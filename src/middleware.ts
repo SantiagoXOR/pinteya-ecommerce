@@ -1,27 +1,43 @@
 // ===================================
-// PINTEYA E-COMMERCE - MIDDLEWARE SIMPLE PARA VERCEL
+// PINTEYA E-COMMERCE - MIDDLEWARE CON CLERK ACTIVADO
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
+import { authMiddleware } from '@clerk/nextjs/server';
 
-/**
- * Middleware mínimo para Vercel - Sin dependencias de Clerk
- * Permite que todas las rutas funcionen sin problemas de autenticación
- */
-export default function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+// Middleware de Clerk v5 con configuración optimizada para Vercel
+export default authMiddleware({
+  // Rutas públicas que NO requieren autenticación
+  publicRoutes: [
+    '/',
+    '/shop',
+    '/shop/(.*)',
+    '/product/(.*)',
+    '/category/(.*)',
+    '/about',
+    '/contact',
+    '/api/products',
+    '/api/categories',
+    '/api/test',
+    '/api/payments/create-preference',
+    '/api/payments/webhook',
+    '/api/payments/status',
+    '/api/auth/webhook',
+    '/signin(.*)',
+    '/signup(.*)',
+    '/sso-callback(.*)',
+  ],
 
-  // Permitir todas las rutas para evitar errores en Vercel
-  // La autenticación se maneja en el frontend con Clerk
+  // Configuración adicional para Vercel
+  debug: false, // Desactivar debug en producción
 
-  // Log básico para debugging
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Middleware - Procesando ruta:', pathname);
-  }
-
-  // Continuar con la request sin modificaciones
-  return NextResponse.next();
-}
+  // Ignorar rutas que causan problemas en Vercel
+  ignoredRoutes: [
+    '/((?!api|trpc))(_next.*|.+\\.[\\w]+$)',
+    '/favicon.ico',
+    '/robots.txt',
+    '/sitemap.xml',
+  ],
+});
 
 // Configuración del matcher mínima para Vercel
 export const config = {

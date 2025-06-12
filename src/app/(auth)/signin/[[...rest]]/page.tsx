@@ -4,8 +4,8 @@ import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function SignInPage() {
-  // Clerk temporalmente desactivado para Vercel
-  const clerkEnabled = false;
+  // Clerk ACTIVADO - Variables configuradas en Vercel
+  const clerkEnabled = true;
 
   // Página de mantenimiento temporal para Vercel
   if (!clerkEnabled) {

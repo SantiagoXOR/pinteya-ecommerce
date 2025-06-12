@@ -4,8 +4,8 @@ import { useUser, SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function TestClerkPage() {
-  // Control de activación de Clerk (debe coincidir con providers.tsx)
-  const clerkEnabled = false; // Cambiar a true cuando Clerk sea estable
+  // Control de activación de Clerk (ACTIVADO - Variables configuradas en Vercel)
+  const clerkEnabled = true; // ✅ ACTIVADO - Variables de entorno configuradas
 
   // Siempre llamar hooks para evitar errores de React
   const userHook = useUser();
