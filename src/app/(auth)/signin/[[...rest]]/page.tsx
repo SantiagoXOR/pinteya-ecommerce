@@ -1,6 +1,7 @@
 "use client";
 
 import { SignIn } from "@clerk/nextjs";
+import Link from "next/link";
 
 export default function SignInPage() {
   // Clerk temporalmente desactivado para Vercel
@@ -21,18 +22,18 @@ export default function SignInPage() {
             Serás redirigido automáticamente a la tienda.
           </p>
           <div className="space-y-3">
-            <a
+            <Link
               href="/shop"
-              className="block w-full bg-tahiti-gold-600 text-white py-2 px-4 rounded-md hover:bg-tahiti-gold-700 transition-colors"
+              className="block w-full bg-tahiti-gold-600 text-white py-2 px-4 rounded-md hover:bg-tahiti-gold-700 transition-colors text-center"
             >
               Ir a la Tienda
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
-              className="block w-full text-tahiti-gold-600 py-2 px-4 border border-tahiti-gold-600 rounded-md hover:bg-tahiti-gold-50 transition-colors"
+              className="block w-full text-tahiti-gold-600 py-2 px-4 border border-tahiti-gold-600 rounded-md hover:bg-tahiti-gold-50 transition-colors text-center"
             >
               Volver al Inicio
-            </a>
+            </Link>
           </div>
         </div>
       </div>
