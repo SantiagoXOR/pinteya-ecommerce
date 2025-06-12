@@ -1,8 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ClerkProvider } from "@clerk/nextjs";
-import { esES } from "@clerk/localizations";
+import dynamic from "next/dynamic";
+
+// Importar ClerkProvider de manera dinámica para evitar errores de SSG
+const ClerkProviderSSG = dynamic(() => import("@/components/providers/ClerkProviderSSG"), {
+  ssr: false,
+});
 
 // Providers de la aplicación
 import { ModalProvider } from "./context/QuickViewModalContext";
@@ -21,8 +25,11 @@ import PreLoader from "@/components/Common/PreLoader";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
+  const [isClient, setIsClient] = useState<boolean>(false);
 
   useEffect(() => {
+    // Verificar que estamos en el cliente para evitar errores de SSG
+    setIsClient(true);
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
@@ -57,37 +64,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     </div>
   );
 
-  // Renderizado con ClerkProvider v5 activado
+  // Renderizado con ClerkProvider v5 activado (compatible con SSG)
   if (clerkEnabled && publishableKey) {
     return (
-      <ClerkProvider
-        publishableKey={publishableKey}
-        localization={esES}
-        signInFallbackRedirectUrl="/shop"
-        signUpFallbackRedirectUrl="/shop"
-        afterSignOutUrl="/"
-        appearance={{
-          baseTheme: undefined,
-          variables: {
-            colorPrimary: '#d97706', // tahiti-gold-600
-            colorBackground: '#fffbea', // tahiti-gold-50
-            colorInputBackground: '#ffffff',
-            colorInputText: '#1f2937',
-            borderRadius: '0.5rem',
-          },
-          elements: {
-            formButtonPrimary: "bg-tahiti-gold-600 hover:bg-tahiti-gold-700 text-sm normal-case font-medium",
-            card: "shadow-xl border border-tahiti-gold-200",
-            headerTitle: "text-2xl font-bold text-gray-900",
-            headerSubtitle: "text-gray-600",
-          }
-        }}
-      >
+      <ClerkProviderSSG publishableKey={publishableKey}>
         <AppContent />
-      </ClerkProvider>
+      </ClerkProviderSSG>
     );
   }
 
-  // Fallback sin Clerk (solo si no hay publishableKey)
+  // Fallback sin Clerk (si no hay publishableKey)
   return <AppContent />;
 }
