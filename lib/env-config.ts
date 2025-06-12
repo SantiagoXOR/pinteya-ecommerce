@@ -106,7 +106,7 @@ export function validateCriticalConfig(): { isValid: boolean; errors: string[] }
 // ===================================
 // EXPORT DEFAULT CONFIG
 // ===================================
-export default {
+const envConfig = {
   supabase: supabaseConfig,
   clerk: clerkConfig,
   mercadopago: mercadopagoConfig,
@@ -117,3 +117,5 @@ export default {
   getConfigurationStatus,
   validateCriticalConfig,
 };
+
+export default envConfig;
