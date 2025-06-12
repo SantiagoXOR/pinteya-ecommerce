@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useState } from "react";
 
 const AuthSection = () => {
-  // Control de activación de Clerk (activado para v5)
-  const clerkEnabled = true; // Clerk v5 activado y funcionando
+  // Control de activación de Clerk (temporalmente desactivado para Vercel)
+  const clerkEnabled = false; // Desactivado temporalmente para deploy en Vercel
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   const handleAuthToggle = () => {

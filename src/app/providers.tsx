@@ -26,8 +26,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  // Configuración de Clerk v5 (activado y estable)
-  const clerkEnabled = true; // Activado para usar Clerk v5
+  // Configuración de Clerk v5 (temporalmente desactivado para Vercel)
+  const clerkEnabled = false; // Desactivado temporalmente para deploy en Vercel
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   // Componente interno con todos los providers

@@ -53,18 +53,17 @@ NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app
 
 ## 🚀 Pasos para Deploy en Vercel
 
-### 1. Preparar el Repositorio
-```bash
-# Asegúrate de que todos los cambios estén committeados
-git add .
-git commit -m "Ready for Vercel deployment"
-git push origin main
-```
+### 1. ✅ Repositorio GitHub Configurado
+**Repositorio**: https://github.com/SantiagoXOR/pinteya-ecommerce
+- ✅ Código subido exitosamente
+- ✅ 505 archivos sincronizados
+- ✅ Listo para conectar con Vercel
 
 ### 2. Conectar con Vercel
 1. Ve a [vercel.com](https://vercel.com)
-2. Conecta tu repositorio de GitHub
-3. Selecciona el proyecto Pinteya
+2. Haz clic en **"New Project"**
+3. Conecta tu cuenta de GitHub si no lo has hecho
+4. Busca y selecciona el repositorio **`pinteya-ecommerce`**
 
 ### 3. Configurar Variables de Entorno
 En el dashboard de Vercel, ve a **Settings > Environment Variables** y agrega:
