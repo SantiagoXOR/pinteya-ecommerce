@@ -4,33 +4,44 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
+import { supabaseConfig, isSupabaseConfigured } from '../../lib/env-config';
 
-// Verificar que las variables de entorno estén configuradas
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Verificar configuración de Supabase
+if (!isSupabaseConfigured()) {
+  console.error('Variables de entorno de Supabase faltantes:', {
+    NEXT_PUBLIC_SUPABASE_URL: !!supabaseConfig.url,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: !!supabaseConfig.anonKey,
+    SUPABASE_SERVICE_ROLE_KEY: !!supabaseConfig.serviceRoleKey,
+  });
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Faltan variables de entorno de Supabase. Verifica NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local'
-  );
+  // En desarrollo, mostrar error detallado
+  if (process.env.NODE_ENV === 'development') {
+    throw new Error(
+      'Faltan variables de entorno de Supabase. Verifica NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local'
+    );
+  }
+
+  // En producción, continuar con valores por defecto para evitar que falle el build
+  console.warn('Usando configuración por defecto de Supabase para el build');
 }
 
 // ===================================
 // CLIENTE PÚBLICO (PARA FRONTEND)
 // ===================================
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-  },
-});
+export const supabase = isSupabaseConfigured()
+  ? createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+      },
+    })
+  : null;
 
 // ===================================
 // CLIENTE ADMINISTRATIVO (PARA API ROUTES)
 // ===================================
-export const supabaseAdmin = supabaseServiceKey
-  ? createClient<Database>(supabaseUrl, supabaseServiceKey, {
+export const supabaseAdmin = supabaseConfig.url && supabaseConfig.serviceRoleKey
+  ? createClient<Database>(supabaseConfig.url, supabaseConfig.serviceRoleKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,

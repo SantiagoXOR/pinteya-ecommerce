@@ -3,10 +3,43 @@
 import { SignUp } from "@clerk/nextjs";
 
 export default function SignUpPage() {
-  // Clerk v5 activado y funcionando
-  const clerkEnabled = true;
+  // Clerk temporalmente desactivado para Vercel
+  const clerkEnabled = false;
 
-  // Clerk v5 con configuración optimizada
+  // Página de mantenimiento temporal para Vercel
+  if (!clerkEnabled) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-tahiti-gold-50">
+        <div className="max-w-md w-full mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            🔧 Registro en Mantenimiento
+          </h1>
+          <p className="text-gray-600 mb-6">
+            El sistema de registro está temporalmente desactivado durante el deploy.
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            Serás redirigido automáticamente a la tienda.
+          </p>
+          <div className="space-y-3">
+            <a
+              href="/shop"
+              className="block w-full bg-tahiti-gold-600 text-white py-2 px-4 rounded-md hover:bg-tahiti-gold-700 transition-colors"
+            >
+              Ir a la Tienda
+            </a>
+            <a
+              href="/"
+              className="block w-full text-tahiti-gold-600 py-2 px-4 border border-tahiti-gold-600 rounded-md hover:bg-tahiti-gold-50 transition-colors"
+            >
+              Volver al Inicio
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Clerk v5 con configuración optimizada (cuando esté activado)
   return (
     <div className="flex min-h-screen items-center justify-center bg-tahiti-gold-50">
       <SignUp

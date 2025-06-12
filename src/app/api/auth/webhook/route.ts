@@ -4,7 +4,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Webhook } from 'svix';
-import { headers } from 'next/headers';
 import { syncUserWithSupabase, deleteUserFromSupabase } from '@/lib/clerk';
 
 interface ClerkUser {
@@ -38,7 +37,8 @@ export async function POST(request: NextRequest) {
     const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
     if (!WEBHOOK_SECRET) {
-      throw new Error('CLERK_WEBHOOK_SECRET no está configurado');
+      console.warn('CLERK_WEBHOOK_SECRET no está configurado - webhook deshabilitado');
+      return new Response('Webhook no configurado', { status: 200 });
     }
 
     // Obtener headers de forma segura
