@@ -2,11 +2,12 @@
 // PINTEYA E-COMMERCE - CHECKOUT HOOK
 // ===================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/redux/store';
 import { selectCartItems, selectTotalPrice, removeAllItemsFromCart } from '@/redux/features/cart-slice';
 import { CheckoutFormData, CheckoutState, CreatePreferencePayload, PaymentPreferenceResponse } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
+import { useUser } from '@clerk/nextjs';
 
 const initialFormData: CheckoutFormData = {
   billing: {
@@ -35,6 +36,7 @@ export const useCheckout = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector(selectCartItems);
   const totalPrice = useAppSelector(selectTotalPrice);
+  const { user, isLoaded } = useUser();
 
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     formData: initialFormData,
@@ -42,6 +44,32 @@ export const useCheckout = () => {
     errors: {},
     step: 'form',
   });
+
+  // ===================================
+  // AUTO-COMPLETAR DATOS DEL USUARIO AUTENTICADO
+  // ===================================
+  useEffect(() => {
+    if (isLoaded && user) {
+      const userEmail = user.emailAddresses[0]?.emailAddress || '';
+      const firstName = user.firstName || '';
+      const lastName = user.lastName || '';
+      const fullName = user.fullName || `${firstName} ${lastName}`.trim();
+
+      // Auto-completar datos de facturación con información de Clerk
+      setCheckoutState(prev => ({
+        ...prev,
+        formData: {
+          ...prev.formData,
+          billing: {
+            ...prev.formData.billing,
+            firstName: firstName || prev.formData.billing.firstName,
+            lastName: lastName || prev.formData.billing.lastName,
+            email: userEmail || prev.formData.billing.email,
+          },
+        },
+      }));
+    }
+  }, [isLoaded, user]);
 
   // Estado para cupones
   const [appliedCoupon, setAppliedCoupon] = useState<{

@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Obtener usuario primero
-    const { data: user } = await supabaseAdmin
+    let { data: user } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('clerk_id', userId)
@@ -60,11 +60,19 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      if (!newUser) {
+        console.error('Error: newUser es null después de la inserción');
+        return NextResponse.json(
+          { error: 'Error al crear usuario' },
+          { status: 500 }
+        );
+      }
+
       // Crear algunas órdenes demo para el usuario
       await createDemoOrders(newUser.id);
-      
+
       // Usar el nuevo usuario
-      user.id = newUser.id;
+      user = newUser;
     }
 
     // Construir query base
@@ -203,7 +211,7 @@ async function createDemoOrders(userId: string) {
       .select();
 
     // Crear items para cada orden
-    if (createdOrders) {
+    if (createdOrders && products.length >= 2) {
       for (const order of createdOrders) {
         const orderItems = [
           {
