@@ -22,7 +22,10 @@ export const supabaseConfig = {
 export const clerkConfig = {
   publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '',
   secretKey: process.env.CLERK_SECRET_KEY || '',
-  webhookSecret: process.env.CLERK_WEBHOOK_SECRET || '',
+  signInUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || '/signin',
+  signUpUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || '/signup',
+  afterSignInUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || '/',
+  afterSignUpUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || '/',
 };
 
 // ===================================
@@ -31,8 +34,6 @@ export const clerkConfig = {
 export const mercadopagoConfig = {
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '',
   publicKey: process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || '',
-  clientId: process.env.MERCADOPAGO_CLIENT_ID || '',
-  clientSecret: process.env.MERCADOPAGO_CLIENT_SECRET || '',
   webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET || '',
 };
 
@@ -72,31 +73,86 @@ export function isMercadoPagoConfigured(): boolean {
 }
 
 /**
- * Obtiene el estado de configuración de todos los servicios
+ * Verifica si todas las configuraciones están completas
  */
-export function getConfigurationStatus() {
+export function isFullyConfigured(): boolean {
+  return isSupabaseConfigured() && isClerkConfigured() && isMercadoPagoConfigured();
+}
+
+/**
+ * Obtiene la configuración de la base de datos
+ */
+export function getDatabaseConfig() {
   return {
-    supabase: isSupabaseConfigured(),
-    clerk: isClerkConfigured(),
-    mercadopago: isMercadoPagoConfigured(),
-    app: !!appConfig.url,
+    url: supabaseConfig.url,
+    anonKey: supabaseConfig.anonKey,
+    serviceRoleKey: supabaseConfig.serviceRoleKey,
   };
 }
 
 /**
- * Valida la configuración crítica para el funcionamiento de la app
+ * Obtiene la configuración de autenticación
  */
-export function validateCriticalConfig(): { isValid: boolean; errors: string[] } {
+export function getAuthConfig() {
+  return {
+    publishableKey: clerkConfig.publishableKey,
+    secretKey: clerkConfig.secretKey,
+    signInUrl: clerkConfig.signInUrl,
+    signUpUrl: clerkConfig.signUpUrl,
+    afterSignInUrl: clerkConfig.afterSignInUrl,
+    afterSignUpUrl: clerkConfig.afterSignUpUrl,
+  };
+}
+
+/**
+ * Obtiene la configuración de pagos
+ */
+export function getPaymentConfig() {
+  return {
+    accessToken: mercadopagoConfig.accessToken,
+    publicKey: mercadopagoConfig.publicKey,
+    webhookSecret: mercadopagoConfig.webhookSecret,
+  };
+}
+
+// ===================================
+// ENVIRONMENT VALIDATION
+// ===================================
+
+/**
+ * Valida que las variables de entorno críticas estén configuradas
+ */
+export function validateEnvironment(): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
-  
-  if (!isSupabaseConfigured()) {
-    errors.push('Supabase no está configurado correctamente');
+
+  // Validar Supabase
+  if (!supabaseConfig.url) {
+    errors.push('NEXT_PUBLIC_SUPABASE_URL is required');
   }
-  
-  if (!appConfig.url) {
-    errors.push('URL de la aplicación no está configurada');
+  if (!supabaseConfig.anonKey) {
+    errors.push('NEXT_PUBLIC_SUPABASE_ANON_KEY is required');
   }
-  
+
+  // Validar Clerk (opcional en desarrollo)
+  if (appConfig.isProduction) {
+    if (!clerkConfig.publishableKey) {
+      errors.push('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is required in production');
+    }
+    if (!clerkConfig.secretKey) {
+      errors.push('CLERK_SECRET_KEY is required in production');
+    }
+  }
+
+  // Validar MercadoPago (opcional en desarrollo)
+  if (appConfig.isProduction) {
+    if (!mercadopagoConfig.accessToken) {
+      errors.push('MERCADOPAGO_ACCESS_TOKEN is required in production');
+    }
+    if (!mercadopagoConfig.publicKey) {
+      errors.push('NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY is required in production');
+    }
+  }
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -106,7 +162,7 @@ export function validateCriticalConfig(): { isValid: boolean; errors: string[] }
 // ===================================
 // EXPORT DEFAULT CONFIG
 // ===================================
-const envConfig = {
+export default {
   supabase: supabaseConfig,
   clerk: clerkConfig,
   mercadopago: mercadopagoConfig,
@@ -114,8 +170,6 @@ const envConfig = {
   isSupabaseConfigured,
   isClerkConfigured,
   isMercadoPagoConfigured,
-  getConfigurationStatus,
-  validateCriticalConfig,
+  isFullyConfigured,
+  validateEnvironment,
 };
-
-export default envConfig;
