@@ -216,20 +216,28 @@ export const simulateUserFlow = async () => {
 
   const cartValidation = validateCartState(mockCartItems);
   if (!cartValidation || typeof cartValidation === 'boolean') {
-    console.log('❌ Error en validación del carrito');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('❌ Error en validación del carrito');
+    }
     return false;
   }
 
   // 3. Probar checkout
-  console.log('3️⃣ Usuario procede al checkout...');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('3️⃣ Usuario procede al checkout...');
+  }
   const checkoutResult = await testCheckoutFlow();
-  
+
   if (!checkoutResult) {
-    console.log('❌ Error en el proceso de checkout');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('❌ Error en el proceso de checkout');
+    }
     return false;
   }
 
-  console.log('🎉 ¡Flujo completo exitoso!');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎉 ¡Flujo completo exitoso!');
+  }
   return {
     success: true,
     cartValidation,
