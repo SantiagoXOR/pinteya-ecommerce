@@ -10,7 +10,7 @@ import PriceDropdown from "./PriceDropdown";
 import SearchBox from "./SearchBox";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategoriesForFilters } from "@/hooks/useCategories";
-// import shopData from "../Shop/shopData"; // Comentado: ahora usamos datos dinámicos
+import { SHOP_CONSTANTS, PRODUCT_CATEGORIES } from "@/constants/shop";
 import SingleGridItem from "../Shop/SingleGridItem";
 import SingleListItem from "../Shop/SingleListItem";
 
@@ -35,7 +35,7 @@ const ShopWithSidebar = () => {
     searchProducts,
   } = useProducts({
     initialFilters: {
-      limit: 9, // Menos productos por página en sidebar
+      limit: SHOP_CONSTANTS.PRODUCTS_PER_PAGE_SIDEBAR,
       sortBy: 'created_at',
       sortOrder: 'desc',
     },
@@ -107,40 +107,39 @@ const ShopWithSidebar = () => {
     searchProducts(searchTerm);
   };
 
-  // Tipos de productos relevantes para pinturería
-  const productTypes = [
-    {
-      name: "Pinturas",
-      products: 15,
-    },
-    {
-      name: "Herramientas",
-      products: 12,
-    },
-    {
-      name: "Accesorios",
-      products: 11,
-    },
-  ];
+  // Tipos de productos relevantes para pinturería (datos dinámicos)
+  const productTypes = Object.values(PRODUCT_CATEGORIES).map(category => ({
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    // TODO: Obtener conteo real desde la API
+    products: 0,
+  }));
 
   useEffect(() => {
     window.addEventListener("scroll", handleStickyMenu);
 
+    return () => {
+      window.removeEventListener("scroll", handleStickyMenu);
+    };
+  }, []);
+
+  useEffect(() => {
     // closing sidebar while clicking outside
-    function handleClickOutside(event) {
-      if (!event.target.closest(".sidebar-content")) {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Element;
+      if (!target.closest(".sidebar-content")) {
         setProductSidebar(false);
       }
     }
 
     if (productSidebar) {
       document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
     }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  });
+  }, [productSidebar]);
 
   return (
     <>

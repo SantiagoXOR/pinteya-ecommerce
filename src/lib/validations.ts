@@ -3,6 +3,7 @@
 // ===================================
 
 import { z } from 'zod';
+import { VALIDATION_CONSTANTS } from '@/constants/shop';
 
 // ===================================
 // VALIDACIONES DE PRODUCTOS
@@ -15,7 +16,10 @@ export const ProductSchema = z.object({
   discounted_price: z.number().positive().optional(),
   stock: z.number().int().min(0, 'El stock no puede ser negativo').default(0),
   category_id: z.number().int().positive().optional(),
-  images: z.any().optional(),
+  images: z.object({
+    previews: z.array(z.string().url()).optional(),
+    main: z.string().url().optional(),
+  }).optional(),
 });
 
 export const ProductFiltersSchema = z.object({
@@ -123,10 +127,14 @@ export const MercadoPagoWebhookSchema = z.object({
 // VALIDACIONES DE FORMULARIOS
 // ===================================
 export const ContactFormSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido').max(100, 'Nombre muy largo'),
+  name: z.string()
+    .min(VALIDATION_CONSTANTS.MIN_NAME_LENGTH, 'El nombre es requerido')
+    .max(VALIDATION_CONSTANTS.MAX_NAME_LENGTH, 'Nombre muy largo'),
   email: z.string().email('Email inválido'),
   subject: z.string().min(1, 'El asunto es requerido').max(200, 'Asunto muy largo'),
-  message: z.string().min(10, 'El mensaje debe tener al menos 10 caracteres').max(1000, 'Mensaje muy largo'),
+  message: z.string()
+    .min(VALIDATION_CONSTANTS.MIN_MESSAGE_LENGTH, 'El mensaje debe tener al menos 10 caracteres')
+    .max(VALIDATION_CONSTANTS.MAX_MESSAGE_LENGTH, 'Mensaje muy largo'),
 });
 
 export const NewsletterSchema = z.object({
