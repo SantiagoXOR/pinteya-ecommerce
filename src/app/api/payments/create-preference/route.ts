@@ -145,9 +145,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 500 });
     }
 
+    // Definir tipo para productos con categoría
+    type ProductWithCategory = {
+      id: number;
+      name: string;
+      price: number;
+      discounted_price: number | null;
+      stock: number;
+      images: any;
+      category: {
+        name: string;
+        slug: string;
+      } | null;
+    };
+
+    const typedProducts = products as ProductWithCategory[];
+
     // Validar stock disponible
     for (const item of orderData.items) {
-      const product = products.find(p => p.id === parseInt(item.id));
+      const product = typedProducts.find(p => p.id === parseInt(item.id));
       if (!product) {
         const errorResponse: ApiResponse<null> = {
           data: null,
@@ -167,13 +183,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const typedProducts = products as unknown as Product[];
-
     // ===================================
     // CALCULAR TOTALES CON PRECIOS CORRECTOS
     // ===================================
     const itemsTotal = orderData.items.reduce((total, item) => {
-      const product = products.find(p => p.id === parseInt(item.id));
+      const product = typedProducts.find(p => p.id === parseInt(item.id));
       if (!product) return total;
 
       // Usar precio con descuento si existe, sino precio normal
@@ -219,7 +233,7 @@ export async function POST(request: NextRequest) {
     // CREAR ITEMS DE LA ORDEN CON PRECIOS CORRECTOS
     // ===================================
     const orderItems = orderData.items.map(item => {
-      const product = products.find(p => p.id === parseInt(item.id));
+      const product = typedProducts.find(p => p.id === parseInt(item.id));
       if (!product) {
         throw new Error(`Producto ${item.id} no encontrado`);
       }
@@ -255,7 +269,7 @@ export async function POST(request: NextRequest) {
     // ===================================
     // CONVERTIR ITEMS PARA MERCADOPAGO
     // ===================================
-    const mercadoPagoItems: MercadoPagoItem[] = products.map((product) => {
+    const mercadoPagoItems: MercadoPagoItem[] = typedProducts.map((product) => {
       const orderItem = orderData.items.find(item => item.id === product.id.toString());
       if (!orderItem) {
         throw new Error(`Order item not found for product ${product.id}`);
