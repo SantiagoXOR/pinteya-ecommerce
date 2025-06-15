@@ -3,11 +3,13 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { CreatePreferencePayload } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
 import { preference } from '@/lib/mercadopago';
 import type { MercadoPagoItem } from '@/lib/mercadopago';
+import { getAuthUser, getAuthUserId } from '@/lib/clerk';
+import { currentUser } from '@clerk/nextjs/server';
 
 interface Product {
   id: number;
@@ -29,14 +31,102 @@ export async function POST(request: NextRequest) {
     const productIds = orderData.items.map(item => parseInt(item.id));
     const shippingCost = orderData.shipping?.cost || 0;
 
-    // Obtener productos
-    const { data: products, error: productsError } = await supabase
+    // ===================================
+    // OBTENER USUARIO AUTENTICADO CON CLERK
+    // ===================================
+    let userId: string | null = null;
+    let userEmail: string | null = null;
+
+    try {
+      // Intentar obtener usuario autenticado de Clerk
+      const clerkUser = await currentUser();
+      if (clerkUser) {
+        userId = clerkUser.id;
+        userEmail = clerkUser.emailAddresses[0]?.emailAddress || null;
+
+        // Verificar si el usuario existe en nuestra base de datos
+        const { data: existingUser, error: userError } = await supabaseAdmin
+          .from('users')
+          .select('id, clerk_id')
+          .eq('clerk_id', clerkUser.id)
+          .single();
+
+        if (userError && userError.code !== 'PGRST116') {
+          console.error('Error checking user in database:', userError);
+        }
+
+        // Si el usuario no existe en nuestra DB, crearlo
+        if (!existingUser) {
+          const { data: newUser, error: createUserError } = await supabaseAdmin
+            .from('users')
+            .insert({
+              clerk_id: clerkUser.id,
+              email: userEmail,
+              name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Usuario',
+            })
+            .select('id')
+            .single();
+
+          if (createUserError) {
+            console.error('Error creating user in database:', createUserError);
+            // Continuar con usuario temporal si falla la creación
+            userId = null;
+          } else if (newUser) {
+            userId = newUser.id;
+          } else {
+            console.error('Error: newUser is null after insertion');
+            userId = null;
+          }
+        } else {
+          userId = existingUser.id;
+        }
+      }
+    } catch (clerkError) {
+      console.error('Error getting Clerk user:', clerkError);
+      // Continuar sin usuario autenticado
+    }
+
+    // Si no hay usuario autenticado, usar usuario temporal
+    if (!userId) {
+      console.log('No authenticated user found, using temporary user');
+      userId = '00000000-0000-4000-8000-000000000000';
+      userEmail = orderData.payer.email;
+
+      // Verificar que el usuario temporal existe
+      const { data: tempUser, error: tempUserError } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      if (tempUserError) {
+        // Crear usuario temporal si no existe
+        const { error: createTempError } = await supabaseAdmin
+          .from('users')
+          .insert({
+            id: userId,
+            clerk_id: 'temp-user',
+            email: userEmail,
+            name: `${orderData.payer.name} ${orderData.payer.surname}`.trim(),
+          });
+
+        if (createTempError) {
+          console.error('Error creating temporary user:', createTempError);
+        }
+      }
+    }
+
+    // ===================================
+    // OBTENER PRODUCTOS Y VALIDAR STOCK
+    // ===================================
+    const { data: products, error: productsError } = await supabaseAdmin
       .from('products')
       .select(`
         id,
         name,
         price,
         discounted_price,
+        stock,
         images,
         category:categories (
           name,
@@ -55,56 +145,104 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 500 });
     }
 
+    // Validar stock disponible
+    for (const item of orderData.items) {
+      const product = products.find(p => p.id === parseInt(item.id));
+      if (!product) {
+        const errorResponse: ApiResponse<null> = {
+          data: null,
+          success: false,
+          error: `Producto ${item.id} no encontrado`,
+        };
+        return NextResponse.json(errorResponse, { status: 400 });
+      }
+
+      if (product.stock < item.quantity) {
+        const errorResponse: ApiResponse<null> = {
+          data: null,
+          success: false,
+          error: `Stock insuficiente para ${product.name}. Disponible: ${product.stock}, solicitado: ${item.quantity}`,
+        };
+        return NextResponse.json(errorResponse, { status: 400 });
+      }
+    }
+
     const typedProducts = products as unknown as Product[];
 
-    // Crear la orden en la base de datos
-    const { data: order, error: orderError } = await supabase
+    // ===================================
+    // CALCULAR TOTALES CON PRECIOS CORRECTOS
+    // ===================================
+    const itemsTotal = orderData.items.reduce((total, item) => {
+      const product = products.find(p => p.id === parseInt(item.id));
+      if (!product) return total;
+
+      // Usar precio con descuento si existe, sino precio normal
+      const finalPrice = product.discounted_price || product.price;
+      return total + (finalPrice * item.quantity);
+    }, 0);
+
+    const totalAmount = itemsTotal + shippingCost;
+
+    // ===================================
+    // CREAR ORDEN EN BASE DE DATOS
+    // ===================================
+    const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
-        user_id: 'demo-user-id', // TODO: Obtener de auth
+        user_id: userId,
         status: 'pending',
-        shipping_cost: shippingCost,
-        items_total: orderData.items.reduce((total, item) => {
-          const product = products.find(p => p.id === parseInt(item.id));
-          return total + ((product?.discounted_price || product?.price || 0) * item.quantity);
-        }, 0),
-        total: orderData.items.reduce((total, item) => {
-          const product = products.find(p => p.id === parseInt(item.id));
-          return total + ((product?.discounted_price || product?.price || 0) * item.quantity);
-        }, 0) + shippingCost,
-        shipping_address: orderData.shipping?.address,
-        payer_email: orderData.payer.email,
+        total: totalAmount,
+        shipping_address: orderData.shipping?.address ? JSON.stringify(orderData.shipping.address) : null,
+        external_reference: orderData.external_reference || `order_${Date.now()}`,
       })
       .select()
       .single();
 
     if (orderError || !order) {
       console.error('Error creating order:', orderError);
+      console.error('Order data attempted:', {
+        user_id: userId,
+        status: 'pending',
+        total: totalAmount,
+        shipping_address: orderData.shipping?.address ? JSON.stringify(orderData.shipping.address) : null,
+        external_reference: orderData.external_reference || `order_${Date.now()}`,
+      });
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
-        error: 'Error creando orden',
+        error: `Error creando orden: ${orderError?.message || 'Unknown error'}`,
       };
       return NextResponse.json(errorResponse, { status: 500 });
     }
 
-    // Crear items de la orden
-    const orderItems = orderData.items.map(item => ({
-      order_id: order.id,
-      product_id: parseInt(item.id),
-      quantity: item.quantity,
-      price: products.find(p => p.id === parseInt(item.id))?.discounted_price || 
-             products.find(p => p.id === parseInt(item.id))?.price || 0,
-    }));
+    // ===================================
+    // CREAR ITEMS DE LA ORDEN CON PRECIOS CORRECTOS
+    // ===================================
+    const orderItems = orderData.items.map(item => {
+      const product = products.find(p => p.id === parseInt(item.id));
+      if (!product) {
+        throw new Error(`Producto ${item.id} no encontrado`);
+      }
 
-    const { error: itemsError } = await supabase
+      // Usar precio con descuento si existe, sino precio normal
+      const finalPrice = product.discounted_price || product.price;
+
+      return {
+        order_id: order.id,
+        product_id: parseInt(item.id),
+        quantity: item.quantity,
+        price: finalPrice,
+      };
+    });
+
+    const { error: itemsError } = await supabaseAdmin
       .from('order_items')
       .insert(orderItems);
 
     if (itemsError) {
       console.error('Error creating order items:', itemsError);
       // Rollback: eliminar orden creada
-      await supabase.from('orders').delete().eq('id', order.id);
+      await supabaseAdmin.from('orders').delete().eq('id', order.id);
       
       const errorResponse: ApiResponse<null> = {
         data: null,
@@ -114,18 +252,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 500 });
     }
 
-    // Convertir items para MercadoPago
-    const mercadoPagoItems: MercadoPagoItem[] = typedProducts.map((product) => {
+    // ===================================
+    // CONVERTIR ITEMS PARA MERCADOPAGO
+    // ===================================
+    const mercadoPagoItems: MercadoPagoItem[] = products.map((product) => {
       const orderItem = orderData.items.find(item => item.id === product.id.toString());
+      if (!orderItem) {
+        throw new Error(`Order item not found for product ${product.id}`);
+      }
+
+      // Usar precio con descuento si existe, sino precio normal
+      const finalPrice = product.discounted_price || product.price;
+
       return {
         id: product.id.toString(),
         title: product.name,
         description: `Producto de pinturería - ${product.category?.name || 'General'}`,
         picture_url: product.images?.previews?.[0] || '',
         category_id: product.category?.slug || 'general',
-        quantity: orderItem?.quantity || 1,
+        quantity: orderItem.quantity,
         currency_id: 'ARS',
-        unit_price: product.discounted_price || product.price,
+        unit_price: finalPrice,
       };
     });
 
@@ -182,7 +329,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Actualizar orden con ID de preferencia
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
         payment_preference_id: preferenceResult.id,

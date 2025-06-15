@@ -8,6 +8,7 @@ import PaymentMethod from "./PaymentMethod";
 import Billing from "./Billing";
 import OrderSummary from "./OrderSummary";
 import Coupon from "./Coupon";
+import UserInfo from "./UserInfo";
 import { useCheckout } from "@/hooks/useCheckout";
 
 const Checkout = () => {
@@ -137,6 +138,9 @@ const Checkout = () => {
 
               {/* Checkout right */}
               <div className="max-w-[455px] w-full">
+                {/* User info */}
+                <UserInfo className="mb-6" />
+
                 {/* Order summary */}
                 <OrderSummary
                   cartItems={cartItems}
