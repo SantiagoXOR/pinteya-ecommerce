@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - TESTS PARA HOOK STICKY MENU
 // ===================================
 
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useStickyMenu } from '@/hooks/useStickyMenu';
 
 // Mock para window scroll
@@ -83,9 +83,11 @@ describe('useStickyMenu', () => {
       value: 100,
       writable: true,
     });
-    
-    scrollHandler();
-    
+
+    act(() => {
+      scrollHandler();
+    });
+
     expect(result.current.isSticky).toBe(true);
   });
 
@@ -101,9 +103,11 @@ describe('useStickyMenu', () => {
       value: 50,
       writable: true,
     });
-    
-    scrollHandler();
-    
+
+    act(() => {
+      scrollHandler();
+    });
+
     expect(result.current.isSticky).toBe(false);
   });
 
@@ -124,9 +128,11 @@ describe('useStickyMenu', () => {
       value: 100,
       writable: true,
     });
-    
-    scrollHandler();
-    
+
+    act(() => {
+      scrollHandler();
+    });
+
     expect(result.current.isSticky).toBe(true);
   });
 
@@ -141,9 +147,11 @@ describe('useStickyMenu', () => {
       value: 1,
       writable: true,
     });
-    
-    scrollHandler();
-    
+
+    act(() => {
+      scrollHandler();
+    });
+
     expect(result.current.isSticky).toBe(true);
   });
 });
