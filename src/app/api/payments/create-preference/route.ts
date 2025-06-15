@@ -145,8 +145,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 500 });
     }
 
-    // Definir tipo para productos con categoría
-    type ProductWithCategory = {
+    // Definir tipo para productos con categoría (como viene de Supabase)
+    type SupabaseProduct = {
       id: number;
       name: string;
       price: number;
@@ -156,10 +156,14 @@ export async function POST(request: NextRequest) {
       category: {
         name: string;
         slug: string;
-      } | null;
+      }[] | null;
     };
 
-    const typedProducts = products as ProductWithCategory[];
+    // Convertir productos para tener categoría como objeto
+    const typedProducts = (products as SupabaseProduct[]).map(product => ({
+      ...product,
+      category: product.category && product.category.length > 0 ? product.category[0] : null
+    }));
 
     // Validar stock disponible
     for (const item of orderData.items) {
