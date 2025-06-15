@@ -8,8 +8,38 @@ import { CreatePreferencePayload } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
 import { preference } from '@/lib/mercadopago';
 import type { MercadoPagoItem } from '@/lib/mercadopago';
-import { getAuthUser, getAuthUserId } from '@/lib/clerk';
 import { currentUser } from '@clerk/nextjs/server';
+import { CHECKOUT_CONSTANTS, VALIDATION_CONSTANTS } from '@/constants/shop';
+import { z } from 'zod';
+
+// Schema de validación para la entrada
+const CreatePreferenceSchema = z.object({
+  items: z.array(z.object({
+    id: z.string().min(1, 'ID de producto requerido'),
+    quantity: z.number().min(1, 'Cantidad debe ser mayor a 0').max(99, 'Cantidad máxima excedida'),
+  })).min(1, 'Al menos un producto es requerido'),
+  payer: z.object({
+    name: z.string().min(VALIDATION_CONSTANTS.MIN_NAME_LENGTH, 'Nombre requerido'),
+    surname: z.string().min(VALIDATION_CONSTANTS.MIN_NAME_LENGTH, 'Apellido requerido'),
+    email: z.string().email('Email inválido'),
+    phone: z.string().regex(VALIDATION_CONSTANTS.PHONE_REGEX, 'Teléfono inválido').optional(),
+    identification: z.object({
+      type: z.string().min(1, 'Tipo de identificación requerido'),
+      number: z.string().min(1, 'Número de identificación requerido'),
+    }).optional(),
+  }),
+  shipping: z.object({
+    cost: z.number().min(0, 'Costo de envío inválido'),
+    address: z.object({
+      street_name: z.string().min(1, 'Nombre de calle requerido'),
+      street_number: z.string().min(1, 'Número de calle requerido'),
+      zip_code: z.string().min(1, 'Código postal requerido'),
+      city_name: z.string().min(1, 'Ciudad requerida'),
+      state_name: z.string().min(1, 'Provincia requerida'),
+    }),
+  }).optional(),
+  external_reference: z.string().optional(),
+});
 
 interface Product {
   id: number;
@@ -25,9 +55,44 @@ interface Product {
   };
 }
 
+// Función helper para calcular precio final
+function getFinalPrice(product: { price: number; discounted_price?: number | null }): number {
+  return product.discounted_price || product.price;
+}
+
+// Función helper para crear usuario temporal
+async function createTemporaryUser(userId: string, email: string, name: string) {
+  const { error } = await supabaseAdmin
+    .from('users')
+    .insert({
+      id: userId,
+      clerk_id: 'temp-user',
+      email,
+      name,
+    });
+
+  if (error) {
+    console.error('Error creating temporary user:', error);
+    throw new Error('Error creando usuario temporal');
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const orderData: CreatePreferencePayload = await request.json();
+    // Validar entrada
+    const rawData = await request.json();
+    const validationResult = CreatePreferenceSchema.safeParse(rawData);
+
+    if (!validationResult.success) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: `Datos inválidos: ${validationResult.error.errors.map(e => e.message).join(', ')}`,
+      };
+      return NextResponse.json(errorResponse, { status: 400 });
+    }
+
+    const orderData = validationResult.data;
     const productIds = orderData.items.map(item => parseInt(item.id));
     const shippingCost = orderData.shipping?.cost || 0;
 
@@ -195,7 +260,7 @@ export async function POST(request: NextRequest) {
       if (!product) return total;
 
       // Usar precio con descuento si existe, sino precio normal
-      const finalPrice = product.discounted_price || product.price;
+      const finalPrice = getFinalPrice(product);
       return total + (finalPrice * item.quantity);
     }, 0);
 
@@ -243,7 +308,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Usar precio con descuento si existe, sino precio normal
-      const finalPrice = product.discounted_price || product.price;
+      const finalPrice = getFinalPrice(product);
 
       return {
         order_id: order.id,
@@ -280,7 +345,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Usar precio con descuento si existe, sino precio normal
-      const finalPrice = product.discounted_price || product.price;
+      const finalPrice = getFinalPrice(product);
 
       return {
         id: product.id.toString(),

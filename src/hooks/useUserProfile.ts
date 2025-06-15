@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - HOOK PARA PERFIL DE USUARIO
 // ===================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface UserProfile {
   id: string;
@@ -26,8 +26,7 @@ export function useUserProfile(): UseUserProfileReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Función para obtener el perfil
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -35,64 +34,55 @@ export function useUserProfile(): UseUserProfileReturn {
       const response = await fetch('/api/user/profile');
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al obtener perfil');
-      }
-
       if (data.success) {
-        setProfile(data.user);
+        setProfile(data.profile);
       } else {
-        throw new Error('Error al obtener perfil');
+        setError(data.error || 'Error obteniendo perfil');
       }
     } catch (err) {
-      console.error('Error en useUserProfile:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setError('Error de conexión');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Función para actualizar el perfil
-  const updateProfile = async (updateData: Partial<UserProfile>): Promise<boolean> => {
+  const updateProfile = useCallback(async (data: Partial<UserProfile>): Promise<boolean> => {
     try {
+      setLoading(true);
       setError(null);
 
       const response = await fetch('/api/user/profile', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updateData),
+        body: JSON.stringify(data),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al actualizar perfil');
-      }
-
-      if (data.success) {
-        setProfile(data.user);
+      if (result.success) {
+        setProfile(result.profile);
         return true;
       } else {
-        throw new Error('Error al actualizar perfil');
+        setError(result.error || 'Error actualizando perfil');
+        return false;
       }
     } catch (err) {
-      console.error('Error al actualizar perfil:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setError('Error de conexión');
       return false;
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  // Función para refrescar el perfil
-  const refreshProfile = () => {
+  const refreshProfile = useCallback(() => {
     fetchProfile();
-  };
+  }, [fetchProfile]);
 
-  // Cargar perfil al montar el componente
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [fetchProfile]);
 
   return {
     profile,
