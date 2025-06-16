@@ -5,6 +5,49 @@ Todos los cambios importantes de este proyecto serán documentados en este archi
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-06-16
+
+### 📚 Major - Refactorización Completa de Documentación
+
+#### Nuevas Funcionalidades
+- **Documentation Architecture**: Nueva estructura jerárquica en `/docs/`
+- **Comprehensive Guides**: Guías completas de instalación, desarrollo y contribución
+- **API Documentation**: Documentación detallada de 22 endpoints
+- **Architecture Diagrams**: Diagramas Mermaid de arquitectura del sistema
+- **Testing Documentation**: Guía completa de 206 tests y cobertura 70%+
+
+#### Estructura Implementada
+```
+docs/
+├── README.md                    # Índice principal
+├── getting-started/             # Guías de inicio
+├── architecture/                # Documentación de arquitectura
+├── api/                         # Documentación de APIs
+├── testing/                     # Estrategias de testing
+├── development/                 # Estándares de desarrollo
+├── deployment/                  # Guías de deploy
+└── contributing/                # Guías de contribución
+```
+
+#### Mejoras del README
+- **Modern Structure**: Badges, enlaces y navegación mejorada
+- **Quick Links**: Enlaces directos a documentación y producción
+- **Status Overview**: Estado actual del proyecto con métricas
+- **Technology Stack**: Stack tecnológico detallado
+
+#### Archivos Eliminados
+- Documentación obsoleta y duplicada (6 archivos)
+- Archivos de resolución de errores ya solucionados
+- Planes de mejoras movidos a nueva estructura
+
+#### Beneficios
+- **Developer Experience**: Onboarding más rápido para nuevos desarrolladores
+- **Maintainability**: Documentación organizada y fácil de mantener
+- **Professional Standards**: Documentación enterprise-ready
+- **Navigation**: Sistema de navegación claro entre documentos
+
+---
+
 ## [1.2.0] - 2025-06-16
 
 ### 🔧 Fixed - CRÍTICO: Errores de Build de Vercel
