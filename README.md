@@ -1,30 +1,53 @@
-# Pinteya E-commerce
+# 🎨 Pinteya E-commerce
 
-E-commerce especializado en productos de pinturería, ferretería y corralón, desarrollado con Next.js 15, TypeScript, Tailwind CSS, Supabase, Clerk y MercadoPago.
+> E-commerce especializado en productos de pinturería, ferretería y corralón, desarrollado con tecnologías modernas y arquitectura escalable.
+
+[![Deploy Status](https://img.shields.io/badge/Deploy-Vercel-success)](https://pinteya-ecommerce.vercel.app)
+[![Tests](https://img.shields.io/badge/Tests-206%20passing-brightgreen)](./docs/testing/README.md)
+[![Coverage](https://img.shields.io/badge/Coverage-70%25-green)](./docs/testing/coverage.md)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7.3-blue)](https://www.typescriptlang.org/)
 
 ## 🚀 Estado del Proyecto
 
-**PROYECTO COMPLETADO AL 100% - DEPLOY EXITOSO** ✅
+**✅ PROYECTO ENTERPRISE-READY - PRODUCCIÓN**
 
-Todas las funcionalidades principales han sido implementadas y están funcionando correctamente:
+Sistema completo de e-commerce con todas las funcionalidades implementadas y testeadas:
 
-- ✅ Backend completo con Supabase
-- ✅ Productos dinámicos y categorías
-- ✅ **Sistema de pagos con MercadoPago 100% FUNCIONAL**
-- ✅ Área de usuario completa
-- ✅ Autenticación con Clerk
-- ✅ 22 APIs funcionando
-- ✅ Base de datos poblada con productos reales
-- ✅ Dashboard de usuario con datos reales
-- ✅ **Checkout completo y operativo**
-- ✅ **Deploy exitoso en Vercel sin errores**
-- ✅ **37 páginas generadas correctamente**
-- ✅ **Build optimizado para producción**
+### 🏗️ **Arquitectura & Backend**
+- ✅ **Next.js 15** con App Router y TypeScript
+- ✅ **Supabase** - Base de datos PostgreSQL con RLS
+- ✅ **22 APIs RESTful** completamente funcionales
+- ✅ **Productos reales** de marcas argentinas reconocidas
 
-### 🌐 Enlaces de Producción
-- **Aplicación en Vivo**: https://pinteya-ecommerce.vercel.app
-- **Repositorio GitHub**: https://github.com/SantiagoXOR/pinteya-ecommerce
-- **Dashboard Vercel**: https://vercel.com/santiagoxor/pinteya-ecommerce
+### 💳 **Pagos & Checkout**
+- ✅ **MercadoPago** integración completa con credenciales reales
+- ✅ **Checkout funcional** con validación de stock automática
+- ✅ **Webhook operativo** para notificaciones de pago
+- ✅ **Estados de pago** completos (success/failure/pending)
+
+### 👤 **Autenticación & Usuario**
+- ✅ **Clerk Authentication** configurado y funcional
+- ✅ **Área de usuario** completa con dashboard dinámico
+- ✅ **Gestión de direcciones** y perfil editable
+- ✅ **Historial de órdenes** con paginación y filtros
+
+### 🧪 **Testing & Calidad**
+- ✅ **206 tests** pasando (100% success rate)
+- ✅ **70%+ cobertura** de código
+- ✅ **Playwright E2E** tests configurados
+- ✅ **CI/CD Pipeline** con GitHub Actions
+
+### 🌐 **Producción**
+- ✅ **Deploy exitoso** en Vercel sin errores
+- ✅ **37 páginas** generadas correctamente
+- ✅ **Performance optimizada** para producción
+- ✅ **SSL y CDN** configurados automáticamente
+
+## 🔗 Enlaces de Producción
+
+- **🌐 Aplicación en Vivo**: [pinteya-ecommerce.vercel.app](https://pinteya-ecommerce.vercel.app)
+- **📂 Repositorio GitHub**: [github.com/SantiagoXOR/pinteya-ecommerce](https://github.com/SantiagoXOR/pinteya-ecommerce)
+- **📊 Dashboard Vercel**: [vercel.com/santiagoxor/pinteya-ecommerce](https://vercel.com/santiagoxor/pinteya-ecommerce)
 
 ## 💳 Sistema de Checkout - COMPLETADO
 
@@ -111,12 +134,46 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 - **Deploy**: Vercel
 - **Testing**: Jest + React Testing Library + Playwright
 
-## 📚 Documentación
+## 🎨 PRÓXIMAS MEJORAS UX/UI - 2025
 
-- [📋 Configuración Completa](docs/CONFIGURATION.md)
-- [💳 Sistema de Checkout](docs/CHECKOUT_SYSTEM.md)
-- [🔧 Correcciones de Build](docs/VERCEL_BUILD_FIX.md)
-- [📝 Changelog Completo](CHANGELOG.md)
+**Estado**: 📋 Planificación Completa - Listo para Implementación
+
+### 🚀 Plan de 5 Fases Definido:
+1. **📱 Header Optimizado** - Carrito destacado + CTA mejorado
+2. **🖼️ Hero Contextual** - Fondo emocional + animaciones + timer urgencia
+3. **🔍 Buscador Avanzado** - Autocompletado + sugerencias + imágenes
+4. **🎨 Branding & Confianza** - Más naranja + reviews + marcas + accesibilidad
+5. **🌍 Internacionalización** - Español/Inglés + next-i18next
+
+**Objetivo**: +15% conversión, +25% engagement, +40% uso buscador, 100% WCAG AA
+
+📋 **[Ver Plan Completo de Mejoras UX/UI](PLAN_MEJORAS_UX_UI_PINTEYA_2025.md)**
+
+---
+
+## 📚 Documentación Completa
+
+> **[📖 Ver Documentación Completa](./docs/README.md)**
+
+### 🚀 **Inicio Rápido**
+- [🏁 Instalación](./docs/getting-started/installation.md) - Configurar proyecto localmente
+- [⚙️ Configuración](./docs/getting-started/configuration.md) - Variables y servicios
+- [🚀 Deploy](./docs/deployment/vercel.md) - Desplegar en Vercel
+
+### 🏗️ **Arquitectura**
+- [📐 Visión General](./docs/architecture/overview.md) - Arquitectura del sistema
+- [🗄️ Base de Datos](./docs/architecture/database.md) - Esquema Supabase
+- [🔌 APIs](./docs/api/README.md) - 22 endpoints documentados
+
+### 🧪 **Testing & Desarrollo**
+- [🧪 Testing](./docs/testing/README.md) - 206 tests, 70% cobertura
+- [💻 Desarrollo](./docs/development/guide.md) - Guía de desarrollo
+- [📝 Estándares](./docs/development/standards.md) - Código y buenas prácticas
+
+### 📋 **Documentación Legacy**
+- [📋 Configuración](docs/CONFIGURATION.md) - Configuración detallada
+- [💳 Sistema de Checkout](docs/CHECKOUT_SYSTEM.md) - Implementación pagos
+- [📝 Changelog](CHANGELOG.md) - Historial de cambios
 
 ## 🚀 Inicio Rápido
 
