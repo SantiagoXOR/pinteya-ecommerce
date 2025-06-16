@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
 
     // Obtener información del pago desde MercadoPago
     const paymentResult = await getPaymentInfo(webhookData.data.id);
-    
-    if (!paymentResult.success) {
+
+    if (!paymentResult.success || !paymentResult.data) {
       console.error('Error getting payment info:', paymentResult.error);
       return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
     }
@@ -59,6 +59,12 @@ export async function POST(request: NextRequest) {
     
     // Inicializar Supabase con cliente administrativo
     const supabase = getSupabaseClient(true);
+
+    // Verificar que el cliente esté disponible
+    if (!supabase) {
+      console.error('Cliente de Supabase no disponible en POST /api/payments/webhook');
+      return NextResponse.json({ error: 'Database service unavailable' }, { status: 503 });
+    }
 
     // Buscar la orden por external_reference
     const orderId = payment.external_reference;

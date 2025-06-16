@@ -30,7 +30,18 @@ export async function GET(request: NextRequest) {
     const filters = validateData(ProductFiltersSchema, queryParams);
     
     const supabase = getSupabaseClient();
-    
+
+    // Verificar que el cliente de Supabase esté disponible
+    if (!supabase) {
+      console.error('Cliente de Supabase no disponible en GET /api/products');
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Servicio de base de datos no disponible',
+      };
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
     // Construir query base
     let query = supabase
       .from('products')
@@ -69,12 +80,14 @@ export async function GET(request: NextRequest) {
     query = query.gt('stock', 0);
 
     // Ordenamiento
-    const orderColumn = filters.sortBy === 'created_at' ? 'created_at' : filters.sortBy;
+    const orderColumn = filters.sortBy === 'created_at' ? 'created_at' : (filters.sortBy || 'created_at');
     query = query.order(orderColumn, { ascending: filters.sortOrder === 'asc' });
 
     // Paginación
-    const from = (filters.page - 1) * filters.limit;
-    const to = from + filters.limit - 1;
+    const page = filters.page || 1;
+    const limit = filters.limit || 10;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
     query = query.range(from, to);
 
     // Ejecutar query
@@ -85,13 +98,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Calcular información de paginación
-    const totalPages = Math.ceil((count || 0) / filters.limit);
+    const totalPages = Math.ceil((count || 0) / limit);
 
     const response: PaginatedResponse<ProductWithCategory> = {
       data: products || [],
       pagination: {
-        page: filters.page,
-        limit: filters.limit,
+        page,
+        limit,
         total: count || 0,
         totalPages,
       },
@@ -131,7 +144,18 @@ export async function POST(request: NextRequest) {
     const productData = validateData(ProductSchema, body);
     
     const supabase = getSupabaseClient(true); // Usar cliente admin
-    
+
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabase) {
+      console.error('Cliente administrativo de Supabase no disponible en POST /api/products');
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Servicio administrativo no disponible',
+      };
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
     // Crear slug si no se proporciona
     if (!productData.slug) {
       productData.slug = productData.name

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React from "react";
 
-const Breadcrumb = ({ title, pages }) => {
+const Breadcrumb = ({ title, pages }: { title: string; pages: any[] }) => {
   return (
     <div className="overflow-hidden shadow-breadcrumb pt-[209px] sm:pt-[155px] lg:pt-[95px] xl:pt-[165px]">
       <div className="border-t border-gray-3">

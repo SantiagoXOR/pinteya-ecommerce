@@ -11,7 +11,7 @@ import "swiper/css/navigation";
 import "swiper/css";
 
 const RecentlyViewdItems = () => {
-  const sliderRef = useRef(null);
+  const sliderRef = useRef<any>(null);
 
   // Hook para obtener productos relacionados
   const { products, loading } = useProducts({

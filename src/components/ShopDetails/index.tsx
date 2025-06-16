@@ -146,7 +146,7 @@ const ShopDetails = () => {
 
                   {/* ?  &apos;border-blue &apos; :  &apos;border-transparent&apos; */}
                   <div className="flex flex-wrap sm:flex-nowrap gap-4.5 mt-6">
-                    {product.imgs?.thumbnails.map((item, key) => (
+                    {product.imgs?.thumbnails.map((item: any, key: number) => (
                       <button
                         onClick={() => setPreviewImg(key)}
                         key={key}

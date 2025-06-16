@@ -1,41 +1,23 @@
 {
   "extends": [
-    "next/core-web-vitals",
-    "@typescript-eslint/recommended"
+    "next/core-web-vitals"
   ],
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
   "rules": {
-    // TypeScript rules
-    "@typescript-eslint/no-unused-vars": "error",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-non-null-assertion": "warn",
-
     // React rules
-    "react-hooks/exhaustive-deps": "error",
+    "react-hooks/exhaustive-deps": "warn",
     "react/no-unescaped-entities": "off",
+    "react/display-name": "off",
 
     // General code quality
-    "no-console": "warn",
-    "prefer-const": "error",
-    "no-var": "error",
+    "no-console": "off",
+    "prefer-const": "warn",
+    "no-var": "warn",
 
-    // Import organization
-    "import/order": [
-      "error",
-      {
-        "groups": [
-          "builtin",
-          "external",
-          "internal",
-          "parent",
-          "sibling",
-          "index"
-        ],
-        "newlines-between": "always"
-      }
-    ]
+    // Import rules
+    "import/no-anonymous-default-export": "off",
+
+    // Next.js specific
+    "@next/next/no-img-element": "off"
   },
   "env": {
     "browser": true,

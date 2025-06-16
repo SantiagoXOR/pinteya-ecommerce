@@ -26,7 +26,18 @@ export async function GET(request: NextRequest) {
     };
     
     const supabase = getSupabaseClient();
-    
+
+    // Verificar que el cliente de Supabase esté disponible
+    if (!supabase) {
+      console.error('Cliente de Supabase no disponible en GET /api/categories');
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Servicio de base de datos no disponible',
+      };
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
     // Construir query base - simplificado para la estructura actual
     let query = supabase
       .from('categories')
@@ -98,7 +109,18 @@ export async function POST(request: NextRequest) {
     const categoryData = validateData(CategorySchema, body);
     
     const supabase = getSupabaseClient(true); // Usar cliente admin
-    
+
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabase) {
+      console.error('Cliente administrativo de Supabase no disponible en POST /api/categories');
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Servicio administrativo no disponible',
+      };
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
     // Crear slug si no se proporciona
     if (!categoryData.slug) {
       categoryData.slug = categoryData.name

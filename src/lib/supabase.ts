@@ -99,6 +99,7 @@ export function handleSupabaseError(error: any, context: string) {
  */
 export async function isAuthenticated(): Promise<boolean> {
   try {
+    if (!supabase) return false;
     const { data: { user } } = await supabase.auth.getUser();
     return !!user;
   } catch {
@@ -112,6 +113,7 @@ export async function isAuthenticated(): Promise<boolean> {
  */
 export async function getCurrentUser() {
   try {
+    if (!supabase) return null;
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error) throw error;
     return user;

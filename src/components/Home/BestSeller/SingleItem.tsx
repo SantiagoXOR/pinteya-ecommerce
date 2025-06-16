@@ -99,7 +99,7 @@ const SingleItem = ({ item }: { item: Product }) => {
 
         <div className="flex justify-center items-center">
           <SafeImage
-            src={item.imgs.previews[0]}
+            src={item.imgs?.previews?.[0] || '/images/placeholder.jpg'}
             alt={item.title}
             width={280}
             height={280}

@@ -41,6 +41,7 @@ export function useSidebar(): UseSidebarReturn {
         document.removeEventListener("mousedown", handleClickOutside);
       };
     }
+    return undefined;
   }, [isOpen, close]);
 
   // Cerrar sidebar con tecla Escape
@@ -57,6 +58,7 @@ export function useSidebar(): UseSidebarReturn {
         document.removeEventListener("keydown", handleEscapeKey);
       };
     }
+    return undefined;
   }, [isOpen, close]);
 
   return {

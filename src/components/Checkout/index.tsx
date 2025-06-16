@@ -43,8 +43,8 @@ const Checkout = () => {
     await processCheckout();
   };
 
-  const handlePaymentMethodChange = (method: 'mercadopago' | 'bank' | 'cash') => {
-    updateFormData({ paymentMethod: method });
+  const handlePaymentMethodChange = (method: string) => {
+    updateFormData({ paymentMethod: method as 'mercadopago' | 'bank' | 'cash' });
   };
 
   const handleShippingMethodChange = (method: 'free' | 'express' | 'pickup') => {

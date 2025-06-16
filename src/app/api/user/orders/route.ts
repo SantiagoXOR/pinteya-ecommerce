@@ -12,6 +12,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // ===================================
 export async function GET(request: NextRequest) {
   try {
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabaseAdmin) {
+      console.error('Cliente administrativo de Supabase no disponible en GET /api/user/orders');
+      return NextResponse.json(
+        { error: 'Servicio de base de datos no disponible' },
+        { status: 503 }
+      );
+    }
+
     // TODO: Reemplazar con autenticación real de Clerk
     // const { userId } = auth();
     // if (!userId) {
@@ -23,13 +32,6 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const status = searchParams.get('status');
-
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        { error: 'Error de configuración del servidor' },
-        { status: 500 }
-      );
-    }
 
     // Obtener usuario primero
     let { data: user } = await supabaseAdmin

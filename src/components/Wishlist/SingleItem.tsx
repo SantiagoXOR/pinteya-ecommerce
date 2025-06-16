@@ -7,7 +7,7 @@ import { addItemToCart } from "@/redux/features/cart-slice";
 
 import Image from "next/image";
 
-const SingleItem = ({ item }) => {
+const SingleItem = ({ item }: { item: any }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleRemoveFromWishlist = () => {

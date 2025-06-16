@@ -10,7 +10,7 @@ import {
 
 import Image from "next/image";
 
-const SingleItem = ({ item }) => {
+const SingleItem = ({ item }: { item: any }) => {
   const [quantity, setQuantity] = useState(item.quantity);
 
   const dispatch = useDispatch<AppDispatch>();
