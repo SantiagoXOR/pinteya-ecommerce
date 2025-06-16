@@ -43,21 +43,21 @@ export async function GET(request: NextRequest) {
         configured: !!(publicEnvVars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && privateEnvVars.CLERK_SECRET_KEY),
         publicKey: !!publicEnvVars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
         secretKey: privateEnvVars.CLERK_SECRET_KEY,
-        issues: []
+        issues: [] as string[]
       },
       supabase: {
         configured: !!(publicEnvVars.NEXT_PUBLIC_SUPABASE_URL && publicEnvVars.NEXT_PUBLIC_SUPABASE_ANON_KEY && privateEnvVars.SUPABASE_SERVICE_ROLE_KEY),
         url: !!publicEnvVars.NEXT_PUBLIC_SUPABASE_URL,
         anonKey: !!publicEnvVars.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         serviceKey: privateEnvVars.SUPABASE_SERVICE_ROLE_KEY,
-        issues: []
+        issues: [] as string[]
       },
       mercadopago: {
         configured: !!(publicEnvVars.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY && privateEnvVars.MERCADOPAGO_ACCESS_TOKEN),
         publicKey: !!publicEnvVars.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY,
         accessToken: privateEnvVars.MERCADOPAGO_ACCESS_TOKEN,
         clientId: privateEnvVars.MERCADOPAGO_CLIENT_ID,
-        issues: []
+        issues: [] as string[]
       }
     };
 

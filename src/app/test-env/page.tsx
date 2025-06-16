@@ -1,5 +1,7 @@
 "use client";
 
+import Link from 'next/link';
+
 export default function TestEnvPage() {
   // Variables de entorno públicas (solo estas son accesibles en el cliente)
   const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -161,24 +163,24 @@ export default function TestEnvPage() {
         <div className="bg-white p-6 rounded-lg shadow-md border">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">🔧 Actions</h2>
           <div className="space-x-4">
-            <a
+            <Link
               href="/test-clerk"
               className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
             >
               Test Clerk
-            </a>
-            <a
+            </Link>
+            <Link
               href="/shop"
               className="inline-block bg-tahiti-gold-500 text-white px-4 py-2 rounded hover:bg-tahiti-gold-600 transition-colors"
             >
               Go to Shop
-            </a>
-            <a
+            </Link>
+            <Link
               href="/signin"
               className="inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
             >
               Sign In
-            </a>
+            </Link>
           </div>
         </div>
       </div>
