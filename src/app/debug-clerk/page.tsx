@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function DebugClerkPage() {
   const [mounted, setMounted] = useState(false);
@@ -229,24 +230,24 @@ export default function DebugClerkPage() {
         <div className="bg-white p-6 rounded-lg shadow-md border">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">🔧 Actions</h2>
           <div className="space-x-4">
-            <a
+            <Link
               href="/test-clerk"
               className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
             >
               Test Clerk Components
-            </a>
-            <a
+            </Link>
+            <Link
               href="/signin"
               className="inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
             >
               Try Sign In
-            </a>
-            <a
+            </Link>
+            <Link
               href="/test-env"
               className="inline-block bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition-colors"
             >
               Environment Test
-            </a>
+            </Link>
           </div>
         </div>
       </div>
