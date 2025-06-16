@@ -50,6 +50,12 @@
 - [🎭 Tests E2E](./testing/e2e.md)
 - [📊 Cobertura](./testing/coverage.md)
 
+### 🔒 **Seguridad**
+- [🛡️ Auditoría de Seguridad](./security/audit-report.md)
+- [🤖 Configuración Codex Agent](./security/codex-agent-config.md)
+- [📋 Plan de Implementación](./security/implementation-plan.md)
+- [📚 Documentación General](./security/README.md)
+
 ### 🤝 **Contribución**
 - [📝 Guía de Contribución](./contributing/guide.md)
 - [🔄 Pull Requests](./contributing/pull-requests.md)

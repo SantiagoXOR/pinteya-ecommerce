@@ -27,8 +27,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://aakzspzfulgftqlgwkpb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 
 # Clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZXhjaXRpbmctZ3JvdXBlci01Ny5jbGVyay5hY2NvdW50cy5kZXYk
-CLERK_SECRET_KEY=sk_test_Y9R3dn2pkyM173HqywLDE8uadR7vqT1edC6kPQwPCs
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your-publishable-key
+CLERK_SECRET_KEY=sk_test_your-secret-key
 ```
 
 #### Middleware Configurado

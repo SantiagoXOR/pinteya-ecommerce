@@ -18,7 +18,9 @@
     "test:components": "jest --testPathPattern=components",
     "test:hooks": "jest --testPathPattern=hooks",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "security:check": "node scripts/security-check.js",
+    "security:audit": "npm audit --audit-level=moderate"
   },
   "dependencies": {
     "@clerk/localizations": "^3.16.0",

@@ -4,23 +4,35 @@
 
 ### Archivo `.env.local`
 
+⚠️ **IMPORTANTE**: Las siguientes variables contienen valores de ejemplo.
+**NUNCA** uses estos valores en producción. Obtén tus propias credenciales de cada servicio.
+
 ```bash
 # Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://aakzspzfulgftqlgwkpb.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 # Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZXhjaXRpbmctZ3JvdXBlci01Ny5jbGVyay5hY2NvdW50cy5kZXYk
-CLERK_SECRET_KEY=sk_test_Y9R3dn2pkyM173HqywLDE8uadR7vqT1edC6kPQwPCs
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your-publishable-key
+CLERK_SECRET_KEY=sk_test_your-secret-key
 
 # MercadoPago Payment Gateway
-MERCADOPAGO_ACCESS_TOKEN=APP_USR-921414591813674-121116-...
-MERCADOPAGO_PUBLIC_KEY=APP_USR-b989b49d-2678-43ce-a048-...
-MERCADOPAGO_CLIENT_ID=921414591813674
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-your-access-token
+MERCADOPAGO_PUBLIC_KEY=APP_USR-your-public-key
+MERCADOPAGO_CLIENT_ID=your-client-id
 
 # Application URLs
 NEXT_PUBLIC_APP_URL=http://localhost:3001
 ```
+
+### 🔒 Configuración de Seguridad
+
+Para configurar el proyecto de forma segura:
+
+1. **Copia el archivo de ejemplo**: `cp .env.example .env.local`
+2. **Reemplaza todos los valores** con tus credenciales reales
+3. **Verifica que `.env.local` esté en `.gitignore`**
+4. **Nunca commitees archivos con credenciales reales**
 
 ## 🗄️ Base de Datos Supabase
 
