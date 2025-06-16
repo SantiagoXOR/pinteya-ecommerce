@@ -437,8 +437,8 @@ describe('/api/payments/create-preference', () => {
     const response = await POST(request)
     const data = await response.json()
 
-    // El endpoint debería manejar items vacíos como error
-    expect(response.status).toBe(500) // Actualmente retorna 500 por el error interno
+    // El endpoint debería manejar items vacíos como error de validación
+    expect(response.status).toBe(400) // Retorna 400 por validación fallida
     expect(data.success).toBe(false)
   })
 

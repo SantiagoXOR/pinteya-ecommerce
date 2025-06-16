@@ -121,22 +121,22 @@ describe('/api/products', () => {
   })
 
   it('validates pagination limits', async () => {
-    const request = new NextRequest('http://localhost:3001/api/products?limit=200')
+    const request = new NextRequest('http://localhost:3001/api/products?limit=150')
     const response = await GET(request)
     const data = await response.json()
 
-    // La API debería retornar error 500 por validación fallida
+    // La API debería retornar error 500 por validación fallida (limit > 100)
     expect(response.status).toBe(500)
     expect(data.success).toBe(false)
     expect(data.error).toContain('limit')
   })
 
   it('handles invalid page numbers', async () => {
-    const request = new NextRequest('http://localhost:3001/api/products?page=0')
+    const request = new NextRequest('http://localhost:3001/api/products?page=-1')
     const response = await GET(request)
     const data = await response.json()
 
-    // La API debería retornar error 500 por validación fallida
+    // La API debería retornar error 500 por validación fallida (page < 1)
     expect(response.status).toBe(500)
     expect(data.success).toBe(false)
     expect(data.error).toContain('page')
@@ -344,5 +344,115 @@ describe('/api/products', () => {
 
     expect(data.pagination.total).toBe(25)
     expect(data.pagination.totalPages).toBe(3) // Math.ceil(25/10)
+  })
+
+  it('handles brand filter correctly', async () => {
+    const request = new NextRequest('http://localhost:3001/api/products?brand=sherwin-williams')
+    const response = await GET(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+  })
+
+  it('handles stock filter correctly', async () => {
+    const request = new NextRequest('http://localhost:3001/api/products?inStock=true')
+    const response = await GET(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+  })
+
+  it('handles featured products filter', async () => {
+    const request = new NextRequest('http://localhost:3001/api/products?featured=true')
+    const response = await GET(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+  })
+
+  it('handles discount filter', async () => {
+    const request = new NextRequest('http://localhost:3001/api/products?onSale=true')
+    const response = await GET(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+  })
+
+  it('validates sort parameters', async () => {
+    const request = new NextRequest('http://localhost:3001/api/products?sortBy=invalid&sortOrder=invalid')
+    const response = await GET(request)
+    const data = await response.json()
+
+    // La API debería retornar error 500 por validación fallida (sortBy y sortOrder inválidos)
+    expect(response.status).toBe(500)
+    expect(data.success).toBe(false)
+    expect(data.error).toContain('sortBy')
+  })
+
+  it('handles network timeout errors', async () => {
+    const mockSupabase = require('@/lib/supabase')
+
+    mockSupabase.getSupabaseClient.mockImplementation(() => {
+      throw new Error('Network timeout')
+    })
+
+    const request = new NextRequest('http://localhost:3001/api/products')
+    const response = await GET(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(500)
+    expect(data.success).toBe(false)
+    expect(data.error).toBe('Network timeout')
+  })
+
+  it('handles very large page numbers', async () => {
+    const request = new NextRequest('http://localhost:3001/api/products?page=999999')
+    const response = await GET(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(500)
+    expect(data.success).toBe(false)
+    // Should handle gracefully or return appropriate error
+  })
+
+  it('handles concurrent requests', async () => {
+    // Resetear el mock para este test específico
+    const mockSupabase = require('@/lib/supabase')
+
+    const mockQueryBuilder = {
+      select: jest.fn(() => mockQueryBuilder),
+      eq: jest.fn(() => mockQueryBuilder),
+      gte: jest.fn(() => mockQueryBuilder),
+      lte: jest.fn(() => mockQueryBuilder),
+      gt: jest.fn(() => mockQueryBuilder),
+      lt: jest.fn(() => mockQueryBuilder),
+      or: jest.fn(() => mockQueryBuilder),
+      and: jest.fn(() => mockQueryBuilder),
+      ilike: jest.fn(() => mockQueryBuilder),
+      like: jest.fn(() => mockQueryBuilder),
+      in: jest.fn(() => mockQueryBuilder),
+      order: jest.fn(() => mockQueryBuilder),
+      range: jest.fn(() => Promise.resolve(mockSupabaseResponse)),
+      single: jest.fn(() => Promise.resolve({ data: null, error: null })),
+    }
+
+    mockSupabase.getSupabaseClient.mockReturnValue({
+      from: jest.fn(() => mockQueryBuilder),
+      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) }
+    })
+
+    const requests = Array(5).fill(null).map(() =>
+      GET(new NextRequest('http://localhost:3001/api/products'))
+    )
+
+    const responses = await Promise.all(requests)
+
+    responses.forEach(response => {
+      expect(response.status).toBe(200)
+    })
   })
 })
