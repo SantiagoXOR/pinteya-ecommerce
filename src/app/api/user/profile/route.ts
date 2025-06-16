@@ -12,6 +12,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // ===================================
 export async function GET(request: NextRequest) {
   try {
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabaseAdmin) {
+      console.error('Cliente administrativo de Supabase no disponible en GET /api/user/profile');
+      return NextResponse.json(
+        { error: 'Servicio de base de datos no disponible' },
+        { status: 503 }
+      );
+    }
+
     // TODO: Reemplazar con autenticación real de Clerk
     // const { userId } = auth();
     // if (!userId) {
@@ -20,13 +29,6 @@ export async function GET(request: NextRequest) {
 
     // Por ahora, usar un usuario demo
     const userId = 'demo-user-id';
-
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        { error: 'Error de configuración del servidor' },
-        { status: 500 }
-      );
-    }
 
     // Buscar usuario en Supabase
     const { data: user, error } = await supabaseAdmin
@@ -89,6 +91,15 @@ export async function GET(request: NextRequest) {
 // ===================================
 export async function PUT(request: NextRequest) {
   try {
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabaseAdmin) {
+      console.error('Cliente administrativo de Supabase no disponible en PUT /api/user/profile');
+      return NextResponse.json(
+        { error: 'Servicio de base de datos no disponible' },
+        { status: 503 }
+      );
+    }
+
     // TODO: Reemplazar con autenticación real de Clerk
     // const { userId } = auth();
     // if (!userId) {
@@ -97,13 +108,6 @@ export async function PUT(request: NextRequest) {
 
     const userId = 'demo-user-id';
     const body = await request.json();
-
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        { error: 'Error de configuración del servidor' },
-        { status: 500 }
-      );
-    }
 
     // Validar datos requeridos
     const { name, email } = body;

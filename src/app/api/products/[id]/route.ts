@@ -28,7 +28,18 @@ export async function GET(
     }
     
     const supabase = getSupabaseClient();
-    
+
+    // Verificar que el cliente de Supabase esté disponible
+    if (!supabase) {
+      console.error('Cliente de Supabase no disponible en GET /api/products/[id]');
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Servicio de base de datos no disponible',
+      };
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
     // Obtener producto con categoría
     const { data: product, error } = await supabase
       .from('products')
@@ -104,7 +115,18 @@ export async function PUT(
     const productData = validateData(ProductSchema.partial(), body);
     
     const supabase = getSupabaseClient(true); // Usar cliente admin
-    
+
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabase) {
+      console.error('Cliente administrativo de Supabase no disponible en PUT /api/products/[id]');
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Servicio administrativo no disponible',
+      };
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
     // Actualizar producto
     const { data: product, error } = await supabase
       .from('products')
@@ -176,7 +198,18 @@ export async function DELETE(
     }
     
     const supabase = getSupabaseClient(true); // Usar cliente admin
-    
+
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabase) {
+      console.error('Cliente administrativo de Supabase no disponible en DELETE /api/products/[id]');
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Servicio administrativo no disponible',
+      };
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
     // Eliminar producto
     const { error } = await supabase
       .from('products')

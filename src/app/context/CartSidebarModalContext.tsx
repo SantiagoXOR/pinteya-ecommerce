@@ -19,7 +19,7 @@ export const useCartModalContext = () => {
   return context;
 };
 
-export const CartModalProvider = ({ children }) => {
+export const CartModalProvider = ({ children }: { children: React.ReactNode }) => {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
   const openCartModal = () => {

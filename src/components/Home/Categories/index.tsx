@@ -10,7 +10,7 @@ import "swiper/css";
 import SingleItem from "./SingleItem";
 
 const Categories = () => {
-  const sliderRef = useRef(null);
+  const sliderRef = useRef<any>(null);
 
   // Hook para obtener categorías dinámicas
   const { categories, loading, error } = useCategories({

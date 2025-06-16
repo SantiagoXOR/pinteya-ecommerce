@@ -13,7 +13,7 @@ export type Category = {
   parent_id?: number | null;
   image_url?: string | null;
   created_at?: string;
-  updated_at?: string;
+  updated_at?: string | null;
   products_count?: number;
 };
 

@@ -17,7 +17,7 @@ export const usePreviewSlider = () => {
   return context;
 };
 
-export const PreviewSliderProvider = ({ children }) => {
+export const PreviewSliderProvider = ({ children }: { children: React.ReactNode }) => {
   const [isModalPreviewOpen, setIsModalOpen] = useState(false);
 
   const openPreviewModal = () => {

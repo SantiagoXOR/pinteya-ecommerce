@@ -43,8 +43,8 @@ const QuickViewModal = () => {
 
   useEffect(() => {
     // closing modal while clicking outside
-    function handleClickOutside(event) {
-      if (!event.target.closest(".modal-content")) {
+    function handleClickOutside(event: MouseEvent) {
+      if (event.target && !(event.target as Element).closest(".modal-content")) {
         closeModal();
       }
     }

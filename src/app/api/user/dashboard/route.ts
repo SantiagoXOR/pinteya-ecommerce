@@ -12,6 +12,15 @@ import { supabaseAdmin } from '@/lib/supabase';
 // ===================================
 export async function GET(request: NextRequest) {
   try {
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabaseAdmin) {
+      console.error('Cliente administrativo de Supabase no disponible en GET /api/user/dashboard');
+      return NextResponse.json(
+        { error: 'Servicio de base de datos no disponible' },
+        { status: 503 }
+      );
+    }
+
     // TODO: Reemplazar con autenticación real de Clerk
     // const { userId } = auth();
     // if (!userId) {
@@ -19,13 +28,6 @@ export async function GET(request: NextRequest) {
     // }
 
     const userId = 'demo-user-id';
-
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        { error: 'Error de configuración del servidor' },
-        { status: 500 }
-      );
-    }
 
     // Obtener usuario
     const { data: user } = await supabaseAdmin
@@ -137,9 +139,9 @@ export async function GET(request: NextRequest) {
 // Función auxiliar para calcular gasto mensual
 // ===================================
 function calculateMonthlySpending(orders: any[]) {
-  const monthlyData = {};
+  const monthlyData: { [key: string]: number } = {};
   const now = new Date();
-  
+
   // Inicializar últimos 6 meses
   for (let i = 5; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -166,7 +168,7 @@ function calculateMonthlySpending(orders: any[]) {
 // Función auxiliar para calcular productos más comprados
 // ===================================
 function calculateTopProducts(orderItems: any[]) {
-  const productMap = {};
+  const productMap: { [key: string]: any } = {};
 
   orderItems.forEach(item => {
     const productId = item.product_id;

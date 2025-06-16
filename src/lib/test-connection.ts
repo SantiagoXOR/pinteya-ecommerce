@@ -11,6 +11,10 @@ export async function testSupabaseConnection() {
   console.log('🔍 Probando conexión a Supabase...');
   
   try {
+    if (!supabase) {
+      throw new Error('Cliente de Supabase no disponible');
+    }
+
     // Test 1: Conexión básica
     const { data, error } = await supabase
       .from('categories')
@@ -38,6 +42,10 @@ export async function testCRUDOperations() {
   console.log('🔍 Probando operaciones CRUD...');
   
   try {
+    if (!supabase) {
+      throw new Error('Cliente de Supabase no disponible');
+    }
+
     // Test 1: Leer categorías
     const { data: categories, error: categoriesError } = await supabase
       .from('categories')
@@ -80,6 +88,11 @@ export async function verifyTables() {
   
   const tables = ['users', 'categories', 'products', 'orders', 'order_items'];
   const results: { [key: string]: boolean } = {};
+
+  if (!supabase) {
+    console.error('❌ Cliente de Supabase no disponible');
+    return {};
+  }
 
   for (const table of tables) {
     try {

@@ -62,6 +62,10 @@ function getFinalPrice(product: { price: number; discounted_price?: number | nul
 
 // Función helper para crear usuario temporal
 async function createTemporaryUser(userId: string, email: string, name: string) {
+  if (!supabaseAdmin) {
+    throw new Error('Cliente administrativo de Supabase no disponible');
+  }
+
   const { error } = await supabaseAdmin
     .from('users')
     .insert({
@@ -79,6 +83,17 @@ async function createTemporaryUser(userId: string, email: string, name: string) 
 
 export async function POST(request: NextRequest) {
   try {
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabaseAdmin) {
+      console.error('Cliente administrativo de Supabase no disponible en POST /api/payments/create-preference');
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Servicio de base de datos no disponible',
+      };
+      return NextResponse.json(errorResponse, { status: 503 });
+    }
+
     // Validar entrada
     const rawData = await request.json();
     const validationResult = CreatePreferenceSchema.safeParse(rawData);

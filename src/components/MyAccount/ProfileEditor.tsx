@@ -54,6 +54,7 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ isVisible }) => {
       }, 5000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [message]);
 
   if (!isVisible) return null;

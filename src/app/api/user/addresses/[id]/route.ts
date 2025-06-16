@@ -15,16 +15,18 @@ export async function GET(
   context: { params: Promise<RouteContext['params']> }
 ) {
   try {
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabaseAdmin) {
+      console.error('Cliente administrativo de Supabase no disponible en GET /api/user/addresses/[id]');
+      return NextResponse.json(
+        { error: 'Servicio de base de datos no disponible' },
+        { status: 503 }
+      );
+    }
+
     const userId = 'demo-user-id';
     const params = await context.params;
     const addressId = params.id;
-
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        { error: 'Error de configuración del servidor' },
-        { status: 500 }
-      );
-    }
 
     // Obtener usuario
     const { data: user } = await supabaseAdmin
@@ -77,17 +79,19 @@ export async function PUT(
   context: { params: Promise<RouteContext['params']> }
 ) {
   try {
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabaseAdmin) {
+      console.error('Cliente administrativo de Supabase no disponible en PUT /api/user/addresses/[id]');
+      return NextResponse.json(
+        { error: 'Servicio de base de datos no disponible' },
+        { status: 503 }
+      );
+    }
+
     const params = await context.params;
     const userId = 'demo-user-id';
     const addressId = params.id;
     const body = await request.json();
-
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        { error: 'Error de configuración del servidor' },
-        { status: 500 }
-      );
-    }
 
     // Validar datos requeridos
     const { name, street, city, postal_code, state, country, is_default } = body;
@@ -183,16 +187,18 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Verificar que el cliente administrativo esté disponible
+    if (!supabaseAdmin) {
+      console.error('Cliente administrativo de Supabase no disponible en DELETE /api/user/addresses/[id]');
+      return NextResponse.json(
+        { error: 'Servicio de base de datos no disponible' },
+        { status: 503 }
+      );
+    }
+
     const params = await context.params;
     const userId = 'demo-user-id';
     const addressId = params.id;
-
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        { error: 'Error de configuración del servidor' },
-        { status: 500 }
-      );
-    }
 
     // Obtener usuario
     const { data: user } = await supabaseAdmin

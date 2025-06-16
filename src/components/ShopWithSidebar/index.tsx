@@ -139,6 +139,7 @@ const ShopWithSidebar = () => {
         document.removeEventListener("mousedown", handleClickOutside);
       };
     }
+    return undefined;
   }, [productSidebar]);
 
   return (

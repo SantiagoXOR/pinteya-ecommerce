@@ -142,7 +142,7 @@ export function calculateShipping(
     'Mendoza': 1400,
   }
 
-  let baseRate = locationRates[location] || 1500
+  const baseRate = locationRates[location] || 1500
 
   // Weight multiplier (every 5kg adds 50% to base rate)
   const weightMultiplier = 1 + Math.floor(weight / 5) * 0.5

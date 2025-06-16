@@ -129,7 +129,7 @@ export async function getUserOrders(): Promise<ApiResponse<any[]>> {
 
     if (!response.ok) {
       return {
-        data: null,
+        data: [],
         success: false,
         error: result.error || 'Error obteniendo órdenes',
       };
@@ -139,7 +139,7 @@ export async function getUserOrders(): Promise<ApiResponse<any[]>> {
   } catch (error: any) {
     console.error('Error getting user orders:', error);
     return {
-      data: null,
+      data: [],
       success: false,
       error: error.message || 'Error de conexión',
     };

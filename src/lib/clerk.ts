@@ -28,9 +28,9 @@ export async function getAuthUser(): Promise<User | null> {
  * Obtiene el ID del usuario autenticado
  * @returns string | null
  */
-export function getAuthUserId(): string | null {
+export async function getAuthUserId(): Promise<string | null> {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     return userId;
   } catch (error) {
     console.error('Error obteniendo ID de usuario:', error);
@@ -42,9 +42,9 @@ export function getAuthUserId(): string | null {
  * Verifica si el usuario está autenticado
  * @returns boolean
  */
-export function isUserAuthenticated(): boolean {
+export async function isUserAuthenticated(): Promise<boolean> {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     return !!userId;
   } catch {
     return false;

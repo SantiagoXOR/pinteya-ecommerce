@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
-const CustomSelect = ({ options, onChange }) => {
+const CustomSelect = ({ options, onChange }: { options: any[]; onChange: (value: any) => void }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(options[0]);
-  const selectRef = useRef(null);
+  const selectRef = useRef<any>(null);
 
   // Function to close the dropdown when a click occurs outside the component
-  const handleClickOutside = useCallback((event) => {
-    if (selectRef.current && !selectRef.current.contains(event.target)) {
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (selectRef.current && event.target && !selectRef.current.contains(event.target as Node)) {
       setIsOpen(false);
     }
   }, []);
@@ -27,7 +27,7 @@ const CustomSelect = ({ options, onChange }) => {
   }, []);
 
   const handleOptionClick = useCallback(
-    (option) => {
+    (option: any) => {
       setSelectedOption(option);
       setIsOpen(false);
       // Call onChange if it's defined
