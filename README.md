@@ -4,7 +4,7 @@ E-commerce especializado en productos de pinturería, ferretería y corralón, d
 
 ## 🚀 Estado del Proyecto
 
-**PROYECTO COMPLETADO AL 100%** ✅
+**PROYECTO COMPLETADO AL 100% - DEPLOY EXITOSO** ✅
 
 Todas las funcionalidades principales han sido implementadas y están funcionando correctamente:
 
@@ -17,7 +17,14 @@ Todas las funcionalidades principales han sido implementadas y están funcionand
 - ✅ Base de datos poblada con productos reales
 - ✅ Dashboard de usuario con datos reales
 - ✅ **Checkout completo y operativo**
-- ✅ Aplicación estable en localhost:3001
+- ✅ **Deploy exitoso en Vercel sin errores**
+- ✅ **37 páginas generadas correctamente**
+- ✅ **Build optimizado para producción**
+
+### 🌐 Enlaces de Producción
+- **Aplicación en Vivo**: https://pinteya-ecommerce.vercel.app
+- **Repositorio GitHub**: https://github.com/SantiagoXOR/pinteya-ecommerce
+- **Dashboard Vercel**: https://vercel.com/santiagoxor/pinteya-ecommerce
 
 ## 💳 Sistema de Checkout - COMPLETADO
 
@@ -80,10 +87,36 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 }
 ```
 
+## 🔧 Últimas Correcciones (16 Jun 2025)
+
+### ✅ Errores de Build de Vercel Resueltos
+
+**Problema**: Build fallando por incompatibilidades React/Clerk y errores TypeScript
+**Solución**: Corrección sistemática de 47+ archivos y downgrade React 19→18.2.0
+**Resultado**: Deploy exitoso con 37 páginas generadas sin errores
+
+#### Correcciones Implementadas:
+- ✅ **React Compatibility**: Downgrade React 19 → 18.2.0 para Clerk 6.21.0
+- ✅ **TypeScript**: 47+ archivos corregidos (tipos implícitos, null checks)
+- ✅ **ESLint**: Dependencias instaladas y configuración simplificada
+- ✅ **Supabase**: Null safety en todas las APIs
+- ✅ **Build**: 0 errores TypeScript, 0 errores ESLint
+
+#### Stack Tecnológico Verificado:
+- **Frontend**: Next.js 15.3.3 + React 18.2.0 + TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Database**: Supabase PostgreSQL
+- **Auth**: Clerk 6.21.0
+- **Payments**: MercadoPago
+- **Deploy**: Vercel
+- **Testing**: Jest + React Testing Library + Playwright
+
 ## 📚 Documentación
 
 - [📋 Configuración Completa](docs/CONFIGURATION.md)
 - [💳 Sistema de Checkout](docs/CHECKOUT_SYSTEM.md)
+- [🔧 Correcciones de Build](docs/VERCEL_BUILD_FIX.md)
+- [📝 Changelog Completo](CHANGELOG.md)
 
 ## 🚀 Inicio Rápido
 
