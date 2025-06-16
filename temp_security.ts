@@ -214,7 +214,7 @@ export function securityMiddleware(request: NextRequest): NextResponse | null {
  */
 export function cleanupRateLimit() {
   const now = Date.now();
-  for (const [key, data] of Array.from(requestCounts.entries())) {
+  for (const [key, data] of requestCounts.entries()) {
     if (now - data.resetTime > 300000) { // 5 minutos
       requestCounts.delete(key);
     }
