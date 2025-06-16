@@ -3,12 +3,18 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
+import { securityMiddleware } from './middleware/security';
 
 /**
  * Middleware híbrido que evita problemas con SSG
- * Usa lógica simple para no interferir con la generación estática
+ * Incluye medidas de seguridad mejoradas
  */
 export default function middleware(request: NextRequest) {
+  // Aplicar middleware de seguridad primero
+  const securityResponse = securityMiddleware(request);
+  if (securityResponse) {
+    return securityResponse;
+  }
   const { pathname } = request.nextUrl;
 
   // Permitir todas las rutas estáticas y de Next.js

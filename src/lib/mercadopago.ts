@@ -152,36 +152,89 @@ export async function getPaymentInfo(paymentId: string) {
 }
 
 /**
- * Valida la firma del webhook de MercadoPago
+ * Valida la firma del webhook de MercadoPago con seguridad mejorada
  */
 export function validateWebhookSignature(
   xSignature: string,
   xRequestId: string,
   dataId: string,
-  ts: string
-): boolean {
+  ts: string,
+  rawBody?: string
+): { isValid: boolean; error?: string } {
   try {
     const crypto = require('crypto');
     const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
-    
+
     if (!secret) {
-      console.error('MERCADOPAGO_WEBHOOK_SECRET not configured');
-      return false;
+      console.error('[SECURITY] MERCADOPAGO_WEBHOOK_SECRET not configured');
+      return { isValid: false, error: 'Webhook secret not configured' };
+    }
+
+    // Validar parámetros requeridos
+    if (!xSignature || !xRequestId || !dataId || !ts) {
+      console.error('[SECURITY] Missing required webhook parameters');
+      return { isValid: false, error: 'Missing required parameters' };
+    }
+
+    // Validar timestamp (no más de 5 minutos de diferencia)
+    const timestamp = parseInt(ts, 10);
+    const now = Math.floor(Date.now() / 1000);
+    const timeDiff = Math.abs(now - timestamp);
+
+    if (timeDiff > 300) { // 5 minutos
+      console.error('[SECURITY] Webhook timestamp too old or future', { timeDiff });
+      return { isValid: false, error: 'Invalid timestamp' };
     }
 
     // Crear el manifest según la documentación de MercadoPago
     const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
-    
+
     // Generar HMAC
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(manifest);
     const sha = hmac.digest('hex');
-    
-    return sha === xSignature;
+
+    // Comparación segura para prevenir timing attacks
+    const isValid = crypto.timingSafeEqual(
+      Buffer.from(sha, 'hex'),
+      Buffer.from(xSignature, 'hex')
+    );
+
+    if (!isValid) {
+      console.error('[SECURITY] Invalid webhook signature', {
+        expected: sha,
+        received: xSignature,
+        manifest,
+      });
+    }
+
+    return { isValid, error: isValid ? undefined : 'Invalid signature' };
   } catch (error) {
-    console.error('Error validating webhook signature:', error);
+    console.error('[SECURITY] Error validating webhook signature:', error);
+    return { isValid: false, error: 'Validation error' };
+  }
+}
+
+/**
+ * Valida el origen del webhook
+ */
+export function validateWebhookOrigin(request: Request): boolean {
+  const origin = request.headers.get('origin');
+  const userAgent = request.headers.get('user-agent');
+
+  // MercadoPago no siempre envía origin, pero si lo hace debe ser válido
+  if (origin && !origin.includes('mercadopago.com')) {
+    console.error('[SECURITY] Invalid webhook origin:', origin);
     return false;
   }
+
+  // Validar User-Agent básico
+  if (!userAgent || !userAgent.toLowerCase().includes('mercadopago')) {
+    console.error('[SECURITY] Suspicious webhook user-agent:', userAgent);
+    return false;
+  }
+
+  return true;
 }
 
 /**
