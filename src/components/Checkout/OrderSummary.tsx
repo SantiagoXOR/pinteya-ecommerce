@@ -125,7 +125,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </div>
             <div>
               <p className="text-dark text-right">
-                {shippingCost === 0 ? 'Gratis' : `$${shippingCost.toLocaleString()}`}
+                {shippingCost === 0
+                  ? 'Gratis'
+                  : `$${shippingCost.toLocaleString('es-AR')}`}
               </p>
             </div>
           </div>

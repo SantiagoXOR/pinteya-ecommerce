@@ -28,7 +28,7 @@ const requestCounts = new Map<string, { count: number; resetTime: number }>();
  * Implementa rate limiting básico
  */
 function checkRateLimit(request: NextRequest): boolean {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   const pathname = request.nextUrl.pathname;
   
   // Encontrar configuración de rate limit
@@ -72,12 +72,12 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   // Content Security Policy
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.mercadopago.com https://www.mercadopago.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.mercadopago.com https://www.mercadopago.com https://*.clerk.accounts.dev https://*.clerk.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.accounts.dev https://*.clerk.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://api.mercadopago.com https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com",
-    "frame-src 'self' https://www.mercadopago.com",
+    "frame-src 'self' https://www.mercadopago.com https://*.clerk.accounts.dev https://*.clerk.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -146,7 +146,7 @@ function logSecurityEvent(
   request: NextRequest,
   details?: string
 ) {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   const userAgent = request.headers.get('user-agent') || 'unknown';
   
   console.warn(`[SECURITY] ${event}`, {
@@ -214,7 +214,7 @@ export function securityMiddleware(request: NextRequest): NextResponse | null {
  */
 export function cleanupRateLimit() {
   const now = Date.now();
-  for (const [key, data] of requestCounts.entries()) {
+  for (const [key, data] of Array.from(requestCounts.entries())) {
     if (now - data.resetTime > 300000) { // 5 minutos
       requestCounts.delete(key);
     }

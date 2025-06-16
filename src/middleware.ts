@@ -40,6 +40,10 @@ export default function middleware(request: NextRequest) {
     '/signin',
     '/signup',
     '/sso-callback',
+    '/admin',
+    '/test-env',
+    '/debug-clerk',
+    '/test-clerk',
   ];
 
   // Rutas de API que siempre están permitidas
@@ -51,6 +55,7 @@ export default function middleware(request: NextRequest) {
     '/api/payments/webhook',
     '/api/payments/status',
     '/api/auth/webhook',
+    '/api/debug',
   ];
 
   // Verificar si es ruta pública
