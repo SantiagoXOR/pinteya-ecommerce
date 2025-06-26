@@ -22,6 +22,8 @@ import CartSidebarModal from "@/components/Common/CartSidebarModal";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";
 import ScrollToTop from "@/components/Common/ScrollToTop";
 import PreLoader from "@/components/Common/PreLoader";
+import CartNotification, { useCartNotification } from "@/components/Common/CartNotification";
+import { BottomNavigation } from "@/components/ui/bottom-navigation";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,31 +40,46 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   // Componente interno con todos los providers
-  const AppContent = () => (
-    <div>
-      {loading ? (
-        <PreLoader />
-      ) : (
-        <>
-          <ReduxProvider>
-            <CartModalProvider>
-              <ModalProvider>
-                <PreviewSliderProvider>
-                  <Header />
-                  <QuickViewModal />
-                  <CartSidebarModal />
-                  <PreviewSliderModal />
-                  <ScrollToTop />
-                  {children}
-                  <Footer />
-                </PreviewSliderProvider>
-              </ModalProvider>
-            </CartModalProvider>
-          </ReduxProvider>
-        </>
-      )}
-    </div>
-  );
+  const AppContent = () => {
+    const { notification, hideNotification } = useCartNotification();
+
+    return (
+      <div className="mobile-bottom-nav-padding">
+        {loading ? (
+          <PreLoader />
+        ) : (
+          <>
+            <ReduxProvider>
+              <CartModalProvider>
+                <ModalProvider>
+                  <PreviewSliderProvider>
+                    <Header />
+                    <QuickViewModal />
+                    <CartSidebarModal />
+                    <PreviewSliderModal />
+                    <ScrollToTop />
+                    {children}
+                    <Footer />
+                    {/* Navegación móvil inferior - Solo visible en móviles */}
+                    <div className="md:hidden">
+                      <BottomNavigation />
+                    </div>
+                    {/* Notificación del carrito */}
+                    <CartNotification
+                      show={notification.show}
+                      productName={notification.productName}
+                      productImage={notification.productImage}
+                      onClose={hideNotification}
+                    />
+                  </PreviewSliderProvider>
+                </ModalProvider>
+              </CartModalProvider>
+            </ReduxProvider>
+          </>
+        )}
+      </div>
+    );
+  };
 
   // Renderizado con ClerkProvider v5 activado (compatible con SSG)
   if (clerkEnabled && publishableKey) {

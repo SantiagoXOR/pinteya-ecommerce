@@ -298,11 +298,11 @@ const buttonClasses = cn(
   // Typography
   'text-sm font-medium',
   // Colors
-  'bg-tahiti-gold-500 text-white',
+  'bg-blaze-orange-500 text-white',
   // Effects
   'rounded-md shadow-sm',
-  'hover:bg-tahiti-gold-600',
-  'focus:outline-none focus:ring-2 focus:ring-tahiti-gold-500',
+  'hover:bg-blaze-orange-600',
+  'focus:outline-none focus:ring-2 focus:ring-blaze-orange-500',
   'transition-colors duration-200',
   // Responsive
   'md:px-6 md:py-3 md:text-base',

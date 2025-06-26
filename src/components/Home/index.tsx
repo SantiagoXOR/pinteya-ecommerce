@@ -8,6 +8,7 @@ import PromoBanner from "./PromoBanner";
 import BestSeller from "./BestSeller";
 import CounDown from "./Countdown";
 import Testimonials from "./Testimonials";
+import TrustSection from "./TrustSection";
 import Newsletter from "../Common/Newsletter";
 
 const Home = () => {
@@ -19,6 +20,7 @@ const Home = () => {
       <PromoBanner />
       <BestSeller />
       <CounDown />
+      <TrustSection />
       <Testimonials />
       <Newsletter />
     </main>

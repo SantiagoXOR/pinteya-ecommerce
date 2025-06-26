@@ -11,6 +11,9 @@ import { ProductWithCategory } from '@/types/api';
  * @returns Product - Producto en formato de componente
  */
 export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Product {
+  // Mapear correctamente las imágenes desde la estructura de BD a la estructura de componentes
+  const images = apiProduct.images || {};
+
   return {
     id: apiProduct.id,
     title: apiProduct.name,
@@ -18,8 +21,9 @@ export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Pro
     price: apiProduct.price,
     discountedPrice: apiProduct.discounted_price || apiProduct.price,
     imgs: {
-      thumbnails: apiProduct.images?.thumbnails || ['/images/products/placeholder-sm.jpg'],
-      previews: apiProduct.images?.previews || ['/images/products/placeholder-bg.jpg'],
+      // Mapear desde la estructura real de la BD: { main, gallery, thumbnail }
+      thumbnails: images.thumbnail ? [images.thumbnail] : ['/images/products/placeholder-sm.jpg'],
+      previews: images.main ? [images.main] : (images.gallery?.[0] ? [images.gallery[0]] : ['/images/products/placeholder-bg.jpg']),
     },
   };
 }

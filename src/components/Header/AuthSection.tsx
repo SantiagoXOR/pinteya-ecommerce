@@ -3,10 +3,13 @@
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LogIn, UserPlus, LogOut } from "lucide-react";
 
 const AuthSection = () => {
-  // Control de activación de Clerk (ACTIVADO - Variables configuradas en Vercel)
-  const clerkEnabled = true; // ✅ ACTIVADO - Variables de entorno configuradas
+  // Control de activación de Clerk (TEMPORALMENTE DESACTIVADO para mostrar botones)
+  const clerkEnabled = false; // ⚠️ TEMPORALMENTE DESACTIVADO - Para mostrar botones de autenticación
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   const handleAuthToggle = () => {
@@ -29,53 +32,60 @@ const AuthSection = () => {
         </SignedIn>
 
         <SignedOut>
-          <Link
-            href="/signin"
-            className="text-sm font-medium hover:text-tahiti-gold-500 transition-colors"
-          >
-            Iniciar Sesión
-          </Link>
-          <Link
-            href="/signup"
-            className="text-sm font-medium bg-tahiti-gold-500 text-white px-4 py-2 rounded-md hover:bg-tahiti-gold-600 transition-colors"
-          >
-            Registrarse
-          </Link>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild className="border-white text-white hover:bg-white hover:text-blaze-orange-600">
+              <Link href="/signin">
+                <LogIn className="w-4 h-4 mr-2" />
+                Iniciar Sesión
+              </Link>
+            </Button>
+            <Button size="sm" asChild className="bg-white text-blaze-orange-600 hover:bg-gray-100">
+              <Link href="/signup">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Registrarse
+              </Link>
+            </Button>
+          </div>
         </SignedOut>
       </div>
     );
   }
 
-  // Versión temporal sin Clerk
+  // Versión temporal sin Clerk - Migrada al Design System
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3">
       {isSignedIn ? (
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-tahiti-gold-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-            U
-          </div>
-          <button
+        <div className="flex items-center gap-3">
+          <Avatar className="w-8 h-8">
+            <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+              U
+            </AvatarFallback>
+          </Avatar>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleAuthToggle}
-            className="text-sm font-medium text-gray-600 hover:text-tahiti-gold-500 transition-colors"
+            className="gap-2 border-white text-white hover:bg-white hover:text-blaze-orange-600"
           >
+            <LogOut className="w-4 h-4" />
             Cerrar Sesión
-          </button>
+          </Button>
         </div>
       ) : (
-        <>
-          <Link
-            href="/signin"
-            className="text-sm font-medium hover:text-tahiti-gold-500 transition-colors"
-          >
-            Iniciar Sesión
-          </Link>
-          <Link
-            href="/signup"
-            className="text-sm font-medium bg-tahiti-gold-500 text-white px-4 py-2 rounded-md hover:bg-tahiti-gold-600 transition-colors"
-          >
-            Registrarse
-          </Link>
-        </>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild className="border-white text-white hover:bg-white hover:text-blaze-orange-600">
+            <Link href="/signin">
+              <LogIn className="w-4 h-4 mr-2" />
+              Iniciar Sesión
+            </Link>
+          </Button>
+          <Button size="sm" asChild className="bg-white text-blaze-orange-600 hover:bg-gray-100">
+            <Link href="/signup">
+              <UserPlus className="w-4 h-4 mr-2" />
+              Registrarse
+            </Link>
+          </Button>
+        </div>
       )}
     </div>
   );

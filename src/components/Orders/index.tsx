@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import SingleOrder from "./SingleOrder";
 import { useUserOrders } from "@/hooks/useUserOrders";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Package, Filter, Calendar, DollarSign, Truck, CheckCircle, ShoppingBag } from "lucide-react";
 // import ordersData from "./ordersData"; // Comentado: ahora usamos datos dinámicos
 
 const Orders = () => {

@@ -30,6 +30,52 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+
+  /* Padding bottom para navegación móvil inferior */
+  .mobile-bottom-nav-padding {
+    @apply pb-20 md:pb-0;
+  }
+
+  /* Mejoras para navegación inferior */
+  .bottom-nav-item-active {
+    @apply relative;
+  }
+
+  /* Eliminamos el ::before que causaba la mancha persistente */
+  .bottom-nav-badge-pulse {
+    animation: badge-pulse 2s infinite;
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.8;
+    }
+  }
+
+  /* Efecto de tap para móviles */
+  .bottom-nav-item {
+    -webkit-tap-highlight-color: transparent;
+    @apply active:scale-95 transition-transform duration-150;
+  }
+
+  /* Mejoras de contraste para navegación */
+  .bottom-nav-text-shadow {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Asegurar que los estados activos no se superpongan */
+  .bottom-nav-container {
+    @apply isolate;
+  }
+
+  .bottom-nav-container > * {
+    @apply relative z-10;
+  }
 }
 
 /* third-party libraries CSS */
@@ -107,7 +153,7 @@ input[type='search']::-webkit-search-results-decoration {
 }
 
 .custom-select-common .select-selected {
-  @apply bg-gray-1 rounded-md !border-r text-dark-4 py-3 pl-5 pr-9 duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-tahiti-gold-500/20;
+  @apply bg-gray-1 rounded-md !border-r text-dark-4 py-3 pl-5 pr-9 duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blaze-orange-500/20;
 }
 .custom-select-common .select-selected:after {
   content: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.41469 5.03569L2.41467 5.03571L2.41749 5.03846L7.76749 10.2635L8.0015 10.492L8.23442 10.2623L13.5844 4.98735L13.5844 4.98735L13.5861 4.98569C13.6809 4.89086 13.8199 4.89087 13.9147 4.98569C14.0092 5.08024 14.0095 5.21864 13.9155 5.31345C13.9152 5.31373 13.915 5.31401 13.9147 5.31429L8.16676 10.9622L8.16676 10.9622L8.16469 10.9643C8.06838 11.0606 8.02352 11.0667 8.00039 11.0667C7.94147 11.0667 7.89042 11.0522 7.82064 10.9991L2.08526 5.36345C1.99127 5.26865 1.99154 5.13024 2.08609 5.03569C2.18092 4.94086 2.31986 4.94086 2.41469 5.03569Z' fill='%238D93A5' stroke='%238D93A5' stroke-width='0.666667'/%3E%3C/svg%3E%0A");
@@ -123,7 +169,7 @@ input[type='search']::-webkit-search-results-decoration {
 }
 
 .hero-carousel .swiper-pagination-bullet-active {
-  @apply w-5.5 bg-tahiti-gold-500;
+  @apply w-5.5 bg-blaze-orange-500;
 }
 
 .hero-carousel .swiper-pagination {
@@ -137,7 +183,7 @@ input[type='search']::-webkit-search-results-decoration {
 
 .common-carousel .swiper-button-next,
 .common-carousel .swiper-button-prev {
-  @apply !static h-9 w-9 rounded-lg bg-white text-dark border border-gray-3 m-0 ease-out duration-200 hover:bg-tahiti-gold-500 hover:text-white hover:border-tahiti-gold-500;
+  @apply !static h-9 w-9 rounded-lg bg-white text-dark border border-gray-3 m-0 ease-out duration-200 hover:bg-blaze-orange-500 hover:text-white hover:border-blaze-orange-500;
 }
 
 .common-carousel .swiper-button-next svg,
@@ -160,10 +206,10 @@ input[type='search']::-webkit-search-results-decoration {
   @apply h-1 rounded-full bg-gray-3;
 }
 .priceSlide .noUi-connect {
-  @apply h-1 rounded-full bg-tahiti-gold-500;
+  @apply h-1 rounded-full bg-blaze-orange-500;
 }
 .priceSlide .noUi-horizontal .noUi-handle {
-  @apply -top-3 h-7 w-7 rounded-full border border-gray-4 bg-white shadow-range before:block before:absolute before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-4 before:h-4 before:rounded-full before:bg-tahiti-gold-500;
+  @apply -top-3 h-7 w-7 rounded-full border border-gray-4 bg-white shadow-range before:block before:absolute before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-4 before:h-4 before:rounded-full before:bg-blaze-orange-500;
 }
 .priceSlide .noUi-tooltip {
   @apply border-none p-0 bg-transparent text-custom-sm text-dark-4;
@@ -175,15 +221,15 @@ input[type='search']::-webkit-search-results-decoration {
 
 
 .range-slider {
- @apply w-full !h-[4px] rounded-md bg-tahiti-gold-500 relative mb-3;
+ @apply w-full !h-[4px] rounded-md bg-blaze-orange-500 relative mb-3;
 }
 
 .slider .thumb {
-  @apply w-6 h-6 bg-tahiti-gold-700 rounded-full absolute -top-2 border-[5px] border-tahiti-gold-100;
+  @apply w-6 h-6 bg-blaze-orange-700 rounded-full absolute -top-2 border-[5px] border-blaze-orange-100;
 }
 
 .range-slider__thumb {
-  @apply !bg-white border-[1px] border-tahiti-gold-100 flex justify-center items-center !w-7 !h-7;
+  @apply !bg-white border-[1px] border-blaze-orange-100 flex justify-center items-center !w-7 !h-7;
 }
 
 .range-slider__thumb::after {
@@ -193,9 +239,85 @@ input[type='search']::-webkit-search-results-decoration {
   display: block;
   border-radius: 100%;
   position: absolute;
-  @apply bg-tahiti-gold-500;
+  @apply bg-blaze-orange-500;
 }
 
 .range-slider__range {
-  @apply !bg-tahiti-gold-500;
+  @apply !bg-blaze-orange-500;
+}
+
+/* ===================================
+   ANIMACIONES PARA CARRITO Y PRODUCTOS
+   =================================== */
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cart-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s ease-out;
+}
+
+.animate-cart-shake {
+  animation: cart-shake 0.5s ease-in-out;
+}
+
+.animate-float-up {
+  animation: float-up 0.8s ease-out forwards;
+}
+
+.animate-pulse-green {
+  animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background-color: #10b981;
 }

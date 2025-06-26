@@ -31,11 +31,15 @@
 - [👤 Usuario](./api/user.md)
 - [📊 Órdenes](./api/orders.md)
 
-### 🎨 **UI/UX**
-- [🎨 Sistema de Diseño](./ui/design-system.md)
-- [🌈 Paleta de Colores](./ui/colors.md)
-- [📱 Responsive Design](./ui/responsive.md)
-- [♿ Accesibilidad](./ui/accessibility.md)
+### 🎨 **Design System**
+- [🎨 Design System Completo](./design-system/README.md)
+- [🎯 Tokens de Diseño](./design-system/tokens.md)
+- [🔘 Componentes](./design-system/components/buttons.md)
+- [🎭 Estados e Interacciones](./design-system/states.md)
+- [🖼️ Iconografía 3D](./design-system/icons.md)
+- [📦 Instalación](./design-system/installation.md)
+- [🔧 Configuración](./design-system/configuration.md)
+- [🚀 Roadmap](./design-system/roadmap.md)
 
 ### 🚀 **Deploy & Producción**
 - [🌐 Deploy en Vercel](./deployment/vercel.md)
@@ -56,6 +60,11 @@
 - [📋 Plan de Implementación](./security/implementation-plan.md)
 - [📚 Documentación General](./security/README.md)
 
+### 📊 **Análisis y Evaluaciones**
+- [🔍 Análisis UX/UI Completo](./analysis/ux-ui-analysis.md) - Evaluación detallada de experiencia de usuario
+- [📈 Plan de Mejoras UX/UI](./analysis/ux-ui-improvement-plan.md) - Roadmap de optimizaciones
+- [**🎯 Análisis Post-Evaluación 2025**](./analysis/post-evaluation-analysis-2025.md) - **Hoja de ruta completa basada en testing Playwright**
+
 ### 🤝 **Contribución**
 - [📝 Guía de Contribución](./contributing/guide.md)
 - [🔄 Pull Requests](./contributing/pull-requests.md)
@@ -72,6 +81,7 @@
 | **Frontend** | ✅ 100% | Completo | [🎨 Ver UI](./ui/design-system.md) |
 | **Testing** | ✅ 206 tests | 70%+ | [🧪 Ver Testing](./testing/README.md) |
 | **Deploy** | ✅ Producción | Vercel | [🚀 Ver Deploy](./deployment/vercel.md) |
+| **Evaluación Playwright** | ✅ Completa | 100% funcional | [🎯 Ver Análisis](./analysis/post-evaluation-analysis-2025.md) |
 | **Documentación** | ✅ Completa | 100% | Este documento |
 
 ---
@@ -127,6 +137,31 @@
 
 ## 📞 Soporte
 
+## 🎯 Hallazgos Clave - Evaluación Playwright 2025
+
+### ✅ **Estado Actual: EXCELENTE**
+- **Funcionalidad Core:** 100% operativa (carrito, checkout, pagos)
+- **Performance:** <3s tiempo de carga
+- **Estabilidad:** Sin errores críticos detectados
+- **UX:** Flujo de compra completo y funcional
+
+### 🚀 **Oportunidades de Crecimiento**
+- **Conversión proyectada:** 2-3% → 8-9% (+200%)
+- **ROI estimado:** 300-500% en 12 meses
+- **Prioridad #1:** Sistema de autenticación completo
+- **Diferenciador clave:** Calculadora de pintura inteligente
+
+### 📋 **Próximos Pasos Inmediatos**
+1. Activar autenticación Clerk completa
+2. Crear páginas de detalle de productos
+3. Implementar calculadora de pintura
+4. Integrar WhatsApp Business
+5. Optimizar Core Web Vitals
+
+**📊 [Ver análisis completo →](./analysis/post-evaluation-analysis-2025.md)**
+
+---
+
 ¿Necesitas ayuda? Consulta nuestra documentación o contacta al equipo:
 
 - 📖 **Documentación**: Navega por las secciones arriba
@@ -136,4 +171,4 @@
 
 ---
 
-*Última actualización: Junio 2025*
+*Última actualización: Junio 2025 - Evaluación Playwright Completa*

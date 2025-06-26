@@ -1,11 +1,70 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
+    remotePatterns: [
       // Supabase storage
-      'aakzspzfulgftqlgwkpb.supabase.co',
+      {
+        protocol: 'https',
+        hostname: 'aakzspzfulgftqlgwkpb.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
       // Imágenes locales de desarrollo
-      'localhost',
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+      // Dominios externos para imágenes de productos
+      {
+        protocol: 'https',
+        hostname: 'www.poxipol.com.ar',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'poxipol.com.ar',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.plavicon.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plavicon.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.petrilac.com.ar',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'petrilac.com.ar',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.sinteplast.com.ar',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'sinteplast.com.ar',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   // Configuración para Clerk

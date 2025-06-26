@@ -6,10 +6,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { Product } from '@/types/product';
 import { ProductFilters, PaginatedResponse, ProductWithCategory } from '@/types/api';
 import { getProducts } from '@/lib/api/products';
-import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter';
+import { adaptApiProductsToLegacy, ExtendedProduct } from '@/lib/adapters/productAdapter';
 
 interface UseProductsState {
-  products: Product[];
+  products: ExtendedProduct[];
   loading: boolean;
   error: string | null;
   pagination: {
@@ -53,8 +53,8 @@ export function useProducts(options: UseProductsOptions = {}) {
       const response: PaginatedResponse<ProductWithCategory> = await getProducts(filtersToUse);
 
       if (response.success) {
-        const adaptedProducts = adaptApiProductsToComponents(response.data);
-        
+        const adaptedProducts = adaptApiProductsToLegacy(response.data);
+
         setState(prev => ({
           ...prev,
           products: adaptedProducts,
