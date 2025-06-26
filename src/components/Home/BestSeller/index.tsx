@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import SingleItem from "./SingleItem";
-import Image from "next/image";
 import Link from "next/link";
 import { useProducts } from "@/hooks/useProducts";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { TrendingUp, ArrowRight, Trophy } from "lucide-react";
 
 const BestSeller = () => {
   const { products, loading, error } = useProducts({
@@ -26,27 +29,39 @@ const BestSeller = () => {
     return (
       <section className="overflow-hidden">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+          {/* Header con Design System */}
           <div className="mb-10 flex items-center justify-between">
             <div>
-              <span className="flex items-center gap-2.5 font-medium text-dark mb-1.5">
-                <Image
-                  src="/images/icons/icon-07.svg"
-                  alt="icon"
-                  width={17}
-                  height={17}
-                />
-                Este Mes
-              </span>
-              <h2 className="font-semibold text-xl xl:text-heading-5 text-dark">
+              <div className="flex items-center gap-2.5 font-medium text-gray-700 mb-1.5">
+                <div className="w-5 h-5 rounded-full bg-yellow-100 flex items-center justify-center">
+                  <Trophy className="w-3 h-3 text-yellow-600" />
+                </div>
+                <span>Este Mes</span>
+                <Badge variant="warning" size="sm">
+                  Top
+                </Badge>
+              </div>
+              <h2 className="font-semibold text-xl xl:text-heading-5 text-gray-900">
                 Más Vendidos
               </h2>
             </div>
           </div>
+
+          {/* Loading State mejorado */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7.5">
             {[...Array(6)].map((_, index) => (
-              <div key={index} className="animate-pulse">
-                <div className="bg-gray-200 rounded-lg h-[403px]"></div>
-              </div>
+              <Card key={index} className="overflow-hidden">
+                <div className="animate-pulse">
+                  <div className="bg-gray-200 h-64 rounded-t-lg"></div>
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div className="bg-gray-200 h-4 rounded w-3/4"></div>
+                      <div className="bg-gray-200 h-4 rounded w-1/2"></div>
+                      <div className="bg-gray-200 h-6 rounded w-1/3"></div>
+                    </div>
+                  </CardContent>
+                </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -58,9 +73,30 @@ const BestSeller = () => {
     return (
       <section className="overflow-hidden">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-          <div className="text-center py-12">
-            <p className="text-red-500">Error cargando productos: {error}</p>
-          </div>
+          {/* Error State mejorado */}
+          <Card variant="outlined" className="border-red-200 bg-red-50">
+            <CardContent className="p-8 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <span className="text-red-600 text-xl">⚠️</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-900 mb-1">
+                    Error al cargar productos más vendidos
+                  </h3>
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                  className="border-red-300 text-red-700 hover:bg-red-100"
+                >
+                  Reintentar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     );
@@ -69,45 +105,70 @@ const BestSeller = () => {
   return (
     <section className="overflow-hidden">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-        {/* <!-- section title --> */}
+        {/* Section Header - Migrado al Design System */}
         <div className="mb-10 flex items-center justify-between">
           <div>
-            <span className="flex items-center gap-2.5 font-medium text-dark mb-1.5">
-              <Image
-                src="/images/icons/icon-07.svg"
-                alt="icon"
-                width={17}
-                height={17}
-              />
-              Este Mes
-            </span>
-            <h2 className="font-semibold text-xl xl:text-heading-5 text-dark">
+            <div className="flex items-center gap-2.5 font-medium text-gray-700 mb-1.5">
+              <div className="w-5 h-5 rounded-full bg-yellow-100 flex items-center justify-center">
+                <Trophy className="w-3 h-3 text-yellow-600" />
+              </div>
+              <span>Este Mes</span>
+              <Badge variant="warning" size="sm">
+                Top
+              </Badge>
+            </div>
+            <h2 className="font-semibold text-xl xl:text-heading-5 text-gray-900">
               Más Vendidos
             </h2>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7.5">
-          {/* <!-- Best Sellers item --> */}
+          {/* Best Sellers Grid */}
           {bestSellerProducts.length > 0 ? (
             bestSellerProducts.map((item, key) => (
               <SingleItem item={item} key={key} />
             ))
           ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-500">No hay productos en oferta disponibles</p>
+            /* Empty State mejorado */
+            <div className="col-span-full">
+              <Card variant="outlined" className="border-gray-200">
+                <CardContent className="p-12 text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center">
+                      <Trophy className="w-8 h-8 text-yellow-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        No hay productos en oferta
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4">
+                        Pronto tendremos nuevas ofertas disponibles
+                      </p>
+                      <Button variant="outline" asChild>
+                        <Link href="/shop">
+                          Ver Catálogo Completo
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>
 
-        <div className="text-center mt-12.5">
-          <Link
-            href="/shop"
-            className="inline-flex font-medium text-custom-sm py-3 px-7 sm:px-12.5 rounded-md border-gray-3 border bg-gray-1 text-dark ease-out duration-200 hover:bg-tahiti-gold-600 hover:text-white hover:border-transparent"
-          >
-            Ver Todos
-          </Link>
-        </div>
+        {/* CTA Button mejorado */}
+        {bestSellerProducts.length > 0 && (
+          <div className="text-center mt-12.5">
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/shop">
+                Ver Todos los Productos
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

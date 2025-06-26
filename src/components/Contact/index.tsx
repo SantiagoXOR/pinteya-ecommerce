@@ -1,5 +1,9 @@
 import React from "react";
 import Breadcrumb from "../Common/Breadcrumb";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
 
 const Contact = () => {
   return (

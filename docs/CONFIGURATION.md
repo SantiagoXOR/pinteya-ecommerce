@@ -173,20 +173,47 @@ back_urls: {
 
 ## 🎨 Diseño y UI
 
-### Paleta de Colores - Tahiti Gold
+### Paleta de Colores - Nueva Identidad Visual
 ```css
 :root {
-  --tahiti-gold-50: #fffbea;
-  --tahiti-gold-100: #fef3c7;
-  --tahiti-gold-200: #fde68a;
-  --tahiti-gold-300: #fcd34d;
-  --tahiti-gold-400: #fbbf24;
-  --tahiti-gold-500: #f59e0b;
-  --tahiti-gold-600: #d97706;
-  --tahiti-gold-700: #b45309;
-  --tahiti-gold-800: #92400e;
-  --tahiti-gold-900: #78350f;
-  --tahiti-gold-950: #471801;
+  /* Blaze Orange - Color Primario */
+  --blaze-orange-50: #fef7ee;
+  --blaze-orange-100: #feeed6;
+  --blaze-orange-200: #fcd9ac;
+  --blaze-orange-300: #f9be78;
+  --blaze-orange-400: #f59842;
+  --blaze-orange-500: #f27a1d;
+  --blaze-orange-600: #eb6313;
+  --blaze-orange-700: #bd4811;
+  --blaze-orange-800: #963a16;
+  --blaze-orange-900: #793115;
+  --blaze-orange-950: #411709;
+
+  /* Fun Green - Color Secundario */
+  --fun-green-50: #ecfff5;
+  --fun-green-100: #d3ffe8;
+  --fun-green-200: #aaffd3;
+  --fun-green-300: #69ffb2;
+  --fun-green-400: #21ff8a;
+  --fun-green-500: #00f269;
+  --fun-green-600: #00ca53;
+  --fun-green-700: #009e44;
+  --fun-green-800: #007638;
+  --fun-green-900: #026532;
+  --fun-green-950: #003919;
+
+  /* Bright Sun - Color de Acento */
+  --bright-sun-50: #fffbeb;
+  --bright-sun-100: #fff4c6;
+  --bright-sun-200: #ffe788;
+  --bright-sun-300: #ffd549;
+  --bright-sun-400: #ffc220;
+  --bright-sun-500: #f9a007;
+  --bright-sun-600: #dd7802;
+  --bright-sun-700: #b75406;
+  --bright-sun-800: #943f0c;
+  --bright-sun-900: #7a350d;
+  --bright-sun-950: #461a02;
 }
 ```
 

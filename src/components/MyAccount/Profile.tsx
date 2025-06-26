@@ -1,5 +1,11 @@
 import React from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FormField, FormMessage } from '@/components/ui/form';
+import { User, Save } from 'lucide-react';
 
 const Profile = () => {
   const { updateProfile } = useUserProfile();
@@ -14,57 +20,66 @@ const Profile = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="bg-white shadow-1 rounded-xl p-4 sm:p-8.5">
-        <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 mb-5">
-          <div className="w-full">
-            <label htmlFor="firstName" className="block mb-2.5">
-              First Name <span className="text-red">*</span>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <User className="w-5 h-5 text-primary" />
+          Información Personal
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <FormField>
+              <Input
+                type="text"
+                name="firstName"
+                id="firstName"
+                label="Nombre"
+                placeholder="Juan"
+                required
+              />
+            </FormField>
+
+            <FormField>
+              <Input
+                type="text"
+                name="lastName"
+                id="lastName"
+                label="Apellido"
+                placeholder="Pérez"
+                required
+              />
+            </FormField>
+          </div>
+
+          <FormField>
+            <label htmlFor="countryName" className="block text-sm font-medium text-gray-700 mb-2">
+              País / Región <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              name="firstName"
-              id="firstName"
-              placeholder="John"
-              className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2.5 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
-            />
-          </div>
+            <Select name="countryName">
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona tu país" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="argentina">Argentina</SelectItem>
+                <SelectItem value="chile">Chile</SelectItem>
+                <SelectItem value="uruguay">Uruguay</SelectItem>
+                <SelectItem value="brasil">Brasil</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
 
-          <div className="w-full">
-            <label htmlFor="lastName" className="block mb-2.5">
-              Last Name <span className="text-red">*</span>
-            </label>
-            <input
-              type="text"
-              name="lastName"
-              id="lastName"
-              placeholder="Doe"
-              className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2.5 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
-            />
+          <div className="flex justify-end">
+            <Button type="submit" size="lg" className="gap-2">
+              <Save className="w-4 h-4" />
+              Guardar Cambios
+            </Button>
           </div>
-        </div>
-
-        <div className="mb-5">
-          <label htmlFor="countryName" className="block mb-2.5">
-            Country/ Region <span className="text-red">*</span>
-          </label>
-          <div className="relative">
-            <select className="w-full bg-gray-1 rounded-md border border-gray-3 text-dark-4 py-3 pl-5 pr-9 duration-200 appearance-none outline-none focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20">
-              <option value="0">Australia</option>
-              <option value="1">America</option>
-              <option value="2">England</option>
-            </select>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
-        >
-          Save Changes
-        </button>
-      </div>
-    </form>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 

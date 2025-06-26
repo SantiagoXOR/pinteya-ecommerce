@@ -1,0 +1,157 @@
+// ===================================
+// PINTEYA E-COMMERCE - ADAPTADOR DE PRODUCTOS
+// ===================================
+
+import { Product as DatabaseProduct } from "@/types/database";
+import { Product as LegacyProduct } from "@/types/product";
+import { ProductWithCategory } from "@/types/api";
+
+/**
+ * Adapta un producto de la base de datos al formato legacy usado en componentes
+ */
+export function adaptDatabaseProductToLegacy(dbProduct: DatabaseProduct): LegacyProduct {
+  return {
+    id: dbProduct.id,
+    title: dbProduct.name,
+    price: dbProduct.price,
+    discountedPrice: dbProduct.discounted_price || dbProduct.price,
+    reviews: 0, // No disponible en BD actual
+    imgs: dbProduct.images ? {
+      thumbnails: dbProduct.images.thumbnails || [],
+      previews: dbProduct.images.previews || []
+    } : undefined,
+  };
+}
+
+/**
+ * Adapta un producto con categoría de la API al formato legacy
+ */
+export function adaptApiProductToLegacy(apiProduct: ProductWithCategory): LegacyProduct & {
+  // Campos adicionales disponibles desde la API
+  stock?: number;
+  created_at?: string;
+  category?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  // Campos calculados
+  name?: string;
+  discounted_price?: number | null;
+  images?: any;
+} {
+  return {
+    // Campos legacy requeridos
+    id: apiProduct.id,
+    title: apiProduct.name,
+    price: apiProduct.price,
+    discountedPrice: apiProduct.discounted_price || apiProduct.price,
+    reviews: 0, // No disponible en BD actual
+    imgs: apiProduct.images ? {
+      thumbnails: apiProduct.images.thumbnails || [],
+      previews: apiProduct.images.previews || []
+    } : undefined,
+    
+    // Campos adicionales para nuevas funcionalidades
+    stock: apiProduct.stock,
+    created_at: apiProduct.created_at,
+    category: apiProduct.category,
+    name: apiProduct.name,
+    discounted_price: apiProduct.discounted_price,
+    images: apiProduct.images,
+  };
+}
+
+/**
+ * Adapta una lista de productos de la API al formato legacy extendido
+ */
+export function adaptApiProductsToLegacy(apiProducts: ProductWithCategory[]): Array<LegacyProduct & {
+  stock?: number;
+  created_at?: string;
+  category?: { id: number; name: string; slug: string; };
+  name?: string;
+  discounted_price?: number | null;
+  images?: any;
+}> {
+  return apiProducts.map(adaptApiProductToLegacy);
+}
+
+/**
+ * Calcula propiedades derivadas para badges y funcionalidades
+ */
+export function calculateProductFeatures(product: ProductWithCategory | (LegacyProduct & {
+  stock?: number;
+  created_at?: string;
+  category?: { id: number; name: string; slug: string; };
+  name?: string;
+  discounted_price?: number | null;
+  images?: any;
+})) {
+  // Precio actual (con descuento si existe)
+  const currentPrice = product.discounted_price || product.price;
+  
+  // Envío gratis para productos > $15000
+  const freeShipping = currentPrice >= 15000;
+  
+  // Envío rápido para ciertas categorías
+  const categoryName = product.category?.name?.toLowerCase() || '';
+  const fastShipping = categoryName.includes('pincel') || 
+                      categoryName.includes('rodillo') ||
+                      categoryName.includes('brocha') ||
+                      categoryName.includes('herramienta');
+  
+  // Producto nuevo (últimos 30 días)
+  const isNew = product.created_at ? 
+    new Date(product.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : 
+    false;
+  
+  // Calcular descuento
+  const discount = product.discounted_price && product.price && product.discounted_price < product.price
+    ? Math.round(((product.price - product.discounted_price) / product.price) * 100)
+    : undefined;
+  
+  // Badge principal
+  const badge = discount ? `${discount}% OFF` : undefined;
+  
+  // Stock disponible
+  const stock = product.stock || 0;
+  
+  return {
+    currentPrice,
+    freeShipping,
+    fastShipping,
+    isNew,
+    discount,
+    badge,
+    stock,
+  };
+}
+
+/**
+ * Tipo extendido que combina legacy con campos de BD
+ */
+export type ExtendedProduct = LegacyProduct & {
+  stock?: number;
+  created_at?: string;
+  category?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  name?: string;
+  discounted_price?: number | null;
+  images?: any;
+};
+
+/**
+ * Tipo para las características calculadas
+ */
+export type ProductFeatures = {
+  currentPrice: number;
+  freeShipping: boolean;
+  fastShipping: boolean;
+  isNew: boolean;
+  discount?: number;
+  badge?: string;
+  stock: number;
+};

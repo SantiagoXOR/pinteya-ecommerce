@@ -1,23 +1,28 @@
 {
   "extends": [
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "plugin:storybook/recommended"
+  ],
+  "ignorePatterns": [
+    "**/*.stories.tsx",
+    "**/*.stories.ts",
+    "src/stories/**/*"
   ],
   "rules": {
     // React rules
     "react-hooks/exhaustive-deps": "warn",
     "react/no-unescaped-entities": "off",
     "react/display-name": "off",
-
     // General code quality
     "no-console": "off",
     "prefer-const": "warn",
     "no-var": "warn",
-
     // Import rules
     "import/no-anonymous-default-export": "off",
-
     // Next.js specific
-    "@next/next/no-img-element": "off"
+    "@next/next/no-img-element": "off",
+    // Storybook rules
+    "storybook/no-renderer-packages": "off"
   },
   "env": {
     "browser": true,

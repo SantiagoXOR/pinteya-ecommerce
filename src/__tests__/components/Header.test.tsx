@@ -54,9 +54,9 @@ describe('Header Component', () => {
     renderWithStore(<Header />)
 
     // Check if logo image is present
-    const logo = screen.getByAltText('Logo')
+    const logo = screen.getByAltText('Pinteya Logo')
     expect(logo).toBeInTheDocument()
-    expect(logo).toHaveAttribute('src', '/images/logo/logo.svg')
+    expect(logo).toHaveAttribute('src', '/images/logo/LOGO POSITIVO.svg')
   })
 
   it('displays cart icon with item count', () => {
@@ -111,7 +111,7 @@ describe('Header Component', () => {
 
     // Just verify the component renders without errors
     // Mobile menu functionality would need specific implementation details
-    const logo = screen.getByAltText('Logo')
+    const logo = screen.getByAltText('Pinteya Logo')
     expect(logo).toBeInTheDocument()
   })
 
@@ -170,7 +170,7 @@ describe('Header Component', () => {
     renderWithStore(<Header />)
 
     // Just verify the component renders without errors
-    const logo = screen.getByAltText('Logo')
+    const logo = screen.getByAltText('Pinteya Logo')
     expect(logo).toBeInTheDocument()
   })
 })

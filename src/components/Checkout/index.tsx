@@ -10,6 +10,10 @@ import OrderSummary from "./OrderSummary";
 import Coupon from "./Coupon";
 import UserInfo from "./UserInfo";
 import { useCheckout } from "@/hooks/useCheckout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { FormMessage } from "@/components/ui/form";
+import { Loader2, CreditCard, AlertTriangle } from "lucide-react";
 
 const Checkout = () => {
   const router = useRouter();
@@ -55,13 +59,25 @@ const Checkout = () => {
     return (
       <>
         <Breadcrumb title={"Checkout"} pages={["checkout"]} />
-        <section className="overflow-hidden py-20 bg-gray-2">
+        <section className="overflow-hidden py-20 bg-gray-50">
           <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue mx-auto mb-4"></div>
-              <h2 className="text-2xl font-medium text-dark mb-2">Procesando tu pedido...</h2>
-              <p className="text-gray-600">Por favor espera mientras preparamos tu pago.</p>
-            </div>
+            <Card className="max-w-md mx-auto">
+              <CardContent className="p-12 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                      Procesando tu pedido...
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                      Por favor espera mientras preparamos tu pago.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
       </>
@@ -72,12 +88,25 @@ const Checkout = () => {
     return (
       <>
         <Breadcrumb title={"Checkout"} pages={["checkout"]} />
-        <section className="overflow-hidden py-20 bg-gray-2">
+        <section className="overflow-hidden py-20 bg-gray-50">
           <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-            <div className="text-center">
-              <h2 className="text-2xl font-medium text-dark mb-2">Redirigiendo a MercadoPago...</h2>
-              <p className="text-gray-600">Si no eres redirigido automáticamente, por favor espera un momento.</p>
-            </div>
+            <Card className="max-w-md mx-auto">
+              <CardContent className="p-12 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                    <CreditCard className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                      Redirigiendo a MercadoPago...
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                      Si no eres redirigido automáticamente, por favor espera un momento.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
       </>
@@ -93,10 +122,15 @@ const Checkout = () => {
             <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
               {/* Checkout left */}
               <div className="lg:max-w-[670px] w-full">
-                {/* Error general */}
+                {/* Error general - Migrado al Design System */}
                 {errors.general && (
-                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-red-800">{errors.general}</p>
+                  <div className="mb-6">
+                    <FormMessage variant="error">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>{errors.general}</span>
+                      </div>
+                    </FormMessage>
                   </div>
                 )}
 

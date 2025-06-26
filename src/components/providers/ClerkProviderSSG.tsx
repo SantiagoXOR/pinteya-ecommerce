@@ -36,15 +36,15 @@ export default function ClerkProviderSSG({ children, publishableKey }: ClerkProv
       appearance={{
         baseTheme: undefined,
         variables: {
-          colorPrimary: '#d97706', // tahiti-gold-600
-          colorBackground: '#fffbea', // tahiti-gold-50
+          colorPrimary: '#eb6313', // blaze-orange-600
+          colorBackground: '#fef7ee', // blaze-orange-50
           colorInputBackground: '#ffffff',
           colorInputText: '#1f2937',
           borderRadius: '0.5rem',
         },
         elements: {
-          formButtonPrimary: "bg-tahiti-gold-600 hover:bg-tahiti-gold-700 text-sm normal-case font-medium",
-          card: "shadow-xl border border-tahiti-gold-200",
+          formButtonPrimary: "bg-blaze-orange-600 hover:bg-blaze-orange-700 text-sm normal-case font-medium",
+          card: "shadow-xl border border-blaze-orange-200",
           headerTitle: "text-2xl font-bold text-gray-900",
           headerSubtitle: "text-gray-600",
         }

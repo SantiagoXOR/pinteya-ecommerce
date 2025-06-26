@@ -5,6 +5,9 @@ import ShopDetails from "./index";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { updateproductDetails } from "@/redux/features/product-details";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 
 interface ShopDetailsByIdProps {
   productId: string;
@@ -67,10 +70,11 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando producto...</p>
-        </div>
+        <Card className="text-center p-8 max-w-md mx-auto">
+          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Cargando producto</h3>
+          <p className="text-gray-600">Obteniendo información del producto...</p>
+        </Card>
       </div>
     );
   }
@@ -78,16 +82,17 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
+        <Card className="text-center p-8 max-w-md mx-auto border-destructive/20">
+          <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-destructive mb-4">Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
-          <a 
-            href="/shop" 
-            className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
-          >
-            Volver a la tienda
-          </a>
-        </div>
+          <Button variant="primary" size="lg" asChild>
+            <a href="/shop">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver a la tienda
+            </a>
+          </Button>
+        </Card>
       </div>
     );
   }
@@ -95,15 +100,17 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
   if (!product) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-600 mb-4">Producto no encontrado</h2>
-          <a 
-            href="/shop" 
-            className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
-          >
-            Volver a la tienda
-          </a>
-        </div>
+        <Card className="text-center p-8 max-w-md mx-auto">
+          <AlertCircle className="w-12 h-12 text-warning mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Producto no encontrado</h2>
+          <p className="text-gray-600 mb-6">El producto que buscas no existe o ha sido eliminado.</p>
+          <Button variant="primary" size="lg" asChild>
+            <a href="/shop">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver a la tienda
+            </a>
+          </Button>
+        </Card>
       </div>
     );
   }
