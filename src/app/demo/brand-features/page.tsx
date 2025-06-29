@@ -213,7 +213,7 @@ export default function BrandFeaturesDemo() {
                     key={product.id}
                     image={product.images?.previews?.[0] || '/images/products/placeholder.svg'}
                     title={product.name}
-                    brand={product.brand}
+                    brand={product.brand ?? undefined}
                     price={product.discounted_price || product.price}
                     originalPrice={product.discounted_price ? product.price : undefined}
                     stock={product.stock}

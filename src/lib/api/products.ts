@@ -199,6 +199,7 @@ export function convertLegacyProduct(oldProduct: any): ProductWithCategory {
   return {
     id: oldProduct.id,
     name: oldProduct.title,
+    brand: oldProduct.brand || null, // Marca del producto legacy
     slug: oldProduct.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
     description: `Producto ${oldProduct.title}`,
     price: oldProduct.price,
@@ -207,6 +208,7 @@ export function convertLegacyProduct(oldProduct: any): ProductWithCategory {
     category_id: 1, // Categoría por defecto
     images: oldProduct.imgs,
     created_at: new Date().toISOString(),
+    updated_at: null, // Campo requerido por el tipo
   };
 }
 
