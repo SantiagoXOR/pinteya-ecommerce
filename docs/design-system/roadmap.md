@@ -1,15 +1,47 @@
 # 🚀 Roadmap de Implementación - Design System Pinteya
 
-> Plan detallado de 5 fases para implementar el Design System en el proyecto existente sin romper funcionalidades actuales
+> Plan actualizado basado en auditoría 2025 vs. mejores prácticas del mercado (MercadoPago, Carbon, Salesforce, Backpack)
 
 ## 📋 Índice
 
+- [🔍 Auditoría 2025](#-auditoría-2025)
 - [🎯 Visión General](#-visión-general)
-- [📅 Cronograma](#-cronograma)
+- [📅 Cronograma Actualizado](#-cronograma-actualizado)
 - [🔄 Fases de Implementación](#-fases-de-implementación)
 - [⚠️ Riesgos y Mitigación](#️-riesgos-y-mitigación)
 - [📊 KPIs y Métricas](#-kpis-y-métricas)
 - [🧪 Estrategia de Testing](#-estrategia-de-testing)
+
+---
+
+## 🔍 Auditoría 2025
+
+### Hallazgos Clave
+**Fecha**: Junio 2025
+**Metodología**: Análisis comparativo con Context7
+**Design Systems Analizados**: MercadoPago, Carbon (IBM), Salesforce Lightning, Backpack (Skyscanner)
+
+#### ✅ Fortalezas Identificadas
+- Paleta de colores coherente y específica para pinturería
+- ProductCard unificado implementado y funcionando
+- Stack tecnológico moderno (Next.js 15 + TypeScript + Tailwind)
+- Documentación estructurada y Storybook configurado
+
+#### 🔍 Gaps Críticos vs. Mejores Prácticas
+- **Tokens limitados**: Escalas de color incompletas (50-950)
+- **Componentes e-commerce faltantes**: PriceDisplay, StockIndicator, ShippingInfo
+- **Sistema de temas ausente**: Sin soporte light/dark/high-contrast
+- **Testing limitado**: Falta visual regression y accessibility testing
+- **Documentación estática**: Sin ejemplos interactivos
+
+#### 📊 Benchmarking Results
+| Aspecto | Pinteya Actual | Mejores Prácticas | Gap |
+|---------|----------------|-------------------|-----|
+| Tokens de Color | 3 escalas básicas | 10+ escalas completas | 🔴 Alto |
+| Componentes E-commerce | 5 básicos | 15+ especializados | 🔴 Alto |
+| Testing | Unit tests | Visual + A11y + Performance | 🟡 Medio |
+| Documentación | Markdown estático | Interactiva + Playground | 🟡 Medio |
+| Temas | Sin soporte | Multi-tema robusto | 🔴 Alto |
 
 ---
 
@@ -32,67 +64,153 @@
 
 ---
 
-## 📅 Cronograma
+## 📅 Cronograma Actualizado
 
-| Fase | Duración | Inicio | Fin | Entregables |
-|------|----------|--------|-----|-------------|
-| **Fase 1** | 1 semana | Semana 1 | Semana 1 | Tokens + Config |
-| **Fase 2** | 2 semanas | Semana 2 | Semana 3 | Componentes Base |
-| **Fase 3** | 2 semanas | Semana 4 | Semana 5 | Storybook + Docs |
-| **Fase 4** | 3 semanas | Semana 6 | Semana 8 | Migración Páginas |
-| **Fase 5** | 1 semana | Semana 9 | Semana 9 | Testing + Optimización |
+> Basado en hallazgos de auditoría 2025 y mejores prácticas identificadas
 
-**Total: 9 semanas (2.25 meses)**
+### Cronograma Revisado
+
+| Fase | Duración | Inicio | Fin | Entregables | Prioridad |
+|------|----------|--------|-----|-------------|-----------|
+| **Fase 1** | 2-3 semanas | Semana 1 | Semana 3 | Tokens Avanzados + Componentes E-commerce | 🔴 Crítica |
+| **Fase 2** | 3-4 semanas | Semana 4 | Semana 7 | Sistema Temas + Componentes Avanzados | 🟡 Alta |
+| **Fase 3** | 2-3 semanas | Semana 8 | Semana 10 | Testing + Documentación Interactiva | 🟢 Media |
+| **Fase 4** | 2 semanas | Semana 11 | Semana 12 | Optimización + Deploy | 🟢 Media |
+
+**Total: 9-12 semanas (2.25-3 meses)**
+
+### Comparación con Plan Original
+
+| Aspecto | Plan Original | Plan Actualizado | Cambio |
+|---------|---------------|------------------|--------|
+| **Duración** | 9 semanas | 9-12 semanas | +0-3 semanas |
+| **Enfoque** | Migración gradual | Mejores prácticas + E-commerce | Más específico |
+| **Prioridades** | Documentación temprana | Componentes críticos primero | Reordenado |
+| **Testing** | Fase final | Integrado en todas las fases | Mejorado |
 
 ---
 
 ## 🔄 Fases de Implementación
 
-### 📦 Fase 1: Fundamentos y Configuración
-**Duración: 1 semana**
+### 🔥 Fase 1: Fundamentos Críticos (Basado en Auditoría 2025)
+**Duración: 2-3 semanas** | **Prioridad: 🔴 Crítica**
 
-#### Objetivos
-- Actualizar configuración de Tailwind CSS
-- Implementar design tokens
-- Configurar utilidades base
+#### Objetivos Actualizados
+- Expandir sistema de tokens basado en mejores prácticas (Carbon/Salesforce)
+- Implementar componentes e-commerce críticos (inspirado en MercadoPago)
+- Configurar testing avanzado desde el inicio
 
-#### Tareas Específicas
+#### 1.1 Expansión de Tokens de Diseño (Semana 1)
+**Inspirado en**: Carbon Design System + Salesforce Lightning
 
-```bash
-# Día 1-2: Configuración Tailwind
-✅ Actualizar tailwind.config.ts con tokens personalizados
-✅ Agregar colores, tipografía, espaciado, sombras
-✅ Configurar animaciones y keyframes
-✅ Testing de build sin errores
+```typescript
+// Escalas de color completas (50-950)
+export const colors = {
+  primary: {
+    50: '#fef7ee', 100: '#feeed6', 200: '#fddbb3',
+    // ... hasta 950: '#411709'
+  },
 
-# Día 3-4: Utilidades y Helpers
-□ Crear lib/utils.ts con funciones helper
-□ Implementar cn() para class merging
-□ Agregar formatters para precios argentinos
-□ Crear hooks básicos (useInteractionState)
+  // Tokens semánticos
+  semantic: {
+    success: '#00A651',    // Fun Green
+    warning: '#FFD700',    // Bright Sun
+    error: '#F44336',      // Error red
+    info: '#2196F3'        // Info blue
+  },
 
-# Día 5: Validación y Testing
-□ Verificar que no se rompa nada existente
-□ Tests de configuración
-□ Documentación de cambios
-□ Deploy a staging
+  // Tokens contextuales e-commerce
+  ecommerce: {
+    price: '#EF7D00',         // Blaze Orange
+    discount: '#F44336',      // Error red
+    freeShipping: '#00A651',  // Fun Green
+    outOfStock: '#9E9E9E',    // Gray
+    premium: '#FFD700'        // Bright Sun
+  }
+};
 ```
 
-#### Criterios de Aceptación
-- [ ] Build exitoso sin warnings
-- [ ] Todas las páginas existentes funcionan
-- [ ] Nuevos tokens disponibles en Tailwind
-- [ ] Documentación actualizada
+#### 1.2 Componentes E-commerce Críticos (Semana 2-3)
+**Inspirado en**: MercadoPago + Backpack
+
+```jsx
+// Componentes prioritarios para conversión
+<PriceDisplay
+  amount={15250}
+  currency="ARS"
+  showInstallments={true}
+  installments={12}
+/>
+
+<StockIndicator
+  quantity={5}
+  lowStockThreshold={3}
+  showExactQuantity={true}
+/>
+
+<AddToCartButton
+  product={product}
+  loading={isLoading}
+  optimized={true}
+/>
+
+<ShippingInfo
+  type="free"
+  estimatedDays={3}
+  location="CABA"
+/>
+
+<ProductRating
+  rating={4.5}
+  reviews={128}
+  showBreakdown={true}
+/>
+```
+
+#### Criterios de Aceptación Actualizados
+- [x] ✅ Escalas de color completas (50-950) implementadas
+- [x] ✅ Tokens semánticos y contextuales funcionando
+- [x] ✅ 4 componentes e-commerce críticos implementados (PriceDisplay, StockIndicator, ShippingInfo, EnhancedProductCard)
+- [x] ✅ Testing unitario configurado (14/14 tests pasando)
+- [x] ✅ Performance baseline establecido
+
+**Estado Fase 1**: ✅ **COMPLETADA** (Enero 2025)
 
 ---
 
-### 🧩 Fase 2: Componentes Base
-**Duración: 2 semanas**
+### 🚀 Fase 2: Componentes Avanzados E-commerce
+**Duración: 2-3 semanas** | **Estado**: ✅ **COMPLETADA** (Enero 2025)
+
+#### Objetivos Completados
+- ✅ Desarrollar componentes avanzados de e-commerce
+- ✅ Integración 100% con componentes base del Design System
+- ✅ Testing completo y documentación enterprise-ready
+- ✅ Exports centralizados y tipos TypeScript
+
+#### Componentes Desarrollados
+- ✅ **CartSummary**: Resumen de carrito con 3 variantes (13 tests)
+- ✅ **CheckoutFlow**: Flujo de checkout paso a paso (18 tests)
+- ✅ **ProductComparison**: Comparación de productos (hasta 4)
+- ✅ **WishlistCard**: Card de wishlist con seguimiento de precios
+
+#### Criterios de Aceptación Fase 2
+- [x] ✅ 4/4 componentes avanzados implementados
+- [x] ✅ 31/31 tests pasando (100%)
+- [x] ✅ Integración completa con PriceDisplay, StockIndicator, ShippingInfo
+- [x] ✅ Exports centralizados en `src/components/ui/index.ts`
+- [x] ✅ Documentación completa en `/docs/design-system/advanced-components.md`
+
+**Estado Fase 2**: ✅ **COMPLETADA** (Enero 2025)
+
+---
+
+### 🧩 Fase 3: Testing Visual & Performance (EN PROGRESO)
+**Duración: 2-3 semanas** | **Estado**: 🔄 **EN PROGRESO**
 
 #### Objetivos
-- Crear componentes UI base en /components/ui/
-- Implementar Button, Input, Card, Badge
-- Mantener compatibilidad con componentes existentes
+- Configurar testing visual regression con Chromatic
+- Implementar tests de accesibilidad automatizados
+- Optimización de performance y bundle size
 
 #### Tareas Específicas
 

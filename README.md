@@ -3,8 +3,10 @@
 > E-commerce especializado en productos de pinturería, ferretería y corralón, desarrollado con tecnologías modernas y arquitectura escalable.
 
 [![Deploy Status](https://img.shields.io/badge/Deploy-Vercel-success)](https://pinteya-ecommerce.vercel.app)
-[![Tests](https://img.shields.io/badge/Tests-206%20passing-brightgreen)](./docs/testing/README.md)
+[![Tests](https://img.shields.io/badge/Tests-480%20passing-brightgreen)](./docs/testing/README.md)
 [![Coverage](https://img.shields.io/badge/Coverage-70%25-green)](./docs/testing/coverage.md)
+[![Design System](https://img.shields.io/badge/Design%20System-Phase%203%20Complete-success)](./docs/design-system/README.md)
+[![Visual Testing](https://img.shields.io/badge/Visual%20Testing-Chromatic-purple)](./docs/testing/visual-regression.md)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7.3-blue)](https://www.typescriptlang.org/)
 
 ## 🚀 Estado del Proyecto
@@ -32,10 +34,19 @@ Sistema completo de e-commerce con todas las funcionalidades implementadas y tes
 - ✅ **Historial de órdenes** con paginación y filtros
 
 ### 🧪 **Testing & Calidad**
-- ✅ **206 tests** pasando (100% success rate)
+- ✅ **480 tests** pasando (100% success rate)
 - ✅ **70%+ cobertura** de código
+- ✅ **Testing Visual Regression** con Chromatic
+- ✅ **Testing de Accesibilidad** con axe-core
 - ✅ **Playwright E2E** tests configurados
 - ✅ **CI/CD Pipeline** con GitHub Actions
+
+### 🎨 **Design System Enterprise-Ready**
+- ✅ **Fase 3 Completada** - Testing visual regression
+- ✅ **29 componentes** con stories completas
+- ✅ **Performance optimizada** con bundle splitting
+- ✅ **Hooks optimizados** para callbacks y memoización
+- ✅ **Documentación completa** con mejores prácticas
 
 ### 🌐 **Producción**
 - ✅ **Deploy exitoso** en Vercel sin errores

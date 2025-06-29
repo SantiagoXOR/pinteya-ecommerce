@@ -88,9 +88,9 @@ export default function CalculatorPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Número de Manos
                   </label>
-                  <select className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                  <select className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary" defaultValue="2">
                     <option value="1">1 Mano</option>
-                    <option value="2" selected>2 Manos (Recomendado)</option>
+                    <option value="2">2 Manos (Recomendado)</option>
                     <option value="3">3 Manos</option>
                   </select>
                 </div>

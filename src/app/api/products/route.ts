@@ -17,12 +17,13 @@ export async function GET(request: NextRequest) {
     // Extraer parámetros de query
     const queryParams = {
       category: searchParams.get('category') || undefined,
+      brand: searchParams.get('brand') || undefined,
       priceMin: searchParams.get('priceMin') ? Number(searchParams.get('priceMin')) : undefined,
       priceMax: searchParams.get('priceMax') ? Number(searchParams.get('priceMax')) : undefined,
       search: searchParams.get('search') || undefined,
       page: searchParams.get('page') ? Number(searchParams.get('page')) : 1,
       limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : 12,
-      sortBy: searchParams.get('sortBy') as 'price' | 'name' | 'created_at' || 'created_at',
+      sortBy: searchParams.get('sortBy') as 'price' | 'name' | 'created_at' | 'brand' || 'created_at',
       sortOrder: searchParams.get('sortOrder') as 'asc' | 'desc' || 'desc',
     };
 
@@ -64,6 +65,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    if (filters.brand) {
+      query = query.eq('brand', filters.brand);
+    }
+
     if (filters.priceMin) {
       query = query.gte('price', filters.priceMin);
     }
@@ -73,14 +78,16 @@ export async function GET(request: NextRequest) {
     }
 
     if (filters.search) {
-      query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,brand.ilike.%${filters.search}%`);
     }
 
     // Solo productos con stock
     query = query.gt('stock', 0);
 
     // Ordenamiento
-    const orderColumn = filters.sortBy === 'created_at' ? 'created_at' : (filters.sortBy || 'created_at');
+    const orderColumn = filters.sortBy === 'created_at' ? 'created_at' :
+                       filters.sortBy === 'brand' ? 'brand' :
+                       (filters.sortBy || 'created_at');
     query = query.order(orderColumn, { ascending: filters.sortOrder === 'asc' });
 
     // Paginación

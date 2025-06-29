@@ -13,6 +13,7 @@ import { ModalProvider } from "./context/QuickViewModalContext";
 import { CartModalProvider } from "./context/CartSidebarModalContext";
 import { ReduxProvider } from "@/redux/provider";
 import { PreviewSliderProvider } from "./context/PreviewSliderContext";
+import CartPersistenceProvider from "@/components/providers/CartPersistenceProvider";
 
 // Componentes UI
 import Header from "../components/Header";
@@ -50,9 +51,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         ) : (
           <>
             <ReduxProvider>
-              <CartModalProvider>
-                <ModalProvider>
-                  <PreviewSliderProvider>
+              <CartPersistenceProvider>
+                <CartModalProvider>
+                  <ModalProvider>
+                    <PreviewSliderProvider>
                     <Header />
                     <QuickViewModal />
                     <CartSidebarModal />
@@ -74,7 +76,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   </PreviewSliderProvider>
                 </ModalProvider>
               </CartModalProvider>
-            </ReduxProvider>
+            </CartPersistenceProvider>
+          </ReduxProvider>
           </>
         )}
       </div>

@@ -222,9 +222,9 @@ export const Overview: Story = {
             title="Pintura Sherwin Williams"
             price={15500}
             originalPrice={18500}
-            rating={4}
-            reviews={23}
-            badge="30% OFF"
+            discount="19%"
+            badge="Envío gratis"
+            cta="Agregar al carrito"
             onAddToCart={() => alert('Agregado al carrito')}
           />
 
@@ -258,58 +258,44 @@ export const Overview: Story = {
             </div>
 
             {/* Grid de productos */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <ProductCard
                 image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/pintura-sherwin-williams.jpg"
                 title="Pintura Sherwin Williams ProClassic"
                 price={15500}
                 originalPrice={18500}
-                rating={4}
-                reviews={23}
-                badge="30% OFF"
+                discount="19%"
+                badge="Envío gratis"
+                cta="Agregar al carrito"
                 onAddToCart={() => {}}
               />
-              
+
               <ProductCard
                 title="Rodillo Profesional 23cm"
                 price={3200}
-                rating={5}
-                reviews={67}
-                badge="NUEVO"
+                badge="Nuevo producto"
+                cta="Comprar ahora"
                 onAddToCart={() => {}}
-              >
-                <div className="mt-2">
-                  <ShippingBadge free />
-                </div>
-              </ProductCard>
-              
+              />
+
               <ProductCard
                 title="Pincel Angular Premium"
                 price={1800}
-                rating={4}
-                reviews={12}
+                badge="Stock limitado"
+                cta="Agregar al carrito"
+                stock={3}
                 onAddToCart={() => {}}
-              >
-                <div className="mt-2 flex gap-1">
-                  <Badge variant="success" size="sm">Calidad premium</Badge>
-                  <StockBadge stock={3} />
-                </div>
-              </ProductCard>
+              />
 
               <ProductCard
                 title="Kit Pintura Completo"
                 price={12500}
                 originalPrice={16700}
-                rating={5}
-                reviews={89}
-                badge="OFERTA"
+                discount="25%"
+                badge="Liquidación"
+                cta="¡Aprovechá!"
                 onAddToCart={() => {}}
-              >
-                <div className="mt-2 flex gap-1">
-                  <ShippingBadge free />
-                  <Badge variant="destructive" size="sm">Liquidación</Badge>
-                </div>
-              </ProductCard>
+              />
             </div>
 
             {/* Acciones */}

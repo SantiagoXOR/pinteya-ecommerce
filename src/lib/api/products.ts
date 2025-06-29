@@ -16,7 +16,7 @@ import { ProductFilters, ProductWithCategory, ApiResponse, PaginatedResponse } f
 export async function getProducts(filters?: ProductFilters): Promise<PaginatedResponse<ProductWithCategory>> {
   try {
     const searchParams = new URLSearchParams();
-    
+
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
@@ -117,7 +117,7 @@ export async function getDiscountedProducts(
   // Nota: Esto requeriría un filtro adicional en la API
   // Por ahora, obtenemos todos los productos y filtramos en el frontend
   const response = await getProducts({ page, limit });
-  
+
   // Filtrar productos con descuento
   const discountedProducts = response.data.filter(
     product => product.discounted_price && product.discounted_price < product.price
@@ -127,6 +127,25 @@ export async function getDiscountedProducts(
     ...response,
     data: discountedProducts,
   };
+}
+
+/**
+ * Obtiene productos por marca
+ * @param brandName - Nombre de la marca
+ * @param page - Página
+ * @param limit - Límite de resultados
+ * @returns Promise<PaginatedResponse<ProductWithCategory>>
+ */
+export async function getProductsByBrand(
+  brandName: string,
+  page: number = 1,
+  limit: number = 12
+): Promise<PaginatedResponse<ProductWithCategory>> {
+  return getProducts({
+    brand: brandName,
+    page,
+    limit,
+  });
 }
 
 /**

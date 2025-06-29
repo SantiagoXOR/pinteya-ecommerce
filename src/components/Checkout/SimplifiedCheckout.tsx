@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useCheckout } from "@/hooks/useCheckout";
-import { 
-  ShoppingCart, 
-  CreditCard, 
-  MapPin, 
-  User, 
-  Phone, 
+import {
+  ShoppingCart,
+  CreditCard,
+  MapPin,
+  User,
+  Phone,
   Mail,
   Package,
   Truck,
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { ProductCard } from "@/components/ui";
 
 const SimplifiedCheckout = () => {
   const router = useRouter();
@@ -372,36 +373,30 @@ const SimplifiedCheckout = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Items del carrito */}
-        <div className="max-h-60 overflow-y-auto space-y-3">
-          {cartItems.map((item, index) => (
-            <div key={index} className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                {item.imgs?.thumbnails?.[0] ? (
-                  <Image
-                    src={item.imgs.thumbnails[0]}
-                    alt={item.title}
-                    width={48}
-                    height={48}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-6 h-6 text-gray-400" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                  {item.title}
-                </p>
-                <p className="text-xs text-gray-500">
-                  Cantidad: {item.quantity}
-                </p>
-              </div>
-              <div className="text-sm font-semibold text-gray-900">
-                ${(item.discountedPrice * item.quantity).toLocaleString()}
-              </div>
+        {/* Items del carrito con ProductCard */}
+        <div className="max-h-80 overflow-y-auto space-y-4">
+          {cartItems.map((item: any, index: number) => (
+            <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
+              <ProductCard
+                context="checkout"
+                image={item.imgs?.thumbnails?.[0] || item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
+                title={item.title}
+                price={item.discountedPrice}
+                originalPrice={item.discountedPrice < item.price ? item.price : undefined}
+                discount={item.discountedPrice < item.price ?
+                  `${Math.round(((item.price - item.discountedPrice) / item.price) * 100)}%` : undefined}
+                stock={item.quantity} // Mostrar cantidad en el carrito como stock
+                stockUnit="en carrito"
+                productId={item.id}
+                badge={item.discountedPrice >= 15000 ? "Envío gratis" : "En carrito"}
+                cta={`Total: $${(item.discountedPrice * item.quantity).toLocaleString()}`}
+                onAddToCart={() => {
+                  // En checkout, no necesitamos agregar más al carrito
+                  console.log('Producto ya en carrito:', item.title);
+                }}
+                showCartAnimation={false}
+// Versión más compacta para checkout
+              />
             </div>
           ))}
         </div>

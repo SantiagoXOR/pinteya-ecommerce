@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, ShoppingCart, Truck, CheckCircle } from "lucide-react";
+import { Search, ShoppingCart, Truck } from "lucide-react";
 
 const Hero = () => {
   return (
@@ -70,7 +70,9 @@ const Hero = () => {
                 Llega gratis mañana
               </Badge>
               <Badge className="bg-fun-green-600 text-white px-4 py-2 text-sm font-medium rounded-full flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
                 ENVÍO GRATIS
               </Badge>
               <span className="text-white/80 text-sm">en Córdoba Capital.</span>

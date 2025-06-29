@@ -1,18 +1,29 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Discount from "./Discount";
 import OrderSummary from "./OrderSummary";
-import { useAppSelector } from "@/redux/store";
+import { useAppSelector, useAppDispatch } from "@/redux/store";
+import { removeAllItemsFromCart } from "@/redux/features/cart-slice";
+import { clearCartFromStorage } from "@/redux/middleware/cartPersistence";
 import SingleItem from "./SingleItem";
 import Breadcrumb from "../Common/Breadcrumb";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ConfirmModal } from "@/components/ui/modal";
 import { ShoppingBag, Trash2, ArrowLeft } from "lucide-react";
 
 const Cart = () => {
   const cartItems = useAppSelector((state) => state.cartReducer.items);
+  const dispatch = useAppDispatch();
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const handleClearCart = () => {
+    dispatch(removeAllItemsFromCart());
+    clearCartFromStorage();
+    setShowClearConfirm(false);
+  };
 
   return (
     <>
@@ -31,7 +42,13 @@ const Cart = () => {
                   {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
                 </Badge>
               </div>
-              <Button variant="destructive" size="md" className="gap-2">
+              <Button
+                variant="destructive"
+                size="md"
+                className="gap-2"
+                onClick={() => setShowClearConfirm(true)}
+                data-testid="clear-cart-btn"
+              >
                 <Trash2 className="w-4 h-4" />
                 Vaciar Carrito
               </Button>
@@ -65,7 +82,7 @@ const Cart = () => {
 
                   {/* <!-- cart item --> */}
                   {cartItems.length > 0 &&
-                    cartItems.map((item, key) => (
+                    cartItems.map((item: any, key: number) => (
                       <SingleItem item={item} key={key} />
                     ))}
                 </div>
@@ -104,6 +121,19 @@ const Cart = () => {
           </div>
         </section>
       )}
+
+      {/* Modal de confirmación para vaciar carrito */}
+      <ConfirmModal
+        open={showClearConfirm}
+        onOpenChange={setShowClearConfirm}
+        title="¿Vaciar carrito?"
+        description={`¿Estás seguro de que quieres eliminar ${cartItems.length === 1 ? 'el producto' : `los ${cartItems.length} productos`} del carrito? Esta acción no se puede deshacer.`}
+        variant="destructive"
+        confirmText="Sí, vaciar carrito"
+        cancelText="Cancelar"
+        onConfirm={handleClearCart}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </>
   );
 };

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { removeItemFromCart } from "@/redux/features/cart-slice";
+import { getValidImageUrl } from "@/lib/adapters/product-adapter";
 
 const SingleItem = ({ item }: { item: any }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -14,10 +15,15 @@ const SingleItem = ({ item }: { item: any }) => {
   };
 
   return (
-    <div className="flex items-center justify-between gap-5">
+    <div className="flex items-center justify-between gap-5" data-testid="cart-item">
       <div className="w-full flex items-center gap-6">
         <div className="flex items-center justify-center rounded-[10px] bg-gray-3 max-w-[90px] w-full h-22.5">
-          <Image src={item.imgs?.thumbnails[0]} alt="product" width={100} height={100} />
+          <Image
+            src={getValidImageUrl(item.imgs?.thumbnails?.[0])}
+            alt="product"
+            width={100}
+            height={100}
+          />
         </div>
 
         <div>
@@ -31,6 +37,7 @@ const SingleItem = ({ item }: { item: any }) => {
       <button
         onClick={handleRemoveFromCart}
         aria-label="button for remove product from cart"
+        data-testid="remove-from-cart"
         className="flex items-center justify-center rounded-lg max-w-[38px] w-full h-9.5 bg-gray-2 border border-gray-3 text-dark ease-out duration-200 hover:bg-red-light-6 hover:border-red-light-4 hover:text-red"
       >
         <svg

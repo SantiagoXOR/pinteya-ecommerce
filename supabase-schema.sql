@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
+  brand VARCHAR(100),
   slug TEXT UNIQUE NOT NULL,
   description TEXT,
   price DECIMAL(10,2) NOT NULL CHECK (price > 0),

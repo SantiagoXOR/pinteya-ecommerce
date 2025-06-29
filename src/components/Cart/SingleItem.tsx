@@ -11,6 +11,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { getValidImageUrl } from "@/lib/adapters/product-adapter";
 
 const SingleItem = ({ item }: { item: any }) => {
   const [quantity, setQuantity] = useState(item.quantity);
@@ -49,7 +50,7 @@ const SingleItem = ({ item }: { item: any }) => {
             <Image
               width={80}
               height={80}
-              src={item.imgs?.thumbnails?.[0] || '/images/placeholder.jpg'}
+              src={getValidImageUrl(item.imgs?.thumbnails?.[0])}
               alt={item.title}
               className="object-cover w-full h-full"
             />
@@ -89,12 +90,13 @@ const SingleItem = ({ item }: { item: any }) => {
             onClick={() => handleDecreaseQuantity()}
             disabled={quantity <= 1}
             aria-label="Disminuir cantidad"
+            data-testid="quantity-decrease"
             className="h-11 w-11 rounded-l-lg hover:bg-gray-50 disabled:opacity-50"
           >
             <Minus className="w-4 h-4" />
           </Button>
 
-          <div className="flex items-center justify-center w-16 h-11 border-x border-gray-200 bg-gray-50 font-semibold text-gray-900">
+          <div className="flex items-center justify-center w-16 h-11 border-x border-gray-200 bg-gray-50 font-semibold text-gray-900" data-testid="quantity-input">
             {quantity}
           </div>
 
@@ -103,6 +105,7 @@ const SingleItem = ({ item }: { item: any }) => {
             size="icon"
             onClick={() => handleIncreaseQuantity()}
             aria-label="Aumentar cantidad"
+            data-testid="quantity-increase"
             className="h-11 w-11 rounded-r-lg hover:bg-gray-50"
           >
             <Plus className="w-4 h-4" />

@@ -55,7 +55,7 @@ const AuthSection = () => {
   return (
     <div className="flex items-center gap-3">
       {isSignedIn ? (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" data-testid="signed-in">
           <Avatar className="w-8 h-8">
             <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
               U
@@ -72,7 +72,7 @@ const AuthSection = () => {
           </Button>
         </div>
       ) : (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-testid="signed-out">
           <Button variant="outline" size="sm" asChild className="border-white text-white hover:bg-white hover:text-blaze-orange-600">
             <Link href="/signin">
               <LogIn className="w-4 h-4 mr-2" />

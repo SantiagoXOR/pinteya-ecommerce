@@ -1,6 +1,11 @@
+"use client"
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+import { PriceDisplay } from "./price-display"
+import { StockIndicator } from "./stock-indicator"
+import { ShippingInfo } from "./shipping-info"
 
 const cardVariants = cva(
   "rounded-card bg-white text-gray-900 transition-all duration-200",
@@ -110,20 +115,29 @@ CardFooter.displayName = "CardFooter"
 export interface ProductCardProps extends CardProps {
   image?: string
   title?: string
+  brand?: string
   price?: number
   originalPrice?: number
-  discount?: number
-  rating?: number
-  reviews?: number
+  discount?: string
   badge?: string
+  cta?: string
   stock?: number
-  freeShipping?: boolean
-  fastShipping?: boolean
-  isNew?: boolean
+  productId?: number | string
   onAddToCart?: () => void
-  onQuickView?: () => void
-  onWishlist?: () => void
   showCartAnimation?: boolean
+  // Nuevas props para componentes e-commerce
+  showInstallments?: boolean
+  installments?: {
+    quantity: number
+    amount: number
+    interestFree?: boolean
+  }
+  showFreeShipping?: boolean
+  stockUnit?: string
+  lowStockThreshold?: number
+  showExactStock?: boolean
+  useNewComponents?: boolean // Flag para activar nuevos componentes
+  showBrand?: boolean // Mostrar marca por separado
 }
 
 const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
@@ -131,20 +145,25 @@ const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
     className,
     image,
     title,
+    brand,
     price,
     originalPrice,
     discount,
-    rating,
-    reviews,
     badge,
+    cta = "Agregar al carrito",
     stock = 0,
-    freeShipping = false,
-    fastShipping = false,
-    isNew = false,
+    productId,
     onAddToCart,
-    onQuickView,
-    onWishlist,
     showCartAnimation = true,
+    // Nuevas props
+    showInstallments = false,
+    installments,
+    showFreeShipping = false,
+    stockUnit = "unidades",
+    lowStockThreshold = 5,
+    showExactStock = false,
+    useNewComponents = false,
+    showBrand = true,
     children,
     ...props
   }, ref) => {
@@ -163,173 +182,160 @@ const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
     };
 
     return (
-    <Card
+    <div
       ref={ref}
-      className={cn("group overflow-hidden", className)}
-      hover="lift"
-      padding="none"
+      className={cn(
+        "bg-[#fffcee] rounded-2xl shadow-sm p-3 w-full max-w-[280px] flex flex-col justify-between relative overflow-hidden min-h-[400px]",
+        className
+      )}
+      data-testid="product-card"
       {...props}
     >
+      {/* Badge de descuento */}
+      {discount && (
+        <div className="absolute top-2 left-2 z-10 max-w-[calc(100%-16px)]">
+          <div className="bg-gradient-to-b from-[#FF6A00] to-[#FFCB00] text-white text-xs font-bold px-2 py-1 rounded max-w-full">
+            <span className="text-white truncate block">{discount}</span>
+          </div>
+          <div className="bg-yellow-400 text-[#4b3200] text-xs font-medium px-2 py-1 rounded-b max-w-full">
+            <span className="truncate block">Descuento especial</span>
+          </div>
+        </div>
+      )}
+
       {/* Imagen del producto */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
-        {image && (
+      <div className="flex justify-center items-center h-32 mb-3 mt-2">
+        {image ? (
           <img
             src={image}
-            alt={title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            alt={title || 'Producto'}
+            className="w-28 h-28 object-contain"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/images/products/placeholder.svg';
+            }}
           />
-        )}
-        
-        {/* Badges superiores */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {badge && (
-            <div className="bg-error text-white text-xs font-medium px-2 py-1 rounded animate-pulse">
-              {badge}
-            </div>
-          )}
-          {isNew && (
-            <div className="bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded">
-              NUEVO
-            </div>
-          )}
-        </div>
-
-        {/* Badges de envío */}
-        <div className="absolute top-2 right-2 flex flex-col gap-1">
-          {freeShipping && (
-            <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce">
-              🚚 ENVÍO GRATIS
-            </div>
-          )}
-          {fastShipping && !freeShipping && (
-            <div className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-              ⚡ ENVÍO RÁPIDO
-            </div>
-          )}
-        </div>
-
-        {/* Badge de stock bajo */}
-        {stock > 0 && stock <= 5 && (
-          <div className="absolute bottom-2 left-2 bg-yellow-500 text-white text-xs font-medium px-2 py-1 rounded">
-            ¡Últimas {stock}!
+        ) : (
+          <div className="w-28 h-28 bg-gray-200 rounded-lg flex items-center justify-center">
+            <img
+              src="/images/products/placeholder.svg"
+              alt="Sin imagen"
+              className="w-20 h-20 opacity-60"
+            />
           </div>
         )}
-        
-        {/* Acciones hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200">
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-full group-hover:translate-y-0 transition-transform duration-200 flex gap-2">
-            {onQuickView && (
-              <button
-                onClick={onQuickView}
-                className="bg-white text-gray-700 p-2 rounded-full shadow-1 hover:bg-gray-50"
-                aria-label="Vista rápida"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-            )}
-            
-            {onWishlist && (
-              <button
-                onClick={onWishlist}
-                className="bg-white text-gray-700 p-2 rounded-full shadow-1 hover:bg-gray-50"
-                aria-label="Agregar a favoritos"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </button>
-            )}
-          </div>
-        </div>
       </div>
-      
-      {/* Contenido del producto */}
-      <div className="p-4">
-        {/* Rating */}
-        {rating && (
-          <div className="flex items-center gap-1 mb-2">
-            <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <svg
-                  key={i}
-                  className={cn(
-                    "w-3 h-3",
-                    i < rating ? "text-yellow-400 fill-current" : "text-gray-300"
-                  )}
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-            {reviews && (
-              <span className="text-xs text-gray-500">({reviews})</span>
-            )}
-          </div>
-        )}
-        
-        {/* Título */}
-        {title && (
-          <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-primary transition-colors">
-            {title}
-          </h3>
-        )}
-        
-        {/* Precios */}
-        {price && (
-          <div className="flex items-center gap-2 mb-3">
-            <span className="font-semibold text-lg text-gray-900">
-              ${price.toLocaleString('es-AR')}
-            </span>
-            {originalPrice && originalPrice > price && (
-              <span className="text-sm text-gray-500 line-through">
-                ${originalPrice.toLocaleString('es-AR')}
-              </span>
-            )}
-          </div>
-        )}
-        
-        {/* Botón agregar al carrito con animación */}
-        {onAddToCart && (
-          <button
-            onClick={handleAddToCart}
-            disabled={isAddingToCart || stock === 0}
-            className={cn(
-              "w-full py-2 px-4 rounded-button font-medium transition-all duration-200 relative overflow-hidden",
-              stock === 0
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : isAddingToCart
-                ? "bg-green-500 text-white"
-                : "bg-primary text-white hover:bg-primary-hover active:scale-95"
-            )}
-          >
-            {isAddingToCart ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                </svg>
-                ¡Agregado!
-              </span>
-            ) : stock === 0 ? (
-              "Sin stock"
-            ) : (
-              "Agregar al carrito"
-            )}
 
-            {/* Efecto de ondas al hacer click */}
-            {isAddingToCart && (
-              <span className="absolute inset-0 bg-white/20 animate-ping rounded-button"></span>
-            )}
-          </button>
+      {/* Badge de envío/promoción */}
+      {badge && (
+        <div className="mb-2 w-full">
+          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded inline-block max-w-full truncate">
+            {badge}
+          </span>
+        </div>
+      )}
+
+      {/* Marca del producto */}
+      {showBrand && brand && (
+        <div className="mb-1">
+          <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+            {brand}
+          </span>
+        </div>
+      )}
+
+      {/* Título del producto */}
+      <h3 className="text-[#712F00] font-semibold text-sm leading-tight mb-2 line-clamp-2 min-h-[2.5rem]" data-testid="product-name">
+        {productId ? (
+          <a href={`/shop-details/${productId}`} className="hover:text-[#8B3A00] transition-colors">
+            {title || 'Producto sin nombre'}
+          </a>
+        ) : (
+          title || 'Producto sin nombre'
         )}
-        
-        {children}
+      </h3>
+
+      {/* Precios - Nuevos componentes o legacy */}
+      <div className="flex-grow">
+        {useNewComponents ? (
+          <div className="mb-3" data-testid="product-price">
+            <PriceDisplay
+              amount={(price || 0) * 100} // Convertir a centavos
+              originalAmount={originalPrice ? originalPrice * 100 : undefined}
+              installments={showInstallments ? installments : undefined}
+              showFreeShipping={showFreeShipping}
+              variant="compact"
+              size="sm"
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1 mb-3" data-testid="product-price">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[#1f2937] font-bold text-lg truncate">
+                ${price?.toLocaleString('es-AR') || '0'}
+              </span>
+              {originalPrice && originalPrice > (price || 0) && (
+                <span className="text-gray-400 line-through text-sm truncate">
+                  ${originalPrice.toLocaleString('es-AR')}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Stock info - Nuevos componentes o legacy */}
+        {useNewComponents ? (
+          <div className="mb-3">
+            <StockIndicator
+              quantity={stock || 0}
+              lowStockThreshold={lowStockThreshold}
+              showExactQuantity={showExactStock}
+              unit={stockUnit}
+              variant="minimal"
+            />
+          </div>
+        ) : (
+          stock !== undefined && stock <= 5 && stock > 0 && (
+            <p className="text-xs text-orange-600 mb-3">
+              ¡Solo quedan {stock} unidades!
+            </p>
+          )
+        )}
       </div>
-    </Card>
+
+      {/* Botón de acción */}
+      {onAddToCart && (
+        <button
+          onClick={handleAddToCart}
+          disabled={isAddingToCart || stock === 0}
+          data-testid="add-to-cart-btn"
+          className={cn(
+            "flex items-center justify-center gap-2 font-semibold py-2.5 px-3 rounded-lg transition w-full text-sm mt-auto",
+            stock === 0
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+              : "bg-yellow-400 hover:bg-yellow-500 text-[#712F00]"
+          )}
+        >
+          {isAddingToCart ? (
+            <>
+              <div className="w-4 h-4 border-2 border-[#712F00] border-t-transparent rounded-full animate-spin"></div>
+              <span className="truncate">Agregando...</span>
+            </>
+          ) : stock === 0 ? (
+            <span className="truncate">Sin stock</span>
+          ) : (
+            <>
+              <svg className="w-4 h-4 fill-current flex-shrink-0" viewBox="0 0 24 24">
+                <path d="M10 20a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm10 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM7.333 5H20l-1.5 6H8.167l-.834-4H4V5h3.333zM6 9h12.5l1-4H7.5l.5 2H6v2z" />
+              </svg>
+              <span className="truncate">{cta || 'Agregar al carrito'}</span>
+            </>
+          )}
+        </button>
+      )}
+
+      {children}
+    </div>
     );
   }
 )

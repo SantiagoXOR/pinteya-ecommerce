@@ -28,6 +28,9 @@ interface UseProductsOptions {
 export function useProducts(options: UseProductsOptions = {}) {
   const { initialFilters = {}, autoFetch = true } = options;
 
+  // DEBUG: Log básico para verificar que el hook se ejecuta
+  console.log('🔍 HOOK useProducts EJECUTÁNDOSE');
+
   const [state, setState] = useState<UseProductsState>({
     products: [],
     loading: false,
@@ -53,7 +56,27 @@ export function useProducts(options: UseProductsOptions = {}) {
       const response: PaginatedResponse<ProductWithCategory> = await getProducts(filtersToUse);
 
       if (response.success) {
+        // DEBUG CRÍTICO: Log de datos antes del adaptador
+        const poximixProducts = response.data.filter(p => p.name?.includes('Poximix'));
+        if (poximixProducts.length > 0) {
+          console.log('🔍 DEBUG CRÍTICO - DATOS ANTES DEL ADAPTADOR:', poximixProducts.map(p => ({
+            id: p.id,
+            name: p.name,
+            'contiene Poxipol': p.name?.includes('Poxipol')
+          })));
+        }
+
         const adaptedProducts = adaptApiProductsToLegacy(response.data);
+
+        // DEBUG CRÍTICO: Log de datos después del adaptador
+        const adaptedPoximix = adaptedProducts.filter(p => p.title?.includes('Poximix'));
+        if (adaptedPoximix.length > 0) {
+          console.log('🔍 DEBUG CRÍTICO - DATOS DESPUÉS DEL ADAPTADOR:', adaptedPoximix.map(p => ({
+            id: p.id,
+            title: p.title,
+            'contiene Poxipol': p.title?.includes('Poxipol')
+          })));
+        }
 
         setState(prev => ({
           ...prev,

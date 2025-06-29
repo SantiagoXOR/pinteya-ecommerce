@@ -26,7 +26,7 @@ const CategoryItem = ({ category, onCategorySelect, isSelected }: CategoryItemPr
   };
 
   return (
-    <div className="flex items-center justify-between py-2 px-1 hover:bg-gray-50 rounded-md transition-colors">
+    <div className="flex items-center justify-between py-2 px-1 hover:bg-gray-50 rounded-md transition-colors" data-testid="category-filter">
       <Checkbox
         id={`category-${category.id || category.slug}`}
         checked={isSelected}

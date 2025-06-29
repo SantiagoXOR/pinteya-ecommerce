@@ -156,6 +156,7 @@ const Header = () => {
 
                 <button
                   onClick={handleOpenCartModal}
+                  data-testid="cart-icon"
                   className={`flex items-center gap-2.5 transition-all duration-200 hover:scale-105 ${
                     cartShake ? 'animate-cart-shake' : ''
                   }`}
@@ -195,11 +196,14 @@ const Header = () => {
                       />
                     </svg>
 
-                    <span className={`flex items-center justify-center font-medium text-2xs absolute -right-2 -top-2.5 w-4.5 h-4.5 rounded-full text-white transition-all duration-200 ${
-                      product.length > 0
-                        ? 'bg-primary animate-bounce-in'
-                        : 'bg-gray-400'
-                    }`}>
+                    <span
+                      data-testid="cart-counter"
+                      className={`flex items-center justify-center font-medium text-2xs absolute -right-2 -top-2.5 w-4.5 h-4.5 rounded-full text-white transition-all duration-200 ${
+                        product.length > 0
+                          ? 'bg-primary animate-bounce-in'
+                          : 'bg-gray-400'
+                      }`}
+                    >
                       {product.length}
                     </span>
                   </span>

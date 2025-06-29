@@ -1,22 +1,100 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Optimizaciones experimentales
+  experimental: {
+    optimizePackageImports: [
+      '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-label',
+      '@radix-ui/react-radio-group',
+      '@radix-ui/react-select',
+      'lucide-react',
+      '@/components/ui'
+    ],
+    optimizeCss: true,
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
+  },
+
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+    reactRemoveProperties: process.env.NODE_ENV === 'production' ? {
+      properties: ['^data-testid$']
+    } : false,
+  },
+
+  // Bundle optimization
+  webpack: (config, { dev, isServer }) => {
+    // Optimizar bundle splitting
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Vendor chunk para dependencias grandes
+          vendor: {
+            name: 'vendor',
+            chunks: 'all',
+            test: /node_modules/,
+            priority: 20,
+          },
+          // UI components chunk
+          ui: {
+            name: 'ui',
+            chunks: 'all',
+            test: /[\\/]components[\\/]ui[\\/]/,
+            priority: 30,
+          },
+          // Common chunk para código compartido
+          common: {
+            name: 'common',
+            chunks: 'all',
+            minChunks: 2,
+            priority: 10,
+            reuseExistingChunk: true,
+          },
+        },
+      };
+    }
+
+    // Tree shaking para Lucide icons - COMENTADO para evitar problemas de importación
+    // if (config.resolve.alias) {
+    //   config.resolve.alias['lucide-react'] = 'lucide-react/dist/esm/icons';
+    // } else {
+    //   config.resolve.alias = {
+    //     'lucide-react': 'lucide-react/dist/esm/icons'
+    //   };
+    // }
+
+    return config;
+  },
+
+  // Configuración de imágenes existente
   images: {
     remotePatterns: [
-      // Supabase storage
       {
         protocol: 'https',
         hostname: 'aakzspzfulgftqlgwkpb.supabase.co',
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
-      // Imágenes locales de desarrollo
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '',
         pathname: '/**',
       },
-      // Dominios externos para imágenes de productos
       {
         protocol: 'https',
         hostname: 'www.poxipol.com.ar',
@@ -66,11 +144,16 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+
   // Configuración para Clerk
   serverExternalPackages: ['@clerk/nextjs'],
 
-  // Headers de seguridad
+  // Headers de seguridad existentes
   async headers() {
     return [
       {
@@ -88,13 +171,25 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
+          // Cache headers para assets estáticos
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Headers específicos para assets
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
         ],
       },
     ];
   },
-
-  // NOTA: Variables de entorno sensibles NO se exponen aquí
-  // Solo las variables NEXT_PUBLIC_* son accesibles desde el cliente
 };
 
 module.exports = nextConfig;
