@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppSelector } from '@/redux/store';
-import { ShoppingCart, CheckCircle, X } from 'lucide-react';
+import { ShoppingCart, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext';
 import Image from 'next/image';
@@ -59,7 +59,7 @@ const CartNotification: React.FC<CartNotificationProps> = ({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+              <Check className="w-5 h-5 text-green-600" />
             </div>
             <span className="font-semibold text-gray-900">¡Agregado al carrito!</span>
           </div>

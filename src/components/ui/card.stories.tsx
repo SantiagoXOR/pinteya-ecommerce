@@ -194,24 +194,19 @@ export const HoverEffects: Story = {
   },
 }
 
-// ProductCard básica
+// ProductCard básica - Nuevo diseño
 export const ProductCardBasic: Story = {
   render: () => (
     <div className="w-80">
       <ProductCard
-        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/pintura-sherwin-williams.jpg"
-        title="Pintura Sherwin Williams ProClassic"
-        price={15500}
-        originalPrice={18500}
-        rating={4}
-        reviews={23}
-        badge="OFERTA"
-        stock={15}
-        freeShipping={true}
-        isNew={false}
+        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg"
+        title="Pintura Látex Premium Sherwin Williams"
+        price={2500}
+        originalPrice={3200}
+        discount="25%"
+        badge="Llega gratis hoy"
+        cta="Agregar al carrito"
         onAddToCart={() => alert('Agregado al carrito')}
-        onQuickView={() => alert('Vista rápida')}
-        onWishlist={() => alert('Agregado a favoritos')}
         showCartAnimation={true}
       />
     </div>
@@ -219,7 +214,32 @@ export const ProductCardBasic: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'ProductCard especializada para productos de pinturería con todas las características mejoradas.',
+        story: 'ProductCard rediseñada con nuevo layout visual, jerarquía mejorada y diseño mobile-first.',
+      },
+    },
+  },
+}
+
+// Ejemplo exacto del wireframe
+export const ProductCardWireframe: Story = {
+  render: () => (
+    <div className="w-80">
+      <ProductCard
+        image="/productos/loxon-20l.png"
+        title="Pintura Látex Premium Sherwin Williams"
+        price={2500}
+        originalPrice={3200}
+        discount="25%"
+        badge="Llega gratis hoy"
+        cta="Agregar al carrito"
+        onAddToCart={() => alert('🛒 Agregado al carrito')}
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Implementación exacta del wireframe proporcionado con todos los elementos visuales especificados.',
       },
     },
   },
@@ -232,15 +252,10 @@ export const ProductCardNoImage: Story = {
       <ProductCard
         title="Pincel Profesional N°4"
         price={2500}
-        rating={5}
-        reviews={45}
-        badge="NUEVO"
+        badge="Nuevo producto"
+        cta="Agregar al carrito"
         onAddToCart={() => alert('Agregado al carrito')}
-      >
-        <div className="mt-2">
-          <Badge variant="success" size="sm">Envío gratis</Badge>
-        </div>
-      </ProductCard>
+      />
     </div>
   ),
   parameters: {
@@ -257,38 +272,31 @@ export const ProductGrid: Story = {
   render: () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
       <ProductCard
-        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/pintura-sherwin-williams.jpg"
-        title="Pintura Sherwin Williams"
+        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg"
+        title="Pintura Látex Sherwin Williams"
         price={15500}
         originalPrice={18500}
-        rating={4}
-        reviews={23}
-        badge="30% OFF"
-        stock={8}
-        freeShipping={true}
-        isNew={false}
+        discount="30%"
+        badge="Envío gratis"
+        cta="Agregar al carrito"
         onAddToCart={() => {}}
       />
 
       <ProductCard
-        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/rodillo-profesional.jpg"
+        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/genericos/rodillo-profesional.jpg"
         title="Rodillo Profesional 23cm"
         price={3200}
-        rating={5}
-        reviews={67}
-        stock={3}
-        fastShipping={true}
-        isNew={true}
+        badge="Nuevo producto"
+        cta="Comprar ahora"
         onAddToCart={() => {}}
       />
 
       <ProductCard
-        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/pincel-angular.jpg"
+        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/genericos/pincel-angular.jpg"
         title="Pincel Angular Premium"
         price={1800}
-        rating={4}
-        reviews={12}
         stock={0}
+        cta="Sin stock"
         onAddToCart={() => {}}
       />
     </div>

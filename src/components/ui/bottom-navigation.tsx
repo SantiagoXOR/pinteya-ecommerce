@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
   Tag,
   Package,
   Calculator,
@@ -16,6 +15,7 @@ import {
   Percent,
   ClipboardList
 } from "lucide-react";
+import { Home } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 
 const bottomNavigationVariants = cva(

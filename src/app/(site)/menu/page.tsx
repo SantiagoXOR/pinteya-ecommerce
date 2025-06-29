@@ -31,6 +31,7 @@ const menuSections = [
       { icon: Home, label: "Inicio", href: "/", description: "Página principal" },
       { icon: ShoppingBag, label: "Tienda", href: "/shop", description: "Todos los productos" },
       { icon: Calculator, label: "Cotizador", href: "/calculator", description: "Calcula tu presupuesto" },
+      { icon: Package, label: "Demos", href: "/demo", description: "Funcionalidades y ejemplos" },
     ]
   },
   {
@@ -48,6 +49,15 @@ const menuSections = [
       { icon: Info, label: "Acerca de", href: "/about", description: "Conoce Pinteya" },
       { icon: Phone, label: "Contacto", href: "/contact", description: "Comunícate con nosotros" },
       { icon: HelpCircle, label: "Ayuda", href: "/help", description: "Preguntas frecuentes" },
+    ]
+  },
+  {
+    title: "Desarrollo y Testing",
+    items: [
+      { icon: Settings, label: "Diagnósticos", href: "/diagnostics", description: "Herramientas de diagnóstico" },
+      { icon: Settings, label: "Test Auth", href: "/test-auth", description: "Pruebas de autenticación" },
+      { icon: Settings, label: "Test Checkout", href: "/test-checkout", description: "Pruebas de checkout" },
+      { icon: Settings, label: "Admin Panel", href: "/admin", description: "Panel de administración" },
     ]
   },
   {

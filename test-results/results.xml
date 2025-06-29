@@ -1,828 +1,470 @@
-<testsuites id="" name="" tests="21" failures="21" skipped="0" errors="0" time="47.454841">
-<testsuite name="checkout-flow.spec.ts" timestamp="2025-06-13T13:09:37.070Z" hostname="chromium" tests="11" failures="11" skipped="0" time="139.211" errors="0">
-<testcase name="Checkout Flow › user can proceed to checkout from cart" classname="checkout-flow.spec.ts" time="13.022">
-<failure message="checkout-flow.spec.ts:21:7 user can proceed to checkout from cart" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:21:7 › Checkout Flow › user can proceed to checkout from cart ─
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-151b5-oceed-to-checkout-from-cart-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-151b5-oceed-to-checkout-from-cart-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\checkout-flow-Checkout-Flo-151b5-oceed-to-checkout-from-cart-chromium\error-context.md
-]]>
-</failure>
+<testsuites id="" name="" tests="20" failures="6" skipped="0" errors="0" time="69.809442">
+<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="chromium" tests="4" failures="3" skipped="0" time="111.265" errors="0">
+<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="16.847">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flo-151b5-oceed-to-checkout-from-cart-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-151b5-oceed-to-checkout-from-cart-chromium\video.webm]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-151b5-oceed-to-checkout-from-cart-chromium\error-context.md]]
+<![CDATA[🔍 Verificando imágenes en página Home...
+📦 Encontradas 14 tarjetas de productos en Home
+🖼️ Producto 1:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png
+   - Alt: Lija al Agua Grano 50 - El Galgo
+🖼️ Producto 2:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png
+   - Alt: Pinceleta para Obra
+🖼️ Producto 3:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png
+   - Alt: Lija al Agua Grano 120 - El Galgo
+🖼️ Producto 4:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png
+   - Alt: Lija al Agua Grano 40 - El Galgo
+🖼️ Producto 5:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png
+   - Alt: Lija al Agua Grano 80 - El Galgo
+🖼️ Producto 6:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png
+   - Alt: Lija al Agua Grano 180 - El Galgo
+🖼️ Producto 7:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png
+   - Alt: Bandeja Chata para Pintura
+🖼️ Producto 8:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png
+   - Alt: Poximix Exterior 5kg Poxipol
+🖼️ Producto 9:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/plavipint-techos-poliuretanico-20l-plavicon.webp
+   - Alt: Plavipint Techos Poliuretánico 20L Plavicon
+🖼️ Producto 10:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/membrana-performa-20l-plavicon.webp
+   - Alt: Membrana Performa 20L Plavicon
 ]]>
 </system-out>
 </testcase>
-<testcase name="Checkout Flow › checkout form displays correctly" classname="checkout-flow.spec.ts" time="12.991">
-<failure message="checkout-flow.spec.ts:36:7 checkout form displays correctly" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:36:7 › Checkout Flow › checkout form displays correctly ───────
+<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="31.716">
+<failure message="product-images-fix.spec.ts:75:7 Verificar productos específicos que tenían problemas" type="FAILURE">
+<![CDATA[  [chromium] › product-images-fix.spec.ts:75:7 › Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas 
 
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
+    Test timeout of 30000ms exceeded.
 
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
 
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
+      92 |       
+      93 |       // Esperar a que la página cargue
+    > 94 |       await page.waitForLoadState('networkidle');
+         |                  ^
+      95 |       
+      96 |       // Buscar la imagen principal del producto
+      97 |       const productImage = page.locator('[data-testid="product-main-image"], .product-image img, img[alt*="producto"], img[alt*="Poximix"], img[alt*="Plavicon"], img[alt*="Sinteplast"], img[alt*="Petrilac"]').first();
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:94:18
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-checkout-form-displays-correctly-chromium\test-failed-1.png
+    test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-checkout-form-displays-correctly-chromium\video.webm
+    test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\test-results\checkout-flow-Checkout-Flow-checkout-form-displays-correctly-chromium\error-context.md
+    Error Context: ..\test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\error-context.md
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flow-checkout-form-displays-correctly-chromium\test-failed-1.png]]
+<![CDATA[🔍 Verificando productos específicos que tenían placeholders...
+🔍 Verificando producto: poximix-exterior-5kg-poxipol
 
-[[ATTACHMENT|checkout-flow-Checkout-Flow-checkout-form-displays-correctly-chromium\video.webm]]
+[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\test-failed-1.png]]
 
-[[ATTACHMENT|checkout-flow-Checkout-Flow-checkout-form-displays-correctly-chromium\error-context.md]]
+[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\video.webm]]
+
+[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Checkout Flow › form validation works correctly" classname="checkout-flow.spec.ts" time="12.942">
-<failure message="checkout-flow.spec.ts:57:7 form validation works correctly" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:57:7 › Checkout Flow › form validation works correctly ────────
+<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="31.792">
+<failure message="product-images-fix.spec.ts:133:7 Verificar página de tienda (Shop) sin placeholders" type="FAILURE">
+<![CDATA[  [chromium] › product-images-fix.spec.ts:133:7 › Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders 
 
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
+    Test timeout of 30000ms exceeded.
 
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
 
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
+      136 |     // Navegar a la página de tienda
+      137 |     await page.goto('/shop');
+    > 138 |     await page.waitForLoadState('networkidle');
+          |                ^
+      139 |     
+      140 |     // Buscar productos en la tienda
+      141 |     const productCards = page.locator('[data-testid="product-card"], .product-card, [class*="product"]');
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:138:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-form-validation-works-correctly-chromium\test-failed-1.png
+    test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-form-validation-works-correctly-chromium\video.webm
+    test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\test-results\checkout-flow-Checkout-Flow-form-validation-works-correctly-chromium\error-context.md
+    Error Context: ..\test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\error-context.md
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flow-form-validation-works-correctly-chromium\test-failed-1.png]]
+<![CDATA[🔍 Verificando imágenes en página Shop...
 
-[[ATTACHMENT|checkout-flow-Checkout-Flow-form-validation-works-correctly-chromium\video.webm]]
+[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\test-failed-1.png]]
 
-[[ATTACHMENT|checkout-flow-Checkout-Flow-form-validation-works-correctly-chromium\error-context.md]]
+[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\video.webm]]
+
+[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Checkout Flow › order summary displays correctly" classname="checkout-flow.spec.ts" time="12.944">
-<failure message="checkout-flow.spec.ts:88:7 order summary displays correctly" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:88:7 › Checkout Flow › order summary displays correctly ───────
+<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="30.91">
+<failure message="product-images-fix.spec.ts:168:7 Verificar estadísticas de corrección" type="FAILURE">
+<![CDATA[  [chromium] › product-images-fix.spec.ts:168:7 › Corrección de Imágenes de Productos › Verificar estadísticas de corrección 
 
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
+    Test timeout of 30000ms exceeded.
 
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
 
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
+      176 |     for (const pagePath of pages) {
+      177 |       await page.goto(pagePath);
+    > 178 |       await page.waitForLoadState('networkidle');
+          |                  ^
+      179 |       
+      180 |       const images = page.locator('img[src*="supabase.co"]');
+      181 |       const imageCount = await images.count();
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:178:18
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-order-summary-displays-correctly-chromium\test-failed-1.png
+    test-results\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-order-summary-displays-correctly-chromium\video.webm
+    test-results\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\test-results\checkout-flow-Checkout-Flow-order-summary-displays-correctly-chromium\error-context.md
+    Error Context: ..\test-results\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\error-context.md
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flow-order-summary-displays-correctly-chromium\test-failed-1.png]]
+<![CDATA[📊 Verificando estadísticas de la corrección...
 
-[[ATTACHMENT|checkout-flow-Checkout-Flow-order-summary-displays-correctly-chromium\video.webm]]
+[[ATTACHMENT|product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\test-failed-1.png]]
 
-[[ATTACHMENT|checkout-flow-Checkout-Flow-order-summary-displays-correctly-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Checkout Flow › shipping calculation works" classname="checkout-flow.spec.ts" time="12.889">
-<failure message="checkout-flow.spec.ts:109:7 shipping calculation works" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:109:7 › Checkout Flow › shipping calculation works ────────────
+[[ATTACHMENT|product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\video.webm]]
 
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-shipping-calculation-works-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-shipping-calculation-works-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\checkout-flow-Checkout-Flow-shipping-calculation-works-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flow-shipping-calculation-works-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flow-shipping-calculation-works-chromium\video.webm]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flow-shipping-calculation-works-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Checkout Flow › user can complete checkout successfully" classname="checkout-flow.spec.ts" time="12.912">
-<failure message="checkout-flow.spec.ts:138:7 user can complete checkout successfully" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:138:7 › Checkout Flow › user can complete checkout successfully 
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-de553-plete-checkout-successfully-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-de553-plete-checkout-successfully-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\checkout-flow-Checkout-Flo-de553-plete-checkout-successfully-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flo-de553-plete-checkout-successfully-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-de553-plete-checkout-successfully-chromium\video.webm]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-de553-plete-checkout-successfully-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Checkout Flow › user can modify cart during checkout" classname="checkout-flow.spec.ts" time="12.907">
-<failure message="checkout-flow.spec.ts:171:7 user can modify cart during checkout" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:171:7 › Checkout Flow › user can modify cart during checkout ──
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-6d426-modify-cart-during-checkout-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-6d426-modify-cart-during-checkout-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\checkout-flow-Checkout-Flo-6d426-modify-cart-during-checkout-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flo-6d426-modify-cart-during-checkout-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-6d426-modify-cart-during-checkout-chromium\video.webm]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-6d426-modify-cart-during-checkout-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Checkout Flow › checkout handles empty cart" classname="checkout-flow.spec.ts" time="12.948">
-<failure message="checkout-flow.spec.ts:196:7 checkout handles empty cart" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:196:7 › Checkout Flow › checkout handles empty cart ───────────
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-checkout-handles-empty-cart-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flow-checkout-handles-empty-cart-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\checkout-flow-Checkout-Flow-checkout-handles-empty-cart-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flow-checkout-handles-empty-cart-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flow-checkout-handles-empty-cart-chromium\video.webm]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flow-checkout-handles-empty-cart-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Checkout Flow › checkout form auto-fills for authenticated users" classname="checkout-flow.spec.ts" time="11.898">
-<failure message="checkout-flow.spec.ts:211:7 checkout form auto-fills for authenticated users" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:211:7 › Checkout Flow › checkout form auto-fills for authenticated users 
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-20041-lls-for-authenticated-users-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-20041-lls-for-authenticated-users-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\checkout-flow-Checkout-Flo-20041-lls-for-authenticated-users-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flo-20041-lls-for-authenticated-users-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-20041-lls-for-authenticated-users-chromium\video.webm]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-20041-lls-for-authenticated-users-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Checkout Flow › checkout handles network errors gracefully" classname="checkout-flow.spec.ts" time="11.884">
-<failure message="checkout-flow.spec.ts:240:7 checkout handles network errors gracefully" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:240:7 › Checkout Flow › checkout handles network errors gracefully 
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-4092d-s-network-errors-gracefully-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-4092d-s-network-errors-gracefully-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\checkout-flow-Checkout-Flo-4092d-s-network-errors-gracefully-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flo-4092d-s-network-errors-gracefully-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-4092d-s-network-errors-gracefully-chromium\video.webm]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-4092d-s-network-errors-gracefully-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Checkout Flow › checkout shows loading state during processing" classname="checkout-flow.spec.ts" time="11.874">
-<failure message="checkout-flow.spec.ts:263:7 checkout shows loading state during processing" type="FAILURE">
-<![CDATA[  [chromium] › checkout-flow.spec.ts:263:7 › Checkout Flow › checkout shows loading state during processing 
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       9 |     // Navigate to shop and add a product to cart
-      10 |     await page.goto('/shop')
-    > 11 |     await page.waitForSelector('[data-testid="product-card"]')
-         |                ^
-      12 |     
-      13 |     // Add first product to cart
-      14 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\checkout-flow.spec.ts:11:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-d9b7b-ing-state-during-processing-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\checkout-flow-Checkout-Flo-d9b7b-ing-state-during-processing-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\checkout-flow-Checkout-Flo-d9b7b-ing-state-during-processing-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|checkout-flow-Checkout-Flo-d9b7b-ing-state-during-processing-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-d9b7b-ing-state-during-processing-chromium\video.webm]]
-
-[[ATTACHMENT|checkout-flow-Checkout-Flo-d9b7b-ing-state-during-processing-chromium\error-context.md]]
+[[ATTACHMENT|product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\error-context.md]]
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="shopping-flow.spec.ts" timestamp="2025-06-13T13:09:37.070Z" hostname="chromium" tests="10" failures="10" skipped="0" time="120.379" errors="0">
-<testcase name="Shopping Flow › user can browse products and add to cart" classname="shopping-flow.spec.ts" time="15.061">
-<failure message="shopping-flow.spec.ts:13:7 user can browse products and add to cart" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:13:7 › Shopping Flow › user can browse products and add to cart 
+<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="firefox" tests="4" failures="3" skipped="0" time="130.479" errors="0">
+<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="30.342">
+<failure message="product-images-fix.spec.ts:21:7 Verificar que productos en Home no muestran placeholders" type="FAILURE">
+<![CDATA[  [firefox] › product-images-fix.spec.ts:21:7 › Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders 
 
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
+    Test timeout of 30000ms exceeded while running "beforeEach" hook.
+
+      11 | test.describe('Corrección de Imágenes de Productos', () => {
+      12 |   
+    > 13 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      14 |     // Navegar a la página principal
+      15 |     await page.goto('/');
+      16 |     
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:13:8
+
+    Error: page.goto: Test timeout of 30000ms exceeded.
     Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
+      - navigating to "http://localhost:3000/", waiting until "load"
 
 
-      17 |
-      18 |     // Wait for products to load
-    > 19 |     await page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 })
+      13 |   test.beforeEach(async ({ page }) => {
+      14 |     // Navegar a la página principal
+    > 15 |     await page.goto('/');
          |                ^
-      20 |
-      21 |     // Verify products are displayed
-      22 |     const productCards = page.locator('[data-testid="product-card"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:19:16
+      16 |     
+      17 |     // Esperar a que la página cargue completamente
+      18 |     await page.waitForLoadState('networkidle');
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:15:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-fe815-se-products-and-add-to-cart-chromium\test-failed-1.png
+    test-results\product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-fe815-se-products-and-add-to-cart-chromium\video.webm
+    test-results\product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flo-fe815-se-products-and-add-to-cart-chromium\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flo-fe815-se-products-and-add-to-cart-chromium\test-failed-1.png]]
+[[ATTACHMENT|product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\test-failed-1.png]]
 
-[[ATTACHMENT|shopping-flow-Shopping-Flo-fe815-se-products-and-add-to-cart-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-fe815-se-products-and-add-to-cart-chromium\error-context.md]]
+[[ATTACHMENT|product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › user can search for products" classname="shopping-flow.spec.ts" time="12.984">
-<failure message="shopping-flow.spec.ts:47:7 user can search for products" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:47:7 › Shopping Flow › user can search for products ───────────
+<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="31.879">
+<failure message="product-images-fix.spec.ts:75:7 Verificar productos específicos que tenían problemas" type="FAILURE">
+<![CDATA[  [firefox] › product-images-fix.spec.ts:75:7 › Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas 
 
-    TimeoutError: locator.fill: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="search-input"]')
+    Test timeout of 30000ms exceeded while running "beforeEach" hook.
 
-
-      51 |     // Search for products
-      52 |     const searchInput = page.locator('[data-testid="search-input"]')
-    > 53 |     await searchInput.fill('pintura')
-         |                       ^
-      54 |     await searchInput.press('Enter')
-      55 |
-      56 |     // Wait for search results
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:53:23
+      11 | test.describe('Corrección de Imágenes de Productos', () => {
+      12 |   
+    > 13 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      14 |     // Navegar a la página principal
+      15 |     await page.goto('/');
+      16 |     
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:13:8
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flow-user-can-search-for-products-chromium\test-failed-1.png
+    test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flow-user-can-search-for-products-chromium\video.webm
+    test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\test-results\shopping-flow-Shopping-Flow-user-can-search-for-products-chromium\error-context.md
+    Error Context: ..\test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flow-user-can-search-for-products-chromium\test-failed-1.png]]
+[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\test-failed-1.png]]
 
-[[ATTACHMENT|shopping-flow-Shopping-Flow-user-can-search-for-products-chromium\video.webm]]
+[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\video.webm]]
 
-[[ATTACHMENT|shopping-flow-Shopping-Flow-user-can-search-for-products-chromium\error-context.md]]
+[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › user can filter products by category" classname="shopping-flow.spec.ts" time="12.806">
-<failure message="shopping-flow.spec.ts:69:7 user can filter products by category" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:69:7 › Shopping Flow › user can filter products by category ───
+<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="38.926">
+<failure message="product-images-fix.spec.ts:133:7 Verificar página de tienda (Shop) sin placeholders" type="FAILURE">
+<![CDATA[  [firefox] › product-images-fix.spec.ts:133:7 › Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders 
 
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
+    Test timeout of 30000ms exceeded while running "beforeEach" hook.
+
+      11 | test.describe('Corrección de Imágenes de Productos', () => {
+      12 |   
+    > 13 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      14 |     // Navegar a la página principal
+      15 |     await page.goto('/');
+      16 |     
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:13:8
+
+    TimeoutError: page.goto: Timeout 30000ms exceeded.
     Call log:
-      - waiting for locator('[data-testid="category-filter"]') to be visible
+      - navigating to "http://localhost:3000/", waiting until "load"
 
 
-      72 |
-      73 |     // Wait for categories to load
-    > 74 |     await page.waitForSelector('[data-testid="category-filter"]')
+      13 |   test.beforeEach(async ({ page }) => {
+      14 |     // Navegar a la página principal
+    > 15 |     await page.goto('/');
          |                ^
-      75 |
-      76 |     // Click on a category filter
-      77 |     await page.click('[data-testid="category-filter"]:has-text("Pinturas Látex")')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:74:16
+      16 |     
+      17 |     // Esperar a que la página cargue completamente
+      18 |     await page.waitForLoadState('networkidle');
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:15:16
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-4db91-filter-products-by-category-chromium\test-failed-1.png
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-4db91-filter-products-by-category-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flo-4db91-filter-products-by-category-chromium\error-context.md
+    Error Context: ..\test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flo-4db91-filter-products-by-category-chromium\test-failed-1.png]]
+[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\video.webm]]
 
-[[ATTACHMENT|shopping-flow-Shopping-Flo-4db91-filter-products-by-category-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-4db91-filter-products-by-category-chromium\error-context.md]]
+[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › user can add multiple products to cart" classname="shopping-flow.spec.ts" time="13.074">
-<failure message="shopping-flow.spec.ts:96:7 user can add multiple products to cart" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:96:7 › Shopping Flow › user can add multiple products to cart ─
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-       99 |
-      100 |     // Wait for products to load
-    > 101 |     await page.waitForSelector('[data-testid="product-card"]')
-          |                ^
-      102 |
-      103 |     // Add first product to cart
-      104 |     await page.click('[data-testid="product-card"]:nth-child(1) [data-testid="add-to-cart-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:101:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-d5aef-d-multiple-products-to-cart-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-d5aef-d-multiple-products-to-cart-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flo-d5aef-d-multiple-products-to-cart-chromium\error-context.md
-]]>
-</failure>
+<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="29.332">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flo-d5aef-d-multiple-products-to-cart-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-d5aef-d-multiple-products-to-cart-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-d5aef-d-multiple-products-to-cart-chromium\error-context.md]]
+<![CDATA[📊 Verificando estadísticas de la corrección...
+📄 /: 0 imágenes de Supabase encontradas
+📄 /shop: 0 imágenes de Supabase encontradas
+📊 Estadísticas finales:
+   - Total imágenes verificadas: 0
+   - Imágenes válidas: 0
+   - Porcentaje de éxito: 0%
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › user can update product quantity in cart" classname="shopping-flow.spec.ts" time="12.832">
-<failure message="shopping-flow.spec.ts:124:7 user can update product quantity in cart" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:124:7 › Shopping Flow › user can update product quantity in cart 
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-      125 |     // Navigate to shop and add product to cart
-      126 |     await page.goto('/shop')
-    > 127 |     await page.waitForSelector('[data-testid="product-card"]')
-          |                ^
-      128 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-      129 |
-      130 |     // Open cart sidebar
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:127:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-1ddc4-te-product-quantity-in-cart-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-1ddc4-te-product-quantity-in-cart-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flo-1ddc4-te-product-quantity-in-cart-chromium\error-context.md
-]]>
-</failure>
+</testsuite>
+<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="webkit" tests="4" failures="0" skipped="0" time="17.114" errors="0">
+<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="3.896">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flo-1ddc4-te-product-quantity-in-cart-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-1ddc4-te-product-quantity-in-cart-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-1ddc4-te-product-quantity-in-cart-chromium\error-context.md]]
+<![CDATA[🔍 Verificando imágenes en página Home...
+📦 Encontradas 0 tarjetas de productos en Home
+⚠️ No se encontraron productos en Home, verificando estructura...
+📦 Productos con selectores alternativos: 0
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › user can remove products from cart" classname="shopping-flow.spec.ts" time="11.749">
-<failure message="shopping-flow.spec.ts:149:7 user can remove products from cart" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:149:7 › Shopping Flow › user can remove products from cart ────
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-      150 |     // Navigate to shop and add product to cart
-      151 |     await page.goto('/shop')
-    > 152 |     await page.waitForSelector('[data-testid="product-card"]')
-          |                ^
-      153 |     await page.click('[data-testid="product-card"]:first-child [data-testid="add-to-cart-btn"]')
-      154 |
-      155 |     // Open cart sidebar
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:152:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-01786-n-remove-products-from-cart-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-01786-n-remove-products-from-cart-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flo-01786-n-remove-products-from-cart-chromium\error-context.md
-]]>
-</failure>
+<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="6.428">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flo-01786-n-remove-products-from-cart-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-01786-n-remove-products-from-cart-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-01786-n-remove-products-from-cart-chromium\error-context.md]]
+<![CDATA[🔍 Verificando productos específicos que tenían placeholders...
+🔍 Verificando producto: poximix-exterior-5kg-poxipol
+   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol
+🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon
+   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon
+🔍 Verificando producto: membrana-performa-20l-plavicon
+   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon
+🔍 Verificando producto: latex-frentes-4l-plavicon
+   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon
+🔍 Verificando producto: recuplast-interior-1l-sinteplast
+   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast
+🔍 Verificando producto: sintetico-converlux-1l-petrilac
+   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › user can add products to wishlist" classname="shopping-flow.spec.ts" time="11.771">
-<failure message="shopping-flow.spec.ts:169:7 user can add products to wishlist" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:169:7 › Shopping Flow › user can add products to wishlist ─────
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-      170 |     // Navigate to shop
-      171 |     await page.goto('/shop')
-    > 172 |     await page.waitForSelector('[data-testid="product-card"]')
-          |                ^
-      173 |
-      174 |     // Add product to wishlist
-      175 |     await page.click('[data-testid="product-card"]:first-child [data-testid="wishlist-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:172:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-2ea7c-an-add-products-to-wishlist-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-2ea7c-an-add-products-to-wishlist-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flo-2ea7c-an-add-products-to-wishlist-chromium\error-context.md
-]]>
-</failure>
+<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="3.128">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flo-2ea7c-an-add-products-to-wishlist-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-2ea7c-an-add-products-to-wishlist-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-2ea7c-an-add-products-to-wishlist-chromium\error-context.md]]
+<![CDATA[🔍 Verificando imágenes en página Shop...
+📦 Productos encontrados en Shop: 0
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › user can view product details" classname="shopping-flow.spec.ts" time="11.725">
-<failure message="shopping-flow.spec.ts:187:7 user can view product details" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:187:7 › Shopping Flow › user can view product details ─────────
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-      188 |     // Navigate to shop
-      189 |     await page.goto('/shop')
-    > 190 |     await page.waitForSelector('[data-testid="product-card"]')
-          |                ^
-      191 |
-      192 |     // Get product name from card
-      193 |     const productName = await page.locator('[data-testid="product-card"]:first-child [data-testid="product-name"]').textContent()
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:190:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flow-user-can-view-product-details-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flow-user-can-view-product-details-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flow-user-can-view-product-details-chromium\error-context.md
-]]>
-</failure>
+<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="3.662">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flow-user-can-view-product-details-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flow-user-can-view-product-details-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flow-user-can-view-product-details-chromium\error-context.md]]
+<![CDATA[📊 Verificando estadísticas de la corrección...
+📄 /: 0 imágenes de Supabase encontradas
+📄 /shop: 0 imágenes de Supabase encontradas
+📊 Estadísticas finales:
+   - Total imágenes verificadas: 0
+   - Imágenes válidas: 0
+   - Porcentaje de éxito: 0%
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › user can navigate using breadcrumbs" classname="shopping-flow.spec.ts" time="11.752">
-<failure message="shopping-flow.spec.ts:211:7 user can navigate using breadcrumbs" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:211:7 › Shopping Flow › user can navigate using breadcrumbs ───
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('[data-testid="product-card"]') to be visible
-
-
-      212 |     // Navigate to shop
-      213 |     await page.goto('/shop')
-    > 214 |     await page.waitForSelector('[data-testid="product-card"]')
-          |                ^
-      215 |
-      216 |     // Click on a product
-      217 |     await page.click('[data-testid="product-card"]:first-child')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:214:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-1ceb5--navigate-using-breadcrumbs-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-1ceb5--navigate-using-breadcrumbs-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flo-1ceb5--navigate-using-breadcrumbs-chromium\error-context.md
-]]>
-</failure>
+</testsuite>
+<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="Mobile Chrome" tests="4" failures="0" skipped="0" time="45.935" errors="0">
+<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="6.801">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flo-1ceb5--navigate-using-breadcrumbs-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-1ceb5--navigate-using-breadcrumbs-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-1ceb5--navigate-using-breadcrumbs-chromium\error-context.md]]
+<![CDATA[🔍 Verificando imágenes en página Home...
+📦 Encontradas 14 tarjetas de productos en Home
+🖼️ Producto 1:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png
+   - Alt: Lija al Agua Grano 50 - El Galgo
+🖼️ Producto 2:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png
+   - Alt: Pinceleta para Obra
+🖼️ Producto 3:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png
+   - Alt: Lija al Agua Grano 120 - El Galgo
+🖼️ Producto 4:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png
+   - Alt: Lija al Agua Grano 40 - El Galgo
+🖼️ Producto 5:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png
+   - Alt: Lija al Agua Grano 80 - El Galgo
+🖼️ Producto 6:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png
+   - Alt: Lija al Agua Grano 180 - El Galgo
+🖼️ Producto 7:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png
+   - Alt: Bandeja Chata para Pintura
+🖼️ Producto 8:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png
+   - Alt: Poximix Exterior 5kg Poxipol
+🖼️ Producto 9:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/plavipint-techos-poliuretanico-20l-plavicon.webp
+   - Alt: Plavipint Techos Poliuretánico 20L Plavicon
+🖼️ Producto 10:
+   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/membrana-performa-20l-plavicon.webp
+   - Alt: Membrana Performa 20L Plavicon
 ]]>
 </system-out>
 </testcase>
-<testcase name="Shopping Flow › responsive design works on mobile" classname="shopping-flow.spec.ts" time="6.625">
-<failure message="shopping-flow.spec.ts:229:7 responsive design works on mobile" type="FAILURE">
-<![CDATA[  [chromium] › shopping-flow.spec.ts:229:7 › Shopping Flow › responsive design works on mobile ─────
-
-    Error: Timed out 5000ms waiting for expect(locator).toBeVisible()
-
-    Locator: locator('[data-testid="mobile-menu-btn"]')
-    Expected: visible
-    Received: <element(s) not found>
-    Call log:
-      - Expect "toBeVisible" with timeout 5000ms
-      - waiting for locator('[data-testid="mobile-menu-btn"]')
-
-
-      235 |
-      236 |     // Verify mobile menu button is visible
-    > 237 |     await expect(page.locator('[data-testid="mobile-menu-btn"]')).toBeVisible()
-          |                                                                   ^
-      238 |
-      239 |     // Open mobile menu
-      240 |     await page.click('[data-testid="mobile-menu-btn"]')
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\shopping-flow.spec.ts:237:67
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-62e0c-sive-design-works-on-mobile-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\shopping-flow-Shopping-Flo-62e0c-sive-design-works-on-mobile-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\shopping-flow-Shopping-Flo-62e0c-sive-design-works-on-mobile-chromium\error-context.md
-]]>
-</failure>
+<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="19.864">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|shopping-flow-Shopping-Flo-62e0c-sive-design-works-on-mobile-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-62e0c-sive-design-works-on-mobile-chromium\video.webm]]
-
-[[ATTACHMENT|shopping-flow-Shopping-Flo-62e0c-sive-design-works-on-mobile-chromium\error-context.md]]
+<![CDATA[🔍 Verificando productos específicos que tenían placeholders...
+🔍 Verificando producto: poximix-exterior-5kg-poxipol
+   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol
+🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon
+   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon
+   📸 Primera imagen encontrada: /_next/image?url=%2Fimages%2Flogo%2FLOGO%20POSITIVO.svg&w=384&q=75
+🔍 Verificando producto: membrana-performa-20l-plavicon
+   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon
+🔍 Verificando producto: latex-frentes-4l-plavicon
+   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon
+🔍 Verificando producto: recuplast-interior-1l-sinteplast
+   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast
+🔍 Verificando producto: sintetico-converlux-1l-petrilac
+   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac
+]]>
+</system-out>
+</testcase>
+<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="8.464">
+<system-out>
+<![CDATA[🔍 Verificando imágenes en página Shop...
+📦 Productos encontrados en Shop: 0
+]]>
+</system-out>
+</testcase>
+<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="10.806">
+<system-out>
+<![CDATA[📊 Verificando estadísticas de la corrección...
+📄 /: 0 imágenes de Supabase encontradas
+📄 /shop: 0 imágenes de Supabase encontradas
+📊 Estadísticas finales:
+   - Total imágenes verificadas: 0
+   - Imágenes válidas: 0
+   - Porcentaje de éxito: 0%
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="Mobile Safari" tests="4" failures="0" skipped="0" time="18.975" errors="0">
+<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="1.997">
+<system-out>
+<![CDATA[🔍 Verificando imágenes en página Home...
+📦 Encontradas 0 tarjetas de productos en Home
+⚠️ No se encontraron productos en Home, verificando estructura...
+📦 Productos con selectores alternativos: 0
+]]>
+</system-out>
+</testcase>
+<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="8.517">
+<system-out>
+<![CDATA[🔍 Verificando productos específicos que tenían placeholders...
+🔍 Verificando producto: poximix-exterior-5kg-poxipol
+   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol
+🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon
+   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon
+🔍 Verificando producto: membrana-performa-20l-plavicon
+   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon
+🔍 Verificando producto: latex-frentes-4l-plavicon
+   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon
+🔍 Verificando producto: recuplast-interior-1l-sinteplast
+   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast
+🔍 Verificando producto: sintetico-converlux-1l-petrilac
+   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac
+]]>
+</system-out>
+</testcase>
+<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="3.362">
+<system-out>
+<![CDATA[🔍 Verificando imágenes en página Shop...
+📦 Productos encontrados en Shop: 0
+]]>
+</system-out>
+</testcase>
+<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="5.099">
+<system-out>
+<![CDATA[📊 Verificando estadísticas de la corrección...
+📄 /: 0 imágenes de Supabase encontradas
+📄 /shop: 0 imágenes de Supabase encontradas
+📊 Estadísticas finales:
+   - Total imágenes verificadas: 0
+   - Imágenes válidas: 0
+   - Porcentaje de éxito: 0%
 ]]>
 </system-out>
 </testcase>

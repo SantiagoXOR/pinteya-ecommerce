@@ -321,6 +321,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               autoComplete="off"
+              data-testid="search-input"
               className={cn(
                 "w-full rounded-r-[5px] bg-gray-1 border border-gray-3 py-2.5 pl-4 pr-10 outline-none transition-all duration-200",
                 "focus:border-primary/50 focus:ring-2 focus:ring-primary/20",
@@ -350,6 +351,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
               <button
                 type="submit"
                 className="text-gray-500 hover:text-primary transition-colors"
+                aria-label="Search"
               >
                 <Search className="w-4 h-4" />
               </button>

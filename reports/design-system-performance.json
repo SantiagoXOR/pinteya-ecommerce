@@ -1,0 +1,579 @@
+{
+  "timestamp": "2025-06-28T21:15:43.055Z",
+  "summary": {
+    "totalComponents": 29,
+    "totalRecommendations": 36,
+    "treeShakingStatus": "Configurado",
+    "performanceIssues": 29
+  },
+  "bundleAnalysis": {
+    "totalComponents": 29,
+    "componentSizes": {
+      "alert-dialog": {
+        "lines": 161,
+        "bytes": 5623,
+        "kb": "5.49"
+      },
+      "avatar": {
+        "lines": 49,
+        "bytes": 1405,
+        "kb": "1.37"
+      },
+      "badge": {
+        "lines": 228,
+        "bytes": 6353,
+        "kb": "6.20"
+      },
+      "bottom-navigation": {
+        "lines": 219,
+        "bytes": 6738,
+        "kb": "6.58"
+      },
+      "breadcrumb": {
+        "lines": 119,
+        "bytes": 2801,
+        "kb": "2.74"
+      },
+      "button": {
+        "lines": 133,
+        "bytes": 4012,
+        "kb": "3.92"
+      },
+      "card": {
+        "lines": 337,
+        "bytes": 9406,
+        "kb": "9.19"
+      },
+      "cart-summary": {
+        "lines": 323,
+        "bytes": 11733,
+        "kb": "11.46"
+      },
+      "checkbox": {
+        "lines": 209,
+        "bytes": 6382,
+        "kb": "6.23"
+      },
+      "checkout-flow": {
+        "lines": 382,
+        "bytes": 12923,
+        "kb": "12.62"
+      },
+      "dialog": {
+        "lines": 155,
+        "bytes": 4753,
+        "kb": "4.64"
+      },
+      "feedback": {
+        "lines": 492,
+        "bytes": 13207,
+        "kb": "12.90"
+      },
+      "form": {
+        "lines": 359,
+        "bytes": 9536,
+        "kb": "9.31"
+      },
+      "input": {
+        "lines": 121,
+        "bytes": 3294,
+        "kb": "3.22"
+      },
+      "modal": {
+        "lines": 282,
+        "bytes": 7591,
+        "kb": "7.41"
+      },
+      "optimized-image": {
+        "lines": 118,
+        "bytes": 2956,
+        "kb": "2.89"
+      },
+      "price-display": {
+        "lines": 199,
+        "bytes": 4951,
+        "kb": "4.83"
+      },
+      "product-card-enhanced": {
+        "lines": 232,
+        "bytes": 7668,
+        "kb": "7.49"
+      },
+      "product-comparison": {
+        "lines": 413,
+        "bytes": 13661,
+        "kb": "13.34"
+      },
+      "radio-group": {
+        "lines": 316,
+        "bytes": 8906,
+        "kb": "8.70"
+      },
+      "search-autocomplete": {
+        "lines": 492,
+        "bytes": 17252,
+        "kb": "16.85"
+      },
+      "select": {
+        "lines": 268,
+        "bytes": 8349,
+        "kb": "8.15"
+      },
+      "separator": {
+        "lines": 29,
+        "bytes": 733,
+        "kb": "0.72"
+      },
+      "shipping-info": {
+        "lines": 252,
+        "bytes": 7690,
+        "kb": "7.51"
+      },
+      "stock-indicator": {
+        "lines": 201,
+        "bytes": 5172,
+        "kb": "5.05"
+      },
+      "tabs": {
+        "lines": 114,
+        "bytes": 3271,
+        "kb": "3.19"
+      },
+      "textarea": {
+        "lines": 244,
+        "bytes": 6951,
+        "kb": "6.79"
+      },
+      "trust-badges": {
+        "lines": 354,
+        "bytes": 9727,
+        "kb": "9.50"
+      },
+      "wishlist-card": {
+        "lines": 422,
+        "bytes": 13642,
+        "kb": "13.32"
+      }
+    },
+    "recommendations": [
+      {
+        "component": "cart-summary",
+        "type": "size",
+        "message": "Componente cart-summary es grande (11.46KB). Considerar dividir en subcomponentes."
+      },
+      {
+        "component": "checkout-flow",
+        "type": "size",
+        "message": "Componente checkout-flow es grande (12.62KB). Considerar dividir en subcomponentes."
+      },
+      {
+        "component": "feedback",
+        "type": "size",
+        "message": "Componente feedback es grande (12.90KB). Considerar dividir en subcomponentes."
+      },
+      {
+        "component": "product-comparison",
+        "type": "size",
+        "message": "Componente product-comparison es grande (13.34KB). Considerar dividir en subcomponentes."
+      },
+      {
+        "component": "search-autocomplete",
+        "type": "size",
+        "message": "Componente search-autocomplete es grande (16.85KB). Considerar dividir en subcomponentes."
+      },
+      {
+        "component": "wishlist-card",
+        "type": "size",
+        "message": "Componente wishlist-card es grande (13.32KB). Considerar dividir en subcomponentes."
+      }
+    ]
+  },
+  "treeShaking": {
+    "hasIndex": true,
+    "totalExports": 29,
+    "namedExports": 28,
+    "defaultExports": 1,
+    "recommendation": "Tree-shaking configurado correctamente"
+  },
+  "dependencies": {
+    "totalDependencies": 36,
+    "uiDependencies": [
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-select",
+      "class-variance-authority",
+      "clsx",
+      "tailwind-merge",
+      "lucide-react"
+    ],
+    "heavyDependencies": [
+      "date-fns"
+    ],
+    "recommendations": [
+      {
+        "type": "dependency",
+        "message": "Considerar alternativas más ligeras para date-fns"
+      }
+    ]
+  },
+  "performance": [
+    {
+      "component": "alert-dialog",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "avatar",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "badge",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "bottom-navigation",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "breadcrumb",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "button",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "card",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "cart-summary",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "checkbox",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "checkout-flow",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "dialog",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "feedback",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "form",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "input",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "modal",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "optimized-image",
+      "issues": [
+        "Objetos inline en props - usar useMemo",
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "price-display",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "product-card-enhanced",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "product-comparison",
+      "issues": [
+        "Funciones inline en JSX - usar useCallback",
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "radio-group",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "search-autocomplete",
+      "issues": [
+        "Funciones inline en JSX - usar useCallback",
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "select",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "separator",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "shipping-info",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "stock-indicator",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "tabs",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "textarea",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "trust-badges",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    },
+    {
+      "component": "wishlist-card",
+      "issues": [
+        "Considerar React.memo para optimización"
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "component": "cart-summary",
+      "type": "size",
+      "message": "Componente cart-summary es grande (11.46KB). Considerar dividir en subcomponentes."
+    },
+    {
+      "component": "checkout-flow",
+      "type": "size",
+      "message": "Componente checkout-flow es grande (12.62KB). Considerar dividir en subcomponentes."
+    },
+    {
+      "component": "feedback",
+      "type": "size",
+      "message": "Componente feedback es grande (12.90KB). Considerar dividir en subcomponentes."
+    },
+    {
+      "component": "product-comparison",
+      "type": "size",
+      "message": "Componente product-comparison es grande (13.34KB). Considerar dividir en subcomponentes."
+    },
+    {
+      "component": "search-autocomplete",
+      "type": "size",
+      "message": "Componente search-autocomplete es grande (16.85KB). Considerar dividir en subcomponentes."
+    },
+    {
+      "component": "wishlist-card",
+      "type": "size",
+      "message": "Componente wishlist-card es grande (13.32KB). Considerar dividir en subcomponentes."
+    },
+    {
+      "type": "dependency",
+      "message": "Considerar alternativas más ligeras para date-fns"
+    },
+    {
+      "component": "alert-dialog",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "avatar",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "badge",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "bottom-navigation",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "breadcrumb",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "button",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "card",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "cart-summary",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "checkbox",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "checkout-flow",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "dialog",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "feedback",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "form",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "input",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "modal",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "optimized-image",
+      "type": "performance",
+      "message": "Issues de performance: Objetos inline en props - usar useMemo, Considerar React.memo para optimización"
+    },
+    {
+      "component": "price-display",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "product-card-enhanced",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "product-comparison",
+      "type": "performance",
+      "message": "Issues de performance: Funciones inline en JSX - usar useCallback, Considerar React.memo para optimización"
+    },
+    {
+      "component": "radio-group",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "search-autocomplete",
+      "type": "performance",
+      "message": "Issues de performance: Funciones inline en JSX - usar useCallback, Considerar React.memo para optimización"
+    },
+    {
+      "component": "select",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "separator",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "shipping-info",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "stock-indicator",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "tabs",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "textarea",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "trust-badges",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    },
+    {
+      "component": "wishlist-card",
+      "type": "performance",
+      "message": "Issues de performance: Considerar React.memo para optimización"
+    }
+  ]
+}

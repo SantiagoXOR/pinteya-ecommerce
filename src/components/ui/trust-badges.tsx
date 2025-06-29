@@ -3,19 +3,19 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { 
-  Shield, 
-  ShieldCheck, 
-  Truck, 
-  Clock, 
-  Star, 
-  Award, 
-  CheckCircle, 
+import {
+  Shield,
+  ShieldCheck,
+  Truck,
+  Clock,
+  Star,
+  Award,
   Lock,
   CreditCard,
   Phone,
   MapPin,
-  Zap
+  Zap,
+  MessageCircle
 } from "lucide-react";
 
 const trustBadgeVariants = cva(
@@ -161,7 +161,7 @@ const SupportBadge = React.forwardRef<HTMLDivElement, SupportBadgeProps>(
     const getIcon = () => {
       switch (type) {
         case 'phone': return <Phone className="w-4 h-4" />;
-        case 'chat': return <CheckCircle className="w-4 h-4" />;
+        case 'chat': return <MessageCircle className="w-4 h-4" />;
         case 'email': return <Clock className="w-4 h-4" />;
         default: return <Phone className="w-4 h-4" />;
       }

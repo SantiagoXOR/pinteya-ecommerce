@@ -229,7 +229,7 @@ export const useCheckout = () => {
 
       // Preparar datos para la API
       const payload: CreatePreferencePayload = {
-        items: cartItems.map(item => ({
+        items: cartItems.map((item: any) => ({
           id: item.id.toString(),
           name: item.title,
           price: item.discountedPrice,

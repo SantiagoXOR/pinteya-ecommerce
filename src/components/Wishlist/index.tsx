@@ -41,7 +41,7 @@ export const Wishlist = () => {
                 </div>
 
                 {/* <!-- wish item --> */}
-                {wishlistItems.map((item, key) => (
+                {wishlistItems.map((item: any, key: number) => (
                   <SingleItem item={item} key={key} />
                 ))}
               </div>

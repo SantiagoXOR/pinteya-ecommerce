@@ -10,6 +10,7 @@ import { VALIDATION_CONSTANTS } from '@/constants/shop';
 // ===================================
 export const ProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(255, 'Nombre muy largo'),
+  brand: z.string().min(1, 'La marca es requerida').max(100, 'Marca muy larga').optional(),
   slug: z.string().min(1, 'El slug es requerido').max(255, 'Slug muy largo'),
   description: z.string().optional(),
   price: z.number().positive('El precio debe ser positivo'),
@@ -24,12 +25,13 @@ export const ProductSchema = z.object({
 
 export const ProductFiltersSchema = z.object({
   category: z.string().optional(),
+  brand: z.string().optional(),
   priceMin: z.number().positive().optional(),
   priceMax: z.number().positive().optional(),
   search: z.string().optional(),
   page: z.number().int().positive().default(1),
   limit: z.number().int().positive().max(100).default(12),
-  sortBy: z.enum(['price', 'name', 'created_at']).default('created_at'),
+  sortBy: z.enum(['price', 'name', 'created_at', 'brand']).default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 

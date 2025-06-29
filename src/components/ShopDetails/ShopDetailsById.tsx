@@ -42,8 +42,8 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
             discountedPrice: productData.discounted_price || productData.price,
             reviews: productData.reviews || 0,
             imgs: {
-              thumbnails: productData.images || [productData.image_url || ''],
-              previews: productData.images || [productData.image_url || '']
+              thumbnails: productData.images?.thumbnails || productData.images?.previews || [productData.image_url || '/images/products/placeholder.svg'],
+              previews: productData.images?.previews || productData.images?.main ? [productData.images.main] : [productData.image_url || '/images/products/placeholder.svg']
             },
           };
           

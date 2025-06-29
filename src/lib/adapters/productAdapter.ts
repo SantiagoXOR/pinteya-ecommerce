@@ -40,10 +40,18 @@ export function adaptApiProductToLegacy(apiProduct: ProductWithCategory): Legacy
   discounted_price?: number | null;
   images?: any;
 } {
+
+
+  // FIX TEMPORAL: Limpiar "Poxipol" del título si está presente
+  let cleanTitle = apiProduct.name;
+  if (cleanTitle && cleanTitle.includes('Poximix') && cleanTitle.includes('Poxipol')) {
+    cleanTitle = cleanTitle.replace(/\s*Poxipol\s*$/, '').trim();
+  }
+
   return {
     // Campos legacy requeridos
     id: apiProduct.id,
-    title: apiProduct.name,
+    title: cleanTitle,
     price: apiProduct.price,
     discountedPrice: apiProduct.discounted_price || apiProduct.price,
     reviews: 0, // No disponible en BD actual
@@ -51,12 +59,12 @@ export function adaptApiProductToLegacy(apiProduct: ProductWithCategory): Legacy
       thumbnails: apiProduct.images.thumbnails || [],
       previews: apiProduct.images.previews || []
     } : undefined,
-    
+
     // Campos adicionales para nuevas funcionalidades
     stock: apiProduct.stock,
     created_at: apiProduct.created_at,
     category: apiProduct.category,
-    name: apiProduct.name,
+    name: cleanTitle, // También limpiar el campo name
     discounted_price: apiProduct.discounted_price,
     images: apiProduct.images,
   };
@@ -139,6 +147,7 @@ export type ExtendedProduct = LegacyProduct & {
     slug: string;
   };
   name?: string;
+  brand?: string | null;
   discounted_price?: number | null;
   images?: any;
 };

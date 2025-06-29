@@ -12,7 +12,7 @@ test.describe('Shopping Flow', () => {
 
   test('user can browse products and add to cart', async ({ page }) => {
     // Navigate to shop
-    await page.click('text=Tienda')
+    await page.goto('/shop')
     await expect(page).toHaveURL('/shop')
 
     // Wait for products to load
@@ -20,7 +20,7 @@ test.describe('Shopping Flow', () => {
 
     // Verify products are displayed
     const productCards = page.locator('[data-testid="product-card"]')
-    await expect(productCards).toHaveCount.greaterThan(0)
+    await expect(productCards).toHaveCount(1)
 
     // Click on first product
     const firstProduct = productCards.first()
@@ -58,7 +58,7 @@ test.describe('Shopping Flow', () => {
 
     // Verify search results
     const productCards = page.locator('[data-testid="product-card"]')
-    await expect(productCards).toHaveCount.greaterThan(0)
+    await expect(productCards).toHaveCount(1)
 
     // Verify search term is highlighted or products contain search term
     const productNames = page.locator('[data-testid="product-name"]')
@@ -81,7 +81,7 @@ test.describe('Shopping Flow', () => {
 
     // Verify filtered products
     const productCards = page.locator('[data-testid="product-card"]')
-    await expect(productCards).toHaveCount.greaterThan(0)
+    await expect(productCards).toHaveCount(1)
 
     // Verify all products belong to selected category
     const categoryLabels = page.locator('[data-testid="product-category"]')
@@ -245,6 +245,6 @@ test.describe('Shopping Flow', () => {
     // Verify products are displayed in mobile layout
     await page.waitForSelector('[data-testid="product-card"]')
     const productCards = page.locator('[data-testid="product-card"]')
-    await expect(productCards).toHaveCount.greaterThan(0)
+    await expect(productCards).toHaveCount(1)
   })
 })

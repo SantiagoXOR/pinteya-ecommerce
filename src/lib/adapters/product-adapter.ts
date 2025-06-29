@@ -22,8 +22,8 @@ export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Pro
     discountedPrice: apiProduct.discounted_price || apiProduct.price,
     imgs: {
       // Mapear desde la estructura real de la BD: { main, gallery, thumbnail }
-      thumbnails: images.thumbnail ? [images.thumbnail] : ['/images/products/placeholder-sm.jpg'],
-      previews: images.main ? [images.main] : (images.gallery?.[0] ? [images.gallery[0]] : ['/images/products/placeholder-bg.jpg']),
+      thumbnails: images.thumbnail ? [images.thumbnail] : ['/images/products/placeholder.svg'],
+      previews: images.main ? [images.main] : (images.gallery?.[0] ? [images.gallery[0]] : ['/images/products/placeholder.svg']),
     },
   };
 }
@@ -118,22 +118,55 @@ export function getMainImage(product: Product | ProductWithCategory): string {
   if ('images' in product && product.images?.previews?.[0]) {
     return product.images.previews[0];
   }
-  return '/images/products/placeholder-bg.jpg';
+  return '/images/products/placeholder.svg';
 }
 
 /**
- * Obtiene la imagen thumbnail del producto
+ * Valida y obtiene una URL de imagen válida, manejando cadenas vacías y undefined
+ * @param imageUrl - URL de imagen a validar
+ * @param fallback - URL de fallback (por defecto: placeholder)
+ * @returns string - URL de imagen válida
+ */
+export function getValidImageUrl(imageUrl: string | undefined | null, fallback: string = '/images/products/placeholder.svg'): string {
+  // Verificar si la imagen existe y no es una cadena vacía o solo espacios
+  if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+    return imageUrl.trim();
+  }
+  return fallback;
+}
+
+/**
+ * Obtiene la imagen thumbnail del producto con validación robusta
  * @param product - Producto
- * @returns string - URL de la imagen thumbnail
+ * @returns string - URL de la imagen thumbnail válida
  */
 export function getThumbnailImage(product: Product | ProductWithCategory): string {
+  let imageUrl: string | undefined;
+
   if ('imgs' in product && product.imgs?.thumbnails?.[0]) {
-    return product.imgs.thumbnails[0];
+    imageUrl = product.imgs.thumbnails[0];
+  } else if ('images' in product && product.images?.thumbnails?.[0]) {
+    imageUrl = product.images.thumbnails[0];
   }
-  if ('images' in product && product.images?.thumbnails?.[0]) {
-    return product.images.thumbnails[0];
+
+  return getValidImageUrl(imageUrl);
+}
+
+/**
+ * Obtiene la imagen preview del producto con validación robusta
+ * @param product - Producto
+ * @returns string - URL de la imagen preview válida
+ */
+export function getPreviewImage(product: Product | ProductWithCategory): string {
+  let imageUrl: string | undefined;
+
+  if ('imgs' in product && product.imgs?.previews?.[0]) {
+    imageUrl = product.imgs.previews[0];
+  } else if ('images' in product && product.images?.previews?.[0]) {
+    imageUrl = product.images.previews[0];
   }
-  return '/images/products/placeholder-sm.jpg';
+
+  return getValidImageUrl(imageUrl);
 }
 
 /**

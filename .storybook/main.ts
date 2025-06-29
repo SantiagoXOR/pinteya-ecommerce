@@ -8,7 +8,12 @@ const config: StorybookConfig = {
   ],
   "addons": [
     "@storybook/addon-docs",
-    "@storybook/addon-a11y"
+    "@storybook/addon-a11y",
+    "@storybook/addon-essentials",
+    "@storybook/addon-interactions",
+    "@storybook/addon-controls",
+    "@storybook/addon-viewport",
+    "@storybook/addon-backgrounds"
   ],
   "framework": {
     "name": "@storybook/nextjs-vite",

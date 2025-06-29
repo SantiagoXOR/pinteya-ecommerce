@@ -9,7 +9,18 @@ import { useAppSelector } from "@/redux/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { PriceDisplay } from "@/components/ui/price-display";
+import { StockIndicator } from "@/components/ui/stock-indicator";
+import { ShippingInfo } from "@/components/ui/shipping-info";
+import { ProductCard } from "@/components/ui";
 import { ZoomIn, Minus, Plus, ShoppingCart, Heart, Star } from "lucide-react";
+
+import { useMemo, useCallback, lazy, Suspense } from 'react';
+import { getValidImageUrl } from "@/lib/adapters/product-adapter";
+
+// Lazy loading para componentes pesados - COMENTADO: archivos no existen
+// const LazyProductModal = lazy(() => import('../Product/ProductModal'));
+// const LazyQuickView = lazy(() => import('../Product/QuickView'));
 
 const ShopDetails = () => {
   const [activeColor, setActiveColor] = useState("blue");
@@ -124,7 +135,7 @@ const ShopDetails = () => {
                       {product.imgs?.previews?.[previewImg] ? (
                         <div className="relative group">
                           <Image
-                            src={product.imgs.previews[previewImg]}
+                            src={getValidImageUrl(product.imgs.previews[previewImg])}
                             alt={`${product.title} - Vista principal`}
                             width={400}
                             height={400}
@@ -163,7 +174,7 @@ const ShopDetails = () => {
                           <Image
                             width={50}
                             height={50}
-                            src={item}
+                            src={getValidImageUrl(item)}
                             alt="thumbnail"
                           />
                         ) : (
@@ -208,51 +219,106 @@ const ShopDetails = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-success/10 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-success"></div>
-                      </div>
-                      <Badge variant="success" size="sm">
-                        En Stock
-                      </Badge>
-                    </div>
+                    {/* Stock con nuevo componente */}
+                    <StockIndicator
+                      quantity={25} // Stock simulado
+                      showExactQuantity={true}
+                      unit="unidades"
+                      variant="default"
+                    />
                   </div>
 
+                  {/* Precio con nuevo componente */}
                   <div className="mb-6">
-                    <div className="flex items-baseline gap-3 mb-2">
-                      <span className="text-3xl font-bold text-gray-900">
-                        ${product.discountedPrice || product.price}
-                      </span>
-                      {product.discountedPrice && product.price && product.discountedPrice < product.price && (
-                        <span className="text-xl text-gray-500 line-through">
-                          ${product.price}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-gray-600 text-sm">
+                    <PriceDisplay
+                      amount={(product.discountedPrice || product.price) * 100} // Convertir a centavos
+                      originalAmount={product.discountedPrice && product.price && product.discountedPrice < product.price ? product.price * 100 : undefined}
+                      installments={{
+                        quantity: (product.discountedPrice || product.price) >= 10000 ? 6 : 3,
+                        amount: Math.round(((product.discountedPrice || product.price) * 100) / ((product.discountedPrice || product.price) >= 10000 ? 6 : 3)),
+                        interestFree: true
+                      }}
+                      showFreeShipping={(product.discountedPrice || product.price) >= 15000}
+                      variant="default"
+                      size="lg"
+                    />
+                    <p className="text-gray-600 text-sm mt-2">
                       Precio incluye IVA • Envío gratis en compras mayores a $15.000
                     </p>
                   </div>
 
-                  <Card className="p-4 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20 mb-6">
-                    <ul className="flex flex-col gap-3">
-                      <li className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-success/10 flex items-center justify-center">
-                          <div className="w-2 h-2 rounded-full bg-success"></div>
-                        </div>
-                        <span className="text-gray-700">Envío gratis disponible</span>
-                      </li>
+                  {/* Información de envío con nuevo componente */}
+                  <div className="mb-6">
+                    <ShippingInfo
+                      variant="card"
+                      options={[
+                        {
+                          id: 'free',
+                          name: 'Envío gratis',
+                          price: 0,
+                          estimatedDays: { min: 5, max: 7 },
+                          isFree: true,
+                          description: 'En compras mayores a $15.000'
+                        },
+                        {
+                          id: 'standard',
+                          name: 'Envío estándar',
+                          price: 2500,
+                          estimatedDays: { min: 3, max: 5 },
+                          description: 'Entrega a domicilio'
+                        },
+                        {
+                          id: 'express',
+                          name: 'Envío express',
+                          price: 4500,
+                          estimatedDays: { min: 1, max: 2 },
+                          isExpress: true,
+                          description: 'Entrega prioritaria'
+                        }
+                      ]}
+                      selectedOption="free"
+                      showCalculator={true}
+                      showGuarantees={true}
+                    />
+                  </div>
 
-                      <li className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-warning/10 flex items-center justify-center">
-                          <div className="w-2 h-2 rounded-full bg-warning"></div>
-                        </div>
-                        <span className="text-gray-700">
-                          Descuento 30% - Código: <Badge variant="warning" size="sm">PROMO30</Badge>
-                        </span>
-                      </li>
-                    </ul>
+                  {/* Promociones adicionales */}
+                  <Card className="p-4 bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-warning/10 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-warning"></div>
+                      </div>
+                      <span className="text-gray-700">
+                        Descuento 30% - Código: <Badge variant="warning" size="sm">PROMO30</Badge>
+                      </span>
+                    </div>
                   </Card>
+
+                  {/* Enhanced ProductCard para página de detalle */}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-900">Vista Rápida del Producto</h3>
+                    <div className="max-w-sm">
+                      <ProductCard
+                        context="productDetail"
+                        image={product.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
+                        title={product.title}
+                        price={product.discountedPrice || product.price}
+                        originalPrice={product.discountedPrice && product.price && product.discountedPrice < product.price ? product.price : undefined}
+                        discount={product.discountedPrice && product.price && product.discountedPrice < product.price ?
+                          `${Math.round(((product.price - product.discountedPrice) / product.price) * 100)}%` : undefined}
+                        stock={25} // Stock simulado
+                        stockUnit="unidades"
+                        productId={product.id}
+                        badge={(product.discountedPrice || product.price) >= 15000 ? "Envío gratis" : "Disponible"}
+                        cta="Agregar al carrito"
+                        onAddToCart={() => {
+                          // Lógica de agregar al carrito (ya existe en el componente principal)
+                          console.log('Agregado desde ProductCard en detalle');
+                        }}
+                        showCartAnimation={true}
+                      />
+                    </div>
+                  </div>
 
                   <form onSubmit={(e) => e.preventDefault()}>
                     <div className="flex flex-col gap-4.5 border-y border-gray-3 mt-7.5 mb-9 py-9">

@@ -52,19 +52,13 @@ function createDirectories() {
   if (!fs.existsSync(DOWNLOAD_DIR)) {
     fs.mkdirSync(DOWNLOAD_DIR, { recursive: true });
   }
-  
+
   if (!fs.existsSync(ORGANIZED_DIR)) {
     fs.mkdirSync(ORGANIZED_DIR, { recursive: true });
   }
 
-  // Crear subdirectorios por marca
-  const brands = ['plavicon', 'petrilac', 'poxipol', 'sinteplast', 'galgo', 'genericos'];
-  brands.forEach(brand => {
-    const brandDir = path.join(ORGANIZED_DIR, brand);
-    if (!fs.existsSync(brandDir)) {
-      fs.mkdirSync(brandDir, { recursive: true });
-    }
-  });
+  // NOTA: Los subdirectorios por marca se crean dinámicamente cuando se necesitan
+  // ya que ahora obtenemos las marcas directamente de la base de datos
 }
 
 // Función para descargar una imagen
@@ -116,15 +110,8 @@ function getFileExtension(url) {
   return ext;
 }
 
-// Función para determinar la marca desde el slug
-function getBrandFromSlug(slug) {
-  if (slug.includes('plavicon')) return 'plavicon';
-  if (slug.includes('petrilac')) return 'petrilac';
-  if (slug.includes('poxipol')) return 'poxipol';
-  if (slug.includes('sinteplast')) return 'sinteplast';
-  if (slug.includes('galgo')) return 'galgo';
-  return 'genericos';
-}
+// NOTA: Función getBrandFromSlug eliminada - ahora usamos el campo 'brand' de la base de datos
+// Esta función ya no es necesaria porque obtenemos la marca directamente de la BD
 
 // Función para limpiar nombre de archivo
 function sanitizeFilename(filename) {
@@ -141,10 +128,10 @@ async function downloadAllProductImages() {
   createDirectories();
   
   try {
-    // Obtener todos los productos con imágenes
+    // Obtener todos los productos con imágenes y marca
     const { data: products, error } = await supabase
       .from('products')
-      .select('id, name, slug, images')
+      .select('id, name, slug, brand, images')
       .not('images', 'is', null);
 
     if (error) {
@@ -159,10 +146,16 @@ async function downloadAllProductImages() {
 
     for (const product of products) {
       console.log(`📥 Procesando: ${product.name}`);
-      
-      const brand = getBrandFromSlug(product.slug);
+
+      // Usar la marca real de la base de datos, con fallback a 'genericos'
+      const brand = product.brand ? product.brand.toLowerCase() : 'genericos';
       const productDir = path.join(ORGANIZED_DIR, brand);
-      
+
+      // Crear directorio de marca si no existe
+      if (!fs.existsSync(productDir)) {
+        fs.mkdirSync(productDir, { recursive: true });
+      }
+
       try {
         const images = product.images;
         const mainImageUrl = images.main;
@@ -223,7 +216,7 @@ async function downloadAllProductImages() {
         downloadLog.push({
           product: product.name,
           slug: product.slug,
-          brand: getBrandFromSlug(product.slug),
+          brand: product.brand ? product.brand.toLowerCase() : 'genericos',
           status: 'error',
           filename: null,
           url: product.images?.main || 'N/A',

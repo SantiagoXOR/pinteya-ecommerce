@@ -1,5 +1,6 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store";
+import { loadCartFromStorage } from "../middleware/cartPersistence";
 
 type InitialState = {
   items: CartItem[];
@@ -17,9 +18,24 @@ type CartItem = {
   };
 };
 
-const initialState: InitialState = {
-  items: [],
+// Función para obtener el estado inicial con persistencia
+const getInitialState = (): InitialState => {
+  // En el servidor, siempre retornar estado vacío
+  if (typeof window === 'undefined') {
+    return { items: [] };
+  }
+
+  // En el cliente, intentar cargar desde localStorage
+  try {
+    const persistedItems = loadCartFromStorage();
+    return { items: persistedItems };
+  } catch (error) {
+    console.warn('Error loading persisted cart:', error);
+    return { items: [] };
+  }
 };
+
+const initialState: InitialState = getInitialState();
 
 export const cart = createSlice({
   name: "cart",
@@ -62,13 +78,23 @@ export const cart = createSlice({
     removeAllItemsFromCart: (state) => {
       state.items = [];
     },
+
+    // Acción para hidratar el carrito desde localStorage
+    hydrateCart: (state, action: PayloadAction<CartItem[]>) => {
+      state.items = action.payload;
+    },
+
+    // Acción para reemplazar todo el carrito (útil para migración de usuarios)
+    replaceCart: (state, action: PayloadAction<CartItem[]>) => {
+      state.items = action.payload;
+    },
   },
 });
 
 export const selectCartItems = (state: RootState) => state.cartReducer.items;
 
 export const selectTotalPrice = createSelector([selectCartItems], (items) => {
-  return items.reduce((total, item) => {
+  return items.reduce((total: number, item: CartItem) => {
     return total + item.discountedPrice * item.quantity;
   }, 0);
 });
@@ -78,5 +104,7 @@ export const {
   removeItemFromCart,
   updateCartItemQuantity,
   removeAllItemsFromCart,
+  hydrateCart,
+  replaceCart,
 } = cart.actions;
 export default cart.reducer;

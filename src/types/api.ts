@@ -32,12 +32,13 @@ export interface PaginatedResponse<T> {
 // ===================================
 export interface ProductFilters {
   category?: string;
+  brand?: string;
   priceMin?: number;
   priceMax?: number;
   search?: string;
   page?: number;
   limit?: number;
-  sortBy?: 'price' | 'name' | 'created_at';
+  sortBy?: 'price' | 'name' | 'created_at' | 'brand';
   sortOrder?: 'asc' | 'desc';
 }
 

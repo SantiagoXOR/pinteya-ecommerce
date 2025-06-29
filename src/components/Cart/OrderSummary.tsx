@@ -38,7 +38,7 @@ const OrderSummary = () => {
 
           {/* <!-- product items --> */}
           <div className="max-h-60 overflow-y-auto">
-            {cartItems.map((item, key) => (
+            {cartItems.map((item: any, key: number) => (
               <div key={key} className="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0">
                 <div className="flex-1 pr-4">
                   <p className="text-gray-900 font-medium line-clamp-2">{item.title}</p>

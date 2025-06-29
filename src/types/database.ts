@@ -62,6 +62,7 @@ export interface Database {
         Row: {
           id: number;
           name: string;
+          brand: string | null;
           slug: string;
           description: string | null;
           price: number;
@@ -70,10 +71,12 @@ export interface Database {
           category_id: number | null;
           images: any | null; // JSONB
           created_at: string;
+          updated_at: string | null;
         };
         Insert: {
           id?: number;
           name: string;
+          brand?: string | null;
           slug: string;
           description?: string | null;
           price: number;
@@ -82,10 +85,12 @@ export interface Database {
           category_id?: number | null;
           images?: any | null;
           created_at?: string;
+          updated_at?: string | null;
         };
         Update: {
           id?: number;
           name?: string;
+          brand?: string | null;
           slug?: string;
           description?: string | null;
           price?: number;
@@ -94,6 +99,7 @@ export interface Database {
           category_id?: number | null;
           images?: any | null;
           created_at?: string;
+          updated_at?: string | null;
         };
       };
       orders: {

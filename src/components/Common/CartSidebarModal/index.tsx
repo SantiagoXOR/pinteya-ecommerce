@@ -75,7 +75,7 @@ const CartSidebarModal = () => {
             <div className="flex flex-col gap-6">
               {/* <!-- cart item --> */}
               {cartItems.length > 0 ? (
-                cartItems.map((item, key) => (
+                cartItems.map((item: any, key: number) => (
                   <SingleItem key={key} item={item} />
                 ))
               ) : (
@@ -102,6 +102,7 @@ const CartSidebarModal = () => {
 
               <Link
                 href="/checkout"
+                data-testid="checkout-btn"
                 className="w-full flex justify-center font-medium text-white bg-dark py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-opacity-95"
               >
                 Checkout
