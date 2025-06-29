@@ -5,6 +5,9 @@
 import { ApiResponse } from '@/types/api';
 import { Brand, BrandFilters } from '@/app/api/brands/route';
 
+// Re-exportar tipos para uso en el frontend
+export type { Brand, BrandFilters };
+
 // ===================================
 // FUNCIONES PARA EL FRONTEND
 // ===================================
