@@ -1,6 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: "Test Favicon | Pinteya E-commerce",
@@ -126,12 +127,12 @@ export default function TestFaviconPage() {
           </div>
 
           <div className="mt-6 text-center">
-            <a 
-              href="/" 
+            <Link
+              href="/"
               className="inline-block bg-blaze-orange-600 text-white px-6 py-3 rounded-lg hover:bg-blaze-orange-700 transition-colors"
             >
               ← Volver al Inicio
-            </a>
+            </Link>
           </div>
         </div>
       </div>
