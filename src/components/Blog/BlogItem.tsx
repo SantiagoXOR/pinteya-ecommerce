@@ -67,5 +67,3 @@ const BlogItem = ({ blog }: { blog: BlogItem }) => {
 };
 
 export default BlogItem;
-
-export default BlogItem;
