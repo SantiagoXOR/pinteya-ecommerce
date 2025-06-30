@@ -46,6 +46,7 @@
 - [⚙️ Variables de Producción](./deployment/environment.md)
 - [📊 Monitoring](./deployment/monitoring.md)
 - [🔧 Troubleshooting](./deployment/troubleshooting.md)
+- [🚨 Build Errors Fix](./troubleshooting/build-errors-fix.md)
 
 ### 🧪 **Testing**
 - [📋 Estrategia de Testing](./testing/README.md)
