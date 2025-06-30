@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { ProductCard } from '@/components/ui/card'
+import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
@@ -11,17 +11,17 @@ export default function ProductCardDemoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#FFFEF0]">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                🧱 ProductCard Component
+                🧱 CommercialProductCard Component
               </h1>
               <p className="text-gray-600 mt-1">
-                Componente funcional, visualmente limpio, jerárquico y adaptable
+                Componente comercial con diseño compacto y elegante
               </p>
             </div>
             <Button variant="outline" asChild>
@@ -42,15 +42,21 @@ export default function ProductCardDemoPage() {
             
             <div className="flex justify-center">
               <div className="w-80">
-                <ProductCard
+                <CommercialProductCard
                   image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg"
                   title="Pintura Látex Premium Sherwin Williams"
+                  brand="Sherwin Williams"
                   price={2500}
                   originalPrice={3200}
                   discount="25%"
-                  badge="Llega gratis hoy"
                   cta="Agregar al carrito"
                   onAddToCart={() => handleAddToCart('Pintura Látex Premium Sherwin Williams')}
+                  freeShipping={true}
+                  installments={{
+                    quantity: 3,
+                    amount: 833,
+                    interestFree: true
+                  }}
                 />
               </div>
             </div>
@@ -82,72 +88,70 @@ export default function ProductCardDemoPage() {
               Adaptable a grilla de 2 o 3 columnas, optimizado para mobile y desktop.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <ProductCard
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <CommercialProductCard
                 image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/petrilac/esmalte-petrilac.jpg"
                 title="Esmalte Sintético Petrilac Brillante"
+                brand="Petrilac"
                 price={1850}
                 originalPrice={2200}
                 discount="15%"
-                badge="Envío rápido"
                 stock={8}
-                stockUnit="latas"
-                showExactStock={true}
-                showInstallments={true}
+                cta="Comprar ahora"
+                onAddToCart={() => handleAddToCart('Esmalte Sintético Petrilac')}
                 installments={{
                   quantity: 3,
                   amount: 617,
                   interestFree: true
                 }}
-                cta="Comprar ahora"
-                onAddToCart={() => handleAddToCart('Esmalte Sintético Petrilac')}
-                useNewComponents={true}
+                shippingText="Envío rápido"
               />
               
-              <ProductCard
+              <CommercialProductCard
                 image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sinteplast/latex-sinteplast.jpg"
                 title="Látex Interior Sinteplast Blanco"
+                brand="Sinteplast"
                 price={1200}
-                badge="Stock limitado"
                 stock={3}
-                stockUnit="latas"
-                lowStockThreshold={5}
-                showExactStock={true}
                 cta="Agregar al carrito"
                 onAddToCart={() => handleAddToCart('Látex Interior Sinteplast')}
-                useNewComponents={true}
+                shippingText="Stock limitado"
               />
               
-              <ProductCard
+              <CommercialProductCard
                 image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/plavicon/impermeabilizante-plavicon.jpg"
                 title="Impermeabilizante Plavicon 20L"
+                brand="Plavicon"
                 price={4500}
                 originalPrice={5200}
                 discount="13%"
-                badge="Oferta especial"
                 cta="Ver detalles"
                 onAddToCart={() => handleAddToCart('Impermeabilizante Plavicon')}
+                shippingText="Oferta especial"
               />
-              
-              <ProductCard
+
+              <CommercialProductCard
                 title="Producto sin imagen"
+                brand="Genérico"
                 price={999}
-                badge="Nuevo"
+                isNew={true}
                 cta="Agregar al carrito"
                 onAddToCart={() => handleAddToCart('Producto sin imagen')}
               />
-              
-              <ProductCard
+
+              <CommercialProductCard
                 image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/galgo/lija-galgo.jpg"
                 title="Lija El Galgo Grano 120"
+                brand="El Galgo"
                 price={350}
                 cta="Agregar"
                 onAddToCart={() => handleAddToCart('Lija El Galgo')}
               />
-              
-              <ProductCard
+
+              <CommercialProductCard
                 image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/poximix/adhesivo-poximix.jpg"
                 title="Adhesivo Estructural Poximix"
+                brand="Akapol"
                 price={0}
                 stock={0}
                 cta="Sin stock"
@@ -168,7 +172,7 @@ export default function ProductCardDemoPage() {
                 <ul className="space-y-2 text-gray-600">
                   <li className="flex items-start gap-2">
                     <span className="text-fun-green-500 mt-1">•</span>
-                    <span>Fondo: gradiente amarillo claro a blanco</span>
+                    <span>Fondo: blanco puro para máximo contraste</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-fun-green-500 mt-1">•</span>

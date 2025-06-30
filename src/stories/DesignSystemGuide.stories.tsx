@@ -95,12 +95,12 @@ Todos los componentes están diseñados primero para dispositivos móviles y lue
 ### Jerarquía de Componentes
 1. **Atoms**: Button, Input, Badge
 2. **Molecules**: Card, Modal, Form
-3. **Organisms**: ProductCard, SearchAutocomplete
+3. **Organisms**: CommercialProductCard, SearchAutocomplete
 4. **Templates**: Layouts, Forms
 5. **Pages**: Complete page examples
 
 ### Naming Convention
-- **Componentes**: PascalCase (Button, ProductCard)
+- **Componentes**: PascalCase (Button, CommercialProductCard)
 - **Props**: camelCase (variant, size, onClick)
 - **CSS Classes**: kebab-case (btn-primary, card-elevated)
 - **Files**: kebab-case (button.tsx, product-card.tsx)

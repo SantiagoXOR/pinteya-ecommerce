@@ -17,7 +17,7 @@ import CartPersistenceProvider from "@/components/providers/CartPersistenceProvi
 
 // Componentes UI
 import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Footer from "../components/layout/Footer";
 import QuickViewModal from "@/components/Common/QuickViewModal";
 import CartSidebarModal from "@/components/Common/CartSidebarModal";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";

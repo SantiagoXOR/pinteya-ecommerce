@@ -5,13 +5,13 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const priceDisplayVariants = cva(
-  "flex flex-col gap-1 w-full max-w-full",
+  "flex flex-col gap-0.5 w-full max-w-full",
   {
     variants: {
       variant: {
         default: "text-left",
         center: "text-center items-center",
-        compact: "flex-row items-baseline gap-2",
+        compact: "flex-col gap-0.5",
       },
       size: {
         sm: "text-sm",
@@ -168,24 +168,35 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
 
         {/* Información de Cuotas */}
         {installments && (
-          <div className="text-sm text-muted-foreground max-w-full">
-            <span className="text-green-600 font-medium truncate block">
-              {installments.quantity}x de {formatPrice(installments.amount, currency, currencySymbol)}
-            </span>
-            {installments.interestFree && (
-              <span className="ml-1 text-green-600 truncate block">
-                {installmentsText}
+          <div className="text-xs text-muted-foreground max-w-full overflow-hidden">
+            {variant === "compact" ? (
+              <span className="text-fun-green-500 font-medium truncate block text-xs leading-tight">
+                {installments.quantity}x de {formatPrice(installments.amount, currency, currencySymbol)}
+                {installments.interestFree && ` ${installmentsText}`}
               </span>
+            ) : (
+              <>
+                <span className="text-fun-green-500 font-medium truncate block text-xs leading-tight">
+                  {installments.quantity}x de {formatPrice(installments.amount, currency, currencySymbol)}
+                </span>
+                {installments.interestFree && (
+                  <span className="ml-1 text-green-600 truncate block">
+                    {installmentsText}
+                  </span>
+                )}
+              </>
             )}
           </div>
         )}
 
         {/* Envío Gratis */}
         {showFreeShipping && (
-          <div className="flex items-center gap-1 text-sm max-w-full">
-            <span className="text-green-600 font-medium truncate">
-              🚚 Envío gratis
-            </span>
+          <div className="flex items-center gap-1 text-sm max-w-full mt-1">
+            <img
+              src="/images/icons/icon-envio.svg"
+              alt="Envío gratis"
+              className="h-6 w-auto"
+            />
           </div>
         )}
       </div>

@@ -48,8 +48,8 @@ describe('PriceDisplay', () => {
 
   it('shows free shipping badge when enabled', () => {
     render(<PriceDisplay amount={1550} showFreeShipping />)
-    
-    expect(screen.getByText('🚚 Envío gratis')).toBeInTheDocument()
+
+    expect(screen.getByAltText('Envío gratis')).toBeInTheDocument()
   })
 
   it('applies correct variant classes', () => {
@@ -104,7 +104,7 @@ describe('PriceDisplay', () => {
       />
     )
     
-    expect(container.firstChild).toHaveClass('flex-row', 'items-baseline', 'gap-2')
+    expect(container.firstChild).toHaveClass('flex-col', 'gap-0.5')
   })
 
   it('handles installments without interest correctly', () => {

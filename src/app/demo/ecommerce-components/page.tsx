@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import { ProductCard } from '@/components/ui/card'
+import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { PriceDisplay } from '@/components/ui/price-display'
 import { StockIndicator } from '@/components/ui/stock-indicator'
 import { ShippingInfo } from '@/components/ui/shipping-info'
@@ -142,17 +142,18 @@ export default function EcommerceComponentsDemo() {
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <h3 className="text-xl font-semibold mb-4">📱 Versión Actual (Legacy)</h3>
               <div className="flex justify-center">
-                <ProductCard
+                <CommercialProductCard
                   image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg"
                   title="Pintura Sherwin Williams ProClassic 4L"
+                  brand="Sherwin Williams"
                   price={8500}
                   originalPrice={10000}
                   discount="15%"
-                  badge="Envío gratis"
                   stock={12}
                   cta="Agregar al carrito"
                   onAddToCart={() => handleAddToCart('Pintura Sherwin Williams Legacy')}
-                  useNewComponents={false}
+                  freeShipping={true}
+                  shippingText="Envío gratis"
                 />
               </div>
             </div>
@@ -161,26 +162,23 @@ export default function EcommerceComponentsDemo() {
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <h3 className="text-xl font-semibold mb-4">✨ Nueva Versión (E-commerce)</h3>
               <div className="flex justify-center">
-                <ProductCard
+                <CommercialProductCard
                   image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg"
                   title="Pintura Sherwin Williams ProClassic 4L"
+                  brand="Sherwin Williams"
                   price={8500}
                   originalPrice={10000}
                   discount="15%"
-                  badge="Envío gratis"
                   stock={12}
-                  stockUnit="latas"
-                  showExactStock={true}
-                  showInstallments={true}
                   installments={{
                     quantity: 6,
                     amount: 1417,
                     interestFree: true
                   }}
-                  showFreeShipping={true}
+                  freeShipping={true}
+                  shippingText="Envío gratis"
                   cta="Agregar al carrito"
                   onAddToCart={() => handleAddToCart('Pintura Sherwin Williams Nueva')}
-                  useNewComponents={true}
                 />
               </div>
             </div>
@@ -191,41 +189,36 @@ export default function EcommerceComponentsDemo() {
         <section className="mb-16">
           <h2 className="text-3xl font-semibold text-gray-900 mb-8">🏪 Productos de Pinturería con Nuevos Componentes</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             
             {/* Pintura Sherwin Williams */}
-            <ProductCard
+            <CommercialProductCard
               image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg"
               title="Pintura Sherwin Williams ProClassic 4L"
+              brand="Sherwin Williams"
               price={8500}
               originalPrice={10000}
               discount="15%"
               stock={12}
-              stockUnit="latas"
-              showExactStock={true}
-              showInstallments={true}
               installments={{
                 quantity: 6,
                 amount: 1417,
                 interestFree: true
               }}
-              showFreeShipping={true}
+              freeShipping={true}
               cta="Agregar al carrito"
               onAddToCart={() => handleAddToCart('Pintura Sherwin Williams')}
-              useNewComponents={true}
             />
 
             {/* Esmalte Petrilac */}
-            <ProductCard
+            <CommercialProductCard
               image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/petrilac/esmalte-petrilac.jpg"
               title="Esmalte Sintético Petrilac Brillante 1L"
+              brand="Petrilac"
               price={1850}
               originalPrice={2200}
               discount="16%"
               stock={8}
-              stockUnit="latas"
-              showExactStock={true}
-              showInstallments={true}
               installments={{
                 quantity: 3,
                 amount: 617,
@@ -233,19 +226,15 @@ export default function EcommerceComponentsDemo() {
               }}
               cta="Comprar ahora"
               onAddToCart={() => handleAddToCart('Esmalte Petrilac')}
-              useNewComponents={true}
             />
 
             {/* Poximix - Stock bajo */}
-            <ProductCard
+            <CommercialProductCard
               image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/poximix/adhesivo-poximix.jpg"
               title="Adhesivo Estructural Poximix 250ml"
+              brand="Akapol"
               price={2300}
               stock={2}
-              stockUnit="tubos"
-              lowStockThreshold={5}
-              showExactStock={true}
-              showInstallments={true}
               installments={{
                 quantity: 3,
                 amount: 767,
@@ -253,20 +242,18 @@ export default function EcommerceComponentsDemo() {
               }}
               cta="Agregar al carrito"
               onAddToCart={() => handleAddToCart('Poximix')}
-              useNewComponents={true}
+              shippingText="Stock bajo"
             />
 
             {/* Lija El Galgo - Sin stock */}
-            <ProductCard
+            <CommercialProductCard
               image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/galgo/lija-galgo.jpg"
               title="Lija El Galgo Grano 120"
+              brand="El Galgo"
               price={450}
               stock={0}
-              stockUnit="unidades"
-              showExactStock={true}
               cta="Sin stock"
               onAddToCart={() => handleAddToCart('Lija El Galgo')}
-              useNewComponents={true}
             />
 
           </div>

@@ -1,470 +1,430 @@
-<testsuites id="" name="" tests="20" failures="6" skipped="0" errors="0" time="69.809442">
-<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="chromium" tests="4" failures="3" skipped="0" time="111.265" errors="0">
-<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="16.847">
-<system-out>
-<![CDATA[🔍 Verificando imágenes en página Home...
-📦 Encontradas 14 tarjetas de productos en Home
-🖼️ Producto 1:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png
-   - Alt: Lija al Agua Grano 50 - El Galgo
-🖼️ Producto 2:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png
-   - Alt: Pinceleta para Obra
-🖼️ Producto 3:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png
-   - Alt: Lija al Agua Grano 120 - El Galgo
-🖼️ Producto 4:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png
-   - Alt: Lija al Agua Grano 40 - El Galgo
-🖼️ Producto 5:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png
-   - Alt: Lija al Agua Grano 80 - El Galgo
-🖼️ Producto 6:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png
-   - Alt: Lija al Agua Grano 180 - El Galgo
-🖼️ Producto 7:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png
-   - Alt: Bandeja Chata para Pintura
-🖼️ Producto 8:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png
-   - Alt: Poximix Exterior 5kg Poxipol
-🖼️ Producto 9:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/plavipint-techos-poliuretanico-20l-plavicon.webp
-   - Alt: Plavipint Techos Poliuretánico 20L Plavicon
-🖼️ Producto 10:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/membrana-performa-20l-plavicon.webp
-   - Alt: Membrana Performa 20L Plavicon
-]]>
-</system-out>
-</testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="31.716">
-<failure message="product-images-fix.spec.ts:75:7 Verificar productos específicos que tenían problemas" type="FAILURE">
-<![CDATA[  [chromium] › product-images-fix.spec.ts:75:7 › Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas 
+<testsuites id="" name="" tests="20" failures="8" skipped="0" errors="0" time="108.160828">
+<testsuite name="product-navigation.spec.ts" timestamp="2025-06-29T21:59:04.233Z" hostname="chromium" tests="4" failures="2" skipped="0" time="74.546" errors="0">
+<testcase name="Product Navigation › should navigate from product card to product details" classname="product-navigation.spec.ts" time="15.093">
+<failure message="product-navigation.spec.ts:4:7 should navigate from product card to product details" type="FAILURE">
+<![CDATA[  [chromium] › product-navigation.spec.ts:4:7 › Product Navigation › should navigate from product card to product details 
 
-    Test timeout of 30000ms exceeded.
+    Error: expect(received).toBeFalsy()
 
-    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
+    Received: true
 
-      92 |       
-      93 |       // Esperar a que la página cargue
-    > 94 |       await page.waitForLoadState('networkidle');
-         |                  ^
-      95 |       
-      96 |       // Buscar la imagen principal del producto
-      97 |       const productImage = page.locator('[data-testid="product-main-image"], .product-image img, img[alt*="producto"], img[alt*="Poximix"], img[alt*="Plavicon"], img[alt*="Sinteplast"], img[alt*="Petrilac"]').first();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:94:18
+      41 |     // Verificar que no hay errores de JavaScript críticos
+      42 |     const hasJSError = pageContent.includes('Error') && pageContent.includes('500');
+    > 43 |     expect(hasJSError).toBeFalsy();
+         |                        ^
+      44 |     
+      45 |     console.log('✅ Navigation test completed successfully');
+      46 |   });
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-navigation.spec.ts:43:24
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\test-failed-1.png
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\video.webm
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\error-context.md
+    Error Context: ..\test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\error-context.md
 ]]>
 </failure>
 <system-out>
-<![CDATA[🔍 Verificando productos específicos que tenían placeholders...
-🔍 Verificando producto: poximix-exterior-5kg-poxipol
+<![CDATA[Product name: Lija al Agua Grano 80
+Product link: /shop-details/89
 
-[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\test-failed-1.png]]
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\test-failed-1.png]]
 
-[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\video.webm]]
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\video.webm]]
 
-[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\error-context.md]]
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="31.792">
-<failure message="product-images-fix.spec.ts:133:7 Verificar página de tienda (Shop) sin placeholders" type="FAILURE">
-<![CDATA[  [chromium] › product-images-fix.spec.ts:133:7 › Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders 
+<testcase name="Product Navigation › should handle product details page loading states" classname="product-navigation.spec.ts" time="13.806">
+<system-out>
+<![CDATA[✅ Product details page loading test completed
+]]>
+</system-out>
+</testcase>
+<testcase name="Product Navigation › should show placeholder images correctly" classname="product-navigation.spec.ts" time="31.343">
+<failure message="product-navigation.spec.ts:73:7 should show placeholder images correctly" type="FAILURE">
+<![CDATA[  [chromium] › product-navigation.spec.ts:73:7 › Product Navigation › should show placeholder images correctly 
 
     Test timeout of 30000ms exceeded.
 
-    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
-
-      136 |     // Navegar a la página de tienda
-      137 |     await page.goto('/shop');
-    > 138 |     await page.waitForLoadState('networkidle');
-          |                ^
-      139 |     
-      140 |     // Buscar productos en la tienda
-      141 |     const productCards = page.locator('[data-testid="product-card"], .product-card, [class*="product"]');
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:138:16
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[🔍 Verificando imágenes en página Shop...
-
-[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\video.webm]]
-
-[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="30.91">
-<failure message="product-images-fix.spec.ts:168:7 Verificar estadísticas de corrección" type="FAILURE">
-<![CDATA[  [chromium] › product-images-fix.spec.ts:168:7 › Corrección de Imágenes de Productos › Verificar estadísticas de corrección 
-
-    Test timeout of 30000ms exceeded.
-
-    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
-
-      176 |     for (const pagePath of pages) {
-      177 |       await page.goto(pagePath);
-    > 178 |       await page.waitForLoadState('networkidle');
-          |                  ^
-      179 |       
-      180 |       const images = page.locator('img[src*="supabase.co"]');
-      181 |       const imageCount = await images.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:178:18
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\error-context.md
-]]>
-</failure>
-<system-out>
-<![CDATA[📊 Verificando estadísticas de la corrección...
-
-[[ATTACHMENT|product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\test-failed-1.png]]
-
-[[ATTACHMENT|product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\video.webm]]
-
-[[ATTACHMENT|product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\error-context.md]]
-]]>
-</system-out>
-</testcase>
-</testsuite>
-<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="firefox" tests="4" failures="3" skipped="0" time="130.479" errors="0">
-<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="30.342">
-<failure message="product-images-fix.spec.ts:21:7 Verificar que productos en Home no muestran placeholders" type="FAILURE">
-<![CDATA[  [firefox] › product-images-fix.spec.ts:21:7 › Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders 
-
-    Test timeout of 30000ms exceeded while running "beforeEach" hook.
-
-      11 | test.describe('Corrección de Imágenes de Productos', () => {
-      12 |   
-    > 13 |   test.beforeEach(async ({ page }) => {
-         |        ^
-      14 |     // Navegar a la página principal
-      15 |     await page.goto('/');
-      16 |     
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:13:8
-
-    Error: page.goto: Test timeout of 30000ms exceeded.
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
     Call log:
-      - navigating to "http://localhost:3000/", waiting until "load"
+      - waiting for locator('[data-testid="product-card"]') to be visible
 
 
-      13 |   test.beforeEach(async ({ page }) => {
-      14 |     // Navegar a la página principal
-    > 15 |     await page.goto('/');
+      76 |     
+      77 |     // Esperar a que los productos se carguen
+    > 78 |     await page.waitForSelector('[data-testid="product-card"]', { timeout: 30000 });
          |                ^
-      16 |     
-      17 |     // Esperar a que la página cargue completamente
-      18 |     await page.waitForLoadState('networkidle');
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:15:16
+      79 |     
+      80 |     // Verificar que no hay errores 404 para placeholder-bg.jpg
+      81 |     const response404Count = await page.evaluate(() => {
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-navigation.spec.ts:78:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\test-failed-1.png
+    test-results\product-navigation-Product-0a44e-laceholder-images-correctly-chromium\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\video.webm
+    test-results\product-navigation-Product-0a44e-laceholder-images-correctly-chromium\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\test-failed-1.png]]
+[[ATTACHMENT|product-navigation-Product-0a44e-laceholder-images-correctly-chromium\test-failed-1.png]]
 
-[[ATTACHMENT|product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\video.webm]]
+[[ATTACHMENT|product-navigation-Product-0a44e-laceholder-images-correctly-chromium\video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="31.879">
-<failure message="product-images-fix.spec.ts:75:7 Verificar productos específicos que tenían problemas" type="FAILURE">
-<![CDATA[  [firefox] › product-images-fix.spec.ts:75:7 › Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas 
-
-    Test timeout of 30000ms exceeded while running "beforeEach" hook.
-
-      11 | test.describe('Corrección de Imágenes de Productos', () => {
-      12 |   
-    > 13 |   test.beforeEach(async ({ page }) => {
-         |        ^
-      14 |     // Navegar a la página principal
-      15 |     await page.goto('/');
-      16 |     
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:13:8
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\error-context.md
-]]>
-</failure>
+<testcase name="Product Navigation › should have working API endpoints" classname="product-navigation.spec.ts" time="14.304">
 <system-out>
-<![CDATA[
-[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\test-failed-1.png]]
-
-[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\video.webm]]
-
-[[ATTACHMENT|product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\error-context.md]]
+<![CDATA[✅ API endpoints test completed
 ]]>
 </system-out>
 </testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="38.926">
-<failure message="product-images-fix.spec.ts:133:7 Verificar página de tienda (Shop) sin placeholders" type="FAILURE">
-<![CDATA[  [firefox] › product-images-fix.spec.ts:133:7 › Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders 
+</testsuite>
+<testsuite name="product-navigation.spec.ts" timestamp="2025-06-29T21:59:04.233Z" hostname="firefox" tests="4" failures="1" skipped="0" time="99.185" errors="0">
+<testcase name="Product Navigation › should navigate from product card to product details" classname="product-navigation.spec.ts" time="60.017">
+<failure message="product-navigation.spec.ts:4:7 should navigate from product card to product details" type="FAILURE">
+<![CDATA[  [firefox] › product-navigation.spec.ts:4:7 › Product Navigation › should navigate from product card to product details 
 
-    Test timeout of 30000ms exceeded while running "beforeEach" hook.
+    Test timeout of 30000ms exceeded.
 
-      11 | test.describe('Corrección de Imágenes de Productos', () => {
-      12 |   
-    > 13 |   test.beforeEach(async ({ page }) => {
-         |        ^
-      14 |     // Navegar a la página principal
-      15 |     await page.goto('/');
-      16 |     
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:13:8
-
-    TimeoutError: page.goto: Timeout 30000ms exceeded.
+    TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
     Call log:
-      - navigating to "http://localhost:3000/", waiting until "load"
+      - waiting for locator('[data-testid="product-card"]') to be visible
 
 
-      13 |   test.beforeEach(async ({ page }) => {
-      14 |     // Navegar a la página principal
-    > 15 |     await page.goto('/');
+       7 |     
+       8 |     // Esperar a que los productos se carguen
+    >  9 |     await page.waitForSelector('[data-testid="product-card"]', { timeout: 30000 });
          |                ^
-      16 |     
-      17 |     // Esperar a que la página cargue completamente
-      18 |     await page.waitForLoadState('networkidle');
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-images-fix.spec.ts:15:16
+      10 |     
+      11 |     // Obtener el primer producto
+      12 |     const firstProduct = page.locator('[data-testid="product-card"]').first();
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-navigation.spec.ts:9:16
 
-    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\video.webm
+    Tearing down "context" exceeded the test timeout of 30000ms.
+
+    Error: browserContext._wrapApiCall: Test timeout of 30000ms exceeded.
+    Browser logs:
+
+    <launching> C:\Users\marti\AppData\Local\ms-playwright\firefox-1487\firefox\firefox.exe -no-remote -wait-for-browser -foreground -profile C:\Users\marti\AppData\Local\Temp\playwright_firefoxdev_profile-RxK94Q -juggler-pipe -silent
+    <launched> pid=52780
+    [pid=52780][err] JavaScript warning: resource://services-settings/Utils.sys.mjs, line 116: unreachable code after return statement
+    [pid=52780][out] console.warn: services.settings: Ignoring preference override of remote settings server
+    [pid=52780][out] console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+    [pid=52780][out] 
+    [pid=52780][out] Juggler listening to the pipe
+    [pid=52780][out] console.error: "Warning: unrecognized command line flag" "-wait-for-browser"
+    [pid=52780][err] JavaScript error: chrome://juggler/content/Helper.js, line 82: NS_ERROR_FAILURE: Component returned failure code: 0x80004005 (NS_ERROR_FAILURE) [nsIWebProgress.removeProgressListener]
+    [pid=52780][out] console.error: SearchEngineSelector: "Received empty search configuration!"
+    [pid=52780][out] console.error: "Received empty top sites configuration!"
+    [pid=52780][out] console.error: SearchEngineSelector: "Received empty search configuration!"
+    [pid=52780][out] console.error: SearchService: "#init: failure initializing search:" [Exception... "Failed to get engine data from Remote Settings"  nsresult: "0x8000ffff (NS_ERROR_UNEXPECTED)"  location: "JS frame :: resource://gre/modules/SearchEngineSelector.sys.mjs :: getEngineConfiguration :: line 100"  data: no]
+    [pid=52780][out] console.error: WebExtensions: 
+    [pid=52780][out]   Message: [Exception... "Failed to get engine data from Remote Settings"  nsresult: "0x8000ffff (NS_ERROR_UNEXPECTED)"  location: "JS frame :: resource://gre/modules/SearchEngineSelector.sys.mjs :: getEngineConfiguration :: line 100"  data: no]
+    [pid=52780][out]   Stack:
+    [pid=52780][out]     getEngineConfiguration@resource://gre/modules/SearchEngineSelector.sys.mjs:100:24
+    [pid=52780][out] 
+    [pid=52780][out] console.error: "Received empty top sites configuration!"
+    [pid=52780][err] JavaScript error: resource://gre/modules/SearchEngineSelector.sys.mjs, line 100: NS_ERROR_UNEXPECTED: Failed to get engine data from Remote Settings
+    [pid=52780][err] JavaScript error: resource://gre/modules/SearchEngineSelector.sys.mjs, line 100: NS_ERROR_UNEXPECTED: Failed to get engine data from Remote Settings
+    [pid=52780][err] JavaScript error: resource://gre/modules/SearchEngineSelector.sys.mjs, line 100: NS_ERROR_UNEXPECTED: Failed to get engine data from Remote Settings
+    [pid=52780][err] JavaScript error: resource://gre/modules/SearchEngineSelector.sys.mjs, line 100: NS_ERROR_UNEXPECTED: Failed to get engine data from Remote Settings
+    [pid=52780][out] console.error: SearchSettings: "_write: Could not write to settings file:" (new Error("cannot write without any engine.", "resource://gre/modules/SearchSettings.sys.mjs", 328))
+    [pid=52780][out] console.error: URLBar - Provider.UrlbarProviderSearchTips: [Exception... "Failed to get engine data from Remote Settings"  nsresult: "0x8000ffff (NS_ERROR_UNEXPECTED)"  location: "JS frame :: resource://gre/modules/SearchEngineSelector.sys.mjs :: getEngineConfiguration :: line 100"  data: no]
+    [pid=52780][err] JavaScript error: http://localhost:3000/_next/static/chunks/app/layout.js, line 2726: SyntaxError: "" literal not terminated before end of script
+    [pid=52780][err] JavaScript error: chrome://juggler/content/content/Runtime.js, line 167: TypeError: message.stack is null
+    [pid=52780][err] JavaScript warning: resource://gre/modules/UpdateService.sys.mjs, line 3878: unreachable code after return statement
+    [pid=52780] <gracefully close start>
+    [pid=52780] <kill>
+    [pid=52780] <will force kill>
+    [pid=52780] taskkill stdout: CORRECTO: el proceso con PID 46856 (proceso secundario de PID 52780)
+    ha sido terminado.
+    CORRECTO: el proceso con PID 46220 (proceso secundario de PID 52780)
+    ha sido terminado.
+    CORRECTO: el proceso con PID 44368 (proceso secundario de PID 52780)
+    ha sido terminado.
+    CORRECTO: el proceso con PID 43088 (proceso secundario de PID 52780)
+    ha sido terminado.
+    CORRECTO: el proceso con PID 43568 (proceso secundario de PID 52780)
+    ha sido terminado.
+    CORRECTO: el proceso con PID 44260 (proceso secundario de PID 52780)
+    ha sido terminado.
+    CORRECTO: el proceso con PID 52780 (proceso secundario de PID 51968)
+    ha sido terminado.
+
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-firefox\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\test-results\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\error-context.md
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\video.webm]]
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-firefox\test-failed-1.png]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Product Navigation › should handle product details page loading states" classname="product-navigation.spec.ts" time="11.925">
+<system-out>
+<![CDATA[✅ Product details page loading test completed
+]]>
+</system-out>
+</testcase>
+<testcase name="Product Navigation › should show placeholder images correctly" classname="product-navigation.spec.ts" time="15.858">
+<system-out>
+<![CDATA[✅ Placeholder images test completed
+]]>
+</system-out>
+</testcase>
+<testcase name="Product Navigation › should have working API endpoints" classname="product-navigation.spec.ts" time="11.385">
+<system-out>
+<![CDATA[✅ API endpoints test completed
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="product-navigation.spec.ts" timestamp="2025-06-29T21:59:04.233Z" hostname="webkit" tests="4" failures="2" skipped="0" time="64.807" errors="0">
+<testcase name="Product Navigation › should navigate from product card to product details" classname="product-navigation.spec.ts" time="30.155">
+<failure message="product-navigation.spec.ts:4:7 should navigate from product card to product details" type="FAILURE">
+<![CDATA[  [webkit] › product-navigation.spec.ts:4:7 › Product Navigation › should navigate from product card to product details 
 
-[[ATTACHMENT|product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\error-context.md]]
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="product-card"]') to be visible
+
+
+       7 |     
+       8 |     // Esperar a que los productos se carguen
+    >  9 |     await page.waitForSelector('[data-testid="product-card"]', { timeout: 30000 });
+         |                ^
+      10 |     
+      11 |     // Obtener el primer producto
+      12 |     const firstProduct = page.locator('[data-testid="product-card"]').first();
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-navigation.spec.ts:9:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-webkit\video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="29.332">
+<testcase name="Product Navigation › should handle product details page loading states" classname="product-navigation.spec.ts" time="2.691">
 <system-out>
-<![CDATA[📊 Verificando estadísticas de la corrección...
-📄 /: 0 imágenes de Supabase encontradas
-📄 /shop: 0 imágenes de Supabase encontradas
-📊 Estadísticas finales:
-   - Total imágenes verificadas: 0
-   - Imágenes válidas: 0
-   - Porcentaje de éxito: 0%
+<![CDATA[✅ Product details page loading test completed
 ]]>
 </system-out>
 </testcase>
-</testsuite>
-<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="webkit" tests="4" failures="0" skipped="0" time="17.114" errors="0">
-<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="3.896">
+<testcase name="Product Navigation › should show placeholder images correctly" classname="product-navigation.spec.ts" time="30.174">
+<failure message="product-navigation.spec.ts:73:7 should show placeholder images correctly" type="FAILURE">
+<![CDATA[  [webkit] › product-navigation.spec.ts:73:7 › Product Navigation › should show placeholder images correctly 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="product-card"]') to be visible
+
+
+      76 |     
+      77 |     // Esperar a que los productos se carguen
+    > 78 |     await page.waitForSelector('[data-testid="product-card"]', { timeout: 30000 });
+         |                ^
+      79 |     
+      80 |     // Verificar que no hay errores 404 para placeholder-bg.jpg
+      81 |     const response404Count = await page.evaluate(() => {
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-navigation.spec.ts:78:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-0a44e-laceholder-images-correctly-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-0a44e-laceholder-images-correctly-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
 <system-out>
-<![CDATA[🔍 Verificando imágenes en página Home...
-📦 Encontradas 0 tarjetas de productos en Home
-⚠️ No se encontraron productos en Home, verificando estructura...
-📦 Productos con selectores alternativos: 0
+<![CDATA[
+[[ATTACHMENT|product-navigation-Product-0a44e-laceholder-images-correctly-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|product-navigation-Product-0a44e-laceholder-images-correctly-webkit\video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="6.428">
+<testcase name="Product Navigation › should have working API endpoints" classname="product-navigation.spec.ts" time="1.787">
 <system-out>
-<![CDATA[🔍 Verificando productos específicos que tenían placeholders...
-🔍 Verificando producto: poximix-exterior-5kg-poxipol
-   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol
-🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon
-   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon
-🔍 Verificando producto: membrana-performa-20l-plavicon
-   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon
-🔍 Verificando producto: latex-frentes-4l-plavicon
-   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon
-🔍 Verificando producto: recuplast-interior-1l-sinteplast
-   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast
-🔍 Verificando producto: sintetico-converlux-1l-petrilac
-   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac
-]]>
-</system-out>
-</testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="3.128">
-<system-out>
-<![CDATA[🔍 Verificando imágenes en página Shop...
-📦 Productos encontrados en Shop: 0
-]]>
-</system-out>
-</testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="3.662">
-<system-out>
-<![CDATA[📊 Verificando estadísticas de la corrección...
-📄 /: 0 imágenes de Supabase encontradas
-📄 /shop: 0 imágenes de Supabase encontradas
-📊 Estadísticas finales:
-   - Total imágenes verificadas: 0
-   - Imágenes válidas: 0
-   - Porcentaje de éxito: 0%
-]]>
-</system-out>
-</testcase>
-</testsuite>
-<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="Mobile Chrome" tests="4" failures="0" skipped="0" time="45.935" errors="0">
-<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="6.801">
-<system-out>
-<![CDATA[🔍 Verificando imágenes en página Home...
-📦 Encontradas 14 tarjetas de productos en Home
-🖼️ Producto 1:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png
-   - Alt: Lija al Agua Grano 50 - El Galgo
-🖼️ Producto 2:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png
-   - Alt: Pinceleta para Obra
-🖼️ Producto 3:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png
-   - Alt: Lija al Agua Grano 120 - El Galgo
-🖼️ Producto 4:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png
-   - Alt: Lija al Agua Grano 40 - El Galgo
-🖼️ Producto 5:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png
-   - Alt: Lija al Agua Grano 80 - El Galgo
-🖼️ Producto 6:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png
-   - Alt: Lija al Agua Grano 180 - El Galgo
-🖼️ Producto 7:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png
-   - Alt: Bandeja Chata para Pintura
-🖼️ Producto 8:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png
-   - Alt: Poximix Exterior 5kg Poxipol
-🖼️ Producto 9:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/plavipint-techos-poliuretanico-20l-plavicon.webp
-   - Alt: Plavipint Techos Poliuretánico 20L Plavicon
-🖼️ Producto 10:
-   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/membrana-performa-20l-plavicon.webp
-   - Alt: Membrana Performa 20L Plavicon
-]]>
-</system-out>
-</testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="19.864">
-<system-out>
-<![CDATA[🔍 Verificando productos específicos que tenían placeholders...
-🔍 Verificando producto: poximix-exterior-5kg-poxipol
-   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol
-🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon
-   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon
-   📸 Primera imagen encontrada: /_next/image?url=%2Fimages%2Flogo%2FLOGO%20POSITIVO.svg&w=384&q=75
-🔍 Verificando producto: membrana-performa-20l-plavicon
-   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon
-🔍 Verificando producto: latex-frentes-4l-plavicon
-   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon
-🔍 Verificando producto: recuplast-interior-1l-sinteplast
-   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast
-🔍 Verificando producto: sintetico-converlux-1l-petrilac
-   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac
-]]>
-</system-out>
-</testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="8.464">
-<system-out>
-<![CDATA[🔍 Verificando imágenes en página Shop...
-📦 Productos encontrados en Shop: 0
-]]>
-</system-out>
-</testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="10.806">
-<system-out>
-<![CDATA[📊 Verificando estadísticas de la corrección...
-📄 /: 0 imágenes de Supabase encontradas
-📄 /shop: 0 imágenes de Supabase encontradas
-📊 Estadísticas finales:
-   - Total imágenes verificadas: 0
-   - Imágenes válidas: 0
-   - Porcentaje de éxito: 0%
+<![CDATA[✅ API endpoints test completed
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="product-images-fix.spec.ts" timestamp="2025-06-28T21:42:59.727Z" hostname="Mobile Safari" tests="4" failures="0" skipped="0" time="18.975" errors="0">
-<testcase name="Corrección de Imágenes de Productos › Verificar que productos en Home no muestran placeholders" classname="product-images-fix.spec.ts" time="1.997">
+<testsuite name="product-navigation.spec.ts" timestamp="2025-06-29T21:59:04.233Z" hostname="Mobile Chrome" tests="4" failures="1" skipped="0" time="18.599" errors="0">
+<testcase name="Product Navigation › should navigate from product card to product details" classname="product-navigation.spec.ts" time="6.929">
+<failure message="product-navigation.spec.ts:4:7 should navigate from product card to product details" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › product-navigation.spec.ts:4:7 › Product Navigation › should navigate from product card to product details 
+
+    Error: expect(received).toBeFalsy()
+
+    Received: true
+
+      41 |     // Verificar que no hay errores de JavaScript críticos
+      42 |     const hasJSError = pageContent.includes('Error') && pageContent.includes('500');
+    > 43 |     expect(hasJSError).toBeFalsy();
+         |                        ^
+      44 |     
+      45 |     console.log('✅ Navigation test completed successfully');
+      46 |   });
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-navigation.spec.ts:43:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\error-context.md
+]]>
+</failure>
 <system-out>
-<![CDATA[🔍 Verificando imágenes en página Home...
-📦 Encontradas 0 tarjetas de productos en Home
-⚠️ No se encontraron productos en Home, verificando estructura...
-📦 Productos con selectores alternativos: 0
+<![CDATA[Product name: Bandeja Chata para Pintura
+Product link: /shop-details/92
+
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar productos específicos que tenían problemas" classname="product-images-fix.spec.ts" time="8.517">
+<testcase name="Product Navigation › should handle product details page loading states" classname="product-navigation.spec.ts" time="6.627">
 <system-out>
-<![CDATA[🔍 Verificando productos específicos que tenían placeholders...
-🔍 Verificando producto: poximix-exterior-5kg-poxipol
-   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol
-🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon
-   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon
-🔍 Verificando producto: membrana-performa-20l-plavicon
-   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon
-🔍 Verificando producto: latex-frentes-4l-plavicon
-   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon
-🔍 Verificando producto: recuplast-interior-1l-sinteplast
-   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast
-🔍 Verificando producto: sintetico-converlux-1l-petrilac
-   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac
+<![CDATA[✅ Product details page loading test completed
 ]]>
 </system-out>
 </testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar página de tienda (Shop) sin placeholders" classname="product-images-fix.spec.ts" time="3.362">
+<testcase name="Product Navigation › should show placeholder images correctly" classname="product-navigation.spec.ts" time="3.949">
 <system-out>
-<![CDATA[🔍 Verificando imágenes en página Shop...
-📦 Productos encontrados en Shop: 0
+<![CDATA[✅ Placeholder images test completed
 ]]>
 </system-out>
 </testcase>
-<testcase name="Corrección de Imágenes de Productos › Verificar estadísticas de corrección" classname="product-images-fix.spec.ts" time="5.099">
+<testcase name="Product Navigation › should have working API endpoints" classname="product-navigation.spec.ts" time="1.094">
 <system-out>
-<![CDATA[📊 Verificando estadísticas de la corrección...
-📄 /: 0 imágenes de Supabase encontradas
-📄 /shop: 0 imágenes de Supabase encontradas
-📊 Estadísticas finales:
-   - Total imágenes verificadas: 0
-   - Imágenes válidas: 0
-   - Porcentaje de éxito: 0%
+<![CDATA[✅ API endpoints test completed
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="product-navigation.spec.ts" timestamp="2025-06-29T21:59:04.233Z" hostname="Mobile Safari" tests="4" failures="2" skipped="0" time="62.545" errors="0">
+<testcase name="Product Navigation › should navigate from product card to product details" classname="product-navigation.spec.ts" time="30.125">
+<failure message="product-navigation.spec.ts:4:7 should navigate from product card to product details" type="FAILURE">
+<![CDATA[  [Mobile Safari] › product-navigation.spec.ts:4:7 › Product Navigation › should navigate from product card to product details 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="product-card"]') to be visible
+
+
+       7 |     
+       8 |     // Esperar a que los productos se carguen
+    >  9 |     await page.waitForSelector('[data-testid="product-card"]', { timeout: 30000 });
+         |                ^
+      10 |     
+      11 |     // Obtener el primer producto
+      12 |     const firstProduct = page.locator('[data-testid="product-card"]').first();
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-navigation.spec.ts:9:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Safari\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Product Navigation › should handle product details page loading states" classname="product-navigation.spec.ts" time="1.483">
+<system-out>
+<![CDATA[✅ Product details page loading test completed
+]]>
+</system-out>
+</testcase>
+<testcase name="Product Navigation › should show placeholder images correctly" classname="product-navigation.spec.ts" time="30.115">
+<failure message="product-navigation.spec.ts:73:7 should show placeholder images correctly" type="FAILURE">
+<![CDATA[  [Mobile Safari] › product-navigation.spec.ts:73:7 › Product Navigation › should show placeholder images correctly 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="product-card"]') to be visible
+
+
+      76 |     
+      77 |     // Esperar a que los productos se carguen
+    > 78 |     await page.waitForSelector('[data-testid="product-card"]', { timeout: 30000 });
+         |                ^
+      79 |     
+      80 |     // Verificar que no hay errores 404 para placeholder-bg.jpg
+      81 |     const response404Count = await page.evaluate(() => {
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\e2e\product-navigation.spec.ts:78:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-0a44e-laceholder-images-correctly-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\product-navigation-Product-0a44e-laceholder-images-correctly-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|product-navigation-Product-0a44e-laceholder-images-correctly-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|product-navigation-Product-0a44e-laceholder-images-correctly-Mobile-Safari\video.webm]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Product Navigation › should have working API endpoints" classname="product-navigation.spec.ts" time="0.822">
+<system-out>
+<![CDATA[✅ API endpoints test completed
 ]]>
 </system-out>
 </testcase>

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BrandFilter, BrandFilterCompact } from '@/components/ui/brand-filter';
-import { ProductCard } from '@/components/ui/card';
+import { CommercialProductCard } from '@/components/ui/product-card-commercial';
 import { useBrandFilter } from '@/hooks/useBrandFilter';
 import { getProducts } from '@/lib/api/products';
 import { getBrandColor, formatBrandName } from '@/lib/api/brands';
@@ -207,20 +207,20 @@ export default function BrandFeaturesDemo() {
                 </Card>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {products.map((product) => (
-                  <ProductCard
+                  <CommercialProductCard
                     key={product.id}
                     image={product.images?.previews?.[0] || '/images/products/placeholder.svg'}
                     title={product.name}
-                    brand={product.brand ?? undefined}
+                    brand={product.brand ?? "Marca"}
                     price={product.discounted_price || product.price}
                     originalPrice={product.discounted_price ? product.price : undefined}
                     stock={product.stock}
-                    badge={product.discounted_price ? "Oferta" : "Disponible"}
                     cta="Ver detalles"
                     onAddToCart={() => console.log(`Agregado: ${product.name}`)}
-                    showBrand={true}
+                    shippingText={product.discounted_price ? "Oferta" : "Disponible"}
+                    freeShipping={(product.discounted_price || product.price) >= 15000}
                   />
                 ))}
               </div>
@@ -263,7 +263,7 @@ export default function BrandFeaturesDemo() {
                     <li>• <code>BrandFilter</code> - Filtro completo con búsqueda</li>
                     <li>• <code>BrandFilterCompact</code> - Filtro compacto con badges</li>
                     <li>• <code>useBrandFilter</code> - Hook para manejo de estado</li>
-                    <li>• <code>ProductCard</code> - Actualizado con visualización de marca</li>
+                    <li>• <code>CommercialProductCard</code> - Actualizado con visualización de marca</li>
                   </ul>
                 </div>
               </CardContent>

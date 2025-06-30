@@ -148,7 +148,7 @@ const ShopWithSidebar = () => {
         title={"Tienda de Pinturería"}
         pages={["tienda", "/", "productos con filtros"]}
       />
-      <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#f3f4f6]">
+      <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#FFFEF0]">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           <div className="flex gap-7.5">
             {/* <!-- Sidebar Start --> */}
@@ -371,7 +371,7 @@ const ShopWithSidebar = () => {
                 <div
                   className={`${
                     productStyle === "grid"
-                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-7.5 gap-y-9"
+                      ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9"
                       : "flex flex-col gap-7.5"
                   }`}
                 >

@@ -23,17 +23,21 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
+
+        // Limpiar localStorage antes de cargar nuevo producto
+        localStorage.removeItem("productDetails");
+
         const response = await fetch(`/api/products/${productId}`);
-        
+
         if (!response.ok) {
           throw new Error('Producto no encontrado');
         }
-        
+
         const data = await response.json();
-        
+
         if (data.success && data.data) {
           const productData = data.data;
-          
+
           // Transformar el producto para que sea compatible con el componente ShopDetails
           const transformedProduct: Product = {
             id: productData.id,
@@ -46,9 +50,9 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
               previews: productData.images?.previews || productData.images?.main ? [productData.images.main] : [productData.image_url || '/images/products/placeholder.svg']
             },
           };
-          
+
           setProduct(transformedProduct);
-          
+
           // Actualizar el estado global para que ShopDetails pueda acceder al producto
           dispatch(updateproductDetails(transformedProduct));
         } else {

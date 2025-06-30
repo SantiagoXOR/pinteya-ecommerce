@@ -127,7 +127,24 @@ const ShippingBadge = React.forwardRef<HTMLDivElement, ShippingBadgeProps>(
   ({ free = false, fast = false, text, className, ...props }, ref) => {
     const content = text || (free ? "Envío gratis" : fast ? "Envío rápido" : "Envío")
     const variant = free ? "success" : fast ? "warning" : "info"
-    
+
+    // Para envío gratis, usar el SVG personalizado completo
+    if (free) {
+      return (
+        <div
+          ref={ref}
+          className={cn("inline-flex items-center", className)}
+          {...props}
+        >
+          <img
+            src="/images/icons/icon-envio.svg"
+            alt={content}
+            className="h-5 w-auto"
+          />
+        </div>
+      )
+    }
+
     return (
       <Badge
         ref={ref}

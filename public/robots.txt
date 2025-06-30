@@ -1,0 +1,43 @@
+User-agent: *
+Allow: /
+
+# Permitir acceso a todas las páginas principales
+Allow: /shop
+Allow: /categories
+Allow: /products
+Allow: /checkout
+Allow: /about
+Allow: /contact
+
+# Bloquear páginas de administración y testing
+Disallow: /admin/
+Disallow: /api/
+Disallow: /test-*
+Disallow: /debug-*
+Disallow: /demo/
+
+# Bloquear archivos de configuración
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /*.txt$
+
+# Permitir archivos de imagen y assets
+Allow: /images/
+Allow: /icons/
+Allow: /_next/static/
+
+# Sitemap
+Sitemap: https://pinteya-ecommerce.vercel.app/sitemap.xml
+
+# Configuración específica para bots de búsqueda
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2

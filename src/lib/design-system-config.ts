@@ -36,7 +36,7 @@ export interface DesignSystemConfig {
     }
   }
   
-  // Configuración de ProductCard
+  // Configuración de CommercialProductCard
   productCard: {
     useNewComponentsByDefault: boolean
     showInstallmentsByDefault: boolean

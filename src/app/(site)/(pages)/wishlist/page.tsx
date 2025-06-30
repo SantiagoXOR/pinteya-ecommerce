@@ -3,9 +3,18 @@ import { Wishlist } from "@/components/Wishlist";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Wishlist Page | NextCommerce Nextjs E-commerce template",
-  description: "This is Wishlist Page for NextCommerce Template",
-  // other metadata
+  title: "Lista de Deseos | Pinteya E-commerce",
+  description: "Guarda tus productos favoritos de pinturería, ferretería y corralón en tu lista de deseos. Accede fácilmente a pinturas, herramientas y accesorios que te interesan.",
+  keywords: [
+    "lista de deseos",
+    "favoritos",
+    "pinturería",
+    "ferretería",
+    "pinturas favoritas",
+    "herramientas favoritas",
+    "wishlist",
+    "Pinteya"
+  ],
 };
 
 const WishlistPage = () => {
