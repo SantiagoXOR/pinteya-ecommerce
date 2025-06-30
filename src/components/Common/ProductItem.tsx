@@ -8,7 +8,7 @@ import { addItemToWishlist } from "@/redux/features/wishlist-slice";
 import { updateproductDetails } from "@/redux/features/product-details";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
-import { ProductCard } from "@/components/ui";
+import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 
 const ProductItem = ({ item }: { item: Product }) => {
   const { openModal } = useModalContext();
@@ -56,21 +56,28 @@ const ProductItem = ({ item }: { item: Product }) => {
     : "Nuevo";
 
   return (
-    <ProductCard
-      context="default" // Contexto para nuevos productos
+    <CommercialProductCard
       image={item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
       title={item.title}
       brand={item.brand}
       price={item.discountedPrice}
       originalPrice={item.discountedPrice < item.price ? item.price : undefined}
       discount={discount ? `${discount}%` : undefined}
-      badge={badge}
+      isNew={badge === "Nuevo"}
       stock={50} // Stock por defecto para productos legacy
-      stockUnit="unidades"
       productId={item.id}
       cta="Agregar al carrito"
       onAddToCart={handleAddToCart}
       showCartAnimation={true}
+      // Información de cuotas automática
+      installments={item.discountedPrice >= 5000 ? {
+        quantity: 3,
+        amount: Math.round(item.discountedPrice / 3),
+        interestFree: true
+      } : undefined}
+      // Envío gratis automático para productos >= $15000
+      freeShipping={item.discountedPrice >= 15000}
+      shippingText={badge === "Envío gratis" ? "Envío gratis" : undefined}
     />
   );
 };

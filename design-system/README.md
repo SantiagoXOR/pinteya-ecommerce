@@ -53,13 +53,18 @@ Basado en múltiplos de 4px para consistencia:
 ## 📱 Breakpoints
 
 ```css
-xs: 0px      /* Mobile portrait */
-sm: 576px    /* Mobile landscape */
-md: 768px    /* Tablet */
-lg: 992px    /* Desktop */
+xs: 0px      /* Mobile portrait - 2 columnas ProductCard */
+sm: 576px    /* Mobile landscape - 2 columnas ProductCard */
+md: 768px    /* Tablet - 2-3 columnas ProductCard */
+lg: 992px    /* Desktop - 3-4 columnas ProductCard */
 xl: 1200px   /* Large desktop */
 xxl: 1600px  /* Extra large */
 ```
+
+### Mobile-First ProductCard
+- **Mobile (0-768px):** 2 productos por columna, altura 280-320px
+- **Tablet (768-1024px):** 2-3 productos por columna, altura 400px
+- **Desktop (1024px+):** 3-4 productos por columna, altura 450px
 
 ## 🔤 Tipografía
 

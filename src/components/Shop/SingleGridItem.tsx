@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import Link from "next/link";
 import Image from "next/image";
-import { ProductCard } from "@/components/ui";
+import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 import { ExtendedProduct, calculateProductFeatures } from "@/lib/adapters/productAdapter";
 
 const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
@@ -52,26 +52,29 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
   }
 
   return (
-    <ProductCard
-      context="default" // Contexto para grids de productos
+    <CommercialProductCard
+      className="bg-white" // Forzar fondo blanco
       image={item.images?.previews?.[0] || item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
       title={cleanTitle}
       brand={item.brand}
       price={features.discount ? Math.round(item.price * (1 - features.discount / 100)) : features.currentPrice}
       originalPrice={features.discount ? item.price : undefined}
       discount={features.discount ? `${features.discount}%` : undefined}
-      badge={features.freeShipping ? "Envío gratis" : features.fastShipping ? "Envío rápido" : features.isNew ? "Nuevo" : features.badge}
+      isNew={features.isNew}
       stock={features.stock}
-      stockUnit="unidades" // Unidad por defecto
       productId={item.id}
       cta="Agregar al carrito"
       onAddToCart={handleAddToCart}
       showCartAnimation={true}
-      // Datos adicionales para cálculos automáticos
-      productData={{
-        category: item.category?.name || 'general',
-        weight: 1, // Peso por defecto
-      }}
+      // Información de cuotas automática
+      installments={features.currentPrice >= 5000 ? {
+        quantity: 3,
+        amount: Math.round(features.currentPrice / 3),
+        interestFree: true
+      } : undefined}
+      // Envío gratis automático para productos >= $15000
+      freeShipping={features.freeShipping || features.currentPrice >= 15000}
+      shippingText={features.freeShipping ? "Envío gratis" : features.fastShipping ? "Envío rápido" : undefined}
     />
   );
 };

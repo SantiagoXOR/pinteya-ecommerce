@@ -57,22 +57,20 @@ describe('ProductCard with E-commerce Components', () => {
       />
     )
     
-    // Verifica información de cuotas
-    expect(screen.getByText(/6x de/)).toBeInTheDocument()
-    expect(screen.getByText(/\$ 14,17/)).toBeInTheDocument()
-    expect(screen.getByText('sin interés')).toBeInTheDocument()
+    // Verifica información de cuotas (ahora en una sola línea en variant compact)
+    expect(screen.getByText(/6x de.*\$ 14,17.*sin interés/)).toBeInTheDocument()
   })
 
   it('shows free shipping badge when enabled', () => {
     render(
-      <ProductCard 
+      <ProductCard
         {...defaultProps}
         useNewComponents={true}
         showFreeShipping={true}
       />
     )
-    
-    expect(screen.getByText('🚚 Envío gratis')).toBeInTheDocument()
+
+    expect(screen.getByAltText('Envío gratis')).toBeInTheDocument()
   })
 
   it('shows low stock warning with new components', () => {
@@ -132,16 +130,16 @@ describe('ProductCard with E-commerce Components', () => {
 
   it('maintains backward compatibility with legacy props', () => {
     render(
-      <ProductCard 
+      <ProductCard
         {...defaultProps}
         badge="Envío gratis"
         discount="15%"
         useNewComponents={false}
       />
     )
-    
+
     // Verifica que los props legacy sigan funcionando
-    expect(screen.getByText('Envío gratis')).toBeInTheDocument()
+    expect(screen.getByAltText('Envío gratis')).toBeInTheDocument()
     expect(screen.getByText('15%')).toBeInTheDocument()
   })
 
@@ -154,7 +152,7 @@ describe('ProductCard with E-commerce Components', () => {
     )
     
     // Verifica que PriceDisplay use variante compact
-    expect(container.querySelector('.flex-row.items-baseline')).toBeInTheDocument()
+    expect(container.querySelector('.flex-col.gap-0\\.5')).toBeInTheDocument()
   })
 
   it('uses minimal variant for StockIndicator in ProductCard', () => {
@@ -232,7 +230,7 @@ describe('ProductCard with E-commerce Components', () => {
     // Verifica que todos los componentes estén presentes
     expect(screen.getByText('$ 8.500,00')).toBeInTheDocument() // PriceDisplay
     expect(screen.getByText(/12x de/)).toBeInTheDocument() // Installments
-    expect(screen.getByText('🚚 Envío gratis')).toBeInTheDocument() // Free shipping
+    expect(screen.getByAltText('Envío gratis')).toBeInTheDocument() // Free shipping
     expect(screen.getByText(/12 latas disponibles/)).toBeInTheDocument() // StockIndicator
   })
 })

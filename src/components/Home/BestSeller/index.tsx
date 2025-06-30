@@ -47,17 +47,17 @@ const BestSeller = () => {
             </div>
           </div>
 
-          {/* Loading State mejorado */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7.5">
+          {/* Loading State mejorado - Mobile-First 2 columnas */}
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-7.5">
             {[...Array(6)].map((_, index) => (
               <Card key={index} className="overflow-hidden">
                 <div className="animate-pulse">
-                  <div className="bg-gray-200 h-64 rounded-t-lg"></div>
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="bg-gray-200 h-4 rounded w-3/4"></div>
-                      <div className="bg-gray-200 h-4 rounded w-1/2"></div>
-                      <div className="bg-gray-200 h-6 rounded w-1/3"></div>
+                  <div className="bg-gray-200 h-40 md:h-64 rounded-t-lg"></div>
+                  <CardContent className="p-2 md:p-4">
+                    <div className="space-y-2 md:space-y-3">
+                      <div className="bg-gray-200 h-3 md:h-4 rounded w-3/4"></div>
+                      <div className="bg-gray-200 h-3 md:h-4 rounded w-1/2"></div>
+                      <div className="bg-gray-200 h-4 md:h-6 rounded w-1/3"></div>
                     </div>
                   </CardContent>
                 </div>
@@ -123,8 +123,8 @@ const BestSeller = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7.5">
-          {/* Best Sellers Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-7.5">
+          {/* Best Sellers Grid - Mobile-First 2 columnas */}
           {bestSellerProducts.length > 0 ? (
             bestSellerProducts.map((item, key) => (
               <SingleItem item={item} key={key} />

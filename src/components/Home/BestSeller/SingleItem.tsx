@@ -7,7 +7,7 @@ import { AppDispatch } from "@/redux/store";
 import { updateQuickView } from "@/redux/features/quickView-slice";
 import { addItemToCart } from "@/redux/features/cart-slice";
 import { addItemToWishlist } from "@/redux/features/wishlist-slice";
-import { ProductCard } from "@/components/ui";
+import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 
 const SingleItem = ({ item }: { item: Product }) => {
   const { openModal } = useModalContext();
@@ -51,20 +51,27 @@ const SingleItem = ({ item }: { item: Product }) => {
     : "Destacado";
 
   return (
-    <ProductCard
-      context="default" // Contexto para best sellers
+    <CommercialProductCard
       image={item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
       title={item.title}
       price={item.discountedPrice}
       originalPrice={item.discountedPrice < item.price ? item.price : undefined}
       discount={discount ? `${discount}%` : undefined}
-      badge={badge}
+      isNew={badge === "Destacado"}
       stock={50} // Stock por defecto para productos legacy
-      stockUnit="unidades"
       productId={item.id}
       cta="Agregar al carrito"
       onAddToCart={handleAddToCart}
       showCartAnimation={true}
+      // Información de cuotas automática
+      installments={item.discountedPrice >= 5000 ? {
+        quantity: 3,
+        amount: Math.round(item.discountedPrice / 3),
+        interestFree: true
+      } : undefined}
+      // Envío gratis automático para productos >= $15000
+      freeShipping={item.discountedPrice >= 15000}
+      shippingText={badge === "Envío gratis" ? "Envío gratis" : badge === "Best Seller" ? "Best Seller" : undefined}
     />
   );
 };

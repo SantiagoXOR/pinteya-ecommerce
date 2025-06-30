@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { ShoppingCart, Heart, Search, Star, Truck, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent, ProductCard } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { Badge, DiscountBadge, ShippingBadge, StockBadge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 
@@ -27,7 +28,7 @@ Sistema de diseño completo mobile-first especializado en productos de pinturer�
 ## 🧩 Componentes Incluidos
 
 - **Button**: 8 variantes, 7 tamaños, estados interactivos
-- **Card**: 4 variantes, ProductCard especializada
+- **Card**: 4 variantes, CommercialProductCard especializada
 - **Badge**: 12 variantes, badges e-commerce específicos
 - **Input**: 3 variantes, validaciones, íconos
 
@@ -202,10 +203,10 @@ export const Overview: Story = {
         </div>
       </section>
 
-      {/* Cards y ProductCard */}
+      {/* Cards y CommercialProductCard */}
       <section className="space-y-6">
         <h2 className="text-2xl font-semibold text-gray-900">🃏 Cards</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Card básica */}
           <Card>
             <CardHeader>
@@ -216,16 +217,17 @@ export const Overview: Story = {
             </CardContent>
           </Card>
 
-          {/* ProductCard */}
-          <ProductCard
+          {/* CommercialProductCard */}
+          <CommercialProductCard
             image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/pintura-sherwin-williams.jpg"
             title="Pintura Sherwin Williams"
+            brand="Sherwin Williams"
             price={15500}
             originalPrice={18500}
             discount="19%"
-            badge="Envío gratis"
             cta="Agregar al carrito"
             onAddToCart={() => alert('Agregado al carrito')}
+            freeShipping={true}
           />
 
           {/* Card con hover */}
@@ -258,43 +260,47 @@ export const Overview: Story = {
             </div>
 
             {/* Grid de productos */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <ProductCard
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <CommercialProductCard
                 image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/pintura-sherwin-williams.jpg"
                 title="Pintura Sherwin Williams ProClassic"
+                brand="Sherwin Williams"
                 price={15500}
                 originalPrice={18500}
                 discount="19%"
-                badge="Envío gratis"
                 cta="Agregar al carrito"
                 onAddToCart={() => {}}
+                freeShipping={true}
               />
 
-              <ProductCard
+              <CommercialProductCard
                 title="Rodillo Profesional 23cm"
+                brand="Profesional"
                 price={3200}
-                badge="Nuevo producto"
                 cta="Comprar ahora"
                 onAddToCart={() => {}}
+                isNew={true}
               />
 
-              <ProductCard
+              <CommercialProductCard
                 title="Pincel Angular Premium"
+                brand="Premium"
                 price={1800}
-                badge="Stock limitado"
                 cta="Agregar al carrito"
                 stock={3}
                 onAddToCart={() => {}}
+                shippingText="Stock limitado"
               />
 
-              <ProductCard
+              <CommercialProductCard
                 title="Kit Pintura Completo"
+                brand="Kit"
                 price={12500}
                 originalPrice={16700}
                 discount="25%"
-                badge="Liquidación"
                 cta="¡Aprovechá!"
                 onAddToCart={() => {}}
+                shippingText="Liquidación"
               />
             </div>
 

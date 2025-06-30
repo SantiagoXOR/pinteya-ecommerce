@@ -30,9 +30,10 @@ describe('ProductCard - Nuevo Diseño', () => {
 
   it('muestra el badge de descuento correctamente', () => {
     render(<ProductCard {...defaultProps} />)
-    
+
     expect(screen.getByText('25%')).toBeInTheDocument()
-    expect(screen.getByText('Descuento especial')).toBeInTheDocument()
+    expect(screen.getByText('Descuento')).toBeInTheDocument()
+    expect(screen.getByText('especial')).toBeInTheDocument()
   })
 
   it('muestra el badge de envío', () => {
@@ -140,9 +141,10 @@ describe('ProductCard - Nuevo Diseño', () => {
     render(<ProductCard {...defaultProps} />)
 
     const card = screen.getByTestId('product-card')
-    expect(card).toHaveClass('bg-[#fffcee]')
-    expect(card).toHaveClass('rounded-2xl')
-    expect(card).toHaveClass('max-w-[280px]')
+    expect(card).toHaveClass('bg-white')
+    expect(card).toHaveClass('rounded-xl') // Mobile-first: rounded-xl
+    expect(card).toHaveClass('md:rounded-2xl') // Desktop: rounded-2xl
+    expect(card).toHaveClass('md:max-w-[300px]') // Desktop: max-width
   })
 
   it('muestra ícono de carrito en el botón CTA', () => {

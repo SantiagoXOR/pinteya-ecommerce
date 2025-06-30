@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { PriceDisplay } from "@/components/ui/price-display";
 import { StockIndicator } from "@/components/ui/stock-indicator";
 import { ShippingInfo } from "@/components/ui/shipping-info";
-import { ProductCard } from "@/components/ui";
+import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 import { ZoomIn, Minus, Plus, ShoppingCart, Heart, Star } from "lucide-react";
 
 import { useMemo, useCallback, lazy, Suspense } from 'react';
@@ -298,24 +298,29 @@ const ShopDetails = () => {
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-4 text-gray-900">Vista Rápida del Producto</h3>
                     <div className="max-w-sm">
-                      <ProductCard
-                        context="productDetail"
+                      <CommercialProductCard
                         image={product.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
                         title={product.title}
+                        brand={product.brand || "Marca"}
                         price={product.discountedPrice || product.price}
                         originalPrice={product.discountedPrice && product.price && product.discountedPrice < product.price ? product.price : undefined}
                         discount={product.discountedPrice && product.price && product.discountedPrice < product.price ?
                           `${Math.round(((product.price - product.discountedPrice) / product.price) * 100)}%` : undefined}
                         stock={25} // Stock simulado
-                        stockUnit="unidades"
                         productId={product.id}
-                        badge={(product.discountedPrice || product.price) >= 15000 ? "Envío gratis" : "Disponible"}
                         cta="Agregar al carrito"
                         onAddToCart={() => {
                           // Lógica de agregar al carrito (ya existe en el componente principal)
-                          console.log('Agregado desde ProductCard en detalle');
+                          console.log('Agregado desde CommercialProductCard en detalle');
                         }}
                         showCartAnimation={true}
+                        freeShipping={(product.discountedPrice || product.price) >= 15000}
+                        shippingText={(product.discountedPrice || product.price) >= 15000 ? "Envío gratis" : "Disponible"}
+                        installments={(product.discountedPrice || product.price) >= 5000 ? {
+                          quantity: 3,
+                          amount: Math.round((product.discountedPrice || product.price) / 3),
+                          interestFree: true
+                        } : undefined}
                       />
                     </div>
                   </div>

@@ -153,21 +153,21 @@
   },
   "suites": [
     {
-      "title": "product-images-fix.spec.ts",
-      "file": "product-images-fix.spec.ts",
+      "title": "product-navigation.spec.ts",
+      "file": "product-navigation.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Corrección de Imágenes de Productos",
-          "file": "product-images-fix.spec.ts",
-          "line": 11,
+          "title": "Product Navigation",
+          "file": "product-navigation.spec.ts",
+          "line": 3,
           "column": 6,
           "specs": [
             {
-              "title": "Verificar que productos en Home no muestran placeholders",
-              "ok": true,
+              "title": "should navigate from product card to product details",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -180,125 +180,75 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 16847,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 15093,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeFalsy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeFalsy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mtrue\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:43:24",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                          "column": 24,
+                          "line": 43
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 41 |\u001b[39m     \u001b[90m// Verificar que no hay errores de JavaScript críticos\u001b[39m\n \u001b[90m 42 |\u001b[39m     \u001b[36mconst\u001b[39m hasJSError \u001b[33m=\u001b[39m pageContent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error'\u001b[39m) \u001b[33m&&\u001b[39m pageContent\u001b[33m.\u001b[39mincludes(\u001b[32m'500'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 43 |\u001b[39m     expect(hasJSError)\u001b[33m.\u001b[39mtoBeFalsy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 44 |\u001b[39m     \n \u001b[90m 45 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ Navigation test completed successfully'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 46 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                            "column": 24,
+                            "line": 43
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeFalsy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mtrue\u001b[39m\n\n\u001b[0m \u001b[90m 41 |\u001b[39m     \u001b[90m// Verificar que no hay errores de JavaScript críticos\u001b[39m\n \u001b[90m 42 |\u001b[39m     \u001b[36mconst\u001b[39m hasJSError \u001b[33m=\u001b[39m pageContent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error'\u001b[39m) \u001b[33m&&\u001b[39m pageContent\u001b[33m.\u001b[39mincludes(\u001b[32m'500'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 43 |\u001b[39m     expect(hasJSError)\u001b[33m.\u001b[39mtoBeFalsy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 44 |\u001b[39m     \n \u001b[90m 45 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ Navigation test completed successfully'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 46 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:43:24\u001b[22m"
+                        }
+                      ],
                       "stdout": [
                         {
-                          "text": "🔍 Verificando imágenes en página Home...\n"
+                          "text": "Product name: Lija al Agua Grano 80\n"
                         },
                         {
-                          "text": "📦 Encontradas 14 tarjetas de productos en Home\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 1:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 50 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 2:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Pinceleta para Obra\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 3:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 120 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 4:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 40 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 5:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 80 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 6:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 180 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 7:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Bandeja Chata para Pintura\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 8:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Poximix Exterior 5kg Poxipol\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 9:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/plavipint-techos-poliuretanico-20l-plavicon.webp\n"
-                        },
-                        {
-                          "text": "   - Alt: Plavipint Techos Poliuretánico 20L Plavicon\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 10:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/membrana-performa-20l-plavicon.webp\n"
-                        },
-                        {
-                          "text": "   - Alt: Membrana Performa 20L Plavicon\n"
+                          "text": "Product link: /shop-details/89\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:01.217Z",
+                      "startTime": "2025-06-29T21:59:05.110Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                        "column": 24,
+                        "line": 43
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-733a7b876b1f02881e61",
-              "file": "product-images-fix.spec.ts",
-              "line": 21,
+              "id": "395d1909b12f641e8bef-53285950eddbc6f1bf4b",
+              "file": "product-navigation.spec.ts",
+              "line": 4,
               "column": 7
             },
             {
-              "title": "Verificar productos específicos que tenían problemas",
-              "ok": false,
+              "title": "should handle product details page loading states",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -311,66 +261,31 @@
                     {
                       "workerIndex": 1,
                       "parallelIndex": 1,
-                      "status": "timedOut",
-                      "duration": 31716,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                            "column": 18,
-                            "line": 94
-                          },
-                          "message": "Error: page.waitForLoadState: Test timeout of 30000ms exceeded.\n\n\u001b[0m \u001b[90m 92 |\u001b[39m       \n \u001b[90m 93 |\u001b[39m       \u001b[90m// Esperar a que la página cargue\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 94 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 95 |\u001b[39m       \n \u001b[90m 96 |\u001b[39m       \u001b[90m// Buscar la imagen principal del producto\u001b[39m\n \u001b[90m 97 |\u001b[39m       \u001b[36mconst\u001b[39m productImage \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"product-main-image\"], .product-image img, img[alt*=\"producto\"], img[alt*=\"Poximix\"], img[alt*=\"Plavicon\"], img[alt*=\"Sinteplast\"], img[alt*=\"Petrilac\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:94:18\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 13806,
+                      "errors": [],
                       "stdout": [
                         {
-                          "text": "🔍 Verificando productos específicos que tenían placeholders...\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: poximix-exterior-5kg-poxipol\n"
+                          "text": "✅ Product details page loading test completed\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:01.084Z",
+                      "startTime": "2025-06-29T21:59:05.123Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-chromium\\error-context.md"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-71dee0adf38d4182633b",
-              "file": "product-images-fix.spec.ts",
-              "line": 75,
+              "id": "395d1909b12f641e8bef-dc427e145cf33609b456",
+              "file": "product-navigation.spec.ts",
+              "line": 48,
               "column": 7
             },
             {
-              "title": "Verificar página de tienda (Shop) sin placeholders",
+              "title": "should show placeholder images correctly",
               "ok": false,
               "tags": [],
               "tests": [
@@ -385,7 +300,7 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "timedOut",
-                      "duration": 31792,
+                      "duration": 31343,
                       "error": {
                         "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
                         "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
@@ -396,37 +311,28 @@
                         },
                         {
                           "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
                             "column": 16,
-                            "line": 138
+                            "line": 78
                           },
-                          "message": "Error: page.waitForLoadState: Test timeout of 30000ms exceeded.\n\n\u001b[0m \u001b[90m 136 |\u001b[39m     \u001b[90m// Navegar a la página de tienda\u001b[39m\n \u001b[90m 137 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/shop'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 138 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 139 |\u001b[39m     \n \u001b[90m 140 |\u001b[39m     \u001b[90m// Buscar productos en la tienda\u001b[39m\n \u001b[90m 141 |\u001b[39m     \u001b[36mconst\u001b[39m productCards \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"product-card\"], .product-card, [class*=\"product\"]'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:138:16\u001b[22m"
+                          "message": "Error: page.waitForSelector: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-card\"]') to be visible\u001b[22m\n\n\n\u001b[0m \u001b[90m 76 |\u001b[39m     \n \u001b[90m 77 |\u001b[39m     \u001b[90m// Esperar a que los productos se carguen\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 78 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 79 |\u001b[39m     \n \u001b[90m 80 |\u001b[39m     \u001b[90m// Verificar que no hay errores 404 para placeholder-bg.jpg\u001b[39m\n \u001b[90m 81 |\u001b[39m     \u001b[36mconst\u001b[39m response404Count \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:78:16\u001b[22m"
                         }
                       ],
-                      "stdout": [
-                        {
-                          "text": "🔍 Verificando imágenes en página Shop...\n"
-                        }
-                      ],
+                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:01.174Z",
+                      "startTime": "2025-06-29T21:59:05.119Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\\test-failed-1.png"
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-0a44e-laceholder-images-correctly-chromium\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-chromium\\error-context.md"
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-0a44e-laceholder-images-correctly-chromium\\video.webm"
                         }
                       ]
                     }
@@ -434,14 +340,14 @@
                   "status": "unexpected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-e9fad2fbc594eacfd9dc",
-              "file": "product-images-fix.spec.ts",
-              "line": 133,
+              "id": "395d1909b12f641e8bef-d6acf01e86180df596d8",
+              "file": "product-navigation.spec.ts",
+              "line": 73,
               "column": 7
             },
             {
-              "title": "Verificar estadísticas de corrección",
-              "ok": false,
+              "title": "should have working API endpoints",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -454,63 +360,31 @@
                     {
                       "workerIndex": 3,
                       "parallelIndex": 3,
-                      "status": "timedOut",
-                      "duration": 30910,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                            "column": 18,
-                            "line": 178
-                          },
-                          "message": "Error: page.waitForLoadState: Test timeout of 30000ms exceeded.\n\n\u001b[0m \u001b[90m 176 |\u001b[39m     \u001b[36mfor\u001b[39m (\u001b[36mconst\u001b[39m pagePath \u001b[36mof\u001b[39m pages) {\n \u001b[90m 177 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(pagePath)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 178 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 179 |\u001b[39m       \n \u001b[90m 180 |\u001b[39m       \u001b[36mconst\u001b[39m images \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'img[src*=\"supabase.co\"]'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 181 |\u001b[39m       \u001b[36mconst\u001b[39m imageCount \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m images\u001b[33m.\u001b[39mcount()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:178:18\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 14304,
+                      "errors": [],
                       "stdout": [
                         {
-                          "text": "📊 Verificando estadísticas de la corrección...\n"
+                          "text": "✅ API endpoints test completed\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:01.134Z",
+                      "startTime": "2025-06-29T21:59:05.133Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-15a77--estadísticas-de-corrección-chromium\\error-context.md"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-be67965d524047172bb5",
-              "file": "product-images-fix.spec.ts",
-              "line": 168,
+              "id": "395d1909b12f641e8bef-2ad85fe32c48986b912e",
+              "file": "product-navigation.spec.ts",
+              "line": 93,
               "column": 7
             },
             {
-              "title": "Verificar que productos en Home no muestran placeholders",
+              "title": "should navigate from product card to product details",
               "ok": false,
               "tags": [],
               "tests": [
@@ -525,70 +399,55 @@
                       "workerIndex": 4,
                       "parallelIndex": 4,
                       "status": "timedOut",
-                      "duration": 30342,
+                      "duration": 60017,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:13:8",
-                        "location": {
-                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                          "column": 8,
-                          "line": 13
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 11 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Corrección de Imágenes de Productos'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m 12 |\u001b[39m   \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m     \u001b[90m// Navegar a la página principal\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[0m"
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
                       },
                       "errors": [
                         {
-                          "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                            "column": 8,
-                            "line": 13
-                          },
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n\u001b[0m \u001b[90m 11 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Corrección de Imágenes de Productos'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m 12 |\u001b[39m   \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m     \u001b[90m// Navegar a la página principal\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:13:8\u001b[22m"
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
                         },
                         {
                           "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
                             "column": 16,
-                            "line": 15
+                            "line": 9
                           },
-                          "message": "Error: page.goto: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 13 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 14 |\u001b[39m     \u001b[90m// Navegar a la página principal\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 16 |\u001b[39m     \n \u001b[90m 17 |\u001b[39m     \u001b[90m// Esperar a que la página cargue completamente\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:15:16\u001b[22m"
+                          "message": "TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-card\"]') to be visible\u001b[22m\n\n\n\u001b[0m \u001b[90m  7 |\u001b[39m     \n \u001b[90m  8 |\u001b[39m     \u001b[90m// Esperar a que los productos se carguen\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 10 |\u001b[39m     \n \u001b[90m 11 |\u001b[39m     \u001b[90m// Obtener el primer producto\u001b[39m\n \u001b[90m 12 |\u001b[39m     \u001b[36mconst\u001b[39m firstProduct \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:9:16\u001b[22m"
+                        },
+                        {
+                          "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 30000ms.\u001b[39m"
+                        },
+                        {
+                          "message": "Error: browserContext._wrapApiCall: Test timeout of 30000ms exceeded.\nBrowser logs:\n\n<launching> C:\\Users\\marti\\AppData\\Local\\ms-playwright\\firefox-1487\\firefox\\firefox.exe -no-remote -wait-for-browser -foreground -profile C:\\Users\\marti\\AppData\\Local\\Temp\\playwright_firefoxdev_profile-RxK94Q -juggler-pipe -silent\n<launched> pid=52780\n[pid=52780][err] JavaScript warning: resource://services-settings/Utils.sys.mjs, line 116: unreachable code after return statement\n[pid=52780][out] console.warn: services.settings: Ignoring preference override of remote settings server\n[pid=52780][out] console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment\n[pid=52780][out] \n[pid=52780][out] Juggler listening to the pipe\n[pid=52780][out] console.error: \"Warning: unrecognized command line flag\" \"-wait-for-browser\"\n[pid=52780][err] JavaScript error: chrome://juggler/content/Helper.js, line 82: NS_ERROR_FAILURE: Component returned failure code: 0x80004005 (NS_ERROR_FAILURE) [nsIWebProgress.removeProgressListener]\n[pid=52780][out] console.error: SearchEngineSelector: \"Received empty search configuration!\"\n[pid=52780][out] console.error: \"Received empty top sites configuration!\"\n[pid=52780][out] console.error: SearchEngineSelector: \"Received empty search configuration!\"\n[pid=52780][out] console.error: SearchService: \"#init: failure initializing search:\" [Exception... \"Failed to get engine data from Remote Settings\"  nsresult: \"0x8000ffff (NS_ERROR_UNEXPECTED)\"  location: \"JS frame :: resource://gre/modules/SearchEngineSelector.sys.mjs :: getEngineConfiguration :: line 100\"  data: no]\n[pid=52780][out] console.error: WebExtensions: \n[pid=52780][out]   Message: [Exception... \"Failed to get engine data from Remote Settings\"  nsresult: \"0x8000ffff (NS_ERROR_UNEXPECTED)\"  location: \"JS frame :: resource://gre/modules/SearchEngineSelector.sys.mjs :: getEngineConfiguration :: line 100\"  data: no]\n[pid=52780][out]   Stack:\n[pid=52780][out]     getEngineConfiguration@resource://gre/modules/SearchEngineSelector.sys.mjs:100:24\n[pid=52780][out] \n[pid=52780][out] console.error: \"Received empty top sites configuration!\"\n[pid=52780][err] JavaScript error: resource://gre/modules/SearchEngineSelector.sys.mjs, line 100: NS_ERROR_UNEXPECTED: Failed to get engine data from Remote Settings\n[pid=52780][err] JavaScript error: resource://gre/modules/SearchEngineSelector.sys.mjs, line 100: NS_ERROR_UNEXPECTED: Failed to get engine data from Remote Settings\n[pid=52780][err] JavaScript error: resource://gre/modules/SearchEngineSelector.sys.mjs, line 100: NS_ERROR_UNEXPECTED: Failed to get engine data from Remote Settings\n[pid=52780][err] JavaScript error: resource://gre/modules/SearchEngineSelector.sys.mjs, line 100: NS_ERROR_UNEXPECTED: Failed to get engine data from Remote Settings\n[pid=52780][out] console.error: SearchSettings: \"_write: Could not write to settings file:\" (new Error(\"cannot write without any engine.\", \"resource://gre/modules/SearchSettings.sys.mjs\", 328))\n[pid=52780][out] console.error: URLBar - Provider.UrlbarProviderSearchTips: [Exception... \"Failed to get engine data from Remote Settings\"  nsresult: \"0x8000ffff (NS_ERROR_UNEXPECTED)\"  location: \"JS frame :: resource://gre/modules/SearchEngineSelector.sys.mjs :: getEngineConfiguration :: line 100\"  data: no]\n[pid=52780][err] JavaScript error: http://localhost:3000/_next/static/chunks/app/layout.js, line 2726: SyntaxError: \"\" literal not terminated before end of script\n[pid=52780][err] JavaScript error: chrome://juggler/content/content/Runtime.js, line 167: TypeError: message.stack is null\n[pid=52780][err] JavaScript warning: resource://gre/modules/UpdateService.sys.mjs, line 3878: unreachable code after return statement\n[pid=52780] <gracefully close start>\n[pid=52780] <kill>\n[pid=52780] <will force kill>\n[pid=52780] taskkill stdout: CORRECTO: el proceso con PID 46856 (proceso secundario de PID 52780)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 46220 (proceso secundario de PID 52780)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 44368 (proceso secundario de PID 52780)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 43088 (proceso secundario de PID 52780)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 43568 (proceso secundario de PID 52780)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 44260 (proceso secundario de PID 52780)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 52780 (proceso secundario de PID 51968)\r\nha sido terminado.\r\n"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:00.947Z",
+                      "startTime": "2025-06-29T21:59:05.118Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-463b2-me-no-muestran-placeholders-firefox\\video.webm"
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-firefox\\test-failed-1.png"
                         }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                        "column": 8,
-                        "line": 13
-                      }
+                      ]
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-4d813c1fd0df5ee40d5b",
-              "file": "product-images-fix.spec.ts",
-              "line": 21,
+              "id": "395d1909b12f641e8bef-1f8cffbc0f23702f7ff1",
+              "file": "product-navigation.spec.ts",
+              "line": 4,
               "column": 7
             },
             {
-              "title": "Verificar productos específicos que tenían problemas",
-              "ok": false,
+              "title": "should handle product details page loading states",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -601,68 +460,32 @@
                     {
                       "workerIndex": 5,
                       "parallelIndex": 5,
-                      "status": "timedOut",
-                      "duration": 31879,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:13:8",
-                        "location": {
-                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                          "column": 8,
-                          "line": 13
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 11 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Corrección de Imágenes de Productos'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m 12 |\u001b[39m   \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m     \u001b[90m// Navegar a la página principal\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 11925,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                            "column": 8,
-                            "line": 13
-                          },
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n\u001b[0m \u001b[90m 11 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Corrección de Imágenes de Productos'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m 12 |\u001b[39m   \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m     \u001b[90m// Navegar a la página principal\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:13:8\u001b[22m"
+                          "text": "✅ Product details page loading test completed\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:01.160Z",
+                      "startTime": "2025-06-29T21:59:05.164Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-f2cfd-íficos-que-tenían-problemas-firefox\\error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                        "column": 8,
-                        "line": 13
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-7c8b49df0e21b36f6838",
-              "file": "product-images-fix.spec.ts",
-              "line": 75,
+              "id": "395d1909b12f641e8bef-e1c940fb63e6e79f4524",
+              "file": "product-navigation.spec.ts",
+              "line": 48,
               "column": 7
             },
             {
-              "title": "Verificar página de tienda (Shop) sin placeholders",
-              "ok": false,
+              "title": "should show placeholder images correctly",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -675,70 +498,31 @@
                     {
                       "workerIndex": 6,
                       "parallelIndex": 6,
-                      "status": "timedOut",
-                      "duration": 38926,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:13:8",
-                        "location": {
-                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                          "column": 8,
-                          "line": 13
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 11 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Corrección de Imágenes de Productos'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m 12 |\u001b[39m   \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m     \u001b[90m// Navegar a la página principal\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[0m"
-                      },
-                      "errors": [
+                      "status": "passed",
+                      "duration": 15858,
+                      "errors": [],
+                      "stdout": [
                         {
-                          "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                            "column": 8,
-                            "line": 13
-                          },
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n\u001b[0m \u001b[90m 11 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'Corrección de Imágenes de Productos'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m 12 |\u001b[39m   \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m     \u001b[90m// Navegar a la página principal\u001b[39m\n \u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m     \u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:13:8\u001b[22m"
-                        },
-                        {
-                          "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                            "column": 16,
-                            "line": 15
-                          },
-                          "message": "TimeoutError: page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 13 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 14 |\u001b[39m     \u001b[90m// Navegar a la página principal\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 16 |\u001b[39m     \n \u001b[90m 17 |\u001b[39m     \u001b[90m// Esperar a que la página cargue completamente\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts:15:16\u001b[22m"
+                          "text": "✅ Placeholder images test completed\n"
                         }
                       ],
-                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:01.050Z",
+                      "startTime": "2025-06-29T21:59:05.130Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-images-fix-Correcc-70f89-ienda-Shop-sin-placeholders-firefox\\error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-images-fix.spec.ts",
-                        "column": 8,
-                        "line": 13
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-a96799dff0f6ad272be1",
-              "file": "product-images-fix.spec.ts",
-              "line": 133,
+              "id": "395d1909b12f641e8bef-42b89e57fb6ab5c0044e",
+              "file": "product-navigation.spec.ts",
+              "line": 73,
               "column": 7
             },
             {
-              "title": "Verificar estadísticas de corrección",
+              "title": "should have working API endpoints",
               "ok": true,
               "tags": [],
               "tests": [
@@ -753,34 +537,16 @@
                       "workerIndex": 7,
                       "parallelIndex": 7,
                       "status": "passed",
-                      "duration": 29332,
+                      "duration": 11385,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "📊 Verificando estadísticas de la corrección...\n"
-                        },
-                        {
-                          "text": "📄 /: 0 imágenes de Supabase encontradas\n"
-                        },
-                        {
-                          "text": "📄 /shop: 0 imágenes de Supabase encontradas\n"
-                        },
-                        {
-                          "text": "📊 Estadísticas finales:\n"
-                        },
-                        {
-                          "text": "   - Total imágenes verificadas: 0\n"
-                        },
-                        {
-                          "text": "   - Imágenes válidas: 0\n"
-                        },
-                        {
-                          "text": "   - Porcentaje de éxito: 0%\n"
+                          "text": "✅ API endpoints test completed\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:01.198Z",
+                      "startTime": "2025-06-29T21:59:05.136Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -788,135 +554,14 @@
                   "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-1487ab3440d89df497a2",
-              "file": "product-images-fix.spec.ts",
-              "line": 168,
+              "id": "395d1909b12f641e8bef-8a58f9021bcb9f6130c9",
+              "file": "product-navigation.spec.ts",
+              "line": 93,
               "column": 7
             },
             {
-              "title": "Verificar que productos en Home no muestran placeholders",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 3896,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "🔍 Verificando imágenes en página Home...\n"
-                        },
-                        {
-                          "text": "📦 Encontradas 0 tarjetas de productos en Home\n"
-                        },
-                        {
-                          "text": "⚠️ No se encontraron productos en Home, verificando estructura...\n"
-                        },
-                        {
-                          "text": "📦 Productos con selectores alternativos: 0\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-06-28T21:43:30.308Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "f7b36ec62e142e18d656-805eecf6ca8feb8dd340",
-              "file": "product-images-fix.spec.ts",
-              "line": 21,
-              "column": 7
-            },
-            {
-              "title": "Verificar productos específicos que tenían problemas",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 6428,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "🔍 Verificando productos específicos que tenían placeholders...\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: poximix-exterior-5kg-poxipol\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: membrana-performa-20l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: latex-frentes-4l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: recuplast-interior-1l-sinteplast\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: sintetico-converlux-1l-petrilac\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-06-28T21:43:35.652Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "f7b36ec62e142e18d656-e14529f81a777fec45fd",
-              "file": "product-images-fix.spec.ts",
-              "line": 75,
-              "column": 7
-            },
-            {
-              "title": "Verificar página de tienda (Shop) sin placeholders",
-              "ok": true,
+              "title": "should navigate from product card to product details",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -929,34 +574,54 @@
                     {
                       "workerIndex": 9,
                       "parallelIndex": 7,
-                      "status": "passed",
-                      "duration": 3128,
-                      "errors": [],
-                      "stdout": [
+                      "status": "timedOut",
+                      "duration": 30155,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
                         {
-                          "text": "🔍 Verificando imágenes en página Shop...\n"
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
                         },
                         {
-                          "text": "📦 Productos encontrados en Shop: 0\n"
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                            "column": 16,
+                            "line": 9
+                          },
+                          "message": "Error: page.waitForSelector: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-card\"]') to be visible\u001b[22m\n\n\n\u001b[0m \u001b[90m  7 |\u001b[39m     \n \u001b[90m  8 |\u001b[39m     \u001b[90m// Esperar a que los productos se carguen\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 10 |\u001b[39m     \n \u001b[90m 11 |\u001b[39m     \u001b[90m// Obtener el primer producto\u001b[39m\n \u001b[90m 12 |\u001b[39m     \u001b[36mconst\u001b[39m firstProduct \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:9:16\u001b[22m"
                         }
                       ],
+                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:41.373Z",
+                      "startTime": "2025-06-29T21:59:21.491Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-webkit\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-webkit\\video.webm"
+                        }
+                      ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-0e3bef8ca8d64fed0fb9",
-              "file": "product-images-fix.spec.ts",
-              "line": 133,
+              "id": "395d1909b12f641e8bef-8b01cb45dcae55cc87b4",
+              "file": "product-navigation.spec.ts",
+              "line": 4,
               "column": 7
             },
             {
-              "title": "Verificar estadísticas de corrección",
+              "title": "should handle product details page loading states",
               "ok": true,
               "tags": [],
               "tests": [
@@ -968,37 +633,19 @@
                   "projectName": "webkit",
                   "results": [
                     {
-                      "workerIndex": 10,
-                      "parallelIndex": 4,
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3662,
+                      "duration": 2691,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "📊 Verificando estadísticas de la corrección...\n"
-                        },
-                        {
-                          "text": "📄 /: 0 imágenes de Supabase encontradas\n"
-                        },
-                        {
-                          "text": "📄 /shop: 0 imágenes de Supabase encontradas\n"
-                        },
-                        {
-                          "text": "📊 Estadísticas finales:\n"
-                        },
-                        {
-                          "text": "   - Total imágenes verificadas: 0\n"
-                        },
-                        {
-                          "text": "   - Imágenes válidas: 0\n"
-                        },
-                        {
-                          "text": "   - Porcentaje de éxito: 0%\n"
+                          "text": "✅ Product details page loading test completed\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:41.532Z",
+                      "startTime": "2025-06-29T21:59:21.360Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1006,14 +653,113 @@
                   "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-10cad17417d1746f03ad",
-              "file": "product-images-fix.spec.ts",
-              "line": 168,
+              "id": "395d1909b12f641e8bef-4101f9d315a66f654518",
+              "file": "product-navigation.spec.ts",
+              "line": 48,
               "column": 7
             },
             {
-              "title": "Verificar que productos en Home no muestran placeholders",
+              "title": "should show placeholder images correctly",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 3,
+                      "status": "timedOut",
+                      "duration": 30174,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                            "column": 16,
+                            "line": 78
+                          },
+                          "message": "Error: page.waitForSelector: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-card\"]') to be visible\u001b[22m\n\n\n\u001b[0m \u001b[90m 76 |\u001b[39m     \n \u001b[90m 77 |\u001b[39m     \u001b[90m// Esperar a que los productos se carguen\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 78 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 79 |\u001b[39m     \n \u001b[90m 80 |\u001b[39m     \u001b[90m// Verificar que no hay errores 404 para placeholder-bg.jpg\u001b[39m\n \u001b[90m 81 |\u001b[39m     \u001b[36mconst\u001b[39m response404Count \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:78:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-06-29T21:59:21.626Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-0a44e-laceholder-images-correctly-webkit\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-0a44e-laceholder-images-correctly-webkit\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "395d1909b12f641e8bef-c597550b2a6eb17c3dad",
+              "file": "product-navigation.spec.ts",
+              "line": 73,
+              "column": 7
+            },
+            {
+              "title": "should have working API endpoints",
               "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 1787,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ API endpoints test completed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-06-29T21:59:22.435Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "395d1909b12f641e8bef-ee5be047f7cc4c05667a",
+              "file": "product-navigation.spec.ts",
+              "line": 93,
+              "column": 7
+            },
+            {
+              "title": "should navigate from product card to product details",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -1026,201 +772,74 @@
                     {
                       "workerIndex": 11,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 6801,
-                      "errors": [],
+                      "status": "failed",
+                      "duration": 6929,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeFalsy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mtrue\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeFalsy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mtrue\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:43:24",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                          "column": 24,
+                          "line": 43
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 41 |\u001b[39m     \u001b[90m// Verificar que no hay errores de JavaScript críticos\u001b[39m\n \u001b[90m 42 |\u001b[39m     \u001b[36mconst\u001b[39m hasJSError \u001b[33m=\u001b[39m pageContent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error'\u001b[39m) \u001b[33m&&\u001b[39m pageContent\u001b[33m.\u001b[39mincludes(\u001b[32m'500'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 43 |\u001b[39m     expect(hasJSError)\u001b[33m.\u001b[39mtoBeFalsy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 44 |\u001b[39m     \n \u001b[90m 45 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ Navigation test completed successfully'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 46 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                            "column": 24,
+                            "line": 43
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeFalsy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mtrue\u001b[39m\n\n\u001b[0m \u001b[90m 41 |\u001b[39m     \u001b[90m// Verificar que no hay errores de JavaScript críticos\u001b[39m\n \u001b[90m 42 |\u001b[39m     \u001b[36mconst\u001b[39m hasJSError \u001b[33m=\u001b[39m pageContent\u001b[33m.\u001b[39mincludes(\u001b[32m'Error'\u001b[39m) \u001b[33m&&\u001b[39m pageContent\u001b[33m.\u001b[39mincludes(\u001b[32m'500'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 43 |\u001b[39m     expect(hasJSError)\u001b[33m.\u001b[39mtoBeFalsy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 44 |\u001b[39m     \n \u001b[90m 45 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'✅ Navigation test completed successfully'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 46 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:43:24\u001b[22m"
+                        }
+                      ],
                       "stdout": [
                         {
-                          "text": "🔍 Verificando imágenes en página Home...\n"
+                          "text": "Product name: Bandeja Chata para Pintura\n"
                         },
                         {
-                          "text": "📦 Encontradas 14 tarjetas de productos en Home\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 1:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 50 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 2:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Pinceleta para Obra\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 3:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 120 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 4:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 40 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 5:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 80 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 6:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Lija al Agua Grano 180 - El Galgo\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 7:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Bandeja Chata para Pintura\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 8:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\n"
-                        },
-                        {
-                          "text": "   - Alt: Poximix Exterior 5kg Poxipol\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 9:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/plavipint-techos-poliuretanico-20l-plavicon.webp\n"
-                        },
-                        {
-                          "text": "   - Alt: Plavipint Techos Poliuretánico 20L Plavicon\n"
-                        },
-                        {
-                          "text": "🖼️ Producto 10:\n"
-                        },
-                        {
-                          "text": "   - Src: https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/membrana-performa-20l-plavicon.webp\n"
-                        },
-                        {
-                          "text": "   - Alt: Membrana Performa 20L Plavicon\n"
+                          "text": "Product link: /shop-details/92\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:43.870Z",
+                      "startTime": "2025-06-29T21:59:22.091Z",
                       "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "f7b36ec62e142e18d656-c275464c022ca8b95e89",
-              "file": "product-images-fix.spec.ts",
-              "line": 21,
-              "column": 7
-            },
-            {
-              "title": "Verificar productos específicos que tenían problemas",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "Mobile Chrome",
-                  "projectName": "Mobile Chrome",
-                  "results": [
-                    {
-                      "workerIndex": 12,
-                      "parallelIndex": 5,
-                      "status": "passed",
-                      "duration": 19864,
-                      "errors": [],
-                      "stdout": [
+                      "attachments": [
                         {
-                          "text": "🔍 Verificando productos específicos que tenían placeholders...\n"
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\\test-failed-1.png"
                         },
                         {
-                          "text": "🔍 Verificando producto: poximix-exterior-5kg-poxipol\n"
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\\video.webm"
                         },
                         {
-                          "text": "   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon\n"
-                        },
-                        {
-                          "text": "   📸 Primera imagen encontrada: /_next/image?url=%2Fimages%2Flogo%2FLOGO%20POSITIVO.svg&w=384&q=75\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: membrana-performa-20l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: latex-frentes-4l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: recuplast-interior-1l-sinteplast\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: sintetico-converlux-1l-petrilac\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac\n"
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Chrome\\error-context.md"
                         }
                       ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-06-28T21:43:43.895Z",
-                      "annotations": [],
-                      "attachments": []
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                        "column": 24,
+                        "line": 43
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-900e7fec22390e4e17ed",
-              "file": "product-images-fix.spec.ts",
-              "line": 75,
+              "id": "395d1909b12f641e8bef-bb652076cc573fc512ba",
+              "file": "product-navigation.spec.ts",
+              "line": 4,
               "column": 7
             },
             {
-              "title": "Verificar página de tienda (Shop) sin placeholders",
+              "title": "should handle product details page loading states",
               "ok": true,
               "tags": [],
               "tests": [
@@ -1233,21 +852,18 @@
                   "results": [
                     {
                       "workerIndex": 13,
-                      "parallelIndex": 7,
+                      "parallelIndex": 6,
                       "status": "passed",
-                      "duration": 8464,
+                      "duration": 6627,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "🔍 Verificando imágenes en página Shop...\n"
-                        },
-                        {
-                          "text": "📦 Productos encontrados en Shop: 0\n"
+                          "text": "✅ Product details page loading test completed\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:46.858Z",
+                      "startTime": "2025-06-29T21:59:25.233Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1255,13 +871,51 @@
                   "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-d625ae3da9a51051deb9",
-              "file": "product-images-fix.spec.ts",
-              "line": 133,
+              "id": "395d1909b12f641e8bef-e59e51f4944a84434420",
+              "file": "product-navigation.spec.ts",
+              "line": 48,
               "column": 7
             },
             {
-              "title": "Verificar estadísticas de corrección",
+              "title": "should show placeholder images correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 3949,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Placeholder images test completed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-06-29T21:59:25.793Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "395d1909b12f641e8bef-a6292b2e500d46293aa2",
+              "file": "product-navigation.spec.ts",
+              "line": 73,
+              "column": 7
+            },
+            {
+              "title": "should have working API endpoints",
               "ok": true,
               "tags": [],
               "tests": [
@@ -1276,34 +930,16 @@
                       "workerIndex": 15,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 10806,
+                      "duration": 1094,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "📊 Verificando estadísticas de la corrección...\n"
-                        },
-                        {
-                          "text": "📄 /: 0 imágenes de Supabase encontradas\n"
-                        },
-                        {
-                          "text": "📄 /shop: 0 imágenes de Supabase encontradas\n"
-                        },
-                        {
-                          "text": "📊 Estadísticas finales:\n"
-                        },
-                        {
-                          "text": "   - Total imágenes verificadas: 0\n"
-                        },
-                        {
-                          "text": "   - Imágenes válidas: 0\n"
-                        },
-                        {
-                          "text": "   - Porcentaje de éxito: 0%\n"
+                          "text": "✅ API endpoints test completed\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:46.954Z",
+                      "startTime": "2025-06-29T21:59:26.480Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1311,61 +947,14 @@
                   "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-589dcfe792200a78fcb6",
-              "file": "product-images-fix.spec.ts",
-              "line": 168,
+              "id": "395d1909b12f641e8bef-4b44316ff210e189dc2b",
+              "file": "product-navigation.spec.ts",
+              "line": 93,
               "column": 7
             },
             {
-              "title": "Verificar que productos en Home no muestran placeholders",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "Mobile Safari",
-                  "projectName": "Mobile Safari",
-                  "results": [
-                    {
-                      "workerIndex": 14,
-                      "parallelIndex": 3,
-                      "status": "passed",
-                      "duration": 1997,
-                      "errors": [],
-                      "stdout": [
-                        {
-                          "text": "🔍 Verificando imágenes en página Home...\n"
-                        },
-                        {
-                          "text": "📦 Encontradas 0 tarjetas de productos en Home\n"
-                        },
-                        {
-                          "text": "⚠️ No se encontraron productos en Home, verificando estructura...\n"
-                        },
-                        {
-                          "text": "📦 Productos con selectores alternativos: 0\n"
-                        }
-                      ],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-06-28T21:43:46.857Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "f7b36ec62e142e18d656-032ea7fc52aa1bfef63c",
-              "file": "product-images-fix.spec.ts",
-              "line": 21,
-              "column": 7
-            },
-            {
-              "title": "Verificar productos específicos que tenían problemas",
-              "ok": true,
+              "title": "should navigate from product card to product details",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -1377,68 +966,55 @@
                   "results": [
                     {
                       "workerIndex": 16,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 8517,
-                      "errors": [],
-                      "stdout": [
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 30125,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
                         {
-                          "text": "🔍 Verificando productos específicos que tenían placeholders...\n"
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
                         },
                         {
-                          "text": "🔍 Verificando producto: poximix-exterior-5kg-poxipol\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para poximix-exterior-5kg-poxipol\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: plavipint-techos-poliuretanico-20l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para plavipint-techos-poliuretanico-20l-plavicon\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: membrana-performa-20l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para membrana-performa-20l-plavicon\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: latex-frentes-4l-plavicon\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para latex-frentes-4l-plavicon\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: recuplast-interior-1l-sinteplast\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para recuplast-interior-1l-sinteplast\n"
-                        },
-                        {
-                          "text": "🔍 Verificando producto: sintetico-converlux-1l-petrilac\n"
-                        },
-                        {
-                          "text": "   ⚠️ No se encontró imagen para sintetico-converlux-1l-petrilac\n"
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                            "column": 16,
+                            "line": 9
+                          },
+                          "message": "Error: page.waitForSelector: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-card\"]') to be visible\u001b[22m\n\n\n\u001b[0m \u001b[90m  7 |\u001b[39m     \n \u001b[90m  8 |\u001b[39m     \u001b[90m// Esperar a que los productos se carguen\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 10 |\u001b[39m     \n \u001b[90m 11 |\u001b[39m     \u001b[90m// Obtener el primer producto\u001b[39m\n \u001b[90m 12 |\u001b[39m     \u001b[36mconst\u001b[39m firstProduct \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:9:16\u001b[22m"
                         }
                       ],
+                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:46.919Z",
+                      "startTime": "2025-06-29T21:59:30.406Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Safari\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-3fbcc-uct-card-to-product-details-Mobile-Safari\\video.webm"
+                        }
+                      ]
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-413235b7447e5200730a",
-              "file": "product-images-fix.spec.ts",
-              "line": 75,
+              "id": "395d1909b12f641e8bef-c465469ae5a653e4bbcd",
+              "file": "product-navigation.spec.ts",
+              "line": 4,
               "column": 7
             },
             {
-              "title": "Verificar página de tienda (Shop) sin placeholders",
+              "title": "should handle product details page loading states",
               "ok": true,
               "tags": [],
               "tests": [
@@ -1451,21 +1027,18 @@
                   "results": [
                     {
                       "workerIndex": 17,
-                      "parallelIndex": 4,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3362,
+                      "duration": 1483,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "🔍 Verificando imágenes en página Shop...\n"
-                        },
-                        {
-                          "text": "📦 Productos encontrados en Shop: 0\n"
+                          "text": "✅ Product details page loading test completed\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:47.304Z",
+                      "startTime": "2025-06-29T21:59:31.241Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1473,14 +1046,14 @@
                   "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-47a031bdf9359c3701b5",
-              "file": "product-images-fix.spec.ts",
-              "line": 133,
+              "id": "395d1909b12f641e8bef-cdea34dccddbb4d0e9de",
+              "file": "product-navigation.spec.ts",
+              "line": 48,
               "column": 7
             },
             {
-              "title": "Verificar estadísticas de corrección",
-              "ok": true,
+              "title": "should show placeholder images correctly",
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -1492,36 +1065,79 @@
                   "results": [
                     {
                       "workerIndex": 18,
+                      "parallelIndex": 5,
+                      "status": "timedOut",
+                      "duration": 30115,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts",
+                            "column": 16,
+                            "line": 78
+                          },
+                          "message": "Error: page.waitForSelector: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-card\"]') to be visible\u001b[22m\n\n\n\u001b[0m \u001b[90m 76 |\u001b[39m     \n \u001b[90m 77 |\u001b[39m     \u001b[90m// Esperar a que los productos se carguen\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 78 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForSelector(\u001b[32m'[data-testid=\"product-card\"]'\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 79 |\u001b[39m     \n \u001b[90m 80 |\u001b[39m     \u001b[90m// Verificar que no hay errores 404 para placeholder-bg.jpg\u001b[39m\n \u001b[90m 81 |\u001b[39m     \u001b[36mconst\u001b[39m response404Count \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate(() \u001b[33m=>\u001b[39m {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\e2e\\product-navigation.spec.ts:78:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-06-29T21:59:31.895Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-0a44e-laceholder-images-correctly-Mobile-Safari\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-navigation-Product-0a44e-laceholder-images-correctly-Mobile-Safari\\video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "395d1909b12f641e8bef-d89b71f7c8446b4d9e42",
+              "file": "product-navigation.spec.ts",
+              "line": 73,
+              "column": 7
+            },
+            {
+              "title": "should have working API endpoints",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 19,
                       "parallelIndex": 6,
                       "status": "passed",
-                      "duration": 5099,
+                      "duration": 822,
                       "errors": [],
                       "stdout": [
                         {
-                          "text": "📊 Verificando estadísticas de la corrección...\n"
-                        },
-                        {
-                          "text": "📄 /: 0 imágenes de Supabase encontradas\n"
-                        },
-                        {
-                          "text": "📄 /shop: 0 imágenes de Supabase encontradas\n"
-                        },
-                        {
-                          "text": "📊 Estadísticas finales:\n"
-                        },
-                        {
-                          "text": "   - Total imágenes verificadas: 0\n"
-                        },
-                        {
-                          "text": "   - Imágenes válidas: 0\n"
-                        },
-                        {
-                          "text": "   - Porcentaje de éxito: 0%\n"
+                          "text": "✅ API endpoints test completed\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-06-28T21:43:48.192Z",
+                      "startTime": "2025-06-29T21:59:33.325Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1529,9 +1145,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "f7b36ec62e142e18d656-bd72d5bfeba8ed6339f7",
-              "file": "product-images-fix.spec.ts",
-              "line": 168,
+              "id": "395d1909b12f641e8bef-bccab1b1f1baeb49f53c",
+              "file": "product-navigation.spec.ts",
+              "line": 93,
               "column": 7
             }
           ]
@@ -1541,11 +1157,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-06-28T21:42:56.766Z",
-    "duration": 69809.44200000001,
-    "expected": 14,
+    "startTime": "2025-06-29T21:58:57.426Z",
+    "duration": 108160.828,
+    "expected": 12,
     "skipped": 0,
-    "unexpected": 6,
+    "unexpected": 8,
     "flaky": 0
   }
 }

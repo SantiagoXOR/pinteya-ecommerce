@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { ProductCard } from "@/components/ui";
+import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 
 const SimplifiedCheckout = () => {
   const router = useRouter();
@@ -377,25 +377,24 @@ const SimplifiedCheckout = () => {
         <div className="max-h-80 overflow-y-auto space-y-4">
           {cartItems.map((item: any, index: number) => (
             <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
-              <ProductCard
-                context="checkout"
+              <CommercialProductCard
                 image={item.imgs?.thumbnails?.[0] || item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
                 title={item.title}
+                brand={item.brand || "Marca"}
                 price={item.discountedPrice}
                 originalPrice={item.discountedPrice < item.price ? item.price : undefined}
                 discount={item.discountedPrice < item.price ?
                   `${Math.round(((item.price - item.discountedPrice) / item.price) * 100)}%` : undefined}
                 stock={item.quantity} // Mostrar cantidad en el carrito como stock
-                stockUnit="en carrito"
                 productId={item.id}
-                badge={item.discountedPrice >= 15000 ? "Envío gratis" : "En carrito"}
                 cta={`Total: $${(item.discountedPrice * item.quantity).toLocaleString()}`}
                 onAddToCart={() => {
                   // En checkout, no necesitamos agregar más al carrito
                   console.log('Producto ya en carrito:', item.title);
                 }}
                 showCartAnimation={false}
-// Versión más compacta para checkout
+                freeShipping={item.discountedPrice >= 15000}
+                shippingText={item.discountedPrice >= 15000 ? "Envío gratis" : "En carrito"}
               />
             </div>
           ))}

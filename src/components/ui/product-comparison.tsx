@@ -357,9 +357,9 @@ export const ProductComparison = React.forwardRef<HTMLDivElement, ProductCompari
           <div className={cn(
             "grid gap-4",
             products.length === 1 && "grid-cols-1 max-w-sm mx-auto",
-            products.length === 2 && "grid-cols-1 md:grid-cols-2",
-            products.length === 3 && "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-            products.length >= 4 && "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+            products.length === 2 && "grid-cols-2 md:grid-cols-2",
+            products.length === 3 && "grid-cols-2 md:grid-cols-2 lg:grid-cols-3",
+            products.length >= 4 && "grid-cols-2 md:grid-cols-2 lg:grid-cols-4"
           )}>
             {products.map(renderProductCard)}
             {canAddMore && renderAddProductCard()}
