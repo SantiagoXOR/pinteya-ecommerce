@@ -60,7 +60,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     <CartSidebarModal />
                     <PreviewSliderModal />
                     <ScrollToTop />
-                    {children}
+                    {/* Contenido principal con padding para compensar header fijo */}
+                    <div className="pt-20 lg:pt-24">
+                      {children}
+                    </div>
                     <Footer />
                     {/* Navegación móvil inferior - Solo visible en móviles */}
                     <div className="md:hidden">

@@ -3,4 +3,6 @@ export type Testimonial = {
   authorName: string;
   authorRole: string;
   authorImg: string;
+  product?: string;
+  verified?: boolean;
 };

@@ -1,6 +1,7 @@
 import React from "react";
 import { Testimonial } from "@/types/testimonial";
 import Image from "next/image";
+import { CheckCircle, MapPin } from "lucide-react";
 
 const SingleItem = ({ testimonial }: { testimonial: Testimonial }) => {
   return (
@@ -38,24 +39,40 @@ const SingleItem = ({ testimonial }: { testimonial: Testimonial }) => {
         />
       </div>
 
-      <p className="text-dark mb-6">{testimonial.review}</p>
+      <p className="text-dark mb-4 leading-relaxed">{testimonial.review}</p>
 
-      <a href="#" className="flex items-center gap-4">
-        <div className="w-12.5 h-12.5 rounded-full overflow-hidden">
-          <Image
-            src={testimonial.authorImg}
-            alt="author"
-            className="w-12.5 h-12.5 rounded-full overflow-hidden"
-            width={50}
-            height={50}
-          />
+      {testimonial.product && (
+        <div className="text-sm text-gray-500 mb-4">{testimonial.product}</div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-12.5 h-12.5 rounded-full overflow-hidden">
+            <Image
+              src={testimonial.authorImg}
+              alt="author"
+              className="w-12.5 h-12.5 rounded-full overflow-hidden"
+              width={50}
+              height={50}
+            />
+          </div>
+
+          <div>
+            <h3 className="font-medium text-dark">{testimonial.authorName}</h3>
+            <div className="flex items-center gap-1 text-gray-500 text-xs">
+              <MapPin className="w-3 h-3" />
+              {testimonial.authorRole}
+            </div>
+          </div>
         </div>
 
-        <div>
-          <h3 className="font-medium text-dark">{testimonial.authorName}</h3>
-          <p className="text-custom-sm">{testimonial.authorRole}</p>
-        </div>
-      </a>
+        {testimonial.verified && (
+          <div className="flex items-center gap-1 text-green-600">
+            <CheckCircle className="w-4 h-4" />
+            <span className="text-xs font-medium">Verificado</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
