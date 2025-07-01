@@ -2,46 +2,52 @@ import { Testimonial } from "@/types/testimonial";
 
 const testimonialsData: Testimonial[] = [
   {
-    review: `Lorem ipsum dolor sit amet, adipiscing elit. Donec
-    malesuada justo vitaeaugue suscipit beautiful vehicula`,
-    authorName: "Davis Dorwart",
+    review: `Excelente calidad en pinturas. El envío fue súper rápido y el producto llegó en perfectas condiciones.`,
+    authorName: "María González",
     authorImg: "/images/users/user-01.jpg",
-    authorRole: "Serial Entrepreneur",
+    authorRole: "Buenos Aires",
+    product: "Pintura Sherwin Williams",
+    verified: true,
   },
   {
-    review: `Lorem ipsum dolor sit amet, adipiscing elit. Donec
-    malesuada justo vitaeaugue suscipit beautiful vehicula`,
-    authorName: "Wilson Dias",
+    review: `Muy buena atención al cliente. Me asesoraron perfectamente para elegir los productos correctos.`,
+    authorName: "Carlos Rodríguez",
     authorImg: "/images/users/user-02.jpg",
-    authorRole: "Backend Developer",
+    authorRole: "Córdoba",
+    product: "Kit de Pinceles Profesionales",
+    verified: true,
   },
   {
-    review: `Lorem ipsum dolor sit amet, adipiscing elit. Donec
-    malesuada justo vitaeaugue suscipit beautiful vehicula`,
-    authorName: "Miracle Exterm",
+    review: `Precios competitivos y productos de primera calidad. Ya es mi tienda de confianza para pinturería.`,
+    authorName: "Ana Martínez",
     authorImg: "/images/users/user-03.jpg",
-    authorRole: "Serial Entrepreneur",
+    authorRole: "Rosario",
+    product: "Rodillo Premium",
+    verified: true,
   },
   {
-    review: `Lorem ipsum dolor sit amet, adipiscing elit. Donec
-    malesuada justo vitaeaugue suscipit beautiful vehicula`,
-    authorName: "Thomas Frank",
+    review: `Increíble variedad de productos y marcas reconocidas. Siempre encuentro lo que necesito para mis proyectos.`,
+    authorName: "Roberto Silva",
     authorImg: "/images/users/user-01.jpg",
-    authorRole: "Entrepreneur",
+    authorRole: "Mendoza",
+    product: "Esmalte Sintético Petrilac",
+    verified: true,
   },
   {
-    review: `Lorem ipsum dolor sit amet, adipiscing elit. Donec
-    malesuada justo vitaeaugue suscipit beautiful vehicula`,
-    authorName: "Dave Smith",
+    review: `El servicio de entrega es excelente y los precios muy competitivos. Recomiendo totalmente Pinteya.`,
+    authorName: "Laura Fernández",
     authorImg: "/images/users/user-02.jpg",
-    authorRole: "Serial Entrepreneur",
+    authorRole: "La Plata",
+    product: "Látex Interior Sinteplast",
+    verified: true,
   },
   {
-    review: `Lorem ipsum dolor sit amet, adipiscing elit. Donec
-    malesuada justo vitaeaugue suscipit beautiful vehicula`,
-    authorName: "Davis Dorwart",
+    review: `Productos de calidad profesional y asesoramiento técnico excepcional. Perfecto para mis obras.`,
+    authorName: "Diego Morales",
     authorImg: "/images/users/user-03.jpg",
-    authorRole: "Serial Entrepreneur",
+    authorRole: "Tucumán",
+    product: "Impermeabilizante Plavicon",
+    verified: true,
   },
 ];
 

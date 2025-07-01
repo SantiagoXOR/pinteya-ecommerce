@@ -137,17 +137,23 @@ interface QualityBadgeProps extends Omit<TrustBadgeProps, 'children' | 'icon'> {
 }
 
 const QualityBadge = React.forwardRef<HTMLDivElement, QualityBadgeProps>(
-  ({ text = "Calidad Premium", rating, className, ...props }, ref) => (
-    <TrustBadge
-      ref={ref}
-      variant="quality"
-      icon={rating ? <Star className="w-4 h-4 fill-current" /> : <Award className="w-4 h-4" />}
-      className={cn("", className)}
-      {...props}
-    >
-      {rating ? `${rating}★ ${text}` : text}
-    </TrustBadge>
-  )
+  ({ text = "Calidad Premium", rating, className, ...props }, ref) => {
+    // Validación segura del rating para prevenir errores de template literal
+    const safeRating = typeof rating === 'number' && rating > 0 ? rating : null;
+    const displayText = safeRating ? `${safeRating}★ ${text}` : text;
+
+    return (
+      <TrustBadge
+        ref={ref}
+        variant="quality"
+        icon={safeRating ? <Star className="w-4 h-4 fill-current" /> : <Award className="w-4 h-4" />}
+        className={cn("", className)}
+        {...props}
+      >
+        {displayText}
+      </TrustBadge>
+    );
+  }
 );
 QualityBadge.displayName = "QualityBadge";
 
