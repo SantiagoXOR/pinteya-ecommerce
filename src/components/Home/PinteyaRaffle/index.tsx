@@ -15,28 +15,28 @@ const PinteyaRaffle = () => {
   // Fecha del sorteo - 15 días desde hoy
   const deadline = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toDateString();
 
-  const getTime = () => {
-    const time = Date.parse(deadline) - Date.now();
-
-    if (time > 0) {
-      setDays(Math.floor(time / (1000 * 60 * 60 * 24)));
-      setHours(Math.floor((time / (1000 * 60 * 60)) % 24));
-      setMinutes(Math.floor((time / 1000 / 60) % 60));
-      setSeconds(Math.floor((time / 1000) % 60));
-    } else {
-      setDays(0);
-      setHours(0);
-      setMinutes(0);
-      setSeconds(0);
-    }
-  };
-
   useEffect(() => {
+    const getTime = () => {
+      const time = Date.parse(deadline) - Date.now();
+
+      if (time > 0) {
+        setDays(Math.floor(time / (1000 * 60 * 60 * 24)));
+        setHours(Math.floor((time / (1000 * 60 * 60)) % 24));
+        setMinutes(Math.floor((time / 1000 / 60) % 60));
+        setSeconds(Math.floor((time / 1000) % 60));
+      } else {
+        setDays(0);
+        setHours(0);
+        setMinutes(0);
+        setSeconds(0);
+      }
+    };
+
     const interval = setInterval(() => getTime(), 1000);
     getTime(); // Llamada inicial
 
     return () => clearInterval(interval);
-  }, []);
+  }, [deadline]);
 
   return (
     <section className="overflow-hidden py-8 lg:py-12">
@@ -150,7 +150,7 @@ const PinteyaRaffle = () => {
 
                 {/* Botón de participación */}
                 <Button
-                  size="default"
+                  size="lg"
                   className="bg-bright-sun-400 hover:bg-bright-sun-500 text-blaze-orange-800 font-bold text-base px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <Gift className="w-4 h-4 mr-2" />
