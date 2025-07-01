@@ -7,7 +7,7 @@ export function useOptimizedCallback<T extends (...args: any[]) => any>(
   callback: T,
   deps: React.DependencyList
 ): T {
-  return useCallback(callback, deps);
+  return useCallback(callback, [callback, ...deps]);
 }
 
 /**
@@ -17,7 +17,7 @@ export function useEventHandler<T = Event>(
   handler: (event: T) => void,
   deps: React.DependencyList = []
 ) {
-  return useCallback(handler, deps);
+  return useCallback(handler, [handler, ...deps]);
 }
 
 /**
@@ -27,5 +27,5 @@ export function useFormHandler<T = HTMLFormElement>(
   handler: (event: React.FormEvent<T>) => void,
   deps: React.DependencyList = []
 ) {
-  return useCallback(handler, deps);
+  return useCallback(handler, [handler, ...deps]);
 }

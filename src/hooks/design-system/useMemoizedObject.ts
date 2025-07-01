@@ -7,7 +7,7 @@ export function useMemoizedConfig<T extends Record<string, any>>(
   config: T,
   deps: React.DependencyList
 ): T {
-  return useMemo(() => config, deps);
+  return useMemo(() => config, [config, ...deps]);
 }
 
 /**
@@ -17,7 +17,7 @@ export function useMemoizedStyles<T extends Record<string, any>>(
   styles: T,
   deps: React.DependencyList = []
 ): T {
-  return useMemo(() => styles, deps);
+  return useMemo(() => styles, [styles, ...deps]);
 }
 
 /**
@@ -27,5 +27,5 @@ export function useMemoizedProps<T extends Record<string, any>>(
   props: T,
   deps: React.DependencyList
 ): T {
-  return useMemo(() => props, deps);
+  return useMemo(() => props, [props, ...deps]);
 }

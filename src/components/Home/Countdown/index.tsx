@@ -15,28 +15,28 @@ const PinteyaRaffle = () => {
   // Fecha del sorteo - 15 días desde hoy
   const deadline = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toDateString();
 
-  const getTime = () => {
-    const time = Date.parse(deadline) - Date.now();
-
-    if (time > 0) {
-      setDays(Math.floor(time / (1000 * 60 * 60 * 24)));
-      setHours(Math.floor((time / (1000 * 60 * 60)) % 24));
-      setMinutes(Math.floor((time / 1000 / 60) % 60));
-      setSeconds(Math.floor((time / 1000) % 60));
-    } else {
-      setDays(0);
-      setHours(0);
-      setMinutes(0);
-      setSeconds(0);
-    }
-  };
-
   useEffect(() => {
+    const getTime = () => {
+      const time = Date.parse(deadline) - Date.now();
+
+      if (time > 0) {
+        setDays(Math.floor(time / (1000 * 60 * 60 * 24)));
+        setHours(Math.floor((time / (1000 * 60 * 60)) % 24));
+        setMinutes(Math.floor((time / 1000 / 60) % 60));
+        setSeconds(Math.floor((time / 1000) % 60));
+      } else {
+        setDays(0);
+        setHours(0);
+        setMinutes(0);
+        setSeconds(0);
+      }
+    };
+
     const interval = setInterval(() => getTime(), 1000);
     getTime(); // Llamada inicial
 
     return () => clearInterval(interval);
-  }, []);
+  }, [deadline]);
 
   return (
     <section className="overflow-hidden py-20">
@@ -144,4 +144,4 @@ const PinteyaRaffle = () => {
   );
 };
 
-export default CounDown;
+export default PinteyaRaffle;
