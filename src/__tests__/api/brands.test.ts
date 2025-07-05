@@ -6,30 +6,40 @@ import { NextRequest } from 'next/server';
 import { GET, POST } from '@/app/api/brands/route';
 
 // Mock de Supabase
-jest.mock('@/lib/supabase', () => ({
-  getSupabaseClient: jest.fn(() => ({
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        not: jest.fn(() => ({
-          gt: jest.fn(() => ({
-            ilike: jest.fn(() => Promise.resolve({
-              data: [
-                { brand: 'El Galgo' },
-                { brand: 'El Galgo' },
-                { brand: 'Plavicon' },
-                { brand: 'Plavicon' },
-                { brand: 'Plavicon' },
-                { brand: 'Akapol' },
-              ],
-              error: null
-            }))
-          }))
-        }))
-      }))
-    }))
-  })),
-  handleSupabaseError: jest.fn()
-}));
+jest.mock('@/lib/supabase', () => {
+  const createMockQueryBuilder = () => {
+    const mockData = {
+      data: [
+        { brand: 'El Galgo' },
+        { brand: 'El Galgo' },
+        { brand: 'Plavicon' },
+        { brand: 'Plavicon' },
+        { brand: 'Plavicon' },
+        { brand: 'Akapol' },
+      ],
+      error: null
+    };
+
+    const mockQueryBuilder = {
+      select: jest.fn(() => mockQueryBuilder),
+      not: jest.fn(() => mockQueryBuilder),
+      gt: jest.fn(() => mockQueryBuilder),
+      ilike: jest.fn(() => Promise.resolve(mockData)),
+      // Hacer que el query builder sea thenable para casos sin ilike
+      then: jest.fn((callback) => Promise.resolve(callback(mockData))),
+      catch: jest.fn(() => Promise.resolve()),
+    };
+
+    return mockQueryBuilder;
+  };
+
+  return {
+    getSupabaseClient: jest.fn(() => ({
+      from: jest.fn(() => createMockQueryBuilder()),
+    })),
+    handleSupabaseError: jest.fn()
+  };
+});
 
 describe('API de Marcas', () => {
   beforeEach(() => {
@@ -248,23 +258,33 @@ describe('API de Marcas', () => {
     it('debería manejar marcas con nombres especiales', async () => {
       // Mock con caracteres especiales
       const mockSupabase = require('@/lib/supabase');
-      mockSupabase.getSupabaseClient.mockReturnValue({
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            not: jest.fn(() => ({
-              gt: jest.fn(() => ({
-                ilike: jest.fn(() => Promise.resolve({
-                  data: [
-                    { brand: 'Marca & Cía.' },
-                    { brand: 'Marca-Test' },
-                    { brand: 'Marca 123' },
-                  ],
-                  error: null
-                }))
-              }))
-            }))
-          }))
+
+      // Crear un mock más robusto que maneje tanto con como sin ilike
+      const mockQueryBuilder = {
+        select: jest.fn(() => mockQueryBuilder),
+        not: jest.fn(() => mockQueryBuilder),
+        gt: jest.fn(() => mockQueryBuilder),
+        ilike: jest.fn(() => Promise.resolve({
+          data: [
+            { brand: 'Marca & Cía.' },
+            { brand: 'Marca-Test' },
+            { brand: 'Marca 123' },
+          ],
+          error: null
+        })),
+        // Agregar método then para manejar casos sin ilike
+        then: jest.fn((callback) => callback({
+          data: [
+            { brand: 'Marca & Cía.' },
+            { brand: 'Marca-Test' },
+            { brand: 'Marca 123' },
+          ],
+          error: null
         }))
+      };
+
+      mockSupabase.getSupabaseClient.mockReturnValue({
+        from: jest.fn(() => mockQueryBuilder)
       });
 
       const request = new NextRequest('http://localhost:3000/api/brands');

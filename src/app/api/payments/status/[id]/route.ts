@@ -17,19 +17,16 @@ interface RouteParams {
 export async function GET(request: NextRequest, context: RouteParams) {
   const params = await context.params;
   try {
-    // TODO: Reactivar cuando Clerk funcione
-    // const { userId } = auth();
-    // if (!userId) {
-    //   const errorResponse: ApiResponse<null> = {
-    //     data: null,
-    //     success: false,
-    //     error: 'Usuario no autenticado',
-    //   };
-    //   return NextResponse.json(errorResponse, { status: 401 });
-    // }
-
-    // Usar usuario temporal por ahora
-    const userId = '00000000-0000-4000-8000-000000000000';
+    // Autenticación con Clerk
+    const { userId } = await auth();
+    if (!userId) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Usuario no autenticado',
+      };
+      return NextResponse.json(errorResponse, { status: 401 });
+    }
     const orderId = params.id;
 
     // Inicializar Supabase con cliente administrativo

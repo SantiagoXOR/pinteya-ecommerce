@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { auth } from '@clerk/nextjs/server';
+import { ApiResponse } from '@/types/api';
 
 type RouteContext = {
   params: {
@@ -24,7 +26,16 @@ export async function GET(
       );
     }
 
-    const userId = 'demo-user-id';
+    // Autenticación con Clerk
+    const { userId } = await auth();
+    if (!userId) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Usuario no autenticado',
+      };
+      return NextResponse.json(errorResponse, { status: 401 });
+    }
     const params = await context.params;
     const addressId = params.id;
 
@@ -89,7 +100,17 @@ export async function PUT(
     }
 
     const params = await context.params;
-    const userId = 'demo-user-id';
+
+    // Autenticación con Clerk
+    const { userId } = await auth();
+    if (!userId) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Usuario no autenticado',
+      };
+      return NextResponse.json(errorResponse, { status: 401 });
+    }
     const addressId = params.id;
     const body = await request.json();
 
@@ -197,7 +218,17 @@ export async function DELETE(
     }
 
     const params = await context.params;
-    const userId = 'demo-user-id';
+
+    // Autenticación con Clerk
+    const { userId } = await auth();
+    if (!userId) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Usuario no autenticado',
+      };
+      return NextResponse.json(errorResponse, { status: 401 });
+    }
     const addressId = params.id;
 
     // Obtener usuario
