@@ -4,8 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-// TODO: Reactivar cuando Clerk funcione
-// import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
+import { ApiResponse } from '@/types/api';
 
 // ===================================
 // GET - Obtener estadísticas del dashboard
@@ -21,13 +21,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // TODO: Reemplazar con autenticación real de Clerk
-    // const { userId } = auth();
-    // if (!userId) {
-    //   return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    // }
-
-    const userId = 'demo-user-id';
+    // Autenticación con Clerk
+    const { userId } = await auth();
+    if (!userId) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Usuario no autenticado',
+      };
+      return NextResponse.json(errorResponse, { status: 401 });
+    }
 
     // Obtener usuario
     const { data: user } = await supabaseAdmin

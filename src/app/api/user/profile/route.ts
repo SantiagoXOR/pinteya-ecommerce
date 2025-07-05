@@ -4,8 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-// TODO: Reactivar cuando Clerk funcione
-// import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
+import { ApiResponse } from '@/types/api';
 
 // ===================================
 // GET - Obtener perfil de usuario
@@ -21,14 +21,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // TODO: Reemplazar con autenticación real de Clerk
-    // const { userId } = auth();
-    // if (!userId) {
-    //   return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    // }
-
-    // Por ahora, usar un usuario demo
-    const userId = 'demo-user-id';
+    // Autenticación con Clerk
+    const { userId } = await auth();
+    if (!userId) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Usuario no autenticado',
+      };
+      return NextResponse.json(errorResponse, { status: 401 });
+    }
 
     // Buscar usuario en Supabase
     const { data: user, error } = await supabaseAdmin
@@ -100,13 +102,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // TODO: Reemplazar con autenticación real de Clerk
-    // const { userId } = auth();
-    // if (!userId) {
-    //   return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    // }
-
-    const userId = 'demo-user-id';
+    // Autenticación con Clerk
+    const { userId } = await auth();
+    if (!userId) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Usuario no autenticado',
+      };
+      return NextResponse.json(errorResponse, { status: 401 });
+    }
     const body = await request.json();
 
     // Validar datos requeridos

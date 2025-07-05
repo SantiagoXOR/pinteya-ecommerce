@@ -349,6 +349,14 @@ const createMockQueryBuilder = () => {
     error: null,
   }))
 
+  // Agregar soporte para Promise (then/catch) para casos donde no se llama a range()
+  builder.then = jest.fn((callback) => {
+    return Promise.resolve(callback(mockSupabaseResponse))
+  })
+  builder.catch = jest.fn((callback) => {
+    return Promise.resolve()
+  })
+
   // Métodos especiales
   builder.insert = jest.fn((data) => {
     // Para inserts que no necesitan select (como order_items)

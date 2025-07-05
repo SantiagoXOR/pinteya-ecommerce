@@ -205,19 +205,18 @@ npm run dev
 
 Visita http://localhost:3001
 
-### NextMerce Free VS NextMerce Pro
+## 🌟 Características del Proyecto
 
-| ✨ Features                         | 🎁 NextMerce Free                 | 🔥 NextMerce Pro                        |
-|----------------------------------|--------------------------------|--------------------------------------|
-| Next.js Pages                    | Static                         | Dynamic Boilerplate Template         |
-| Components                       | Limited                        | All According to Demo                |
-| eCommerce Functionality          | Included                       | Included                             |
-| Integrations (DB, Auth, etc.)    | Not Included                   | Included                             |
-| Community Support                | Included                       | Included                             |
-| Premium Email Support            | Not Included                   | Included                             |
-| Lifetime Free Updates            | Included                       | Included                             |
+**Pinteya E-commerce** es un sistema completo de comercio electrónico especializado en productos de pinturería, ferretería y corralón, desarrollado con las mejores prácticas y tecnologías modernas.
 
+### ✨ Funcionalidades Principales
+- 🛒 **E-commerce Completo**: Catálogo, carrito, checkout y gestión de órdenes
+- 💳 **Pagos Integrados**: MercadoPago con credenciales reales
+- 🔐 **Autenticación**: Sistema completo con Clerk
+- 📱 **Responsive**: Diseño mobile-first optimizado
+- 🎨 **Design System**: Componentes reutilizables con shadcn/ui
+- 🧪 **Testing**: Cobertura completa con Jest y Playwright
 
-#### [🚀 Live Demo](https://demo.nextmerce.com/)
+#### [🚀 Demo en Vivo](https://pinteya-ecommerce.vercel.app)
 
-#### [🌐 Visit Website](https://nextmerce.com/)
+#### [📚 Documentación Completa](./docs/README.md)
