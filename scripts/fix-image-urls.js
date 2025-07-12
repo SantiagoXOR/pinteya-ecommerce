@@ -1,8 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 const supabase = createClient(
-  'https://aakzspzfulgftqlgwkpb.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFha3pzcHpmdWxnZnRxbGd3a3BiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTMzNDExMiwiZXhwIjoyMDY0OTEwMTEyfQ.r-RFBL09kjQtMO3_RrHyh4sqOiaYrkT86knc_bP0c6g'
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 // Mapeo de productos afectados y sus nuevas rutas

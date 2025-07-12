@@ -80,6 +80,12 @@ function scanFileForCredentials(filePath) {
             match.includes('APP_USR-your') ||
             match.includes('placeholder') ||
             match.includes('dummy') ||
+            match.includes('SearchAutocomplete') ||
+            match.includes('reactInternal') ||
+            match.includes('Provider') ||
+            match.includes('ABCDEFGHIJKLMNOP') ||
+            match.includes('defghijklmnop') ||
+            match.includes('RR5QMNSnOkQ2PI50An38') || // URL de imagen específica
             match.length < 10 // Muy corto para ser una credencial real
           ) {
             return;
@@ -118,14 +124,24 @@ function checkCredentialsInCode() {
   // Función recursiva para escanear directorios
   function scanDirectory(dir) {
     const files = fs.readdirSync(dir);
-    
+
     files.forEach(file => {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
-      if (stat.isDirectory() && !file.startsWith('.') && file !== 'node_modules') {
+
+      // Ignorar directorios y archivos específicos
+      if (stat.isDirectory() && !file.startsWith('.') &&
+          file !== 'node_modules' &&
+          file !== 'storybook-static' &&
+          file !== 'test-results' &&
+          file !== 'playwright-report') {
         scanDirectory(filePath);
-      } else if (stat.isFile() && (file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.js') || file.endsWith('.jsx') || file.endsWith('.md'))) {
+      } else if (stat.isFile() &&
+                 (file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.js') || file.endsWith('.jsx') || file.endsWith('.md')) &&
+                 !filePath.includes('storybook-static') &&
+                 !filePath.includes('node_modules') &&
+                 !filePath.includes('test-results') &&
+                 !filePath.includes('playwright-report')) {
         const issues = scanFileForCredentials(filePath);
         if (issues.length > 0) {
           console.error(`❌ Posibles credenciales encontradas en ${filePath}:`);

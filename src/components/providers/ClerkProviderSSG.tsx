@@ -13,12 +13,18 @@ interface ClerkProviderSSGProps {
  * ClerkProvider wrapper que evita errores durante SSG
  * Solo se renderiza en el cliente para evitar problemas de contexto
  */
-export default function ClerkProviderSSG({ children, publishableKey }: ClerkProviderSSGProps) {
+function ClerkProviderSSG({ children, publishableKey }: ClerkProviderSSGProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Validar que publishableKey existe
+  if (!publishableKey) {
+    console.warn('ClerkProviderSSG: publishableKey is required');
+    return <>{children}</>;
+  }
 
   // Durante SSG o hidratación inicial, renderizar sin ClerkProvider
   if (!isMounted) {
@@ -26,31 +32,38 @@ export default function ClerkProviderSSG({ children, publishableKey }: ClerkProv
   }
 
   // Una vez montado en el cliente, usar ClerkProvider
-  return (
-    <ClerkProvider
-      publishableKey={publishableKey}
-      localization={esES}
-      signInFallbackRedirectUrl="/shop"
-      signUpFallbackRedirectUrl="/shop"
-      afterSignOutUrl="/"
-      appearance={{
-        baseTheme: undefined,
-        variables: {
-          colorPrimary: '#eb6313', // blaze-orange-600
-          colorBackground: '#fef7ee', // blaze-orange-50
-          colorInputBackground: '#ffffff',
-          colorInputText: '#1f2937',
-          borderRadius: '0.5rem',
-        },
-        elements: {
-          formButtonPrimary: "bg-blaze-orange-600 hover:bg-blaze-orange-700 text-sm normal-case font-medium",
-          card: "shadow-xl border border-blaze-orange-200",
-          headerTitle: "text-2xl font-bold text-gray-900",
-          headerSubtitle: "text-gray-600",
-        }
-      }}
-    >
-      {children}
-    </ClerkProvider>
-  );
+  try {
+    return (
+      <ClerkProvider
+        publishableKey={publishableKey}
+        localization={esES}
+        signInFallbackRedirectUrl="/shop"
+        signUpFallbackRedirectUrl="/shop"
+        afterSignOutUrl="/"
+        appearance={{
+          baseTheme: undefined,
+          variables: {
+            colorPrimary: '#eb6313', // blaze-orange-600
+            colorBackground: '#fef7ee', // blaze-orange-50
+            colorInputBackground: '#ffffff',
+            colorInputText: '#1f2937',
+            borderRadius: '0.5rem',
+          },
+          elements: {
+            formButtonPrimary: "bg-blaze-orange-600 hover:bg-blaze-orange-700 text-sm normal-case font-medium",
+            card: "shadow-xl border border-blaze-orange-200",
+            headerTitle: "text-2xl font-bold text-gray-900",
+            headerSubtitle: "text-gray-600",
+          }
+        }}
+      >
+        {children}
+      </ClerkProvider>
+    );
+  } catch (error) {
+    console.error('Error initializing ClerkProvider:', error);
+    return <>{children}</>;
+  }
 }
+
+export default ClerkProviderSSG;

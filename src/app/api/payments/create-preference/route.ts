@@ -6,11 +6,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { CreatePreferencePayload } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
-import { preference } from '@/lib/mercadopago';
+import { createPaymentPreference } from '@/lib/mercadopago';
 import type { MercadoPagoItem } from '@/lib/mercadopago';
 import { currentUser } from '@clerk/nextjs/server';
 import { CHECKOUT_CONSTANTS, VALIDATION_CONSTANTS } from '@/constants/shop';
 import { z } from 'zod';
+import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS, endpointKeyGenerator } from '@/lib/rate-limiter';
+import { metricsCollector } from '@/lib/metrics';
 
 // Schema de validación para la entrada
 const CreatePreferenceSchema = z.object({
@@ -82,10 +85,53 @@ async function createTemporaryUser(userId: string, email: string, name: string) 
 }
 
 export async function POST(request: NextRequest) {
+  const requestStart = Date.now();
+  const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+
+  // ✅ NUEVO: Logging estructurado del inicio de la request
+  logger.info(LogCategory.PAYMENT, 'Create preference request started', {
+    endpoint: '/api/payments/create-preference',
+    method: 'POST',
+  }, {
+    clientIP,
+    userAgent,
+  });
+
+  // ✅ NUEVO: Rate limiting avanzado para API de pagos
+  const rateLimitConfig = {
+    ...RATE_LIMIT_CONFIGS.PAYMENT_API,
+    keyGenerator: endpointKeyGenerator('create-preference'),
+  };
+
+  const rateLimitResult = await checkRateLimit(request, rateLimitConfig);
+
+  if (!rateLimitResult.success) {
+    logger.warn(LogCategory.SECURITY, 'Rate limit exceeded for create-preference', {
+      clientIP,
+      limit: rateLimitResult.limit,
+      retryAfter: rateLimitResult.retryAfter,
+    });
+
+    return NextResponse.json({
+      success: false,
+      error: rateLimitConfig.message,
+      retryAfter: rateLimitResult.retryAfter,
+    }, {
+      status: 429,
+      headers: {
+        'RateLimit-Limit': rateLimitResult.limit.toString(),
+        'RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+        'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+      }
+    });
+  }
+
   try {
     // Verificar que el cliente administrativo esté disponible
     if (!supabaseAdmin) {
-      console.error('Cliente administrativo de Supabase no disponible en POST /api/payments/create-preference');
+      logger.error(LogCategory.PAYMENT, 'Supabase admin client not available', undefined, { clientIP });
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -387,70 +433,128 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Crear preferencia de pago
-    const preferenceResult = await preference.create({
-      body: {
-        items: mercadoPagoItems,
-        payer: {
-          name: orderData.payer.name,
-          surname: orderData.payer.surname,
-          email: orderData.payer.email,
-          phone: orderData.payer.phone ? {
-            area_code: orderData.payer.phone.substring(0, 3),
-            number: orderData.payer.phone.substring(3),
-          } : undefined,
-          identification: orderData.payer.identification,
-          address: orderData.shipping ? {
-            street_name: orderData.shipping.address.street_name,
-            street_number: orderData.shipping.address.street_number,
-            zip_code: orderData.shipping.address.zip_code,
-          } : undefined,
-        },
-        back_urls: {
-          success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?order_id=${order.id}`,
-          failure: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failure?order_id=${order.id}`,
-          pending: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pending?order_id=${order.id}`,
-        },
-        auto_return: 'approved',
-        external_reference: order.id.toString(),
-        shipments: orderData.shipping ? {
-          cost: orderData.shipping.cost,
-          receiver_address: {
-            zip_code: orderData.shipping.address.zip_code,
-            street_name: orderData.shipping.address.street_name,
-            street_number: orderData.shipping.address.street_number,
-            city_name: orderData.shipping.address.city_name,
-            state_name: orderData.shipping.address.state_name,
-          },
+    // ✅ MEJORADO: Usar nueva función con configuración avanzada
+    const preferenceResult = await createPaymentPreference({
+      items: mercadoPagoItems,
+      payer: {
+        name: orderData.payer.name,
+        surname: orderData.payer.surname,
+        email: orderData.payer.email,
+        phone: orderData.payer.phone ? {
+          area_code: orderData.payer.phone.substring(0, 3),
+          number: orderData.payer.phone.substring(3),
+        } : undefined,
+        identification: orderData.payer.identification,
+        address: orderData.shipping ? {
+          street_name: orderData.shipping.address.street_name,
+          street_number: orderData.shipping.address.street_number,
+          zip_code: orderData.shipping.address.zip_code,
         } : undefined,
       },
+      back_urls: {
+        success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?order_id=${order.id}`,
+        failure: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failure?order_id=${order.id}`,
+        pending: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pending?order_id=${order.id}`,
+      },
+      external_reference: order.id.toString(),
+      shipments: orderData.shipping ? {
+        cost: orderData.shipping.cost,
+        receiver_address: {
+          zip_code: orderData.shipping.address.zip_code,
+          street_name: orderData.shipping.address.street_name,
+          street_number: orderData.shipping.address.street_number,
+          city_name: orderData.shipping.address.city_name,
+          state_name: orderData.shipping.address.state_name,
+        },
+      } : undefined,
     });
+
+    // ✅ MEJORADO: Manejar resultado de la nueva función
+    if (!preferenceResult.success) {
+      throw new Error(preferenceResult.error || 'Error creando preferencia de pago');
+    }
 
     // Actualizar orden con ID de preferencia
     const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
-        payment_preference_id: preferenceResult.id,
+        payment_preference_id: preferenceResult.data.id,
       })
       .eq('id', order.id);
 
     if (updateError) {
-      console.error('Error updating order with preference ID:', updateError);
+      logger.warn(LogCategory.PAYMENT, 'Failed to update order with preference ID', { updateError }, { clientIP });
     }
 
-    return NextResponse.json({
+    // ✅ NUEVO: Logging exitoso de creación de preferencia
+    const processingTime = Date.now() - requestStart;
+    logger.payment(LogLevel.INFO, 'Payment preference created successfully', {
+      orderId: order.id.toString(),
+      preferenceId: preferenceResult.data.id,
+      amount: totalAmount,
+      currency: 'ARS',
+      method: 'mercadopago',
+    }, {
+      clientIP,
+      userAgent,
+    });
+
+    logger.performance(LogLevel.INFO, 'Create preference request completed', {
+      operation: 'create-preference',
+      duration: processingTime,
+      endpoint: '/api/payments/create-preference',
+      statusCode: 200,
+    }, { clientIP });
+
+    // ✅ NUEVO: Crear respuesta con headers de rate limiting
+    const response = NextResponse.json({
       success: true,
       data: {
-        init_point: preferenceResult.init_point,
-        preference_id: preferenceResult.id,
+        init_point: preferenceResult.data.init_point,
+        preference_id: preferenceResult.data.id,
       },
     });
 
-  } catch (error) {
-    console.error('Error en create-preference:', error);
+    // ✅ NUEVO: Registrar métricas de éxito
+    await metricsCollector.recordRequest(
+      'create-preference',
+      'POST',
+      200,
+      Date.now() - requestStart,
+      { clientIP, userAgent }
+    );
+
+    // Agregar headers de rate limiting a la respuesta exitosa
+    return addRateLimitHeaders(response, rateLimitResult, rateLimitConfig);
+
+  } catch (error: any) {
+    // ✅ MEJORADO: Logging estructurado de errores
+    const processingTime = Date.now() - requestStart;
+
+    logger.error(LogCategory.PAYMENT, 'Failed to create payment preference', error, {
+      clientIP,
+      userAgent,
+    });
+
+    logger.performance(LogLevel.ERROR, 'Create preference request failed', {
+      operation: 'create-preference',
+      duration: processingTime,
+      endpoint: '/api/payments/create-preference',
+      statusCode: 500,
+    }, { clientIP });
+
+    // ✅ NUEVO: Registrar métricas de error
+    await metricsCollector.recordRequest(
+      'create-preference',
+      'POST',
+      500,
+      processingTime,
+      { clientIP, userAgent, error: error.message }
+    );
+
     return NextResponse.json({
       success: false,
-      error: 'Error interno del servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Error interno del servidor',
     }, { status: 500 });
   }
 }

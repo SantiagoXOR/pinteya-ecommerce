@@ -110,12 +110,19 @@ INSERT INTO users (id, clerk_id, email, name)
 VALUES ('00000000-0000-4000-8000-000000000000', 'temp_user', 'temp@pinteya.com', 'Usuario Temporal');
 ```
 
-## 🔐 Autenticación Clerk
+## 🔐 Autenticación y Seguridad
 
-### Configuración
+### Configuración Clerk
 - **Dominio**: exciting-grouper-57.clerk.accounts.dev
 - **Aplicación**: Pinteya E-commerce
 - **Versión**: 6.19.4
+
+### Configuración Supabase Auth (Actualizada 2025-01-05)
+- **OTP Email**: 600 segundos (10 minutos) ✅ SEGURO
+- **OTP SMS**: 60 segundos (1 minuto)
+- **Contraseñas filtradas**: Habilitado (HaveIBeenPwned)
+- **MFA**: TOTP + WebAuthn habilitados
+- **Longitud mínima contraseña**: 8 caracteres
 
 ### Middleware Configurado
 ```typescript

@@ -19,7 +19,7 @@ import { Home } from "lucide-react";
 import { useAppSelector } from "@/redux/store";
 
 const bottomNavigationVariants = cva(
-  "fixed bottom-0 left-0 right-0 z-50 border-t shadow-lg backdrop-blur-sm",
+  "fixed bottom-0 left-0 right-0 z-bottom-nav border-t shadow-lg backdrop-blur-sm",
   {
     variants: {
       variant: {

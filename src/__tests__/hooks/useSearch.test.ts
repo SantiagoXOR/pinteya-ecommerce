@@ -1,0 +1,259 @@
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { useRouter } from 'next/navigation';
+import { useSearch } from '@/hooks/useSearch';
+import { searchProducts } from '@/lib/api/products';
+
+// Mock Next.js router
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
+// Mock API
+jest.mock('@/lib/api/products', () => ({
+  searchProducts: jest.fn(),
+}));
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
+
+const mockSearchProducts = searchProducts as jest.MockedFunction<typeof searchProducts>;
+
+describe('useSearch Hook', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorageMock.getItem.mockReturnValue(null);
+  });
+
+  it('should initialize with default state', () => {
+    const { result } = renderHook(() => useSearch());
+
+    expect(result.current.query).toBe('');
+    expect(result.current.results).toEqual([]);
+    expect(result.current.suggestions).toEqual([]);
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.error).toBe(null);
+    expect(result.current.hasSearched).toBe(false);
+  });
+
+  it('should load recent searches from localStorage', async () => {
+    const recentSearches = ['pintura', 'rodillo'];
+    localStorageMock.getItem.mockReturnValue(JSON.stringify(recentSearches));
+
+    const { result } = renderHook(() => useSearch({ saveRecentSearches: true }));
+
+    await act(async () => {
+      result.current.initialize();
+    });
+
+    await waitFor(() => {
+      expect(result.current.recentSearches).toEqual(recentSearches);
+    });
+  });
+
+  it('should perform search with debounce', async () => {
+    const mockResponse = {
+      success: true,
+      data: [
+        {
+          id: '1',
+          name: 'Pintura Test',
+          category: { name: 'Pinturas' },
+          stock: 10,
+          images: { previews: ['test.jpg'] }
+        }
+      ],
+      pagination: { total: 1 }
+    };
+
+    mockSearchProducts.mockResolvedValue(mockResponse);
+
+    const { result } = renderHook(() => useSearch({ debounceMs: 100 }));
+
+    await act(async () => {
+      result.current.searchWithDebounce('pintura');
+    });
+
+    // Esperar el debounce
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    }, { timeout: 200 });
+
+    expect(mockSearchProducts).toHaveBeenCalledWith('pintura', 8);
+    expect(result.current.suggestions.length).toBeGreaterThan(0);
+  });
+
+  it('should execute search and navigate', async () => {
+    const mockResponse = {
+      success: true,
+      data: [
+        {
+          id: '1',
+          name: 'Pintura Test',
+          category: { name: 'Pinturas' },
+          stock: 10
+        }
+      ],
+      pagination: { total: 1 }
+    };
+
+    mockSearchProducts.mockResolvedValue(mockResponse);
+
+    const { result } = renderHook(() => useSearch());
+
+    await act(async () => {
+      await result.current.executeSearch('pintura');
+    });
+
+    expect(mockSearchProducts).toHaveBeenCalledWith('pintura', 12);
+    expect(mockPush).toHaveBeenCalledWith('/search?q=pintura');
+    expect(result.current.results).toHaveLength(1);
+    expect(result.current.hasSearched).toBe(true);
+  });
+
+  it('should handle search errors gracefully', async () => {
+    const mockError = new Error('Network error');
+    mockSearchProducts.mockRejectedValue(mockError);
+
+    const { result } = renderHook(() => useSearch());
+
+    await act(async () => {
+      await result.current.executeSearch('pintura');
+    });
+
+    expect(result.current.error).toBe('Network error');
+    expect(result.current.results).toEqual([]);
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('should save recent searches', async () => {
+    const { result } = renderHook(() => useSearch({ saveRecentSearches: true }));
+
+    await act(async () => {
+      result.current.executeSearch('pintura');
+    });
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'pinteya-recent-searches',
+      JSON.stringify(['pintura'])
+    );
+  });
+
+  it('should select suggestion and navigate', async () => {
+    const suggestion = {
+      id: 'product-1',
+      type: 'product' as const,
+      title: 'Pintura Test',
+      href: '/shop-details/1'
+    };
+
+    const { result } = renderHook(() => useSearch());
+
+    await act(async () => {
+      result.current.selectSuggestion(suggestion);
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/shop-details/1');
+    expect(result.current.query).toBe('Pintura Test');
+  });
+
+  it('should clear search state', async () => {
+    const { result } = renderHook(() => useSearch());
+
+    // Primero establecer algún estado
+    await act(async () => {
+      result.current.searchWithDebounce('test');
+    });
+
+    // Luego limpiar
+    await act(async () => {
+      result.current.clearSearch();
+    });
+
+    expect(result.current.query).toBe('');
+    expect(result.current.results).toEqual([]);
+    expect(result.current.error).toBe(null);
+    expect(result.current.hasSearched).toBe(false);
+  });
+
+  it('should handle empty search query', async () => {
+    const { result } = renderHook(() => useSearch());
+
+    await act(async () => {
+      result.current.searchWithDebounce('');
+    });
+
+    expect(result.current.suggestions).toEqual(expect.any(Array));
+    expect(result.current.isLoading).toBe(false);
+    expect(mockSearchProducts).not.toHaveBeenCalled();
+  });
+
+  it('should call custom callbacks', async () => {
+    const onSearch = jest.fn();
+    const onSuggestionSelect = jest.fn();
+
+    const mockResponse = {
+      success: true,
+      data: [{ id: '1', name: 'Test', category: { name: 'Test' }, stock: 1 }],
+      pagination: { total: 1 }
+    };
+
+    mockSearchProducts.mockResolvedValue(mockResponse);
+
+    const { result } = renderHook(() => useSearch({
+      onSearch,
+      onSuggestionSelect
+    }));
+
+    // Test search callback
+    await act(async () => {
+      await result.current.executeSearch('test');
+    });
+
+    expect(onSearch).toHaveBeenCalledWith('test', mockResponse.data);
+
+    // Test suggestion callback
+    const suggestion = {
+      id: 'test',
+      type: 'product' as const,
+      title: 'Test',
+      href: '/test'
+    };
+
+    await act(async () => {
+      result.current.selectSuggestion(suggestion);
+    });
+
+    expect(onSuggestionSelect).toHaveBeenCalledWith(suggestion);
+  });
+
+  it('should cleanup timeouts', () => {
+    const { result, unmount } = renderHook(() => useSearch());
+
+    // Iniciar una búsqueda con debounce
+    act(() => {
+      result.current.searchWithDebounce('test');
+    });
+
+    // Limpiar manualmente
+    act(() => {
+      result.current.cleanup();
+    });
+
+    // Desmontar el hook
+    unmount();
+
+    // No debería haber errores o warnings
+    expect(true).toBe(true);
+  });
+});

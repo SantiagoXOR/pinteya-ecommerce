@@ -3,49 +3,130 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getPaymentInfo, validateWebhookSignature } from '@/lib/mercadopago';
+import { getPaymentInfo, validateWebhookSignature, validateWebhookOrigin } from '@/lib/mercadopago';
 import { getSupabaseClient } from '@/lib/supabase';
 import { MercadoPagoWebhookData } from '@/types/mercadopago';
+import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS, endpointKeyGenerator } from '@/lib/rate-limiter';
+import { metricsCollector } from '@/lib/metrics';
+
+// ✅ ELIMINADO: Rate limiting básico reemplazado por sistema avanzado con Redis
 
 export async function POST(request: NextRequest) {
   try {
+    // ✅ MEJORADO: Logging estructurado con timestamp
+    const requestStart = Date.now();
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+
+    // ✅ MEJORADO: Logging estructurado
+    logger.webhook(LogLevel.INFO, 'Webhook request received', {
+      type: 'incoming',
+    }, {
+      clientIP,
+      userAgent: request.headers.get('user-agent'),
+    });
+
+    // ✅ MEJORADO: Rate limiting avanzado con Redis
+    const rateLimitConfig = {
+      ...RATE_LIMIT_CONFIGS.WEBHOOK_API,
+      keyGenerator: endpointKeyGenerator('webhook'),
+    };
+
+    const rateLimitResult = await checkRateLimit(request, rateLimitConfig);
+
+    if (!rateLimitResult.success) {
+      logger.warn(LogCategory.SECURITY, 'Rate limit exceeded for webhook', {
+        clientIP,
+        limit: rateLimitResult.limit,
+        retryAfter: rateLimitResult.retryAfter,
+      });
+
+      return NextResponse.json({
+        error: rateLimitConfig.message,
+        retryAfter: rateLimitResult.retryAfter,
+      }, {
+        status: 429,
+        headers: {
+          'RateLimit-Limit': rateLimitResult.limit.toString(),
+          'RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+          'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+        }
+      });
+    }
+
+    // ✅ MEJORADO: Validar origen del webhook
+    if (!validateWebhookOrigin(request)) {
+      logger.security(LogLevel.ERROR, 'Invalid webhook origin detected', {
+        threat: 'invalid_origin',
+        blocked: true,
+        reason: 'Webhook origin validation failed',
+      }, { clientIP, userAgent: request.headers.get('user-agent') });
+
+      return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
+    }
+
     // Obtener headers necesarios para validación
     const xSignature = request.headers.get('x-signature');
     const xRequestId = request.headers.get('x-request-id');
-    
+    const timestamp = request.headers.get('x-timestamp') || Math.floor(Date.now() / 1000).toString();
+
     if (!xSignature || !xRequestId) {
-      console.error('Missing required headers for webhook validation');
+      logger.security(LogLevel.ERROR, 'Missing required webhook headers', {
+        threat: 'missing_headers',
+        blocked: true,
+        reason: 'Required headers x-signature or x-request-id missing',
+      }, { clientIP });
+
       return NextResponse.json({ error: 'Missing headers' }, { status: 400 });
     }
 
     // Obtener datos del webhook
     const webhookData: MercadoPagoWebhookData = await request.json();
-    
-    console.log('Webhook received:', {
+
+    // ✅ MEJORADO: Logging estructurado de datos del webhook
+    logger.webhook(LogLevel.INFO, 'Webhook data received', {
       type: webhookData.type,
       action: webhookData.action,
       dataId: webhookData.data.id,
-    });
+    }, { clientIP });
 
     // Solo procesar notificaciones de pagos
     if (webhookData.type !== 'payment') {
-      console.log('Ignoring non-payment webhook:', webhookData.type);
+      logger.webhook(LogLevel.INFO, 'Ignoring non-payment webhook', {
+        type: webhookData.type,
+        action: webhookData.action,
+      }, { clientIP });
+
       return NextResponse.json({ status: 'ignored' }, { status: 200 });
     }
 
-    // Validar firma del webhook (opcional en desarrollo)
-    const timestamp = Date.now().toString();
-    const isValidSignature = validateWebhookSignature(
+    // ✅ MEJORADO: Validación de firma robusta siempre activa
+    const signatureValidation = validateWebhookSignature(
       xSignature,
       xRequestId,
       webhookData.data.id,
       timestamp
     );
 
-    if (!isValidSignature && process.env.NODE_ENV === 'production') {
-      console.error('Invalid webhook signature');
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    if (!signatureValidation.isValid) {
+      logger.security(LogLevel.ERROR, 'Webhook signature validation failed', {
+        threat: 'invalid_signature',
+        blocked: true,
+        reason: signatureValidation.error || 'Signature validation failed',
+      }, { clientIP });
+
+      return NextResponse.json({
+        error: 'Invalid signature',
+        details: signatureValidation.error
+      }, { status: 401 });
     }
+
+    logger.security(LogLevel.INFO, 'Webhook signature validated successfully', {
+      threat: 'none',
+      blocked: false,
+      reason: 'Valid signature',
+    }, { clientIP });
 
     // Obtener información del pago desde MercadoPago
     const paymentResult = await getPaymentInfo(webhookData.data.id);
@@ -155,30 +236,82 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Log del evento procesado
-    console.log('Webhook processed successfully:', {
-      orderId,
-      paymentId: payment.id,
-      status: payment.status,
-      newOrderStatus: newStatus,
-      amount: payment.transaction_amount,
-    });
+    // ✅ MEJORADO: Logging estructurado del evento procesado
+    const processingTime = Date.now() - requestStart;
 
-    // Responder exitosamente
-    return NextResponse.json({ 
+    logger.webhook(LogLevel.INFO, 'Webhook processed successfully', {
+      type: 'payment',
+      action: 'processed',
+      dataId: payment.id,
+      isValid: true,
+      processingTime,
+    }, { clientIP });
+
+    logger.payment(LogLevel.INFO, 'Payment webhook processed', {
+      orderId: orderId.toString(),
+      paymentId: payment.id,
+      amount: payment.transaction_amount,
+      currency: payment.currency_id,
+      status: payment.status,
+      method: 'mercadopago',
+    }, { clientIP });
+
+    logger.performance(LogLevel.INFO, 'Webhook processing completed', {
+      operation: 'webhook-processing',
+      duration: processingTime,
+      endpoint: '/api/payments/webhook',
+      statusCode: 200,
+    }, { clientIP });
+
+    // ✅ NUEVO: Responder exitosamente con headers de rate limiting
+    const response = NextResponse.json({
       status: 'processed',
       order_id: orderId,
       payment_status: payment.status,
       order_status: newStatus,
     }, { status: 200 });
 
+    // ✅ NUEVO: Registrar métricas de éxito
+    await metricsCollector.recordRequest(
+      'webhook',
+      'POST',
+      200,
+      Date.now() - requestStart,
+      { clientIP, paymentId: payment.id.toString() }
+    );
+
+    return addRateLimitHeaders(response, rateLimitResult, rateLimitConfig);
+
   } catch (error: any) {
-    console.error('Error processing webhook:', error);
-    
+    // ✅ MEJORADO: Logging estructurado de errores
+    const processingTime = Date.now() - requestStart;
+
+    logger.error(LogCategory.WEBHOOK, 'Webhook processing failed', error, {
+      clientIP,
+      userAgent: request.headers.get('user-agent'),
+    });
+
+    logger.performance(LogLevel.ERROR, 'Webhook processing failed', {
+      operation: 'webhook-processing',
+      duration: processingTime,
+      endpoint: '/api/payments/webhook',
+      statusCode: 500,
+    }, { clientIP });
+
+    // ✅ NUEVO: Registrar métricas de error
+    await metricsCollector.recordRequest(
+      'webhook',
+      'POST',
+      500,
+      processingTime,
+      { clientIP, error: error.message }
+    );
+
     // Retornar error 500 para que MercadoPago reintente
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Internal server error',
-      message: error.message 
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Processing failed',
+      timestamp: new Date().toISOString(),
     }, { status: 500 });
   }
 }

@@ -69,12 +69,15 @@ GET    /api/products/featured     // Productos destacados
 GET    /api/products/category/[slug] // Productos por categoría
 ```
 
-### 💳 **Pagos** (4 endpoints)
+### 💳 **Pagos** (7 endpoints)
 ```typescript
-POST   /api/payments/create-preference  // Crear preferencia MercadoPago
-POST   /api/payments/webhook           // Webhook notificaciones
-GET    /api/payments/status            // Estado de pago
-GET    /api/payments/methods           // Métodos de pago disponibles
+POST   /api/payments/create-preference     // Crear preferencia MercadoPago
+POST   /api/payments/webhook              // Webhook notificaciones
+GET    /api/payments/status               // Estado de pago
+GET    /api/payments/methods              // Métodos de pago disponibles
+GET    /api/payments/integration-quality  // Medición de calidad de integración
+GET    /api/payments/reports              // Reportes de MercadoPago
+POST   /api/payments/reports              // Crear reporte personalizado
 ```
 
 ### 👤 **Usuario** (8 endpoints)

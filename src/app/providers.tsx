@@ -1,12 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
-
-// Importar ClerkProvider de manera dinámica para evitar errores de SSG
-const ClerkProviderSSG = dynamic(() => import("@/components/providers/ClerkProviderSSG"), {
-  ssr: false,
-});
+import { ClerkProvider } from "@clerk/nextjs";
+import { esES } from "@clerk/localizations";
 
 // Providers de la aplicación
 import { ModalProvider } from "./context/QuickViewModalContext";
@@ -14,9 +10,11 @@ import { CartModalProvider } from "./context/CartSidebarModalContext";
 import { ReduxProvider } from "@/redux/provider";
 import { PreviewSliderProvider } from "./context/PreviewSliderContext";
 import CartPersistenceProvider from "@/components/providers/CartPersistenceProvider";
+import { AnalyticsProvider } from "@/components/Analytics/AnalyticsProvider";
+import { QueryClientProvider } from "@/components/providers/QueryClientProvider";
 
 // Componentes UI
-import Header from "../components/Header";
+import Header from "../components/Header/NewHeader";
 import Footer from "../components/layout/Footer";
 import QuickViewModal from "@/components/Common/QuickViewModal";
 import CartSidebarModal from "@/components/Common/CartSidebarModal";
@@ -25,6 +23,55 @@ import ScrollToTop from "@/components/Common/ScrollToTop";
 import PreLoader from "@/components/Common/PreLoader";
 import CartNotification, { useCartNotification } from "@/components/Common/CartNotification";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
+import FloatingCartButton from "@/components/ui/floating-cart-button";
+
+// Componente ClerkWrapper simplificado siguiendo las mejores prácticas oficiales
+function ClerkWrapper({ children, publishableKey }: { children: React.ReactNode; publishableKey: string }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Validar publishableKey
+  if (!publishableKey) {
+    console.warn('ClerkProvider: publishableKey is required');
+    return <>{children}</>;
+  }
+
+  // Durante SSG/hidratación inicial, renderizar sin ClerkProvider para evitar mismatch
+  if (!isMounted) {
+    return <>{children}</>;
+  }
+
+  // Una vez montado en el cliente, usar ClerkProvider con configuración oficial
+  return (
+    <ClerkProvider
+      publishableKey={publishableKey}
+      localization={esES}
+      signInFallbackRedirectUrl="/shop"
+      signUpFallbackRedirectUrl="/shop"
+      afterSignOutUrl="/"
+      appearance={{
+        variables: {
+          colorPrimary: '#eb6313', // blaze-orange-600
+          colorBackground: '#fef7ee', // blaze-orange-50
+          colorInputBackground: '#ffffff',
+          colorInputText: '#1f2937',
+          borderRadius: '0.5rem',
+        },
+        elements: {
+          formButtonPrimary: "bg-blaze-orange-600 hover:bg-blaze-orange-700 text-sm normal-case font-medium",
+          card: "shadow-xl border border-blaze-orange-200",
+          headerTitle: "text-2xl font-bold text-gray-900",
+          headerSubtitle: "text-gray-600",
+        }
+      }}
+    >
+      {children}
+    </ClerkProvider>
+  );
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
@@ -50,11 +97,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <PreLoader />
         ) : (
           <>
-            <ReduxProvider>
-              <CartPersistenceProvider>
-                <CartModalProvider>
-                  <ModalProvider>
-                    <PreviewSliderProvider>
+            <QueryClientProvider>
+              <ReduxProvider>
+                <CartPersistenceProvider>
+                  <AnalyticsProvider>
+                    <CartModalProvider>
+                      <ModalProvider>
+                        <PreviewSliderProvider>
                     <Header />
                     <QuickViewModal />
                     <CartSidebarModal />
@@ -69,6 +118,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     <div className="md:hidden">
                       <BottomNavigation />
                     </div>
+
+                    {/* Botón de carrito flotante */}
+                    <FloatingCartButton />
+
                     {/* Notificación del carrito */}
                     <CartNotification
                       show={notification.show}
@@ -76,11 +129,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
                       productImage={notification.productImage}
                       onClose={hideNotification}
                     />
-                  </PreviewSliderProvider>
-                </ModalProvider>
-              </CartModalProvider>
-            </CartPersistenceProvider>
-          </ReduxProvider>
+                      </PreviewSliderProvider>
+                    </ModalProvider>
+                  </CartModalProvider>
+                </AnalyticsProvider>
+              </CartPersistenceProvider>
+            </ReduxProvider>
+          </QueryClientProvider>
           </>
         )}
       </div>
@@ -90,9 +145,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Renderizado con ClerkProvider v5 activado (compatible con SSG)
   if (clerkEnabled && publishableKey) {
     return (
-      <ClerkProviderSSG publishableKey={publishableKey}>
+      <ClerkWrapper publishableKey={publishableKey}>
         <AppContent />
-      </ClerkProviderSSG>
+      </ClerkWrapper>
     );
   }
 

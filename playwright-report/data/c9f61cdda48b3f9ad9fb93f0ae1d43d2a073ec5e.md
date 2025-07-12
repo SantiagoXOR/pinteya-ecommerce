@@ -1,0 +1,65 @@
+# Page snapshot
+
+```yaml
+- button "Open Next.js Dev Tools":
+  - img
+- button "Open issues overlay": 1 Issue
+- button "Collapse issues badge":
+  - img
+- navigation:
+  - button "previous" [disabled]:
+    - img "previous"
+  - text: 1/1
+  - button "next" [disabled]:
+    - img "next"
+- img
+- link "Next.js 15.3.3 (stale) Webpack":
+  - /url: https://nextjs.org/docs/messages/version-staleness
+  - img
+  - text: Next.js 15.3.3 (stale) Webpack
+- img
+- dialog "Runtime Error":
+  - text: Runtime Error
+  - button "Copy Stack Trace":
+    - img
+  - button "No related documentation found" [disabled]:
+    - img
+  - link "Learn more about enabling Node.js inspector for server code with Chrome DevTools":
+    - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
+    - img
+  - paragraph: "Error: useUser can only be used within the <ClerkProvider /> component. Possible fixes: 1. Ensure that the <ClerkProvider /> is correctly wrapping your application where this component is used. 2. Check for multiple versions of the `@clerk/shared` package in your project. Use a tool like `npm ls @clerk/shared` to identify multiple versions, and update your dependencies to only rely on one. Learn more: https://clerk.com/docs/components/clerk-provider"
+  - paragraph:
+    - img
+    - text: src\hooks\useUserRole.ts (42:37) @ useUserRole
+    - button "Open in editor":
+      - img
+  - text: "40 | 41 | export const useUserRole = (): UseUserRoleReturn => { > 42 | const { user, isLoaded } = useUser(); | ^ 43 | const [userProfile, setUserProfile] = useState<UserProfile | null>(null); 44 | const [isLoading, setIsLoading] = useState(true); 45 | const [error, setError] = useState<string | null>(null);"
+  - paragraph: Call Stack 7
+  - button "Show 2 ignore-listed frame(s)":
+    - text: Show 2 ignore-listed frame(s)
+    - img
+  - text: useUserRole
+  - button:
+    - img
+  - text: src\hooks\useUserRole.ts (42:37) AnalyticsProvider
+  - button:
+    - img
+  - text: src\components\Analytics\AnalyticsProvider.tsx (48:3) AppContent
+  - button:
+    - img
+  - text: src\app\providers.tsx (56:17) Providers
+  - button:
+    - img
+  - text: src\app\providers.tsx (97:9) RootLayout
+  - button:
+    - img
+  - text: src\app\layout.tsx (30:9)
+- contentinfo:
+  - region "Error feedback":
+    - paragraph:
+      - link "Was this helpful?":
+        - /url: https://nextjs.org/telemetry#error-feedback
+    - button "Mark as helpful"
+    - button "Mark as not helpful"
+- 'heading "Application error: a client-side exception has occurred while loading localhost (see the browser console for more information)." [level=2]'
+```

@@ -53,7 +53,7 @@ const CartNotification: React.FC<CartNotificationProps> = ({
   if (!show || !isVisible) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
+    <div className="fixed top-4 right-4 z-notification animate-slide-in-right">
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">

@@ -33,6 +33,7 @@ export default function middleware(request: NextRequest) {
   const publicRoutes = [
     '/',
     '/shop',
+    '/search',
     '/product',
     '/category',
     '/about',
