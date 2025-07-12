@@ -1,0 +1,176 @@
+# Page snapshot
+
+```yaml
+- alert
+- button "Open Next.js Dev Tools":
+  - img
+- link "(351) 341-1796":
+  - /url: tel:+5493513411796
+- text: Asesoramiento 24/7
+- button "Envíos a Córdoba Capital"
+- banner:
+  - link "Pinteya Logo":
+    - /url: /
+    - img "Pinteya Logo"
+  - button "Todas las Categorías"
+  - combobox "Busco productos de pinturería..."
+  - status
+  - button "Buscar"
+  - button "Carrito con 0 productos": Carrito
+  - button "Iniciar con Google":
+    - img
+    - text: Iniciar con Google
+  - button "Registrarse"
+- heading "Cart View" [level=2]
+- button "button for close modal":
+  - img
+- img
+- paragraph: Your cart is empty!
+- link "Continue Shopping":
+  - /url: /shop-with-sidebar
+- paragraph: "Subtotal:"
+- paragraph: $0
+- link "View Cart":
+  - /url: /cart
+- link "Checkout":
+  - /url: /checkout
+- main:
+  - heading "Productos de Pinturería" [level=1]
+  - navigation "breadcrumb":
+    - list:
+      - listitem:
+        - link "Inicio":
+          - /url: /
+      - listitem: tienda
+      - listitem: /
+      - listitem:
+        - link "productos" [disabled]
+  - text: Productos Más Recientes Mostrando ... Productos
+  - button "Vista en grilla"
+  - button "Vista en lista"
+  - text: Cargando productos...
+  - list:
+    - listitem:
+      - button "button for pagination left" [disabled]:
+        - img
+    - listitem:
+      - link "1":
+        - /url: "#"
+    - listitem:
+      - link "2":
+        - /url: "#"
+    - listitem:
+      - link "3":
+        - /url: "#"
+    - listitem:
+      - link "4":
+        - /url: "#"
+    - listitem:
+      - link "5":
+        - /url: "#"
+    - listitem:
+      - link "...":
+        - /url: "#"
+    - listitem:
+      - link "10":
+        - /url: "#"
+    - listitem:
+      - button "button for pagination left":
+        - img
+- contentinfo:
+  - img
+  - paragraph: COMPRA 100% SEGURA
+  - paragraph: Protección SSL
+  - img
+  - paragraph: ENVÍO A CÓRDOBA
+  - paragraph: Entrega rápida
+  - img
+  - paragraph: +15 AÑOS
+  - paragraph: De experiencia
+  - img
+  - paragraph: ASESORAMIENTO
+  - paragraph: Experto gratuito
+  - img "Pinteya - Pinturería"
+  - img
+  - paragraph: Pinteya
+  - paragraph: Córdoba Capital, Argentina
+  - img
+  - link "+54 351 341 1796":
+    - /url: tel:+5493513411796
+  - img
+  - link "info@pinteya.com.ar":
+    - /url: mailto:info@pinteya.com.ar
+  - heading "Enlaces Útiles" [level=3]
+  - link "Sobre Nosotros":
+    - /url: /about
+  - link "Contacto":
+    - /url: /contact
+  - link "Centro de Ayuda":
+    - /url: /help
+  - link "Envíos y Devoluciones":
+    - /url: /shipping
+  - link "Política de Privacidad":
+    - /url: /privacy
+  - link "Términos y Condiciones":
+    - /url: /terms
+  - heading "Categorías" [level=3]
+  - link "Pinturas":
+    - /url: /shop?category=pinturas
+  - link "Esmaltes":
+    - /url: /shop?category=esmaltes
+  - link "Barnices":
+    - /url: /shop?category=barnices
+  - link "Impermeabilizantes":
+    - /url: /shop?category=impermeabilizantes
+  - link "Accesorios":
+    - /url: /shop?category=accesorios
+  - link "Ver Todo":
+    - /url: /shop
+  - heading "Métodos de Pago" [level=3]
+  - img "MercadoPago"
+  - img "Visa"
+  - img "Mastercard"
+  - text: Tarjetas de Crédito
+  - img "Débito"
+  - text: Tarjeta de Débito
+  - img "Efectivo"
+  - text: Pago en Efectivo
+  - img "Transferencia"
+  - text: Transferencia Bancaria
+  - paragraph: Aceptamos todos los medios de pago disponibles en Argentina
+  - img
+  - paragraph: Garantía de Calidad
+  - paragraph: Productos originales certificados
+  - heading "Seguinos" [level=3]
+  - link "Facebook":
+    - /url: https://www.facebook.com/pinteya
+    - img
+    - text: Facebook
+  - link "Instagram":
+    - /url: https://www.instagram.com/pinteya
+    - img
+    - text: Instagram
+  - link "WhatsApp":
+    - /url: https://wa.me/5493513411796
+    - img
+    - text: WhatsApp
+  - paragraph: © 2025 Pinteya. Todos los derechos reservados.
+  - link "Política de Privacidad":
+    - /url: /privacy
+  - text: •
+  - link "Términos y Condiciones":
+    - /url: /terms
+  - text: "• CUIT: 20-12345678-9 Desarrollado por"
+  - img "XOR"
+  - img
+  - paragraph: Argentina
+  - paragraph: Córdoba Capital
+  - img
+  - paragraph: SSL
+  - paragraph: Seguro
+  - img
+  - paragraph: AFIP
+  - paragraph: Registrado
+- button "Open Tanstack query devtools":
+  - img
+```

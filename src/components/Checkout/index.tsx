@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form";
 import { Loader2, CreditCard, AlertTriangle } from "lucide-react";
+import MercadoPagoWallet, { MercadoPagoWalletFallback } from "./MercadoPagoWallet";
 
 const Checkout = () => {
   const router = useRouter();
@@ -33,6 +34,12 @@ const Checkout = () => {
     updateShippingData,
     updateFormData,
     processCheckout,
+    // ✅ NUEVO: Propiedades para Wallet Brick
+    preferenceId,
+    initPoint,
+    handleWalletReady,
+    handleWalletError,
+    handleWalletSubmit,
   } = useCheckout();
 
   // Redirigir si el carrito está vacío
@@ -84,6 +91,75 @@ const Checkout = () => {
     );
   }
 
+  // ✅ NUEVO: Paso de pago con Wallet Brick
+  if (step === 'payment') {
+    return (
+      <>
+        <Breadcrumb title={"Checkout - Pago"} pages={["checkout", "pago"]} />
+        <section className="overflow-hidden py-20 bg-gray-50">
+          <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
+            <div className="max-w-2xl mx-auto">
+              <div className="mb-8 text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Finalizar Pago
+                </h2>
+                <p className="text-gray-600">
+                  Completa tu compra de forma segura con MercadoPago
+                </p>
+              </div>
+
+              {/* Wallet Brick */}
+              {preferenceId ? (
+                <MercadoPagoWallet
+                  preferenceId={preferenceId}
+                  onReady={handleWalletReady}
+                  onError={handleWalletError}
+                  onSubmit={handleWalletSubmit}
+                />
+              ) : (
+                // Fallback si no hay preferenceId
+                initPoint && (
+                  <MercadoPagoWalletFallback
+                    initPoint={initPoint}
+                  />
+                )
+              )}
+
+              {/* Resumen del pedido */}
+              <div className="mt-8">
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-gray-900 mb-4">Resumen del Pedido</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span>${totalPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Envío:</span>
+                        <span>${shippingCost.toFixed(2)}</span>
+                      </div>
+                      {discount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Descuento:</span>
+                          <span>-${discount.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="border-t pt-2 flex justify-between font-semibold">
+                        <span>Total:</span>
+                        <span>${finalTotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+      </>
+    );
+  }
+
   if (step === 'redirect') {
     return (
       <>
@@ -98,10 +174,10 @@ const Checkout = () => {
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                      Redirigiendo a MercadoPago...
+                      Procesando Pago...
                     </h2>
                     <p className="text-gray-600 text-sm">
-                      Si no eres redirigido automáticamente, por favor espera un momento.
+                      Tu pago está siendo procesado. Serás redirigido automáticamente.
                     </p>
                   </div>
                 </div>

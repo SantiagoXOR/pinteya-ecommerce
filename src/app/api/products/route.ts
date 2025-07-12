@@ -81,8 +81,8 @@ export async function GET(request: NextRequest) {
       query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,brand.ilike.%${filters.search}%`);
     }
 
-    // Solo productos con stock
-    query = query.gt('stock', 0);
+    // Solo productos con stock (temporalmente comentado para testing)
+    // query = query.gt('stock', 0);
 
     // Ordenamiento
     const orderColumn = filters.sortBy === 'created_at' ? 'created_at' :

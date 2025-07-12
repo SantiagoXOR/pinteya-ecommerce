@@ -351,6 +351,51 @@ const config: Config = {
         50: "12.5rem",
       },
       zIndex: {
+        // Jerarquía de z-index estandarizada
+        // Contenido base
+        'base': '1',
+        'raised': '10',
+
+        // Elementos flotantes
+        'floating': '100',
+        'badge': '200',
+        'tooltip-simple': '300',
+
+        // Navegación
+        'topbar': '1000',
+        'header': '1100',
+        'navigation': '1200',
+        'bottom-nav': '1300',
+
+        // Overlays y dropdowns
+        'dropdown': '2000',
+        'popover': '2500',
+        'tooltip': '3000',
+        'context-menu': '3500',
+
+        // Modales y dialogs
+        'modal-backdrop': '5000',
+        'modal': '5100',
+        'dialog': '5200',
+        'sidebar-modal': '5300',
+        'quick-view': '5400',
+
+        // Notificaciones
+        'notification': '8000',
+        'toast': '8100',
+        'alert': '8200',
+
+        // Elementos críticos
+        'loader': '9000',
+        'overlay-critical': '9100',
+        'error-critical': '9200',
+
+        // Máxima prioridad
+        'gallery': '10000',
+        'debug': '10100',
+        'maximum': '10200',
+
+        // Valores legacy (mantener por compatibilidad)
         999999: "999999",
         99999: "99999",
         9999: "9999",

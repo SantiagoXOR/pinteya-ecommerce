@@ -43,6 +43,8 @@ export const useCheckout = () => {
     isLoading: false,
     errors: {},
     step: 'form',
+    preferenceId: undefined,
+    initPoint: undefined,
   });
 
   // ===================================
@@ -273,17 +275,13 @@ export const useCheckout = () => {
       // Limpiar carrito
       dispatch(removeAllItemsFromCart());
 
-      // Redirigir a MercadoPago
-      setCheckoutState(prev => ({ ...prev, step: 'redirect' }));
-
-      // Usar init_point de producción (credenciales reales configuradas)
-      const redirectUrl = result.data.init_point;
-
-      if (!redirectUrl) {
-        throw new Error('No se pudo obtener URL de pago de MercadoPago');
-      }
-
-      window.location.href = redirectUrl;
+      // ✅ MEJORADO: Usar Wallet Brick en lugar de redirección directa
+      setCheckoutState(prev => ({
+        ...prev,
+        step: 'payment',
+        preferenceId: result.data.preference_id,
+        initPoint: result.data.init_point
+      }));
 
     } catch (error: any) {
       console.error('Error en checkout:', error);
@@ -296,12 +294,37 @@ export const useCheckout = () => {
     }
   }, [checkoutState.formData, cartItems, validateForm, calculateShippingCost, dispatch]);
 
+  // ===================================
+  // CALLBACKS PARA WALLET BRICK
+  // ===================================
+  const handleWalletReady = useCallback(() => {
+    console.log('Wallet Brick cargado correctamente');
+  }, []);
+
+  const handleWalletError = useCallback((error: any) => {
+    console.error('Error en Wallet Brick:', error);
+    setCheckoutState(prev => ({
+      ...prev,
+      errors: { payment: error.message || 'Error en el sistema de pagos' },
+      isLoading: false,
+    }));
+  }, []);
+
+  const handleWalletSubmit = useCallback((data: any) => {
+    console.log('Pago enviado desde Wallet Brick:', data);
+    setCheckoutState(prev => ({ ...prev, step: 'redirect' }));
+  }, []);
+
   return {
     // Estado
     formData: checkoutState.formData,
     isLoading: checkoutState.isLoading,
     errors: checkoutState.errors,
     step: checkoutState.step,
+
+    // ✅ NUEVO: Datos para Wallet Brick
+    preferenceId: checkoutState.preferenceId,
+    initPoint: checkoutState.initPoint,
 
     // Datos calculados
     cartItems,
@@ -320,5 +343,10 @@ export const useCheckout = () => {
     updateShippingData,
     validateForm,
     processCheckout,
+
+    // ✅ NUEVO: Callbacks para Wallet Brick
+    handleWalletReady,
+    handleWalletError,
+    handleWalletSubmit,
   };
 };

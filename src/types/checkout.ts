@@ -42,7 +42,9 @@ export interface CheckoutState {
   formData: CheckoutFormData;
   isLoading: boolean;
   errors: Record<string, string>;
-  step: 'form' | 'processing' | 'redirect';
+  step: 'form' | 'processing' | 'payment' | 'redirect';
+  preferenceId?: string;
+  initPoint?: string;
 }
 
 export interface ShippingOption {

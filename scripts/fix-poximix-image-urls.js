@@ -1,8 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 // Configuración de Supabase
-const supabaseUrl = 'https://aakzspzfulgftqlgwkpb.supabase.co';
-const supabaseKey = '[SUPABASE_SERVICE_ROLE_KEY_REMOVED]';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

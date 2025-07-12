@@ -1,0 +1,184 @@
+/**
+ * Z-Index Hierarchy - Pinteya E-commerce
+ * 
+ * Jerarquía de z-index estandarizada para evitar conflictos de superposición
+ * Basada en las mejores prácticas de UI/UX y accesibilidad
+ */
+
+/* ===================================
+   JERARQUÍA DE Z-INDEX DEFINIDA
+   =================================== */
+
+/*
+  NIVEL 1: Contenido base (0-99)
+  - Contenido normal de la página
+  - Elementos estáticos
+*/
+
+/*
+  NIVEL 2: Elementos flotantes (100-999)
+  - Elementos que flotan sobre el contenido
+  - Badges, tooltips simples
+*/
+
+/*
+  NIVEL 3: Navegación y headers (1000-1999)
+  - Header sticky
+  - TopBar
+  - Navegación principal
+*/
+
+/*
+  NIVEL 4: Overlays y dropdowns (2000-4999)
+  - Dropdowns
+  - Popovers
+  - Tooltips complejos
+  - Menús contextuales
+*/
+
+/*
+  NIVEL 5: Modales y dialogs (5000-7999)
+  - Modales principales
+  - Dialogs de confirmación
+  - Sidebars modales
+*/
+
+/*
+  NIVEL 6: Notificaciones (8000-8999)
+  - Notificaciones toast
+  - Alertas temporales
+  - Mensajes de estado
+*/
+
+/*
+  NIVEL 7: Elementos críticos (9000-9999)
+  - Loaders globales
+  - Overlays de carga
+  - Estados de error críticos
+*/
+
+/*
+  NIVEL 8: Máxima prioridad (10000+)
+  - Galerías de imágenes
+  - Elementos de máxima prioridad
+  - Debug tools
+*/
+
+/* ===================================
+   CLASES UTILITARIAS
+   =================================== */
+
+/* Contenido base */
+.z-base { z-index: 1; }
+.z-raised { z-index: 10; }
+
+/* Elementos flotantes */
+.z-floating { z-index: 100; }
+.z-badge { z-index: 200; }
+.z-tooltip-simple { z-index: 300; }
+
+/* Navegación */
+.z-topbar { z-index: 1000; }
+.z-header { z-index: 1100; }
+.z-navigation { z-index: 1200; }
+.z-bottom-nav { z-index: 1300; }
+
+/* Overlays y dropdowns */
+.z-dropdown { z-index: 2000; }
+.z-popover { z-index: 2500; }
+.z-tooltip { z-index: 3000; }
+.z-context-menu { z-index: 3500; }
+
+/* Modales y dialogs */
+.z-modal-backdrop { z-index: 5000; }
+.z-modal { z-index: 5100; }
+.z-dialog { z-index: 5200; }
+.z-sidebar-modal { z-index: 5300; }
+.z-quick-view { z-index: 5400; }
+
+/* Notificaciones */
+.z-notification { z-index: 8000; }
+.z-toast { z-index: 8100; }
+.z-alert { z-index: 8200; }
+
+/* Elementos críticos */
+.z-loader { z-index: 9000; }
+.z-overlay-critical { z-index: 9100; }
+.z-error-critical { z-index: 9200; }
+
+/* Máxima prioridad */
+.z-gallery { z-index: 10000; }
+.z-debug { z-index: 10100; }
+.z-maximum { z-index: 10200; }
+
+/* ===================================
+   RESPONSIVE Z-INDEX
+   =================================== */
+
+/* En móviles, algunos elementos pueden necesitar ajustes */
+@media (max-width: 768px) {
+  .z-header-mobile { z-index: 1150; }
+  .z-bottom-nav-mobile { z-index: 1350; }
+}
+
+/* ===================================
+   ESTADOS ESPECIALES
+   =================================== */
+
+/* Elementos que necesitan estar temporalmente al frente */
+.z-temp-front { z-index: 9999; }
+
+/* Elementos que deben estar siempre atrás */
+.z-background { z-index: -1; }
+
+/* ===================================
+   UTILIDADES PARA DEBUGGING
+   =================================== */
+
+/* Clase para debugging de z-index */
+.debug-z-index {
+  position: relative;
+}
+
+.debug-z-index::before {
+  content: attr(data-z-index);
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: red;
+  color: white;
+  padding: 2px 4px;
+  font-size: 10px;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+/* ===================================
+   NOTAS DE IMPLEMENTACIÓN
+   =================================== */
+
+/*
+  REGLAS DE USO:
+
+  1. NUNCA usar z-index arbitrarios como 9999, 99999, etc.
+  2. SIEMPRE usar las clases definidas en esta jerarquía
+  3. Si necesitas un nuevo nivel, agregarlo aquí primero
+  4. Documentar cualquier excepción o caso especial
+  5. Probar en todos los breakpoints responsive
+
+  ORDEN DE RENDERIZADO (de atrás hacia adelante):
+  1. Contenido base (z-base, z-raised)
+  2. Elementos flotantes (z-floating, z-badge, z-tooltip-simple)
+  3. Navegación (z-topbar, z-header, z-navigation, z-bottom-nav)
+  4. Overlays (z-dropdown, z-popover, z-tooltip, z-context-menu)
+  5. Modales (z-modal-backdrop, z-modal, z-dialog, z-sidebar-modal)
+  6. Notificaciones (z-notification, z-toast, z-alert)
+  7. Críticos (z-loader, z-overlay-critical, z-error-critical)
+  8. Máxima prioridad (z-gallery, z-debug, z-maximum)
+
+  TESTING:
+  - Verificar que modales aparecen sobre headers
+  - Confirmar que dropdowns no se ocultan detrás de elementos
+  - Probar notificaciones en todos los contextos
+  - Validar en mobile y desktop
+*/

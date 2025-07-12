@@ -15,12 +15,14 @@ const nextConfig = {
       '@/components/ui'
     ],
     optimizeCss: true,
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+
+  // Configuración de Turbopack (estable en Next.js 15)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
@@ -152,6 +154,17 @@ const nextConfig = {
 
   // Configuración para Clerk
   serverExternalPackages: ['@clerk/nextjs'],
+
+  // Redirects para compatibilidad de URLs
+  async redirects() {
+    return [
+      {
+        source: '/product/:id',
+        destination: '/shop-details/:id',
+        permanent: true,
+      },
+    ];
+  },
 
   // Headers de seguridad existentes
   async headers() {

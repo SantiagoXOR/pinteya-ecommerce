@@ -3,15 +3,24 @@
 // ===================================
 
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import { v4 as uuidv4 } from 'uuid';
+import { retryMercadoPagoOperation } from './retry-logic';
+import { logger, LogLevel, LogCategory } from './logger';
+import { CacheUtils } from './cache-manager';
 
-// Configuración del cliente MercadoPago
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
-  options: {
-    timeout: 5000,
-    idempotencyKey: 'abc',
-  }
-});
+// ✅ MEJORADO: Función para crear cliente con IdempotencyKey dinámico
+export function createMercadoPagoClient(transactionId?: string) {
+  return new MercadoPagoConfig({
+    accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
+    options: {
+      timeout: 5000,
+      idempotencyKey: transactionId || uuidv4(),
+    }
+  });
+}
+
+// Cliente por defecto (para compatibilidad)
+const client = createMercadoPagoClient();
 
 // Instancias de los servicios
 export const preference = new Preference(client);
@@ -87,68 +96,136 @@ export interface CreatePreferenceData {
 }
 
 /**
- * Crea una preferencia de pago en MercadoPago
+ * Crea una preferencia de pago en MercadoPago con retry automático
  */
 export async function createPaymentPreference(data: CreatePreferenceData) {
-  try {
+  // ✅ NUEVO: Usar retry logic para operación crítica
+  const retryResult = await retryMercadoPagoOperation(
+    async () => {
+      // ✅ MEJORADO: Usar cliente con IdempotencyKey dinámico
+      const dynamicClient = createMercadoPagoClient(data.external_reference);
+      const dynamicPreference = new Preference(dynamicClient);
+
+    // ✅ MEJORADO: Configuración avanzada de métodos de pago
+    const paymentMethods = {
+      excluded_payment_methods: [
+        // Excluir American Express si no se acepta
+        // { id: "amex" },
+      ],
+      excluded_payment_types: [
+        // Excluir pagos en efectivo para simplificar
+        { id: "ticket" },
+        // Excluir cajeros automáticos
+        { id: "atm" },
+      ],
+      installments: 12, // Máximo 12 cuotas
+      default_installments: 1, // Por defecto sin cuotas
+      default_payment_method_id: null, // Sin método preferido
+    };
+
+    // ✅ MEJORADO: URLs dinámicas según entorno
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+
     const preferenceData = {
       items: data.items,
       payer: data.payer,
       shipments: data.shipments,
       back_urls: {
-        success: data.back_urls?.success || `http://localhost:3001/checkout/success`,
-        failure: data.back_urls?.failure || `http://localhost:3001/checkout/failure`,
-        pending: data.back_urls?.pending || `http://localhost:3001/checkout/pending`,
+        success: data.back_urls?.success || `${baseUrl}/checkout/success`,
+        failure: data.back_urls?.failure || `${baseUrl}/checkout/failure`,
+        pending: data.back_urls?.pending || `${baseUrl}/checkout/pending`,
       },
-      // Deshabilitar auto_return para desarrollo con localhost
-      // auto_return: data.auto_return || 'approved',
-      payment_methods: data.payment_methods,
-      notification_url: data.notification_url || `http://localhost:3001/api/payments/webhook`,
-      statement_descriptor: data.statement_descriptor || 'PINTEYA',
+      // ✅ MEJORADO: Habilitar auto_return condicionalmente
+      auto_return: process.env.NODE_ENV === 'production' ? 'approved' : undefined,
+
+      // ✅ MEJORADO: Configuración completa de métodos de pago
+      payment_methods: data.payment_methods || paymentMethods,
+
+      notification_url: data.notification_url || `${baseUrl}/api/payments/webhook`,
+      statement_descriptor: data.statement_descriptor || 'PINTEYA ECOMMERCE',
       external_reference: data.external_reference,
-      expires: data.expires,
-      expiration_date_from: data.expiration_date_from,
-      expiration_date_to: data.expiration_date_to,
+
+      // ✅ NUEVO: Configuración de expiración
+      expires: true,
+      expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
     };
 
-    console.log('Sending to MercadoPago:', JSON.stringify(preferenceData, null, 2));
-    const response = await preference.create({ body: preferenceData });
-    
-    return {
-      success: true,
-      data: {
-        id: response.id,
-        init_point: response.init_point,
-        sandbox_init_point: response.sandbox_init_point,
-      },
-    };
-  } catch (error: any) {
-    console.error('Error creating MercadoPago preference:', error);
+      console.log('Sending to MercadoPago:', JSON.stringify(preferenceData, null, 2));
+      const response = await dynamicPreference.create({ body: preferenceData });
+
+      return {
+        success: true,
+        data: {
+          id: response.id,
+          init_point: response.init_point,
+          sandbox_init_point: response.sandbox_init_point,
+        },
+      };
+    },
+    'createPaymentPreference',
+    true // Es operación crítica
+  );
+
+  // ✅ NUEVO: Manejar resultado del retry
+  if (retryResult.success) {
+    logger.info(LogCategory.PAYMENT, 'Payment preference created successfully with retry', {
+      attempts: retryResult.attempts,
+      totalDuration: retryResult.totalDuration,
+      preferenceId: retryResult.data?.data.id,
+    });
+    return retryResult.data!;
+  } else {
+    logger.error(LogCategory.PAYMENT, 'Failed to create payment preference after retries', retryResult.error!, {
+      attempts: retryResult.attempts,
+      totalDuration: retryResult.totalDuration,
+    });
     return {
       success: false,
-      error: error.message || 'Error creating payment preference',
+      error: retryResult.error?.message || 'Error creating payment preference after retries',
     };
   }
 }
 
 /**
- * Obtiene información de un pago por su ID
+ * Obtiene información de un pago por su ID con cache y retry automático
  */
 export async function getPaymentInfo(paymentId: string) {
-  try {
-    const paymentInfo = await payment.get({ id: paymentId });
-    
-    return {
-      success: true,
-      data: paymentInfo,
-    };
-  } catch (error: any) {
-    console.error('Error getting payment info:', error);
+  // ✅ NUEVO: Usar cache para evitar llamadas repetidas a MercadoPago
+  return CacheUtils.cachePaymentInfo(paymentId, async () => {
+    // ✅ NUEVO: Usar retry logic para consulta (menos crítica)
+    const retryResult = await retryMercadoPagoOperation(
+      async () => {
+        const paymentInfo = await payment.get({ id: paymentId });
+
+        return {
+          success: true,
+          data: paymentInfo,
+        };
+      },
+      'getPaymentInfo',
+      false // No es operación crítica
+    );
+
+  // ✅ NUEVO: Manejar resultado del retry
+  if (retryResult.success) {
+    logger.info(LogCategory.PAYMENT, 'Payment info retrieved successfully with retry', {
+      paymentId,
+      attempts: retryResult.attempts,
+      totalDuration: retryResult.totalDuration,
+    });
+    return retryResult.data!;
+  } else {
+    logger.error(LogCategory.PAYMENT, 'Failed to get payment info after retries', retryResult.error!, {
+      paymentId,
+      attempts: retryResult.attempts,
+      totalDuration: retryResult.totalDuration,
+    });
     return {
       success: false,
-      error: error.message || 'Error getting payment information',
+      error: retryResult.error?.message || 'Error getting payment information after retries',
     };
   }
+  }); // Cierre del CacheUtils.cachePaymentInfo
 }
 
 /**

@@ -17,6 +17,17 @@
 - [🎨 Frontend](./architecture/frontend.md)
 - [🔐 Autenticación](./architecture/authentication.md)
 
+### 🔍 **Auditoría y Planificación 2025**
+- [🔍 Auditoría Técnica Completa](./AUDITORIA_TECNICA_2025.md) - Evaluación integral del sistema
+- [📋 Plan de Mejoras Técnicas](./PLAN_MEJORAS_TECNICAS_2025.md) - Roadmap enterprise 2025
+- [🎯 Métricas y KPIs](./METRICAS_PERFORMANCE_2025.md) - Objetivos de performance
+
+### 🔐 **Seguridad (Actualizado 2025-01-05)**
+- [🛡️ Mejoras de Seguridad](../SECURITY_IMPROVEMENTS.md) - Path hijacking, MFA, contraseñas
+- [📧 Corrección OTP](../OTP_SECURITY_FIX.md) - Configuración segura de códigos OTP
+- [🔒 Políticas RLS](../SECURITY_RLS.md) - Row Level Security implementado
+- [🔧 Configuración Auth](../CONFIGURATION.md) - Configuración de autenticación
+
 ### 💻 **Desarrollo**
 - [🛠️ Guía de Desarrollo](./development/guide.md)
 - [📝 Estándares de Código](./development/standards.md)
@@ -47,6 +58,12 @@
 - [📊 Monitoring](./deployment/monitoring.md)
 - [🔧 Troubleshooting](./deployment/troubleshooting.md)
 - [🚨 Build Errors Fix](./troubleshooting/build-errors-fix.md)
+
+### 🎯 **Enhanced Header & UI Fixes**
+- [🎨 Enhanced Header Completo](./implementation/pinteya-enhanced-header-complete.md)
+- [🔧 Dropdown Menu Fix](./fixes/dropdown-menu-fix.md)
+- [⚡ ClerkProvider Runtime Error Fix](./fixes/clerk-provider-runtime-error-fix.md)
+- [🧪 Demo Interactivo](http://localhost:3000/demo/header)
 
 ### 🧪 **Testing**
 - [📋 Estrategia de Testing](./testing/README.md)

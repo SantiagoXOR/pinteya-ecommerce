@@ -1,8 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 const supabase = createClient(
-  'https://aakzspzfulgftqlgwkpb.supabase.co',
-  '[SUPABASE_SERVICE_ROLE_KEY_REMOVED]'
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 // Mapeo de productos afectados y sus nuevas rutas
