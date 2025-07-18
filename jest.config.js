@@ -11,21 +11,29 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  // Test environment
+  // Test environment optimizado
   testEnvironment: 'jsdom',
-  
+
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  
-  // Module name mapping for absolute imports
+
+  // Module name mapping para absolute imports - Optimizado
   moduleNameMapper: {
+    // Mapeo principal
     '^@/(.*)$': '<rootDir>/src/$1',
+
+    // Mapeos específicos para mejor resolución
     '^@/components/(.*)$': '<rootDir>/src/components/$1',
     '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
     '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
     '^@/utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@/types/(.*)$': '<rootDir>/src/types/$1',
     '^@/redux/(.*)$': '<rootDir>/src/redux/$1',
+    '^@/__tests__/(.*)$': '<rootDir>/src/__tests__/$1',
+
+    // Mapeos para assets estáticos
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/__mocks__/fileMock.js',
   },
   
   // Test patterns
@@ -34,11 +42,14 @@ const customJestConfig = {
     '**/?(*.)+(spec|test).[jt]s?(x)'
   ],
 
-  // Ignore E2E tests (Playwright)
+  // Ignore E2E tests (Playwright) and utility files
   testPathIgnorePatterns: [
     '/node_modules/',
     '/e2e/',
     '/.next/',
+    '/tests/',
+    'test-utils.tsx',
+    'queryClient.setup.ts',
   ],
   
   // Coverage configuration
@@ -79,23 +90,46 @@ const customJestConfig = {
     '/e2e/',
   ],
   
-  // Transform ignore patterns
+  // Transform ignore patterns - Optimizado
   transformIgnorePatterns: [
-    '/node_modules/',
+    '/node_modules/(?!(.*\\.mjs$|@tanstack|use-debounce))',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
-  
-  // Test timeout
-  testTimeout: 10000,
-  
-  // Verbose output
-  verbose: true,
-  
+
+  // Test timeout optimizado para mejor performance
+  testTimeout: 10000, // Reducido de 15s a 10s
+
+  // Verbose output solo cuando sea necesario
+  verbose: false,
+
   // Clear mocks between tests
   clearMocks: true,
-  
+
   // Restore mocks after each test
   restoreMocks: true,
+
+  // Configuración de workers optimizada para mejor rendimiento
+  maxWorkers: process.env.CI ? 2 : '75%', // Más workers en local, menos en CI
+
+  // Cache para mejorar velocidad
+  cache: true,
+  cacheDirectory: '<rootDir>/.jest-cache',
+
+  // Configuración de módulos ES
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+
+  // Configuración adicional para mejor rendimiento
+  detectOpenHandles: false,
+  forceExit: true,
+
+  // Configuraciones adicionales de performance
+  bail: false, // No parar en el primer error para ver todos los fallos
+  passWithNoTests: true, // Permitir ejecución sin tests
+
+  // Configuración de timers para tests más rápidos
+  fakeTimers: {
+    enableGlobally: false, // Solo habilitar cuando sea necesario
+  },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

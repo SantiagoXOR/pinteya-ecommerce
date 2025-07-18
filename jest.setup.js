@@ -4,6 +4,75 @@
 
 import '@testing-library/jest-dom'
 
+// Mock TanStack Query para tests - Versión completa con QueryCache
+jest.mock('@tanstack/react-query', () => {
+  const actual = jest.requireActual('@tanstack/react-query');
+
+  // Mock completo del QueryCache
+  const mockQueryCache = {
+    clear: jest.fn(),
+    get: jest.fn(() => null),
+    getAll: jest.fn(() => []),
+    find: jest.fn(() => null),
+    findAll: jest.fn(() => []),
+    notify: jest.fn(),
+    onFocus: jest.fn(),
+    onOnline: jest.fn(),
+    subscribe: jest.fn(() => jest.fn()),
+    build: jest.fn(),
+  };
+
+  // Mock completo del MutationCache
+  const mockMutationCache = {
+    clear: jest.fn(),
+    getAll: jest.fn(() => []),
+    find: jest.fn(() => null),
+    findAll: jest.fn(() => []),
+    notify: jest.fn(),
+    subscribe: jest.fn(() => jest.fn()),
+    build: jest.fn(),
+  };
+
+  // Mock del QueryClient con todos los métodos necesarios
+  const mockQueryClient = {
+    clear: jest.fn(),
+    getQueryCache: jest.fn(() => mockQueryCache),
+    getMutationCache: jest.fn(() => mockMutationCache),
+    setQueryData: jest.fn(),
+    getQueryData: jest.fn(),
+    invalidateQueries: jest.fn(),
+    removeQueries: jest.fn(),
+    prefetchQuery: jest.fn(),
+    defaultQueryOptions: jest.fn(() => ({})),
+    getDefaultOptions: jest.fn(() => ({
+      queries: {},
+      mutations: {},
+    })),
+    mount: jest.fn(),
+    unmount: jest.fn(),
+    isFetching: jest.fn(() => 0),
+    isMutating: jest.fn(() => 0),
+  };
+
+  return {
+    ...actual,
+    QueryClient: jest.fn().mockImplementation(() => mockQueryClient),
+    useQuery: jest.fn(() => ({
+      data: null,
+      error: null,
+      isLoading: false,
+      isError: false,
+      isSuccess: true,
+      isFetching: false,
+      isStale: false,
+      dataUpdatedAt: Date.now(),
+      refetch: jest.fn(),
+    })),
+    useQueryClient: jest.fn(() => mockQueryClient),
+    QueryClientProvider: ({ children }) => children,
+  };
+});
+
 // Mock Next.js router
 jest.mock('next/router', () => ({
   useRouter() {
@@ -40,9 +109,19 @@ jest.mock('next/navigation', () => ({
       refresh: jest.fn(),
     }
   },
-  useSearchParams() {
-    return new URLSearchParams()
-  },
+  useSearchParams: jest.fn(() => ({
+    get: jest.fn((key) => {
+      if (key === 'q') return 'test-query';
+      return null;
+    }),
+    getAll: jest.fn(),
+    has: jest.fn(),
+    keys: jest.fn(),
+    values: jest.fn(),
+    entries: jest.fn(),
+    forEach: jest.fn(),
+    toString: jest.fn(() => 'q=test-query'),
+  })),
   usePathname() {
     return '/'
   },
@@ -277,7 +356,7 @@ jest.mock('@/app/context/QuickViewModalContext', () => ({
   ModalProvider: ({ children }) => children,
 }))
 
-// Mock Clerk components
+// Mock Clerk components y server functions
 jest.mock('@clerk/nextjs', () => ({
   SignedIn: ({ children }) => <div data-testid="signed-in">{children}</div>,
   SignedOut: ({ children }) => <div data-testid="signed-out">{children}</div>,
@@ -290,6 +369,31 @@ jest.mock('@clerk/nextjs', () => ({
     user: null,
     isLoaded: true,
   }),
+}))
+
+// Mock Clerk server functions
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: jest.fn(() => ({
+    userId: 'test-user-id',
+    sessionId: 'test-session-id',
+    getToken: jest.fn(() => Promise.resolve('test-token')),
+  })),
+  currentUser: jest.fn(() => Promise.resolve({
+    id: 'test-user-id',
+    emailAddresses: [{ emailAddress: 'test@example.com' }],
+    firstName: 'Test',
+    lastName: 'User',
+  })),
+  clerkClient: {
+    users: {
+      getUser: jest.fn(() => Promise.resolve({
+        id: 'test-user-id',
+        emailAddresses: [{ emailAddress: 'test@example.com' }],
+        firstName: 'Test',
+        lastName: 'User',
+      })),
+    },
+  },
 }))
 
 // Mock Supabase - Configuración completa y robusta
@@ -437,8 +541,50 @@ const createMockQueryBuilder = () => {
   return builder
 }
 
-// Mock principal de Supabase - Exportaciones nombradas
+// Mock principal de Supabase - Versión mejorada
 jest.mock('@/lib/supabase', () => {
+  // Mock completo del query builder con todos los métodos
+  const createMockQueryBuilder = () => {
+    const mockData = {
+      data: [
+        { brand: 'El Galgo', product_count: 3 },
+        { brand: 'Plavicon', product_count: 5 },
+        { brand: 'Akapol', product_count: 2 },
+      ],
+      error: null
+    };
+
+    const mockQueryBuilder = {
+      select: jest.fn(() => mockQueryBuilder),
+      from: jest.fn(() => mockQueryBuilder),
+      insert: jest.fn(() => mockQueryBuilder),
+      update: jest.fn(() => mockQueryBuilder),
+      delete: jest.fn(() => mockQueryBuilder),
+      eq: jest.fn(() => mockQueryBuilder),
+      neq: jest.fn(() => mockQueryBuilder),
+      gt: jest.fn(() => mockQueryBuilder),
+      gte: jest.fn(() => mockQueryBuilder),
+      lt: jest.fn(() => mockQueryBuilder),
+      lte: jest.fn(() => mockQueryBuilder),
+      like: jest.fn(() => mockQueryBuilder),
+      ilike: jest.fn(() => mockQueryBuilder),
+      is: jest.fn(() => mockQueryBuilder),
+      in: jest.fn(() => mockQueryBuilder),
+      not: jest.fn(() => mockQueryBuilder),
+      or: jest.fn(() => mockQueryBuilder),
+      and: jest.fn(() => mockQueryBuilder),
+      order: jest.fn(() => mockQueryBuilder),
+      limit: jest.fn(() => mockQueryBuilder),
+      range: jest.fn(() => mockQueryBuilder),
+      single: jest.fn(() => Promise.resolve(mockData)),
+      maybeSingle: jest.fn(() => Promise.resolve(mockData)),
+      then: jest.fn((callback) => Promise.resolve(callback(mockData))),
+      catch: jest.fn(() => Promise.resolve()),
+    };
+
+    return mockQueryBuilder;
+  };
+
   const mockClient = {
     from: jest.fn(() => createMockQueryBuilder()),
     auth: {
@@ -483,7 +629,7 @@ jest.mock('@/lib/clerk', () => ({
   getAuthUserId: jest.fn(() => Promise.resolve(null)),
 }))
 
-// Mock MercadoPago
+// Mock MercadoPago - Versión completa
 jest.mock('@/lib/mercadopago', () => ({
   preference: {
     create: jest.fn(() => Promise.resolve({
@@ -507,6 +653,62 @@ jest.mock('@/lib/mercadopago', () => ({
     },
   })),
   validateWebhookSignature: jest.fn(() => true),
+  createPaymentPreference: jest.fn(() => Promise.resolve({
+    success: true,
+    data: {
+      id: 'test-preference-id',
+      init_point: 'https://test-mercadopago.com/checkout',
+      sandbox_init_point: 'https://test-mercadopago.com/checkout',
+    },
+  })),
+  mercadopago: {
+    preferences: {
+      create: jest.fn(() => Promise.resolve({
+        body: {
+          id: 'test-preference-id',
+          init_point: 'https://test-mercadopago.com/checkout',
+        },
+      })),
+    },
+  },
+}))
+
+// Mock Redis para tests
+jest.mock('@/lib/redis', () => ({
+  redis: {
+    get: jest.fn(() => Promise.resolve(null)),
+    set: jest.fn(() => Promise.resolve('OK')),
+    del: jest.fn(() => Promise.resolve(1)),
+    incr: jest.fn(() => Promise.resolve(1)),
+    expire: jest.fn(() => Promise.resolve(1)),
+    ping: jest.fn(() => Promise.resolve('PONG')),
+    disconnect: jest.fn(() => Promise.resolve()),
+  },
+  RedisCache: jest.fn().mockImplementation(() => ({
+    get: jest.fn(() => Promise.resolve(null)),
+    set: jest.fn(() => Promise.resolve(true)),
+    del: jest.fn(() => Promise.resolve(true)),
+    incr: jest.fn(() => Promise.resolve(1)),
+    expire: jest.fn(() => Promise.resolve(true)),
+    ping: jest.fn(() => Promise.resolve(true)),
+  })),
+  isRedisAvailable: jest.fn(() => false),
+}))
+
+// Mock Rate Limiter
+jest.mock('@/lib/rate-limiter', () => ({
+  checkRateLimit: jest.fn(() => Promise.resolve({
+    success: true,
+    remaining: 100,
+    reset: Date.now() + 60000,
+  })),
+  RateLimiter: jest.fn().mockImplementation(() => ({
+    check: jest.fn(() => Promise.resolve({
+      success: true,
+      remaining: 100,
+      reset: Date.now() + 60000,
+    })),
+  })),
 }))
 
 // Clean up after each test
