@@ -17,7 +17,7 @@ export interface RetryConfig {
 }
 
 // Configuraciones predefinidas
-export const RETRY_CONFIGS = {
+export const RETRY_CONFIGS: Record<string, RetryConfig> = {
   // Para llamadas críticas a MercadoPago
   MERCADOPAGO_CRITICAL: {
     maxRetries: 3,
@@ -206,28 +206,20 @@ export async function retryWithBackoff<T>(
   let lastError: Error | undefined;
   let attempts = 0;
 
-  logger.info(LogCategory.SYSTEM, `Starting retry operation: ${operationName}`, {
-    maxRetries: config.maxRetries,
-    baseDelay: config.baseDelayMs,
-    maxDelay: config.maxDelayMs,
-  });
+  logger.info(LogCategory.API, `Starting retry operation: ${operationName}`);
 
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     attempts = attempt + 1;
     const attemptStart = Date.now();
 
     try {
-      logger.debug(LogCategory.SYSTEM, `Retry attempt ${attempts}/${config.maxRetries + 1} for ${operationName}`);
+      logger.info(LogCategory.API, `Retry attempt ${attempts}/${config.maxRetries + 1} for ${operationName}`);
       
       const result = await operation();
       const attemptDuration = Date.now() - attemptStart;
       const totalDuration = Date.now() - startTime;
 
-      logger.info(LogCategory.SYSTEM, `Retry operation succeeded: ${operationName}`, {
-        attempts,
-        totalDuration,
-        attemptDuration,
-      });
+      logger.info(LogCategory.API, `Retry operation succeeded: ${operationName}`);
 
       // ✅ NUEVO: Registrar métricas de retry exitoso
       await metricsCollector.recordRetry(operationName, attempts, true, totalDuration);
@@ -254,17 +246,7 @@ export async function retryWithBackoff<T>(
       };
 
       // Log del intento fallido
-      logger.warn(LogCategory.SYSTEM, `Retry attempt ${attempts} failed for ${operationName}`, {
-        error: {
-          type: errorInfo.type,
-          code: errorInfo.code,
-          message: lastError.message,
-          isNetwork: errorInfo.isNetwork,
-        },
-        attempt: attempts,
-        maxRetries: config.maxRetries + 1,
-        duration: attemptDuration,
-      });
+      logger.warn(LogCategory.API, `Retry attempt ${attempts} failed for ${operationName}`);
 
       // Si es el último intento, no calcular delay
       if (attempt === config.maxRetries) {
@@ -273,11 +255,7 @@ export async function retryWithBackoff<T>(
 
       // Verificar si el error es reintentable
       if (!isRetryableError(lastError, config)) {
-        logger.error(LogCategory.SYSTEM, `Non-retryable error for ${operationName}`, lastError, {
-          errorType: errorInfo.type,
-          errorCode: errorInfo.code,
-          attempts,
-        });
+        logger.error(LogCategory.API, `Non-retryable error for ${operationName}`, lastError);
         break;
       }
 
@@ -285,11 +263,7 @@ export async function retryWithBackoff<T>(
       const delay = calculateDelay(attempt, config);
       attemptInfo.delay = delay;
 
-      logger.info(LogCategory.SYSTEM, `Retrying ${operationName} in ${delay}ms`, {
-        nextAttempt: attempts + 1,
-        delay,
-        errorType: errorInfo.type,
-      });
+      logger.info(LogCategory.API, `Retrying ${operationName} in ${delay}ms`);
 
       // Esperar antes del siguiente intento
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -299,11 +273,7 @@ export async function retryWithBackoff<T>(
   // Todos los intentos fallaron
   const totalDuration = Date.now() - startTime;
   
-  logger.error(LogCategory.SYSTEM, `All retry attempts failed for ${operationName}`, lastError!, {
-    totalAttempts: attempts,
-    totalDuration,
-    finalError: lastError?.message,
-  });
+  logger.error(LogCategory.API, `All retry attempts failed for ${operationName}`, lastError!);
 
   // ✅ NUEVO: Registrar métricas de retry fallido
   await metricsCollector.recordRetry(operationName, attempts, false, totalDuration);

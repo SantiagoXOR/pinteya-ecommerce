@@ -49,9 +49,8 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
-      'refunds',
-      clientIP,
-      RATE_LIMIT_CONFIGS.PAYMENT_CREATION
+      request,
+      RATE_LIMIT_CONFIGS.PAYMENT_API
     );
 
     if (!rateLimitResult.success) {
@@ -64,7 +63,7 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
       return response;
     }
 
@@ -89,6 +88,13 @@ export async function POST(request: NextRequest) {
 
     // Verificar que el pago existe y pertenece al usuario
     const supabase = getSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { success: false, error: 'Error de configuración de base de datos' },
+        { status: 500 }
+      );
+    }
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('id, total_amount, payment_status, external_reference')
@@ -153,7 +159,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Registrar métricas
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/refunds',
       'POST',
       200,
@@ -177,19 +183,22 @@ export async function POST(request: NextRequest) {
       processing_time: Date.now() - startTime,
     });
 
-    addRateLimitHeaders(response, rateLimitResult);
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
     return response;
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.PAYMENT, 'Refund processing failed', error as Error, {
+    logger.performance(LogLevel.ERROR, 'Refund processing failed', {
+      operation: 'refund-processing-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
       userAgent,
-      processingTime,
     });
 
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/refunds',
       'POST',
       500,
@@ -224,9 +233,8 @@ export async function GET(request: NextRequest) {
 
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
-      'refunds-list',
-      clientIP,
-      RATE_LIMIT_CONFIGS.ANALYTICS
+      request,
+      RATE_LIMIT_CONFIGS.QUERY_API
     );
 
     if (!rateLimitResult.success) {
@@ -234,7 +242,7 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
       return response;
     }
 
@@ -245,7 +253,13 @@ export async function GET(request: NextRequest) {
     const status = url.searchParams.get('status');
 
     const supabase = getSupabaseClient();
-    
+    if (!supabase) {
+      return NextResponse.json(
+        { success: false, error: 'Error de configuración de base de datos' },
+        { status: 500 }
+      );
+    }
+
     // Construir query
     let query = supabase
       .from('refunds')
@@ -271,12 +285,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Registrar métricas
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/refunds',
       'GET',
       200,
       Date.now() - startTime,
-      { userId, count: refunds?.length || 0 }
+      { userId, count: (refunds?.length || 0).toString() }
     );
 
     logger.info(LogCategory.API, 'Refunds list retrieved', {
@@ -297,15 +311,18 @@ export async function GET(request: NextRequest) {
       processing_time: Date.now() - startTime,
     });
 
-    addRateLimitHeaders(response, rateLimitResult);
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
     return response;
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.API, 'Refunds list failed', error as Error, {
+    logger.performance(LogLevel.ERROR, 'Refunds list failed', {
+      operation: 'refunds-list-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
-      processingTime,
     });
 
     return NextResponse.json(
@@ -354,10 +371,7 @@ async function processRefund(
     return refundResponse;
 
   } catch (error) {
-    logger.error(LogCategory.PAYMENT, 'MercadoPago refund failed', error as Error, {
-      payment_id: paymentId,
-      amount,
-    });
+    logger.error(LogCategory.PAYMENT, 'MercadoPago refund failed', error as Error);
 
     // En caso de error, devolver estado pendiente
     return {

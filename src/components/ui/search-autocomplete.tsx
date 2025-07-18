@@ -11,6 +11,9 @@ import { ProductWithCategory } from "@/types/api";
 import { Badge } from "./badge";
 import { Button } from "./button";
 import Image from "next/image";
+import { useTrendingSearches } from "@/hooks/useTrendingSearches";
+import { useRecentSearches } from "@/hooks/useRecentSearches";
+import { SEARCH_CONSTANTS } from "@/constants/shop";
 
 const searchAutocompleteVariants = cva(
   "relative w-full",
@@ -47,6 +50,13 @@ export interface SearchAutocompleteProps
   showTrendingSearches?: boolean;
   maxSuggestions?: number;
   debounceMs?: number;
+  // Props opcionales para integración con hooks externos
+  query?: string;
+  suggestions?: SearchSuggestion[];
+  isLoading?: boolean;
+  error?: string | null;
+  searchWithDebounce?: (query: string) => void;
+  onClear?: () => void;
 }
 
 // Búsquedas trending por defecto para pinturería
@@ -88,55 +98,63 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
     maxSuggestions = 8,
     debounceMs = 300,
     placeholder = "Busco productos de pinturería...",
+    // Props opcionales para integración con hooks externos
+    query: externalQuery,
+    suggestions: externalSuggestions,
+    isLoading: externalIsLoading,
+    error: externalError,
+    searchWithDebounce: externalSearchWithDebounce,
+    onClear: externalOnClear,
     ...props
   }, ref) => {
-    const [query, setQuery] = useState("");
-    const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+
+    // Hook para obtener búsquedas trending reales
+    const { trendingSearches, trackSearch } = useTrendingSearches({
+      limit: 4,
+      enabled: showTrendingSearches
+    });
+
+    // Hook para gestionar búsquedas recientes
+    const {
+      recentSearches,
+      addSearch: addRecentSearch,
+      getRecentSearches
+    } = useRecentSearches({
+      maxSearches: SEARCH_CONSTANTS.MAX_RECENT_SEARCHES,
+      enablePersistence: showRecentSearches,
+      expirationDays: SEARCH_CONSTANTS.RECENT_SEARCHES_EXPIRATION_DAYS
+    });
+    // Estado interno (usado solo si no hay props externas)
+    const [internalQuery, setInternalQuery] = useState("");
+    const [internalSuggestions, setInternalSuggestions] = useState<SearchSuggestion[]>([]);
+    const [internalIsLoading, setInternalIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
-    const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+    // Usar props externas si están disponibles, sino usar estado interno
+    const query = externalQuery !== undefined ? externalQuery : internalQuery;
+    const suggestions = externalSuggestions !== undefined ? externalSuggestions : internalSuggestions;
+    const isLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading;
+    const error = externalError;
     
     const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const debounceRef = useRef<NodeJS.Timeout>();
 
-    // Cargar búsquedas recientes del localStorage
-    useEffect(() => {
-      if (showRecentSearches) {
-        const stored = localStorage.getItem('pinteya-recent-searches');
-        if (stored) {
-          try {
-            setRecentSearches(JSON.parse(stored));
-          } catch (error) {
-            console.error('Error loading recent searches:', error);
-          }
-        }
-      }
-    }, [showRecentSearches]);
-
-    // Guardar búsqueda reciente
-    const saveRecentSearch = useCallback((searchQuery: string) => {
-      if (!searchQuery.trim() || !showRecentSearches) return;
-      
-      const updated = [
-        searchQuery,
-        ...recentSearches.filter(s => s !== searchQuery)
-      ].slice(0, 5); // Mantener solo las últimas 5
-      
-      setRecentSearches(updated);
-      localStorage.setItem('pinteya-recent-searches', JSON.stringify(updated));
-    }, [recentSearches, showRecentSearches]);
-
     // Buscar productos con debounce
     const searchProductsDebounced = useCallback(async (searchQuery: string) => {
-      if (!searchQuery.trim()) {
-        setSuggestions([]);
+      // No ejecutar si hay props externas
+      if (externalSuggestions !== undefined) {
         return;
       }
 
-      setIsLoading(true);
+      if (!searchQuery.trim()) {
+        setInternalSuggestions([]);
+        return;
+      }
+
+      setInternalIsLoading(true);
       
       try {
         const response = await searchProducts(searchQuery, 6);
@@ -152,70 +170,93 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
             href: `/product/${product.id}`,
           }));
 
-          setSuggestions(productSuggestions.slice(0, maxSuggestions));
+          setInternalSuggestions(productSuggestions.slice(0, maxSuggestions));
         }
       } catch (error) {
         console.error('Error searching products:', error);
-        setSuggestions([]);
+        setInternalSuggestions([]);
       } finally {
-        setIsLoading(false);
+        setInternalIsLoading(false);
       }
-    }, [maxSuggestions]);
+    }, [maxSuggestions, externalSuggestions]);
 
     // Manejar cambio en el input
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      setQuery(value);
-      setSelectedIndex(-1);
 
-      // Limpiar debounce anterior
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
+      // Si hay función externa de búsqueda, usarla
+      if (externalSearchWithDebounce) {
+        externalSearchWithDebounce(value);
+      } else {
+        // Usar lógica interna
+        setInternalQuery(value);
+        setSelectedIndex(-1);
+
+        // Limpiar debounce anterior
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+
+        // Configurar nuevo debounce
+        debounceRef.current = setTimeout(() => {
+          searchProductsDebounced(value);
+        }, debounceMs);
       }
-
-      // Configurar nuevo debounce
-      debounceRef.current = setTimeout(() => {
-        searchProductsDebounced(value);
-      }, debounceMs);
     };
 
     // Mostrar sugerencias por defecto cuando se enfoca
     const handleFocus = () => {
       setIsOpen(true);
-      
-      if (!query.trim()) {
+
+      if (!query.trim() && !externalSuggestions) {
+        // Solo mostrar sugerencias por defecto si no hay props externas
         const defaultSuggestions: SearchSuggestion[] = [];
-        
+
         // Agregar búsquedas recientes
         if (showRecentSearches && recentSearches.length > 0) {
           defaultSuggestions.push(
-            ...recentSearches.slice(0, 3).map((search, index) => ({
+            ...getRecentSearches(3).map((search, index) => ({
               id: `recent-${index}`,
               type: 'recent' as const,
               title: search,
-              href: `/shop?search=${encodeURIComponent(search)}`,
+              href: `/search?q=${encodeURIComponent(search)}`,
             }))
           );
         }
-        
-        // Agregar búsquedas trending
-        if (showTrendingSearches) {
-          defaultSuggestions.push(...defaultTrendingSearches.slice(0, 4));
+
+        // Agregar búsquedas trending reales
+        if (showTrendingSearches && trendingSearches.length > 0) {
+          const trendingSuggestions: SearchSuggestion[] = trendingSearches.map(trending => ({
+            id: trending.id,
+            type: 'trending' as const,
+            title: trending.query,
+            href: trending.href,
+            badge: trending.count ? `${trending.count}` : undefined
+          }));
+          defaultSuggestions.push(...trendingSuggestions.slice(0, 4));
         }
-        
-        setSuggestions(defaultSuggestions.slice(0, maxSuggestions));
+
+        setInternalSuggestions(defaultSuggestions.slice(0, maxSuggestions));
       }
     };
 
     // Manejar selección de sugerencia
     const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
       if (suggestion.type === 'product' || suggestion.type === 'category') {
-        saveRecentSearch(suggestion.title);
+        addRecentSearch(suggestion.title);
       }
-      
-      setQuery(suggestion.title);
+
+      // Registrar búsquedas trending y recientes en analytics
+      if (suggestion.type === 'trending' || suggestion.type === 'recent') {
+        trackSearch(suggestion.title).catch(console.warn);
+      }
+
+      // Solo actualizar query interna si no hay query externa
+      if (externalQuery === undefined) {
+        setInternalQuery(suggestion.title);
+      }
       setIsOpen(false);
-      
+
       if (onSuggestionSelect) {
         onSuggestionSelect(suggestion);
       } else {
@@ -226,15 +267,18 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
     // Manejar envío del formulario
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      
+
       if (query.trim()) {
-        saveRecentSearch(query.trim());
+        addRecentSearch(query.trim());
         setIsOpen(false);
-        
+
+        // Registrar búsqueda en analytics para trending
+        trackSearch(query.trim()).catch(console.warn);
+
         if (onSearch) {
           onSearch(query.trim());
         } else {
-          router.push(`/shop?search=${encodeURIComponent(query.trim())}`);
+          router.push(`/search?q=${encodeURIComponent(query.trim())}`);
         }
       }
     };
@@ -338,8 +382,12 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                 <button
                   type="button"
                   onClick={() => {
-                    setQuery("");
-                    setSuggestions([]);
+                    if (externalOnClear) {
+                      externalOnClear();
+                    } else {
+                      setInternalQuery("");
+                      setInternalSuggestions([]);
+                    }
                     inputRef.current?.focus();
                   }}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -363,6 +411,8 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
             <div
               ref={dropdownRef}
               className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-96 overflow-y-auto"
+              role="listbox"
+              aria-label="Search suggestions"
             >
               {isLoading && (
                 <div className="p-4 text-center text-gray-500">
@@ -391,10 +441,13 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                           <button
                             key={suggestion.id}
                             onClick={() => handleSuggestionSelect(suggestion)}
+                            onMouseEnter={() => setSelectedIndex(suggestions.indexOf(suggestion))}
                             className={cn(
                               "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-md transition-colors",
                               selectedIndex === suggestions.indexOf(suggestion) && "bg-primary/10"
                             )}
+                            role="option"
+                            aria-selected={selectedIndex === suggestions.indexOf(suggestion)}
                           >
                             {getSuggestionIcon(suggestion.type)}
                             <span className="text-sm text-gray-700">{suggestion.title}</span>
@@ -415,10 +468,13 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                           <button
                             key={suggestion.id}
                             onClick={() => handleSuggestionSelect(suggestion)}
+                            onMouseEnter={() => setSelectedIndex(suggestions.indexOf(suggestion))}
                             className={cn(
                               "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-md transition-colors",
                               selectedIndex === suggestions.indexOf(suggestion) && "bg-primary/10"
                             )}
+                            role="option"
+                            aria-selected={selectedIndex === suggestions.indexOf(suggestion)}
                           >
                             {suggestion.image ? (
                               <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
@@ -465,10 +521,13 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                           <button
                             key={suggestion.id}
                             onClick={() => handleSuggestionSelect(suggestion)}
+                            onMouseEnter={() => setSelectedIndex(suggestions.indexOf(suggestion))}
                             className={cn(
                               "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-md transition-colors",
                               selectedIndex === suggestions.indexOf(suggestion) && "bg-primary/10"
                             )}
+                            role="option"
+                            aria-selected={selectedIndex === suggestions.indexOf(suggestion)}
                           >
                             {getSuggestionIcon(suggestion.type)}
                             <span className="text-sm text-gray-700">{suggestion.title}</span>

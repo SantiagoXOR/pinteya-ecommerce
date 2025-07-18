@@ -175,10 +175,7 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
     });
     return retryResult.data!;
   } else {
-    logger.error(LogCategory.PAYMENT, 'Failed to create payment preference after retries', retryResult.error!, {
-      attempts: retryResult.attempts,
-      totalDuration: retryResult.totalDuration,
-    });
+    logger.error(LogCategory.PAYMENT, 'Failed to create payment preference after retries', retryResult.error!);
     return {
       success: false,
       error: retryResult.error?.message || 'Error creating payment preference after retries',
@@ -215,11 +212,7 @@ export async function getPaymentInfo(paymentId: string) {
     });
     return retryResult.data!;
   } else {
-    logger.error(LogCategory.PAYMENT, 'Failed to get payment info after retries', retryResult.error!, {
-      paymentId,
-      attempts: retryResult.attempts,
-      totalDuration: retryResult.totalDuration,
-    });
+    logger.error(LogCategory.PAYMENT, 'Failed to get payment info after retries', retryResult.error!);
     return {
       success: false,
       error: retryResult.error?.message || 'Error getting payment information after retries',

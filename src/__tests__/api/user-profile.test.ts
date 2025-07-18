@@ -70,6 +70,10 @@ describe('/api/user/profile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    // Configurar mock de currentUser por defecto
+    const { currentUser } = require('@clerk/nextjs/server');
+    currentUser.mockResolvedValue(mockUser);
+
     // Resetear el mock de Supabase a su estado por defecto
     const { supabaseAdmin } = require('@/lib/supabase');
     supabaseAdmin.from.mockReturnValue({
@@ -119,13 +123,38 @@ describe('/api/user/profile', () => {
 
   describe('GET', () => {
     it('should return user profile successfully', async () => {
+      // Asegurar que currentUser devuelve un usuario válido
       const { currentUser } = require('@clerk/nextjs/server');
       currentUser.mockResolvedValue(mockUser);
 
+      // Asegurar que Supabase devuelve datos válidos
+      const { supabaseAdmin } = require('@/lib/supabase');
+      supabaseAdmin.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({
+              data: {
+                id: '1',
+                clerk_id: 'clerk_123',
+                name: 'Juan Pérez',
+                email: 'juan@example.com',
+              },
+              error: null,
+            })),
+          })),
+        })),
+      });
+
       const request = new NextRequest('http://localhost:3000/api/user/profile');
-      
+
       const response = await GET(request);
       const data = await response.json();
+
+      // Si el test falla, mostrar la respuesta real para debug
+      if (response.status !== 200) {
+        console.log('Response status:', response.status);
+        console.log('Response data:', data);
+      }
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);

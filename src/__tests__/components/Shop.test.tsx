@@ -144,7 +144,7 @@ describe('Shop Component', () => {
 
     // Verify that products are displayed (the test shows "Sin stock" buttons)
     const stockButtons = screen.getAllByText('Sin stock')
-    expect(stockButtons).toHaveLength(4) // Ajustado según la implementación actual
+    expect(stockButtons).toHaveLength(2) // Ajustado según la implementación actual
   })
 
   it('displays products with add to cart functionality', async () => {

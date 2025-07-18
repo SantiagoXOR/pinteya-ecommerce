@@ -31,32 +31,19 @@ export function getRedisClient(): Redis {
 
     // Event listeners para logging
     redisClient.on('connect', () => {
-      logger.info(LogCategory.SYSTEM, 'Redis connected successfully', {
-        host: REDIS_CONFIG.host,
-        port: REDIS_CONFIG.port,
-        db: REDIS_CONFIG.db,
-      });
+      logger.info(LogCategory.API, 'Redis connected successfully');
     });
 
     redisClient.on('error', (error) => {
-      logger.error(LogCategory.SYSTEM, 'Redis connection error', error, {
-        host: REDIS_CONFIG.host,
-        port: REDIS_CONFIG.port,
-      });
+      logger.error(LogCategory.API, 'Redis connection error', error);
     });
 
     redisClient.on('close', () => {
-      logger.warn(LogCategory.SYSTEM, 'Redis connection closed', {
-        host: REDIS_CONFIG.host,
-        port: REDIS_CONFIG.port,
-      });
+      logger.warn(LogCategory.API, 'Redis connection closed');
     });
 
     redisClient.on('reconnecting', () => {
-      logger.info(LogCategory.SYSTEM, 'Redis reconnecting...', {
-        host: REDIS_CONFIG.host,
-        port: REDIS_CONFIG.port,
-      });
+      logger.info(LogCategory.API, 'Redis reconnecting...');
     });
   }
 
@@ -72,7 +59,7 @@ export async function isRedisAvailable(): Promise<boolean> {
     await client.ping();
     return true;
   } catch (error) {
-    logger.error(LogCategory.SYSTEM, 'Redis health check failed', error as Error);
+    logger.error(LogCategory.API, 'Redis health check failed', error as Error);
     return false;
   }
 }
@@ -84,7 +71,7 @@ export async function closeRedisConnection(): Promise<void> {
   if (redisClient) {
     await redisClient.quit();
     redisClient = null;
-    logger.info(LogCategory.SYSTEM, 'Redis connection closed gracefully');
+    logger.info(LogCategory.API, 'Redis connection closed gracefully');
   }
 }
 
@@ -104,13 +91,10 @@ export class RedisCache {
   async get(key: string): Promise<string | null> {
     try {
       const value = await this.client.get(key);
-      logger.debug(LogCategory.CACHE, 'Cache get operation', {
-        key,
-        hit: value !== null,
-      });
+      logger.info(LogCategory.API, 'Cache get operation');
       return value;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache get operation failed', error as Error, { key });
+      logger.error(LogCategory.API, 'Cache get operation failed', error as Error);
       return null;
     }
   }
@@ -126,16 +110,10 @@ export class RedisCache {
         await this.client.set(key, value);
       }
       
-      logger.debug(LogCategory.CACHE, 'Cache set operation', {
-        key,
-        ttl: ttlSeconds,
-      });
+      logger.info(LogCategory.API, 'Cache set operation');
       return true;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache set operation failed', error as Error, { 
-        key, 
-        ttl: ttlSeconds 
-      });
+      logger.error(LogCategory.API, 'Cache set operation failed', error as Error);
       return false;
     }
   }
@@ -146,13 +124,10 @@ export class RedisCache {
   async del(key: string): Promise<boolean> {
     try {
       const result = await this.client.del(key);
-      logger.debug(LogCategory.CACHE, 'Cache delete operation', {
-        key,
-        deleted: result > 0,
-      });
+      logger.info(LogCategory.API, 'Cache delete operation');
       return result > 0;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache delete operation failed', error as Error, { key });
+      logger.error(LogCategory.API, 'Cache delete operation failed', error as Error);
       return false;
     }
   }
@@ -163,13 +138,10 @@ export class RedisCache {
   async incr(key: string): Promise<number | null> {
     try {
       const result = await this.client.incr(key);
-      logger.debug(LogCategory.CACHE, 'Cache increment operation', {
-        key,
-        value: result,
-      });
+      logger.info(LogCategory.API, 'Cache increment operation');
       return result;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache increment operation failed', error as Error, { key });
+      logger.error(LogCategory.API, 'Cache increment operation failed', error as Error);
       return null;
     }
   }
@@ -180,17 +152,10 @@ export class RedisCache {
   async expire(key: string, ttlSeconds: number): Promise<boolean> {
     try {
       const result = await this.client.expire(key, ttlSeconds);
-      logger.debug(LogCategory.CACHE, 'Cache expire operation', {
-        key,
-        ttl: ttlSeconds,
-        success: result === 1,
-      });
+      logger.info(LogCategory.API, 'Cache expire operation');
       return result === 1;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache expire operation failed', error as Error, { 
-        key, 
-        ttl: ttlSeconds 
-      });
+      logger.error(LogCategory.API, 'Cache expire operation failed', error as Error);
       return false;
     }
   }
@@ -201,13 +166,10 @@ export class RedisCache {
   async ttl(key: string): Promise<number | null> {
     try {
       const result = await this.client.ttl(key);
-      logger.debug(LogCategory.CACHE, 'Cache TTL check', {
-        key,
-        ttl: result,
-      });
+      logger.info(LogCategory.API, 'Cache TTL check');
       return result;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache TTL check failed', error as Error, { key });
+      logger.error(LogCategory.API, 'Cache TTL check failed', error as Error);
       return null;
     }
   }
@@ -239,7 +201,7 @@ export async function getRateLimitInfo(key: string): Promise<{
 
     return { count, ttl };
   } catch (error) {
-    logger.error(LogCategory.SYSTEM, 'Rate limit info retrieval failed', error as Error, { key });
+    logger.error(LogCategory.API, 'Rate limit info retrieval failed', error as Error);
     return null;
   }
 }
@@ -272,10 +234,7 @@ export async function incrementRateLimit(key: string, windowSeconds: number): Pr
 
     return { count, ttl, isNewWindow };
   } catch (error) {
-    logger.error(LogCategory.SYSTEM, 'Rate limit increment failed', error as Error, { 
-      key, 
-      windowSeconds 
-    });
+    logger.error(LogCategory.API, 'Rate limit increment failed', error as Error);
     return null;
   }
 }

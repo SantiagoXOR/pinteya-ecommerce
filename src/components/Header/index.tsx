@@ -10,15 +10,28 @@ import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import Image from "next/image";
 import AuthSection from "./AuthSection";
-import { SearchAutocomplete } from "@/components/ui/search-autocomplete";
+import { SearchAutocompleteIntegrated } from "@/components/ui/SearchAutocompleteIntegrated";
 import { useCartAnimation } from "@/hooks/useCartAnimation";
+import { MapPin, Search, Loader2 } from "lucide-react";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { pinteyaMobileLogoProps, pinteyaDesktopLogoProps } from "@/utils/imageOptimization";
+import GeolocationDebugger from "./GeolocationDebugger";
 
 const Header = () => {
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
   const [cartShake, setCartShake] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const { openCartModal } = useCartModalContext();
   const { isAnimating } = useCartAnimation();
+
+  // Hook de geolocalización para detectar ubicación
+  const { detectedZone, requestLocation, permissionStatus, isLoading, error, location, testLocation } = useGeolocation();
+
+  // Log para debugging del estado de geolocalización (solo cuando cambia la zona)
+  useEffect(() => {
+    console.log('🏠 Header - Geolocation zone updated:', detectedZone?.name);
+  }, [detectedZone?.name]); // Solo depender del nombre de la zona
 
   const product = useAppSelector((state) => state.cartReducer.items);
   const totalPrice = useSelector(selectTotalPrice);
@@ -31,8 +44,43 @@ const Header = () => {
     }
   }, [product.length]);
 
+  // Efecto para solicitar geolocalización automáticamente
+  useEffect(() => {
+    console.log('🗺️ Header mounted, checking geolocation...');
+    // Solicitar ubicación automáticamente si no se ha detectado
+    if (permissionStatus === 'unknown' || permissionStatus === 'prompt') {
+      console.log('🗺️ Auto-requesting location on mount');
+      setTimeout(() => {
+        requestLocation();
+      }, 1000); // Delay de 1 segundo para evitar conflictos
+    }
+  }, [permissionStatus, requestLocation]);
+
   const handleOpenCartModal = () => {
     openCartModal();
+  };
+
+  const handleLocationClick = () => {
+    console.log('🗺️ === LOCATION CLICK EVENT ===');
+    console.log('🗺️ Current status:', permissionStatus);
+    console.log('🗺️ Current detected zone:', detectedZone);
+    console.log('🗺️ Is loading:', isLoading);
+    console.log('🗺️ Error:', error);
+    console.log('🗺️ Location:', location);
+
+    // Siempre intentar solicitar ubicación cuando se hace click
+    if (permissionStatus === 'denied') {
+      console.log('🗺️ Permisos denegados, mostrando mensaje al usuario');
+      alert('Para detectar tu ubicación automáticamente, permite el acceso a la ubicación en la configuración de tu navegador.');
+    } else if (permissionStatus === 'granted' && detectedZone && detectedZone.name !== "Córdoba Capital") {
+      console.log('🗺️ Ubicación ya detectada, refrescando...');
+      requestLocation();
+    } else {
+      console.log('🗺️ Solicitando permisos de geolocalización...');
+      requestLocation();
+    }
+
+    console.log('🗺️ === LOCATION CLICK COMPLETE ===');
   };
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -64,8 +112,12 @@ const Header = () => {
   ];
 
   return (
-    <header
-      className={`fixed left-0 top-0 w-full z-9999 bg-blaze-orange-600 transition-all ease-in-out duration-500 transform ${
+    <>
+      {/* Debugger temporal para geolocalización - REMOVIDO PARA PRODUCCIÓN */}
+      {/* <GeolocationDebugger /> */}
+
+      <header
+        className={`fixed left-0 top-0 w-full z-9999 bg-blaze-orange-600 rounded-b-3xl transition-all ease-in-out duration-500 transform ${
         stickyMenu
           ? "shadow-lg backdrop-blur-sm bg-blaze-orange-600/95 translate-y-0"
           : "shadow-none bg-blaze-orange-600 translate-y-0"
@@ -84,17 +136,17 @@ const Header = () => {
         >
           {/* <!-- header top left --> */}
           <div className="xl:w-auto flex-col sm:flex-row w-full flex sm:justify-between sm:items-center gap-3 sm:gap-6">
-            <Link className="flex-shrink-0" href="/">
+            <Link className="flex-shrink-0 group" href="/">
+              {/* Logo desktop optimizado */}
               <Image
-                src="/images/logo/LOGO POSITIVO.svg"
-                alt="Pinteya Logo"
-                width={160}
-                height={32}
-                className="h-8 w-auto"
+                {...pinteyaDesktopLogoProps}
+                className="hidden sm:block h-8 w-auto group-hover:scale-105 transition-transform duration-200"
               />
+              {/* Logo mobile eliminado - ahora está en el layout reorganizado */}
             </Link>
 
-            <div className="max-w-[475px] w-full">
+            {/* Buscador Desktop */}
+            <div className="max-w-[475px] w-full hidden sm:block">
               <form onSubmit={handleSearchSubmit}>
                 <div className="flex items-center">
                   <CustomSelect options={options} />
@@ -102,14 +154,88 @@ const Header = () => {
                   <div className="relative max-w-[333px] sm:min-w-[333px] w-full">
                     {/* <!-- divider --> */}
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 inline-block w-px h-5.5 bg-gray-300 z-10"></span>
-                    <SearchAutocomplete
+                    <SearchAutocompleteIntegrated
                       placeholder="Busco productos de pinturería..."
                       className="!border-l-0"
                       size="md"
+                      debounceMs={300}
+                      maxSuggestions={6}
+                      showRecentSearches={true}
+                      showTrendingSearches={true}
                     />
                   </div>
                 </div>
               </form>
+            </div>
+
+            {/* Layout Mobile Reorganizado: Logo + Buscador en la misma línea */}
+            <div className="w-full sm:hidden">
+              <div className="space-y-3">
+                {/* Primera línea: Logo + Campo de búsqueda */}
+                <div className="flex items-center gap-3">
+                  {/* Logo mobile clickeable más grande */}
+                  <Link href="/" className="flex-shrink-0 group">
+                    <Image
+                      {...pinteyaMobileLogoProps}
+                      className="h-16 w-16 rounded-xl object-contain shadow-lg group-hover:scale-105 group-active:scale-95 transition-all duration-200 cursor-pointer"
+                    />
+                  </Link>
+
+                  {/* Campo de búsqueda reducido (75% del ancho) - Sin icono duplicado */}
+                  <div className="relative group flex-1">
+                    <SearchAutocompleteIntegrated
+                      placeholder="latex interior blanco 20lts"
+                      className="[&>div>div>input]:bg-[#fff3c5] [&>div>div>input]:border-2 [&>div>div>input]:border-[#fff3c5] [&>div>div>input]:rounded-xl [&>div>div>input]:pl-4 [&>div>div>input]:pr-4 [&>div>div>input]:py-3 [&>div>div>input]:text-gray-700 [&>div>div>input]:placeholder-gray-500 [&>div>div>input]:font-medium [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-yellow-400 [&>div>div>input]:focus:ring-2 [&>div>div>input]:focus:ring-yellow-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200"
+                      size="md"
+                      debounceMs={300}
+                      maxSuggestions={8}
+                      showRecentSearches={true}
+                      showTrendingSearches={true}
+                    />
+                    {/* Icono de búsqueda eliminado para evitar duplicados */}
+                  </div>
+                </div>
+
+                {/* Segunda línea: Ubicación + Botón de Sesión */}
+                <div className="flex items-center justify-between">
+                  {/* Ubicación */}
+                  <div
+                    onClick={handleLocationClick}
+                    className="flex items-center gap-2 text-sm text-white bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm hover:bg-white/20 transition-colors duration-200 cursor-pointer group active:scale-95"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 text-yellow-300 animate-spin" />
+                    ) : permissionStatus === 'denied' ? (
+                      <MapPin className="w-4 h-4 text-red-300 group-hover:scale-110 transition-transform duration-200" />
+                    ) : permissionStatus === 'granted' && detectedZone && detectedZone.name !== "Córdoba Capital" ? (
+                      <MapPin className="w-4 h-4 text-green-300 group-hover:scale-110 transition-transform duration-200" />
+                    ) : (
+                      <MapPin className="w-4 h-4 text-yellow-300 group-hover:scale-110 transition-transform duration-200" />
+                    )}
+                    <span className="font-medium">
+                      {isLoading ? (
+                        "Detectando ubicación..."
+                      ) : permissionStatus === 'denied' ? (
+                        <>Envíos a <span className="text-red-200">{detectedZone?.name || "Córdoba Capital"}</span></>
+                      ) : permissionStatus === 'granted' && detectedZone && detectedZone.name !== "Córdoba Capital" ? (
+                        <>Envíos a <span className="text-green-200">{detectedZone.name}</span> <span className="text-xs opacity-75">✓</span></>
+                      ) : (
+                        <>Envíos a <span className="text-yellow-200">{detectedZone?.name || "Córdoba Capital"}</span></>
+                      )}
+                    </span>
+                    {!isLoading && (
+                      <div className={`w-1 h-1 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-200 ${
+                        permissionStatus === 'denied' ? 'bg-red-300' :
+                        permissionStatus === 'granted' && detectedZone && detectedZone.name !== "Córdoba Capital" ? 'bg-green-300' :
+                        'bg-yellow-300'
+                      }`}></div>
+                    )}
+                  </div>
+
+                  {/* Botón de Iniciar Sesión mobile */}
+                  <AuthSection variant="mobile" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -155,10 +281,10 @@ const Header = () => {
             {/* <!-- divider --> */}
             <span className="hidden lg:block w-px h-6 bg-white/30"></span>
 
-            <div className="flex w-full lg:w-auto justify-between items-center gap-3 lg:gap-5">
+            <div className="hidden lg:flex w-full lg:w-auto justify-between items-center gap-3 lg:gap-5">
               <div className="flex items-center gap-3 lg:gap-5">
-                {/* Autenticación con Clerk */}
-                <AuthSection />
+                {/* Autenticación con Clerk - Solo Desktop */}
+                <AuthSection variant="desktop" />
 
                 <button
                   onClick={handleOpenCartModal}
@@ -225,7 +351,7 @@ const Header = () => {
                 </button>
               </div>
 
-              {/* <!-- Hamburger Toggle BTN --> */}
+              {/* <!-- Hamburger Toggle BTN - Solo Desktop --> */}
               <button
                 id="Toggle"
                 aria-label="Toggler"
@@ -371,6 +497,7 @@ const Header = () => {
         </div>
       </div>
     </header>
+    </>
   );
 };
 

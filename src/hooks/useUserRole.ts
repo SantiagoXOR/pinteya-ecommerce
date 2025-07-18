@@ -168,7 +168,7 @@ export const useUserRole = (): UseUserRoleReturn => {
       current = current[path];
     }
 
-    return current === true;
+    return Boolean(current);
   };
 
   const isAdmin = userProfile?.user_roles?.role_name === 'admin';

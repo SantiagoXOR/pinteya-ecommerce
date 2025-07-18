@@ -54,7 +54,7 @@ export default function TestStickyHeaderPage() {
                   <ul className="text-sm text-gray-600 space-y-1">
                     <li><strong>Z-index:</strong> 9999 (tanto en clase como en style)</li>
                     <li><strong>Posición:</strong> fixed left-0 w-full</li>
-                    <li><strong>Trigger:</strong> window.scrollY >= 60</li>
+                    <li><strong>Trigger:</strong> window.scrollY &gt;= 60</li>
                     <li><strong>Transición:</strong> header-sticky-transition (0.3s cubic-bezier)</li>
                     <li><strong>Backdrop:</strong> blur(8px) cuando sticky</li>
                   </ul>

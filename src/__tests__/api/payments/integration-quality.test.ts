@@ -3,10 +3,15 @@ import { GET } from '@/app/api/payments/integration-quality/route';
 import { auth } from '@clerk/nextjs/server';
 
 // Mock dependencies
-jest.mock('@clerk/nextjs/server');
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: jest.fn()
+}));
 jest.mock('@/lib/supabase');
+jest.mock('@/lib/mercadopago', () => ({
+  getPaymentInfo: jest.fn()
+}));
 jest.mock('@/lib/rate-limiter', () => ({
-  checkRateLimit: jest.fn(),
+  checkRateLimit: jest.fn(() => Promise.resolve({ success: true, remaining: 10 })),
   addRateLimitHeaders: jest.fn(),
   RATE_LIMIT_CONFIGS: {
     ANALYTICS: { requests: 100, window: 3600 }
@@ -14,7 +19,7 @@ jest.mock('@/lib/rate-limiter', () => ({
 }));
 jest.mock('@/lib/metrics', () => ({
   metricsCollector: {
-    recordApiCall: jest.fn()
+    recordApiCall: jest.fn(() => Promise.resolve())
   }
 }));
 jest.mock('@/lib/logger', () => ({
@@ -38,10 +43,17 @@ const mockAuth = auth as jest.MockedFunction<typeof auth>;
 describe('/api/payments/integration-quality', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock environment variables
     process.env.MERCADOPAGO_ACCESS_TOKEN = 'APP_USR_test_token';
     process.env.NODE_ENV = 'test';
+
+    // Reset all mocks to default successful state
+    const { checkRateLimit } = require('@/lib/rate-limiter');
+    checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+
+    const { metricsCollector } = require('@/lib/metrics');
+    metricsCollector.recordApiCall.mockResolvedValue(undefined);
   });
 
   describe('GET', () => {

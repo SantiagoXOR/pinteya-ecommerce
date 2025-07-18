@@ -53,10 +53,10 @@ describe('Header Component', () => {
   it('renders header with logo', () => {
     renderWithStore(<Header />)
 
-    // Check if logo image is present
-    const logo = screen.getByAltText('Pinteya Logo')
-    expect(logo).toBeInTheDocument()
-    expect(logo).toHaveAttribute('src', '/images/logo/LOGO POSITIVO.svg')
+    // Check if logo images are present (mobile and desktop)
+    const logos = screen.getAllByAltText('Pinteya Logo')
+    expect(logos).toHaveLength(2) // Mobile and desktop logos
+    expect(logos[0]).toBeInTheDocument()
   })
 
   it('displays cart icon with item count', () => {
@@ -111,8 +111,35 @@ describe('Header Component', () => {
 
     // Just verify the component renders without errors
     // Mobile menu functionality would need specific implementation details
-    const logo = screen.getByAltText('Pinteya Logo')
-    expect(logo).toBeInTheDocument()
+    const logos = screen.getAllByAltText('Pinteya Logo')
+    expect(logos[0]).toBeInTheDocument()
+  })
+
+  it('shows mobile-specific elements correctly', () => {
+    // Mock window.innerWidth for mobile view
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 375,
+    })
+
+    renderWithStore(<Header />)
+
+    // Verify mobile search fields exist (mobile and desktop versions)
+    const searchInputs = screen.getAllByPlaceholderText('Busco productos de pinturería...')
+    expect(searchInputs.length).toBeGreaterThanOrEqual(1)
+
+    // Verify location text is present
+    const locationText = screen.getByText(/Envíos a/)
+    expect(locationText).toBeInTheDocument()
+  })
+
+  it('displays correct logo for mobile and desktop', () => {
+    renderWithStore(<Header />)
+
+    // Both logos should be present but with different visibility classes
+    const logos = screen.getAllByAltText('Pinteya Logo')
+    expect(logos).toHaveLength(2) // One for mobile, one for desktop
   })
 
   it('renders authentication section when signed out', () => {
@@ -143,13 +170,15 @@ describe('Header Component', () => {
   it('handles search functionality', () => {
     renderWithStore(<Header />)
 
-    // Check if search input is present
-    const searchInput = screen.getByPlaceholderText('Busco productos de pinturería...')
-    expect(searchInput).toBeInTheDocument()
+    // Check if search inputs are present (mobile and desktop)
+    const searchInputs = screen.getAllByPlaceholderText('Busco productos de pinturería...')
+    expect(searchInputs.length).toBeGreaterThanOrEqual(1)
+    expect(searchInputs[0]).toBeInTheDocument()
 
     // Check if search button is present
-    const searchButton = screen.getByLabelText('Search')
-    expect(searchButton).toBeInTheDocument()
+    const searchButtons = screen.getAllByLabelText('Search')
+    expect(searchButtons.length).toBeGreaterThanOrEqual(1)
+    expect(searchButtons[0]).toBeInTheDocument()
   })
 
   it('displays correct cart total', () => {
@@ -179,7 +208,7 @@ describe('Header Component', () => {
     renderWithStore(<Header />)
 
     // Just verify the component renders without errors
-    const logo = screen.getByAltText('Pinteya Logo')
-    expect(logo).toBeInTheDocument()
+    const logos = screen.getAllByAltText('Pinteya Logo')
+    expect(logos[0]).toBeInTheDocument()
   })
 })

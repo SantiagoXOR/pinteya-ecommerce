@@ -293,13 +293,24 @@ describe('useSearch - Recent Searches', () => {
 // ===================================
 
 describe('useSearch - Cleanup', () => {
-  it('should cleanup timeouts on unmount', () => {
+  it('should cleanup timeouts on unmount', async () => {
     const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
-    
+
     const { result, unmount } = renderHook(() => useSearch());
 
+    // Activar búsqueda para crear timeouts
     act(() => {
       result.current.searchWithDebounce('test');
+    });
+
+    // Esperar un poco para que se establezcan los timeouts (optimizado)
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
+
+    // Llamar cleanup explícitamente antes de unmount
+    act(() => {
+      result.current.cleanup();
     });
 
     unmount();

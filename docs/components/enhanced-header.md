@@ -4,6 +4,13 @@
 
 El header del e-commerce Pinteya ha sido completamente refactorizado siguiendo el design system establecido y las mejores prácticas de UX/UI. La nueva implementación resuelve los problemas de usabilidad identificados y mejora significativamente la experiencia del usuario.
 
+### 🆕 **Última Actualización (Enero 2025)**
+
+- ✅ **Fondo naranja de marca**: Cambiado de blanco a `bg-blaze-orange-600` (#eb6313)
+- ✅ **Logo más prominente**: Aumentado 25% de tamaño (h-10 vs h-8)
+- ✅ **Autenticación simplificada**: Eliminado botón "Registrarse", mantenido solo "Iniciar Sesión"
+- ✅ **Consistencia visual**: Header alineado con identidad de marca Pinteya
+
 ## 🏗️ Estructura de 3 Niveles
 
 ### 1. TopBar Superior (Desktop Only)

@@ -14,7 +14,7 @@ import { AnalyticsProvider } from "@/components/Analytics/AnalyticsProvider";
 import { QueryClientProvider } from "@/components/providers/QueryClientProvider";
 
 // Componentes UI
-import Header from "../components/Header/NewHeader";
+import Header from "../components/Header";
 import Footer from "../components/layout/Footer";
 import QuickViewModal from "@/components/Common/QuickViewModal";
 import CartSidebarModal from "@/components/Common/CartSidebarModal";

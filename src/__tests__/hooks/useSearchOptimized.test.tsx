@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSearchOptimized } from '@/hooks/useSearchOptimized';
 import { searchProducts } from '@/lib/api/products';
 import { useSearchNavigation } from '@/hooks/useSearchNavigation';
+import { createTestQueryClient, createHookWrapper } from '@/__tests__/utils/test-utils';
 
 // ===================================
 // MOCKS
@@ -41,6 +42,8 @@ jest.mock('@/hooks/useSearchToast', () => ({
     toasts: [],
     showSuccess: jest.fn(),
     showError: jest.fn(),
+    showSuccessToast: jest.fn(),
+    showInfoToast: jest.fn(),
     removeToast: jest.fn(),
     clearToasts: jest.fn(),
   }),
@@ -57,6 +60,13 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
 });
 
+// Mock TanStack Query useQuery para tests específicos
+const mockUseQuery = jest.fn();
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: (...args) => mockUseQuery(...args),
+}));
+
 // ===================================
 // SETUP
 // ===================================
@@ -66,45 +76,6 @@ const mockNavigateToProduct = jest.fn();
 const mockPrefetchSearch = jest.fn();
 const mockSearchProducts = searchProducts as jest.MockedFunction<typeof searchProducts>;
 const mockUseSearchNavigation = useSearchNavigation as jest.MockedFunction<typeof useSearchNavigation>;
-
-// Crear QueryClient para tests
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      gcTime: 0,
-    },
-  },
-});
-
-// Wrapper con QueryClientProvider
-const createWrapper = () => {
-  const queryClient = createTestQueryClient();
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
-};
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  
-  // Mock useSearchNavigation
-  mockUseSearchNavigation.mockReturnValue({
-    navigateToSearch: mockNavigateToSearch,
-    navigateToProduct: mockNavigateToProduct,
-    navigateToCategory: jest.fn(),
-    prefetchSearch: mockPrefetchSearch,
-    prefetchProduct: jest.fn(),
-    getCurrentSearchQuery: jest.fn(() => ''),
-    getCurrentCategory: jest.fn(() => ''),
-    buildSearchUrl: jest.fn(),
-    router: {} as any,
-  });
-  
-  localStorageMock.getItem.mockReturnValue(null);
-});
 
 // ===================================
 // DATOS DE PRUEBA
@@ -128,6 +99,44 @@ const mockProductResults = [
     price: 800,
   },
 ];
+
+// Wrapper para tests usando las utilidades centralizadas
+const createWrapper = () => {
+  const queryClient = createTestQueryClient();
+  return createHookWrapper(queryClient);
+};
+
+beforeEach(() => {
+  jest.clearAllMocks();
+
+  // Mock useQuery por defecto (sin datos iniciales)
+  mockUseQuery.mockReturnValue({
+    data: null,
+    error: null,
+    isLoading: false,
+    isError: false,
+    isSuccess: false,
+    isFetching: false,
+    isStale: false,
+    dataUpdatedAt: Date.now(),
+    refetch: jest.fn(),
+  });
+
+  // Mock useSearchNavigation
+  mockUseSearchNavigation.mockReturnValue({
+    navigateToSearch: mockNavigateToSearch,
+    navigateToProduct: mockNavigateToProduct,
+    navigateToCategory: jest.fn(),
+    prefetchSearch: mockPrefetchSearch,
+    prefetchProduct: jest.fn(),
+    getCurrentSearchQuery: jest.fn(() => ''),
+    getCurrentCategory: jest.fn(() => ''),
+    buildSearchUrl: jest.fn(),
+    router: {} as any,
+  });
+
+  localStorageMock.getItem.mockReturnValue(null);
+});
 
 // ===================================
 // TESTS
@@ -181,15 +190,15 @@ describe('useSearchOptimized Hook', () => {
       result.current.searchWithDebounce('pintura');
     });
 
-    // Esperar a que se ejecute el debounce y la query
+    // Esperar a que se ejecute el debounce y la query (optimizado)
     await waitFor(() => {
       expect(result.current.query).toBe('pintura');
-    }, { timeout: 3000 });
+    }, { timeout: 1000 });
 
-    // Esperar a que TanStack Query procese la respuesta
+    // Esperar a que TanStack Query procese la respuesta (optimizado)
     await waitFor(() => {
       expect(mockSearchProducts).toHaveBeenCalledWith('pintura', 6);
-    }, { timeout: 3000 });
+    }, { timeout: 1000 });
 
     // Por ahora, solo verificamos que el hook funciona básicamente
     // TODO: Arreglar integración con TanStack Query en tests
@@ -230,7 +239,18 @@ describe('useSearchOptimized Hook', () => {
   });
 
   it('should handle search errors gracefully', async () => {
-    mockSearchProducts.mockRejectedValue(new Error('Network error'));
+    // Configurar mock de useQuery para simular error
+    mockUseQuery.mockReturnValue({
+      data: null,
+      error: new Error('Network error'),
+      isLoading: false,
+      isError: true,
+      isSuccess: false,
+      isFetching: false,
+      isStale: false,
+      dataUpdatedAt: Date.now(),
+      refetch: jest.fn(),
+    });
 
     const { result } = renderHook(() => useSearchOptimized({
       debounceMs: 50,

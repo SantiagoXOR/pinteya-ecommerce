@@ -98,16 +98,14 @@ describe('PinteyaRaffle', () => {
 
   test('muestra las imágenes de productos', () => {
     render(<PinteyaRaffle />);
-    
-    // Verificar que las imágenes están presentes
+
+    // Verificar que la imagen principal está presente
     const mainImage = screen.getByAltText('Kit de Pinturería Pinteya');
     expect(mainImage).toBeInTheDocument();
-    
-    const brushImage = screen.getByAltText('Pincel');
-    expect(brushImage).toBeInTheDocument();
-    
-    const rollerImage = screen.getByAltText('Rodillo');
-    expect(rollerImage).toBeInTheDocument();
+
+    // Verificar que hay elementos decorativos (los círculos animados)
+    const decorativeElements = document.querySelectorAll('.animate-bounce, .animate-pulse, .animate-ping');
+    expect(decorativeElements.length).toBeGreaterThan(0);
   });
 
   test('actualiza el contador cada segundo', async () => {

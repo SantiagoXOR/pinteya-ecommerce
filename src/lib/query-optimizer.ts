@@ -91,10 +91,7 @@ export class QueryOptimizer {
 
         const cached = await cacheManager.get<T>(queryName, cacheConfig);
         if (cached !== null) {
-          logger.debug(LogCategory.SYSTEM, 'Query cache hit', {
-            queryName,
-            duration: Date.now() - startTime,
-          });
+          logger.info(LogCategory.API, 'Query cache hit');
           return cached;
         }
       }
@@ -111,27 +108,17 @@ export class QueryOptimizer {
         };
 
         cacheManager.set(queryName, result, cacheConfig).catch(error => {
-          logger.warn(LogCategory.SYSTEM, 'Failed to cache query result', {
-            queryName,
-            error: error.message,
-          });
+          logger.warn(LogCategory.API, 'Failed to cache query result');
         });
       }
 
       const duration = Date.now() - startTime;
-      logger.debug(LogCategory.SYSTEM, 'Query executed successfully', {
-        queryName,
-        duration,
-        cached: false,
-      });
+      logger.info(LogCategory.API, 'Query executed successfully');
 
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
-      logger.error(LogCategory.SYSTEM, 'Query execution failed', error as Error, {
-        queryName,
-        duration,
-      });
+      logger.error(LogCategory.API, 'Query execution failed', error as Error);
       throw error;
     }
   }
@@ -193,9 +180,9 @@ export class QueryOptimizer {
 
       await cacheManager.invalidatePattern(pattern, cacheConfig);
       
-      logger.info(LogCategory.SYSTEM, 'Query cache invalidated', { pattern });
+      logger.info(LogCategory.API, 'Query cache invalidated');
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'Failed to invalidate query cache', error as Error, { pattern });
+      logger.error(LogCategory.API, 'Failed to invalidate query cache', error as Error);
     }
   }
 }
@@ -221,6 +208,10 @@ export const OptimizedQueries = {
     return queryOptimizer.executeQuery(
       cacheKey,
       async () => {
+        if (!supabaseAdmin) {
+          throw new Error('Supabase admin client not available');
+        }
+
         let query = supabaseAdmin
           .from('products')
           .select('*');
@@ -262,6 +253,10 @@ export const OptimizedQueries = {
     return queryOptimizer.executeQuery(
       cacheKey,
       async () => {
+        if (!supabaseAdmin) {
+          throw new Error('Supabase admin client not available');
+        }
+
         const { data, error } = await supabaseAdmin
           .from('orders')
           .select(`
@@ -303,6 +298,10 @@ export const OptimizedQueries = {
     return queryOptimizer.executeQuery(
       cacheKey,
       async () => {
+        if (!supabaseAdmin) {
+          throw new Error('Supabase admin client not available');
+        }
+
         // Ejecutar múltiples queries en paralelo
         const [totalResult, categoryResult, topProductsResult] = await Promise.all([
           supabaseAdmin

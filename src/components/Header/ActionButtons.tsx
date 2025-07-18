@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { User, ShoppingCart, UserPlus, LogIn } from "lucide-react";
+import { User, ShoppingCart, LogIn } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -176,28 +176,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         </DropdownMenu>
       ) : (
         <div className="flex items-center gap-2">
-          {/* Botón "Iniciar con Google" */}
+          {/* Botón "Iniciar Sesión" */}
           <Button
             variant="ghost"
             size="sm"
             className="text-white hover:text-black hover:bg-bright-sun transition-all duration-200"
           >
             <div className="flex items-center gap-2">
-              <GoogleIcon className="w-4 h-4" />
-              <User className="w-4 h-4" />
-              <span className="text-sm font-medium">Iniciar con Google</span>
-            </div>
-          </Button>
-
-          {/* Botón "Registrarse" */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-white text-white hover:bg-bright-sun hover:text-black hover:border-bright-sun transition-all duration-200"
-          >
-            <div className="flex items-center gap-2">
-              <UserPlus className="w-4 h-4" />
-              <span className="text-sm font-medium">Registrarse</span>
+              <LogIn className="w-4 h-4" />
+              <span className="text-sm font-medium">Iniciar Sesión</span>
             </div>
           </Button>
         </div>

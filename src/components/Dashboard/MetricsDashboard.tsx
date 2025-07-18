@@ -200,7 +200,7 @@ export default function MetricsDashboard() {
 
           {/* Toggle auto-refresh */}
           <Button
-            variant={autoRefresh ? "default" : "outline"}
+            variant={autoRefresh ? "secondary" : "outline"}
             onClick={() => setAutoRefresh(!autoRefresh)}
             size="sm"
           >

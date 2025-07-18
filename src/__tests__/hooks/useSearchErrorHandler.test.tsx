@@ -12,10 +12,14 @@ import { useSearchErrorHandler } from '@/hooks/useSearchErrorHandler';
 beforeEach(() => {
   jest.clearAllMocks();
   jest.useFakeTimers();
+  // Mock console methods to reduce noise
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
 afterEach(() => {
   jest.useRealTimers();
+  jest.restoreAllMocks();
 });
 
 // ===================================
@@ -170,9 +174,9 @@ describe('useSearchErrorHandler - Retry Logic', () => {
   });
 
   it('should stop retrying after max attempts', async () => {
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useSearchErrorHandler({
-        retryConfig: { maxRetries: 2, baseDelay: 50 }
+        retryConfig: { maxRetries: 2, baseDelay: 10 }
       })
     );
 
@@ -189,12 +193,13 @@ describe('useSearchErrorHandler - Retry Logic', () => {
       );
     });
 
-    // Avanzar timers para todos los retries
+    // Avanzar timers para todos los retries de forma más eficiente
     await act(async () => {
-      jest.advanceTimersByTime(50);  // Primer retry
+      jest.advanceTimersByTime(10);  // Primer retry
       await Promise.resolve();
-      jest.advanceTimersByTime(100); // Segundo retry
+      jest.advanceTimersByTime(20);  // Segundo retry
       await Promise.resolve();
+      jest.advanceTimersByTime(100); // Asegurar que todos los timers se ejecuten
     });
 
     await expect(executePromise!).rejects.toThrow('Persistent error');

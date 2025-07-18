@@ -79,7 +79,7 @@ export async function GET(request: NextRequest, context: RouteParams) {
     if (order.payment_id) {
       const paymentResult = await getPaymentInfo(order.payment_id);
 
-      if (paymentResult.success && paymentResult.data) {
+      if (paymentResult.success && 'data' in paymentResult) {
         paymentInfo = paymentResult.data;
         mercadoPagoStatus = {
           id: paymentInfo.id,
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest, context: RouteParams) {
     if (payment_id) {
       const paymentResult = await getPaymentInfo(payment_id);
 
-      if (paymentResult.success && paymentResult.data) {
+      if (paymentResult.success && 'data' in paymentResult) {
         const payment = paymentResult.data;
         
         // Mapear estado de MercadoPago

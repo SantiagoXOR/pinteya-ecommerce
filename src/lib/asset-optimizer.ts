@@ -115,10 +115,7 @@ export class AssetOptimizer {
       // Para URLs locales, mantener como están
       return originalUrl;
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'Image URL optimization failed', error as Error, {
-        originalUrl,
-        config,
-      });
+      logger.error(LogCategory.API, 'Image URL optimization failed', error as Error);
       return originalUrl;
     }
   }
@@ -149,10 +146,7 @@ export class AssetOptimizer {
 
       return srcSet;
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'SrcSet generation failed', error as Error, {
-        baseUrl,
-        config,
-      });
+      logger.error(LogCategory.API, 'SrcSet generation failed', error as Error);
       return baseUrl;
     }
   }
@@ -193,14 +187,9 @@ export class AssetOptimizer {
         
         document.head.appendChild(link);
         
-        logger.debug(LogCategory.SYSTEM, 'Asset preloaded', {
-          url: asset.url,
-          type: asset.type,
-        });
+        logger.info(LogCategory.API, 'Asset preloaded');
       } catch (error) {
-        logger.error(LogCategory.SYSTEM, 'Asset preload failed', error as Error, {
-          asset,
-        });
+        logger.error(LogCategory.API, 'Asset preload failed', error as Error);
       }
     });
   }
@@ -231,9 +220,7 @@ export class AssetOptimizer {
           img.classList.remove('lazy');
           observer.unobserve(img);
           
-          logger.debug(LogCategory.SYSTEM, 'Lazy image loaded', {
-            src: img.src,
-          });
+          logger.info(LogCategory.API, 'Lazy image loaded');
         }
       });
     }, {
@@ -258,13 +245,11 @@ export class AssetOptimizer {
         .map(selector => `${selector} { /* critical styles */ }`)
         .join('\n');
 
-      logger.debug(LogCategory.SYSTEM, 'Critical CSS optimized', {
-        selectorsCount: criticalSelectors.length,
-      });
+      logger.info(LogCategory.API, 'Critical CSS optimized');
 
       return criticalCSS;
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'Critical CSS optimization failed', error as Error);
+      logger.error(LogCategory.API, 'Critical CSS optimization failed', error as Error);
       return '';
     }
   }
@@ -280,15 +265,11 @@ export class AssetOptimizer {
       // Comprimir JSON (sin espacios)
       const compressed = JSON.stringify(cleaned);
       
-      logger.debug(LogCategory.SYSTEM, 'JSON response optimized', {
-        originalSize: JSON.stringify(data).length,
-        optimizedSize: compressed.length,
-        compressionRatio: (compressed.length / JSON.stringify(data).length * 100).toFixed(2) + '%',
-      });
+      logger.info(LogCategory.API, 'JSON response optimized');
 
       return compressed;
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'JSON optimization failed', error as Error);
+      logger.error(LogCategory.API, 'JSON optimization failed', error as Error);
       // En caso de error (como objetos circulares), retornar string simple
       try {
         return JSON.stringify({ error: 'Serialization failed' });
@@ -388,6 +369,6 @@ export const AssetUtils = {
     // Precargar assets críticos
     AssetUtils.preloadPaymentAssets();
 
-    logger.info(LogCategory.SYSTEM, 'Client asset optimizations initialized');
+    logger.info(LogCategory.API, 'Client asset optimizations initialized');
   },
 };

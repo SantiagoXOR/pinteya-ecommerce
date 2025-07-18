@@ -31,9 +31,8 @@ export async function GET(request: NextRequest) {
 
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
-      'reports',
-      clientIP,
-      RATE_LIMIT_CONFIGS.ANALYTICS
+      request,
+      RATE_LIMIT_CONFIGS.QUERY_API
     );
 
     if (!rateLimitResult.success) {
@@ -46,7 +45,7 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
       return response;
     }
 
@@ -78,7 +77,7 @@ export async function GET(request: NextRequest) {
     const reportData = await generateReport(reportType, dateFrom, dateTo, includeMetrics);
 
     // Registrar métricas
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/reports',
       'GET',
       200,
@@ -100,19 +99,22 @@ export async function GET(request: NextRequest) {
       processing_time: Date.now() - startTime,
     });
 
-    addRateLimitHeaders(response, rateLimitResult);
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
     return response;
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.API, 'Reports request failed', error as Error, {
+    logger.performance(LogLevel.ERROR, 'Reports request failed', {
+      operation: 'reports-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
       userAgent,
-      processingTime,
     });
 
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/reports',
       'GET',
       500,
@@ -147,9 +149,8 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
-      'reports-create',
-      clientIP,
-      RATE_LIMIT_CONFIGS.PAYMENT_CREATION
+      request,
+      RATE_LIMIT_CONFIGS.PAYMENT_API
     );
 
     if (!rateLimitResult.success) {
@@ -157,7 +158,7 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
       return response;
     }
 
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest) {
     const report = await createMercadoPagoReport(type, date_from, date_to, columns);
 
     // Registrar métricas
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/reports',
       'POST',
       201,
@@ -206,18 +207,21 @@ export async function POST(request: NextRequest) {
       processing_time: Date.now() - startTime,
     }, { status: 201 });
 
-    addRateLimitHeaders(response, rateLimitResult);
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
     return response;
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.API, 'Report creation failed', error as Error, {
+    logger.performance(LogLevel.ERROR, 'Report creation failed', {
+      operation: 'report-creation-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
-      processingTime,
     });
 
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/reports',
       'POST',
       500,
@@ -242,7 +246,10 @@ async function generateReport(
   includeMetrics: boolean = false
 ) {
   const supabase = getSupabaseClient();
-  
+  if (!supabase) {
+    throw new Error('Error de configuración de base de datos');
+  }
+
   // Configurar fechas por defecto (últimos 30 días)
   const endDate = dateTo ? new Date(dateTo) : new Date();
   const startDate = dateFrom ? new Date(dateFrom) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);

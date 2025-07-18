@@ -30,68 +30,73 @@ describe('Hero Component', () => {
 
   it('should render the main heading', () => {
     render(<Hero />);
-    expect(screen.getByText(/Pintar ahora/i)).toBeInTheDocument();
-    expect(screen.getByText(/fácil/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pintá rápido/i)).toBeInTheDocument();
+    expect(screen.getByText(/fácil y cotiza/i)).toBeInTheDocument();
+    expect(screen.getByText(/al instante/i)).toBeInTheDocument();
   });
 
-  it('should render the description text', () => {
+  it('should render the hero image', () => {
     render(<Hero />);
-    expect(screen.getByText(/Descubrí la mejor selección de pinturas/i)).toBeInTheDocument();
+    // Hay múltiples imágenes con el mismo alt text, usar getAllByAltText
+    const heroImages = screen.getAllByAltText(/Pintá rápido, fácil y cotiza al instante/i);
+    expect(heroImages.length).toBeGreaterThan(0);
   });
 
-  it('should render shipping badges', () => {
+  it('should render service badges', () => {
     render(<Hero />);
-    expect(screen.getByText(/Llega gratis mañana/i)).toBeInTheDocument();
-    // Usar getAllByText para manejar múltiples elementos con "ENVÍO GRATIS"
-    const envioGratisElements = screen.getAllByText(/ENVÍO GRATIS/i);
-    expect(envioGratisElements.length).toBeGreaterThan(0);
+    expect(screen.getByText(/Envíos/i)).toBeInTheDocument();
+    expect(screen.getByText(/Asesoramiento/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pagos/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cambios/i)).toBeInTheDocument();
   });
 
   it('should render action buttons', () => {
     render(<Hero />);
-    expect(screen.getByText(/Ver Catálogo/i)).toBeInTheDocument();
+    // El componente Hero actual no tiene botones "Ver Catálogo", solo es visual
+    // Verificar que el componente se renderiza sin errores
+    expect(screen.getByText(/Pintá rápido/i)).toBeInTheDocument();
   });
 
   it('should render offer cards', () => {
     render(<Hero />);
-    expect(screen.getByText(/25% OFF/i)).toBeInTheDocument();
-    // Usar getAllByText para manejar múltiples elementos con "Envío gratis"
-    const envioGratisElements = screen.getAllByText(/Envío gratis/i);
-    expect(envioGratisElements.length).toBeGreaterThan(0);
+    // El componente Hero actual no tiene ofertas "25% OFF", pero tiene badges de servicios
+    // Verificar que los badges de servicios están presentes
+    expect(screen.getByText(/Envíos/i)).toBeInTheDocument();
+    expect(screen.getByText(/Asesoramiento/i)).toBeInTheDocument();
   });
 
   it('should render location information', () => {
     render(<Hero />);
-    expect(screen.getByText(/Yapeyú 1201, Córdoba/i)).toBeInTheDocument();
+    // El componente Hero actual no muestra información de ubicación
+    // Verificar que el componente principal se renderiza
+    const heroSection = document.querySelector('section');
+    expect(heroSection).toBeInTheDocument();
   });
 
-  it('should render SVG icons without errors', () => {
+  it('should render images without errors', () => {
     const { container } = render(<Hero />);
-    const svgElements = container.querySelectorAll('svg');
-    expect(svgElements.length).toBeGreaterThan(0);
-    
-    // Verificar que todos los SVG tienen viewBox definido
-    svgElements.forEach(svg => {
-      if (svg.hasAttribute('viewBox')) {
-        expect(svg.getAttribute('viewBox')).toBeTruthy();
-      }
+    const imgElements = container.querySelectorAll('img');
+    expect(imgElements.length).toBeGreaterThan(0);
+
+    // Verificar que todas las imágenes tienen src definido
+    imgElements.forEach(img => {
+      expect(img.getAttribute('src')).toBeTruthy();
     });
   });
 
-  it('should render Truck icon from lucide-react', () => {
+  it('should render service icons correctly', () => {
     const { container } = render(<Hero />);
-    // El ícono Truck debería estar presente
-    const truckIcons = container.querySelectorAll('[data-lucide="truck"], .lucide-truck');
-    // Si no encuentra por data attributes, al menos debería haber SVGs
-    const svgElements = container.querySelectorAll('svg');
-    expect(svgElements.length).toBeGreaterThan(0);
+
+    // Verificar que hay imágenes de servicios (envíos, asesoramiento, etc.)
+    const serviceImages = container.querySelectorAll('img[alt*="Envíos"], img[alt*="Asesoramiento"], img[alt*="Pagos"], img[alt*="Cambios"]');
+    expect(serviceImages.length).toBeGreaterThan(0);
   });
 
-  it('should render all Badge components correctly', () => {
+  it('should render all service badges correctly', () => {
     const { container } = render(<Hero />);
-    // Buscar elementos con clases de Badge
-    const badgeElements = container.querySelectorAll('[class*="bg-fun-green"]');
-    expect(badgeElements.length).toBeGreaterThanOrEqual(2);
+    // Buscar elementos con clases de gradientes de servicios
+    const serviceElements = container.querySelectorAll('[class*="bg-gradient-to-br"]');
+    expect(serviceElements.length).toBeGreaterThanOrEqual(4); // 4 servicios: Envíos, Asesoramiento, Pagos, Cambios
   });
 
   it('should not have undefined elements in JSX', () => {

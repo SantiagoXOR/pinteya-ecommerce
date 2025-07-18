@@ -182,9 +182,9 @@ describe('useCartWithClerk Hook', () => {
         store.dispatch(addItemToCart(mockProduct))
       })
 
-      // Esperar el debounce del efecto
+      // Esperar el debounce del efecto (optimizado)
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 1100))
+        await new Promise(resolve => setTimeout(resolve, 500))
       })
 
       // Verificar que el hook funciona correctamente
@@ -350,9 +350,9 @@ describe('useCartWithClerk Hook', () => {
         store.dispatch(addItemToCart(mockProduct))
       })
 
-      // Esperar el debounce del efecto
+      // Esperar el debounce del efecto (optimizado)
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 1100))
+        await new Promise(resolve => setTimeout(resolve, 500))
       })
 
       // Verificar que el hook maneja errores sin lanzar excepciones

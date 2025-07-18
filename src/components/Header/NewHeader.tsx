@@ -37,7 +37,7 @@ const NewHeader = () => {
       {/* Header principal */}
       <header
         className={cn(
-          "sticky top-0 z-50 w-full bg-white border-b border-gray-200 transition-all duration-300",
+          "sticky top-0 z-50 w-full bg-blaze-orange-600 border-b border-blaze-orange-700 transition-all duration-300",
           stickyMenu && "shadow-md"
         )}
       >
@@ -49,9 +49,9 @@ const NewHeader = () => {
                 <Image
                   src="/images/logo/LOGO POSITIVO.svg"
                   alt="Pinteya Logo"
-                  width={160}
-                  height={32}
-                  className="h-8 w-auto"
+                  width={200}
+                  height={40}
+                  className="h-10 w-auto"
                   priority
                 />
               </Link>
