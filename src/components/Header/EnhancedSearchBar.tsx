@@ -10,8 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SearchAutocomplete } from "@/components/ui/search-autocomplete";
-import { useSearch, type SearchSuggestion } from "@/hooks/useSearch";
+import { SearchAutocompleteIntegrated } from "@/components/ui/SearchAutocompleteIntegrated";
+import { type SearchSuggestion } from "@/hooks/useSearch";
 
 // Definición de categorías con iconos
 const categories = [
@@ -29,14 +29,6 @@ interface EnhancedSearchBarProps {
   onSuggestionSelect?: (suggestion: SearchSuggestion) => void;
   size?: "sm" | "md" | "lg";
   "data-testid"?: string;
-
-  // Props del hook useSearch (para evitar múltiples instancias)
-  query?: string;
-  suggestions?: SearchSuggestion[];
-  isLoading?: boolean;
-  error?: string | null;
-  searchWithDebounce?: (query: string) => void;
-  clearSearch?: () => void;
 }
 
 const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
@@ -45,14 +37,6 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
   onSuggestionSelect,
   size = "md",
   "data-testid": testId,
-
-  // Props del hook useSearch (recibidas del componente padre)
-  query = '',
-  suggestions = [],
-  isLoading = false,
-  error = null,
-  searchWithDebounce,
-  clearSearch
 }) => {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
 
@@ -133,19 +117,11 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
 
         {/* Campo de búsqueda con autocompletado */}
         <div className="flex-1 relative">
-          <SearchAutocomplete
-            // Props del hook useSearch centralizado
-            query={query}
-            suggestions={suggestions}
-            isLoading={isLoading}
-            error={error}
-            searchWithDebounce={searchWithDebounce}
-
+          <SearchAutocompleteIntegrated
             // Props de configuración
             placeholder={selectedCategory.placeholder}
             onSearch={handleSearch}
             onSuggestionSelect={handleSuggestionSelect}
-            onClear={clearSearch} // Pasar función de limpiar del hook
             size={size}
             className="w-full [&>div>div>input]:border-0 [&>div>div>input]:rounded-none [&>div>div>input]:bg-white [&>div>div>input]:focus:ring-0 [&>div>div>input]:focus:border-gray-300"
             maxSuggestions={6}

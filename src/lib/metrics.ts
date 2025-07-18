@@ -119,20 +119,10 @@ export class MetricsCollector {
       await this.recordValue(`${baseKey}:response_time`, responseTime, timestamp);
 
       // Log para debugging
-      logger.debug(LogCategory.SYSTEM, 'Metric recorded', {
-        endpoint,
-        method,
-        statusCode,
-        responseTime,
-        labels,
-      });
+      logger.info(LogCategory.API, 'Metric recorded');
 
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'Failed to record metric', error as Error, {
-        endpoint,
-        method,
-        statusCode,
-      });
+      logger.error(LogCategory.API, 'Failed to record metric', error as Error);
     }
   }
 
@@ -160,11 +150,7 @@ export class MetricsCollector {
       }
 
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'Failed to record retry metric', error as Error, {
-        operation,
-        attempts,
-        success,
-      });
+      logger.error(LogCategory.API, 'Failed to record retry metric', error as Error);
     }
   }
 
@@ -191,10 +177,7 @@ export class MetricsCollector {
       await this.recordValue(`${baseKey}:utilization`, (limit - remaining) / limit, timestamp);
 
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'Failed to record rate limit metric', error as Error, {
-        endpoint,
-        blocked,
-      });
+      logger.error(LogCategory.API, 'Failed to record rate limit metric', error as Error);
     }
   }
 
@@ -266,11 +249,7 @@ export class MetricsCollector {
       };
 
     } catch (error) {
-      logger.error(LogCategory.SYSTEM, 'Failed to get API metrics', error as Error, {
-        endpoint,
-        method,
-        hoursBack,
-      });
+      logger.error(LogCategory.API, 'Failed to get API metrics', error as Error);
       
       // Retornar métricas vacías en caso de error
       return this.getEmptyApiMetrics();
@@ -365,6 +344,62 @@ export class MetricsCollector {
       failed_retries: counters.failed || 0,
       avg_attempts: attempts.avg || 0,
     };
+  }
+
+  /**
+   * Obtiene métricas específicas de MercadoPago
+   */
+  async getMercadoPagoMetrics(hoursBack: number = 1): Promise<MercadoPagoMetrics> {
+    try {
+      const [paymentCreation, paymentQueries, webhookProcessing] = await Promise.all([
+        this.getApiMetrics('/api/payments/create-preference', 'POST', hoursBack),
+        this.getApiMetrics('/api/payments/query', 'GET', hoursBack),
+        this.getApiMetrics('/api/webhooks/mercadopago', 'POST', hoursBack),
+      ]);
+
+      // Calcular métricas generales de salud
+      const totalRequests = paymentCreation.requests.total +
+                           paymentQueries.requests.total +
+                           webhookProcessing.requests.total;
+
+      const totalErrors = paymentCreation.requests.error +
+                         paymentQueries.requests.error +
+                         webhookProcessing.requests.error;
+
+      const overallErrorRate = totalRequests > 0 ? totalErrors / totalRequests : 0;
+
+      const avgResponseTime = totalRequests > 0 ?
+        (paymentCreation.response_times.avg * paymentCreation.requests.total +
+         paymentQueries.response_times.avg * paymentQueries.requests.total +
+         webhookProcessing.response_times.avg * webhookProcessing.requests.total) / totalRequests : 0;
+
+      return {
+        payment_creation: paymentCreation,
+        payment_queries: paymentQueries,
+        webhook_processing: webhookProcessing,
+        overall_health: {
+          uptime_percentage: overallErrorRate < 0.05 ? 99.9 : 95.0, // Simplificado
+          avg_response_time: avgResponseTime,
+          error_rate: overallErrorRate,
+          last_incident: overallErrorRate > 0.1 ? new Date().toISOString() : null,
+        },
+      };
+    } catch (error) {
+      console.error('Error getting MercadoPago metrics:', error);
+      // Retornar métricas vacías en caso de error
+      const emptyMetrics = this.getEmptyApiMetrics();
+      return {
+        payment_creation: emptyMetrics,
+        payment_queries: emptyMetrics,
+        webhook_processing: emptyMetrics,
+        overall_health: {
+          uptime_percentage: 0,
+          avg_response_time: 0,
+          error_rate: 1,
+          last_incident: new Date().toISOString(),
+        },
+      };
+    }
   }
 
   /**

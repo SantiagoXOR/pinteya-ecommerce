@@ -87,3 +87,20 @@ export const VALIDATION_CONSTANTS = {
   PHONE_REGEX: /^[0-9]{10,11}$/,
   DNI_REGEX: /^[0-9]{7,8}$/,
 } as const;
+
+export const SEARCH_CONSTANTS = {
+  // Búsquedas recientes
+  MAX_RECENT_SEARCHES: 5,
+  RECENT_SEARCHES_STORAGE_KEY: 'pinteya-recent-searches',
+  RECENT_SEARCHES_EXPIRATION_DAYS: 30,
+
+  // Búsquedas trending
+  MAX_TRENDING_SEARCHES: 6,
+  TRENDING_REFRESH_INTERVAL: 5 * 60 * 1000, // 5 minutos
+  TRENDING_DAYS_BACK: 7,
+
+  // Configuración general
+  SEARCH_DEBOUNCE_MS: 300,
+  MIN_SEARCH_QUERY_LENGTH: 2,
+  MAX_SUGGESTIONS: 8,
+} as const;

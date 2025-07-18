@@ -105,15 +105,23 @@ describe('CommercialProductCard', () => {
 
   it('shows loading state when adding to cart', async () => {
     render(<CommercialProductCard {...defaultProps} showCartAnimation={true} />)
-    
+
     const button = screen.getByTestId('add-to-cart-btn')
     fireEvent.click(button)
-    
-    expect(screen.getByText('Agregando...')).toBeInTheDocument()
-    
+
+    // Verificar que el botón está deshabilitado durante la carga
+    expect(button).toBeDisabled()
+
+    // Verificar que aparece el texto "Agregando..." (puede estar oculto en mobile)
     await waitFor(() => {
-      expect(screen.getByText('Agregar al carrito')).toBeInTheDocument()
-    }, { timeout: 1500 })
+      const loadingTexts = screen.getAllByText(/Agregando|\.\.\./)
+      expect(loadingTexts.length).toBeGreaterThan(0)
+    }, { timeout: 100 })
+
+    // Verificar que después de 1 segundo el botón vuelve a estar habilitado
+    await waitFor(() => {
+      expect(button).not.toBeDisabled()
+    }, { timeout: 1200 })
   })
 
   it('disables button when stock is 0', () => {

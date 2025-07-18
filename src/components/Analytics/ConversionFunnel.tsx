@@ -36,32 +36,32 @@ const ConversionFunnel: React.FC<ConversionFunnelProps> = ({ data, className = '
   });
 
   useEffect(() => {
-    if (data) {
-      // Animar los valores gradualmente
-      const duration = 1500;
-      const steps = 60;
-      const interval = duration / steps;
+    if (!data) return;
 
-      let currentStep = 0;
-      const timer = setInterval(() => {
-        currentStep++;
-        const progress = currentStep / steps;
-        
-        setAnimatedValues({
-          productViews: Math.round(data.productViews * progress),
-          cartAdditions: Math.round(data.cartAdditions * progress),
-          checkoutStarts: Math.round(data.checkoutStarts * progress),
-          checkoutCompletions: Math.round(data.checkoutCompletions * progress),
-        });
+    // Animar los valores gradualmente
+    const duration = 1500;
+    const steps = 60;
+    const interval = duration / steps;
 
-        if (currentStep >= steps) {
-          clearInterval(timer);
-          setAnimatedValues(data);
-        }
-      }, interval);
+    let currentStep = 0;
+    const timer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
 
-      return () => clearInterval(timer);
-    }
+      setAnimatedValues({
+        productViews: Math.round(data.productViews * progress),
+        cartAdditions: Math.round(data.cartAdditions * progress),
+        checkoutStarts: Math.round(data.checkoutStarts * progress),
+        checkoutCompletions: Math.round(data.checkoutCompletions * progress),
+      });
+
+      if (currentStep >= steps) {
+        clearInterval(timer);
+        setAnimatedValues(data);
+      }
+    }, interval);
+
+    return () => clearInterval(timer);
   }, [data]);
 
   const steps: FunnelStep[] = [

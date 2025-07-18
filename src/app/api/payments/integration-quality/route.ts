@@ -55,9 +55,8 @@ export async function GET(request: NextRequest) {
 
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
-      'integration-quality',
-      clientIP,
-      RATE_LIMIT_CONFIGS.ANALYTICS
+      request,
+      RATE_LIMIT_CONFIGS.QUERY_API
     );
 
     if (!rateLimitResult.success) {
@@ -70,7 +69,7 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
       return response;
     }
 
@@ -90,12 +89,12 @@ export async function GET(request: NextRequest) {
     const qualityMetrics = await measureIntegrationQuality(paymentId, includeRecommendations);
 
     // Registrar métricas
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/integration-quality',
       'GET',
       200,
       Date.now() - startTime,
-      { userId, paymentId }
+      { userId, paymentId: paymentId || 'none' }
     );
 
     logger.info(LogCategory.API, 'Integration quality measurement completed', {
@@ -112,19 +111,22 @@ export async function GET(request: NextRequest) {
       processing_time: Date.now() - startTime,
     });
 
-    addRateLimitHeaders(response, rateLimitResult);
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
     return response;
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.API, 'Integration quality measurement failed', error as Error, {
+    logger.performance(LogLevel.ERROR, 'Integration quality measurement failed', {
+      operation: 'integration-quality-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
       userAgent,
-      processingTime,
     });
 
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/integration-quality',
       'GET',
       500,

@@ -13,17 +13,18 @@ import { metricsCollector } from '@/lib/metrics';
 // ✅ ELIMINADO: Rate limiting básico reemplazado por sistema avanzado con Redis
 
 export async function POST(request: NextRequest) {
+  // ✅ MEJORADO: Logging estructurado con timestamp
+  const requestStart = Date.now();
+  const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+
   try {
-    // ✅ MEJORADO: Logging estructurado con timestamp
-    const requestStart = Date.now();
-    const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
 
     // ✅ MEJORADO: Logging estructurado
     logger.webhook(LogLevel.INFO, 'Webhook request received', {
       type: 'incoming',
     }, {
       clientIP,
-      userAgent: request.headers.get('user-agent'),
+      userAgent: request.headers.get('user-agent') || 'unknown',
     });
 
     // ✅ MEJORADO: Rate limiting avanzado con Redis
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
         threat: 'invalid_origin',
         blocked: true,
         reason: 'Webhook origin validation failed',
-      }, { clientIP, userAgent: request.headers.get('user-agent') });
+      }, { clientIP, userAgent: request.headers.get('user-agent') || 'unknown' });
 
       return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
     }
@@ -131,8 +132,8 @@ export async function POST(request: NextRequest) {
     // Obtener información del pago desde MercadoPago
     const paymentResult = await getPaymentInfo(webhookData.data.id);
 
-    if (!paymentResult.success || !paymentResult.data) {
-      console.error('Error getting payment info:', paymentResult.error);
+    if (!paymentResult.success || !('data' in paymentResult)) {
+      console.error('Error getting payment info:', 'error' in paymentResult ? paymentResult.error : 'Unknown error');
       return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
     }
 
@@ -242,14 +243,14 @@ export async function POST(request: NextRequest) {
     logger.webhook(LogLevel.INFO, 'Webhook processed successfully', {
       type: 'payment',
       action: 'processed',
-      dataId: payment.id,
+      dataId: payment.id?.toString(),
       isValid: true,
       processingTime,
     }, { clientIP });
 
     logger.payment(LogLevel.INFO, 'Payment webhook processed', {
       orderId: orderId.toString(),
-      paymentId: payment.id,
+      paymentId: payment.id?.toString(),
       amount: payment.transaction_amount,
       currency: payment.currency_id,
       status: payment.status,
@@ -277,7 +278,7 @@ export async function POST(request: NextRequest) {
       'POST',
       200,
       Date.now() - requestStart,
-      { clientIP, paymentId: payment.id.toString() }
+      { clientIP, paymentId: payment.id?.toString() || 'unknown' }
     );
 
     return addRateLimitHeaders(response, rateLimitResult, rateLimitConfig);
@@ -288,7 +289,7 @@ export async function POST(request: NextRequest) {
 
     logger.error(LogCategory.WEBHOOK, 'Webhook processing failed', error, {
       clientIP,
-      userAgent: request.headers.get('user-agent'),
+      userAgent: request.headers.get('user-agent') || 'unknown',
     });
 
     logger.performance(LogLevel.ERROR, 'Webhook processing failed', {

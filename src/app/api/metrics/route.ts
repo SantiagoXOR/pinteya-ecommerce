@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const hoursBack = parseInt(searchParams.get('hours') || '1');
     const endpoint = searchParams.get('endpoint');
 
-    logger.info(LogCategory.SYSTEM, 'Metrics API request', {
+    logger.info(LogCategory.API, 'Metrics API request', {
       userId: user.id,
       hoursBack,
       endpoint,
@@ -92,11 +92,12 @@ export async function GET(request: NextRequest) {
 
     const processingTime = Date.now() - startTime;
 
-    logger.info(LogCategory.SYSTEM, 'Metrics API response generated', {
+    logger.performance(LogLevel.INFO, 'Metrics API response generated', {
+      operation: 'metrics-api',
+      duration: processingTime,
+      statusCode: 200,
+    }, {
       userId: user.id,
-      processingTime,
-      totalRequests,
-      errorRate,
     });
 
     return NextResponse.json({
@@ -112,9 +113,12 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.SYSTEM, 'Metrics API error', error, {
+    logger.performance(LogLevel.ERROR, 'Metrics API error', {
+      operation: 'metrics-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
-      processingTime,
     });
 
     return NextResponse.json({
@@ -212,7 +216,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      logger.info(LogCategory.SYSTEM, 'Alerts checked', {
+      logger.info(LogCategory.API, 'Alerts checked', {
         userId: user.id,
         alertsFound: alerts.length,
         clientIP,
@@ -236,9 +240,12 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.SYSTEM, 'Metrics alerts API error', error, {
+    logger.performance(LogLevel.ERROR, 'Metrics alerts API error', {
+      operation: 'metrics-alerts-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
-      processingTime,
     });
 
     return NextResponse.json({

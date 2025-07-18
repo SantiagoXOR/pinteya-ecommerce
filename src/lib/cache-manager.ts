@@ -92,7 +92,7 @@ export class CacheManager {
       
       return serialized;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Serialization error', error as Error, { data: typeof data });
+      logger.error(LogCategory.API, 'Serialization error', error as Error);
       throw error;
     }
   }
@@ -110,7 +110,7 @@ export class CacheManager {
       
       return config.serialize ? JSON.parse(deserialized) : deserialized;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Deserialization error', error as Error, { data: data.substring(0, 100) });
+      logger.error(LogCategory.API, 'Deserialization error', error as Error);
       throw error;
     }
   }
@@ -141,24 +141,17 @@ export class CacheManager {
       const cached = await redisCache.get(cacheKey);
       
       if (cached === null) {
-        logger.debug(LogCategory.CACHE, 'Cache miss', {
-          key: cacheKey,
-          duration: Date.now() - startTime,
-        });
+        logger.info(LogCategory.API, 'Cache miss');
         return null;
       }
 
       const result = this.deserialize(cached, config);
       
-      logger.debug(LogCategory.CACHE, 'Cache hit', {
-        key: cacheKey,
-        duration: Date.now() - startTime,
-        size: cached.length,
-      });
+      logger.info(LogCategory.API, 'Cache hit');
 
       return result;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache get error', error as Error, { key: cacheKey });
+      logger.error(LogCategory.API, 'Cache get error', error as Error);
       return null; // Fallar silenciosamente para no afectar la aplicación
     }
   }
@@ -174,17 +167,11 @@ export class CacheManager {
       const serialized = this.serialize(value, config);
       const success = await redisCache.set(cacheKey, serialized, config.ttl);
       
-      logger.debug(LogCategory.CACHE, 'Cache set', {
-        key: cacheKey,
-        duration: Date.now() - startTime,
-        size: serialized.length,
-        ttl: config.ttl,
-        success,
-      });
+      logger.info(LogCategory.API, 'Cache set');
 
       return success;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache set error', error as Error, { key: cacheKey });
+      logger.error(LogCategory.API, 'Cache set error', error as Error);
       return false;
     }
   }
@@ -198,14 +185,11 @@ export class CacheManager {
     try {
       const success = await redisCache.del(cacheKey);
       
-      logger.debug(LogCategory.CACHE, 'Cache delete', {
-        key: cacheKey,
-        success,
-      });
+      logger.info(LogCategory.API, 'Cache delete');
 
       return success;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache delete error', error as Error, { key: cacheKey });
+      logger.error(LogCategory.API, 'Cache delete error', error as Error);
       return false;
     }
   }
@@ -231,20 +215,14 @@ export class CacheManager {
       
       // Almacenar en cache de forma asíncrona
       this.set(key, value, config).catch(error => {
-        logger.warn(LogCategory.CACHE, 'Background cache set failed', {
-          key,
-          error: error.message,
-        });
+        logger.warn(LogCategory.API, 'Background cache set failed');
       });
 
-      logger.debug(LogCategory.CACHE, 'Cache miss - fetched from source', {
-        key,
-        fetchDuration: Date.now() - startTime,
-      });
+      logger.info(LogCategory.API, 'Cache miss - fetched from source');
 
       return value;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Fetcher error in getOrSet', error as Error, { key });
+      logger.error(LogCategory.API, 'Fetcher error in getOrSet', error as Error);
       throw error;
     }
   }
@@ -258,14 +236,12 @@ export class CacheManager {
     try {
       // En Redis real, usaríamos SCAN + DEL para patrones
       // Por simplicidad, aquí solo registramos la operación
-      logger.info(LogCategory.CACHE, 'Cache invalidation requested', {
-        pattern: fullPattern,
-      });
+      logger.info(LogCategory.API, 'Cache invalidation requested');
 
       // TODO: Implementar invalidación real por patrón
       return 0;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache invalidation error', error as Error, { pattern: fullPattern });
+      logger.error(LogCategory.API, 'Cache invalidation error', error as Error);
       return 0;
     }
   }
@@ -288,7 +264,7 @@ export class CacheManager {
         totalKeys: 0,
       };
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache stats error', error as Error);
+      logger.error(LogCategory.API, 'Cache stats error', error as Error);
       return {
         hits: 0,
         misses: 0,
@@ -303,14 +279,12 @@ export class CacheManager {
    */
   async clear(config: CacheConfig): Promise<boolean> {
     try {
-      logger.info(LogCategory.CACHE, 'Cache clear requested', {
-        prefix: config.prefix,
-      });
+      logger.info(LogCategory.API, 'Cache clear requested');
 
       // TODO: Implementar limpieza real por prefijo
       return true;
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Cache clear error', error as Error, { prefix: config.prefix });
+      logger.error(LogCategory.API, 'Cache clear error', error as Error);
       return false;
     }
   }

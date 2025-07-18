@@ -22,10 +22,8 @@ export function QueryClientProvider({ children }: QueryClientProviderProps) {
       {children}
       {/* DevTools solo en desarrollo */}
       {process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools 
+        <ReactQueryDevtools
           initialIsOpen={false}
-          position="bottom-right"
-          buttonPosition="bottom-right"
         />
       )}
     </TanStackQueryClientProvider>

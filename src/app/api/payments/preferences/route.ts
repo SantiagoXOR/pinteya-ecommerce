@@ -98,9 +98,8 @@ export async function GET(request: NextRequest) {
 
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
-      'preferences-config',
-      clientIP,
-      RATE_LIMIT_CONFIGS.ANALYTICS
+      request,
+      RATE_LIMIT_CONFIGS.QUERY_API
     );
 
     if (!rateLimitResult.success) {
@@ -108,7 +107,7 @@ export async function GET(request: NextRequest) {
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
       return response;
     }
 
@@ -191,7 +190,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Registrar métricas
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/preferences',
       'GET',
       200,
@@ -224,18 +223,21 @@ export async function GET(request: NextRequest) {
       processing_time: Date.now() - startTime,
     });
 
-    addRateLimitHeaders(response, rateLimitResult);
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
     return response;
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.API, 'Preferences config failed', error as Error, {
+    logger.performance(LogLevel.ERROR, 'Preferences config failed', {
+      operation: 'preferences-config-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
-      processingTime,
     });
 
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/preferences',
       'GET',
       500,
@@ -270,9 +272,8 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
-      'preferences-update',
-      clientIP,
-      RATE_LIMIT_CONFIGS.PAYMENT_CREATION
+      request,
+      RATE_LIMIT_CONFIGS.PAYMENT_API
     );
 
     if (!rateLimitResult.success) {
@@ -280,7 +281,7 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
       return response;
     }
 
@@ -310,12 +311,12 @@ export async function POST(request: NextRequest) {
     };
 
     // Registrar métricas
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/preferences',
       'POST',
       200,
       Date.now() - startTime,
-      { userId, configKeys: Object.keys(config) }
+      { userId, configKeys: Object.keys(config).join(',') }
     );
 
     logger.info(LogCategory.API, 'Preferences config updated successfully', {
@@ -334,18 +335,21 @@ export async function POST(request: NextRequest) {
       processing_time: Date.now() - startTime,
     });
 
-    addRateLimitHeaders(response, rateLimitResult);
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
     return response;
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
     
-    logger.error(LogCategory.API, 'Preferences config update failed', error as Error, {
+    logger.performance(LogLevel.ERROR, 'Preferences config update failed', {
+      operation: 'preferences-config-update-api',
+      duration: processingTime,
+      statusCode: 500,
+    }, {
       clientIP,
-      processingTime,
     });
 
-    await metricsCollector.recordApiCall(
+    await metricsCollector.recordRequest(
       '/api/payments/preferences',
       'POST',
       500,

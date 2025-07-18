@@ -2,7 +2,7 @@
 // HOOK: useSearchOptimized - Sistema de búsqueda con TanStack Query
 // ===================================
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import { searchProducts } from '@/lib/api/products';
@@ -81,14 +81,18 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
   const updateDebouncedQuery = useDebouncedCallback(
     (value: string) => {
       setDebouncedQuery(value);
-      
+
       // Analytics tracking
       if (value.trim()) {
         console.log('🔍 useSearchOptimized: Query debounced:', value);
+        console.log('🔍 useSearchOptimized: New debouncedQuery value:', value);
+        console.log('🔍 useSearchOptimized: Value type:', typeof value);
+        console.log('🔍 useSearchOptimized: Value length:', value?.length);
+        console.log('🔍 useSearchOptimized: Query enabled condition will be:', !!value?.trim());
       }
     },
     debounceMs,
-    { 
+    {
       maxWait: 2000,
       leading: false,
       trailing: true,
@@ -114,12 +118,19 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       if (!searchQuery?.trim()) return [];
       
       console.log('🔍 useSearchOptimized: Executing search for:', searchQuery);
-      
+
       // AbortController para cancelar requests (nota: searchProducts no soporta signal aún)
       const response = await searchProducts(searchQuery, maxSuggestions);
+      console.log('🔍 useSearchOptimized: API response:', response);
+      console.log('🔍 useSearchOptimized: Response data:', response.data);
+      console.log('🔍 useSearchOptimized: Response success:', response.success);
       return response.data || [];
     },
-    enabled: !!debouncedQuery?.trim(),
+    enabled: (() => {
+      const isEnabled = !!debouncedQuery?.trim() && debouncedQuery.length >= 2;
+      console.log('🔍 useSearchOptimized: Query enabled condition:', isEnabled, 'for query:', debouncedQuery);
+      return isEnabled;
+    })(),
     ...searchQueryConfig,
   });
 
@@ -128,16 +139,21 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
   // ===================================
 
   const suggestions: SearchSuggestion[] = Array.isArray(searchResults)
-    ? searchResults.map((product) => ({
-        id: product.id,
-        type: 'product' as const,
-        title: product.name,
-        subtitle: product.category?.name,
-        image: product.image_url,
-        badge: product.stock > 0 ? 'En stock' : 'Sin stock',
-        href: `/products/${product.id}`,
-      }))
+    ? searchResults.map((product) => {
+        console.log('🔍 useSearchOptimized: Mapping product:', product);
+        return {
+          id: product.id.toString(),
+          type: 'product' as const,
+          title: product.name,
+          subtitle: product.category?.name,
+          image: product.images?.previews?.[0] || product.images?.thumbnails?.[0],
+          badge: product.stock > 0 ? 'En stock' : 'Sin stock',
+          href: `/products/${product.id}`,
+        };
+      })
     : [];
+
+  console.log('🔍 useSearchOptimized: Generated suggestions:', suggestions.length, suggestions);
 
   // ===================================
   // SEARCH FUNCTIONS
@@ -186,11 +202,11 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
         onSearch(searchQuery, searchResults);
       }
 
-      toastHandler.showSuccess(`Búsqueda realizada: "${searchQuery}"`);
+      toastHandler.showSuccessToast(searchQuery, searchResults?.length || 0);
       
     } catch (error) {
       console.error('❌ useSearchOptimized: Error en executeSearch:', error);
-      errorHandler.handleError(error, `búsqueda de "${searchQuery}"`);
+      errorHandler.handleError(error);
     }
   }, [saveRecentSearches, recentSearches, navigation, onSearch, searchResults, toastHandler, errorHandler]);
 
@@ -210,7 +226,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       onSuggestionSelect(suggestion);
     }
 
-    toastHandler.showSuccess(`${suggestion.type === 'product' ? 'Producto' : 'Búsqueda'} seleccionado: ${suggestion.title}`);
+    toastHandler.showInfoToast(`${suggestion.type === 'product' ? 'Producto' : 'Búsqueda'} seleccionado`, suggestion.title);
   }, [navigation, onSuggestionSelect, toastHandler]);
 
   const clearSearch = useCallback(() => {

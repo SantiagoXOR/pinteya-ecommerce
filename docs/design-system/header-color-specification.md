@@ -58,6 +58,15 @@ className="bg-blaze-orange text-white border-b border-blaze-orange-600"
 className="bg-blaze-orange-600 text-white border-b border-blaze-orange-700"
 ```
 
+### **NewHeader (Actualizado Enero 2025)**
+```tsx
+// CORRECTO ✅ - Fondo naranja de marca
+className="bg-blaze-orange-600 border-b border-blaze-orange-700"
+
+// ANTES ❌ - Fondo blanco genérico
+className="bg-white border-b border-gray-200"
+```
+
 ### **Header Principal**
 ```tsx
 // CORRECTO ✅

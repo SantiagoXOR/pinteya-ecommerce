@@ -33,6 +33,28 @@ describe('useSearch Hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorageMock.getItem.mockReturnValue(null);
+
+    // Setup successful API response
+    mockSearchProducts.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: 1,
+          title: 'Pintura Latex Interior',
+          brand: 'Sherwin Williams',
+          price: 15000,
+          discountedPrice: 15000,
+          category: 'Pinturas',
+          imgs: { previews: ['/test-image.jpg'] },
+          stock: 10,
+        },
+      ],
+    });
+
+    // Mock console methods to avoid noise in tests
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   it('should initialize with default state', () => {
@@ -62,35 +84,26 @@ describe('useSearch Hook', () => {
   });
 
   it('should perform search with debounce', async () => {
-    const mockResponse = {
-      success: true,
-      data: [
-        {
-          id: '1',
-          name: 'Pintura Test',
-          category: { name: 'Pinturas' },
-          stock: 10,
-          images: { previews: ['test.jpg'] }
-        }
-      ],
-      pagination: { total: 1 }
-    };
-
-    mockSearchProducts.mockResolvedValue(mockResponse);
-
-    const { result } = renderHook(() => useSearch({ debounceMs: 100 }));
+    const { result } = renderHook(() => useSearch({ debounceMs: 50 }));
 
     await act(async () => {
       result.current.searchWithDebounce('pintura');
     });
 
-    // Esperar el debounce
+    // Esperar el debounce y que se actualice el query
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.query).toBe('pintura');
     }, { timeout: 200 });
 
-    expect(mockSearchProducts).toHaveBeenCalledWith('pintura', 8);
-    expect(result.current.suggestions.length).toBeGreaterThan(0);
+    // Verificar que se llamó a searchProducts después del debounce
+    await waitFor(() => {
+      expect(mockSearchProducts).toHaveBeenCalledWith('pintura', 8);
+    }, { timeout: 300 });
+
+    // Verificar que se actualizaron las sugerencias
+    await waitFor(() => {
+      expect(result.current.suggestions.length).toBeGreaterThan(0);
+    }, { timeout: 100 });
   });
 
   it('should execute search and navigate', async () => {

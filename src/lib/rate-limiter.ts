@@ -127,14 +127,7 @@ async function rateLimitWithRedis(
     const resetTime = Date.now() + (ttl * 1000);
     
     // Log de la operación
-    logger.debug(LogCategory.SECURITY, 'Rate limit check', {
-      key,
-      count,
-      limit: config.maxRequests,
-      remaining,
-      ttl,
-      isNewWindow,
-    });
+    logger.info(LogCategory.SECURITY, 'Rate limit check');
 
     if (count > config.maxRequests) {
       // Límite excedido
@@ -170,7 +163,7 @@ async function rateLimitWithRedis(
     };
 
   } catch (error) {
-    logger.error(LogCategory.SECURITY, 'Redis rate limiting failed', error as Error, { key });
+    logger.error(LogCategory.SECURITY, 'Redis rate limiting failed', error as Error);
     throw error;
   }
 }
@@ -259,7 +252,7 @@ export async function checkRateLimit(
     }
   } catch (error) {
     // En caso de error, usar fallback en memoria
-    logger.error(LogCategory.SECURITY, 'Rate limiting error, using memory fallback', error as Error, { key });
+    logger.error(LogCategory.SECURITY, 'Rate limiting error, using memory fallback', error as Error);
     return rateLimitWithMemory(key, config);
   }
 }

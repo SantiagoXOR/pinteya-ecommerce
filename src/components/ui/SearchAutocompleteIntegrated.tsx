@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { SearchAutocomplete, SearchAutocompleteProps } from './search-autocomplete';
-import { useSearch } from '@/hooks/useSearch';
+import { useSearchOptimized } from '@/hooks/useSearchOptimized';
 
 export interface SearchAutocompleteIntegratedProps 
   extends Omit<SearchAutocompleteProps, 'query' | 'suggestions' | 'isLoading' | 'error' | 'searchWithDebounce' | 'onClear'> {
@@ -38,9 +38,10 @@ export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, S
     ...props
   }, ref) => {
     
-    // Hook de búsqueda centralizado
+    // Hook de búsqueda optimizado con TanStack Query
     const {
       query,
+      results,
       suggestions,
       isLoading,
       error,
@@ -48,7 +49,7 @@ export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, S
       executeSearch,
       selectSuggestion,
       clearSearch,
-    } = useSearch({
+    } = useSearchOptimized({
       debounceMs,
       maxSuggestions,
       searchLimit,
@@ -87,15 +88,15 @@ export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, S
       <SearchAutocomplete
         ref={ref}
         {...props}
-        // Props del hook useSearch
+        // Estado del hook optimizado
         query={query}
         suggestions={suggestions}
         isLoading={isLoading}
         error={error}
-        searchWithDebounce={searchWithDebounce}
         // Callbacks integrados
         onSearch={handleSearch}
         onSuggestionSelect={handleSuggestionSelect}
+        searchWithDebounce={searchWithDebounce}
         onClear={handleClear}
       />
     );

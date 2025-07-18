@@ -249,7 +249,16 @@ export default function SearchPage() {
             {products.map((product) => (
               <ProductCard
                 key={product.id}
-                product={product}
+                productId={product.id}
+                title={product.name}
+                price={product.price}
+                image={product.images?.previews?.[0] || '/images/products/placeholder.svg'}
+                stock={product.stock}
+                brand={product.category?.name}
+                onAddToCart={() => {
+                  // TODO: Implementar lógica de agregar al carrito
+                  console.log('Agregando al carrito:', product.name);
+                }}
                 className={`bg-white shadow-sm hover:shadow-md transition-shadow ${
                   viewMode === 'list' ? 'flex flex-row items-center p-4' : ''
                 }`}

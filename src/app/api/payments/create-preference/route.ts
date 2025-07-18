@@ -471,14 +471,15 @@ export async function POST(request: NextRequest) {
 
     // ✅ MEJORADO: Manejar resultado de la nueva función
     if (!preferenceResult.success) {
-      throw new Error(preferenceResult.error || 'Error creando preferencia de pago');
+      throw new Error('error' in preferenceResult ? preferenceResult.error : 'Error creando preferencia de pago');
     }
 
     // Actualizar orden con ID de preferencia
+    const preferenceData = 'data' in preferenceResult ? preferenceResult.data : null;
     const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
-        payment_preference_id: preferenceResult.data.id,
+        payment_preference_id: preferenceData?.id,
       })
       .eq('id', order.id);
 
@@ -490,7 +491,7 @@ export async function POST(request: NextRequest) {
     const processingTime = Date.now() - requestStart;
     logger.payment(LogLevel.INFO, 'Payment preference created successfully', {
       orderId: order.id.toString(),
-      preferenceId: preferenceResult.data.id,
+      preferenceId: preferenceData?.id,
       amount: totalAmount,
       currency: 'ARS',
       method: 'mercadopago',
@@ -510,8 +511,8 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       data: {
-        init_point: preferenceResult.data.init_point,
-        preference_id: preferenceResult.data.id,
+        init_point: preferenceData?.init_point,
+        preference_id: preferenceData?.id,
       },
     });
 

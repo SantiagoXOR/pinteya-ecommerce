@@ -92,7 +92,7 @@ const HeaderDemoPage = () => {
           <CardContent>
             <div className="flex gap-2 mb-4">
               <Button
-                variant={selectedDevice === 'mobile' ? 'default' : 'outline'}
+                variant={selectedDevice === 'mobile' ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => setSelectedDevice('mobile')}
                 className="flex items-center gap-2"
@@ -101,7 +101,7 @@ const HeaderDemoPage = () => {
                 Mobile
               </Button>
               <Button
-                variant={selectedDevice === 'tablet' ? 'default' : 'outline'}
+                variant={selectedDevice === 'tablet' ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => setSelectedDevice('tablet')}
                 className="flex items-center gap-2"
@@ -110,7 +110,7 @@ const HeaderDemoPage = () => {
                 Tablet
               </Button>
               <Button
-                variant={selectedDevice === 'desktop' ? 'default' : 'outline'}
+                variant={selectedDevice === 'desktop' ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => setSelectedDevice('desktop')}
                 className="flex items-center gap-2"

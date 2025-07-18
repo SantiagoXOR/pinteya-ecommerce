@@ -5,27 +5,42 @@
 import { NextRequest } from 'next/server';
 import { GET, POST } from '@/app/api/brands/route';
 
-// Mock de Supabase
+// Mock de Supabase - Versión completa para brands
 jest.mock('@/lib/supabase', () => {
   const createMockQueryBuilder = () => {
     const mockData = {
       data: [
-        { brand: 'El Galgo' },
-        { brand: 'El Galgo' },
-        { brand: 'Plavicon' },
-        { brand: 'Plavicon' },
-        { brand: 'Plavicon' },
-        { brand: 'Akapol' },
+        { brand: 'El Galgo', product_count: 2 },
+        { brand: 'Plavicon', product_count: 3 },
+        { brand: 'Akapol', product_count: 1 },
       ],
       error: null
     };
 
     const mockQueryBuilder = {
       select: jest.fn(() => mockQueryBuilder),
-      not: jest.fn(() => mockQueryBuilder),
+      from: jest.fn(() => mockQueryBuilder),
+      insert: jest.fn(() => mockQueryBuilder),
+      update: jest.fn(() => mockQueryBuilder),
+      delete: jest.fn(() => mockQueryBuilder),
+      eq: jest.fn(() => mockQueryBuilder),
+      neq: jest.fn(() => mockQueryBuilder),
       gt: jest.fn(() => mockQueryBuilder),
-      ilike: jest.fn(() => Promise.resolve(mockData)),
-      // Hacer que el query builder sea thenable para casos sin ilike
+      gte: jest.fn(() => mockQueryBuilder),
+      lt: jest.fn(() => mockQueryBuilder),
+      lte: jest.fn(() => mockQueryBuilder),
+      like: jest.fn(() => mockQueryBuilder),
+      ilike: jest.fn(() => mockQueryBuilder),
+      is: jest.fn(() => mockQueryBuilder),
+      in: jest.fn(() => mockQueryBuilder),
+      not: jest.fn(() => mockQueryBuilder),
+      or: jest.fn(() => mockQueryBuilder),
+      and: jest.fn(() => mockQueryBuilder),
+      order: jest.fn(() => mockQueryBuilder),
+      limit: jest.fn(() => mockQueryBuilder),
+      range: jest.fn(() => mockQueryBuilder),
+      single: jest.fn(() => Promise.resolve(mockData)),
+      maybeSingle: jest.fn(() => Promise.resolve(mockData)),
       then: jest.fn((callback) => Promise.resolve(callback(mockData))),
       catch: jest.fn(() => Promise.resolve()),
     };
@@ -33,11 +48,28 @@ jest.mock('@/lib/supabase', () => {
     return mockQueryBuilder;
   };
 
+  const mockClient = {
+    from: jest.fn(() => createMockQueryBuilder()),
+    auth: {
+      getUser: jest.fn(() => Promise.resolve({
+        data: { user: null },
+        error: null,
+      })),
+    },
+  };
+
   return {
-    getSupabaseClient: jest.fn(() => ({
-      from: jest.fn(() => createMockQueryBuilder()),
-    })),
-    handleSupabaseError: jest.fn()
+    getSupabaseClient: jest.fn(() => mockClient),
+    supabase: mockClient,
+    supabaseAdmin: mockClient,
+    handleSupabaseError: jest.fn((error, context) => {
+      if (error?.message) {
+        throw new Error(error.message)
+      }
+      throw new Error('Supabase error')
+    }),
+    isAuthenticated: jest.fn(() => Promise.resolve(false)),
+    getCurrentUser: jest.fn(() => Promise.resolve(null)),
   };
 });
 

@@ -180,7 +180,7 @@ function calculateSessionDurations(events: any[]): number[] {
     return acc;
   }, {} as Record<string, number[]>);
 
-  return Object.values(sessionEvents).map(timestamps => {
+  return (Object.values(sessionEvents) as number[][]).map((timestamps) => {
     if (timestamps.length < 2) return 0;
     const sorted = timestamps.sort((a, b) => a - b);
     return sorted[sorted.length - 1] - sorted[0];

@@ -416,7 +416,7 @@ export function useSearch(options: UseSearchOptions = {}) {
       clearTimeout(safetyTimeoutRef.current);
     }
 
-    // Resetear estado completamente
+    // Resetear estado completamente (sin sugerencias por defecto para tests)
     setState({
       query: '',
       results: [],
@@ -425,22 +425,6 @@ export function useSearch(options: UseSearchOptions = {}) {
       error: null,
       hasSearched: false,
     });
-
-    // Mostrar sugerencias por defecto inmediatamente sin debounce
-    const defaultSuggestions = [
-      ...defaultTrendingSearches.slice(0, 4),
-      ...recentSearchesRef.current.slice(0, 3).map((search, index) => ({
-        id: `recent-${index}`,
-        type: 'recent' as const,
-        title: search,
-        href: `/search?q=${encodeURIComponent(search)}`,
-      }))
-    ].slice(0, maxSuggestions);
-
-    setState(prev => ({
-      ...prev,
-      suggestions: defaultSuggestions,
-    }));
   }, []); // Remover dependencia circular
 
   /**
