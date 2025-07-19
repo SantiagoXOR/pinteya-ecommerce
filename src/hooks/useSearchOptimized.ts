@@ -175,7 +175,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       // Prefetch de página de resultados
       navigation.prefetchSearch(searchQuery.trim());
     }
-  }, [updateDebouncedQuery, enablePrefetch, queryClient, maxSuggestions]);
+  }, [updateDebouncedQuery, enablePrefetch, queryClient, maxSuggestions, navigation]);
 
   const executeSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) return;

@@ -1,18 +1,179 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import {
-  Theme,
-  ThemeMode,
-  ThemeContext as ThemeContextType,
-  lightTheme,
-  darkTheme,
-  useSystemTheme,
-  applyThemeVariables,
-  getTheme,
-  saveThemePreference,
-  loadThemePreference,
-} from '@/lib/theme-system'
+
+// Tipos simplificados para el theme system
+type ThemeMode = 'light' | 'dark' | 'auto'
+type ThemeContextType = 'default' | 'ecommerce' | 'admin' | 'mobile'
+
+interface Theme {
+  name: string
+  colors: {
+    primary: Record<number, string>
+    background: {
+      primary: string
+      secondary: string
+    }
+    text: {
+      primary: string
+      secondary: string
+      tertiary: string
+    }
+    border: {
+      primary: string
+      secondary: string
+    }
+    ecommerce: {
+      price: {
+        current: string
+        original: string
+      }
+      stock: {
+        available: string
+        low: string
+        out: string
+      }
+      shipping: {
+        free: string
+        standard: string
+        express: string
+      }
+    }
+  }
+}
+
+// Temas simplificados
+const lightTheme: Theme = {
+  name: 'Pinteya Light',
+  colors: {
+    primary: {
+      500: '#ea5a17', // blaze-orange
+      600: '#eb6313',
+    },
+    background: {
+      primary: '#ffffff',
+      secondary: '#f9fafb',
+    },
+    text: {
+      primary: '#111827',
+      secondary: '#6b7280',
+      tertiary: '#9ca3af',
+    },
+    border: {
+      primary: '#e5e7eb',
+      secondary: '#d1d5db',
+    },
+    ecommerce: {
+      price: {
+        current: '#059669',
+        original: '#6b7280',
+      },
+      stock: {
+        available: '#059669',
+        low: '#f59e0b',
+        out: '#dc2626',
+      },
+      shipping: {
+        free: '#059669',
+        standard: '#3b82f6',
+        express: '#f59e0b',
+      },
+    },
+  },
+}
+
+const darkTheme: Theme = {
+  name: 'Pinteya Dark',
+  colors: {
+    primary: {
+      500: '#ea5a17',
+      600: '#eb6313',
+    },
+    background: {
+      primary: '#1f2937',
+      secondary: '#111827',
+    },
+    text: {
+      primary: '#f9fafb',
+      secondary: '#d1d5db',
+      tertiary: '#9ca3af',
+    },
+    border: {
+      primary: '#374151',
+      secondary: '#4b5563',
+    },
+    ecommerce: {
+      price: {
+        current: '#10b981',
+        original: '#9ca3af',
+      },
+      stock: {
+        available: '#10b981',
+        low: '#fbbf24',
+        out: '#ef4444',
+      },
+      shipping: {
+        free: '#10b981',
+        standard: '#60a5fa',
+        express: '#fbbf24',
+      },
+    },
+  },
+}
+
+// Hooks simplificados
+function useSystemTheme(): 'light' | 'dark' {
+  const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light')
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    setSystemTheme(mediaQuery.matches ? 'dark' : 'light')
+
+    const handler = (e: MediaQueryListEvent) => {
+      setSystemTheme(e.matches ? 'dark' : 'light')
+    }
+
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
+
+  return systemTheme
+}
+
+function getTheme(mode: ThemeMode, context: ThemeContextType, systemTheme: 'light' | 'dark'): Theme {
+  const resolvedMode = mode === 'auto' ? systemTheme : mode
+  return resolvedMode === 'dark' ? darkTheme : lightTheme
+}
+
+function applyThemeVariables(theme: Theme) {
+  const root = document.documentElement
+  root.style.setProperty('--color-primary-500', theme.colors.primary[500])
+  root.style.setProperty('--color-primary-600', theme.colors.primary[600])
+  root.style.setProperty('--color-bg-primary', theme.colors.background.primary)
+  root.style.setProperty('--color-bg-secondary', theme.colors.background.secondary)
+}
+
+function saveThemePreference(mode: ThemeMode, context: ThemeContextType) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('theme-preference', JSON.stringify({ mode, context }))
+  }
+}
+
+function loadThemePreference(): { mode: ThemeMode; context: ThemeContextType } {
+  if (typeof window === 'undefined') {
+    return { mode: 'light', context: 'default' }
+  }
+
+  try {
+    const saved = localStorage.getItem('theme-preference')
+    if (saved) {
+      return JSON.parse(saved)
+    }
+  } catch (error) {
+    console.warn('Error loading theme preference:', error)
+  }
+  return { mode: 'light', context: 'default' }
+}
 
 interface ThemeProviderContextType {
   theme: Theme
