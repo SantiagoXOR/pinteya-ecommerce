@@ -19,17 +19,8 @@ const customJestConfig = {
 
   // Module name mapping para absolute imports - Optimizado
   moduleNameMapper: {
-    // Mapeo principal
+    // Mapeo principal (suficiente para la mayoría de casos)
     '^@/(.*)$': '<rootDir>/src/$1',
-
-    // Mapeos específicos para mejor resolución
-    '^@/components/(.*)$': '<rootDir>/src/components/$1',
-    '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
-    '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
-    '^@/utils/(.*)$': '<rootDir>/src/utils/$1',
-    '^@/types/(.*)$': '<rootDir>/src/types/$1',
-    '^@/redux/(.*)$': '<rootDir>/src/redux/$1',
-    '^@/__tests__/(.*)$': '<rootDir>/src/__tests__/$1',
 
     // Mapeos para assets estáticos
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',

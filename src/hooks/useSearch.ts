@@ -246,7 +246,7 @@ export function useSearch(options: UseSearchOptions = {}) {
           error: 'Error en la búsqueda. Intenta nuevamente.',
         }));
       }
-  }, [debounceMs, maxSuggestions, defaultTrendingSearches]); // Dependencias estables sin circularidad
+  }, [maxSuggestions]); // Solo maxSuggestions es necesario como dependencia
 
   /**
    * Función de búsqueda con debounce optimizado usando use-debounce

@@ -98,6 +98,13 @@ export function useSearchToast(options: UseSearchToastOptions = {}) {
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
   /**
+   * Remueve un toast específico
+   */
+  const removeToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  }, []);
+
+  /**
    * Agrega un nuevo toast
    */
   const addToast = useCallback((toast: Omit<ToastNotification, 'id'>): string => {
@@ -122,14 +129,7 @@ export function useSearchToast(options: UseSearchToastOptions = {}) {
     }
 
     return id;
-  }, [defaultDuration, maxToasts]);
-
-  /**
-   * Remueve un toast específico
-   */
-  const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  }, []);
+  }, [defaultDuration, maxToasts, removeToast]);
 
   /**
    * Limpia todos los toasts

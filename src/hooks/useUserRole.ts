@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 export interface UserRole {
@@ -44,7 +44,7 @@ export const useUserRole = (): UseUserRoleReturn => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const syncUser = async () => {
+  const syncUser = useCallback(async () => {
     if (!user || !isLoaded) return;
 
     try {
@@ -98,9 +98,9 @@ export const useUserRole = (): UseUserRoleReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, isLoaded]);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!user || !isLoaded) return;
 
     try {
@@ -157,7 +157,7 @@ export const useUserRole = (): UseUserRoleReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, isLoaded, syncUser]);
 
   const hasPermission = (permissionPath: string[]): boolean => {
     if (!userProfile?.user_roles?.permissions) return false;
@@ -183,7 +183,7 @@ export const useUserRole = (): UseUserRoleReturn => {
       setIsLoading(false);
       setError(null);
     }
-  }, [user, isLoaded]);
+  }, [user, isLoaded, fetchUserProfile]);
 
   return {
     userProfile,

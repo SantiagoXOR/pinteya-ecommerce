@@ -2,7 +2,7 @@
 // HOOK: useSearchErrorHandler - Manejo robusto de errores de búsqueda
 // ===================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 // ===================================
 // TIPOS
@@ -122,7 +122,10 @@ export function useSearchErrorHandler(options: UseSearchErrorHandlerOptions = {}
     onRetryFailed,
   } = options;
 
-  const retryConfig = { ...DEFAULT_RETRY_CONFIG, ...userRetryConfig };
+  const retryConfig = useMemo(() => ({
+    ...DEFAULT_RETRY_CONFIG,
+    ...userRetryConfig
+  }), [userRetryConfig]);
   
   const [currentError, setCurrentError] = useState<SearchError | null>(null);
   const [retryCount, setRetryCount] = useState(0);
