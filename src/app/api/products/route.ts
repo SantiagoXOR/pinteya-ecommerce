@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient, handleSupabaseError } from '@/lib/supabase';
-import { validateData, ProductFiltersSchema, ProductSchema } from '@/lib/validations';
+import { validateData, safeValidateData, ProductFiltersSchema, ProductSchema } from '@/lib/validations';
 import { ApiResponse, PaginatedResponse, ProductWithCategory } from '@/types/api';
 
 // ===================================
@@ -27,8 +27,20 @@ export async function GET(request: NextRequest) {
       sortOrder: searchParams.get('sortOrder') as 'asc' | 'desc' || 'desc',
     };
 
-    // Validar parámetros
-    const filters = validateData(ProductFiltersSchema, queryParams);
+    // Validar parámetros de manera segura
+    const validationResult = safeValidateData(ProductFiltersSchema, queryParams);
+
+    if (!validationResult.success) {
+      console.error('Error de validación en GET /api/products:', validationResult.error);
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: `Parámetros inválidos: ${validationResult.error}`,
+      };
+      return NextResponse.json(errorResponse, { status: 400 });
+    }
+
+    const filters = validationResult.data!;
     
     const supabase = getSupabaseClient();
 
