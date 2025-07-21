@@ -97,7 +97,7 @@ describe('Header Dropdown Functionality', () => {
     test('should render delivery zone selector', () => {
       render(<TopBar />);
       
-      expect(screen.getByText(/Envíos a Córdoba Capital/i)).toBeInTheDocument();
+      expect(screen.getByText(/Envíos en Córdoba Capital/i)).toBeInTheDocument();
     });
 
     test('should open dropdown when clicked', async () => {
@@ -282,12 +282,12 @@ describe('Dropdown Integration', () => {
     );
 
     // Verificar que todos los dropdowns están presentes
-    expect(screen.getByText(/Envíos a Córdoba Capital/i)).toBeInTheDocument();
+    expect(screen.getByText(/Envíos en Córdoba Capital/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Todas las Categorías/i)).toHaveLength(2);
     expect(screen.getByText(/Iniciar con Google/i)).toBeInTheDocument();
 
     // Verificar que no hay conflictos entre dropdowns
-    const deliveryTrigger = screen.getByRole('button', { name: /Envíos a/i });
+    const deliveryTrigger = screen.getByRole('button', { name: /Envíos en/i });
     const categoryTrigger = screen.getByRole('button', { name: /Todas las Categorías/i });
 
     fireEvent.click(deliveryTrigger);

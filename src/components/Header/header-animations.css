@@ -6,6 +6,21 @@
   background: linear-gradient(135deg, #f27a1d 0%, #eb6313 100%);
 }
 
+/* Enhanced sticky header with scroll direction */
+.header-sticky-enhanced {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s ease-in-out,
+              backdrop-filter 0.3s ease-in-out;
+}
+
+.header-sticky-enhanced.scrolling-up {
+  transform: translateY(0);
+}
+
+.header-sticky-enhanced.scrolling-down {
+  transform: translateY(-2px);
+}
+
 /* Logo scale animation on sticky */
 .logo-sticky-scale {
   transition: all 0.2s ease-in-out;
@@ -13,12 +28,44 @@
 
 /* Search bar focus animations */
 .search-focus-ring {
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 .search-focus-ring:focus-within {
   box-shadow: 0 0 0 3px rgba(242, 122, 29, 0.1);
   border-color: #f27a1d;
+  transform: scale(1.02);
+}
+
+.search-focus-ring:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(242, 122, 29, 0.15);
+}
+
+/* Search input expansion animation */
+.search-input-expand {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-input-expand:focus {
+  transform: scale(1.02);
+}
+
+/* Search suggestions enhanced animation */
+.search-suggestions-enhanced {
+  animation: searchSuggestionsSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top;
+}
+
+@keyframes searchSuggestionsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Button hover animations */
@@ -29,6 +76,63 @@
 .button-hover-lift:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced button animations */
+.button-enhanced-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.button-enhanced-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease-in-out;
+}
+
+.button-enhanced-hover:hover::before {
+  left: 100%;
+}
+
+.button-enhanced-hover:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Icon rotation on hover */
+.icon-rotate-hover {
+  transition: transform 0.3s ease-in-out;
+}
+
+.icon-rotate-hover:hover {
+  transform: rotate(12deg) scale(1.1);
+}
+
+/* Icon bounce on hover */
+.icon-bounce-hover {
+  transition: transform 0.2s ease-in-out;
+}
+
+.icon-bounce-hover:hover {
+  animation: iconBounce 0.6s ease-in-out;
+}
+
+@keyframes iconBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
 }
 
 /* Cart badge bounce animation */
@@ -65,6 +169,61 @@
   background-color: rgba(242, 122, 29, 0.05);
   color: #f27a1d;
   padding-left: 1rem;
+}
+
+/* Enhanced dropdown animations */
+.dropdown-enhanced {
+  animation: dropdownSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-enhanced-exit {
+  animation: dropdownSlideOut 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropdownSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+}
+
+/* Dropdown item stagger animation */
+.dropdown-item-stagger {
+  animation: dropdownItemStagger 0.3s ease-out;
+  animation-fill-mode: both;
+}
+
+.dropdown-item-stagger:nth-child(1) { animation-delay: 0.05s; }
+.dropdown-item-stagger:nth-child(2) { animation-delay: 0.1s; }
+.dropdown-item-stagger:nth-child(3) { animation-delay: 0.15s; }
+.dropdown-item-stagger:nth-child(4) { animation-delay: 0.2s; }
+.dropdown-item-stagger:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes dropdownItemStagger {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Navigation link underline animation */
@@ -143,8 +302,17 @@
 
 /* Responsive animations */
 @media (max-width: 1024px) {
-  .header-sticky-transition {
+  .header-sticky-transition,
+  .header-sticky-enhanced {
     transition: all 0.2s ease-in-out;
+  }
+
+  .search-focus-ring:hover {
+    transform: scale(1.01);
+  }
+
+  .button-enhanced-hover:hover {
+    transform: translateY(-1px) scale(1.02);
   }
 }
 
@@ -152,9 +320,46 @@
   .mobile-menu-slide {
     transition: all 0.25s ease-in-out;
   }
-  
-  .button-hover-lift:hover {
+
+  /* Disable hover effects on mobile for better touch experience */
+  .button-hover-lift:hover,
+  .button-enhanced-hover:hover,
+  .floating-button:hover,
+  .micro-bounce:hover,
+  .elastic-scale:hover {
     transform: none;
+    box-shadow: none;
+  }
+
+  /* Reduce animation intensity on mobile */
+  .search-focus-ring:focus-within {
+    transform: scale(1.01);
+  }
+
+  .icon-rotate-hover:hover,
+  .icon-bounce-hover:hover {
+    transform: none;
+    animation: none;
+  }
+
+  /* Optimize dropdown animations for mobile */
+  .dropdown-enhanced {
+    animation-duration: 0.2s;
+  }
+
+  .dropdown-item-stagger {
+    animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Further reduce animations on very small screens */
+  .search-focus-ring:focus-within,
+  .search-focus-ring:hover {
+    transform: none;
+  }
+
+  .glow-on-hover:hover {
     box-shadow: none;
   }
 }
@@ -175,6 +380,59 @@
   }
 }
 
+/* Enhanced loading states */
+.loading-pulse-enhanced {
+  animation: pulseEnhanced 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseEnhanced {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* Success state animation */
+.success-state {
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Error state animation */
+.error-state {
+  animation: errorShake 0.5s ease-in-out;
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-3px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(3px);
+  }
+}
+
 /* Focus states for accessibility */
 .focus-ring:focus {
   outline: 2px solid #f27a1d;
@@ -192,24 +450,75 @@
   }
 }
 
+/* Microinteraction enhancements */
+.micro-bounce {
+  transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.micro-bounce:hover {
+  transform: scale(1.1);
+}
+
+.micro-bounce:active {
+  transform: scale(0.95);
+}
+
+/* Glow effect for interactive elements */
+.glow-on-hover {
+  transition: all 0.3s ease-in-out;
+}
+
+.glow-on-hover:hover {
+  box-shadow: 0 0 20px rgba(242, 122, 29, 0.3);
+}
+
+/* Smooth color transitions */
+.color-transition {
+  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+/* Elastic scale animation */
+.elastic-scale {
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.elastic-scale:hover {
+  transform: scale(1.05);
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .header-sticky-transition,
+  .header-sticky-enhanced,
   .logo-sticky-scale,
   .search-focus-ring,
+  .search-input-expand,
   .button-hover-lift,
+  .button-enhanced-hover,
   .mobile-menu-slide,
   .dropdown-item-hover,
+  .dropdown-enhanced,
   .nav-link-underline::before,
   .floating-button,
-  .category-selector-hover {
+  .category-selector-hover,
+  .micro-bounce,
+  .glow-on-hover,
+  .color-transition,
+  .elastic-scale,
+  .icon-rotate-hover,
+  .icon-bounce-hover {
     transition: none;
   }
-  
+
   .cart-badge-animate,
   .search-suggestions-fade,
+  .search-suggestions-enhanced,
   .topbar-slide,
-  .loading-shimmer {
+  .loading-shimmer,
+  .loading-pulse-enhanced,
+  .success-state,
+  .error-state,
+  .dropdown-item-stagger {
     animation: none;
   }
 }

@@ -4,6 +4,7 @@
 
 import { ApiResponse } from '@/types/api';
 import { Brand, BrandFilters } from '@/app/api/brands/route';
+import { safeApiResponseJson } from '@/lib/json-utils';
 
 // Re-exportar tipos para uso en el frontend
 export type { Brand, BrandFilters };
@@ -36,11 +37,14 @@ export async function getBrands(filters?: BrandFilters): Promise<ApiResponse<Bra
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    // Usar parsing seguro de JSON
+    const result = await safeApiResponseJson<ApiResponse<Brand[]>>(response);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error parsing API response');
     }
 
-    return await response.json();
+    return result.data;
   } catch (error) {
     console.error('Error obteniendo marcas:', error);
     throw error;
@@ -60,11 +64,14 @@ export async function getBrandStats(): Promise<ApiResponse<any[]>> {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    // Usar parsing seguro de JSON
+    const result = await safeApiResponseJson<ApiResponse<any[]>>(response);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error parsing API response');
     }
 
-    return await response.json();
+    return result.data;
   } catch (error) {
     console.error('Error obteniendo estadísticas de marcas:', error);
     throw error;
@@ -121,11 +128,14 @@ export async function getProductsByBrand(
     },
   });
 
-  if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
+  // Usar parsing seguro de JSON
+  const result = await safeApiResponseJson(response);
+
+  if (!result.success) {
+    throw new Error(result.error || 'Error parsing API response');
   }
 
-  return await response.json();
+  return result.data;
 }
 
 /**

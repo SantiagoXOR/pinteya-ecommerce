@@ -101,7 +101,13 @@ export async function GET(request: NextRequest) {
     const { data: products, error, count } = await query;
 
     if (error) {
-      handleSupabaseError(error, 'GET /api/products');
+      console.error('Error en GET /api/products - Supabase:', error);
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: error.message || 'Error obteniendo productos de la base de datos',
+      };
+      return NextResponse.json(errorResponse, { status: 500 });
     }
 
     // Calcular información de paginación

@@ -148,6 +148,8 @@ const config: Config = {
         "light-1": "#FDE68A",
         "light-2": "#FEF3C7",
         "light-4": "#FFFBEB",
+        "400": "#FACC15",
+        "500": "#EAB308",
       },
       teal: {
         DEFAULT: "#02AAA4",

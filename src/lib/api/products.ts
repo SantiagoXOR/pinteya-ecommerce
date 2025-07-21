@@ -3,6 +3,7 @@
 // ===================================
 
 import { ProductFilters, ProductWithCategory, ApiResponse, PaginatedResponse } from '@/types/api';
+import { safeApiResponseJson } from '@/lib/json-utils';
 
 // ===================================
 // FUNCIONES PARA EL FRONTEND
@@ -25,21 +26,67 @@ export async function getProducts(filters?: ProductFilters): Promise<PaginatedRe
       });
     }
 
-    const response = await fetch(`/api/products?${searchParams.toString()}`, {
+    const url = `/api/products?${searchParams.toString()}`;
+    const DEBUG_MODE = process.env.NODE_ENV === 'development';
+
+    if (DEBUG_MODE) {
+      console.log('🔍 Fetching products from:', url);
+    }
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    if (DEBUG_MODE) {
+      console.log('📡 Response status:', response.status, response.statusText);
     }
 
-    return await response.json();
+    // Usar parsing seguro de JSON
+    const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response);
+
+    if (DEBUG_MODE) {
+      console.log('🔍 Parse result:', { success: result.success, error: result.error });
+    }
+
+    if (!result.success) {
+      console.error('❌ JSON parsing failed:', result.error);
+
+      // Return a fallback response instead of throwing
+      return {
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 12,
+          total: 0,
+          totalPages: 0,
+        },
+        success: false,
+        message: result.error || 'Error loading products',
+      };
+    }
+
+    if (DEBUG_MODE) {
+      console.log('✅ Products loaded successfully:', result.data?.data?.length || 0, 'items');
+    }
+    return result.data;
   } catch (error) {
-    console.error('Error obteniendo productos:', error);
-    throw error;
+    console.error('❌ Error obteniendo productos:', error);
+
+    // Return a fallback response instead of throwing
+    return {
+      data: [],
+      pagination: {
+        page: 1,
+        limit: 12,
+        total: 0,
+        totalPages: 0,
+      },
+      success: false,
+      message: error instanceof Error ? error.message : 'Error inesperado',
+    };
   }
 }
 
@@ -57,11 +104,14 @@ export async function getProductById(id: number): Promise<ApiResponse<ProductWit
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    // Usar parsing seguro de JSON
+    const result = await safeApiResponseJson<ApiResponse<ProductWithCategory>>(response);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error parsing API response');
     }
 
-    return await response.json();
+    return result.data;
   } catch (error) {
     console.error(`Error obteniendo producto ${id}:`, error);
     throw error;
@@ -169,12 +219,15 @@ export async function getRelatedProducts(
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    // Usar parsing seguro de JSON
+    const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Error parsing API response');
     }
 
-    const data: PaginatedResponse<ProductWithCategory> = await response.json();
-    
+    const data = result.data;
+
     // Filtrar el producto actual y limitar resultados
     return data.data
       .filter(product => product.id !== productId)

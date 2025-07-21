@@ -1,0 +1,103 @@
+315f5648ad59b91fb8588c2ef2e81997
+// ===================================
+// PINTEYA E-COMMERCE - IMAGE OPTIMIZATION UTILITY
+// ===================================
+/**
+ * Configuración de optimización para imágenes del proyecto
+ * Especialmente para logos y elementos del header mobile
+ */ "use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: all[name]
+    });
+}
+_export(exports, {
+    getOptimizedImageProps: function() {
+        return getOptimizedImageProps;
+    },
+    imageOptimizationConfig: function() {
+        return imageOptimizationConfig;
+    },
+    pinteyaDesktopLogoProps: function() {
+        return pinteyaDesktopLogoProps;
+    },
+    pinteyaMobileLogoProps: function() {
+        return pinteyaMobileLogoProps;
+    }
+});
+const imageOptimizationConfig = {
+    // Configuración para logos
+    logo: {
+        mobile: {
+            width: 40,
+            height: 40,
+            quality: 90,
+            format: 'webp',
+            fallback: 'png'
+        },
+        desktop: {
+            width: 160,
+            height: 32,
+            quality: 90,
+            format: 'svg'
+        }
+    },
+    // Configuración para iconos
+    icons: {
+        width: 24,
+        height: 24,
+        quality: 85,
+        format: 'webp'
+    },
+    // Configuración para imágenes de productos
+    products: {
+        thumbnail: {
+            width: 300,
+            height: 300,
+            quality: 80,
+            format: 'webp'
+        },
+        full: {
+            width: 800,
+            height: 800,
+            quality: 85,
+            format: 'webp'
+        }
+    }
+};
+const getOptimizedImageProps = (src, alt, config)=>{
+    return {
+        src,
+        alt,
+        width: config.width,
+        height: config.height,
+        quality: config.quality,
+        priority: true,
+        placeholder: 'blur',
+        blurDataURL: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k='
+    };
+};
+const pinteyaMobileLogoProps = {
+    src: '/images/logo/LOGO POSITIVO.svg',
+    alt: 'Pinteya - Tu Pinturería Online',
+    width: 64,
+    height: 64,
+    priority: true,
+    className: 'rounded-xl shadow-lg',
+    style: {
+        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+    }
+};
+const pinteyaDesktopLogoProps = {
+    src: '/images/logo/LOGO POSITIVO.svg',
+    alt: 'Pinteya - Tu Pinturería Online',
+    width: 160,
+    height: 32,
+    priority: true
+};
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcdXRpbHNcXGltYWdlT3B0aW1pemF0aW9uLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG4vLyBQSU5URVlBIEUtQ09NTUVSQ0UgLSBJTUFHRSBPUFRJTUlaQVRJT04gVVRJTElUWVxuLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cblxuLyoqXG4gKiBDb25maWd1cmFjacOzbiBkZSBvcHRpbWl6YWNpw7NuIHBhcmEgaW3DoWdlbmVzIGRlbCBwcm95ZWN0b1xuICogRXNwZWNpYWxtZW50ZSBwYXJhIGxvZ29zIHkgZWxlbWVudG9zIGRlbCBoZWFkZXIgbW9iaWxlXG4gKi9cblxuZXhwb3J0IGNvbnN0IGltYWdlT3B0aW1pemF0aW9uQ29uZmlnID0ge1xuICAvLyBDb25maWd1cmFjacOzbiBwYXJhIGxvZ29zXG4gIGxvZ286IHtcbiAgICBtb2JpbGU6IHtcbiAgICAgIHdpZHRoOiA0MCxcbiAgICAgIGhlaWdodDogNDAsXG4gICAgICBxdWFsaXR5OiA5MCxcbiAgICAgIGZvcm1hdDogJ3dlYnAnIGFzIGNvbnN0LFxuICAgICAgZmFsbGJhY2s6ICdwbmcnIGFzIGNvbnN0LFxuICAgIH0sXG4gICAgZGVza3RvcDoge1xuICAgICAgd2lkdGg6IDE2MCxcbiAgICAgIGhlaWdodDogMzIsXG4gICAgICBxdWFsaXR5OiA5MCxcbiAgICAgIGZvcm1hdDogJ3N2ZycgYXMgY29uc3QsXG4gICAgfVxuICB9LFxuICBcbiAgLy8gQ29uZmlndXJhY2nDs24gcGFyYSBpY29ub3NcbiAgaWNvbnM6IHtcbiAgICB3aWR0aDogMjQsXG4gICAgaGVpZ2h0OiAyNCxcbiAgICBxdWFsaXR5OiA4NSxcbiAgICBmb3JtYXQ6ICd3ZWJwJyBhcyBjb25zdCxcbiAgfSxcbiAgXG4gIC8vIENvbmZpZ3VyYWNpw7NuIHBhcmEgaW3DoWdlbmVzIGRlIHByb2R1Y3Rvc1xuICBwcm9kdWN0czoge1xuICAgIHRodW1ibmFpbDoge1xuICAgICAgd2lkdGg6IDMwMCxcbiAgICAgIGhlaWdodDogMzAwLFxuICAgICAgcXVhbGl0eTogODAsXG4gICAgICBmb3JtYXQ6ICd3ZWJwJyBhcyBjb25zdCxcbiAgICB9LFxuICAgIGZ1bGw6IHtcbiAgICAgIHdpZHRoOiA4MDAsXG4gICAgICBoZWlnaHQ6IDgwMCxcbiAgICAgIHF1YWxpdHk6IDg1LFxuICAgICAgZm9ybWF0OiAnd2VicCcgYXMgY29uc3QsXG4gICAgfVxuICB9XG59O1xuXG4vKipcbiAqIEdlbmVyYSBsYXMgcHJvcHMgb3B0aW1pemFkYXMgcGFyYSBOZXh0LmpzIEltYWdlIGNvbXBvbmVudFxuICovXG5leHBvcnQgY29uc3QgZ2V0T3B0aW1pemVkSW1hZ2VQcm9wcyA9IChcbiAgc3JjOiBzdHJpbmcsXG4gIGFsdDogc3RyaW5nLFxuICBjb25maWc6IHR5cGVvZiBpbWFnZU9wdGltaXphdGlvbkNvbmZpZy5sb2dvLm1vYmlsZVxuKSA9PiB7XG4gIHJldHVybiB7XG4gICAgc3JjLFxuICAgIGFsdCxcbiAgICB3aWR0aDogY29uZmlnLndpZHRoLFxuICAgIGhlaWdodDogY29uZmlnLmhlaWdodCxcbiAgICBxdWFsaXR5OiBjb25maWcucXVhbGl0eSxcbiAgICBwcmlvcml0eTogdHJ1ZSwgLy8gUGFyYSBsb2dvcyBpbXBvcnRhbnRlc1xuICAgIHBsYWNlaG9sZGVyOiAnYmx1cicgYXMgY29uc3QsXG4gICAgYmx1ckRhdGFVUkw6ICdkYXRhOmltYWdlL2pwZWc7YmFzZTY0LC85ai80QUFRU2taSlJnQUJBUUFBQVFBQkFBRC8yd0JEQUFZRUJRWUZCQVlHQlFZSEJ3WUlDaEFLQ2drSkNoUU9Ed3dRRnhRWUdCY1VGaFlhSFNVZkdoc2pIQllXSUN3Z0l5WW5LU29wR1I4dE1DMG9NQ1VvS1NqLzJ3QkRBUWNIQndvSUNoTUtDaE1vR2hZYUtDZ29LQ2dvS0Nnb0tDZ29LQ2dvS0Nnb0tDZ29LQ2dvS0Nnb0tDZ29LQ2dvS0Nnb0tDZ29LQ2dvS0Nnb0tDZ29LQ2ovd0FBUkNBQUJBQUVEQVNJQUFoRUJBeEVCLzhRQUZRQUJBUUFBQUFBQUFBQUFBQUFBQUFBQUFBdi94QUFVRUFFQUFBQUFBQUFBQUFBQUFBQUFBQUFBLzhRQUZRRUJBUUFBQUFBQUFBQUFBQUFBQUFBQUFBWC94QUFVRVFFQUFBQUFBQUFBQUFBQUFBQUFBQUFBLzlvQURBTUJBQUlSQXhFQVB3Q2RBQm1YLzlrPScsXG4gIH07XG59O1xuXG4vKipcbiAqIENvbmZpZ3VyYWNpw7NuIGVzcGVjw61maWNhIHBhcmEgZWwgbG9nbyBtb2JpbGUgZGUgUGludGV5YVxuICovXG5leHBvcnQgY29uc3QgcGludGV5YU1vYmlsZUxvZ29Qcm9wcyA9IHtcbiAgc3JjOiAnL2ltYWdlcy9sb2dvL0xPR08gUE9TSVRJVk8uc3ZnJyxcbiAgYWx0OiAnUGludGV5YSAtIFR1IFBpbnR1cmVyw61hIE9ubGluZScsXG4gIHdpZHRoOiA2NCxcbiAgaGVpZ2h0OiA2NCxcbiAgcHJpb3JpdHk6IHRydWUsXG4gIGNsYXNzTmFtZTogJ3JvdW5kZWQteGwgc2hhZG93LWxnJyxcbiAgc3R5bGU6IHtcbiAgICBmaWx0ZXI6ICdkcm9wLXNoYWRvdygwIDJweCA0cHggcmdiYSgwLDAsMCwwLjEpKSdcbiAgfVxufTtcblxuLyoqXG4gKiBDb25maWd1cmFjacOzbiBlc3BlY8OtZmljYSBwYXJhIGVsIGxvZ28gZGVza3RvcCBkZSBQaW50ZXlhXG4gKi9cbmV4cG9ydCBjb25zdCBwaW50ZXlhRGVza3RvcExvZ29Qcm9wcyA9IHtcbiAgc3JjOiAnL2ltYWdlcy9sb2dvL0xPR08gUE9TSVRJVk8uc3ZnJyxcbiAgYWx0OiAnUGludGV5YSAtIFR1IFBpbnR1cmVyw61hIE9ubGluZScsXG4gIHdpZHRoOiAxNjAsXG4gIGhlaWdodDogMzIsXG4gIHByaW9yaXR5OiB0cnVlLFxufTtcbiJdLCJuYW1lcyI6WyJnZXRPcHRpbWl6ZWRJbWFnZVByb3BzIiwiaW1hZ2VPcHRpbWl6YXRpb25Db25maWciLCJwaW50ZXlhRGVza3RvcExvZ29Qcm9wcyIsInBpbnRleWFNb2JpbGVMb2dvUHJvcHMiLCJsb2dvIiwibW9iaWxlIiwid2lkdGgiLCJoZWlnaHQiLCJxdWFsaXR5IiwiZm9ybWF0IiwiZmFsbGJhY2siLCJkZXNrdG9wIiwiaWNvbnMiLCJwcm9kdWN0cyIsInRodW1ibmFpbCIsImZ1bGwiLCJzcmMiLCJhbHQiLCJjb25maWciLCJwcmlvcml0eSIsInBsYWNlaG9sZGVyIiwiYmx1ckRhdGFVUkwiLCJjbGFzc05hbWUiLCJzdHlsZSIsImZpbHRlciJdLCJtYXBwaW5ncyI6IkFBQUEsc0NBQXNDO0FBQ3RDLGtEQUFrRDtBQUNsRCxzQ0FBc0M7QUFFdEM7OztDQUdDOzs7Ozs7Ozs7OztJQWdEWUEsc0JBQXNCO2VBQXRCQTs7SUE5Q0FDLHVCQUF1QjtlQUF2QkE7O0lBaUZBQyx1QkFBdUI7ZUFBdkJBOztJQWZBQyxzQkFBc0I7ZUFBdEJBOzs7QUFsRU4sTUFBTUYsMEJBQTBCO0lBQ3JDLDJCQUEyQjtJQUMzQkcsTUFBTTtRQUNKQyxRQUFRO1lBQ05DLE9BQU87WUFDUEMsUUFBUTtZQUNSQyxTQUFTO1lBQ1RDLFFBQVE7WUFDUkMsVUFBVTtRQUNaO1FBQ0FDLFNBQVM7WUFDUEwsT0FBTztZQUNQQyxRQUFRO1lBQ1JDLFNBQVM7WUFDVEMsUUFBUTtRQUNWO0lBQ0Y7SUFFQSw0QkFBNEI7SUFDNUJHLE9BQU87UUFDTE4sT0FBTztRQUNQQyxRQUFRO1FBQ1JDLFNBQVM7UUFDVEMsUUFBUTtJQUNWO0lBRUEsMkNBQTJDO0lBQzNDSSxVQUFVO1FBQ1JDLFdBQVc7WUFDVFIsT0FBTztZQUNQQyxRQUFRO1lBQ1JDLFNBQVM7WUFDVEMsUUFBUTtRQUNWO1FBQ0FNLE1BQU07WUFDSlQsT0FBTztZQUNQQyxRQUFRO1lBQ1JDLFNBQVM7WUFDVEMsUUFBUTtRQUNWO0lBQ0Y7QUFDRjtBQUtPLE1BQU1ULHlCQUF5QixDQUNwQ2dCLEtBQ0FDLEtBQ0FDO0lBRUEsT0FBTztRQUNMRjtRQUNBQztRQUNBWCxPQUFPWSxPQUFPWixLQUFLO1FBQ25CQyxRQUFRVyxPQUFPWCxNQUFNO1FBQ3JCQyxTQUFTVSxPQUFPVixPQUFPO1FBQ3ZCVyxVQUFVO1FBQ1ZDLGFBQWE7UUFDYkMsYUFBYTtJQUNmO0FBQ0Y7QUFLTyxNQUFNbEIseUJBQXlCO0lBQ3BDYSxLQUFLO0lBQ0xDLEtBQUs7SUFDTFgsT0FBTztJQUNQQyxRQUFRO0lBQ1JZLFVBQVU7SUFDVkcsV0FBVztJQUNYQyxPQUFPO1FBQ0xDLFFBQVE7SUFDVjtBQUNGO0FBS08sTUFBTXRCLDBCQUEwQjtJQUNyQ2MsS0FBSztJQUNMQyxLQUFLO0lBQ0xYLE9BQU87SUFDUEMsUUFBUTtJQUNSWSxVQUFVO0FBQ1oifQ==
