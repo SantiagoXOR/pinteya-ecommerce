@@ -228,7 +228,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
 
       if (products.length > 0) {
         console.log('🔍 useSearchOptimized: Processing', products.length, 'products');
-        const productSuggestions = products.map((product) => {
+        const productSuggestions = products.map((product: ProductWithCategory) => {
           console.log('🔍 useSearchOptimized: Mapping product:', product.name);
           return {
             id: product.id.toString(),
