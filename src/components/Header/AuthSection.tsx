@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut, Menu } from "lucide-react";
+import { LogIn, LogOut, Menu, UserPlus } from "lucide-react";
 
 interface AuthSectionProps {
   variant?: 'desktop' | 'mobile' | 'topbar';

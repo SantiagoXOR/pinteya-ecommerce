@@ -169,16 +169,16 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     console.log('🔍 useSearchOptimized: error:', error);
     console.log('🔍 useSearchOptimized: searchResults:', searchResults);
     console.log('🔍 useSearchOptimized: searchResults type:', typeof searchResults);
-    console.log('🔍 useSearchOptimized: searchResults.data isArray:', Array.isArray(searchResults?.data));
-    console.log('🔍 useSearchOptimized: searchResults.data length:', searchResults?.data?.length);
+    console.log('🔍 useSearchOptimized: searchResults isArray:', Array.isArray(searchResults));
+    console.log('🔍 useSearchOptimized: searchResults length:', searchResults?.length);
 
     if (hasQuery) {
       // CUANDO HAY TEXTO: Priorizar productos SIEMPRE
       console.log('🔍 useSearchOptimized: *** PROCESSING QUERY MODE ***');
 
-      if (Array.isArray(searchResults?.data) && searchResults.data.length > 0) {
-        console.log('🔍 useSearchOptimized: Processing', searchResults.data.length, 'products');
-        const productSuggestions = searchResults.data.map((product) => {
+      if (Array.isArray(searchResults) && searchResults.length > 0) {
+        console.log('🔍 useSearchOptimized: Processing', searchResults.length, 'products');
+        const productSuggestions = searchResults.map((product) => {
           console.log('🔍 useSearchOptimized: Mapping product:', product.name);
           return {
             id: product.id.toString(),
@@ -195,8 +195,8 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       } else {
         console.log('🔍 useSearchOptimized: ❌ No products found or invalid searchResults');
         console.log('🔍 useSearchOptimized: searchResults details:', {
-          isArray: Array.isArray(searchResults?.data),
-          length: searchResults?.data?.length,
+          isArray: Array.isArray(searchResults),
+          length: searchResults?.length,
           value: searchResults
         });
       }
@@ -298,7 +298,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
         onSearch(searchQuery, searchResults);
       }
 
-      toastHandler.showSuccessToast(searchQuery, searchResults?.data?.length || 0);
+      toastHandler.showSuccessToast(searchQuery, searchResults?.length || 0);
       
     } catch (error) {
       console.error('❌ useSearchOptimized: Error en executeSearch:', error);
