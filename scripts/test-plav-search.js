@@ -8,7 +8,7 @@ const https = require('https');
 const http = require('http');
 
 const PRODUCTION_URL = 'https://pinteya-ecommerce.vercel.app';
-const LOCAL_URL = 'http://localhost:3001';
+const LOCAL_URL = 'http://localhost:3000';
 
 function makeRequest(url) {
   return new Promise((resolve, reject) => {
@@ -17,7 +17,11 @@ function makeRequest(url) {
     
     const startTime = Date.now();
     
-    const req = client.request(url, (res) => {
+    const req = client.request(url, {
+      headers: {
+        'User-Agent': 'Pinteya-Debug-Script/1.0 (Node.js Testing Tool)'
+      }
+    }, (res) => {
       let data = '';
       
       res.on('data', (chunk) => {
@@ -102,24 +106,49 @@ async function testSearchTerm(baseUrl, term, environment) {
 }
 
 async function main() {
-  console.log('🚀 Testing "plav" search in production vs development\n');
-  
+  console.log('🚀 Testing search functionality: LOCAL vs PRODUCTION\n');
+
   const searchTerms = ['plav', 'plavicon', 'pintura', 'latex'];
-  
+
   for (const term of searchTerms) {
-    console.log(`\n${'='.repeat(50)}`);
+    console.log(`\n${'='.repeat(60)}`);
     console.log(`🔍 TESTING TERM: "${term}"`);
-    console.log(`${'='.repeat(50)}`);
-    
-    // Test en producción
-    await testSearchTerm(PRODUCTION_URL, term, 'production');
-    
+    console.log(`${'='.repeat(60)}`);
+
+    // Test en desarrollo local
+    console.log('\n📍 DESARROLLO LOCAL (localhost:3000)');
+    const localResult = await testSearchTerm(LOCAL_URL, term, 'development');
+
     // Pausa entre requests
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Test en producción
+    console.log('\n📍 PRODUCCIÓN (Vercel)');
+    const prodResult = await testSearchTerm(PRODUCTION_URL, term, 'production');
+
+    // Comparar resultados
+    console.log('\n📊 COMPARACIÓN:');
+    if (localResult.success && prodResult.success) {
+      const localCount = localResult.data?.data?.length || 0;
+      const prodCount = prodResult.data?.data?.length || 0;
+
+      if (localCount === prodCount) {
+        console.log(`✅ Consistente: ${localCount} productos en ambos entornos`);
+      } else {
+        console.log(`⚠️  Diferencia: Local=${localCount}, Producción=${prodCount}`);
+      }
+    } else {
+      console.log(`❌ Error en algún entorno: Local=${localResult.success}, Prod=${prodResult.success}`);
+    }
+
+    // Pausa entre términos
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
-  
-  console.log(`\n✅ Testing completed!`);
-  console.log(`💡 Compare results to identify differences between environments`);
+
+  console.log(`\n${'='.repeat(60)}`);
+  console.log(`✅ Testing completed!`);
+  console.log(`💡 Review comparison results above for any inconsistencies`);
+  console.log(`${'='.repeat(60)}`);
 }
 
 if (require.main === module) {
