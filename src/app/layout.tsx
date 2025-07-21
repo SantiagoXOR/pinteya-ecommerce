@@ -29,7 +29,7 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-          <JsonSafetyInitializer />
+          {/* <JsonSafetyInitializer /> */}
           {children}
         </Providers>
       </body>

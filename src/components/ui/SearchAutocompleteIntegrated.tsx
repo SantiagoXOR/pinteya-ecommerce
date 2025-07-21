@@ -70,6 +70,7 @@ export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, S
     console.log('🔍 SearchAutocompleteIntegrated: Hook state:', {
       query,
       suggestions: suggestions?.length || 0,
+      suggestionsDetailed: suggestions?.map(s => ({ type: s.type, title: s.title })) || [],
       isLoading,
       error,
       results: results?.length || 0
