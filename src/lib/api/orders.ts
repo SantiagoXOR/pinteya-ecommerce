@@ -36,7 +36,15 @@ export async function createOrder(orderData: CreateOrderRequest): Promise<ApiRes
       return {
         data: null,
         success: false,
-        error: result.error || 'Error creando orden',
+        error: result?.error || 'Error creando orden',
+      };
+    }
+
+    if (!result) {
+      return {
+        data: null,
+        success: false,
+        error: 'Error: respuesta nula del servidor',
       };
     }
 
@@ -69,7 +77,15 @@ export async function getOrderStatus(orderId: string): Promise<ApiResponse<any>>
       return {
         data: null,
         success: false,
-        error: result.error || 'Error obteniendo estado de orden',
+        error: result?.error || 'Error obteniendo estado de orden',
+      };
+    }
+
+    if (!result) {
+      return {
+        data: null,
+        success: false,
+        error: 'Error: respuesta nula del servidor',
       };
     }
 
@@ -110,7 +126,15 @@ export async function updateOrderStatus(
       return {
         data: null,
         success: false,
-        error: result.error || 'Error actualizando estado de orden',
+        error: result?.error || 'Error actualizando estado de orden',
+      };
+    }
+
+    if (!result) {
+      return {
+        data: null,
+        success: false,
+        error: 'Error: respuesta nula del servidor',
       };
     }
 
@@ -143,7 +167,15 @@ export async function getUserOrders(): Promise<ApiResponse<any[]>> {
       return {
         data: [],
         success: false,
-        error: result.error || 'Error obteniendo órdenes',
+        error: result?.error || 'Error obteniendo órdenes',
+      };
+    }
+
+    if (!result) {
+      return {
+        data: [],
+        success: false,
+        error: 'Error: respuesta nula del servidor',
       };
     }
 
@@ -176,7 +208,15 @@ export async function getUserOrder(orderId: string): Promise<ApiResponse<any>> {
       return {
         data: null,
         success: false,
-        error: result.error || 'Error obteniendo orden',
+        error: result?.error || 'Error obteniendo orden',
+      };
+    }
+
+    if (!result) {
+      return {
+        data: null,
+        success: false,
+        error: 'Error: respuesta nula del servidor',
       };
     }
 

@@ -68,6 +68,23 @@ export async function getProducts(filters?: ProductFilters): Promise<PaginatedRe
       };
     }
 
+    if (!result.data) {
+      console.error('❌ Result data is null');
+
+      // Return a fallback response instead of throwing
+      return {
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 12,
+          total: 0,
+          totalPages: 0,
+        },
+        success: false,
+        message: 'Error: respuesta nula del servidor',
+      };
+    }
+
     if (DEBUG_MODE) {
       console.log('✅ Products loaded successfully:', result.data?.data?.length || 0, 'items');
     }
@@ -107,8 +124,8 @@ export async function getProductById(id: number): Promise<ApiResponse<ProductWit
     // Usar parsing seguro de JSON
     const result = await safeApiResponseJson<ApiResponse<ProductWithCategory>>(response);
 
-    if (!result.success) {
-      throw new Error(result.error || 'Error parsing API response');
+    if (!result || !result.success || !result.data) {
+      throw new Error(result?.error || 'Error parsing API response');
     }
 
     return result.data;
@@ -222,8 +239,8 @@ export async function getRelatedProducts(
     // Usar parsing seguro de JSON
     const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response);
 
-    if (!result.success) {
-      throw new Error(result.error || 'Error parsing API response');
+    if (!result || !result.success || !result.data) {
+      throw new Error(result?.error || 'Error parsing API response');
     }
 
     const data = result.data;

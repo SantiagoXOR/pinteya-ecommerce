@@ -40,8 +40,8 @@ export async function getBrands(filters?: BrandFilters): Promise<ApiResponse<Bra
     // Usar parsing seguro de JSON
     const result = await safeApiResponseJson<ApiResponse<Brand[]>>(response);
 
-    if (!result.success) {
-      throw new Error(result.error || 'Error parsing API response');
+    if (!result || !result.success || !result.data) {
+      throw new Error(result?.error || 'Error parsing API response');
     }
 
     return result.data;
@@ -67,8 +67,8 @@ export async function getBrandStats(): Promise<ApiResponse<any[]>> {
     // Usar parsing seguro de JSON
     const result = await safeApiResponseJson<ApiResponse<any[]>>(response);
 
-    if (!result.success) {
-      throw new Error(result.error || 'Error parsing API response');
+    if (!result || !result.success || !result.data) {
+      throw new Error(result?.error || 'Error parsing API response');
     }
 
     return result.data;
@@ -131,8 +131,8 @@ export async function getProductsByBrand(
   // Usar parsing seguro de JSON
   const result = await safeApiResponseJson(response);
 
-  if (!result.success) {
-    throw new Error(result.error || 'Error parsing API response');
+  if (!result || !result.success || !result.data) {
+    throw new Error(result?.error || 'Error parsing API response');
   }
 
   return result.data;
