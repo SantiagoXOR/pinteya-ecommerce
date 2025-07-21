@@ -2,7 +2,7 @@
 // HOOK: useSearchOptimized - Sistema de búsqueda con TanStack Query
 // ===================================
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import { searchProducts } from '@/lib/api/products';
@@ -135,18 +135,40 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     queryFn: async ({ queryKey, signal }) => {
       const [, , searchQuery] = queryKey;
       if (!searchQuery?.trim()) return [];
-      
+
+      console.log('🔍 useSearchOptimized: *** TanStack Query EXECUTING ***');
       console.log('🔍 useSearchOptimized: Executing search for:', searchQuery);
 
-      // AbortController para cancelar requests (nota: searchProducts no soporta signal aún)
-      const response = await searchProducts(searchQuery, maxSuggestions);
-      console.log('🔍 useSearchOptimized: API response:', response);
-      console.log('🔍 useSearchOptimized: Response data:', response.data);
-      console.log('🔍 useSearchOptimized: Response success:', response.success);
-      return response.data || [];
+      try {
+        // Usar la API de búsqueda correcta
+        const url = `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${maxSuggestions}`;
+        console.log('🔍 useSearchOptimized: Making API call to:', url);
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal, // Usar AbortController
+        });
+
+        if (!response.ok) {
+          console.error('🔍 useSearchOptimized: API response not ok:', response.status);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('🔍 useSearchOptimized: API response received:', data);
+        console.log('🔍 useSearchOptimized: Products count:', data.products?.length || 0);
+
+        return data.products || [];
+      } catch (error) {
+        console.error('🔍 useSearchOptimized: API call failed:', error);
+        throw error;
+      }
     },
     enabled: (() => {
-      const isEnabled = !!debouncedQuery?.trim() && debouncedQuery.length >= 1;
+      const isEnabled = !!debouncedQuery?.trim() && debouncedQuery.length >= 2;
       console.log('🔍 useSearchOptimized: Query enabled condition:', isEnabled, 'for query:', debouncedQuery);
       return isEnabled;
     })(),
@@ -157,7 +179,16 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
   // SUGGESTIONS GENERATION
   // ===================================
 
-  const suggestions: SearchSuggestion[] = (() => {
+  console.log('🔍 useSearchOptimized: *** ABOUT TO GENERATE SUGGESTIONS ***');
+  console.log('🔍 useSearchOptimized: Current state before suggestions:', {
+    query,
+    debouncedQuery,
+    searchResults: searchResults?.length || 0,
+    isLoading,
+    error: !!error
+  });
+
+  const suggestions: SearchSuggestion[] = useMemo(() => {
     const allSuggestions: SearchSuggestion[] = [];
     const hasQuery = !!debouncedQuery?.trim();
 
@@ -176,9 +207,28 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       // CUANDO HAY TEXTO: Priorizar productos SIEMPRE
       console.log('🔍 useSearchOptimized: *** PROCESSING QUERY MODE ***');
 
-      if (Array.isArray(searchResults) && searchResults.length > 0) {
-        console.log('🔍 useSearchOptimized: Processing', searchResults.length, 'products');
-        const productSuggestions = searchResults.map((product) => {
+      // Extraer productos de la respuesta de la API
+      let products = [];
+
+      // Si searchResults es un array directamente
+      if (Array.isArray(searchResults)) {
+        products = searchResults;
+        console.log('🔍 useSearchOptimized: ✅ searchResults is direct array, length:', products.length);
+      }
+      // Si searchResults es un objeto con propiedad data (respuesta de API)
+      else if (searchResults && typeof searchResults === 'object' && Array.isArray(searchResults.data)) {
+        products = searchResults.data;
+        console.log('🔍 useSearchOptimized: ✅ searchResults.data is array, length:', products.length);
+      }
+      // Si searchResults es un objeto con propiedad products
+      else if (searchResults && typeof searchResults === 'object' && Array.isArray(searchResults.products)) {
+        products = searchResults.products;
+        console.log('🔍 useSearchOptimized: ✅ searchResults.products is array, length:', products.length);
+      }
+
+      if (products.length > 0) {
+        console.log('🔍 useSearchOptimized: Processing', products.length, 'products');
+        const productSuggestions = products.map((product) => {
           console.log('🔍 useSearchOptimized: Mapping product:', product.name);
           return {
             id: product.id.toString(),
@@ -193,11 +243,14 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
         allSuggestions.push(...productSuggestions);
         console.log('🔍 useSearchOptimized: ✅ Added', productSuggestions.length, 'product suggestions');
       } else {
-        console.log('🔍 useSearchOptimized: ❌ No products found or invalid searchResults');
-        console.log('🔍 useSearchOptimized: searchResults details:', {
+        console.log('🔍 useSearchOptimized: ❌ No products found in searchResults');
+        console.log('🔍 useSearchOptimized: searchResults structure:', {
           isArray: Array.isArray(searchResults),
-          length: searchResults?.length,
-          value: searchResults
+          hasData: searchResults?.data ? 'yes' : 'no',
+          hasProducts: searchResults?.products ? 'yes' : 'no',
+          dataLength: searchResults?.data?.length,
+          productsLength: searchResults?.products?.length,
+          keys: searchResults ? Object.keys(searchResults) : 'null'
         });
       }
 
@@ -250,7 +303,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     console.log('🔍 useSearchOptimized: === END SUGGESTIONS ===');
 
     return finalSuggestions;
-  })();
+  }, [debouncedQuery, searchResults, isLoading, error, maxSuggestions, trendingSearches]);
 
   console.log('🔍 useSearchOptimized: Generated suggestions:', suggestions.length, suggestions);
 
