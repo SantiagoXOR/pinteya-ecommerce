@@ -97,7 +97,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
     showTrendingSearches = true,
     maxSuggestions = 8,
     debounceMs = 300,
-    placeholder = "Busco productos de pinturería...",
+    placeholder = "Látex interior blanco 20lts, rodillos, pinceles...",
     // Props opcionales para integración con hooks externos
     query: externalQuery,
     suggestions: externalSuggestions,
@@ -344,7 +344,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
         case 'recent':
           return <Clock className="w-4 h-4 text-gray-400" />;
         case 'trending':
-          return <TrendingUp className="w-4 h-4 text-primary" />;
+          return <TrendingUp className="w-4 h-4 text-fun-green-600" />;
         case 'product':
           return <Package className="w-4 h-4 text-gray-600" />;
         default:
@@ -369,7 +369,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
               className={cn(
                 "w-full rounded-r-[5px] bg-gray-1 border border-gray-3 py-2.5 pl-4 pr-10 outline-none transition-all duration-200",
                 "focus:border-primary/50 focus:ring-2 focus:ring-primary/20",
-                "placeholder:text-gray-500",
+                "placeholder:text-gray-400 placeholder:font-normal",
                 size === "sm" && "py-2 text-sm",
                 size === "lg" && "py-3 text-lg"
               )}
@@ -410,7 +410,8 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
           {isOpen && (
             <div
               ref={dropdownRef}
-              className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-96 overflow-y-auto"
+              className="absolute top-full left-0 right-0 z-50 mt-1 rounded-md shadow-lg max-h-96 overflow-y-auto"
+              style={{ backgroundColor: '#fff3c5' }}
               role="listbox"
               aria-label="Search suggestions"
             >
@@ -432,7 +433,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                   {/* Secciones de sugerencias */}
                   {showRecentSearches && suggestions.some(s => s.type === 'recent') && (
                     <div className="px-3 py-2">
-                      <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                      <h4 className="text-xs font-medium text-fun-green-700 uppercase tracking-wide mb-2">
                         Búsquedas recientes
                       </h4>
                       {suggestions
@@ -443,8 +444,8 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                             onClick={() => handleSuggestionSelect(suggestion)}
                             onMouseEnter={() => setSelectedIndex(suggestions.indexOf(suggestion))}
                             className={cn(
-                              "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-md transition-colors",
-                              selectedIndex === suggestions.indexOf(suggestion) && "bg-primary/10"
+                              "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-white/50 hover:border-l-2 hover:border-fun-green-500 rounded-md transition-all duration-200",
+                              selectedIndex === suggestions.indexOf(suggestion) && "bg-white/70 border-l-2 border-fun-green-600"
                             )}
                             role="option"
                             aria-selected={selectedIndex === suggestions.indexOf(suggestion)}
@@ -458,8 +459,8 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
 
                   {/* Productos */}
                   {suggestions.some(s => s.type === 'product') && (
-                    <div className="px-3 py-2 border-t border-gray-100">
-                      <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    <div className="px-3 py-2">
+                      <h4 className="text-xs font-medium text-fun-green-700 uppercase tracking-wide mb-2">
                         Productos
                       </h4>
                       {suggestions
@@ -470,8 +471,8 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                             onClick={() => handleSuggestionSelect(suggestion)}
                             onMouseEnter={() => setSelectedIndex(suggestions.indexOf(suggestion))}
                             className={cn(
-                              "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-md transition-colors",
-                              selectedIndex === suggestions.indexOf(suggestion) && "bg-primary/10"
+                              "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-white/50 hover:border-l-2 hover:border-fun-green-500 rounded-md transition-all duration-200",
+                              selectedIndex === suggestions.indexOf(suggestion) && "bg-white/70 border-l-2 border-fun-green-600"
                             )}
                             role="option"
                             aria-selected={selectedIndex === suggestions.indexOf(suggestion)}
@@ -494,7 +495,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                                 {suggestion.title}
                               </div>
                               {suggestion.subtitle && (
-                                <div className="text-xs text-gray-500 truncate">
+                                <div className="text-xs text-fun-green-600 truncate font-medium">
                                   {suggestion.subtitle}
                                 </div>
                               )}
@@ -511,8 +512,8 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
 
                   {/* Trending */}
                   {showTrendingSearches && suggestions.some(s => s.type === 'trending') && !query.trim() && (
-                    <div className="px-3 py-2 border-t border-gray-100">
-                      <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    <div className="px-3 py-2">
+                      <h4 className="text-xs font-medium text-fun-green-700 uppercase tracking-wide mb-2">
                         Búsquedas populares
                       </h4>
                       {suggestions
@@ -523,8 +524,8 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
                             onClick={() => handleSuggestionSelect(suggestion)}
                             onMouseEnter={() => setSelectedIndex(suggestions.indexOf(suggestion))}
                             className={cn(
-                              "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 rounded-md transition-colors",
-                              selectedIndex === suggestions.indexOf(suggestion) && "bg-primary/10"
+                              "w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-white/50 hover:border-l-2 hover:border-fun-green-500 rounded-md transition-all duration-200",
+                              selectedIndex === suggestions.indexOf(suggestion) && "bg-white/70 border-l-2 border-fun-green-600"
                             )}
                             role="option"
                             aria-selected={selectedIndex === suggestions.indexOf(suggestion)}

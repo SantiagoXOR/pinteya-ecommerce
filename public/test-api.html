@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Pinteya</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #ea5a17;
+            text-align: center;
+        }
+        button {
+            background: #ea5a17;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #d14d0f;
+        }
+        .success {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            background: #2196F3;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .loading {
+            background: #ff9800;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test API - Pinteya</h1>
+        
+        <div class="info">
+            <strong>Propósito:</strong><br>
+            Esta página prueba la API de productos para verificar que no hay errores JSON.
+        </div>
+
+        <h3>Tests Disponibles:</h3>
+        
+        <button onclick="testProductsAPI()">🛍️ Test Products API</button>
+        <button onclick="testCategoriesAPI()">📂 Test Categories API</button>
+        <button onclick="testBrandsAPI()">🏷️ Test Brands API</button>
+        <button onclick="clearResults()">🧹 Limpiar Resultados</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            results.appendChild(div);
+            
+            // Auto-scroll to results
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testProductsAPI() {
+            showResult('<strong>🧪 Testing Products API...</strong>', 'loading');
+            
+            try {
+                console.log('🔍 Starting products API test...');
+                
+                const response = await fetch('/api/products?limit=5', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('📡 Response received:', response.status, response.statusText);
+
+                const text = await response.text();
+                console.log('📄 Raw response text:', text);
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                    console.log('✅ JSON parsed successfully:', data);
+                } catch (parseError) {
+                    console.error('❌ JSON parse error:', parseError);
+                    showResult(`❌ JSON Parse Error: ${parseError.message}<br><strong>Raw response:</strong><pre>${text}</pre>`, 'error');
+                    return;
+                }
+
+                if (response.ok) {
+                    showResult(`✅ Products API Success<br><strong>Status:</strong> ${response.status}<br><strong>Products found:</strong> ${data.data?.length || 0}<br><strong>Response:</strong><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult(`❌ Products API Error<br><strong>Status:</strong> ${response.status}<br><strong>Error:</strong> ${data.error || 'Unknown error'}<br><strong>Response:</strong><pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Test error:', error);
+                showResult(`❌ Test Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCategoriesAPI() {
+            showResult('<strong>🧪 Testing Categories API...</strong>', 'loading');
+            
+            try {
+                const response = await fetch('/api/categories', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const text = await response.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(text);
+                } catch (parseError) {
+                    showResult(`❌ JSON Parse Error: ${parseError.message}<br><strong>Raw response:</strong><pre>${text}</pre>`, 'error');
+                    return;
+                }
+
+                if (response.ok) {
+                    showResult(`✅ Categories API Success<br><strong>Status:</strong> ${response.status}<br><strong>Categories found:</strong> ${data.data?.length || 0}<br><strong>Response:</strong><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult(`❌ Categories API Error<br><strong>Status:</strong> ${response.status}<br><strong>Error:</strong> ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Test Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBrandsAPI() {
+            showResult('<strong>🧪 Testing Brands API...</strong>', 'loading');
+            
+            try {
+                const response = await fetch('/api/brands', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const text = await response.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(text);
+                } catch (parseError) {
+                    showResult(`❌ JSON Parse Error: ${parseError.message}<br><strong>Raw response:</strong><pre>${text}</pre>`, 'error');
+                    return;
+                }
+
+                if (response.ok) {
+                    showResult(`✅ Brands API Success<br><strong>Status:</strong> ${response.status}<br><strong>Brands found:</strong> ${data.data?.length || 0}<br><strong>Response:</strong><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult(`❌ Brands API Error<br><strong>Status:</strong> ${response.status}<br><strong>Error:</strong> ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Test Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test products API on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testProductsAPI();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

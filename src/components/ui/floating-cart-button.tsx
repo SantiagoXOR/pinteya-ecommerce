@@ -3,7 +3,7 @@
 import React from "react";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { cn } from "@/lib/utils";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { useAppSelector } from "@/redux/store";
@@ -28,19 +28,17 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({
     openCartModal();
   };
 
-  // No mostrar el botón si no hay items en el carrito
-  if (!hasCartItems) {
-    return null;
-  }
+  // En mobile siempre mostrar el botón (incluso sin items para consistencia UX)
 
   return (
     <Button
       onClick={handleCartClick}
+      data-testid="floating-cart-icon"
       className={cn(
-        // Posicionamiento flotante
-        "fixed bottom-6 right-6 z-floating",
+        // Posicionamiento flotante - Solo visible en mobile
+        "fixed bottom-6 right-6 z-floating sm:hidden",
         // Estilos del botón (similar al ProductCard)
-        "bg-yellow-400 hover:bg-yellow-500 text-black font-bold",
+        "bg-yellow-400 hover:bg-yellow-500 text-blaze-orange-600 font-bold",
         "rounded-xl shadow-lg hover:shadow-xl",
         "transition-all duration-300 ease-in-out",
         "transform hover:scale-105 active:scale-95",
@@ -51,33 +49,38 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({
         "backdrop-blur-sm",
         className
       )}
+      style={{ color: '#ea5a17' }}
     >
       <div className="flex items-center gap-3">
         {/* Icono del carrito */}
         <div className="relative">
-          <ShoppingCart className="w-6 h-6" />
+          <ShoppingCart className="w-6 h-6" style={{ color: '#ea5a17' }} />
           {/* Badge con contador */}
-          <Badge 
-            variant="destructive" 
-            className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold bg-red-500 hover:bg-red-600"
-          >
-            {cartItemCount}
-          </Badge>
+          {cartItemCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-fun-green-500 hover:bg-fun-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-badge shadow-sm border border-white">
+              {cartItemCount}
+            </span>
+          )}
         </div>
 
         {/* Texto y precio */}
         <div className="flex flex-col items-start">
           <span className="text-sm font-bold leading-none">
-            {cartItemCount} {cartItemCount === 1 ? 'producto' : 'productos'}
+            {hasCartItems
+              ? `${cartItemCount} ${cartItemCount === 1 ? 'producto' : 'productos'}`
+              : 'Carrito'
+            }
           </span>
           <span className="text-lg font-black leading-none">
-            ${totalPrice.toLocaleString()}
+            {hasCartItems ? `$${totalPrice.toLocaleString()}` : 'Vacío'}
           </span>
         </div>
       </div>
 
-      {/* Efecto de pulso para llamar la atención */}
-      <div className="absolute inset-0 rounded-xl bg-yellow-400 opacity-75 animate-ping"></div>
+      {/* Efecto de pulso para llamar la atención - Solo cuando hay items */}
+      {hasCartItems && (
+        <div className="absolute inset-0 rounded-xl bg-yellow-400 opacity-75 animate-ping"></div>
+      )}
     </Button>
   );
 };

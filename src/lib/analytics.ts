@@ -360,7 +360,21 @@ class AnalyticsManager {
   private storeEventForRetry(event: AnalyticsEvent): void {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        const failedEvents = JSON.parse(localStorage.getItem('analytics_failed_events') || '[]');
+        // Usar parsing seguro para evitar errores JSON
+        const stored = localStorage.getItem('analytics_failed_events') || '[]';
+        let failedEvents: AnalyticsEvent[] = [];
+
+        try {
+          failedEvents = JSON.parse(stored);
+          // Verificar que sea un array válido
+          if (!Array.isArray(failedEvents)) {
+            failedEvents = [];
+          }
+        } catch (parseError) {
+          console.warn('Error parsing analytics failed events, resetting:', parseError);
+          failedEvents = [];
+        }
+
         failedEvents.push(event);
 
         // Limitar a los últimos 50 eventos fallidos
@@ -372,6 +386,7 @@ class AnalyticsManager {
       }
     } catch (error) {
       // Ignorar errores de localStorage
+      console.warn('Error storing analytics event for retry:', error);
     }
   }
 

@@ -208,7 +208,37 @@ export async function GET(request: NextRequest) {
 // Método POST para registrar una búsqueda (para analytics)
 export async function POST(request: NextRequest) {
   try {
-    const { query, category, userId, sessionId } = await request.json();
+    // Validar que el request tenga contenido
+    const contentType = request.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return NextResponse.json(
+        { error: 'Content-Type debe ser application/json' },
+        { status: 400 }
+      );
+    }
+
+    // Obtener el texto del body primero para validar
+    const bodyText = await request.text();
+    if (!bodyText || bodyText.trim() === '' || bodyText === '""' || bodyText === "''") {
+      return NextResponse.json(
+        { error: 'Body de la request no puede estar vacío' },
+        { status: 400 }
+      );
+    }
+
+    // Parsear JSON de forma segura
+    let requestData;
+    try {
+      requestData = JSON.parse(bodyText);
+    } catch (parseError) {
+      console.error('Error parsing JSON in POST /api/search/trending:', parseError);
+      return NextResponse.json(
+        { error: 'JSON inválido en el body de la request' },
+        { status: 400 }
+      );
+    }
+
+    const { query, category, userId, sessionId } = requestData;
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json(

@@ -28,7 +28,7 @@ const TopBar = () => {
   const currentZone = detectedZone || deliveryZones.find(zone => zone.id === "cordoba-capital");
 
   return (
-    <div className="bg-blaze-orange text-white border-b border-blaze-orange-600 hidden lg:block topbar-slide relative z-topbar">
+    <div className="bg-blaze-orange text-white border-b border-blaze-orange-600 hidden lg:block topbar-slide relative z-topbar transition-all duration-300 hover:bg-blaze-orange-500">
       <div className="max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-2">
           {/* Información de contacto - Izquierda */}
@@ -36,10 +36,10 @@ const TopBar = () => {
             {/* Teléfono clickeable - NÚMERO CORREGIDO */}
             <Link
               href="tel:+5493513411796"
-              className="flex items-center gap-2 hover:text-accent-200 transition-colors duration-200"
+              className="flex items-center gap-2 hover:text-accent-200 transition-all duration-200 hover:scale-105 group focus-ring"
             >
-              <Phone className="w-4 h-4" />
-              <span className="text-sm font-medium">
+              <Phone className="w-4 h-4 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12" />
+              <span className="text-sm font-medium transition-colors duration-200">
                 (351) 341-1796
               </span>
             </Link>
@@ -48,9 +48,9 @@ const TopBar = () => {
             <span className="w-px h-4 bg-accent-500"></span>
 
             {/* Asesoramiento 24/7 */}
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-fun-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium">Asesoramiento 24/7</span>
+            <div className="flex items-center gap-2 transition-all duration-200 hover:scale-105">
+              <div className="w-2 h-2 bg-fun-green-400 rounded-full animate-pulse hover:animate-bounce"></div>
+              <span className="text-sm font-medium transition-colors duration-200 hover:text-fun-green-200">Asesoramiento 24/7</span>
             </div>
 
             {/* Separador */}
@@ -78,7 +78,7 @@ const TopBar = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:text-accent-200 hover:bg-accent-700 gap-2 px-3 py-1"
+                  className="text-white hover:text-accent-200 hover:bg-accent-700 gap-2 px-3 py-1 transition-all duration-200 hover:scale-105 group focus-ring"
                   aria-expanded="false"
                   aria-haspopup="menu"
                   data-testid="delivery-zone-selector"
@@ -86,26 +86,26 @@ const TopBar = () => {
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-4 h-4 transition-transform duration-200 group-hover:scale-110 group-hover:text-fun-green-300" />
                   )}
-                  <span className="text-sm">
-                    Envíos a {currentZone?.name || 'Seleccionar zona'}
+                  <span className="text-sm transition-colors duration-200">
+                    Envíos en {currentZone?.name || 'Seleccionar zona'}
                   </span>
-                  <ChevronDown className="w-3 h-3" />
+                  <ChevronDown className="w-3 h-3 transition-transform duration-200 group-hover:rotate-180" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64" data-testid="delivery-zone-dropdown">
+              <DropdownMenuContent align="end" className="w-64 search-suggestions-fade" data-testid="delivery-zone-dropdown">
                 {/* Opción de geolocalización */}
                 {permissionStatus !== 'granted' && !detectedZone && (
                   <>
                     <DropdownMenuItem
                       onClick={requestLocation}
-                      className="flex items-center gap-2 py-3 text-primary-600 hover:text-primary-700"
+                      className="flex items-center gap-2 py-3 text-primary-600 hover:text-primary-700 dropdown-item-hover transition-all duration-200 hover:scale-105 group"
                     >
-                      <Navigation className="w-4 h-4" />
+                      <Navigation className="w-4 h-4 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12" />
                       <div className="flex flex-col">
-                        <span className="font-medium">Detectar mi ubicación</span>
-                        <span className="text-xs text-gray-500">
+                        <span className="font-medium transition-colors duration-200">Detectar mi ubicación</span>
+                        <span className="text-xs text-gray-500 transition-colors duration-200">
                           Para mostrar la zona más cercana
                         </span>
                       </div>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { User, ShoppingCart, LogIn } from "lucide-react";
+import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +44,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   variant = "header"
 }) => {
   // Integración con Clerk
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn, user, isLoaded } = useUser();
 
   // Integración con carrito
   const { openCartModal } = useCartModalContext();
@@ -54,6 +55,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   const handleCartClick = () => {
     openCartModal();
   };
+
+  // Componente skeleton para estado de carga
+  const AuthSkeleton = () => (
+    <div className="flex items-center gap-2">
+      <div className="h-8 w-24 bg-white/20 rounded animate-pulse" />
+    </div>
+  );
 
   if (variant === "mobile") {
     return (
@@ -66,11 +74,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           className="relative p-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200"
           data-testid="cart-icon"
         >
-          <ShoppingCart className="w-5 h-5" />
+          <Image
+            src="/images/categories/carrito.png"
+            alt="Carrito"
+            width={20}
+            height={20}
+            className="w-5 h-5"
+          />
           {cartItemCount > 0 && (
             <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold bg-red-500 hover:bg-red-600"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md"
+              style={{ backgroundColor: '#007639' }}
             >
               {cartItemCount}
             </Badge>
@@ -78,7 +92,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         </Button>
 
         {/* Usuario móvil con integración Clerk */}
-        {isSignedIn ? (
+        {!isLoaded ? (
+          <AuthSkeleton />
+        ) : isSignedIn ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="p-1 hover:bg-bright-sun hover:text-black transition-all duration-200 rounded-full">
@@ -131,11 +147,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       >
         <div className="flex items-center gap-2">
           <div className="relative">
-            <ShoppingCart className="w-5 h-5" />
+            <Image
+              src="/images/categories/carrito.png"
+              alt="Carrito"
+              width={20}
+              height={20}
+              className="w-5 h-5"
+            />
             {cartItemCount > 0 && (
               <Badge
-                variant="destructive"
-                className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold bg-red-500 hover:bg-red-600"
+                className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md"
+                style={{ backgroundColor: '#007639' }}
               >
                 {cartItemCount}
               </Badge>
@@ -148,7 +170,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       </Button>
 
       {/* Usuario desktop */}
-      {isSignedIn ? (
+      {!isLoaded ? (
+        <AuthSkeleton />
+      ) : isSignedIn ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 px-3 py-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200 rounded-full">

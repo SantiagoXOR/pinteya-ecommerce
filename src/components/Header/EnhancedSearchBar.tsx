@@ -13,14 +13,14 @@ import {
 import { SearchAutocompleteIntegrated } from "@/components/ui/SearchAutocompleteIntegrated";
 import { type SearchSuggestion } from "@/hooks/useSearch";
 
-// Definición de categorías con iconos
+// Definición de categorías con iconos y placeholders profesionales
 const categories = [
-  { id: "all", name: "Todas las Categorías", icon: Package, placeholder: "Busco productos de pinturería..." },
-  { id: "pinturas", name: "Pinturas", icon: Palette, placeholder: "Busco pinturas..." },
-  { id: "herramientas", name: "Herramientas", icon: Wrench, placeholder: "Busco herramientas..." },
-  { id: "accesorios", name: "Accesorios", icon: Package, placeholder: "Busco accesorios..." },
-  { id: "barnices", name: "Barnices", icon: Sparkles, placeholder: "Busco barnices..." },
-  { id: "esmaltes", name: "Esmaltes", icon: Brush, placeholder: "Busco esmaltes..." },
+  { id: "all", name: "Todas las Categorías", icon: Package, placeholder: "Látex interior blanco 20lts, rodillos, pinceles..." },
+  { id: "pinturas", name: "Pinturas", icon: Palette, placeholder: "Látex Sherwin Williams, esmalte sintético..." },
+  { id: "herramientas", name: "Herramientas", icon: Wrench, placeholder: "Rodillos premium, pinceles profesionales..." },
+  { id: "accesorios", name: "Accesorios", icon: Package, placeholder: "Bandejas, extensores, cintas de papel..." },
+  { id: "barnices", name: "Barnices", icon: Sparkles, placeholder: "Barniz marino, poliuretánico brillante..." },
+  { id: "esmaltes", name: "Esmaltes", icon: Brush, placeholder: "Esmalte sintético blanco, antióxido rojo..." },
 ];
 
 interface EnhancedSearchBarProps {

@@ -4,6 +4,7 @@
 
 import { ApiResponse } from '@/types/api';
 import { CreateOrderRequest } from '@/types/mercadopago';
+import { safeApiResponseJson } from '@/lib/json-utils';
 
 /**
  * Crea una nueva orden y preferencia de pago
@@ -18,7 +19,18 @@ export async function createOrder(orderData: CreateOrderRequest): Promise<ApiRes
       body: JSON.stringify(orderData),
     });
 
-    const result = await response.json();
+    // Usar parsing seguro de JSON
+    const parseResult = await safeApiResponseJson<ApiResponse<any>>(response);
+
+    if (!parseResult.success) {
+      return {
+        data: null,
+        success: false,
+        error: parseResult.error || 'Error parsing API response',
+      };
+    }
+
+    const result = parseResult.data;
 
     if (!response.ok) {
       return {

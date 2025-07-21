@@ -154,7 +154,7 @@ describe('Header Integration Tests', () => {
       expect(screen.getByPlaceholderText('latex interior blanco 20lts')).toBeInTheDocument();
 
       // Verificar ubicación
-      expect(screen.getByText(/Envíos a/)).toBeInTheDocument();
+      expect(screen.getByText(/Envíos en/)).toBeInTheDocument();
       expect(screen.getByText('Córdoba Capital')).toBeInTheDocument();
 
       // Verificar autenticación
@@ -242,7 +242,7 @@ describe('Header Integration Tests', () => {
         </TestWrapper>
       );
 
-      const locationButton = screen.getByText(/Envíos a/).closest('div');
+      const locationButton = screen.getByText(/Envíos en/).closest('div');
       fireEvent.click(locationButton!);
 
       expect(mockRequestLocation).toHaveBeenCalled();
@@ -346,7 +346,7 @@ describe('Header Integration Tests', () => {
         </TestWrapper>
       );
 
-      const locationElement = screen.getByText(/Envíos a/).closest('div');
+      const locationElement = screen.getByText(/Envíos en/).closest('div');
       fireEvent.click(locationElement!);
 
       expect(mockRequestLocation).toHaveBeenCalled();

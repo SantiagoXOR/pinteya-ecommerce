@@ -27,7 +27,7 @@ export interface SearchAutocompleteIntegratedProps
  */
 export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, SearchAutocompleteIntegratedProps>(
   ({
-    debounceMs = 150,
+    debounceMs = 100,
     maxSuggestions = 6,
     searchLimit = 12,
     saveRecentSearches = true,
@@ -64,6 +64,15 @@ export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, S
         onSuggestionSelected?.(suggestion);
         onSuggestionSelect?.(suggestion);
       }
+    });
+
+    // Debugging del estado del hook
+    console.log('🔍 SearchAutocompleteIntegrated: Hook state:', {
+      query,
+      suggestions: suggestions?.length || 0,
+      isLoading,
+      error,
+      results: results?.length || 0
     });
 
     // Manejar envío de búsqueda

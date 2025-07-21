@@ -434,12 +434,27 @@ export function useSearch(options: UseSearchOptions = {}) {
     if (saveRecentSearches) {
       try {
         const stored = localStorage.getItem('pinteya-recent-searches');
-        if (stored) {
+        if (stored && stored.trim() !== '' && stored !== '""' && stored !== "''") {
+          // Validar que no esté corrupto
+          if (stored.includes('""') && stored.length < 5) {
+            console.warn('Detected corrupted recent searches data, cleaning up');
+            localStorage.removeItem('pinteya-recent-searches');
+            return;
+          }
+
           const parsed = JSON.parse(stored);
-          setRecentSearches(parsed);
+          // Verificar que sea un array válido
+          if (Array.isArray(parsed)) {
+            setRecentSearches(parsed);
+          } else {
+            console.warn('Invalid recent searches format, resetting');
+            localStorage.removeItem('pinteya-recent-searches');
+          }
         }
       } catch (error) {
         console.warn('Error cargando búsquedas recientes:', error);
+        // Limpiar datos corruptos
+        localStorage.removeItem('pinteya-recent-searches');
       }
     }
   }, [saveRecentSearches]);

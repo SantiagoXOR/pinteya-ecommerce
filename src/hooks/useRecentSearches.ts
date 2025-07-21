@@ -3,6 +3,7 @@
 // ===================================
 
 import { useState, useEffect, useCallback } from 'react';
+import { safeLocalStorageGet, safeLocalStorageSet, STORAGE_KEYS } from '@/lib/json-utils';
 
 export interface RecentSearchesOptions {
   /** Número máximo de búsquedas recientes a mantener */
@@ -76,45 +77,43 @@ export function useRecentSearches(options: RecentSearchesOptions = {}): RecentSe
 
   // Cargar búsquedas desde localStorage
   const loadFromStorage = useCallback((): string[] => {
-    if (!config.enablePersistence || typeof window === 'undefined') {
+    if (!config.enablePersistence) {
       return [];
     }
 
-    try {
-      const stored = localStorage.getItem(config.storageKey);
-      if (!stored) return [];
+    // Usar utilidad segura para cargar desde localStorage
+    const result = safeLocalStorageGet<PersistedSearchData | string[]>(config.storageKey);
 
-      // Intentar cargar formato nuevo (con metadata)
-      try {
-        const parsed: PersistedSearchData = JSON.parse(stored);
-        
-        // Verificar estructura y expiración
-        if (parsed.searches && Array.isArray(parsed.searches)) {
-          if (parsed.timestamp && isExpired(parsed.timestamp)) {
-            localStorage.removeItem(config.storageKey);
-            return [];
-          }
-          return parsed.searches.slice(0, config.maxSearches);
-        }
-      } catch {
-        // Fallback: intentar cargar formato antiguo (array simple)
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          return parsed.slice(0, config.maxSearches);
-        }
-      }
-
-      return [];
-    } catch (error) {
-      console.warn('Error loading recent searches from localStorage:', error);
-      // Limpiar localStorage corrupto
-      try {
-        localStorage.removeItem(config.storageKey);
-      } catch (cleanupError) {
-        console.warn('Error cleaning up corrupted localStorage:', cleanupError);
-      }
+    if (!result.success) {
       return [];
     }
+
+    const data = result.data;
+
+    // Verificar si es formato nuevo (con metadata)
+    if (data && typeof data === 'object' && 'searches' in data && Array.isArray(data.searches)) {
+      const persistedData = data as PersistedSearchData;
+
+      // Verificar expiración
+      if (persistedData.timestamp && isExpired(persistedData.timestamp)) {
+        // Limpiar datos expirados usando utilidad segura
+        safeLocalStorageSet(config.storageKey, {
+          searches: [],
+          timestamp: Date.now(),
+          version: '1.0'
+        });
+        return [];
+      }
+
+      return persistedData.searches.slice(0, config.maxSearches);
+    }
+
+    // Formato antiguo (array simple)
+    if (Array.isArray(data)) {
+      return data.slice(0, config.maxSearches);
+    }
+
+    return [];
   }, [config.enablePersistence, config.storageKey, config.maxSearches, isExpired]);
 
   // Guardar búsquedas en localStorage

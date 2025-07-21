@@ -150,7 +150,7 @@ export default function TestTopBarPage() {
                     Para probar la geolocalización:
                   </h4>
                   <ol className="text-sm text-yellow-700 space-y-1 list-decimal list-inside">
-                    <li>Haz clic en el dropdown "Envíos a..." en el TopBar</li>
+                    <li>Haz clic en el dropdown "Envíos en..." en el TopBar</li>
                     <li>Selecciona "Detectar mi ubicación"</li>
                     <li>Permite el acceso a la ubicación cuando el navegador lo solicite</li>
                     <li>Observa cómo se actualiza automáticamente la zona detectada</li>

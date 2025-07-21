@@ -74,10 +74,11 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.mercadopago.com https://www.mercadopago.com https://*.clerk.accounts.dev https://*.clerk.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.accounts.dev https://*.clerk.com",
-    "font-src 'self' https://fonts.gstatic.com",
+    "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://api.mercadopago.com https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com",
     "frame-src 'self' https://www.mercadopago.com https://*.clerk.accounts.dev https://*.clerk.com",
+    "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -117,11 +118,24 @@ function validateRequest(request: NextRequest): { isValid: boolean; error?: stri
     return { isValid: false, error: 'Invalid User-Agent' };
   }
   
-  // Validar Content-Type para requests con body
-  if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
+  // Validar Content-Type para requests con body (solo para APIs que requieren JSON)
+  if (['POST', 'PUT', 'PATCH'].includes(request.method) && pathname.startsWith('/api/')) {
     const contentType = request.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      return { isValid: false, error: 'Invalid Content-Type' };
+    const contentLength = request.headers.get('content-length');
+
+    // Solo validar Content-Type si hay contenido en el body
+    if (contentLength && parseInt(contentLength) > 0) {
+      // Permitir tipos de contenido válidos
+      const validContentTypes = [
+        'application/json',
+        'application/x-www-form-urlencoded',
+        'multipart/form-data',
+        'text/plain'
+      ];
+
+      if (!contentType || !validContentTypes.some(type => contentType.includes(type))) {
+        return { isValid: false, error: 'Invalid Content-Type' };
+      }
     }
   }
   

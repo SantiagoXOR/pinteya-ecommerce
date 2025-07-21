@@ -24,16 +24,30 @@ export const loadCartFromStorage = (): any[] => {
 
   try {
     const stored = localStorage.getItem(CART_STORAGE_KEY);
-    if (!stored) {
+    if (!stored || stored.trim() === '' || stored === '""' || stored === "''") {
+      return [];
+    }
+
+    // Validar que el string no esté corrupto
+    if (stored.includes('""') && stored.length < 5) {
+      console.warn('Detected corrupted cart localStorage data, cleaning up');
+      localStorage.removeItem(CART_STORAGE_KEY);
       return [];
     }
 
     const parsed: PersistedCartState = JSON.parse(stored);
-    
+
+    // Verificar estructura válida
+    if (!parsed || typeof parsed !== 'object') {
+      console.warn('Invalid cart data structure, cleaning up');
+      localStorage.removeItem(CART_STORAGE_KEY);
+      return [];
+    }
+
     // Verificar que no sea muy antiguo (7 días)
     const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 días en ms
-    const isExpired = Date.now() - parsed.timestamp > maxAge;
-    
+    const isExpired = parsed.timestamp && (Date.now() - parsed.timestamp > maxAge);
+
     if (isExpired) {
       localStorage.removeItem(CART_STORAGE_KEY);
       return [];
