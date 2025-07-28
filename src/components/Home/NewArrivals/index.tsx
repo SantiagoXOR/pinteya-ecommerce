@@ -3,21 +3,34 @@
 import React from "react";
 import Link from "next/link";
 import ProductItem from "@/components/Common/ProductItem";
-import { useProducts } from "@/hooks/useProducts";
+import { useFilteredProducts } from "@/hooks/useFilteredProducts";
+import { adaptApiProductsToComponents } from "@/lib/adapters/product-adapter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
 
-const NewArrival = () => {
-  // Hook para obtener productos más recientes
-  const { products, loading, error } = useProducts({
-    initialFilters: {
-      limit: 8, // Mostrar solo 8 productos
-      sortBy: 'created_at',
-      sortOrder: 'desc',
-    },
+interface NewArrivalProps {
+  selectedCategories?: string[];
+}
+
+const NewArrival: React.FC<NewArrivalProps> = ({ selectedCategories = [] }) => {
+  // Hook para obtener productos más recientes filtrados
+  const { data, isLoading, error } = useFilteredProducts({
+    categories: selectedCategories.length > 0 ? selectedCategories : undefined,
+    limit: 8,
+    sortBy: 'created_at',
+    sortOrder: 'desc',
   });
+
+  // Obtener productos de la respuesta y adaptarlos al formato de componente
+  const apiProducts = data?.data || [];
+  const products = adaptApiProductsToComponents(apiProducts);
+
+  // Título dinámico según filtros
+  const sectionTitle = selectedCategories.length > 0
+    ? `Novedades en ${selectedCategories.length === 1 ? 'esta categoría' : 'estas categorías'}`
+    : 'Nuevos Productos';
 
   return (
     <section className="overflow-hidden pt-15">
@@ -35,7 +48,7 @@ const NewArrival = () => {
               </Badge>
             </div>
             <h2 className="font-semibold text-xl xl:text-heading-5 text-gray-900">
-              Últimos Productos de Pinturería
+              {sectionTitle}
             </h2>
           </div>
 
@@ -49,7 +62,7 @@ const NewArrival = () => {
         </div>
 
         {/* Loading State - Mobile-First 2 columnas */}
-        {loading ? (
+        {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9">
             {[...Array(8)].map((_, index) => (
               <Card key={index} className="overflow-hidden">
@@ -101,7 +114,7 @@ const NewArrival = () => {
         )}
 
         {/* Empty State - Nuevo con Design System */}
-        {!loading && !error && products.length === 0 && (
+        {!isLoading && !error && products.length === 0 && (
           <Card variant="outlined" className="border-gray-200">
             <CardContent className="p-12 text-center">
               <div className="flex flex-col items-center gap-4">

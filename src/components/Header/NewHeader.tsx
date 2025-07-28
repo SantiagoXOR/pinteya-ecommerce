@@ -25,7 +25,6 @@ const NewHeader = () => {
   }, []);
 
   const handleSearch = (query: string) => {
-    console.log("Searching for:", query);
     // Implementar lógica de búsqueda
   };
 

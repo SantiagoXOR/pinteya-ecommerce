@@ -16,7 +16,6 @@ const HeaderDemoPage = () => {
   const [selectedDevice, setSelectedDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
 
   const handleSearch = (query: string, category?: string) => {
-    console.log('Búsqueda realizada:', { query, category });
     setSearchResults([
       `Resultado para "${query}" en categoría ${category}`,
       'Látex Interior Premium 20L',

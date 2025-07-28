@@ -135,7 +135,7 @@ const { trendingSearches, trackSearch } = useTrendingSearches();
 - ✅ **Logos**: POSITIVO.svg + NEGATIVO.svg
 - ✅ **Header**: Sticky 3 niveles con buscador prominente
 - ✅ **Footer**: Información empresa + logos pago
-- ✅ **Hero**: Layers apilados con imágenes 011-014
+- ✅ **Hero**: Layers apilados con imágenes 011-014 **ACTUALIZADO ENERO 2025** - Limpieza completada, iconos servicios eliminados
 
 ## 🔐 SEGURIDAD & PERFORMANCE
 

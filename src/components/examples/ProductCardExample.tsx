@@ -3,7 +3,6 @@ import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 
 export function ProductCardExample() {
   const handleAddToCart = () => {
-    console.log('Producto agregado al carrito')
   }
 
   return (

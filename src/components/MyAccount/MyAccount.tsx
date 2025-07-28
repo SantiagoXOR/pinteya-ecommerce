@@ -47,7 +47,6 @@ export default function MyAccount() {
   // TODO: Reactivar cuando Supabase esté configurado
   const loadProfile = async () => {
     // Función temporal - no hace nada por ahora
-    console.log("loadProfile - función temporal");
   };
 
   const handleInputChange = (field: keyof Profile, value: string) => {

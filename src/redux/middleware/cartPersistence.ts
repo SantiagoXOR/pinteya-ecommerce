@@ -155,7 +155,6 @@ export const migrateTemporaryCart = async (
     // Por ahora, simplemente limpiamos el localStorage
     // ya que el carrito se mantendrá en Redux
     
-    console.log(`Migrating ${temporaryCartItems.length} items for user ${userId}`);
     
     // En una implementación completa, aquí haríamos:
     // 1. Enviar los items al backend para asociarlos al usuario
@@ -175,7 +174,6 @@ export const loadUserCart = async (userId: string): Promise<any[]> => {
     // Aquí se implementaría la lógica para cargar el carrito
     // del usuario desde la base de datos
     
-    console.log(`Loading cart for user ${userId}`);
     
     // En una implementación completa, aquí haríamos:
     // 1. Hacer una petición al backend para obtener el carrito del usuario
@@ -198,7 +196,6 @@ export const saveUserCart = async (
     // Aquí se implementaría la lógica para guardar el carrito
     // del usuario en la base de datos
     
-    console.log(`Saving ${cartItems.length} items for user ${userId}`);
     
     // En una implementación completa, aquí haríamos:
     // 1. Enviar los items al backend para guardarlos asociados al usuario

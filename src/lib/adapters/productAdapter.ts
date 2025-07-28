@@ -53,18 +53,22 @@ export function adaptApiProductToLegacy(apiProduct: ProductWithCategory): Legacy
     id: apiProduct.id,
     title: cleanTitle,
     price: apiProduct.price,
-    discountedPrice: apiProduct.discounted_price || apiProduct.price,
+    discountedPrice: apiProduct.discounted_price ?? apiProduct.price,
     reviews: 0, // No disponible en BD actual
     imgs: apiProduct.images ? {
-      thumbnails: apiProduct.images.thumbnails || [],
-      previews: apiProduct.images.previews || []
-    } : undefined,
+      thumbnails: apiProduct.images.thumbnails || apiProduct.images.previews || [apiProduct.images.main],
+      previews: apiProduct.images.previews || [apiProduct.images.main]
+    } : {
+      thumbnails: ['/images/products/placeholder.svg'],
+      previews: ['/images/products/placeholder.svg']
+    },
 
     // Campos adicionales para nuevas funcionalidades
     stock: apiProduct.stock,
     created_at: apiProduct.created_at,
     category: apiProduct.category,
     name: cleanTitle, // También limpiar el campo name
+    brand: apiProduct.brand, // Agregar brand
     discounted_price: apiProduct.discounted_price,
     images: apiProduct.images,
   };

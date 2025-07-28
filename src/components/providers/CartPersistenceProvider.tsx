@@ -32,7 +32,6 @@ export const CartPersistenceProvider: React.FC<CartPersistenceProviderProps> = (
 
         // Log para debugging (remover en producción)
         if (process.env.NODE_ENV === 'development') {
-          console.log('Cart hydrated from localStorage:', persistedItems.length, 'items');
         }
       }
     } catch (error) {

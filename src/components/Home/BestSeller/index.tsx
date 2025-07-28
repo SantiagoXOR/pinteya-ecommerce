@@ -3,29 +3,36 @@
 import React from "react";
 import SingleItem from "./SingleItem";
 import Link from "next/link";
-import { useProducts } from "@/hooks/useProducts";
+import { useFilteredProducts } from "@/hooks/useFilteredProducts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, ArrowRight, Trophy } from "lucide-react";
 
-const BestSeller = () => {
-  const { products, loading, error } = useProducts({
-    initialFilters: {
-      limit: 6,
-      page: 1,
-      sortBy: 'price',
-      sortOrder: 'desc'
-    },
-    autoFetch: true
+interface BestSellerProps {
+  selectedCategories?: string[];
+}
+
+const BestSeller: React.FC<BestSellerProps> = ({ selectedCategories = [] }) => {
+  const { data, isLoading, error } = useFilteredProducts({
+    categories: selectedCategories.length > 0 ? selectedCategories : undefined,
+    limit: 6,
+    sortBy: 'price',
+    sortOrder: 'desc'
   });
 
-  // Filtrar productos con descuento para mostrar como "best sellers"
+  // Obtener productos y filtrar los que tienen descuento
+  const products = data?.data || [];
   const bestSellerProducts = products.filter(product =>
     product.discountedPrice && product.discountedPrice < product.price
   ).slice(0, 6);
 
-  if (loading) {
+  // Mostrar título dinámico según si hay filtros activos
+  const sectionTitle = selectedCategories.length > 0
+    ? `Mejores Ofertas en ${selectedCategories.length === 1 ? 'esta categoría' : 'estas categorías'}`
+    : 'Mejores Ofertas';
+
+  if (isLoading) {
     return (
       <section className="overflow-hidden">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
@@ -118,7 +125,7 @@ const BestSeller = () => {
               </Badge>
             </div>
             <h2 className="font-semibold text-xl xl:text-heading-5 text-gray-900">
-              Más Vendidos
+              {sectionTitle}
             </h2>
           </div>
         </div>

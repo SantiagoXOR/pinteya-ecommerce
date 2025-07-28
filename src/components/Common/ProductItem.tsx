@@ -44,12 +44,16 @@ const ProductItem = ({ item }: { item: Product }) => {
   };
 
   // Calcular descuento si existe
-  const discount = item.discountedPrice && item.discountedPrice < item.price
+  const hasDiscount = item.discountedPrice && item.discountedPrice < item.price;
+  const discount = hasDiscount
     ? Math.round(((item.price - item.discountedPrice) / item.price) * 100)
     : undefined;
 
+  // Precio final a mostrar
+  const finalPrice = hasDiscount ? item.discountedPrice : item.price;
+
   // Determinar badge basado en precio y características
-  const badge = item.discountedPrice >= 15000
+  const badge = finalPrice >= 15000
     ? "Envío gratis"
     : discount
     ? "Oferta especial"
@@ -60,8 +64,8 @@ const ProductItem = ({ item }: { item: Product }) => {
       image={item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
       title={item.title}
       brand={item.brand}
-      price={item.discountedPrice}
-      originalPrice={item.discountedPrice < item.price ? item.price : undefined}
+      price={finalPrice}
+      originalPrice={hasDiscount ? item.price : undefined}
       discount={discount ? `${discount}%` : undefined}
       isNew={badge === "Nuevo"}
       stock={50} // Stock por defecto para productos legacy
@@ -70,13 +74,13 @@ const ProductItem = ({ item }: { item: Product }) => {
       onAddToCart={handleAddToCart}
       showCartAnimation={true}
       // Información de cuotas automática
-      installments={item.discountedPrice >= 5000 ? {
+      installments={finalPrice >= 5000 ? {
         quantity: 3,
-        amount: Math.round(item.discountedPrice / 3),
+        amount: Math.round(finalPrice / 3),
         interestFree: true
       } : undefined}
       // Envío gratis automático para productos >= $15000
-      freeShipping={item.discountedPrice >= 15000}
+      freeShipping={finalPrice >= 15000}
       shippingText={badge === "Envío gratis" ? "Envío gratis" : undefined}
     />
   );

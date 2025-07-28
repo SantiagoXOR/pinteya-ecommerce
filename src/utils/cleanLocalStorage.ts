@@ -22,14 +22,12 @@ export function clearAllPinteyaStorage(): void {
       if (localStorage.getItem(key)) {
         localStorage.removeItem(key);
         clearedCount++;
-        console.log(`🧹 Cleared localStorage key: ${key}`);
       }
     } catch (error) {
       console.warn(`Error clearing localStorage key ${key}:`, error);
     }
   });
 
-  console.log(`✅ Cleared ${clearedCount} localStorage entries`);
 }
 
 /**
@@ -45,9 +43,7 @@ export function cleanCorruptedStorage(): number {
   const cleanedCount = cleanCorruptedLocalStorage(keys);
   
   if (cleanedCount > 0) {
-    console.log(`🧹 Cleaned ${cleanedCount} corrupted localStorage entries`);
   } else {
-    console.log('✅ No corrupted localStorage entries found');
   }
 
   return cleanedCount;
@@ -62,7 +58,6 @@ export function inspectLocalStorage(): void {
     return;
   }
 
-  console.log('🔍 Inspecting localStorage...');
   
   const keys = Object.values(STORAGE_KEYS);
   
@@ -100,8 +95,6 @@ export function setupDebugHelpers(): void {
 
   // Agregar funciones de debug al objeto window
   (window as any).debugPinteyaStorage = () => {
-    console.log('🛠️ Pinteya Storage Debug Helpers');
-    console.log('Available commands:');
     console.log('- window.clearAllPinteyaStorage() - Clear all Pinteya localStorage');
     console.log('- window.cleanCorruptedStorage() - Clean only corrupted data');
     console.log('- window.inspectLocalStorage() - Inspect localStorage content');
@@ -123,7 +116,6 @@ export function detectJsonProblems(): void {
     return;
   }
 
-  console.log('🔍 Detecting JSON problems...');
   
   const keys = Object.values(STORAGE_KEYS);
   const problems: Array<{key: string, issue: string, data: string}> = [];
@@ -158,7 +150,6 @@ export function detectJsonProblems(): void {
       console.warn(`  ${problem.key}: ${problem.issue} - ${problem.data}`);
     });
   } else {
-    console.log('✅ No JSON problems detected');
   }
 }
 

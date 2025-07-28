@@ -83,7 +83,6 @@ export const useUserRole = (): UseUserRoleReturn => {
       const data = await response.json();
       if (data.success) {
         setUserProfile(data.user);
-        console.log('Usuario sincronizado exitosamente');
       } else {
         console.warn('Error en sincronización:', data.error);
         setError(data.error || 'Error de sincronización');
@@ -124,7 +123,6 @@ export const useUserRole = (): UseUserRoleReturn => {
 
       if (response.status === 404) {
         // Usuario no existe, intentar sincronizar
-        console.log('Usuario no encontrado, intentando sincronizar...');
         await syncUser();
         return;
       }

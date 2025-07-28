@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import MercadoPagoAdminClient from '@/components/admin/MercadoPagoAdminClient';
 
 export const metadata: Metadata = {
   title: 'MercadoPago Admin - Pinteya E-commerce',
@@ -19,12 +18,11 @@ export default async function MercadoPagoAdminPage() {
     redirect('/sign-in');
   }
 
-  // TODO: Verificar si el usuario es admin
-  // const isAdmin = await checkUserRole(userId);
-  // if (!isAdmin) {
-  //   redirect('/');
-  // }
-
-  return <MercadoPagoAdminClient />;
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">MercadoPago Admin</h1>
+      <p className="text-gray-600">Panel de administración en desarrollo.</p>
+    </div>
+  );
 }
 

@@ -24,7 +24,6 @@ const GeolocationDebugger = () => {
 
   React.useEffect(() => {
     setRenderCount(prev => prev + 1);
-    console.log('🔍 GeolocationDebugger render #', renderCount + 1);
   }, [detectedZone, permissionStatus, isLoading, error, location]); // Solo re-render cuando cambie el estado de geolocalización
 
   return (
@@ -61,7 +60,6 @@ const GeolocationDebugger = () => {
           </button>
           <button
             onClick={() => {
-              console.log('🧪 FORCE TEST: Simulating successful geolocation...');
               testLocation(-31.4201, -64.1888);
             }}
             className="bg-green-600 px-2 py-1 rounded text-xs hover:bg-green-700"

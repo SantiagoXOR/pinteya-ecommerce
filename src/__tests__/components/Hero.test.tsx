@@ -42,12 +42,13 @@ describe('Hero Component', () => {
     expect(heroImages.length).toBeGreaterThan(0);
   });
 
-  it('should render service badges', () => {
+  it('should render without service badges (moved to TrustSection)', () => {
     render(<Hero />);
-    expect(screen.getByText(/Envíos/i)).toBeInTheDocument();
-    expect(screen.getByText(/Asesoramiento/i)).toBeInTheDocument();
-    expect(screen.getByText(/Pagos/i)).toBeInTheDocument();
-    expect(screen.getByText(/Cambios/i)).toBeInTheDocument();
+    // Los badges de servicios fueron movidos a TrustSection
+    expect(screen.queryByText(/Envíos/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Asesoramiento/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Pagos/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Cambios/i)).not.toBeInTheDocument();
   });
 
   it('should render action buttons', () => {
@@ -57,12 +58,13 @@ describe('Hero Component', () => {
     expect(screen.getByText(/Pintá rápido/i)).toBeInTheDocument();
   });
 
-  it('should render offer cards', () => {
+  it('should render hero content without service badges', () => {
     render(<Hero />);
-    // El componente Hero actual no tiene ofertas "25% OFF", pero tiene badges de servicios
-    // Verificar que los badges de servicios están presentes
-    expect(screen.getByText(/Envíos/i)).toBeInTheDocument();
-    expect(screen.getByText(/Asesoramiento/i)).toBeInTheDocument();
+    // El componente Hero ya no tiene badges de servicios (movidos a TrustSection)
+    // Verificar que el contenido principal del hero está presente
+    expect(screen.getByText(/Pintá rápido/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Envíos/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Asesoramiento/i)).not.toBeInTheDocument();
   });
 
   it('should render location information', () => {
@@ -84,19 +86,20 @@ describe('Hero Component', () => {
     });
   });
 
-  it('should render service icons correctly', () => {
+  it('should not render service icons (moved to TrustSection)', () => {
     const { container } = render(<Hero />);
 
-    // Verificar que hay imágenes de servicios (envíos, asesoramiento, etc.)
+    // Verificar que NO hay imágenes de servicios (fueron movidas a TrustSection)
     const serviceImages = container.querySelectorAll('img[alt*="Envíos"], img[alt*="Asesoramiento"], img[alt*="Pagos"], img[alt*="Cambios"]');
-    expect(serviceImages.length).toBeGreaterThan(0);
+    expect(serviceImages.length).toBe(0);
   });
 
-  it('should render all service badges correctly', () => {
+  it('should not render service badges (moved to TrustSection)', () => {
     const { container } = render(<Hero />);
-    // Buscar elementos con clases de gradientes de servicios
+    // Los elementos con gradientes de servicios fueron movidos a TrustSection
     const serviceElements = container.querySelectorAll('[class*="bg-gradient-to-br"]');
-    expect(serviceElements.length).toBeGreaterThanOrEqual(4); // 4 servicios: Envíos, Asesoramiento, Pagos, Cambios
+    // Solo deben quedar los elementos decorativos del hero, no los 4 servicios
+    expect(serviceElements.length).toBeLessThan(4);
   });
 
   it('should not have undefined elements in JSX', () => {

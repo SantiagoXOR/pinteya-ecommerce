@@ -25,7 +25,11 @@ export const ProductSchema = z.object({
 
 export const ProductFiltersSchema = z.object({
   category: z.string().optional(),
+  categories: z.array(z.string()).optional(),
   brand: z.string().optional(),
+  brands: z.array(z.string()).optional(),
+  paintType: z.string().optional(),
+  paintTypes: z.array(z.string()).optional(),
   priceMin: z.number().positive().optional(),
   priceMax: z.number().positive().optional(),
   search: z.string().optional(),

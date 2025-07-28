@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - HOOK PARA PRODUCTOS
 // ===================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Product } from '@/types/product';
 import { ProductFilters, PaginatedResponse, ProductWithCategory } from '@/types/api';
 import { getProducts } from '@/lib/api/products';
@@ -28,8 +28,13 @@ interface UseProductsOptions {
 export function useProducts(options: UseProductsOptions = {}) {
   const { initialFilters = {}, autoFetch = true } = options;
 
-  // DEBUG: Log básico para verificar que el hook se ejecuta
-  console.log('🔍 HOOK useProducts EJECUTÁNDOSE');
+  // Referencias para evitar re-renders innecesarios
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const lastRequestRef = useRef<string>('');
+
+  // DEBUG: Log básico para verificar que el hook se ejecuta (solo en desarrollo)
+  if (process.env.NODE_ENV === 'development') {
+  }
 
   const [state, setState] = useState<UseProductsState>({
     products: [],
@@ -46,37 +51,18 @@ export function useProducts(options: UseProductsOptions = {}) {
   const [filters, setFilters] = useState<ProductFilters>(initialFilters);
 
   /**
-   * Obtiene productos desde la API
+   * Obtiene productos desde la API con optimizaciones de performance
    */
   const fetchProducts = useCallback(async (newFilters?: ProductFilters) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    const filtersToUse = newFilters || filters;
 
     try {
-      const filtersToUse = newFilters || filters;
-      const response: PaginatedResponse<ProductWithCategory> = await getProducts(filtersToUse);
+      setState(prev => ({ ...prev, loading: true, error: null }));
+
+      const response = await getProducts(filtersToUse);
 
       if (response.success) {
-        // DEBUG CRÍTICO: Log de datos antes del adaptador
-        const poximixProducts = response.data.filter(p => p.name?.includes('Poximix'));
-        if (poximixProducts.length > 0) {
-          console.log('🔍 DEBUG CRÍTICO - DATOS ANTES DEL ADAPTADOR:', poximixProducts.map(p => ({
-            id: p.id,
-            name: p.name,
-            'contiene Poxipol': p.name?.includes('Poxipol')
-          })));
-        }
-
         const adaptedProducts = adaptApiProductsToLegacy(response.data);
-
-        // DEBUG CRÍTICO: Log de datos después del adaptador
-        const adaptedPoximix = adaptedProducts.filter(p => p.title?.includes('Poximix'));
-        if (adaptedPoximix.length > 0) {
-          console.log('🔍 DEBUG CRÍTICO - DATOS DESPUÉS DEL ADAPTADOR:', adaptedPoximix.map(p => ({
-            id: p.id,
-            title: p.title,
-            'contiene Poxipol': p.title?.includes('Poxipol')
-          })));
-        }
 
         setState(prev => ({
           ...prev,
@@ -177,7 +163,25 @@ export function useProducts(options: UseProductsOptions = {}) {
     if (autoFetch) {
       fetchProducts();
     }
-  }, [autoFetch, fetchProducts]);
+  }, [autoFetch]); // Removido fetchProducts de las dependencias para evitar bucles
+
+  // Cleanup effect para cancelar requests pendientes
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Memoized helpers para optimizar renders
+  const helpers = useMemo(() => ({
+    hasProducts: state.products.length > 0,
+    isEmpty: !state.loading && state.products.length === 0,
+    hasError: !!state.error,
+    hasNextPage: state.pagination.page < state.pagination.totalPages,
+    hasPrevPage: state.pagination.page > 1,
+  }), [state.products.length, state.loading, state.error, state.pagination.page, state.pagination.totalPages]);
 
   return {
     // Estado
@@ -199,11 +203,7 @@ export function useProducts(options: UseProductsOptions = {}) {
     clearFilters,
     refresh,
 
-    // Helpers
-    hasProducts: state.products.length > 0,
-    isEmpty: !state.loading && state.products.length === 0,
-    hasError: !!state.error,
-    hasNextPage: state.pagination.page < state.pagination.totalPages,
-    hasPrevPage: state.pagination.page > 1,
+    // Helpers memoizados
+    ...helpers,
   };
 }

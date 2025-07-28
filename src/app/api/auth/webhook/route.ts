@@ -82,7 +82,6 @@ export async function POST(request: NextRequest) {
       case 'user.created':
         try {
           await syncUserWithSupabase(evt.data);
-          console.log(`Usuario creado y sincronizado: ${evt.data.email_addresses[0]?.email_address}`);
         } catch (error) {
           console.error('Error sincronizando usuario creado:', error);
           throw error;
@@ -92,7 +91,6 @@ export async function POST(request: NextRequest) {
       case 'user.updated':
         try {
           await syncUserWithSupabase(evt.data);
-          console.log(`Usuario actualizado y sincronizado: ${evt.data.email_addresses[0]?.email_address}`);
         } catch (error) {
           console.error('Error sincronizando usuario actualizado:', error);
           throw error;
@@ -102,7 +100,6 @@ export async function POST(request: NextRequest) {
       case 'user.deleted':
         try {
           await deleteUserFromSupabase(evt.data.id);
-          console.log('Usuario eliminado de Supabase');
         } catch (error) {
           console.error('Error eliminando usuario:', error);
           throw error;
@@ -110,7 +107,6 @@ export async function POST(request: NextRequest) {
         break;
 
       default:
-        console.log(`Evento webhook no manejado: ${eventType}`);
     }
 
     return new Response('Webhook procesado correctamente', { status: 200 });

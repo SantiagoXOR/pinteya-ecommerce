@@ -149,7 +149,6 @@ export function useSearch(options: UseSearchOptions = {}) {
    * Función de búsqueda interna optimizada
    */
   const performSearch = useCallback(async (searchQuery: string) => {
-    console.log('🔍 useSearch: performSearch ejecutando para:', searchQuery);
 
     // Limpiar timeout de seguridad anterior
     if (safetyTimeoutRef.current) {
@@ -158,7 +157,6 @@ export function useSearch(options: UseSearchOptions = {}) {
 
     // Si la query está vacía, mostrar sugerencias por defecto
     if (!searchQuery.trim()) {
-      console.log('🔍 useSearch: Query vacía, mostrando sugerencias por defecto');
       const defaultSuggestions = [
         ...defaultTrendingSearches.slice(0, 4),
         ...recentSearchesRef.current.slice(0, 3).map((search, index) => ({
@@ -180,7 +178,6 @@ export function useSearch(options: UseSearchOptions = {}) {
 
     // Timeout de seguridad para evitar loading permanente (5 segundos)
     safetyTimeoutRef.current = setTimeout(() => {
-      console.log('⚠️ useSearch: Timeout de seguridad activado - reseteando loading state');
       setState(prev => ({
         ...prev,
         isLoading: false,
@@ -190,10 +187,8 @@ export function useSearch(options: UseSearchOptions = {}) {
 
     // Ejecutar búsqueda directamente (el debounce se maneja en searchWithDebounce)
     try {
-      console.log('🔍 useSearch: Iniciando búsqueda para:', searchQuery);
 
       const response = await searchProducts(searchQuery, maxSuggestions);
-      console.log('📦 useSearch: Respuesta de búsqueda:', response);
 
       // Limpiar timeout de seguridad ya que la API respondió
       if (safetyTimeoutRef.current) {
@@ -211,7 +206,6 @@ export function useSearch(options: UseSearchOptions = {}) {
             href: `/shop-details/${product.id}`,
           }));
 
-          console.log('✅ useSearch: Sugerencias generadas:', productSuggestions.length);
 
           setState(prev => ({
             ...prev,
@@ -221,7 +215,6 @@ export function useSearch(options: UseSearchOptions = {}) {
             error: null,
           }));
         } else {
-          console.log('⚠️ useSearch: Sin resultados o respuesta no exitosa');
           setState(prev => ({
             ...prev,
             query: searchQuery, // Actualizar query incluso cuando no hay resultados
@@ -406,7 +399,6 @@ export function useSearch(options: UseSearchOptions = {}) {
    * Limpia el estado de búsqueda
    */
   const clearSearch = useCallback(() => {
-    console.log('🧹 useSearch: clearSearch llamado');
 
     // Limpiar todos los timeouts
     if (debounceRef.current) {

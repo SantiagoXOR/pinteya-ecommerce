@@ -390,7 +390,6 @@ const SimplifiedCheckout = () => {
                 cta={`Total: $${(item.discountedPrice * item.quantity).toLocaleString()}`}
                 onAddToCart={() => {
                   // En checkout, no necesitamos agregar más al carrito
-                  console.log('Producto ya en carrito:', item.title);
                 }}
                 showCartAnimation={false}
                 freeShipping={item.discountedPrice >= 15000}

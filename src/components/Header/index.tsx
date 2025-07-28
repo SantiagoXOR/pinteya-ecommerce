@@ -45,7 +45,6 @@ const Header = () => {
 
   // Log para debugging del estado de geolocalización (solo cuando cambia la zona)
   useEffect(() => {
-    console.log('🏠 Header - Geolocation zone updated:', detectedZone?.name);
   }, [detectedZone?.name]); // Solo depender del nombre de la zona
 
   const product = useAppSelector((state) => state.cartReducer.items);
@@ -61,10 +60,8 @@ const Header = () => {
 
   // Efecto para solicitar geolocalización automáticamente
   useEffect(() => {
-    console.log('🗺️ Header mounted, checking geolocation...');
     // Solicitar ubicación automáticamente si no se ha detectado
     if (permissionStatus === 'unknown' || permissionStatus === 'prompt') {
-      console.log('🗺️ Auto-requesting location on mount');
       setTimeout(() => {
         requestLocation();
       }, 1000); // Delay de 1 segundo para evitar conflictos
@@ -76,26 +73,16 @@ const Header = () => {
   };
 
   const handleLocationClick = () => {
-    console.log('🗺️ === LOCATION CLICK EVENT ===');
-    console.log('🗺️ Current status:', permissionStatus);
-    console.log('🗺️ Current detected zone:', detectedZone);
-    console.log('🗺️ Is loading:', isLoading);
-    console.log('🗺️ Error:', error);
-    console.log('🗺️ Location:', location);
 
     // Siempre intentar solicitar ubicación cuando se hace click
     if (permissionStatus === 'denied') {
-      console.log('🗺️ Permisos denegados, mostrando mensaje al usuario');
       alert('Para detectar tu ubicación automáticamente, permite el acceso a la ubicación en la configuración de tu navegador.');
     } else if (permissionStatus === 'granted' && detectedZone && detectedZone.name !== "Córdoba Capital") {
-      console.log('🗺️ Ubicación ya detectada, refrescando...');
       requestLocation();
     } else {
-      console.log('🗺️ Solicitando permisos de geolocalización...');
       requestLocation();
     }
 
-    console.log('🗺️ === LOCATION CLICK COMPLETE ===');
   };
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {

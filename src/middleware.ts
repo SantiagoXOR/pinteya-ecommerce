@@ -6,27 +6,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { securityMiddleware } from './middleware/security';
 
 /**
- * Middleware híbrido que evita problemas con SSG
- * Incluye medidas de seguridad mejoradas
+ * Middleware optimizado para performance
+ * Validaciones mínimas para rutas críticas
  */
 export default function middleware(request: NextRequest) {
-  // Aplicar middleware de seguridad primero
-  const securityResponse = securityMiddleware(request);
-  if (securityResponse) {
-    return securityResponse;
-  }
   const { pathname } = request.nextUrl;
 
-  // Permitir todas las rutas estáticas y de Next.js
+  // Skip inmediato para rutas estáticas (performance crítico)
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
     pathname.includes('.') ||
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml' ||
-    pathname === '/_not-found'
+    pathname === '/_not-found' ||
+    pathname.startsWith('/api/analytics') // Skip analytics para performance
   ) {
     return NextResponse.next();
+  }
+
+  // Aplicar middleware de seguridad solo para rutas críticas
+  if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) {
+    const securityResponse = securityMiddleware(request);
+    if (securityResponse) {
+      return securityResponse;
+    }
   }
 
   // Rutas públicas que siempre están permitidas
@@ -86,10 +90,13 @@ export default function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Configuración del matcher mínima para Vercel
+// Configuración del matcher optimizada para performance
 export const config = {
   matcher: [
-    // Solo procesar rutas que no sean archivos estáticos
-    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|robots.txt|sitemap.xml).*)',
+    // Matcher más específico para reducir overhead
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|robots.txt|sitemap.xml|api/analytics).*)',
+    // Solo procesar rutas admin y dashboard para seguridad
+    '/admin/:path*',
+    '/dashboard/:path*'
   ],
 };

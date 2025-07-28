@@ -106,7 +106,6 @@ export function useTrendingSearches(options: UseTrendingSearchesOptions = {}): U
   // Función para registrar una búsqueda en analytics
   const trackSearch = async (query: string, searchCategory?: string): Promise<void> => {
     try {
-      console.log('📊 useTrendingSearches: Tracking search', { query, category: searchCategory });
 
       const response = await fetch('/api/search/trending', {
         method: 'POST',
@@ -124,7 +123,6 @@ export function useTrendingSearches(options: UseTrendingSearchesOptions = {}): U
       if (!response.ok) {
         console.warn('⚠️ Error tracking search:', response.status);
       } else {
-        console.log('✅ Search tracked successfully');
       }
     } catch (error) {
       console.warn('⚠️ Error tracking search:', error);
