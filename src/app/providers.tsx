@@ -109,8 +109,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     <CartSidebarModal />
                     <PreviewSliderModal />
                     <ScrollToTop />
-                    {/* Contenido principal con padding para compensar header fijo */}
-                    <div className="pt-20 lg:pt-24">
+                    {/* Contenido principal - Padding ya aplicado en body */}
+                    <div>
                       {children}
                     </div>
                     <Footer />

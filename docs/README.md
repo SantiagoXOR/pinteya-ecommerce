@@ -1,9 +1,10 @@
 # 📚 Documentación - Pinteya E-commerce
 
-**Última Actualización**: 21 de Julio, 2025
+**Última Actualización**: 26 de Julio, 2025
 **Estado del Proyecto**: 100% Completado ✅
 **Análisis Técnico**: Completo y documentado
 **Error JSON**: ✅ RESUELTO DEFINITIVAMENTE
+**Categorías Dinámicas**: ✅ DATOS HARDCODEADOS ELIMINADOS
 
 > Documentación completa del proyecto Pinteya E-commerce - Sistema de e-commerce especializado en productos de pinturería, ferretería y corralón. **Aplicación completamente estable y lista para producción.**
 
@@ -35,9 +36,10 @@
 - [🔒 Políticas RLS](../SECURITY_RLS.md) - Row Level Security implementado
 - [🔧 Configuración Auth](../CONFIGURATION.md) - Configuración de autenticación
 
-### 🔧 **Correcciones Críticas (Actualizado 2025-01-21)**
+### 🔧 **Correcciones Críticas (Actualizado 2025-07-26)**
 - [🚨 Error JSON Resuelto](./fixes/json-error-persistent-fix.md) - Solución definitiva del error JSON persistente
 - [🧹 Herramientas de Limpieza](./fixes/json-error-final-solution.md) - Utilidades de debug y limpieza
+- [📂 Categorías Hardcodeadas Corregidas](./fixes/categories-hardcoded-data-fix-2025.md) - **NUEVO** - Eliminación de datos hardcodeados
 - [🛠️ Patrones de Error Handling](./development/error-handling-patterns.md) - Estándares implementados
 - [🧪 Testing Tools](../public/test-api.html) - Herramienta de testing de APIs
 - [🗑️ Storage Cleaner](../public/clear-storage.html) - Limpieza de localStorage corrupto
@@ -58,6 +60,7 @@
 
 ### 🎨 **Design System**
 - [🎨 Design System Completo](./design-system/README.md)
+- [🏠 Hero Section](./components/hero-section-documentation.md) - **ACTUALIZADO 2025** - Documentación completa
 - [🎯 Tokens de Diseño](./design-system/tokens.md)
 - [🔘 Componentes](./design-system/components/buttons.md)
 - [🎭 Estados e Interacciones](./design-system/states.md)

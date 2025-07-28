@@ -1,53 +1,257 @@
-import React from "react";
-import Breadcrumb from "../Common/Breadcrumb";
-import Link from "next/link";
+// ===================================
+// MAIL SUCCESS COMPONENT
+// ===================================
+// Componente de éxito para confirmación de envío de emails
 
-const MailSuccess = () => {
+"use client";
+
+import React from 'react';
+import Link from 'next/link';
+import { CheckCircle, Mail, Home, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+// ===================================
+// INTERFACES
+// ===================================
+
+interface MailSuccessProps {
+  /** Título personalizado */
+  title?: string;
+  /** Descripción personalizada */
+  description?: string;
+  /** Email al que se envió */
+  email?: string;
+  /** Tipo de email enviado */
+  type?: 'contact' | 'newsletter' | 'order' | 'general';
+  /** Mostrar botón de volver */
+  showGoBack?: boolean;
+  /** URL de redirección personalizada */
+  redirectUrl?: string;
+  /** Texto del botón de redirección */
+  redirectText?: string;
+}
+
+// ===================================
+// COMPONENTE PRINCIPAL
+// ===================================
+
+const MailSuccess: React.FC<MailSuccessProps> = ({
+  title,
+  description,
+  email,
+  type = 'general',
+  showGoBack = true,
+  redirectUrl,
+  redirectText,
+}) => {
+  
+  // Configuración por defecto basada en el tipo
+  const getTypeConfig = (mailType: string) => {
+    switch (mailType) {
+      case 'contact':
+        return {
+          title: title || '¡Mensaje enviado correctamente!',
+          description: description || 'Recibimos tu consulta y te responderemos a la brevedad. Revisá tu bandeja de entrada para la confirmación.',
+          icon: <Mail className="w-16 h-16 text-green-500" />,
+          nextSteps: [
+            'Te responderemos en las próximas 24 horas',
+            'Revisá tu bandeja de entrada y spam',
+            'Podés seguir navegando nuestra tienda'
+          ],
+        };
+      case 'newsletter':
+        return {
+          title: title || '¡Suscripción exitosa!',
+          description: description || 'Te suscribiste correctamente a nuestro newsletter. Recibirás las mejores ofertas y novedades.',
+          icon: <CheckCircle className="w-16 h-16 text-green-500" />,
+          nextSteps: [
+            'Recibirás ofertas exclusivas',
+            'Novedades de productos',
+            'Consejos y tutoriales'
+          ],
+        };
+      case 'order':
+        return {
+          title: title || '¡Pedido confirmado!',
+          description: description || 'Tu pedido fue procesado correctamente. Te enviamos los detalles por email.',
+          icon: <CheckCircle className="w-16 h-16 text-green-500" />,
+          nextSteps: [
+            'Recibirás actualizaciones del envío',
+            'Podés rastrear tu pedido',
+            'Te contactaremos si necesitamos algo'
+          ],
+        };
+      default:
+        return {
+          title: title || '¡Email enviado correctamente!',
+          description: description || 'Tu email fue enviado exitosamente.',
+          icon: <CheckCircle className="w-16 h-16 text-green-500" />,
+          nextSteps: [
+            'Revisá tu bandeja de entrada',
+            'Te responderemos pronto',
+            'Gracias por contactarnos'
+          ],
+        };
+    }
+  };
+
+  const config = getTypeConfig(type);
+
+  const handleGoBack = () => {
+    if (typeof window !== 'undefined') {
+      window.history.back();
+    }
+  };
+
   return (
-    <>
-      <Breadcrumb title={"MailSuccess"} pages={["MailSuccess"]} />
-      <section className="overflow-hidden py-20 bg-gray-2">
-        <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-          <div className="bg-white rounded-xl shadow-1 px-4 py-10 sm:py-15 lg:py-20 xl:py-25">
-            <div className="text-center">
-              <h2 className="font-bold text-blue text-4xl lg:text-[45px] lg:leading-[57px] mb-5">
-                Successful!
-              </h2>
-
-              <h3 className="font-medium text-dark text-xl sm:text-2xl mb-3">
-                Your message sent successfully
-              </h3>
-
-              <p className="max-w-[491px] w-full mx-auto mb-7.5">
-                Thank you so much for your message. We check e-mail frequently
-                and will try our best to respond to your inquiry.
-              </p>
-
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 font-medium text-white bg-blue py-3 px-6 rounded-md ease-out duration-200 hover:bg-blue-dark"
-              >
-                <svg
-                  className="fill-current"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M16.6654 9.37502C17.0105 9.37502 17.2904 9.65484 17.2904 10C17.2904 10.3452 17.0105 10.625 16.6654 10.625H8.95703L8.95703 15C8.95703 15.2528 8.80476 15.4807 8.57121 15.5774C8.33766 15.6742 8.06884 15.6207 7.89009 15.442L2.89009 10.442C2.77288 10.3247 2.70703 10.1658 2.70703 10C2.70703 9.83426 2.77288 9.67529 2.89009 9.55808L7.89009 4.55808C8.06884 4.37933 8.33766 4.32586 8.57121 4.42259C8.80475 4.51933 8.95703 4.74723 8.95703 5.00002L8.95703 9.37502H16.6654Z"
-                    fill=""
-                  />
-                </svg>
-                Back to Home
-              </Link>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <Card className="text-center">
+          <CardHeader className="pb-4">
+            {/* Icono de éxito */}
+            <div className="mx-auto mb-4">
+              {config.icon}
             </div>
-          </div>
+            
+            {/* Título */}
+            <CardTitle className="text-2xl text-gray-900">
+              {config.title}
+            </CardTitle>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            {/* Descripción */}
+            <p className="text-gray-600 leading-relaxed">
+              {config.description}
+            </p>
+
+            {/* Email de confirmación */}
+            {email && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-center space-x-2 text-green-700">
+                  <Mail className="w-4 h-4" />
+                  <span className="text-sm font-medium">
+                    Enviado a: {email}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Próximos pasos */}
+            <div className="bg-gray-50 rounded-lg p-4 text-left">
+              <h4 className="font-semibold text-gray-900 mb-3">
+                ¿Qué sigue ahora?
+              </h4>
+              <ul className="text-sm text-gray-600 space-y-2">
+                {config.nextSteps.map((step, index) => (
+                  <li key={index} className="flex items-start">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                    {step}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Botón principal */}
+              {redirectUrl ? (
+                <Button asChild className="flex-1 bg-blaze-orange-600 hover:bg-blaze-orange-700">
+                  <Link href={redirectUrl}>
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    {redirectText || 'Continuar'}
+                  </Link>
+                </Button>
+              ) : (
+                <Button asChild className="flex-1 bg-blaze-orange-600 hover:bg-blaze-orange-700">
+                  <Link href="/">
+                    <Home className="w-4 h-4 mr-2" />
+                    Ir al inicio
+                  </Link>
+                </Button>
+              )}
+
+              {/* Botón secundario - Volver */}
+              {showGoBack && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleGoBack}
+                  className="flex-1"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Volver
+                </Button>
+              )}
+            </div>
+
+            {/* Enlaces útiles */}
+            <div className="border-t pt-4">
+              <p className="text-sm text-gray-500 mb-3">
+                Mientras tanto, podés:
+              </p>
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <Link 
+                  href="/shop" 
+                  className="text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors"
+                >
+                  Ver productos
+                </Link>
+                <Link 
+                  href="/offers" 
+                  className="text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors"
+                >
+                  Ofertas
+                </Link>
+                <Link 
+                  href="/help" 
+                  className="text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors"
+                >
+                  Ayuda
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Información adicional */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-500">
+            ¿No recibiste el email?{' '}
+            <Link 
+              href="/contact" 
+              className="text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors"
+            >
+              Contactanos
+            </Link>
+            {' '}y te ayudamos.
+          </p>
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 };
 
+// ===================================
+// COMPONENTES ESPECIALIZADOS
+// ===================================
+
+const ContactSuccess: React.FC<Omit<MailSuccessProps, 'type'>> = (props) => (
+  <MailSuccess {...props} type="contact" />
+);
+
+const NewsletterSuccess: React.FC<Omit<MailSuccessProps, 'type'>> = (props) => (
+  <MailSuccess {...props} type="newsletter" />
+);
+
+const OrderSuccess: React.FC<Omit<MailSuccessProps, 'type'>> = (props) => (
+  <MailSuccess {...props} type="order" />
+);
+
+// ===================================
+// EXPORTS
+// ===================================
+
+export type { MailSuccessProps };
+export { ContactSuccess, NewsletterSuccess, OrderSuccess };
 export default MailSuccess;

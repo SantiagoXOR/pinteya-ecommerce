@@ -3,7 +3,7 @@
 // ===================================
 
 import React from 'react';
-import { PRODUCT_CATEGORIES } from '@/constants/shop';
+import { useCategoryData } from '@/hooks/useCategoryData';
 
 interface ProductType {
   name: string;
@@ -21,14 +21,38 @@ const ProductTypesList: React.FC<ProductTypesListProps> = ({
   onCategorySelect,
   selectedCategory,
 }) => {
-  // Tipos de productos relevantes para pinturería (datos dinámicos)
-  const productTypes: ProductType[] = Object.values(PRODUCT_CATEGORIES).map(category => ({
+  // Obtener categorías dinámicas desde la API
+  const { categories: apiCategories, loading } = useCategoryData({
+    autoFetch: true,
+    fallbackCategories: [],
+    enableAnalytics: false,
+  });
+
+  // Transformar categorías de la API al formato esperado
+  const productTypes: ProductType[] = apiCategories.map(category => ({
     name: category.name,
-    slug: category.slug,
-    description: category.description,
-    // TODO: Obtener conteo real desde la API
-    products: 0,
+    slug: category.slug || category.id,
+    description: category.description || `Productos de ${category.name.toLowerCase()}`,
+    products: category.products_count || 0,
   }));
+
+  // Mostrar estado de carga si las categorías están cargando
+  if (loading) {
+    return (
+      <div className="mb-7.5">
+        <h3 className="font-medium text-dark text-lg mb-4">
+          Tipos de Productos
+        </h3>
+        <div className="space-y-2">
+          {[...Array(4)].map((_, index) => (
+            <div key={index} className="w-full p-2 rounded bg-gray-100 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-7.5">

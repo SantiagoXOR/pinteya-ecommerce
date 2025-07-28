@@ -4,7 +4,6 @@ const PasswordChange = () => {
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implementar cambio de contraseña cuando Clerk esté activo
-    console.log('Cambio de contraseña - funcionalidad pendiente');
   };
 
   return (

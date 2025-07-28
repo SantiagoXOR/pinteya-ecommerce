@@ -10,7 +10,6 @@ import { createClient } from '@supabase/supabase-js';
 // ===================================
 export async function GET(request: NextRequest) {
   try {
-    console.log('🚀 Iniciando tests desde API...');
 
     // Test básico de conexión a Supabase
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

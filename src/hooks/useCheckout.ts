@@ -298,7 +298,6 @@ export const useCheckout = () => {
   // CALLBACKS PARA WALLET BRICK
   // ===================================
   const handleWalletReady = useCallback(() => {
-    console.log('Wallet Brick cargado correctamente');
   }, []);
 
   const handleWalletError = useCallback((error: any) => {
@@ -311,7 +310,6 @@ export const useCheckout = () => {
   }, []);
 
   const handleWalletSubmit = useCallback((data: any) => {
-    console.log('Pago enviado desde Wallet Brick:', data);
     setCheckoutState(prev => ({ ...prev, step: 'redirect' }));
   }, []);
 

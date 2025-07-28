@@ -208,7 +208,6 @@ export async function safeApiResponseJson<T = any>(response: Response): Promise<
 
   try {
     if (DEBUG_MODE) {
-      console.log('🔍 safeApiResponseJson - Response status:', response.status, response.statusText);
     }
 
     // Verificar que la respuesta sea válida
@@ -218,7 +217,6 @@ export async function safeApiResponseJson<T = any>(response: Response): Promise<
       try {
         const errorText = await response.text();
         if (DEBUG_MODE) {
-          console.log('❌ Error response body:', errorText);
         }
         errorDetails = errorText ? ` - ${errorText}` : '';
       } catch (textError) {
@@ -237,14 +235,12 @@ export async function safeApiResponseJson<T = any>(response: Response): Promise<
     // Obtener el texto primero
     const text = await response.text();
     if (DEBUG_MODE) {
-      console.log('📄 Response text length:', text.length);
       console.log('📄 Response text preview:', text.substring(0, 200) + (text.length > 200 ? '...' : ''));
     }
 
     // Parsear de forma segura
     const parseResult = safeJsonParse<T>(text);
     if (DEBUG_MODE) {
-      console.log('🔍 Parse result:', { success: parseResult.success, error: parseResult.error });
     }
 
     return parseResult;
@@ -278,6 +274,5 @@ export function initializeJsonSafety(): void {
   const cleanedCount = cleanCorruptedLocalStorage(keysToCheck);
   
   if (cleanedCount > 0) {
-    console.info(`🧹 Cleaned ${cleanedCount} corrupted localStorage entries`);
   }
 }

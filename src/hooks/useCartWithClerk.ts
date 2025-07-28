@@ -32,7 +32,6 @@ export const useCartWithClerk = () => {
       const temporaryItems = loadCartFromStorage();
       
       if (temporaryItems.length > 0) {
-        console.log(`Migrating ${temporaryItems.length} items for user ${userId}`);
         
         // Migrar items al backend (implementación futura)
         const migrationSuccess = await migrateTemporaryCart(temporaryItems, userId);
@@ -40,7 +39,6 @@ export const useCartWithClerk = () => {
         if (migrationSuccess) {
           // Limpiar localStorage después de migración exitosa
           clearCartFromStorage();
-          console.log('Cart migration completed successfully');
         }
       }
       

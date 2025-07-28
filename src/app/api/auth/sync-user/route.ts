@@ -20,16 +20,13 @@ const isClerkConfigured = () => {
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('=== INICIO GET /api/auth/sync-user ===');
 
     const url = new URL(request.url);
     const email = url.searchParams.get('email');
 
-    console.log('Email recibido:', email);
 
     // Verificar configuración básica
     const clerkConfigured = isClerkConfigured();
-    console.log('Clerk configurado:', clerkConfigured);
 
     if (!clerkConfigured) {
       console.error('Clerk no está configurado correctamente');
@@ -41,7 +38,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 503 });
     }
 
-    console.log('supabaseAdmin disponible:', !!supabaseAdmin);
 
     if (!supabaseAdmin) {
       console.error('Cliente administrativo de Supabase no disponible');
@@ -63,7 +59,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar usuario en la base de datos
-    console.log('Consultando usuario en Supabase...');
     const { data: user, error } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
@@ -71,7 +66,6 @@ export async function GET(request: NextRequest) {
       .eq('is_active', true)
       .single();
 
-    console.log('Resultado de consulta:', { user: !!user, error: error?.code });
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -111,7 +105,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('=== INICIO POST /api/auth/sync-user ===');
     
     // Verificar configuración básica
     if (!isClerkConfigured()) {
@@ -149,7 +142,6 @@ export async function POST(request: NextRequest) {
 
     const { email, firstName, lastName, clerkUserId } = body;
 
-    console.log('Datos recibidos:', { email, firstName, lastName, clerkUserId });
 
     // Validaciones
     if (!clerkUserId) {
@@ -171,7 +163,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar si el usuario ya existe (por email O clerk_user_id)
-    console.log('Verificando si el usuario existe...');
     const { data: existingUser, error: fetchError } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
@@ -189,7 +180,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (existingUser) {
-      console.log('Usuario existe, actualizando...');
       // Actualizar usuario existente
       const { data: updatedUser, error: updateError } = await supabaseAdmin
         .from('user_profiles')
@@ -223,7 +213,6 @@ export async function POST(request: NextRequest) {
       };
       return NextResponse.json(successResponse);
     } else {
-      console.log('Usuario no existe, creando nuevo...');
       // Crear nuevo usuario
       const { data: newUser, error: insertError } = await supabaseAdmin
         .from('user_profiles')

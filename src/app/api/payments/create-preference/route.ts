@@ -214,7 +214,6 @@ export async function POST(request: NextRequest) {
 
     // Si no hay usuario autenticado, usar usuario temporal
     if (!userId) {
-      console.log('No authenticated user found, using temporary user');
       userId = '00000000-0000-4000-8000-000000000000';
       userEmail = orderData.payer.email;
 

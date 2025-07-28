@@ -27,11 +27,6 @@ export async function getProducts(filters?: ProductFilters): Promise<PaginatedRe
     }
 
     const url = `/api/products?${searchParams.toString()}`;
-    const DEBUG_MODE = process.env.NODE_ENV === 'development';
-
-    if (DEBUG_MODE) {
-      console.log('🔍 Fetching products from:', url);
-    }
 
     const response = await fetch(url, {
       method: 'GET',
@@ -40,16 +35,8 @@ export async function getProducts(filters?: ProductFilters): Promise<PaginatedRe
       },
     });
 
-    if (DEBUG_MODE) {
-      console.log('📡 Response status:', response.status, response.statusText);
-    }
-
     // Usar parsing seguro de JSON
     const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response);
-
-    if (DEBUG_MODE) {
-      console.log('🔍 Parse result:', { success: result.success, error: result.error });
-    }
 
     if (!result.success) {
       console.error('❌ JSON parsing failed:', result.error);
@@ -85,9 +72,6 @@ export async function getProducts(filters?: ProductFilters): Promise<PaginatedRe
       };
     }
 
-    if (DEBUG_MODE) {
-      console.log('✅ Products loaded successfully:', result.data?.data?.length || 0, 'items');
-    }
     return result.data;
   } catch (error) {
     console.error('❌ Error obteniendo productos:', error);

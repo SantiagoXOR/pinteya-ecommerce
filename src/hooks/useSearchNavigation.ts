@@ -90,7 +90,6 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
     // Callback después de navegar
     onAfterNavigate?.(searchUrl);
     
-    console.log('🔍 useSearchNavigation: Navegando a:', searchUrl);
   }, [router, searchParams, preserveParams, replace, scrollToTop, onBeforeNavigate, onAfterNavigate]);
 
   // ===================================
@@ -106,7 +105,6 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
     router.push(productUrl);
     onAfterNavigate?.(productUrl);
     
-    console.log('🔍 useSearchNavigation: Navegando a producto:', productUrl);
   }, [router, onBeforeNavigate, onAfterNavigate]);
 
   // ===================================
@@ -122,7 +120,6 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
     router.push(categoryUrl);
     onAfterNavigate?.(categoryUrl);
     
-    console.log('🔍 useSearchNavigation: Navegando a categoría:', categoryUrl);
   }, [router, onBeforeNavigate, onAfterNavigate]);
 
   // ===================================
@@ -141,7 +138,6 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
     const searchUrl = `/search?${params.toString()}`;
     router.prefetch(searchUrl);
     
-    console.log('🔍 useSearchNavigation: Prefetching:', searchUrl);
   }, [router]);
 
   const prefetchProduct = useCallback((productId: string, productSlug?: string) => {
@@ -150,7 +146,6 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
       : `/products/${productId}`;
     
     router.prefetch(productUrl);
-    console.log('🔍 useSearchNavigation: Prefetching product:', productUrl);
   }, [router]);
 
   // ===================================

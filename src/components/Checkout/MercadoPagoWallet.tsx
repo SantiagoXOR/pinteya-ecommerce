@@ -115,7 +115,6 @@ export default function MercadoPagoWallet({
               onError?.(error);
             },
             onSubmit: (data: any) => {
-              console.log('Pago enviado:', data);
               onSubmit?.(data);
             },
           },

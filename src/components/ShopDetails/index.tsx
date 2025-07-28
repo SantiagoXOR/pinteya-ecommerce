@@ -106,7 +106,6 @@ const ShopDetails = () => {
     openPreviewModal();
   };
 
-  console.log(product);
 
   return (
     <>
@@ -311,7 +310,6 @@ const ShopDetails = () => {
                         cta="Agregar al carrito"
                         onAddToCart={() => {
                           // Lógica de agregar al carrito (ya existe en el componente principal)
-                          console.log('Agregado desde CommercialProductCard en detalle');
                         }}
                         showCartAnimation={true}
                         freeShipping={(product.discountedPrice || product.price) >= 15000}

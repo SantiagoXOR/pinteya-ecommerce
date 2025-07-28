@@ -102,11 +102,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       setDebouncedQuery(value);
 
       // Analytics tracking
-      if (value.trim()) {
-        console.log('🔍 useSearchOptimized: Query debounced:', value);
-        console.log('🔍 useSearchOptimized: New debouncedQuery value:', value);
-        console.log('🔍 useSearchOptimized: Value type:', typeof value);
-        console.log('🔍 useSearchOptimized: Value length:', value?.length);
+      if (value.trim() && process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_SEARCH === 'true') {
         console.log('🔍 useSearchOptimized: Query enabled condition will be:', !!value?.trim());
       }
     },
@@ -136,13 +132,10 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       const [, , searchQuery] = queryKey;
       if (!searchQuery?.trim()) return [];
 
-      console.log('🔍 useSearchOptimized: *** TanStack Query EXECUTING ***');
-      console.log('🔍 useSearchOptimized: Executing search for:', searchQuery);
 
       try {
         // Usar la API de búsqueda correcta
         const url = `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${maxSuggestions}`;
-        console.log('🔍 useSearchOptimized: Making API call to:', url);
 
         const response = await fetch(url, {
           method: 'GET',
@@ -158,8 +151,6 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
         }
 
         const data = await response.json();
-        console.log('🔍 useSearchOptimized: API response received:', data);
-        console.log('🔍 useSearchOptimized: Products count:', data.products?.length || 0);
 
         return data.products || [];
       } catch (error) {
@@ -169,7 +160,6 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     },
     enabled: (() => {
       const isEnabled = !!debouncedQuery?.trim() && debouncedQuery.length >= 2;
-      console.log('🔍 useSearchOptimized: Query enabled condition:', isEnabled, 'for query:', debouncedQuery);
       return isEnabled;
     })(),
     ...searchQueryConfig,
@@ -179,33 +169,27 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
   // SUGGESTIONS GENERATION
   // ===================================
 
-  console.log('🔍 useSearchOptimized: *** ABOUT TO GENERATE SUGGESTIONS ***');
-  console.log('🔍 useSearchOptimized: Current state before suggestions:', {
-    query,
-    debouncedQuery,
-    searchResults: searchResults?.length || 0,
-    isLoading,
-    error: !!error
-  });
+  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_SEARCH === 'true') {
+    console.log('🔍 useSearchOptimized: Current state before suggestions:', {
+      query,
+      debouncedQuery,
+      searchResults: searchResults?.length || 0,
+      isLoading,
+      error: !!error
+    });
+  }
 
   const suggestions: SearchSuggestion[] = useMemo(() => {
     const allSuggestions: SearchSuggestion[] = [];
     const hasQuery = !!debouncedQuery?.trim();
 
-    console.log('🔍 useSearchOptimized: === GENERATING SUGGESTIONS ===');
-    console.log('🔍 useSearchOptimized: hasQuery:', hasQuery);
-    console.log('🔍 useSearchOptimized: debouncedQuery:', `"${debouncedQuery}"`);
-    console.log('🔍 useSearchOptimized: query (current):', `"${query}"`);
-    console.log('🔍 useSearchOptimized: isLoading:', isLoading);
-    console.log('🔍 useSearchOptimized: error:', error);
-    console.log('🔍 useSearchOptimized: searchResults:', searchResults);
-    console.log('🔍 useSearchOptimized: searchResults type:', typeof searchResults);
-    console.log('🔍 useSearchOptimized: searchResults isArray:', Array.isArray(searchResults));
-    console.log('🔍 useSearchOptimized: searchResults length:', searchResults?.length);
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_SEARCH === 'true') {
+      console.log('🔍 useSearchOptimized: query (current):', `"${query}"`);
+      console.log('🔍 useSearchOptimized: searchResults isArray:', Array.isArray(searchResults));
+    }
 
     if (hasQuery) {
       // CUANDO HAY TEXTO: Priorizar productos SIEMPRE
-      console.log('🔍 useSearchOptimized: *** PROCESSING QUERY MODE ***');
 
       // Extraer productos de la respuesta de la API
       let products = [];
@@ -213,23 +197,18 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       // Si searchResults es un array directamente
       if (Array.isArray(searchResults)) {
         products = searchResults;
-        console.log('🔍 useSearchOptimized: ✅ searchResults is direct array, length:', products.length);
       }
       // Si searchResults es un objeto con propiedad data (respuesta de API)
       else if (searchResults && typeof searchResults === 'object' && Array.isArray(searchResults.data)) {
         products = searchResults.data;
-        console.log('🔍 useSearchOptimized: ✅ searchResults.data is array, length:', products.length);
       }
       // Si searchResults es un objeto con propiedad products
       else if (searchResults && typeof searchResults === 'object' && Array.isArray(searchResults.products)) {
         products = searchResults.products;
-        console.log('🔍 useSearchOptimized: ✅ searchResults.products is array, length:', products.length);
       }
 
       if (products.length > 0) {
-        console.log('🔍 useSearchOptimized: Processing', products.length, 'products');
         const productSuggestions = products.map((product: ProductWithCategory) => {
-          console.log('🔍 useSearchOptimized: Mapping product:', product.name);
           return {
             id: product.id.toString(),
             type: 'product' as const,
@@ -241,22 +220,21 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
           };
         });
         allSuggestions.push(...productSuggestions);
-        console.log('🔍 useSearchOptimized: ✅ Added', productSuggestions.length, 'product suggestions');
       } else {
-        console.log('🔍 useSearchOptimized: ❌ No products found in searchResults');
-        console.log('🔍 useSearchOptimized: searchResults structure:', {
-          isArray: Array.isArray(searchResults),
-          hasData: searchResults?.data ? 'yes' : 'no',
-          hasProducts: searchResults?.products ? 'yes' : 'no',
-          dataLength: searchResults?.data?.length,
-          productsLength: searchResults?.products?.length,
-          keys: searchResults ? Object.keys(searchResults) : 'null'
-        });
+        if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_SEARCH === 'true') {
+          console.log('🔍 useSearchOptimized: searchResults structure:', {
+            isArray: Array.isArray(searchResults),
+            hasData: searchResults?.data ? 'yes' : 'no',
+            hasProducts: searchResults?.products ? 'yes' : 'no',
+            dataLength: searchResults?.data?.length,
+            productsLength: searchResults?.products?.length,
+            keys: searchResults ? Object.keys(searchResults) : 'null'
+          });
+        }
       }
 
       // Solo agregar recent/trending si hay muy pocos productos
       if (allSuggestions.length < 2) {
-        console.log('🔍 useSearchOptimized: Adding recent searches as fallback');
         const recentSuggestions = getRecentSearches(2).map((search, index) => ({
           id: `recent-${index}`,
           type: 'recent' as const,
@@ -264,11 +242,9 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
           href: `/shop?q=${encodeURIComponent(search)}`,
         }));
         allSuggestions.push(...recentSuggestions);
-        console.log('🔍 useSearchOptimized: Added', recentSuggestions.length, 'recent suggestions as fallback');
       }
     } else {
       // CUANDO NO HAY TEXTO: Mostrar trending y recent
-      console.log('🔍 useSearchOptimized: *** PROCESSING EMPTY MODE ***');
 
       // Agregar búsquedas recientes primero
       const recentSuggestions = getRecentSearches(3).map((search, index) => ({
@@ -278,7 +254,6 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
         href: `/shop?q=${encodeURIComponent(search)}`,
       }));
       allSuggestions.push(...recentSuggestions);
-      console.log('🔍 useSearchOptimized: Added', recentSuggestions.length, 'recent suggestions');
 
       // Agregar trending searches
       if (allSuggestions.length < maxSuggestions) {
@@ -291,21 +266,18 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
           badge: trending.count ? `${trending.count}` : undefined
         }));
         allSuggestions.push(...trendingSuggestions);
-        console.log('🔍 useSearchOptimized: Added', trendingSuggestions.length, 'trending suggestions');
       }
     }
 
     const finalSuggestions = allSuggestions.slice(0, maxSuggestions);
-    console.log('🔍 useSearchOptimized: === FINAL RESULT ===');
-    console.log('🔍 useSearchOptimized: Final suggestions count:', finalSuggestions.length);
-    console.log('🔍 useSearchOptimized: Final suggestions types:', finalSuggestions.map(s => s.type));
-    console.log('🔍 useSearchOptimized: Final suggestions titles:', finalSuggestions.map(s => s.title));
-    console.log('🔍 useSearchOptimized: === END SUGGESTIONS ===');
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_SEARCH === 'true') {
+      console.log('🔍 useSearchOptimized: Final suggestions types:', finalSuggestions.map(s => s.type));
+      console.log('🔍 useSearchOptimized: Final suggestions titles:', finalSuggestions.map(s => s.title));
+    }
 
     return finalSuggestions;
   }, [debouncedQuery, searchResults, isLoading, error, maxSuggestions, trendingSearches]);
 
-  console.log('🔍 useSearchOptimized: Generated suggestions:', suggestions.length, suggestions);
 
   // ===================================
   // SEARCH FUNCTIONS
@@ -360,7 +332,6 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
   }, [saveRecentSearches, recentSearches, navigation, onSearch, searchResults, toastHandler, errorHandler]);
 
   const selectSuggestion = useCallback((suggestion: SearchSuggestion) => {
-    console.log('✅ useSearchOptimized: Suggestion selected:', suggestion.title);
 
     // Navegar según el tipo de sugerencia
     if (suggestion.type === 'product') {

@@ -50,7 +50,6 @@ export default function SearchPage() {
       setError(null);
 
       try {
-        console.log('🔍 Buscando productos para:', query);
         const response = await searchProducts(query, 50); // Más resultados para la página
 
         if (response.success && response.data) {
@@ -257,7 +256,6 @@ export default function SearchPage() {
                 brand={product.category?.name}
                 onAddToCart={() => {
                   // TODO: Implementar lógica de agregar al carrito
-                  console.log('Agregando al carrito:', product.name);
                 }}
                 className={`bg-white shadow-sm hover:shadow-md transition-shadow ${
                   viewMode === 'list' ? 'flex flex-row items-center p-4' : ''

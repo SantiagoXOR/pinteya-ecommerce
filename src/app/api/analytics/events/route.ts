@@ -1,6 +1,6 @@
 /**
  * API Route para recibir eventos de analytics
- * Almacena eventos en Supabase y procesa métricas
+ * Optimizado para procesamiento asíncrono y cache
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -11,11 +11,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Cache simple en memoria para eventos recientes (evita duplicados)
+const eventCache = new Map<string, number>();
+const CACHE_TTL = 5000; // 5 segundos
+
 export async function POST(request: NextRequest) {
   try {
     const event = await request.json();
-    
-    // Validar estructura del evento
+
+    // Validación rápida y simple
     if (!event.event || !event.category || !event.action) {
       return NextResponse.json(
         { error: 'Evento inválido: faltan campos requeridos' },
@@ -23,32 +27,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insertar evento en Supabase
-    const { data, error } = await supabase
-      .from('analytics_events')
-      .insert({
-        event_name: event.event,
-        category: event.category,
-        action: event.action,
-        label: event.label,
-        value: event.value,
-        user_id: event.userId,
-        session_id: event.sessionId,
-        page: event.page,
-        user_agent: event.userAgent,
-        metadata: event.metadata,
-        created_at: new Date(event.timestamp).toISOString(),
-      });
+    // Cache key para evitar eventos duplicados
+    const cacheKey = `${event.event}-${event.category}-${event.action}-${event.sessionId}`;
+    const now = Date.now();
 
-    if (error) {
-      console.error('Error insertando evento:', error);
-      return NextResponse.json(
-        { error: 'Error almacenando evento' },
-        { status: 500 }
-      );
+    // Verificar cache para evitar duplicados recientes
+    if (eventCache.has(cacheKey)) {
+      const lastTime = eventCache.get(cacheKey)!;
+      if (now - lastTime < CACHE_TTL) {
+        return NextResponse.json({ success: true, cached: true });
+      }
     }
 
-    return NextResponse.json({ success: true, data });
+    // Actualizar cache
+    eventCache.set(cacheKey, now);
+
+    // Limpiar cache viejo periódicamente
+    if (eventCache.size > 1000) {
+      const cutoff = now - CACHE_TTL;
+      for (const [key, time] of eventCache.entries()) {
+        if (time < cutoff) {
+          eventCache.delete(key);
+        }
+      }
+    }
+
+    // Procesar evento de forma asíncrona (no bloquear respuesta)
+    setImmediate(async () => {
+      try {
+        await supabase
+          .from('analytics_events')
+          .insert({
+            event_name: event.event,
+            category: event.category,
+            action: event.action,
+            label: event.label,
+            value: event.value,
+            user_id: event.userId,
+            session_id: event.sessionId,
+            page: event.page,
+            user_agent: event.userAgent,
+            metadata: event.metadata,
+            created_at: new Date(event.timestamp).toISOString(),
+          });
+      } catch (error) {
+        console.error('Error procesando evento analytics (async):', error);
+      }
+    });
+
+    // Respuesta inmediata
+    return NextResponse.json(
+      { success: true },
+      {
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
   } catch (error) {
     console.error('Error procesando evento:', error);
     return NextResponse.json(

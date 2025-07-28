@@ -101,7 +101,6 @@ export async function syncUserWithSupabase(clerkUser: ClerkUser): Promise<void> 
       throw error;
     }
 
-    console.log('Usuario sincronizado exitosamente:', userData.email);
   } catch (error) {
     console.error('Error en sincronización de usuario:', error);
     throw error;
@@ -157,7 +156,6 @@ export async function deleteUserFromSupabase(clerkUserId: string): Promise<void>
       throw error;
     }
 
-    console.log('Usuario eliminado exitosamente de Supabase:', clerkUserId);
   } catch (error) {
     console.error('Error en eliminación de usuario:', error);
     throw error;

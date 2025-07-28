@@ -1,7 +1,7 @@
 "use client";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useCallback, useRef, useEffect } from "react";
-import { useCategories } from "@/hooks/useCategories";
+import { useCategoriesWithDynamicCounts } from "@/hooks/useCategoriesWithDynamicCounts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,11 +15,10 @@ import SingleItem from "./SingleItem";
 const Categories = () => {
   const sliderRef = useRef<any>(null);
 
-  // Hook para obtener categorías dinámicas
-  const { categories, loading, error } = useCategories({
-    initialFilters: {
-      // Solo usar filtros válidos para CategoryFilters
-    },
+  // Hook para obtener categorías con conteos dinámicos
+  const { categories, loading, error } = useCategoriesWithDynamicCounts({
+    enableDynamicCounts: true,
+    baseFilters: {},
   });
 
   const handlePrev = useCallback(() => {

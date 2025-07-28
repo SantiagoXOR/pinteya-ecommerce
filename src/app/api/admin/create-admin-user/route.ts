@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
     let authUser;
 
     if (userExists) {
-      console.log('Usuario ya existe en auth.users:', email);
       authUser = userExists;
     } else {
       // Crear usuario en Supabase Auth
@@ -69,7 +68,6 @@ export async function POST(request: NextRequest) {
       }
 
       authUser = newAuthUser.user;
-      console.log('Usuario creado en auth.users:', authUser.id);
     }
 
     // Verificar si el perfil ya existe

@@ -55,12 +55,10 @@ export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, S
       searchLimit,
       saveRecentSearches,
       onSearch: (query, results) => {
-        console.log(`🔍 SearchAutocompleteIntegrated: Búsqueda ejecutada: "${query}" - ${results.length} resultados`);
         onSearchExecuted?.(query, results);
         onSearch?.(query);
       },
       onSuggestionSelect: (suggestion) => {
-        console.log(`✅ SearchAutocompleteIntegrated: Sugerencia seleccionada: ${suggestion.title}`);
         onSuggestionSelected?.(suggestion);
         onSuggestionSelect?.(suggestion);
       }
@@ -78,19 +76,16 @@ export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, S
 
     // Manejar envío de búsqueda
     const handleSearch = (query: string) => {
-      console.log('🔍 SearchAutocompleteIntegrated: handleSearch llamado con:', query);
       executeSearch(query);
     };
 
     // Manejar selección de sugerencia
     const handleSuggestionSelect = (suggestion: any) => {
-      console.log('✅ SearchAutocompleteIntegrated: handleSuggestionSelect llamado con:', suggestion);
       selectSuggestion(suggestion);
     };
 
     // Manejar limpieza
     const handleClear = () => {
-      console.log('🧹 SearchAutocompleteIntegrated: handleClear llamado');
       clearSearch();
     };
 

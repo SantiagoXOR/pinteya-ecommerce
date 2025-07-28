@@ -52,28 +52,28 @@ const iconMapping = {
   'adhesivos-selladores': 'selladores.png',
   'esmaltes-sinteticos': 'sinteticos.png',
   
-  // Iconos numerados genéricos para otras categorías
-  'pinturas': 'categories-01.png',
-  'herramientas': 'categories-02.png',
-  'preparacion-superficies': 'categories-03.png',
-  'proteccion-seguridad': 'categories-04.png',
-  'pinturas-latex': 'categories-05.png',
-  'impermeabilizantes': 'categories-06.png',
-  'pinturas-especiales': 'categories-07.png',
-  
-  // Para categorías sin PNG específico, usar placeholder
-  'pinceles': 'placeholder.png',
-  'rodillos': 'placeholder.png',
-  'extensores-mangos': 'placeholder.png',
-  'espatulas': 'placeholder.png',
-  'lijas-abrasivos': 'placeholder.png',
-  'pistolas-pintura': 'placeholder.png',
-  'herramientas-pintura': 'placeholder.png',
-  'pinturas-techos': 'placeholder.png',
-  'pinturas-exteriores': 'placeholder.png',
-  'pinturas-interiores': 'placeholder.png',
-  'pinturas-madera': 'placeholder.png',
-  'tratamientos-madera': 'placeholder.png'
+  // Usar imágenes existentes para categorías sin PNG específico
+  'pinturas': 'decoraciones.png',
+  'herramientas': 'decoraciones.png',
+  'preparacion-superficies': 'preparaciones.png',
+  'proteccion-seguridad': 'decoraciones.png',
+  'pinturas-latex': 'interiores.png',
+  'impermeabilizantes': 'humedades.png',
+  'pinturas-especiales': 'decoraciones.png',
+
+  // Para categorías sin PNG específico, usar imágenes existentes
+  'pinceles': 'decoraciones.png',
+  'rodillos': 'decoraciones.png',
+  'extensores-mangos': 'decoraciones.png',
+  'espatulas': 'decoraciones.png',
+  'lijas-abrasivos': 'preparaciones.png',
+  'pistolas-pintura': 'decoraciones.png',
+  'herramientas-pintura': 'decoraciones.png',
+  'pinturas-techos': 'techos.png',
+  'pinturas-exteriores': 'exteriores.png',
+  'pinturas-interiores': 'interiores.png',
+  'pinturas-madera': 'maderas.png',
+  'tratamientos-madera': 'maderas.png'
 };
 
 // ===================================

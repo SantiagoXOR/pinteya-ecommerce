@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
     // Extraer parámetros de query
     const queryParams = {
       category: searchParams.get('category') || undefined,
+      categories: searchParams.get('categories')?.split(',').filter(Boolean) || undefined,
       brand: searchParams.get('brand') || undefined,
+      brands: searchParams.get('brands')?.split(',').filter(Boolean) || undefined,
+      paintType: searchParams.get('paintType') || undefined,
+      paintTypes: searchParams.get('paintTypes')?.split(',').filter(Boolean) || undefined,
       priceMin: searchParams.get('priceMin') ? Number(searchParams.get('priceMin')) : undefined,
       priceMax: searchParams.get('priceMax') ? Number(searchParams.get('priceMax')) : undefined,
       search: searchParams.get('search') || undefined,
@@ -55,11 +59,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 503 });
     }
 
-    // Construir query base
+    // Construir query base optimizada (solo campos necesarios)
     let query = supabase
       .from('products')
       .select(`
-        *,
+        id, name, slug, price, discounted_price, brand, stock, images,
         category:categories(id, name, slug)
       `, { count: 'exact' });
 
@@ -77,8 +81,36 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Filtro por múltiples categorías (nuevo)
+    if (filters.categories && filters.categories.length > 0) {
+      const { data: categoriesData } = await supabase
+        .from('categories')
+        .select('id')
+        .in('slug', filters.categories);
+
+      if (categoriesData && categoriesData.length > 0) {
+        const categoryIds = categoriesData.map(cat => cat.id);
+        query = query.in('category_id', categoryIds);
+      }
+    }
+
     if (filters.brand) {
       query = query.eq('brand', filters.brand);
+    }
+
+    // Filtro por múltiples marcas (nuevo)
+    if (filters.brands && filters.brands.length > 0) {
+      query = query.in('brand', filters.brands);
+    }
+
+    // Filtro por tipo de pintura (nuevo)
+    if (filters.paintType) {
+      query = query.eq('paint_type', filters.paintType);
+    }
+
+    // Filtro por múltiples tipos de pintura (nuevo)
+    if (filters.paintTypes && filters.paintTypes.length > 0) {
+      query = query.in('paint_type', filters.paintTypes);
     }
 
     if (filters.priceMin) {
@@ -137,7 +169,13 @@ export async function GET(request: NextRequest) {
       message: `${products?.length || 0} productos encontrados`,
     };
 
-    return NextResponse.json(response);
+    // Agregar headers de cache para mejorar performance
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'Content-Type': 'application/json'
+      }
+    });
 
   } catch (error: any) {
     console.error('Error en GET /api/products:', error);

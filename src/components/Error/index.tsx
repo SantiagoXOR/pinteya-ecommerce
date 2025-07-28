@@ -1,62 +1,247 @@
-import React from "react";
-import Breadcrumb from "../Common/Breadcrumb";
-import Link from "next/link";
-import Image from "next/image";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Home, ArrowLeft, Search, HelpCircle } from "lucide-react";
+// ===================================
+// ERROR COMPONENT
+// ===================================
+// Componente de error para páginas de error
 
-const Error = () => {
+"use client";
+
+import React from 'react';
+import Link from 'next/link';
+import { AlertTriangle, Home, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+// ===================================
+// INTERFACES
+// ===================================
+
+interface ErrorPageProps {
+  /** Código de error */
+  errorCode?: string | number;
+  /** Título del error */
+  title?: string;
+  /** Descripción del error */
+  description?: string;
+  /** Mostrar botón de retry */
+  showRetry?: boolean;
+  /** Mostrar botón de volver */
+  showGoBack?: boolean;
+  /** Callback para retry */
+  onRetry?: () => void;
+  /** Callback para volver */
+  onGoBack?: () => void;
+}
+
+// ===================================
+// COMPONENTE PRINCIPAL
+// ===================================
+
+const ErrorPage: React.FC<ErrorPageProps> = ({
+  errorCode = '404',
+  title,
+  description,
+  showRetry = false,
+  showGoBack = true,
+  onRetry,
+  onGoBack,
+}) => {
+  
+  // Configuración por defecto basada en el código de error
+  const getErrorConfig = (code: string | number) => {
+    const codeStr = String(code);
+    
+    switch (codeStr) {
+      case '404':
+        return {
+          title: title || 'Página no encontrada',
+          description: description || 'La página que buscás no existe o fue movida a otra ubicación.',
+          icon: <AlertTriangle className="w-16 h-16 text-yellow-500" />,
+          color: 'yellow',
+        };
+      case '500':
+        return {
+          title: title || 'Error interno del servidor',
+          description: description || 'Ocurrió un error inesperado. Nuestro equipo ha sido notificado.',
+          icon: <AlertTriangle className="w-16 h-16 text-red-500" />,
+          color: 'red',
+        };
+      case '403':
+        return {
+          title: title || 'Acceso denegado',
+          description: description || 'No tenés permisos para acceder a esta página.',
+          icon: <AlertTriangle className="w-16 h-16 text-orange-500" />,
+          color: 'orange',
+        };
+      default:
+        return {
+          title: title || 'Error',
+          description: description || 'Ocurrió un error inesperado.',
+          icon: <AlertTriangle className="w-16 h-16 text-gray-500" />,
+          color: 'gray',
+        };
+    }
+  };
+
+  const errorConfig = getErrorConfig(errorCode);
+
+  const handleGoBack = () => {
+    if (onGoBack) {
+      onGoBack();
+    } else if (typeof window !== 'undefined') {
+      window.history.back();
+    }
+  };
+
+  const handleRetry = () => {
+    if (onRetry) {
+      onRetry();
+    } else if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+  };
+
   return (
-    <>
-      <Breadcrumb title={"Error 404"} pages={["Error"]} />
-      <section className="overflow-hidden py-20 bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="max-w-[800px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-          <Card className="border-0 shadow-2 px-4 py-10 sm:py-15 lg:py-20 xl:py-25">
-            <div className="text-center">
-              <Image
-                src="/images/404.svg"
-                alt="404"
-                className="mx-auto mb-8 w-1/2 sm:w-auto"
-                width={288}
-                height={190}
-              />
-
-              <h2 className="font-medium text-dark text-xl sm:text-2xl mb-3">
-                Sorry, the page can’t be found
-              </h2>
-
-              <p className="max-w-[410px] w-full mx-auto mb-7.5">
-                The page you were looking for appears to have been moved,
-                deleted or does not exist.
-              </p>
-
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 font-medium text-white bg-tahiti-gold-500 py-3 px-6 rounded-md ease-out duration-200 hover:bg-tahiti-gold-700"
-              >
-                <svg
-                  className="fill-current"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M16.6654 9.37502C17.0105 9.37502 17.2904 9.65484 17.2904 10C17.2904 10.3452 17.0105 10.625 16.6654 10.625H8.95703L8.95703 15C8.95703 15.2528 8.80476 15.4807 8.57121 15.5774C8.33766 15.6742 8.06884 15.6207 7.89009 15.442L2.89009 10.442C2.77288 10.3247 2.70703 10.1658 2.70703 10C2.70703 9.83426 2.77288 9.67529 2.89009 9.55808L7.89009 4.55808C8.06884 4.37933 8.33766 4.32586 8.57121 4.42259C8.80475 4.51933 8.95703 4.74723 8.95703 5.00002L8.95703 9.37502H16.6654Z"
-                    fill=""
-                  />
-                </svg>
-                Back to Home
-              </Link>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <Card className="text-center">
+          <CardHeader className="pb-4">
+            {/* Icono de error */}
+            <div className="mx-auto mb-4">
+              {errorConfig.icon}
             </div>
-          </Card>
+            
+            {/* Código de error */}
+            <div className="text-6xl font-bold text-gray-300 mb-2">
+              {errorCode}
+            </div>
+            
+            {/* Título */}
+            <CardTitle className="text-2xl text-gray-900">
+              {errorConfig.title}
+            </CardTitle>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            {/* Descripción */}
+            <p className="text-gray-600 leading-relaxed">
+              {errorConfig.description}
+            </p>
+
+            {/* Sugerencias */}
+            <div className="bg-gray-50 rounded-lg p-4 text-left">
+              <h4 className="font-semibold text-gray-900 mb-2">
+                ¿Qué podés hacer?
+              </h4>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Verificá que la URL esté escrita correctamente</li>
+                <li>• Volvé a la página anterior</li>
+                <li>• Visitá nuestra página principal</li>
+                {showRetry && <li>• Intentá recargar la página</li>}
+              </ul>
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Botón principal - Ir al inicio */}
+              <Button asChild className="flex-1 bg-blaze-orange-600 hover:bg-blaze-orange-700">
+                <Link href="/">
+                  <Home className="w-4 h-4 mr-2" />
+                  Ir al inicio
+                </Link>
+              </Button>
+
+              {/* Botón secundario - Volver */}
+              {showGoBack && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleGoBack}
+                  className="flex-1"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Volver
+                </Button>
+              )}
+
+              {/* Botón de retry */}
+              {showRetry && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleRetry}
+                  className="flex-1"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Reintentar
+                </Button>
+              )}
+            </div>
+
+            {/* Enlaces útiles */}
+            <div className="border-t pt-4">
+              <p className="text-sm text-gray-500 mb-3">
+                Enlaces útiles:
+              </p>
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <Link 
+                  href="/shop" 
+                  className="text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors"
+                >
+                  Tienda
+                </Link>
+                <Link 
+                  href="/contact" 
+                  className="text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors"
+                >
+                  Contacto
+                </Link>
+                <Link 
+                  href="/help" 
+                  className="text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors"
+                >
+                  Ayuda
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Información adicional */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-500">
+            Si el problema persiste, podés{' '}
+            <Link 
+              href="/contact" 
+              className="text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors"
+            >
+              contactarnos
+            </Link>
+            {' '}para obtener ayuda.
+          </p>
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 };
 
-export default Error;
+// ===================================
+// COMPONENTES ESPECIALIZADOS
+// ===================================
+
+const Error404: React.FC<Omit<ErrorPageProps, 'errorCode'>> = (props) => (
+  <ErrorPage {...props} errorCode="404" />
+);
+
+const Error500: React.FC<Omit<ErrorPageProps, 'errorCode'>> = (props) => (
+  <ErrorPage {...props} errorCode="500" showRetry />
+);
+
+const Error403: React.FC<Omit<ErrorPageProps, 'errorCode'>> = (props) => (
+  <ErrorPage {...props} errorCode="403" />
+);
+
+// ===================================
+// EXPORTS
+// ===================================
+
+export type { ErrorPageProps };
+export { Error404, Error500, Error403 };
+export default ErrorPage;

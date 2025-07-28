@@ -143,7 +143,6 @@ export async function GET(request: NextRequest) {
             type: 'trending' as const
           }));
 
-          console.log('✅ Búsquedas trending obtenidas de analytics:', trendingSearches.length);
         }
       } catch (analyticsError) {
         console.warn('⚠️ Error obteniendo trending de analytics, usando fallback:', analyticsError);
@@ -152,7 +151,6 @@ export async function GET(request: NextRequest) {
 
     // Si no hay datos reales o hay pocos, usar datos por defecto
     if (trendingSearches.length < 3) {
-      console.log('📋 Usando búsquedas trending por defecto');
       
       let filteredDefaults = defaultTrendingSearches;
       
@@ -270,7 +268,6 @@ export async function POST(request: NextRequest) {
       if (error) {
         console.error('Error registrando búsqueda en analytics:', error);
       } else {
-        console.log('✅ Búsqueda registrada en analytics:', query);
       }
     }
 
