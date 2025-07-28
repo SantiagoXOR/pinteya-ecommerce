@@ -24,7 +24,7 @@ const AnalyticsDemo: React.FC = () => {
   const [hoverCount, setHoverCount] = useState(0);
   const { trackClick, trackHover, trackSearch } = useTrackInteraction();
   const { trackProductView, trackAddToCart } = useTrackEcommerce();
-  const { sessionMetrics } = useAnalytics();
+  const { sessionMetrics } = useOptimizedAnalytics();
 
   const handleDemoClick = () => {
     setClickCount(prev => prev + 1);

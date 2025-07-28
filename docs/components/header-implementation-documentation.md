@@ -2,10 +2,11 @@
 
 ## 📋 Resumen Ejecutivo
 
-**Componente**: Header Principal de Pinteya E-commerce  
-**Ubicación**: `src/components/Header/`  
-**Estado**: ✅ Completamente implementado y testeado  
-**Última actualización**: Enero 2025  
+**Componente**: Header Principal de Pinteya E-commerce
+**Ubicación**: `src/components/Header/`
+**Estado**: ✅ Completamente implementado y testeado
+**Última actualización**: Enero 2025
+**Bottom Navigation**: ⚠️ Temporalmente desactivado (Enero 2025)
 
 ## 🗂️ Estructura de Archivos
 

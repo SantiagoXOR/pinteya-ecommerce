@@ -13,7 +13,7 @@ import { useCartAnimation } from "@/hooks/useCartAnimation";
 import { MapPin, Loader2, ShoppingCart } from "lucide-react";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { HeaderLogo } from "@/components/ui/OptimizedLogo";
-import GeolocationDebugger from "./GeolocationDebugger";
+// import GeolocationDebugger from "./GeolocationDebugger"; // Componente de debugging desactivado
 
 const Header = () => {
   const [cartShake, setCartShake] = useState(false);
@@ -58,15 +58,16 @@ const Header = () => {
     }
   }, [product.length]);
 
-  // Efecto para solicitar geolocalización automáticamente
-  useEffect(() => {
-    // Solicitar ubicación automáticamente si no se ha detectado
-    if (permissionStatus === 'unknown' || permissionStatus === 'prompt') {
-      setTimeout(() => {
-        requestLocation();
-      }, 1000); // Delay de 1 segundo para evitar conflictos
-    }
-  }, [permissionStatus, requestLocation]);
+  // Geolocalización automática desactivada por ser intrusiva
+  // Los usuarios pueden activar manualmente la ubicación desde el TopBar
+  // useEffect(() => {
+  //   // Solicitar ubicación automáticamente si no se ha detectado
+  //   if (permissionStatus === 'unknown' || permissionStatus === 'prompt') {
+  //     setTimeout(() => {
+  //       requestLocation();
+  //     }, 1000); // Delay de 1 segundo para evitar conflictos
+  //   }
+  // }, [permissionStatus, requestLocation]);
 
   const handleOpenCartModal = () => {
     openCartModal();

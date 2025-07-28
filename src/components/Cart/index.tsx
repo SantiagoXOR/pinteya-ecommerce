@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ConfirmModal } from "@/components/ui/modal";
-import { ShoppingBag, Trash2, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Trash2, ArrowLeft, Sparkles, Palette } from "lucide-react";
 
 const Cart = () => {
   const cartItems = useAppSelector((state) => state.cartReducer.items);
@@ -100,23 +100,65 @@ const Cart = () => {
           <div className="max-w-[600px] w-full mx-auto px-4 sm:px-8 xl:px-0">
             <Card className="text-center p-12 border-0 shadow-2">
               <div className="mx-auto mb-8">
-                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
-                  <ShoppingBag className="w-12 h-12 text-gray-400" />
+                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center">
+                  <ShoppingBag className="w-12 h-12" style={{ color: '#ea5a17' }} />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                  Tu carrito está vacío
+                  ¡Tu carrito está vacío!
                 </h2>
                 <p className="text-gray-600 mb-8">
-                  ¡Descubre nuestros productos de pinturería y comienza a crear!
+                  Descubre nuestros productos de pinturería profesional<br />
+                  y comienza a crear algo increíble
                 </p>
               </div>
 
-              <Button variant="primary" size="lg" className="w-full sm:w-auto" asChild>
-                <Link href="/shop-with-sidebar">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Continuar Comprando
-                </Link>
-              </Button>
+              {/* Beneficios destacados */}
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 mb-8 border border-yellow-200">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-yellow-600" />
+                  <span className="font-semibold text-gray-700">Beneficios Pinteya</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span>Envío gratis desde $15.000</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span>Pago seguro con MercadoPago</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                    <span>Productos profesionales</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                  asChild
+                >
+                  <Link href="/">
+                    <Palette className="w-5 h-5 mr-2" />
+                    Explorar Productos
+                  </Link>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200"
+                  asChild
+                >
+                  <Link href="/">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Volver al Inicio
+                  </Link>
+                </Button>
+              </div>
             </Card>
           </div>
         </section>

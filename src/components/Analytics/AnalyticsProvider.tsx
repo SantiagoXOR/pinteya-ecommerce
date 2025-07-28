@@ -39,7 +39,7 @@ interface AnalyticsProviderProps {
   enableCustomAnalytics?: boolean;
 }
 
-export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
+export const AnalyticsProvider: React.FC<OptimizedAnalyticsProviderProps> = ({
   children,
   enableGA = true,
   enableCustomAnalytics = true,
@@ -125,7 +125,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
 
       // Track en nuestro sistema
       if (enableCustomAnalytics) {
-        await analytics.trackEvent(event, category, action, label, value, enrichedMetadata);
+        await optimizedAnalytics.trackEvent(event, category, action, label, value, enrichedMetadata);
       }
 
       // Track en Google Analytics

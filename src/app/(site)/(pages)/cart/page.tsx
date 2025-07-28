@@ -1,19 +1,15 @@
-import React from "react";
-import Cart from "@/components/Cart";
+import { redirect } from "next/navigation";
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "Cart Page | NextCommerce Nextjs E-commerce template",
-  description: "This is Cart Page for NextCommerce Template",
+  title: "Carrito - Pinteya E-commerce",
+  description: "Carrito de compras - Pinteya E-commerce",
   // other metadata
 };
 
 const CartPage = () => {
-  return (
-    <>
-      <Cart />
-    </>
-  );
+  // Redirigir a la homepage donde el usuario puede usar el CartSidebarModal
+  redirect("/");
 };
 
 export default CartPage;
