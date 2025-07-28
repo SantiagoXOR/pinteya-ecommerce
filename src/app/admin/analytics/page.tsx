@@ -27,7 +27,7 @@ import {
 const AnalyticsPage: React.FC = () => {
   const { user, isLoaded } = useUser();
   const { userProfile, isAdmin, hasPermission, isLoading: roleLoading } = useUserRole();
-  const { getEvents, getInteractions, getConversionMetrics } = useAnalytics();
+  const { getEvents, getInteractions, getConversionMetrics } = useOptimizedAnalytics();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'funnel' | 'heatmap'>('dashboard');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [conversionData, setConversionData] = useState({

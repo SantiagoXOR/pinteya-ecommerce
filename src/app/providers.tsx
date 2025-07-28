@@ -10,7 +10,7 @@ import { CartModalProvider } from "./context/CartSidebarModalContext";
 import { ReduxProvider } from "@/redux/provider";
 import { PreviewSliderProvider } from "./context/PreviewSliderContext";
 import CartPersistenceProvider from "@/components/providers/CartPersistenceProvider";
-import { AnalyticsProvider } from "@/components/Analytics/AnalyticsProvider";
+import { OptimizedAnalyticsProvider as AnalyticsProvider } from '@/components/Analytics/OptimizedAnalyticsProvider';
 import { QueryClientProvider } from "@/components/providers/QueryClientProvider";
 
 // Componentes UI
@@ -22,7 +22,7 @@ import PreviewSliderModal from "@/components/Common/PreviewSlider";
 import ScrollToTop from "@/components/Common/ScrollToTop";
 import PreLoader from "@/components/Common/PreLoader";
 import CartNotification, { useCartNotification } from "@/components/Common/CartNotification";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
+// import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import FloatingCartButton from "@/components/ui/floating-cart-button";
 
 // Componente ClerkWrapper simplificado siguiendo las mejores prácticas oficiales
@@ -92,7 +92,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const { notification, hideNotification } = useCartNotification();
 
     return (
-      <div className="mobile-bottom-nav-padding">
+      <div className="">{/* mobile-bottom-nav-padding - TEMPORALMENTE DESACTIVADO */}
         {loading ? (
           <PreLoader />
         ) : (
@@ -114,10 +114,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
                       {children}
                     </div>
                     <Footer />
-                    {/* Navegación móvil inferior - Solo visible en móviles */}
-                    <div className="md:hidden">
+                    {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
+                    {/* <div className="md:hidden">
                       <BottomNavigation />
-                    </div>
+                    </div> */}
 
                     {/* Botón de carrito flotante */}
                     <FloatingCartButton />

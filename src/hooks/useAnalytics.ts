@@ -97,7 +97,7 @@ export const useAnalytics = (): UseAnalyticsReturn => {
       userEmail: user?.emailAddresses?.[0]?.emailAddress,
     };
     
-    analytics.trackEvent(event, category, action, label, value, enrichedMetadata);
+    optimizedAnalytics.trackEvent(event, category, action, label, value, enrichedMetadata);
   }, [isEnabled, user]);
 
   const trackEcommerceEvent = useCallback((action: string, data: Record<string, any>) => {
@@ -294,7 +294,7 @@ export const useRealTimeMetrics = (refreshInterval: number = 5000) => {
 
 // Hook para tracking automático de componentes
 export const useComponentTracking = (componentName: string, trackMount: boolean = true) => {
-  const { trackEvent } = useAnalytics();
+  const { trackEvent } = useOptimizedAnalytics();
 
   useEffect(() => {
     if (trackMount) {

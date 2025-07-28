@@ -248,22 +248,17 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabaseClient();
 
     if (supabase) {
-      // Registrar la búsqueda en analytics
-      const { error } = await supabase
-        .from('analytics_events')
-        .insert({
-          event_name: 'search_query',
-          category: 'search',
-          action: 'search_query',
-          label: query.toLowerCase().trim(),
-          user_id: userId,
-          session_id: sessionId || 'anonymous',
-          page: '/search',
-          metadata: {
-            category: category,
-            timestamp: new Date().toISOString()
-          }
-        });
+      // Registrar la búsqueda en analytics usando función optimizada
+      const { error } = await supabase.rpc('insert_analytics_event_optimized', {
+        p_event_name: 'search',
+        p_category: 'search',
+        p_action: 'search',
+        p_label: query.toLowerCase().trim().substring(0, 50),
+        p_user_id: userId,
+        p_session_id: sessionId || 'anonymous',
+        p_page: '/search',
+        p_user_agent: null
+      });
 
       if (error) {
         console.error('Error registrando búsqueda en analytics:', error);

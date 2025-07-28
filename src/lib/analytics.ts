@@ -473,7 +473,7 @@ export const trackEvent = async (
   metadata?: Record<string, any>
 ): Promise<void> => {
   try {
-    await analytics.trackEvent(event, category, action, label, value, metadata);
+    await optimizedAnalytics.trackEvent(event, category, action, label, value, metadata);
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('Analytics trackEvent error:', error);

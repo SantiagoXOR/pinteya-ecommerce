@@ -41,8 +41,20 @@ Para configurar el proyecto de forma segura:
 - **ID**: aakzspzfulgftqlgwkpb
 - **Región**: sa-east-1
 - **URL**: https://aakzspzfulgftqlgwkpb.supabase.co
+- **Estado**: ✅ OPTIMIZADO (63% reducción almacenamiento)
+- **Performance**: 5-10x mejorada (Julio 2025)
 
 ### Tablas Principales
+
+> **📊 OPTIMIZACIÓN 2025:** Las tablas principales han sido optimizadas con una reducción del 63% en almacenamiento. Ver [OPTIMIZATION_SUPABASE_2025.md](./OPTIMIZATION_SUPABASE_2025.md) para detalles completos.
+
+#### Tablas Optimizadas (Recomendadas)
+- `analytics_events_optimized` - 66% más eficiente
+- `products_optimized` - 52% más eficiente
+- `product_brands` - Lookup table normalizada
+- `analytics_*` - Tablas de lookup para enums
+
+#### Tablas Originales (Legacy)
 
 #### `products`
 ```sql

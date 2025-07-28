@@ -6,7 +6,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, CreditCard, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, CreditCard, AlertTriangle, CheckCircle, Shield, Lock } from 'lucide-react';
 
 // Tipos para el SDK de MercadoPago
 declare global {
@@ -150,68 +151,128 @@ export default function MercadoPagoWallet({
   };
 
   return (
-    <Card className={`w-full ${className}`}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CreditCard className="w-5 h-5 text-primary" />
-          Método de Pago
-        </CardTitle>
+    <Card className={`w-full shadow-lg ${className}`}>
+      <CardHeader className="bg-gradient-to-r from-blaze-orange-50 to-yellow-50 border-b">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-blaze-orange-700">
+            <CreditCard className="w-5 h-5" />
+            Método de Pago Seguro
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="bg-green-100 text-green-700">
+              <Shield className="w-3 h-3 mr-1" />
+              Seguro
+            </Badge>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+              <Lock className="w-3 h-3 mr-1" />
+              SSL
+            </Badge>
+          </div>
+        </div>
+        <p className="text-sm text-gray-600 mt-1">
+          Completa tu pago de forma segura con MercadoPago
+        </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         {/* Estado de carga */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-gray-600">
-              Cargando opciones de pago seguras...
-            </p>
+          <div className="flex flex-col items-center justify-center py-12 space-y-6">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full bg-blaze-orange-100 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blaze-orange-600" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                <CreditCard className="w-3 h-3 text-gray-700" />
+              </div>
+            </div>
+            <div className="text-center space-y-2">
+              <p className="font-medium text-gray-900">
+                Cargando opciones de pago
+              </p>
+              <p className="text-sm text-gray-600">
+                Preparando tu experiencia de pago segura...
+              </p>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-blaze-orange-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+            </div>
           </div>
         )}
 
         {/* Estado de error */}
         {error && (
-          <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <AlertTriangle className="w-8 h-8 text-red-500" />
-            <div className="text-center">
-              <p className="text-sm text-red-600 mb-2">{error}</p>
-              <Button 
-                onClick={handleRetry}
-                variant="outline"
-                size="sm"
-              >
-                Reintentar
-              </Button>
+          <div className="flex flex-col items-center justify-center py-12 space-y-6">
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+              <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
+            <div className="text-center space-y-2">
+              <p className="font-medium text-red-800">Error al cargar el sistema de pagos</p>
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+            <Button
+              onClick={handleRetry}
+              className="bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white"
+              size="lg"
+            >
+              <CreditCard className="w-4 h-4 mr-2" />
+              Reintentar Carga
+            </Button>
           </div>
         )}
 
         {/* Estado listo */}
         {isReady && !error && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center gap-2 text-green-800">
-              <CheckCircle className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                Sistema de pagos cargado correctamente
-              </span>
+          <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-green-800">
+                  Sistema de pagos listo
+                </p>
+                <p className="text-sm text-green-700 mt-1">
+                  Selecciona tu método de pago preferido
+                </p>
+              </div>
             </div>
           </div>
         )}
 
         {/* Contenedor del Wallet Brick */}
-        <div 
-          id="wallet_container" 
+        <div
+          id="wallet_container"
           ref={walletRef}
-          className={`min-h-[200px] ${isLoading || error ? 'hidden' : 'block'}`}
+          className={`min-h-[300px] rounded-lg border border-gray-200 ${isLoading || error ? 'hidden' : 'block'}`}
         />
 
         {/* Información adicional */}
         {isReady && !error && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Pago seguro con MercadoPago:</strong> Acepta tarjetas de crédito, 
-              débito, efectivo y transferencias bancarias. Tus datos están protegidos 
-              con encriptación de nivel bancario.
-            </p>
+          <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-blue-800 mb-2">
+                  Pago 100% Seguro
+                </p>
+                <p className="text-sm text-blue-700">
+                  Acepta tarjetas de crédito, débito, efectivo y transferencias bancarias.
+                  Tus datos están protegidos con encriptación de nivel bancario y certificación PCI DSS.
+                </p>
+                <div className="flex items-center gap-4 mt-3 text-xs text-blue-600">
+                  <span className="flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    SSL 256-bit
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    PCI DSS
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Verificado
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </CardContent>
@@ -220,32 +281,55 @@ export default function MercadoPagoWallet({
 }
 
 // Componente de fallback para casos de error crítico
-export function MercadoPagoWalletFallback({ 
-  initPoint, 
-  className = "" 
-}: { 
-  initPoint: string; 
-  className?: string; 
+export function MercadoPagoWalletFallback({
+  initPoint,
+  className = ""
+}: {
+  initPoint: string;
+  className?: string;
 }) {
   return (
-    <Card className={`w-full ${className}`}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CreditCard className="w-5 h-5 text-primary" />
-          Método de Pago
+    <Card className={`w-full shadow-lg ${className}`}>
+      <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b">
+        <CardTitle className="flex items-center gap-2 text-blaze-orange-700">
+          <CreditCard className="w-5 h-5" />
+          Método de Pago Alternativo
         </CardTitle>
+        <p className="text-sm text-gray-600 mt-1">
+          Continúa con el pago en la plataforma de MercadoPago
+        </p>
       </CardHeader>
-      <CardContent>
-        <div className="text-center py-6">
-          <p className="text-sm text-gray-600 mb-4">
-            Continúa con el pago en MercadoPago
-          </p>
-          <Button 
+      <CardContent className="p-6">
+        <div className="text-center py-8 space-y-6">
+          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
+            <CreditCard className="w-8 h-8 text-blue-600" />
+          </div>
+          <div className="space-y-2">
+            <p className="font-medium text-gray-900">
+              Finaliza tu compra en MercadoPago
+            </p>
+            <p className="text-sm text-gray-600">
+              Serás redirigido a la plataforma segura de MercadoPago para completar tu pago
+            </p>
+          </div>
+          <Button
             onClick={() => window.open(initPoint, '_blank')}
-            className="w-full bg-blue-500 hover:bg-blue-600"
+            className="w-full h-12 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
+            size="lg"
           >
-            Pagar con MercadoPago
+            <CreditCard className="w-5 h-5 mr-2" />
+            Continuar con MercadoPago
           </Button>
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <Shield className="w-3 h-3" />
+              Pago Seguro
+            </span>
+            <span className="flex items-center gap-1">
+              <Lock className="w-3 h-3" />
+              Datos Protegidos
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>

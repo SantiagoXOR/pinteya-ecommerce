@@ -1,26 +1,28 @@
 "use client";
 
-import React from "react";
-import { ShoppingCart } from "lucide-react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-
+import { OptimizedCartIcon } from "@/components/ui/optimized-cart-icon";
 import { cn } from "@/lib/utils";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { useAppSelector } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { selectTotalPrice } from "@/redux/features/cart-slice";
+import { useCartAnimation } from "@/hooks/useCartAnimation";
 
 interface FloatingCartButtonProps {
   className?: string;
 }
 
-const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ 
-  className 
+const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({
+  className
 }) => {
+  const [cartShake, setCartShake] = useState(false);
   const { openCartModal } = useCartModalContext();
   const cartItems = useAppSelector((state) => state.cartReducer.items);
   const totalPrice = useSelector(selectTotalPrice);
-  
+  const { isAnimating } = useCartAnimation();
+
   const cartItemCount = cartItems.length;
   const hasCartItems = cartItemCount > 0;
 
@@ -31,57 +33,53 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({
   // En mobile siempre mostrar el botón (incluso sin items para consistencia UX)
 
   return (
-    <Button
-      onClick={handleCartClick}
-      data-testid="floating-cart-icon"
-      className={cn(
-        // Posicionamiento flotante - Solo visible en mobile
-        "fixed bottom-6 right-6 z-floating sm:hidden",
-        // Estilos del botón (similar al ProductCard)
-        "bg-yellow-400 hover:bg-yellow-500 text-blaze-orange-600 font-bold",
-        "rounded-xl shadow-lg hover:shadow-xl",
-        "transition-all duration-300 ease-in-out",
-        "transform hover:scale-105 active:scale-95",
-        // Tamaño y padding
-        "h-14 px-6 py-3",
-        // Efectos adicionales
-        "border-2 border-yellow-500 hover:border-yellow-600",
-        "backdrop-blur-sm",
-        className
-      )}
-      style={{ color: '#ea5a17' }}
-    >
-      <div className="flex items-center gap-3">
-        {/* Icono del carrito */}
-        <div className="relative">
-          <ShoppingCart className="w-6 h-6" style={{ color: '#ea5a17' }} />
-          {/* Badge con contador */}
+    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-bottom-nav sm:hidden">
+      {/* Liquid Glass Background Effect */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/80 via-yellow-300/60 to-yellow-500/80 backdrop-blur-xl border border-white/20 shadow-2xl"></div>
+      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent"></div>
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tl from-yellow-600/20 via-transparent to-white/10"></div>
+
+      {/* Main Button */}
+      <button
+        onClick={handleCartClick}
+        data-testid="floating-cart-icon"
+        className={cn(
+          // Posicionamiento relativo dentro del contenedor
+          "relative",
+          // Estilos del botón con efecto glass - altura reducida
+          "bg-yellow-400/90 hover:bg-yellow-500/90 text-black font-bold px-4 py-1.5",
+          "rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out",
+          "hover:scale-110 active:scale-95 border border-white/30",
+          "flex items-center gap-1 group floating-button focus-ring",
+          // Animaciones condicionales (igual al header)
+          cartShake ? 'animate-bounce cart-badge-animate' : '',
+          isAnimating ? 'scale-110 cart-badge-animate' : 'scale-100',
+          "hover:rotate-3 hover:shadow-2xl",
+          // Efecto glass mejorado
+          "backdrop-blur-md bg-gradient-to-r from-yellow-400/80 to-yellow-500/80",
+          className
+        )}
+      >
+        {/* Icono del carrito que puede sobresalir */}
+        <div className="relative -mt-2 -mb-1">
+          <OptimizedCartIcon
+            width={44}
+            height={44}
+            className="w-11 h-11 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg"
+            alt="Carrito de compras"
+          />
           {cartItemCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-fun-green-500 hover:bg-fun-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-badge shadow-sm border border-white">
-              {cartItemCount}
+            <span
+              className="absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-badge shadow-lg transition-all duration-200 group-hover:scale-125 animate-pulse"
+              style={{ backgroundColor: '#007639', color: '#fbbf24' }}
+            >
+              {cartItemCount > 99 ? '99+' : cartItemCount}
             </span>
           )}
         </div>
-
-        {/* Texto y precio */}
-        <div className="flex flex-col items-start">
-          <span className="text-sm font-bold leading-none">
-            {hasCartItems
-              ? `${cartItemCount} ${cartItemCount === 1 ? 'producto' : 'productos'}`
-              : 'Carrito'
-            }
-          </span>
-          <span className="text-lg font-black leading-none">
-            {hasCartItems ? `$${totalPrice.toLocaleString()}` : 'Vacío'}
-          </span>
-        </div>
-      </div>
-
-      {/* Efecto de pulso para llamar la atención - Solo cuando hay items */}
-      {hasCartItems && (
-        <div className="absolute inset-0 rounded-xl bg-yellow-400 opacity-75 animate-ping"></div>
-      )}
-    </Button>
+        <span className="text-xs font-semibold text-blaze-orange-600" style={{ color: '#ea5a17' }}>Carrito</span>
+      </button>
+    </div>
   );
 };
 

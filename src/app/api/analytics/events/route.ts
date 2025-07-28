@@ -52,26 +52,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Procesar evento de forma asíncrona (no bloquear respuesta)
+    // Procesar evento de forma asíncrona usando función optimizada
     setImmediate(async () => {
       try {
-        await supabase
-          .from('analytics_events')
-          .insert({
-            event_name: event.event,
-            category: event.category,
-            action: event.action,
-            label: event.label,
-            value: event.value,
-            user_id: event.userId,
-            session_id: event.sessionId,
-            page: event.page,
-            user_agent: event.userAgent,
-            metadata: event.metadata,
-            created_at: new Date(event.timestamp).toISOString(),
-          });
+        await supabase.rpc('insert_analytics_event_optimized', {
+          p_event_name: event.event,
+          p_category: event.category,
+          p_action: event.action,
+          p_label: event.label,
+          p_value: event.value,
+          p_user_id: event.userId,
+          p_session_id: event.sessionId,
+          p_page: event.page,
+          p_user_agent: event.userAgent
+        });
       } catch (error) {
-        console.error('Error procesando evento analytics (async):', error);
+        console.error('Error procesando evento analytics optimizado (async):', error);
       }
     });
 
@@ -105,7 +101,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '100');
 
     let query = supabase
-      .from('analytics_events')
+      .from('analytics_events_view')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(limit);

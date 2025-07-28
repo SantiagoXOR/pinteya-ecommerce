@@ -78,12 +78,15 @@ const SingleItem = ({ item }: { item: any }) => {
 
       {/* Price */}
       <div className="min-w-[180px]">
-        <p className="font-semibold text-lg text-gray-900">${item.discountedPrice}</p>
+        <p className="font-bold text-lg" style={{ color: '#ea5a17' }}>${item.discountedPrice.toLocaleString()}</p>
+        {item.price && item.discountedPrice && item.discountedPrice < item.price && (
+          <p className="text-sm text-gray-500 line-through">${item.price.toLocaleString()}</p>
+        )}
       </div>
 
-      {/* Quantity Selector */}
+      {/* Quantity Selector - Pinteya Design */}
       <div className="min-w-[275px]">
-        <div className="flex items-center rounded-lg border border-gray-300 bg-white shadow-sm w-max">
+        <div className="flex items-center rounded-xl border-2 border-yellow-400 bg-white shadow-lg w-max overflow-hidden">
           <Button
             variant="ghost"
             size="icon"
@@ -91,12 +94,12 @@ const SingleItem = ({ item }: { item: any }) => {
             disabled={quantity <= 1}
             aria-label="Disminuir cantidad"
             data-testid="quantity-decrease"
-            className="h-11 w-11 rounded-l-lg hover:bg-gray-50 disabled:opacity-50"
+            className="h-12 w-12 rounded-none bg-yellow-400 hover:bg-yellow-500 text-black font-bold disabled:opacity-50 disabled:bg-gray-200 transition-all duration-200"
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-5 h-5" />
           </Button>
 
-          <div className="flex items-center justify-center w-16 h-11 border-x border-gray-200 bg-gray-50 font-semibold text-gray-900" data-testid="quantity-input">
+          <div className="flex items-center justify-center w-16 h-12 bg-white font-bold text-lg text-gray-900 border-x-2 border-yellow-400" data-testid="quantity-input">
             {quantity}
           </div>
 
@@ -106,19 +109,21 @@ const SingleItem = ({ item }: { item: any }) => {
             onClick={() => handleIncreaseQuantity()}
             aria-label="Aumentar cantidad"
             data-testid="quantity-increase"
-            className="h-11 w-11 rounded-r-lg hover:bg-gray-50"
+            className="h-12 w-12 rounded-none bg-yellow-400 hover:bg-yellow-500 text-black font-bold transition-all duration-200"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
           </Button>
         </div>
       </div>
 
       {/* Subtotal */}
       <div className="min-w-[200px]">
-        <p className="font-bold text-xl text-gray-900">${(item.discountedPrice * quantity).toFixed(2)}</p>
+        <p className="font-bold text-xl" style={{ color: '#ea5a17' }}>
+          ${(item.discountedPrice * quantity).toLocaleString()}
+        </p>
         {item.price && item.discountedPrice && item.discountedPrice < item.price && (
-          <p className="text-sm text-gray-500">
-            Ahorro: ${((item.price - item.discountedPrice) * quantity).toFixed(2)}
+          <p className="text-sm font-semibold text-green-600">
+            Ahorro: ${((item.price - item.discountedPrice) * quantity).toLocaleString()}
           </p>
         )}
       </div>
@@ -130,7 +135,7 @@ const SingleItem = ({ item }: { item: any }) => {
           size="icon"
           onClick={() => handleRemoveFromCart()}
           aria-label="Eliminar producto del carrito"
-          className="h-10 w-10 hover:bg-destructive hover:text-white hover:border-destructive transition-all duration-200"
+          className="h-10 w-10 border-2 border-red-400 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-200 rounded-xl"
         >
           <Trash2 className="w-4 h-4" />
         </Button>
