@@ -1,9 +1,9 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Breadcrumb from "../Common/Breadcrumb";
+
 import Shipping from "./Shipping";
-import ShippingMethod from "./ShippingMethod";
+
 import PaymentMethod from "./PaymentMethod";
 import Billing from "./Billing";
 import Coupon from "./Coupon";
@@ -14,13 +14,44 @@ import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, AlertTriangle, ShoppingCart, Truck, CheckCircle } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import {
+  Loader2,
+  CreditCard,
+  AlertTriangle,
+  ShoppingCart,
+  Truck,
+  CheckCircle,
+  User,
+  MapPin,
+  Shield,
+  Phone,
+  Mail,
+  MessageCircle,
+  Zap,
+  Gift,
+  Star,
+  Users,
+  Clock,
+  Eye,
+  TrendingUp
+} from "lucide-react";
 import MercadoPagoWallet, { MercadoPagoWalletFallback } from "./MercadoPagoWallet";
 import { CartSummary } from "@/components/ui/cart-summary";
-import { CheckoutFlow } from "@/components/ui/checkout-flow";
+import {
+  UrgencyTimer,
+  StockIndicator,
+  TrustSignals,
+  SocialProof,
+  PurchaseIncentives,
+  ExitIntentModal
+} from "./ConversionOptimizer";
 
 const Checkout = () => {
   const router = useRouter();
+  const [showExitIntent, setShowExitIntent] = useState(false);
+  const [isExpressMode, setIsExpressMode] = useState(false);
+
   const {
     formData,
     isLoading,
@@ -37,7 +68,7 @@ const Checkout = () => {
     updateShippingData,
     updateFormData,
     processCheckout,
-    // ✅ NUEVO: Propiedades para Wallet Brick
+    // ✅ Propiedades para Wallet Brick
     preferenceId,
     initPoint,
     handleWalletReady,
@@ -45,13 +76,13 @@ const Checkout = () => {
     handleWalletSubmit,
   } = useCheckout();
 
-  // ✅ NUEVO: Pasos del checkout mejorado
+  // ✅ UNIFICADO: Pasos del checkout
   const checkoutSteps = [
     {
       id: 'info',
       title: 'Información',
       description: 'Datos de contacto y envío',
-      icon: ShoppingCart,
+      icon: User,
       isCompleted: step !== 'form',
       isActive: step === 'form',
     },
@@ -85,8 +116,20 @@ const Checkout = () => {
     }
   };
 
+  // ✅ NUEVO: Exit intent detection para conversión
+  useEffect(() => {
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (e.clientY <= 0 && !showExitIntent && step === 'form') {
+        setShowExitIntent(true);
+      }
+    };
+
+    document.addEventListener('mouseleave', handleMouseLeave);
+    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, [showExitIntent, step]);
+
   // Redirigir si el carrito está vacío
-  React.useEffect(() => {
+  useEffect(() => {
     if (cartItems.length === 0 && step === 'form') {
       router.push('/cart');
     }
@@ -101,8 +144,11 @@ const Checkout = () => {
     updateFormData({ paymentMethod: method as 'mercadopago' | 'bank' | 'cash' });
   };
 
-  const handleShippingMethodChange = (method: 'free' | 'express' | 'pickup') => {
-    updateFormData({ shippingMethod: method });
+
+
+  // ✅ NUEVO: Toggle entre modo normal y express
+  const toggleExpressMode = () => {
+    setIsExpressMode(!isExpressMode);
   };
 
   if (step === 'processing') {
@@ -270,18 +316,54 @@ const Checkout = () => {
 
   return (
     <>
-      <Breadcrumb title={"Checkout"} pages={["checkout"]} />
-      <section className="overflow-hidden py-8 md:py-20 bg-gray-50">
+      <section className="overflow-hidden py-4 md:py-8 bg-gray-50">
         <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 xl:px-0">
-          {/* Progress indicator */}
+          {/* ✅ UNIFICADO: Header con progreso y modo express */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Checkout</h1>
-              <Badge variant="secondary" className="bg-blaze-orange-100 text-blaze-orange-700">
-                Paso 1 de 3
-              </Badge>
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Checkout</h1>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleExpressMode}
+                  className="hidden md:flex items-center gap-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  {isExpressMode ? 'Modo Completo' : 'Modo Express'}
+                </Button>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="bg-blaze-orange-100 text-blaze-orange-700">
+                  Paso {step === 'form' ? '1' : step === 'payment' ? '2' : '3'} de 3
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => window.open('https://wa.me/5493515551234', '_blank')}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span className="hidden md:inline">Ayuda</span>
+                </Button>
+              </div>
             </div>
-            <Progress value={getProgressValue()} className="h-2" />
+            <Progress value={getProgressValue()} className="h-3" />
+          </div>
+
+          {/* ✅ OPTIMIZADO: Elementos de conversión simplificados */}
+          <div className="mb-6 space-y-3">
+            {/* Timer de Urgencia */}
+            <UrgencyTimer
+              initialMinutes={15}
+              message="Completa tu compra para mantener el precio y envío gratis desde $15.000"
+              variant="warning"
+              showProgress={true}
+            />
+
+            {/* Trust Signals */}
+            <TrustSignals />
           </div>
 
           <form onSubmit={handleSubmit} role="form">
@@ -290,7 +372,7 @@ const Checkout = () => {
               <div className="lg:col-span-2 space-y-6">
                 {/* Error general - Mejorado con Design System */}
                 {errors.general && (
-                  <Card className="border-red-200 bg-red-50">
+                  <Card className="border-red-200 bg-red-50 shadow-sm">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -305,7 +387,7 @@ const Checkout = () => {
 
                 {/* Error de carrito vacío */}
                 {errors.cart && (
-                  <Card className="border-yellow-200 bg-yellow-50">
+                  <Card className="border-yellow-200 bg-yellow-50 shadow-sm">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <ShoppingCart className="w-5 h-5 text-yellow-600 flex-shrink-0" />
@@ -315,89 +397,158 @@ const Checkout = () => {
                   </Card>
                 )}
 
-                {/* Billing details */}
-                <Card className="shadow-sm">
-                  <CardHeader className="bg-blaze-orange-50 border-b">
-                    <CardTitle className="text-blaze-orange-700">Información de Facturación</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <Billing
-                      billingData={formData.billing}
-                      errors={errors}
-                      onBillingChange={updateBillingData}
-                    />
-                  </CardContent>
-                </Card>
+                {/* ✅ SIMPLIFICADO: Formulario optimizado */}
+                {isExpressMode ? (
+                  /* Modo Express - Formulario ultra simplificado */
+                  <Card className="shadow-lg">
+                    <CardHeader className="bg-gradient-to-r from-blaze-orange-50 to-yellow-50 border-b">
+                      <CardTitle className="flex items-center gap-2 text-blaze-orange-700">
+                        <Zap className="w-5 h-5" />
+                        Checkout Express
+                      </CardTitle>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Solo 3 datos y listo
+                      </p>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Email */}
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-sm font-medium">
+                            <Mail className="w-4 h-4 text-blaze-orange-600" />
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            placeholder="tu@email.com"
+                            value={formData.billing.email}
+                            onChange={(e) => updateBillingData({ email: e.target.value })}
+                            className="w-full h-12 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
+                          />
+                        </div>
 
-                {/* Shipping address */}
-                <Card className="shadow-sm">
-                  <CardHeader className="bg-blue-50 border-b">
-                    <CardTitle className="flex items-center gap-2 text-blue-700">
-                      <Truck className="w-5 h-5" />
-                      Dirección de Envío
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <Shipping
-                      shippingData={formData.shipping}
-                      billingData={formData.billing}
-                      errors={errors}
-                      onShippingChange={updateShippingData}
-                    />
-                  </CardContent>
-                </Card>
+                        {/* Teléfono */}
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-sm font-medium">
+                            <Phone className="w-4 h-4 text-blaze-orange-600" />
+                            Teléfono
+                          </label>
+                          <input
+                            type="tel"
+                            placeholder="11 1234-5678"
+                            value={formData.billing.phone}
+                            onChange={(e) => updateBillingData({ phone: e.target.value })}
+                            className="w-full h-12 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
 
-                {/* Shipping method */}
-                <Card className="shadow-sm">
-                  <CardHeader className="bg-green-50 border-b">
-                    <CardTitle className="text-green-700">Método de Envío</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <ShippingMethod
-                      selectedMethod={formData.shippingMethod}
-                      totalPrice={totalPrice}
-                      onMethodChange={handleShippingMethodChange}
-                    />
-                  </CardContent>
-                </Card>
+                      {/* Dirección */}
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium">
+                          <MapPin className="w-4 h-4 text-blaze-orange-600" />
+                          Dirección completa
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Calle 123, Ciudad, Provincia"
+                          value={formData.billing.streetAddress}
+                          onChange={(e) => updateBillingData({ streetAddress: e.target.value })}
+                          className="w-full h-12 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
+                        />
+                      </div>
 
-                {/* Payment method */}
-                <Card className="shadow-sm">
-                  <CardHeader className="bg-purple-50 border-b">
-                    <CardTitle className="flex items-center gap-2 text-purple-700">
-                      <CreditCard className="w-5 h-5" />
-                      Método de Pago
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <PaymentMethod
-                      selectedMethod={formData.paymentMethod}
-                      onMethodChange={handlePaymentMethodChange}
-                    />
-                  </CardContent>
-                </Card>
+                      {/* Payment Method Express */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <CreditCard className="w-5 h-5 text-blaze-orange-600" />
+                          Método de Pago
+                        </h3>
+                        <PaymentMethod
+                          selectedMethod={formData.paymentMethod}
+                          onMethodChange={handlePaymentMethodChange}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  /* Modo Completo - Formulario tradicional */
+                  <>
+                    {/* Billing details */}
+                    <Card className="shadow-sm">
+                      <CardHeader className="bg-blaze-orange-50 border-b">
+                        <CardTitle className="flex items-center gap-2 text-blaze-orange-700">
+                          <User className="w-5 h-5" />
+                          Información de Facturación
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <Billing
+                          billingData={formData.billing}
+                          errors={errors}
+                          onBillingChange={updateBillingData}
+                        />
+                      </CardContent>
+                    </Card>
+
+                    {/* Shipping address */}
+                    <Card className="shadow-sm">
+                      <CardHeader className="bg-blue-50 border-b">
+                        <CardTitle className="flex items-center gap-2 text-blue-700">
+                          <Truck className="w-5 h-5" />
+                          Dirección de Envío
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <Shipping
+                          shippingData={formData.shipping}
+                          billingData={formData.billing}
+                          errors={errors}
+                          onShippingChange={updateShippingData}
+                        />
+                      </CardContent>
+                    </Card>
+
+
+
+                    {/* Payment method */}
+                    <Card className="shadow-sm">
+                      <CardHeader className="bg-purple-50 border-b">
+                        <CardTitle className="flex items-center gap-2 text-purple-700">
+                          <CreditCard className="w-5 h-5" />
+                          Método de Pago
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <PaymentMethod
+                          selectedMethod={formData.paymentMethod}
+                          onMethodChange={handlePaymentMethodChange}
+                        />
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
               </div>
 
-              {/* Checkout sidebar */}
-              <div className="lg:col-span-1 space-y-6">
-                {/* User info */}
-                <Card className="shadow-sm">
-                  <CardHeader className="bg-gray-50 border-b">
-                    <CardTitle className="text-gray-700">Información del Usuario</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <UserInfo />
-                  </CardContent>
-                </Card>
+              {/* ✅ SIMPLIFICADO: Sidebar optimizado */}
+              <div className="lg:col-span-1 space-y-4">
+                {/* Stock Indicator - Solo elemento principal */}
+                <StockIndicator
+                  quantity={3}
+                  lowStockThreshold={5}
+                  viewers={0}
+                  recentPurchases={0}
+                  showSocialProof={false}
+                />
 
-                {/* Order summary - Usando CartSummary del Design System */}
+                {/* Order summary - CartSummary del Design System */}
                 <CartSummary
                   cartItems={cartItems}
                   totalPrice={totalPrice}
                   shippingCost={shippingCost}
                   discount={discount}
                   finalTotal={finalTotal}
-                  shippingMethod={formData.shippingMethod}
+                  shippingMethod="free"
                   appliedCoupon={appliedCoupon}
                   variant="detailed"
                   showProductCards={false}
@@ -405,12 +556,12 @@ const Checkout = () => {
                   className="sticky top-4"
                 />
 
-                {/* Coupon */}
+                {/* Social Proof sutil */}
+                <SocialProof showTestimonials={false} />
+
+                {/* Coupon simplificado */}
                 <Card className="shadow-sm">
-                  <CardHeader className="bg-yellow-50 border-b">
-                    <CardTitle className="text-yellow-700">Cupón de Descuento</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
+                  <CardContent className="p-4">
                     <Coupon
                       onCouponApply={applyCoupon}
                       appliedCoupon={appliedCoupon}
@@ -419,44 +570,41 @@ const Checkout = () => {
                   </CardContent>
                 </Card>
 
-                {/* Checkout button - Mejorado con Design System */}
-                <Card className="shadow-sm">
-                  <CardContent className="p-6">
+                {/* Checkout button - Simplificado */}
+                <Card className="shadow-lg border-2 border-yellow-200">
+                  <CardContent className="p-4">
                     <Button
                       type="submit"
                       disabled={isLoading || cartItems.length === 0}
-                      className={`w-full h-12 text-lg font-semibold transition-all duration-200 ${
+                      className={`w-full h-16 text-2xl font-bold transition-all duration-200 ${
                         isLoading || cartItems.length === 0
                           ? 'bg-gray-400 cursor-not-allowed'
-                          : 'bg-yellow-400 hover:bg-yellow-500 text-gray-900 shadow-lg hover:shadow-xl'
+                          : 'bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white shadow-lg hover:shadow-xl'
                       }`}
                     >
                       {isLoading ? (
                         <div className="flex items-center gap-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <Loader2 className="w-6 h-6 animate-spin" />
                           Procesando...
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <CreditCard className="w-5 h-5" />
-                          Procesar Pedido
+                          <CreditCard className="w-6 h-6" />
+                          FINALIZAR COMPRA - ${finalTotal.toLocaleString()}
                         </div>
                       )}
                     </Button>
 
-                    {/* Terms and conditions */}
-                    <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                      <p className="text-xs text-gray-600 text-center">
-                        Al hacer clic en &quot;Procesar Pedido&quot;, aceptas nuestros{' '}
-                        <a href="/terms" className="text-blaze-orange-600 hover:underline font-medium">
-                          términos y condiciones
-                        </a>{' '}
-                        y{' '}
-                        <a href="/privacy" className="text-blaze-orange-600 hover:underline font-medium">
-                          política de privacidad
-                        </a>
-                        .
-                      </p>
+                    {/* Trust indicators simplificados */}
+                    <div className="mt-3 flex items-center justify-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <Shield className="w-4 h-4 text-green-600" />
+                        <span>Pago Seguro</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Truck className="w-4 h-4 text-blue-600" />
+                        <span>Envío Gratis +$15.000</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -464,6 +612,19 @@ const Checkout = () => {
             </div>
           </form>
         </div>
+
+        {/* ✅ NUEVO: Exit Intent Modal para conversión */}
+        {showExitIntent && (
+          <ExitIntentModal
+            onClose={() => setShowExitIntent(false)}
+            onAccept={() => {
+              setShowExitIntent(false);
+              // TODO: Aplicar descuento del 10%
+              // applyCoupon('EXIT10');
+            }}
+            discount={10}
+          />
+        )}
       </section>
     </>
   );
