@@ -121,7 +121,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
 
   if (loading) {
     return (
-      <section className="bg-white border-b border-gray-200 py-4">
+      <section className="bg-white border-b border-gray-200 py-2">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 overflow-x-auto pb-2">
             {[...Array(8)].map((_, index) => (
@@ -140,7 +140,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   }
 
   return (
-    <section className="bg-white border-b border-gray-200 py-4 sticky top-[120px] z-40">
+    <section className="bg-white border-b border-gray-200 py-3 sticky top-[110px] lg:top-[120px] z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Contenedor con degradados en los bordes */}
         <div className="relative">

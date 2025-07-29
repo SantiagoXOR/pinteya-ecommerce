@@ -34,7 +34,7 @@ const BestSeller: React.FC<BestSellerProps> = ({ selectedCategories = [] }) => {
 
   if (isLoading) {
     return (
-      <section className="overflow-hidden">
+      <section className="overflow-hidden py-4 sm:py-8">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           {/* Header con Design System */}
           <div className="mb-10 flex items-center justify-between">
@@ -78,7 +78,7 @@ const BestSeller: React.FC<BestSellerProps> = ({ selectedCategories = [] }) => {
 
   if (error) {
     return (
-      <section className="overflow-hidden">
+      <section className="overflow-hidden py-4 sm:py-8">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           {/* Error State mejorado */}
           <Card variant="outlined" className="border-red-200 bg-red-50">
@@ -110,7 +110,7 @@ const BestSeller: React.FC<BestSellerProps> = ({ selectedCategories = [] }) => {
   }
 
   return (
-    <section className="overflow-hidden">
+    <section className="overflow-hidden py-4 sm:py-8">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
         {/* Section Header - Migrado al Design System */}
         <div className="mb-10 flex items-center justify-between">

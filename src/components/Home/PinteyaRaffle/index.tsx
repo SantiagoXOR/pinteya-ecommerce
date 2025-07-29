@@ -39,7 +39,7 @@ const PinteyaRaffle = () => {
   }, [deadline]);
 
   return (
-    <section className="overflow-hidden py-8 lg:py-12">
+    <section className="overflow-hidden py-4 sm:py-6 lg:py-8">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
         <Card className="relative overflow-hidden bg-gradient-to-br from-blaze-orange-50 via-bright-sun-50 to-fun-green-50 border-2 border-blaze-orange-200 shadow-2xl hover:shadow-3xl transition-all duration-500">
           <CardContent className="p-4 lg:p-6 xl:p-8">
