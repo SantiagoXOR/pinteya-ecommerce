@@ -224,7 +224,7 @@ export const TrustSignals: React.FC = () => {
     {
       icon: Truck,
       title: "Envío Gratis",
-      description: "En compras +$25.000",
+      description: "En compras +$15.000",
       color: "blue"
     },
     {
@@ -391,7 +391,7 @@ export const PurchaseIncentives: React.FC = () => {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600" />
-            <span className="text-sm text-green-700">Envío GRATIS en compras +$25.000</span>
+            <span className="text-sm text-green-700">Envío GRATIS en compras +$15.000</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600" />

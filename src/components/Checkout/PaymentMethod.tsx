@@ -47,9 +47,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onMethodC
             >
               <div className="flex items-center">
                 <div className="pr-2.5">
-                  <div className="bg-tahiti-gold-500 text-white px-3 py-1 rounded text-sm font-medium">
-                    MP
-                  </div>
+                  <Image src="/images/checkout/mercadopago.svg" alt="MercadoPago" width={24} height={24} />
                 </div>
 
                 <div className="border-l border-gray-4 pl-2.5">
@@ -102,7 +100,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onMethodC
             </div>
           </label>
 
-          {/* Efectivo contra entrega */}
+          {/* Pagás cuando llega */}
           <label
             htmlFor="cash"
             className="flex cursor-pointer select-none items-center gap-4"
@@ -138,7 +136,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onMethodC
                 </div>
 
                 <div className="border-l border-gray-4 pl-2.5">
-                  <p>Efectivo contra entrega</p>
+                  <p>Pagás cuando llega</p>
                 </div>
               </div>
             </div>
