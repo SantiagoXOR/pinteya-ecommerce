@@ -13,7 +13,7 @@ import {
 
 const TrustSection = () => {
   return (
-    <section className="py-12 lg:py-16 bg-gradient-to-br from-gray-50 to-white">
+    <section className="py-4 sm:py-6 lg:py-8 bg-gradient-to-br from-gray-50 to-white">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
         {/* Header */}
         <div className="text-center mb-8">

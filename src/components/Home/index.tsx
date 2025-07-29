@@ -67,31 +67,31 @@ const Home = () => {
       {/* <Categories /> ELIMINADO: Sección "Explorar por Categoría" */}
 
       {/* Componentes no críticos - lazy loading con Suspense */}
-      <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg mx-4 my-8" />}>
+      <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg mx-4 my-2" />}>
         <NewArrival selectedCategories={selectedCategories} />
       </Suspense>
 
-      <Suspense fallback={<div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4 my-8" />}>
+      <Suspense fallback={<div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4 my-2" />}>
         <PromoBanner />
       </Suspense>
 
-      <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg mx-4 my-8" />}>
+      <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg mx-4 my-2" />}>
         <BestSeller selectedCategories={selectedCategories} />
       </Suspense>
 
-      <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg mx-4 my-8" />}>
+      <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg mx-4 my-2" />}>
         <PinteyaRaffle />
       </Suspense>
 
-      <Suspense fallback={<div className="h-48 bg-gray-100 animate-pulse rounded-lg mx-4 my-8" />}>
+      <Suspense fallback={<div className="h-48 bg-gray-100 animate-pulse rounded-lg mx-4 my-2" />}>
         <TrustSection />
       </Suspense>
 
-      <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg mx-4 my-8" />}>
+      <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg mx-4 my-2" />}>
         <Testimonials />
       </Suspense>
 
-      <Suspense fallback={<div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4 my-8" />}>
+      <Suspense fallback={<div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4 my-2" />}>
         <Newsletter />
       </Suspense>
     </main>

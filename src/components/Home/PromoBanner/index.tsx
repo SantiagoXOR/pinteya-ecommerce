@@ -9,7 +9,7 @@ import { ShoppingCart } from "lucide-react";
 
 const PromoBanner = () => {
   return (
-    <section className="overflow-hidden py-20">
+    <section className="overflow-hidden py-4 sm:py-8">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
         {/* <!-- promo banner big --> */}
         <Card className="relative z-1 overflow-hidden bg-gradient-to-r from-blaze-orange-50 to-blaze-orange-100 py-12.5 lg:py-17.5 xl:py-22.5 px-4 sm:px-7.5 lg:px-14 xl:px-19 mb-7.5 border-0 shadow-2 hover:shadow-3 transition-all duration-300">

@@ -33,10 +33,10 @@ const NewArrival: React.FC<NewArrivalProps> = ({ selectedCategories = [] }) => {
     : 'Nuevos Productos';
 
   return (
-    <section className="overflow-hidden pt-15">
+    <section className="overflow-hidden pt-6 sm:pt-10 pb-4 sm:pb-6">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
         {/* Section Header - Migrado al Design System */}
-        <div className="mb-7 flex items-center justify-between">
+        <div className="mb-8 sm:mb-10 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2.5 font-medium text-gray-700 mb-1.5">
               <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
@@ -63,7 +63,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ selectedCategories = [] }) => {
 
         {/* Loading State - Mobile-First 2 columnas */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-x-7.5 md:gap-y-9">
             {[...Array(8)].map((_, index) => (
               <Card key={index} className="overflow-hidden">
                 <div className="animate-pulse">
@@ -106,7 +106,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ selectedCategories = [] }) => {
           </Card>
         ) : (
           /* Products Grid - Mobile-First 2 columnas */
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-x-7.5 md:gap-y-9">
             {products.map((item, key) => (
               <ProductItem item={item} key={key} />
             ))}
