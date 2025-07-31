@@ -52,7 +52,12 @@ const optionalEnvVars = {
   'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY': 'Clave pública de Clerk',
   'CLERK_SECRET_KEY': 'Clave secreta de Clerk',
   'CLERK_WEBHOOK_SECRET': 'Secret del webhook de Clerk',
-  
+
+  // Email (opcionales)
+  'RESEND_API_KEY': 'API Key de Resend para emails',
+  'RESEND_FROM_EMAIL': 'Email origen para notificaciones',
+  'RESEND_SUPPORT_EMAIL': 'Email de soporte',
+
   // Configuración adicional
   'MERCADOPAGO_CLIENT_SECRET': 'Secret de cliente de MercadoPago',
   'MERCADOPAGO_WEBHOOK_SECRET': 'Secret del webhook de MercadoPago',
