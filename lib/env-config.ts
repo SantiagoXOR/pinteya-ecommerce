@@ -38,10 +38,19 @@ export const mercadopagoConfig = {
 };
 
 // ===================================
+// EMAIL CONFIGURATION (RESEND)
+// ===================================
+export const emailConfig = {
+  resendApiKey: process.env.RESEND_API_KEY || '',
+  fromEmail: process.env.RESEND_FROM_EMAIL || 'noreply@pinteya.com',
+  supportEmail: process.env.RESEND_SUPPORT_EMAIL || 'soporte@pinteya.com',
+};
+
+// ===================================
 // APPLICATION CONFIGURATION
 // ===================================
 export const appConfig = {
-  url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001',
+  url: process.env.NEXT_PUBLIC_APP_URL || 'https://www.pinteya.com',
   nodeEnv: process.env.NODE_ENV || 'development',
   isDevelopment: process.env.NODE_ENV === 'development',
   isProduction: process.env.NODE_ENV === 'production',
@@ -73,10 +82,17 @@ export function isMercadoPagoConfigured(): boolean {
 }
 
 /**
+ * Verifica si el email está configurado correctamente
+ */
+export function isEmailConfigured(): boolean {
+  return !!(emailConfig.resendApiKey && emailConfig.fromEmail);
+}
+
+/**
  * Verifica si todas las configuraciones están completas
  */
 export function isFullyConfigured(): boolean {
-  return isSupabaseConfigured() && isClerkConfigured() && isMercadoPagoConfigured();
+  return isSupabaseConfigured() && isClerkConfigured() && isMercadoPagoConfigured() && isEmailConfigured();
 }
 
 /**
@@ -101,6 +117,17 @@ export function getAuthConfig() {
     signUpUrl: clerkConfig.signUpUrl,
     afterSignInUrl: clerkConfig.afterSignInUrl,
     afterSignUpUrl: clerkConfig.afterSignUpUrl,
+  };
+}
+
+/**
+ * Obtiene la configuración de email
+ */
+export function getEmailConfig() {
+  return {
+    resendApiKey: emailConfig.resendApiKey,
+    fromEmail: emailConfig.fromEmail,
+    supportEmail: emailConfig.supportEmail,
   };
 }
 
@@ -166,10 +193,13 @@ export default {
   supabase: supabaseConfig,
   clerk: clerkConfig,
   mercadopago: mercadopagoConfig,
+  email: emailConfig,
   app: appConfig,
   isSupabaseConfigured,
   isClerkConfigured,
   isMercadoPagoConfigured,
+  isEmailConfigured,
   isFullyConfigured,
   validateEnvironment,
+  getEmailConfig,
 };
