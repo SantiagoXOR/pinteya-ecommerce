@@ -16,15 +16,43 @@ import {
   Activity,
   Zap
 } from 'lucide-react';
-import { useTrackInteraction, useTrackEcommerce } from '@/components/Analytics/AnalyticsProvider';
+import { useOptimizedAnalytics } from '@/components/Analytics/OptimizedAnalyticsProvider';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
 const AnalyticsDemo: React.FC = () => {
   const [clickCount, setClickCount] = useState(0);
   const [hoverCount, setHoverCount] = useState(0);
-  const { trackClick, trackHover, trackSearch } = useTrackInteraction();
-  const { trackProductView, trackAddToCart } = useTrackEcommerce();
-  const { sessionMetrics } = useOptimizedAnalytics();
+  const { trackEvent } = useOptimizedAnalytics();
+  const { sessionMetrics } = useAnalytics();
+
+  // Funciones de tracking usando el sistema optimizado
+  const trackClick = (element: string, metadata?: Record<string, any>) => {
+    trackEvent('click', 'interaction', 'click', element, undefined, metadata);
+  };
+
+  const trackHover = (element: string, metadata?: Record<string, any>) => {
+    trackEvent('hover', 'interaction', 'hover', element, undefined, metadata);
+  };
+
+  const trackSearch = (query: string, resultsCount: number) => {
+    trackEvent('search', 'search', 'search', query.substring(0, 30), resultsCount);
+  };
+
+  const trackProductView = (productId: string, productName: string, category: string, price: number) => {
+    trackEvent('product_view', 'ecommerce', 'view', productId, price, {
+      item_name: productName,
+      item_category: category,
+      currency: 'ARS'
+    });
+  };
+
+  const trackAddToCart = (productId: string, productName: string, price: number, quantity: number) => {
+    trackEvent('cart_add', 'ecommerce', 'add', productId, price * quantity, {
+      item_name: productName,
+      quantity: quantity,
+      currency: 'ARS'
+    });
+  };
 
   const handleDemoClick = () => {
     setClickCount(prev => prev + 1);

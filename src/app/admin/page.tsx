@@ -1,166 +1,278 @@
 import Link from 'next/link';
+import { AdminLayout } from '@/components/admin/layout/AdminLayout';
+import { AdminCard } from '@/components/admin/ui/AdminCard';
+import {
+  Package,
+  ShoppingCart,
+  Users,
+  BarChart3,
+  Settings,
+  Database,
+  CreditCard,
+  Search,
+  TrendingUp,
+  AlertTriangle
+} from 'lucide-react';
 
 export default function AdminPage() {
   const adminSections = [
     {
+      title: 'Productos',
+      description: 'Gestionar catálogo de productos, precios y stock',
+      href: '/admin/products',
+      icon: Package,
+      color: 'bg-blue-500',
+      stats: '156 productos'
+    },
+    {
+      title: 'Órdenes',
+      description: 'Gestionar pedidos, estados y fulfillment',
+      href: '/admin/orders',
+      icon: ShoppingCart,
+      color: 'bg-green-500',
+      stats: '23 pendientes',
+      disabled: true
+    },
+    {
+      title: 'Clientes',
+      description: 'Gestionar usuarios y perfiles de clientes',
+      href: '/admin/customers',
+      icon: Users,
+      color: 'bg-purple-500',
+      stats: '1,247 usuarios',
+      disabled: true
+    },
+    {
+      title: 'Analytics',
+      description: 'Métricas avanzadas y reportes de rendimiento',
+      href: '/admin/analytics',
+      icon: BarChart3,
+      color: 'bg-yellow-500',
+      stats: 'Tiempo real'
+    },
+    {
+      title: 'MercadoPago',
+      description: 'Configuración y métricas de pagos',
+      href: '/admin/mercadopago',
+      icon: CreditCard,
+      color: 'bg-indigo-500',
+      stats: 'Enterprise'
+    },
+    {
       title: 'Diagnósticos',
       description: 'Herramientas de debugging y verificación del sistema',
       href: '/admin/diagnostics',
-      icon: '🔍',
-      color: 'bg-blue-500'
-    },
-    {
-      title: 'Logs del Sistema',
-      description: 'Visualizar logs y eventos del sistema',
-      href: '/admin/logs',
-      icon: '📋',
-      color: 'bg-green-500',
-      disabled: true
+      icon: Search,
+      color: 'bg-red-500',
+      stats: 'Sistema OK'
     },
     {
       title: 'Configuración',
       description: 'Configurar parámetros del sistema',
-      href: '/admin/config',
-      icon: '⚙️',
-      color: 'bg-purple-500',
+      href: '/admin/settings',
+      icon: Settings,
+      color: 'bg-gray-500',
+      stats: 'Próximamente',
       disabled: true
     },
     {
       title: 'Base de Datos',
       description: 'Herramientas de gestión de base de datos',
       href: '/admin/database',
-      icon: '🗄️',
-      color: 'bg-yellow-500',
+      icon: Database,
+      color: 'bg-orange-500',
+      stats: 'Próximamente',
       disabled: true
     }
   ];
 
+  // Quick stats data
+  const quickStats = [
+    {
+      title: 'Ventas Hoy',
+      value: '$12,450',
+      change: '+8.2%',
+      changeType: 'positive' as const,
+      icon: TrendingUp,
+    },
+    {
+      title: 'Órdenes Pendientes',
+      value: '23',
+      change: '+3',
+      changeType: 'neutral' as const,
+      icon: ShoppingCart,
+    },
+    {
+      title: 'Stock Bajo',
+      value: '8',
+      change: '-2',
+      changeType: 'negative' as const,
+      icon: AlertTriangle,
+    },
+    {
+      title: 'Usuarios Activos',
+      value: '1,247',
+      change: '+12%',
+      changeType: 'positive' as const,
+      icon: Users,
+    },
+  ];
+
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          🔧 Panel de Administración
-        </h1>
-        <p className="text-gray-600">
-          Bienvenido al panel de administración de Pinteya E-commerce. 
-          Aquí puedes acceder a herramientas de diagnóstico, configuración y mantenimiento del sistema.
-        </p>
-      </div>
-
-      {/* Warning Banner */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
-        <div className="flex items-center">
-          <div className="text-yellow-600 mr-3">⚠️</div>
-          <div>
-            <h3 className="text-sm font-medium text-yellow-800">Área Restringida</h3>
-            <p className="text-sm text-yellow-700 mt-1">
-              Esta área está destinada únicamente para administradores y desarrollo. 
-              El acceso no autorizado está prohibido.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Admin Sections Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {adminSections.map((section) => (
-          <div
-            key={section.title}
-            className={`bg-white rounded-lg shadow-md border p-6 ${
-              section.disabled ? 'opacity-50' : 'hover:shadow-lg transition-shadow'
-            }`}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`w-12 h-12 ${section.color} rounded-lg flex items-center justify-center text-white text-2xl`}>
-                {section.icon}
-              </div>
-              {section.disabled && (
-                <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-medium">
-                  Próximamente
-                </span>
-              )}
+    <AdminLayout title="Dashboard">
+      <div className="space-y-6">
+        {/* Welcome Section */}
+        <AdminCard className="bg-gradient-to-r from-blaze-orange-500 to-blaze-orange-600 text-white border-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">
+                ¡Bienvenido al Panel Administrativo!
+              </h1>
+              <p className="text-blaze-orange-100">
+                Gestiona y monitorea tu tienda de e-commerce desde aquí
+              </p>
             </div>
-            
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {section.title}
-            </h3>
-            <p className="text-gray-600 text-sm mb-4">
-              {section.description}
-            </p>
-            
-            {section.disabled ? (
-              <button
-                disabled
-                className="w-full bg-gray-200 text-gray-500 py-2 px-4 rounded cursor-not-allowed"
-              >
-                No Disponible
-              </button>
-            ) : (
-              <Link
-                href={section.href}
-                className="block w-full bg-tahiti-gold-500 text-white py-2 px-4 rounded text-center hover:bg-tahiti-gold-600 transition-colors"
-              >
-                Acceder
-              </Link>
-            )}
+            <div className="hidden md:block">
+              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <BarChart3 className="w-8 h-8" />
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
+        </AdminCard>
 
-      {/* Quick Stats */}
-      <div className="bg-white rounded-lg shadow-md border p-6 mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Estado del Sistema</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">✅</div>
-            <div className="text-sm text-gray-600">Build Status</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">🟢</div>
-            <div className="text-sm text-gray-600">Database</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">🔐</div>
-            <div className="text-sm text-gray-600">Auth</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">💳</div>
-            <div className="text-sm text-gray-600">Payments</div>
-          </div>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {quickStats.map((stat) => (
+            <AdminCard key={stat.title} className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {stat.value}
+                  </p>
+                  <p className={`text-sm mt-1 ${
+                    stat.changeType === 'positive'
+                      ? 'text-green-600'
+                      : stat.changeType === 'negative'
+                      ? 'text-red-600'
+                      : 'text-gray-600'
+                  }`}>
+                    {stat.change} desde ayer
+                  </p>
+                </div>
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                  stat.changeType === 'positive'
+                    ? 'bg-green-100'
+                    : stat.changeType === 'negative'
+                    ? 'bg-red-100'
+                    : 'bg-gray-100'
+                }`}>
+                  <stat.icon className={`w-6 h-6 ${
+                    stat.changeType === 'positive'
+                      ? 'text-green-600'
+                      : stat.changeType === 'negative'
+                      ? 'text-red-600'
+                      : 'text-gray-600'
+                  }`} />
+                </div>
+              </div>
+            </AdminCard>
+          ))}
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-md border p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">⚡ Acciones Rápidas</h3>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/admin/diagnostics"
-            className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 transition-colors"
-          >
-            🔍 Diagnósticos
-          </Link>
-          <Link
-            href="/test-env"
-            className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition-colors"
-          >
-            🌐 Variables Entorno
-          </Link>
-          <Link
-            href="/debug-clerk"
-            className="bg-purple-500 text-white px-4 py-2 rounded text-sm hover:bg-purple-600 transition-colors"
-          >
-            🔐 Debug Clerk
-          </Link>
-          <Link
-            href="/"
-            className="bg-gray-500 text-white px-4 py-2 rounded text-sm hover:bg-gray-600 transition-colors"
-          >
-            🏠 Volver al Sitio
-          </Link>
-        </div>
+        {/* Admin Sections Grid */}
+        <AdminCard
+          title="Módulos Administrativos"
+          description="Accede a las diferentes secciones del panel"
+          padding="none"
+        >
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {adminSections.map((section) => {
+                const IconComponent = section.icon;
+
+                return (
+                  <div
+                    key={section.title}
+                    className={`bg-gray-50 rounded-lg border p-6 transition-all ${
+                      section.disabled
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:shadow-md hover:bg-white cursor-pointer'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`w-12 h-12 ${section.color} rounded-lg flex items-center justify-center text-white`}>
+                        <IconComponent className="w-6 h-6" />
+                      </div>
+                      {section.disabled ? (
+                        <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-medium">
+                          Próximamente
+                        </span>
+                      ) : (
+                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                          {section.stats}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {section.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      {section.description}
+                    </p>
+
+                    {section.disabled ? (
+                      <div className="text-gray-400 text-sm">
+                        Funcionalidad en desarrollo
+                      </div>
+                    ) : (
+                      <Link
+                        href={section.href}
+                        className="inline-flex items-center text-blaze-orange-600 hover:text-blaze-orange-800 text-sm font-medium"
+                      >
+                        Acceder →
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </AdminCard>
+
+        {/* System Status */}
+        <AdminCard
+          title="Estado del Sistema"
+          description="Monitoreo en tiempo real del estado de la aplicación"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl">✅</span>
+              </div>
+              <div className="text-sm font-medium text-green-800">Sistema Operativo</div>
+              <div className="text-xs text-green-600 mt-1">Todos los servicios funcionando</div>
+            </div>
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl">🔄</span>
+              </div>
+              <div className="text-sm font-medium text-blue-800">Sincronización Activa</div>
+              <div className="text-xs text-blue-600 mt-1">Última sync: hace 2 min</div>
+            </div>
+            <div className="text-center p-4 bg-yellow-50 rounded-lg">
+              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl">⚡</span>
+              </div>
+              <div className="text-sm font-medium text-yellow-800">Performance Óptimo</div>
+              <div className="text-xs text-yellow-600 mt-1">Tiempo respuesta: 120ms</div>
+            </div>
+          </div>
+        </AdminCard>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

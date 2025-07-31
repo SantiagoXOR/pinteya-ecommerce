@@ -214,16 +214,16 @@ export async function incrementRateLimit(key: string, windowSeconds: number): Pr
   try {
     const client = getRedisClient();
     const pipeline = client.pipeline();
-    
+
     // Incrementar contador
     pipeline.incr(key);
     // Establecer TTL solo si es la primera vez
     pipeline.expire(key, windowSeconds);
     // Obtener TTL actual
     pipeline.ttl(key);
-    
+
     const results = await pipeline.exec();
-    
+
     if (!results || results.length !== 3) {
       return null;
     }
@@ -238,3 +238,248 @@ export async function incrementRateLimit(key: string, windowSeconds: number): Pr
     return null;
   }
 }
+
+// =====================================================
+// FUNCIONES ENTERPRISE PARA RATE LIMITING
+// =====================================================
+
+/**
+ * Rate limiting enterprise con sliding window
+ */
+export async function enterpriseRateLimit(
+  key: string,
+  windowMs: number,
+  maxRequests: number
+): Promise<{
+  allowed: boolean;
+  count: number;
+  remaining: number;
+  resetTime: number;
+  retryAfter?: number;
+} | null> {
+  try {
+    const client = getRedisClient();
+    const now = Date.now();
+    const window = Math.floor(now / windowMs);
+    const redisKey = `rate_limit:${key}:${window}`;
+
+    // Usar pipeline para operaciones atómicas
+    const pipeline = client.pipeline();
+    pipeline.incr(redisKey);
+    pipeline.expire(redisKey, Math.ceil(windowMs / 1000));
+
+    const results = await pipeline.exec();
+
+    if (!results || results.length !== 2) {
+      return null;
+    }
+
+    const count = results[0][1] as number;
+    const remaining = Math.max(0, maxRequests - count);
+    const resetTime = (window + 1) * windowMs;
+    const allowed = count <= maxRequests;
+
+    const result = {
+      allowed,
+      count,
+      remaining,
+      resetTime,
+      retryAfter: allowed ? undefined : Math.ceil((resetTime - now) / 1000)
+    };
+
+    logger.debug(LogCategory.API, 'Enterprise rate limit check', {
+      key: redisKey,
+      count,
+      maxRequests,
+      allowed,
+      remaining
+    });
+
+    return result;
+  } catch (error) {
+    logger.error(LogCategory.API, 'Enterprise rate limit failed', error as Error);
+    return null;
+  }
+}
+
+/**
+ * Rate limiting con múltiples ventanas (más preciso)
+ */
+export async function slidingWindowRateLimit(
+  key: string,
+  windowMs: number,
+  maxRequests: number,
+  precision: number = 10
+): Promise<{
+  allowed: boolean;
+  count: number;
+  remaining: number;
+  resetTime: number;
+} | null> {
+  try {
+    const client = getRedisClient();
+    const now = Date.now();
+    const windowSize = Math.floor(windowMs / precision);
+    const currentWindow = Math.floor(now / windowSize);
+
+    // Limpiar ventanas antiguas y contar requests en ventana actual
+    const pipeline = client.pipeline();
+
+    // Eliminar ventanas más antiguas que el período de rate limiting
+    for (let i = 1; i <= precision; i++) {
+      const oldWindow = currentWindow - precision - i;
+      pipeline.del(`${key}:${oldWindow}`);
+    }
+
+    // Incrementar contador para ventana actual
+    const currentKey = `${key}:${currentWindow}`;
+    pipeline.incr(currentKey);
+    pipeline.expire(currentKey, Math.ceil(windowMs / 1000));
+
+    // Obtener contadores de todas las ventanas en el período
+    for (let i = 0; i < precision; i++) {
+      const windowKey = `${key}:${currentWindow - i}`;
+      pipeline.get(windowKey);
+    }
+
+    const results = await pipeline.exec();
+
+    if (!results) {
+      return null;
+    }
+
+    // Calcular total de requests en la ventana deslizante
+    let totalCount = 0;
+    const countResults = results.slice(precision + 2); // Saltar operaciones de limpieza e incremento
+
+    for (const result of countResults) {
+      if (result[1]) {
+        totalCount += parseInt(result[1] as string);
+      }
+    }
+
+    const remaining = Math.max(0, maxRequests - totalCount);
+    const allowed = totalCount <= maxRequests;
+    const resetTime = (currentWindow + 1) * windowSize;
+
+    return {
+      allowed,
+      count: totalCount,
+      remaining,
+      resetTime
+    };
+  } catch (error) {
+    logger.error(LogCategory.API, 'Sliding window rate limit failed', error as Error);
+    return null;
+  }
+}
+
+/**
+ * Obtener estadísticas de rate limiting
+ */
+export async function getRateLimitStats(pattern: string = 'rate_limit:*'): Promise<{
+  totalKeys: number;
+  activeWindows: number;
+  topKeys: Array<{ key: string; count: number; ttl: number }>;
+} | null> {
+  try {
+    const client = getRedisClient();
+    const keys = await client.keys(pattern);
+
+    if (keys.length === 0) {
+      return {
+        totalKeys: 0,
+        activeWindows: 0,
+        topKeys: []
+      };
+    }
+
+    // Obtener información de las claves más activas
+    const pipeline = client.pipeline();
+    keys.forEach(key => {
+      pipeline.get(key);
+      pipeline.ttl(key);
+    });
+
+    const results = await pipeline.exec();
+
+    if (!results) {
+      return null;
+    }
+
+    const keyStats: Array<{ key: string; count: number; ttl: number }> = [];
+
+    for (let i = 0; i < keys.length; i++) {
+      const countResult = results[i * 2];
+      const ttlResult = results[i * 2 + 1];
+
+      if (countResult[1] && ttlResult[1]) {
+        keyStats.push({
+          key: keys[i],
+          count: parseInt(countResult[1] as string),
+          ttl: ttlResult[1] as number
+        });
+      }
+    }
+
+    // Ordenar por count descendente
+    keyStats.sort((a, b) => b.count - a.count);
+
+    return {
+      totalKeys: keys.length,
+      activeWindows: keyStats.filter(stat => stat.ttl > 0).length,
+      topKeys: keyStats.slice(0, 10) // Top 10
+    };
+  } catch (error) {
+    logger.error(LogCategory.API, 'Rate limit stats failed', error as Error);
+    return null;
+  }
+}
+
+/**
+ * Limpiar claves de rate limiting expiradas
+ */
+export async function cleanupRateLimitKeys(pattern: string = 'rate_limit:*'): Promise<number> {
+  try {
+    const client = getRedisClient();
+    const keys = await client.keys(pattern);
+
+    if (keys.length === 0) {
+      return 0;
+    }
+
+    // Verificar TTL de cada clave y eliminar las expiradas
+    const pipeline = client.pipeline();
+    keys.forEach(key => {
+      pipeline.ttl(key);
+    });
+
+    const ttlResults = await pipeline.exec();
+
+    if (!ttlResults) {
+      return 0;
+    }
+
+    const expiredKeys: string[] = [];
+
+    for (let i = 0; i < keys.length; i++) {
+      const ttlResult = ttlResults[i];
+      if (ttlResult[1] === -2) { // Clave expirada
+        expiredKeys.push(keys[i]);
+      }
+    }
+
+    if (expiredKeys.length > 0) {
+      await client.del(...expiredKeys);
+      logger.info(LogCategory.API, `Cleaned up ${expiredKeys.length} expired rate limit keys`);
+    }
+
+    return expiredKeys.length;
+  } catch (error) {
+    logger.error(LogCategory.API, 'Rate limit cleanup failed', error as Error);
+    return 0;
+  }
+}
+
+// Exportar cliente Redis para uso directo
+export const redis = getRedisClient();

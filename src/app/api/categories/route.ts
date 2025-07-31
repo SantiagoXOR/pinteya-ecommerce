@@ -97,11 +97,24 @@ export async function GET(request: NextRequest) {
 // ===================================
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Verificar permisos de administrador
-    // const { userId } = auth();
-    // if (!userId || !isAdmin(userId)) {
-    //   return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    // }
+    // ENTERPRISE: Usar nueva autenticación enterprise para admin
+    const { requireAdminAuth } = await import('@/lib/auth/enterprise-auth-utils');
+
+    const authResult = await requireAdminAuth(request, ['categories_create']);
+
+    if (!authResult.success) {
+      return NextResponse.json(
+        {
+          error: authResult.error,
+          code: authResult.code,
+          enterprise: true,
+          timestamp: new Date().toISOString()
+        },
+        { status: authResult.status || 401 }
+      );
+    }
+
+    const context = authResult.context!;
 
     const body = await request.json();
     

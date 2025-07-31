@@ -254,36 +254,36 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/payments/preferences
- * Actualiza configuraciones de preferencias
+ * Actualiza configuraciones de preferencias (ENTERPRISE)
  */
-export async function POST(request: NextRequest) {
+const postHandler = async (request: NextRequest) => {
   const startTime = Date.now();
   const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
 
   try {
-    // Verificar autenticación
-    const { userId } = await auth();
-    if (!userId) {
+    // ENTERPRISE: Verificar autenticación con contexto completo
+    const authResult = await getEnterpriseAuthContext(request, {
+      securityLevel: 'high',
+      enableJWTValidation: true,
+      enableCSRFProtection: true,
+      enableRateLimit: false // Rate limiting manejado por middleware
+    });
+
+    if (!authResult.success) {
       return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
+        {
+          error: authResult.error,
+          code: authResult.code,
+          enterprise: true
+        },
+        { status: authResult.status || 401 }
       );
     }
 
-    // Rate limiting
-    const rateLimitResult = await checkRateLimit(
-      request,
-      RATE_LIMIT_CONFIGS.PAYMENT_API
-    );
+    const context = authResult.context!;
+    const userId = context.userId;
 
-    if (!rateLimitResult.success) {
-      const response = NextResponse.json(
-        { success: false, error: 'Demasiadas solicitudes' },
-        { status: 429 }
-      );
-      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
-      return response;
-    }
+    // Rate limiting manejado por middleware enterprise
 
     const config: AdvancedPreferenceConfig = await request.json();
 

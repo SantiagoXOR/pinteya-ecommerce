@@ -1,14 +1,19 @@
 /**
  * API para sincronizar usuarios entre Clerk y Supabase
- * 
- * ✅ SOLUCIONADO: Error "This module cannot be imported from a Client Component module"
- * Se eliminó la importación problemática de auth() de Clerk y se implementó
- * un enfoque alternativo compatible con Next.js 15
+ * Versión mejorada con servicio de sincronización robusto
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { ApiResponse } from '@/types/api';
+import {
+  syncUserToSupabase,
+  syncUserFromClerk,
+  bulkSyncUsersFromClerk,
+  type ClerkUserData,
+  type SyncOptions
+} from '@/lib/auth/user-sync-service';
+import { getAuthenticatedUser } from '@/lib/auth/admin-auth';
 
 // Verificar configuración de Clerk
 const isClerkConfigured = () => {
@@ -18,18 +23,20 @@ const isClerkConfigured = () => {
   );
 };
 
+/**
+ * GET /api/auth/sync-user
+ * Obtiene información de sincronización de un usuario
+ * Parámetros: email, clerkUserId, action (get|sync|bulk)
+ */
 export async function GET(request: NextRequest) {
   try {
-
     const url = new URL(request.url);
     const email = url.searchParams.get('email');
-
+    const clerkUserId = url.searchParams.get('clerkUserId');
+    const action = url.searchParams.get('action') || 'get';
 
     // Verificar configuración básica
-    const clerkConfigured = isClerkConfigured();
-
-    if (!clerkConfigured) {
-      console.error('Clerk no está configurado correctamente');
+    if (!isClerkConfigured()) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -38,9 +45,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 503 });
     }
 
-
     if (!supabaseAdmin) {
-      console.error('Cliente administrativo de Supabase no disponible');
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -49,49 +54,123 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 503 });
     }
 
-    if (!email) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Email es requerido como parámetro de consulta',
-      };
-      return NextResponse.json(errorResponse, { status: 400 });
-    }
+    // Manejar diferentes acciones
+    switch (action) {
+      case 'sync':
+        // Sincronizar usuario específico desde Clerk
+        if (!clerkUserId) {
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: 'clerkUserId es requerido para sincronización',
+          };
+          return NextResponse.json(errorResponse, { status: 400 });
+        }
 
-    // Buscar usuario en la base de datos
-    const { data: user, error } = await supabaseAdmin
-      .from('user_profiles')
-      .select('*')
-      .eq('email', email)
-      .eq('is_active', true)
-      .single();
+        const syncResult = await syncUserFromClerk(clerkUserId, {
+          retryAttempts: 2,
+          logEvents: true
+        });
 
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        const errorResponse: ApiResponse<null> = {
-          data: null,
-          success: false,
-          error: 'Usuario no encontrado',
+        const syncResponse: ApiResponse<any> = {
+          data: syncResult,
+          success: syncResult.success,
+          message: syncResult.success ? 'Usuario sincronizado exitosamente' : 'Error en sincronización'
         };
-        return NextResponse.json(errorResponse, { status: 404 });
-      }
-      console.error('Error fetching user:', error);
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Error al obtener usuario',
-      };
-      return NextResponse.json(errorResponse, { status: 500 });
+        return NextResponse.json(syncResponse, {
+          status: syncResult.success ? 200 : 500
+        });
+
+      case 'bulk':
+        // Verificar permisos de admin para sincronización masiva
+        try {
+          const authResult = await getAuthenticatedUser(request);
+          if (!authResult.userId) {
+            const errorResponse: ApiResponse<null> = {
+              data: null,
+              success: false,
+              error: 'Autenticación requerida para sincronización masiva',
+            };
+            return NextResponse.json(errorResponse, { status: 401 });
+          }
+        } catch (authError) {
+          console.warn('[SYNC] No se pudo verificar autenticación para bulk sync');
+        }
+
+        const batchSize = parseInt(url.searchParams.get('batchSize') || '10');
+        const maxUsers = parseInt(url.searchParams.get('maxUsers') || '50');
+
+        const bulkResult = await bulkSyncUsersFromClerk({
+          batchSize: Math.min(batchSize, 20), // Límite de seguridad
+          maxUsers: Math.min(maxUsers, 100), // Límite de seguridad
+          retryAttempts: 1,
+          logEvents: false
+        });
+
+        const bulkResponse: ApiResponse<any> = {
+          data: bulkResult,
+          success: bulkResult.success,
+          message: `Sincronización masiva: ${bulkResult.successful} exitosos, ${bulkResult.failed} fallidos`
+        };
+        return NextResponse.json(bulkResponse);
+
+      case 'get':
+      default:
+        // Obtener usuario existente
+        if (!email && !clerkUserId) {
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: 'Email o clerkUserId es requerido',
+          };
+          return NextResponse.json(errorResponse, { status: 400 });
+        }
+
+        let query = supabaseAdmin
+          .from('user_profiles')
+          .select(`
+            *,
+            user_roles (
+              id,
+              role_name,
+              display_name,
+              permissions
+            )
+          `);
+
+        if (email) {
+          query = query.eq('email', email);
+        } else if (clerkUserId) {
+          query = query.eq('clerk_user_id', clerkUserId);
+        }
+
+        const { data: user, error } = await query.single();
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            const errorResponse: ApiResponse<null> = {
+              data: null,
+              success: false,
+              error: 'Usuario no encontrado',
+            };
+            return NextResponse.json(errorResponse, { status: 404 });
+          }
+          console.error('Error fetching user:', error);
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: 'Error al obtener usuario',
+          };
+          return NextResponse.json(errorResponse, { status: 500 });
+        }
+
+        const successResponse: ApiResponse<any> = {
+          data: { user },
+          success: true,
+          message: 'Usuario obtenido exitosamente'
+        };
+        return NextResponse.json(successResponse);
     }
-
-    const successResponse: ApiResponse<any> = {
-      data: { user },
-      success: true,
-      message: 'Usuario obtenido exitosamente'
-    };
-    return NextResponse.json(successResponse);
-
   } catch (error) {
     console.error('Error en GET sync-user:', error);
     const errorResponse: ApiResponse<null> = {
@@ -103,12 +182,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * POST /api/auth/sync-user
+ * Sincroniza un usuario específico con datos proporcionados
+ * Body: { userData: ClerkUserData, options?: SyncOptions } o { email, firstName, lastName, clerkUserId }
+ */
 export async function POST(request: NextRequest) {
   try {
-    
     // Verificar configuración básica
     if (!isClerkConfigured()) {
-      console.error('Clerk no está configurado correctamente');
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -118,7 +200,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!supabaseAdmin) {
-      console.error('Cliente administrativo de Supabase no disponible');
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -140,6 +221,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
+    // Soportar tanto el formato nuevo (userData) como el formato legacy
+    if (body.userData) {
+      // Formato nuevo con servicio de sincronización robusto
+      const { userData, options = {} } = body;
+
+      const syncOptions: SyncOptions = {
+        retryAttempts: 3,
+        retryDelay: 1000,
+        validateData: true,
+        createMissingRole: true,
+        logEvents: true,
+        ...options
+      };
+
+      const result = await syncUserToSupabase(userData as ClerkUserData, syncOptions);
+
+      if (result.success) {
+        const successResponse: ApiResponse<any> = {
+          data: result,
+          success: true,
+          message: `Usuario ${result.action} exitosamente`
+        };
+        return NextResponse.json(successResponse);
+      } else {
+        const errorResponse: ApiResponse<any> = {
+          data: { error: result.error, details: result.details },
+          success: false,
+          error: result.error || 'Error al sincronizar usuario',
+        };
+        return NextResponse.json(errorResponse, { status: 500 });
+      }
+    }
+
+    // Formato legacy - mantener compatibilidad hacia atrás
     const { email, firstName, lastName, clerkUserId } = body;
 
 

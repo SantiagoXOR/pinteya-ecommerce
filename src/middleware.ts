@@ -1,15 +1,56 @@
 // ===================================
-// PINTEYA E-COMMERCE - MIDDLEWARE COMPATIBLE CON SSG
+// PINTEYA E-COMMERCE - MIDDLEWARE MEJORADO CON CLERK
 // ===================================
+// DEBUG: Forzar recompilación - Fix publicMetadata
 
 import { NextRequest, NextResponse } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { securityMiddleware } from './middleware/security';
+// Importaciones simplificadas para Edge Runtime
+// No importar session-management que usa Redis
 
-/**
- * Middleware optimizado para performance
- * Validaciones mínimas para rutas críticas
- */
-export default function middleware(request: NextRequest) {
+// ===================================
+// DEFINICIÓN DE RUTAS
+// ===================================
+
+// Rutas que requieren autenticación admin
+const isAdminRoute = createRouteMatcher(['/api/admin(.*)']);
+
+// Rutas admin que NO requieren autenticación (para corrección de roles)
+const isAdminExceptionRoute = createRouteMatcher(['/api/admin/fix-santiago-role(.*)']);
+
+// Rutas públicas que NO requieren autenticación
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/shop(.*)',
+  '/search(.*)',
+  '/product(.*)',
+  '/category(.*)',
+  '/about',
+  '/contact',
+  '/signin(.*)',
+  '/signup(.*)',
+  '/sso-callback(.*)',
+  '/test-env',
+  '/debug-clerk',
+  '/test-clerk',
+  // APIs públicas
+  '/api/products(.*)',
+  '/api/categories(.*)',
+  '/api/test(.*)',
+  '/api/payments/create-preference',
+  '/api/payments/webhook',
+  '/api/payments/status',
+  '/api/auth/webhook',
+  '/api/debug(.*)',
+  '/api/analytics(.*)' // Skip analytics para performance
+]);
+
+// ===================================
+// MIDDLEWARE PRINCIPAL CON CLERK
+// ===================================
+
+export default clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl;
 
   // Skip inmediato para rutas estáticas (performance crítico)
@@ -19,84 +60,115 @@ export default function middleware(request: NextRequest) {
     pathname.includes('.') ||
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml' ||
-    pathname === '/_not-found' ||
-    pathname.startsWith('/api/analytics') // Skip analytics para performance
+    pathname === '/_not-found'
   ) {
     return NextResponse.next();
   }
 
-  // Aplicar middleware de seguridad solo para rutas críticas
-  if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) {
-    const securityResponse = securityMiddleware(request);
-    if (securityResponse) {
-      return securityResponse;
+  // Aplicar middleware de seguridad para todas las rutas
+  const securityResponse = securityMiddleware(request);
+  if (securityResponse && securityResponse.status !== 200) {
+    return securityResponse;
+  }
+
+  // Permitir rutas admin de excepción sin autenticación
+  if (isAdminExceptionRoute(request)) {
+    console.log(`[MIDDLEWARE] Permitiendo acceso sin auth a ruta de excepción: ${pathname}`);
+    return NextResponse.next();
+  }
+
+  // Proteger rutas admin con Clerk y gestión de sesiones
+  if (isAdminRoute(request)) {
+    try {
+      // Verificar autenticación y rol admin
+      const { userId, sessionClaims, sessionId } = await auth();
+
+      if (!userId) {
+        console.warn(`[MIDDLEWARE] Acceso denegado a ruta admin: ${pathname} - Usuario no autenticado`);
+        return NextResponse.json(
+          {
+            error: 'Acceso denegado - Autenticación requerida',
+            code: 'AUTH_REQUIRED'
+          },
+          { status: 401 }
+        );
+      }
+
+      // Gestión básica de sesiones para rutas admin (sin Redis)
+      if (sessionId) {
+        console.log(`[MIDDLEWARE] Sesión activa para usuario ${userId}: ${sessionId}`);
+        // En el middleware, solo verificamos que existe sessionId
+        // La validación completa se hace en las APIs individuales
+      }
+
+      // Verificar rol de administrador en publicMetadata (FIXED)
+      const userRole = sessionClaims?.publicMetadata?.role as string;
+      console.log(`[MIDDLEWARE] DEBUG - sessionClaims:`, JSON.stringify(sessionClaims, null, 2));
+      console.log(`[MIDDLEWARE] DEBUG - publicMetadata:`, JSON.stringify(sessionClaims?.publicMetadata, null, 2));
+      console.log(`[MIDDLEWARE] DEBUG - userRole:`, userRole);
+      if (userRole !== 'admin' && userRole !== 'moderator') {
+        console.warn(`[MIDDLEWARE] Acceso denegado a ruta admin: ${pathname} - Usuario ${userId} con rol: ${userRole}`);
+        return NextResponse.json(
+          {
+            error: 'Acceso denegado - Se requiere rol de administrador',
+            code: 'INSUFFICIENT_PERMISSIONS'
+          },
+          { status: 403 }
+        );
+      }
+
+      console.log(`[MIDDLEWARE] Acceso autorizado a ruta admin: ${pathname} - Usuario ${userId} con rol: ${userRole}`);
+    } catch (error) {
+      console.error('[MIDDLEWARE] Error en protección de ruta admin:', error);
+      return NextResponse.json(
+        {
+          error: 'Error interno de autenticación',
+          code: 'AUTH_ERROR'
+        },
+        { status: 500 }
+      );
     }
   }
 
-  // Rutas públicas que siempre están permitidas
-  const publicRoutes = [
-    '/',
-    '/shop',
-    '/search',
-    '/product',
-    '/category',
-    '/about',
-    '/contact',
-    '/signin',
-    '/signup',
-    '/sso-callback',
-    '/admin',
-    '/test-env',
-    '/debug-clerk',
-    '/test-clerk',
-  ];
-
-  // Rutas de API que siempre están permitidas
-  const publicApiRoutes = [
-    '/api/products',
-    '/api/categories',
-    '/api/test',
-    '/api/payments/create-preference',
-    '/api/payments/webhook',
-    '/api/payments/status',
-    '/api/auth/webhook',
-    '/api/debug',
-  ];
-
-  // Verificar si es ruta pública
-  const isPublicRoute = publicRoutes.some(route =>
-    pathname === route || pathname.startsWith(route + '/')
-  );
-
-  const isPublicApiRoute = publicApiRoutes.some(route =>
-    pathname.startsWith(route)
-  );
-
-  // Permitir rutas públicas
-  if (isPublicRoute || isPublicApiRoute) {
+  // Permitir rutas públicas sin verificación adicional
+  if (isPublicRoute(request)) {
     return NextResponse.next();
   }
 
-  // Para rutas protegidas, verificar si Clerk está disponible
-  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  // Para otras rutas protegidas, verificar autenticación básica con gestión de sesiones
+  try {
+    const { userId, sessionId } = await auth();
+    if (!userId) {
+      // Redirigir a signin para rutas protegidas no-admin
+      const signInUrl = new URL('/signin', request.url);
+      signInUrl.searchParams.set('redirect_url', request.url);
+      return NextResponse.redirect(signInUrl);
+    }
 
-  // Si no hay Clerk configurado, permitir acceso (modo desarrollo)
-  if (!publishableKey) {
+    // Gestión básica de sesiones para rutas protegidas (sin Redis)
+    if (sessionId) {
+      console.log(`[MIDDLEWARE] Sesión activa para usuario ${userId}: ${sessionId}`);
+      // En el middleware, solo verificamos que existe sessionId
+      // La validación completa se hace en las APIs individuales
+    }
+  } catch (error) {
+    console.error('[MIDDLEWARE] Error en verificación de autenticación:', error);
+    // En caso de error, permitir acceso (fail-open para evitar bloqueos)
     return NextResponse.next();
   }
 
-  // En producción con Clerk, la autenticación se maneja en el frontend
-  // El middleware no bloquea para evitar problemas con SSG
   return NextResponse.next();
-}
+});
 
-// Configuración del matcher optimizada para performance
+// ===================================
+// CONFIGURACIÓN DEL MATCHER
+// ===================================
+
 export const config = {
   matcher: [
-    // Matcher más específico para reducir overhead
-    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|robots.txt|sitemap.xml|api/analytics).*)',
-    // Solo procesar rutas admin y dashboard para seguridad
-    '/admin/:path*',
-    '/dashboard/:path*'
+    // Incluir todas las rutas excepto archivos estáticos
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Siempre procesar rutas API
+    '/(api|trpc)(.*)',
   ],
 };

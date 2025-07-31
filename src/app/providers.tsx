@@ -92,7 +92,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const { notification, hideNotification } = useCartNotification();
 
     return (
-      <div className="">{/* mobile-bottom-nav-padding - TEMPORALMENTE DESACTIVADO */}
+      <div className="app-content-wrapper">{/* mobile-bottom-nav-padding - TEMPORALMENTE DESACTIVADO */}
         {loading ? (
           <PreLoader />
         ) : (

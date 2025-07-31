@@ -31,6 +31,13 @@ export interface UseUserRoleReturn {
   isLoading: boolean;
   error: string | null;
   hasPermission: (permission: string[]) => boolean;
+  hasAnyPermission: (permissions: string[][]) => boolean;
+  hasAllPermissions: (permissions: string[][]) => boolean;
+  canAccessAdminPanel: boolean;
+  canManageProducts: boolean;
+  canManageOrders: boolean;
+  canManageUsers: boolean;
+  canViewAnalytics: boolean;
   isAdmin: boolean;
   isCustomer: boolean;
   isModerator: boolean;
@@ -166,12 +173,51 @@ export const useUserRole = (): UseUserRoleReturn => {
       current = current[path];
     }
 
+    // Manejar diferentes tipos de valores de permisos
+    if (typeof current === 'boolean') {
+      return current;
+    }
+
+    if (typeof current === 'string') {
+      // Para permisos como "own", "own_limited", etc.
+      return current !== 'false';
+    }
+
     return Boolean(current);
   };
 
+  const hasAnyPermission = (permissions: string[][]): boolean => {
+    return permissions.some(permission => hasPermission(permission));
+  };
+
+  const hasAllPermissions = (permissions: string[][]): boolean => {
+    return permissions.every(permission => hasPermission(permission));
+  };
+
+  // Verificaciones de roles
   const isAdmin = userProfile?.user_roles?.role_name === 'admin';
   const isCustomer = userProfile?.user_roles?.role_name === 'customer';
   const isModerator = userProfile?.user_roles?.role_name === 'moderator';
+
+  // Verificaciones de permisos específicos
+  const canAccessAdminPanel = hasPermission(['admin_panel', 'access']);
+  const canManageProducts = hasAnyPermission([
+    ['products', 'create'],
+    ['products', 'update'],
+    ['products', 'delete']
+  ]);
+  const canManageOrders = hasAnyPermission([
+    ['orders', 'create'],
+    ['orders', 'update'],
+    ['orders', 'delete']
+  ]);
+  const canManageUsers = hasAnyPermission([
+    ['users', 'create'],
+    ['users', 'update'],
+    ['users', 'delete'],
+    ['users', 'manage_roles']
+  ]);
+  const canViewAnalytics = hasPermission(['analytics', 'read']);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -189,6 +235,13 @@ export const useUserRole = (): UseUserRoleReturn => {
     isLoading,
     error,
     hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    canAccessAdminPanel,
+    canManageProducts,
+    canManageOrders,
+    canManageUsers,
+    canViewAnalytics,
     isAdmin,
     isCustomer,
     isModerator,
