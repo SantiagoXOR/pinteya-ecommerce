@@ -14,7 +14,10 @@ import { securityMiddleware } from './middleware/security';
 // ===================================
 
 // Rutas que requieren autenticación admin
-const isAdminRoute = createRouteMatcher(['/api/admin(.*)']);
+const isAdminRoute = createRouteMatcher([
+  '/api/admin(.*)',
+  '/admin(.*)'  // ← Agregar rutas admin del frontend
+]);
 
 // Rutas admin que NO requieren autenticación (para corrección de roles)
 const isAdminExceptionRoute = createRouteMatcher(['/api/admin/fix-santiago-role(.*)']);
