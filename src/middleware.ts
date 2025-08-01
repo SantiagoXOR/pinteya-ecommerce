@@ -66,6 +66,12 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.next();
   }
 
+  // Skip inmediato para webhooks (CRÍTICO para producción)
+  if (pathname.startsWith('/api/webhooks/')) {
+    console.log(`[MIDDLEWARE] Webhook detectado: ${pathname} - Permitiendo acceso directo`);
+    return NextResponse.next();
+  }
+
   // Aplicar middleware de seguridad para todas las rutas
   const securityResponse = securityMiddleware(request);
   if (securityResponse && securityResponse.status !== 200) {
