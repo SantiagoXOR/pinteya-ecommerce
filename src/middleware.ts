@@ -42,6 +42,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/payments/webhook',
   '/api/payments/status',
   '/api/auth/webhook',
+  '/api/webhooks(.*)', // Todos los webhooks (Clerk, MercadoPago, etc.)
   '/api/debug(.*)',
   '/api/analytics(.*)' // Skip analytics para performance
 ]);
