@@ -40,6 +40,15 @@ yarn-error.log*
 .env.development
 .env.staging
 
+# SECURITY: Backup files that may contain credentials
+*.backup*
+.env*.backup*
+.env.local.backup.*
+.env.production.backup.*
+.env.development.backup.*
+*.env.backup
+backup.env*
+
 # Scripts with potential sensitive data
 scripts/fix-*.js
 scripts/organize-storage.js
