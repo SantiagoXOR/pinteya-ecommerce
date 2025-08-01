@@ -113,18 +113,21 @@ export default clerkMiddleware(async (auth, request) => {
 
       // Verificar rol de administrador en publicMetadata (FIXED)
       const userRole = sessionClaims?.publicMetadata?.role as string;
-      console.log(`[MIDDLEWARE] DEBUG - sessionClaims:`, JSON.stringify(sessionClaims, null, 2));
-      console.log(`[MIDDLEWARE] DEBUG - publicMetadata:`, JSON.stringify(sessionClaims?.publicMetadata, null, 2));
-      console.log(`[MIDDLEWARE] DEBUG - userRole:`, userRole);
+      console.log(`[MIDDLEWARE] Verificando acceso admin para ${pathname}:`);
+      console.log(`[MIDDLEWARE] - Usuario: ${userId}`);
+      console.log(`[MIDDLEWARE] - Rol detectado: ${userRole || 'undefined'}`);
+      console.log(`[MIDDLEWARE] - SessionClaims completo:`, JSON.stringify(sessionClaims, null, 2));
+
       if (userRole !== 'admin' && userRole !== 'moderator') {
-        console.warn(`[MIDDLEWARE] Acceso denegado a ruta admin: ${pathname} - Usuario ${userId} con rol: ${userRole}`);
-        return NextResponse.json(
-          {
-            error: 'Acceso denegado - Se requiere rol de administrador',
-            code: 'INSUFFICIENT_PERMISSIONS'
-          },
-          { status: 403 }
-        );
+        console.warn(`[MIDDLEWARE] Acceso denegado a ruta admin: ${pathname} - Usuario ${userId} con rol: ${userRole || 'undefined'}`);
+
+        // Redirigir a /my-account en lugar de devolver JSON error
+        const redirectUrl = new URL('/my-account', request.url);
+        redirectUrl.searchParams.set('error', 'insufficient_permissions');
+        redirectUrl.searchParams.set('message', 'Se requiere rol de administrador');
+
+        console.log(`[MIDDLEWARE] Redirigiendo a: ${redirectUrl.toString()}`);
+        return NextResponse.redirect(redirectUrl);
       }
 
       console.log(`[MIDDLEWARE] Acceso autorizado a ruta admin: ${pathname} - Usuario ${userId} con rol: ${userRole}`);
