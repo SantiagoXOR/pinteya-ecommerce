@@ -34,7 +34,18 @@ Página my-account detecta admin → Redirige a /admin → CICLO INFINITO ♻️
 
 ## ✅ Solución Implementada
 
-### 1. Corrección del Middleware (`src/middleware.ts`)
+### **SOLUCIÓN DEFINITIVA: ELIMINACIÓN COMPLETA DE /my-account**
+
+Después del análisis, se determinó que la solución más robusta y segura es **eliminar completamente la ruta `/my-account`** para evitar cualquier posibilidad de ciclos recursivos.
+
+### 1. Eliminación Completa de Componentes My-Account
+
+#### Archivos Eliminados:
+- ❌ `src/app/(site)/(pages)/my-account/` - Página completa eliminada
+- ❌ `src/components/MyAccount/` - Directorio completo eliminado
+- ❌ `src/hooks/useAuthRedirectDebug.ts` - Hook que causaba problemas
+
+### 2. Corrección del Middleware (`src/middleware.ts`)
 
 #### Cambios Realizados:
 - ❌ **REMOVIDO:** `/my-account(.*)` de rutas públicas

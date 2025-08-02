@@ -138,9 +138,9 @@ export const menuData: Menu[] = [
       },
       {
         id: 69,
-        title: "My Account",
+        title: "Admin Panel",
         newTab: false,
-        path: "/my-account",
+        path: "/admin",
       },
       {
         id: 70,

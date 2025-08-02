@@ -51,8 +51,8 @@ const isExcludedRoute = createRouteMatcher([
   '/api/webhooks/clerk' // ⚠️ CRÍTICO: Webhook activo de Clerk
 ]);
 
-// Rutas que requieren autenticación básica (usuarios normales)
-const isUserRoute = createRouteMatcher(['/my-account(.*)']);
+// ELIMINADO: Rutas my-account completamente removidas del sistema
+// const isUserRoute = createRouteMatcher(['/my-account(.*)']);
 
 // ===================================
 // FUNCIÓN AUXILIAR PARA VERIFICAR ROLES
@@ -199,45 +199,11 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   // ===================================
-  // PROTECCIÓN DE RUTAS DE USUARIO
+  // RUTAS MY-ACCOUNT ELIMINADAS COMPLETAMENTE
   // ===================================
-
-  // Proteger rutas de usuario (my-account) - requiere autenticación básica
-  if (isUserRoute(request)) {
-    console.log(`[MIDDLEWARE] 🔒 RUTA DE USUARIO DETECTADA: ${pathname}`);
-
-    const { userId, sessionClaims, redirectToSignIn } = await auth();
-
-    if (!userId) {
-      console.warn(`[MIDDLEWARE] ❌ Usuario no autenticado - Redirigiendo a signin`);
-      return redirectToSignIn();
-    }
-
-    // Usar función auxiliar para verificación robusta de roles
-    const adminCheck = await isUserAdmin(userId, sessionClaims);
-
-    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN EN RUTA USUARIO:`, {
-      userId,
-      pathname,
-      isAdmin: adminCheck.isAdmin,
-      method: adminCheck.method,
-      roleValue: adminCheck.roleValue
-    });
-
-    if (adminCheck.isAdmin) {
-      console.log(`[MIDDLEWARE] 🚀 ADMIN DETECTADO EN RUTA DE USUARIO - REDIRIGIENDO A /admin`, {
-        userId,
-        fromPath: pathname,
-        toPath: '/admin',
-        method: adminCheck.method,
-        roleValue: adminCheck.roleValue
-      });
-      return NextResponse.redirect(new URL('/admin', request.url));
-    }
-
-    console.log(`[MIDDLEWARE] ✅ Usuario normal autenticado - Permitiendo acceso a ${pathname}`);
-    return NextResponse.next();
-  }
+  // NOTA: Se eliminó toda la lógica de /my-account para evitar ciclos recursivos
+  // Los usuarios admin acceden directamente a /admin
+  // Los usuarios normales pueden usar otras rutas de perfil si es necesario
 
   // ===================================
   // RUTAS PÚBLICAS Y OTRAS PROTEGIDAS
