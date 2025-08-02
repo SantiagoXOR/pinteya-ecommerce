@@ -666,19 +666,24 @@ export class EnterpriseAutomatedTesting {
   // =====================================================
 
   private startScheduledTests(): void {
-    for (const [testId, testCase] of this.testCases.entries()) {
-      if (!testCase.enabled || testCase.interval <= 0) continue;
+    console.log('[ENTERPRISE_TESTING] 🚫 TESTS PROGRAMADOS TEMPORALMENTE DESHABILITADOS');
+    console.log('[ENTERPRISE_TESTING] 📋 Razón: Evitar llamadas recursivas a APIs de auth');
 
-      const timer = setInterval(async () => {
-        try {
-          await this.runTest(testId);
-        } catch (error) {
-          console.error(`[ENTERPRISE_TESTING] Error in scheduled test ${testId}:`, error);
-        }
-      }, testCase.interval * 1000);
+    // CÓDIGO COMENTADO TEMPORALMENTE PARA EVITAR RECURSIÓN
+    // for (const [testId, testCase] of this.testCases.entries()) {
+    //   if (!testCase.enabled || testCase.interval <= 0) continue;
 
-      this.testTimers.set(testId, timer);
-    }
+    //   const timer = setInterval(async () => {
+    //     try {
+    //       await this.runTest(testId);
+    //     } catch (error) {
+    //       console.error(`[ENTERPRISE_TESTING] Error in scheduled test ${testId}:`, error);
+    //     }
+    //   }, testCase.interval * 1000);
+
+    //   this.testTimers.set(testId, timer);
+    // }
+  }
   }
 
   private async checkAlertThreshold(testCase: TestCase, result: TestResult): Promise<void> {
