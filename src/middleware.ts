@@ -164,8 +164,7 @@ export default clerkMiddleware(async (auth, request) => {
   // PROTECCIÓN DE RUTAS ADMIN
   // ===================================
 
-  // 🚨 PROTECCIÓN ADMIN TEMPORALMENTE DESHABILITADA PARA DEBUGGING
-  // Permitir acceso a /admin sin verificación de roles para diagnosticar el problema
+  // ✅ PROTECCIÓN ADMIN CORREGIDA Y REACTIVADA
   if (isAdminRoute(request)) {
     console.log(`[MIDDLEWARE] 🔒 RUTA ADMIN DETECTADA: ${pathname}`);
 
@@ -176,13 +175,38 @@ export default clerkMiddleware(async (auth, request) => {
       return redirectToSignIn();
     }
 
-    // TEMPORALMENTE: Permitir acceso sin verificación de roles
-    console.log(`[MIDDLEWARE] 🚨 ACCESO ADMIN PERMITIDO TEMPORALMENTE (DEBUGGING):`, {
+    // Verificación simplificada y corregida de roles
+    const publicRole = sessionClaims?.publicMetadata?.role as string;
+    const privateRole = sessionClaims?.privateMetadata?.role as string;
+
+    const isAdmin = publicRole === 'admin' || privateRole === 'admin';
+
+    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN SIMPLIFICADA:`, {
       userId,
       pathname,
-      sessionClaimsExists: !!sessionClaims,
-      publicRole: sessionClaims?.publicMetadata?.role,
-      privateRole: sessionClaims?.privateMetadata?.role
+      publicRole,
+      privateRole,
+      isAdmin,
+      sessionClaimsExists: !!sessionClaims
+    });
+
+    if (!isAdmin) {
+      console.error(`[MIDDLEWARE] ❌ ACCESO ADMIN DENEGADO:`, {
+        userId,
+        pathname,
+        publicRole,
+        privateRole,
+        reason: 'Usuario no tiene rol admin'
+      });
+
+      // Redirigir a homepage en lugar de error 403
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    console.log(`[MIDDLEWARE] ✅ ACCESO ADMIN AUTORIZADO:`, {
+      userId,
+      pathname,
+      role: publicRole || privateRole
     });
 
     return NextResponse.next();
