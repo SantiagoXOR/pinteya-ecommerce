@@ -109,23 +109,43 @@ export default clerkMiddleware(async (auth, request) => {
     // Verificar múltiples estructuras de metadata para compatibilidad
     const publicRole = sessionClaims?.publicMetadata?.role as string;
     const privateRole = sessionClaims?.privateMetadata?.role as string;
-    const metadataRole = sessionClaims?.metadata?.role as string; // Estructura recomendada por Clerk
+    const metadataRole = sessionClaims?.metadata?.role as string;
+
+    // DEBUGGING DETALLADO - Verificar estructura completa de sessionClaims
+    console.log(`[MIDDLEWARE] 🔍 DEBUGGING SESSIONCLAIMS COMPLETO:`, {
+      userId,
+      pathname,
+      sessionClaimsExists: !!sessionClaims,
+      publicMetadataExists: !!sessionClaims?.publicMetadata,
+      privateMetadataExists: !!sessionClaims?.privateMetadata,
+      metadataExists: !!sessionClaims?.metadata,
+      publicRole,
+      privateRole,
+      metadataRole,
+      fullSessionClaims: sessionClaims ? JSON.stringify(sessionClaims, null, 2) : 'null'
+    });
 
     const hasAdminRole = publicRole === 'admin' ||
                         privateRole === 'admin' ||
                         metadataRole === 'admin';
 
-    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN DE ROLES DETALLADA:`, {
-      userId,
-      publicRole,
-      privateRole,
-      metadataRole,
+    console.log(`[MIDDLEWARE] 🎯 RESULTADO VERIFICACIÓN ADMIN:`, {
       hasAdminRole,
-      sessionClaims: JSON.stringify(sessionClaims, null, 2)
+      publicRoleCheck: publicRole === 'admin',
+      privateRoleCheck: privateRole === 'admin',
+      metadataRoleCheck: metadataRole === 'admin'
     });
 
     if (!hasAdminRole) {
-      console.warn(`[MIDDLEWARE] ❌ Usuario sin permisos admin - Acceso denegado`);
+      console.error(`[MIDDLEWARE] ❌ ACCESO ADMIN DENEGADO:`, {
+        userId,
+        pathname,
+        publicRole,
+        privateRole,
+        metadataRole,
+        reason: 'No se encontró rol admin en ninguna estructura de metadata'
+      });
+
       // En lugar de redirigir a my-account (que causaba el ciclo), devolver 403
       return new NextResponse('Acceso denegado - Se requieren permisos de administrador', {
         status: 403,
@@ -135,7 +155,11 @@ export default clerkMiddleware(async (auth, request) => {
       });
     }
 
-    console.log(`[MIDDLEWARE] ✅ Acceso admin autorizado para ${userId}`);
+    console.log(`[MIDDLEWARE] ✅ ACCESO ADMIN AUTORIZADO:`, {
+      userId,
+      pathname,
+      roleFound: publicRole || privateRole || metadataRole
+    });
     return NextResponse.next();
   }
 
@@ -159,12 +183,26 @@ export default clerkMiddleware(async (auth, request) => {
     const privateRole = sessionClaims?.privateMetadata?.role as string;
     const metadataRole = sessionClaims?.metadata?.role as string;
 
+    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN EN RUTA USUARIO:`, {
+      userId,
+      pathname,
+      publicRole,
+      privateRole,
+      metadataRole,
+      sessionClaimsExists: !!sessionClaims
+    });
+
     const isAdmin = publicRole === 'admin' ||
                    privateRole === 'admin' ||
                    metadataRole === 'admin';
 
     if (isAdmin) {
-      console.log(`[MIDDLEWARE] 🚀 ADMIN DETECTADO EN RUTA DE USUARIO - REDIRIGIENDO A /admin`);
+      console.log(`[MIDDLEWARE] 🚀 ADMIN DETECTADO EN RUTA DE USUARIO - REDIRIGIENDO A /admin`, {
+        userId,
+        fromPath: pathname,
+        toPath: '/admin',
+        roleFound: publicRole || privateRole || metadataRole
+      });
       return NextResponse.redirect(new URL('/admin', request.url));
     }
 
