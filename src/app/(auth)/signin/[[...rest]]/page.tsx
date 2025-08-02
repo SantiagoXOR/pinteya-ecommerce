@@ -40,6 +40,9 @@ export default function SignInPage() {
     );
   }
 
+  // DEBUG: Log de configuración de SignIn
+  console.log('[SIGNIN_PAGE] Configurando SignIn con redirectUrl:', '/shop');
+
   // Clerk v5 con configuración optimizada (cuando esté activado)
   return (
     <div className="flex min-h-screen items-center justify-center bg-tahiti-gold-50">

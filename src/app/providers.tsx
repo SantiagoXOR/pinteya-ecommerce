@@ -44,6 +44,14 @@ function ClerkWrapper({ children, publishableKey }: { children: React.ReactNode;
     return <>{children}</>;
   }
 
+  // DEBUG: Log de configuración de redirección
+  console.log('[CLERK_PROVIDER] Configurando redirecciones:', {
+    signInFallbackRedirectUrl: "/shop",
+    signUpFallbackRedirectUrl: "/shop",
+    afterSignOutUrl: "/",
+    publishableKey: publishableKey ? 'SET' : 'NOT_SET'
+  });
+
   // Una vez montado en el cliente, usar ClerkProvider con configuración oficial
   return (
     <ClerkProvider

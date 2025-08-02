@@ -89,12 +89,19 @@ export default clerkMiddleware(async (auth, request) => {
 
   // Proteger rutas admin con Clerk y gestión de sesiones
   if (isAdminRoute(request)) {
+    console.log(`[MIDDLEWARE] 🔍 RUTA ADMIN DETECTADA: ${pathname}`);
     try {
       // Verificar autenticación y rol admin
       const { userId, sessionClaims, sessionId } = await auth();
 
+      console.log(`[MIDDLEWARE] 🔍 AUTH RESULT:`, {
+        userId: userId || 'NULL',
+        sessionId: sessionId || 'NULL',
+        sessionClaims: sessionClaims ? JSON.stringify(sessionClaims, null, 2) : 'NULL'
+      });
+
       if (!userId) {
-        console.warn(`[MIDDLEWARE] Acceso denegado a ruta admin: ${pathname} - Usuario no autenticado`);
+        console.warn(`[MIDDLEWARE] ❌ Acceso denegado a ruta admin: ${pathname} - Usuario no autenticado`);
         return NextResponse.json(
           {
             error: 'Acceso denegado - Autenticación requerida',
