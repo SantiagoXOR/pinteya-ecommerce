@@ -35,10 +35,10 @@ const menuSections = [
     ]
   },
   {
-    title: "Mi Cuenta",
+    title: "Administración",
     items: [
-      { icon: User, label: "Mi Perfil", href: "/my-account", description: "Datos personales" },
-      { icon: Package, label: "Mis Pedidos", href: "/my-account", description: "Historial de compras" },
+      { icon: User, label: "Panel Admin", href: "/admin", description: "Panel de administración" },
+      { icon: Package, label: "Productos", href: "/admin/products", description: "Gestión de productos" },
       { icon: Heart, label: "Favoritos", href: "/wishlist", description: "Productos guardados" },
       { icon: ShoppingCart, label: "Carrito", href: "/cart", description: "Productos seleccionados" },
     ]

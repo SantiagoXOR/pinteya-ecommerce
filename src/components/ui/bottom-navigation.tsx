@@ -84,7 +84,7 @@ const defaultItems: BottomNavigationItem[] = [
   {
     id: "orders",
     label: "Pedidos",
-    href: "/my-account",
+    href: "/admin",
     icon: <ClipboardList className="w-5 h-5" strokeWidth={1.5} />,
   },
   {
