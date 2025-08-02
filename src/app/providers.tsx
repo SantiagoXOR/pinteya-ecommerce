@@ -57,8 +57,8 @@ function ClerkWrapper({ children, publishableKey }: { children: React.ReactNode;
     <ClerkProvider
       publishableKey={publishableKey}
       localization={esES}
-      signInFallbackRedirectUrl="/shop"
-      signUpFallbackRedirectUrl="/shop"
+      signInFallbackRedirectUrl="/my-account"
+      signUpFallbackRedirectUrl="/my-account"
       afterSignOutUrl="/"
       appearance={{
         variables: {
