@@ -32,7 +32,7 @@ export default function RootLayout({
       <body>
         <Providers>
           {/* <JsonSafetyInitializer /> */}
-          <AuthRedirectDebugger />
+          {/* <AuthRedirectDebugger /> TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN */}
           {children}
         </Providers>
       </body>
