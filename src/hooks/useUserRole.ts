@@ -58,42 +58,40 @@ export const useUserRole = (): UseUserRoleReturn => {
       setIsLoading(true);
       setError(null);
 
-      const email = user.emailAddresses[0]?.emailAddress;
-      if (!email) {
-        console.warn('Email no disponible para sincronización');
-        setError('Email no disponible');
-        setIsLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/auth/sync-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          clerkUserId: user.id,
-        }),
+      console.log('[useUserRole] 🚫 SINCRONIZACIÓN TEMPORALMENTE DESHABILITADA');
+      console.log('[useUserRole] 📋 Usuario detectado:', {
+        id: user.id,
+        email: user.emailAddresses[0]?.emailAddress,
+        publicRole: user.publicMetadata?.role,
+        privateRole: user.privateMetadata?.role
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.warn(`Error al sincronizar usuario (${response.status}): ${errorText}`);
-        setError(`Error de sincronización (${response.status})`);
-        setIsLoading(false);
-        return;
-      }
+      // TEMPORALMENTE DESHABILITADO - Evitar bucle recursivo
+      // const response = await fetch('/api/auth/sync-user', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     email,
+      //     firstName: user.firstName,
+      //     lastName: user.lastName,
+      //     clerkUserId: user.id,
+      //   }),
+      // });
 
-      const data = await response.json();
-      if (data.success) {
-        setUserProfile(data.user);
-      } else {
-        console.warn('Error en sincronización:', data.error);
-        setError(data.error || 'Error de sincronización');
-      }
+      // Simular respuesta exitosa para evitar errores
+      setIsLoading(false);
+      return;
+
+      // CÓDIGO COMENTADO TEMPORALMENTE
+      // const data = await response.json();
+      // if (data.success) {
+      //   setUserProfile(data.user);
+      // } else {
+      //   console.warn('Error en sincronización:', data.error);
+      //   setError(data.error || 'Error de sincronización');
+      // }
     } catch (err) {
       // Manejo más suave de errores
       console.warn('Error syncing user:', err);
@@ -109,60 +107,66 @@ export const useUserRole = (): UseUserRoleReturn => {
   const fetchUserProfile = useCallback(async () => {
     if (!user || !isLoaded) return;
 
-    try {
-      setIsLoading(true);
-      setError(null);
+    console.log('[useUserRole] 🚫 FETCH USER PROFILE TEMPORALMENTE DESHABILITADO');
+    setIsLoading(false);
+    return;
 
-      const email = user.emailAddresses[0]?.emailAddress;
-      if (!email) {
-        console.warn('Email no disponible para el usuario');
-        setError('Email no disponible');
-        setIsLoading(false);
-        return;
-      }
+    // CÓDIGO COMENTADO TEMPORALMENTE
+    // try {
+    //   setIsLoading(true);
+    //   setError(null);
 
-      const response = await fetch(`/api/auth/sync-user?email=${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    //   const email = user.emailAddresses[0]?.emailAddress;
+    //   if (!email) {
+    //     console.warn('Email no disponible para el usuario');
+    //     setError('Email no disponible');
+    //     setIsLoading(false);
+    //     return;
+    //   }
 
-      if (response.status === 404) {
-        // Usuario no existe, intentar sincronizar
-        await syncUser();
-        return;
-      }
+    //   const response = await fetch(`/api/auth/sync-user?email=${encodeURIComponent(email)}`, {
+    //     method: 'GET',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //   });
 
-      if (!response.ok) {
-        // Manejo más específico de errores HTTP
-        const errorText = await response.text();
-        console.warn(`Error HTTP ${response.status}: ${errorText}`);
+    //   if (response.status === 404) {
+    //     // Usuario no existe, intentar sincronizar
+    //     await syncUser();
+    //     return;
+    //   }
 
-        // No lanzar error para errores de red, solo logear
-        setError(`Error de conexión (${response.status})`);
-        setIsLoading(false);
-        return;
-      }
+    // RESTO DEL CÓDIGO COMENTADO TEMPORALMENTE
+    //   if (!response.ok) {
+    //     // Manejo más específico de errores HTTP
+    //     const errorText = await response.text();
+    //     console.warn(`Error HTTP ${response.status}: ${errorText}`);
 
-      const data = await response.json();
-      if (data.success) {
-        setUserProfile(data.user);
-      } else {
-        console.warn('Error en respuesta del servidor:', data.error);
-        setError(data.error || 'Error del servidor');
-      }
-    } catch (err) {
-      // Manejo más suave de errores para no interrumpir la aplicación
-      console.warn('Error fetching user profile:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error de conexión';
-      setError(errorMessage);
+    //     // No lanzar error para errores de red, solo logear
+    //     setError(`Error de conexión (${response.status})`);
+    //     setIsLoading(false);
+    //     return;
+    //   }
 
-      // No re-lanzar el error para evitar interrumpir otros componentes
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, isLoaded, syncUser]);
+    //   const data = await response.json();
+    //   if (data.success) {
+    //     setUserProfile(data.user);
+    //   } else {
+    //     console.warn('Error en respuesta del servidor:', data.error);
+    //     setError(data.error || 'Error del servidor');
+    //   }
+    // } catch (err) {
+    //   // Manejo más suave de errores para no interrumpir la aplicación
+    //   console.warn('Error fetching user profile:', err);
+    //   const errorMessage = err instanceof Error ? err.message : 'Error de conexión';
+    //   setError(errorMessage);
+
+    //   // No re-lanzar el error para evitar interrumpir otros componentes
+    // } finally {
+    //   setIsLoading(false);
+    // }
+  }, [user, isLoaded]);
 
   const hasPermission = (permissionPath: string[]): boolean => {
     if (!userProfile?.user_roles?.permissions) return false;
@@ -220,14 +224,17 @@ export const useUserRole = (): UseUserRoleReturn => {
   const canViewAnalytics = hasPermission(['analytics', 'read']);
 
   useEffect(() => {
+    console.log('[useUserRole] 🚫 useEffect TEMPORALMENTE DESHABILITADO');
     if (isLoaded && user) {
-      fetchUserProfile();
+      console.log('[useUserRole] 📋 Usuario cargado, pero sincronización deshabilitada');
+      setIsLoading(false);
+      // fetchUserProfile(); // TEMPORALMENTE DESHABILITADO
     } else if (isLoaded && !user) {
       setUserProfile(null);
       setIsLoading(false);
       setError(null);
     }
-  }, [user, isLoaded, fetchUserProfile]);
+  }, [user, isLoaded]);
 
   return {
     userProfile,
