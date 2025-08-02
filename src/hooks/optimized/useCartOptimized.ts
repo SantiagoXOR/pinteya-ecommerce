@@ -401,9 +401,13 @@ export function useCartOptimized(
 
   // Efecto para sincronización con usuario
   useEffect(() => {
-    if (isLoaded && user && enableUserSync) {
-      syncWithUser();
-    }
+    console.log('[useCartOptimized] 🚫 SYNC WITH USER TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
+    return;
+
+    // CÓDIGO COMENTADO TEMPORALMENTE
+    // if (isLoaded && user && enableUserSync) {
+    //   syncWithUser();
+    // }
   }, [isLoaded, user, enableUserSync, syncWithUser]);
 
   // ===================================

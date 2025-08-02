@@ -16,21 +16,25 @@ export function useAuthRedirectDebug() {
   const previousStateRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!userLoaded || !authLoaded) {
-      console.log('[AUTH_DEBUG] 🔄 Cargando estado de autenticación...');
-      return;
-    }
+    console.log('[AUTH_DEBUG] 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
+    return;
 
-    const currentState = {
-      isSignedIn,
-      userId,
-      sessionId,
-      userRole: user?.publicMetadata?.role,
-      privateRole: user?.privateMetadata?.role,
-      pathname: window.location.pathname,
-      search: window.location.search,
-      timestamp: new Date().toISOString()
-    };
+    // CÓDIGO COMENTADO TEMPORALMENTE
+    // if (!userLoaded || !authLoaded) {
+    //   console.log('[AUTH_DEBUG] 🔄 Cargando estado de autenticación...');
+    //   return;
+    // }
+
+    // const currentState = {
+    //   isSignedIn,
+    //   userId,
+    //   sessionId,
+    //   userRole: user?.publicMetadata?.role,
+    //   privateRole: user?.privateMetadata?.role,
+    //   pathname: window.location.pathname,
+    //   search: window.location.search,
+    //   timestamp: new Date().toISOString()
+    // };
 
     // Solo log si el estado cambió
     if (JSON.stringify(currentState) !== JSON.stringify(previousStateRef.current)) {
