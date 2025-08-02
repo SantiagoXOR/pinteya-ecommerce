@@ -46,8 +46,8 @@ function ClerkWrapper({ children, publishableKey }: { children: React.ReactNode;
 
   // DEBUG: Log de configuración de redirección
   console.log('[CLERK_PROVIDER] Configurando redirecciones:', {
-    signInFallbackRedirectUrl: "/shop",
-    signUpFallbackRedirectUrl: "/shop",
+    signInFallbackRedirectUrl: "/admin",
+    signUpFallbackRedirectUrl: "/admin",
     afterSignOutUrl: "/",
     publishableKey: publishableKey ? 'SET' : 'NOT_SET'
   });
@@ -57,6 +57,8 @@ function ClerkWrapper({ children, publishableKey }: { children: React.ReactNode;
     <ClerkProvider
       publishableKey={publishableKey}
       localization={esES}
+      signInFallbackRedirectUrl="/admin"
+      signUpFallbackRedirectUrl="/admin"
       afterSignOutUrl="/"
       appearance={{
         variables: {

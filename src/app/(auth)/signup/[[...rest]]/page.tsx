@@ -47,7 +47,7 @@ export default function SignUpPage() {
         path="/signup"
         routing="path"
         signInUrl="/signin"
-        redirectUrl="/my-account"
+        redirectUrl="/admin"
         appearance={{
           baseTheme: undefined,
           variables: {
