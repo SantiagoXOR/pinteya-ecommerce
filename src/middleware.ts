@@ -175,11 +175,33 @@ export default clerkMiddleware(async (auth, request) => {
       return redirectToSignIn();
     }
 
-    // Verificación simplificada y corregida de roles
+    // Verificación robusta de roles con fallback a Clerk API
     const publicRole = sessionClaims?.publicMetadata?.role as string;
     const privateRole = sessionClaims?.privateMetadata?.role as string;
 
-    const isAdmin = publicRole === 'admin' || privateRole === 'admin';
+    let isAdmin = publicRole === 'admin' || privateRole === 'admin';
+
+    // Si sessionClaims no tiene el rol, verificar directamente con Clerk
+    if (!isAdmin) {
+      try {
+        const clerkClient = createClerkClient({
+          secretKey: process.env.CLERK_SECRET_KEY!
+        });
+        const clerkUser = await clerkClient.users.getUser(userId);
+        const userPublicRole = clerkUser.publicMetadata?.role as string;
+        const userPrivateRole = clerkUser.privateMetadata?.role as string;
+
+        isAdmin = userPublicRole === 'admin' || userPrivateRole === 'admin';
+
+        console.log(`[MIDDLEWARE] 🔄 VERIFICACIÓN FALLBACK CON CLERK API:`, {
+          sessionClaimsRole: publicRole,
+          clerkApiRole: userPublicRole,
+          finalIsAdmin: isAdmin
+        });
+      } catch (error) {
+        console.error(`[MIDDLEWARE] ❌ Error verificando con Clerk API:`, error);
+      }
+    }
 
     console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN SIMPLIFICADA:`, {
       userId,
@@ -191,17 +213,16 @@ export default clerkMiddleware(async (auth, request) => {
     });
 
     if (!isAdmin) {
-      console.error(`[MIDDLEWARE] ❌ ACCESO ADMIN DENEGADO (TEMPORALMENTE PERMITIDO PARA DEBUGGING):`, {
+      console.error(`[MIDDLEWARE] ❌ ACCESO ADMIN DENEGADO:`, {
         userId,
         pathname,
         publicRole,
         privateRole,
-        reason: 'Usuario no tiene rol admin - PERO PERMITIENDO ACCESO PARA DEBUGGING'
+        reason: 'Usuario no tiene rol admin después de verificación completa'
       });
 
-      // TEMPORALMENTE: Permitir acceso para debugging
-      console.log(`[MIDDLEWARE] 🚨 PERMITIENDO ACCESO TEMPORAL PARA DEBUGGING`);
-      // return NextResponse.redirect(new URL('/', request.url));
+      // Redirigir a homepage
+      return NextResponse.redirect(new URL('/', request.url));
     }
 
     console.log(`[MIDDLEWARE] ✅ ACCESO ADMIN AUTORIZADO:`, {
