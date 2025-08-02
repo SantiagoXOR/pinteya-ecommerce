@@ -497,12 +497,17 @@ export async function initializeEnterpriseOnAppStart(): Promise<void> {
 // AUTO-INICIALIZACIÓN EN DESARROLLO
 // =====================================================
 
+// 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN
+// El sistema de monitoreo automático está causando llamadas recursivas a APIs de auth
+console.log('[ENTERPRISE_STARTUP] 🚫 Auto-inicialización DESHABILITADA para evitar recursión');
+
+// CÓDIGO COMENTADO TEMPORALMENTE
 // En desarrollo, inicializar automáticamente cuando se importa el módulo
-if (process.env.NODE_ENV === 'development' && typeof window === 'undefined') {
-  // Usar setTimeout para no bloquear la importación
-  setTimeout(() => {
-    initializeEnterpriseOnAppStart().catch(error => {
-      console.error('[ENTERPRISE_STARTUP] Error en auto-inicialización:', error);
-    });
-  }, 1000);
-}
+// if (process.env.NODE_ENV === 'development' && typeof window === 'undefined') {
+//   // Usar setTimeout para no bloquear la importación
+//   setTimeout(() => {
+//     initializeEnterpriseOnAppStart().catch(error => {
+//       console.error('[ENTERPRISE_STARTUP] Error en auto-inicialización:', error);
+//     });
+//   }, 1000);
+// }

@@ -785,35 +785,43 @@ export async function markAlertAsFalsePositive(
 
 /**
  * Inicia el monitoreo automático de seguridad
+ * 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN
  */
 export function startSecurityMonitoring(intervalMinutes: number = 5): NodeJS.Timeout {
-  console.log(`[SECURITY] Iniciando monitoreo automático cada ${intervalMinutes} minutos`);
+  console.log(`[SECURITY] 🚫 MONITOREO AUTOMÁTICO TEMPORALMENTE DESHABILITADO`);
+  console.log(`[SECURITY] 📋 Razón: Evitar llamadas recursivas a APIs de auth`);
 
-  return setInterval(async () => {
-    try {
-      console.log('[SECURITY] Ejecutando análisis automático...');
+  // RETORNAR UN TIMEOUT DUMMY PARA NO ROMPER EL CÓDIGO QUE LO LLAMA
+  return setTimeout(() => {
+    console.log('[SECURITY] Timeout dummy completado');
+  }, 1000) as NodeJS.Timeout;
 
-      // Analizar patrones de seguridad
-      const alerts = await analyzeSecurityPatterns();
+  // CÓDIGO COMENTADO TEMPORALMENTE
+  // return setInterval(async () => {
+  //   try {
+  //     console.log('[SECURITY] Ejecutando análisis automático...');
 
-      if (alerts.length > 0) {
-        console.log(`[SECURITY] ${alerts.length} nuevas alertas generadas`);
+  //     // Analizar patrones de seguridad
+  //     const alerts = await analyzeSecurityPatterns();
 
-        // Procesar alertas críticas inmediatamente
-        const criticalAlerts = alerts.filter(a => a.severity === 'critical');
-        if (criticalAlerts.length > 0) {
-          console.warn(`[SECURITY] ¡${criticalAlerts.length} alertas críticas detectadas!`);
-          // Aquí se podrían enviar notificaciones inmediatas
-        }
-      }
+  //     if (alerts.length > 0) {
+  //       console.log(`[SECURITY] ${alerts.length} nuevas alertas generadas`);
 
-      // Actualizar métricas
-      await getSecurityMetrics();
+  //       // Procesar alertas críticas inmediatamente
+  //       const criticalAlerts = alerts.filter(a => a.severity === 'critical');
+  //       if (criticalAlerts.length > 0) {
+  //         console.warn(`[SECURITY] ¡${criticalAlerts.length} alertas críticas detectadas!`);
+  //         // Aquí se podrían enviar notificaciones inmediatas
+  //       }
+  //     }
 
-    } catch (error) {
-      console.error('[SECURITY] Error en monitoreo automático:', error);
-    }
-  }, intervalMinutes * 60 * 1000);
+  //     // Actualizar métricas
+  //     await getSecurityMetrics();
+
+  //   } catch (error) {
+  //     console.error('[SECURITY] Error en monitoreo automático:', error);
+  //   }
+  // }, intervalMinutes * 60 * 1000);
 }
 
 /**

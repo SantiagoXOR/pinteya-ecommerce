@@ -454,25 +454,29 @@ export class EnterpriseAuditSystem {
   }
 
   private startAutomatedAnalysis(): void {
-    const config = ENTERPRISE_AUDIT_CONFIG.AUTOMATED_ANALYSIS;
+    console.log('[ENTERPRISE_AUDIT] 🚫 ANÁLISIS AUTOMÁTICO TEMPORALMENTE DESHABILITADO');
+    console.log('[ENTERPRISE_AUDIT] 📋 Razón: Evitar llamadas recursivas a APIs de auth');
 
-    // Análisis de patrones
-    const patternInterval = setInterval(async () => {
-      try {
-        await analyzeSecurityPatterns();
-      } catch (error) {
-        console.error('[ENTERPRISE_AUDIT] Error en análisis de patrones:', error);
-      }
-    }, config.pattern_analysis_interval * 1000);
+    // CÓDIGO COMENTADO TEMPORALMENTE PARA EVITAR RECURSIÓN
+    // const config = ENTERPRISE_AUDIT_CONFIG.AUTOMATED_ANALYSIS;
 
-    // Detección de anomalías
-    const anomalyInterval = setInterval(async () => {
-      try {
-        await this.detectAnomalies();
-      } catch (error) {
-        console.error('[ENTERPRISE_AUDIT] Error en detección de anomalías:', error);
-      }
-    }, config.anomaly_detection_interval * 1000);
+    // // Análisis de patrones
+    // const patternInterval = setInterval(async () => {
+    //   try {
+    //     await analyzeSecurityPatterns();
+    //   } catch (error) {
+    //     console.error('[ENTERPRISE_AUDIT] Error en análisis de patrones:', error);
+    //   }
+    // }, config.pattern_analysis_interval * 1000);
+
+    // // Detección de anomalías
+    // const anomalyInterval = setInterval(async () => {
+    //   try {
+    //     await this.detectAnomalies();
+    //   } catch (error) {
+    //     console.error('[ENTERPRISE_AUDIT] Error en detección de anomalías:', error);
+    //   }
+    // }, config.anomaly_detection_interval * 1000);
 
     // Actualización de métricas
     const metricsInterval = setInterval(async () => {
