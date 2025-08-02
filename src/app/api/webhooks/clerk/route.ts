@@ -29,8 +29,12 @@ type ClerkWebhookEvent = {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('[CLERK_WEBHOOK] Recibiendo webhook...');
+
     // Verificar que tenemos el webhook secret
     const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
     if (!webhookSecret) {
       console.error('[CLERK_WEBHOOK] CLERK_WEBHOOK_SECRET no configurado');
       return NextResponse.json(
@@ -45,6 +49,12 @@ export async function POST(req: NextRequest) {
     const svix_timestamp = headerPayload.get('svix-timestamp');
     const svix_signature = headerPayload.get('svix-signature');
 
+    console.log('[CLERK_WEBHOOK] Headers recibidos:', {
+      svix_id: svix_id ? 'presente' : 'faltante',
+      svix_timestamp: svix_timestamp ? 'presente' : 'faltante',
+      svix_signature: svix_signature ? 'presente' : 'faltante'
+    });
+
     if (!svix_id || !svix_timestamp || !svix_signature) {
       console.error('[CLERK_WEBHOOK] Headers de verificación faltantes');
       return NextResponse.json(
@@ -55,25 +65,39 @@ export async function POST(req: NextRequest) {
 
     // Obtener el body del request
     const body = await req.text();
-
-    // Crear instancia de Webhook para verificación
-    const wh = new Webhook(webhookSecret);
+    console.log('[CLERK_WEBHOOK] Body recibido, longitud:', body.length);
 
     let evt: ClerkWebhookEvent;
 
-    try {
-      // Verificar la firma del webhook
-      evt = wh.verify(body, {
-        'svix-id': svix_id,
-        'svix-timestamp': svix_timestamp,
-        'svix-signature': svix_signature,
-      }) as ClerkWebhookEvent;
-    } catch (err) {
-      console.error('[CLERK_WEBHOOK] Error verificando webhook:', err);
-      return NextResponse.json(
-        { error: 'Verificación de webhook fallida' },
-        { status: 400 }
-      );
+    // En desarrollo, permitir bypass de verificación si el secret es de prueba
+    if (isDevelopment && webhookSecret.includes('development')) {
+      console.log('[CLERK_WEBHOOK] Modo desarrollo: parseando body directamente');
+      try {
+        evt = JSON.parse(body) as ClerkWebhookEvent;
+      } catch (parseError) {
+        console.error('[CLERK_WEBHOOK] Error parseando JSON:', parseError);
+        return NextResponse.json(
+          { error: 'JSON inválido' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // Crear instancia de Webhook para verificación en producción
+      try {
+        const wh = new Webhook(webhookSecret);
+        evt = wh.verify(body, {
+          'svix-id': svix_id,
+          'svix-timestamp': svix_timestamp,
+          'svix-signature': svix_signature,
+        }) as ClerkWebhookEvent;
+        console.log('[CLERK_WEBHOOK] Firma verificada exitosamente');
+      } catch (err) {
+        console.error('[CLERK_WEBHOOK] Error verificando webhook:', err);
+        return NextResponse.json(
+          { error: 'Verificación de webhook fallida' },
+          { status: 400 }
+        );
+      }
     }
 
     // Procesar diferentes tipos de eventos
@@ -110,7 +134,7 @@ export async function POST(req: NextRequest) {
 
 async function handleUserCreated(userData: ClerkWebhookEvent['data']) {
   try {
-    const primaryEmail = userData.email_addresses.find(email => 
+    const primaryEmail = userData.email_addresses.find(email =>
       email.email_address
     )?.email_address;
 
@@ -119,33 +143,68 @@ async function handleUserCreated(userData: ClerkWebhookEvent['data']) {
       return;
     }
 
-    // Insertar usuario en Supabase
-    const { error } = await supabase
-      .from('users')
+    console.log(`[CLERK_WEBHOOK] Iniciando creación de usuario: ${primaryEmail} (${userData.id})`);
+
+    // Primero obtener el role_id para 'customer'
+    const { data: customerRole, error: roleError } = await supabase
+      .from('user_roles')
+      .select('id')
+      .eq('role_name', 'customer')
+      .single();
+
+    if (roleError) {
+      console.error('[CLERK_WEBHOOK] Error obteniendo rol customer:', roleError);
+      return;
+    }
+
+    // Insertar usuario en user_profiles (tabla correcta)
+    const { data, error } = await supabase
+      .from('user_profiles')
       .insert({
-        clerk_id: userData.id,
+        clerk_user_id: userData.id, // Columna correcta
         email: primaryEmail,
         first_name: userData.first_name || '',
         last_name: userData.last_name || '',
-        avatar_url: userData.image_url || '',
-        role: 'customer', // Rol por defecto
-        created_at: new Date(userData.created_at).toISOString(),
-        updated_at: new Date(userData.updated_at).toISOString(),
-      });
+        role_id: customerRole.id, // ID del rol customer
+        is_active: true,
+        metadata: {
+          avatar_url: userData.image_url || '',
+          clerk_created_at: new Date(userData.created_at).toISOString(),
+          source: 'clerk_webhook'
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select();
 
     if (error) {
-      console.error('[CLERK_WEBHOOK] Error creando usuario en Supabase:', error);
+      console.error('[CLERK_WEBHOOK] Error creando usuario en user_profiles:', {
+        error: error,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
     } else {
-      console.log(`[CLERK_WEBHOOK] Usuario creado exitosamente: ${primaryEmail}`);
+      console.log(`[CLERK_WEBHOOK] Usuario creado exitosamente en user_profiles:`, {
+        email: primaryEmail,
+        clerk_id: userData.id,
+        user_profile_id: data?.[0]?.id,
+        role_id: customerRole.id
+      });
     }
   } catch (error) {
-    console.error('[CLERK_WEBHOOK] Error en handleUserCreated:', error);
+    console.error('[CLERK_WEBHOOK] Error en handleUserCreated:', {
+      error: error,
+      message: error.message,
+      stack: error.stack
+    });
   }
 }
 
 async function handleUserUpdated(userData: ClerkWebhookEvent['data']) {
   try {
-    const primaryEmail = userData.email_addresses.find(email => 
+    const primaryEmail = userData.email_addresses.find(email =>
       email.email_address
     )?.email_address;
 
@@ -154,45 +213,87 @@ async function handleUserUpdated(userData: ClerkWebhookEvent['data']) {
       return;
     }
 
-    // Actualizar usuario en Supabase
-    const { error } = await supabase
-      .from('users')
+    console.log(`[CLERK_WEBHOOK] Iniciando actualización de usuario: ${primaryEmail} (${userData.id})`);
+
+    // Actualizar usuario en user_profiles (tabla correcta)
+    const { data, error } = await supabase
+      .from('user_profiles')
       .update({
         email: primaryEmail,
         first_name: userData.first_name || '',
         last_name: userData.last_name || '',
-        avatar_url: userData.image_url || '',
-        updated_at: new Date(userData.updated_at).toISOString(),
+        metadata: {
+          avatar_url: userData.image_url || '',
+          clerk_updated_at: new Date(userData.updated_at).toISOString(),
+          last_sync: new Date().toISOString()
+        },
+        updated_at: new Date().toISOString(),
       })
-      .eq('clerk_id', userData.id);
+      .eq('clerk_user_id', userData.id) // Columna correcta
+      .select();
 
     if (error) {
-      console.error('[CLERK_WEBHOOK] Error actualizando usuario en Supabase:', error);
+      console.error('[CLERK_WEBHOOK] Error actualizando usuario en user_profiles:', {
+        error: error,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
     } else {
-      console.log(`[CLERK_WEBHOOK] Usuario actualizado exitosamente: ${primaryEmail}`);
+      console.log(`[CLERK_WEBHOOK] Usuario actualizado exitosamente en user_profiles:`, {
+        email: primaryEmail,
+        clerk_id: userData.id,
+        updated_records: data?.length || 0
+      });
     }
   } catch (error) {
-    console.error('[CLERK_WEBHOOK] Error en handleUserUpdated:', error);
+    console.error('[CLERK_WEBHOOK] Error en handleUserUpdated:', {
+      error: error,
+      message: error.message,
+      stack: error.stack
+    });
   }
 }
 
 async function handleUserDeleted(userData: ClerkWebhookEvent['data']) {
   try {
-    // Marcar usuario como eliminado (soft delete)
-    const { error } = await supabase
-      .from('users')
+    console.log(`[CLERK_WEBHOOK] Iniciando eliminación de usuario: ${userData.id}`);
+
+    // Marcar usuario como eliminado (soft delete) en user_profiles
+    const { data, error } = await supabase
+      .from('user_profiles')
       .update({
-        deleted_at: new Date().toISOString(),
+        is_active: false, // Desactivar usuario
+        metadata: {
+          deleted_at: new Date().toISOString(),
+          deletion_source: 'clerk_webhook',
+          clerk_deleted_at: new Date().toISOString()
+        },
         updated_at: new Date().toISOString(),
       })
-      .eq('clerk_id', userData.id);
+      .eq('clerk_user_id', userData.id) // Columna correcta
+      .select();
 
     if (error) {
-      console.error('[CLERK_WEBHOOK] Error eliminando usuario en Supabase:', error);
+      console.error('[CLERK_WEBHOOK] Error eliminando usuario en user_profiles:', {
+        error: error,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
     } else {
-      console.log(`[CLERK_WEBHOOK] Usuario eliminado exitosamente: ${userData.id}`);
+      console.log(`[CLERK_WEBHOOK] Usuario eliminado exitosamente en user_profiles:`, {
+        clerk_id: userData.id,
+        deactivated_records: data?.length || 0
+      });
     }
   } catch (error) {
-    console.error('[CLERK_WEBHOOK] Error en handleUserDeleted:', error);
+    console.error('[CLERK_WEBHOOK] Error en handleUserDeleted:', {
+      error: error,
+      message: error.message,
+      stack: error.stack
+    });
   }
 }
