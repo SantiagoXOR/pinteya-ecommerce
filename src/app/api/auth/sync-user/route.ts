@@ -29,21 +29,32 @@ const isClerkConfigured = () => {
  * Parámetros: email, clerkUserId, action (get|sync|bulk)
  */
 export async function GET(request: NextRequest) {
-  try {
-    const url = new URL(request.url);
-    const email = url.searchParams.get('email');
-    const clerkUserId = url.searchParams.get('clerkUserId');
-    const action = url.searchParams.get('action') || 'get';
+  console.log('[SYNC-USER API] 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
 
-    // Verificar configuración básica
-    if (!isClerkConfigured()) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Servicio de autenticación no disponible',
-      };
-      return NextResponse.json(errorResponse, { status: 503 });
-    }
+  // RESPUESTA TEMPORAL PARA EVITAR ERRORES 500
+  const disabledResponse: ApiResponse<null> = {
+    data: null,
+    success: false,
+    error: 'API temporalmente deshabilitada para evitar recursión',
+  };
+  return NextResponse.json(disabledResponse, { status: 503 });
+
+  // CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
+  // try {
+  //   const url = new URL(request.url);
+  //   const email = url.searchParams.get('email');
+  //   const clerkUserId = url.searchParams.get('clerkUserId');
+  //   const action = url.searchParams.get('action') || 'get';
+
+  //   // Verificar configuración básica
+  //   if (!isClerkConfigured()) {
+  //     const errorResponse: ApiResponse<null> = {
+  //       data: null,
+  //       success: false,
+  //       error: 'Servicio de autenticación no disponible',
+  //     };
+  //     return NextResponse.json(errorResponse, { status: 503 });
+  //   }
 
     if (!supabaseAdmin) {
       const errorResponse: ApiResponse<null> = {
@@ -188,25 +199,36 @@ export async function GET(request: NextRequest) {
  * Body: { userData: ClerkUserData, options?: SyncOptions } o { email, firstName, lastName, clerkUserId }
  */
 export async function POST(request: NextRequest) {
-  try {
-    // Verificar configuración básica
-    if (!isClerkConfigured()) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Servicio de autenticación no disponible',
-      };
-      return NextResponse.json(errorResponse, { status: 503 });
-    }
+  console.log('[SYNC-USER API POST] 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
 
-    if (!supabaseAdmin) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Servicio de base de datos no disponible',
-      };
-      return NextResponse.json(errorResponse, { status: 503 });
-    }
+  // RESPUESTA TEMPORAL PARA EVITAR ERRORES 500
+  const disabledResponse: ApiResponse<null> = {
+    data: null,
+    success: false,
+    error: 'API POST temporalmente deshabilitada para evitar recursión',
+  };
+  return NextResponse.json(disabledResponse, { status: 503 });
+
+  // CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
+  // try {
+  //   // Verificar configuración básica
+  //   if (!isClerkConfigured()) {
+  //     const errorResponse: ApiResponse<null> = {
+  //       data: null,
+  //       success: false,
+  //       error: 'Servicio de autenticación no disponible',
+  //     };
+  //     return NextResponse.json(errorResponse, { status: 503 });
+  //   }
+
+  //   if (!supabaseAdmin) {
+  //     const errorResponse: ApiResponse<null> = {
+  //       data: null,
+  //       success: false,
+  //       error: 'Servicio de base de datos no disponible',
+  //     };
+  //     return NextResponse.json(errorResponse, { status: 503 });
+  //   }
 
     let body;
     try {
