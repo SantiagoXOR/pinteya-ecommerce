@@ -28,7 +28,7 @@ const isPublicRoute = createRouteMatcher([
   '/signin(.*)',
   '/signup(.*)',
   '/sso-callback(.*)',
-  '/my-account(.*)', // Permitir acceso a my-account para interceptar
+  // REMOVIDO: '/my-account(.*)' - Ahora será ruta protegida
   // APIs públicas
   '/api/products(.*)',
   '/api/categories(.*)',
@@ -50,8 +50,8 @@ const isExcludedRoute = createRouteMatcher([
   '/api/webhooks/clerk' // ⚠️ CRÍTICO: Webhook activo de Clerk
 ]);
 
-// Rutas que requieren redirección inteligente después del login
-const isMyAccountRoute = createRouteMatcher(['/my-account(.*)']);
+// Rutas que requieren autenticación básica (usuarios normales)
+const isUserRoute = createRouteMatcher(['/my-account(.*)']);
 
 // ===================================
 // MIDDLEWARE PRINCIPAL CON CLERK
@@ -88,43 +88,14 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   // ===================================
-  // REDIRECCIÓN INTELIGENTE BASADA EN ROLES
+  // PROTECCIÓN DE RUTAS ADMIN CON VERIFICACIÓN DE ROLES
   // ===================================
-
-  // Interceptar acceso a /my-account para redirección inteligente
-  if (isMyAccountRoute(request)) {
-    console.log(`[MIDDLEWARE] 🎯 INTERCEPTANDO MY-ACCOUNT: ${pathname}`);
-
-    const { userId, sessionClaims } = await auth();
-
-    if (userId) {
-      const userRole = sessionClaims?.publicMetadata?.role as string;
-      const privateRole = sessionClaims?.privateMetadata?.role as string;
-
-      console.log(`[MIDDLEWARE] 🔍 USUARIO EN MY-ACCOUNT:`, {
-        userId,
-        publicRole: userRole,
-        privateRole: privateRole
-      });
-
-      // Si es admin, redirigir a /admin
-      if (userRole === 'admin' || privateRole === 'admin') {
-        console.log(`[MIDDLEWARE] 🚀 ADMIN DETECTADO - REDIRIGIENDO A /admin`);
-        return NextResponse.redirect(new URL('/admin', request.url));
-      }
-
-      console.log(`[MIDDLEWARE] ✅ Usuario normal - Permitiendo acceso a my-account`);
-    }
-
-    // Permitir acceso a my-account (para usuarios normales o no autenticados)
-    return NextResponse.next();
-  }
 
   // ===================================
   // PROTECCIÓN DE RUTAS ADMIN
   // ===================================
 
-  // Proteger rutas admin
+  // Proteger rutas admin con verificación de roles mejorada
   if (isAdminRoute(request)) {
     console.log(`[MIDDLEWARE] 🔒 RUTA ADMIN DETECTADA: ${pathname}`);
 
@@ -135,13 +106,33 @@ export default clerkMiddleware(async (auth, request) => {
       return redirectToSignIn();
     }
 
-    const userRole = sessionClaims?.publicMetadata?.role as string;
+    // Verificar múltiples estructuras de metadata para compatibilidad
+    const publicRole = sessionClaims?.publicMetadata?.role as string;
     const privateRole = sessionClaims?.privateMetadata?.role as string;
-    const hasAdminRole = userRole === 'admin' || privateRole === 'admin';
+    const metadataRole = sessionClaims?.metadata?.role as string; // Estructura recomendada por Clerk
+
+    const hasAdminRole = publicRole === 'admin' ||
+                        privateRole === 'admin' ||
+                        metadataRole === 'admin';
+
+    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN DE ROLES DETALLADA:`, {
+      userId,
+      publicRole,
+      privateRole,
+      metadataRole,
+      hasAdminRole,
+      sessionClaims: JSON.stringify(sessionClaims, null, 2)
+    });
 
     if (!hasAdminRole) {
-      console.warn(`[MIDDLEWARE] ❌ Usuario sin permisos admin - Redirigiendo a my-account`);
-      return NextResponse.redirect(new URL('/my-account', request.url));
+      console.warn(`[MIDDLEWARE] ❌ Usuario sin permisos admin - Acceso denegado`);
+      // En lugar de redirigir a my-account (que causaba el ciclo), devolver 403
+      return new NextResponse('Acceso denegado - Se requieren permisos de administrador', {
+        status: 403,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8'
+        }
+      });
     }
 
     console.log(`[MIDDLEWARE] ✅ Acceso admin autorizado para ${userId}`);
@@ -149,7 +140,40 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   // ===================================
-  // RUTAS PÚBLICAS Y PROTEGIDAS
+  // PROTECCIÓN DE RUTAS DE USUARIO
+  // ===================================
+
+  // Proteger rutas de usuario (my-account) - requiere autenticación básica
+  if (isUserRoute(request)) {
+    console.log(`[MIDDLEWARE] 🔒 RUTA DE USUARIO DETECTADA: ${pathname}`);
+
+    const { userId, sessionClaims, redirectToSignIn } = await auth();
+
+    if (!userId) {
+      console.warn(`[MIDDLEWARE] ❌ Usuario no autenticado - Redirigiendo a signin`);
+      return redirectToSignIn();
+    }
+
+    // Verificar si es admin y redirigir a panel admin
+    const publicRole = sessionClaims?.publicMetadata?.role as string;
+    const privateRole = sessionClaims?.privateMetadata?.role as string;
+    const metadataRole = sessionClaims?.metadata?.role as string;
+
+    const isAdmin = publicRole === 'admin' ||
+                   privateRole === 'admin' ||
+                   metadataRole === 'admin';
+
+    if (isAdmin) {
+      console.log(`[MIDDLEWARE] 🚀 ADMIN DETECTADO EN RUTA DE USUARIO - REDIRIGIENDO A /admin`);
+      return NextResponse.redirect(new URL('/admin', request.url));
+    }
+
+    console.log(`[MIDDLEWARE] ✅ Usuario normal autenticado - Permitiendo acceso a ${pathname}`);
+    return NextResponse.next();
+  }
+
+  // ===================================
+  // RUTAS PÚBLICAS Y OTRAS PROTEGIDAS
   // ===================================
 
   // Permitir rutas públicas sin verificación adicional
