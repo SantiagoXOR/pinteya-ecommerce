@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { createClerkClient } from '@clerk/nextjs/server';
 
 // ===================================
 // DEFINICIÓN DE RUTAS
@@ -52,6 +53,58 @@ const isExcludedRoute = createRouteMatcher([
 
 // Rutas que requieren autenticación básica (usuarios normales)
 const isUserRoute = createRouteMatcher(['/my-account(.*)']);
+
+// ===================================
+// FUNCIÓN AUXILIAR PARA VERIFICAR ROLES
+// ===================================
+
+/**
+ * Verifica si un usuario tiene rol admin usando múltiples métodos
+ * Combina sessionClaims y cliente directo de Clerk para máxima compatibilidad
+ */
+async function isUserAdmin(userId: string, sessionClaims: any): Promise<{isAdmin: boolean, method: string, roleValue: string}> {
+  try {
+    // Método 1: Verificar sessionClaims (más rápido)
+    const publicRole = sessionClaims?.publicMetadata?.role as string;
+    const privateRole = sessionClaims?.privateMetadata?.role as string;
+    const metadataRole = sessionClaims?.metadata?.role as string;
+
+    if (publicRole === 'admin') {
+      return { isAdmin: true, method: 'sessionClaims.publicMetadata', roleValue: publicRole };
+    }
+    if (privateRole === 'admin') {
+      return { isAdmin: true, method: 'sessionClaims.privateMetadata', roleValue: privateRole };
+    }
+    if (metadataRole === 'admin') {
+      return { isAdmin: true, method: 'sessionClaims.metadata', roleValue: metadataRole };
+    }
+
+    // Método 2: Verificar con cliente directo de Clerk (fallback)
+    console.log(`[MIDDLEWARE] 🔄 SessionClaims no tiene rol admin, verificando con cliente directo...`);
+
+    const clerkClient = createClerkClient({
+      secretKey: process.env.CLERK_SECRET_KEY!
+    });
+
+    const clerkUser = await clerkClient.users.getUser(userId);
+
+    const userPublicRole = clerkUser.publicMetadata?.role as string;
+    const userPrivateRole = clerkUser.privateMetadata?.role as string;
+
+    if (userPublicRole === 'admin') {
+      return { isAdmin: true, method: 'clerkClient.publicMetadata', roleValue: userPublicRole };
+    }
+    if (userPrivateRole === 'admin') {
+      return { isAdmin: true, method: 'clerkClient.privateMetadata', roleValue: userPrivateRole };
+    }
+
+    return { isAdmin: false, method: 'none', roleValue: 'none' };
+
+  } catch (error) {
+    console.error(`[MIDDLEWARE] ❌ Error verificando rol admin:`, error);
+    return { isAdmin: false, method: 'error', roleValue: 'error' };
+  }
+}
 
 // ===================================
 // MIDDLEWARE PRINCIPAL CON CLERK
@@ -106,44 +159,25 @@ export default clerkMiddleware(async (auth, request) => {
       return redirectToSignIn();
     }
 
-    // Verificar múltiples estructuras de metadata para compatibilidad
-    const publicRole = sessionClaims?.publicMetadata?.role as string;
-    const privateRole = sessionClaims?.privateMetadata?.role as string;
-    const metadataRole = sessionClaims?.metadata?.role as string;
+    // Usar función auxiliar para verificación robusta de roles
+    const adminCheck = await isUserAdmin(userId, sessionClaims);
 
-    // DEBUGGING DETALLADO - Verificar estructura completa de sessionClaims
-    console.log(`[MIDDLEWARE] 🔍 DEBUGGING SESSIONCLAIMS COMPLETO:`, {
+    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN ROBUSTA:`, {
       userId,
       pathname,
-      sessionClaimsExists: !!sessionClaims,
-      publicMetadataExists: !!sessionClaims?.publicMetadata,
-      privateMetadataExists: !!sessionClaims?.privateMetadata,
-      metadataExists: !!sessionClaims?.metadata,
-      publicRole,
-      privateRole,
-      metadataRole,
-      fullSessionClaims: sessionClaims ? JSON.stringify(sessionClaims, null, 2) : 'null'
+      isAdmin: adminCheck.isAdmin,
+      method: adminCheck.method,
+      roleValue: adminCheck.roleValue,
+      sessionClaimsExists: !!sessionClaims
     });
 
-    const hasAdminRole = publicRole === 'admin' ||
-                        privateRole === 'admin' ||
-                        metadataRole === 'admin';
-
-    console.log(`[MIDDLEWARE] 🎯 RESULTADO VERIFICACIÓN ADMIN:`, {
-      hasAdminRole,
-      publicRoleCheck: publicRole === 'admin',
-      privateRoleCheck: privateRole === 'admin',
-      metadataRoleCheck: metadataRole === 'admin'
-    });
-
-    if (!hasAdminRole) {
+    if (!adminCheck.isAdmin) {
       console.error(`[MIDDLEWARE] ❌ ACCESO ADMIN DENEGADO:`, {
         userId,
         pathname,
-        publicRole,
-        privateRole,
-        metadataRole,
-        reason: 'No se encontró rol admin en ninguna estructura de metadata'
+        method: adminCheck.method,
+        roleValue: adminCheck.roleValue,
+        reason: 'No se encontró rol admin en ningún método de verificación'
       });
 
       // En lugar de redirigir a my-account (que causaba el ciclo), devolver 403
@@ -158,7 +192,8 @@ export default clerkMiddleware(async (auth, request) => {
     console.log(`[MIDDLEWARE] ✅ ACCESO ADMIN AUTORIZADO:`, {
       userId,
       pathname,
-      roleFound: publicRole || privateRole || metadataRole
+      method: adminCheck.method,
+      roleValue: adminCheck.roleValue
     });
     return NextResponse.next();
   }
@@ -178,30 +213,24 @@ export default clerkMiddleware(async (auth, request) => {
       return redirectToSignIn();
     }
 
-    // Verificar si es admin y redirigir a panel admin
-    const publicRole = sessionClaims?.publicMetadata?.role as string;
-    const privateRole = sessionClaims?.privateMetadata?.role as string;
-    const metadataRole = sessionClaims?.metadata?.role as string;
+    // Usar función auxiliar para verificación robusta de roles
+    const adminCheck = await isUserAdmin(userId, sessionClaims);
 
     console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN EN RUTA USUARIO:`, {
       userId,
       pathname,
-      publicRole,
-      privateRole,
-      metadataRole,
-      sessionClaimsExists: !!sessionClaims
+      isAdmin: adminCheck.isAdmin,
+      method: adminCheck.method,
+      roleValue: adminCheck.roleValue
     });
 
-    const isAdmin = publicRole === 'admin' ||
-                   privateRole === 'admin' ||
-                   metadataRole === 'admin';
-
-    if (isAdmin) {
+    if (adminCheck.isAdmin) {
       console.log(`[MIDDLEWARE] 🚀 ADMIN DETECTADO EN RUTA DE USUARIO - REDIRIGIENDO A /admin`, {
         userId,
         fromPath: pathname,
         toPath: '/admin',
-        roleFound: publicRole || privateRole || metadataRole
+        method: adminCheck.method,
+        roleValue: adminCheck.roleValue
       });
       return NextResponse.redirect(new URL('/admin', request.url));
     }
