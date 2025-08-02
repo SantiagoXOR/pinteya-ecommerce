@@ -13,48 +13,46 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('[HOME_PAGE] 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
-    return;
+    console.log('[HOME_PAGE] 🔄 PÁGINA DE REDIRECCIÓN INTELIGENTE ACTIVADA');
 
-    // CÓDIGO COMENTADO TEMPORALMENTE
-    // if (!isLoaded) {
-    //   console.log('[HOME_PAGE] 🔄 Cargando usuario...');
-    //   return;
-    // }
+    if (!isLoaded) {
+      console.log('[HOME_PAGE] 🔄 Cargando usuario...');
+      return;
+    }
 
-    // if (!user) {
-    //   console.log('[HOME_PAGE] ❌ Usuario no autenticado, redirigiendo a signin');
-    //   router.push('/signin');
-    //   return;
-    // }
+    if (!user) {
+      console.log('[HOME_PAGE] ❌ Usuario no autenticado, redirigiendo a signin');
+      router.push('/signin');
+      return;
+    }
 
-    // // Debug completo del usuario
-    // console.log('[HOME_PAGE] 🔍 USUARIO AUTENTICADO:', {
-    //   id: user.id,
-    //   email: user.emailAddresses[0]?.emailAddress,
-    //   publicMetadata: user.publicMetadata,
-    //   privateMetadata: user.privateMetadata,
-    //   createdAt: user.createdAt,
-    //   lastSignInAt: user.lastSignInAt
-    // });
+    // Debug completo del usuario
+    console.log('[HOME_PAGE] 🔍 USUARIO AUTENTICADO:', {
+      id: user.id,
+      email: user.emailAddresses[0]?.emailAddress,
+      publicMetadata: user.publicMetadata,
+      privateMetadata: user.privateMetadata,
+      createdAt: user.createdAt,
+      lastSignInAt: user.lastSignInAt
+    });
 
-    // // Verificar rol de admin
-    // const isAdmin = user.publicMetadata?.role === 'admin' ||
-    //                user.privateMetadata?.role === 'admin';
+    // Verificar rol de admin
+    const isAdmin = user.publicMetadata?.role === 'admin' ||
+                   user.privateMetadata?.role === 'admin';
 
-    // console.log('[HOME_PAGE] 🔍 VERIFICACIÓN DE ROL:', {
-    //   publicRole: user.publicMetadata?.role,
-    //   privateRole: user.privateMetadata?.role,
-    //   isAdmin
-    // });
+    console.log('[HOME_PAGE] 🔍 VERIFICACIÓN DE ROL:', {
+      publicRole: user.publicMetadata?.role,
+      privateRole: user.privateMetadata?.role,
+      isAdmin
+    });
 
-    // if (isAdmin) {
-    //   console.log('[HOME_PAGE] 🚀 Usuario admin detectado, redirigiendo a /admin');
-    //   router.push('/admin');
-    // } else {
-    //   console.log('[HOME_PAGE] 🛍️ Usuario normal detectado, redirigiendo a /shop');
-    //   router.push('/shop');
-    // }
+    if (isAdmin) {
+      console.log('[HOME_PAGE] 🚀 Usuario admin detectado, redirigiendo a /admin');
+      router.push('/admin');
+    } else {
+      console.log('[HOME_PAGE] 🛍️ Usuario normal detectado, redirigiendo a homepage');
+      router.push('/'); // Redirigir a homepage en lugar de /shop
+    }
   }, [user, isLoaded, router]);
 
   // Mostrar loading mientras se determina la redirección
