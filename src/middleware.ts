@@ -42,6 +42,16 @@ const isPublicRoute = createRouteMatcher([
   '/api/analytics(.*)'
 ]);
 
+// 🚨 RUTAS QUE DEBEN SER COMPLETAMENTE EXCLUIDAS DEL MIDDLEWARE
+// Estas rutas causan recursión si pasan por el middleware de Clerk
+const isExcludedRoute = createRouteMatcher([
+  '/api/auth/sync-user-data',
+  '/api/auth/sync-user',
+  '/api/auth/webhook',
+  '/api/webhooks(.*)',
+  '/api/webhooks/clerk' // ⚠️ CRÍTICO: Webhook activo de Clerk
+]);
+
 // Rutas que requieren redirección inteligente después del login
 const isMyAccountRoute = createRouteMatcher(['/my-account(.*)']);
 
@@ -53,6 +63,13 @@ export default clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl;
 
   console.log(`[MIDDLEWARE] 🔍 PROCESANDO RUTA: ${pathname}`);
+
+  // 🚨 EXCLUSIÓN TOTAL PARA RUTAS QUE CAUSAN RECURSIÓN
+  // Estas rutas NO deben pasar por el middleware de Clerk bajo ninguna circunstancia
+  if (isExcludedRoute(request)) {
+    console.log(`[MIDDLEWARE] 🚫 RUTA EXCLUIDA COMPLETAMENTE: ${pathname} - Sin procesamiento Clerk`);
+    return NextResponse.next();
+  }
 
   // Skip inmediato para rutas estáticas (performance crítico)
   if (
@@ -160,9 +177,9 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    // Incluir todas las rutas excepto archivos estáticos
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Siempre procesar rutas API
-    '/(api|trpc)(.*)',
+    // Incluir todas las rutas excepto archivos estáticos Y rutas excluidas
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)|api/auth/sync-user-data|api/auth/sync-user|api/auth/webhook|api/webhooks/clerk).*)',
+    // Procesar rutas API EXCEPTO las que causan recursión (sintaxis corregida)
+    '/(api|trpc)/((?!auth/sync-user-data|auth/sync-user|auth/webhook|webhooks/clerk).*)',
   ],
 };
