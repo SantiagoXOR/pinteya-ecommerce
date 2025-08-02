@@ -71,7 +71,6 @@ export const OptimizedCartIcon = ({
           width={width}
           height={height}
           className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}
-          priority
           onLoad={handleImageLoad}
           onError={handleImageError}
           sizes={`${width}px`}

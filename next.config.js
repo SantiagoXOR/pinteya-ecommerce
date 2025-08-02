@@ -229,7 +229,7 @@ const nextConfig = {
           // Permissions Policy para evitar errores de browsing-topics
           {
             key: 'Permissions-Policy',
-            value: 'browsing-topics=(), interest-cohort=(), join-ad-interest-group=(), run-ad-auction=()',
+            value: 'browsing-topics=(), interest-cohort=(), join-ad-interest-group=(), run-ad-auction=(), camera=(), microphone=(), geolocation=(), payment=()',
           },
           // Cache headers para assets estáticos
           {
