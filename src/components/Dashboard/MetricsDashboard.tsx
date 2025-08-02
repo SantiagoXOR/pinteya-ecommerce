@@ -56,7 +56,7 @@ export default function MetricsDashboard() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false); // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN
   const [timeRange, setTimeRange] = useState(1); // horas
 
   // Cargar métricas
@@ -102,7 +102,9 @@ export default function MetricsDashboard() {
   }, [timeRange]);
 
   // Auto-refresh cada 30 segundos
+  // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN EN APIS DE AUTH
   useEffect(() => {
+    console.log('[METRICS_DASHBOARD] 🚫 Auto-refresh temporalmente deshabilitado para evitar recursión');
     if (!autoRefresh) return;
 
     const interval = setInterval(() => {
