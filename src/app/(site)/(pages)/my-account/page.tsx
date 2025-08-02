@@ -26,7 +26,7 @@ const MyAccountPage = () => {
   }, [isLoaded, router]);
 
   useEffect(() => {
-    console.log('[MY_ACCOUNT_PAGE] 🔍 INTERCEPTANDO ACCESO A MY-ACCOUNT');
+    console.log('[MY_ACCOUNT_PAGE] 🔍 CARGANDO MY-ACCOUNT');
 
     if (!isLoaded) {
       console.log('[MY_ACCOUNT_PAGE] ⏳ Esperando carga de usuario...');
@@ -39,7 +39,7 @@ const MyAccountPage = () => {
       return;
     }
 
-    // Debug completo del usuario
+    // Debug del usuario (sin lógica de redirección - ahora manejada por middleware)
     console.log('[MY_ACCOUNT_PAGE] 🔍 USUARIO EN MY-ACCOUNT:', {
       id: user.id,
       email: user.emailAddresses[0]?.emailAddress,
@@ -49,23 +49,7 @@ const MyAccountPage = () => {
       lastSignInAt: user.lastSignInAt
     });
 
-    // Verificar si es admin y redirigir
-    const isAdmin = user.publicMetadata?.role === 'admin' ||
-                   user.privateMetadata?.role === 'admin';
-
-    console.log('[MY_ACCOUNT_PAGE] 🔍 VERIFICACIÓN DE ROL ADMIN:', {
-      publicRole: user.publicMetadata?.role,
-      privateRole: user.privateMetadata?.role,
-      isAdmin
-    });
-
-    if (isAdmin) {
-      console.log('[MY_ACCOUNT_PAGE] 🚀 USUARIO ADMIN DETECTADO - REDIRIGIENDO A /admin');
-      router.push('/admin');
-      return;
-    }
-
-    console.log('[MY_ACCOUNT_PAGE] ✅ Usuario normal, permitiendo acceso a my-account');
+    console.log('[MY_ACCOUNT_PAGE] ✅ Usuario cargado correctamente - Middleware ya validó permisos');
   }, [user, isLoaded, router]);
 
   // Mostrar loading mientras se verifica
