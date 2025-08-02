@@ -187,8 +187,7 @@ export const publicRoutes = [
  */
 export const protectedRoutes = [
   '/checkout',
-  '/my-account',
-  '/my-account/(.*)',
+  // ELIMINADO: '/my-account' y '/my-account/(.*)' - Ruta completamente removida del sistema
   '/orders',
   '/orders/(.*)',
   '/wishlist',
