@@ -468,6 +468,10 @@ export function getEnterpriseSystemHealth() {
  */
 export async function initializeEnterpriseOnAppStart(): Promise<void> {
   try {
+    // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN EN APIS DE AUTH
+    console.log('[ENTERPRISE_STARTUP] 🚫 Inicialización automática temporalmente deshabilitada');
+    return;
+
     // Solo inicializar en servidor
     if (typeof window !== 'undefined') {
       return;
@@ -478,7 +482,7 @@ export async function initializeEnterpriseOnAppStart(): Promise<void> {
       enableCache: true,
       enableAlerts: true,
       enableTesting: true,
-      enableAudit: true,
+      enableAudit: false, // 🚫 DESHABILITADO TEMPORALMENTE
       runInitialTests: process.env.NODE_ENV === 'development',
       logStartup: true
     };

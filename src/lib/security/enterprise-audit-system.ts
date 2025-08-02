@@ -506,8 +506,9 @@ export class EnterpriseAuditSystem {
   }
 
   private async saveEnterpriseEvent(event: EnterpriseSecurityEvent): Promise<void> {
-    // Implementar guardado en base de datos enterprise
-    console.log('[ENTERPRISE_AUDIT] Guardando evento enterprise:', event.id);
+    // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR LOGS MASIVOS DURANTE DEBUG
+    // console.log('[ENTERPRISE_AUDIT] Guardando evento enterprise:', event.id);
+    return;
   }
 
   private async performImmediateAnalysis(event: EnterpriseSecurityEvent): Promise<void> {
