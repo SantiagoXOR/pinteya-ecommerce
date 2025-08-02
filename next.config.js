@@ -200,8 +200,7 @@ const nextConfig = {
   // Redirects para compatibilidad de URLs
   async redirects() {
     return [
-      // 🚨 REDIRECCIÓN CRÍTICA: /my-account → /admin
-      // Solución definitiva para evitar ciclos recursivos de Clerk
+      // 🚨 REDIRECCIONES CRÍTICAS: Evitar ciclos recursivos de Clerk
       {
         source: '/my-account',
         destination: '/admin',
@@ -211,6 +210,11 @@ const nextConfig = {
         source: '/my-account/:path*',
         destination: '/admin',
         permanent: false, // 302 redirect para cualquier subruta
+      },
+      {
+        source: '/home',
+        destination: '/admin',
+        permanent: false, // 302 redirect - eliminar /home problemático
       },
       {
         source: '/product/:id',
