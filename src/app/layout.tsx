@@ -6,7 +6,7 @@ import { metadata as defaultMetadata } from './metadata';
 import StructuredData from '@/components/SEO/StructuredData';
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
 import JsonSafetyInitializer from '@/components/JsonSafetyInitializer';
-import AuthRedirectDebugger from '@/components/Debug/AuthRedirectDebugger';
+import AuthRedirectDebugger from '@/components/debug/AuthRedirectDebugger';
 import { organizationStructuredData, websiteStructuredData, storeStructuredData } from '@/lib/structured-data';
 import type { Metadata } from 'next';
 
