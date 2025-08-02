@@ -164,74 +164,14 @@ export default clerkMiddleware(async (auth, request) => {
   // PROTECCIÓN DE RUTAS ADMIN
   // ===================================
 
-  // ✅ PROTECCIÓN ADMIN CORREGIDA Y REACTIVADA
+  // 🚨 BLOQUEO TEMPORAL DE SEGURIDAD - ADMIN COMPLETAMENTE BLOQUEADO
   if (isAdminRoute(request)) {
-    console.log(`[MIDDLEWARE] 🔒 RUTA ADMIN DETECTADA: ${pathname}`);
+    console.error(`[SECURITY] � ACCESO ADMIN BLOQUEADO TEMPORALMENTE POR VULNERABILIDAD DE SEGURIDAD`);
+    console.error(`[SECURITY] � RUTA: ${pathname}`);
+    console.error(`[SECURITY] � TIMESTAMP: ${new Date().toISOString()}`);
 
-    const { userId, sessionClaims, redirectToSignIn } = await auth();
-
-    if (!userId) {
-      console.warn(`[MIDDLEWARE] ❌ Usuario no autenticado - Redirigiendo a signin`);
-      return redirectToSignIn();
-    }
-
-    // Verificación robusta de roles con fallback a Clerk API
-    const publicRole = sessionClaims?.publicMetadata?.role as string;
-    const privateRole = sessionClaims?.privateMetadata?.role as string;
-
-    let isAdmin = publicRole === 'admin' || privateRole === 'admin';
-
-    // Si sessionClaims no tiene el rol, verificar directamente con Clerk
-    if (!isAdmin) {
-      try {
-        const clerkClient = createClerkClient({
-          secretKey: process.env.CLERK_SECRET_KEY!
-        });
-        const clerkUser = await clerkClient.users.getUser(userId);
-        const userPublicRole = clerkUser.publicMetadata?.role as string;
-        const userPrivateRole = clerkUser.privateMetadata?.role as string;
-
-        isAdmin = userPublicRole === 'admin' || userPrivateRole === 'admin';
-
-        console.log(`[MIDDLEWARE] 🔄 VERIFICACIÓN FALLBACK CON CLERK API:`, {
-          sessionClaimsRole: publicRole,
-          clerkApiRole: userPublicRole,
-          finalIsAdmin: isAdmin
-        });
-      } catch (error) {
-        console.error(`[MIDDLEWARE] ❌ Error verificando con Clerk API:`, error);
-      }
-    }
-
-    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN SIMPLIFICADA:`, {
-      userId,
-      pathname,
-      publicRole,
-      privateRole,
-      isAdmin,
-      sessionClaimsExists: !!sessionClaims
-    });
-
-    if (!isAdmin) {
-      console.error(`[MIDDLEWARE] ❌ ACCESO ADMIN DENEGADO:`, {
-        userId,
-        pathname,
-        publicRole,
-        privateRole,
-        reason: 'Usuario no tiene rol admin después de verificación completa'
-      });
-
-      // Redirigir a homepage
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-
-    console.log(`[MIDDLEWARE] ✅ ACCESO ADMIN AUTORIZADO:`, {
-      userId,
-      pathname,
-      role: publicRole || privateRole
-    });
-
-    return NextResponse.next();
+    // BLOQUEAR COMPLETAMENTE HASTA RESOLVER VULNERABILIDAD
+    return NextResponse.redirect(new URL('/?security_block=admin_access_disabled', request.url));
   }
 
   // ===================================
