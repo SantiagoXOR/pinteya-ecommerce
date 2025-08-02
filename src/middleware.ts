@@ -1,11 +1,10 @@
 // ===================================
-// PINTEYA E-COMMERCE - MIDDLEWARE CON REDIRECCIÓN INTELIGENTE
+// PINTEYA E-COMMERCE - MIDDLEWARE MODERNIZADO (VERSIÓN CORREGIDA)
 // ===================================
-// Implementación basada en mejores prácticas de Clerk
+// Implementación siguiendo mejores prácticas oficiales de Clerk v5
+// CORREGIDO: Compatible con configuración actual de roles
 
-import { NextRequest, NextResponse } from 'next/server';
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { createClerkClient } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 // ===================================
 // DEFINICIÓN DE RUTAS
@@ -43,234 +42,56 @@ const isPublicRoute = createRouteMatcher([
   '/api/analytics(.*)'
 ]);
 
-// 🚨 RUTAS QUE DEBEN SER COMPLETAMENTE EXCLUIDAS DEL MIDDLEWARE
-// Estas rutas causan recursión si pasan por el middleware de Clerk
-const isExcludedRoute = createRouteMatcher([
-  '/api/auth/webhook',
-  '/api/webhooks(.*)',
-  '/api/webhooks/clerk' // ⚠️ CRÍTICO: Webhook activo de Clerk
-]);
-
-// ELIMINADO: Rutas my-account completamente removidas del sistema
-// const isUserRoute = createRouteMatcher(['/my-account(.*)']);
-
 // ===================================
-// FUNCIÓN AUXILIAR PARA VERIFICAR ROLES
+// MIDDLEWARE PRINCIPAL MODERNIZADO (CORREGIDO)
 // ===================================
 
-/**
- * Verifica si un usuario tiene rol admin usando múltiples métodos
- * Combina sessionClaims y cliente directo de Clerk para máxima compatibilidad
- */
-async function isUserAdmin(userId: string, sessionClaims: any): Promise<{isAdmin: boolean, method: string, roleValue: string}> {
-  try {
-    // Método 1: Verificar sessionClaims (más rápido)
-    const publicRole = sessionClaims?.publicMetadata?.role as string;
-    const privateRole = sessionClaims?.privateMetadata?.role as string;
-    const metadataRole = sessionClaims?.metadata?.role as string;
-
-    if (publicRole === 'admin') {
-      return { isAdmin: true, method: 'sessionClaims.publicMetadata', roleValue: publicRole };
-    }
-    if (privateRole === 'admin') {
-      return { isAdmin: true, method: 'sessionClaims.privateMetadata', roleValue: privateRole };
-    }
-    if (metadataRole === 'admin') {
-      return { isAdmin: true, method: 'sessionClaims.metadata', roleValue: metadataRole };
-    }
-
-    // Método 2: Verificar con cliente directo de Clerk (fallback)
-    console.log(`[MIDDLEWARE] 🔄 SessionClaims no tiene rol admin, verificando con cliente directo...`);
-
-    const clerkClient = createClerkClient({
-      secretKey: process.env.CLERK_SECRET_KEY!
-    });
-
-    const clerkUser = await clerkClient.users.getUser(userId);
-
-    const userPublicRole = clerkUser.publicMetadata?.role as string;
-    const userPrivateRole = clerkUser.privateMetadata?.role as string;
-
-    if (userPublicRole === 'admin') {
-      return { isAdmin: true, method: 'clerkClient.publicMetadata', roleValue: userPublicRole };
-    }
-    if (userPrivateRole === 'admin') {
-      return { isAdmin: true, method: 'clerkClient.privateMetadata', roleValue: userPrivateRole };
-    }
-
-    return { isAdmin: false, method: 'none', roleValue: 'none' };
-
-  } catch (error) {
-    console.error(`[MIDDLEWARE] ❌ Error verificando rol admin:`, error);
-    return { isAdmin: false, method: 'error', roleValue: 'error' };
-  }
-}
-
-// ===================================
-// MIDDLEWARE PRINCIPAL CON CLERK
-// ===================================
-
-export default clerkMiddleware(async (auth, request) => {
-  const { pathname } = request.nextUrl;
-
-  console.log(`[MIDDLEWARE] 🔍 PROCESANDO RUTA: ${pathname}`);
-
-  // 🚨 REDIRECCIÓN INMEDIATA DE /my-account A /admin
-  // Intercepta cualquier acceso a /my-account y redirige a /admin
-  if (pathname.startsWith('/my-account')) {
-    console.log(`[MIDDLEWARE] 🔄 REDIRECCIÓN FORZADA: ${pathname} → /admin`);
-    const adminUrl = new URL('/admin', request.url);
-    console.log(`[MIDDLEWARE] 🎯 Redirigiendo a: ${adminUrl.toString()}`);
-    return NextResponse.redirect(adminUrl, { status: 302 });
+export default clerkMiddleware(async (auth, req) => {
+  // Redirección de /my-account a /admin (mantener compatibilidad)
+  if (req.nextUrl.pathname.startsWith('/my-account')) {
+    const adminUrl = new URL('/admin', req.url)
+    return Response.redirect(adminUrl, 302)
   }
 
-  // 🚨 PROTECCIÓN ADICIONAL: Si detectamos ciclo recursivo, ir a homepage
-  const referer = request.headers.get('referer');
-  if (pathname.startsWith('/my-account') && referer?.includes('/my-account')) {
-    console.log(`[MIDDLEWARE] 🚨 CICLO DETECTADO - Redirigiendo a homepage`);
-    return NextResponse.redirect(new URL('/', request.url), { status: 302 });
-  }
+  // CORREGIDO: Para rutas admin, verificar autenticación Y roles manualmente
+  if (isAdminRoute(req)) {
+    const { userId, sessionClaims } = await auth()
 
-  // 🚨 EXCLUSIÓN TOTAL PARA RUTAS QUE CAUSAN RECURSIÓN
-  // Estas rutas NO deben pasar por el middleware de Clerk bajo ninguna circunstancia
-  if (isExcludedRoute(request)) {
-    console.log(`[MIDDLEWARE] 🚫 RUTA EXCLUIDA COMPLETAMENTE: ${pathname} - Sin procesamiento Clerk`);
-    return NextResponse.next();
-  }
-
-  // Skip inmediato para rutas estáticas (performance crítico)
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon') ||
-    pathname.includes('.') ||
-    pathname === '/robots.txt' ||
-    pathname === '/sitemap.xml' ||
-    pathname === '/_not-found'
-  ) {
-    return NextResponse.next();
-  }
-
-  // Skip inmediato para webhooks (CRÍTICO para producción)
-  if (pathname.startsWith('/api/webhooks/')) {
-    console.log(`[MIDDLEWARE] Webhook detectado: ${pathname} - Permitiendo acceso directo`);
-    return NextResponse.next();
-  }
-
-  // ===================================
-  // PROTECCIÓN DE RUTAS ADMIN CON VERIFICACIÓN DE ROLES
-  // ===================================
-
-  // ===================================
-  // PROTECCIÓN DE RUTAS ADMIN
-  // ===================================
-
-  // ✅ PROTECCIÓN ADMIN CORREGIDA Y REACTIVADA
-  if (isAdminRoute(request)) {
-    console.log(`[MIDDLEWARE] 🔒 RUTA ADMIN DETECTADA: ${pathname}`);
-
-    const { userId, sessionClaims, redirectToSignIn } = await auth();
-
+    // Verificar que el usuario esté autenticado
     if (!userId) {
-      console.warn(`[MIDDLEWARE] ❌ Usuario no autenticado - Redirigiendo a signin`);
-      return redirectToSignIn();
+      // Redirigir a signin si no está autenticado
+      const signInUrl = new URL('/signin', req.url)
+      return Response.redirect(signInUrl, 302)
     }
 
-    // Verificación robusta de roles con fallback a Clerk API
-    const publicRole = sessionClaims?.publicMetadata?.role as string;
-    const privateRole = sessionClaims?.privateMetadata?.role as string;
-
-    let isAdmin = publicRole === 'admin' || privateRole === 'admin';
-
-    // Si sessionClaims no tiene el rol, verificar directamente con Clerk
-    if (!isAdmin) {
-      try {
-        const clerkClient = createClerkClient({
-          secretKey: process.env.CLERK_SECRET_KEY!
-        });
-        const clerkUser = await clerkClient.users.getUser(userId);
-        const userPublicRole = clerkUser.publicMetadata?.role as string;
-        const userPrivateRole = clerkUser.privateMetadata?.role as string;
-
-        isAdmin = userPublicRole === 'admin' || userPrivateRole === 'admin';
-
-        console.log(`[MIDDLEWARE] 🔄 VERIFICACIÓN FALLBACK CON CLERK API:`, {
-          sessionClaimsRole: publicRole,
-          clerkApiRole: userPublicRole,
-          finalIsAdmin: isAdmin
-        });
-      } catch (error) {
-        console.error(`[MIDDLEWARE] ❌ Error verificando con Clerk API:`, error);
-      }
-    }
-
-    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN SIMPLIFICADA:`, {
-      userId,
-      pathname,
-      publicRole,
-      privateRole,
-      isAdmin,
-      sessionClaimsExists: !!sessionClaims
-    });
+    // Verificar rol admin en metadata
+    const publicRole = sessionClaims?.publicMetadata?.role as string
+    const privateRole = sessionClaims?.privateMetadata?.role as string
+    const isAdmin = publicRole === 'admin' || privateRole === 'admin'
 
     if (!isAdmin) {
-      console.error(`[MIDDLEWARE] ❌ ACCESO ADMIN DENEGADO:`, {
-        userId,
-        pathname,
-        publicRole,
-        privateRole,
-        reason: 'Usuario no tiene rol admin después de verificación completa'
-      });
-
-      // Redirigir a homepage
-      return NextResponse.redirect(new URL('/', request.url));
+      // Redirigir a homepage si no es admin
+      const homeUrl = new URL('/', req.url)
+      return Response.redirect(homeUrl, 302)
     }
 
-    console.log(`[MIDDLEWARE] ✅ ACCESO ADMIN AUTORIZADO:`, {
-      userId,
-      pathname,
-      role: publicRole || privateRole
-    });
-
-    return NextResponse.next();
+    // Si es admin, permitir acceso
+    return
   }
 
-  // ===================================
-  // RUTAS MY-ACCOUNT ELIMINADAS COMPLETAMENTE
-  // ===================================
-  // NOTA: Se eliminó toda la lógica de /my-account para evitar ciclos recursivos
-  // Los usuarios admin acceden directamente a /admin
-  // Los usuarios normales pueden usar otras rutas de perfil si es necesario
-
-  // ===================================
-  // RUTAS PÚBLICAS Y OTRAS PROTEGIDAS
-  // ===================================
-
-  // Permitir rutas públicas sin verificación adicional
-  if (isPublicRoute(request)) {
-    console.log(`[MIDDLEWARE] ✅ Ruta pública permitida: ${pathname}`);
-    return NextResponse.next();
+  // Para otras rutas protegidas, solo verificar autenticación básica
+  if (!isPublicRoute(req)) {
+    await auth.protect()
   }
-
-  // Para otras rutas protegidas, verificar autenticación básica
-  const { userId, redirectToSignIn } = await auth();
-  if (!userId) {
-    console.log(`[MIDDLEWARE] 🔒 Ruta protegida - Redirigiendo a signin: ${pathname}`);
-    return redirectToSignIn();
-  }
-
-  console.log(`[MIDDLEWARE] ✅ Usuario autenticado - Permitiendo acceso: ${pathname}`);
-  return NextResponse.next();
-});
+})
 
 // ===================================
-// CONFIGURACIÓN DEL MATCHER
+// CONFIGURACIÓN DEL MATCHER (SIMPLIFICADA)
 // ===================================
 
 export const config = {
   matcher: [
-    // Incluir todas las rutas excepto archivos estáticos Y rutas excluidas
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)|api/auth/webhook|api/webhooks/clerk).*)',
-    // Procesar rutas API EXCEPTO las que causan recursión (sintaxis corregida)
-    '/(api|trpc)/((?!auth/webhook|webhooks/clerk).*)',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
   ],
-};
+}
