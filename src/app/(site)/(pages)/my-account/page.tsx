@@ -1,46 +1,17 @@
-"use client";
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
 
 /**
- * PÁGINA TEMPORAL DE REDIRECCIÓN
- * 
+ * PÁGINA TEMPORAL DE REDIRECCIÓN - SERVER SIDE
+ *
  * Esta página existe únicamente para romper el ciclo recursivo
  * causado por configuraciones de Clerk que redirigen a /my-account.
- * 
- * FUNCIÓN: Redirigir inmediatamente a /admin
+ *
+ * FUNCIÓN: Redirigir inmediatamente a /admin usando Server Side Redirect
  * ESTADO: TEMPORAL - Eliminar cuando se corrijan las configuraciones de Clerk
  */
 export default function MyAccountRedirectPage() {
-  const router = useRouter();
-  const { user, isLoaded } = useUser();
-
-  useEffect(() => {
-    console.log('[MY_ACCOUNT_REDIRECT] 🔄 Página temporal activada - Redirigiendo a /admin');
-    
-    // Redirección inmediata sin condiciones
-    const timer = setTimeout(() => {
-      console.log('[MY_ACCOUNT_REDIRECT] ✅ Ejecutando redirección a /admin');
-      router.replace('/admin');
-    }, 100); // Delay mínimo para evitar problemas de hidratación
-
-    return () => clearTimeout(timer);
-  }, [router]);
-
-  // Mostrar mensaje temporal mientras se redirige
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blaze-orange-600 mx-auto mb-4"></div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Redirigiendo al Panel de Administración
-        </h2>
-        <p className="text-gray-600">
-          Por favor espera un momento...
-        </p>
-      </div>
-    </div>
-  );
+  // Redirección inmediata del lado del servidor
+  // Esto es más confiable que redirecciones del lado del cliente
+  console.log('[MY_ACCOUNT_REDIRECT] 🔄 Server-side redirect a /admin');
+  redirect('/admin');
 }
