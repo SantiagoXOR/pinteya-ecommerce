@@ -684,7 +684,6 @@ export class EnterpriseAutomatedTesting {
     //   this.testTimers.set(testId, timer);
     // }
   }
-  }
 
   private async checkAlertThreshold(testCase: TestCase, result: TestResult): Promise<void> {
     const recentResults = this.getTestResults(testCase.id, testCase.alertThreshold);
