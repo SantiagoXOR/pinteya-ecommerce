@@ -119,7 +119,16 @@ export default clerkMiddleware(async (auth, request) => {
   // Intercepta cualquier acceso a /my-account y redirige a /admin
   if (pathname.startsWith('/my-account')) {
     console.log(`[MIDDLEWARE] 🔄 REDIRECCIÓN FORZADA: ${pathname} → /admin`);
-    return NextResponse.redirect(new URL('/admin', request.url));
+    const adminUrl = new URL('/admin', request.url);
+    console.log(`[MIDDLEWARE] 🎯 Redirigiendo a: ${adminUrl.toString()}`);
+    return NextResponse.redirect(adminUrl, { status: 302 });
+  }
+
+  // 🚨 PROTECCIÓN ADICIONAL: Si detectamos ciclo recursivo, ir a homepage
+  const referer = request.headers.get('referer');
+  if (pathname.startsWith('/my-account') && referer?.includes('/my-account')) {
+    console.log(`[MIDDLEWARE] 🚨 CICLO DETECTADO - Redirigiendo a homepage`);
+    return NextResponse.redirect(new URL('/', request.url), { status: 302 });
   }
 
   // 🚨 EXCLUSIÓN TOTAL PARA RUTAS QUE CAUSAN RECURSIÓN
