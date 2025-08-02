@@ -115,6 +115,13 @@ export default clerkMiddleware(async (auth, request) => {
 
   console.log(`[MIDDLEWARE] 🔍 PROCESANDO RUTA: ${pathname}`);
 
+  // 🚨 REDIRECCIÓN INMEDIATA DE /my-account A /admin
+  // Intercepta cualquier acceso a /my-account y redirige a /admin
+  if (pathname.startsWith('/my-account')) {
+    console.log(`[MIDDLEWARE] 🔄 REDIRECCIÓN FORZADA: ${pathname} → /admin`);
+    return NextResponse.redirect(new URL('/admin', request.url));
+  }
+
   // 🚨 EXCLUSIÓN TOTAL PARA RUTAS QUE CAUSAN RECURSIÓN
   // Estas rutas NO deben pasar por el middleware de Clerk bajo ninguna circunstancia
   if (isExcludedRoute(request)) {
