@@ -11,8 +11,8 @@ export default function ClerkProviderWrapper({ children }: ClerkProviderWrapperP
   return (
     <ClerkProvider
       localization={esES}
-      signInFallbackRedirectUrl="/shop"
-      signUpFallbackRedirectUrl="/shop"
+      signInFallbackRedirectUrl="/admin"
+      signUpFallbackRedirectUrl="/admin"
       afterSignOutUrl="/"
       appearance={{
         baseTheme: undefined,
