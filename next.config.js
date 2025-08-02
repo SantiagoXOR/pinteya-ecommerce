@@ -226,6 +226,11 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
+          // Permissions Policy para evitar errores de browsing-topics
+          {
+            key: 'Permissions-Policy',
+            value: 'browsing-topics=(), interest-cohort=(), join-ad-interest-group=(), run-ad-auction=()',
+          },
           // Cache headers para assets estáticos
           {
             key: 'Cache-Control',
