@@ -275,10 +275,23 @@ async function processWebhookEvent(event: WebhookEventData): Promise<WebhookProc
  * Maneja eventos de usuario con validación de firma, retry logic y auditoría
  */
 export async function POST(request: NextRequest) {
-  const requestStartTime = Date.now();
+  console.log('[WEBHOOK] 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
 
-  try {
-    console.log('[WEBHOOK] Recibiendo evento de Clerk...');
+  // RESPUESTA TEMPORAL PARA EVITAR ERRORES
+  return NextResponse.json(
+    {
+      success: false,
+      message: 'Webhook temporalmente deshabilitado para evitar recursión',
+      timestamp: new Date().toISOString()
+    },
+    { status: 503 }
+  );
+
+  // CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
+  // const requestStartTime = Date.now();
+
+  // try {
+  //   console.log('[WEBHOOK] Recibiendo evento de Clerk...');
 
     // 1. Verificar configuración del webhook
     const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
