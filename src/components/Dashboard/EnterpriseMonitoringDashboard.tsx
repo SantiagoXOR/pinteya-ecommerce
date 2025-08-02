@@ -220,7 +220,7 @@ const SystemHealthIndicator: React.FC<{
 export const EnterpriseMonitoringDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<EnterpriseMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false); // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN
   const [refreshInterval, setRefreshInterval] = useState(30); // segundos
 
   // Función para obtener métricas
@@ -341,7 +341,9 @@ export const EnterpriseMonitoringDashboard: React.FC = () => {
   }, [fetchMetrics]);
 
   // Efecto para auto-refresh
+  // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN EN APIS DE AUTH
   useEffect(() => {
+    console.log('[ENTERPRISE_DASHBOARD] 🚫 Auto-refresh temporalmente deshabilitado para evitar recursión');
     if (!autoRefresh) return;
 
     const interval = setInterval(fetchMetrics, refreshInterval * 1000);
