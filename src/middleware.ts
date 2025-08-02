@@ -45,8 +45,6 @@ const isPublicRoute = createRouteMatcher([
 // 🚨 RUTAS QUE DEBEN SER COMPLETAMENTE EXCLUIDAS DEL MIDDLEWARE
 // Estas rutas causan recursión si pasan por el middleware de Clerk
 const isExcludedRoute = createRouteMatcher([
-  '/api/auth/sync-user-data',
-  '/api/auth/sync-user',
   '/api/auth/webhook',
   '/api/webhooks(.*)',
   '/api/webhooks/clerk' // ⚠️ CRÍTICO: Webhook activo de Clerk
@@ -178,8 +176,8 @@ export default clerkMiddleware(async (auth, request) => {
 export const config = {
   matcher: [
     // Incluir todas las rutas excepto archivos estáticos Y rutas excluidas
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)|api/auth/sync-user-data|api/auth/sync-user|api/auth/webhook|api/webhooks/clerk).*)',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)|api/auth/webhook|api/webhooks/clerk).*)',
     // Procesar rutas API EXCEPTO las que causan recursión (sintaxis corregida)
-    '/(api|trpc)/((?!auth/sync-user-data|auth/sync-user|auth/webhook|webhooks/clerk).*)',
+    '/(api|trpc)/((?!auth/webhook|webhooks/clerk).*)',
   ],
 };
