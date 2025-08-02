@@ -50,7 +50,7 @@ export default function SignInPage() {
         path="/signin"
         routing="path"
         signUpUrl="/signup"
-        redirectUrl="/shop"
+        redirectUrl="/my-account"
         appearance={{
           baseTheme: undefined,
           variables: {
