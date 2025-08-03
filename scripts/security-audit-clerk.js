@@ -96,13 +96,33 @@ async function auditClerkSecurity() {
       console.log('ID:', santiagoUser.id);
       console.log('Public Metadata:', JSON.stringify(santiagoUser.publicMetadata, null, 2));
       console.log('Private Metadata:', JSON.stringify(santiagoUser.privateMetadata, null, 2));
-      
-      const hasAdminRole = santiagoUser.publicMetadata?.role === 'admin' || 
+
+      const hasAdminRole = santiagoUser.publicMetadata?.role === 'admin' ||
                           santiagoUser.privateMetadata?.role === 'admin';
-      
+
       if (!hasAdminRole) {
         console.error('🚨 PROBLEMA ENCONTRADO: Santiago no tiene rol admin en Clerk');
-        console.error('Necesita configurar el rol admin en Clerk Dashboard');
+        console.error('ACCIÓN REQUERIDA: Configurar rol admin en Clerk Dashboard');
+        console.log('\n🔧 PASOS PARA CONFIGURAR ROL ADMIN:');
+        console.log('1. Ir a https://dashboard.clerk.com');
+        console.log('2. Seleccionar proyecto Pinteya');
+        console.log('3. Ir a Users > santiago@xor.com.ar');
+        console.log('4. En Public metadata agregar: {"role": "admin"}');
+        console.log('5. Guardar cambios');
+
+        // Intentar configurar automáticamente
+        console.log('\n🤖 INTENTANDO CONFIGURAR ROL AUTOMÁTICAMENTE...');
+        try {
+          await clerkClient.users.updateUserMetadata(santiagoUser.id, {
+            publicMetadata: {
+              ...santiagoUser.publicMetadata,
+              role: 'admin'
+            }
+          });
+          console.log('✅ ROL ADMIN CONFIGURADO AUTOMÁTICAMENTE');
+        } catch (error) {
+          console.error('❌ Error configurando rol automáticamente:', error.message);
+        }
       } else {
         console.log('✅ Santiago tiene rol admin correctamente configurado');
       }

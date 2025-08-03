@@ -1,8 +1,8 @@
-# 📝 Changelog - 3 de Enero 2025
+# 📝 Changelog - 2 de Agosto 2025
 
 ## 🎯 Resumen de Cambios
 
-**Fecha**: 3 de Enero 2025
+**Fecha**: 2 de Agosto 2025
 **Tipo**: HOTFIX CRÍTICO - JsonSafetyInitializer
 **Estado**: ✅ Completado y desplegado
 **Impacto**: Excepciones client-side completamente resueltas
