@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
+import { createClerkClient } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -30,6 +31,9 @@ export async function GET(request: NextRequest) {
     console.log('✅ Admin Products Direct: User authenticated', { userId });
 
     // Obtener usuario de Clerk para verificar rol
+    const clerkClient = createClerkClient({
+      secretKey: process.env.CLERK_SECRET_KEY!
+    });
     const user = await clerkClient.users.getUser(userId);
     const userRole = user.publicMetadata?.role as string;
 
@@ -195,6 +199,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener usuario de Clerk para verificar rol
+    const clerkClient = createClerkClient({
+      secretKey: process.env.CLERK_SECRET_KEY!
+    });
     const user = await clerkClient.users.getUser(userId);
     const userRole = user.publicMetadata?.role as string;
 
