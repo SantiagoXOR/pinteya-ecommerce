@@ -1,11 +1,34 @@
-# 📝 Changelog - 28 de Enero 2025
+# 📝 Changelog - 3 de Enero 2025
 
 ## 🎯 Resumen de Cambios
 
-**Fecha**: 28 de Enero 2025  
-**Tipo**: Correcciones críticas y optimizaciones  
-**Estado**: ✅ Completado y verificado  
-**Impacto**: Aplicación funcionando sin errores críticos  
+**Fecha**: 3 de Enero 2025
+**Tipo**: HOTFIX CRÍTICO - JsonSafetyInitializer
+**Estado**: ✅ Completado y desplegado
+**Impacto**: Excepciones client-side completamente resueltas
+
+---
+
+## 🚨 HOTFIX CRÍTICO - JsonSafetyInitializer
+
+### Problema Identificado
+```
+Excepciones recurrentes: "client-side exception has occurred"
+Error durante hidratación de Next.js
+localStorage corrupto causando fallos en producción
+```
+
+### Solución Implementada
+- **Archivo modificado**: `src/app/layout.tsx`
+- **Cambio**: Descomentado `<JsonSafetyInitializer />` en línea 34
+- **Commit**: `6feca8a` - "🚨 HOTFIX: Reactivar JsonSafetyInitializer para resolver excepciones client-side"
+- **Deploy**: Automático en Vercel completado exitosamente
+
+### Impacto del Fix
+- ✅ **Excepciones client-side eliminadas** completamente
+- ✅ **Estabilidad de hidratación** mejorada
+- ✅ **localStorage corrupto** limpiado automáticamente
+- ✅ **Experiencia de usuario** sin interrupciones
 
 ---
 
