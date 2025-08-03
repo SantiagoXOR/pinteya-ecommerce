@@ -43,15 +43,39 @@ interface ProductListResponse {
   totalPages: number;
 }
 
+// ✅ MEJORA: Interface para la respuesta de la API (estructura real)
+interface ApiProductListResponse {
+  success: boolean;
+  data: {
+    products: Product[];
+    total: number;
+    pagination: {
+      page: number;
+      limit: number;
+      offset: number;
+      totalPages: number;
+      hasMore: boolean;
+      hasPrevious: boolean;
+    };
+  };
+  meta: {
+    timestamp: string;
+    method: string;
+    user: string;
+    role: string;
+  };
+}
+
 // API Functions
 async function fetchProducts(params: ProductListParams): Promise<ProductListResponse> {
   const searchParams = new URLSearchParams();
-  
+
   if (params.page) searchParams.set('page', params.page.toString());
-  if (params.pageSize) searchParams.set('pageSize', params.pageSize.toString());
+  // ✅ CORRECCIÓN: Cambiar 'pageSize' a 'limit' para coincidir con la API
+  if (params.pageSize) searchParams.set('limit', params.pageSize.toString());
   if (params.sortBy) searchParams.set('sortBy', params.sortBy);
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
-  
+
   // Add filters
   if (params.filters) {
     Object.entries(params.filters).forEach(([key, value]) => {
@@ -61,13 +85,61 @@ async function fetchProducts(params: ProductListParams): Promise<ProductListResp
     });
   }
 
+  console.log('🔍 Fetching products with params:', searchParams.toString());
+
   const response = await fetch(`/api/admin/products-direct?${searchParams.toString()}`);
 
+  // ✅ MEJORA: Error handling más detallado siguiendo mejores prácticas
   if (!response.ok) {
-    throw new Error(`Error fetching products: ${response.statusText}`);
+    const errorText = await response.text();
+    console.error('❌ API Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+      errorText
+    });
+    throw new Error(`Error fetching products: ${response.status} ${response.statusText}`);
   }
 
-  return response.json();
+  const apiResponse: ApiProductListResponse = await response.json();
+
+  // ✅ VALIDACIÓN: Verificar estructura de respuesta
+  if (!apiResponse.success) {
+    console.error('❌ API returned error:', apiResponse);
+    throw new Error('API returned unsuccessful response');
+  }
+
+  if (!apiResponse.data || !Array.isArray(apiResponse.data.products)) {
+    console.error('❌ Invalid API response structure:', apiResponse);
+    throw new Error('Invalid API response structure: missing products array');
+  }
+
+  console.log('✅ API Response received:', {
+    success: apiResponse.success,
+    totalProducts: apiResponse.data.total,
+    productsCount: apiResponse.data.products.length,
+    currentPage: apiResponse.data.pagination.page,
+    totalPages: apiResponse.data.pagination.totalPages
+  });
+
+  // ✅ CORRECCIÓN CRÍTICA: Transformar respuesta al formato esperado por el hook
+  const transformedResponse: ProductListResponse = {
+    data: apiResponse.data.products,                          // Extraer products del objeto anidado
+    total: apiResponse.data.total,
+    page: apiResponse.data.pagination.page,
+    pageSize: apiResponse.data.pagination.limit,              // Mapear limit → pageSize
+    totalPages: apiResponse.data.pagination.totalPages
+  };
+
+  console.log('🔄 Transformed response:', {
+    productsCount: transformedResponse.data.length,
+    total: transformedResponse.total,
+    page: transformedResponse.page,
+    pageSize: transformedResponse.pageSize,
+    totalPages: transformedResponse.totalPages
+  });
+
+  return transformedResponse;
 }
 
 async function deleteProduct(productId: string): Promise<void> {
@@ -104,16 +176,31 @@ export function useProductList(initialParams: ProductListParams = {}) {
 
   const queryClient = useQueryClient();
 
-  // Fetch products query
+  // ✅ MEJORA: Fetch products query con mejores prácticas de TanStack Query
   const {
     data: productsData,
     isLoading,
     error,
     refetch,
+    isFetching,
+    isError,
   } = useQuery({
     queryKey: ['admin-products', params],
     queryFn: () => fetchProducts(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3, // ✅ Reintentar 3 veces en caso de error
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // ✅ Backoff exponencial
+    refetchOnWindowFocus: false, // ✅ No refetch automático al enfocar ventana
+    refetchOnMount: true, // ✅ Refetch al montar componente
+    onError: (error) => {
+      console.error('❌ Query error in useProductList:', error);
+    },
+    onSuccess: (data) => {
+      console.log('✅ Query success in useProductList:', {
+        productsCount: data.data.length,
+        total: data.total
+      });
+    },
   });
 
   // Delete product mutation
@@ -219,31 +306,41 @@ export function useProductList(initialParams: ProductListParams = {}) {
     totalPages,
     currentPage,
     currentPageSize,
-    
+
     // State
     isLoading,
+    isFetching, // ✅ MEJORA: Agregar estado de fetching para indicadores de carga
+    isError, // ✅ MEJORA: Agregar estado de error booleano
     error: error as Error | null,
     params,
     hasFilters,
-    
+
     // Actions
     refetch,
     updateParams,
     updateFilters,
     clearFilters,
     search,
-    
+
     // Pagination
     goToPage,
     changePageSize,
-    
+
     // Sorting
     updateSort,
-    
+
     // Delete operations
     deleteProduct: handleDeleteProduct,
     bulkDelete: handleBulkDelete,
     isDeleting: deleteProductMutation.isPending,
     isBulkDeleting: bulkDeleteMutation.isPending,
+
+    // ✅ MEJORA: Información de debugging
+    debug: {
+      queryKey: ['admin-products', params],
+      lastFetch: new Date().toISOString(),
+      apiEndpoint: '/api/admin/products-direct',
+      transformedData: !!productsData
+    }
   };
 }
