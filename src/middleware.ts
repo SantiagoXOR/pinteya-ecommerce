@@ -40,8 +40,9 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhooks(.*)',
   '/api/debug(.*)',
   '/api/analytics(.*)',
-  // API de diagnóstico admin (temporal para debugging)
-  '/api/admin/debug(.*)'
+  // APIs de diagnóstico admin (temporal para debugging)
+  '/api/admin/debug(.*)',
+  '/api/admin/products-simple(.*)'
 ]);
 
 // Rutas que deben ser completamente excluidas del middleware
