@@ -39,7 +39,7 @@ export default function AdminDebugProductsPage() {
   const testProductsAPI = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/products-direct?page=1&limit=5');
+      const response = await fetch('/api/admin/products-simple?page=1&limit=5');
       
       if (!response.ok) {
         const errorText = await response.text();

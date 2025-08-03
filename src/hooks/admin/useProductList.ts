@@ -87,7 +87,7 @@ async function fetchProducts(params: ProductListParams): Promise<ProductListResp
 
   console.log('🔍 Fetching products with params:', searchParams.toString());
 
-  const response = await fetch(`/api/admin/products-direct?${searchParams.toString()}`);
+  const response = await fetch(`/api/admin/products-simple?${searchParams.toString()}`);
 
   // ✅ MEJORA: Error handling más detallado siguiendo mejores prácticas
   if (!response.ok) {
