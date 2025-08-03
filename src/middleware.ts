@@ -39,7 +39,9 @@ const isPublicRoute = createRouteMatcher([
   '/api/auth/webhook',
   '/api/webhooks(.*)',
   '/api/debug(.*)',
-  '/api/analytics(.*)'
+  '/api/analytics(.*)',
+  // API de diagnóstico admin (temporal para debugging)
+  '/api/admin/debug(.*)'
 ]);
 
 // Rutas que deben ser completamente excluidas del middleware
@@ -86,6 +88,16 @@ export default clerkMiddleware(async (auth, request) => {
   // Skip inmediato para webhooks (CRÍTICO para producción)
   if (pathname.startsWith('/api/webhooks/')) {
     console.log(`[MIDDLEWARE] Webhook detectado: ${pathname} - Permitiendo acceso directo`);
+    return NextResponse.next();
+  }
+
+  // ===================================
+  // VERIFICAR RUTAS PÚBLICAS PRIMERO (incluye debug)
+  // ===================================
+
+  // Permitir rutas públicas sin verificación adicional
+  if (isPublicRoute(request)) {
+    console.log(`[MIDDLEWARE] ✅ Ruta pública permitida: ${pathname}`);
     return NextResponse.next();
   }
 
@@ -166,14 +178,8 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   // ===================================
-  // RUTAS PÚBLICAS Y OTRAS PROTEGIDAS
+  // OTRAS RUTAS PROTEGIDAS
   // ===================================
-
-  // Permitir rutas públicas sin verificación adicional
-  if (isPublicRoute(request)) {
-    console.log(`[MIDDLEWARE] ✅ Ruta pública permitida: ${pathname}`);
-    return NextResponse.next();
-  }
 
   // Para otras rutas protegidas, verificar autenticación básica
   const { userId, redirectToSignIn } = await auth();
