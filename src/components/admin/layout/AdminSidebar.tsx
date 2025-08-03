@@ -39,12 +39,13 @@ const sidebarItems: SidebarItem[] = [
     title: 'Órdenes',
     href: '/admin/orders',
     icon: ShoppingCart,
-    badge: 'Nuevo',
+    badge: 'Beta',
   },
   {
     title: 'Clientes',
     href: '/admin/customers',
     icon: Users,
+    badge: 'Beta',
   },
   {
     title: 'Analytics',
@@ -60,7 +61,7 @@ const sidebarItems: SidebarItem[] = [
     title: 'Configuración',
     href: '/admin/settings',
     icon: Settings,
-    disabled: true,
+    badge: 'Beta',
   },
   {
     title: 'Diagnósticos',

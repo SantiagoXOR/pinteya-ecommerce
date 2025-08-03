@@ -173,7 +173,7 @@ export const useCategoryData = (
         .map(cat => ({
           id: cat.slug || cat.id.toString(), // Use slug as ID, fallback to string ID
           name: cat.name,
-          icon: cat.image_url || cat.icon || "/images/categories/placeholder.png", // Map image_url to icon
+          icon: cat.image_url || (cat.icon ? cat.icon : "/images/categories/placeholder.png"), // Safe access to icon property
           description: cat.description || `Productos de ${cat.name.toLowerCase()}`, // Generate description if missing
           isAvailable: cat.isAvailable ?? true,
           // Keep additional API fields for compatibility

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin APIs - Pinteya</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #ea5a17;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #d14910; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Admin APIs - Pinteya E-commerce</h1>
+    
+    <div class="container">
+        <h2>📊 Estado de las APIs</h2>
+        <div id="status" class="info">
+            Haz clic en los botones para probar las APIs...
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Test Products API -->
+        <div class="container">
+            <h3>📦 API de Productos</h3>
+            <button onclick="testProductsAPI()">Probar API Productos</button>
+            <div id="products-result"></div>
+        </div>
+
+        <!-- Test Orders API -->
+        <div class="container">
+            <h3>🛒 API de Órdenes</h3>
+            <button onclick="testOrdersAPI()">Probar API Órdenes</button>
+            <div id="orders-result"></div>
+        </div>
+
+        <!-- Test Customers API -->
+        <div class="container">
+            <h3>👥 API de Clientes</h3>
+            <button onclick="testCustomersAPI()">Probar API Clientes</button>
+            <div id="customers-result"></div>
+        </div>
+
+        <!-- Test Settings API -->
+        <div class="container">
+            <h3>⚙️ API de Configuración</h3>
+            <button onclick="testSettingsAPI()">Probar API Settings</button>
+            <div id="settings-result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>🔍 Resultados Detallados</h3>
+        <div id="detailed-results"></div>
+    </div>
+
+    <script>
+        const baseURL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000' 
+            : 'https://www.pinteya.com';
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+        }
+
+        function displayResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="status ${result.success ? 'success' : 'error'}">
+                    <strong>Status:</strong> ${result.status}<br>
+                    <strong>Tiempo:</strong> ${result.time}ms<br>
+                    <strong>Mensaje:</strong> ${result.message}
+                </div>
+                <pre>${JSON.stringify(result.data, null, 2)}</pre>
+            `;
+        }
+
+        function addDetailedResult(apiName, result) {
+            const detailedDiv = document.getElementById('detailed-results');
+            const timestamp = new Date().toLocaleTimeString();
+            detailedDiv.innerHTML += `
+                <div class="status ${result.success ? 'success' : 'error'}">
+                    <strong>[${timestamp}] ${apiName}</strong><br>
+                    Status: ${result.status} | Tiempo: ${result.time}ms<br>
+                    ${result.message}
+                </div>
+            `;
+        }
+
+        async function testAPI(url, name) {
+            const startTime = Date.now();
+            try {
+                updateStatus(`🔄 Probando ${name}...`, 'info');
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+
+                const endTime = Date.now();
+                const time = endTime - startTime;
+
+                let data;
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    data = { text: await response.text() };
+                }
+
+                const result = {
+                    success: response.ok,
+                    status: response.status,
+                    time: time,
+                    message: response.ok ? 'API funcionando correctamente' : `Error ${response.status}: ${response.statusText}`,
+                    data: data
+                };
+
+                addDetailedResult(name, result);
+                return result;
+
+            } catch (error) {
+                const endTime = Date.now();
+                const time = endTime - startTime;
+                
+                const result = {
+                    success: false,
+                    status: 'ERROR',
+                    time: time,
+                    message: `Error de conexión: ${error.message}`,
+                    data: { error: error.message }
+                };
+
+                addDetailedResult(name, result);
+                return result;
+            }
+        }
+
+        async function testProductsAPI() {
+            const result = await testAPI(`${baseURL}/api/admin/products-test?page=1&limit=5`, 'API Productos');
+            displayResult('products-result', result);
+            
+            if (result.success) {
+                updateStatus('✅ API de Productos funcionando correctamente', 'success');
+            } else {
+                updateStatus('❌ Error en API de Productos', 'error');
+            }
+        }
+
+        async function testOrdersAPI() {
+            const result = await testAPI(`${baseURL}/api/admin/orders?page=1&limit=5`, 'API Órdenes');
+            displayResult('orders-result', result);
+            
+            if (result.success) {
+                updateStatus('✅ API de Órdenes funcionando correctamente', 'success');
+            } else {
+                updateStatus('❌ Error en API de Órdenes', 'error');
+            }
+        }
+
+        async function testCustomersAPI() {
+            const result = await testAPI(`${baseURL}/api/admin/customers?page=1&limit=5`, 'API Clientes');
+            displayResult('customers-result', result);
+            
+            if (result.success) {
+                updateStatus('✅ API de Clientes funcionando correctamente', 'success');
+            } else {
+                updateStatus('❌ Error en API de Clientes', 'error');
+            }
+        }
+
+        async function testSettingsAPI() {
+            const result = await testAPI(`${baseURL}/api/admin/settings`, 'API Settings');
+            displayResult('settings-result', result);
+            
+            if (result.success) {
+                updateStatus('✅ API de Settings funcionando correctamente', 'success');
+            } else {
+                updateStatus('❌ Error en API de Settings', 'error');
+            }
+        }
+
+        // Test automático al cargar la página
+        window.onload = function() {
+            updateStatus('🚀 Página cargada. Listo para probar las APIs.', 'info');
+        };
+    </script>
+</body>
+</html>
