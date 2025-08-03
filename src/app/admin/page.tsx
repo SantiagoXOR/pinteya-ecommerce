@@ -31,7 +31,7 @@ export default function AdminPage() {
       icon: ShoppingCart,
       color: 'bg-green-500',
       stats: '23 pendientes',
-      disabled: true
+      badge: 'Beta'
     },
     {
       title: 'Clientes',
@@ -40,7 +40,7 @@ export default function AdminPage() {
       icon: Users,
       color: 'bg-purple-500',
       stats: '1,247 usuarios',
-      disabled: true
+      badge: 'Beta'
     },
     {
       title: 'Analytics',
@@ -72,8 +72,8 @@ export default function AdminPage() {
       href: '/admin/settings',
       icon: Settings,
       color: 'bg-gray-500',
-      stats: 'Próximamente',
-      disabled: true
+      stats: 'Solo lectura',
+      badge: 'Beta'
     },
     {
       title: 'Base de Datos',
@@ -210,6 +210,10 @@ export default function AdminPage() {
                         <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-medium">
                           Próximamente
                         </span>
+                      ) : section.badge ? (
+                        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">
+                          {section.badge}
+                        </span>
                       ) : (
                         <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
                           {section.stats}
@@ -233,7 +237,7 @@ export default function AdminPage() {
                         href={section.href}
                         className="inline-flex items-center text-blaze-orange-600 hover:text-blaze-orange-800 text-sm font-medium"
                       >
-                        Acceder →
+                        {section.badge ? 'Ver Preview →' : 'Acceder →'}
                       </Link>
                     )}
                   </div>
