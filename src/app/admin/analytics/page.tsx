@@ -192,7 +192,7 @@ const AnalyticsPage: React.FC = () => {
           {/* Tabs */}
           <div className="flex space-x-8 border-b border-gray-200">
             {tabs.map((tab) => {
-              const Icon = tab.icon;
+              const Icon = tab && tab.icon ? tab.icon : null;
               return (
                 <button
                   key={tab.id}
@@ -203,7 +203,7 @@ const AnalyticsPage: React.FC = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  {Icon && <Icon className="w-5 h-5" />}
                   <span className="hidden sm:inline">{tab.name}</span>
                 </button>
               );

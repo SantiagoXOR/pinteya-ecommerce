@@ -213,7 +213,7 @@ export default function DiagnosticsPage() {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {category.icon} {category.name}
+              {category && category.icon ? category.icon : '📋'} {category.name}
             </button>
           ))}
         </div>
@@ -224,7 +224,7 @@ export default function DiagnosticsPage() {
         {filteredTools.map((tool) => (
           <div key={tool.id} className="bg-white p-6 rounded-lg shadow-md border hover:shadow-lg transition-shadow">
             <div className="flex items-start justify-between mb-4">
-              <div className="text-3xl">{tool.icon}</div>
+              <div className="text-3xl">{tool && tool.icon ? tool.icon : '🔧'}</div>
               <div className="flex flex-col items-end space-y-2">
                 <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(tool.status)}`}>
                   {tool.status}
