@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@clerk/nextjs';
 
 interface Product {
   id: string;
@@ -67,7 +68,7 @@ interface ApiProductListResponse {
 }
 
 // API Functions
-async function fetchProducts(params: ProductListParams): Promise<ProductListResponse> {
+async function fetchProducts(params: ProductListParams, getToken?: () => Promise<string | null>): Promise<ProductListResponse> {
   const searchParams = new URLSearchParams();
 
   if (params.page) searchParams.set('page', params.page.toString());
@@ -87,7 +88,26 @@ async function fetchProducts(params: ProductListParams): Promise<ProductListResp
 
   console.log('🔍 Fetching products with params:', searchParams.toString());
 
-  const response = await fetch(`/api/admin/products-secure?${searchParams.toString()}`);
+  // Preparar headers con autenticación
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Obtener token de Clerk si está disponible
+  if (getToken) {
+    try {
+      const token = await getToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.warn('⚠️ Error obteniendo token de Clerk:', error);
+    }
+  }
+
+  const response = await fetch(`/api/admin/products-secure?${searchParams.toString()}`, {
+    headers
+  });
 
   // ✅ MEJORA: Error handling más detallado siguiendo mejores prácticas
   if (!response.ok) {
@@ -175,6 +195,7 @@ export function useProductList(initialParams: ProductListParams = {}) {
   });
 
   const queryClient = useQueryClient();
+  const { getToken } = useAuth(); // Hook de Clerk para obtener token
 
   // ✅ MEJORA: Fetch products query con mejores prácticas de TanStack Query
   const {
@@ -186,7 +207,7 @@ export function useProductList(initialParams: ProductListParams = {}) {
     isError,
   } = useQuery({
     queryKey: ['admin-products', params],
-    queryFn: () => fetchProducts(params),
+    queryFn: () => fetchProducts(params, getToken),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3, // ✅ Reintentar 3 veces en caso de error
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // ✅ Backoff exponencial
