@@ -49,15 +49,15 @@ function StatusBadge({ status }: { status: Product['status'] }) {
   };
 
   const config = statusConfig[status];
-  const Icon = config.icon;
+  const Icon = config && config.icon ? config.icon : Package;
 
   return (
     <span className={cn(
       "inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border",
-      config.className
+      config && config.className ? config.className : 'bg-gray-100 text-gray-800 border-gray-200'
     )}>
       <Icon className="w-3 h-3" />
-      <span>{config.label}</span>
+      <span>{config && config.label ? config.label : 'Estado'}</span>
     </span>
   );
 }

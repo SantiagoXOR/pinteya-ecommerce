@@ -112,7 +112,9 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-4 space-y-1">
         {sidebarItems.map((item) => {
-          const isActive = pathname === item.href || 
+          if (!item || !item.icon) return null;
+
+          const isActive = pathname === item.href ||
             (item.href !== '/admin' && pathname.startsWith(item.href));
           
           return (
