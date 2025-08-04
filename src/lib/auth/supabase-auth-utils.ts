@@ -94,12 +94,23 @@ async function getAuthenticatedUser(request: NextRequest): Promise<AuthResult> {
           .single();
 
         if (profileError || !profile) {
+          console.error('❌ Error obteniendo perfil de usuario:', {
+            clerkUserId: clerkPayload.sub,
+            profileError: profileError?.message,
+            profile
+          });
           return {
             success: false,
             error: 'Usuario no encontrado en el sistema',
             status: 401
           };
         }
+
+        console.log('✅ Usuario encontrado:', {
+          email: profile.email,
+          role: profile.user_roles?.role_name,
+          clerkId: clerkPayload.sub
+        });
 
         // Crear objeto user compatible
         const user = {
@@ -108,11 +119,18 @@ async function getAuthenticatedUser(request: NextRequest): Promise<AuthResult> {
           clerk_id: clerkPayload.sub
         };
 
+        const isAdmin = profile.user_roles?.role_name === 'admin';
+
+        console.log('🔐 Verificación de admin:', {
+          isAdmin,
+          roleName: profile.user_roles?.role_name
+        });
+
         return {
           success: true,
           user,
           supabase,
-          isAdmin: profile.user_roles?.role_name === 'admin'
+          isAdmin
         };
       }
     } catch (clerkError) {
@@ -133,7 +151,8 @@ async function getAuthenticatedUser(request: NextRequest): Promise<AuthResult> {
       };
     }
 
-    // Obtener perfil y rol del usuario
+    // Obtener perfil y rol del usuario usando service role key
+    const supabaseAdmin = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!);
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select(`
@@ -205,13 +224,30 @@ export async function requireAdminAuth(request: NextRequest): Promise<AuthResult
     }
 
     // Verificar rol de administrador
-    if (authResult.user?.role !== 'admin') {
+    console.log('🔍 Verificando permisos de admin:', {
+      user: authResult.user,
+      isAdmin: authResult.isAdmin,
+      userRole: authResult.user?.role
+    });
+
+    // Verificar usando isAdmin (para tokens Clerk) o role (para tokens Supabase)
+    const hasAdminAccess = authResult.isAdmin || authResult.user?.role === 'admin';
+
+    if (!hasAdminAccess) {
+      console.warn('❌ Acceso denegado:', {
+        isAdmin: authResult.isAdmin,
+        userRole: authResult.user?.role,
+        email: authResult.user?.email
+      });
+
       return {
         success: false,
         error: 'Acceso denegado: se requiere rol de administrador',
         status: 403
       };
     }
+
+    console.log('✅ Acceso de admin autorizado para:', authResult.user?.email);
 
     return authResult;
 
