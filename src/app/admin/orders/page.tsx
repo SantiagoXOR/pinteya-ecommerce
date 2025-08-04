@@ -124,13 +124,15 @@ export default function OrdersPage() {
                     ? 'bg-red-100'
                     : 'bg-gray-100'
                 }`}>
-                  <stat.icon className={`w-6 h-6 ${
-                    stat.changeType === 'positive'
-                      ? 'text-green-600'
-                      : stat.changeType === 'negative'
-                      ? 'text-red-600'
-                      : 'text-gray-600'
-                  }`} />
+                  {stat && stat.icon && (
+                    <stat.icon className={`w-6 h-6 ${
+                      stat.changeType === 'positive'
+                        ? 'text-green-600'
+                        : stat.changeType === 'negative'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
+                    }`} />
+                  )}
                 </div>
               </div>
             </AdminCard>

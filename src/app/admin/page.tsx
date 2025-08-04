@@ -169,13 +169,15 @@ export default function AdminPage() {
                     ? 'bg-red-100'
                     : 'bg-gray-100'
                 }`}>
-                  <stat.icon className={`w-6 h-6 ${
-                    stat.changeType === 'positive'
-                      ? 'text-green-600'
-                      : stat.changeType === 'negative'
-                      ? 'text-red-600'
-                      : 'text-gray-600'
-                  }`} />
+                  {stat && stat.icon && (
+                    <stat.icon className={`w-6 h-6 ${
+                      stat.changeType === 'positive'
+                        ? 'text-green-600'
+                        : stat.changeType === 'negative'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
+                    }`} />
+                  )}
                 </div>
               </div>
             </AdminCard>
@@ -191,7 +193,7 @@ export default function AdminPage() {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {adminSections.map((section) => {
-                const IconComponent = section.icon;
+                const IconComponent = section && section.icon ? section.icon : null;
 
                 return (
                   <div
@@ -204,7 +206,7 @@ export default function AdminPage() {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className={`w-12 h-12 ${section.color} rounded-lg flex items-center justify-center text-white`}>
-                        <IconComponent className="w-6 h-6" />
+                        {IconComponent && <IconComponent className="w-6 h-6" />}
                       </div>
                       {section.disabled ? (
                         <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-medium">

@@ -169,7 +169,7 @@ export default function SettingsPage() {
               >
                 <div className="flex items-center space-x-4">
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${category.color}`}>
-                    <category.icon className="w-6 h-6 text-white" />
+                    {category && category.icon && <category.icon className="w-6 h-6 text-white" />}
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-medium text-gray-900">
