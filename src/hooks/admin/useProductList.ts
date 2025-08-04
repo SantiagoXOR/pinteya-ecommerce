@@ -87,7 +87,7 @@ async function fetchProducts(params: ProductListParams): Promise<ProductListResp
 
   console.log('🔍 Fetching products with params:', searchParams.toString());
 
-  const response = await fetch(`/api/admin/products-test?${searchParams.toString()}`);
+  const response = await fetch(`/api/admin/products-secure?${searchParams.toString()}`);
 
   // ✅ MEJORA: Error handling más detallado siguiendo mejores prácticas
   if (!response.ok) {
@@ -339,7 +339,7 @@ export function useProductList(initialParams: ProductListParams = {}) {
     debug: {
       queryKey: ['admin-products', params],
       lastFetch: new Date().toISOString(),
-      apiEndpoint: '/api/admin/products-direct',
+      apiEndpoint: '/api/admin/products-secure',
       transformedData: !!productsData
     }
   };
