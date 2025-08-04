@@ -293,7 +293,7 @@ export const preloadCategoryImages = (categories: Category[]): void => {
   if (typeof window === 'undefined') return;
 
   categories.forEach(category => {
-    if (category.icon) {
+    if (category && category.icon) {
       const img = new Image();
       img.src = category.icon;
     }
