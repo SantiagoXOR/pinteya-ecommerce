@@ -5,8 +5,6 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -58,28 +56,29 @@ function checkRateLimit(identifier: string, maxRequests = 100, windowMs = 60000)
  */
 async function getAuthenticatedUser(request: NextRequest): Promise<AuthResult> {
   try {
-    // Crear cliente Supabase para SSR
-    const cookieStore = cookies();
-    
-    const supabase = createServerClient(
-      supabaseUrl,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    // Obtener token del header Authorization
+    const authHeader = request.headers.get('authorization');
 
-    // Obtener usuario autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        success: false,
+        error: 'Token de autorización requerido',
+        status: 401
+      };
+    }
+
+    const token = authHeader.substring(7); // Remover "Bearer "
+
+    // Crear cliente Supabase con el token
+    const supabase = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+
+    // Verificar el token JWT
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
       return {
         success: false,
-        error: 'Usuario no autenticado',
+        error: 'Token inválido o expirado',
         status: 401
       };
     }
