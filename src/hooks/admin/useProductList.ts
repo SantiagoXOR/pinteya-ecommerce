@@ -105,7 +105,9 @@ async function fetchProducts(params: ProductListParams, getToken?: () => Promise
     }
   }
 
-  const response = await fetch(`/api/admin/products-secure?${searchParams.toString()}`, {
+  // TEMPORAL: Usar API que funciona mientras se configura Cloudflare
+  // TODO: Cambiar a products-secure cuando Cloudflare esté configurado
+  const response = await fetch(`/api/admin/products-test?${searchParams.toString()}`, {
     headers
   });
 
@@ -360,7 +362,7 @@ export function useProductList(initialParams: ProductListParams = {}) {
     debug: {
       queryKey: ['admin-products', params],
       lastFetch: new Date().toISOString(),
-      apiEndpoint: '/api/admin/products-secure',
+      apiEndpoint: '/api/admin/products-test', // TEMPORAL: Cloudflare bloquea products-secure
       transformedData: !!productsData
     }
   };
