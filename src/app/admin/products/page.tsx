@@ -64,7 +64,7 @@ function ProductStats() {
                 ? 'bg-green-100'
                 : 'bg-red-100'
             }`}>
-              {stat && stat.icon && (
+              {stat?.icon && (
                 <stat.icon className={`w-6 h-6 ${
                   stat.changeType === 'positive'
                     ? 'text-green-600'
