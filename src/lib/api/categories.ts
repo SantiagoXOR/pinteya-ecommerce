@@ -227,5 +227,5 @@ export function getCategoryUrl(category: Category): string {
  * @returns string
  */
 export function getCategoryImage(category: Category): string {
-  return category.icon || '/images/categories/default.jpg';
+  return (category && category.icon) ? category.icon : '/images/categories/default.jpg';
 }
