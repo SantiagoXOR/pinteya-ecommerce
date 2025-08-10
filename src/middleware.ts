@@ -12,9 +12,10 @@ import { createClerkClient } from '@clerk/nextjs/server';
 // ===================================
 
 // Rutas que requieren autenticación admin
-// Separar APIs de páginas para evitar redirecciones de Clerk en APIs
-const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)']);
-const isAdminPageRoute = createRouteMatcher(['/admin(.*)']);
+const isAdminRoute = createRouteMatcher([
+  '/api/admin(.*)',
+  '/admin(.*)'
+]);
 
 // Rutas públicas que NO requieren autenticación
 const isPublicRoute = createRouteMatcher([
@@ -103,101 +104,23 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   // ===================================
-  // PROTECCIÓN DE RUTAS ADMIN - API (JSON en lugar de redirect)
+  // PROTECCIÓN DE RUTAS ADMIN (PÁGINAS) - Patrón recomendado Clerk
   // ===================================
-  if (isAdminApiRoute(request)) {
-    console.log(`[MIDDLEWARE] 🔒 RUTA ADMIN API DETECTADA: ${pathname}`);
+  if (isAdminPageRoute(request)) {
+    const { userId, sessionClaims, redirectToSignIn } = await auth();
 
-    const { userId, sessionClaims } = await auth();
+    // Páginas: si no hay sesión, redirigir
+    if (!userId) return redirectToSignIn();
 
-    // Para APIs: devolver 401 JSON en vez de redirigir a /sign-in
-    if (!userId) {
-      return NextResponse.json({ error: 'Autenticación requerida' }, { status: 401 });
-    }
-
+    // Verificar rol admin sólo con sessionClaims (evitar Clerk API en middleware)
     const publicRole = sessionClaims?.publicMetadata?.role as string;
     const privateRole = sessionClaims?.privateMetadata?.role as string;
     const isAdmin = publicRole === 'admin' || privateRole === 'admin';
 
+    // Si no es admin, redirigir a home con mensaje
     if (!isAdmin) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
-    }
-
-    return NextResponse.next();
-  }
-
-  // ===================================
-  // PROTECCIÓN DE RUTAS ADMIN CON VERIFICACIÓN ROBUSTA
-  // ===================================
-
-  if (isAdminRoute(request)) {
-    console.log(`[MIDDLEWARE] 🔒 RUTA ADMIN DETECTADA: ${pathname}`);
-
-    const { userId, sessionClaims, redirectToSignIn } = await auth();
-
-    if (!userId) {
-      console.warn(`[MIDDLEWARE] ❌ Usuario no autenticado - Redirigiendo a signin`);
-      return redirectToSignIn();
-    }
-
-    // Verificación robusta de roles con claves válidas
-    const publicRole = sessionClaims?.publicMetadata?.role as string;
-    const privateRole = sessionClaims?.privateMetadata?.role as string;
-
-    let isAdmin = publicRole === 'admin' || privateRole === 'admin';
-
-    // Si sessionClaims no tiene el rol, verificar directamente con Clerk
-    if (!isAdmin) {
-      try {
-        console.log(`[MIDDLEWARE] 🔄 Verificando rol con Clerk API...`);
-        const clerkClient = createClerkClient({
-          secretKey: process.env.CLERK_SECRET_KEY!
-        });
-        const clerkUser = await clerkClient.users.getUser(userId);
-        const userPublicRole = clerkUser.publicMetadata?.role as string;
-        const userPrivateRole = clerkUser.privateMetadata?.role as string;
-
-        isAdmin = userPublicRole === 'admin' || userPrivateRole === 'admin';
-
-        console.log(`[MIDDLEWARE] 🔄 VERIFICACIÓN FALLBACK CON CLERK API:`, {
-          sessionClaimsRole: publicRole,
-          clerkApiRole: userPublicRole,
-          finalIsAdmin: isAdmin
-        });
-      } catch (error) {
-        console.error(`[MIDDLEWARE] ❌ Error verificando con Clerk API:`, error);
-        // En caso de error, denegar acceso por seguridad
-        isAdmin = false;
-      }
-    }
-
-    console.log(`[MIDDLEWARE] 🔍 VERIFICACIÓN ADMIN COMPLETA:`, {
-      userId,
-      pathname,
-      publicRole,
-      privateRole,
-      isAdmin,
-      sessionClaimsExists: !!sessionClaims
-    });
-
-    if (!isAdmin) {
-      console.error(`[MIDDLEWARE] ❌ ACCESO ADMIN DENEGADO:`, {
-        userId,
-        pathname,
-        publicRole,
-        privateRole,
-        reason: 'Usuario no tiene rol admin después de verificación completa'
-      });
-
-      // Redirigir a homepage con mensaje de acceso denegado
       return NextResponse.redirect(new URL('/?access_denied=admin_required', request.url));
     }
-
-    console.log(`[MIDDLEWARE] ✅ ACCESO ADMIN AUTORIZADO:`, {
-      userId,
-      pathname,
-      role: publicRole || privateRole
-    });
 
     return NextResponse.next();
   }
