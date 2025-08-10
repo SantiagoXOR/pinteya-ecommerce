@@ -6,13 +6,32 @@ const isPublicRoute = createRouteMatcher([
   '/about', '/contact', '/signin(.*)', '/signup(.*)', '/sso-callback(.*)',
   '/api/products(.*)', '/api/categories(.*)', '/api/payments/webhook',
   '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)',
-  '/clerk-status', '/debug-clerk',
+  '/clerk-status', '/debug-clerk', '/debug-auth',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-  // Proteger rutas admin con verificación automática
+  // Proteger rutas admin con verificación personalizada
   if (isAdminRoute(req)) {
-    await auth.protect({ role: 'admin' })
+    const { userId, sessionClaims } = await auth()
+
+    if (!userId) {
+      // Redirigir a login si no está autenticado
+      const signInUrl = new URL('/signin', req.url)
+      signInUrl.searchParams.set('redirect_url', req.url)
+      return Response.redirect(signInUrl)
+    }
+
+    // Verificar rol de admin en sessionClaims o publicMetadata
+    const hasAdminRole = sessionClaims?.metadata?.role === 'admin' ||
+                        sessionClaims?.role === 'admin' ||
+                        sessionClaims?.publicMetadata?.role === 'admin'
+
+    if (!hasAdminRole) {
+      // Redirigir con mensaje de acceso denegado
+      const deniedUrl = new URL('/', req.url)
+      deniedUrl.searchParams.set('access_denied', 'admin_required')
+      return Response.redirect(deniedUrl)
+    }
   }
 
   // Proteger otras rutas autenticadas
