@@ -11,11 +11,9 @@ import { createClerkClient } from '@clerk/nextjs/server';
 // DEFINICIÓN DE RUTAS
 // ===================================
 
-// Rutas que requieren autenticación admin
-const isAdminRoute = createRouteMatcher([
-  '/api/admin(.*)',
-  '/admin(.*)'
-]);
+// Rutas admin diferenciadas: APIs vs Páginas
+const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)']);
+const isAdminPageRoute = createRouteMatcher(['/admin(.*)']);
 
 // Rutas públicas que NO requieren autenticación
 const isPublicRoute = createRouteMatcher([
@@ -104,24 +102,35 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   // ===================================
-  // PROTECCIÓN DE RUTAS ADMIN (PÁGINAS) - Patrón recomendado Clerk
-  // ===================================
-  if (isAdminPageRoute(request)) {
-    const { userId, sessionClaims, redirectToSignIn } = await auth();
-
-    // Páginas: si no hay sesión, redirigir
-    if (!userId) return redirectToSignIn();
-
-    // Verificar rol admin sólo con sessionClaims (evitar Clerk API en middleware)
+  // APIs admin: devolver 401/403 (nunca redirigir)
+  if (isAdminApiRoute(request)) {
+    const { userId, sessionClaims } = await auth();
+    if (!userId) return NextResponse.json({ error: 'Autenticación requerida' }, { status: 401 });
     const publicRole = sessionClaims?.publicMetadata?.role as string;
     const privateRole = sessionClaims?.privateMetadata?.role as string;
     const isAdmin = publicRole === 'admin' || privateRole === 'admin';
+    if (!isAdmin) return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
+    return NextResponse.next();
+  }
 
-    // Si no es admin, redirigir a home con mensaje
+  // Páginas admin: redirigir si no autenticado; validar rol por claims
+  if (isAdminPageRoute(request)) {
+    const { userId, sessionClaims } = await auth();
+    if (!userId) {
+      const signInUrl = new URL('/signin', request.url);
+      return NextResponse.redirect(signInUrl);
+    }
+    const publicRole = sessionClaims?.publicMetadata?.role as string;
+    const privateRole = sessionClaims?.privateMetadata?.role as string;
+    const isAdmin = publicRole === 'admin' || privateRole === 'admin';
     if (!isAdmin) {
       return NextResponse.redirect(new URL('/?access_denied=admin_required', request.url));
     }
+    return NextResponse.next();
+  }
 
+  // Ruta legacy no usada; mantenida como no-op por compatibilidad
+  if (false) {
     return NextResponse.next();
   }
 
