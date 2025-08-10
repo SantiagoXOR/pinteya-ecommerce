@@ -12,10 +12,9 @@ import { createClerkClient } from '@clerk/nextjs/server';
 // ===================================
 
 // Rutas que requieren autenticación admin
-const isAdminRoute = createRouteMatcher([
-  '/api/admin(.*)',
-  '/admin(.*)'
-]);
+// Separar APIs de páginas para evitar redirecciones de Clerk en APIs
+const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)']);
+const isAdminPageRoute = createRouteMatcher(['/admin(.*)']);
 
 // Rutas públicas que NO requieren autenticación
 const isPublicRoute = createRouteMatcher([
@@ -100,6 +99,30 @@ export default clerkMiddleware(async (auth, request) => {
   // Permitir rutas públicas sin verificación adicional
   if (isPublicRoute(request)) {
     console.log(`[MIDDLEWARE] ✅ Ruta pública permitida: ${pathname}`);
+    return NextResponse.next();
+  }
+
+  // ===================================
+  // PROTECCIÓN DE RUTAS ADMIN - API (JSON en lugar de redirect)
+  // ===================================
+  if (isAdminApiRoute(request)) {
+    console.log(`[MIDDLEWARE] 🔒 RUTA ADMIN API DETECTADA: ${pathname}`);
+
+    const { userId, sessionClaims } = await auth();
+
+    // Para APIs: devolver 401 JSON en vez de redirigir a /sign-in
+    if (!userId) {
+      return NextResponse.json({ error: 'Autenticación requerida' }, { status: 401 });
+    }
+
+    const publicRole = sessionClaims?.publicMetadata?.role as string;
+    const privateRole = sessionClaims?.privateMetadata?.role as string;
+    const isAdmin = publicRole === 'admin' || privateRole === 'admin';
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
+    }
+
     return NextResponse.next();
   }
 

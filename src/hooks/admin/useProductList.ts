@@ -105,11 +105,24 @@ async function fetchProducts(params: ProductListParams, getToken?: () => Promise
     }
   }
 
-  // TEMPORAL: Usar API que funciona mientras se configura Cloudflare
-  // TODO: Cambiar a products-secure cuando Cloudflare esté configurado
-  const response = await fetch(`/api/admin/products-test?${searchParams.toString()}`, {
-    headers
-  });
+  // Endpoint seguro por defecto con fallback automático
+  const primaryEndpoint = `/api/admin/products-secure`;
+  const fallbackEndpoint = `/api/admin/products-test`;
+
+  let usedEndpoint = primaryEndpoint;
+  let response = await fetch(`${primaryEndpoint}?${searchParams.toString()}`, { headers });
+
+  // Si la respuesta no es OK o parece un HTML (challenge/redirección), usar fallback
+  const contentType = response.headers.get('content-type') || '';
+  if (!response.ok || contentType.includes('text/html')) {
+    console.warn('⚠️ API segura no disponible, usando fallback temporal', {
+      status: response.status,
+      statusText: response.statusText,
+      contentType
+    });
+    usedEndpoint = fallbackEndpoint;
+    response = await fetch(`${fallbackEndpoint}?${searchParams.toString()}`, { headers });
+  }
 
   // ✅ MEJORA: Error handling más detallado siguiendo mejores prácticas
   if (!response.ok) {
@@ -362,7 +375,7 @@ export function useProductList(initialParams: ProductListParams = {}) {
     debug: {
       queryKey: ['admin-products', params],
       lastFetch: new Date().toISOString(),
-      apiEndpoint: '/api/admin/products-test', // TEMPORAL: Cloudflare bloquea products-secure
+      apiEndpoint: typeof window !== 'undefined' ? usedEndpoint : '/api/admin/products-secure',
       transformedData: !!productsData
     }
   };
