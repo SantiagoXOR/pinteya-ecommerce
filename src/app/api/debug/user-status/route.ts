@@ -4,66 +4,115 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   try {
     console.log('🔍 [DEBUG] Iniciando verificación de estado del usuario...')
-    
+
+    // Verificar variables de entorno primero
+    const clerkSecretKey = process.env.CLERK_SECRET_KEY
+    const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+    if (!clerkSecretKey) {
+      throw new Error('CLERK_SECRET_KEY no está configurado')
+    }
+
+    if (!clerkPublishableKey) {
+      throw new Error('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY no está configurado')
+    }
+
+    console.log('🔍 [DEBUG] Variables de entorno verificadas')
+
     // Obtener información de autenticación
-    const { userId, sessionClaims, orgRole } = await auth()
-    console.log('🔍 [DEBUG] Auth data:', { userId, orgRole })
-    console.log('🔍 [DEBUG] Session claims:', sessionClaims)
-    
+    let authData
+    try {
+      authData = await auth()
+      console.log('🔍 [DEBUG] Auth data obtenido:', {
+        userId: authData.userId,
+        orgRole: authData.orgRole,
+        hasSessionClaims: !!authData.sessionClaims
+      })
+    } catch (authError) {
+      console.error('❌ [ERROR] Error en auth():', authError)
+      throw new Error(`Error en auth(): ${authError instanceof Error ? authError.message : 'Error desconocido'}`)
+    }
+
+    const { userId, sessionClaims, orgRole } = authData
+
     // Obtener información completa del usuario
-    const user = await currentUser()
-    console.log('🔍 [DEBUG] Current user:', {
-      id: user?.id,
-      email: user?.emailAddresses?.[0]?.emailAddress,
-      firstName: user?.firstName,
-      lastName: user?.lastName,
-      publicMetadata: user?.publicMetadata,
-      privateMetadata: user?.privateMetadata,
-      organizationMemberships: user?.organizationMemberships
-    })
+    let user = null
+    try {
+      user = await currentUser()
+      console.log('🔍 [DEBUG] Current user obtenido:', {
+        id: user?.id,
+        email: user?.emailAddresses?.[0]?.emailAddress,
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        hasPublicMetadata: !!user?.publicMetadata,
+        hasPrivateMetadata: !!user?.privateMetadata,
+        organizationMembershipsCount: user?.organizationMemberships?.length || 0
+      })
+    } catch (userError) {
+      console.error('❌ [ERROR] Error en currentUser():', userError)
+      // No lanzamos error aquí, continuamos sin user data
+    }
     
-    // Verificar roles específicos
-    const hasAdminRole = sessionClaims?.metadata?.role === 'admin' || 
-                        sessionClaims?.role === 'admin' ||
-                        user?.publicMetadata?.role === 'admin' ||
-                        user?.privateMetadata?.role === 'admin'
+    // Verificar roles específicos de forma segura
+    let hasAdminRole = false
+    let roleFromSessionClaims = null
+    let roleFromPublicMetadata = null
+    let roleFromPrivateMetadata = null
+
+    try {
+      roleFromSessionClaims = sessionClaims?.metadata?.role || sessionClaims?.role || null
+      roleFromPublicMetadata = user?.publicMetadata?.role || null
+      roleFromPrivateMetadata = user?.privateMetadata?.role || null
+
+      hasAdminRole = roleFromSessionClaims === 'admin' ||
+                    roleFromPublicMetadata === 'admin' ||
+                    roleFromPrivateMetadata === 'admin'
+
+      console.log('🔍 [DEBUG] Verificación de roles:', {
+        hasAdminRole,
+        roleFromSessionClaims,
+        roleFromPublicMetadata,
+        roleFromPrivateMetadata
+      })
+    } catch (roleError) {
+      console.error('❌ [ERROR] Error verificando roles:', roleError)
+    }
     
-    console.log('🔍 [DEBUG] Verificación de rol admin:', hasAdminRole)
-    
+    // Construir respuesta de forma segura
     const debugInfo = {
       timestamp: new Date().toISOString(),
       authentication: {
         isAuthenticated: !!userId,
-        userId,
-        orgRole,
-        sessionClaims
+        userId: userId || null,
+        orgRole: orgRole || null,
+        sessionClaims: sessionClaims || null
       },
       user: user ? {
-        id: user.id,
-        email: user.emailAddresses?.[0]?.emailAddress,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        publicMetadata: user.publicMetadata,
-        privateMetadata: user.privateMetadata,
+        id: user.id || null,
+        email: user.emailAddresses?.[0]?.emailAddress || null,
+        firstName: user.firstName || null,
+        lastName: user.lastName || null,
+        publicMetadata: user.publicMetadata || null,
+        privateMetadata: user.privateMetadata || null,
         organizationMemberships: user.organizationMemberships?.map(org => ({
-          id: org.id,
-          role: org.role,
+          id: org.id || null,
+          role: org.role || null,
           organization: {
-            id: org.organization.id,
-            name: org.organization.name
+            id: org.organization?.id || null,
+            name: org.organization?.name || null
           }
-        }))
+        })) || []
       } : null,
       roleCheck: {
         hasAdminRole,
-        roleFromSessionClaims: sessionClaims?.metadata?.role || sessionClaims?.role,
-        roleFromPublicMetadata: user?.publicMetadata?.role,
-        roleFromPrivateMetadata: user?.privateMetadata?.role
+        roleFromSessionClaims,
+        roleFromPublicMetadata,
+        roleFromPrivateMetadata
       },
       environment: {
-        clerkPublishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.substring(0, 20) + '...',
-        clerkSecretKey: process.env.CLERK_SECRET_KEY ? 'SET' : 'NOT_SET',
-        nodeEnv: process.env.NODE_ENV
+        clerkPublishableKey: clerkPublishableKey?.substring(0, 20) + '...',
+        clerkSecretKey: clerkSecretKey ? 'SET' : 'NOT_SET',
+        nodeEnv: process.env.NODE_ENV || 'unknown'
       }
     }
     
