@@ -376,7 +376,8 @@ export function useProductList(initialParams: ProductListParams = {}) {
       queryKey: ['admin-products', params],
       lastFetch: new Date().toISOString(),
       apiEndpoint: '/api/admin/products-secure',
-      transformedData: !!productsData
+      transformedData: !!productsData,
+      deployTimestamp: '2025-01-12T19:30:00Z' // Force deploy
     }
   };
 }
