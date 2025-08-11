@@ -375,7 +375,7 @@ export function useProductList(initialParams: ProductListParams = {}) {
     debug: {
       queryKey: ['admin-products', params],
       lastFetch: new Date().toISOString(),
-      apiEndpoint: typeof window !== 'undefined' ? usedEndpoint : '/api/admin/products-secure',
+      apiEndpoint: '/api/admin/products-secure',
       transformedData: !!productsData
     }
   };
