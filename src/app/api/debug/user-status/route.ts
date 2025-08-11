@@ -3,89 +3,91 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    console.log('🔍 [DEBUG] Iniciando verificación de estado del usuario...')
+    console.log('🔍 [DEBUG] Iniciando verificación simplificada...')
 
-    // Verificar variables de entorno primero
+    // Verificar variables de entorno
     const clerkSecretKey = process.env.CLERK_SECRET_KEY
     const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
-    if (!clerkSecretKey) {
-      throw new Error('CLERK_SECRET_KEY no está configurado')
-    }
+    console.log('🔍 [DEBUG] Variables de entorno:', {
+      hasSecretKey: !!clerkSecretKey,
+      hasPublishableKey: !!clerkPublishableKey,
+      secretKeyLength: clerkSecretKey?.length || 0,
+      publishableKeyLength: clerkPublishableKey?.length || 0
+    })
 
-    if (!clerkPublishableKey) {
-      throw new Error('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY no está configurado')
-    }
+    // Obtener información básica de autenticación
+    let authData = null
+    let authError = null
 
-    console.log('🔍 [DEBUG] Variables de entorno verificadas')
-
-    // Obtener información de autenticación
-    let authData
     try {
       authData = await auth()
-      console.log('🔍 [DEBUG] Auth data obtenido:', {
-        userId: authData.userId,
-        orgRole: authData.orgRole,
-        hasSessionClaims: !!authData.sessionClaims
-      })
-    } catch (authError) {
+      console.log('🔍 [DEBUG] Auth exitoso')
+    } catch (error) {
+      authError = error instanceof Error ? error.message : 'Error desconocido en auth()'
       console.error('❌ [ERROR] Error en auth():', authError)
-      throw new Error(`Error en auth(): ${authError instanceof Error ? authError.message : 'Error desconocido'}`)
     }
 
-    const { userId, sessionClaims, orgRole } = authData
-
-    // Obtener información completa del usuario
+    // Obtener información del usuario
     let user = null
+    let userError = null
+
     try {
       user = await currentUser()
-      console.log('🔍 [DEBUG] Current user obtenido:', {
-        id: user?.id,
-        email: user?.emailAddresses?.[0]?.emailAddress,
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        hasPublicMetadata: !!user?.publicMetadata,
-        hasPrivateMetadata: !!user?.privateMetadata,
-        organizationMembershipsCount: user?.organizationMemberships?.length || 0
-      })
-    } catch (userError) {
+      console.log('🔍 [DEBUG] CurrentUser exitoso')
+    } catch (error) {
+      userError = error instanceof Error ? error.message : 'Error desconocido en currentUser()'
       console.error('❌ [ERROR] Error en currentUser():', userError)
-      // No lanzamos error aquí, continuamos sin user data
     }
     
-    // Verificar roles específicos de forma segura
+    // Verificar roles de forma segura
     let hasAdminRole = false
     let roleFromSessionClaims = null
     let roleFromPublicMetadata = null
     let roleFromPrivateMetadata = null
+    let roleError = null
 
     try {
-      roleFromSessionClaims = sessionClaims?.metadata?.role || sessionClaims?.role || null
-      roleFromPublicMetadata = user?.publicMetadata?.role || null
-      roleFromPrivateMetadata = user?.privateMetadata?.role || null
+      if (authData?.sessionClaims) {
+        roleFromSessionClaims = authData.sessionClaims.metadata?.role || authData.sessionClaims.role || null
+      }
+
+      if (user?.publicMetadata) {
+        roleFromPublicMetadata = user.publicMetadata.role || null
+      }
+
+      if (user?.privateMetadata) {
+        roleFromPrivateMetadata = user.privateMetadata.role || null
+      }
 
       hasAdminRole = roleFromSessionClaims === 'admin' ||
                     roleFromPublicMetadata === 'admin' ||
                     roleFromPrivateMetadata === 'admin'
 
-      console.log('🔍 [DEBUG] Verificación de roles:', {
+      console.log('🔍 [DEBUG] Verificación de roles exitosa:', {
         hasAdminRole,
         roleFromSessionClaims,
         roleFromPublicMetadata,
         roleFromPrivateMetadata
       })
-    } catch (roleError) {
+    } catch (error) {
+      roleError = error instanceof Error ? error.message : 'Error desconocido en verificación de roles'
       console.error('❌ [ERROR] Error verificando roles:', roleError)
     }
     
     // Construir respuesta de forma segura
     const debugInfo = {
       timestamp: new Date().toISOString(),
+      errors: {
+        authError,
+        userError,
+        roleError
+      },
       authentication: {
-        isAuthenticated: !!userId,
-        userId: userId || null,
-        orgRole: orgRole || null,
-        sessionClaims: sessionClaims || null
+        isAuthenticated: !!authData?.userId,
+        userId: authData?.userId || null,
+        orgRole: authData?.orgRole || null,
+        sessionClaims: authData?.sessionClaims || null
       },
       user: user ? {
         id: user.id || null,
@@ -94,14 +96,7 @@ export async function GET() {
         lastName: user.lastName || null,
         publicMetadata: user.publicMetadata || null,
         privateMetadata: user.privateMetadata || null,
-        organizationMemberships: user.organizationMemberships?.map(org => ({
-          id: org.id || null,
-          role: org.role || null,
-          organization: {
-            id: org.organization?.id || null,
-            name: org.organization?.name || null
-          }
-        })) || []
+        organizationMemberships: user.organizationMemberships?.length || 0
       } : null,
       roleCheck: {
         hasAdminRole,
