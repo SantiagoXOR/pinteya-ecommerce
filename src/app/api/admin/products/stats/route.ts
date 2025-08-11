@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { getSupabaseClient } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 
 /**
  * GET /api/admin/products/stats
@@ -17,13 +17,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = getSupabaseClient(true);
-    if (!supabase) {
+    // Crear cliente de Supabase con service role para operaciones admin
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
-        { error: 'Servicio administrativo no disponible' },
-        { status: 503 }
+        { error: 'Error interno en validación de origen' },
+        { status: 403 }
       );
     }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     // Obtener estadísticas usando una sola query optimizada
     const { data: stats, error } = await supabase.rpc('get_product_stats');
