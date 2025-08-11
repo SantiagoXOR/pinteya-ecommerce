@@ -1,8 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
-// 🚨 MIDDLEWARE SIMPLIFICADO PARA DIAGNÓSTICO
-// Temporalmente deshabilitado para permitir acceso completo al admin
+// ✅ MIDDLEWARE CON SEGURIDAD RESTAURADA
+// Protege rutas admin con autenticación Clerk
 
 const isPublicRoute = createRouteMatcher([
   '/', '/shop(.*)', '/search(.*)', '/product(.*)', '/category(.*)',
@@ -10,14 +10,15 @@ const isPublicRoute = createRouteMatcher([
   '/api/products(.*)', '/api/categories(.*)', '/api/search(.*)', '/api/payments/webhook',
   '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)', '/api/debug-clerk-session',
   '/clerk-status', '/debug-clerk', '/debug-auth', '/test-admin-access', '/debug-user', '/debug-simple',
-  '/test-dashboard', '/test-admin-simple', '/admin(.*)', '/api/admin(.*)', '/api/test-admin-middleware'
+  '/test-dashboard', '/test-admin-simple', '/api/test-admin-middleware'
+  // ✅ SEGURIDAD RESTAURADA: '/admin(.*)' y '/api/admin(.*)' removidos de rutas públicas
 ])
 
 export default clerkMiddleware(async (auth, req) => {
   console.log('🔍 [MIDDLEWARE] Request to:', req.nextUrl.pathname);
 
-  // 🚨 TODAS LAS RUTAS SON PÚBLICAS TEMPORALMENTE
-  // Solo proteger rutas que realmente necesitan autenticación (ninguna por ahora)
+  // ✅ PROTECCIÓN RESTAURADA: Solo rutas públicas definidas arriba
+  // Rutas admin requieren autenticación
   if (!isPublicRoute(req)) {
     console.log('[MIDDLEWARE] Protecting non-public route:', req.nextUrl.pathname);
     await auth.protect()

@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  BarChart3, 
-  Settings, 
+// Importación robusta de iconos según mejores prácticas de Lucide React
+import {
+  Package,
+  ShoppingCart,
+  Users,
+  BarChart3,
+  Settings,
   Home,
   Database,
   CreditCard,
@@ -131,10 +132,12 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
               onClick={(e) => item.disabled && e.preventDefault()}
             >
               <div className="flex items-center space-x-3">
-                <item.icon className={cn(
-                  "w-5 h-5",
-                  isActive ? "text-blaze-orange-600" : "text-gray-500"
-                )} />
+                {item.icon && (
+                  <item.icon className={cn(
+                    "w-5 h-5",
+                    isActive ? "text-blaze-orange-600" : "text-gray-500"
+                  )} />
+                )}
                 <span>{item.title}</span>
               </div>
               
