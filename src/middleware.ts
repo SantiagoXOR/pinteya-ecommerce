@@ -14,11 +14,11 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-  // 🚨 MODO DEBUG TEMPORAL - PERMITIR ACCESO MIENTRAS DIAGNOSTICAMOS
-  const DEBUG_MODE = true; // Cambiar a false después del diagnóstico
+  // 🚨 ACCESO ADMIN TEMPORAL DESHABILITADO - PERMITIR ACCESO COMPLETO
+  const DISABLE_ADMIN_PROTECTION = true; // Cambiar a false después del diagnóstico
 
   // Proteger rutas admin con verificación de roles
-  if (isAdminRoute(req) || isAdminApiRoute(req)) {
+  if ((isAdminRoute(req) || isAdminApiRoute(req)) && !DISABLE_ADMIN_PROTECTION) {
     try {
       const { userId, sessionClaims } = await auth.protect()
 
