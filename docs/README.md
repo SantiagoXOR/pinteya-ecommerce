@@ -124,7 +124,7 @@
 ## 🔗 Enlaces Rápidos
 
 ### 🌐 **Producción**
-- **App en Vivo**: [pinteya-ecommerce.vercel.app](https://pinteya-ecommerce.vercel.app)
+- **App en Vivo**: [pinteya.com](https://pinteya.com)
 - **Repositorio**: [GitHub](https://github.com/SantiagoXOR/pinteya-ecommerce)
 - **Dashboard Vercel**: [Vercel Dashboard](https://vercel.com/santiagoxor/pinteya-ecommerce)
 

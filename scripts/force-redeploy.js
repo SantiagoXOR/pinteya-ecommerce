@@ -142,7 +142,7 @@ async function main() {
     console.log('\n🔗 Enlaces útiles:');
     console.log('- Dashboard Vercel: https://vercel.com/dashboard');
     console.log('- Logs de deploy: https://vercel.com/santiagoXOR/pinteya-ecommerce');
-    console.log('- Aplicación: https://pinteya-ecommerce.vercel.app');
+    console.log('- Aplicación: https://pinteya.com');
     
   } catch (error) {
     console.error('\n❌ ERROR EN EL PROCESO:', error.message);

@@ -65,7 +65,7 @@ git push origin main
 ## Verificación post-deploy:
 
 1. Verificar que Vercel deploy sea exitoso
-2. Confirmar que https://pinteya-ecommerce.vercel.app sigue funcionando
+2. Confirmar que https://pinteya.com sigue funcionando
 3. Monitorear logs por 24h para detectar cualquier issue
 
 ## Plan de rollback si es necesario:

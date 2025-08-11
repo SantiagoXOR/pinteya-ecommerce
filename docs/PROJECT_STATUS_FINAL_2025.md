@@ -147,7 +147,7 @@ window.clearAllPinteyaStorage() // Reset completo
 ## 🚀 **ESTADO DE PRODUCCIÓN**
 
 ### **Aplicación en Vivo**
-- **URL**: [pinteya-ecommerce.vercel.app](https://pinteya-ecommerce.vercel.app)
+- **URL**: [pinteya.com](https://pinteya.com)
 - **Estado**: ✅ **COMPLETAMENTE ESTABLE**
 - **Errores JSON**: ✅ **ELIMINADOS DEFINITIVAMENTE**
 - **Performance**: ✅ **OPTIMIZADA**

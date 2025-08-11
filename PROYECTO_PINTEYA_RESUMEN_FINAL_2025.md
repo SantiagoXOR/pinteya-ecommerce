@@ -173,9 +173,9 @@
 
 ## 🌐 Enlaces de Producción
 
-- **🎯 Aplicación Live**: [pinteya-ecommerce.vercel.app](https://pinteya-ecommerce.vercel.app)
-- **📊 Analytics Demo**: [pinteya-ecommerce.vercel.app/demo/analytics](https://pinteya-ecommerce.vercel.app/demo/analytics)
-- **👨‍💼 Dashboard Admin**: [pinteya-ecommerce.vercel.app/admin/analytics](https://pinteya-ecommerce.vercel.app/admin/analytics)
+- **🎯 Aplicación Live**: [pinteya.com](https://pinteya.com)
+- **📊 Analytics Demo**: [pinteya.com/demo/analytics](https://pinteya.com/demo/analytics)
+- **👨‍💼 Dashboard Admin**: [pinteya.com/admin/analytics](https://pinteya.com/admin/analytics)
 - **📂 Repositorio**: [github.com/SantiagoXOR/pinteya-ecommerce](https://github.com/SantiagoXOR/pinteya-ecommerce)
 
 ---
