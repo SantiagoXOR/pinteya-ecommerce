@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { currentUser } from '@clerk/nextjs/server'
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
 const isPublicRoute = createRouteMatcher([
@@ -21,15 +22,38 @@ export default clerkMiddleware(async (auth, req) => {
       return Response.redirect(signInUrl)
     }
 
-    // Verificar rol de admin en sessionClaims o publicMetadata
-    const hasAdminRole = sessionClaims?.metadata?.role === 'admin' ||
-                        sessionClaims?.role === 'admin' ||
-                        sessionClaims?.publicMetadata?.role === 'admin'
+    try {
+      // Obtener información completa del usuario
+      const user = await currentUser()
 
-    if (!hasAdminRole) {
-      // Redirigir con mensaje de acceso denegado
+      // Verificar rol de admin en múltiples ubicaciones
+      const hasAdminRole = sessionClaims?.metadata?.role === 'admin' ||
+                          sessionClaims?.role === 'admin' ||
+                          sessionClaims?.publicMetadata?.role === 'admin' ||
+                          user?.publicMetadata?.role === 'admin' ||
+                          user?.privateMetadata?.role === 'admin'
+
+      console.log('🔍 [MIDDLEWARE] Verificación de admin:', {
+        userId,
+        sessionClaimsRole: sessionClaims?.role,
+        sessionClaimsMetadataRole: sessionClaims?.metadata?.role,
+        sessionClaimsPublicMetadataRole: sessionClaims?.publicMetadata?.role,
+        userPublicMetadataRole: user?.publicMetadata?.role,
+        userPrivateMetadataRole: user?.privateMetadata?.role,
+        hasAdminRole
+      })
+
+      if (!hasAdminRole) {
+        // Redirigir con mensaje de acceso denegado
+        const deniedUrl = new URL('/', req.url)
+        deniedUrl.searchParams.set('access_denied', 'admin_required')
+        return Response.redirect(deniedUrl)
+      }
+    } catch (error) {
+      console.error('❌ [MIDDLEWARE] Error verificando usuario:', error)
+      // En caso de error, redirigir a home
       const deniedUrl = new URL('/', req.url)
-      deniedUrl.searchParams.set('access_denied', 'admin_required')
+      deniedUrl.searchParams.set('access_denied', 'verification_error')
       return Response.redirect(deniedUrl)
     }
   }
