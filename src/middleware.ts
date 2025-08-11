@@ -27,15 +27,6 @@ export default clerkMiddleware(async (auth, req) => {
                           sessionClaims?.role === 'admin' ||
                           sessionClaims?.publicMetadata?.role === 'admin'
 
-      console.log('🔍 [MIDDLEWARE] Verificación de admin:', {
-        userId,
-        sessionClaimsRole: sessionClaims?.role,
-        sessionClaimsMetadataRole: sessionClaims?.metadata?.role,
-        sessionClaimsPublicMetadataRole: sessionClaims?.publicMetadata?.role,
-        hasAdminRole,
-        url: req.url
-      })
-
       if (!hasAdminRole) {
         // Redirigir con mensaje de acceso denegado
         const deniedUrl = new URL('/', req.url)
@@ -49,7 +40,6 @@ export default clerkMiddleware(async (auth, req) => {
       await auth.protect()
     }
   } catch (error) {
-    console.error('❌ [MIDDLEWARE] Error crítico:', error)
     // En caso de error crítico, permitir acceso a rutas públicas pero bloquear admin
     if (isAdminRoute(req)) {
       const deniedUrl = new URL('/', req.url)
