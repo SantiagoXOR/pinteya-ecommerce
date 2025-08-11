@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { createClient } from '@supabase/supabase-js';
+import { checkCRUDPermissions } from '@/lib/auth/admin-auth';
 
 /**
  * GET /api/admin/products/stats
@@ -8,32 +7,17 @@ import { createClient } from '@supabase/supabase-js';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Verificar autenticación de admin
-    const { userId } = auth();
-    if (!userId) {
+    // Verificar autenticación y permisos de admin
+    const authResult = await checkCRUDPermissions('products', 'read', request);
+
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    // Crear cliente de Supabase con service role para operaciones admin
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json(
-        { error: 'Error interno en validación de origen' },
-        { status: 403 }
-      );
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+    const { supabase } = authResult;
 
     // Obtener estadísticas usando una sola query optimizada
     const { data: stats, error } = await supabase.rpc('get_product_stats');

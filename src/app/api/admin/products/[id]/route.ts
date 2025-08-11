@@ -14,8 +14,8 @@ const UpdateProductSchema = z.object({
 });
 
 // Helper function to check admin permissions for specific actions
-async function checkAdminPermissionsForProduct(action: 'read' | 'update' | 'delete') {
-  return await checkCRUDPermissions('products', action);
+async function checkAdminPermissionsForProduct(action: 'read' | 'update' | 'delete', request?: NextRequest) {
+  return await checkCRUDPermissions('products', action, request);
 }
 
 // Helper function to get product by ID
@@ -64,7 +64,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authResult = await checkAdminPermissionsForProduct('read');
+    const authResult = await checkAdminPermissionsForProduct('read', request);
     if (!authResult.success) {
       return NextResponse.json(
         { error: authResult.error },
@@ -114,7 +114,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authResult = await checkAdminPermissionsForProduct('update');
+    const authResult = await checkAdminPermissionsForProduct('update', request);
     if (!authResult.success) {
       return NextResponse.json(
         { error: authResult.error },
@@ -234,7 +234,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authResult = await checkAdminPermissionsForProduct('delete');
+    const authResult = await checkAdminPermissionsForProduct('delete', request);
     if (!authResult.success) {
       return NextResponse.json(
         { error: authResult.error },
