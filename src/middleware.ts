@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
@@ -7,7 +8,7 @@ const isPublicRoute = createRouteMatcher([
   '/', '/shop(.*)', '/search(.*)', '/product(.*)', '/category(.*)',
   '/about', '/contact', '/signin(.*)', '/signup(.*)', '/sso-callback(.*)',
   '/api/products(.*)', '/api/categories(.*)', '/api/search(.*)', '/api/payments/webhook',
-  '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)',
+  '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)', '/api/debug-clerk-session',
   '/clerk-status', '/debug-clerk', '/debug-auth', '/test-admin-access', '/debug-user', '/debug-simple',
   '/test-dashboard',
 ])
@@ -23,16 +24,42 @@ export default clerkMiddleware(async (auth, req) => {
         return NextResponse.redirect(new URL('/signin', req.url))
       }
 
-      // Verificar rol de admin en sessionClaims
-      const userRole = sessionClaims?.metadata?.role as string
-      const isAdmin = userRole === 'admin'
+      // Verificar rol de admin en sessionClaims (checking multiple possible locations)
+      let userRole = sessionClaims?.publicMetadata?.role ||
+                     sessionClaims?.metadata?.role ||
+                     sessionClaims?.role as string
+      let isAdmin = userRole === 'admin'
 
-      console.log('[MIDDLEWARE] Admin route access attempt:', {
+      console.log('[MIDDLEWARE] Admin route access attempt (initial):', {
         userId,
         userRole,
         isAdmin,
-        path: req.nextUrl.pathname
+        path: req.nextUrl.pathname,
+        sessionClaimsStructure: {
+          publicMetadata: sessionClaims?.publicMetadata,
+          metadata: sessionClaims?.metadata,
+          role: sessionClaims?.role
+        }
       })
+
+      // Fallback: If role not found in sessionClaims, check directly with Clerk API
+      if (!isAdmin && userId) {
+        try {
+          console.log('[MIDDLEWARE] Role not found in sessionClaims, checking Clerk API...')
+          const user = await clerkClient.users.getUser(userId)
+          const roleFromApi = user.publicMetadata?.role as string
+          isAdmin = roleFromApi === 'admin'
+          userRole = roleFromApi
+
+          console.log('[MIDDLEWARE] Clerk API fallback result:', {
+            roleFromApi,
+            isAdmin,
+            publicMetadata: user.publicMetadata
+          })
+        } catch (apiError) {
+          console.error('[MIDDLEWARE] Clerk API fallback failed:', apiError)
+        }
+      }
 
       if (!isAdmin) {
         console.log('[MIDDLEWARE] Access denied - not admin')
