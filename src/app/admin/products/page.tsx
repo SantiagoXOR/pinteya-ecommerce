@@ -2,7 +2,7 @@
 
 import { AdminCard } from '@/components/admin/ui/AdminCard';
 import { ProductList } from '@/components/admin/products/ProductList';
-import { Package, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Package, TrendingUp, AlertTriangle, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface ProductStatsData {
