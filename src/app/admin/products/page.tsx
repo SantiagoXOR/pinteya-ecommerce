@@ -159,6 +159,7 @@ export default function ProductsPage() {
     { label: 'Productos' },
   ];
 
+  // Botón para crear nuevo producto - Plus icon importado correctamente
   const actions = (
     <button
       onClick={() => window.location.href = '/admin/products/new'}
