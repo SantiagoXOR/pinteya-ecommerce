@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { AdminCard } from '@/components/admin/ui/AdminCard';
@@ -13,8 +15,10 @@ import {
   TrendingUp,
   AlertTriangle
 } from 'lucide-react';
+import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats';
 
 export default function AdminPage() {
+  const { stats, loading, error } = useAdminDashboardStats();
   const adminSections = [
     {
       title: 'Productos',
@@ -22,7 +26,7 @@ export default function AdminPage() {
       href: '/admin/products',
       icon: Package,
       color: 'bg-blue-500',
-      stats: '156 productos'
+      stats: loading ? 'Cargando...' : `${stats?.totalProducts || 0} productos`
     },
     {
       title: 'Órdenes',
@@ -86,33 +90,33 @@ export default function AdminPage() {
     }
   ];
 
-  // Quick stats data
+  // Quick stats data - usando datos reales
   const quickStats = [
     {
-      title: 'Ventas Hoy',
-      value: '$12,450',
-      change: '+8.2%',
+      title: 'Total Productos',
+      value: loading ? 'Cargando...' : (stats?.totalProducts || 0).toString(),
+      change: loading ? '...' : `${stats?.activeProducts || 0} activos`,
       changeType: 'positive' as const,
-      icon: TrendingUp,
+      icon: Package,
     },
     {
-      title: 'Órdenes Pendientes',
-      value: '23',
-      change: '+3',
+      title: 'Stock Bajo',
+      value: loading ? 'Cargando...' : (stats?.lowStockProducts || 0).toString(),
+      change: loading ? '...' : `${stats?.noStockProducts || 0} sin stock`,
+      changeType: (stats?.lowStockProducts || 0) > 0 ? 'negative' as const : 'positive' as const,
+      icon: AlertTriangle,
+    },
+    {
+      title: 'Órdenes Totales',
+      value: loading ? 'Cargando...' : (stats?.totalOrders || 0).toString(),
+      change: loading ? '...' : `${stats?.pendingOrders || 0} pendientes`,
       changeType: 'neutral' as const,
       icon: ShoppingCart,
     },
     {
-      title: 'Stock Bajo',
-      value: '8',
-      change: '-2',
-      changeType: 'negative' as const,
-      icon: AlertTriangle,
-    },
-    {
-      title: 'Usuarios Activos',
-      value: '1,247',
-      change: '+12%',
+      title: 'Usuarios Registrados',
+      value: loading ? 'Cargando...' : (stats?.totalUsers || 0).toString(),
+      change: loading ? '...' : `${stats?.activeUsers || 0} activos`,
       changeType: 'positive' as const,
       icon: Users,
     },
@@ -139,6 +143,16 @@ export default function AdminPage() {
             </div>
           </div>
         </AdminCard>
+
+        {/* Error Message */}
+        {error && (
+          <AdminCard className="border-red-200 bg-red-50">
+            <div className="flex items-center space-x-2 text-red-700">
+              <AlertTriangle className="h-5 w-5" />
+              <span>Error cargando estadísticas: {error}</span>
+            </div>
+          </AdminCard>
+        )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
