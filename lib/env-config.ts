@@ -24,8 +24,10 @@ export const clerkConfig = {
   secretKey: process.env.CLERK_SECRET_KEY || '',
   signInUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || '/signin',
   signUpUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || '/signup',
-  afterSignInUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || '/',
-  afterSignUpUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || '/',
+  // ✅ CORREGIDO: Usar fallbackRedirectUrl en lugar de afterSignInUrl/afterSignUpUrl
+  fallbackRedirectUrl: process.env.NEXT_PUBLIC_CLERK_FALLBACK_REDIRECT_URL || '/admin',
+  signInFallbackRedirectUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL || '/admin',
+  signUpFallbackRedirectUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL || '/admin',
 };
 
 // ===================================
@@ -115,8 +117,10 @@ export function getAuthConfig() {
     secretKey: clerkConfig.secretKey,
     signInUrl: clerkConfig.signInUrl,
     signUpUrl: clerkConfig.signUpUrl,
-    afterSignInUrl: clerkConfig.afterSignInUrl,
-    afterSignUpUrl: clerkConfig.afterSignUpUrl,
+    // ✅ CORREGIDO: Usar nuevas props de Clerk v5
+    fallbackRedirectUrl: clerkConfig.fallbackRedirectUrl,
+    signInFallbackRedirectUrl: clerkConfig.signInFallbackRedirectUrl,
+    signUpFallbackRedirectUrl: clerkConfig.signUpFallbackRedirectUrl,
   };
 }
 

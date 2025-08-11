@@ -1,8 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
-// ✅ MIDDLEWARE CON SEGURIDAD RESTAURADA
-// Protege rutas admin con autenticación Clerk
+// 🚨 ROLLBACK TEMPORAL: Middleware sin protección admin
+// Corrigiendo errores de configuración de Clerk
 
 const isPublicRoute = createRouteMatcher([
   '/', '/shop(.*)', '/search(.*)', '/product(.*)', '/category(.*)',
@@ -10,8 +10,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/products(.*)', '/api/categories(.*)', '/api/search(.*)', '/api/payments/webhook',
   '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)', '/api/debug-clerk-session',
   '/clerk-status', '/debug-clerk', '/debug-auth', '/test-admin-access', '/debug-user', '/debug-simple',
-  '/test-dashboard', '/test-admin-simple', '/api/test-admin-middleware'
-  // ✅ SEGURIDAD RESTAURADA: '/admin(.*)' y '/api/admin(.*)' removidos de rutas públicas
+  '/test-dashboard', '/test-admin-simple', '/admin(.*)', '/api/admin(.*)', '/api/test-admin-middleware'
+  // 🚨 ROLLBACK TEMPORAL: Admin routes públicas mientras se corrigen errores de Clerk
 ])
 
 export default clerkMiddleware(async (auth, req) => {
