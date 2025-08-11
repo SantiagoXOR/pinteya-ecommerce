@@ -3,7 +3,7 @@ import { clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
-const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)'])
+const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)', '/api/test-admin-middleware'])
 const isPublicRoute = createRouteMatcher([
   '/', '/shop(.*)', '/search(.*)', '/product(.*)', '/category(.*)',
   '/about', '/contact', '/signin(.*)', '/signup(.*)', '/sso-callback(.*)',
