@@ -16,6 +16,9 @@ const isPublicRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, req) => {
   console.log('🔍 [MIDDLEWARE] Request to:', req.nextUrl.pathname);
 
+  // 🚨 TODAS LAS RUTAS SON PÚBLICAS TEMPORALMENTE
+  // Solo proteger rutas que realmente necesitan autenticación (ninguna por ahora)
+  if (!isPublicRoute(req)) {
     console.log('[MIDDLEWARE] Protecting non-public route:', req.nextUrl.pathname);
     await auth.protect()
   }
