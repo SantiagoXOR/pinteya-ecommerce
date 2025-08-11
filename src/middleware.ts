@@ -6,46 +6,56 @@ const isPublicRoute = createRouteMatcher([
   '/about', '/contact', '/signin(.*)', '/signup(.*)', '/sso-callback(.*)',
   '/api/products(.*)', '/api/categories(.*)', '/api/payments/webhook',
   '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)',
-  '/clerk-status', '/debug-clerk', '/debug-auth', '/test-admin-access', '/debug-user',
+  '/clerk-status', '/debug-clerk', '/debug-auth', '/test-admin-access', '/debug-user', '/debug-simple',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-  // Proteger rutas admin con verificación personalizada
-  if (isAdminRoute(req)) {
-    const { userId, sessionClaims } = await auth()
+  try {
+    // Proteger rutas admin con verificación personalizada
+    if (isAdminRoute(req)) {
+      const { userId, sessionClaims } = await auth()
 
-    if (!userId) {
-      // Redirigir a login si no está autenticado
-      const signInUrl = new URL('/signin', req.url)
-      signInUrl.searchParams.set('redirect_url', req.url)
-      return Response.redirect(signInUrl)
+      if (!userId) {
+        // Redirigir a login si no está autenticado
+        const signInUrl = new URL('/signin', req.url)
+        signInUrl.searchParams.set('redirect_url', req.url)
+        return Response.redirect(signInUrl)
+      }
+
+      // Verificar rol de admin usando solo sessionClaims (compatible con middleware)
+      const hasAdminRole = sessionClaims?.metadata?.role === 'admin' ||
+                          sessionClaims?.role === 'admin' ||
+                          sessionClaims?.publicMetadata?.role === 'admin'
+
+      console.log('🔍 [MIDDLEWARE] Verificación de admin:', {
+        userId,
+        sessionClaimsRole: sessionClaims?.role,
+        sessionClaimsMetadataRole: sessionClaims?.metadata?.role,
+        sessionClaimsPublicMetadataRole: sessionClaims?.publicMetadata?.role,
+        hasAdminRole,
+        url: req.url
+      })
+
+      if (!hasAdminRole) {
+        // Redirigir con mensaje de acceso denegado
+        const deniedUrl = new URL('/', req.url)
+        deniedUrl.searchParams.set('access_denied', 'admin_required')
+        return Response.redirect(deniedUrl)
+      }
     }
 
-    // Verificar rol de admin usando solo sessionClaims (compatible con middleware)
-    const hasAdminRole = sessionClaims?.metadata?.role === 'admin' ||
-                        sessionClaims?.role === 'admin' ||
-                        sessionClaims?.publicMetadata?.role === 'admin'
-
-    console.log('🔍 [MIDDLEWARE] Verificación de admin:', {
-      userId,
-      sessionClaimsRole: sessionClaims?.role,
-      sessionClaimsMetadataRole: sessionClaims?.metadata?.role,
-      sessionClaimsPublicMetadataRole: sessionClaims?.publicMetadata?.role,
-      hasAdminRole,
-      fullSessionClaims: sessionClaims
-    })
-
-    if (!hasAdminRole) {
-      // Redirigir con mensaje de acceso denegado
+    // Proteger otras rutas autenticadas
+    if (!isPublicRoute(req)) {
+      await auth.protect()
+    }
+  } catch (error) {
+    console.error('❌ [MIDDLEWARE] Error crítico:', error)
+    // En caso de error crítico, permitir acceso a rutas públicas pero bloquear admin
+    if (isAdminRoute(req)) {
       const deniedUrl = new URL('/', req.url)
-      deniedUrl.searchParams.set('access_denied', 'admin_required')
+      deniedUrl.searchParams.set('access_denied', 'middleware_error')
       return Response.redirect(deniedUrl)
     }
-  }
-
-  // Proteger otras rutas autenticadas
-  if (!isPublicRoute(req)) {
-    await auth.protect()
   }
 })
 
