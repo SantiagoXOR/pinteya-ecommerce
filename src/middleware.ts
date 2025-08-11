@@ -10,9 +10,9 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, req) => {
-  // Proteger rutas admin con verificación básica
+  // Proteger rutas admin - solo requiere autenticación por ahora
   if (isAdminRoute(req)) {
-    await auth.protect({ role: 'admin' })
+    await auth.protect()
   }
 
   // Proteger otras rutas autenticadas
