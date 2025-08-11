@@ -36,8 +36,17 @@ const AuthSection = ({ variant = 'desktop' }: AuthSectionProps) => {
       }
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <SignedIn>
+            {/* Botón Admin Mobile */}
+            <Link
+              href="/admin"
+              className="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-lg transition-colors duration-200"
+              title="Panel Admin"
+            >
+              <span className="text-sm">⚙️</span>
+            </Link>
+
             <UserButton
               appearance={{
                 elements: {
@@ -105,6 +114,16 @@ const AuthSection = ({ variant = 'desktop' }: AuthSectionProps) => {
     return (
       <div className="flex items-center gap-4">
         <SignedIn>
+          {/* Botón Admin - Acceso directo temporal */}
+          <Link
+            href="/admin"
+            className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-1"
+            title="Panel Administrativo"
+          >
+            <span className="text-xs">⚙️</span>
+            <span className="hidden lg:inline">Admin</span>
+          </Link>
+
           <UserButton
             appearance={{
               elements: {
