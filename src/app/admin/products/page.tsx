@@ -22,19 +22,29 @@ function ProductStats() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/admin/products/stats');
+
+        // Obtener datos reales directamente desde la API de productos
+        const response = await fetch('/api/products');
 
         if (!response.ok) {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
-        const result = await response.json();
+        const products = await response.json();
 
-        if (result.success) {
-          setStatsData(result.stats);
-        } else {
-          throw new Error(result.error || 'Error obteniendo estadísticas');
-        }
+        // Calcular estadísticas reales
+        const totalProducts = products.length;
+        const activeProducts = products.filter((p: any) => p.stock > 0).length;
+        const lowStockProducts = products.filter((p: any) => p.stock > 0 && p.stock <= 10).length;
+        const noStockProducts = products.filter((p: any) => p.stock === 0 || p.stock === null).length;
+
+        setStatsData({
+          total_products: totalProducts,
+          active_products: activeProducts,
+          low_stock_products: lowStockProducts,
+          no_stock_products: noStockProducts
+        });
+
       } catch (err) {
         console.error('Error fetching product stats:', err);
         setError(err instanceof Error ? err.message : 'Error desconocido');
