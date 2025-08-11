@@ -10,7 +10,7 @@ const https = require('https');
 console.log('🌐 VERIFICANDO CORRECCIÓN ERROR 500 EN PRODUCCIÓN\n');
 
 const PRODUCTION_URLS = {
-  main: 'https://pinteya-ecommerce.vercel.app',
+  main: 'https://pinteya.com',
   custom: 'https://www.pinteya.com'
 };
 

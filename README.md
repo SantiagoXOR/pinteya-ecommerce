@@ -123,7 +123,7 @@ Sistema completo de e-commerce con **optimización masiva enterprise-ready compl
 
 ## 🔗 Enlaces de Producción
 
-- **🌐 Aplicación en Vivo**: [pinteya-ecommerce.vercel.app](https://pinteya-ecommerce.vercel.app)
+- **🌐 Aplicación en Vivo**: [pinteya.com](https://pinteya.com)
 - **📂 Repositorio GitHub**: [github.com/SantiagoXOR/pinteya-ecommerce](https://github.com/SantiagoXOR/pinteya-ecommerce)
 - **📊 Dashboard Vercel**: [vercel.com/santiagoxor/pinteya-ecommerce](https://vercel.com/santiagoxor/pinteya-ecommerce)
 

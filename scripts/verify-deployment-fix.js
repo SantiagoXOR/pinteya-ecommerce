@@ -11,7 +11,7 @@ const fs = require('fs');
 console.log('🔍 VERIFICADOR DE DEPLOYMENT - PINTEYA E-COMMERCE');
 console.log('Verificando que el error de Server Action se haya solucionado...\n');
 
-const APP_URL = 'https://pinteya-ecommerce.vercel.app';
+const APP_URL = 'https://pinteya.com';
 const VERCEL_API_URL = 'https://api.vercel.com/v6/deployments';
 
 /**

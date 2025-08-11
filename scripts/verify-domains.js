@@ -14,7 +14,6 @@ const dns = require('dns').promises;
 const DOMAINS = [
   'pinteya.com',
   'www.pinteya.com',
-  'pinteya-ecommerce.vercel.app',
   'clerk.pinteya.com',
   'accounts.pinteya.com'
 ];

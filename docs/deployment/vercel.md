@@ -6,7 +6,7 @@
 
 **🎉 PROYECTO YA DESPLEGADO Y FUNCIONANDO**
 
-- **URL Producción**: [pinteya-ecommerce.vercel.app](https://pinteya-ecommerce.vercel.app)
+- **URL Producción**: [pinteya.com](https://pinteya.com)
 - **Estado**: ✅ Activo y estable
 - **Build**: ✅ 37 páginas generadas sin errores
 - **Performance**: ✅ Optimizado para producción
@@ -64,7 +64,7 @@ CLERK_SECRET_KEY=[STRIPE_SECRET_KEY_REMOVED]your-secret-key
 
 #### **URLs de Producción**
 ```bash
-NEXT_PUBLIC_APP_URL=https://pinteya-ecommerce.vercel.app
+NEXT_PUBLIC_APP_URL=https://pinteya.com
 ```
 
 ## 🚀 Proceso de Deploy
@@ -140,13 +140,13 @@ module.exports = nextConfig;
 ### **1. URLs Principales**
 ```bash
 # Página principal
-curl -I https://pinteya-ecommerce.vercel.app/
+curl -I https://pinteya.com/
 
 # API de productos
-curl https://pinteya-ecommerce.vercel.app/api/products
+curl https://pinteya.com/api/products
 
 # Tienda
-curl -I https://pinteya-ecommerce.vercel.app/shop
+curl -I https://pinteya.com/shop
 ```
 
 ### **2. Funcionalidades Críticas**
@@ -305,4 +305,4 @@ Después del deploy exitoso:
 ---
 
 **🎉 ¡Felicitaciones! Tu aplicación está en producción:**
-**[pinteya-ecommerce.vercel.app](https://pinteya-ecommerce.vercel.app)**
+**[pinteya.com](https://pinteya.com)**
