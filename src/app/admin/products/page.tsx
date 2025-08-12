@@ -31,7 +31,10 @@ function ProductStats() {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
-        const products = await response.json();
+        const apiResponse = await response.json();
+
+        // Extraer productos de la respuesta de la API
+        const products = apiResponse.data || [];
 
         // Calcular estadísticas reales
         const totalProducts = products.length;
