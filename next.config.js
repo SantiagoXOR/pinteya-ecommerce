@@ -200,21 +200,22 @@ const nextConfig = {
   // Redirects para compatibilidad de URLs
   async redirects() {
     return [
-      // 🚨 REDIRECCIONES TEMPORALMENTE COMENTADAS - CAUSABAN PROBLEMAS CON /admin
-      // {
-      //   source: '/my-account',
-      //   destination: '/admin',
-      //   permanent: false, // 302 redirect para poder cambiar en el futuro
-      // },
-      // {
-      //   source: '/my-account/:path*',
-      //   destination: '/admin',
-      //   permanent: false, // 302 redirect para cualquier subruta
-      // },
+      // ✅ REDIRECCIONES RESTAURADAS CON CONFIGURACIÓN SEGURA
+      {
+        source: '/my-account',
+        destination: '/admin',
+        permanent: false, // 302 redirect para poder cambiar en el futuro
+      },
+      {
+        source: '/my-account/:path*',
+        destination: '/admin/:path*', // Preservar subrutas
+        permanent: false,
+      },
+      // Comentado temporalmente hasta verificar que no cause problemas
       // {
       //   source: '/home',
       //   destination: '/admin',
-      //   permanent: false, // 302 redirect - eliminar /home problemático
+      //   permanent: false,
       // },
       {
         source: '/product/:id',
