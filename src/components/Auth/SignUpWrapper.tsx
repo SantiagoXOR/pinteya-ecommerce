@@ -17,7 +17,7 @@ export default function SignUpWrapper({ redirectUrl = "/shop" }: SignUpWrapperPr
           headerSubtitle: "text-gray-600",
         }
       }}
-      redirectUrl={redirectUrl}
+      fallbackRedirectUrl={redirectUrl}
     />
   );
 }
