@@ -10,7 +10,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/products(.*)', '/api/categories(.*)', '/api/search(.*)', '/api/payments/webhook',
   '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)', '/api/debug-clerk-session',
   '/clerk-status', '/debug-clerk', '/debug-auth', '/test-admin-access', '/debug-user', '/debug-simple',
-  '/test-dashboard', '/test-admin-simple', '/api/test-admin-middleware'
+  '/test-dashboard', '/test-admin-simple', '/api/test-admin-middleware', '/test-auth-status'
   // ✅ SEGURIDAD REACTIVADA: /admin(.*)' y '/api/admin(.*)' removidos - requieren autenticación
 ])
 
