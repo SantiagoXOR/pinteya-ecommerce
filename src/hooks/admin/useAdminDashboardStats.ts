@@ -38,32 +38,42 @@ export function useAdminDashboardStats() {
       setLoading(true);
       setError(null);
 
-      // Obtener token de autenticación
-      const token = await getToken();
-      
-      if (!token) {
-        throw new Error('No se pudo obtener token de autenticación');
+      // Intentar obtener token de autenticación (sin fallar si no hay token)
+      let token = null;
+      try {
+        token = await getToken();
+      } catch (tokenError) {
+        console.warn('No se pudo obtener token, usando fallback:', tokenError);
       }
 
-      // Hacer requests paralelos a diferentes APIs
+      // Hacer requests paralelos a diferentes APIs (con manejo de errores individual)
       const [productsResponse, ordersResponse, usersResponse] = await Promise.allSettled([
         fetch('/api/admin/products/stats', {
-          headers: {
+          headers: token ? {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          } : {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
         }),
         fetch('/api/admin/orders/stats', {
-          headers: {
+          headers: token ? {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          } : {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
         }),
         fetch('/api/admin/users/stats', {
-          headers: {
+          headers: token ? {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          } : {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
         })
       ]);
 
@@ -135,11 +145,17 @@ export function useAdminDashboardStats() {
       setStats(combinedStats);
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
-      
-      // Fallback: obtener estadísticas básicas directamente de Supabase
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+
+      // No establecer error inmediatamente, intentar fallback primero
+      console.log('Intentando fallback con API pública de productos...');
+
+      // Fallback: obtener estadísticas básicas directamente de la API pública
       try {
-        const response = await fetch('/api/products');
+        const response = await fetch('/api/products', {
+          credentials: 'include'
+        });
+
         if (response.ok) {
           const data = await response.json();
           const products = data.data || [];
@@ -162,7 +178,12 @@ export function useAdminDashboardStats() {
             totalUsers: 0,
             activeUsers: 0
           });
+
+          // Solo mostrar warning, no error completo
+          setError(`Usando datos básicos: ${errorMessage}`);
+          console.log('Fallback exitoso con API pública');
         } else {
+          console.warn('API pública falló, usando datos estáticos');
           // Fallback final con datos conocidos
           setStats({
             totalProducts: 53,
@@ -177,9 +198,11 @@ export function useAdminDashboardStats() {
             totalUsers: 0,
             activeUsers: 0
           });
+          setError(`Usando datos estáticos: ${errorMessage}`);
         }
       } catch (fallbackError) {
         console.error('Error en fallback:', fallbackError);
+        // Fallback final con datos estáticos
         setStats({
           totalProducts: 53,
           activeProducts: 53,
@@ -193,6 +216,7 @@ export function useAdminDashboardStats() {
           totalUsers: 0,
           activeUsers: 0
         });
+        setError(`Fallback completo falló: ${errorMessage}`);
       }
     } finally {
       setLoading(false);
