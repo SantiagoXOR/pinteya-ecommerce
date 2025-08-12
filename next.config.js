@@ -200,22 +200,22 @@ const nextConfig = {
   // Redirects para compatibilidad de URLs
   async redirects() {
     return [
-      // 🚨 REDIRECCIONES CRÍTICAS: Evitar ciclos recursivos de Clerk
-      {
-        source: '/my-account',
-        destination: '/admin',
-        permanent: false, // 302 redirect para poder cambiar en el futuro
-      },
-      {
-        source: '/my-account/:path*',
-        destination: '/admin',
-        permanent: false, // 302 redirect para cualquier subruta
-      },
-      {
-        source: '/home',
-        destination: '/admin',
-        permanent: false, // 302 redirect - eliminar /home problemático
-      },
+      // 🚨 REDIRECCIONES TEMPORALMENTE COMENTADAS - CAUSABAN PROBLEMAS CON /admin
+      // {
+      //   source: '/my-account',
+      //   destination: '/admin',
+      //   permanent: false, // 302 redirect para poder cambiar en el futuro
+      // },
+      // {
+      //   source: '/my-account/:path*',
+      //   destination: '/admin',
+      //   permanent: false, // 302 redirect para cualquier subruta
+      // },
+      // {
+      //   source: '/home',
+      //   destination: '/admin',
+      //   permanent: false, // 302 redirect - eliminar /home problemático
+      // },
       {
         source: '/product/:id',
         destination: '/shop-details/:id',
