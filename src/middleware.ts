@@ -11,8 +11,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)', '/api/debug-clerk-session',
   '/clerk-status', '/debug-clerk', '/debug-auth', '/test-admin-access', '/debug-user', '/debug-simple',
   '/test-dashboard', '/test-admin-simple', '/api/test-admin-middleware', '/test-auth-status',
-  '/admin/page-simple'
-  // ✅ SEGURIDAD REACTIVADA: /admin(.*)' y '/api/admin(.*)' removidos - requieren autenticación
+  '/admin/page-simple', '/admin'
+  // ⚠️ TEMPORAL: /admin agregado como público para debugging - REMOVER después de fix
 ])
 
 export default clerkMiddleware(async (auth, req) => {
