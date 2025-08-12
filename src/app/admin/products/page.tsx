@@ -1,6 +1,7 @@
 'use client';
 
 import { AdminCard } from '@/components/admin/ui/AdminCard';
+import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { ProductList } from '@/components/admin/products/ProductList';
 import { Package, TrendingUp, AlertTriangle, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
