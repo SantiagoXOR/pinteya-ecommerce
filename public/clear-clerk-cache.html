@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpiar Cache de Clerk - Pinteya</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background-color: #eb6313;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #d55a0f;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Limpiar Cache de Clerk - Pinteya</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Importante:</strong> Esta herramienta limpia completamente el cache de autenticación de Clerk. Tendrás que volver a iniciar sesión después de usarla.
+        </div>
+
+        <div class="info">
+            <strong>📋 Problema:</strong> Si estás viendo errores de props deprecadas de Clerk o problemas de autenticación en /admin/products, esta herramienta puede ayudar.
+        </div>
+
+        <h2>🚀 Acciones de Limpieza</h2>
+        
+        <button class="button" onclick="clearClerkCache()">
+            🗑️ Limpiar Cache de Clerk
+        </button>
+        
+        <button class="button" onclick="clearAllStorage()">
+            🧹 Limpiar Todo el Storage
+        </button>
+        
+        <button class="button" onclick="clearCookies()">
+            🍪 Limpiar Cookies de Clerk
+        </button>
+        
+        <button class="button" onclick="fullReset()">
+            💥 Reset Completo
+        </button>
+
+        <div id="result" class="success"></div>
+
+        <h2>📊 Estado Actual</h2>
+        <div id="status"></div>
+
+        <h2>🔍 Información de Debug</h2>
+        <pre id="debug-info"></pre>
+    </div>
+
+    <script>
+        function showResult(message) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.style.display = 'block';
+            setTimeout(() => {
+                result.style.display = 'none';
+            }, 5000);
+        }
+
+        function clearClerkCache() {
+            try {
+                // Limpiar localStorage de Clerk
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.includes('clerk') || key.includes('__clerk'))) {
+                        keysToRemove.push(key);
+                    }
+                }
+                
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                
+                // Limpiar sessionStorage de Clerk
+                const sessionKeysToRemove = [];
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    if (key && (key.includes('clerk') || key.includes('__clerk'))) {
+                        sessionKeysToRemove.push(key);
+                    }
+                }
+                
+                sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
+                
+                showResult(`✅ Cache de Clerk limpiado. Eliminadas ${keysToRemove.length} entradas de localStorage y ${sessionKeysToRemove.length} de sessionStorage.`);
+                updateStatus();
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        function clearAllStorage() {
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                showResult('✅ Todo el storage limpiado completamente.');
+                updateStatus();
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        function clearCookies() {
+            try {
+                // Limpiar cookies de Clerk
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                showResult('✅ Cookies limpiadas.');
+                updateStatus();
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        function fullReset() {
+            try {
+                clearClerkCache();
+                clearCookies();
+                
+                // Forzar recarga completa
+                setTimeout(() => {
+                    window.location.href = '/admin/products?cache_cleared=true';
+                }, 2000);
+                
+                showResult('✅ Reset completo realizado. Redirigiendo a /admin/products...');
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`);
+            }
+        }
+
+        function updateStatus() {
+            const status = document.getElementById('status');
+            const debugInfo = document.getElementById('debug-info');
+            
+            // Contar entradas de Clerk
+            let clerkLocalStorage = 0;
+            let clerkSessionStorage = 0;
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('clerk') || key.includes('__clerk'))) {
+                    clerkLocalStorage++;
+                }
+            }
+            
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && (key.includes('clerk') || key.includes('__clerk'))) {
+                    clerkSessionStorage++;
+                }
+            }
+            
+            status.innerHTML = `
+                <div class="info">
+                    <strong>📊 Estado del Storage:</strong><br>
+                    • Entradas de Clerk en localStorage: ${clerkLocalStorage}<br>
+                    • Entradas de Clerk en sessionStorage: ${clerkSessionStorage}<br>
+                    • Total localStorage: ${localStorage.length}<br>
+                    • Total sessionStorage: ${sessionStorage.length}
+                </div>
+            `;
+            
+            // Debug info
+            const debugData = {
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                timestamp: new Date().toISOString(),
+                clerkKeys: {
+                    localStorage: [],
+                    sessionStorage: []
+                }
+            };
+            
+            // Recopilar keys de Clerk
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('clerk') || key.includes('__clerk'))) {
+                    debugData.clerkKeys.localStorage.push(key);
+                }
+            }
+            
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && (key.includes('clerk') || key.includes('__clerk'))) {
+                    debugData.clerkKeys.sessionStorage.push(key);
+                }
+            }
+            
+            debugInfo.textContent = JSON.stringify(debugData, null, 2);
+        }
+
+        // Actualizar estado al cargar
+        updateStatus();
+    </script>
+</body>
+</html>
