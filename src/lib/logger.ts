@@ -189,6 +189,18 @@ class StructuredLogger {
   }
 
   // Métodos de conveniencia
+  debug(level: LogLevel, message: string, data?: any, category?: LogCategory, metadata?: Partial<BaseLogEntry>): void {
+    this.writeLog({
+      timestamp: new Date().toISOString(),
+      level: level,
+      category: category || LogCategory.API,
+      message,
+      environment: this.environment,
+      data,
+      ...metadata,
+    } as BaseLogEntry);
+  }
+
   info(category: LogCategory, message: string, data?: any, metadata?: Partial<BaseLogEntry>): void {
     this.writeLog({
       timestamp: new Date().toISOString(),

@@ -9,12 +9,14 @@ import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils';
 import { withCriticalValidation } from '@/lib/validation/enterprise-validation-middleware';
 import {
   validateData,
-  sanitizeData,
+  sanitizeData
+} from '@/lib/validation/enterprise-validation-middleware';
+import {
   criticalValidator,
   highValidator,
   standardValidator,
   basicValidator
-} from '@/lib/validation/enterprise-validation-middleware';
+} from '@/lib/validation/enterprise-validation-system';
 import {
   EnterpriseEmailSchema,
   EnterprisePasswordSchema,
