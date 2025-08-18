@@ -90,9 +90,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Obtener resumen del sistema
-    const systemHealth = enterpriseHealthSystem.getSystemHealth();
-    const summary = systemHealth.summary;
-    const overall = systemHealth.overall;
+    const healthData = enterpriseHealthSystem.getSystemHealth();
+    const summary = healthData.summary;
+    const overall = healthData.overall;
 
     const systemHealth: SystemHealth = {
       overall,
