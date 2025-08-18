@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifyToken } from '@clerk/backend';
+import { getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -201,13 +202,13 @@ async function getAuthenticatedUser(request: NextRequest): Promise<AuthResult> {
 /**
  * Verificar si el usuario tiene rol de administrador
  */
-export async function requireAdminAuth(request: NextRequest): Promise<AuthResult> {
+export async function requireAdminAuth(request: NextRequest, permissions?: string[]): Promise<AuthResult> {
   try {
     // Rate limiting
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                    request.headers.get('x-real-ip') || 
+    const clientIP = request.headers.get('x-forwarded-for') ||
+                    request.headers.get('x-real-ip') ||
                     'unknown';
-    
+
     if (!checkRateLimit(`admin_${clientIP}`, 50, 60000)) {
       return {
         success: false,
@@ -216,40 +217,42 @@ export async function requireAdminAuth(request: NextRequest): Promise<AuthResult
       };
     }
 
-    // Autenticar usuario
-    const authResult = await getAuthenticatedUser(request);
-    
-    if (!authResult.success) {
-      return authResult;
-    }
+    // ✅ CORREGIDO: Usar getAuthenticatedAdmin que tiene la verificación de roles corregida
+    const authResult = await getAuthenticatedAdmin(request);
 
-    // Verificar rol de administrador
-    console.log('🔍 Verificando permisos de admin:', {
-      user: authResult.user,
-      isAdmin: authResult.isAdmin,
-      userRole: authResult.user?.role
-    });
-
-    // Verificar usando isAdmin (para tokens Clerk) o role (para tokens Supabase)
-    const hasAdminAccess = authResult.isAdmin || authResult.user?.role === 'admin';
-
-    if (!hasAdminAccess) {
-      console.warn('❌ Acceso denegado:', {
+    if (!authResult.userId || !authResult.isAdmin) {
+      console.warn('❌ Acceso denegado en requireAdminAuth:', {
+        userId: authResult.userId,
         isAdmin: authResult.isAdmin,
-        userRole: authResult.user?.role,
-        email: authResult.user?.email
+        error: authResult.error
       });
 
       return {
         success: false,
-        error: 'Acceso denegado: se requiere rol de administrador',
-        status: 403
+        error: authResult.error || 'Acceso denegado: se requiere rol de administrador',
+        status: authResult.status || 403
       };
     }
 
-    console.log('✅ Acceso de admin autorizado para:', authResult.user?.email);
+    console.log('✅ Acceso de admin autorizado via requireAdminAuth:', authResult.user?.email || authResult.userId);
 
-    return authResult;
+    // Convertir resultado a formato AuthResult compatible
+    return {
+      success: true,
+      user: authResult.user ? {
+        id: authResult.user.id || authResult.userId,
+        email: authResult.user.email || 'unknown',
+        role: 'admin',
+        permissions: {}
+      } : {
+        id: authResult.userId,
+        email: 'unknown',
+        role: 'admin',
+        permissions: {}
+      },
+      supabase: authResult.supabase,
+      isAdmin: true
+    };
 
   } catch (error) {
     console.error('Error en requireAdminAuth:', error);
