@@ -44,22 +44,33 @@ function ClerkWrapper({ children, publishableKey }: { children: React.ReactNode;
     return <>{children}</>;
   }
 
-  // DEBUG: Log de configuración de redirección
-  console.log('[CLERK_PROVIDER] Configurando redirecciones:', {
+  // DEBUG: Log de configuración optimizada
+  console.log('[CLERK_PROVIDER] Configuración optimizada para persistencia:', {
     signInFallbackRedirectUrl: "/admin",
     signUpFallbackRedirectUrl: "/admin",
+    afterSignInUrl: "/admin",
+    afterSignUpUrl: "/admin",
     afterSignOutUrl: "/",
+    sessionTokenTemplate: "pinteya-{{session.id}}",
+    domain: process.env.NODE_ENV === 'production' ? 'pinteya.com' : 'localhost',
     publishableKey: publishableKey ? 'SET' : 'NOT_SET'
   });
 
-  // Una vez montado en el cliente, usar ClerkProvider con configuración oficial
+  // ✅ CONFIGURACIÓN OPTIMIZADA para persistencia de sesión
   return (
     <ClerkProvider
       publishableKey={publishableKey}
       localization={esES}
+      // ✅ URLs de redirección optimizadas para admin
       signInFallbackRedirectUrl="/admin"
       signUpFallbackRedirectUrl="/admin"
+      afterSignInUrl="/admin"
+      afterSignUpUrl="/admin"
       afterSignOutUrl="/"
+      // ✅ Configuración de sesión optimizada
+      sessionTokenTemplate="pinteya-{{session.id}}"
+      // ✅ Configuración de dominio para persistencia
+      domain={process.env.NODE_ENV === 'production' ? 'pinteya.com' : undefined}
       appearance={{
         variables: {
           colorPrimary: '#eb6313', // blaze-orange-600

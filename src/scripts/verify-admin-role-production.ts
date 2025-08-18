@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - VERIFICACIÓN DE ROLES ADMIN EN PRODUCCIÓN
 // ===================================
 
-import { createClerkClient } from '@clerk/nextjs/server';
+const { createClerkClient } = require('@clerk/nextjs/server');
 
 /**
  * Script para verificar que la cuenta admin tenga los roles correctos
