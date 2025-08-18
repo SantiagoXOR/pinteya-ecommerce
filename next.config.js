@@ -1,121 +1,51 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Optimizaciones experimentales simplificadas para mejor performance
+  // ✅ OPTIMIZACIONES PARA ADMIN PANEL - Configuración simplificada y estable
   experimental: {
-    // Solo optimizaciones críticas que realmente mejoran performance
+    // Optimizaciones críticas para admin panel
     optimizePackageImports: [
       'lucide-react',
-      '@/components/ui'
+      '@radix-ui/react-icons',
+      '@clerk/nextjs'
     ],
-    optimizeCss: true,
-    // Removidas optimizaciones que causan overhead de compilación
+    // Removidas optimizaciones experimentales que causan problemas de build
   },
 
-  // Configuración de Turbopack simplificada
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
+  // ✅ BUILD ID ÚNICO para evitar cache issues
+  generateBuildId: async () => {
+    return 'admin-panel-' + Date.now()
   },
 
-  // ESLint configuration - Mejorado para mejor calidad de código
+  // ✅ ESLint configuration - Simplificado para builds estables
   eslint: {
-    // Ignorar durante builds para evitar bloqueos
     ignoreDuringBuilds: true,
-    dirs: ['src', 'pages', 'components', 'lib', 'utils'],
+    dirs: ['src'],
   },
 
-  // TypeScript configuration
+  // ✅ TypeScript configuration - Simplificado
   typescript: {
-    // Ignorar errores de TypeScript para el build
     ignoreBuildErrors: true,
   },
 
-  // Compiler optimizations
+  // ✅ Compiler optimizations - Solo las esenciales
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
-    reactRemoveProperties: process.env.NODE_ENV === 'production' ? {
-      properties: ['^data-testid$']
-    } : false,
   },
 
-  // Bundle optimization
+  // ✅ WEBPACK SIMPLIFICADO - Solo configuraciones esenciales para admin panel
   webpack: (config, { dev, isServer }) => {
-    // Optimizar bundle splitting
+    // Configuración mínima para evitar problemas de build
     if (!dev && !isServer) {
+      // Configuración básica de chunks para admin panel
       config.optimization.splitChunks = {
         chunks: 'all',
         cacheGroups: {
-          default: false,
-          vendors: false,
-          // Vendor chunk para dependencias grandes
+          // Vendor chunk básico
           vendor: {
-            name: 'vendor',
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
             chunks: 'all',
-            test: /node_modules/,
-            priority: 20,
-          },
-          // UI components chunk
-          ui: {
-            name: 'ui',
-            chunks: 'all',
-            test: /[\\/]components[\\/]ui[\\/]/,
-            priority: 30,
-          },
-          // Common chunk para código compartido
-          common: {
-            name: 'common',
-            chunks: 'all',
-            minChunks: 2,
             priority: 10,
-            reuseExistingChunk: true,
-          },
-        },
-      };
-    }
-
-    // Tree shaking mejorado para librerías pesadas
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      // Optimizar imports de librerías comunes
-      '@/lib/optimized-imports': require('path').resolve(__dirname, 'src/lib/optimized-imports.ts'),
-    };
-
-    // Configuración de tree-shaking para producción
-    if (config.mode === 'production') {
-      config.optimization = {
-        ...config.optimization,
-        usedExports: true,
-        sideEffects: false,
-        // Configuración específica para tree-shaking
-        splitChunks: {
-          ...config.optimization.splitChunks,
-          cacheGroups: {
-            ...config.optimization.splitChunks?.cacheGroups,
-            // Separar librerías de iconos
-            icons: {
-              test: /[\\/]node_modules[\\/](lucide-react|@radix-ui)[\\/]/,
-              name: 'icons',
-              chunks: 'all',
-              priority: 20,
-            },
-            // Separar librerías de animación
-            animations: {
-              test: /[\\/]node_modules[\\/](framer-motion)[\\/]/,
-              name: 'animations',
-              chunks: 'all',
-              priority: 15,
-            },
-            // Separar utilidades de fecha
-            dateUtils: {
-              test: /[\\/]node_modules[\\/](date-fns)[\\/]/,
-              name: 'date-utils',
-              chunks: 'all',
-              priority: 10,
-            },
           },
         },
       };
@@ -194,8 +124,7 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Configuración para Clerk
-  serverExternalPackages: ['@clerk/nextjs'],
+  // ✅ CONFIGURACIÓN CLERK corregida - Removido serverExternalPackages conflictivo
 
   // Redirects para compatibilidad de URLs
   async redirects() {
@@ -225,7 +154,7 @@ const nextConfig = {
     ];
   },
 
-  // Headers de seguridad existentes
+  // ✅ HEADERS OPTIMIZADOS para admin panel
   async headers() {
     return [
       {
@@ -243,21 +172,29 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          // Permissions Policy para evitar errores de browsing-topics
+        ],
+      },
+      // ✅ Headers específicos para admin panel
+      {
+        source: '/admin/:path*',
+        headers: [
           {
-            key: 'Permissions-Policy',
-            value: 'browsing-topics=(), interest-cohort=(), join-ad-interest-group=(), run-ad-auction=(), camera=(), microphone=(), geolocation=(), payment=()',
+            key: 'X-Frame-Options',
+            value: 'DENY',
           },
-          // Cache headers para assets estáticos
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            value: 'no-cache, no-store, must-revalidate',
           },
         ],
       },
-      // Headers específicos para assets
+      // Headers para assets estáticos
       {
-        source: '/images/:path*',
+        source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
