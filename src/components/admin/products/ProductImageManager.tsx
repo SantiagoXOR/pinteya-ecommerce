@@ -24,6 +24,7 @@ interface ProductImage {
 }
 
 interface ProductImageManagerProps {
+  productId?: string;
   images: ProductImage[];
   onChange: (images: ProductImage[]) => void;
   error?: string;
@@ -32,6 +33,7 @@ interface ProductImageManagerProps {
 }
 
 export function ProductImageManager({
+  productId,
   images = [],
   onChange,
   error,
@@ -44,9 +46,14 @@ export function ProductImageManager({
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle file upload
-  const handleFileUpload = async (files: FileList) => {
+  // Handle file upload with Supabase Storage integration
+  const handleFileUpload = async (files: FileList, productId?: string) => {
     if (files.length === 0) return;
+
+    if (!productId) {
+      console.error('Product ID is required for image upload');
+      return;
+    }
     
     const remainingSlots = maxImages - images.length;
     const filesToUpload = Array.from(files).slice(0, remainingSlots);

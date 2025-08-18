@@ -13,7 +13,8 @@ import {
   CreditCard,
   Search,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Activity
 } from 'lucide-react';
 import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats';
 
@@ -61,6 +62,15 @@ export default function AdminPage() {
       icon: CreditCard,
       color: 'bg-indigo-500',
       stats: 'Enterprise'
+    },
+    {
+      title: 'Monitoreo',
+      description: 'Dashboard de monitoreo en tiempo real',
+      href: '/admin/monitoring',
+      icon: Activity,
+      color: 'bg-emerald-500',
+      stats: 'Tiempo real',
+      badge: 'Enterprise'
     },
     {
       title: 'Diagnósticos',

@@ -7,6 +7,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { retryMercadoPagoOperation } from './retry-logic';
 import { logger, LogLevel, LogCategory } from './logger';
 import { CacheUtils } from './cache-manager';
+import {
+  executeMercadoPagoCritical,
+  executeMercadoPagoStandard,
+  CircuitBreakerResult
+} from './mercadopago/circuit-breaker';
 
 // ✅ MEJORADO: Función para crear cliente con IdempotencyKey dinámico
 export function createMercadoPagoClient(transactionId?: string) {
@@ -96,15 +101,17 @@ export interface CreatePreferenceData {
 }
 
 /**
- * Crea una preferencia de pago en MercadoPago con retry automático
+ * Crea una preferencia de pago en MercadoPago con retry automático y circuit breaker
  */
 export async function createPaymentPreference(data: CreatePreferenceData) {
-  // ✅ NUEVO: Usar retry logic para operación crítica
-  const retryResult = await retryMercadoPagoOperation(
-    async () => {
-      // ✅ MEJORADO: Usar cliente con IdempotencyKey dinámico
-      const dynamicClient = createMercadoPagoClient(data.external_reference);
-      const dynamicPreference = new Preference(dynamicClient);
+  // ✅ ENTERPRISE: Usar circuit breaker para operación crítica
+  const circuitResult = await executeMercadoPagoCritical(async () => {
+    // ✅ NUEVO: Usar retry logic para operación crítica
+    const retryResult = await retryMercadoPagoOperation(
+      async () => {
+        // ✅ MEJORADO: Usar cliente con IdempotencyKey dinámico
+        const dynamicClient = createMercadoPagoClient(data.external_reference);
+        const dynamicPreference = new Preference(dynamicClient);
 
     // ✅ MEJORADO: Configuración avanzada de métodos de pago
     const paymentMethods = {
@@ -161,63 +168,110 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
           sandbox_init_point: response.sandbox_init_point,
         },
       };
-    },
-    'createPaymentPreference',
-    true // Es operación crítica
-  );
+      },
+      'createPaymentPreference',
+      true // Es operación crítica
+    );
 
-  // ✅ NUEVO: Manejar resultado del retry
-  if (retryResult.success) {
-    logger.info(LogCategory.PAYMENT, 'Payment preference created successfully with retry', {
-      attempts: retryResult.attempts,
-      totalDuration: retryResult.totalDuration,
-      preferenceId: retryResult.data?.data.id,
-    });
-    return retryResult.data!;
+    // ✅ NUEVO: Manejar resultado del retry
+    if (retryResult.success) {
+      logger.info(LogCategory.PAYMENT, 'Payment preference created successfully with retry', {
+        attempts: retryResult.attempts,
+        totalDuration: retryResult.totalDuration,
+        preferenceId: retryResult.data?.data.id,
+      });
+      return retryResult.data!;
+    } else {
+      logger.error(LogCategory.PAYMENT, 'Failed to create payment preference after retries', retryResult.error!);
+      throw new Error(retryResult.error?.message || 'Error creating payment preference after retries');
+    }
+  });
+
+  // ✅ ENTERPRISE: Manejar resultado del circuit breaker
+  if (circuitResult.success) {
+    return circuitResult.data!;
   } else {
-    logger.error(LogCategory.PAYMENT, 'Failed to create payment preference after retries', retryResult.error!);
-    return {
-      success: false,
-      error: retryResult.error?.message || 'Error creating payment preference after retries',
-    };
+    if (circuitResult.wasRejected) {
+      logger.error(LogCategory.PAYMENT, 'Payment preference creation rejected by circuit breaker', {
+        state: circuitResult.state,
+        error: circuitResult.error?.message
+      });
+      return {
+        success: false,
+        error: `Service temporarily unavailable (Circuit Breaker ${circuitResult.state})`,
+      };
+    } else {
+      logger.error(LogCategory.PAYMENT, 'Payment preference creation failed', {
+        error: circuitResult.error?.message,
+        executionTime: circuitResult.executionTime
+      });
+      return {
+        success: false,
+        error: circuitResult.error?.message || 'Error creating payment preference',
+      };
+    }
   }
 }
 
 /**
- * Obtiene información de un pago por su ID con cache y retry automático
+ * Obtiene información de un pago por su ID con cache, retry automático y circuit breaker
  */
 export async function getPaymentInfo(paymentId: string) {
   // ✅ NUEVO: Usar cache para evitar llamadas repetidas a MercadoPago
   return CacheUtils.cachePaymentInfo(paymentId, async () => {
-    // ✅ NUEVO: Usar retry logic para consulta (menos crítica)
-    const retryResult = await retryMercadoPagoOperation(
-      async () => {
-        const paymentInfo = await payment.get({ id: paymentId });
+    // ✅ ENTERPRISE: Usar circuit breaker para consultas (menos crítico)
+    const circuitResult = await executeMercadoPagoStandard(async () => {
+      // ✅ NUEVO: Usar retry logic para consulta (menos crítica)
+      const retryResult = await retryMercadoPagoOperation(
+        async () => {
+          const paymentInfo = await payment.get({ id: paymentId });
 
-        return {
-          success: true,
-          data: paymentInfo,
-        };
-      },
-      'getPaymentInfo',
-      false // No es operación crítica
-    );
+          return {
+            success: true,
+            data: paymentInfo,
+          };
+        },
+        'getPaymentInfo',
+        false // No es operación crítica
+      );
 
-  // ✅ NUEVO: Manejar resultado del retry
-  if (retryResult.success) {
-    logger.info(LogCategory.PAYMENT, 'Payment info retrieved successfully with retry', {
-      paymentId,
-      attempts: retryResult.attempts,
-      totalDuration: retryResult.totalDuration,
+      if (retryResult.success) {
+        return retryResult.data!;
+      } else {
+        throw new Error(retryResult.error?.message || 'Error getting payment info');
+      }
     });
-    return retryResult.data!;
-  } else {
-    logger.error(LogCategory.PAYMENT, 'Failed to get payment info after retries', retryResult.error!);
-    return {
-      success: false,
-      error: retryResult.error?.message || 'Error getting payment information after retries',
-    };
-  }
+
+    // ✅ ENTERPRISE: Manejar resultado del circuit breaker
+    if (circuitResult.success) {
+      logger.info(LogCategory.PAYMENT, 'Payment info retrieved successfully', {
+        paymentId,
+        executionTime: circuitResult.executionTime,
+        state: circuitResult.state
+      });
+      return circuitResult.data!;
+    } else {
+      if (circuitResult.wasRejected) {
+        logger.warn(LogCategory.PAYMENT, 'Payment info request rejected by circuit breaker', {
+          paymentId,
+          state: circuitResult.state
+        });
+        return {
+          success: false,
+          error: `Payment service temporarily unavailable (Circuit Breaker ${circuitResult.state})`,
+        };
+      } else {
+        logger.error(LogCategory.PAYMENT, 'Failed to get payment info', {
+          paymentId,
+          error: circuitResult.error?.message,
+          executionTime: circuitResult.executionTime
+        });
+        return {
+          success: false,
+          error: circuitResult.error?.message || 'Error getting payment information',
+        };
+      }
+    }
   }); // Cierre del CacheUtils.cachePaymentInfo
 }
 
