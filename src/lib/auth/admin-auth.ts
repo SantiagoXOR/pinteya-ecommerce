@@ -20,6 +20,12 @@ import {
   runSecurityDetection
 } from './security-audit';
 import {
+  logAuthentication,
+  logDataAccess,
+  logAdminAction,
+  AuditResult
+} from '@/lib/security/audit-trail';
+import {
   validateJWTIntegrity,
   validateJWTPermissions,
   type JWTValidationResult
@@ -558,13 +564,62 @@ export async function checkAdminPermissions(
       if (securityContext) {
         await logAuthSuccess(userId, securityContext, request);
       }
+
+      // ✅ ENTERPRISE: Audit trail para autenticación exitosa
+      await logAuthentication(
+        'user_authenticated',
+        AuditResult.SUCCESS,
+        userId,
+        {
+          sessionId,
+          authMethod: 'clerk',
+          securityContext: securityContext?.riskLevel
+        },
+        {
+          ip: securityContext?.ipAddress || 'unknown',
+          userAgent: securityContext?.userAgent || 'unknown',
+          sessionId
+        }
+      );
     } catch (authError) {
       console.warn('[AUTH] Error en autenticación unificada, intentando fallback');
       await logAuthFailure(null, `Error de autenticación: ${authError.message}`, request);
 
+      // ✅ ENTERPRISE: Audit trail para fallo de autenticación
+      await logAuthentication(
+        'authentication_failed',
+        AuditResult.FAILURE,
+        undefined,
+        {
+          error: authError.message,
+          authMethod: 'clerk',
+          fallbackAttempted: true
+        },
+        {
+          ip: request?.headers?.get('x-forwarded-for') || 'unknown',
+          userAgent: request?.headers?.get('user-agent') || 'unknown'
+        }
+      );
+
       const fallbackResult = await getAuthenticatedUser(request);
       if (!fallbackResult.userId) {
         await logAuthFailure(null, fallbackResult.error || 'No autorizado', request);
+
+        // ✅ ENTERPRISE: Audit trail para fallo de fallback
+        await logAuthentication(
+          'authentication_fallback_failed',
+          AuditResult.FAILURE,
+          undefined,
+          {
+            error: fallbackResult.error,
+            authMethod: 'fallback'
+          },
+          {
+            ip: request?.headers?.get('x-forwarded-for') || 'unknown',
+            userAgent: request?.headers?.get('user-agent') || 'unknown'
+          }
+        );
+
         return {
           success: false,
           error: fallbackResult.error || 'No autorizado',

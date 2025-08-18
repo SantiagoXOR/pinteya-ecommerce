@@ -14,7 +14,8 @@ import {
   Database,
   CreditCard,
   Search,
-  Bell
+  Bell,
+  Activity
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -52,6 +53,12 @@ const sidebarItems: SidebarItem[] = [
     title: 'Analytics',
     href: '/admin/analytics',
     icon: BarChart3,
+  },
+  {
+    title: 'Monitoreo',
+    href: '/admin/monitoring',
+    icon: Activity,
+    badge: 'Enterprise',
   },
   {
     title: 'MercadoPago',

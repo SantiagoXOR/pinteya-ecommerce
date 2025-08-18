@@ -359,6 +359,7 @@ jobs:
 
 ## 🔗 Enlaces Relacionados
 
+- [🚀 **Enterprise Testing Optimization 2025**](./enterprise-testing-optimization-2025.md) - ✅ **NUEVO** Optimización completa
 - [🧪 Tests Unitarios](./unit.md)
 - [🔗 Tests de Integración](./integration.md)
 - [🎭 Tests E2E](./e2e.md)
@@ -366,4 +367,4 @@ jobs:
 
 ---
 
-*Última actualización: Junio 2025*
+*Última actualización: Enero 2025 - Enterprise Testing Optimizado*

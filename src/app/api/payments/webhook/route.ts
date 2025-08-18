@@ -9,6 +9,13 @@ import { MercadoPagoWebhookData } from '@/types/mercadopago';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
 import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS, endpointKeyGenerator } from '@/lib/rate-limiter';
 import { metricsCollector } from '@/lib/metrics';
+import { executeWebhookProcessing } from '@/lib/mercadopago/circuit-breaker';
+import { logPaymentEvent, logSecurityViolation, AuditResult } from '@/lib/security/audit-trail';
+import {
+  recordPerformanceMetric,
+  recordBusinessMetric,
+  recordSecurityMetric
+} from '@/lib/monitoring/enterprise-metrics';
 
 // ✅ ELIMINADO: Rate limiting básico reemplazado por sistema avanzado con Redis
 
@@ -117,6 +124,34 @@ export async function POST(request: NextRequest) {
         reason: signatureValidation.error || 'Signature validation failed',
       }, { clientIP });
 
+      // ✅ ENTERPRISE: Audit trail para violación de seguridad
+      await logSecurityViolation(
+        'webhook_signature_validation_failed',
+        'Invalid HMAC signature in MercadoPago webhook',
+        {
+          ip: clientIP,
+          userAgent: request.headers.get('user-agent') || 'unknown'
+        },
+        {
+          webhookType: webhookData.type,
+          dataId: webhookData.data.id,
+          signatureError: signatureValidation.error,
+          xSignature: xSignature?.substring(0, 20) + '...', // Truncar por seguridad
+          xRequestId
+        }
+      );
+
+      // ✅ ENTERPRISE: Métrica de seguridad
+      await recordSecurityMetric(
+        'signature_validation_failed',
+        'critical',
+        {
+          endpoint: '/api/payments/webhook',
+          ip: clientIP,
+          webhookType: webhookData.type
+        }
+      );
+
       return NextResponse.json({
         error: 'Invalid signature',
         details: signatureValidation.error
@@ -129,15 +164,41 @@ export async function POST(request: NextRequest) {
       reason: 'Valid signature',
     }, { clientIP });
 
-    // Obtener información del pago desde MercadoPago
-    const paymentResult = await getPaymentInfo(webhookData.data.id);
+    // ✅ ENTERPRISE: Procesar webhook con circuit breaker
+    const webhookResult = await executeWebhookProcessing(async () => {
+      // Obtener información del pago desde MercadoPago
+      const paymentResult = await getPaymentInfo(webhookData.data.id);
 
-    if (!paymentResult.success || !('data' in paymentResult)) {
-      console.error('Error getting payment info:', 'error' in paymentResult ? paymentResult.error : 'Unknown error');
-      return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
+      if (!paymentResult.success || !('data' in paymentResult)) {
+        throw new Error('error' in paymentResult ? paymentResult.error : 'Payment not found');
+      }
+
+      return paymentResult.data;
+    });
+
+    if (!webhookResult.success) {
+      if (webhookResult.wasRejected) {
+        logger.warn(LogLevel.WARN, 'Webhook processing rejected by circuit breaker', {
+          dataId: webhookData.data.id,
+          state: webhookResult.state
+        }, { clientIP });
+
+        return NextResponse.json({
+          error: 'Webhook processing temporarily unavailable',
+          retry_after: 30
+        }, { status: 503 });
+      } else {
+        logger.error(LogLevel.ERROR, 'Webhook processing failed', {
+          dataId: webhookData.data.id,
+          error: webhookResult.error?.message,
+          executionTime: webhookResult.executionTime
+        }, { clientIP });
+
+        return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
+      }
     }
 
-    const payment = paymentResult.data;
+    const payment = webhookResult.data;
     
     // Inicializar Supabase con cliente administrativo
     const supabase = getSupabaseClient(true);
@@ -257,12 +318,61 @@ export async function POST(request: NextRequest) {
       method: 'mercadopago',
     }, { clientIP });
 
+    // ✅ ENTERPRISE: Audit trail para procesamiento de pago
+    await logPaymentEvent(
+      'payment_webhook_processed',
+      payment.status === 'approved' ? AuditResult.SUCCESS :
+      payment.status === 'rejected' ? AuditResult.FAILURE : AuditResult.SUCCESS,
+      {
+        orderId: orderId.toString(),
+        paymentId: payment.id?.toString(),
+        amount: payment.transaction_amount,
+        currency: payment.currency_id,
+        method: 'mercadopago'
+      },
+      undefined, // No hay userId en webhook
+      {
+        ip: clientIP,
+        userAgent: request.headers.get('user-agent') || 'webhook'
+      }
+    );
+
     logger.performance(LogLevel.INFO, 'Webhook processing completed', {
       operation: 'webhook-processing',
       duration: processingTime,
       endpoint: '/api/payments/webhook',
       statusCode: 200,
     }, { clientIP });
+
+    // ✅ ENTERPRISE: Métricas de performance
+    await recordPerformanceMetric(
+      'webhook_processing',
+      processingTime,
+      true,
+      {
+        endpoint: '/api/payments/webhook',
+        paymentStatus: payment.status,
+        orderStatus: newStatus
+      }
+    );
+
+    // ✅ ENTERPRISE: Métricas de negocio
+    await recordBusinessMetric(
+      'payment_processed',
+      payment.transaction_amount || 0,
+      {
+        currency: payment.currency_id || 'ARS',
+        method: 'mercadopago',
+        status: payment.status
+      }
+    );
+
+    if (payment.status === 'approved') {
+      await recordBusinessMetric('payment_approved', 1, {
+        amount: payment.transaction_amount?.toString() || '0',
+        currency: payment.currency_id || 'ARS'
+      });
+    }
 
     // ✅ NUEVO: Responder exitosamente con headers de rate limiting
     const response = NextResponse.json({
