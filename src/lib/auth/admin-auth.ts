@@ -95,14 +95,34 @@ export async function getAuthenticatedUser(
       if (userId) {
         console.log(`[AUTH] Usuario autenticado via getAuth: ${userId}`);
 
-        // Verificar si es admin usando el token
+        // ✅ CORREGIDO: Verificar si es admin usando el token y fallback a currentUser
         let isAdmin = false;
         try {
           const token = await getToken();
           if (token) {
             // Decodificar token para obtener metadata
             const payload = JSON.parse(atob(token.split('.')[1]));
-            isAdmin = payload.metadata?.role === 'admin';
+            const publicRole = payload.publicMetadata?.role;
+            const privateRole = payload.privateMetadata?.role;
+            isAdmin = publicRole === 'admin' || privateRole === 'admin';
+
+            console.log(`[AUTH] Token verificación - publicRole: ${publicRole}, privateRole: ${privateRole}, isAdmin: ${isAdmin}`);
+          }
+
+          // Si no encontramos el rol en el token, verificar directamente con Clerk
+          if (!isAdmin) {
+            try {
+              const user = await currentUser();
+              if (user) {
+                const userPublicRole = user.publicMetadata?.role as string;
+                const userPrivateRole = user.privateMetadata?.role as string;
+                isAdmin = userPublicRole === 'admin' || userPrivateRole === 'admin';
+
+                console.log(`[AUTH] Fallback currentUser - userPublicRole: ${userPublicRole}, userPrivateRole: ${userPrivateRole}, isAdmin: ${isAdmin}`);
+              }
+            } catch (fallbackError) {
+              console.warn('[AUTH] Error en fallback currentUser:', fallbackError);
+            }
           }
         } catch (tokenError) {
           console.warn('[AUTH] Error obteniendo token para verificar admin:', tokenError);
@@ -119,8 +139,29 @@ export async function getAuthenticatedUser(
         if (userId) {
           console.log(`[AUTH] Usuario autenticado via auth(): ${userId}`);
 
-          // Verificar si es admin usando sessionClaims
-          const isAdmin = sessionClaims?.metadata?.role === 'admin';
+          // ✅ CORREGIDO: Verificar si es admin usando publicMetadata y privateMetadata
+          const publicRole = sessionClaims?.publicMetadata?.role as string;
+          const privateRole = sessionClaims?.privateMetadata?.role as string;
+          let isAdmin = publicRole === 'admin' || privateRole === 'admin';
+
+          // Logging para debugging en producción
+          console.log(`[AUTH] Verificación de roles - publicRole: ${publicRole}, privateRole: ${privateRole}, isAdmin: ${isAdmin}`);
+
+          // Si no encontramos el rol en sessionClaims, verificar directamente con Clerk
+          if (!isAdmin && userId) {
+            try {
+              const user = await currentUser();
+              if (user) {
+                const userPublicRole = user.publicMetadata?.role as string;
+                const userPrivateRole = user.privateMetadata?.role as string;
+                isAdmin = userPublicRole === 'admin' || userPrivateRole === 'admin';
+
+                console.log(`[AUTH] Fallback verificación - userPublicRole: ${userPublicRole}, userPrivateRole: ${userPrivateRole}, isAdmin: ${isAdmin}`);
+              }
+            } catch (fallbackError) {
+              console.warn('[AUTH] Error en fallback de verificación de admin:', fallbackError);
+            }
+          }
 
           return { userId, sessionId, isAdmin };
         }
