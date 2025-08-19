@@ -33,8 +33,10 @@ interface ProductFormData {
   }>;
 }
 
-// API function to create product
+// API function to create product (USANDO API SIMPLIFICADA)
 async function createProduct(data: ProductFormData) {
+  console.log('🚀 Creating product with data:', data);
+
   const response = await fetch('/api/admin/products', {
     method: 'POST',
     headers: {
@@ -43,9 +45,11 @@ async function createProduct(data: ProductFormData) {
     body: JSON.stringify(data),
   });
 
+  const result = await response.json();
+  console.log('📝 API Response:', result);
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Error al crear producto');
+    throw new Error(result.error || 'Error al crear producto');
   }
 
   return response.json();
