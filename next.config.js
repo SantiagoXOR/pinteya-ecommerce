@@ -126,12 +126,14 @@ const nextConfig = {
 
   // ✅ CONFIGURACIÓN CLERK PROXY - Para usar proxy en lugar de DNS personalizado
   async rewrites() {
-    return [
-      {
-        source: '/__clerk/:path*',
-        destination: 'https://api.clerk.com/:path*',
-      },
-    ];
+    return {
+      beforeFiles: [
+        {
+          source: '/__clerk/:path*',
+          destination: 'https://api.clerk.com/:path*',
+        },
+      ],
+    };
   },
 
   // Redirects para compatibilidad de URLs
