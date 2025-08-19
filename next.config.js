@@ -124,17 +124,17 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // ✅ CONFIGURACIÓN CLERK PROXY - Para usar proxy en lugar de DNS personalizado
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/__clerk/:path*',
-          destination: 'https://api.clerk.com/:path*',
-        },
-      ],
-    };
-  },
+  // ✅ CONFIGURACIÓN CLERK PROXY - Temporalmente comentado para debug
+  // async rewrites() {
+  //   return {
+  //     beforeFiles: [
+  //       {
+  //         source: '/__clerk/:path*',
+  //         destination: 'https://api.clerk.com/:path*',
+  //       },
+  //     ],
+  //   };
+  // },
 
   // Redirects para compatibilidad de URLs
   async redirects() {
