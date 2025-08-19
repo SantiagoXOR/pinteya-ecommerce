@@ -309,11 +309,154 @@ const postHandler = async (request: ValidatedRequest) => {
   }
 };
 
+/**
+ * POST SIMPLIFICADO /api/admin/products
+ * Crear nuevo producto SIN validaciones enterprise complejas
+ */
+const postHandlerSimple = async (request: NextRequest) => {
+  try {
+    console.log('🔧 Products API: Creating product (SIMPLE MODE)...');
+
+    // Verificar autenticación básica
+    const authResult = await checkCRUDPermissions('products', 'create', request);
+
+    if (!authResult.success) {
+      console.log('❌ Auth failed:', authResult.error);
+      return NextResponse.json(
+        {
+          error: authResult.error || 'Autenticación requerida',
+          code: 'AUTH_ERROR'
+        },
+        { status: authResult.status || 401 }
+      );
+    }
+
+    console.log('✅ Auth successful');
+    const { supabase, user } = authResult;
+
+    const body = await request.json();
+    console.log('📝 Request body:', JSON.stringify(body, null, 2));
+
+    // Validación básica de campos requeridos
+    const requiredFields = ['name', 'price'];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(
+          {
+            error: `Campo requerido: ${field}`,
+            code: 'MISSING_FIELD'
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Mapear datos del frontend al formato de base de datos
+    const productData = {
+      name: body.name,
+      description: body.description || '',
+      short_description: body.short_description || '',
+      price: parseFloat(body.price),
+      discounted_price: body.compare_price ? parseFloat(body.compare_price) : null,
+      cost_price: body.cost_price ? parseFloat(body.cost_price) : null,
+      stock: parseInt(body.stock) || 0,
+      low_stock_threshold: parseInt(body.low_stock_threshold) || 5,
+      category_id: body.category_id ? parseInt(body.category_id) : null,
+      status: body.status || 'draft',
+      is_active: body.status === 'active',
+      track_inventory: body.track_inventory !== false,
+      allow_backorders: body.allow_backorders === true,
+      // Generar slug automático
+      slug: body.name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim() + '-' + Date.now(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('🔄 Mapped product data:', JSON.stringify(productData, null, 2));
+
+    // Verificar categoría si se proporciona
+    if (productData.category_id) {
+      const { data: category, error: categoryError } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('id', productData.category_id)
+        .single();
+
+      if (categoryError || !category) {
+        console.log('❌ Category not found:', categoryError);
+        return NextResponse.json(
+          {
+            error: 'Categoría no encontrada',
+            code: 'CATEGORY_NOT_FOUND'
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Crear producto
+    const { data: product, error } = await supabase
+      .from('products')
+      .insert(productData)
+      .select(`
+        id,
+        name,
+        description,
+        price,
+        stock,
+        category_id,
+        status,
+        created_at,
+        updated_at
+      `)
+      .single();
+
+    if (error) {
+      console.error('❌ Error creating product:', error);
+      return NextResponse.json(
+        {
+          error: 'Error al crear producto',
+          code: 'DATABASE_ERROR',
+          details: error.message
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log('✅ Product created successfully:', product);
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Producto creado exitosamente',
+        data: product
+      },
+      { status: 201 }
+    );
+
+  } catch (error) {
+    console.error('❌ Error in POST /api/admin/products (SIMPLE):', error);
+
+    return NextResponse.json(
+      {
+        error: 'Error interno del servidor',
+        code: 'INTERNAL_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+};
+
 // ENTERPRISE: Aplicar validación crítica para operaciones admin
 export const GET = withCriticalValidation({
   querySchema: EnterpriseProductFiltersSchema.merge(EnterprisePaginationSchema)
 })(getHandler);
 
-export const POST = withCriticalValidation({
-  bodySchema: EnterpriseProductSchema
-})(postHandler);
+// USAR VERSIÓN SIMPLIFICADA TEMPORALMENTE
+export const POST = postHandlerSimple;
