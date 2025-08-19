@@ -16,6 +16,9 @@ const isPublicRoute = createRouteMatcher([
   // ✅ AUTENTICACIÓN RESTAURADA: /admin removido - requiere autenticación
 ])
 
+// ✅ RUTAS API ADMIN - Manejar autenticación interna en cada API
+const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)'])
+
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
@@ -23,6 +26,12 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // ✅ CSP ESPECÍFICO PARA ADMIN - Basado en mejores prácticas Next.js
   const response = NextResponse.next()
+
+  // ✅ PERMITIR APIs ADMIN - Manejan autenticación internamente
+  if (isAdminApiRoute(req)) {
+    console.log('🔧 [MIDDLEWARE] Admin API route - allowing through for internal auth:', req.nextUrl.pathname);
+    return response
+  }
 
   if (isAdminRoute(req)) {
     // Generar nonce único para cada request
