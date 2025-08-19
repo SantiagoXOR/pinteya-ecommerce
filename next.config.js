@@ -124,7 +124,15 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // ✅ CONFIGURACIÓN CLERK corregida - Removido serverExternalPackages conflictivo
+  // ✅ CONFIGURACIÓN CLERK PROXY - Para usar proxy en lugar de DNS personalizado
+  async rewrites() {
+    return [
+      {
+        source: '/__clerk/:path*',
+        destination: 'https://api.clerk.com/:path*',
+      },
+    ];
+  },
 
   // Redirects para compatibilidad de URLs
   async redirects() {
