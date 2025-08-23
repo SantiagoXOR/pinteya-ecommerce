@@ -7,18 +7,15 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { optimizedAnalytics, trackEventOptimized } from '@/lib/analytics-optimized';
 
-// Hook seguro para usar Clerk
+// Hook para NextAuth.js
 const useSafeUser = () => {
-  try {
-    return useUser();
-  } catch (error) {
-    console.warn('Clerk not available, using fallback user state');
-    return { user: null, isLoaded: true, isSignedIn: false };
-  }
+  // Usar NextAuth.js en lugar de Clerk
+  const { user, isLoaded, isSignedIn } = useAuth();
+  return { user, isLoaded, isSignedIn };
 };
 
 interface OptimizedAnalyticsContextType {

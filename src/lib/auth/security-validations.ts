@@ -161,7 +161,7 @@ export async function getSecurityContext(
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
     
-    if (!user) {
+    if (!session?.user) {
       return null;
     }
 
@@ -384,7 +384,7 @@ export function withSecurityValidation(
                       request.headers?.get?.('x-clerk-user-id') ||
                       (request.headers as any)?.['x-clerk-user-id'];
 
-        if (!userId) {
+        if (!session?.user) {
           const errorResponse = {
             success: false,
             error: 'Usuario no autenticado',

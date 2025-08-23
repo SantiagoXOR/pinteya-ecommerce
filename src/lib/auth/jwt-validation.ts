@@ -3,7 +3,7 @@
  * Implementa verificación de integridad, autenticidad y validez de tokens
  */
 
-import { auth, getAuth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { NextRequest } from 'next/server';
 import type { NextApiRequest } from 'next';
 
@@ -78,32 +78,45 @@ export async function validateJWTIntegrity(
     let token: string | null = null;
     let payload: any = null;
 
-    // Obtener token usando métodos oficiales de Clerk
+    // NextAuth.js - Obtener sesión en lugar de token JWT
     if (request && 'query' in request) {
-      // Pages Router
-      const { getToken } = getAuth(request as NextApiRequest);
-      try {
-        token = await getToken();
-      } catch (error) {
-        return {
-          valid: false,
-          error: 'Error obteniendo token desde Pages Router',
-          code: 'TOKEN_RETRIEVAL_ERROR',
-          severity: 'medium'
-        };
-      }
+      // Pages Router - No soportado con NextAuth.js
+      return {
+        valid: false,
+        error: 'Pages Router no soportado con NextAuth.js',
+        code: 'NOT_SUPPORTED',
+        severity: 'medium'
+      };
     } else {
-      // App Router
+      // App Router - NextAuth.js
       try {
-        const { getToken } = await auth();
-        if (getToken) {
-          token = await getToken();
+        const session = await auth();
+        if (!session?.user) {
+          return {
+            valid: false,
+            error: 'Usuario no autenticado',
+            code: 'NOT_AUTHENTICATED',
+            severity: 'medium'
+          };
         }
+        // Para NextAuth.js, consideramos válida la sesión si existe
+        return {
+          valid: true,
+          payload: {
+            userId: session.user.id,
+            email: session.user.email,
+            name: session.user.name
+          },
+          claims: {
+            sub: session.user.id,
+            email: session.user.email
+          }
+        };
       } catch (error) {
         return {
           valid: false,
-          error: 'Error obteniendo token desde App Router',
-          code: 'TOKEN_RETRIEVAL_ERROR',
+          error: 'Error obteniendo sesión desde NextAuth.js',
+          code: 'SESSION_RETRIEVAL_ERROR',
           severity: 'medium'
         };
       }

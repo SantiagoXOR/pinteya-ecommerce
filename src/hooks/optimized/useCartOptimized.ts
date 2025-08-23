@@ -5,7 +5,7 @@
 // type safety mejorado y gestión de estado más eficiente
 
 import { useCallback, useMemo, useEffect, useRef } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import { 
   selectCartItems, 
@@ -116,7 +116,7 @@ export function useCartOptimized(
   // ===================================
 
   const dispatch = useAppDispatch();
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth();
   
   // Selectores memoizados para mejor performance
   const items = useAppSelector(selectCartItems);

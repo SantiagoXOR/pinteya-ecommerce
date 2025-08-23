@@ -356,44 +356,37 @@ jest.mock('@/app/context/QuickViewModalContext', () => ({
   ModalProvider: ({ children }) => children,
 }))
 
-// Mock Clerk components y server functions
-jest.mock('@clerk/nextjs', () => ({
-  SignedIn: ({ children }) => <div data-testid="signed-in">{children}</div>,
-  SignedOut: ({ children }) => <div data-testid="signed-out">{children}</div>,
-  UserButton: () => <div data-testid="user-button">User Button</div>,
-  useAuth: () => ({
-    isSignedIn: false,
-    userId: null,
-  }),
-  useUser: () => ({
-    user: null,
-    isLoaded: true,
-  }),
+// Mock NextAuth.js components and functions
+jest.mock('next-auth', () => ({
+  default: jest.fn(() => ({
+    handlers: { GET: jest.fn(), POST: jest.fn() },
+    auth: jest.fn(),
+    signIn: jest.fn(),
+    signOut: jest.fn(),
+  })),
 }))
 
-// Mock Clerk server functions
-jest.mock('@clerk/nextjs/server', () => ({
-  auth: jest.fn(() => ({
-    userId: 'test-user-id',
-    sessionId: 'test-session-id',
-    getToken: jest.fn(() => Promise.resolve('test-token')),
+jest.mock('next-auth/providers/google', () => ({
+  default: jest.fn(() => ({
+    id: 'google',
+    name: 'Google',
+    type: 'oauth',
   })),
-  currentUser: jest.fn(() => Promise.resolve({
-    id: 'test-user-id',
-    emailAddresses: [{ emailAddress: 'test@example.com' }],
-    firstName: 'Test',
-    lastName: 'User',
-  })),
-  clerkClient: {
-    users: {
-      getUser: jest.fn(() => Promise.resolve({
-        id: 'test-user-id',
-        emailAddresses: [{ emailAddress: 'test@example.com' }],
-        firstName: 'Test',
-        lastName: 'User',
-      })),
+}))
+
+// Mock NextAuth.js auth function
+jest.mock('@/auth', () => ({
+  auth: jest.fn(() => Promise.resolve({
+    user: {
+      id: 'test-user-id',
+      email: 'test@example.com',
+      name: 'Test User',
+      image: 'https://example.com/avatar.jpg',
     },
-  },
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  })),
+  signIn: jest.fn(),
+  signOut: jest.fn(),
 }))
 
 // Mock Supabase - Configuración completa y robusta
@@ -615,18 +608,30 @@ jest.mock('@/lib/supabase/client', () => ({
   createClient: jest.fn(() => mockSupabaseClient),
 }))
 
-// Mock Clerk para tests de API
-jest.mock('@clerk/nextjs/server', () => ({
-  currentUser: jest.fn(() => Promise.resolve(null)),
-  auth: jest.fn(() => ({
-    userId: null,
-    user: null,
+// Mock NextAuth.js para tests de API
+jest.mock('next-auth/next', () => ({
+  getServerSession: jest.fn(() => Promise.resolve({
+    user: {
+      id: 'test-user-id',
+      email: 'test@example.com',
+      name: 'Test User',
+    },
   })),
 }))
 
-jest.mock('@/lib/clerk', () => ({
-  getAuthUser: jest.fn(() => Promise.resolve(null)),
-  getAuthUserId: jest.fn(() => Promise.resolve(null)),
+// Mock auth utilities para compatibilidad
+jest.mock('@/lib/auth/admin-auth', () => ({
+  getAuthUser: jest.fn(() => Promise.resolve({
+    id: 'test-user-id',
+    email: 'test@example.com',
+    name: 'Test User',
+  })),
+  getAuthUserId: jest.fn(() => Promise.resolve('test-user-id')),
+  requireAuth: jest.fn(() => Promise.resolve({
+    id: 'test-user-id',
+    email: 'test@example.com',
+    name: 'Test User',
+  })),
 }))
 
 // Mock MercadoPago - Versión completa

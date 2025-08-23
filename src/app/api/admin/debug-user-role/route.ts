@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { createClerkClient } from '@clerk/nextjs/server';
 
 /**
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     // Verificar autenticación
     const { userId, sessionClaims } = await auth();
     
-    if (!userId) {
+    if (!session?.user) {
       return NextResponse.json(
         { 
           error: 'No authenticated user',

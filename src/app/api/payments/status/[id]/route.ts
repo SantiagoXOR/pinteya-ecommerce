@@ -3,7 +3,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { getPaymentInfo } from '@/lib/mercadopago';
 import { getSupabaseClient } from '@/lib/supabase';
 import { ApiResponse } from '@/types/api';
@@ -18,8 +18,8 @@ export async function GET(request: NextRequest, context: RouteParams) {
   const params = await context.params;
   try {
     // Autenticación con Clerk
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest, context: RouteParams) {
   try {
     // TODO: Reactivar cuando Clerk funcione
     // const { userId } = auth();
-    // if (!userId) {
+    // if (!session?.user) {
     //   const errorResponse: ApiResponse<null> = {
     //     data: null,
     //     success: false,

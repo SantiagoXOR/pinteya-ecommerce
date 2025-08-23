@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
@@ -29,23 +29,23 @@ const AnalyticsFiltersSchema = z.object({
 
 async function validateAdminAuth() {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       return { error: 'Usuario no autenticado', status: 401 };
     }
 
-    const user = await currentUser();
-    if (!user) {
+    const user = session?.user;
+    if (!session?.user) {
       return { error: 'Usuario no encontrado', status: 401 };
     }
 
     // Verificar si es admin
-    const isAdmin = user.emailAddresses?.[0]?.emailAddress === 'santiago@xor.com.ar';
+    const isAdmin = session.user.email === 'santiago@xor.com.ar';
     if (!isAdmin) {
       return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 };
     }
 
-    return { user, userId };
+    return { user: session.user, userId: session.user.id };
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.AUTH, 'Error en validación admin', { error });
     return { error: 'Error de autenticación', status: 500 };

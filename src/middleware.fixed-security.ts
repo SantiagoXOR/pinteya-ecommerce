@@ -98,7 +98,7 @@ export default clerkMiddleware(async (auth, request) => {
 
     const { userId, sessionClaims, redirectToSignIn } = await auth();
 
-    if (!userId) {
+    if (!session?.user) {
       console.warn(`[MIDDLEWARE] ❌ Usuario no autenticado - Redirigiendo a signin`);
       return redirectToSignIn();
     }
@@ -177,7 +177,7 @@ export default clerkMiddleware(async (auth, request) => {
 
   // Para otras rutas protegidas, verificar autenticación básica
   const { userId, redirectToSignIn } = await auth();
-  if (!userId) {
+  if (!session?.user) {
     console.log(`[MIDDLEWARE] 🔒 Ruta protegida - Redirigiendo a signin: ${pathname}`);
     return redirectToSignIn();
   }

@@ -4,12 +4,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
 import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { MetricsCollector } from '@/lib/metrics';
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -36,23 +36,18 @@ const UpdateOrderSchema = z.object({
 
 async function validateAdminAuth() {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       return { error: 'Usuario no autenticado', status: 401 };
     }
 
-    const user = await currentUser();
-    if (!user) {
-      return { error: 'Usuario no encontrado', status: 401 };
-    }
-
     // Verificar si es admin
-    const isAdmin = user.emailAddresses?.[0]?.emailAddress === 'santiago@xor.com.ar';
+    const isAdmin = session.user.email === 'santiago@xor.com.ar';
     if (!isAdmin) {
       return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 };
     }
 
-    return { user, userId };
+    return { user: session.user, userId: session.user.id };
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.AUTH, 'Error en validación admin', { error });
     return { error: 'Error de autenticación', status: 500 };
@@ -212,7 +207,7 @@ export async function GET(
 
     // Métricas de performance
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-order-detail', responseTime, 200);
+    await MetricsCollector.getInstance().recordRequest('admin-order-detail', 'GET', 200, responseTime);
 
     const response: ApiResponse<{
       order: typeof order;
@@ -240,7 +235,7 @@ export async function GET(
 
   } catch (error) {
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-order-detail', responseTime, 500);
+    await MetricsCollector.getInstance().recordRequest('admin-order-detail', 'GET', 500, responseTime);
     
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/orders/[id]', { error, orderId: params.id });
     
@@ -379,7 +374,7 @@ export async function PATCH(
 
     // Métricas de performance
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-order-update', responseTime, 200);
+    await MetricsCollector.getInstance().recordRequest('admin-order-update', 'PATCH', 200, responseTime);
 
     const response: ApiResponse<typeof updatedOrder> = {
       data: updatedOrder,
@@ -400,7 +395,7 @@ export async function PATCH(
 
   } catch (error) {
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-order-update', responseTime, 500);
+    await MetricsCollector.getInstance().recordRequest('admin-order-update', 'PATCH', 500, responseTime);
     
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PATCH /api/admin/orders/[id]', { error, orderId: params.id });
     

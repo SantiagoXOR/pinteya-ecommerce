@@ -7,13 +7,14 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow', // No indexar páginas de admin
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   // ✅ OBTENER NONCE del middleware para CSP
-  const nonce = headers().get('X-Nonce') || undefined;
+  const headersList = await headers();
+  const nonce = headersList.get('X-Nonce') || undefined;
 
   return (
     <div className="min-h-screen bg-gray-50">

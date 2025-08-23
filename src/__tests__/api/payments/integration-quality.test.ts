@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/payments/integration-quality/route';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 
 // Mock dependencies
 jest.mock('@clerk/nextjs/server', () => ({

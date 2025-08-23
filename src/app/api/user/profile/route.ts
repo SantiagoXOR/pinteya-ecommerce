@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 
 // ===================================
@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Autenticación con Clerk
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Si no existe el usuario, crear uno demo
-    if (!user) {
+    if (!session?.user) {
       const { data: newUser, error: createError } = await supabaseAdmin
         .from('users')
         .insert([
@@ -103,8 +103,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Autenticación con Clerk
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,

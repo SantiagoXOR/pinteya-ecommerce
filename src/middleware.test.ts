@@ -92,7 +92,7 @@ export default clerkMiddleware(async (auth, request) => {
   if (isAdminRoute(request)) {
     const { userId, sessionClaims, redirectToSignIn } = await auth();
 
-    if (!userId) {
+    if (!session?.user) {
       return redirectToSignIn();
     }
 
@@ -137,7 +137,7 @@ export default clerkMiddleware(async (auth, request) => {
 
   // Para otras rutas protegidas, verificar autenticación básica
   const { userId, redirectToSignIn } = await auth();
-  if (!userId) {
+  if (!session?.user) {
     return redirectToSignIn();
   }
 

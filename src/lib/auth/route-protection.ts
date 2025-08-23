@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { supabaseAdmin } from '@/lib/supabase';
 
 // =====================================================
@@ -224,7 +224,7 @@ export async function protectAdminRoute(request: NextRequest): Promise<NextRespo
       return NextResponse.redirect(loginUrl);
     }
 
-    if (!userId) {
+    if (!session?.user) {
       return null; // No autenticado pero ruta no requiere auth
     }
 

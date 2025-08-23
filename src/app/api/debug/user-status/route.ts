@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -91,7 +91,7 @@ export async function GET() {
       },
       user: user ? {
         id: user.id || null,
-        email: user.emailAddresses?.[0]?.emailAddress || null,
+        email: session.user.email || null,
         firstName: user.firstName || null,
         lastName: user.lastName || null,
         publicMetadata: user.publicMetadata || null,

@@ -124,45 +124,35 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // ✅ CONFIGURACIÓN CLERK PROXY - Temporalmente comentado para debug
-  // async rewrites() {
-  //   return {
-  //     beforeFiles: [
-  //       {
-  //         source: '/__clerk/:path*',
-  //         destination: 'https://api.clerk.com/:path*',
-  //       },
-  //     ],
-  //   };
-  // },
+  // ✅ CONFIGURACIÓN CLERK corregida - Removido serverExternalPackages conflictivo
 
-  // Redirects para compatibilidad de URLs - TEMPORALMENTE COMENTADO PARA DEBUG
-  // async redirects() {
-  //   return [
-  //     // ✅ REDIRECCIONES RESTAURADAS CON CONFIGURACIÓN SEGURA
-  //     {
-  //       source: '/my-account',
-  //       destination: '/admin',
-  //       permanent: false, // 302 redirect para poder cambiar en el futuro
-  //     },
-  //     {
-  //       source: '/my-account/:path*',
-  //       destination: '/admin/:path*', // Preservar subrutas
-  //       permanent: false,
-  //     },
-  //     // Comentado temporalmente hasta verificar que no cause problemas
-  //     // {
-  //     //   source: '/home',
-  //     //   destination: '/admin',
-  //     //   permanent: false,
-  //     // },
-  //     {
-  //       source: '/product/:id',
-  //       destination: '/shop-details/:id',
-  //       permanent: true,
-  //     },
-  //   ];
-  // },
+  // Redirects para compatibilidad de URLs
+  async redirects() {
+    return [
+      // ✅ REDIRECCIONES RESTAURADAS CON CONFIGURACIÓN SEGURA
+      {
+        source: '/my-account',
+        destination: '/admin',
+        permanent: false, // 302 redirect para poder cambiar en el futuro
+      },
+      {
+        source: '/my-account/:path*',
+        destination: '/admin/:path*', // Preservar subrutas
+        permanent: false,
+      },
+      // Comentado temporalmente hasta verificar que no cause problemas
+      // {
+      //   source: '/home',
+      //   destination: '/admin',
+      //   permanent: false,
+      // },
+      {
+        source: '/product/:id',
+        destination: '/shop-details/:id',
+        permanent: true,
+      },
+    ];
+  },
 
   // ✅ HEADERS OPTIMIZADOS para admin panel
   async headers() {

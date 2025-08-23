@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { verifyToken } from '@clerk/backend';
+// import { verifyToken } from '@clerk/backend'; // REMOVIDO: Migrado a NextAuth.js
 import { getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -71,72 +71,20 @@ async function getAuthenticatedUser(request: NextRequest): Promise<AuthResult> {
 
     const token = authHeader.substring(7); // Remover "Bearer "
 
-    // Intentar verificar con Clerk primero
-    try {
-      const clerkPayload = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY!
-      });
+    // REMOVIDO: Verificación con Clerk (migrado a NextAuth.js)
+    // try {
+    //   const clerkPayload = await verifyToken(token, {
+    //     secretKey: process.env.CLERK_SECRET_KEY!
+    //   });
 
-      if (clerkPayload && clerkPayload.sub) {
-        // Token de Clerk válido, buscar usuario en Supabase
-        const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-
-        const { data: profile, error: profileError } = await supabase
-          .from('user_profiles')
-          .select(`
-            id,
-            email,
-            supabase_user_id,
-            user_roles (
-              role_name
-            )
-          `)
-          .eq('clerk_user_id', clerkPayload.sub)
-          .single();
-
-        if (profileError || !profile) {
-          console.error('❌ Error obteniendo perfil de usuario:', {
-            clerkUserId: clerkPayload.sub,
-            profileError: profileError?.message,
-            profile
-          });
-          return {
-            success: false,
-            error: 'Usuario no encontrado en el sistema',
-            status: 401
-          };
-        }
-
-        console.log('✅ Usuario encontrado:', {
-          email: profile.email,
-          role: profile.user_roles?.role_name,
-          clerkId: clerkPayload.sub
-        });
-
-        // Crear objeto user compatible
-        const user = {
-          id: profile.supabase_user_id,
-          email: profile.email,
-          clerk_id: clerkPayload.sub
-        };
-
-        const isAdmin = profile.user_roles?.role_name === 'admin';
-
-        console.log('🔐 Verificación de admin:', {
-          isAdmin,
-          roleName: profile.user_roles?.role_name
-        });
-
-        return {
-          success: true,
-          user,
-          supabase,
-          isAdmin
-        };
-      }
-    } catch (clerkError) {
-      console.log('Token no es de Clerk, intentando con Supabase...');
-    }
+    //   if (clerkPayload && clerkPayload.sub) {
+    //     // Token de Clerk válido, buscar usuario en Supabase
+    //     const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    //     // ... resto del código de Clerk comentado
+    //   }
+    // } catch (clerkError) {
+    //   console.log('Token no es de Clerk, intentando con Supabase...');
+    // }
 
     // Si no es token de Clerk, intentar con Supabase
     const supabase = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);

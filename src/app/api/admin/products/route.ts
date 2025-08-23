@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { supabaseAdmin } from '@/lib/supabase';
 import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth';
 import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils';
 import { withCriticalValidation } from '@/lib/validation/enterprise-validation-middleware';
@@ -319,28 +317,22 @@ const postHandlerSimple = async (request: NextRequest) => {
   try {
     console.log('🔧 Products API: Creating product (SIMPLE MODE)...');
 
-    // Verificar autenticación básica con Clerk
-    let userId: string;
-    try {
-      const authResult = await auth();
-      userId = authResult.userId || '';
+    // Verificar autenticación básica
+    const authResult = await checkCRUDPermissions('products', 'create', request);
 
-      if (!userId) {
-        console.log('❌ Usuario no autenticado - sin userId');
-        return NextResponse.json(
-          { error: 'Autenticación requerida', code: 'NOT_AUTHENTICATED' },
-          { status: 401 }
-        );
-      }
-    } catch (authError) {
-      console.error('❌ Error en autenticación Clerk:', authError);
+    if (!authResult.success) {
+      console.log('❌ Auth failed:', authResult.error);
       return NextResponse.json(
-        { error: 'Error interno del servidor', code: 'AUTH_ERROR' },
-        { status: 500 }
+        {
+          error: authResult.error || 'Autenticación requerida',
+          code: 'AUTH_ERROR'
+        },
+        { status: authResult.status || 401 }
       );
     }
 
-    console.log('✅ Usuario autenticado:', userId);
+    console.log('✅ Auth successful');
+    const { supabase, user } = authResult;
 
     const body = await request.json();
     console.log('📝 Request body:', JSON.stringify(body, null, 2));
@@ -389,7 +381,7 @@ const postHandlerSimple = async (request: NextRequest) => {
 
     // Verificar categoría si se proporciona
     if (productData.category_id) {
-      const { data: category, error: categoryError } = await supabaseAdmin
+      const { data: category, error: categoryError } = await supabase
         .from('categories')
         .select('id')
         .eq('id', productData.category_id)
@@ -408,7 +400,7 @@ const postHandlerSimple = async (request: NextRequest) => {
     }
 
     // Crear producto
-    const { data: product, error } = await supabaseAdmin
+    const { data: product, error } = await supabase
       .from('products')
       .insert(productData)
       .select(`

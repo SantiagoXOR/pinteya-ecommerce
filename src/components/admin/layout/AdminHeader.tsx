@@ -1,7 +1,7 @@
 'use client';
 
-import { UserButton } from '@clerk/nextjs';
-import { Bell, Menu, X } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { Bell, Menu, X, User, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -145,15 +145,7 @@ export function AdminHeader({
 
         {/* User Menu */}
         <div className="flex items-center">
-          <UserButton 
-            appearance={{
-              elements: {
-                avatarBox: "w-8 h-8",
-                userButtonPopoverCard: "shadow-lg border border-gray-200",
-                userButtonPopoverActionButton: "hover:bg-gray-50",
-              }
-            }}
-          />
+          <UserMenuButton />
         </div>
       </div>
 
@@ -164,5 +156,44 @@ export function AdminHeader({
         </div>
       )}
     </header>
+  );
+}
+
+// Componente UserMenuButton para NextAuth.js
+function UserMenuButton() {
+  const { data: session } = useSession();
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!session?.user) {
+    return null;
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+      >
+        <div className="w-8 h-8 bg-blaze-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+          {session.user.name?.charAt(0) || session.user.email?.charAt(0) || 'U'}
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+          <div className="px-4 py-2 border-b border-gray-200">
+            <p className="text-sm font-medium text-gray-900">{session.user.name}</p>
+            <p className="text-xs text-gray-500">{session.user.email}</p>
+          </div>
+          <button
+            onClick={() => signOut()}
+            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Cerrar Sesión
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

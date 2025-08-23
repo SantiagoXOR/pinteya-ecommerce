@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 
 // Tipos para clientes (placeholder)
 interface Customer {
@@ -59,8 +59,8 @@ export async function GET(request: NextRequest) {
     console.log('🔍 API: GET /api/admin/customers - Iniciando...');
 
     // Verificar autenticación
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       console.log('❌ Usuario no autenticado');
       return NextResponse.json({
         success: false,
@@ -137,8 +137,8 @@ export async function POST(request: NextRequest) {
     console.log('🔍 API: POST /api/admin/customers - Iniciando...');
 
     // Verificar autenticación
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json({
         success: false,
         error: 'No autorizado'

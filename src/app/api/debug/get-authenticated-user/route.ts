@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser, getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 
 export async function GET(request: NextRequest) {
   try {

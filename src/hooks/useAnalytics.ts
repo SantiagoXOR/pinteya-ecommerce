@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useCallback, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from './useAuth';
 import { usePathname } from 'next/navigation';
 import { analytics, AnalyticsEvent, ConversionMetrics, UserInteraction } from '@/lib/analytics';
 
@@ -37,7 +37,7 @@ export interface UseAnalyticsReturn {
 }
 
 export const useAnalytics = (): UseAnalyticsReturn => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const pathname = usePathname();
   const [isEnabled, setIsEnabled] = useState(true);
   const [sessionMetrics, setSessionMetrics] = useState<ConversionMetrics>({
