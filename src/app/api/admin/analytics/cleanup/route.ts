@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@/auth';
 
 /**
  * POST /api/admin/analytics/cleanup
@@ -14,7 +14,7 @@ import { auth } from '@clerk/nextjs';
 export async function POST(request: NextRequest) {
   try {
     // Verificar autenticación de admin
-    const { userId } = auth();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'No autorizado' },
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación de admin
-    const { userId } = auth();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'No autorizado' },
