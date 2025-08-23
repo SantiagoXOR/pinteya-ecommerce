@@ -4,7 +4,7 @@
  */
 
 import { Suspense } from "react"
-import { SignInForm } from "@/components/auth/SignInForm"
+import { SignInForm } from "@/components/Auth/SignInForm"
 
 export default function SignInPage() {
   return (
