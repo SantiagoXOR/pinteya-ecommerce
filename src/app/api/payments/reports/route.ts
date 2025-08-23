@@ -3,7 +3,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { getSupabaseClient } from '@/lib/supabase';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
 import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
 
   try {
     // Verificar autenticación
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, error: 'No autorizado' },
         { status: 401 }
@@ -139,8 +139,8 @@ export async function POST(request: NextRequest) {
 
   try {
     // Verificar autenticación
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, error: 'No autorizado' },
         { status: 401 }

@@ -7,7 +7,7 @@ import { useAppSelector } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
-import AuthSection from "./AuthSection";
+import AuthSectionSimple from "./AuthSectionSimple";
 import { SearchAutocompleteIntegrated } from "@/components/ui/SearchAutocompleteIntegrated";
 import { useCartAnimation } from "@/hooks/useCartAnimation";
 import { MapPin, Loader2, ShoppingCart } from "lucide-react";
@@ -196,10 +196,10 @@ const Header = () => {
             <div className="flex items-center gap-1 sm:gap-3">
               {/* Autenticación - Responsive */}
               <div className="hidden sm:block">
-                <AuthSection variant="desktop" />
+                <AuthSectionSimple variant="desktop" />
               </div>
               <div className="sm:hidden">
-                <AuthSection variant="mobile" />
+                <AuthSectionSimple variant="mobile" />
               </div>
 
               {/* Carrito - Solo visible en desktop */}

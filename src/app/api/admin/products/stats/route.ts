@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkCRUDPermissions } from '@/lib/auth/admin-auth';
+import { requireAdminAuth } from '@/lib/auth/admin-auth';
+import { supabaseAdmin } from '@/lib/supabase';
 
 /**
  * GET /api/admin/products/stats
@@ -8,29 +9,27 @@ import { checkCRUDPermissions } from '@/lib/auth/admin-auth';
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación y permisos de admin
-    const authResult = await checkCRUDPermissions('products', 'read', request);
+    const authResult = await requireAdminAuth();
 
     if (!authResult.success) {
       return NextResponse.json(
         { error: authResult.error },
-        { status: authResult.status }
+        { status: authResult.status || 401 }
       );
     }
 
-    const { supabase } = authResult;
-
     // Obtener estadísticas usando una sola query optimizada
-    const { data: stats, error } = await supabase.rpc('get_product_stats');
+    const { data: stats, error } = await supabaseAdmin.rpc('get_product_stats');
 
     if (error) {
       console.error('Error obteniendo estadísticas de productos:', error);
-      
+
       // Fallback: calcular estadísticas manualmente
       const [totalResult, activeResult, lowStockResult, noStockResult] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }),
-        supabase.from('products').select('id', { count: 'exact', head: true }).gt('stock', 0),
-        supabase.from('products').select('id', { count: 'exact', head: true }).gt('stock', 0).lte('stock', 10),
-        supabase.from('products').select('id', { count: 'exact', head: true }).or('stock.eq.0,stock.is.null')
+        supabaseAdmin.from('products').select('id', { count: 'exact', head: true }),
+        supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).gt('stock', 0),
+        supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).gt('stock', 0).lte('stock', 10),
+        supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).or('stock.eq.0,stock.is.null')
       ]);
 
       const fallbackStats = {

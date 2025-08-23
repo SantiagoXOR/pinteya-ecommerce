@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ClerkProvider } from "@clerk/nextjs";
-import { esES } from "@clerk/localizations";
+import { SessionProvider } from "next-auth/react";
 
 // Providers de la aplicación
 import { ModalProvider } from "./context/QuickViewModalContext";
@@ -10,11 +9,11 @@ import { CartModalProvider } from "./context/CartSidebarModalContext";
 import { ReduxProvider } from "@/redux/provider";
 import { PreviewSliderProvider } from "./context/PreviewSliderContext";
 import CartPersistenceProvider from "@/components/providers/CartPersistenceProvider";
-import { OptimizedAnalyticsProvider as AnalyticsProvider } from '@/components/Analytics/OptimizedAnalyticsProvider';
+import { SimpleAnalyticsProvider as AnalyticsProvider } from '@/components/Analytics/SimpleAnalyticsProvider';
 import { QueryClientProvider } from "@/components/providers/QueryClientProvider";
 
 // Componentes UI
-import Header from "../components/Header";
+import HeaderNextAuth from "../components/Header/HeaderNextAuth";
 import Footer from "../components/layout/Footer";
 import QuickViewModal from "@/components/Common/QuickViewModal";
 import CartSidebarModal from "@/components/Common/CartSidebarModal";
@@ -25,70 +24,26 @@ import CartNotification, { useCartNotification } from "@/components/Common/CartN
 // import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import FloatingCartButton from "@/components/ui/floating-cart-button";
 
-// Componente ClerkWrapper simplificado siguiendo las mejores prácticas oficiales
-function ClerkWrapper({ children, publishableKey }: { children: React.ReactNode; publishableKey: string }) {
+// Componente NextAuthWrapper para manejar sesiones
+function NextAuthWrapper({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Validar publishableKey
-  if (!publishableKey) {
-    console.warn('ClerkProvider: publishableKey is required');
-    return <>{children}</>;
-  }
-
-  // Durante SSG/hidratación inicial, renderizar sin ClerkProvider para evitar mismatch
+  // Durante SSG/hidratación inicial, renderizar sin SessionProvider para evitar mismatch
   if (!isMounted) {
     return <>{children}</>;
   }
 
-  // DEBUG: Log de configuración optimizada
-  console.log('[CLERK_PROVIDER] Configuración optimizada para persistencia:', {
-    signInFallbackRedirectUrl: "/admin",
-    signUpFallbackRedirectUrl: "/admin",
-    afterSignInUrl: "/admin",
-    afterSignUpUrl: "/admin",
-    afterSignOutUrl: "/",
-    sessionTokenTemplate: "pinteya-{{session.id}}",
-    domain: process.env.NODE_ENV === 'production' ? 'pinteya.com' : 'localhost',
-    publishableKey: publishableKey ? 'SET' : 'NOT_SET'
-  });
+  // DEBUG: Log de configuración NextAuth
+  console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce');
 
-  // ✅ CONFIGURACIÓN OPTIMIZADA para persistencia de sesión
   return (
-    <ClerkProvider
-      publishableKey={publishableKey}
-      localization={esES}
-      // ✅ URLs de redirección optimizadas para admin
-      signInFallbackRedirectUrl="/admin"
-      signUpFallbackRedirectUrl="/admin"
-      afterSignInUrl="/admin"
-      afterSignUpUrl="/admin"
-      afterSignOutUrl="/"
-      // ✅ Configuración de sesión optimizada
-      sessionTokenTemplate="pinteya-{{session.id}}"
-      // ✅ Configuración de dominio para persistencia
-      domain={process.env.NODE_ENV === 'production' ? 'pinteya.com' : undefined}
-      appearance={{
-        variables: {
-          colorPrimary: '#eb6313', // blaze-orange-600
-          colorBackground: '#fef7ee', // blaze-orange-50
-          colorInputBackground: '#ffffff',
-          colorInputText: '#1f2937',
-          borderRadius: '0.5rem',
-        },
-        elements: {
-          formButtonPrimary: "bg-blaze-orange-600 hover:bg-blaze-orange-700 text-sm normal-case font-medium",
-          card: "shadow-xl border border-blaze-orange-200",
-          headerTitle: "text-2xl font-bold text-gray-900",
-          headerSubtitle: "text-gray-600",
-        }
-      }}
-    >
+    <SessionProvider>
       {children}
-    </ClerkProvider>
+    </SessionProvider>
   );
 }
 
@@ -102,16 +57,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  // Configuración de Clerk v5 (ACTIVADO - Variables configuradas en Vercel)
-  const clerkEnabled = true; // ✅ ACTIVADO - Variables de entorno configuradas
-  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  // ✅ NEXTAUTH.JS ACTIVADO - Migración completada 21/08/2025
+  // NextAuth.js reemplaza a Clerk para autenticación
+  const nextAuthEnabled = true; // ✅ ACTIVADO - Sistema funcional
 
   // Componente interno con todos los providers
   const AppContent = () => {
     const { notification, hideNotification } = useCartNotification();
 
     return (
-      <div className="app-content-wrapper">{/* mobile-bottom-nav-padding - TEMPORALMENTE DESACTIVADO */}
+      <div className="app-content-wrapper">{/* mobile-bottom-nav-padding TEMPORALMENTE DESACTIVADO */}
         {loading ? (
           <PreLoader />
         ) : (
@@ -123,7 +78,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     <CartModalProvider>
                       <ModalProvider>
                         <PreviewSliderProvider>
-                    <Header />
+                    <HeaderNextAuth />
                     <QuickViewModal />
                     <CartSidebarModal />
                     <PreviewSliderModal />
@@ -161,15 +116,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     );
   };
 
-  // Renderizado con ClerkProvider v5 activado (compatible con SSG)
-  if (clerkEnabled && publishableKey) {
+  // Renderizado con NextAuth.js SessionProvider
+  if (nextAuthEnabled) {
     return (
-      <ClerkWrapper publishableKey={publishableKey}>
+      <NextAuthWrapper>
         <AppContent />
-      </ClerkWrapper>
+      </NextAuthWrapper>
     );
   }
 
-  // Fallback sin Clerk (si no hay publishableKey)
+  // Fallback sin autenticación
   return <AppContent />;
 }

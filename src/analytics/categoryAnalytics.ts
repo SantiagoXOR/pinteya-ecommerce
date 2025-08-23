@@ -151,10 +151,11 @@ class CategoryAnalyticsManager {
         if (name === 'userId') return value;
       }
 
-      // From Clerk (if available)
-      if ((window as any).Clerk?.user?.id) {
-        return (window as any).Clerk.user.id;
-      }
+      // 🚨 TEMPORAL: Clerk removido durante migración a NextAuth.js
+      // TODO: Implementar obtención de usuario desde NextAuth.js
+      // if ((window as any).Clerk?.user?.id) {
+      //   return (window as any).Clerk.user.id;
+      // }
     }
 
     return undefined;

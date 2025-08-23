@@ -1,6 +1,8 @@
 "use client";
 
-import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
+// 🚨 MIGRADO A NEXTAUTH.JS - Clerk desactivado
+// import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,10 +14,10 @@ interface AuthSectionProps {
 }
 
 const AuthSection = ({ variant = 'desktop' }: AuthSectionProps) => {
-  // Control de activación de Clerk (ACTIVADO para autenticación real)
-  const clerkEnabled = true; // ✅ ACTIVADO - Para usar autenticación real con Clerk
+  // 🚨 TEMPORAL: Versión simplificada sin autenticación
+  // TODO: Implementar NextAuth.js completamente
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const { isLoaded } = useUser();
+  const isLoaded = true;
 
   // Componente skeleton para estado de carga
   const AuthSkeleton = () => (
@@ -28,7 +30,7 @@ const AuthSection = ({ variant = 'desktop' }: AuthSectionProps) => {
     setIsSignedIn(!isSignedIn);
   };
 
-  if (clerkEnabled) {
+  if (nextAuthEnabled) {
     // Versión con Clerk - Adaptada para mobile y desktop
     if (variant === 'mobile') {
       if (!isLoaded) {

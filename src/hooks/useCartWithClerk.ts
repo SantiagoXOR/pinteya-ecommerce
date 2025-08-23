@@ -3,7 +3,7 @@
 // ===================================
 
 import { useEffect, useCallback } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from './useAuth';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import { 
   selectCartItems, 
@@ -19,9 +19,9 @@ import {
   saveUserCart 
 } from '@/redux/middleware/cartPersistence';
 
-// Hook personalizado para manejar el carrito con integración Clerk
+// Hook personalizado para manejar el carrito con integración NextAuth
 export const useCartWithClerk = () => {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector(selectCartItems);
 

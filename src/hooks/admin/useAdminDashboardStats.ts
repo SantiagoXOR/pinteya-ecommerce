@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 
 interface DashboardStats {
   totalProducts: number;
@@ -27,7 +27,7 @@ export function useAdminDashboardStats() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { getToken } = useAuth();
+  const { data: session } = useSession();
 
   useEffect(() => {
     fetchDashboardStats();
@@ -38,39 +38,25 @@ export function useAdminDashboardStats() {
       setLoading(true);
       setError(null);
 
-      // Intentar obtener token de autenticación (sin fallar si no hay token)
-      let token = null;
-      try {
-        token = await getToken();
-      } catch (tokenError) {
-        console.warn('No se pudo obtener token, usando fallback:', tokenError);
-      }
+      // NextAuth.js maneja las cookies de sesión automáticamente
+      // No necesitamos obtener token manualmente
 
       // Hacer requests paralelos a diferentes APIs (con manejo de errores individual)
       const [productsResponse, ordersResponse, usersResponse] = await Promise.allSettled([
         fetch('/api/admin/products/stats', {
-          headers: token ? {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } : {
+          headers: {
             'Content-Type': 'application/json'
           },
           credentials: 'include'
         }),
         fetch('/api/admin/orders/stats', {
-          headers: token ? {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } : {
+          headers: {
             'Content-Type': 'application/json'
           },
           credentials: 'include'
         }),
         fetch('/api/admin/users/stats', {
-          headers: token ? {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } : {
+          headers: {
             'Content-Type': 'application/json'
           },
           credentials: 'include'

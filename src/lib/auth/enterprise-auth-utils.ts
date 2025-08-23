@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import type { NextApiRequest } from 'next';
-import { auth, getAuth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { validateJWTIntegrity, validateJWTPermissions } from './jwt-validation';
 import { validateRequestOrigin } from './csrf-protection';
@@ -182,22 +182,18 @@ export async function getEnterpriseAuthContext(
     let userEmail: string | undefined;
 
     if (request && 'query' in request) {
-      // Pages Router
-      const { userId: authUserId, sessionId: authSessionId } = getAuth(request as NextApiRequest);
-      if (!authUserId) {
-        return {
-          success: false,
-          error: 'Usuario no autenticado',
-          code: 'NOT_AUTHENTICATED',
+      // Pages Router - NextAuth.js
+      // TODO: Implementar autenticación para Pages Router con NextAuth.js
+      return {
+        success: false,
+        error: 'Pages Router no soportado con NextAuth.js',
+        code: 'NOT_SUPPORTED',
           status: 401
         };
-      }
-      userId = authUserId;
-      sessionId = authSessionId;
     } else {
-      // App Router
-      const { userId: authUserId, sessionId: authSessionId } = await auth();
-      if (!authUserId) {
+      // App Router - NextAuth.js
+      const session = await auth();
+      if (!session?.user?.id) {
         return {
           success: false,
           error: 'Usuario no autenticado',
@@ -205,8 +201,9 @@ export async function getEnterpriseAuthContext(
           status: 401
         };
       }
-      userId = authUserId;
-      sessionId = authSessionId;
+      userId = session.user.id;
+      sessionId = session.user.id; // NextAuth.js no tiene sessionId separado
+      userEmail = session.user.email;
     }
 
     // 4. VALIDACIÓN JWT

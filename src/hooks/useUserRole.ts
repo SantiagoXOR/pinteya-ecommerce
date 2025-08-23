@@ -1,12 +1,12 @@
 /**
  * Hook personalizado para gestionar roles de usuario
- * Integra Clerk con el sistema de roles de Supabase
+ * Integra NextAuth.js con el sistema de roles de Supabase
  */
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from './useAuth';
 
 export interface UserRole {
   role_name: string;
@@ -46,127 +46,123 @@ export interface UseUserRoleReturn {
 }
 
 export const useUserRole = (): UseUserRoleReturn => {
-  const { user, isLoaded } = useUser();
+  // 🚨 TEMPORAL: Hook simplificado sin autenticación durante migración
+  // TODO: Restaurar funcionalidad completa cuando NextAuth esté configurado
+  // const { user, isLoaded, isSignedIn } = useAuth();
+
+  // 🚨 TEMPORAL: Estados simplificados sin autenticación
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 🚨 TEMPORAL: Variables mock para evitar errores
+  const user = null;
+  const isLoaded = true;
+  const isSignedIn = false;
+
   const syncUser = useCallback(async () => {
-    if (!user || !isLoaded) return;
+    if (!user?.email) {
+      console.log('[useUserRole] No hay usuario autenticado para sincronizar');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       setIsLoading(true);
       setError(null);
 
-      console.log('[useUserRole] 🚫 SINCRONIZACIÓN TEMPORALMENTE DESHABILITADA');
-      console.log('[useUserRole] 📋 Usuario detectado:', {
-        id: user.id,
-        email: user.emailAddresses[0]?.emailAddress,
-        publicRole: user.publicMetadata?.role,
-        privateRole: user.privateMetadata?.role
+      // Buscar o crear usuario en Supabase
+      const response = await fetch('/api/admin/users/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        }),
       });
 
-      // TEMPORALMENTE DESHABILITADO - Evitar bucle recursivo
-      // const response = await fetch('/api/auth/sync-user', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     email,
-      //     firstName: user.firstName,
-      //     lastName: user.lastName,
-      //     clerkUserId: user.id,
-      //   }),
-      // });
+      if (!response.ok) {
+        throw new Error('Error al sincronizar usuario');
+      }
 
-      // Simular respuesta exitosa para evitar errores
-      setIsLoading(false);
-      return;
+      const userData = await response.json();
+      setUserProfile(userData);
 
-      // CÓDIGO COMENTADO TEMPORALMENTE
-      // const data = await response.json();
-      // if (data.success) {
-      //   setUserProfile(data.user);
-      // } else {
-      //   console.warn('Error en sincronización:', data.error);
-      //   setError(data.error || 'Error de sincronización');
-      // }
+      console.log('[useUserRole] Usuario sincronizado exitosamente');
     } catch (err) {
-      // Manejo más suave de errores
-      console.warn('Error syncing user:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error de conexión';
-      setError(errorMessage);
-
-      // No re-lanzar el error
+      console.error('[useUserRole] Error al sincronizar usuario:', err);
+      setError('Error al sincronizar usuario');
     } finally {
       setIsLoading(false);
     }
-  }, [user, isLoaded]);
+  }, [user]);
 
   const fetchUserProfile = useCallback(async () => {
-    if (!user || !isLoaded) return;
+    if (!user?.email) {
+      console.log('[useUserRole] No hay usuario autenticado');
+      setUserProfile(null);
+      setIsLoading(false);
+      return;
+    }
 
-    console.log('[useUserRole] 🚫 FETCH USER PROFILE TEMPORALMENTE DESHABILITADO');
-    setIsLoading(false);
-    return;
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    // CÓDIGO COMENTADO TEMPORALMENTE
-    // try {
-    //   setIsLoading(true);
-    //   setError(null);
+      const email = user.email;
+      if (!email) {
+        console.warn('Email no disponible para el usuario');
+        setError('Email no disponible');
+        setIsLoading(false);
+        return;
+      }
 
-    //   const email = user.emailAddresses[0]?.emailAddress;
-    //   if (!email) {
-    //     console.warn('Email no disponible para el usuario');
-    //     setError('Email no disponible');
-    //     setIsLoading(false);
-    //     return;
-    //   }
+      const response = await fetch(`/api/admin/users/profile?email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    //   const response = await fetch(`/api/auth/sync-user?email=${encodeURIComponent(email)}`, {
-    //     method: 'GET',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //   });
+      if (response.status === 404) {
+        // Usuario no existe, intentar sincronizar
+        await syncUser();
+        return;
+      }
 
-    //   if (response.status === 404) {
-    //     // Usuario no existe, intentar sincronizar
-    //     await syncUser();
-    //     return;
-    //   }
+      if (!response.ok) {
+        // Manejo más específico de errores HTTP
+        const errorText = await response.text();
+        console.warn(`Error HTTP ${response.status}: ${errorText}`);
 
-    // RESTO DEL CÓDIGO COMENTADO TEMPORALMENTE
-    //   if (!response.ok) {
-    //     // Manejo más específico de errores HTTP
-    //     const errorText = await response.text();
-    //     console.warn(`Error HTTP ${response.status}: ${errorText}`);
+        // No lanzar error para errores de red, solo logear
+        setError(`Error de conexión (${response.status})`);
+        setIsLoading(false);
+        return;
+      }
 
-    //     // No lanzar error para errores de red, solo logear
-    //     setError(`Error de conexión (${response.status})`);
-    //     setIsLoading(false);
-    //     return;
-    //   }
+      const data = await response.json();
+      if (data.success) {
+        setUserProfile(data.user);
+      } else {
+        console.warn('Error en respuesta del servidor:', data.error);
+        setError(data.error || 'Error del servidor');
+      }
+    } catch (err) {
+      // Manejo más suave de errores para no interrumpir la aplicación
+      console.warn('Error fetching user profile:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Error de conexión';
+      setError(errorMessage);
 
-    //   const data = await response.json();
-    //   if (data.success) {
-    //     setUserProfile(data.user);
-    //   } else {
-    //     console.warn('Error en respuesta del servidor:', data.error);
-    //     setError(data.error || 'Error del servidor');
-    //   }
-    // } catch (err) {
-    //   // Manejo más suave de errores para no interrumpir la aplicación
-    //   console.warn('Error fetching user profile:', err);
-    //   const errorMessage = err instanceof Error ? err.message : 'Error de conexión';
-    //   setError(errorMessage);
-
-    //   // No re-lanzar el error para evitar interrumpir otros componentes
-    // } finally {
-    //   setIsLoading(false);
-    // }
-  }, [user, isLoaded]);
+      // No re-lanzar el error para evitar interrumpir otros componentes
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   const hasPermission = (permissionPath: string[]): boolean => {
     if (!userProfile?.user_roles?.permissions) return false;
@@ -224,17 +220,16 @@ export const useUserRole = (): UseUserRoleReturn => {
   const canViewAnalytics = hasPermission(['analytics', 'read']);
 
   useEffect(() => {
-    console.log('[useUserRole] 🚫 useEffect TEMPORALMENTE DESHABILITADO');
-    if (isLoaded && user) {
-      console.log('[useUserRole] 📋 Usuario cargado, pero sincronización deshabilitada');
-      setIsLoading(false);
-      // fetchUserProfile(); // TEMPORALMENTE DESHABILITADO
-    } else if (isLoaded && !user) {
+    if (isLoaded && isSignedIn && user) {
+      console.log('[useUserRole] Usuario autenticado, obteniendo perfil...');
+      fetchUserProfile();
+    } else if (isLoaded && !isSignedIn) {
+      console.log('[useUserRole] Usuario no autenticado');
       setUserProfile(null);
       setIsLoading(false);
       setError(null);
     }
-  }, [user, isLoaded]);
+  }, [isLoaded, isSignedIn, user, fetchUserProfile]);
 
   return {
     userProfile,

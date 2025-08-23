@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
@@ -12,9 +12,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function MercadoPagoAdminPage() {
   // Verificar autenticación
-  const { userId } = await auth();
+  const session = await auth();
 
-  if (!userId) {
+  if (!session?.user) {
     redirect('/sign-in');
   }
 

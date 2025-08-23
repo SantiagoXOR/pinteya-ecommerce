@@ -8,7 +8,7 @@ import { CreatePreferencePayload } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
 import { createPaymentPreference } from '@/lib/mercadopago';
 import type { MercadoPagoItem } from '@/lib/mercadopago';
-import { currentUser } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { CHECKOUT_CONSTANTS, VALIDATION_CONSTANTS } from '@/constants/shop';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Si no hay usuario autenticado, usar usuario temporal
-    if (!userId) {
+    if (!session?.user) {
       userId = '00000000-0000-4000-8000-000000000000';
       userEmail = orderData.payer.email;
 

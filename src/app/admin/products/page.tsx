@@ -6,6 +6,9 @@ import { ProductList } from '@/components/admin/products/ProductList';
 import { Package, TrendingUp, AlertTriangle, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+// Importar el test de API
+import '../../../test-api.js';
+
 interface ProductStatsData {
   total_products: number;
   active_products: number;

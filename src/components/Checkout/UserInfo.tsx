@@ -5,7 +5,8 @@
 "use client";
 
 import React from 'react';
-import { useUser, SignedIn, SignedOut } from '@clerk/nextjs';
+// 🚨 TEMPORAL: Clerk desactivado por regresión crítica
+// import { useUser, SignedIn, SignedOut } from '@clerk/nextjs';
 import Link from 'next/link';
 
 interface UserInfoProps {
@@ -13,7 +14,9 @@ interface UserInfoProps {
 }
 
 const UserInfo: React.FC<UserInfoProps> = ({ className = '' }) => {
-  const { user, isLoaded } = useUser();
+  // 🚨 TEMPORAL: Simular usuario no autenticado
+  const user = null;
+  const isLoaded = true;
 
   if (!isLoaded) {
     return (
@@ -28,7 +31,8 @@ const UserInfo: React.FC<UserInfoProps> = ({ className = '' }) => {
 
   return (
     <div className={`bg-white shadow-1 rounded-[10px] p-4 sm:p-6 ${className}`}>
-      <SignedIn>
+      {/* 🚨 TEMPORAL: Mostrar como usuario no autenticado */}
+      {user && (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-tahiti-gold-100 rounded-full flex items-center justify-center">
             <span className="text-tahiti-gold-700 font-semibold text-sm">
@@ -49,9 +53,10 @@ const UserInfo: React.FC<UserInfoProps> = ({ className = '' }) => {
             ✅ Autenticado con Clerk - Los datos se guardarán en tu cuenta
           </p>
         </div>
-      </SignedIn>
+      )}
 
-      <SignedOut>
+      {/* 🚨 TEMPORAL: Siempre mostrar como usuario no autenticado */}
+      {!user && (
         <div className="text-center">
           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
             <span className="text-gray-500 font-semibold text-sm">?</span>
@@ -63,10 +68,10 @@ const UserInfo: React.FC<UserInfoProps> = ({ className = '' }) => {
             href="/signin"
             className="inline-flex items-center px-3 py-2 text-xs font-medium text-tahiti-gold-700 bg-tahiti-gold-50 border border-tahiti-gold-200 rounded-md hover:bg-tahiti-gold-100 transition-colors"
           >
-            Iniciar Sesión
+            Iniciar Sesión (Temporalmente deshabilitado)
           </Link>
         </div>
-      </SignedOut>
+      )}
     </div>
   );
 };

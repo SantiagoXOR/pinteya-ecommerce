@@ -57,7 +57,7 @@ export default clerkMiddleware(async (auth, req) => {
     const { userId, sessionClaims } = await auth()
     
     // Verificar que el usuario esté autenticado
-    if (!userId) {
+    if (!session?.user) {
       // Redirigir a signin si no está autenticado
       const signInUrl = new URL('/signin', req.url)
       return Response.redirect(signInUrl, 302)

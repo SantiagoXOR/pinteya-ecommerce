@@ -7,7 +7,7 @@ import { useAppSelector, useAppDispatch } from '@/redux/store';
 import { selectCartItems, selectTotalPrice, removeAllItemsFromCart } from '@/redux/features/cart-slice';
 import { CheckoutFormData, CheckoutState, CreatePreferencePayload, PaymentPreferenceResponse } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from './useAuth';
 
 const initialFormData: CheckoutFormData = {
   billing: {
@@ -36,7 +36,7 @@ export const useCheckout = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector(selectCartItems);
   const totalPrice = useAppSelector(selectTotalPrice);
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth();
 
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     formData: initialFormData,

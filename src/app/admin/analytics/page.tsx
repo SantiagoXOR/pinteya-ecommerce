@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/useAuth';
 import { redirect } from 'next/navigation';
 import AnalyticsDashboard from '@/components/Analytics/AnalyticsDashboard';
 import ConversionFunnel from '@/components/Analytics/ConversionFunnel';
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 const AnalyticsPage: React.FC = () => {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth();
   const { userProfile, isAdmin, hasPermission, isLoading: roleLoading } = useUserRole();
   const { getEvents, getInteractions, getConversionMetrics } = useAnalytics();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'funnel' | 'heatmap'>('dashboard');

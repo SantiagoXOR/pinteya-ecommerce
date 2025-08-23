@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { metricsCollector, MercadoPagoMetrics } from '@/lib/metrics';
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { currentUser } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
 
   try {
     // Verificar autenticación (solo usuarios autenticados pueden ver métricas)
-    const user = await currentUser();
-    if (!user) {
+    const user = session?.user;
+    if (!session?.user) {
       return NextResponse.json({
         success: false,
         error: 'Authentication required',
@@ -136,8 +136,8 @@ export async function POST(request: NextRequest) {
 
   try {
     // Verificar autenticación
-    const user = await currentUser();
-    if (!user) {
+    const user = session?.user;
+    if (!session?.user) {
       return NextResponse.json({
         success: false,
         error: 'Authentication required',

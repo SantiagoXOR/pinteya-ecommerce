@@ -1,77 +1,47 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { NextRequest, NextResponse } from 'next/server'
+/**
+ * Middleware de NextAuth.js para Pinteya E-commerce
+ * Protege rutas administrativas y maneja autenticación
+ */
 
-// ✅ MIDDLEWARE OPTIMIZADO: CSP específico para admin + protección Clerk
-// Configuración enterprise-ready basada en mejores prácticas Next.js + Clerk
+import { auth } from "@/auth"
+import { NextResponse } from "next/server"
 
-// ✅ ROUTE MATCHERS optimizados
-const isPublicRoute = createRouteMatcher([
-  '/', '/shop(.*)', '/search(.*)', '/product(.*)', '/category(.*)',
-  '/about', '/contact', '/signin(.*)', '/signup(.*)', '/sso-callback(.*)',
-  '/api/products(.*)', '/api/categories(.*)', '/api/search(.*)', '/api/payments/webhook',
-  '/api/auth/webhook', '/api/webhooks(.*)', '/api/debug(.*)', '/api/debug-clerk-session',
-  '/clerk-status', '/debug-clerk', '/debug-auth', '/test-admin-access', '/debug-user', '/debug-simple',
-  '/test-dashboard', '/test-admin-simple', '/api/test-admin-middleware', '/test-auth-status',
-  '/admin/page-simple'
-  // ✅ AUTENTICACIÓN RESTAURADA: /admin removido - requiere autenticación
-])
+export default auth((req) => {
+  const { nextUrl } = req
+  const isLoggedIn = !!req.auth
 
-// ✅ RUTAS API ADMIN - Manejar autenticación interna en cada API
-const isAdminApiRoute = createRouteMatcher(['/api/admin(.*)'])
+  console.log(`[NextAuth Middleware] ${nextUrl.pathname} - Authenticated: ${isLoggedIn}`)
 
-const isAdminRoute = createRouteMatcher(['/admin(.*)'])
+  // Rutas que requieren autenticación
+  const isAdminRoute = nextUrl.pathname.startsWith('/admin')
+  const isApiAdminRoute = nextUrl.pathname.startsWith('/api/admin')
 
-export default clerkMiddleware(async (auth, req: NextRequest) => {
-  console.log('🔍 [MIDDLEWARE] Request to:', req.nextUrl.pathname);
-
-  // ✅ CSP ESPECÍFICO PARA ADMIN - Basado en mejores prácticas Next.js
-  const response = NextResponse.next()
-
-  // ✅ PERMITIR APIs ADMIN - Manejan autenticación internamente
-  if (isAdminApiRoute(req)) {
-    console.log('🔧 [MIDDLEWARE] Admin API route - allowing through for internal auth:', req.nextUrl.pathname);
-    return response
+  // Permitir rutas de autenticación
+  if (nextUrl.pathname.startsWith('/api/auth')) {
+    return NextResponse.next()
   }
 
-  if (isAdminRoute(req)) {
-    // Generar nonce único para cada request
-    const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
-    const isDev = process.env.NODE_ENV === 'development'
-
-    // CSP optimizado para admin panel
-    const cspHeader = `
-      default-src 'self';
-      script-src 'self' 'nonce-${nonce}' ${isDev ? "'unsafe-eval' 'unsafe-inline'" : "'strict-dynamic'"};
-      style-src 'self' 'nonce-${nonce}' 'unsafe-inline';
-      img-src 'self' data: blob: *.vercel.app *.supabase.co;
-      font-src 'self' data:;
-      connect-src 'self' *.supabase.co *.clerk.accounts.dev *.clerk.dev *.vercel.app;
-      frame-src 'self' *.clerk.accounts.dev *.clerk.dev;
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self';
-      upgrade-insecure-requests;
-    `.replace(/\s+/g, ' ').trim()
-
-    response.headers.set('Content-Security-Policy', cspHeader)
-    response.headers.set('X-Nonce', nonce)
-
-    console.log('🛡️ [MIDDLEWARE] CSP aplicado para admin:', req.nextUrl.pathname);
-
-    // Proteger ruta admin
-    await auth.protect()
-  } else if (!isPublicRoute(req)) {
-    console.log('[MIDDLEWARE] Protecting non-public route:', req.nextUrl.pathname);
-    await auth.protect()
+  // Proteger rutas administrativas
+  if ((isAdminRoute || isApiAdminRoute) && !isLoggedIn) {
+    console.log(`[NextAuth Middleware] Redirecting to signin: ${nextUrl.pathname}`)
+    const signInUrl = new URL('/api/auth/signin', nextUrl.origin)
+    signInUrl.searchParams.set('callbackUrl', nextUrl.href)
+    return NextResponse.redirect(signInUrl)
   }
 
-  console.log('[MIDDLEWARE] Request allowed to proceed');
-  return response
+  return NextResponse.next()
 })
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder files (images, etc.)
+     * - api/auth (NextAuth.js routes)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api/auth).*)",
   ],
 }

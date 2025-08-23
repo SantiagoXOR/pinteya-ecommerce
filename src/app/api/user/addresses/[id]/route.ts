@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 
 type RouteContext = {
@@ -27,8 +27,8 @@ export async function GET(
     }
 
     // Autenticación con Clerk
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -46,7 +46,7 @@ export async function GET(
       .eq('clerk_id', userId)
       .single();
 
-    if (!user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }
@@ -102,8 +102,8 @@ export async function PUT(
     const params = await context.params;
 
     // Autenticación con Clerk
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -130,7 +130,7 @@ export async function PUT(
       .eq('clerk_id', userId)
       .single();
 
-    if (!user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }
@@ -220,8 +220,8 @@ export async function DELETE(
     const params = await context.params;
 
     // Autenticación con Clerk
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth();
+    if (!session?.user) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -238,7 +238,7 @@ export async function DELETE(
       .eq('clerk_id', userId)
       .single();
 
-    if (!user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }

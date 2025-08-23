@@ -19,32 +19,106 @@ const REDIS_CONFIG = {
   commandTimeout: 5000,
 };
 
+// Mock Redis para desarrollo cuando Redis no está disponible
+class MockRedis {
+  private storage = new Map<string, any>();
+
+  async get(key: string): Promise<string | null> {
+    return this.storage.get(key) || null;
+  }
+
+  async set(key: string, value: any, ...args: any[]): Promise<'OK'> {
+    this.storage.set(key, value);
+    return 'OK';
+  }
+
+  async del(key: string): Promise<number> {
+    const existed = this.storage.has(key);
+    this.storage.delete(key);
+    return existed ? 1 : 0;
+  }
+
+  async exists(key: string): Promise<number> {
+    return this.storage.has(key) ? 1 : 0;
+  }
+
+  async incr(key: string): Promise<number> {
+    const current = parseInt(this.storage.get(key) || '0');
+    const newValue = current + 1;
+    this.storage.set(key, newValue.toString());
+    return newValue;
+  }
+
+  async expire(key: string, seconds: number): Promise<number> {
+    // Mock: no implementamos expiración real
+    return 1;
+  }
+
+  async keys(pattern: string): Promise<string[]> {
+    const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+    return Array.from(this.storage.keys()).filter(key => regex.test(key));
+  }
+
+  async flushall(): Promise<'OK'> {
+    this.storage.clear();
+    return 'OK';
+  }
+
+  // Métodos de conexión mock
+  async connect(): Promise<void> {
+    console.log('[REDIS MOCK] Conectado (simulado)');
+  }
+
+  disconnect(): void {
+    console.log('[REDIS MOCK] Desconectado (simulado)');
+  }
+
+  on(event: string, callback: Function): this {
+    return this;
+  }
+}
+
 // Cliente Redis singleton
-let redisClient: Redis | null = null;
+let redisClient: Redis | MockRedis | null = null;
+let isUsingMock = false;
 
 /**
  * Obtiene o crea la instancia de Redis
  */
-export function getRedisClient(): Redis {
+export function getRedisClient(): Redis | MockRedis {
   if (!redisClient) {
-    redisClient = new Redis(REDIS_CONFIG);
+    try {
+      redisClient = new Redis(REDIS_CONFIG);
 
-    // Event listeners para logging
-    redisClient.on('connect', () => {
-      logger.info(LogCategory.API, 'Redis connected successfully');
-    });
+      // Event listeners para logging
+      redisClient.on('connect', () => {
+        logger.info(LogCategory.API, 'Redis connected successfully');
+        isUsingMock = false;
+      });
 
-    redisClient.on('error', (error) => {
-      logger.error(LogCategory.API, 'Redis connection error', error);
-    });
+      redisClient.on('error', (error) => {
+        logger.error(LogCategory.API, 'Redis connection error', error);
+        // Si hay error de conexión, usar mock
+        if (!isUsingMock) {
+          console.log('[REDIS] Cambiando a modo mock debido a error de conexión');
+          redisClient = new MockRedis();
+          isUsingMock = true;
+        }
+      });
 
-    redisClient.on('close', () => {
-      logger.warn(LogCategory.API, 'Redis connection closed');
-    });
+      redisClient.on('close', () => {
+        logger.warn(LogCategory.API, 'Redis connection closed');
+      });
 
-    redisClient.on('reconnecting', () => {
-      logger.info(LogCategory.API, 'Redis reconnecting...');
-    });
+      redisClient.on('reconnecting', () => {
+        logger.info(LogCategory.API, 'Redis reconnecting...');
+      });
+
+    } catch (error) {
+      console.log('[REDIS] Error inicializando Redis, usando mock:', error.message);
+      redisClient = new MockRedis();
+      isUsingMock = true;
+    }
   }
 
   return redisClient;
@@ -55,8 +129,14 @@ export function getRedisClient(): Redis {
  */
 export async function isRedisAvailable(): Promise<boolean> {
   try {
+    if (isUsingMock) {
+      return false; // Mock no es Redis real
+    }
     const client = getRedisClient();
-    await client.ping();
+    if (client instanceof MockRedis) {
+      return false;
+    }
+    await (client as Redis).ping();
     return true;
   } catch (error) {
     logger.error(LogCategory.API, 'Redis health check failed', error as Error);

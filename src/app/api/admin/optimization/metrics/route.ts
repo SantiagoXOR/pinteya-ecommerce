@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación de admin
     const { userId } = auth();
-    if (!userId) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'No autorizado' },
         { status: 401 }

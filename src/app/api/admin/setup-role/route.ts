@@ -7,9 +7,9 @@ import { auth, clerkClient } from '@clerk/nextjs/server'
  */
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const session = await auth()
     
-    if (!userId) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
@@ -50,9 +50,9 @@ export async function POST(request: NextRequest) {
  */
 export async function GET() {
   try {
-    const { userId } = await auth()
+    const session = await auth()
     
-    if (!userId) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { createClerkClient } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -14,13 +13,13 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔍 Admin Products Direct: Starting...');
 
-    // Verificar autenticación directamente con Clerk
-    const { userId } = await auth();
-    
-    if (!userId) {
+    // Verificar autenticación con NextAuth.js
+    const session = await auth();
+
+    if (!session?.user) {
       console.log('❌ Admin Products Direct: No authenticated user');
       return NextResponse.json(
-        { 
+        {
           error: 'Acceso denegado - Autenticación requerida',
           code: 'AUTH_REQUIRED'
         },
@@ -28,25 +27,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userId = session.user.id;
     console.log('✅ Admin Products Direct: User authenticated', { userId });
 
-    // Obtener usuario de Clerk para verificar rol
-    const clerkClient = createClerkClient({
-      secretKey: process.env.CLERK_SECRET_KEY!
-    });
-    const user = await clerkClient.users.getUser(userId);
-    const userRole = user.publicMetadata?.role as string;
+    // Verificar si es admin (simplificado)
+    const isAdmin = session.user.email === 'santiago@xor.com.ar';
+
+    if (!isAdmin) {
+      console.log('❌ Admin Products Direct: User not admin');
+      return NextResponse.json(
+        {
+          error: 'Acceso denegado - Se requieren permisos de administrador',
+          code: 'ADMIN_REQUIRED'
+        },
+        { status: 403 }
+      );
+    }
 
     console.log('🔍 Admin Products Direct: User info', {
       userId,
-      email: user.primaryEmailAddress?.emailAddress,
-      role: userRole,
-      metadata: user.publicMetadata
+      email: session.user.email,
+      isAdmin
     });
 
-    // TEMPORAL: Permitir acceso sin verificar rol para debug
-    console.log('⚠️ Admin Products Direct: MODO DEBUG - Permitiendo acceso sin verificar rol');
-    console.log(`📋 Rol actual del usuario: ${userRole || 'undefined'}`);
+    // Usuario verificado como admin
+    console.log('✅ Admin Products Direct: Usuario verificado como admin');
+    console.log(`📋 Admin status: ${isAdmin}`);
 
     // Comentamos la verificación de rol temporalmente para debug
     // if (userRole !== 'admin' && userRole !== 'moderator') {
@@ -161,7 +167,7 @@ export async function GET(request: NextRequest) {
         timestamp: new Date().toISOString(),
         method: 'admin_direct',
         user: userId,
-        role: userRole
+        role: 'admin'
       }
     });
 
@@ -185,12 +191,12 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🔍 Admin Products Direct POST: Starting...');
 
-    // Verificar autenticación directamente con Clerk
-    const { userId } = await auth();
-    
-    if (!userId) {
+    // Verificar autenticación con NextAuth.js
+    const session = await auth();
+
+    if (!session?.user) {
       return NextResponse.json(
-        { 
+        {
           error: 'Acceso denegado - Autenticación requerida',
           code: 'AUTH_REQUIRED'
         },
@@ -198,16 +204,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener usuario de Clerk para verificar rol
-    const clerkClient = createClerkClient({
-      secretKey: process.env.CLERK_SECRET_KEY!
-    });
-    const user = await clerkClient.users.getUser(userId);
-    const userRole = user.publicMetadata?.role as string;
+    const userId = session.user.id;
 
-    // TEMPORAL: Permitir acceso sin verificar rol para debug
-    console.log('⚠️ Admin Products Direct POST: MODO DEBUG - Permitiendo acceso sin verificar rol');
-    console.log(`📋 Rol actual del usuario: ${userRole || 'undefined'}`);
+    // Verificar si es admin (simplificado)
+    const isAdmin = session.user.email === 'santiago@xor.com.ar';
+
+    if (!isAdmin) {
+      return NextResponse.json(
+        {
+          error: 'Acceso denegado - Se requieren permisos de administrador',
+          code: 'ADMIN_REQUIRED'
+        },
+        { status: 403 }
+      );
+    }
+
+    // Usuario verificado como admin
+    console.log('✅ Admin Products Direct POST: Usuario verificado como admin');
+    console.log(`📋 Admin status: ${isAdmin}`);
 
     // Comentamos la verificación de rol temporalmente para debug
 

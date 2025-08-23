@@ -75,8 +75,12 @@ export function AdminDataTable<T extends Record<string, any>>({
     direction: 'asc' | 'desc';
   } | null>(null);
 
+  // Asegurar que data siempre sea un array
+  console.log('🔍 AdminDataTable: data recibida:', { data, type: typeof data, isArray: Array.isArray(data) });
+  const safeData = Array.isArray(data) ? data : [];
+
   // Filter and search data
-  const filteredData = data.filter(row => {
+  const filteredData = safeData.filter(row => {
     if (!searchTerm) return true;
     return Object.values(row).some(value => 
       String(value).toLowerCase().includes(searchTerm.toLowerCase())

@@ -3,7 +3,7 @@
 import React from "react";
 import { User, ShoppingCart, LogIn } from "lucide-react";
 import Image from "next/image";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -44,7 +44,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   variant = "header"
 }) => {
   // Integración con Clerk
-  const { isSignedIn, user, isLoaded } = useUser();
+  const { isSignedIn, user, isLoaded } = useAuth();
 
   // Integración con carrito
   const { openCartModal } = useCartModalContext();

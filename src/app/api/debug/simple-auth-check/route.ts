@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 
 /**
  * API simple para verificar el estado de autenticación sin dependencias complejas
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     // Verificar autenticación básica
     const { userId, sessionClaims } = await auth();
     
-    if (!userId) {
+    if (!session?.user) {
       return NextResponse.json(
         { 
           success: false,

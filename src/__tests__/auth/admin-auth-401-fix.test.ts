@@ -3,7 +3,7 @@
 // ===================================
 
 import { getAuthenticatedAdmin, getAuthenticatedUser } from '@/lib/auth/admin-auth';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 
 // Mocks
 jest.mock('@clerk/nextjs/server', () => ({
