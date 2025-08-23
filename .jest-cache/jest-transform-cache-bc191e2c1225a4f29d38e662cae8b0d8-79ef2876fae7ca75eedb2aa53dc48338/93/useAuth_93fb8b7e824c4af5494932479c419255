@@ -1,0 +1,86 @@
+111b75b8ac7a1a18365adadaf35fa22d
+/**
+ * Hook de Autenticación para NextAuth.js
+ * Reemplaza los hooks de Clerk con NextAuth.js
+ */ "use client";
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get useAuth () {
+        return useAuth;
+    },
+    get useIsAdmin () {
+        return useIsAdmin;
+    },
+    get useRequireAuth () {
+        return useRequireAuth;
+    }
+});
+const _react = require("next-auth/react");
+const _navigation = require("next/navigation");
+const _react1 = require("react");
+function useAuth() {
+    // 🚨 TEMPORAL: Implementación simple sin useSession para evitar errores
+    // TODO: Restaurar useSession cuando el SessionProvider esté funcionando correctamente
+    const session = null;
+    const status = "unauthenticated";
+    const router = (0, _navigation.useRouter)();
+    const handleSignIn = (0, _react1.useCallback)(async (provider = "google", options)=>{
+        try {
+            await (0, _react.signIn)(provider, {
+                callbackUrl: options?.callbackUrl || "/admin",
+                redirect: true
+            });
+        } catch (error) {
+            console.error("Error al iniciar sesión:", error);
+        }
+    }, []);
+    const handleSignOut = (0, _react1.useCallback)(async (options)=>{
+        try {
+            await (0, _react.signOut)({
+                callbackUrl: options?.callbackUrl || "/",
+                redirect: true
+            });
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+        }
+    }, []);
+    // 🚨 TEMPORAL: Usuario null mientras migramos
+    const user = null;
+    return {
+        user,
+        isLoaded: status !== "loading",
+        isSignedIn: status === "authenticated",
+        signIn: handleSignIn,
+        signOut: handleSignOut,
+        session,
+        status
+    };
+}
+function useIsAdmin() {
+    const { user, isSignedIn } = useAuth();
+    // Por ahora, todos los usuarios autenticados son admin
+    // TODO: Implementar sistema de roles más granular
+    return isSignedIn && !!user;
+}
+function useRequireAuth(redirectTo = "/api/auth/signin") {
+    const { isSignedIn, isLoaded } = useAuth();
+    const router = (0, _navigation.useRouter)();
+    if (isLoaded && !isSignedIn) {
+        router.push(redirectTo);
+    }
+    return {
+        isSignedIn,
+        isLoaded
+    };
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcaG9va3NcXHVzZUF1dGgudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiBIb29rIGRlIEF1dGVudGljYWNpw7NuIHBhcmEgTmV4dEF1dGguanNcbiAqIFJlZW1wbGF6YSBsb3MgaG9va3MgZGUgQ2xlcmsgY29uIE5leHRBdXRoLmpzXG4gKi9cblxuXCJ1c2UgY2xpZW50XCJcblxuaW1wb3J0IHsgdXNlU2Vzc2lvbiwgc2lnbkluLCBzaWduT3V0IH0gZnJvbSBcIm5leHQtYXV0aC9yZWFjdFwiXG5pbXBvcnQgeyB1c2VSb3V0ZXIgfSBmcm9tIFwibmV4dC9uYXZpZ2F0aW9uXCJcbmltcG9ydCB7IHVzZUNhbGxiYWNrIH0gZnJvbSBcInJlYWN0XCJcblxuZXhwb3J0IGludGVyZmFjZSBBdXRoVXNlciB7XG4gIGlkOiBzdHJpbmdcbiAgbmFtZT86IHN0cmluZyB8IG51bGxcbiAgZW1haWw/OiBzdHJpbmcgfCBudWxsXG4gIGltYWdlPzogc3RyaW5nIHwgbnVsbFxufVxuXG5leHBvcnQgaW50ZXJmYWNlIFVzZUF1dGhSZXR1cm4ge1xuICAvLyBFc3RhZG8gZGUgYXV0ZW50aWNhY2nDs25cbiAgdXNlcjogQXV0aFVzZXIgfCBudWxsXG4gIGlzTG9hZGVkOiBib29sZWFuXG4gIGlzU2lnbmVkSW46IGJvb2xlYW5cbiAgXG4gIC8vIEZ1bmNpb25lcyBkZSBhdXRlbnRpY2FjacOzblxuICBzaWduSW46IChwcm92aWRlcj86IHN0cmluZywgb3B0aW9ucz86IHsgY2FsbGJhY2tVcmw/OiBzdHJpbmcgfSkgPT4gUHJvbWlzZTx2b2lkPlxuICBzaWduT3V0OiAob3B0aW9ucz86IHsgY2FsbGJhY2tVcmw/OiBzdHJpbmcgfSkgPT4gUHJvbWlzZTx2b2lkPlxuICBcbiAgLy8gSW5mb3JtYWNpw7NuIGRlIHNlc2nDs25cbiAgc2Vzc2lvbjogYW55XG4gIHN0YXR1czogXCJsb2FkaW5nXCIgfCBcImF1dGhlbnRpY2F0ZWRcIiB8IFwidW5hdXRoZW50aWNhdGVkXCJcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHVzZUF1dGgoKTogVXNlQXV0aFJldHVybiB7XG4gIC8vIPCfmqggVEVNUE9SQUw6IEltcGxlbWVudGFjacOzbiBzaW1wbGUgc2luIHVzZVNlc3Npb24gcGFyYSBldml0YXIgZXJyb3Jlc1xuICAvLyBUT0RPOiBSZXN0YXVyYXIgdXNlU2Vzc2lvbiBjdWFuZG8gZWwgU2Vzc2lvblByb3ZpZGVyIGVzdMOpIGZ1bmNpb25hbmRvIGNvcnJlY3RhbWVudGVcbiAgY29uc3Qgc2Vzc2lvbiA9IG51bGxcbiAgY29uc3Qgc3RhdHVzID0gXCJ1bmF1dGhlbnRpY2F0ZWRcIiBhcyBjb25zdFxuICBjb25zdCByb3V0ZXIgPSB1c2VSb3V0ZXIoKVxuXG4gIGNvbnN0IGhhbmRsZVNpZ25JbiA9IHVzZUNhbGxiYWNrKGFzeW5jIChwcm92aWRlcjogc3RyaW5nID0gXCJnb29nbGVcIiwgb3B0aW9ucz86IHsgY2FsbGJhY2tVcmw/OiBzdHJpbmcgfSkgPT4ge1xuICAgIHRyeSB7XG4gICAgICBhd2FpdCBzaWduSW4ocHJvdmlkZXIsIHtcbiAgICAgICAgY2FsbGJhY2tVcmw6IG9wdGlvbnM/LmNhbGxiYWNrVXJsIHx8IFwiL2FkbWluXCIsXG4gICAgICAgIHJlZGlyZWN0OiB0cnVlLFxuICAgICAgfSlcbiAgICB9IGNhdGNoIChlcnJvcikge1xuICAgICAgY29uc29sZS5lcnJvcihcIkVycm9yIGFsIGluaWNpYXIgc2VzacOzbjpcIiwgZXJyb3IpXG4gICAgfVxuICB9LCBbXSlcblxuICBjb25zdCBoYW5kbGVTaWduT3V0ID0gdXNlQ2FsbGJhY2soYXN5bmMgKG9wdGlvbnM/OiB7IGNhbGxiYWNrVXJsPzogc3RyaW5nIH0pID0+IHtcbiAgICB0cnkge1xuICAgICAgYXdhaXQgc2lnbk91dCh7XG4gICAgICAgIGNhbGxiYWNrVXJsOiBvcHRpb25zPy5jYWxsYmFja1VybCB8fCBcIi9cIixcbiAgICAgICAgcmVkaXJlY3Q6IHRydWUsXG4gICAgICB9KVxuICAgIH0gY2F0Y2ggKGVycm9yKSB7XG4gICAgICBjb25zb2xlLmVycm9yKFwiRXJyb3IgYWwgY2VycmFyIHNlc2nDs246XCIsIGVycm9yKVxuICAgIH1cbiAgfSwgW10pXG5cbiAgLy8g8J+aqCBURU1QT1JBTDogVXN1YXJpbyBudWxsIG1pZW50cmFzIG1pZ3JhbW9zXG4gIGNvbnN0IHVzZXI6IEF1dGhVc2VyIHwgbnVsbCA9IG51bGxcblxuICByZXR1cm4ge1xuICAgIHVzZXIsXG4gICAgaXNMb2FkZWQ6IHN0YXR1cyAhPT0gXCJsb2FkaW5nXCIsXG4gICAgaXNTaWduZWRJbjogc3RhdHVzID09PSBcImF1dGhlbnRpY2F0ZWRcIixcbiAgICBzaWduSW46IGhhbmRsZVNpZ25JbixcbiAgICBzaWduT3V0OiBoYW5kbGVTaWduT3V0LFxuICAgIHNlc3Npb24sXG4gICAgc3RhdHVzLFxuICB9XG59XG5cbi8vIEhvb2sgcGFyYSB2ZXJpZmljYXIgc2kgZWwgdXN1YXJpbyBlcyBhZG1pbmlzdHJhZG9yXG5leHBvcnQgZnVuY3Rpb24gdXNlSXNBZG1pbigpOiBib29sZWFuIHtcbiAgY29uc3QgeyB1c2VyLCBpc1NpZ25lZEluIH0gPSB1c2VBdXRoKClcbiAgXG4gIC8vIFBvciBhaG9yYSwgdG9kb3MgbG9zIHVzdWFyaW9zIGF1dGVudGljYWRvcyBzb24gYWRtaW5cbiAgLy8gVE9ETzogSW1wbGVtZW50YXIgc2lzdGVtYSBkZSByb2xlcyBtw6FzIGdyYW51bGFyXG4gIHJldHVybiBpc1NpZ25lZEluICYmICEhdXNlclxufVxuXG4vLyBIb29rIHBhcmEgcHJvdGVnZXIgcnV0YXNcbmV4cG9ydCBmdW5jdGlvbiB1c2VSZXF1aXJlQXV0aChyZWRpcmVjdFRvOiBzdHJpbmcgPSBcIi9hcGkvYXV0aC9zaWduaW5cIikge1xuICBjb25zdCB7IGlzU2lnbmVkSW4sIGlzTG9hZGVkIH0gPSB1c2VBdXRoKClcbiAgY29uc3Qgcm91dGVyID0gdXNlUm91dGVyKClcblxuICBpZiAoaXNMb2FkZWQgJiYgIWlzU2lnbmVkSW4pIHtcbiAgICByb3V0ZXIucHVzaChyZWRpcmVjdFRvKVxuICB9XG5cbiAgcmV0dXJuIHsgaXNTaWduZWRJbiwgaXNMb2FkZWQgfVxufVxuIl0sIm5hbWVzIjpbInVzZUF1dGgiLCJ1c2VJc0FkbWluIiwidXNlUmVxdWlyZUF1dGgiLCJzZXNzaW9uIiwic3RhdHVzIiwicm91dGVyIiwidXNlUm91dGVyIiwiaGFuZGxlU2lnbkluIiwidXNlQ2FsbGJhY2siLCJwcm92aWRlciIsIm9wdGlvbnMiLCJzaWduSW4iLCJjYWxsYmFja1VybCIsInJlZGlyZWN0IiwiZXJyb3IiLCJjb25zb2xlIiwiaGFuZGxlU2lnbk91dCIsInNpZ25PdXQiLCJ1c2VyIiwiaXNMb2FkZWQiLCJpc1NpZ25lZEluIiwicmVkaXJlY3RUbyIsInB1c2giXSwibWFwcGluZ3MiOiJBQUFBOzs7Q0FHQyxHQUVEOzs7Ozs7Ozs7Ozs7UUE0QmdCQTtlQUFBQTs7UUE0Q0FDO2VBQUFBOztRQVNBQztlQUFBQTs7O3VCQS9FNEI7NEJBQ2xCO3dCQUNFO0FBd0JyQixTQUFTRjtJQUNkLHdFQUF3RTtJQUN4RSxzRkFBc0Y7SUFDdEYsTUFBTUcsVUFBVTtJQUNoQixNQUFNQyxTQUFTO0lBQ2YsTUFBTUMsU0FBU0MsSUFBQUEscUJBQVM7SUFFeEIsTUFBTUMsZUFBZUMsSUFBQUEsbUJBQVcsRUFBQyxPQUFPQyxXQUFtQixRQUFRLEVBQUVDO1FBQ25FLElBQUk7WUFDRixNQUFNQyxJQUFBQSxhQUFNLEVBQUNGLFVBQVU7Z0JBQ3JCRyxhQUFhRixTQUFTRSxlQUFlO2dCQUNyQ0MsVUFBVTtZQUNaO1FBQ0YsRUFBRSxPQUFPQyxPQUFPO1lBQ2RDLFFBQVFELEtBQUssQ0FBQyw0QkFBNEJBO1FBQzVDO0lBQ0YsR0FBRyxFQUFFO0lBRUwsTUFBTUUsZ0JBQWdCUixJQUFBQSxtQkFBVyxFQUFDLE9BQU9FO1FBQ3ZDLElBQUk7WUFDRixNQUFNTyxJQUFBQSxjQUFPLEVBQUM7Z0JBQ1pMLGFBQWFGLFNBQVNFLGVBQWU7Z0JBQ3JDQyxVQUFVO1lBQ1o7UUFDRixFQUFFLE9BQU9DLE9BQU87WUFDZEMsUUFBUUQsS0FBSyxDQUFDLDJCQUEyQkE7UUFDM0M7SUFDRixHQUFHLEVBQUU7SUFFTCw4Q0FBOEM7SUFDOUMsTUFBTUksT0FBd0I7SUFFOUIsT0FBTztRQUNMQTtRQUNBQyxVQUFVZixXQUFXO1FBQ3JCZ0IsWUFBWWhCLFdBQVc7UUFDdkJPLFFBQVFKO1FBQ1JVLFNBQVNEO1FBQ1RiO1FBQ0FDO0lBQ0Y7QUFDRjtBQUdPLFNBQVNIO0lBQ2QsTUFBTSxFQUFFaUIsSUFBSSxFQUFFRSxVQUFVLEVBQUUsR0FBR3BCO0lBRTdCLHVEQUF1RDtJQUN2RCxrREFBa0Q7SUFDbEQsT0FBT29CLGNBQWMsQ0FBQyxDQUFDRjtBQUN6QjtBQUdPLFNBQVNoQixlQUFlbUIsYUFBcUIsa0JBQWtCO0lBQ3BFLE1BQU0sRUFBRUQsVUFBVSxFQUFFRCxRQUFRLEVBQUUsR0FBR25CO0lBQ2pDLE1BQU1LLFNBQVNDLElBQUFBLHFCQUFTO0lBRXhCLElBQUlhLFlBQVksQ0FBQ0MsWUFBWTtRQUMzQmYsT0FBT2lCLElBQUksQ0FBQ0Q7SUFDZDtJQUVBLE9BQU87UUFBRUQ7UUFBWUQ7SUFBUztBQUNoQyJ9

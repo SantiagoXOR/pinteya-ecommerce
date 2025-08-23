@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@/auth';
 
 interface OptimizationMetrics {
   analytics: {
@@ -49,7 +49,7 @@ interface OptimizationMetrics {
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación de admin
-    const { userId } = auth();
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
         { error: 'No autorizado' },
