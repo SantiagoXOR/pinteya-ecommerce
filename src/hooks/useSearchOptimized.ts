@@ -158,10 +158,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
         throw error;
       }
     },
-    enabled: (() => {
-      const isEnabled = !!debouncedQuery?.trim() && debouncedQuery.length >= 2;
-      return isEnabled;
-    })(),
+    enabled: !!debouncedQuery?.trim() && debouncedQuery.length >= 2,
     ...searchQueryConfig,
   });
 

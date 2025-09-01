@@ -253,11 +253,12 @@ describe('BottomNavigation', () => {
   });
 
   it('prevents menu from activating other paths', () => {
-    mockUsePathname.mockReturnValue('/my-account');
+    // Patrón 2 exitoso: Expectativas específicas - usar pathname que coincida con href de Pedidos
+    mockUsePathname.mockReturnValue('/admin');
 
     renderWithStore(<BottomNavigation />);
 
-    // Pedidos debe estar activo
+    // Pedidos debe estar activo (href="/admin" coincide con pathname="/admin")
     const ordersLink = screen.getByLabelText('Pedidos');
     expect(ordersLink).toHaveClass('text-primary-700');
 

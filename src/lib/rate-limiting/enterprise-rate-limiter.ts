@@ -5,6 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import type { NextApiRequest } from 'next';
+import { isRedisAvailable, enterpriseRateLimit } from '@/lib/redis';
 
 // =====================================================
 // TIPOS Y INTERFACES
@@ -345,8 +346,12 @@ class MemoryRateLimitStore {
   getStats(): { entries: number; memoryUsage: number } {
     const entries = this.store.size;
     const memoryUsage = JSON.stringify([...this.store.entries()]).length;
-    
+
     return { entries, memoryUsage };
+  }
+
+  clear(): void {
+    this.store.clear();
   }
 
   destroy(): void {
@@ -471,23 +476,7 @@ export { memoryStore, metricsCollector };
 // IMPLEMENTACIÓN REDIS
 // =====================================================
 
-/**
- * Verifica si Redis está disponible
- */
-async function isRedisAvailable(): Promise<boolean> {
-  try {
-    // Intentar importar Redis dinámicamente
-    const { redis } = await import('@/lib/redis');
-    if (!redis) return false;
-
-    // Test de conexión simple
-    await redis.ping();
-    return true;
-  } catch (error) {
-    console.warn('[RATE_LIMIT] Redis no disponible, usando fallback en memoria');
-    return false;
-  }
-}
+// Función isRedisAvailable ahora se importa desde @/lib/redis
 
 /**
  * Rate limiting con Redis
@@ -499,6 +488,26 @@ async function rateLimitWithRedis(
   const startTime = Date.now();
 
   try {
+    // Usar la función importada de Redis
+    const result = await enterpriseRateLimit(key, config);
+
+    if (result) {
+      return {
+        allowed: result.allowed,
+        limit: result.limit || config.maxRequests,
+        remaining: result.remaining || 0,
+        resetTime: result.resetTime || Date.now() + config.windowMs,
+        retryAfter: result.allowed ? undefined : Math.ceil(config.windowMs / 1000),
+        source: 'redis',
+        metrics: {
+          responseTime: Date.now() - startTime,
+          cacheHit: true,
+          keyGenerated: key
+        }
+      };
+    }
+
+    // Si no hay resultado, usar implementación manual
     const { redis } = await import('@/lib/redis');
     const now = Date.now();
     const window = Math.floor(now / config.windowMs);

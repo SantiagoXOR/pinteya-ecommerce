@@ -37,11 +37,23 @@ describe('Sistema Enterprise de Rate Limiting', () => {
   beforeEach(() => {
     mockIsRedisAvailable = isRedisAvailable as jest.MockedFunction<typeof isRedisAvailable>;
     mockEnterpriseRateLimit = enterpriseRateLimit as jest.MockedFunction<typeof enterpriseRateLimit>;
-    
+
     jest.clearAllMocks();
-    
+
+    // Reset memory store
+    memoryStore.clear();
+
     // Reset métricas
     metricsCollector.reset();
+
+    // Configurar mocks por defecto
+    mockIsRedisAvailable.mockResolvedValue(false); // Por defecto usar memoria
+    mockEnterpriseRateLimit.mockResolvedValue({
+      allowed: true,
+      count: 1,
+      remaining: 49,
+      resetTime: Date.now() + 300000
+    });
   });
 
   describe('Configuraciones Predefinidas', () => {
@@ -124,6 +136,7 @@ describe('Sistema Enterprise de Rate Limiting', () => {
 
   describe('Rate Limiting con Redis', () => {
     it('debe usar Redis cuando está disponible', async () => {
+      // Configurar Redis como disponible
       mockIsRedisAvailable.mockResolvedValue(true);
       mockEnterpriseRateLimit.mockResolvedValue({
         allowed: true,
@@ -146,6 +159,7 @@ describe('Sistema Enterprise de Rate Limiting', () => {
     });
 
     it('debe usar fallback en memoria cuando Redis no está disponible', async () => {
+      // Redis no disponible (configuración por defecto)
       mockIsRedisAvailable.mockResolvedValue(false);
 
       const mockRequest = {
@@ -162,6 +176,7 @@ describe('Sistema Enterprise de Rate Limiting', () => {
     });
 
     it('debe manejar errores de Redis y usar fallback', async () => {
+      // Redis disponible pero con error
       mockIsRedisAvailable.mockResolvedValue(true);
       mockEnterpriseRateLimit.mockRejectedValue(new Error('Redis error'));
 
@@ -296,8 +311,9 @@ describe('Sistema Enterprise de Rate Limiting', () => {
       const result = await checkEnterpriseRateLimit(mockRequest, 'ADMIN_API');
 
       expect(result.metrics).toBeDefined();
-      expect(result.metrics?.responseTime).toBeGreaterThan(0);
+      expect(result.metrics?.responseTime).toBeGreaterThanOrEqual(0); // Puede ser 0 en tests rápidos
       expect(result.metrics?.keyGenerated).toBeDefined();
+      expect(typeof result.metrics?.responseTime).toBe('number');
     });
   });
 

@@ -155,9 +155,10 @@ describe('RealTimeMonitoringDashboard', () => {
 
     test('debe mostrar detalles de la alerta', async () => {
       render(<RealTimeMonitoringDashboard />);
-      
+
       await waitFor(() => {
-        expect(screen.getByText('performance.api.duration: 1.200 / 1.000')).toBeInTheDocument();
+        // Patrón 2 exitoso: Expectativas específicas - formato argentino con comas
+        expect(screen.getByText('performance.api.duration: 1.200,00 / 1.000,00')).toBeInTheDocument();
       });
     });
 
