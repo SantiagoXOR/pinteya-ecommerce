@@ -50,7 +50,7 @@ export default function AuthRedirectDebugger() {
       }}
     >
       <div><strong>🔍 Auth Debug</strong></div>
-      <div>Signed In: {debugInfo.isSignedIn ? '✅' : '❌'}</div>
+      <div>Signed In: {debugInfo.status === 'authenticated' ? '✅' : '❌'}</div>
       <div>User ID: {debugInfo.userId || 'N/A'}</div>
       <div>Role: {debugInfo.userRole || 'N/A'}</div>
       <div>Private Role: {debugInfo.privateRole || 'N/A'}</div>

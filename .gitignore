@@ -66,3 +66,50 @@ next-env.d.ts
 
 *storybook.log
 storybook-static
+
+# ===== OPTIMIZACIONES ADICIONALES PARA VSCODE =====
+
+# Cache files que consumen recursos
+.eslintcache
+.stylelintcache
+*.cache
+**/.cache/
+**/cache/
+
+# Archivos temporales de VSCode
+.vscode/settings.json.backup
+.vscode/*.log
+
+# Archivos de testing masivos
+**/__tests__/coverage/
+**/test-coverage/
+**/.nyc_output/
+**/junit.xml
+**/*.lcov
+
+# Archivos de build adicionales
+**/.turbo/
+**/tsconfig.tsbuildinfo
+**/*.tsbuildinfo
+
+# Logs adicionales
+**/*.log.*
+**/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Archivos de sistema que VSCode indexa innecesariamente
+**/.DS_Store
+**/Thumbs.db
+**/*.tmp
+**/*.temp
+**/desktop.ini
+
+# Archivos de editor
+**/.vscode/settings.json.backup
+**/.idea/
+**/*.swp
+**/*.swo
+**/*~

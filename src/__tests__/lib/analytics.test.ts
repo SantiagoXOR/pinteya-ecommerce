@@ -3,7 +3,7 @@
  * Verificación de la corrección del error de runtime en getElementInfo
  */
 
-import { optimizedAnalytics } from '@/lib/analytics-optimized';
+import { analytics } from '@/lib/analytics';
 
 // Mock del DOM para testing
 const mockElement = (props: {

@@ -32,10 +32,7 @@ export interface UseAuthReturn {
 }
 
 export function useAuth(): UseAuthReturn {
-  // 🚨 TEMPORAL: Implementación simple sin useSession para evitar errores
-  // TODO: Restaurar useSession cuando el SessionProvider esté funcionando correctamente
-  const session = null
-  const status = "unauthenticated" as const
+  const { data: session, status } = useSession()
   const router = useRouter()
 
   const handleSignIn = useCallback(async (provider: string = "google", options?: { callbackUrl?: string }) => {
@@ -60,8 +57,13 @@ export function useAuth(): UseAuthReturn {
     }
   }, [])
 
-  // 🚨 TEMPORAL: Usuario null mientras migramos
-  const user: AuthUser | null = null
+  // Mapear usuario de NextAuth a nuestro formato
+  const user: AuthUser | null = session?.user ? {
+    id: session.user.id || session.user.email || '',
+    name: session.user.name,
+    email: session.user.email,
+    image: session.user.image,
+  } : null
 
   return {
     user,

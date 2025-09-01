@@ -7,6 +7,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ProductTypesList from '@/components/ShopWithSidebar/ProductTypesList';
 import { PRODUCT_CATEGORIES } from '@/constants/shop';
 
+// Mock del hook useCategoryData
+jest.mock('@/hooks/useCategoryData', () => ({
+  useCategoryData: () => ({
+    categories: Object.values(PRODUCT_CATEGORIES),
+    loading: false,
+    error: null,
+  })
+}));
+
 const mockOnCategorySelect = jest.fn();
 
 const defaultProps = {

@@ -6,7 +6,7 @@
 
 import React from 'react';
 // 🚨 TEMPORAL: Clerk desactivado por regresión crítica
-// import { useUser, SignedIn, SignedOut } from '@clerk/nextjs';
+// import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 interface UserInfoProps {

@@ -75,7 +75,7 @@ describe('TrustSection Component', () => {
     
     // Verificar que el contenedor principal tiene clases responsive
     const section = container.querySelector('section');
-    expect(section).toHaveClass('py-12', 'lg:py-16');
+    expect(section).toHaveClass('py-4', 'sm:py-6', 'lg:py-8');
     
     // Verificar grid responsive para los íconos de servicios
     const serviceGrid = container.querySelector('.grid.grid-cols-4');

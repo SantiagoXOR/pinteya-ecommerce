@@ -5,17 +5,8 @@
 
 import { NextRequest } from 'next/server';
 
-// Mock de Clerk
-jest.mock('@clerk/nextjs/server', () => ({
-  clerkMiddleware: (fn: any) => fn,
-  createRouteMatcher: (routes: string[]) => (req: any) => {
-    const pathname = req.nextUrl?.pathname || req.url;
-    return routes.some(route => {
-      const regex = new RegExp(route.replace(/\(\.\*\)/g, '.*'));
-      return regex.test(pathname);
-    });
-  }
-}));
+// NextAuth se mockea automáticamente
+// NextAuth se mockea automáticamente via moduleNameMapper
 
 // Mock del middleware de seguridad
 jest.mock('../middleware/security', () => ({

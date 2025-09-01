@@ -3,9 +3,18 @@ import { GET } from '@/app/api/payments/integration-quality/route';
 import { auth } from '@/auth';
 
 // Mock dependencies
-jest.mock('@clerk/nextjs/server', () => ({
-  auth: jest.fn()
-}));
+jest.mock('@/auth', () => ({ auth: jest.fn() }));
+
+// Mock NextAuth Google provider (Patrón 1: Imports faltantes)
+jest.mock('next-auth/providers/google', () => {
+  return jest.fn(() => ({
+    id: 'google',
+    name: 'Google',
+    type: 'oauth',
+    clientId: 'mock-client-id',
+    clientSecret: 'mock-client-secret'
+  }));
+});
 jest.mock('@/lib/supabase');
 jest.mock('@/lib/mercadopago', () => ({
   getPaymentInfo: jest.fn()

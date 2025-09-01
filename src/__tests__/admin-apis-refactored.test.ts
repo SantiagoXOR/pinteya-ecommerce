@@ -100,7 +100,7 @@ describe('APIs Admin Refactorizadas', () => {
   let mockExecuteWithRLS: jest.MockedFunction<typeof executeWithRLS>;
   let mockWithCache: jest.MockedFunction<typeof withCache>;
   let mockGetCacheStats: jest.MockedFunction<typeof getCacheStats>;
-  let mockGetAuthenticatedAdmin: jest.MockedFunction<typeof getAuthenticatedAdmin>;
+  let mockAuthenticatedAdmin: jest.MockedFunction<typeof getAuthenticatedAdmin>;
   let mockCheckCRUDPermissions: jest.MockedFunction<typeof checkCRUDPermissions>;
   let mockGetSecurityMetrics: jest.MockedFunction<typeof getSecurityMetrics>;
 
@@ -110,7 +110,7 @@ describe('APIs Admin Refactorizadas', () => {
     mockExecuteWithRLS = executeWithRLS as jest.MockedFunction<typeof executeWithRLS>;
     mockWithCache = withCache as jest.MockedFunction<typeof withCache>;
     mockGetCacheStats = getCacheStats as jest.MockedFunction<typeof getCacheStats>;
-    mockGetAuthenticatedAdmin = getAuthenticatedAdmin as jest.MockedFunction<typeof getAuthenticatedAdmin>;
+    mockAuthenticatedAdmin = getAuthenticatedAdmin as jest.MockedFunction<typeof getAuthenticatedAdmin>;
     mockCheckCRUDPermissions = checkCRUDPermissions as jest.MockedFunction<typeof checkCRUDPermissions>;
     mockGetSecurityMetrics = getSecurityMetrics as jest.MockedFunction<typeof getSecurityMetrics>;
 
@@ -179,7 +179,7 @@ describe('APIs Admin Refactorizadas', () => {
     });
 
     // Setup legacy mocks
-    mockGetAuthenticatedAdmin.mockResolvedValue({
+    mockAuthenticatedAdmin.mockResolvedValue({
       userId: 'user_123',
       sessionId: 'sess_123',
       isAdmin: true,

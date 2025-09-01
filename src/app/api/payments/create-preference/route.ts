@@ -12,7 +12,8 @@ import { auth } from '@/auth';
 import { CHECKOUT_CONSTANTS, VALIDATION_CONSTANTS } from '@/constants/shop';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS, endpointKeyGenerator } from '@/lib/rate-limiter';
+import { checkRateLimit, addRateLimitHeaders, endpointKeyGenerator } from '@/lib/rate-limiter';
+import { ENTERPRISE_RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/enterprise-rate-limiter';
 import { metricsCollector } from '@/lib/metrics';
 
 // Schema de validación para la entrada
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
 
   // ✅ NUEVO: Rate limiting avanzado para API de pagos
   const rateLimitConfig = {
-    ...RATE_LIMIT_CONFIGS.PAYMENT_API,
+    ...ENTERPRISE_RATE_LIMIT_CONFIGS.PAYMENT_API,
     keyGenerator: endpointKeyGenerator('create-preference'),
   };
 

@@ -14,17 +14,54 @@ const customJestConfig = {
   // Test environment optimizado
   testEnvironment: 'jsdom',
 
+  // DESHABILITAR CACHE PARA EVITAR SOBRECARGA VS CODE
+  cache: false,
+  cacheDirectory: false,
+
   // Setup files
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: [
+    '<rootDir>/jest.setup.js',
+    '<rootDir>/__tests__/setup/auth-setup.js',
+  ],
 
   // Module name mapping para absolute imports - Optimizado
   moduleNameMapper: {
+    // CSS modules and styles
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+
+    // Swiper CSS específico (debe ir antes del mapeo general)
+    'swiper/css$': '<rootDir>/__mocks__/swiper/css.js',
+    'swiper/css/pagination$': '<rootDir>/__mocks__/swiper/css/pagination.js',
+    'swiper/css/navigation$': '<rootDir>/__mocks__/swiper/css/navigation.js',
+
     // Mapeo principal (suficiente para la mayoría de casos)
     '^@/(.*)$': '<rootDir>/src/$1',
 
+    // NextAuth mocks para testing (Patrón 1: Imports faltantes)
+    '^next-auth/react$': '<rootDir>/__mocks__/next-auth-react.js',
+    '^next-auth$': '<rootDir>/__mocks__/next-auth.js',
+    '^next-auth/providers/google$': '<rootDir>/__mocks__/next-auth/providers/google.js',
+    '^@/auth$': '<rootDir>/__mocks__/@/auth.js',
+
+    // Next.js navigation mocks
+    '^next/navigation$': '<rootDir>/__mocks__/next/navigation.js',
+
     // Mapeos para assets estáticos
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    'swiper/.*\\.css$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/__mocks__/fileMock.js',
+
+    // Swiper mocks (Patrón 1: Imports faltantes)
+    '^swiper$': '<rootDir>/__mocks__/swiper.js',
+    '^swiper/react$': '<rootDir>/__mocks__/swiper-react.js',
+    '^swiper/modules$': '<rootDir>/__mocks__/swiper-modules.js',
+    '^swiper/modules/(.*)$': '<rootDir>/__mocks__/swiper-modules.js',
+
+    // Swiper CSS mocks - orden específico importante
+    'swiper/css/pagination': 'identity-obj-proxy',
+    'swiper/css/navigation': 'identity-obj-proxy',
+    'swiper/css': 'identity-obj-proxy',
+    'swiper/css/(.*)': 'identity-obj-proxy',
   },
   
   // Test patterns
@@ -41,6 +78,16 @@ const customJestConfig = {
     '/tests/',
     'test-utils.tsx',
     'queryClient.setup.ts',
+    '/__mocks__/',
+    '/setup/',
+    'jest.setup.js',
+    'global-setup.js',
+    'global-teardown.js',
+    'test-results-processor.js',
+    'api-mocks.js',
+    'orders-mocks.js',
+    'hooks-mocks.ts',
+    'components-mocks.ts',
   ],
   
   // Coverage configuration
@@ -83,7 +130,7 @@ const customJestConfig = {
   
   // Transform ignore patterns - Optimizado
   transformIgnorePatterns: [
-    '/node_modules/(?!(.*\\.mjs$|@tanstack|use-debounce))',
+    '/node_modules/(?!(.*\\.mjs$|@tanstack|use-debounce|next-auth|swiper))',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
 

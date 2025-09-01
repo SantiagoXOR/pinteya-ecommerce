@@ -159,10 +159,9 @@ describe('useSearchErrorHandler - Retry Logic', () => {
   it('should not retry non-retryable errors', async () => {
     const { result } = renderHook(() => useSearchErrorHandler());
 
-    const nonRetryableOperation = jest.fn().mockRejectedValue({ 
-      status: 400, 
-      message: 'Bad Request' 
-    });
+    const error = new Error('Bad Request');
+    (error as any).status = 400;
+    const nonRetryableOperation = jest.fn().mockRejectedValue(error);
 
     await act(async () => {
       await expect(
@@ -176,7 +175,7 @@ describe('useSearchErrorHandler - Retry Logic', () => {
   it('should stop retrying after max attempts', async () => {
     const { result } = renderHook(() =>
       useSearchErrorHandler({
-        retryConfig: { maxRetries: 2, baseDelay: 10 }
+        retryConfig: { maxRetries: 2, baseDelay: 1 } // Delay muy pequeño
       })
     );
 
@@ -184,26 +183,20 @@ describe('useSearchErrorHandler - Retry Logic', () => {
       new Error('Persistent error')
     );
 
-    let executePromise: Promise<any>;
+    // Usar real timers para este test
+    jest.useRealTimers();
 
-    await act(async () => {
-      executePromise = result.current.executeWithRetry(
+    await expect(
+      result.current.executeWithRetry(
         alwaysFailingOperation,
         'persistent failure test'
-      );
-    });
+      )
+    ).rejects.toThrow('Persistent error');
 
-    // Avanzar timers para todos los retries de forma más eficiente
-    await act(async () => {
-      jest.advanceTimersByTime(10);  // Primer retry
-      await Promise.resolve();
-      jest.advanceTimersByTime(20);  // Segundo retry
-      await Promise.resolve();
-      jest.advanceTimersByTime(100); // Asegurar que todos los timers se ejecuten
-    });
-
-    await expect(executePromise!).rejects.toThrow('Persistent error');
     expect(alwaysFailingOperation).toHaveBeenCalledTimes(3); // Original + 2 retries
+
+    // Restaurar fake timers
+    jest.useFakeTimers();
   });
 });
 
@@ -267,27 +260,21 @@ describe('useSearchErrorHandler - Callbacks', () => {
 
   it('should call onRetryFailed callback when all retries fail', async () => {
     const onRetryFailed = jest.fn();
-    const { result } = renderHook(() => 
-      useSearchErrorHandler({ 
+    const { result } = renderHook(() =>
+      useSearchErrorHandler({
         onRetryFailed,
-        retryConfig: { maxRetries: 1, baseDelay: 50 }
+        retryConfig: { maxRetries: 1, baseDelay: 1 } // Delay muy pequeño
       })
     );
 
     const failingOperation = jest.fn().mockRejectedValue(new Error('Always fails'));
 
-    let executePromise: Promise<any>;
+    // Usar real timers para este test
+    jest.useRealTimers();
 
-    await act(async () => {
-      executePromise = result.current.executeWithRetry(failingOperation);
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(50);
-      await Promise.resolve();
-    });
-
-    await expect(executePromise!).rejects.toThrow();
+    await expect(
+      result.current.executeWithRetry(failingOperation)
+    ).rejects.toThrow();
 
     expect(onRetryFailed).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -296,6 +283,9 @@ describe('useSearchErrorHandler - Callbacks', () => {
       }),
       1 // número de intentos
     );
+
+    // Restaurar fake timers
+    jest.useFakeTimers();
   });
 });
 

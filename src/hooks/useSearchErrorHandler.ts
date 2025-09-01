@@ -153,13 +153,14 @@ export function useSearchErrorHandler(options: UseSearchErrorHandlerOptions = {}
     operationName: string = 'búsqueda'
   ): Promise<T> => {
     let lastError: any;
-    
+
     for (let attempt = 1; attempt <= retryConfig.maxRetries + 1; attempt++) {
       try {
         setIsRetrying(attempt > 1);
-        
+        setRetryCount(attempt > 1 ? attempt - 1 : 0);
+
         const result = await operation();
-        
+
         // Éxito
         if (attempt > 1) {
           setCurrentError(null);
@@ -167,38 +168,40 @@ export function useSearchErrorHandler(options: UseSearchErrorHandlerOptions = {}
           setIsRetrying(false);
           onRetrySuccess?.();
         }
-        
+
         return result;
-        
+
       } catch (error) {
         lastError = error;
         const searchError = classifyError(error);
-        
-        // Si no es retryable o hemos agotado los intentos
-        if (!searchError.retryable || attempt > retryConfig.maxRetries) {
+
+        // Si no es retryable, fallar inmediatamente
+        if (!searchError.retryable) {
+          setCurrentError(searchError);
+          setRetryCount(0);
+          setIsRetrying(false);
+          onError?.(searchError);
+          throw error;
+        }
+
+        // Si hemos agotado los intentos
+        if (attempt > retryConfig.maxRetries) {
           setCurrentError(searchError);
           setRetryCount(attempt - 1);
           setIsRetrying(false);
-          
-          if (attempt > 1) {
-            onRetryFailed?.(searchError, attempt - 1);
-          } else {
-            onError?.(searchError);
-          }
-          
+          onRetryFailed?.(searchError, attempt - 1);
           throw error;
         }
-        
+
         // Preparar para retry
-        setRetryCount(attempt);
         const delay = calculateDelay(attempt, retryConfig);
-        
+
         console.warn(`${operationName} falló (intento ${attempt}/${retryConfig.maxRetries}). Reintentando en ${delay}ms...`, error);
-        
+
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
-    
+
     throw lastError;
   }, [retryConfig, onError, onRetrySuccess, onRetryFailed]);
 

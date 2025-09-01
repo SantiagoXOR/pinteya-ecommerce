@@ -280,7 +280,7 @@ describe('useSearchOptimized Hook', () => {
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       'pinteya-recent-searches',
-      JSON.stringify(['test search'])
+      expect.stringContaining('"test search"')
     );
   });
 

@@ -2,8 +2,8 @@ import { NextRequest } from 'next/server';
 import { GET, POST } from '@/app/api/payments/refunds/route';
 import { auth } from '@/auth';
 
-// Mock dependencies
-jest.mock('@clerk/nextjs/server');
+// Mock dependencies - Clerk eliminado, usar NextAuth
+// jest.mock('@clerk/nextjs/server'); // ELIMINADO - migrado a NextAuth
 jest.mock('@/lib/supabase', () => ({
   getSupabaseClient: jest.fn()
 }));

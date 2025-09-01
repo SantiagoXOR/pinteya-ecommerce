@@ -56,40 +56,31 @@ jest.mock('next/image', () => ({
   },
 }));
 
-// Mock Clerk authentication
-jest.mock('@clerk/nextjs', () => ({
-  useAuth: () => ({
-    isLoaded: true,
-    isSignedIn: true,
-    userId: 'test-user-id',
-    sessionId: 'test-session-id',
-    getToken: jest.fn().mockResolvedValue('test-token'),
+// Mock NextAuth authentication (migrated from Clerk)
+jest.mock('next-auth/react', () => ({
+  useSession: () => ({
+    data: {
+      user: {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        name: 'Test User',
+      },
+    },
+    status: 'authenticated',
   }),
-  useUser: () => ({
-    isLoaded: true,
-    isSignedIn: true,
+  signIn: jest.fn(),
+  signOut: jest.fn(),
+}));
+
+// Mock NextAuth server-side functions
+jest.mock('@/auth', () => ({
+  auth: jest.fn(() => ({
     user: {
       id: 'test-user-id',
-      emailAddresses: [{ emailAddress: 'test@example.com' }],
-      firstName: 'Test',
-      lastName: 'User',
+      email: 'test@example.com',
+      name: 'Test User',
     },
-  }),
-  SignInButton: ({ children }) => <button>{children}</button>,
-  SignOutButton: ({ children }) => <button>{children}</button>,
-  UserButton: () => <div data-testid="user-button">User</div>,
-  ClerkProvider: ({ children }) => <div>{children}</div>,
-  auth: () => ({
-    userId: 'test-user-id',
-    sessionId: 'test-session-id',
-    getToken: jest.fn().mockResolvedValue('test-token'),
-  }),
-  currentUser: () => ({
-    id: 'test-user-id',
-    emailAddresses: [{ emailAddress: 'test@example.com' }],
-    firstName: 'Test',
-    lastName: 'User',
-  }),
+  })),
 }));
 
 // Mock React Query

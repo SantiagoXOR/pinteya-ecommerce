@@ -167,7 +167,7 @@ export async function requireAdminAuth(): Promise<{
 }> {
   try {
     const adminResult = await getAuthenticatedAdmin();
-    
+
     if (!adminResult.success) {
       return {
         success: false,
@@ -186,6 +186,253 @@ export async function requireAdminAuth(): Promise<{
       success: false,
       error: 'Error de autenticación',
       status: 500
+    };
+  }
+}
+
+// ===================================
+// FUNCIONES ADICIONALES REQUERIDAS POR EL BUILD
+// ===================================
+
+/**
+ * Verifica permisos CRUD para operaciones administrativas
+ */
+export async function checkCRUDPermissions(
+  operation: 'create' | 'read' | 'update' | 'delete',
+  resource: string,
+  userId?: string
+): Promise<{
+  allowed: boolean;
+  error?: string;
+}> {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return {
+        allowed: false,
+        error: 'Usuario no autenticado'
+      };
+    }
+
+    // Verificar si es admin
+    const isAdmin = session.user.email === 'santiago@xor.com.ar';
+
+    if (!isAdmin) {
+      return {
+        allowed: false,
+        error: 'Permisos insuficientes para la operación solicitada'
+      };
+    }
+
+    // Admin tiene todos los permisos CRUD
+    console.log(`[AUTH] Permiso CRUD concedido - ${operation} en ${resource} para ${session.user.email}`);
+
+    return {
+      allowed: true
+    };
+  } catch (error) {
+    console.error('[AUTH] Error verificando permisos CRUD:', error);
+    return {
+      allowed: false,
+      error: 'Error verificando permisos'
+    };
+  }
+}
+
+/**
+ * Registra acciones administrativas para auditoría
+ */
+export async function logAdminAction(
+  action: string,
+  resource: string,
+  details?: Record<string, any>,
+  userId?: string
+): Promise<void> {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      console.warn('[AUDIT] Intento de log sin autenticación');
+      return;
+    }
+
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      userId: session.user.id,
+      userEmail: session.user.email,
+      action,
+      resource,
+      details: details || {},
+      ip: 'unknown', // En un entorno real, obtener de headers
+      userAgent: 'unknown' // En un entorno real, obtener de headers
+    };
+
+    console.log('[AUDIT] Acción administrativa registrada:', logEntry);
+
+    // En un entorno de producción, esto se guardaría en una tabla de auditoría
+    if (supabaseAdmin) {
+      try {
+        await supabaseAdmin
+          .from('admin_audit_log')
+          .insert(logEntry);
+      } catch (dbError) {
+        // Si falla la BD, al menos logueamos en consola
+        console.error('[AUDIT] Error guardando en BD, usando fallback:', dbError);
+      }
+    }
+  } catch (error) {
+    console.error('[AUDIT] Error registrando acción admin:', error);
+  }
+}
+
+/**
+ * Verifica acceso administrativo general
+ */
+export async function checkAdminAccess(
+  requiredRole: string = 'admin'
+): Promise<{
+  hasAccess: boolean;
+  user?: AdminUser;
+  error?: string;
+}> {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return {
+        hasAccess: false,
+        error: 'Usuario no autenticado'
+      };
+    }
+
+    // Verificar si es admin
+    const isAdmin = session.user.email === 'santiago@xor.com.ar';
+
+    if (!isAdmin) {
+      return {
+        hasAccess: false,
+        error: 'Acceso denegado - Se requieren permisos de administrador'
+      };
+    }
+
+    return {
+      hasAccess: true,
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name || '',
+        role: 'admin'
+      }
+    };
+  } catch (error) {
+    console.error('[AUTH] Error verificando acceso admin:', error);
+    return {
+      hasAccess: false,
+      error: 'Error verificando acceso'
+    };
+  }
+}
+
+/**
+ * Obtiene el perfil completo del usuario autenticado
+ */
+export async function getUserProfile(userId?: string): Promise<{
+  success: boolean;
+  profile?: {
+    id: string;
+    email: string;
+    name?: string;
+    role: string;
+    isAdmin: boolean;
+    lastLogin?: string;
+    permissions: string[];
+  };
+  error?: string;
+}> {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return {
+        success: false,
+        error: 'Usuario no autenticado'
+      };
+    }
+
+    // Si se especifica un userId diferente, verificar permisos admin
+    if (userId && userId !== session.user.id) {
+      const isAdmin = session.user.email === 'santiago@xor.com.ar';
+      if (!isAdmin) {
+        return {
+          success: false,
+          error: 'Permisos insuficientes para ver perfil de otro usuario'
+        };
+      }
+    }
+
+    const isAdmin = session.user.email === 'santiago@xor.com.ar';
+
+    return {
+      success: true,
+      profile: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name || '',
+        role: isAdmin ? 'admin' : 'user',
+        isAdmin,
+        lastLogin: new Date().toISOString(), // En producción, obtener de BD
+        permissions: isAdmin ? ['read', 'write', 'delete', 'admin'] : ['read']
+      }
+    };
+  } catch (error) {
+    console.error('[AUTH] Error obteniendo perfil de usuario:', error);
+    return {
+      success: false,
+      error: 'Error obteniendo perfil'
+    };
+  }
+}
+
+/**
+ * Extrae información de autenticación de headers HTTP
+ */
+export async function getAuthFromHeaders(
+  headers: Headers | Record<string, string>
+): Promise<{
+  success: boolean;
+  userId?: string;
+  sessionId?: string;
+  isAdmin?: boolean;
+  error?: string;
+}> {
+  try {
+    // En NextAuth.js, la autenticación se maneja automáticamente
+    // Esta función es principalmente para compatibilidad con APIs legacy
+    const session = await auth();
+
+    if (!session?.user) {
+      return {
+        success: false,
+        error: 'No se encontró sesión válida en headers'
+      };
+    }
+
+    const isAdmin = session.user.email === 'santiago@xor.com.ar';
+
+    console.log(`[AUTH] Autenticación extraída de headers para ${session.user.email}`);
+
+    return {
+      success: true,
+      userId: session.user.id,
+      sessionId: session.user.id,
+      isAdmin
+    };
+  } catch (error) {
+    console.error('[AUTH] Error extrayendo auth de headers:', error);
+    return {
+      success: false,
+      error: 'Error procesando headers de autenticación'
     };
   }
 }

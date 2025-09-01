@@ -1,323 +1,252 @@
 /**
- * Tests Unitarios - AuthSection
- * Pruebas enfocadas en el componente de autenticación
+ * Test simplificado para AuthSection con NextAuth
+ * Enfocado en validar la funcionalidad core sin complejidades
  */
 
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ClerkProvider } from '@clerk/nextjs';
-import AuthSection from '../../AuthSection';
+import React from 'react'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { useSession, signIn } from 'next-auth/react'
+import AuthSection from '../../AuthSection'
 
-// Mock de Next.js
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-    replace: jest.fn(),
-    prefetch: jest.fn(),
-  }),
-}));
+// Mock NextAuth
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(),
+  signIn: jest.fn()
+}))
 
-// Mock de Clerk con diferentes estados
-const mockClerkHooks = {
-  useUser: jest.fn(),
-  SignedIn: ({ children }: { children: React.ReactNode }) => <div data-testid="signed-in">{children}</div>,
-  SignedOut: ({ children }: { children: React.ReactNode }) => <div data-testid="signed-out">{children}</div>,
-  UserButton: () => <div data-testid="user-button">UserButton</div>,
-};
+const mockUseSession = useSession as jest.MockedFunction<typeof useSession>
+const mockSignIn = signIn as jest.MockedFunction<typeof signIn>
 
-jest.mock('@clerk/nextjs', () => ({
-  ClerkProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  ...mockClerkHooks,
-}));
+// Mock user data
+const mockUser = {
+  id: 'user_123',
+  name: 'Juan Pérez',
+  email: 'juan@example.com'
+}
 
-// Wrapper de pruebas
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <ClerkProvider publishableKey="test-key">
-    {children}
-  </ClerkProvider>
-);
-
-describe('AuthSection - Tests Unitarios', () => {
+describe('AuthSection - Simplified Tests', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    // Estado por defecto: usuario no autenticado
-    mockClerkHooks.useUser.mockReturnValue({
-      isSignedIn: false,
-      user: null,
-      isLoaded: true,
-    });
-  });
+    jest.clearAllMocks()
+  })
 
-  describe('Variante Desktop', () => {
-    it('debe renderizar el botón de autenticación con solo icono Google', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
+  describe('Unauthenticated State', () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'unauthenticated'
+      } as any)
+    })
 
-      // Verificar que se renderiza el estado SignedOut
-      expect(screen.getByTestId('signed-out')).toBeInTheDocument();
+    it('should render sign in button when unauthenticated', () => {
+      render(<AuthSection />)
       
-      // Verificar que hay un botón con enlace a /signin
-      const signInLink = screen.getByRole('link');
-      expect(signInLink).toHaveAttribute('href', '/signin');
-    });
+      const button = screen.getByRole('button')
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveClass('bg-white/20', 'hover:bg-white/30')
+    })
 
-    it('debe mostrar solo el icono de Google sin texto', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
-
-      // Verificar que NO hay texto "Iniciar Sesión"
-      expect(screen.queryByText('Iniciar Sesión')).not.toBeInTheDocument();
+    it('should render Google icon in button', () => {
+      render(<AuthSection />)
       
-      // Verificar que hay un SVG (icono de Google)
-      const googleIcon = screen.getByRole('link').querySelector('svg');
-      expect(googleIcon).toBeInTheDocument();
-    });
+      const svg = screen.getByRole('button').querySelector('svg')
+      expect(svg).toBeInTheDocument()
+      expect(svg).toHaveClass('w-5', 'h-5')
+    })
 
-    it('debe tener las clases CSS correctas para el botón translúcido', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
-
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-white/20', 'hover:bg-white/30');
-      expect(button).toHaveClass('backdrop-blur-sm');
-      expect(button).toHaveClass('border-2', 'border-white/30');
-      expect(button).toHaveClass('rounded-full');
-    });
-
-    it('debe tener los colores oficiales de Google en el SVG', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
-
-      const svgPaths = screen.getByRole('link').querySelectorAll('path');
+    it('should call signIn when button is clicked', () => {
+      render(<AuthSection />)
       
-      // Verificar que hay 4 paths (colores de Google)
-      expect(svgPaths).toHaveLength(4);
+      const button = screen.getByRole('button')
+      fireEvent.click(button)
       
-      // Verificar colores específicos
-      expect(svgPaths[0]).toHaveAttribute('fill', '#4285F4'); // Azul
-      expect(svgPaths[1]).toHaveAttribute('fill', '#34A853'); // Verde
-      expect(svgPaths[2]).toHaveAttribute('fill', '#FBBC05'); // Amarillo
-      expect(svgPaths[3]).toHaveAttribute('fill', '#EA4335'); // Rojo
-    });
+      expect(mockSignIn).toHaveBeenCalledWith('google')
+    })
 
-    it('debe ser clickeable y navegar a /signin', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
-
-      const signInLink = screen.getByRole('link');
-      fireEvent.click(signInLink);
+    it('should have correct CSS classes for translucent button', () => {
+      render(<AuthSection />)
       
-      // Verificar que el enlace es clickeable
-      expect(signInLink).toHaveAttribute('href', '/signin');
-    });
-  });
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass(
+        'relative',
+        'bg-white/20',
+        'hover:bg-white/30',
+        'backdrop-blur-sm',
+        'border-2',
+        'border-white/30',
+        'rounded-full'
+      )
+    })
+  })
 
-  describe('Variante Mobile', () => {
-    it('debe renderizar correctamente en mobile', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="mobile" />
-        </TestWrapper>
-      );
+  describe('Authenticated State', () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: { user: mockUser },
+        status: 'authenticated'
+      } as any)
+    })
 
-      expect(screen.getByTestId('signed-out')).toBeInTheDocument();
+    it('should render admin link when authenticated', () => {
+      render(<AuthSection />)
       
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-white/20', 'hover:bg-white/30');
-    });
+      const adminLink = screen.getByRole('link')
+      expect(adminLink).toBeInTheDocument()
+      expect(adminLink).toHaveAttribute('href', '/admin')
+    })
 
-    it('debe tener el mismo diseño que desktop', () => {
-      const { rerender } = render(
-        <TestWrapper>
-          <AuthSection variant="mobile" />
-        </TestWrapper>
-      );
-
-      const mobileButton = screen.getByRole('button');
-      const mobileClasses = mobileButton.className;
-
-      rerender(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
-
-      const desktopButton = screen.getByRole('button');
-      expect(desktopButton.className).toBe(mobileClasses);
-    });
-  });
-
-  describe('Variante TopBar', () => {
-    it('debe renderizar un botón diferente para topbar', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="topbar" />
-        </TestWrapper>
-      );
-
-      expect(screen.getByText('Ingresá')).toBeInTheDocument();
+    it('should render user avatar when authenticated', () => {
+      render(<AuthSection />)
       
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('text-gray-800', 'hover:text-gray-900');
-    });
+      const avatar = screen.getByText('J') // First letter of Juan
+      expect(avatar).toBeInTheDocument()
+    })
 
-    it('debe tener estilos específicos para topbar', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="topbar" />
-        </TestWrapper>
-      );
-
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('text-xs', 'px-2', 'py-1', 'h-auto');
-    });
-  });
-
-  describe('Estados de Clerk', () => {
-    it('debe mostrar skeleton cuando Clerk no está cargado', () => {
-      mockClerkHooks.useUser.mockReturnValue({
-        isSignedIn: false,
-        user: null,
-        isLoaded: false, // No cargado
-      });
-
-      render(
-        <TestWrapper>
-          <AuthSection variant="mobile" />
-        </TestWrapper>
-      );
-
-      // Verificar que se muestra el skeleton
-      const skeleton = screen.getByRole('generic');
-      expect(skeleton).toHaveClass('animate-pulse');
-    });
-
-    it('debe renderizar UserButton cuando el usuario está autenticado', () => {
-      mockClerkHooks.useUser.mockReturnValue({
-        isSignedIn: true,
-        user: { id: '1', firstName: 'Test' },
-        isLoaded: true,
-      });
-
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
-
-      expect(screen.getByTestId('signed-in')).toBeInTheDocument();
-      expect(screen.getByTestId('user-button')).toBeInTheDocument();
-    });
-  });
-
-  describe('Modo Fallback (sin Clerk)', () => {
-    it('debe funcionar sin Clerk habilitado', () => {
-      // Simular componente sin Clerk
-      const { container } = render(<AuthSection variant="desktop" />);
+    it('should have admin button with correct styling', () => {
+      render(<AuthSection />)
       
-      // Verificar que se renderiza algo (modo fallback)
-      expect(container.firstChild).toBeInTheDocument();
-    });
-  });
+      const adminLink = screen.getByRole('link')
+      expect(adminLink).toHaveClass(
+        'bg-orange-600',
+        'hover:bg-orange-700',
+        'text-white'
+      )
+    })
+  })
 
-  describe('Accesibilidad', () => {
-    it('debe tener atributos de accesibilidad correctos', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
+  describe('Loading State', () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'loading'
+      } as any)
+    })
 
-      const button = screen.getByRole('button');
-      expect(button).toBeInTheDocument();
+    it('should render loading skeleton', () => {
+      render(<AuthSection />)
+
+      const skeleton = screen.getByText((content, element) => {
+        return element?.classList.contains('animate-pulse') || false
+      })
+      expect(skeleton).toHaveClass('animate-pulse')
+    })
+  })
+
+  describe('Variants', () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'unauthenticated'
+      } as any)
+    })
+
+    it('should render mobile variant correctly', () => {
+      render(<AuthSection variant="mobile" />)
       
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/signin');
-    });
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('hover:scale-110')
+    })
 
-    it('debe ser navegable por teclado', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
-
-      const button = screen.getByRole('button');
+    it('should render topbar variant with text', () => {
+      render(<AuthSection variant="topbar" />)
       
-      // Simular navegación por teclado
-      fireEvent.keyDown(button, { key: 'Enter' });
-      fireEvent.keyDown(button, { key: ' ' });
+      const button = screen.getByText('Iniciar Sesión')
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveClass('text-gray-800')
+    })
+
+    it('should render default variant correctly', () => {
+      render(<AuthSection variant="default" />)
       
-      // Verificar que no hay errores
-      expect(button).toBeInTheDocument();
-    });
-  });
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('hover:scale-105')
+    })
+  })
 
-  describe('Interacciones', () => {
-    it('debe manejar hover effects', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
+  describe('Accessibility', () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'unauthenticated'
+      } as any)
+    })
 
-      const button = screen.getByRole('button');
+    it('should be keyboard accessible', () => {
+      render(<AuthSection />)
       
-      fireEvent.mouseEnter(button);
-      fireEvent.mouseLeave(button);
+      const button = screen.getByRole('button')
+      expect(button).toBeInTheDocument()
       
-      // Verificar que las clases hover están presentes
-      expect(button).toHaveClass('hover:bg-white/30');
-      expect(button).toHaveClass('hover:border-white/50');
-    });
+      // Button should be focusable
+      button.focus()
+      expect(document.activeElement).toBe(button)
+    })
 
-    it('debe manejar efectos de transformación', () => {
-      render(
-        <TestWrapper>
-          <AuthSection variant="desktop" />
-        </TestWrapper>
-      );
-
-      const button = screen.getByRole('button');
+    it('should have proper button role', () => {
+      render(<AuthSection />)
       
-      // Verificar clases de transformación
-      expect(button).toHaveClass('transform', 'hover:scale-105', 'active:scale-95');
-    });
-  });
+      const button = screen.getByRole('button')
+      expect(button).toBeInTheDocument()
+    })
+  })
 
-  describe('Consistencia Visual', () => {
-    it('debe mantener el mismo tamaño de icono en todas las variantes', () => {
-      const variants: Array<'desktop' | 'mobile' | 'topbar'> = ['desktop', 'mobile'];
+  describe('Visual Consistency', () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'unauthenticated'
+      } as any)
+    })
+
+    it('should maintain consistent icon size across variants', () => {
+      const variants = ['default', 'mobile'] as const
       
       variants.forEach(variant => {
-        const { unmount } = render(
-          <TestWrapper>
-            <AuthSection variant={variant} />
-          </TestWrapper>
-        );
-
-        if (variant !== 'topbar') {
-          const svg = screen.getByRole('link').querySelector('svg');
-          expect(svg).toHaveClass('w-5', 'h-5');
-        }
+        const { unmount } = render(<AuthSection variant={variant} />)
         
-        unmount();
-      });
-    });
-  });
-});
+        const svg = screen.getByRole('button').querySelector('svg')
+        expect(svg).toHaveClass('w-5', 'h-5')
+        
+        unmount()
+      })
+    })
+
+    it('should have hover effects', () => {
+      render(<AuthSection />)
+      
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('hover:bg-white/30')
+    })
+
+    it('should have transform effects', () => {
+      render(<AuthSection />)
+      
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('transform', 'hover:scale-105')
+    })
+  })
+
+  describe('Google Branding', () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'unauthenticated'
+      } as any)
+    })
+
+    it('should have Google colors in SVG paths', () => {
+      render(<AuthSection />)
+      
+      const svg = screen.getByRole('button').querySelector('svg')
+      const paths = svg?.querySelectorAll('path')
+      
+      expect(paths).toHaveLength(4)
+      
+      // Check for Google brand colors
+      const colors = Array.from(paths || []).map(path => path.getAttribute('fill'))
+      expect(colors).toContain('#4285F4') // Google Blue
+      expect(colors).toContain('#34A853') // Google Green
+      expect(colors).toContain('#FBBC05') // Google Yellow
+      expect(colors).toContain('#EA4335') // Google Red
+    })
+  })
+})

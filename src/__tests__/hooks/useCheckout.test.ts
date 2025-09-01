@@ -46,13 +46,8 @@ const createMockStore = (initialState = {}) => {
 const mockFetch = jest.fn()
 global.fetch = mockFetch
 
-// Mock Clerk
-jest.mock('@clerk/nextjs', () => ({
-  useUser: () => ({
-    user: null,
-    isLoaded: true,
-  }),
-}))
+// Mock NextAuth
+// NextAuth se mockea automáticamente via moduleNameMapper
 
 // Helper function to render hook with Redux store
 const renderHookWithStore = (initialState = {}) => {

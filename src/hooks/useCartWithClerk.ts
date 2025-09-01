@@ -68,38 +68,30 @@ export const useCartWithClerk = () => {
 
   // Efecto para manejar cambios en el estado de autenticación
   useEffect(() => {
-    console.log('[useCartWithClerk] 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
-    return;
+    if (!isLoaded) return;
 
-    // CÓDIGO COMENTADO TEMPORALMENTE
-    // if (!isLoaded) return;
-
-    // if (user) {
-    //   // Usuario autenticado - migrar carrito temporal si existe
-    //   migrateCart(user.id);
-    // } else {
-    //   // Usuario no autenticado - cargar desde localStorage
-    //   const persistedItems = loadCartFromStorage();
-    //   if (persistedItems.length > 0) {
-    //     dispatch(hydrateCart(persistedItems));
-    //   }
-    // }
+    if (user) {
+      // Usuario autenticado - migrar carrito temporal si existe
+      migrateCart(user.id);
+    } else {
+      // Usuario no autenticado - cargar desde localStorage
+      const persistedItems = loadCartFromStorage();
+      if (persistedItems.length > 0) {
+        dispatch(hydrateCart(persistedItems));
+      }
+    }
   }, [user, isLoaded, dispatch, migrateCart]);
 
   // Efecto para guardar carrito de usuario autenticado cuando cambie
   useEffect(() => {
-    console.log('[useCartWithClerk] 🚫 SAVE CART TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
-    return;
+    if (!isLoaded || !user) return;
 
-    // CÓDIGO COMENTADO TEMPORALMENTE
-    // if (!isLoaded || !user) return;
+    // Debounce para evitar guardados excesivos
+    const timeoutId = setTimeout(() => {
+      saveCart(user.id);
+    }, 1000);
 
-    // // Debounce para evitar guardados excesivos
-    // const timeoutId = setTimeout(() => {
-    //   saveCart(user.id);
-    // }, 1000);
-
-    // return () => clearTimeout(timeoutId);
+    return () => clearTimeout(timeoutId);
   }, [cartItems, user, isLoaded, saveCart]);
 
   // Función para limpiar carrito al cerrar sesión
