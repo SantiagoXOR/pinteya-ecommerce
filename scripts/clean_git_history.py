@@ -68,7 +68,16 @@ def main():
         "pk_live_Y2xlcmsucGludGV5YS5jb20k==>[STRIPE_PUBLIC_KEY_REMOVED]",
         "sk_test_==>[STRIPE_SECRET_KEY_REMOVED]",
         "pk_test_==>[STRIPE_PUBLIC_KEY_REMOVED]",
-        "whsec_TdGlLw2mxSzdkiBM8M655Lu5/6CWrBdr==>[WEBHOOK_SECRET_REMOVED]"
+        "        "whsec_TdGlLw2mxSzdkiBM8M655Lu5/6CWrBdr==>[WEBHOOK_SECRET_REMOVED]",
+        "APP_USR-1666432701165913-062411-afba33f755c88d68ad8a435e4b90fc14-452711838==>[MERCADOPAGO_ACCESS_TOKEN_REMOVED]",
+        "APP_USR-1fffdd3e-155d-4b1a-93af-8b79b7242962==>[MERCADOPAGO_PUBLIC_KEY_REMOVED]",
+        "1666432701165913==>[MERCADOPAGO_CLIENT_ID_REMOVED]",
+        "        "kCyTlavw8B2l9zJ7T5IMeR3nOhLOHrTm==>[MERCADOPAGO_CLIENT_SECRET_REMOVED]",
+        "pk_live_Y2xlcmsucGludGV5YS5jb20k==>[CLERK_PUBLISHABLE_KEY_REMOVED]",
+        "sk_live_[CLERK_SECRET_PATTERN]==>[CLERK_SECRET_KEY_REMOVED]",
+        "L1m+iV4Wi4JKKp97wvqOfkh3tnnsxe7pNnn1asEV7vw===>[NEXTAUTH_SECRET_REMOVED]",
+        "76477973505-tqui6nk4dunjci0t2sta391bd63kl0pu.apps.googleusercontent.com==>[GOOGLE_CLIENT_ID_REMOVED]",
+        "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==>[GOOGLE_CLIENT_SECRET_REMOVED]"""
     ]
     
     # Crear archivo temporal con reemplazos
