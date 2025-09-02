@@ -11,28 +11,31 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Configuración de variables para Vercel
-const VERCEL_ENV_VARS = {
+// ⚠️ CONFIGURACIÓN DE VARIABLES PARA VERCEL
+// IMPORTANTE: Las credenciales reales deben configurarse manualmente en Vercel Dashboard
+// Este archivo NO contiene credenciales reales por seguridad
+
+const VERCEL_ENV_VARS_TEMPLATE = {
   // NextAuth.js Core
-  'NEXTAUTH_SECRET': '[NEXTAUTH_SECRET_REMOVED]',
+  'NEXTAUTH_SECRET': '[GENERAR_CON_CRYPTO_RANDOMBYTES_32]',
   'NEXTAUTH_URL': 'https://pinteya.com',
-  
-  // Google OAuth (usando credenciales existentes de Clerk)
-  'AUTH_GOOGLE_ID': '[GOOGLE_OAUTH_CLIENT_ID_REMOVED]',
-  'AUTH_GOOGLE_SECRET': '[GOOGLE_OAUTH_SECRET_REMOVED]',
-  
-  // Supabase (mantener existentes)
-  'NEXT_PUBLIC_SUPABASE_URL': 'https://aakzspzfulgftqlgwkpb.supabase.co',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY': '[SUPABASE_ANON_KEY_REMOVED]',
-  'SUPABASE_SERVICE_ROLE_KEY': '[SUPABASE_SERVICE_ROLE_KEY_REMOVED]',
-  
-  // MercadoPago (mantener existentes)
-  'MERCADOPAGO_ACCESS_TOKEN': '[MERCADOPAGO_ACCESS_TOKEN_REMOVED]',
-  'NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY': 'APP_USR-1f2e3d4c5b6a7f8e9d0c1b2a3f4e5d6c',
-  'MERCADOPAGO_CLIENT_ID': '1666432701165913',
-  'MERCADOPAGO_CLIENT_SECRET': 'kCyTlavw8BqRhHf6m9n0p1q2r3s4t5u6',
-  'MERCADOPAGO_WEBHOOK_SECRET': 'ROTATED_REPLACED_SECRET_2024',
-  
+
+  // Google OAuth (configurar en Google Cloud Console)
+  'AUTH_GOOGLE_ID': '[GOOGLE_OAUTH_CLIENT_ID]',
+  'AUTH_GOOGLE_SECRET': '[GOOGLE_OAUTH_CLIENT_SECRET]',
+
+  // Supabase (obtener de Supabase Dashboard)
+  'NEXT_PUBLIC_SUPABASE_URL': '[SUPABASE_PROJECT_URL]',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY': '[SUPABASE_ANON_KEY]',
+  'SUPABASE_SERVICE_ROLE_KEY': '[SUPABASE_SERVICE_ROLE_KEY]',
+
+  // MercadoPago (obtener de MercadoPago Dashboard)
+  'MERCADOPAGO_ACCESS_TOKEN': '[MERCADOPAGO_ACCESS_TOKEN]',
+  'NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY': '[MERCADOPAGO_PUBLIC_KEY]',
+  'MERCADOPAGO_CLIENT_ID': '[MERCADOPAGO_CLIENT_ID]',
+  'MERCADOPAGO_CLIENT_SECRET': '[MERCADOPAGO_CLIENT_SECRET]',
+  'MERCADOPAGO_WEBHOOK_SECRET': '[MERCADOPAGO_WEBHOOK_SECRET]',
+
   // App Configuration
   'NEXT_PUBLIC_APP_URL': 'https://pinteya.com',
   'NODE_ENV': 'production'
@@ -80,7 +83,7 @@ class VercelEnvSetup {
   generateVercelCommands() {
     const commands = [];
     
-    Object.entries(VERCEL_ENV_VARS).forEach(([key, value]) => {
+    Object.entries(VERCEL_ENV_VARS_TEMPLATE).forEach(([key, value]) => {
       // Escapar valores que contienen caracteres especiales
       const escapedValue = value.replace(/"/g, '\\"');
       commands.push(`vercel env add ${key} production`);
@@ -96,7 +99,7 @@ class VercelEnvSetup {
     this.log('3. Ir a Settings > Environment Variables');
     this.log('4. Agregar las siguientes variables para PRODUCTION:\n');
     
-    Object.entries(VERCEL_ENV_VARS).forEach(([key, value]) => {
+    Object.entries(VERCEL_ENV_VARS_TEMPLATE).forEach(([key, value]) => {
       console.log(`${key}=${value}`);
     });
     
@@ -140,7 +143,7 @@ class VercelEnvSetup {
     }
     
     this.log('\n📋 Variables a configurar:');
-    Object.keys(VERCEL_ENV_VARS).forEach(key => {
+    Object.keys(VERCEL_ENV_VARS_TEMPLATE).forEach(key => {
       console.log(`  - ${key}`);
     });
     
