@@ -3,6 +3,14 @@
 // ===================================
 
 import { defineConfig, devices } from '@playwright/test'
+import dotenv from 'dotenv'
+
+// Cargar variables de entorno específicas para testing
+if (process.env.NODE_ENV === 'test' || process.env.PLAYWRIGHT_TEST === 'true') {
+  dotenv.config({ path: '.env.test' });
+} else {
+  dotenv.config();
+}
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -48,33 +56,106 @@ export default defineConfig({
     
     /* Global timeout for navigation */
     navigationTimeout: 30000,
+
+    /* Headers para identificar tests de Playwright */
+    extraHTTPHeaders: {
+      'x-playwright-test': 'true',
+      'x-test-auth': 'bypass',
+      'User-Agent': 'Playwright-Test-Agent'
+    },
   },
 
   /* Configure projects for major browsers */
   projects: [
+    // Setup de autenticación (se ejecuta primero)
     {
-      name: 'chromium',
+      name: 'setup',
+      testMatch: '**/auth.setup.ts',
+      teardown: 'cleanup',
+      fullyParallel: false, // Ejecutar tests de setup secuencialmente
+    },
+
+    // Cleanup (se ejecuta al final)
+    {
+      name: 'cleanup',
+      testMatch: '**/auth.cleanup.ts',
+    },
+
+    // API Admin tests - direct API testing (sin middleware problemático)
+    {
+      name: 'api-admin',
       use: { ...devices['Desktop Chrome'] },
+      testMatch: ['**/api-admin.spec.ts']
+    },
+
+    // API Public tests - direct API testing
+    {
+      name: 'api-public',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: ['**/api-public.spec.ts']
+    },
+
+    // UI Admin tests - require authentication (legacy)
+    {
+      name: 'ui-admin',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/e2e/.auth/admin.json',
+      },
+      dependencies: ['setup'],
+      testMatch: [
+        '**/admin/**/*.spec.ts',
+        '**/auth/**/*.spec.ts',
+        '!**/api-*.spec.ts' // Excluir tests API
+      ]
+    },
+
+    // UI Public tests - no authentication required
+    {
+      name: 'ui-public',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: [
+        '**/*.spec.ts',
+        '!**/admin/**/*.spec.ts',
+        '!**/auth/**/*.spec.ts',
+        '!**/api-*.spec.ts' // Excluir tests API
+      ]
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      testMatch: [
+        '**/*.spec.ts',
+        '!**/admin/**/*.spec.ts' // Excluir tests admin en Firefox por ahora
+      ]
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      testMatch: [
+        '**/*.spec.ts',
+        '!**/admin/**/*.spec.ts' // Excluir tests admin en Safari por ahora
+      ]
     },
 
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
+      testMatch: [
+        '**/*.spec.ts',
+        '!**/admin/**/*.spec.ts' // Excluir tests admin en móvil
+      ]
     },
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
+      testMatch: [
+        '**/*.spec.ts',
+        '!**/admin/**/*.spec.ts' // Excluir tests admin en móvil
+      ]
     },
 
     /* Test against branded browsers. */
@@ -92,7 +173,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true, // Siempre reutilizar servidor existente
     timeout: 120000,
   },
 

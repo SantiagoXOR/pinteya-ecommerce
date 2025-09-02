@@ -1,18 +1,26 @@
 /**
  * NextAuth.js v5 Configuration for Pinteya E-commerce
- * Integración con Supabase y Google OAuth
+ * Configuración optimizada para producción con Google OAuth
+ * Migración completa desde Clerk a NextAuth.js
  */
 
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 
-// Configuración de NextAuth.js v5
+// Configuración de NextAuth.js v5 optimizada para producción
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // Configuración de providers
+  // Configuración de providers con validación
   providers: [
     GoogleProvider({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
   ],
 
@@ -25,9 +33,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // Configuración de páginas personalizadas
   pages: {
     signIn: "/auth/signin",
-    signOut: "/auth/signout",
     error: "/auth/error",
   },
+
+  // Configuración de base URL para producción
+  basePath: "/api/auth",
 
   // Configuración de callbacks
   callbacks: {
@@ -88,6 +98,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   // Configuración de debug
   debug: process.env.NODE_ENV === "development",
+
+  // Configuración de trusted hosts para desarrollo y producción
+  trustHost: true,
+
+  // Configuración de cookies para producción
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+
+  // Configuración de secret para producción
+  secret: process.env.NEXTAUTH_SECRET,
 })
 
 // Tipos TypeScript para extender la sesión
