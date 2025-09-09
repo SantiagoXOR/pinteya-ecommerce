@@ -93,7 +93,7 @@ git commit -m "security: remove .env.local from tracking"
 #### **2.1 Reemplazar credenciales reales con placeholders**
 ```bash
 # En todos los archivos de docs/:
-APP_USR-1666432701165913-... → [MERCADOPAGO_ACCESS_TOKEN]
+[CREDENCIAL_REMOVIDA] → [MERCADOPAGO_ACCESS_TOKEN]
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... → [SUPABASE_ANON_KEY]
 ```
 
