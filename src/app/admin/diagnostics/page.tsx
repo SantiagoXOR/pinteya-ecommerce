@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { DiagnosticPanel } from '@/components/admin/DiagnosticPanel';
 
 interface DiagnosticTool {
   id: string;
@@ -252,6 +253,12 @@ export default function DiagnosticsPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Panel de Diagnóstico Enterprise */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Diagnóstico Enterprise en Tiempo Real</h2>
+        <DiagnosticPanel />
       </div>
 
       {/* Footer */}

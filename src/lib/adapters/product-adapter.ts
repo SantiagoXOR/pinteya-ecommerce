@@ -103,7 +103,7 @@ export function getFinalPrice(product: Product | ProductWithCategory): number {
   if ('discountedPrice' in product) {
     return product.discountedPrice;
   }
-  return product.discounted_price || product.price;
+  return product.discounted_price ?? product.price;
 }
 
 /**

@@ -41,7 +41,7 @@ const sidebarItems: SidebarItem[] = [
     title: 'Órdenes',
     href: '/admin/orders',
     icon: ShoppingCart,
-    badge: 'Beta',
+    badge: 'Enterprise',
   },
   {
     title: 'Clientes',

@@ -1,27 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { Filter, X, Search } from 'lucide-react';
+import { Filter, X, Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface ProductFilters {
-  search?: string;
-  category?: string;
-  status?: string;
-  priceMin?: number;
-  priceMax?: number;
-  stockMin?: number;
-  stockMax?: number;
-}
+import { ProductFilters as ProductFiltersType } from '@/hooks/admin/useProductsEnterprise';
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
 }
 
 interface ProductFiltersProps {
-  filters: ProductFilters;
-  onFiltersChange: (filters: Partial<ProductFilters>) => void;
+  filters: ProductFiltersType;
+  onFiltersChange: (filters: Partial<ProductFiltersType>) => void;
   onClearFilters: () => void;
   categories?: Category[];
   className?: string;
@@ -30,7 +21,26 @@ interface ProductFiltersProps {
 const statusOptions = [
   { value: 'active', label: 'Activo' },
   { value: 'inactive', label: 'Inactivo' },
-  { value: 'draft', label: 'Borrador' },
+  { value: 'all', label: 'Todos' },
+];
+
+const stockStatusOptions = [
+  { value: 'in_stock', label: 'En Stock' },
+  { value: 'low_stock', label: 'Stock Bajo' },
+  { value: 'out_of_stock', label: 'Sin Stock' },
+  { value: 'all', label: 'Todos' },
+];
+
+const sortOptions = [
+  { value: 'name', label: 'Nombre' },
+  { value: 'price', label: 'Precio' },
+  { value: 'stock', label: 'Stock' },
+  { value: 'created_at', label: 'Fecha de creación' },
+];
+
+const sortOrderOptions = [
+  { value: 'asc', label: 'Ascendente' },
+  { value: 'desc', label: 'Descendente' },
 ];
 
 export function ProductFilters({
@@ -46,8 +56,15 @@ export function ProductFilters({
     value !== undefined && value !== ''
   );
 
-  const handleInputChange = (key: keyof ProductFilters, value: string | number) => {
+  const handleInputChange = (key: keyof ProductFiltersType, value: string | number) => {
     onFiltersChange({ [key]: value === '' ? undefined : value });
+  };
+
+  const handleSortChange = (sortBy: string, sortOrder: string) => {
+    onFiltersChange({ 
+      sort_by: sortBy as ProductFiltersType['sort_by'], 
+      sort_order: sortOrder as ProductFiltersType['sort_order'] 
+    });
   };
 
   return (
@@ -98,16 +115,17 @@ export function ProductFilters({
 
       {/* Advanced Filters */}
       {isExpanded && (
-        <div className="p-4 border-t border-gray-200 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="p-4 border-t border-gray-200 space-y-6">
+          {/* First Row - Basic Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Category Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Categoría
               </label>
               <select
-                value={filters.category || ''}
-                onChange={(e) => handleInputChange('category', e.target.value)}
+                value={filters.category_id || ''}
+                onChange={(e) => handleInputChange('category_id', Number(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
               >
                 <option value="">Todas las categorías</option>
@@ -125,11 +143,10 @@ export function ProductFilters({
                 Estado
               </label>
               <select
-                value={filters.status || ''}
+                value={filters.status || 'all'}
                 onChange={(e) => handleInputChange('status', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
               >
-                <option value="">Todos los estados</option>
                 {statusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -138,6 +155,41 @@ export function ProductFilters({
               </select>
             </div>
 
+            {/* Stock Status Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Estado de Stock
+              </label>
+              <select
+                value={filters.stock_status || 'all'}
+                onChange={(e) => handleInputChange('stock_status', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
+              >
+                {stockStatusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Brand Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Marca
+              </label>
+              <input
+                type="text"
+                placeholder="Filtrar por marca"
+                value={filters.brand || ''}
+                onChange={(e) => handleInputChange('brand', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Second Row - Price and Sort */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Price Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -146,42 +198,55 @@ export function ProductFilters({
               <div className="flex space-x-2">
                 <input
                   type="number"
-                  placeholder="Mín"
-                  value={filters.priceMin || ''}
-                  onChange={(e) => handleInputChange('priceMin', Number(e.target.value))}
+                  placeholder="Precio mín"
+                  value={filters.price_min || ''}
+                  onChange={(e) => handleInputChange('price_min', Number(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
                 />
                 <input
                   type="number"
-                  placeholder="Máx"
-                  value={filters.priceMax || ''}
-                  onChange={(e) => handleInputChange('priceMax', Number(e.target.value))}
+                  placeholder="Precio máx"
+                  value={filters.price_max || ''}
+                  onChange={(e) => handleInputChange('price_max', Number(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
                 />
               </div>
             </div>
 
-            {/* Stock Range */}
+            {/* Sort By */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rango de Stock
+                Ordenar por
               </label>
-              <div className="flex space-x-2">
-                <input
-                  type="number"
-                  placeholder="Mín"
-                  value={filters.stockMin || ''}
-                  onChange={(e) => handleInputChange('stockMin', Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
-                />
-                <input
-                  type="number"
-                  placeholder="Máx"
-                  value={filters.stockMax || ''}
-                  onChange={(e) => handleInputChange('stockMax', Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
-                />
-              </div>
+              <select
+                value={filters.sort_by || 'created_at'}
+                onChange={(e) => handleSortChange(e.target.value, filters.sort_order || 'desc')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort Order */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Orden
+              </label>
+              <select
+                value={filters.sort_order || 'desc'}
+                onChange={(e) => handleSortChange(filters.sort_by || 'created_at', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
+              >
+                {sortOrderOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -201,11 +266,11 @@ export function ProductFilters({
                   </span>
                 )}
                 
-                {filters.category && (
+                {filters.category_id && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Categoría: {categories.find(c => c.id === filters.category)?.name || filters.category}
+                    Categoría: {categories.find(c => c.id === filters.category_id)?.name || filters.category_id}
                     <button
-                      onClick={() => handleInputChange('category', '')}
+                      onClick={() => handleInputChange('category_id', undefined)}
                       className="ml-2 text-green-600 hover:text-green-800"
                     >
                       <X className="w-3 h-3" />
@@ -213,25 +278,49 @@ export function ProductFilters({
                   </span>
                 )}
                 
-                {filters.status && (
+                {filters.status && filters.status !== 'all' && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                     Estado: {statusOptions.find(s => s.value === filters.status)?.label || filters.status}
                     <button
-                      onClick={() => handleInputChange('status', '')}
+                      onClick={() => handleInputChange('status', 'all')}
                       className="ml-2 text-purple-600 hover:text-purple-800"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </span>
                 )}
+
+                {filters.stock_status && filters.stock_status !== 'all' && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                    Stock: {stockStatusOptions.find(s => s.value === filters.stock_status)?.label || filters.stock_status}
+                    <button
+                      onClick={() => handleInputChange('stock_status', 'all')}
+                      className="ml-2 text-orange-600 hover:text-orange-800"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+
+                {filters.brand && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    Marca: {filters.brand}
+                    <button
+                      onClick={() => handleInputChange('brand', '')}
+                      className="ml-2 text-indigo-600 hover:text-indigo-800"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
                 
-                {(filters.priceMin || filters.priceMax) && (
+                {(filters.price_min || filters.price_max) && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    Precio: ${filters.priceMin || 0} - ${filters.priceMax || '∞'}
+                    Precio: ${filters.price_min || 0} - ${filters.price_max || '∞'}
                     <button
                       onClick={() => {
-                        handleInputChange('priceMin', '');
-                        handleInputChange('priceMax', '');
+                        handleInputChange('price_min', undefined);
+                        handleInputChange('price_max', undefined);
                       }}
                       className="ml-2 text-yellow-600 hover:text-yellow-800"
                     >
@@ -239,16 +328,13 @@ export function ProductFilters({
                     </button>
                   </span>
                 )}
-                
-                {(filters.stockMin || filters.stockMax) && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                    Stock: {filters.stockMin || 0} - {filters.stockMax || '∞'}
+
+                {((filters.sort_by && filters.sort_by !== 'created_at') || (filters.sort_order && filters.sort_order !== 'desc')) && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    Orden: {sortOptions.find(s => s.value === filters.sort_by)?.label} ({sortOrderOptions.find(s => s.value === filters.sort_order)?.label})
                     <button
-                      onClick={() => {
-                        handleInputChange('stockMin', '');
-                        handleInputChange('stockMax', '');
-                      }}
-                      className="ml-2 text-red-600 hover:text-red-800"
+                      onClick={() => handleSortChange('created_at', 'desc')}
+                      className="ml-2 text-gray-600 hover:text-gray-800"
                     >
                       <X className="w-3 h-3" />
                     </button>

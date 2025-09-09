@@ -26,16 +26,16 @@ export async function POST(request: NextRequest) {
     console.log('🔧 Products Simple API: Creating product...');
 
     // Verificar autenticación básica
-    const authResult = await checkCRUDPermissions('products', 'create', request);
+    const authResult = await checkCRUDPermissions('create', 'products');
 
-    if (!authResult.success) {
+    if (!authResult.allowed) {
       console.log('❌ Auth failed:', authResult.error);
       return NextResponse.json(
         {
           error: authResult.error || 'Autenticación requerida',
           code: 'AUTH_ERROR'
         },
-        { status: authResult.status || 401 }
+        { status: 401 }
       );
     }
 
@@ -169,15 +169,15 @@ export async function GET(request: NextRequest) {
     console.log('🔧 Products Simple API: Getting products...');
 
     // Verificar autenticación básica
-    const authResult = await checkCRUDPermissions('products', 'read', request);
+    const authResult = await checkCRUDPermissions('read', 'products');
 
-    if (!authResult.success) {
+    if (!authResult.allowed) {
       return NextResponse.json(
         {
           error: authResult.error || 'Autenticación requerida',
           code: 'AUTH_ERROR'
         },
-        { status: authResult.status || 401 }
+        { status: 401 }
       );
     }
 

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const enterpriseResult = await requireAdminAuth(request, ['products_read']);
 
     // LEGACY: Mantener método anterior para comparación
-    const legacyResult = await checkCRUDPermissions('products', 'read', request);
+    const legacyResult = await checkCRUDPermissions('read', 'products');
 
     console.log('🔍 Debug Admin Products: Results comparison:', {
       enterprise: {

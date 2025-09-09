@@ -39,6 +39,17 @@ export default function MercadoPagoWallet({
 
   // Verificar si el SDK ya está cargado
   useEffect(() => {
+    // ✅ NUEVO: Verificar que estamos en la página correcta antes de cargar el SDK
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/checkout/success') ||
+          currentPath.includes('/checkout/failure') ||
+          currentPath.includes('/checkout/pending')) {
+        console.log('🚫 SDK de MercadoPago no se carga en páginas de resultado');
+        return;
+      }
+    }
+
     if (window.MercadoPago) {
       setSdkLoaded(true);
       return;
@@ -77,6 +88,18 @@ export default function MercadoPagoWallet({
   useEffect(() => {
     if (!sdkLoaded || !preferenceId) return;
 
+    // ✅ NUEVO: Verificar que estamos en la página correcta
+    // No inicializar el Wallet Brick en páginas de resultado
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/checkout/success') ||
+          currentPath.includes('/checkout/failure') ||
+          currentPath.includes('/checkout/pending')) {
+        console.log('🚫 Wallet Brick no se inicializa en páginas de resultado');
+        return;
+      }
+    }
+
     const initializeWallet = async () => {
       try {
         setIsLoading(true);
@@ -88,37 +111,42 @@ export default function MercadoPagoWallet({
           throw new Error('Clave pública de MercadoPago no configurada');
         }
 
-        // Inicializar MercadoPago
-        const mp = new window.MercadoPago(publicKey);
-        
-        // Limpiar contenedor anterior si existe
+        // Verificar que el contenedor existe antes de inicializar
         const container = document.getElementById('wallet_container');
-        if (container) {
-          container.innerHTML = '';
+        if (!container) {
+          console.warn('⚠️ Contenedor wallet_container no encontrado, cancelando inicialización');
+          return;
         }
 
-        // Crear el Wallet Brick
-        await mp.bricks().create("wallet", "wallet_container", {
-          initialization: {
-            preferenceId: preferenceId,
-            redirectMode: "self" // Mantener en la misma pestaña
-          },
-          callbacks: {
-            onReady: () => {
-              setIsLoading(false);
-              setIsReady(true);
-              onReady?.();
+        // Inicializar MercadoPago
+        const mp = new window.MercadoPago(publicKey);
+
+        // Limpiar contenedor anterior si existe
+        container.innerHTML = '';
+
+        // Crear el Wallet Brick con manejo de errores mejorado
+        try {
+          await mp.bricks().create("wallet", "wallet_container", {
+            initialization: {
+              preferenceId: preferenceId,
+              redirectMode: "self" // Mantener en la misma pestaña
             },
-            onError: (error: any) => {
-              console.error('Error en Wallet Brick:', error);
-              setError(error.message || 'Error en el procesamiento del pago');
-              setIsLoading(false);
-              onError?.(error);
+            callbacks: {
+              onReady: () => {
+                setIsLoading(false);
+                setIsReady(true);
+                onReady?.();
+              },
+              onError: (error: any) => {
+                console.error('Error en Wallet Brick:', error);
+                setError(error.message || 'Error en el procesamiento del pago');
+                setIsLoading(false);
+                onError?.(error);
+              },
+              onSubmit: (data: any) => {
+                onSubmit?.(data);
+              },
             },
-            onSubmit: (data: any) => {
-              onSubmit?.(data);
-            },
-          },
           customization: {
             texts: {
               valueProp: 'smart_option',
@@ -129,6 +157,15 @@ export default function MercadoPagoWallet({
             },
           },
         });
+        } catch (brickError: any) {
+          // Manejo específico de errores del Wallet Brick
+          if (brickError.message?.includes('wallet_container') ||
+              brickError.message?.includes('container')) {
+            console.warn('⚠️ Contenedor wallet_container no disponible, esto es normal en páginas de resultado');
+            return; // Salir silenciosamente
+          }
+          throw brickError; // Re-lanzar otros errores
+        }
 
       } catch (error: any) {
         console.error('Error inicializando Wallet Brick:', error);
@@ -150,36 +187,62 @@ export default function MercadoPagoWallet({
     window.location.reload();
   };
 
+  const isMobileOptimized = className?.includes('mobile-optimized');
+
   return (
     <Card className={`w-full shadow-lg ${className}`}>
-      <CardHeader className="bg-gradient-to-r from-blaze-orange-50 to-yellow-50 border-b">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-blaze-orange-700">
-            <CreditCard className="w-5 h-5" />
+      <CardHeader className={cn(
+        "bg-gradient-to-r from-blaze-orange-50 to-yellow-50 border-b",
+        isMobileOptimized && "px-4 py-4"
+      )}>
+        <div className={cn(
+          "flex items-center justify-between",
+          isMobileOptimized && "flex-col gap-3 items-start"
+        )}>
+          <CardTitle className={cn(
+            "flex items-center gap-2 text-blaze-orange-700",
+            isMobileOptimized && "text-lg"
+          )}>
+            <CreditCard className={cn("w-5 h-5", isMobileOptimized && "w-4 h-4")} />
             Método de Pago Seguro
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
+          <div className={cn(
+            "flex items-center gap-2",
+            isMobileOptimized && "w-full justify-between"
+          )}>
+            <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
               <Shield className="w-3 h-3 mr-1" />
               Seguro
             </Badge>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
               <Lock className="w-3 h-3 mr-1" />
               SSL
             </Badge>
           </div>
         </div>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className={cn(
+          "text-sm text-gray-600 mt-1",
+          isMobileOptimized && "text-xs mt-2"
+        )}>
           Completa tu pago de forma segura con MercadoPago
         </p>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className={cn("p-6", isMobileOptimized && "p-4")}>
         {/* Estado de carga */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-12 space-y-6">
+          <div className={cn(
+            "flex flex-col items-center justify-center py-12 space-y-6",
+            isMobileOptimized && "py-8 space-y-4"
+          )}>
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-blaze-orange-100 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-blaze-orange-600" />
+              <div className={cn(
+                "w-16 h-16 rounded-full bg-blaze-orange-100 flex items-center justify-center",
+                isMobileOptimized && "w-12 h-12"
+              )}>
+                <Loader2 className={cn(
+                  "w-8 h-8 animate-spin text-blaze-orange-600",
+                  isMobileOptimized && "w-6 h-6"
+                )} />
               </div>
               <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
                 <CreditCard className="w-3 h-3 text-gray-700" />
@@ -288,39 +351,71 @@ export function MercadoPagoWalletFallback({
   initPoint: string;
   className?: string;
 }) {
+  const isMobileOptimized = className?.includes('mobile-optimized');
+
   return (
     <Card className={`w-full shadow-lg ${className}`}>
-      <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b">
-        <CardTitle className="flex items-center gap-2 text-blaze-orange-700">
-          <CreditCard className="w-5 h-5" />
+      <CardHeader className={cn(
+        "bg-gradient-to-r from-yellow-50 to-orange-50 border-b",
+        isMobileOptimized && "px-4 py-4"
+      )}>
+        <CardTitle className={cn(
+          "flex items-center gap-2 text-blaze-orange-700",
+          isMobileOptimized && "text-lg"
+        )}>
+          <CreditCard className={cn("w-5 h-5", isMobileOptimized && "w-4 h-4")} />
           Método de Pago Alternativo
         </CardTitle>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className={cn(
+          "text-sm text-gray-600 mt-1",
+          isMobileOptimized && "text-xs"
+        )}>
           Continúa con el pago en la plataforma de MercadoPago
         </p>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="text-center py-8 space-y-6">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
-            <CreditCard className="w-8 h-8 text-blue-600" />
+      <CardContent className={cn("p-6", isMobileOptimized && "p-4")}>
+        <div className={cn(
+          "text-center py-8 space-y-6",
+          isMobileOptimized && "py-6 space-y-4"
+        )}>
+          <div className={cn(
+            "w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto",
+            isMobileOptimized && "w-12 h-12"
+          )}>
+            <CreditCard className={cn(
+              "w-8 h-8 text-blue-600",
+              isMobileOptimized && "w-6 h-6"
+            )} />
           </div>
           <div className="space-y-2">
-            <p className="font-medium text-gray-900">
+            <p className={cn(
+              "font-medium text-gray-900",
+              isMobileOptimized && "text-lg"
+            )}>
               Finaliza tu compra en MercadoPago
             </p>
-            <p className="text-sm text-gray-600">
+            <p className={cn(
+              "text-sm text-gray-600",
+              isMobileOptimized && "text-xs"
+            )}>
               Serás redirigido a la plataforma segura de MercadoPago para completar tu pago
             </p>
           </div>
           <Button
             onClick={() => window.open(initPoint, '_blank')}
-            className="w-full h-12 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
+            className={cn(
+              "w-full h-12 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200",
+              isMobileOptimized && "h-14 text-base rounded-xl active:scale-[0.98]"
+            )}
             size="lg"
           >
-            <CreditCard className="w-5 h-5 mr-2" />
+            <CreditCard className={cn("w-5 h-5 mr-2", isMobileOptimized && "w-4 h-4")} />
             Continuar con MercadoPago
           </Button>
-          <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+          <div className={cn(
+            "flex items-center justify-center gap-4 text-xs text-gray-500",
+            isMobileOptimized && "gap-6"
+          )}>
             <span className="flex items-center gap-1">
               <Shield className="w-3 h-3" />
               Pago Seguro

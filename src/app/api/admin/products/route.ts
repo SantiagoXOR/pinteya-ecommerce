@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth';
 import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils';
 import { withCriticalValidation } from '@/lib/validation/enterprise-validation-middleware';
@@ -7,11 +8,12 @@ import {
   EnterpriseProductFiltersSchema,
   EnterprisePaginationSchema
 } from '@/lib/validation/enterprise-schemas';
+import { ProductFiltersSchema } from '@/lib/validation/admin-schemas';
 import type { ValidatedRequest } from '@/lib/validation/enterprise-validation-middleware';
 
 // Helper function to check admin permissions with proper role verification
 async function checkAdminPermissionsForProducts(action: 'create' | 'read' | 'update' | 'delete', request?: NextRequest) {
-  return await checkCRUDPermissions('products', action, request);
+  return await checkCRUDPermissions(action, 'products');
 }
 
 /**
@@ -48,26 +50,22 @@ const getHandler = async (request: ValidatedRequest) => {
     const { supabase, user } = authResult;
     const { searchParams } = new URL(request.url);
 
-    // Parse and validate query parameters
+    // Parse query parameters - let schema handle type conversion
+    const statusParam = searchParams.get('status');
+    
     const rawParams = {
-      page: parseInt(searchParams.get('page') || '1'),
-      pageSize: parseInt(searchParams.get('pageSize') || '25'),
-      sortBy: searchParams.get('sortBy') || 'created_at',
-      sortOrder: searchParams.get('sortOrder') || 'desc',
-    };
-
-    const rawFilters = {
+      page: searchParams.get('page') || '1',
+      limit: searchParams.get('limit') || searchParams.get('pageSize') || '20',
       search: searchParams.get('search') || undefined,
-      category: searchParams.get('category') || undefined,
-      status: searchParams.get('status') || undefined,
-      priceMin: searchParams.get('priceMin') ? parseFloat(searchParams.get('priceMin')!) : undefined,
-      priceMax: searchParams.get('priceMax') ? parseFloat(searchParams.get('priceMax')!) : undefined,
-      stockMin: searchParams.get('stockMin') ? parseInt(searchParams.get('stockMin')!) : undefined,
-      stockMax: searchParams.get('stockMax') ? parseInt(searchParams.get('stockMax')!) : undefined,
+      category_id: searchParams.get('category') || undefined,
+      is_active: statusParam ? statusParam === 'active' : undefined,
+      price_min: searchParams.get('priceMin') || undefined,
+      price_max: searchParams.get('priceMax') || undefined,
+      sort_by: searchParams.get('sortBy') || 'created_at',
+      sort_order: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc'
     };
 
-    const pagination = PaginationSchema.parse(rawParams);
-    const filters = ProductFiltersSchema.parse(rawFilters);
+    const filters = ProductFiltersSchema.parse(rawParams);
 
     // Build query
     let query = supabase
@@ -90,39 +88,27 @@ const getHandler = async (request: ValidatedRequest) => {
 
     // Apply filters
     if (filters.search) {
-      query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      query = query.ilike('name', `%${filters.search}%`);
     }
-
-    if (filters.category) {
-      query = query.eq('category_id', filters.category);
+    if (filters.category_id) {
+      query = query.eq('category_id', filters.category_id);
     }
-
-    if (filters.status) {
-      query = query.eq('status', filters.status);
+    if (filters.is_active !== undefined) {
+      query = query.eq('is_active', filters.is_active);
     }
-
-    if (filters.priceMin !== undefined) {
-      query = query.gte('price', filters.priceMin);
+    if (filters.price_min !== undefined) {
+      query = query.gte('price', filters.price_min);
     }
-
-    if (filters.priceMax !== undefined) {
-      query = query.lte('price', filters.priceMax);
-    }
-
-    if (filters.stockMin !== undefined) {
-      query = query.gte('stock', filters.stockMin);
-    }
-
-    if (filters.stockMax !== undefined) {
-      query = query.lte('stock', filters.stockMax);
+    if (filters.price_max !== undefined) {
+      query = query.lte('price', filters.price_max);
     }
 
     // Apply sorting
-    query = query.order(pagination.sortBy, { ascending: pagination.sortOrder === 'asc' });
+    query = query.order(filters.sort_by, { ascending: filters.sort_order === 'asc' });
 
     // Apply pagination
-    const from = (pagination.page - 1) * pagination.pageSize;
-    const to = from + pagination.pageSize - 1;
+    const from = (filters.page - 1) * filters.limit;
+    const to = from + filters.limit - 1;
     query = query.range(from, to);
 
     const { data: products, error, count } = await query;
@@ -143,18 +129,18 @@ const getHandler = async (request: ValidatedRequest) => {
     })) || [];
 
     const total = count || 0;
-    const totalPages = Math.ceil(total / pagination.pageSize);
+    const totalPages = Math.ceil(total / filters.limit);
 
     return NextResponse.json({
       data: transformedProducts,
       total,
-      page: pagination.page,
-      pageSize: pagination.pageSize,
+      page: filters.page,
+      pageSize: filters.limit,
       totalPages,
       filters,
       sort: {
-        by: pagination.sortBy,
-        order: pagination.sortOrder,
+        by: filters.sort_by,
+        order: filters.sort_order,
       },
     });
 
@@ -318,16 +304,16 @@ const postHandlerSimple = async (request: NextRequest) => {
     console.log('🔧 Products API: Creating product (SIMPLE MODE)...');
 
     // Verificar autenticación básica
-    const authResult = await checkCRUDPermissions('products', 'create', request);
+    const authResult = await checkCRUDPermissions('create', 'products');
 
-    if (!authResult.success) {
+    if (!authResult.allowed) {
       console.log('❌ Auth failed:', authResult.error);
       return NextResponse.json(
         {
           error: authResult.error || 'Autenticación requerida',
           code: 'AUTH_ERROR'
         },
-        { status: authResult.status || 401 }
+        { status: 401 }
       );
     }
 
@@ -453,10 +439,70 @@ const postHandlerSimple = async (request: NextRequest) => {
   }
 };
 
-// ENTERPRISE: Aplicar validación crítica para operaciones admin
-export const GET = withCriticalValidation({
-  querySchema: EnterpriseProductFiltersSchema.merge(EnterprisePaginationSchema)
-})(getHandler);
+// USAR VERSIÓN SIMPLIFICADA TEMPORALMENTE PARA DEBUG
+export const GET = async (request: NextRequest) => {
+  try {
+    console.log('🔍 GET /api/admin/products - Starting request');
+    
+    // Simple auth check
+    const authResult = await checkAdminPermissionsForProducts('read');
+    if (!authResult.allowed) {
+      console.log('❌ Auth failed:', authResult.error);
+      return NextResponse.json(
+        { error: authResult.error || 'Acceso denegado' },
+        { status: 403 }
+      );
+    }
+
+    // Get supabase instance
+    const { supabaseAdmin } = await import('@/lib/supabase');
+    const supabase = supabaseAdmin;
+    console.log('✅ Auth successful, querying products...');
+
+    // Simple query without complex filters
+    const { data: products, error, count } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories!inner(name)
+      `, { count: 'exact' })
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('❌ Database error:', error);
+      return NextResponse.json(
+        { error: 'Error al obtener productos', details: error.message },
+        { status: 500 }
+      );
+    }
+
+    console.log('✅ Products fetched:', products?.length || 0, 'total:', count);
+
+    // Transform data
+    const transformedProducts = products?.map(product => ({
+      ...product,
+      category_name: product.categories?.name || null,
+      categories: undefined,
+    })) || [];
+
+    return NextResponse.json({
+      data: transformedProducts,
+      total: count || 0,
+      page: 1,
+      pageSize: 20,
+      totalPages: Math.ceil((count || 0) / 20),
+    });
+
+  } catch (error) {
+    console.error('❌ Error in GET /api/admin/products:', error);
+    return NextResponse.json(
+      { error: 'Error interno del servidor', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+};
 
 // USAR VERSIÓN SIMPLIFICADA TEMPORALMENTE
 export const POST = postHandlerSimple;

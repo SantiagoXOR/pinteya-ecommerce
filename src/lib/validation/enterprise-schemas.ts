@@ -223,16 +223,16 @@ export const EnterpriseProductUpdateSchema = EnterpriseProductSchema.partial();
 export const EnterpriseProductFiltersSchema = z.object({
   category_id: EnterpriseUUIDSchema.optional(),
   brand: z.string().max(50).optional(),
-  min_price: EnterprisePriceSchema.optional(),
-  max_price: EnterprisePriceSchema.optional(),
+  min_price: z.coerce.number().min(0.01).optional(),
+  max_price: z.coerce.number().min(0.01).optional(),
   status: z.enum(['active', 'inactive', 'draft']).optional(),
   in_stock: z.boolean().optional(),
   tags: z.array(z.string().max(30)).max(10).optional(),
   search: z.string().max(100).optional(),
   sort_by: z.enum(['name', 'price', 'created_at', 'updated_at']).default('created_at'),
   sort_order: z.enum(['asc', 'desc']).default('desc'),
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(20)
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20)
 });
 
 // =====================================================
@@ -492,8 +492,8 @@ export const EnterpriseSlugParamSchema = z.object({
 });
 
 export const EnterprisePaginationSchema = z.object({
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(20),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
   sort_by: z.string().max(50).optional(),
   sort_order: z.enum(['asc', 'desc']).default('desc')
 });

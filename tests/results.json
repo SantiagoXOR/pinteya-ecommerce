@@ -1,0 +1,677 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\playwright.config.ts",
+    "rootDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\global-setup.ts",
+    "globalTeardown": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "tests/playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "tests/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "tests/results.xml"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "setup",
+        "name": "setup",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/auth.setup.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "cleanup",
+        "name": "cleanup",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/auth.cleanup.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "api-admin",
+        "name": "api-admin",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/api-admin.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "api-public",
+        "name": "api-public",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/api-public.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "ui-admin",
+        "name": "ui-admin",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/admin/**/*.spec.ts",
+          "**/auth/**/*.spec.ts",
+          "!**/api-*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "ui-public",
+        "name": "ui-public",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts",
+          "!**/auth/**/*.spec.ts",
+          "!**/api-*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "auth.cleanup.ts",
+      "file": "auth.cleanup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "cleanup auth files",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "cleanup",
+              "projectName": "cleanup",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "🧹 Iniciando limpieza de archivos de autenticación...\n"
+                    },
+                    {
+                      "text": "📁 Archivos encontrados: 1\n"
+                    },
+                    {
+                      "text": "🗑️ Eliminado: admin.json\n"
+                    },
+                    {
+                      "text": "📁 Directorio .auth eliminado\n"
+                    },
+                    {
+                      "text": "✅ Limpieza de autenticación completada\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-09T03:20:01.849Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "73d701b3bde42ede7438-2a270ccd30fdbf02d173",
+          "file": "auth.cleanup.ts",
+          "line": 14,
+          "column": 8
+        },
+        {
+          "title": "cleanup test artifacts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "cleanup",
+              "projectName": "cleanup",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "🧹 Limpiando artefactos de tests...\n"
+                    },
+                    {
+                      "text": "✅ Limpieza de artefactos completada\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-09T03:20:01.899Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "73d701b3bde42ede7438-83ad50922a82b39797d6",
+          "file": "auth.cleanup.ts",
+          "line": 50,
+          "column": 8
+        }
+      ]
+    },
+    {
+      "title": "auth.setup.ts",
+      "file": "auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "authenticate as admin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22136,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "🔧 Iniciando setup de autenticación administrativa...\n"
+                    },
+                    {
+                      "text": "🔐 Autenticando usuario administrador...\n"
+                    },
+                    {
+                      "text": "🔐 Iniciando autenticación simplificada...\n"
+                    },
+                    {
+                      "text": "📍 Navegando a página principal...\n"
+                    },
+                    {
+                      "text": "🍪 Configurando cookies de sesión...\n"
+                    },
+                    {
+                      "text": "🔄 Recargando página con cookies...\n"
+                    },
+                    {
+                      "text": "✅ Autenticación simplificada completada\n"
+                    },
+                    {
+                      "text": "🔍 Verificando acceso administrativo...\n"
+                    },
+                    {
+                      "text": "🔍 Verificando acceso administrativo...\n"
+                    },
+                    {
+                      "text": "✅ Elemento administrativo encontrado: h1:has-text(\"Admin\")\n"
+                    },
+                    {
+                      "text": "✅ Acceso administrativo verificado exitosamente\n"
+                    },
+                    {
+                      "text": "💾 Guardando estado de autenticación...\n"
+                    },
+                    {
+                      "text": "✅ Setup de autenticación completado exitosamente\n"
+                    },
+                    {
+                      "text": "📄 Estado guardado en: tests/e2e/.auth/admin.json\n"
+                    },
+                    {
+                      "text": "🧪 Verificando acceso a APIs administrativas...\n"
+                    },
+                    {
+                      "text": "✅ Acceso a API administrativa verificado\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-09T03:19:25.406Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "17e3fe6f4d9d8bd79c6b-1580989d32f149e984ed",
+          "file": "auth.setup.ts",
+          "line": 17,
+          "column": 6
+        },
+        {
+          "title": "verify authentication persistence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3409,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "🔄 Verificando persistencia de autenticación...\n"
+                    },
+                    {
+                      "text": "✅ Archivo de autenticación encontrado después de 0 intentos\n"
+                    },
+                    {
+                      "text": "✅ Elemento administrativo encontrado: h1:has-text(\"Admin\")\n"
+                    },
+                    {
+                      "text": "✅ Persistencia de autenticación verificada\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-09T03:19:47.720Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "17e3fe6f4d9d8bd79c6b-394e660093bd0d1f4b1c",
+          "file": "auth.setup.ts",
+          "line": 73,
+          "column": 6
+        },
+        {
+          "title": "cleanup old auth files",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "🧹 Limpiando archivos de autenticación antiguos...\n"
+                    },
+                    {
+                      "text": "✅ Limpieza completada\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-09-09T03:19:51.152Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "17e3fe6f4d9d8bd79c6b-e9d0b09281f30d068281",
+          "file": "auth.setup.ts",
+          "line": 178,
+          "column": 6
+        }
+      ]
+    },
+    {
+      "title": "admin\\product-management.spec.ts",
+      "file": "admin/product-management.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Panel Administrativo - Gestión de Productos",
+          "file": "admin/product-management.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "debe cargar la lista de productos correctamente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-admin",
+                  "projectName": "ui-admin",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2756,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-09T03:19:52.325Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "840eea10809030d112f3-1b33ffd78de2eb18dbc2",
+              "file": "admin/product-management.spec.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "debe mostrar filtros de productos funcionales",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-admin",
+                  "projectName": "ui-admin",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2684,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-09T03:19:55.313Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "840eea10809030d112f3-515fae53b7254864ed24",
+              "file": "admin/product-management.spec.ts",
+              "line": 29,
+              "column": 7
+            },
+            {
+              "title": "debe mostrar la tabla de productos con columnas correctas",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-admin",
+                  "projectName": "ui-admin",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2667,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-09T03:19:58.019Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "840eea10809030d112f3-d60068e47d220e11858a",
+              "file": "admin/product-management.spec.ts",
+              "line": 82,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-09T03:19:15.217Z",
+    "duration": 46733.452,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

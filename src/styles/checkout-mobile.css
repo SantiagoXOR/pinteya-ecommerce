@@ -1,0 +1,329 @@
+/* ===================================
+   PINTEYA E-COMMERCE - CHECKOUT MOBILE-FIRST STYLES
+   =================================== */
+
+/* Variables CSS para consistencia */
+:root {
+  --checkout-mobile-padding: 1rem;
+  --checkout-mobile-gap: 1.5rem;
+  --checkout-mobile-border-radius: 0.75rem;
+  --checkout-mobile-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --checkout-mobile-backdrop: rgba(255, 255, 255, 0.9);
+  --checkout-mobile-gradient: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
+}
+
+/* Layout base mobile-first */
+.checkout-mobile-container {
+  min-height: 100vh;
+  background: var(--checkout-mobile-gradient);
+  padding: var(--checkout-mobile-padding);
+}
+
+.checkout-mobile-content {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+/* Header optimizado para móviles */
+.checkout-mobile-header {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--checkout-mobile-backdrop);
+  backdrop-filter: blur(8px);
+  border-radius: var(--checkout-mobile-border-radius);
+  box-shadow: var(--checkout-mobile-shadow);
+}
+
+.checkout-mobile-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.checkout-mobile-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Progress bar mejorado */
+.checkout-mobile-progress {
+  height: 0.75rem;
+  background: #f3f4f6;
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.checkout-mobile-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Cards optimizadas para móviles */
+.checkout-mobile-card {
+  background: var(--checkout-mobile-backdrop);
+  backdrop-filter: blur(8px);
+  border-radius: var(--checkout-mobile-border-radius);
+  box-shadow: var(--checkout-mobile-shadow);
+  border: 0;
+  margin-bottom: var(--checkout-mobile-gap);
+}
+
+.checkout-mobile-card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.checkout-mobile-card-content {
+  padding: 1.5rem;
+}
+
+/* Resumen del pedido colapsible */
+.checkout-mobile-summary {
+  background: var(--checkout-mobile-backdrop);
+  backdrop-filter: blur(8px);
+  border-radius: var(--checkout-mobile-border-radius);
+  box-shadow: var(--checkout-mobile-shadow);
+  border: 0;
+  overflow: hidden;
+}
+
+.checkout-mobile-summary-button {
+  width: 100%;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.checkout-mobile-summary-button:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.checkout-mobile-summary-button:active {
+  transform: scale(0.98);
+}
+
+.checkout-mobile-summary-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: #dcfce7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #16a34a;
+}
+
+.checkout-mobile-summary-info h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.checkout-mobile-summary-info p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0 0;
+}
+
+.checkout-mobile-summary-total {
+  text-align: right;
+}
+
+.checkout-mobile-summary-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.checkout-mobile-summary-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+/* Botón de pago optimizado */
+.checkout-mobile-pay-button {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, white, white 80%, transparent);
+  padding: 1.5rem 1rem 1rem;
+  margin: 0 -1rem;
+}
+
+.checkout-mobile-pay-btn {
+  width: 100%;
+  min-height: 4rem;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+  border: none;
+  border-radius: var(--checkout-mobile-border-radius);
+  box-shadow: var(--checkout-mobile-shadow);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.checkout-mobile-pay-btn:hover {
+  background: linear-gradient(135deg, #15803d, #166534);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.checkout-mobile-pay-btn:active {
+  transform: scale(0.98);
+}
+
+.checkout-mobile-pay-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.checkout-mobile-pay-content {
+  text-align: center;
+}
+
+.checkout-mobile-pay-amount {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.checkout-mobile-pay-subtitle {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  margin-top: 0.25rem;
+}
+
+/* Indicadores de seguridad */
+.checkout-mobile-security {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.checkout-mobile-security-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Animaciones y transiciones */
+@keyframes checkout-mobile-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkout-mobile-animate-in {
+  animation: checkout-mobile-slide-up 0.3s ease-out;
+}
+
+/* Estados de carga */
+.checkout-mobile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.checkout-mobile-loading-spinner {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: #dcfce7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 375px) {
+  .checkout-mobile-content {
+    padding: 1rem 0.75rem;
+  }
+  
+  .checkout-mobile-header {
+    padding: 1rem;
+  }
+  
+  .checkout-mobile-card-header,
+  .checkout-mobile-card-content {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .checkout-mobile-container {
+    padding: 2rem;
+  }
+  
+  .checkout-mobile-content {
+    max-width: 32rem;
+    padding: 2rem 1.5rem;
+  }
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .checkout-mobile-pay-btn,
+  .checkout-mobile-summary-button,
+  .checkout-mobile-progress-fill {
+    transition: none;
+  }
+  
+  .checkout-mobile-animate-in {
+    animation: none;
+  }
+}
+
+/* Soporte para modo oscuro */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --checkout-mobile-backdrop: rgba(17, 24, 39, 0.9);
+    --checkout-mobile-gradient: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  }
+  
+  .checkout-mobile-title {
+    color: #f9fafb;
+  }
+  
+  .checkout-mobile-subtitle {
+    color: #d1d5db;
+  }
+  
+  .checkout-mobile-summary-info h3 {
+    color: #f9fafb;
+  }
+}

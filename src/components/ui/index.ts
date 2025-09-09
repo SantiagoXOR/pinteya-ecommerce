@@ -44,29 +44,32 @@ export {
   NewBadge, 
   OfferBadge 
 } from './badge'
-// export { Progress } from './progress' // TODO: Crear componente Progress
-// export { Skeleton } from './skeleton' // Archivo no existe
-// export { Spinner } from './spinner' // TODO: Crear componente Spinner
-// export {
-//   Toast,
-//   ToastAction,
-//   ToastClose,
-//   ToastDescription,
-//   ToastProvider,
-//   ToastTitle,
-//   ToastViewport
-// } from './toast' // TODO: Crear componente Toast
-// export { useToast, toast } from './use-toast' // TODO: Crear hook useToast
+export { Progress } from './progress'
+export { Skeleton } from './skeleton'
+export { Spinner, SpinnerOverlay } from './spinner'
+export {
+  Toast,
+  ToastAction,
+  ToastClose,
+  ToastDescription,
+  ToastProvider,
+  ToastTitle,
+  ToastViewport
+} from './toast'
+export { useToast, toast } from './use-toast'
 
 // Navegación
-// export {
-//   NavigationMenu,
-//   NavigationMenuContent,
-//   NavigationMenuItem,
-//   NavigationMenuLink,
-//   NavigationMenuList,
-//   NavigationMenuTrigger
-// } from './navigation-menu' // TODO: Crear componente NavigationMenu
+export {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuIndicator,
+  NavigationMenuViewport,
+  navigationMenuTriggerStyle
+} from './navigation-menu'
 export { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -97,17 +100,17 @@ export {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from './alert-dialog'
-// export {
-//   Popover,
-//   PopoverContent,
-//   PopoverTrigger
-// } from './popover' // TODO: Crear componente Popover
-// export {
-//   Tooltip,
-//   TooltipContent,
-//   TooltipProvider,
-//   TooltipTrigger
-// } from './tooltip' // TODO: Crear componente Tooltip
+export {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from './popover'
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from './tooltip'
 export { ConfirmModal } from './modal'
 
 // Formularios avanzados
@@ -119,12 +122,11 @@ export {
   FormActions,
   FormMessage
 } from './form'
-// export { Calendar } from './calendar' // TODO: Crear componente Calendar
-// export {
-//   Popover as DatePicker,
-//   PopoverContent as DatePickerContent,
-//   PopoverTrigger as DatePickerTrigger
-// } from './popover' // TODO: Crear componente DatePicker
+export { Calendar } from './calendar'
+export {
+  DatePicker,
+  DateRangePicker
+} from './date-picker'
 
 // Componentes E-commerce del Design System
 export { PriceDisplay } from './price-display'
@@ -143,18 +145,13 @@ export { ProductComparison, type ComparisonProduct } from './product-comparison'
 export { WishlistCard, type WishlistItem } from './wishlist-card'
 
 // Hooks del Design System
-// export { useDesignSystemConfig } from '../hooks/useDesignSystemConfig' // TODO: Crear hook useDesignSystemConfig
+export { useDesignSystemConfig } from '../hooks/useDesignSystemConfig'
 
 // Utilidades
 export { cn } from '../../lib/utils'
 
 // Tipos comunes
-// export type {
-//   ButtonProps,
-//   InputProps,
-//   CardProps,
-//   BadgeProps
-// } from './types' // TODO: Crear archivo types.ts
+export * from './types'
 
 // Re-exports de Radix UI para casos avanzados
 // export * from '@radix-ui/react-icons' // TODO: Verificar si es necesario

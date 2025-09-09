@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
+import React, { use, useEffect, useState, useMemo, useCallback, lazy, Suspense } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import Image from "next/image";
 import Newsletter from "../Common/Newsletter";
@@ -13,9 +13,8 @@ import { PriceDisplay } from "@/components/ui/price-display";
 import { StockIndicator } from "@/components/ui/stock-indicator";
 import { ShippingInfo } from "@/components/ui/shipping-info";
 import { CommercialProductCard } from "@/components/ui/product-card-commercial";
-import { ZoomIn, Minus, Plus, ShoppingCart, Heart, Star } from "lucide-react";
-
-import { useMemo, useCallback, lazy, Suspense } from 'react';
+import { ZoomIn, Minus, Plus, ShoppingCart, Heart, Star } from "@/lib/optimized-imports";
+import { useShopDetailsReducer } from "@/hooks/optimization/useShopDetailsReducer";
 import { getValidImageUrl } from "@/lib/adapters/product-adapter";
 
 // Lazy loading para componentes pesados - COMENTADO: archivos no existen
@@ -23,15 +22,11 @@ import { getValidImageUrl } from "@/lib/adapters/product-adapter";
 // const LazyQuickView = lazy(() => import('../Product/QuickView'));
 
 const ShopDetails = () => {
-  const [activeColor, setActiveColor] = useState("blue");
+  // Usar el hook optimizado con useReducer
+  const { state, actions, selectors } = useShopDetailsReducer();
   const { openPreviewModal } = usePreviewSlider();
-  const [previewImg, setPreviewImg] = useState(0);
-
-  const [storage, setStorage] = useState("gb128");
-  const [type, setType] = useState("active");
-  const [sim, setSim] = useState("dual");
-  const [quantity, setQuantity] = useState(1);
-
+  
+  // Estados locales que no necesitan estar en el reducer global
   const [activeTab, setActiveTab] = useState("tabOne");
 
   const storages = [
@@ -101,10 +96,17 @@ const ShopDetails = () => {
     localStorage.setItem("productDetails", JSON.stringify(product));
   }, [product]);
 
-  // pass the product here when you get the real data.
-  const handlePreviewSlider = () => {
+  // Función optimizada para manejar el preview slider
+  const handlePreviewSlider = useCallback(() => {
     openPreviewModal();
-  };
+  }, [openPreviewModal]);
+  
+  // Cargar preferencias desde localStorage al montar el componente
+  useEffect(() => {
+    if (product?.id) {
+      actions.loadFromStorage(product.id);
+    }
+  }, [product?.id, actions]);
 
 
   return (
@@ -131,10 +133,10 @@ const ShopDetails = () => {
                         <ZoomIn className="w-5 h-5" />
                       </Button>
 
-                      {product.imgs?.previews?.[previewImg] ? (
+                      {product.imgs?.previews?.[state.selectedImageIndex] ? (
                         <div className="relative group">
                           <Image
-                            src={getValidImageUrl(product.imgs.previews[previewImg])}
+                            src={getValidImageUrl(product.imgs.previews[state.selectedImageIndex])}
                             alt={`${product.title} - Vista principal`}
                             width={400}
                             height={400}
@@ -161,10 +163,10 @@ const ShopDetails = () => {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => setPreviewImg(key)}
+                        onClick={() => actions.setSelectedImageIndex(key)}
                         key={key}
                         className={`w-15 sm:w-25 h-15 sm:h-25 overflow-hidden bg-gray-50 hover:bg-white transition-all duration-200 border-2 hover:border-primary ${
-                          key === previewImg
+                          key === state.selectedImageIndex
                             ? "border-primary bg-primary/5"
                             : "border-gray-200"
                         }`}
@@ -344,11 +346,11 @@ const ShopDetails = () => {
                                   name="color"
                                   id={color}
                                   className="sr-only"
-                                  onChange={() => setActiveColor(color)}
+                                  onChange={() => actions.setActiveColor(color)}
                                 />
                                 <div
                                   className={`flex items-center justify-center w-5.5 h-5.5 rounded-full ${
-                                    activeColor === color && "border"
+                                    state.activeColor === color && "border"
                                   }`}
                                   style={{ borderColor: `${color}` }}
                                 >
@@ -382,20 +384,20 @@ const ShopDetails = () => {
                                   name="storage"
                                   id={item.id}
                                   className="sr-only"
-                                  onChange={() => setStorage(item.id)}
+                                  onChange={() => actions.setStorage(item.id)}
                                 />
 
                                 {/*  */}
                                 <div
                                   className={`mr-2 flex h-4 w-4 items-center justify-center rounded border ${
-                                    storage === item.id
+                                    state.storage === item.id
                                       ? "border-blue bg-blue"
                                       : "border-gray-4"
                                   } `}
                                 >
                                   <span
                                     className={
-                                      storage === item.id
+                                      state.storage === item.id
                                         ? "opacity-100"
                                         : "opacity-0"
                                     }
@@ -450,20 +452,20 @@ const ShopDetails = () => {
                                   name="storage"
                                   id={item.id}
                                   className="sr-only"
-                                  onChange={() => setType(item.id)}
+                                  onChange={() => actions.setType(item.id)}
                                 />
 
                                 {/*  */}
                                 <div
                                   className={`mr-2 flex h-4 w-4 items-center justify-center rounded border ${
-                                    type === item.id
+                                    state.type === item.id
                                       ? "border-blue bg-blue"
                                       : "border-gray-4"
                                   } `}
                                 >
                                   <span
                                     className={
-                                      type === item.id
+                                      state.type === item.id
                                         ? "opacity-100"
                                         : "opacity-0"
                                     }
@@ -518,20 +520,20 @@ const ShopDetails = () => {
                                   name="storage"
                                   id={item.id}
                                   className="sr-only"
-                                  onChange={() => setSim(item.id)}
+                                  onChange={() => actions.setSim(item.id)}
                                 />
 
                                 {/*  */}
                                 <div
                                   className={`mr-2 flex h-4 w-4 items-center justify-center rounded border ${
-                                    sim === item.id
+                                    state.sim === item.id
                                       ? "border-blue bg-blue"
                                       : "border-gray-4"
                                   } `}
                                 >
                                   <span
                                     className={
-                                      sim === item.id
+                                      state.sim === item.id
                                         ? "opacity-100"
                                         : "opacity-0"
                                     }
@@ -574,8 +576,8 @@ const ShopDetails = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => quantity > 1 && setQuantity(quantity - 1)}
-                          disabled={quantity <= 1}
+                          onClick={() => state.quantity > 1 && actions.setQuantity(state.quantity - 1)}
+                          disabled={state.quantity <= 1}
                           aria-label="Disminuir cantidad"
                           className="h-12 w-12 rounded-l-lg hover:bg-gray-50 disabled:opacity-50"
                         >
@@ -583,13 +585,13 @@ const ShopDetails = () => {
                         </Button>
 
                         <div className="flex items-center justify-center w-16 h-12 border-x border-gray-200 bg-gray-50 font-semibold text-gray-900">
-                          {quantity}
+                          {state.quantity}
                         </div>
 
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setQuantity(quantity + 1)}
+                          onClick={() => actions.setQuantity(state.quantity + 1)}
                           aria-label="Aumentar cantidad"
                           className="h-12 w-12 rounded-r-lg hover:bg-gray-50"
                         >
@@ -630,9 +632,9 @@ const ShopDetails = () => {
                 {tabs.map((item, key) => (
                   <button
                     key={key}
-                    onClick={() => setActiveTab(item.id)}
+                    onClick={() => actions.setActiveTab(item.id)}
                     className={`font-medium lg:text-lg ease-out duration-200 hover:text-blue relative before:h-0.5 before:bg-blue before:absolute before:left-0 before:bottom-0 before:ease-out before:duration-200 hover:before:w-full ${
-                      activeTab === item.id
+                      state.activeTab === item.id
                         ? "text-blue before:w-full"
                         : "text-dark before:w-0"
                     }`}
@@ -648,7 +650,7 @@ const ShopDetails = () => {
               <div>
                 <div
                   className={`flex-col sm:flex-row gap-7.5 xl:gap-12.5 mt-12.5 ${
-                    activeTab === "tabOne" ? "flex" : "hidden"
+                    state.activeTab === "tabOne" ? "flex" : "hidden"
                   }`}
                 >
                   <div className="max-w-[670px] w-full">
@@ -701,7 +703,7 @@ const ShopDetails = () => {
               <div>
                 <div
                   className={`rounded-xl bg-white shadow-1 p-4 sm:p-6 mt-10 ${
-                    activeTab === "tabTwo" ? "block" : "hidden"
+                    state.activeTab === "tabTwo" ? "block" : "hidden"
                   }`}
                 >
                   {/* <!-- info item --> */}
@@ -844,7 +846,7 @@ const ShopDetails = () => {
               <div>
                 <div
                   className={`flex-col sm:flex-row gap-7.5 xl:gap-12.5 mt-12.5 ${
-                    activeTab === "tabThree" ? "flex" : "hidden"
+                    state.activeTab === "tabThree" ? "flex" : "hidden"
                   }`}
                 >
                   <div className="max-w-[570px] w-full">

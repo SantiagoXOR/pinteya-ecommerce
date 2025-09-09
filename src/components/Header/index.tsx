@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { OptimizedCartIcon } from "@/components/ui/optimized-cart-icon";
@@ -10,7 +10,7 @@ import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import AuthSectionSimple from "./AuthSectionSimple";
 import { SearchAutocompleteIntegrated } from "@/components/ui/SearchAutocompleteIntegrated";
 import { useCartAnimation } from "@/hooks/useCartAnimation";
-import { MapPin, Loader2, ShoppingCart } from "lucide-react";
+import { MapPin, Loader2, ShoppingCart } from "@/lib/optimized-imports";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { HeaderLogo } from "@/components/ui/OptimizedLogo";
 // import GeolocationDebugger from "./GeolocationDebugger"; // Componente de debugging desactivado
@@ -69,12 +69,11 @@ const Header = () => {
   //   }
   // }, [permissionStatus, requestLocation]);
 
-  const handleOpenCartModal = () => {
+  const handleOpenCartModal = useCallback(() => {
     openCartModal();
-  };
+  }, [openCartModal]);
 
-  const handleLocationClick = () => {
-
+  const handleLocationClick = useCallback(() => {
     // Siempre intentar solicitar ubicación cuando se hace click
     if (permissionStatus === 'denied') {
       alert('Para detectar tu ubicación automáticamente, permite el acceso a la ubicación en la configuración de tu navegador.');
@@ -83,14 +82,13 @@ const Header = () => {
     } else {
       requestLocation();
     }
+  }, [permissionStatus, detectedZone, requestLocation]);
 
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // El SearchAutocomplete maneja su propia lógica de búsqueda
     // Este handler previene el comportamiento por defecto del form
-  };
+  }, []);
 
   return (
     <>

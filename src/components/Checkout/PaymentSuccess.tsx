@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { updateOrderStatus, getOrderStatus } from '@/lib/api/orders';
+import { useDispatch } from 'react-redux';
+import { removeAllItemsFromCart } from '@/store/slices/cartSlice';
 
 interface PaymentSuccessProps {
   type: 'success' | 'failure' | 'pending';
@@ -12,6 +14,7 @@ interface PaymentSuccessProps {
 const PaymentSuccess = ({ type }: PaymentSuccessProps) => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [orderData, setOrderData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,9 +46,17 @@ const PaymentSuccess = ({ type }: PaymentSuccessProps) => {
 
         // Obtener datos actualizados de la orden
         const orderResult = await getOrderStatus(externalReference);
-        
+
         if (orderResult.success) {
           setOrderData(orderResult.data);
+
+          // Limpiar carrito solo si el pago fue exitoso
+          if (type === 'success' && (status === 'approved' || status === 'in_process')) {
+            console.log('✅ PaymentSuccess - Limpiando carrito después de pago exitoso');
+            dispatch(removeAllItemsFromCart());
+            // Limpiar marca de checkout en progreso
+            sessionStorage.removeItem('checkout-in-progress');
+          }
         } else {
           setError(orderResult.error || 'Error obteniendo datos de la orden');
         }

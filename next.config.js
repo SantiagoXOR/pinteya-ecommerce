@@ -2,14 +2,32 @@
 const nextConfig = {
   // ✅ OPTIMIZACIONES PARA ADMIN PANEL - Configuración simplificada y estable
   experimental: {
-    // Optimizaciones críticas para admin panel
+    // Optimizaciones críticas para admin panel + lazy loading
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-icons',
-      '@clerk/nextjs'
+      '@clerk/nextjs',
+      'recharts',
+      'maplibre-gl',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      'date-fns',
+      'framer-motion'
     ],
     // Removidas optimizaciones experimentales que causan problemas de build
   },
+
+  // ✅ CONFIGURACIÓN DE DESARROLLO OPTIMIZADA
+  ...(process.env.NODE_ENV === 'development' && {
+    // Configuraciones específicas para desarrollo
+    onDemandEntries: {
+      // Tiempo antes de eliminar páginas de memoria (ms)
+      maxInactiveAge: 60 * 1000,
+      // Páginas que se mantienen en memoria
+      pagesBufferLength: 5,
+    },
+  }),
 
   // ✅ BUILD ID ÚNICO para evitar cache issues
   generateBuildId: async () => {

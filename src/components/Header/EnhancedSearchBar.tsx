@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { Search, ChevronDown, Palette, Brush, Wrench, Package, Sparkles } from "lucide-react";
+import { Search, ChevronDown, Palette, Brush, Wrench, Package, Sparkles } from "@/lib/optimized-imports";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {

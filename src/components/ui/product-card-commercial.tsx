@@ -84,7 +84,8 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           "md:rounded-2xl",
           className
         )}
-        data-testid="commercial-product-card"
+        data-testid="product-card"
+        data-testid-commercial="commercial-product-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{
@@ -257,7 +258,8 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               <motion.button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || stock === 0}
-                data-testid="add-to-cart-btn"
+                data-testid="add-to-cart"
+                data-testid-btn="add-to-cart-btn"
                 className={cn(
                   "w-full py-2 md:py-3 rounded-lg md:rounded-xl text-center shadow-md font-semibold flex items-center justify-center gap-1 md:gap-2 text-sm md:text-base relative overflow-hidden",
                   stock === 0

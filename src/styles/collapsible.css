@@ -1,0 +1,53 @@
+/* Animaciones para el componente Collapsible */
+@keyframes collapsible-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+.animate-collapsible-down {
+  animation: collapsible-down 0.15s ease-out;
+}
+
+.animate-collapsible-up {
+  animation: collapsible-up 0.15s ease-out;
+}
+
+/* Fallback para navegadores que no soportan CSS custom properties */
+@supports not (height: var(--radix-collapsible-content-height)) {
+  .animate-collapsible-down {
+    animation: none;
+    transition: all 0.15s ease-out;
+  }
+  
+  .animate-collapsible-up {
+    animation: none;
+    transition: all 0.15s ease-out;
+  }
+  
+  [data-state="open"] {
+    max-height: 1000px;
+    opacity: 1;
+  }
+  
+  [data-state="closed"] {
+    max-height: 0;
+    opacity: 0;
+  }
+}

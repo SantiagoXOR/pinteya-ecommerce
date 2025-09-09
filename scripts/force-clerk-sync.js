@@ -25,7 +25,7 @@ export default function ClerkDebugPage() {
     if (isLoaded && user) {
       const info = {
         userId: user.id,
-        email: user.emailAddresses[0]?.emailAddress,
+        email: user.emailAddresses?.[0]?.emailAddress,
         publicMetadata: user.publicMetadata,
         privateMetadata: user.privateMetadata,
         unsafeMetadata: user.unsafeMetadata,

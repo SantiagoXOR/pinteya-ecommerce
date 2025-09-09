@@ -7,7 +7,7 @@ import { useFilteredProducts } from "@/hooks/useFilteredProducts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, ArrowRight, Trophy } from "lucide-react";
+import { TrendingUp, ArrowRight, Trophy } from "@/lib/optimized-imports";
 
 interface BestSellerProps {
   selectedCategories?: string[];

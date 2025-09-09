@@ -1,0 +1,410 @@
+{
+  "summary": {
+    "totalSteps": 24,
+    "successfulSteps": 10,
+    "errors": 0,
+    "totalExecutionTime": 11140,
+    "timestamp": "2025-09-08T12:27:37.412Z"
+  },
+  "logs": [
+    {
+      "timestamp": "2025-09-08T12:27:26.275Z",
+      "step": "1. Verificación del Servidor",
+      "status": "START",
+      "executionTime": 3,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:27.187Z",
+      "step": "1. Verificación del Servidor",
+      "status": "SUCCESS",
+      "executionTime": 915,
+      "data": {
+        "status": 200,
+        "productsCount": 12
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:27.689Z",
+      "step": "2. Carga de Productos",
+      "status": "START",
+      "executionTime": 1417,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:27.900Z",
+      "step": "2. Carga de Productos",
+      "status": "SUCCESS",
+      "executionTime": 1628,
+      "data": {
+        "totalProducts": 10,
+        "availableProducts": 10,
+        "selectedProducts": 3,
+        "products": [
+          {
+            "id": 87,
+            "name": "Lija al Agua Grano 40",
+            "price": 850,
+            "stock": 50
+          },
+          {
+            "id": 89,
+            "name": "Lija al Agua Grano 80",
+            "price": 780,
+            "stock": 50
+          },
+          {
+            "id": 92,
+            "name": "Bandeja Chata para Pintura",
+            "price": 1250,
+            "stock": 30
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:28.407Z",
+      "step": "3. Selección de Productos",
+      "status": "START",
+      "executionTime": 2135,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:28.408Z",
+      "step": "3. Selección de Productos",
+      "status": "SUCCESS",
+      "executionTime": 2136,
+      "data": {
+        "cartItems": 3,
+        "totalItems": 7,
+        "totalAmount": 6540,
+        "cart": [
+          {
+            "id": "87",
+            "name": "Lija al Agua Grano 40",
+            "price": 850,
+            "quantity": 2,
+            "image": "https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png"
+          },
+          {
+            "id": "89",
+            "name": "Lija al Agua Grano 80",
+            "price": 780,
+            "quantity": 3,
+            "image": "https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png"
+          },
+          {
+            "id": "92",
+            "name": "Bandeja Chata para Pintura",
+            "price": 1250,
+            "quantity": 2,
+            "image": "https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:28.913Z",
+      "step": "4. Validación de Carrito y Stock",
+      "status": "START",
+      "executionTime": 2641,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:31.388Z",
+      "step": "4. Validación de Carrito y Stock",
+      "status": "SUCCESS",
+      "executionTime": 5116,
+      "data": {
+        "message": "Stock suficiente para todos los productos",
+        "validatedItems": 3
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:31.892Z",
+      "step": "5. Creación de Preferencia de Pago",
+      "status": "START",
+      "executionTime": 5620,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:31.893Z",
+      "step": "5. Creación de Preferencia de Pago",
+      "status": "INFO",
+      "executionTime": 5621,
+      "data": {
+        "message": "Enviando payload a MercadoPago",
+        "payload": {
+          "items": [
+            {
+              "id": "87",
+              "quantity": 2
+            },
+            {
+              "id": "89",
+              "quantity": 3
+            },
+            {
+              "id": "92",
+              "quantity": 2
+            }
+          ],
+          "payer": {
+            "name": "Test",
+            "surname": "Usuario",
+            "email": "test@pinteya.com",
+            "phone": "1234567890",
+            "identification": {
+              "type": "DNI",
+              "number": "12345678"
+            }
+          },
+          "shipping": {
+            "cost": 2500,
+            "address": {
+              "street_name": "Av. Corrientes",
+              "street_number": "1234",
+              "zip_code": "1043",
+              "city_name": "Buenos Aires",
+              "state_name": "CABA"
+            }
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:34.378Z",
+      "step": "5. Creación de Preferencia de Pago",
+      "status": "SUCCESS",
+      "executionTime": 8106,
+      "data": {
+        "preferenceId": "2541024839-24805114-bad4-4b9b-a998-4dbe5d0964f0",
+        "initPoint": "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=2541024839-24805114-bad4-4b9b-a998-4dbe5d0964f0"
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:34.883Z",
+      "step": "6. Verificación de Orden en Base de Datos",
+      "status": "START",
+      "executionTime": 8611,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:34.883Z",
+      "step": "6. Verificación de Orden en Base de Datos",
+      "status": "INFO",
+      "executionTime": 8611,
+      "data": {
+        "message": "Verificando orden creada en Supabase"
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:34.884Z",
+      "step": "6. Verificación de Orden en Base de Datos",
+      "status": "SUCCESS",
+      "executionTime": 8612,
+      "data": {
+        "status": "pending",
+        "message": "Orden registrada correctamente en Supabase"
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:35.390Z",
+      "step": "7. Simulación de Proceso de Pago",
+      "status": "START",
+      "executionTime": 9118,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:35.390Z",
+      "step": "7. Simulación de Proceso de Pago",
+      "status": "INFO",
+      "executionTime": 9118,
+      "data": {
+        "message": "Simulando pago con credenciales de prueba de MercadoPago",
+        "preferenceId": "2541024839-24805114-bad4-4b9b-a998-4dbe5d0964f0",
+        "testCards": {
+          "approved": "4509 9535 6623 3704",
+          "rejected": "4013 5406 8274 6260",
+          "pending": "4009 1753 3280 7176"
+        }
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:35.391Z",
+      "step": "7. Simulación de Proceso de Pago",
+      "status": "SUCCESS",
+      "executionTime": 9119,
+      "data": {
+        "paymentResult": {
+          "status": "approved",
+          "status_detail": "accredited",
+          "id": 758772,
+          "external_reference": "test-order-1757334455391",
+          "transaction_amount": 9040
+        },
+        "message": "Pago procesado exitosamente (simulación)"
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:35.897Z",
+      "step": "8. Procesamiento de Webhook",
+      "status": "START",
+      "executionTime": 9626,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:35.898Z",
+      "step": "8. Procesamiento de Webhook",
+      "status": "INFO",
+      "executionTime": 9626,
+      "data": {
+        "message": "Simulando webhook de MercadoPago",
+        "webhookPayload": {
+          "action": "payment.updated",
+          "api_version": "v1",
+          "data": {
+            "id": 758772
+          },
+          "date_created": "2025-09-08T12:27:35.898Z",
+          "id": 832178,
+          "live_mode": false,
+          "type": "payment",
+          "user_id": "123456789"
+        }
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:35.899Z",
+      "step": "8. Procesamiento de Webhook",
+      "status": "SUCCESS",
+      "executionTime": 9627,
+      "data": {
+        "newStatus": "paid",
+        "paymentId": 758772,
+        "message": "Estado de orden actualizado correctamente"
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:36.405Z",
+      "step": "9. Generación de Confirmación",
+      "status": "START",
+      "executionTime": 10133,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:36.406Z",
+      "step": "9. Generación de Confirmación",
+      "status": "SUCCESS",
+      "executionTime": 10134,
+      "data": {
+        "confirmation": {
+          "orderNumber": "PN-1757334456406",
+          "status": "confirmed",
+          "items": [
+            {
+              "id": "87",
+              "name": "Lija al Agua Grano 40",
+              "price": 850,
+              "quantity": 2,
+              "image": "https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png"
+            },
+            {
+              "id": "89",
+              "name": "Lija al Agua Grano 80",
+              "price": 780,
+              "quantity": 3,
+              "image": "https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png"
+            },
+            {
+              "id": "92",
+              "name": "Bandeja Chata para Pintura",
+              "price": 1250,
+              "quantity": 2,
+              "image": "https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png"
+            }
+          ],
+          "buyer": {
+            "name": "Test",
+            "surname": "Usuario",
+            "email": "test@pinteya.com",
+            "phone": "1234567890",
+            "identification": {
+              "type": "DNI",
+              "number": "12345678"
+            }
+          },
+          "shipping": {
+            "cost": 2500,
+            "address": {
+              "street_name": "Av. Corrientes",
+              "street_number": "1234",
+              "zip_code": "1043",
+              "city_name": "Buenos Aires",
+              "state_name": "CABA"
+            }
+          },
+          "totals": {
+            "subtotal": 6540,
+            "shipping": 2500,
+            "total": 9040
+          },
+          "estimatedDelivery": "2025-09-15",
+          "trackingNumber": "TRK00455497"
+        },
+        "message": "Confirmación de orden generada exitosamente"
+      },
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:36.907Z",
+      "step": "10. Validación del Flujo Completo",
+      "status": "START",
+      "executionTime": 10635,
+      "data": {},
+      "error": null
+    },
+    {
+      "timestamp": "2025-09-08T12:27:36.907Z",
+      "step": "10. Validación del Flujo Completo",
+      "status": "SUCCESS",
+      "executionTime": 10635,
+      "data": {
+        "validations": {
+          "serverOnline": true,
+          "productsLoaded": true,
+          "cartCreated": true,
+          "orderCreated": true,
+          "preferenceCreated": true,
+          "paymentProcessed": true,
+          "webhookProcessed": true,
+          "confirmationGenerated": true
+        },
+        "message": "Flujo de compra completado exitosamente",
+        "flowIntegrity": "100%"
+      },
+      "error": null
+    }
+  ]
+}

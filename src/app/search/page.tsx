@@ -8,9 +8,12 @@ import { ProductCard } from '@/components/ui';
 import { Search, AlertCircle, Package, Filter, SortAsc } from 'lucide-react';
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton';
 import { Button } from '@/components/ui/button';
+import { useCart } from '@/hooks/useCart';
+import { toast } from '@/components/ui/use-toast';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
+  const { addItem } = useCart();
   const query = searchParams.get('search') || '';
   const category = searchParams.get('category');
 
@@ -255,7 +258,25 @@ export default function SearchPage() {
                 stock={product.stock}
                 brand={product.category?.name}
                 onAddToCart={() => {
-                  // TODO: Implementar lógica de agregar al carrito
+                  try {
+                    addItem({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      image: product.images?.previews?.[0] || '/images/products/placeholder.svg',
+                      quantity: 1
+                    })
+                    toast({
+                      title: "Producto agregado",
+                      description: `${product.name} se agregó al carrito`,
+                    })
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "No se pudo agregar el producto al carrito",
+                      variant: "destructive"
+                    })
+                  }
                 }}
                 className={`bg-white shadow-sm hover:shadow-md transition-shadow ${
                   viewMode === 'list' ? 'flex flex-row items-center p-4' : ''

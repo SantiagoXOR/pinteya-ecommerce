@@ -7,7 +7,7 @@ import { AppDispatch } from "@/redux/store";
 import { updateproductDetails } from "@/redux/features/product-details";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2 } from "@/lib/optimized-imports";
 
 interface ShopDetailsByIdProps {
   productId: string;

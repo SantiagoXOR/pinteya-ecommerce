@@ -78,10 +78,11 @@ function checkEnvironmentVariables() {
       console.log(`❌ ${varName}: FALTANTE - ${description}`);
       hasErrors = true;
     } else {
-      const maskedValue = varName.includes('SECRET') || varName.includes('KEY') 
-        ? `${value.substring(0, 10)}...` 
-        : value.length > 50 
-        ? `${value.substring(0, 50)}...` 
+      // Ocultar completamente credenciales sensibles en producción
+      const maskedValue = varName.includes('SECRET') || varName.includes('KEY') || varName.includes('TOKEN') || varName.includes('ANON') || varName.includes('SERVICE_ROLE')
+        ? '***HIDDEN***'
+        : value.length > 50
+        ? `${value.substring(0, 20)}...`
         : value;
       console.log(`✅ ${varName}: ${maskedValue}`);
     }
@@ -94,10 +95,11 @@ function checkEnvironmentVariables() {
       console.log(`⚠️  ${varName}: FALTANTE - ${description}`);
       hasWarnings = true;
     } else {
-      const maskedValue = varName.includes('SECRET') || varName.includes('KEY') 
-        ? `${value.substring(0, 10)}...` 
-        : value.length > 50 
-        ? `${value.substring(0, 50)}...` 
+      // Ocultar completamente credenciales sensibles en producción
+      const maskedValue = varName.includes('SECRET') || varName.includes('KEY') || varName.includes('TOKEN') || varName.includes('ANON') || varName.includes('SERVICE_ROLE')
+        ? '***HIDDEN***'
+        : value.length > 50
+        ? `${value.substring(0, 20)}...`
         : value;
       console.log(`✅ ${varName}: ${maskedValue}`);
     }

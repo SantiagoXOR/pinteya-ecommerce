@@ -225,7 +225,7 @@ export function calculateOrderMetrics(order: OrderEnterprise): {
   deliveryTime?: number;
 } {
   const totalItems = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-  const averageItemPrice = totalItems > 0 ? order.total_amount / totalItems : 0;
+  const averageItemPrice = totalItems > 0 ? order.total / totalItems : 0;
   
   let processingTime: number | undefined;
   let deliveryTime: number | undefined;
@@ -293,12 +293,12 @@ export function filterOrders(
     }
     
     // Filtro por monto mínimo
-    if (filters.minAmount && order.total_amount < filters.minAmount) {
+    if (filters.minAmount && order.total < filters.minAmount) {
       return false;
     }
     
     // Filtro por monto máximo
-    if (filters.maxAmount && order.total_amount > filters.maxAmount) {
+    if (filters.maxAmount && order.total > filters.maxAmount) {
       return false;
     }
     
@@ -327,7 +327,7 @@ export function filterOrders(
  */
 export function sortOrders(
   orders: OrderEnterprise[],
-  sortBy: 'created_at' | 'total_amount' | 'order_number' | 'status',
+  sortBy: 'created_at' | 'total' | 'order_number' | 'status',
   sortOrder: 'asc' | 'desc' = 'desc'
 ): OrderEnterprise[] {
   return [...orders].sort((a, b) => {
@@ -337,8 +337,8 @@ export function sortOrders(
       case 'created_at':
         comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         break;
-      case 'total_amount':
-        comparison = a.total_amount - b.total_amount;
+      case 'total':
+      comparison = a.total - b.total;
         break;
       case 'order_number':
         comparison = a.order_number.localeCompare(b.order_number);
@@ -407,7 +407,7 @@ export function validateOrderData(orderData: Partial<OrderEnterprise>): {
 } {
   const errors: string[] = [];
   
-  if (orderData.total_amount !== undefined && orderData.total_amount <= 0) {
+  if (orderData.total !== undefined && orderData.total <= 0) {
     errors.push('El monto total debe ser mayor a 0');
   }
   
@@ -450,7 +450,7 @@ export function ordersToCSV(orders: OrderEnterprise[]): string {
     order.user_profiles?.email || '',
     formatOrderStatus(order.status).label,
     formatPaymentStatus(order.payment_status).label,
-    order.total_amount.toString(),
+    order.total.toString(),
     new Date(order.created_at).toLocaleDateString(),
     new Date(order.updated_at).toLocaleDateString()
   ]);

@@ -238,9 +238,6 @@ const HeaderNextAuth = () => {
           </div>
         </div>
       </header>
-
-      {/* Spacer para compensar el header fixed */}
-      <div className="h-[100px] sm:h-[110px]" />
     </>
   );
 };

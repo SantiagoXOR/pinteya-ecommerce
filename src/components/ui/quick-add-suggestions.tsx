@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Star, Loader2 } from "lucide-react";
+import { Plus, Star, Loader2 } from "@/lib/optimized-imports";
 import { cn } from "@/lib/utils";
 import { getProducts } from "@/lib/api/products";
 import { ProductWithCategory } from "@/types/api";
@@ -29,6 +29,8 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     const fetchPopularProducts = async () => {
       try {
         setLoading(true);
@@ -39,7 +41,12 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
           limit: 3,
           sortBy: 'created_at',
           sortOrder: 'desc'
-        });
+        }, abortController.signal);
+
+        // Verificar si el componente aún está montado
+        if (abortController.signal.aborted) {
+          return;
+        }
 
         if (response.success && response.data) {
           setProducts(response.data);
@@ -47,14 +54,25 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
           setError('No se pudieron cargar los productos');
         }
       } catch (err) {
-        console.error('Error fetching popular products:', err);
-        setError('Error al cargar productos populares');
+        // Solo mostrar error si no fue cancelado
+        if (!abortController.signal.aborted && err instanceof Error && err.name !== 'AbortError') {
+          console.error('Error fetching popular products:', err);
+          setError('Error al cargar productos populares');
+        }
       } finally {
-        setLoading(false);
+        // Solo actualizar loading si no fue cancelado
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchPopularProducts();
+
+    // Cleanup: cancelar la request si el componente se desmonta
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
   const handleAddToCart = (productId: string) => {

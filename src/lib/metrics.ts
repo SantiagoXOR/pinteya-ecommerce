@@ -127,6 +127,29 @@ export class MetricsCollector {
   }
 
   /**
+   * Registra una llamada a API (alias para recordRequest)
+   */
+  async recordApiCall(params: {
+    endpoint: string;
+    method: string;
+    statusCode: number;
+    responseTime: number;
+    userId?: string;
+    error?: string;
+  }): Promise<void> {
+    await this.recordRequest(
+      params.endpoint,
+      params.method,
+      params.statusCode,
+      params.responseTime,
+      {
+        userId: params.userId || 'anonymous',
+        error: params.error || ''
+      }
+    );
+  }
+
+  /**
    * Registra métricas de retry
    */
   async recordRetry(
@@ -194,14 +217,25 @@ export class MetricsCollector {
    * Registra un valor numérico
    */
   private async recordValue(key: string, value: number, timestamp: number): Promise<void> {
-    const windowKey = this.getWindowKey(key, timestamp);
-    const listKey = `${windowKey}:values`;
-    
-    // Agregar valor a la lista (usando Redis como cola circular)
-    const client = redisCache['client'];
-    await client.lpush(listKey, value.toString());
-    await client.ltrim(listKey, 0, 999); // Mantener últimos 1000 valores
-    await client.expire(listKey, METRICS_CONFIG.RETENTION_HOURS * 3600);
+    try {
+      const windowKey = this.getWindowKey(key, timestamp);
+      const listKey = `${windowKey}:values`;
+
+      // Obtener cliente Redis (real o mock)
+      const client = redisCache['client'] || redisCache;
+
+      // Verificar si el cliente tiene los métodos necesarios
+      if (typeof client.lpush === 'function') {
+        await client.lpush(listKey, value.toString());
+        await client.ltrim(listKey, 0, 999); // Mantener últimos 1000 valores
+        await client.expire(listKey, METRICS_CONFIG.RETENTION_HOURS * 3600);
+      } else {
+        // Fallback para mock básico - usar storage simple
+        await redisCache.set(`${listKey}:latest`, value.toString());
+      }
+    } catch (error) {
+      logger.error(LogCategory.API, 'Failed to record metric value', error as Error);
+    }
   }
 
   /**
@@ -288,21 +322,33 @@ export class MetricsCollector {
    * Obtiene estadísticas de valores numéricos
    */
   private async getValueStats(
-    baseKey: string, 
-    startTime: number, 
+    baseKey: string,
+    startTime: number,
     endTime: number
   ): Promise<AggregatedMetric> {
     const values: number[] = [];
     const windowSize = METRICS_CONFIG.AGGREGATION_WINDOW_MINUTES * 60 * 1000;
-    
+
     for (let time = startTime; time <= endTime; time += windowSize) {
       const windowStart = Math.floor(time / windowSize);
       const key = `${baseKey}:${windowStart}:values`;
-      
+
       try {
-        const client = redisCache['client'];
-        const windowValues = await client.lrange(key, 0, -1);
-        values.push(...windowValues.map(v => parseFloat(v)).filter(v => !isNaN(v)));
+        const client = redisCache['client'] || redisCache;
+
+        if (typeof client.lrange === 'function') {
+          const windowValues = await client.lrange(key, 0, -1);
+          values.push(...windowValues.map(v => parseFloat(v)).filter(v => !isNaN(v)));
+        } else {
+          // Fallback para mock básico
+          const value = await redisCache.get(`${key}:latest`);
+          if (value) {
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue)) {
+              values.push(numValue);
+            }
+          }
+        }
       } catch (error) {
         // Continuar si no se puede obtener valores de una ventana
       }

@@ -35,7 +35,6 @@ const mockCategory: Category = {
   name: 'Test Category',
   icon: '/test-icon.png',
   description: 'Test category description',
-  count: 5,
 };
 
 const defaultProps: CategoryPillProps = {
@@ -78,22 +77,7 @@ describe('CategoryPill Component', () => {
       }
     });
 
-    it('displays product count when available', () => {
-      render(<CategoryPill {...defaultProps} onClick={mockOnClick} />);
-      expect(screen.getByText('(5)')).toBeInTheDocument();
-    });
 
-    it('hides product count when not available', () => {
-      const categoryWithoutCount = { ...mockCategory, count: undefined };
-      render(
-        <CategoryPill 
-          {...defaultProps} 
-          category={categoryWithoutCount}
-          onClick={mockOnClick} 
-        />
-      );
-      expect(screen.queryByText(/\(\d+\)/)).not.toBeInTheDocument();
-    });
 
     it('renders description for screen readers', () => {
       render(<CategoryPill {...defaultProps} onClick={mockOnClick} />);

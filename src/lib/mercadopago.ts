@@ -4,6 +4,7 @@
 
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { v4 as uuidv4 } from 'uuid';
+import { isMockEnabled, createMockPreference } from './mercadopago-mock';
 import { retryMercadoPagoOperation } from './retry-logic';
 import { logger, LogLevel, LogCategory } from './logger';
 import { CacheUtils } from './cache-manager';
@@ -15,11 +16,22 @@ import {
 
 // ✅ MEJORADO: Función para crear cliente con IdempotencyKey dinámico
 export function createMercadoPagoClient(transactionId?: string) {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN!;
+
+  // ✅ NUEVO: Detectar automáticamente si es sandbox
+  const isSandbox = accessToken.includes('TEST') || accessToken.includes('APP_USR');
+
   return new MercadoPagoConfig({
-    accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
+    accessToken,
     options: {
       timeout: 5000,
       idempotencyKey: transactionId || uuidv4(),
+      // ✅ NUEVO: Configurar entorno sandbox explícitamente
+      ...(isSandbox && {
+        sandbox: true,
+        integratorId: 'dev_24c65fb163bf11ea96500242ac130004'
+      })
     }
   });
 }
@@ -104,6 +116,20 @@ export interface CreatePreferenceData {
  * Crea una preferencia de pago en MercadoPago con retry automático y circuit breaker
  */
 export async function createPaymentPreference(data: CreatePreferenceData) {
+  // ✅ NUEVO: Verificar si el modo mock está habilitado
+  if (isMockEnabled()) {
+    console.log('🧪 Usando MercadoPago Mock para desarrollo');
+    const mockResult = await createMockPreference(data);
+    return {
+      success: true,
+      data: {
+        id: mockResult.id,
+        init_point: mockResult.init_point,
+        sandbox_init_point: mockResult.sandbox_init_point,
+      },
+    };
+  }
+
   // ✅ ENTERPRISE: Usar circuit breaker para operación crítica
   const circuitResult = await executeMercadoPagoCritical(async () => {
     // ✅ NUEVO: Usar retry logic para operación crítica
@@ -131,7 +157,11 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
     };
 
     // ✅ MEJORADO: URLs dinámicas según entorno
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+    // ✅ NUEVO: Detectar entorno sandbox
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN!;
+    const isSandbox = accessToken.includes('TEST') || accessToken.includes('APP_USR');
 
     const preferenceData = {
       items: data.items,
@@ -155,6 +185,15 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
       // ✅ NUEVO: Configuración de expiración
       expires: true,
       expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
+
+      // ✅ NUEVO: Configuración específica para sandbox
+      ...(isSandbox && {
+        purpose: 'wallet_purchase',
+        marketplace: 'NONE',
+        binary_mode: false,
+        // Forzar uso de sandbox en las URLs
+        notification_url: data.notification_url || `${baseUrl}/api/payments/webhook?sandbox=true`,
+      })
     };
 
       console.log('Sending to MercadoPago:', JSON.stringify(preferenceData, null, 2));

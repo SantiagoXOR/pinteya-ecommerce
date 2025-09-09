@@ -1,58 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { createAdminClient } from '@/lib/supabase/server';
+import { logger, LogLevel, LogCategory } from '@/lib/logger';
 
-// Tipos para clientes (placeholder)
+// Tipos para clientes
 interface Customer {
   id: string;
   name: string;
   email: string;
   phone?: string;
-  status: 'active' | 'inactive' | 'blocked';
-  orders_count: number;
-  total_spent: number;
-  last_order_date?: string;
+  address?: string;
   created_at: string;
-  updated_at: string;
 }
-
-// Datos de ejemplo para clientes (placeholder)
-const mockCustomers: Customer[] = [
-  {
-    id: 'cust_1',
-    name: 'Juan Pérez',
-    email: 'juan@example.com',
-    phone: '+54 11 1234-5678',
-    status: 'active',
-    orders_count: 5,
-    total_spent: 45000,
-    last_order_date: new Date().toISOString(),
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'cust_2',
-    name: 'María García',
-    email: 'maria@example.com',
-    phone: '+54 11 9876-5432',
-    status: 'active',
-    orders_count: 3,
-    total_spent: 28500,
-    last_order_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'cust_3',
-    name: 'Carlos López',
-    email: 'carlos@example.com',
-    status: 'inactive',
-    orders_count: 1,
-    total_spent: 12000,
-    last_order_date: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,62 +27,89 @@ export async function GET(request: NextRequest) {
       }, { status: 401 });
     }
 
+    logger.log(LogLevel.INFO, LogCategory.API, 'Fetching customers for admin', {
+      userId: session.user.id
+    });
+
     // Obtener parámetros de query
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const status = searchParams.get('status');
-    const search = searchParams.get('search');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const search = searchParams.get('search') || '';
 
-    console.log('📊 Parámetros:', { page, limit, status, search });
+    console.log('📊 Parámetros:', { page, limit, search });
 
-    // Filtrar clientes (placeholder logic)
-    let filteredCustomers = [...mockCustomers];
-    
-    if (status) {
-      filteredCustomers = filteredCustomers.filter(customer => customer.status === status);
-    }
-    
-    if (search) {
-      filteredCustomers = filteredCustomers.filter(customer => 
-        customer.name.toLowerCase().includes(search.toLowerCase()) ||
-        customer.email.toLowerCase().includes(search.toLowerCase()) ||
-        customer.id.includes(search)
-      );
-    }
-
-    // Paginación
-    const total = filteredCustomers.length;
-    const totalPages = Math.ceil(total / limit);
+    // Calcular offset
     const offset = (page - 1) * limit;
-    const paginatedCustomers = filteredCustomers.slice(offset, offset + limit);
+
+    // Construir query base
+    const supabase = createAdminClient();
+    let query = supabase
+      .from('users')
+      .select('id, name, email, created_at', { count: 'exact' });
+
+    // Aplicar filtros de búsqueda si se proporciona
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+
+    // Aplicar paginación y ordenamiento
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data: customers, error, count } = await query;
+
+    if (error) {
+      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error fetching customers', { error });
+      return NextResponse.json({
+        success: false,
+        error: 'Error al obtener clientes'
+      }, { status: 500 });
+    }
+
+    // Formatear datos para el frontend
+    const formattedCustomers: Customer[] = customers?.map(customer => ({
+      id: customer.id,
+      name: customer.name || 'Sin nombre',
+      email: customer.email,
+      phone: '', // TODO: Agregar campo phone a la tabla users si es necesario
+      address: '', // TODO: Agregar campo address a la tabla users si es necesario
+      created_at: customer.created_at
+    })) || [];
 
     const response = {
       success: true,
-      data: paginatedCustomers,
-      total,
+      data: formattedCustomers,
+      total: count || 0,
       pagination: {
         page,
         limit,
-        totalPages,
-        hasNext: page < totalPages,
+        totalPages: Math.ceil((count || 0) / limit),
+        hasNext: page < Math.ceil((count || 0) / limit),
         hasPrev: page > 1,
       },
-      message: `${paginatedCustomers.length} clientes encontrados de ${total} totales`
+      message: `${formattedCustomers.length} clientes encontrados de ${count || 0} totales`
     };
 
     console.log('✅ Respuesta exitosa:', {
-      customersCount: paginatedCustomers.length,
-      total,
+      customersCount: formattedCustomers.length,
+      total: count,
       page,
-      totalPages
+      totalPages: Math.ceil((count || 0) / limit)
+    });
+
+    logger.log(LogLevel.INFO, LogCategory.API, 'Customers fetched successfully', {
+      count: formattedCustomers.length,
+      total: count
     });
 
     return NextResponse.json(response);
 
   } catch (error) {
     console.error('❌ Error en GET /api/admin/customers:', error);
-    
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Unexpected error in customers API', { error });
+
     return NextResponse.json({
       success: false,
       error: 'Error interno del servidor',

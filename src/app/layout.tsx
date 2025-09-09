@@ -2,12 +2,16 @@
 import { Providers } from './providers';
 import './css/style.css';
 import './css/euclid-circular-a-font.css';
+import '../styles/checkout-mobile.css';
 import { metadata as defaultMetadata } from './metadata';
 import StructuredData from '@/components/SEO/StructuredData';
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
+import { ClientErrorSuppression } from '@/components/ErrorSuppression/ClientErrorSuppression';
 import JsonSafetyInitializer from '@/components/JsonSafetyInitializer';
+import DebugNotificationDisabler from '@/components/debug/DebugNotificationDisabler';
 import AuthRedirectDebugger from '@/components/debug/AuthRedirectDebugger';
 import { organizationStructuredData, websiteStructuredData, storeStructuredData } from '@/lib/structured-data';
+import PerformanceTracker from '@/components/PerformanceTracker';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = defaultMetadata;
@@ -30,6 +34,10 @@ export default function RootLayout({
         <GoogleAnalytics />
       </head>
       <body>
+        {/* <ClientErrorSuppression /> */}
+        {/* <JsonSafetyInitializer /> */}
+        {/* <DebugNotificationDisabler /> */}
+        {/* <PerformanceTracker /> */}
         <Providers>
           {children}
         </Providers>

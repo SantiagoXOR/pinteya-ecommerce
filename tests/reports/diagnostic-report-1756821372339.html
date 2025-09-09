@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Diagnóstico - Panel Admin Enterprise</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { 
+            background: linear-gradient(135deg, #ea5a17 0%, #f97316 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.9; }
+        
+        .summary-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        .summary-card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #ea5a17;
+        }
+        .summary-card h3 { color: #1e293b; margin-bottom: 10px; }
+        .summary-card .number { font-size: 2rem; font-weight: bold; color: #ea5a17; }
+        .summary-card .percentage { font-size: 0.9rem; color: #64748b; }
+        
+        .modules-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        .module-card { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .module-header { 
+            padding: 20px; 
+            background: #f1f5f9; 
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .module-header h3 { color: #1e293b; }
+        .module-progress { 
+            width: 100%; 
+            height: 8px; 
+            background: #e2e8f0; 
+            border-radius: 4px; 
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .module-progress-bar { 
+            height: 100%; 
+            background: linear-gradient(90deg, #10b981, #059669); 
+            transition: width 0.3s ease;
+        }
+        
+        .results-table { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .results-table h3 { 
+            padding: 20px; 
+            background: #f1f5f9; 
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; font-weight: 600; color: #475569; }
+        
+        .status-badge { 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-size: 0.8rem; 
+            font-weight: 500;
+        }
+        .status-implemented { background: #dcfce7; color: #166534; }
+        .status-placeholder { background: #fef3c7; color: #92400e; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+        .status-not-found { background: #f1f5f9; color: #475569; }
+        
+        .footer { 
+            text-align: center; 
+            padding: 20px; 
+            color: #64748b; 
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .summary-grid, .modules-grid { grid-template-columns: 1fr; }
+            .container { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Panel Administrativo Enterprise</h1>
+            <p>Reporte de Diagnóstico Completo - Pinteya E-commerce</p>
+            <p>Generado el 2/9/2025, 10:54:44</p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>📋 Total Funcionalidades</h3>
+                <div class="number">14</div>
+                <div class="percentage">Funcionalidades evaluadas</div>
+            </div>
+            <div class="summary-card">
+                <h3>✅ Implementadas</h3>
+                <div class="number">4</div>
+                <div class="percentage">28.6% del total</div>
+            </div>
+            <div class="summary-card">
+                <h3>🚧 En Desarrollo</h3>
+                <div class="number">0</div>
+                <div class="percentage">0.0% del total</div>
+            </div>
+            <div class="summary-card">
+                <h3>❌ Con Errores</h3>
+                <div class="number">8</div>
+                <div class="percentage">57.1% del total</div>
+            </div>
+        </div>
+
+        <div class="modules-grid">
+            
+                <div class="module-card">
+                    <div class="module-header">
+                        <h3>📋 Orders</h3>
+                        <div>0/1 funcionalidades (0.0%)</div>
+                        <div class="module-progress">
+                            <div class="module-progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+              
+                <div class="module-card">
+                    <div class="module-header">
+                        <h3>📦 Products</h3>
+                        <div>0/1 funcionalidades (0.0%)</div>
+                        <div class="module-progress">
+                            <div class="module-progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+              
+                <div class="module-card">
+                    <div class="module-header">
+                        <h3>🚚 Logistics</h3>
+                        <div>1/4 funcionalidades (25.0%)</div>
+                        <div class="module-progress">
+                            <div class="module-progress-bar" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+              
+                <div class="module-card">
+                    <div class="module-header">
+                        <h3>🔗 Integration</h3>
+                        <div>3/8 funcionalidades (37.5%)</div>
+                        <div class="module-progress">
+                            <div class="module-progress-bar" style="width: 37.5%"></div>
+                        </div>
+                    </div>
+                </div>
+              
+        </div>
+
+        <div class="results-table">
+            <h3>📊 Detalle de Funcionalidades</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Módulo</th>
+                        <th>Funcionalidad</th>
+                        <th>Estado</th>
+                        <th>Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td><strong>ORDERS</strong></td>
+                            <td>Flujo General</td>
+                            <td><span class="status-badge status-error">❌ ERROR</span></td>
+                            <td>Error general: TimeoutError: locator.textContent: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('h1')[22m
+</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>PRODUCTS</strong></td>
+                            <td>Flujo General</td>
+                            <td><span class="status-badge status-error">❌ ERROR</span></td>
+                            <td>Error general: TimeoutError: locator.textContent: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('h1')[22m
+</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>LOGISTICS</strong></td>
+                            <td>Navegación a /admin/logistics</td>
+                            <td><span class="status-badge status-implemented">✅ IMPLEMENTED</span></td>
+                            <td>Página de logística carga correctamente</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>LOGISTICS</strong></td>
+                            <td>Dashboard de Métricas</td>
+                            <td><span class="status-badge status-error">❌ ERROR</span></td>
+                            <td>Solo 0 métricas encontradas</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>LOGISTICS</strong></td>
+                            <td>Tabs de Logística</td>
+                            <td><span class="status-badge status-error">❌ ERROR</span></td>
+                            <td>Solo 0 tabs encontrados</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>LOGISTICS</strong></td>
+                            <td>Gestión de Carriers</td>
+                            <td><span class="status-badge status-not-found">🔍 NOT_FOUND</span></td>
+                            <td>Sección de carriers no encontrada</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>INTEGRATION</strong></td>
+                            <td>Lista de Órdenes para Integración</td>
+                            <td><span class="status-badge status-error">❌ ERROR</span></td>
+                            <td>No se encontraron órdenes para probar integración</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>INTEGRATION</strong></td>
+                            <td>Crear Envío desde Orden</td>
+                            <td><span class="status-badge status-not-found">🔍 NOT_FOUND</span></td>
+                            <td>Funcionalidad de crear envío no encontrada</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>INTEGRATION</strong></td>
+                            <td>Responsividad Desktop</td>
+                            <td><span class="status-badge status-error">❌ ERROR</span></td>
+                            <td>Viewport 1920x1080 - Contenido no visible</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>INTEGRATION</strong></td>
+                            <td>Responsividad Tablet</td>
+                            <td><span class="status-badge status-error">❌ ERROR</span></td>
+                            <td>Viewport 768x1024 - Contenido no visible</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>INTEGRATION</strong></td>
+                            <td>Responsividad Mobile</td>
+                            <td><span class="status-badge status-error">❌ ERROR</span></td>
+                            <td>Viewport 375x667 - Contenido no visible</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>INTEGRATION</strong></td>
+                            <td>JavaScript Errors /admin/orders</td>
+                            <td><span class="status-badge status-implemented">✅ IMPLEMENTED</span></td>
+                            <td>No se detectaron errores de JavaScript</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>INTEGRATION</strong></td>
+                            <td>JavaScript Errors /admin/products</td>
+                            <td><span class="status-badge status-implemented">✅ IMPLEMENTED</span></td>
+                            <td>No se detectaron errores de JavaScript</td>
+                        </tr>
+                      
+                        <tr>
+                            <td><strong>INTEGRATION</strong></td>
+                            <td>JavaScript Errors /admin/logistics</td>
+                            <td><span class="status-badge status-implemented">✅ IMPLEMENTED</span></td>
+                            <td>No se detectaron errores de JavaScript</td>
+                        </tr>
+                      
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>🔧 Reporte generado automáticamente por Playwright E2E Testing Suite</p>
+            <p>Panel Administrativo Enterprise - Pinteya E-commerce</p>
+        </div>
+    </div>
+</body>
+</html>
+  

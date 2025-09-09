@@ -12,9 +12,13 @@ import { safeApiResponseJson } from '@/lib/json-utils';
 /**
  * Obtiene productos con filtros desde la API
  * @param filters - Filtros de productos
+ * @param signal - AbortSignal para cancelar la request
  * @returns Promise<PaginatedResponse<ProductWithCategory>>
  */
-export async function getProducts(filters?: ProductFilters): Promise<PaginatedResponse<ProductWithCategory>> {
+export async function getProducts(
+  filters?: ProductFilters,
+  signal?: AbortSignal
+): Promise<PaginatedResponse<ProductWithCategory>> {
   try {
     const searchParams = new URLSearchParams();
 
@@ -33,6 +37,7 @@ export async function getProducts(filters?: ProductFilters): Promise<PaginatedRe
       headers: {
         'Content-Type': 'application/json',
       },
+      signal, // Agregar soporte para AbortController
     });
 
     // Usar parsing seguro de JSON

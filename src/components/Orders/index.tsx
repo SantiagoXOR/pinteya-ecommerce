@@ -4,7 +4,7 @@ import { useUserOrders } from "@/hooks/useUserOrders";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Package, Filter, Calendar, DollarSign, Truck, CheckCircle, ShoppingBag } from "lucide-react";
+import { Package, Filter, Calendar, DollarSign, Truck, CheckCircle, ShoppingBag } from "@/lib/optimized-imports";
 // import ordersData from "./ordersData"; // Comentado: ahora usamos datos dinámicos
 
 const Orders = () => {

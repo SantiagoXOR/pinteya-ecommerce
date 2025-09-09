@@ -8,7 +8,8 @@ import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
+import { checkRateLimit } from '@/lib/auth/rate-limiting';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
 import { MetricsCollector } from '@/lib/metrics';
 
 // ===================================

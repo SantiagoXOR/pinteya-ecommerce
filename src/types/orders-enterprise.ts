@@ -72,7 +72,7 @@ export interface OrderEnterprise {
   status: OrderStatus;
   payment_status: PaymentStatus;
   fulfillment_status: FulfillmentStatus;
-  total_amount: number;
+  total: number;
   currency: string;
   shipping_address?: ShippingAddress;
   billing_address?: BillingAddress;
@@ -203,7 +203,7 @@ export interface OrderFilters {
   date_from?: string;
   date_to?: string;
   search?: string;
-  sort_by?: 'created_at' | 'total_amount' | 'order_number';
+  sort_by?: 'created_at' | 'total' | 'order_number';
   sort_order?: 'asc' | 'desc';
 }
 

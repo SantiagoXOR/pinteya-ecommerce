@@ -7,7 +7,7 @@ import { AppDispatch } from "@/redux/store";
 import { removeItemFromCart, updateCartItemQuantity } from "@/redux/features/cart-slice";
 import { getValidImageUrl } from "@/lib/adapters/product-adapter";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2 } from "@/lib/optimized-imports";
 
 const SingleItem = ({ item }: { item: any }) => {
   const [quantity, setQuantity] = useState(item.quantity);

@@ -228,6 +228,25 @@ export function ProductSeo({ form, errors, productName = '', className }: Produc
                   <p className="text-red-600 text-sm mt-1">{errors.slug.message}</p>
                 )}
               </div>
+
+              {/* Meta Keywords */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Palabras Clave Meta
+                </label>
+                <input
+                  type="text"
+                  {...register('meta_keywords')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent"
+                  placeholder="palabra1, palabra2, palabra3"
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                  Separar con comas. Máximo 10 palabras clave para SEO.
+                </div>
+                {errors.meta_keywords && (
+                  <p className="text-red-600 text-sm mt-1">{errors.meta_keywords.message}</p>
+                )}
+              </div>
             </div>
           </AdminCard>
 

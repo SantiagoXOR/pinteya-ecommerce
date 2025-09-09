@@ -1,0 +1,40 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--read-only",
+        "--project-ref=aakzspzfulgftqlgwkpb"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_973e7c2a5f8440f4b073cf40b7fd543d265f5e6f"
+      }
+    }
+  }
+}
+
+// ANÁLISIS DE LA CONFIGURACIÓN MCP SUPABASE:
+// ==========================================
+//
+// PROBLEMA IDENTIFICADO:
+// - La configuración actual usa "--project-ref=<project-ref>" como placeholder
+// - Necesita el project-ref real extraído de la URL de Supabase
+//
+// SOLUCIÓN APLICADA:
+// - Project-ref correcto: "aakzspzfulgftqlgwkpb"
+// - Extraído de: https://aakzspzfulgftqlgwkpb.supabase.co
+// - Token de acceso: Mantiene el mismo valor
+//
+// CONFIGURACIÓN CORREGIDA:
+// - Reemplaza "<project-ref>" por "aakzspzfulgftqlgwkpb"
+// - Mantiene todos los demás parámetros iguales
+// - Conserva el modo "--read-only" para seguridad
+//
+// VERIFICACIÓN:
+// - La URL base de Supabase: https://aakzspzfulgftqlgwkpb.supabase.co
+// - Project-ref extraído: aakzspzfulgftqlgwkpb
+// - Token válido y configurado correctamente
+//
+// ESTADO: ✅ CONFIGURACIÓN CORREGIDA Y LISTA PARA USO

@@ -141,8 +141,8 @@ function calculateDelay(
  * Determina si un error es reintentable
  */
 function isRetryableError(error: Error, config: RetryConfig): boolean {
-  const errorMessage = error.message.toLowerCase();
-  const errorName = error.name.toLowerCase();
+  const errorMessage = (error.message || '').toLowerCase();
+  const errorName = (error.name || '').toLowerCase();
   
   // Verificar errores no reintenables primero (tienen prioridad)
   for (const nonRetryableError of config.nonRetryableErrors) {
@@ -173,8 +173,8 @@ function extractErrorInfo(error: Error): {
   statusCode?: number;
   isNetwork: boolean;
 } {
-  const message = error.message.toLowerCase();
-  const name = error.name.toLowerCase();
+  const message = (error.message || '').toLowerCase();
+  const name = (error.name || '').toLowerCase();
   
   // Detectar errores de red
   const networkErrors = ['econnreset', 'enotfound', 'econnrefused', 'etimedout'];

@@ -2,7 +2,7 @@
 // COMPONENTE: SearchAutocompleteIntegrated - Integración completa con useSearch
 // ===================================
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { SearchAutocomplete, SearchAutocompleteProps } from './search-autocomplete';
 import { useSearchOptimized } from '@/hooks/useSearchOptimized';
 
@@ -25,7 +25,7 @@ export interface SearchAutocompleteIntegratedProps
  * Este componente proporciona una experiencia de búsqueda completa sin necesidad
  * de manejar manualmente el estado del hook useSearch.
  */
-export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, SearchAutocompleteIntegratedProps>(
+export const SearchAutocompleteIntegrated = React.memo(React.forwardRef<HTMLInputElement, SearchAutocompleteIntegratedProps>(
   ({
     debounceMs = 100,
     maxSuggestions = 6,
@@ -106,7 +106,7 @@ export const SearchAutocompleteIntegrated = React.forwardRef<HTMLInputElement, S
       />
     );
   }
-);
+));
 
 SearchAutocompleteIntegrated.displayName = 'SearchAutocompleteIntegrated';
 

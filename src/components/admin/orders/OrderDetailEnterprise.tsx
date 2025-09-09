@@ -305,7 +305,7 @@ export const OrderDetailEnterprise: React.FC<OrderDetailEnterpriseProps> = ({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${order.total_amount.toLocaleString()} {order.currency}
+            ${(order.total || 0).toLocaleString()} {order.currency}
           </div>
           <p className="text-sm text-gray-600 mt-2">
             {order.order_items?.length || 0} producto(s)
@@ -331,9 +331,23 @@ export const OrderDetailEnterprise: React.FC<OrderDetailEnterpriseProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <h4 className="font-medium mb-2">Datos Personales</h4>
-            <p><strong>Nombre:</strong> {order.user_profiles?.name || 'N/A'}</p>
-            <p><strong>Email:</strong> {order.user_profiles?.email || 'N/A'}</p>
-            <p><strong>Teléfono:</strong> {order.user_profiles?.phone || 'N/A'}</p>
+            <p><strong>Nombre:</strong> {
+              order.user_profiles?.name || 
+              (order.payer_info?.name && order.payer_info?.surname ? 
+                `${order.payer_info.name} ${order.payer_info.surname}` : 
+                order.payer_info?.name) || 
+              'N/A'
+            }</p>
+            <p><strong>Email:</strong> {
+              order.user_profiles?.email || 
+              order.payer_info?.email || 
+              'N/A'
+            }</p>
+            <p><strong>Teléfono:</strong> {
+              order.user_profiles?.phone || 
+              order.payer_info?.phone || 
+              'N/A'
+            }</p>
           </div>
           {order.shipping_address && (
             <div>
@@ -377,11 +391,11 @@ export const OrderDetailEnterprise: React.FC<OrderDetailEnterpriseProps> = ({
               <div className="flex-1">
                 <h4 className="font-medium">{item.products?.name || 'Producto'}</h4>
                 <p className="text-sm text-gray-600">
-                  Cantidad: {item.quantity} × ${item.unit_price.toLocaleString()}
+                  Cantidad: {item.quantity} × ${(item.unit_price || 0).toLocaleString()}
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-medium">${item.total_price.toLocaleString()}</p>
+                <p className="font-medium">${(item.total_price || 0).toLocaleString()}</p>
               </div>
             </div>
           ))}
@@ -389,7 +403,7 @@ export const OrderDetailEnterprise: React.FC<OrderDetailEnterpriseProps> = ({
         <Separator className="my-4" />
         <div className="flex justify-between items-center font-medium text-lg">
           <span>Total:</span>
-          <span>${order.total_amount.toLocaleString()} {order.currency}</span>
+          <span>${(order.total || 0).toLocaleString()} {order.currency}</span>
         </div>
       </CardContent>
     </Card>

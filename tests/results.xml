@@ -1,0 +1,68 @@
+<testsuites id="" name="" tests="8" failures="0" skipped="0" errors="0" time="46.733452">
+<testsuite name="auth.cleanup.ts" timestamp="2025-09-09T03:19:24.222Z" hostname="cleanup" tests="2" failures="0" skipped="0" time="0.014" errors="0">
+<testcase name="cleanup auth files" classname="auth.cleanup.ts" time="0.012">
+<system-out>
+<![CDATA[🧹 Iniciando limpieza de archivos de autenticación...
+📁 Archivos encontrados: 1
+🗑️ Eliminado: admin.json
+📁 Directorio .auth eliminado
+✅ Limpieza de autenticación completada
+]]>
+</system-out>
+</testcase>
+<testcase name="cleanup test artifacts" classname="auth.cleanup.ts" time="0.002">
+<system-out>
+<![CDATA[🧹 Limpiando artefactos de tests...
+✅ Limpieza de artefactos completada
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth.setup.ts" timestamp="2025-09-09T03:19:24.222Z" hostname="setup" tests="3" failures="0" skipped="0" time="25.547" errors="0">
+<testcase name="authenticate as admin" classname="auth.setup.ts" time="22.136">
+<system-out>
+<![CDATA[🔧 Iniciando setup de autenticación administrativa...
+🔐 Autenticando usuario administrador...
+🔐 Iniciando autenticación simplificada...
+📍 Navegando a página principal...
+🍪 Configurando cookies de sesión...
+🔄 Recargando página con cookies...
+✅ Autenticación simplificada completada
+🔍 Verificando acceso administrativo...
+🔍 Verificando acceso administrativo...
+✅ Elemento administrativo encontrado: h1:has-text("Admin")
+✅ Acceso administrativo verificado exitosamente
+💾 Guardando estado de autenticación...
+✅ Setup de autenticación completado exitosamente
+📄 Estado guardado en: tests/e2e/.auth/admin.json
+🧪 Verificando acceso a APIs administrativas...
+✅ Acceso a API administrativa verificado
+]]>
+</system-out>
+</testcase>
+<testcase name="verify authentication persistence" classname="auth.setup.ts" time="3.409">
+<system-out>
+<![CDATA[🔄 Verificando persistencia de autenticación...
+✅ Archivo de autenticación encontrado después de 0 intentos
+✅ Elemento administrativo encontrado: h1:has-text("Admin")
+✅ Persistencia de autenticación verificada
+]]>
+</system-out>
+</testcase>
+<testcase name="cleanup old auth files" classname="auth.setup.ts" time="0.002">
+<system-out>
+<![CDATA[🧹 Limpiando archivos de autenticación antiguos...
+✅ Limpieza completada
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="admin\product-management.spec.ts" timestamp="2025-09-09T03:19:24.222Z" hostname="ui-admin" tests="3" failures="0" skipped="0" time="8.107" errors="0">
+<testcase name="Panel Administrativo - Gestión de Productos › debe cargar la lista de productos correctamente" classname="admin\product-management.spec.ts" time="2.756">
+</testcase>
+<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar filtros de productos funcionales" classname="admin\product-management.spec.ts" time="2.684">
+</testcase>
+<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar la tabla de productos con columnas correctas" classname="admin\product-management.spec.ts" time="2.667">
+</testcase>
+</testsuite>
+</testsuites>

@@ -277,6 +277,22 @@ const Billing: React.FC<BillingProps> = ({ billingData, errors, onBillingChange 
           />
         </div>
 
+        <div className="mb-5">
+          <label htmlFor="observations" className="block mb-2.5">
+            Observaciones de entrega (Opcional)
+          </label>
+
+          <textarea
+            name="observations"
+            id="observations"
+            rows={3}
+            placeholder="Ej: Barrio específico, características de la casa, horarios de entrega preferidos..."
+            value={billingData.observations}
+            onChange={handleInputChange('observations')}
+            className="rounded-md border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2.5 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-tahiti-gold-500/20 resize-none"
+          />
+        </div>
+
 
       </div>
     </div>

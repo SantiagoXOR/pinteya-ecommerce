@@ -5,6 +5,7 @@
 export interface BillingData {
   firstName: string;
   lastName: string;
+  dni?: string;
   companyName?: string;
   country: string;
   streetAddress: string;
@@ -15,6 +16,7 @@ export interface BillingData {
   phone: string;
   email: string;
   orderNotes?: string;
+  observations?: string;
 }
 
 export interface ShippingData {

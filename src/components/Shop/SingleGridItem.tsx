@@ -11,25 +11,42 @@ import Link from "next/link";
 import Image from "next/image";
 import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 import { ExtendedProduct, calculateProductFeatures } from "@/lib/adapters/productAdapter";
+import { useCartWithBackend } from "@/hooks/useCartWithBackend";
 
 const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
   const { openModal } = useModalContext();
-
   const dispatch = useDispatch<AppDispatch>();
+
+  // Hook para carrito con backend
+  const { addItem, loading } = useCartWithBackend();
 
   // update the QuickView state
   const handleQuickViewUpdate = () => {
     dispatch(updateQuickView({ ...item }));
   };
 
-  // add to cart
-  const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...item,
-        quantity: 1,
-      })
-    );
+  // add to cart - Conectado con backend
+  const handleAddToCart = async () => {
+    // Intentar agregar al backend primero
+    const success = await addItem(item.id, 1);
+
+    if (success) {
+      // Si el backend funciona, también actualizar Redux para compatibilidad
+      dispatch(
+        addItemToCart({
+          ...item,
+          quantity: 1,
+        })
+      );
+    } else {
+      // Si falla el backend, solo usar Redux (fallback)
+      dispatch(
+        addItemToCart({
+          ...item,
+          quantity: 1,
+        })
+      );
+    }
   };
 
   const handleItemToWishList = () => {

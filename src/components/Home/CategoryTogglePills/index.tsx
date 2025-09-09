@@ -5,7 +5,7 @@ import { useCategoriesWithDynamicCounts } from "@/hooks/useCategoriesWithDynamic
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Filter, X, Tag, Loader2 } from "lucide-react";
+import { Filter, X, Tag } from "lucide-react";
 import Image from "next/image";
 
 interface CategoryTogglePillsProps {
@@ -27,7 +27,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       ...otherFilters,
     },
     selectedCategories,
-    enableDynamicCounts: true,
+    enableDynamicCounts: false, // Deshabilitar conteos dinámicos para evitar errores de API
   });
 
   // Referencia para el contenedor del carrusel
@@ -198,22 +198,6 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     <span className="text-xs font-medium sm:text-sm">
                       {category.name}
                     </span>
-                    <Badge
-                      variant="secondary"
-                      className={`
-                        text-xs px-1 py-0.5 ml-0.5 flex items-center gap-1 sm:px-1.5 sm:ml-1
-                        ${isSelected
-                          ? 'bg-white/30 text-white'
-                          : 'bg-white/30 text-white'
-                        }
-                      `}
-                    >
-                      {category.isLoading ? (
-                        <Loader2 className="w-2 h-2 sm:w-3 sm:h-3 animate-spin" />
-                      ) : (
-                        category.products_count || 0
-                      )}
-                    </Badge>
                   </div>
                 </Button>
               );

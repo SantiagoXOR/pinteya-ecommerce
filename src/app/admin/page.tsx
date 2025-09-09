@@ -14,12 +14,18 @@ import {
   Search,
   TrendingUp,
   AlertTriangle,
-  Activity
+  Activity,
+  Truck,
+  Gauge,
+  GitBranch
 } from 'lucide-react';
 import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats';
+import { useMonitoringStats } from '@/providers/MonitoringProvider';
+import { MonitoringStatus } from '@/providers/MonitoringProvider';
 
 export default function AdminPage() {
   const { stats, loading, error } = useAdminDashboardStats();
+  const { stats: monitoringStats, loading: monitoringLoading } = useMonitoringStats();
   const adminSections = [
     {
       title: 'Productos',
@@ -48,6 +54,15 @@ export default function AdminPage() {
       badge: 'Beta'
     },
     {
+      title: 'Logística',
+      description: 'Gestión completa de envíos y tracking en tiempo real',
+      href: '/admin/logistics',
+      icon: Truck,
+      color: 'bg-orange-500',
+      stats: 'Enterprise',
+      badge: 'Enterprise'
+    },
+    {
       title: 'Analytics',
       description: 'Métricas avanzadas y reportes de rendimiento',
       href: '/admin/analytics',
@@ -71,6 +86,24 @@ export default function AdminPage() {
       color: 'bg-emerald-500',
       stats: 'Tiempo real',
       badge: 'Enterprise'
+    },
+    {
+      title: 'Performance',
+      description: 'Métricas de performance y Core Web Vitals',
+      href: '/admin/performance',
+      icon: Gauge,
+      color: 'bg-purple-500',
+      stats: 'Optimizado',
+      badge: 'New'
+    },
+    {
+      title: 'Test Flows',
+      description: 'Flujos automatizados de CI/CD y testing',
+      href: '/admin/test-flows',
+      icon: GitBranch,
+      color: 'bg-cyan-500',
+      stats: 'Automatizado',
+      badge: 'New'
     },
     {
       title: 'Diagnósticos',
@@ -276,33 +309,62 @@ export default function AdminPage() {
         {/* System Status */}
         <AdminCard
           title="Estado del Sistema"
-          description="Monitoreo en tiempo real del estado de la aplicación"
+          description="Monitoreo proactivo en tiempo real del estado de la aplicación"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-2xl">✅</span>
+                <Activity className="w-6 h-6 text-green-600" />
               </div>
-              <div className="text-sm font-medium text-green-800">Sistema Operativo</div>
-              <div className="text-xs text-green-600 mt-1">Todos los servicios funcionando</div>
+              <div className="text-sm font-medium text-green-800">Monitoreo Activo</div>
+              <div className="text-xs text-green-600 mt-1">
+                {monitoringLoading ? 'Cargando...' : (monitoringStats ? 'Sistema operativo' : 'Inicializando...')}
+              </div>
             </div>
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-2xl">🔄</span>
+                <AlertTriangle className="w-6 h-6 text-blue-600" />
               </div>
-              <div className="text-sm font-medium text-blue-800">Sincronización Activa</div>
-              <div className="text-xs text-blue-600 mt-1">Última sync: hace 2 min</div>
+              <div className="text-sm font-medium text-blue-800">Errores Detectados</div>
+              <div className="text-xs text-blue-600 mt-1">
+                {monitoringLoading ? 'Cargando...' : `${monitoringStats?.totalErrors || 0} errores`}
+              </div>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-2xl">⚡</span>
+                <TrendingUp className="w-6 h-6 text-yellow-600" />
               </div>
-              <div className="text-sm font-medium text-yellow-800">Performance Óptimo</div>
-              <div className="text-xs text-yellow-600 mt-1">Tiempo respuesta: 120ms</div>
+              <div className="text-sm font-medium text-yellow-800">Performance</div>
+              <div className="text-xs text-yellow-600 mt-1">
+                {monitoringLoading ? 'Cargando...' : `${monitoringStats?.avgResponseTime || 0}ms promedio`}
+              </div>
             </div>
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Gauge className="w-6 h-6 text-purple-600" />
+              </div>
+              <div className="text-sm font-medium text-purple-800">Salud del Sistema</div>
+              <div className="text-xs text-purple-600 mt-1">
+                {monitoringLoading ? 'Cargando...' : `${monitoringStats?.systemHealth || 0}% saludable`}
+              </div>
+            </div>
+          </div>
+          
+          {/* Enlace al dashboard completo de monitoreo */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <Link
+              href="/admin/monitoring"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Activity className="w-4 h-4 mr-2" />
+              Ver Dashboard Completo de Monitoreo
+            </Link>
           </div>
         </AdminCard>
       </div>
+      
+      {/* Componente de estado de monitoreo para desarrollo */}
+      <MonitoringStatus />
     </AdminLayout>
   );
 }

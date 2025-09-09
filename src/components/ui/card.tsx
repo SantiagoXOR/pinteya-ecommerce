@@ -141,7 +141,7 @@ export interface ProductCardProps extends CardProps {
   isNew?: boolean // Badge "Nuevo" en esquina superior derecha
 }
 
-const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
+const ProductCard = React.memo(React.forwardRef<HTMLDivElement, ProductCardProps>(
   ({
     className,
     image,
@@ -395,7 +395,7 @@ const ProductCard = React.forwardRef<HTMLDivElement, ProductCardProps>(
     </div>
     );
   }
-)
+))
 ProductCard.displayName = "ProductCard"
 
 export { 

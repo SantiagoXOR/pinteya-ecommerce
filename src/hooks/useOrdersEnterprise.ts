@@ -19,6 +19,8 @@ import {
 // ===================================
 
 export function useOrdersEnterprise(initialFilters?: OrderFilters) {
+  // Hook legacy - usar /hooks/admin/useOrdersEnterprise.ts en su lugar
+
   const [state, setState] = useState<UseOrdersState>({
     orders: [],
     loading: true,
@@ -50,7 +52,8 @@ export function useOrdersEnterprise(initialFilters?: OrderFilters) {
     try {
       const queryParams = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
+        // FILTRAR OBJETOS: Solo agregar valores primitivos (string, number, boolean)
+        if (value !== undefined && value !== null && value !== '' && typeof value !== 'object') {
           queryParams.append(key, value.toString());
         }
       });
@@ -281,19 +284,44 @@ export function useOrdersEnterprise(initialFilters?: OrderFilters) {
     return state.orders.filter(order => order.status === status);
   }, [state.orders]);
 
+  // ===================================
+  // FUNCIÓN DE VALIDACIÓN DE DATOS
+  // ===================================
+
+  const validateOrderTotal = useCallback((total: unknown): number => {
+    if (typeof total === 'number' && !isNaN(total) && total >= 0) {
+      return total;
+    }
+    console.warn('[useOrdersEnterprise] Invalid order total detected:', total);
+    return 0;
+  }, []);
+
+  const getOrderTotal = useCallback((order: any): number => {
+    // Manejar tanto 'total' como 'total_amount' para compatibilidad con mocks
+    const total = order.total ?? order.total_amount;
+    return validateOrderTotal(total);
+  }, [validateOrderTotal]);
+
   const getTotalRevenue = useCallback((): number => {
     return state.orders.reduce((total, order) => {
-      return order.status !== 'cancelled' ? total + order.total_amount : total;
+      const orderTotal = getOrderTotal(order);
+      return order.status !== 'cancelled' ? total + orderTotal : total;
     }, 0);
-  }, [state.orders]);
+  }, [state.orders, getOrderTotal]);
 
   const getAverageOrderValue = useCallback((): number => {
-    const validOrders = state.orders.filter(order => order.status !== 'cancelled');
+    const validOrders = state.orders.filter(order => {
+      const total = getOrderTotal(order);
+      return order.status !== 'cancelled' && total > 0;
+    });
+
     if (validOrders.length === 0) return 0;
-    
-    const total = validOrders.reduce((sum, order) => sum + order.total_amount, 0);
-    return total / validOrders.length;
-  }, [state.orders]);
+
+    const total = validOrders.reduce((sum, order) =>
+      sum + getOrderTotal(order), 0
+    );
+    return Math.round((total / validOrders.length) * 100) / 100;
+  }, [state.orders, getOrderTotal]);
 
   // ===================================
   // EFECTOS

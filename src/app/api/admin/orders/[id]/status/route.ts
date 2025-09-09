@@ -8,7 +8,8 @@ import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
+import { checkRateLimit } from '@/lib/auth/rate-limiting';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
 import { metricsCollector } from '@/lib/metrics';
 
 // ===================================
@@ -271,7 +272,7 @@ export async function POST(
 
     // Métricas de performance
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-order-status-change', responseTime, 200);
+    await metricsCollector.recordRequest('admin-order-status-change', 'POST', 200, responseTime);
 
     const response: ApiResponse<{
       order: typeof updatedOrder;
@@ -305,7 +306,7 @@ export async function POST(
 
   } catch (error) {
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-order-status-change', responseTime, 500);
+    await metricsCollector.recordRequest('admin-order-status-change', 'POST', 500, responseTime);
     
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/orders/[id]/status', { error, orderId: params.id });
     

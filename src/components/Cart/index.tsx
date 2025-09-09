@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ConfirmModal } from "@/components/ui/modal";
-import { ShoppingBag, Trash2, ArrowLeft, Sparkles, Palette } from "lucide-react";
+import { ShoppingBag, Trash2, ArrowLeft, Sparkles, Palette } from "@/lib/optimized-imports";
 
 const Cart = () => {
   const cartItems = useAppSelector((state) => state.cartReducer.items);

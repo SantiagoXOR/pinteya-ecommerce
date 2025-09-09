@@ -1,0 +1,863 @@
+{
+  "summary": {
+    "timestamp": "2025-09-09T10:21:25.236Z",
+    "bundleSize": "Error",
+    "dependencies": 67,
+    "unusedDependencies": 38,
+    "heavyComponents": 10,
+    "optimizations": 3
+  },
+  "results": {
+    "bundleSize": {
+      "error": "Command failed: npm run build\n ⚠ Invalid next.config.js options detected: \n ⚠     Unrecognized key(s) in object: 'fastRefresh' at \"experimental\"\n ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config\nFailed to compile.\n\n./src/components/admin/products/ProductForm.tsx\nError:   \u001b[31mx\u001b[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\n     ,-[\u001b[36;1;4mC:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\components\\admin\\products\\ProductForm.tsx\u001b[0m:445:1]\n \u001b[2m442\u001b[0m |               </AdminCard>\n \u001b[2m443\u001b[0m |             </div>\n \u001b[2m444\u001b[0m |           </div>\n \u001b[2m445\u001b[0m |         )})}}\n     : \u001b[35;1m           ^\u001b[0m\n \u001b[2m446\u001b[0m | \n \u001b[2m447\u001b[0m |         {/* Details Tab */}\n \u001b[2m448\u001b[0m |         {activeTab === 'details' && (\n     `----\n  \u001b[31mx\u001b[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?\n     ,-[\u001b[36;1;4mC:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\components\\admin\\products\\ProductForm.tsx\u001b[0m:445:1]\n \u001b[2m442\u001b[0m |               </AdminCard>\n \u001b[2m443\u001b[0m |             </div>\n \u001b[2m444\u001b[0m |           </div>\n \u001b[2m445\u001b[0m |         )})}}\n     : \u001b[35;1m            ^\u001b[0m\n \u001b[2m446\u001b[0m | \n \u001b[2m447\u001b[0m |         {/* Details Tab */}\n \u001b[2m448\u001b[0m |         {activeTab === 'details' && (\n     `----\n\nCaused by:\n    Syntax Error\n\nImport trace for requested module:\n./src/components/admin/products/ProductForm.tsx\n./src/app/admin/products/new/page.tsx\n\n./src/app/api/admin/audit/route.ts\nModule not found: Can't resolve '@/lib/rate-limit'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\n./src/app/api/admin/categories/[id]/route.ts\nModule not found: Can't resolve '@/lib/auth/admin'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\n./src/app/api/admin/categories/bulk/route.ts\nModule not found: Can't resolve '@/lib/auth/admin'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\n./src/app/api/admin/coupons/[id]/route.ts\nModule not found: Can't resolve '@/lib/rate-limit'\n\nhttps://nextjs.org/docs/messages/module-not-found\n\n\n> Build failed because of webpack errors\n"
+    },
+    "dependencies": {
+      "total": 67,
+      "heavy": [
+        {
+          "name": "@reduxjs/toolkit",
+          "version": "^2.6.1",
+          "reason": "State management - evaluar uso real"
+        },
+        {
+          "name": "date-fns",
+          "version": "^4.1.0",
+          "reason": "Date library - considerar tree-shaking"
+        },
+        {
+          "name": "lucide-react",
+          "version": "^0.513.0",
+          "reason": "Icon library - implementar tree-shaking"
+        },
+        {
+          "name": "mercadopago",
+          "version": "^2.7.0",
+          "reason": "Payment SDK - necesario pero optimizable"
+        },
+        {
+          "name": "react-redux",
+          "version": "^9.2.0",
+          "reason": "Redux bindings - evaluar si es necesario"
+        },
+        {
+          "name": "sharp",
+          "version": "^0.34.2",
+          "reason": "Image processing - solo para build"
+        },
+        {
+          "name": "swiper",
+          "version": "^11.1.15",
+          "reason": "Carousel library - evaluar si se usa completamente"
+        }
+      ],
+      "light": [
+        {
+          "name": "@auth/supabase-adapter",
+          "version": "^1.10.0"
+        },
+        {
+          "name": "@clerk/localizations",
+          "version": "^3.16.0"
+        },
+        {
+          "name": "@clerk/themes",
+          "version": "^2.2.45"
+        },
+        {
+          "name": "@hookform/resolvers",
+          "version": "^5.2.1"
+        },
+        {
+          "name": "@radix-ui/react-alert-dialog",
+          "version": "^1.1.14"
+        },
+        {
+          "name": "@radix-ui/react-avatar",
+          "version": "^1.1.10"
+        },
+        {
+          "name": "@radix-ui/react-checkbox",
+          "version": "^1.3.2"
+        },
+        {
+          "name": "@radix-ui/react-dialog",
+          "version": "^1.1.14"
+        },
+        {
+          "name": "@radix-ui/react-dropdown-menu",
+          "version": "^2.1.15"
+        },
+        {
+          "name": "@radix-ui/react-label",
+          "version": "^2.1.7"
+        },
+        {
+          "name": "@radix-ui/react-navigation-menu",
+          "version": "^1.2.14"
+        },
+        {
+          "name": "@radix-ui/react-popover",
+          "version": "^1.1.15"
+        },
+        {
+          "name": "@radix-ui/react-radio-group",
+          "version": "^1.3.7"
+        },
+        {
+          "name": "@radix-ui/react-scroll-area",
+          "version": "^1.2.9"
+        },
+        {
+          "name": "@radix-ui/react-select",
+          "version": "^2.2.5"
+        },
+        {
+          "name": "@radix-ui/react-slider",
+          "version": "^1.3.5"
+        },
+        {
+          "name": "@radix-ui/react-switch",
+          "version": "^1.2.6"
+        },
+        {
+          "name": "@radix-ui/react-toast",
+          "version": "^1.2.15"
+        },
+        {
+          "name": "@radix-ui/react-toggle",
+          "version": "^1.1.9"
+        },
+        {
+          "name": "@radix-ui/react-toggle-group",
+          "version": "^1.1.10"
+        },
+        {
+          "name": "@radix-ui/react-tooltip",
+          "version": "^1.2.8"
+        },
+        {
+          "name": "@supabase/ssr",
+          "version": "^0.6.1"
+        },
+        {
+          "name": "@supabase/supabase-js",
+          "version": "^2.50.0"
+        },
+        {
+          "name": "@tanstack/react-query",
+          "version": "^5.85.9"
+        },
+        {
+          "name": "@tanstack/react-table",
+          "version": "^8.21.3"
+        },
+        {
+          "name": "@types/jsonwebtoken",
+          "version": "^9.0.10"
+        },
+        {
+          "name": "autoprefixer",
+          "version": "^10.4.20"
+        },
+        {
+          "name": "axios",
+          "version": "^1.11.0"
+        },
+        {
+          "name": "class-variance-authority",
+          "version": "^0.7.1"
+        },
+        {
+          "name": "clsx",
+          "version": "^2.1.1"
+        },
+        {
+          "name": "critters",
+          "version": "^0.0.23"
+        },
+        {
+          "name": "dotenv",
+          "version": "^16.6.1"
+        },
+        {
+          "name": "framer-motion",
+          "version": "^12.23.0"
+        },
+        {
+          "name": "ioredis",
+          "version": "^5.6.1"
+        },
+        {
+          "name": "isomorphic-dompurify",
+          "version": "^2.26.0"
+        },
+        {
+          "name": "jsonwebtoken",
+          "version": "^9.0.2"
+        },
+        {
+          "name": "maplibre-gl",
+          "version": "^5.7.0"
+        },
+        {
+          "name": "msw",
+          "version": "^2.11.1"
+        },
+        {
+          "name": "next",
+          "version": "^15.3.3"
+        },
+        {
+          "name": "next-auth",
+          "version": "^5.0.0-beta.29"
+        },
+        {
+          "name": "postcss",
+          "version": "^8.4.49"
+        },
+        {
+          "name": "react",
+          "version": "^18.2.0"
+        },
+        {
+          "name": "react-day-picker",
+          "version": "^9.9.0"
+        },
+        {
+          "name": "react-dom",
+          "version": "^18.2.0"
+        },
+        {
+          "name": "react-hook-form",
+          "version": "^7.61.1"
+        },
+        {
+          "name": "react-hot-toast",
+          "version": "^2.5.2"
+        },
+        {
+          "name": "react-icons",
+          "version": "^5.5.0"
+        },
+        {
+          "name": "react-range-slider-input",
+          "version": "^3.0.7"
+        },
+        {
+          "name": "recharts",
+          "version": "^3.1.2"
+        },
+        {
+          "name": "resend",
+          "version": "^4.7.0"
+        },
+        {
+          "name": "sonner",
+          "version": "^2.0.7"
+        },
+        {
+          "name": "svix",
+          "version": "^1.70.0"
+        },
+        {
+          "name": "tailwind-merge",
+          "version": "^3.3.1"
+        },
+        {
+          "name": "tailwindcss",
+          "version": "^3.4.17"
+        },
+        {
+          "name": "tailwindcss-animate",
+          "version": "^1.0.7"
+        },
+        {
+          "name": "use-debounce",
+          "version": "^10.0.5"
+        },
+        {
+          "name": "usehooks-ts",
+          "version": "^3.1.1"
+        },
+        {
+          "name": "uuid",
+          "version": "^11.0.3"
+        },
+        {
+          "name": "validator",
+          "version": "^13.15.15"
+        },
+        {
+          "name": "zod",
+          "version": "^3.25.76"
+        }
+      ],
+      "categories": {
+        "ui": [
+          {
+            "name": "@radix-ui/react-alert-dialog",
+            "version": "^1.1.14"
+          },
+          {
+            "name": "@radix-ui/react-avatar",
+            "version": "^1.1.10"
+          },
+          {
+            "name": "@radix-ui/react-checkbox",
+            "version": "^1.3.2"
+          },
+          {
+            "name": "@radix-ui/react-dialog",
+            "version": "^1.1.14"
+          },
+          {
+            "name": "@radix-ui/react-dropdown-menu",
+            "version": "^2.1.15"
+          },
+          {
+            "name": "@radix-ui/react-label",
+            "version": "^2.1.7"
+          },
+          {
+            "name": "@radix-ui/react-navigation-menu",
+            "version": "^1.2.14"
+          },
+          {
+            "name": "@radix-ui/react-popover",
+            "version": "^1.1.15"
+          },
+          {
+            "name": "@radix-ui/react-radio-group",
+            "version": "^1.3.7"
+          },
+          {
+            "name": "@radix-ui/react-scroll-area",
+            "version": "^1.2.9"
+          },
+          {
+            "name": "@radix-ui/react-select",
+            "version": "^2.2.5"
+          },
+          {
+            "name": "@radix-ui/react-slider",
+            "version": "^1.3.5"
+          },
+          {
+            "name": "@radix-ui/react-switch",
+            "version": "^1.2.6"
+          },
+          {
+            "name": "@radix-ui/react-toast",
+            "version": "^1.2.15"
+          },
+          {
+            "name": "@radix-ui/react-toggle",
+            "version": "^1.1.9"
+          },
+          {
+            "name": "@radix-ui/react-toggle-group",
+            "version": "^1.1.10"
+          },
+          {
+            "name": "@radix-ui/react-tooltip",
+            "version": "^1.2.8"
+          },
+          {
+            "name": "lucide-react",
+            "version": "^0.513.0"
+          },
+          {
+            "name": "uuid",
+            "version": "^11.0.3"
+          }
+        ],
+        "state": [
+          {
+            "name": "@reduxjs/toolkit",
+            "version": "^2.6.1"
+          },
+          {
+            "name": "react-redux",
+            "version": "^9.2.0"
+          }
+        ],
+        "auth": [
+          {
+            "name": "@auth/supabase-adapter",
+            "version": "^1.10.0"
+          },
+          {
+            "name": "@clerk/localizations",
+            "version": "^3.16.0"
+          },
+          {
+            "name": "@clerk/themes",
+            "version": "^2.2.45"
+          },
+          {
+            "name": "class-variance-authority",
+            "version": "^0.7.1"
+          },
+          {
+            "name": "next-auth",
+            "version": "^5.0.0-beta.29"
+          }
+        ],
+        "database": [
+          {
+            "name": "@supabase/ssr",
+            "version": "^0.6.1"
+          },
+          {
+            "name": "@supabase/supabase-js",
+            "version": "^2.50.0"
+          }
+        ],
+        "payment": [
+          {
+            "name": "mercadopago",
+            "version": "^2.7.0"
+          }
+        ],
+        "testing": [],
+        "build": [
+          {
+            "name": "next",
+            "version": "^15.3.3"
+          }
+        ],
+        "other": [
+          {
+            "name": "@hookform/resolvers",
+            "version": "^5.2.1"
+          },
+          {
+            "name": "@tanstack/react-query",
+            "version": "^5.85.9"
+          },
+          {
+            "name": "@tanstack/react-table",
+            "version": "^8.21.3"
+          },
+          {
+            "name": "@types/jsonwebtoken",
+            "version": "^9.0.10"
+          },
+          {
+            "name": "autoprefixer",
+            "version": "^10.4.20"
+          },
+          {
+            "name": "axios",
+            "version": "^1.11.0"
+          },
+          {
+            "name": "clsx",
+            "version": "^2.1.1"
+          },
+          {
+            "name": "critters",
+            "version": "^0.0.23"
+          },
+          {
+            "name": "date-fns",
+            "version": "^4.1.0"
+          },
+          {
+            "name": "dotenv",
+            "version": "^16.6.1"
+          },
+          {
+            "name": "framer-motion",
+            "version": "^12.23.0"
+          },
+          {
+            "name": "ioredis",
+            "version": "^5.6.1"
+          },
+          {
+            "name": "isomorphic-dompurify",
+            "version": "^2.26.0"
+          },
+          {
+            "name": "jsonwebtoken",
+            "version": "^9.0.2"
+          },
+          {
+            "name": "maplibre-gl",
+            "version": "^5.7.0"
+          },
+          {
+            "name": "msw",
+            "version": "^2.11.1"
+          },
+          {
+            "name": "postcss",
+            "version": "^8.4.49"
+          },
+          {
+            "name": "react",
+            "version": "^18.2.0"
+          },
+          {
+            "name": "react-day-picker",
+            "version": "^9.9.0"
+          },
+          {
+            "name": "react-dom",
+            "version": "^18.2.0"
+          },
+          {
+            "name": "react-hook-form",
+            "version": "^7.61.1"
+          },
+          {
+            "name": "react-hot-toast",
+            "version": "^2.5.2"
+          },
+          {
+            "name": "react-icons",
+            "version": "^5.5.0"
+          },
+          {
+            "name": "react-range-slider-input",
+            "version": "^3.0.7"
+          },
+          {
+            "name": "recharts",
+            "version": "^3.1.2"
+          },
+          {
+            "name": "resend",
+            "version": "^4.7.0"
+          },
+          {
+            "name": "sharp",
+            "version": "^0.34.2"
+          },
+          {
+            "name": "sonner",
+            "version": "^2.0.7"
+          },
+          {
+            "name": "svix",
+            "version": "^1.70.0"
+          },
+          {
+            "name": "swiper",
+            "version": "^11.1.15"
+          },
+          {
+            "name": "tailwind-merge",
+            "version": "^3.3.1"
+          },
+          {
+            "name": "tailwindcss",
+            "version": "^3.4.17"
+          },
+          {
+            "name": "tailwindcss-animate",
+            "version": "^1.0.7"
+          },
+          {
+            "name": "use-debounce",
+            "version": "^10.0.5"
+          },
+          {
+            "name": "usehooks-ts",
+            "version": "^3.1.1"
+          },
+          {
+            "name": "validator",
+            "version": "^13.15.15"
+          },
+          {
+            "name": "zod",
+            "version": "^3.25.76"
+          }
+        ]
+      }
+    },
+    "unusedDependencies": {
+      "unused": [
+        "@auth/supabase-adapter",
+        "@clerk/localizations",
+        "@clerk/themes",
+        "axios",
+        "critters",
+        "dotenv",
+        "jsonwebtoken",
+        "maplibre-gl",
+        "msw",
+        "recharts",
+        "resend",
+        "sharp",
+        "usehooks-ts",
+        "@axe-core/playwright",
+        "@chromatic-com/storybook",
+        "@commitlint/cli",
+        "@commitlint/config-conventional",
+        "@storybook/addon-a11y",
+        "@storybook/addon-docs",
+        "@storybook/addon-onboarding",
+        "@storybook/addon-vitest",
+        "@storybook/test-runner",
+        "@testing-library/jest-dom",
+        "axe-core",
+        "babel-plugin-import",
+        "chromatic",
+        "chrome-launcher",
+        "cross-env",
+        "glob",
+        "husky",
+        "jest",
+        "jest-environment-jsdom",
+        "jest-html-reporters",
+        "jest-junit",
+        "lighthouse",
+        "prettier",
+        "ts-jest",
+        "ts-node"
+      ],
+      "used": [
+        "@hookform/resolvers",
+        "@radix-ui/react-alert-dialog",
+        "@radix-ui/react-avatar",
+        "@radix-ui/react-checkbox",
+        "@radix-ui/react-dialog",
+        "@radix-ui/react-dropdown-menu",
+        "@radix-ui/react-label",
+        "@radix-ui/react-navigation-menu",
+        "@radix-ui/react-popover",
+        "@radix-ui/react-radio-group",
+        "@radix-ui/react-scroll-area",
+        "@radix-ui/react-select",
+        "@radix-ui/react-slider",
+        "@radix-ui/react-switch",
+        "@radix-ui/react-toast",
+        "@radix-ui/react-toggle",
+        "@radix-ui/react-toggle-group",
+        "@radix-ui/react-tooltip",
+        "@reduxjs/toolkit",
+        "@supabase/ssr",
+        "@supabase/supabase-js",
+        "@tanstack/react-query",
+        "@tanstack/react-table",
+        "@types/jsonwebtoken",
+        "autoprefixer",
+        "class-variance-authority",
+        "clsx",
+        "date-fns",
+        "framer-motion",
+        "ioredis",
+        "isomorphic-dompurify",
+        "lucide-react",
+        "mercadopago",
+        "next",
+        "next-auth",
+        "postcss",
+        "react",
+        "react-day-picker",
+        "react-dom",
+        "react-hook-form",
+        "react-hot-toast",
+        "react-icons",
+        "react-range-slider-input",
+        "react-redux",
+        "sonner",
+        "svix",
+        "swiper",
+        "tailwind-merge",
+        "tailwindcss",
+        "tailwindcss-animate",
+        "use-debounce",
+        "uuid",
+        "validator",
+        "zod",
+        "@axe-core/react",
+        "@next/bundle-analyzer",
+        "@playwright/test",
+        "@storybook/nextjs-vite",
+        "@tanstack/react-query-devtools",
+        "@testing-library/react",
+        "@testing-library/user-event",
+        "@types/jest",
+        "@types/node",
+        "@types/react",
+        "@types/react-dom",
+        "@types/uuid",
+        "@types/validator",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "eslint",
+        "eslint-config-next",
+        "eslint-plugin-storybook",
+        "jest-axe",
+        "playwright",
+        "storybook",
+        "typescript"
+      ],
+      "total": 114
+    },
+    "heavyComponents": [
+      {
+        "name": "ShopDetails",
+        "file": "src\\components\\ShopDetails\\index.tsx",
+        "size": 72426,
+        "sizeKB": "70.73",
+        "lines": 1377,
+        "imports": 19,
+        "exports": 1,
+        "complexity": 24,
+        "suggestions": [
+          "Considerar usar useReducer para estado complejo",
+          "Considerar lazy loading de imports pesados",
+          "Implementar lazy loading para modales"
+        ]
+      },
+      {
+        "name": "layout",
+        "file": "src\\components\\layout\\Footer.tsx",
+        "size": 40279,
+        "sizeKB": "39.33",
+        "lines": 656,
+        "imports": 3,
+        "exports": 1,
+        "complexity": 0,
+        "suggestions": []
+      },
+      {
+        "name": "products",
+        "file": "src\\components\\admin\\products\\ProductForm.tsx",
+        "size": 35176,
+        "sizeKB": "34.35",
+        "lines": 879,
+        "imports": 14,
+        "exports": 1,
+        "complexity": 50,
+        "suggestions": [
+          "Optimizar operaciones de array con useMemo",
+          "Considerar lazy loading de imports pesados"
+        ]
+      },
+      {
+        "name": "ShopWithSidebar",
+        "file": "src\\components\\ShopWithSidebar\\index.tsx",
+        "size": 29898,
+        "sizeKB": "29.20",
+        "lines": 516,
+        "imports": 14,
+        "exports": 1,
+        "complexity": 9,
+        "suggestions": [
+          "Considerar usar useReducer para estado complejo"
+        ]
+      },
+      {
+        "name": "Dashboard",
+        "file": "src\\components\\Dashboard\\EnterpriseMonitoringDashboard.tsx",
+        "size": 29341,
+        "sizeKB": "28.65",
+        "lines": 799,
+        "imports": 6,
+        "exports": 5,
+        "complexity": 14,
+        "suggestions": [
+          "Considerar usar useReducer para estado complejo"
+        ]
+      },
+      {
+        "name": "products",
+        "file": "src\\components\\admin\\products\\ProductImageManager.tsx",
+        "size": 27797,
+        "sizeKB": "27.15",
+        "lines": 705,
+        "imports": 5,
+        "exports": 1,
+        "complexity": 73,
+        "suggestions": [
+          "Optimizar operaciones de array con useMemo"
+        ]
+      },
+      {
+        "name": "Checkout",
+        "file": "src\\components\\Checkout\\index.tsx",
+        "size": 25732,
+        "sizeKB": "25.13",
+        "lines": 641,
+        "imports": 19,
+        "exports": 1,
+        "complexity": 16,
+        "suggestions": [
+          "Considerar usar useReducer para estado complejo",
+          "Considerar lazy loading de imports pesados",
+          "Implementar lazy loading para modales"
+        ]
+      },
+      {
+        "name": "products",
+        "file": "src\\components\\admin\\products\\ProductActions.tsx",
+        "size": 25695,
+        "sizeKB": "25.09",
+        "lines": 685,
+        "imports": 7,
+        "exports": 5,
+        "complexity": 58,
+        "suggestions": [
+          "Implementar lazy loading para modales"
+        ]
+      },
+      {
+        "name": "Checkout",
+        "file": "src\\components\\Checkout\\SimplifiedCheckout.tsx",
+        "size": 24937,
+        "sizeKB": "24.35",
+        "lines": 646,
+        "imports": 12,
+        "exports": 1,
+        "complexity": 42,
+        "suggestions": [
+          "Considerar usar useReducer para estado complejo"
+        ]
+      },
+      {
+        "name": "Common",
+        "file": "src\\components\\Common\\QuickViewModal.tsx",
+        "size": 24935,
+        "sizeKB": "24.35",
+        "lines": 450,
+        "imports": 9,
+        "exports": 1,
+        "complexity": 10,
+        "suggestions": [
+          "Considerar usar useReducer para estado complejo",
+          "Implementar lazy loading para modales"
+        ]
+      }
+    ],
+    "optimizations": [
+      {
+        "priority": "medium",
+        "category": "Dependencies",
+        "issue": "7 dependencias pesadas detectadas",
+        "solution": "Evaluar alternativas más ligeras o tree-shaking",
+        "impact": "Medio - reducción de bundle size"
+      },
+      {
+        "priority": "low",
+        "category": "Cleanup",
+        "issue": "38 dependencias posiblemente no utilizadas",
+        "solution": "Remover dependencias no utilizadas",
+        "impact": "Bajo - limpieza de código"
+      },
+      {
+        "priority": "medium",
+        "category": "Components",
+        "issue": "10 componentes grandes detectados",
+        "solution": "Refactorizar componentes grandes y implementar lazy loading",
+        "impact": "Medio - mejora en tiempo de renderizado"
+      }
+    ],
+    "timestamp": "2025-09-09T10:21:25.236Z"
+  }
+}

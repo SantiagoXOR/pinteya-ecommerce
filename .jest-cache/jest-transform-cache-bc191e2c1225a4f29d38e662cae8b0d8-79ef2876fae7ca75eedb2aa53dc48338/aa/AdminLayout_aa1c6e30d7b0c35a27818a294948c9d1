@@ -1,0 +1,51 @@
+f2a1167fec28a21576c161c5aef6ad81
+'use client';
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "AdminLayout", {
+    enumerable: true,
+    get: function() {
+        return AdminLayout;
+    }
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _react = require("react");
+const _AdminSidebar = require("./AdminSidebar");
+const _AdminHeader = require("./AdminHeader");
+const _utils = require("../../../lib/utils");
+function AdminLayout({ children, title, breadcrumbs, actions, className }) {
+    const [sidebarOpen, setSidebarOpen] = (0, _react.useState)(true);
+    return /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+        className: "flex h-screen bg-gray-50",
+        children: [
+            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                className: (0, _utils.cn)("fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full"),
+                children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_AdminSidebar.AdminSidebar, {})
+            }),
+            sidebarOpen && /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                className: "fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden",
+                onClick: ()=>setSidebarOpen(false)
+            }),
+            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                className: "flex-1 flex flex-col min-w-0",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)(_AdminHeader.AdminHeader, {
+                        title: title,
+                        breadcrumbs: breadcrumbs,
+                        actions: actions,
+                        onMenuToggle: ()=>setSidebarOpen(!sidebarOpen),
+                        isSidebarOpen: sidebarOpen
+                    }),
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)("main", {
+                        className: (0, _utils.cn)("flex-1 overflow-auto p-4 lg:p-6", className),
+                        children: children
+                    })
+                ]
+            })
+        ]
+    });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcY29tcG9uZW50c1xcYWRtaW5cXGxheW91dFxcQWRtaW5MYXlvdXQudHN4Il0sInNvdXJjZXNDb250ZW50IjpbIid1c2UgY2xpZW50JztcblxuaW1wb3J0IHsgdXNlU3RhdGUgfSBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBBZG1pblNpZGViYXIgfSBmcm9tICcuL0FkbWluU2lkZWJhcic7XG5pbXBvcnQgeyBBZG1pbkhlYWRlciB9IGZyb20gJy4vQWRtaW5IZWFkZXInO1xuaW1wb3J0IHsgY24gfSBmcm9tICdAL2xpYi91dGlscyc7XG5cbmludGVyZmFjZSBCcmVhZGNydW1iSXRlbSB7XG4gIGxhYmVsOiBzdHJpbmc7XG4gIGhyZWY/OiBzdHJpbmc7XG59XG5cbmludGVyZmFjZSBBZG1pbkxheW91dFByb3BzIHtcbiAgY2hpbGRyZW46IFJlYWN0LlJlYWN0Tm9kZTtcbiAgdGl0bGU/OiBzdHJpbmc7XG4gIGJyZWFkY3J1bWJzPzogQnJlYWRjcnVtYkl0ZW1bXTtcbiAgYWN0aW9ucz86IFJlYWN0LlJlYWN0Tm9kZTtcbiAgY2xhc3NOYW1lPzogc3RyaW5nO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gQWRtaW5MYXlvdXQoeyBcbiAgY2hpbGRyZW4sIFxuICB0aXRsZSwgXG4gIGJyZWFkY3J1bWJzLCBcbiAgYWN0aW9ucyxcbiAgY2xhc3NOYW1lIFxufTogQWRtaW5MYXlvdXRQcm9wcykge1xuICBjb25zdCBbc2lkZWJhck9wZW4sIHNldFNpZGViYXJPcGVuXSA9IHVzZVN0YXRlKHRydWUpO1xuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGgtc2NyZWVuIGJnLWdyYXktNTBcIj5cbiAgICAgIHsvKiBTaWRlYmFyICovfVxuICAgICAgPGRpdiBjbGFzc05hbWU9e2NuKFxuICAgICAgICBcImZpeGVkIGluc2V0LXktMCBsZWZ0LTAgei01MCB0cmFuc2l0aW9uLXRyYW5zZm9ybSBkdXJhdGlvbi0zMDAgZWFzZS1pbi1vdXQgbGc6cmVsYXRpdmUgbGc6dHJhbnNsYXRlLXgtMFwiLFxuICAgICAgICBzaWRlYmFyT3BlbiA/IFwidHJhbnNsYXRlLXgtMFwiIDogXCItdHJhbnNsYXRlLXgtZnVsbFwiXG4gICAgICApfT5cbiAgICAgICAgPEFkbWluU2lkZWJhciAvPlxuICAgICAgPC9kaXY+XG5cbiAgICAgIHsvKiBNb2JpbGUgU2lkZWJhciBPdmVybGF5ICovfVxuICAgICAge3NpZGViYXJPcGVuICYmIChcbiAgICAgICAgPGRpdiBcbiAgICAgICAgICBjbGFzc05hbWU9XCJmaXhlZCBpbnNldC0wIGJnLWJsYWNrIGJnLW9wYWNpdHktNTAgei00MCBsZzpoaWRkZW5cIlxuICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHNldFNpZGViYXJPcGVuKGZhbHNlKX1cbiAgICAgICAgLz5cbiAgICAgICl9XG5cbiAgICAgIHsvKiBNYWluIENvbnRlbnQgKi99XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXgtMSBmbGV4IGZsZXgtY29sIG1pbi13LTBcIj5cbiAgICAgICAgey8qIEhlYWRlciAqL31cbiAgICAgICAgPEFkbWluSGVhZGVyXG4gICAgICAgICAgdGl0bGU9e3RpdGxlfVxuICAgICAgICAgIGJyZWFkY3J1bWJzPXticmVhZGNydW1ic31cbiAgICAgICAgICBhY3Rpb25zPXthY3Rpb25zfVxuICAgICAgICAgIG9uTWVudVRvZ2dsZT17KCkgPT4gc2V0U2lkZWJhck9wZW4oIXNpZGViYXJPcGVuKX1cbiAgICAgICAgICBpc1NpZGViYXJPcGVuPXtzaWRlYmFyT3Blbn1cbiAgICAgICAgLz5cblxuICAgICAgICB7LyogUGFnZSBDb250ZW50ICovfVxuICAgICAgICA8bWFpbiBjbGFzc05hbWU9e2NuKFxuICAgICAgICAgIFwiZmxleC0xIG92ZXJmbG93LWF1dG8gcC00IGxnOnAtNlwiLFxuICAgICAgICAgIGNsYXNzTmFtZVxuICAgICAgICApfT5cbiAgICAgICAgICB7Y2hpbGRyZW59XG4gICAgICAgIDwvbWFpbj5cbiAgICAgIDwvZGl2PlxuICAgIDwvZGl2PlxuICApO1xufVxuIl0sIm5hbWVzIjpbIkFkbWluTGF5b3V0IiwiY2hpbGRyZW4iLCJ0aXRsZSIsImJyZWFkY3J1bWJzIiwiYWN0aW9ucyIsImNsYXNzTmFtZSIsInNpZGViYXJPcGVuIiwic2V0U2lkZWJhck9wZW4iLCJ1c2VTdGF0ZSIsImRpdiIsImNuIiwiQWRtaW5TaWRlYmFyIiwib25DbGljayIsIkFkbWluSGVhZGVyIiwib25NZW51VG9nZ2xlIiwiaXNTaWRlYmFyT3BlbiIsIm1haW4iXSwibWFwcGluZ3MiOiJBQUFBOzs7OzsrQkFvQmdCQTs7O2VBQUFBOzs7O3VCQWxCUzs4QkFDSTs2QkFDRDt1QkFDVDtBQWVaLFNBQVNBLFlBQVksRUFDMUJDLFFBQVEsRUFDUkMsS0FBSyxFQUNMQyxXQUFXLEVBQ1hDLE9BQU8sRUFDUEMsU0FBUyxFQUNRO0lBQ2pCLE1BQU0sQ0FBQ0MsYUFBYUMsZUFBZSxHQUFHQyxJQUFBQSxlQUFRLEVBQUM7SUFFL0MscUJBQ0Usc0JBQUNDO1FBQUlKLFdBQVU7OzBCQUViLHFCQUFDSTtnQkFBSUosV0FBV0ssSUFBQUEsU0FBRSxFQUNoQiwwR0FDQUosY0FBYyxrQkFBa0I7MEJBRWhDLGNBQUEscUJBQUNLLDBCQUFZOztZQUlkTCw2QkFDQyxxQkFBQ0c7Z0JBQ0NKLFdBQVU7Z0JBQ1ZPLFNBQVMsSUFBTUwsZUFBZTs7MEJBS2xDLHNCQUFDRTtnQkFBSUosV0FBVTs7a0NBRWIscUJBQUNRLHdCQUFXO3dCQUNWWCxPQUFPQTt3QkFDUEMsYUFBYUE7d0JBQ2JDLFNBQVNBO3dCQUNUVSxjQUFjLElBQU1QLGVBQWUsQ0FBQ0Q7d0JBQ3BDUyxlQUFlVDs7a0NBSWpCLHFCQUFDVTt3QkFBS1gsV0FBV0ssSUFBQUEsU0FBRSxFQUNqQixtQ0FDQUw7a0NBRUNKOzs7Ozs7QUFLWCJ9

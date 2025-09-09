@@ -2,6 +2,32 @@
 // PINTEYA E-COMMERCE - SETUP DE JEST
 // ===================================
 
+// Polyfills para MSW
+import { TextEncoder, TextDecoder } from 'util';
+import { ReadableStream, WritableStream, TransformStream } from 'stream/web';
+
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+global.ReadableStream = ReadableStream;
+global.WritableStream = WritableStream;
+global.TransformStream = TransformStream;
+
+// Mock fetch si no está disponible
+if (!global.fetch) {
+  global.fetch = jest.fn();
+}
+
+// Mock BroadcastChannel para MSW
+global.BroadcastChannel = class BroadcastChannel {
+  constructor(name) {
+    this.name = name;
+  }
+  postMessage() {}
+  close() {}
+  addEventListener() {}
+  removeEventListener() {}
+};
+
 import '@testing-library/jest-dom'
 
 // Mock TanStack Query para tests - Versión completa con QueryCache
@@ -372,6 +398,34 @@ jest.mock('next-auth/providers/google', () => ({
     name: 'Google',
     type: 'oauth',
   })),
+}))
+
+// Mock NextAuth.js React hooks
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(() => ({
+    data: {
+      user: {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        name: 'Test User',
+        image: 'https://example.com/avatar.jpg',
+      },
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    },
+    status: 'authenticated',
+  })),
+  signIn: jest.fn(() => Promise.resolve({ ok: true, error: null })),
+  signOut: jest.fn(() => Promise.resolve({ url: '/api/auth/signin' })),
+  getProviders: jest.fn(() => Promise.resolve({
+    google: {
+      id: 'google',
+      name: 'Google',
+      type: 'oauth',
+      signinUrl: '/api/auth/signin/google',
+      callbackUrl: '/api/auth/callback/google',
+    },
+  })),
+  SessionProvider: ({ children }) => children,
 }))
 
 // Mock NextAuth.js auth function

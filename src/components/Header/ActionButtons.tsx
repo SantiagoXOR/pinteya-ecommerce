@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { User, ShoppingCart, LogIn } from "lucide-react";
+import { User, ShoppingCart, LogIn, Package } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -111,6 +112,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 <User className="mr-2 h-4 w-4" />
                 Mi Perfil
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/orders">
+                  <Package className="mr-2 h-4 w-4" />
+                  Mis Órdenes
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 Cerrar Sesión
@@ -191,6 +198,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               Mi Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/orders">
+                <Package className="mr-2 h-4 w-4" />
+                Mis Órdenes
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

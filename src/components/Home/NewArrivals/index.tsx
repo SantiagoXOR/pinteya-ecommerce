@@ -8,7 +8,7 @@ import { adaptApiProductsToComponents } from "@/lib/adapters/product-adapter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Sparkles, ArrowRight, Loader2 } from "@/lib/optimized-imports";
 
 interface NewArrivalProps {
   selectedCategories?: string[];

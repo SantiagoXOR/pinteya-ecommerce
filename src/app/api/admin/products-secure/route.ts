@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     // Verificar autenticación y permisos
     const authResult = await checkPermission(request, 'products', 'read');
 
-    if (!authResult.success) {
+    if (!authResult.allowed) {
       console.warn('❌ Authentication failed:', authResult.error);
       return NextResponse.json(
         { 
@@ -204,7 +204,7 @@ export async function POST(request: NextRequest) {
     // Verificar autenticación y permisos
     const authResult = await checkPermission(request, 'products', 'create');
 
-    if (!authResult.success) {
+    if (!authResult.allowed) {
       return NextResponse.json(
         { 
           error: authResult.error,

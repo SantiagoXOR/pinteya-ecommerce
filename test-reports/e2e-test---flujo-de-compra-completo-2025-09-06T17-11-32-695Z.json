@@ -1,0 +1,184 @@
+{
+  "id": "bffc59eb-158e-4247-ad0c-8ddafe221186",
+  "name": "E2E Test - Flujo de Compra Completo",
+  "description": "Test automatizado que verifica el flujo completo de compra en el e-commerce",
+  "startTime": "2025-09-06T17:08:59.644Z",
+  "status": "completed",
+  "steps": [
+    {
+      "id": "53961363-df53-4795-851f-1ef2fbddaead",
+      "description": "Configurar entorno de test",
+      "action": "async () => {\n            // Inicializar navegador\n            await this.screenshotManager.initialize({\n                headless: false, // Cambiar a true para ejecución sin interfaz\n                ...",
+      "timestamp": "2025-09-06T17:08:59.647Z",
+      "duration": 725,
+      "success": true,
+      "details": {
+        "result": {
+          "initialized": true
+        },
+        "actualDuration": 725
+      },
+      "category": "setup",
+      "severity": "critical"
+    },
+    {
+      "id": "aa4c78c9-bd44-4733-b886-a061d6296e63",
+      "description": "Navegar a la página principal",
+      "action": "async () => {\n            await this.screenshotManager.navigateTo(this.baseUrl);\n            const pageInfo = await this.screenshotManager.getPageInfo();\n            // Validar que la página se cargó ...",
+      "timestamp": "2025-09-06T17:09:00.373Z",
+      "duration": 14702,
+      "success": true,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T17-09-00-374Z-step-0-before.png",
+      "details": {
+        "result": {
+          "url": "http://localhost:3000/",
+          "title": "Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón | Pinteya E-commerce",
+          "viewport": {
+            "width": 1920,
+            "height": 1080
+          },
+          "userAgent": "AutomatedTestFramework/1.0.0"
+        },
+        "actualDuration": 14702
+      },
+      "category": "action",
+      "severity": "high"
+    },
+    {
+      "id": "7a159bc8-27d2-403c-86c8-cc46be444491",
+      "description": "Buscar productos en la tienda",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Navegar a la sección de producto...",
+      "timestamp": "2025-09-06T17:09:15.075Z",
+      "duration": 45331,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T17-09-15-076Z-step-1-before.png",
+      "details": {
+        "result": {
+          "error": "No se pudieron encontrar productos con ningún selector"
+        },
+        "actualDuration": 45331
+      },
+      "category": "action",
+      "severity": "high"
+    },
+    {
+      "id": "683bebab-f8ec-46e4-8359-e5da1b7d8358",
+      "description": "Seleccionar primer producto disponible",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Buscar el primer producto dispon...",
+      "timestamp": "2025-09-06T17:10:00.406Z",
+      "duration": 25031,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T17-10-00-407Z-step-2-before.png",
+      "details": {
+        "result": {
+          "error": "No se pudo seleccionar ningún producto"
+        },
+        "actualDuration": 25031
+      },
+      "category": "action",
+      "severity": "high"
+    },
+    {
+      "id": "41c0279b-5f6e-48cd-ad0c-9a14fa979466",
+      "description": "Agregar producto al carrito",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Validar estructura antes de agre...",
+      "timestamp": "2025-09-06T17:10:25.437Z",
+      "duration": 8419,
+      "success": true,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T17-10-25-438Z-step-3-before.png",
+      "details": {
+        "result": {
+          "addedToCart": true,
+          "timestamp": "2025-09-06T17:10:33.855Z"
+        },
+        "actualDuration": 8419
+      },
+      "category": "action",
+      "severity": "critical"
+    },
+    {
+      "id": "6c5f5e1c-c22d-4b69-9541-8570ad637eb6",
+      "description": "Verificar contenido del carrito",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Navegar al carrito\n            a...",
+      "timestamp": "2025-09-06T17:10:33.856Z",
+      "duration": 25588,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T17-10-33-857Z-step-4-before.png",
+      "details": {
+        "result": {
+          "error": "page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"clear-cart-btn\"]') to be visible\u001b[22m\n"
+        },
+        "actualDuration": 25588
+      },
+      "category": "verification",
+      "severity": "high"
+    },
+    {
+      "id": "f280a55a-3309-4bc8-a287-763673b08d71",
+      "description": "Simular proceso de checkout",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Buscar botón de checkout\n       ...",
+      "timestamp": "2025-09-06T17:10:59.445Z",
+      "duration": 31665,
+      "success": true,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T17-10-59-449Z-step-5-before.png",
+      "details": {
+        "result": {
+          "checkoutInitiated": false,
+          "simulatedCheckout": true,
+          "timestamp": "2025-09-06T17:11:31.109Z"
+        },
+        "actualDuration": 31665
+      },
+      "category": "action",
+      "severity": "medium"
+    },
+    {
+      "id": "da39fb04-a015-49d8-9abe-64990e632465",
+      "description": "Verificación final del test",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Capturar screenshot final\n      ...",
+      "timestamp": "2025-09-06T17:11:31.110Z",
+      "duration": 1583,
+      "success": true,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T17-11-31-111Z-step-6-before.png",
+      "details": {
+        "result": {
+          "testCompleted": true,
+          "finalUrl": "http://localhost:3000/",
+          "finalTitle": "Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón | Pinteya E-commerce",
+          "completionTime": "2025-09-06T17:11:32.693Z"
+        },
+        "actualDuration": 1583
+      },
+      "category": "verification",
+      "severity": "medium"
+    }
+  ],
+  "summary": {
+    "totalSteps": 8,
+    "successfulSteps": 5,
+    "failedSteps": 3,
+    "criticalErrors": 0,
+    "warnings": 3
+  },
+  "environment": {
+    "userAgent": "Node.js Environment",
+    "browser": "Chromium",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "url": "http://localhost:3000"
+  },
+  "metadata": {
+    "testVersion": "1.0.0",
+    "framework": "AutomatedTestFramework",
+    "executedBy": "System",
+    "tags": [
+      "e2e",
+      "purchase-flow",
+      "critical"
+    ]
+  },
+  "endTime": "2025-09-06T17:11:32.694Z",
+  "duration": 153050
+}

@@ -61,7 +61,7 @@ interface Product {
 
 // Función helper para calcular precio final
 function getFinalPrice(product: { price: number; discounted_price?: number | null }): number {
-  return product.discounted_price || product.price;
+  return product.discounted_price ?? product.price;
 }
 
 // Función helper para crear usuario temporal
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
       const clerkUser = await currentUser();
       if (clerkUser) {
         userId = clerkUser.id;
-        userEmail = clerkUser.emailAddresses[0]?.emailAddress || null;
+        userEmail = clerkUser.emailAddresses?.[0]?.emailAddress || null;
 
         // Verificar si el usuario existe en nuestra base de datos
         const { data: existingUser, error: userError } = await supabaseAdmin
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Si no hay usuario autenticado, usar usuario temporal
-    if (!session?.user) {
+    if (!userId) {
       userId = '00000000-0000-4000-8000-000000000000';
       userEmail = orderData.payer.email;
 
@@ -338,6 +338,14 @@ export async function POST(request: NextRequest) {
         total: totalAmount,
         shipping_address: orderData.shipping?.address ? JSON.stringify(orderData.shipping.address) : null,
         external_reference: orderData.external_reference || `order_${Date.now()}`,
+        // ✅ NUEVO: Guardar información del payer
+        payer_info: {
+          name: orderData.payer.name,
+          surname: orderData.payer.surname,
+          email: orderData.payer.email,
+          phone: orderData.payer.phone,
+          identification: orderData.payer.identification,
+        },
       })
       .select()
       .single();

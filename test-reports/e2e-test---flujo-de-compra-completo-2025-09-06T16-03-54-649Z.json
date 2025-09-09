@@ -1,0 +1,172 @@
+{
+  "id": "231aa782-b7a0-425e-b88b-1abd8cf3f4b4",
+  "name": "E2E Test - Flujo de Compra Completo",
+  "description": "Test automatizado que verifica el flujo completo de compra en el e-commerce",
+  "startTime": "2025-09-06T16:02:42.105Z",
+  "status": "completed",
+  "steps": [
+    {
+      "id": "3d9b49d5-59e2-4105-a971-be353a884812",
+      "description": "Configurar entorno de test",
+      "action": "async () => {\n            // Inicializar navegador\n            await this.screenshotManager.initialize({\n                headless: false, // Cambiar a true para ejecución sin interfaz\n                ...",
+      "timestamp": "2025-09-06T16:02:42.107Z",
+      "duration": 697,
+      "success": true,
+      "details": {
+        "result": {
+          "initialized": true
+        },
+        "actualDuration": 697
+      },
+      "category": "setup",
+      "severity": "critical"
+    },
+    {
+      "id": "f48dba2b-b291-47e3-be6b-0cd8193a0925",
+      "description": "Navegar a la página principal",
+      "action": "async () => {\n            await this.screenshotManager.navigateTo(this.baseUrl);\n            const pageInfo = await this.screenshotManager.getPageInfo();\n            // Capturar screenshot de la págin...",
+      "timestamp": "2025-09-06T16:02:42.805Z",
+      "duration": 9621,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T16-02-42-805Z-step-0-before.png",
+      "details": {
+        "result": {
+          "error": "page.screenshot: options.quality is unsupported for the png screenshots"
+        },
+        "actualDuration": 9621
+      },
+      "category": "action",
+      "severity": "high"
+    },
+    {
+      "id": "a09c7865-2078-4296-aeca-33c760026923",
+      "description": "Buscar productos en la tienda",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Navegar a la sección de producto...",
+      "timestamp": "2025-09-06T16:02:52.426Z",
+      "duration": 15351,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T16-02-52-427Z-step-1-before.png",
+      "details": {
+        "result": {
+          "error": "page.screenshot: options.quality is unsupported for the png screenshots"
+        },
+        "actualDuration": 15351
+      },
+      "category": "action",
+      "severity": "high"
+    },
+    {
+      "id": "ad4c01fe-e663-4cfc-9318-9af4beb3ba51",
+      "description": "Seleccionar primer producto disponible",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Buscar el primer producto dispon...",
+      "timestamp": "2025-09-06T16:03:07.777Z",
+      "duration": 10014,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T16-03-07-777Z-step-2-before.png",
+      "details": {
+        "result": {
+          "error": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-card\"], .product-card, .product-item').first() to be visible\u001b[22m\n"
+        },
+        "actualDuration": 10014
+      },
+      "category": "action",
+      "severity": "high"
+    },
+    {
+      "id": "14968583-7c61-46e9-bed7-c8b6f555e199",
+      "description": "Agregar producto al carrito",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Buscar botón de agregar al carri...",
+      "timestamp": "2025-09-06T16:03:17.791Z",
+      "duration": 20,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T16-03-17-792Z-step-3-before.png",
+      "details": {
+        "result": {
+          "error": "page.screenshot: options.quality is unsupported for the png screenshots"
+        },
+        "actualDuration": 20
+      },
+      "category": "action",
+      "severity": "critical"
+    },
+    {
+      "id": "57086f2c-4308-43ff-a834-46c3c78eb7b5",
+      "description": "Verificar contenido del carrito",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Navegar al carrito\n            a...",
+      "timestamp": "2025-09-06T16:03:17.811Z",
+      "duration": 6767,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T16-03-17-811Z-step-4-before.png",
+      "details": {
+        "result": {
+          "error": "page.screenshot: options.quality is unsupported for the png screenshots"
+        },
+        "actualDuration": 6767
+      },
+      "category": "verification",
+      "severity": "high"
+    },
+    {
+      "id": "41018b16-33d1-4342-a1d1-07eca2271ece",
+      "description": "Simular proceso de checkout",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Buscar botón de checkout\n       ...",
+      "timestamp": "2025-09-06T16:03:24.579Z",
+      "duration": 30060,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T16-03-24-579Z-step-5-before.png",
+      "details": {
+        "result": {
+          "error": "page.screenshot: options.quality is unsupported for the png screenshots"
+        },
+        "actualDuration": 30060
+      },
+      "category": "action",
+      "severity": "medium"
+    },
+    {
+      "id": "2d86a041-fb56-450a-8d1b-83dc8d923d02",
+      "description": "Verificación final del test",
+      "action": "async () => {\n            const page = this.screenshotManager.getPage();\n            if (!page)\n                throw new Error('Página no disponible');\n            // Capturar screenshot final\n      ...",
+      "timestamp": "2025-09-06T16:03:54.639Z",
+      "duration": 8,
+      "success": false,
+      "screenshot": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-screenshots\\2025-09-06T16-03-54-640Z-step-6-before.png",
+      "details": {
+        "result": {
+          "error": "page.screenshot: options.quality is unsupported for the png screenshots"
+        },
+        "actualDuration": 8
+      },
+      "category": "verification",
+      "severity": "medium"
+    }
+  ],
+  "summary": {
+    "totalSteps": 8,
+    "successfulSteps": 1,
+    "failedSteps": 7,
+    "criticalErrors": 1,
+    "warnings": 4
+  },
+  "environment": {
+    "userAgent": "Node.js Environment",
+    "browser": "Chromium",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "url": "http://localhost:3000"
+  },
+  "metadata": {
+    "testVersion": "1.0.0",
+    "framework": "AutomatedTestFramework",
+    "executedBy": "System",
+    "tags": [
+      "e2e",
+      "purchase-flow",
+      "critical"
+    ]
+  },
+  "endTime": "2025-09-06T16:03:54.648Z",
+  "duration": 72543
+}

@@ -9,6 +9,14 @@ import { configureStore } from '@reduxjs/toolkit'
 import { useCheckout } from '@/hooks/useCheckout'
 import cartReducer from '@/redux/features/cart-slice'
 
+// Mock useAuth hook
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: null,
+    isLoaded: true,
+  }),
+}))
+
 // Mock data
 const mockCartItems = [
   {
@@ -110,17 +118,17 @@ describe('useCheckout Hook', () => {
   })
 
   it('validates form correctly', () => {
-    const { result } = renderHookWithStore()
+    const { result } = renderHookWithStore();
 
-    // Test validation with empty form
     act(() => {
-      const isValid = result.current.validateForm()
-      expect(isValid).toBe(false)
-    })
+      const isValid = result.current.validateForm();
+      expect(isValid).toBe(false);
+    });
 
-    expect(result.current.errors.firstName).toBe('Nombre es requerido')
-    expect(result.current.errors.email).toBe('Email es requerido')
-  })
+    // Verificar que los errores se establecieron correctamente
+    expect(result.current.errors.firstName).toBe('Nombre es requerido');
+    expect(result.current.errors.email).toBe('Email es requerido');
+  });
 
   it('calculates total correctly', () => {
     const { result } = renderHookWithStore()

@@ -8,7 +8,8 @@ import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
+import { checkRateLimit } from '@/lib/auth/rate-limiting';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
 import { metricsCollector } from '@/lib/metrics';
 
 // ===================================
@@ -325,7 +326,7 @@ async function handleBulkExport(request: NextRequest, authResult: any) {
         order_number,
         status,
         payment_status,
-        total_amount,
+        total,
         currency,
         created_at,
         updated_at,
@@ -380,7 +381,7 @@ async function handleBulkExport(request: NextRequest, authResult: any) {
 
     // Métricas de performance
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-bulk-export', responseTime, 200);
+    await metricsCollector.recordRequest('admin-bulk-export', 'GET', 200, responseTime);
 
     const response: ApiResponse<{
       orders: typeof orders;

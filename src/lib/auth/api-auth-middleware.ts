@@ -8,24 +8,20 @@ export function withAdminAuth(permissions: string[] = []) {
     return async function (request: NextRequest, context: any) {
       try {
         // Verificar autenticación enterprise
-        const authResult = await checkCRUDPermissions('products', 'read', request);
+        const authResult = await checkCRUDPermissions('read', 'products');
 
-        if (!authResult.success) {
+        if (!authResult.allowed) {
           return NextResponse.json(
             {
               success: false,
-              error: authResult.error,
+              error: authResult.error || 'Acceso denegado',
               code: 'AUTH_ERROR',
               timestamp: new Date().toISOString(),
               path: request.url
             },
-            { status: authResult.status || 401 }
+            { status: 401 }
           );
         }
-
-        // Agregar contexto de usuario a la request
-        (request as any).user = authResult.user;
-        (request as any).supabase = authResult.supabase;
 
         return await handler(request, context);
       } catch (error) {
@@ -49,23 +45,20 @@ export function withPermissionCheck(resource: string, action: string) {
   return function (handler: Function) {
     return async function (request: NextRequest, context: any) {
       try {
-        const authResult = await checkCRUDPermissions(resource, action, request);
+        const authResult = await checkCRUDPermissions(action as 'create' | 'read' | 'update' | 'delete', resource);
 
-        if (!authResult.success) {
+        if (!authResult.allowed) {
           return NextResponse.json(
             {
               success: false,
-              error: authResult.error,
+              error: authResult.error || 'Permisos insuficientes',
               code: 'PERMISSION_DENIED',
               timestamp: new Date().toISOString(),
               path: request.url
             },
-            { status: authResult.status || 403 }
+            { status: 403 }
           );
         }
-
-        (request as any).user = authResult.user;
-        (request as any).supabase = authResult.supabase;
 
         return await handler(request, context);
       } catch (error) {

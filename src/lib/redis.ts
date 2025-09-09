@@ -64,6 +64,39 @@ class MockRedis {
     return 'OK';
   }
 
+  // Métodos de listas para métricas
+  async lpush(key: string, ...values: string[]): Promise<number> {
+    const list = this.storage.get(key) || [];
+    list.unshift(...values);
+    this.storage.set(key, list);
+    return list.length;
+  }
+
+  async ltrim(key: string, start: number, stop: number): Promise<'OK'> {
+    const list = this.storage.get(key) || [];
+    const trimmed = list.slice(start, stop + 1);
+    this.storage.set(key, trimmed);
+    return 'OK';
+  }
+
+  async lrange(key: string, start: number, stop: number): Promise<string[]> {
+    const list = this.storage.get(key) || [];
+    if (stop === -1) {
+      return list.slice(start);
+    }
+    return list.slice(start, stop + 1);
+  }
+
+  async ttl(key: string): Promise<number> {
+    // Mock: retornar -1 (sin expiración) o un valor fijo
+    return this.storage.has(key) ? 3600 : -2;
+  }
+
+  // Pipeline mock para operaciones batch
+  pipeline(): MockPipeline {
+    return new MockPipeline(this);
+  }
+
   // Métodos de conexión mock
   async connect(): Promise<void> {
     console.log('[REDIS MOCK] Conectado (simulado)');
@@ -76,6 +109,57 @@ class MockRedis {
   on(event: string, callback: Function): this {
     return this;
   }
+
+  async quit(): Promise<'OK'> {
+    console.log('[REDIS MOCK] Desconectado (quit simulado)');
+    return 'OK';
+  }
+}
+
+// Mock Pipeline para operaciones batch
+class MockPipeline {
+  private commands: Array<{ method: string; args: any[] }> = [];
+  private redis: MockRedis;
+
+  constructor(redis: MockRedis) {
+    this.redis = redis;
+  }
+
+  get(key: string): this {
+    this.commands.push({ method: 'get', args: [key] });
+    return this;
+  }
+
+  ttl(key: string): this {
+    this.commands.push({ method: 'ttl', args: [key] });
+    return this;
+  }
+
+  incr(key: string): this {
+    this.commands.push({ method: 'incr', args: [key] });
+    return this;
+  }
+
+  expire(key: string, seconds: number): this {
+    this.commands.push({ method: 'expire', args: [key, seconds] });
+    return this;
+  }
+
+  async exec(): Promise<Array<[Error | null, any]>> {
+    const results: Array<[Error | null, any]> = [];
+
+    for (const command of this.commands) {
+      try {
+        const result = await (this.redis as any)[command.method](...command.args);
+        results.push([null, result]);
+      } catch (error) {
+        results.push([error as Error, null]);
+      }
+    }
+
+    this.commands = []; // Limpiar comandos después de ejecutar
+    return results;
+  }
 }
 
 // Cliente Redis singleton
@@ -87,6 +171,14 @@ let isUsingMock = false;
  */
 export function getRedisClient(): Redis | MockRedis {
   if (!redisClient) {
+    // Verificar si Redis está deshabilitado
+    if (process.env.DISABLE_REDIS === 'true') {
+      console.log('[REDIS] Redis deshabilitado por configuración, usando mock');
+      redisClient = new MockRedis();
+      isUsingMock = true;
+      return redisClient;
+    }
+
     try {
       redisClient = new Redis(REDIS_CONFIG);
 

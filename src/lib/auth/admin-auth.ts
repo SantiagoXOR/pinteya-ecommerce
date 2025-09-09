@@ -166,6 +166,19 @@ export async function requireAdminAuth(): Promise<{
   status?: number;
 }> {
   try {
+    // BYPASS TEMPORAL PARA DESARROLLO
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+      console.log('[AUTH] BYPASS AUTH ENABLED - requireAdminAuth (admin-auth)');
+      return {
+        success: true,
+        user: {
+          id: 'dev-admin',
+          email: 'santiago@xor.com.ar',
+          role: 'admin'
+        }
+      };
+    }
+
     const adminResult = await getAuthenticatedAdmin();
 
     if (!adminResult.success) {
@@ -206,6 +219,14 @@ export async function checkCRUDPermissions(
   error?: string;
 }> {
   try {
+    // BYPASS TEMPORAL PARA DESARROLLO
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+      console.log(`[AUTH] BYPASS AUTH ENABLED - checkCRUDPermissions ${operation} en ${resource}`);
+      return {
+        allowed: true
+      };
+    }
+
     const session = await auth();
 
     if (!session?.user) {

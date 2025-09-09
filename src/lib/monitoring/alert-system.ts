@@ -4,7 +4,19 @@
 
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
 import { getSupabaseClient } from '@/lib/supabase';
-import { CacheUtils } from '@/lib/cache-manager';
+import { emailService } from '@/lib/notifications/email';
+import { slackService } from '@/lib/notifications/slack';
+
+// ✅ IMPORT CONDICIONAL: Solo cargar CacheUtils en servidor para evitar errores de ioredis en cliente
+let CacheUtils: any = null;
+if (typeof window === 'undefined') {
+  // Solo en servidor
+  try {
+    CacheUtils = require('@/lib/cache-manager').CacheUtils;
+  } catch (error) {
+    console.warn('[EnterpriseAlertSystem] CacheUtils not available:', error);
+  }
+}
 
 // Niveles de alerta con escalamiento
 export enum AlertLevel {
@@ -462,21 +474,72 @@ export class EnterpriseAlertSystem {
    * Implementaciones de notificación específicas
    */
   private async sendEmailNotification(alert: Alert, channel: NotificationChannel): Promise<void> {
-    // TODO: Implementar envío de email
-    logger.info(LogLevel.INFO, `Email notification sent`, {
-      alertId: alert.id,
-      to: channel.config.to,
-      subject: `[${alert.level.toUpperCase()}] ${alert.ruleName}`
-    }, LogCategory.SYSTEM);
+    try {
+      const subject = `[${alert.level.toUpperCase()}] ${alert.ruleName}`;
+      const emailData = {
+        to: channel.config.to || ['admin@example.com'],
+        subject,
+        template: 'alert-notification',
+        data: {
+          alert,
+          level: alert.level.toUpperCase(),
+          timestamp: new Date(alert.triggeredAt).toLocaleString(),
+          message: alert.message,
+          metricName: alert.metricName,
+          value: alert.value,
+          threshold: alert.threshold
+        },
+        priority: alert.level === AlertLevel.CRITICAL || alert.level === AlertLevel.EMERGENCY ? 'high' as const : 'normal' as const
+      };
+
+      await emailService.sendNotification(emailData);
+      
+      logger.info(LogLevel.INFO, `Email notification sent successfully`, {
+        alertId: alert.id,
+        to: channel.config.to,
+        subject
+      }, LogCategory.SYSTEM);
+    } catch (error) {
+      logger.error(LogLevel.ERROR, `Failed to send email notification`, {
+        alertId: alert.id,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, LogCategory.SYSTEM);
+      throw error;
+    }
   }
 
   private async sendSlackNotification(alert: Alert, channel: NotificationChannel): Promise<void> {
-    // TODO: Implementar notificación Slack
-    logger.info(LogLevel.INFO, `Slack notification sent`, {
-      alertId: alert.id,
-      channel: channel.config.channel,
-      webhook: channel.config.webhookUrl ? 'configured' : 'missing'
-    }, LogCategory.SYSTEM);
+    try {
+      const alertData = {
+        title: `${alert.level.toUpperCase()}: ${alert.ruleName}`,
+        message: alert.message,
+        severity: alert.level === AlertLevel.CRITICAL || alert.level === AlertLevel.EMERGENCY ? 'error' as const : 
+                 alert.level === AlertLevel.WARNING ? 'warning' as const : 'info' as const,
+        details: {
+          'Alert ID': alert.id,
+          'Timestamp': new Date(alert.triggeredAt).toLocaleString(),
+          'Metric': alert.metricName,
+          'Value': alert.value?.toString() || 'N/A',
+          'Threshold': alert.threshold?.toString() || 'N/A',
+          'Status': alert.status,
+          ...alert.tags
+        }
+      };
+
+      await slackService.sendSystemAlert(alertData);
+      
+      logger.info(LogLevel.INFO, `Slack notification sent successfully`, {
+        alertId: alert.id,
+        channel: channel.config.channel,
+        webhook: channel.config.webhookUrl ? 'configured' : 'missing'
+      }, LogCategory.SYSTEM);
+    } catch (error) {
+      logger.error(LogLevel.ERROR, `Failed to send Slack notification`, {
+        alertId: alert.id,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }, LogCategory.SYSTEM);
+      throw error;
+    }
   }
 
   private async sendWebhookNotification(alert: Alert, channel: NotificationChannel): Promise<void> {

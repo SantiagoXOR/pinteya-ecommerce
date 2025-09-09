@@ -16,6 +16,7 @@ import {
   recordBusinessMetric,
   recordSecurityMetric
 } from '@/lib/monitoring/enterprise-metrics';
+import { sendOrderConfirmationEmail } from '../../../../../lib/email';
 
 // ✅ ELIMINADO: Rate limiting básico reemplazado por sistema avanzado con Redis
 
@@ -210,62 +211,118 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar la orden por external_reference
-    const orderId = payment.external_reference;
-    if (!orderId) {
+    const orderReference = payment.external_reference;
+    if (!orderReference) {
       console.error('No external_reference found in payment');
       return NextResponse.json({ error: 'No order reference' }, { status: 400 });
     }
 
+    // Buscar orden por external_reference (no por id)
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
-      .eq('id', orderId)
+      .eq('external_reference', orderReference)
       .single();
 
     if (orderError || !order) {
-      console.error('Order not found:', orderId, orderError);
+      console.error('Order not found by external_reference:', orderReference, orderError);
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
     // Mapear estados de MercadoPago a estados internos
-    let newStatus: string;
+    let newOrderStatus: string;
+    let newPaymentStatus: string;
     let shouldUpdateStock = false;
+    let shouldSendEmail = false;
 
     switch (payment.status) {
       case 'approved':
-        newStatus = 'paid';
+        newOrderStatus = 'confirmed'; // Orden confirmada cuando pago aprobado
+        newPaymentStatus = 'paid';
         shouldUpdateStock = true;
+        shouldSendEmail = true;
         break;
       case 'pending':
       case 'in_process':
-        newStatus = 'pending';
+        newOrderStatus = 'pending';
+        newPaymentStatus = 'pending';
         break;
       case 'rejected':
       case 'cancelled':
-        newStatus = 'cancelled';
+        newOrderStatus = 'cancelled';
+        newPaymentStatus = 'failed';
         break;
       case 'refunded':
       case 'charged_back':
-        newStatus = 'refunded';
+        newOrderStatus = 'refunded';
+        newPaymentStatus = 'refunded';
         // TODO: Restaurar stock si es necesario
         break;
       default:
-        newStatus = 'pending';
+        newOrderStatus = 'pending';
+        newPaymentStatus = 'pending';
     }
 
     // Actualizar estado de la orden
     const { error: updateError } = await supabase
       .from('orders')
       .update({
-        status: newStatus,
+        status: newOrderStatus,
+        payment_status: newPaymentStatus,
         payment_id: payment.id,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', orderId);
+      .eq('id', order.id);
 
     if (updateError) {
       console.error('Error updating order:', updateError);
       return NextResponse.json({ error: 'Error updating order' }, { status: 500 });
+    }
+
+    // Enviar email de confirmación si el pago fue aprobado
+    if (shouldSendEmail && order.payer_info) {
+      try {
+        // Obtener items de la orden para el email
+        const { data: orderItems, error: itemsError } = await supabase
+          .from('order_items')
+          .select(`
+            quantity,
+            price,
+            products (
+              name
+            )
+          `)
+          .eq('order_id', order.id);
+
+        if (!itemsError && orderItems) {
+          const emailItems = orderItems.map(item => ({
+            name: item.products?.name || 'Producto',
+            quantity: item.quantity,
+            price: `$${parseFloat(item.price).toLocaleString('es-AR')}`
+          }));
+
+          await sendOrderConfirmationEmail({
+            userName: order.payer_info.name || 'Cliente',
+            userEmail: order.payer_info.email,
+            orderNumber: orderReference,
+            orderTotal: `$${parseFloat(order.total).toLocaleString('es-AR')}`,
+            orderItems: emailItems
+          });
+
+          logger.info(LogLevel.INFO, 'Order confirmation email sent', {
+            orderId: order.id,
+            email: order.payer_info.email,
+            orderReference
+          });
+        }
+      } catch (emailError) {
+        // No fallar el webhook por errores de email
+        console.error('Error sending confirmation email:', emailError);
+        logger.warn(LogLevel.WARN, 'Failed to send confirmation email', {
+          orderId: order.id,
+          error: emailError instanceof Error ? emailError.message : 'Unknown error'
+        });
+      }
     }
 
     // Si el pago fue aprobado, actualizar stock de productos
@@ -275,7 +332,7 @@ export async function POST(request: NextRequest) {
         const { data: orderItems, error: itemsError } = await supabase
           .from('order_items')
           .select('product_id, quantity')
-          .eq('order_id', orderId);
+          .eq('order_id', order.id);
 
         if (itemsError) {
           console.error('Error getting order items:', itemsError);
@@ -310,11 +367,13 @@ export async function POST(request: NextRequest) {
     }, { clientIP });
 
     logger.payment(LogLevel.INFO, 'Payment webhook processed', {
-      orderId: orderId.toString(),
+      orderId: order.id.toString(),
       paymentId: payment.id?.toString(),
       amount: payment.transaction_amount,
       currency: payment.currency_id,
       status: payment.status,
+      newOrderStatus,
+      newPaymentStatus,
       method: 'mercadopago',
     }, { clientIP });
 
@@ -324,10 +383,12 @@ export async function POST(request: NextRequest) {
       payment.status === 'approved' ? AuditResult.SUCCESS :
       payment.status === 'rejected' ? AuditResult.FAILURE : AuditResult.SUCCESS,
       {
-        orderId: orderId.toString(),
+        orderId: order.id.toString(),
         paymentId: payment.id?.toString(),
         amount: payment.transaction_amount,
         currency: payment.currency_id,
+        orderStatus: newOrderStatus,
+        paymentStatus: newPaymentStatus,
         method: 'mercadopago'
       },
       undefined, // No hay userId en webhook
@@ -377,9 +438,10 @@ export async function POST(request: NextRequest) {
     // ✅ NUEVO: Responder exitosamente con headers de rate limiting
     const response = NextResponse.json({
       status: 'processed',
-      order_id: orderId,
-      payment_status: payment.status,
-      order_status: newStatus,
+      order_id: order.id,
+      payment_status: newPaymentStatus,
+      order_status: newOrderStatus,
+      email_sent: shouldSendEmail,
     }, { status: 200 });
 
     // ✅ NUEVO: Registrar métricas de éxito

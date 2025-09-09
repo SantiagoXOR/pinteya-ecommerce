@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
 
 // Providers de la aplicación
@@ -11,6 +12,8 @@ import { PreviewSliderProvider } from "./context/PreviewSliderContext";
 import CartPersistenceProvider from "@/components/providers/CartPersistenceProvider";
 import { SimpleAnalyticsProvider as AnalyticsProvider } from '@/components/Analytics/SimpleAnalyticsProvider';
 import { QueryClientProvider } from "@/components/providers/QueryClientProvider";
+import { NetworkErrorProvider } from "@/components/providers/NetworkErrorProvider";
+import { MonitoringProvider } from "@/providers/MonitoringProvider";
 
 // Componentes UI
 import HeaderNextAuth from "../components/Header/HeaderNextAuth";
@@ -64,6 +67,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Componente interno con todos los providers
   const AppContent = () => {
     const { notification, hideNotification } = useCartNotification();
+    const pathname = usePathname();
+
+    // Detectar si estamos en rutas de admin
+    const isAdminRoute = pathname?.startsWith('/admin');
+
+    // DEBUG: Logs para verificar la detección de rutas admin (DESHABILITADO)
+    // console.log('🔧 PROVIDERS DEBUG:', {
+    //   pathname,
+    //   isAdminRoute,
+    //   timestamp: new Date().toISOString()
+    // });
 
     return (
       <div className="app-content-wrapper">{/* mobile-bottom-nav-padding TEMPORALMENTE DESACTIVADO */}
@@ -71,45 +85,62 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <PreLoader />
         ) : (
           <>
-            <QueryClientProvider>
-              <ReduxProvider>
-                <CartPersistenceProvider>
-                  <AnalyticsProvider>
-                    <CartModalProvider>
-                      <ModalProvider>
-                        <PreviewSliderProvider>
-                    <HeaderNextAuth />
+            <MonitoringProvider
+              autoStart={process.env.NODE_ENV === 'production'}
+              enableErrorBoundary={true}
+            >
+              <QueryClientProvider>
+                <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
+                  <ReduxProvider>
+                    <CartPersistenceProvider>
+                      <AnalyticsProvider>
+                        <CartModalProvider>
+                          <ModalProvider>
+                            <PreviewSliderProvider>
+
+                    {/* Header y Footer solo para rutas públicas */}
+                    {!isAdminRoute && <HeaderNextAuth />}
+
                     <QuickViewModal />
-                    <CartSidebarModal />
+                    {/* CartSidebarModal solo para rutas públicas */}
+                    {!isAdminRoute && <CartSidebarModal />}
                     <PreviewSliderModal />
                     <ScrollToTop />
-                    {/* Contenido principal - Padding ya aplicado en body */}
+
+                    {/* Contenido principal */}
                     <div>
                       {children}
                     </div>
-                    <Footer />
+
+                    {/* Footer solo para rutas públicas */}
+                    {!isAdminRoute && <Footer />}
+
                     {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
                     {/* <div className="md:hidden">
                       <BottomNavigation />
                     </div> */}
 
-                    {/* Botón de carrito flotante */}
-                    <FloatingCartButton />
+                    {/* Botón de carrito flotante - Solo en rutas públicas */}
+                    {!isAdminRoute && <FloatingCartButton />}
 
-                    {/* Notificación del carrito */}
-                    <CartNotification
-                      show={notification.show}
-                      productName={notification.productName}
-                      productImage={notification.productImage}
-                      onClose={hideNotification}
-                    />
-                      </PreviewSliderProvider>
-                    </ModalProvider>
-                  </CartModalProvider>
-                </AnalyticsProvider>
-              </CartPersistenceProvider>
-            </ReduxProvider>
-          </QueryClientProvider>
+                    {/* Notificación del carrito - Solo en rutas públicas */}
+                    {!isAdminRoute && (
+                      <CartNotification
+                        show={notification.show}
+                        productName={notification.productName}
+                        productImage={notification.productImage}
+                        onClose={hideNotification}
+                      />
+                    )}
+                            </PreviewSliderProvider>
+                          </ModalProvider>
+                        </CartModalProvider>
+                      </AnalyticsProvider>
+                    </CartPersistenceProvider>
+                  </ReduxProvider>
+                </NetworkErrorProvider>
+              </QueryClientProvider>
+            </MonitoringProvider>
           </>
         )}
       </div>

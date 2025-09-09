@@ -1,0 +1,143 @@
+{
+  "id": "exec-1757263813433",
+  "timestamp": "2025-09-07T16:50:13.433Z",
+  "totalSteps": 4,
+  "completedSteps": 0,
+  "failedSteps": 4,
+  "totalApis": 0,
+  "successfulApis": 0,
+  "failedApis": 0,
+  "totalScreenshots": 0,
+  "screenshotsByStep": [
+    {
+      "stepName": "Tests Unitarios",
+      "count": 0,
+      "screenshots": []
+    },
+    {
+      "stepName": "Tests de Componentes",
+      "count": 0,
+      "screenshots": []
+    },
+    {
+      "stepName": "Tests E2E",
+      "count": 0,
+      "screenshots": []
+    },
+    {
+      "stepName": "Tests de Performance",
+      "count": 0,
+      "screenshots": []
+    }
+  ],
+  "hasScreenshots": false,
+  "steps": [
+    {
+      "id": "step-1",
+      "name": "Tests Unitarios",
+      "description": "Ejecución de Tests Unitarios",
+      "status": "failed",
+      "timestamp": "2025-09-07T16:50:15.497Z",
+      "duration": 2063,
+      "screenshots": [],
+      "screenshotCount": 0,
+      "details": {
+        "tests": 0,
+        "passed": 0,
+        "failed": 0
+      }
+    },
+    {
+      "id": "step-2",
+      "name": "Tests de Componentes",
+      "description": "Ejecución de Tests de Componentes",
+      "status": "failed",
+      "timestamp": "2025-09-07T16:50:15.526Z",
+      "duration": 2092,
+      "screenshots": [],
+      "screenshotCount": 0,
+      "details": {
+        "tests": 0,
+        "passed": 0,
+        "failed": 0
+      }
+    },
+    {
+      "id": "step-3",
+      "name": "Tests E2E",
+      "description": "Ejecución de Tests E2E",
+      "status": "failed",
+      "timestamp": "2025-09-07T16:50:17.959Z",
+      "duration": 4525,
+      "screenshots": [],
+      "screenshotCount": 0,
+      "details": {
+        "tests": 0,
+        "passed": 0,
+        "failed": 0
+      }
+    },
+    {
+      "id": "step-4",
+      "name": "Tests de Performance",
+      "description": "Ejecución de Tests de Performance",
+      "status": "failed",
+      "timestamp": "2025-09-07T16:50:15.475Z",
+      "duration": 2041,
+      "screenshots": [],
+      "screenshotCount": 0,
+      "details": {
+        "tests": 0,
+        "passed": 0,
+        "failed": 0
+      }
+    }
+  ],
+  "apiTests": [],
+  "errors": [
+    "Command failed: npm test -- --testPathPattern=\"__tests__/(hooks|utils|lib)\" --passWithNoTests\nError: ● Validation Error:\n\n  Option \"cacheDirectory\" must be of type:\n    string\n  but instead received:\n    boolean\n\n  Example:\n  {\n    \"cacheDirectory\": \"/tmp/user/jest\"\n  }\n\n  Configuration Documentation:\n  https://jestjs.io/docs/configuration\n\n",
+    "Command failed: npm test -- --testPathPattern=\"__tests__/(components|optimization)\" --passWithNoTests\nError: ● Validation Error:\n\n  Option \"cacheDirectory\" must be of type:\n    string\n  but instead received:\n    boolean\n\n  Example:\n  {\n    \"cacheDirectory\": \"/tmp/user/jest\"\n  }\n\n  Configuration Documentation:\n  https://jestjs.io/docs/configuration\n\n",
+    "Command failed: npx playwright test --project=ui-admin --reporter=json\n❌ Error durante la autenticación: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"/\", waiting until \"load\"\u001b[22m\n\n    at authenticateAdmin (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\auth-setup.ts:119:16)\n    at setupPersistentAuth (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\auth-setup.ts:339:5)\n    at globalSetup (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\global-setup.ts:25:7) {\n  name: 'Error'\n}\n⚠️ No se pudo configurar autenticación global: Fallo en autenticación de administrador: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"/\", waiting until \"load\"\u001b[22m\n\n⚠️ Los tests individuales manejarán su propia autenticación\n",
+    "Command failed: npm test -- --testPathPattern=\"performance\" --passWithNoTests\nError: ● Validation Error:\n\n  Option \"cacheDirectory\" must be of type:\n    string\n  but instead received:\n    boolean\n\n  Example:\n  {\n    \"cacheDirectory\": \"/tmp/user/jest\"\n  }\n\n  Configuration Documentation:\n  https://jestjs.io/docs/configuration\n\n"
+  ],
+  "summary": {
+    "status": "partial",
+    "message": "0/4 suites completadas exitosamente",
+    "duration": "10.7s",
+    "environment": "test"
+  },
+  "performanceMetrics": {
+    "averageResponseTime": 2680.5,
+    "minResponseTime": 2041,
+    "maxResponseTime": 4525,
+    "p95ResponseTime": 0,
+    "throughput": 0.37306472673008767,
+    "errorRate": 100,
+    "availability": 0
+  },
+  "qualityMetrics": {
+    "testCoverage": 85,
+    "reliability": 0,
+    "maintainabilityIndex": 75,
+    "codeQuality": 80
+  },
+  "errorAnalysis": {
+    "totalErrors": 4,
+    "errorsByCategory": {
+      "test-failure": 4
+    },
+    "criticalErrors": 4,
+    "errorTrends": {
+      "increasing": false,
+      "percentage": 0
+    }
+  },
+  "observations": [],
+  "metadata": {
+    "testSuite": "Automated Test Execution",
+    "version": "1.0.0",
+    "browser": "Node.js",
+    "viewport": "N/A",
+    "userAgent": "Test Runner"
+  }
+}

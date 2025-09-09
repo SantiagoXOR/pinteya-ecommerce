@@ -156,7 +156,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </div>
             <div>
               <p className="font-medium text-lg text-dark text-right">
-                ${finalTotal.toLocaleString()}
+                ${finalTotal ? finalTotal.toLocaleString() : '0'}
               </p>
             </div>
           </div>

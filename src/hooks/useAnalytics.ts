@@ -97,7 +97,7 @@ export const useAnalytics = (): UseAnalyticsReturn => {
       userEmail: user?.emailAddresses?.[0]?.emailAddress,
     };
     
-    optimizedAnalytics.trackEvent(event, category, action, label, value, enrichedMetadata);
+    analytics.trackEvent(event, category, action, label, value, enrichedMetadata);
   }, [isEnabled, user]);
 
   const trackEcommerceEvent = useCallback((action: string, data: Record<string, any>) => {

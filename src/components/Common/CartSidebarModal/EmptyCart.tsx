@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Palette, Home, Sparkles } from "lucide-react";
+import { ShoppingBag, Palette, Home, Sparkles } from "@/lib/optimized-imports";
 import QuickAddSuggestions from "@/components/ui/quick-add-suggestions";
 
 const EmptyCart = () => {

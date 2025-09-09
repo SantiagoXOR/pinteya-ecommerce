@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { PriceDisplay } from "@/components/ui/price-display"
 import { ShippingInfo } from "@/components/ui/shipping-info"
 import { EnhancedProductCard } from "@/components/ui/product-card-enhanced"
-import { ShoppingCart, CreditCard, Truck, Gift, Percent } from "lucide-react"
+import { ShoppingCart, CreditCard, Truck, Gift, Percent, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface CartItem {
@@ -46,7 +46,7 @@ export interface CartSummaryProps {
     type: 'percentage' | 'fixed'
   } | null
   /** Variante del componente */
-  variant?: 'default' | 'compact' | 'detailed'
+  variant?: 'default' | 'compact' | 'detailed' | 'mobile'
   /** Mostrar productos como cards */
   showProductCards?: boolean
   /** Contexto para EnhancedProductCard */
@@ -59,6 +59,8 @@ export interface CartSummaryProps {
   onRemoveCoupon?: () => void
   /** Mostrar información de envío detallada */
   showShippingDetails?: boolean
+  /** Inicialmente colapsado (solo para variante mobile) */
+  initiallyCollapsed?: boolean
   /** Clase CSS adicional */
   className?: string
 }
@@ -89,36 +91,105 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
     onApplyCoupon,
     onRemoveCoupon,
     showShippingDetails = false,
+    initiallyCollapsed = false,
     className,
     ...props
   }, ref) => {
     const calculatedFinalTotal = finalTotal ?? (totalPrice + (shippingCost || 0) - (discount || 0))
     const isCompact = variant === 'compact'
     const isDetailed = variant === 'detailed'
+    const isMobile = variant === 'mobile'
+    
+    // Estado para colapso en variante mobile
+    const [isCollapsed, setIsCollapsed] = React.useState(isMobile ? initiallyCollapsed : false)
 
     // Calcular si califica para envío gratis
     const qualifiesForFreeShipping = totalPrice >= 50000
     const actualShippingCost = qualifiesForFreeShipping ? 0 : (shippingCost || 0)
 
     return (
-      <Card ref={ref} className={cn("w-full", className)} {...props}>
-        <CardHeader className={cn("pb-4", isCompact && "pb-2")}>
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-primary" />
-            Resumen del Pedido
-            <Badge variant="outline" size="sm">
-              {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
-            </Badge>
+      <Card ref={ref} className={cn(
+        "w-full",
+        isMobile && "border-0 shadow-lg bg-white/90 backdrop-blur-sm rounded-xl",
+        className
+      )} {...props}>
+        <CardHeader
+          className={cn(
+            "pb-4",
+            isCompact && "pb-2",
+            isMobile && "pb-0 px-0 cursor-pointer"
+          )}
+          onClick={isMobile ? () => setIsCollapsed(!isCollapsed) : undefined}
+        >
+          <CardTitle className={cn(
+            "flex items-center gap-2",
+            isMobile && "justify-between text-base p-5 hover:bg-gray-50/50 transition-colors rounded-xl"
+          )}>
+            <div className={cn(
+              "flex items-center gap-2",
+              isMobile && "gap-3"
+            )}>
+              {isMobile ? (
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5 text-green-600" />
+                </div>
+              ) : (
+                <ShoppingCart className="w-5 h-5 text-primary" />
+              )}
+              <div>
+                <span className={cn(
+                  "font-semibold",
+                  isMobile && "text-gray-900 block"
+                )}>
+                  {isMobile ? "Resumen del Pedido" : "Resumen del Pedido"}
+                </span>
+                {isMobile && (
+                  <span className="text-sm text-gray-600">
+                    {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
+                  </span>
+                )}
+              </div>
+              {!isMobile && (
+                <Badge variant="outline" size="sm">
+                  {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+                </Badge>
+              )}
+            </div>
+            {isMobile && (
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <PriceDisplay
+                    amount={calculatedFinalTotal * 100}
+                    variant="compact"
+                    size="lg"
+                    className="text-green-600 font-bold text-xl"
+                  />
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Total</div>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                  {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                </div>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className={cn(
+          "space-y-4",
+          isMobile && "px-5 pb-5",
+          isMobile && isCollapsed && "hidden"
+        )}>
+          {isMobile && !isCollapsed && (
+            <div className="border-t pt-4" />
+          )}
+
           {/* Items del carrito */}
           {cartItems.length > 0 ? (
             <div className={cn(
               "space-y-3",
-              isCompact ? "max-h-40" : "max-h-80",
-              "overflow-y-auto"
+              isCompact ? "max-h-40" : isMobile ? "max-h-48" : "max-h-80",
+              "overflow-y-auto",
+              isMobile && "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
             )}>
               {cartItems.map((item, index) => (
                 <div key={`${item.id}-${index}`}>
@@ -144,17 +215,26 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                     />
                   ) : (
                     // Mostrar como item simple
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                    <div className={cn(
+                      "flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0",
+                      isMobile && "py-1.5"
+                    )}>
                       <div className="flex-1 pr-4">
-                        <p className="font-medium text-gray-900 line-clamp-2">{item.title}</p>
-                        <p className="text-sm text-gray-500">Cantidad: {item.quantity}</p>
+                        <p className={cn(
+                          "font-medium text-gray-900 line-clamp-2",
+                          isMobile && "text-sm line-clamp-1"
+                        )}>{item.title}</p>
+                        <p className={cn(
+                          "text-sm text-gray-500",
+                          isMobile && "text-xs"
+                        )}>Cantidad: {item.quantity}</p>
                       </div>
                       <div className="text-right">
                         <PriceDisplay
                           amount={(item.discountedPrice * item.quantity) * 100}
                           originalAmount={item.discountedPrice < item.price ? (item.price * item.quantity) * 100 : undefined}
                           variant="compact"
-                          size="sm"
+                          size={isMobile ? "xs" : "sm"}
                         />
                       </div>
                     </div>
@@ -174,34 +254,36 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
               <Separator />
 
               {/* Totales */}
-              <div className="space-y-3">
-                {/* Subtotal */}
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Subtotal</span>
-                  <PriceDisplay
-                    amount={totalPrice * 100}
-                    variant="compact"
-                    size="sm"
-                  />
-                </div>
+              <div className={cn("space-y-3", isMobile && "space-y-2")}>
+                {/* Subtotal - Solo mostrar en desktop o si no es mobile */}
+                {!isMobile && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <PriceDisplay
+                      amount={totalPrice * 100}
+                      variant="compact"
+                      size="sm"
+                    />
+                  </div>
+                )}
 
-                {/* Envío */}
+                {/* Envío - Versión compacta para mobile */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Truck className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-600">Envío</span>
+                    <Truck className={cn("w-4 h-4 text-gray-500", isMobile && "w-3 h-3")} />
+                    <span className={cn("text-gray-600", isMobile && "text-sm")}>Envío</span>
                     {qualifiesForFreeShipping && (
-                      <Badge variant="success" size="sm">Gratis</Badge>
+                      <Badge variant="success" size={isMobile ? "xs" : "sm"}>Gratis</Badge>
                     )}
                   </div>
                   <div className="text-right">
                     {qualifiesForFreeShipping ? (
-                      <span className="text-green-600 font-medium">Gratis</span>
+                      <span className={cn("text-green-600 font-medium", isMobile && "text-sm")}>Gratis</span>
                     ) : (
                       <PriceDisplay
                         amount={actualShippingCost * 100}
                         variant="compact"
-                        size="sm"
+                        size={isMobile ? "xs" : "sm"}
                       />
                     )}
                   </div>
@@ -211,10 +293,10 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                 {(discount > 0 || appliedCoupon) && (
                   <div className="flex items-center justify-between text-green-600">
                     <div className="flex items-center gap-2">
-                      <Percent className="w-4 h-4" />
-                      <span>Descuento</span>
+                      <Percent className={cn("w-4 h-4", isMobile && "w-3 h-3")} />
+                      <span className={cn(isMobile && "text-sm")}>Descuento</span>
                       {appliedCoupon && (
-                        <Badge variant="success" size="sm">
+                        <Badge variant="success" size={isMobile ? "xs" : "sm"}>
                           {appliedCoupon.code}
                         </Badge>
                       )}
@@ -222,7 +304,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                     <PriceDisplay
                       amount={-(discount * 100)}
                       variant="compact"
-                      size="sm"
+                      size={isMobile ? "xs" : "sm"}
                       className="text-green-600"
                     />
                   </div>
@@ -231,19 +313,37 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                 <Separator />
 
                 {/* Total final */}
-                <div className="flex items-center justify-between font-semibold text-lg">
-                  <span>Total</span>
+                <div className={cn(
+                  "flex items-center justify-between font-semibold text-lg",
+                  isMobile && "bg-green-50 p-4 rounded-lg border border-green-200"
+                )}>
+                  <div className={cn(isMobile && "flex flex-col")}>
+                    <span className={cn(
+                      "text-gray-900",
+                      isMobile && "text-lg font-bold"
+                    )}>
+                      Total
+                    </span>
+                    {isMobile && (
+                      <span className="text-xs text-gray-600 uppercase tracking-wide">
+                        Precio final
+                      </span>
+                    )}
+                  </div>
                   <PriceDisplay
                     amount={calculatedFinalTotal * 100}
                     variant="default"
-                    size="lg"
-                    className="text-primary"
+                    size={isMobile ? "xl" : "lg"}
+                    className={cn(
+                      "text-primary",
+                      isMobile && "text-green-600 text-2xl font-bold"
+                    )}
                   />
                 </div>
               </div>
 
-              {/* Información de envío detallada */}
-              {showShippingDetails && isDetailed && (
+              {/* Información de envío detallada - Oculta en mobile */}
+              {showShippingDetails && isDetailed && !isMobile && (
                 <>
                   <Separator />
                   <ShippingInfo
@@ -280,8 +380,8 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                 </>
               )}
 
-              {/* Beneficios */}
-              {!isCompact && (
+              {/* Beneficios - Ocultos en mobile y modo compacto */}
+              {!isCompact && !isMobile && (
                 <>
                   <Separator />
                   <div className="bg-green-50 p-3 rounded-lg">
@@ -296,18 +396,24 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                 </>
               )}
 
-              {/* Botón de checkout */}
+              {/* Botón de checkout - Optimizado para mobile */}
               {onCheckout && (
                 <>
                   <Separator />
                   <Button
                     onClick={onCheckout}
-                    className="w-full"
+                    className={cn(
+                      "w-full",
+                      isMobile && "h-12 text-base font-semibold"
+                    )}
                     size="lg"
                     disabled={cartItems.length === 0}
                   >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Proceder al Pago
+                    <CreditCard className={cn(
+                      "w-4 h-4 mr-2",
+                      isMobile && "w-5 h-5"
+                    )} />
+                    {isMobile ? "Comprar ahora" : "Proceder al Pago"}
                   </Button>
                 </>
               )}

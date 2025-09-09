@@ -6,11 +6,24 @@
 
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
+import { createErrorSuppressionMiddleware } from "@/lib/middleware/error-suppression"
 
 export default auth((req) => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
   const isProduction = process.env.NODE_ENV === 'production'
+
+  // Aplicar supresión de errores
+  const errorSuppressionMiddleware = createErrorSuppressionMiddleware();
+
+  // BYPASS TEMPORAL PARA DESARROLLO
+  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    console.log(`[NextAuth Middleware] BYPASS AUTH ENABLED - ${nextUrl.pathname}`)
+    const response = NextResponse.next();
+    // Aplicar headers de supresión de errores
+    response.headers.set('X-Error-Suppression', 'enabled');
+    return response;
+  }
 
   // Logging condicional (solo en desarrollo o para rutas críticas)
   if (!isProduction || nextUrl.pathname.startsWith('/admin') || nextUrl.pathname.startsWith('/api/admin')) {
@@ -60,7 +73,12 @@ export default auth((req) => {
     }
   }
 
-  return NextResponse.next()
+  // Aplicar headers de supresión de errores a todas las respuestas
+  const response = NextResponse.next();
+  response.headers.set('X-Error-Suppression', 'enabled');
+  response.headers.set('X-Network-Error-Handling', 'active');
+
+  return response;
 })
 
 export const config = {

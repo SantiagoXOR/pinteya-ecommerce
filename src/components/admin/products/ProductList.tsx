@@ -19,6 +19,12 @@ interface Product {
   category_id: string;
   category_name?: string;
   image_url?: string;
+  images?: {
+    main: string;
+    gallery: string[];
+    previews: string[];
+    thumbnails: string[];
+  };
   status: 'active' | 'inactive' | 'draft';
   created_at: string;
   updated_at: string;
@@ -115,34 +121,37 @@ export function ProductList({ className }: ProductListProps) {
   // Table columns configuration
   const columns = [
     {
-      key: 'image_url',
+      key: 'images',
       title: 'Imagen',
-      width: '80px',
-      render: (imageUrl: string, product: Product) => (
-        <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              width={48}
-              height={48}
-              className="object-cover"
-            />
-          ) : (
-            <Package className="w-6 h-6 text-gray-400" />
-          )}
-        </div>
-      )
+      width: '100px',
+      render: (images: any, product: Product) => {
+        const imageUrl = images?.main || product.image_url;
+        return (
+          <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shadow-sm">
+            {imageUrl ? (
+              <Image
+                src={imageUrl}
+                alt={product.name}
+                width={64}
+                height={64}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <Package className="w-8 h-8 text-gray-400" />
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'name',
       title: 'Producto',
       sortable: true,
       render: (name: string, product: Product) => (
-        <div>
-          <div className="font-medium text-gray-900">{name}</div>
-          <div className="text-sm text-gray-500 truncate max-w-xs">
-            {product.description}
+        <div className="max-w-sm">
+          <div className="font-semibold text-gray-900 text-base mb-1">{name}</div>
+          <div className="text-sm text-gray-600 overflow-hidden leading-relaxed" style={{display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'}}>
+            {product.description || 'Sin descripción disponible'}
           </div>
         </div>
       )
@@ -163,9 +172,11 @@ export function ProductList({ className }: ProductListProps) {
       align: 'right' as const,
       sortable: true,
       render: (price: number) => (
-        <span className="font-medium text-gray-900">
-          ${price.toLocaleString('es-AR')}
-        </span>
+        <div className="text-right">
+          <span className="font-bold text-lg text-green-600">
+            ${price.toLocaleString('es-AR')}
+          </span>
+        </div>
       )
     },
     {

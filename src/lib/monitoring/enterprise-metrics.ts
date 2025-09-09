@@ -4,8 +4,18 @@
 
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
 import { getSupabaseClient } from '@/lib/supabase';
-import { CacheUtils } from '@/lib/cache-manager';
 import { enterpriseAlertSystem, AlertLevel as AlertSystemLevel } from './alert-system';
+
+// ✅ IMPORT CONDICIONAL: Solo cargar CacheUtils en servidor para evitar errores de ioredis en cliente
+let CacheUtils: any = null;
+if (typeof window === 'undefined') {
+  // Solo en servidor
+  try {
+    CacheUtils = require('@/lib/cache-manager').CacheUtils;
+  } catch (error) {
+    console.warn('[EnterpriseMetrics] CacheUtils not available:', error);
+  }
+}
 
 // Tipos de métricas enterprise
 export enum MetricType {
@@ -398,9 +408,10 @@ export class EnterpriseMetricsCollector {
   ): Promise<MetricAggregation[]> {
     const cacheKey = `metrics:aggregated:${metricName}:${period}:${startTime}:${endTime}`;
     
-    return CacheUtils.cacheMetricsAggregation(cacheKey, async () => {
+    // ✅ CACHE CONDICIONAL: Solo usar cache en servidor
+    const fetchData = async () => {
       const supabase = getSupabaseClient(true);
-      
+
       if (!supabase) {
         throw new Error('Supabase client not available');
       }
@@ -418,7 +429,14 @@ export class EnterpriseMetricsCollector {
       }
 
       return data || [];
-    });
+    };
+
+    // Usar cache solo si está disponible (servidor)
+    if (CacheUtils && typeof window === 'undefined') {
+      return CacheUtils.cacheMetricsAggregation(cacheKey, fetchData);
+    } else {
+      return fetchData();
+    }
   }
 
   /**

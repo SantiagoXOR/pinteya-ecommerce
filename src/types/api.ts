@@ -12,6 +12,7 @@ export interface ApiResponse<T> {
   success: boolean;
   message?: string;
   error?: string;
+  timestamp?: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -175,7 +176,7 @@ export interface MercadoPagoReport {
 
 export interface ReportMetrics {
   total_transactions: number;
-  total_amount: number;
+  total: number;
   successful_payments: number;
   failed_payments: number;
   refunds: number;

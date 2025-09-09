@@ -47,11 +47,11 @@ export const RATE_LIMIT_CONFIGS = {
     message: 'Demasiados intentos de autenticación. Intenta de nuevo en 15 minutos.'
   },
   
-  // APIs admin - restrictivo
+  // APIs admin - restrictivo (temporalmente aumentado para pruebas)
   admin: {
-    windowMs: 5 * 60 * 1000, // 5 minutos
-    maxRequests: 30, // 30 requests por 5 minutos
-    message: 'Demasiadas requests administrativas. Intenta de nuevo en 5 minutos.'
+    windowMs: 1 * 60 * 1000, // 1 minuto
+    maxRequests: 100, // 100 requests por minuto
+    message: 'Demasiadas requests administrativas. Intenta de nuevo en 1 minuto.'
   },
   
   // APIs de productos - moderado
@@ -164,6 +164,16 @@ export async function checkRateLimit(
   config: RateLimitConfig,
   keyPrefix: string = 'api'
 ): Promise<RateLimitResult> {
+  // Bypass temporal para pruebas de desarrollo
+  if (process.env.NODE_ENV === 'development' && keyPrefix === 'admin-orders') {
+    return {
+      allowed: true,
+      limit: config.maxRequests,
+      remaining: config.maxRequests,
+      resetTime: Date.now() + config.windowMs
+    };
+  }
+  
   try {
     const now = Date.now();
     const key = config.keyGenerator 

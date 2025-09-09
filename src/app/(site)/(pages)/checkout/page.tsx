@@ -1,17 +1,15 @@
 import React from "react";
-import Checkout from "@/components/Checkout";
+import CheckoutExpress from "@/components/Checkout/CheckoutExpress";
 
-import { Metadata } from "next";
-export const metadata: Metadata = {
-  title: "Checkout Page | NextCommerce Nextjs E-commerce template",
-  description: "This is Checkout Page for NextCommerce Template",
-  // other metadata
+export const metadata = {
+  title: "Checkout Express - Pinteya",
+  description: "Finaliza tu compra de manera segura y rápida con nuestro checkout express",
 };
 
 const CheckoutPage = () => {
   return (
-    <main>
-      <Checkout />
+    <main className="min-h-screen">
+      <CheckoutExpress />
     </main>
   );
 };

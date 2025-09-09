@@ -14,9 +14,9 @@ const customJestConfig = {
   // Test environment optimizado
   testEnvironment: 'jsdom',
 
-  // DESHABILITAR CACHE PARA EVITAR SOBRECARGA VS CODE
-  cache: false,
-  cacheDirectory: false,
+  // Configuración de cache unificada - Optimizada para CI/Local
+  cache: process.env.CI ? false : true,
+  cacheDirectory: process.env.CI ? false : '<rootDir>/.jest-cache',
 
   // Setup files
   setupFilesAfterEnv: [
@@ -62,6 +62,10 @@ const customJestConfig = {
     'swiper/css/navigation': 'identity-obj-proxy',
     'swiper/css': 'identity-obj-proxy',
     'swiper/css/(.*)': 'identity-obj-proxy',
+
+    // MSW mocks para testing
+    '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
+    '^@mswjs/interceptors/(.*)$': '<rootDir>/node_modules/@mswjs/interceptors/$1',
   },
   
   // Test patterns
@@ -130,8 +134,8 @@ const customJestConfig = {
   
   // Transform ignore patterns - Optimizado
   transformIgnorePatterns: [
-    '/node_modules/(?!(.*\\.mjs$|@tanstack|use-debounce|next-auth|swiper))',
-    '^.+\\.module\\.(css|sass|scss)$',
+    '/node_modules/(?!(.*\.mjs$|@tanstack|use-debounce|next-auth|swiper|msw))',
+    '^.+\.module\.(css|sass|scss)$',
   ],
 
   // Test timeout optimizado para mejor performance
@@ -148,10 +152,6 @@ const customJestConfig = {
 
   // Configuración de workers optimizada para mejor rendimiento
   maxWorkers: process.env.CI ? 2 : '75%', // Más workers en local, menos en CI
-
-  // Cache para mejorar velocidad
-  cache: true,
-  cacheDirectory: '<rootDir>/.jest-cache',
 
   // Configuración de módulos ES
   extensionsToTreatAsEsm: ['.ts', '.tsx'],

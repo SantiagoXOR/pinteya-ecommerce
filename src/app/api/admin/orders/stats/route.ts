@@ -18,8 +18,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener estadísticas de órdenes
-    const [totalResult, pendingResult, completedResult, todayResult] = await Promise.all([
+    const today = new Date().toISOString().split('T')[0];
+
+    // Obtener estadísticas de órdenes con revenue
+    const [totalResult, pendingResult, completedResult, todayResult, revenueResult, todayRevenueResult] = await Promise.all([
       // Total de órdenes
       supabaseAdmin.from('orders').select('id', { count: 'exact', head: true }),
       // Órdenes pendientes
@@ -30,14 +32,29 @@ export async function GET(request: NextRequest) {
         .eq('status', 'delivered'),
       // Órdenes de hoy
       supabaseAdmin.from('orders').select('id', { count: 'exact', head: true })
-        .gte('created_at', new Date().toISOString().split('T')[0])
+        .gte('created_at', `${today}T00:00:00Z`)
+        .lt('created_at', `${today}T23:59:59Z`),
+      // Revenue total (órdenes completadas)
+      supabaseAdmin.from('orders').select('total')
+        .eq('status', 'delivered'),
+      // Revenue de hoy (órdenes completadas de hoy)
+      supabaseAdmin.from('orders').select('total')
+        .eq('status', 'delivered')
+        .gte('created_at', `${today}T00:00:00Z`)
+        .lt('created_at', `${today}T23:59:59Z`)
     ]);
+
+    // Calcular revenue
+    const totalRevenue = revenueResult.data?.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0) || 0;
+    const todayRevenue = todayRevenueResult.data?.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0) || 0;
 
     const stats = {
       total_orders: totalResult.count || 0,
       pending_orders: pendingResult.count || 0,
       completed_orders: completedResult.count || 0,
-      today_orders: todayResult.count || 0
+      today_orders: todayResult.count || 0,
+      total_revenue: totalRevenue,
+      today_revenue: todayRevenue
     };
 
     return NextResponse.json({
@@ -57,7 +74,9 @@ export async function GET(request: NextRequest) {
           total_orders: 0,
           pending_orders: 0,
           completed_orders: 0,
-          today_orders: 0
+          today_orders: 0,
+          total_revenue: 0,
+          today_revenue: 0
         }
       },
       { status: 500 }

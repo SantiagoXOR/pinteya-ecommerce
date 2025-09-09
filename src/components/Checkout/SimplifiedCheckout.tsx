@@ -272,6 +272,19 @@ const SimplifiedCheckout = () => {
                   )}
                 </div>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Observaciones de entrega (opcional)
+                </label>
+                <textarea
+                  value={formData.billing.observations || ''}
+                  onChange={(e) => handleInputChange('observations', e.target.value)}
+                  placeholder="Ej: Barrio específico, características de la casa, horarios de entrega preferidos..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -426,7 +439,7 @@ const SimplifiedCheckout = () => {
           <Separator />
           <div className="flex justify-between font-semibold text-lg">
             <span>Total</span>
-            <span className="text-primary">${finalTotal.toLocaleString()}</span>
+            <span className="text-primary">${finalTotal ? finalTotal.toLocaleString() : '0'}</span>
           </div>
         </div>
 

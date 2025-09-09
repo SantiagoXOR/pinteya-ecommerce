@@ -10,7 +10,7 @@ import {
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2 } from "@/lib/optimized-imports";
 import { getValidImageUrl } from "@/lib/adapters/product-adapter";
 
 const SingleItem = ({ item }: { item: any }) => {

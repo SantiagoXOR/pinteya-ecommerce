@@ -391,7 +391,7 @@ export async function GET(request: NextRequest) {
     // Verificar autenticación admin
     const authResult = await requireAdminAuth(request, ['admin_access', 'monitoring_access']);
     
-    if (!authResult.success) {
+    if (!authResult.isValid) {
       return NextResponse.json(
         { 
           error: authResult.error,
@@ -478,7 +478,7 @@ export async function POST(request: NextRequest) {
     // Verificar autenticación admin
     const authResult = await requireAdminAuth(request, ['admin_access', 'monitoring_write']);
     
-    if (!authResult.success) {
+    if (!authResult.isValid) {
       return NextResponse.json(
         { 
           error: authResult.error,

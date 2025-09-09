@@ -1,203 +1,346 @@
+// =====================================================
+// PÁGINA: GESTIÓN DE PRODUCTOS ENTERPRISE
+// Ruta: /admin/products
+// Descripción: Dashboard principal del módulo de productos
+// Incluye: Import/Export, Operaciones masivas, Gestión avanzada
+// =====================================================
+
 'use client';
 
-import { AdminCard } from '@/components/admin/ui/AdminCard';
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
+import { Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Package,
+  BarChart3,
+  TrendingUp,
+  Plus,
+  RefreshCw,
+  Download,
+  Upload,
+  Settings
+} from 'lucide-react';
+import { useProductsEnterprise } from '@/hooks/admin/useProductsEnterprise';
+import { ProductBulkOperations } from '@/components/admin/products/ProductBulkOperations';
 import { ProductList } from '@/components/admin/products/ProductList';
-import { Package, TrendingUp, AlertTriangle, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
-// Importar el test de API
-import '../../../test-api.js';
+// =====================================================
+// COMPONENTE PRINCIPAL
+// =====================================================
 
-interface ProductStatsData {
-  total_products: number;
-  active_products: number;
-  low_stock_products: number;
-  no_stock_products: number;
-}
+export default function ProductsPage() {
+  const router = useRouter();
+  const {
+    // Datos
+    products,
+    stats,
+    categories,
 
-// Quick stats component
-function ProductStats() {
-  const [statsData, setStatsData] = useState<ProductStatsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    // Estados de carga
+    isLoading,
+    isLoadingProducts,
+    isLoadingStats,
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
+    // Errores
+    error,
 
-        // Obtener datos reales directamente desde la API de productos
-        const response = await fetch('/api/products');
+    // Filtros y paginación
+    filters,
+    updateFilters,
+    resetFilters,
+    pagination,
 
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
+    // Acciones CRUD
+    createProduct,
+    updateProduct,
+    refetchProducts,
 
-        const apiResponse = await response.json();
+    // Operaciones masivas
+    bulkUpdateStatus,
+    bulkUpdateCategory,
+    bulkDelete,
 
-        // Extraer productos de la respuesta de la API
-        const products = apiResponse.data || [];
+    // Import/Export
+    importProducts,
+    exportProducts,
 
-        // Calcular estadísticas reales
-        const totalProducts = products.length;
-        const activeProducts = products.filter((p: any) => p.stock > 0).length;
-        const lowStockProducts = products.filter((p: any) => p.stock > 0 && p.stock <= 10).length;
-        const noStockProducts = products.filter((p: any) => p.stock === 0 || p.stock === null).length;
+    // Estados de mutations
+    isCreating,
+    isUpdating,
+    isBulkOperating,
+    isImporting,
 
-        setStatsData({
-          total_products: totalProducts,
-          active_products: activeProducts,
-          low_stock_products: lowStockProducts,
-          no_stock_products: noStockProducts
-        });
+    // Métricas derivadas
+    derivedMetrics
+  } = useProductsEnterprise();
 
-      } catch (err) {
-        console.error('Error fetching product stats:', err);
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // =====================================================
+  // HANDLERS
+  // =====================================================
 
-    fetchStats();
-  }, []);
-
-  // Valores por defecto mientras carga
-  const defaultStats = {
-    total_products: 0,
-    active_products: 0,
-    low_stock_products: 0,
-    no_stock_products: 0
+  const handleCreateProduct = () => {
+    router.push('/admin/products/new');
   };
 
-  const currentStats = statsData || defaultStats;
+  const handleBulkUpdateStatus = async (productIds: string[], status: 'active' | 'inactive') => {
+    try {
+      await bulkUpdateStatus(productIds, status);
+    } catch (error) {
+      console.error('Error en actualización masiva de estado:', error);
+    }
+  };
 
-  const stats = [
-    {
-      title: 'Total Productos',
-      value: loading ? '...' : currentStats.total_products.toString(),
-      change: '+12%',
-      changeType: 'positive' as const,
-      icon: Package,
-    },
-    {
-      title: 'Productos Activos',
-      value: loading ? '...' : currentStats.active_products.toString(),
-      change: '+8%',
-      changeType: 'positive' as const,
-      icon: TrendingUp,
-    },
-    {
-      title: 'Stock Bajo',
-      value: loading ? '...' : currentStats.low_stock_products.toString(),
-      change: '-2',
-      changeType: 'negative' as const,
-      icon: AlertTriangle,
-    },
-    {
-      title: 'Sin Stock',
-      value: loading ? '...' : currentStats.no_stock_products.toString(),
-      change: '+1',
-      changeType: 'negative' as const,
-      icon: AlertTriangle,
-    },
-  ];
+  const handleBulkUpdateCategory = async (productIds: string[], categoryId: number) => {
+    try {
+      await bulkUpdateCategory(productIds, categoryId);
+    } catch (error) {
+      console.error('Error en actualización masiva de categoría:', error);
+    }
+  };
+
+  const handleBulkDelete = async (productIds: string[]) => {
+    try {
+      await bulkDelete(productIds);
+    } catch (error) {
+      console.error('Error en eliminación masiva:', error);
+    }
+  };
+
+  const handleImportProducts = async (file: File) => {
+    try {
+      await importProducts(file);
+    } catch (error) {
+      console.error('Error en importación:', error);
+    }
+  };
+
+  const handleExportProducts = async () => {
+    try {
+      await exportProducts();
+    } catch (error) {
+      console.error('Error en exportación:', error);
+    }
+  };
+
+  // =====================================================
+  // RENDER
+  // =====================================================
 
   if (error) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <AdminCard className="p-6 col-span-full">
-          <div className="text-center text-red-600">
-            <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
-            <p className="font-medium">Error cargando estadísticas</p>
-            <p className="text-sm text-gray-500 mt-1">{error}</p>
-          </div>
-        </AdminCard>
-      </div>
+      <ErrorBoundary
+        error={error}
+        onRetry={refetchProducts}
+        title="Error al cargar productos"
+      />
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-      {stats.map((stat) => (
-        <AdminCard key={stat.title} className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                {stat.title}
-              </p>
-              <p className={`text-2xl font-bold mt-1 ${
-                loading ? 'text-gray-400' : 'text-gray-900'
-              }`}>
-                {stat.value}
-              </p>
-              <p className={`text-sm mt-1 ${
-                stat.changeType === 'positive'
-                  ? 'text-green-600'
-                  : 'text-red-600'
-              }`}>
-                {stat.change} desde el mes pasado
-              </p>
-            </div>
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-              stat.changeType === 'positive'
-                ? 'bg-green-100'
-                : 'bg-red-100'
-            }`}>
-              {stat?.icon && (
-                <stat.icon className={`w-6 h-6 ${
-                  stat.changeType === 'positive'
-                    ? 'text-green-600'
-                    : 'text-red-600'
-                }`} />
-              )}
-            </div>
-          </div>
-        </AdminCard>
-      ))}
-    </div>
-  );
-}
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Gestión de Productos</h1>
+          <p className="text-muted-foreground">
+            Sistema enterprise para gestión completa de productos e inventario
+          </p>
+        </div>
 
-export default function ProductsPage() {
-  const breadcrumbs = [
-    { label: 'Admin', href: '/admin' },
-    { label: 'Productos' },
-  ];
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetchProducts()}
+            disabled={isLoading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </Button>
 
-  // Botón para crear nuevo producto - Plus icon importado correctamente
-  const actions = (
-    <button
-      onClick={() => window.location.href = '/admin/products/new'}
-      className="flex items-center space-x-2 px-4 py-2 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors"
-    >
-      <Plus className="w-4 h-4" />
-      <span>Nuevo Producto</span>
-    </button>
-  );
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportProducts}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Exportar
+          </Button>
 
-  return (
-    <AdminLayout
-      title="Gestión de Productos"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
-      <div className="space-y-6">
-        {/* Quick Stats */}
-        <ProductStats />
-
-        {/* Main Content */}
-        <AdminCard
-          title="Lista de Productos"
-          description="Gestiona todos los productos de tu tienda"
-          padding="none"
-        >
-          <div className="p-6">
-            <ProductList />
-          </div>
-        </AdminCard>
+          <Button
+            onClick={handleCreateProduct}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Producto
+          </Button>
+        </div>
       </div>
-    </AdminLayout>
+
+      {/* Métricas principales */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Productos
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {(stats.total_products || 0).toLocaleString()}
+                  </p>
+                </div>
+                <Package className="w-8 h-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Productos Activos
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {(stats.active_products || 0).toLocaleString()}
+                  </p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Stock Bajo
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {(stats.low_stock_products || 0).toLocaleString()}
+                  </p>
+                </div>
+                <Package className="w-8 h-8 text-yellow-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Valor Total
+                  </p>
+                  <p className="text-2xl font-bold">
+                    ${(stats.total_value || 0).toLocaleString()}
+                  </p>
+                </div>
+                <BarChart3 className="w-8 h-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Operaciones Masivas */}
+      <ProductBulkOperations
+        selectedProducts={[]} // TODO: Implementar selección desde lista
+        categories={categories}
+        onBulkUpdateStatus={handleBulkUpdateStatus}
+        onBulkUpdateCategory={handleBulkUpdateCategory}
+        onBulkDelete={handleBulkDelete}
+        onImportProducts={handleImportProducts}
+        onExportProducts={handleExportProducts}
+        isLoading={isBulkOperating || isImporting}
+      />
+
+      {/* Contenido principal en tabs */}
+      <Tabs defaultValue="products" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="products" className="flex items-center gap-2">
+            <Package className="w-4 h-4" />
+            Productos ({derivedMetrics.totalProducts})
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="inventory" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Inventario
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tab: Lista de Productos */}
+        <TabsContent value="products">
+          <ProductList />
+        </TabsContent>
+
+        {/* Tab: Analytics */}
+        <TabsContent value="analytics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics de Productos</CardTitle>
+              <CardDescription>
+                Análisis detallado de performance y tendencias
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Analytics en desarrollo</h3>
+                <p className="text-muted-foreground">
+                  Los gráficos de analytics estarán disponibles próximamente.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Inventario */}
+        <TabsContent value="inventory">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gestión de Inventario</CardTitle>
+              <CardDescription>
+                Control avanzado de stock y alertas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Inventario en desarrollo</h3>
+                <p className="text-muted-foreground">
+                  El sistema de inventario avanzado estará disponible próximamente.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Indicadores de estado */}
+      {(isCreating || isUpdating || isBulkOperating || isImporting) && (
+        <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+          <div className="flex items-center gap-2">
+            <RefreshCw className="w-4 h-4 animate-spin" />
+            {isCreating && "Creando producto..."}
+            {isUpdating && "Actualizando producto..."}
+            {isBulkOperating && "Procesando operación masiva..."}
+            {isImporting && "Importando productos..."}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Gift, Palette, Trophy, Sparkles, Clock, Star } from "lucide-react";
+import { Gift, Palette, Trophy, Sparkles, Clock, Star } from "@/lib/optimized-imports";
 
 const PinteyaRaffle = () => {
   const [days, setDays] = useState(0);

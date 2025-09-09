@@ -8,7 +8,8 @@ import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
+import { checkRateLimit } from '@/lib/auth/rate-limiting';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
 import { metricsCollector } from '@/lib/metrics';
 
 // ===================================
@@ -17,13 +18,12 @@ import { metricsCollector } from '@/lib/metrics';
 
 const OrderFiltersSchema = z.object({
   page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(20),
-  status: z.string().optional(),
-  payment_status: z.string().optional(),
-  date_from: z.string().optional(),
-  date_to: z.string().optional(),
-  search: z.string().optional(),
-  sort_by: z.enum(['created_at', 'total_amount', 'order_number']).default('created_at'),
+  limit: z.coerce.number().min(1).max(100).default(25),
+  status: z.string().optional().nullable(),
+  date_from: z.string().optional().nullable(),
+  date_to: z.string().optional().nullable(),
+  search: z.string().optional().nullable(),
+  sort_by: z.enum(['created_at', 'total', 'id']).default('created_at'),
   sort_order: z.enum(['asc', 'desc']).default('desc'),
 });
 
@@ -50,6 +50,18 @@ const CreateOrderSchema = z.object({
 
 async function validateAdminAuth() {
   try {
+    // BYPASS TEMPORAL PARA DESARROLLO
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+      return {
+        user: {
+          id: 'dev-admin',
+          email: 'santiago@xor.com.ar',
+          name: 'Dev Admin'
+        },
+        userId: 'dev-admin'
+      };
+    }
+
     const session = await auth();
     if (!session?.user) {
       return { error: 'Usuario no autenticado', status: 401 };
@@ -78,17 +90,20 @@ export async function GET(request: NextRequest) {
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
-      RATE_LIMIT_CONFIGS.admin.requests,
-      RATE_LIMIT_CONFIGS.admin.window,
+      {
+        windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
+        maxRequests: RATE_LIMIT_CONFIGS.admin.maxRequests,
+        message: RATE_LIMIT_CONFIGS.admin.message || 'Demasiadas solicitudes administrativas'
+      },
       'admin-orders'
     );
 
-    if (!rateLimitResult.success) {
+    if (!rateLimitResult.allowed) {
       const response = NextResponse.json(
         { error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.admin);
       return response;
     }
 
@@ -103,19 +118,26 @@ export async function GET(request: NextRequest) {
 
     // Validar parámetros de consulta
     const { searchParams } = new URL(request.url);
-    const filtersResult = OrderFiltersSchema.safeParse({
+    const queryParams = {
       page: searchParams.get('page'),
       limit: searchParams.get('limit'),
       status: searchParams.get('status'),
-      payment_status: searchParams.get('payment_status'),
       date_from: searchParams.get('date_from'),
       date_to: searchParams.get('date_to'),
       search: searchParams.get('search'),
       sort_by: searchParams.get('sort_by'),
       sort_order: searchParams.get('sort_order'),
-    });
+    };
+
+    logger.log(LogLevel.INFO, LogCategory.API, 'Parámetros recibidos', { queryParams });
+
+    const filtersResult = OrderFiltersSchema.safeParse(queryParams);
 
     if (!filtersResult.success) {
+      logger.log(LogLevel.ERROR, LogCategory.VALIDATION, 'Parámetros de consulta inválidos', {
+        queryParams,
+        errors: filtersResult.error.errors
+      });
       return NextResponse.json(
         { error: 'Parámetros de consulta inválidos', details: filtersResult.error.errors },
         { status: 400 }
@@ -129,16 +151,16 @@ export async function GET(request: NextRequest) {
       .from('orders')
       .select(`
         id,
-        order_number,
         status,
-        payment_status,
-        total_amount,
-        currency,
+        total,
+        payment_id,
         created_at,
         updated_at,
         shipping_address,
-        notes,
-        user_profiles!orders_user_id_fkey (
+        external_reference,
+        payment_preference_id,
+        payer_info,
+        users (
           id,
           name,
           email
@@ -146,8 +168,7 @@ export async function GET(request: NextRequest) {
         order_items (
           id,
           quantity,
-          unit_price,
-          total_price,
+          price,
           products (
             id,
             name,
@@ -161,10 +182,6 @@ export async function GET(request: NextRequest) {
       query = query.eq('status', filters.status);
     }
 
-    if (filters.payment_status) {
-      query = query.eq('payment_status', filters.payment_status);
-    }
-
     if (filters.date_from) {
       query = query.gte('created_at', filters.date_from);
     }
@@ -174,7 +191,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (filters.search) {
-      query = query.or(`order_number.ilike.%${filters.search}%,notes.ilike.%${filters.search}%`);
+      query = query.or(`external_reference.ilike.%${filters.search}%,payment_id.ilike.%${filters.search}%`);
     }
 
     // Aplicar ordenamiento y paginación
@@ -193,14 +210,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Calcular estadísticas
+    // Calcular estadísticas de paginación
     const totalPages = Math.ceil((count || 0) / filters.limit);
     const hasNextPage = filters.page < totalPages;
     const hasPreviousPage = filters.page > 1;
 
+    // Calcular analytics básicas
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayOrders = orders?.filter(order => {
+      const orderDate = new Date(order.created_at);
+      return orderDate >= todayStart;
+    }) || [];
+    
+    const analytics = {
+      total_orders: count || 0,
+      pending_orders: orders?.filter(order => order.status === 'pending').length || 0,
+      completed_orders: orders?.filter(order => order.status === 'completed').length || 0,
+      total_revenue: orders?.reduce((sum, order) => sum + (order.total || 0), 0) || 0,
+      today_revenue: todayOrders.reduce((sum, order) => sum + (order.total || 0), 0)
+    };
+
     // Métricas de performance
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-orders-list', responseTime, 200);
+    await metricsCollector.recordRequest('admin-orders-list', 'GET', 200, responseTime);
 
     const response: ApiResponse<{
       orders: typeof orders;
@@ -212,6 +245,13 @@ export async function GET(request: NextRequest) {
         hasNextPage: boolean;
         hasPreviousPage: boolean;
       };
+      analytics: {
+         total_orders: number;
+         pending_orders: number;
+         completed_orders: number;
+         total_revenue: number;
+         today_revenue: number;
+       };
       filters: typeof filters;
     }> = {
       data: {
@@ -224,14 +264,16 @@ export async function GET(request: NextRequest) {
           hasNextPage,
           hasPreviousPage,
         },
+        analytics,
         filters,
       },
       success: true,
       error: null,
+      timestamp: new Date().toISOString()
     };
 
     const nextResponse = NextResponse.json(response);
-    addRateLimitHeaders(nextResponse, rateLimitResult);
+    addRateLimitHeaders(nextResponse, rateLimitResult, RATE_LIMIT_CONFIGS.admin);
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Órdenes admin obtenidas exitosamente', {
       count: orders?.length,
@@ -243,12 +285,34 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-orders-list', responseTime, 500);
+    await metricsCollector.recordRequest('admin-orders', 'GET', 500, responseTime);
 
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/orders', { error });
+    // Logging detallado del error
+    const errorDetails = {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : 'UnknownError',
+      cause: error instanceof Error ? error.cause : undefined
+    };
+
+    console.error('❌ [Orders API] Error detallado:', errorDetails);
+
+    try {
+      logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/orders', {
+        error: errorDetails,
+        timestamp: new Date().toISOString()
+      });
+    } catch (logError) {
+      // Ignorar errores de logging en desarrollo
+      console.error('Logging failed:', logError);
+    }
 
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      {
+        error: 'Error interno del servidor',
+        details: errorDetails.message,
+        debug: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+      },
       { status: 500 }
     );
   }
@@ -264,17 +328,20 @@ export async function POST(request: NextRequest) {
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
-      RATE_LIMIT_CONFIGS.admin.requests,
-      RATE_LIMIT_CONFIGS.admin.window,
+      {
+        windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
+        maxRequests: RATE_LIMIT_CONFIGS.admin.maxRequests,
+        message: RATE_LIMIT_CONFIGS.admin.message || 'Demasiadas solicitudes administrativas'
+      },
       'admin-orders-create'
     );
 
-    if (!rateLimitResult.success) {
+    if (!rateLimitResult.allowed) {
       const response = NextResponse.json(
         { error: 'Demasiadas solicitudes' },
         { status: 429 }
       );
-      addRateLimitHeaders(response, rateLimitResult);
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.admin);
       return response;
     }
 
@@ -289,9 +356,12 @@ export async function POST(request: NextRequest) {
 
     // Validar datos de entrada
     const body = await request.json();
+    console.log('🔍 [Orders API] Payload recibido:', JSON.stringify(body, null, 2));
+
     const validationResult = CreateOrderSchema.safeParse(body);
 
     if (!validationResult.success) {
+      console.log('❌ [Orders API] Validación fallida:', validationResult.error.errors);
       return NextResponse.json(
         { error: 'Datos de orden inválidos', details: validationResult.error.errors },
         { status: 400 }
@@ -299,6 +369,7 @@ export async function POST(request: NextRequest) {
     }
 
     const orderData = validationResult.data;
+    console.log('✅ [Orders API] Datos validados:', JSON.stringify(orderData, null, 2));
 
     // Generar número de orden único
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -309,22 +380,26 @@ export async function POST(request: NextRequest) {
     );
 
     // Crear orden en transacción
+    // Solo usar columnas que existen en la tabla: id, user_id, total, status, payment_id, shipping_address, created_at, updated_at, external_reference, payment_preference_id, payer_info, payment_status
+    const orderInsertData = {
+      user_id: orderData.user_id,
+      status: 'pending',
+      payment_status: 'pending',
+      total: totalAmount,
+      shipping_address: orderData.shipping_address ? JSON.stringify(orderData.shipping_address) : null,
+      external_reference: orderNumber, // Usar external_reference para almacenar el número de orden
+    };
+
+    console.log('📝 [Orders API] Insertando orden:', JSON.stringify(orderInsertData, null, 2));
+
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
-      .insert({
-        user_id: orderData.user_id,
-        order_number: orderNumber,
-        status: 'pending',
-        payment_status: 'pending',
-        total_amount: totalAmount,
-        currency: 'ARS',
-        shipping_address: orderData.shipping_address ? JSON.stringify(orderData.shipping_address) : null,
-        notes: orderData.notes,
-      })
+      .insert(orderInsertData)
       .select()
       .single();
 
     if (orderError) {
+      console.log('❌ [Orders API] Error al crear orden:', orderError);
       logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error al crear orden', { orderError });
       return NextResponse.json(
         { error: 'Error al crear orden' },
@@ -332,20 +407,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('✅ [Orders API] Orden creada exitosamente:', order);
+
     // Crear items de la orden
     const orderItems = orderData.items.map(item => ({
       order_id: order.id,
       product_id: item.product_id,
       quantity: item.quantity,
-      unit_price: item.unit_price,
-      total_price: item.unit_price * item.quantity,
+      price: item.unit_price, // La tabla order_items usa 'price' en lugar de 'unit_price' y 'total_price'
     }));
+
+    console.log('📝 [Orders API] Insertando items:', JSON.stringify(orderItems, null, 2));
 
     const { error: itemsError } = await supabaseAdmin
       .from('order_items')
       .insert(orderItems);
 
     if (itemsError) {
+      console.log('❌ [Orders API] Error al crear items:', itemsError);
       // Rollback: eliminar orden creada
       await supabaseAdmin.from('orders').delete().eq('id', order.id);
 
@@ -356,9 +435,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('✅ [Orders API] Items creados exitosamente');
+
     // Métricas de performance
     const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin-orders-create', responseTime, 201);
+    await metricsCollector.recordRequest('admin-orders-create', 'POST', 201, responseTime);
 
     const response: ApiResponse<typeof order> = {
       data: order,
@@ -367,7 +448,7 @@ export async function POST(request: NextRequest) {
     };
 
     const nextResponse = NextResponse.json(response, { status: 201 });
-    addRateLimitHeaders(nextResponse, rateLimitResult);
+    addRateLimitHeaders(nextResponse, rateLimitResult, RATE_LIMIT_CONFIGS.admin);
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Orden creada exitosamente por admin', {
       orderId: order.id,

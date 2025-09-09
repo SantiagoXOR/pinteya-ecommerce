@@ -15,9 +15,9 @@ import SingleItem from "./SingleItem";
 const Categories = () => {
   const sliderRef = useRef<any>(null);
 
-  // Hook para obtener categorías con conteos dinámicos
+  // Hook para obtener categorías sin conteos dinámicos para evitar errores de API
   const { categories, loading, error } = useCategoriesWithDynamicCounts({
-    enableDynamicCounts: true,
+    enableDynamicCounts: false, // Deshabilitar conteos dinámicos
     baseFilters: {},
   });
 

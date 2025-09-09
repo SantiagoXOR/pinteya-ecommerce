@@ -10,7 +10,6 @@ interface CategoryPillProps {
     id: string;
     name: string;
     slug: string;
-    count?: number;
   };
   isSelected?: boolean;
   onClick?: (category: any) => void;
@@ -44,11 +43,6 @@ export const CategoryPill: React.FC<CategoryPillProps> = ({
       data-testid={`category-pill-${category.slug}`}
     >
       {category.name}
-      {category.count !== undefined && (
-        <span className="ml-1.5 text-xs opacity-75">
-          ({category.count})
-        </span>
-      )}
     </button>
   );
 };

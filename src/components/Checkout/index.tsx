@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Breadcrumb from "../Common/Breadcrumb";
 
 import Shipping from "./Shipping";
 
@@ -35,7 +36,7 @@ import {
   Clock,
   Eye,
   TrendingUp
-} from "lucide-react";
+} from "@/lib/optimized-imports";
 import MercadoPagoWallet, { MercadoPagoWalletFallback } from "./MercadoPagoWallet";
 import { CartSummary } from "@/components/ui/cart-summary";
 import {
@@ -50,7 +51,7 @@ import {
 const Checkout = () => {
   const router = useRouter();
   const [showExitIntent, setShowExitIntent] = useState(false);
-  const [isExpressMode, setIsExpressMode] = useState(false);
+  const [isExpressMode, setIsExpressMode] = useState(true); // ✅ TEMPORAL: Activado por defecto para testing
 
   const {
     formData,
@@ -68,6 +69,7 @@ const Checkout = () => {
     updateShippingData,
     updateFormData,
     processCheckout,
+    processExpressCheckout,
     // ✅ Propiedades para Wallet Brick
     preferenceId,
     initPoint,
@@ -137,7 +139,12 @@ const Checkout = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await processCheckout();
+    // ✅ CORREGIDO: Usar la función correcta según el modo
+    if (isExpressMode) {
+      await processExpressCheckout();
+    } else {
+      await processCheckout();
+    }
   };
 
   const handlePaymentMethodChange = (method: string) => {
@@ -590,7 +597,7 @@ const Checkout = () => {
                       ) : (
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-6 h-6" />
-                          FINALIZAR COMPRA - ${finalTotal.toLocaleString()}
+                          FINALIZAR COMPRA - ${finalTotal ? finalTotal.toLocaleString() : '0'}
                         </div>
                       )}
                     </Button>

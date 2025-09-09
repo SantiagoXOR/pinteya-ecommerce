@@ -12,12 +12,26 @@ import ShippingProgressBar from "@/components/ui/shipping-progress-bar";
 import Image from "next/image";
 import CheckoutTransitionAnimation from "@/components/ui/checkout-transition-animation";
 import useCheckoutTransition from "@/hooks/useCheckoutTransition";
+import { useCartWithBackend } from "@/hooks/useCartWithBackend";
 
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext();
   const cartItems = useAppSelector((state) => state.cartReducer.items);
 
+  // Hook para carrito con backend
+  const {
+    items: backendCartItems,
+    totalItems: backendTotalItems,
+    totalAmount: backendTotalAmount,
+    loading: cartLoading
+  } = useCartWithBackend();
+
   const totalPrice = useSelector(selectTotalPrice);
+
+  // Usar carrito del backend si está disponible, sino usar Redux
+  const effectiveCartItems = backendCartItems.length > 0 ? backendCartItems : cartItems;
+  const effectiveTotalPrice = backendCartItems.length > 0 ? backendTotalAmount : totalPrice;
+  const hasItems = effectiveCartItems.length > 0;
 
   // Hook para manejar la animación de transición al checkout
   const {
@@ -143,15 +157,15 @@ const CartSidebarModal = () => {
               {/* Botón principal de checkout */}
               <button
                 onClick={startTransition}
-                disabled={isButtonDisabled || cartItems.length === 0}
+                disabled={isButtonDisabled || !hasItems || cartLoading}
                 data-testid="checkout-btn"
                 className={`w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl ${
-                  isButtonDisabled || cartItems.length === 0
+                  isButtonDisabled || !hasItems || cartLoading
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:scale-105 active:scale-95'
                 }`}
               >
-                {isButtonDisabled ? 'Procesando...' : 'Finalizar Compra'}
+                {cartLoading ? 'Cargando carrito...' : isButtonDisabled ? 'Procesando...' : 'Finalizar Compra'}
               </button>
             </div>
           </div>

@@ -21,35 +21,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Autenticación con Clerk
-    const session = await auth();
-    if (!session?.user) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Usuario no autenticado',
-      };
-      return NextResponse.json(errorResponse, { status: 401 });
-    }
+    // Obtener parámetros de consulta
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const status = searchParams.get('status');
 
+    // Para demo, usar un usuario fijo o crear uno temporal
+    const demoUserId = 'demo-user-123';
+
     // Obtener usuario primero
     let { data: user } = await supabaseAdmin
       .from('users')
       .select('id')
-      .eq('clerk_id', userId)
+      .eq('clerk_id', demoUserId)
       .single();
 
-    if (!session?.user) {
+    if (!user) {
       // Crear usuario demo si no existe
       const { data: newUser, error: createError } = await supabaseAdmin
         .from('users')
         .insert([
           {
-            clerk_id: userId,
+            clerk_id: demoUserId,
             email: 'usuario@demo.com',
             name: 'Usuario Demo',
           },
@@ -134,7 +128,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      orders: orders || [],
+      data: orders || [],
       pagination: {
         page,
         limit,

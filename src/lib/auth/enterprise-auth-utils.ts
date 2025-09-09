@@ -122,10 +122,39 @@ export async function getEnterpriseAuthContext(
   options: EnterpriseAuthOptions = {}
 ): Promise<EnterpriseAuthResult> {
   try {
+    // BYPASS TEMPORAL PARA DESARROLLO
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+      return {
+        success: true,
+        context: {
+          userId: 'dev-admin',
+          sessionId: 'dev-session',
+          email: 'santiago@xor.com.ar',
+          role: 'admin',
+          permissions: ['admin_access', 'products_read', 'products_write', 'orders_read', 'orders_write'],
+          sessionValid: true,
+          securityLevel: 'critical',
+          supabase: supabaseAdmin,
+          validations: {
+            jwtValid: true,
+            csrfValid: true,
+            rateLimitPassed: true,
+            originValid: true
+          }
+        },
+        user: {
+          id: 'dev-admin',
+          email: 'santiago@xor.com.ar',
+          name: 'Dev Admin'
+        },
+        supabase: supabaseAdmin
+      };
+    }
+
     const startTime = Date.now();
-    
+
     // Aplicar configuración predefinida si se especifica nivel de seguridad
-    const config = options.securityLevel 
+    const config = options.securityLevel
       ? { ...ENTERPRISE_CONFIGS[options.securityLevel], ...options }
       : options;
 
@@ -449,6 +478,36 @@ export async function requireAdminAuth(
   request: NextRequest | NextApiRequest,
   requiredPermissions: string[] = ['admin_access']
 ): Promise<EnterpriseAuthResult> {
+  // BYPASS TEMPORAL PARA DESARROLLO
+  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    console.log('[Enterprise Auth] BYPASS AUTH ENABLED - requireAdminAuth');
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    return {
+      success: true,
+      user: {
+        id: 'dev-admin',
+        email: 'santiago@xor.com.ar',
+        role: 'admin'
+      },
+      supabase,
+      context: {
+        user: {
+          id: 'dev-admin',
+          email: 'santiago@xor.com.ar',
+          role: 'admin'
+        },
+        permissions: requiredPermissions,
+        metadata: { bypass: true }
+      }
+    };
+  }
+
   return getEnterpriseAuthContext(request, {
     requiredRole: 'admin',
     requiredPermissions,

@@ -65,6 +65,15 @@ export const RATE_LIMIT_CONFIGS = {
     standardHeaders: true,
     legacyHeaders: false,
   },
+
+  // Para APIs administrativas
+  admin: {
+    windowMs: 5 * 60 * 1000,   // 5 minutos
+    maxRequests: 100,          // 100 requests por ventana (aumentado para testing)
+    message: 'Demasiadas requests administrativas. Intenta de nuevo en 5 minutos.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  },
 } as const;
 
 // Resultado del rate limiting
