@@ -110,7 +110,7 @@ NODE_ENV=development
 ```bash
 # Test de credenciales
 curl -X GET \
--H "Authorization: Bearer APP_USR-2482259294188972-090211-9b431062f47e5f8a20d01ca68922373d-2541024839" \
+-H "Authorization: Bearer [TU_MERCADOPAGO_ACCESS_TOKEN]" \
 "https://api.mercadopago.com/users/me"
 ```
 
@@ -118,7 +118,7 @@ curl -X GET \
 ```bash
 curl -X POST \
 -H "Content-Type: application/json" \
--H "Authorization: Bearer APP_USR-2482259294188972-090211-9b431062f47e5f8a20d01ca68922373d-2541024839" \
+-H "Authorization: Bearer [TU_MERCADOPAGO_ACCESS_TOKEN]" \
 "https://api.mercadopago.com/checkout/preferences" \
 -d '{
   "items": [
