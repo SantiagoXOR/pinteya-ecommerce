@@ -87,6 +87,24 @@ const nextConfig = {
             minSize: 20000
           },
           
+          // Chunk para componentes pesados (ShopDetails, ShopWithSidebar)
+          shopComponents: {
+            test: /[\\/]src[\\/]components[\\/](ShopDetails|ShopWithSidebar)[\\/]/,
+            name: 'shop-components',
+            priority: 35,
+            chunks: 'all',
+            minSize: 30000
+          },
+          
+          // Chunk para checkout y componentes de pago
+          checkout: {
+            test: /[\\/]src[\\/]components[\\/]Checkout[\\/]/,
+            name: 'checkout',
+            priority: 35,
+            chunks: 'all',
+            minSize: 25000
+          },
+          
           // Chunk para componentes UI comunes
           ui: {
             test: /[\\/]src[\\/]components[\\/]ui[\\/]/,

@@ -1,15 +1,15 @@
 # 📊 Bundle Analysis Report
 ## Pinteya E-commerce Performance Analysis
 
-**Fecha:** 9/9/2025, 07:21:25
+**Fecha:** 11/9/2025, 10:07:42
 
 ## 📋 Resumen Ejecutivo
 
 | Métrica | Valor | Estado |
 |---------|-------|--------|
-| Bundle Size | Error | ❌ Error |
-| Dependencias | 67 | 🔴 Muchas dependencias |
-| No utilizadas | 38 | 🔴 Muchas no utilizadas |
+| Bundle Size | 4.61 MB | 🟡 Bueno |
+| Dependencias | 62 | 🔴 Muchas dependencias |
+| No utilizadas | 19 | 🔴 Muchas no utilizadas |
 | Componentes pesados | 10 | 🔴 Muchos componentes pesados |
 
 ## 🎯 Plan de Optimización
@@ -24,7 +24,7 @@
 
 ### Cleanup - Prioridad LOW
 
-**Problema:** 38 dependencias posiblemente no utilizadas  
+**Problema:** 19 dependencias posiblemente no utilizadas  
 **Solución:** Remover dependencias no utilizadas  
 **Impacto:** Bajo - limpieza de código
 
@@ -40,21 +40,30 @@
 
 
 ### Archivos más grandes
-No disponible
+- **vendors-34592007fa3382ce.js**: 1862.01 KB
+- **ca7c8059eeb9cbd2.css**: 144.87 KB
+- **polyfills-42372ed130431b0a.js**: 109.96 KB
+- **layout-29efcd1753f61f40.js**: 100.65 KB
+- **9495-14297cfd0006c192.js**: 83.59 KB
+- **page-1449b786b485fe82.js**: 68.85 KB
+- **page-1afc6668c1ee6a9b.js**: 60.46 KB
+- **page-008a2d314c0cc9c3.js**: 60.10 KB
+- **1182-37f8bcd6af4a3a1b.js**: 51.63 KB
+- **page-94903112b011e938.js**: 47.20 KB
 
 ### Distribución por tipo
-- **JavaScript**: 0 archivos
-- **CSS**: 0 archivos
-- **Chunks grandes**: 0 archivos
+- **JavaScript**: 239 archivos
+- **CSS**: 7 archivos
+- **Chunks grandes**: 4 archivos
 
 
 ## 📚 Análisis de Dependencias
 
 
 ### Dependencias por categoría
-- **UI**: 19
+- **UI**: 17
 - **Estado**: 2
-- **Auth**: 5
+- **Auth**: 3
 - **Database**: 2
 - **Payment**: 1
 
@@ -72,8 +81,8 @@ No disponible
 
 
 ### ShopDetails
-- **Tamaño**: 70.73 KB (1377 líneas)
-- **Complejidad**: 24
+- **Tamaño**: 71.11 KB (1379 líneas)
+- **Complejidad**: 25
 - **Sugerencias**: Considerar usar useReducer para estado complejo, Considerar lazy loading de imports pesados, Implementar lazy loading para modales
 
 
@@ -84,7 +93,7 @@ No disponible
 
 
 ### products
-- **Tamaño**: 34.35 KB (879 líneas)
+- **Tamaño**: 34.60 KB (886 líneas)
 - **Complejidad**: 50
 - **Sugerencias**: Optimizar operaciones de array con useMemo, Considerar lazy loading de imports pesados
 
@@ -101,14 +110,26 @@ No disponible
 - **Sugerencias**: Considerar usar useReducer para estado complejo
 
 
+### orders
+- **Tamaño**: 28.42 KB (792 líneas)
+- **Complejidad**: 41
+- **Sugerencias**: Considerar usar useReducer para estado complejo, Optimizar operaciones de array con useMemo, Considerar lazy loading de imports pesados, Implementar lazy loading para modales
+
+
+### orders
+- **Tamaño**: 28.42 KB (760 líneas)
+- **Complejidad**: 70
+- **Sugerencias**: Considerar usar useReducer para estado complejo, Implementar lazy loading para modales
+
+
 ### products
-- **Tamaño**: 27.15 KB (705 líneas)
+- **Tamaño**: 27.15 KB (706 líneas)
 - **Complejidad**: 73
 - **Sugerencias**: Optimizar operaciones de array con useMemo
 
 
 ### Checkout
-- **Tamaño**: 25.13 KB (641 líneas)
+- **Tamaño**: 25.14 KB (641 líneas)
 - **Complejidad**: 16
 - **Sugerencias**: Considerar usar useReducer para estado complejo, Considerar lazy loading de imports pesados, Implementar lazy loading para modales
 
@@ -117,18 +138,6 @@ No disponible
 - **Tamaño**: 25.09 KB (685 líneas)
 - **Complejidad**: 58
 - **Sugerencias**: Implementar lazy loading para modales
-
-
-### Checkout
-- **Tamaño**: 24.35 KB (646 líneas)
-- **Complejidad**: 42
-- **Sugerencias**: Considerar usar useReducer para estado complejo
-
-
-### Common
-- **Tamaño**: 24.35 KB (450 líneas)
-- **Complejidad**: 10
-- **Sugerencias**: Considerar usar useReducer para estado complejo, Implementar lazy loading para modales
 
 
 ---
