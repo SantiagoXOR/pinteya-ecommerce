@@ -387,8 +387,8 @@ export function validateWebhookOrigin(request: Request): boolean {
   const referer = request.headers.get('referer');
   const host = request.headers.get('host');
 
-  // ✅ DEBUGGING: Log detallado de headers para diagnóstico
-  const debugMode = process.env.MERCADOPAGO_WEBHOOK_DEBUG === 'true';
+  // ✅ DEBUGGING: Log detallado de headers para diagnóstico (SIEMPRE ACTIVO TEMPORALMENTE)
+  const debugMode = true; // Temporalmente siempre activo para diagnosticar
   if (debugMode) {
     console.log('[WEBHOOK_DEBUG] Headers recibidos:', {
       origin,
@@ -397,6 +397,8 @@ export function validateWebhookOrigin(request: Request): boolean {
       host,
       'x-forwarded-for': request.headers.get('x-forwarded-for'),
       'x-real-ip': request.headers.get('x-real-ip'),
+      'content-type': request.headers.get('content-type'),
+      'authorization': request.headers.get('authorization') ? 'PRESENTE' : 'AUSENTE',
     });
   }
 
@@ -411,8 +413,12 @@ export function validateWebhookOrigin(request: Request): boolean {
       userAgent.includes('MercadoPago') ||
       userAgent.includes('curl') ||
       userAgent.includes('PostmanRuntime') ||
-      userAgent.includes('insomnia')
-    ))
+      userAgent.includes('insomnia') ||
+      userAgent.includes('restclient') ||
+      userAgent.includes('node')
+    )) ||
+    // ✅ TEMPORAL: Permitir simulaciones sin user-agent específico
+    (!origin && !referer) // Simulaciones del dashboard a menudo no tienen origin/referer
   );
 
   // ✅ SEGURIDAD: Validar origen si está presente
@@ -427,13 +433,20 @@ export function validateWebhookOrigin(request: Request): boolean {
     return true;
   }
 
-  // ✅ SEGURIDAD: Validar User-Agent para webhooks reales
-  if (!userAgent || !userAgent.toLowerCase().includes('mercadopago')) {
+  // ✅ SEGURIDAD: Validar User-Agent para webhooks reales (TEMPORAL: más permisivo)
+  if (!userAgent || (!userAgent.toLowerCase().includes('mercadopago') && !isSimulation)) {
     console.error('[SECURITY] Suspicious webhook user-agent:', userAgent);
+    console.log('[SECURITY] isSimulation:', isSimulation);
 
     // ✅ DESARROLLO: Permitir en modo desarrollo local
     if (process.env.NODE_ENV === 'development' && host?.includes('localhost')) {
       console.warn('[DEV] Permitiendo webhook en desarrollo local');
+      return true;
+    }
+
+    // ✅ TEMPORAL: Permitir si es simulación detectada
+    if (isSimulation) {
+      console.warn('[WEBHOOK] Permitiendo simulación a pesar de user-agent sospechoso');
       return true;
     }
 
