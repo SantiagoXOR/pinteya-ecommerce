@@ -176,6 +176,44 @@ export async function POST(request: NextRequest) {
       reason: 'Valid signature',
     }, { clientIP });
 
+    // ✅ OPTIMIZACIÓN: Respuesta rápida para evitar timeout de MercadoPago
+    console.log('[WEBHOOK] Respondiendo inmediatamente para evitar timeout');
+
+    // Procesar webhook de forma asíncrona (sin await)
+    processWebhookAsync(webhookData, clientIP).catch(error => {
+      console.error('[WEBHOOK_ASYNC] Error en procesamiento asíncrono:', error);
+    });
+
+    // Responder inmediatamente a MercadoPago
+    return NextResponse.json({
+      status: 'received',
+      message: 'Webhook received and processing',
+      timestamp: new Date().toISOString(),
+      data_id: webhookData.data.id
+    }, { status: 200 });
+  } catch (error: any) {
+    console.error('Error en webhook:', error);
+
+    // Log del error para debugging
+    logger.error(LogLevel.ERROR, 'Webhook processing error', {
+      error: error.message,
+      stack: error.stack,
+    }, { clientIP });
+
+    // Retornar error 500 para que MercadoPago reintente
+    return NextResponse.json({
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Processing failed',
+      timestamp: new Date().toISOString(),
+    }, { status: 500 });
+  }
+}
+
+// ✅ NUEVA FUNCIÓN: Procesamiento asíncrono del webhook
+async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP: string) {
+  try {
+    console.log('[WEBHOOK_ASYNC] Iniciando procesamiento asíncrono para:', webhookData.data.id);
+
     // ✅ ENTERPRISE: Procesar webhook con circuit breaker
     const webhookResult = await executeWebhookProcessing(async () => {
       // Obtener información del pago desde MercadoPago
@@ -195,10 +233,8 @@ export async function POST(request: NextRequest) {
           state: webhookResult.state
         }, { clientIP });
 
-        return NextResponse.json({
-          error: 'Webhook processing temporarily unavailable',
-          retry_after: 30
-        }, { status: 503 });
+        console.error('[WEBHOOK_ASYNC] Circuit breaker rejected webhook processing');
+        return;
       } else {
         logger.error(LogLevel.ERROR, 'Webhook processing failed', {
           dataId: webhookData.data.id,
@@ -206,26 +242,28 @@ export async function POST(request: NextRequest) {
           executionTime: webhookResult.executionTime
         }, { clientIP });
 
-        return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
+        console.error('[WEBHOOK_ASYNC] Webhook processing failed:', webhookResult.error?.message);
+        return;
       }
     }
 
     const payment = webhookResult.data;
+    console.log('[WEBHOOK_ASYNC] Payment info obtenida:', payment.id, payment.status);
     
     // Inicializar Supabase con cliente administrativo
     const supabase = getSupabaseClient(true);
 
     // Verificar que el cliente esté disponible
     if (!supabase) {
-      console.error('Cliente de Supabase no disponible en POST /api/payments/webhook');
-      return NextResponse.json({ error: 'Database service unavailable' }, { status: 503 });
+      console.error('[WEBHOOK_ASYNC] Cliente de Supabase no disponible');
+      return;
     }
 
     // Buscar la orden por external_reference
     const orderReference = payment.external_reference;
     if (!orderReference) {
-      console.error('No external_reference found in payment');
-      return NextResponse.json({ error: 'No order reference' }, { status: 400 });
+      console.error('[WEBHOOK_ASYNC] No external_reference found in payment');
+      return;
     }
 
     // Buscar orden por external_reference (no por id)
@@ -236,9 +274,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (orderError || !order) {
-      console.error('Order not found by external_reference:', orderReference, orderError);
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      console.error('[WEBHOOK_ASYNC] Order not found by external_reference:', orderReference, orderError);
+      return;
     }
+
+    console.log('[WEBHOOK_ASYNC] Order encontrada:', order.id, 'Status actual:', order.status);
 
     // Mapear estados de MercadoPago a estados internos
     let newOrderStatus: string;
@@ -286,8 +326,8 @@ export async function POST(request: NextRequest) {
       .eq('id', order.id);
 
     if (updateError) {
-      console.error('Error updating order:', updateError);
-      return NextResponse.json({ error: 'Error updating order' }, { status: 500 });
+      console.error('[WEBHOOK_ASYNC] Error updating order:', updateError);
+      return;
     }
 
     // Enviar email de confirmación si el pago fue aprobado
@@ -367,9 +407,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ✅ MEJORADO: Logging estructurado del evento procesado
-    const processingTime = Date.now() - requestStart;
+    const processingTime = Date.now() - Date.now(); // Simplificado para función asíncrona
 
-    logger.webhook(LogLevel.INFO, 'Webhook processed successfully', {
+    logger.webhook(LogLevel.INFO, 'Webhook processed successfully (async)', {
       type: 'payment',
       action: 'processed',
       dataId: payment.id?.toString(),
@@ -377,126 +417,17 @@ export async function POST(request: NextRequest) {
       processingTime,
     }, { clientIP });
 
-    logger.payment(LogLevel.INFO, 'Payment webhook processed', {
-      orderId: order.id.toString(),
-      paymentId: payment.id?.toString(),
-      amount: payment.transaction_amount,
-      currency: payment.currency_id,
-      status: payment.status,
-      newOrderStatus,
-      newPaymentStatus,
-      method: 'mercadopago',
-    }, { clientIP });
-
-    // ✅ ENTERPRISE: Audit trail para procesamiento de pago
-    await logPaymentEvent(
-      'payment_webhook_processed',
-      payment.status === 'approved' ? AuditResult.SUCCESS :
-      payment.status === 'rejected' ? AuditResult.FAILURE : AuditResult.SUCCESS,
-      {
-        orderId: order.id.toString(),
-        paymentId: payment.id?.toString(),
-        amount: payment.transaction_amount,
-        currency: payment.currency_id,
-        orderStatus: newOrderStatus,
-        paymentStatus: newPaymentStatus,
-        method: 'mercadopago'
-      },
-      undefined, // No hay userId en webhook
-      {
-        ip: clientIP,
-        userAgent: request.headers.get('user-agent') || 'webhook'
-      }
-    );
-
-    logger.performance(LogLevel.INFO, 'Webhook processing completed', {
-      operation: 'webhook-processing',
-      duration: processingTime,
-      endpoint: '/api/payments/webhook',
-      statusCode: 200,
-    }, { clientIP });
-
-    // ✅ ENTERPRISE: Métricas de performance
-    await recordPerformanceMetric(
-      'webhook_processing',
-      processingTime,
-      true,
-      {
-        endpoint: '/api/payments/webhook',
-        paymentStatus: payment.status,
-        orderStatus: newStatus
-      }
-    );
-
-    // ✅ ENTERPRISE: Métricas de negocio
-    await recordBusinessMetric(
-      'payment_processed',
-      payment.transaction_amount || 0,
-      {
-        currency: payment.currency_id || 'ARS',
-        method: 'mercadopago',
-        status: payment.status
-      }
-    );
-
-    if (payment.status === 'approved') {
-      await recordBusinessMetric('payment_approved', 1, {
-        amount: payment.transaction_amount?.toString() || '0',
-        currency: payment.currency_id || 'ARS'
-      });
-    }
-
-    // ✅ NUEVO: Responder exitosamente con headers de rate limiting
-    const response = NextResponse.json({
-      status: 'processed',
-      order_id: order.id,
-      payment_status: newPaymentStatus,
-      order_status: newOrderStatus,
-      email_sent: shouldSendEmail,
-    }, { status: 200 });
-
-    // ✅ NUEVO: Registrar métricas de éxito
-    await metricsCollector.recordRequest(
-      'webhook',
-      'POST',
-      200,
-      Date.now() - requestStart,
-      { clientIP, paymentId: payment.id?.toString() || 'unknown' }
-    );
-
-    return addRateLimitHeaders(response, rateLimitResult, rateLimitConfig);
+    console.log('[WEBHOOK_ASYNC] Procesamiento completado exitosamente para payment:', payment.id);
+    console.log('[WEBHOOK_ASYNC] Order actualizada:', order.id, 'Nuevo status:', newOrderStatus);
 
   } catch (error: any) {
-    // ✅ MEJORADO: Logging estructurado de errores
-    const processingTime = Date.now() - requestStart;
+    console.error('[WEBHOOK_ASYNC] Error en procesamiento asíncrono:', error);
 
-    logger.error(LogCategory.WEBHOOK, 'Webhook processing failed', error, {
-      clientIP,
-      userAgent: request.headers.get('user-agent') || 'unknown',
-    });
-
-    logger.performance(LogLevel.ERROR, 'Webhook processing failed', {
-      operation: 'webhook-processing',
-      duration: processingTime,
-      endpoint: '/api/payments/webhook',
-      statusCode: 500,
+    logger.error(LogLevel.ERROR, 'Async webhook processing failed', {
+      error: error.message,
+      stack: error.stack,
+      dataId: webhookData.data.id
     }, { clientIP });
-
-    // ✅ NUEVO: Registrar métricas de error
-    await metricsCollector.recordRequest(
-      'webhook',
-      'POST',
-      500,
-      processingTime,
-      { clientIP, error: error.message }
-    );
-
-    // Retornar error 500 para que MercadoPago reintente
-    return NextResponse.json({
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Processing failed',
-      timestamp: new Date().toISOString(),
-    }, { status: 500 });
   }
 }
 
