@@ -20,6 +20,17 @@ import { sendOrderConfirmationEmail } from '../../../../../lib/email';
 
 // ✅ ELIMINADO: Rate limiting básico reemplazado por sistema avanzado con Redis
 
+// ✅ NUEVO: Handler GET para verificación de webhook por MercadoPago
+export async function GET(request: NextRequest) {
+  // MercadoPago hace peticiones GET para verificar que el webhook existe
+  return NextResponse.json({
+    status: 'webhook_active',
+    message: 'MercadoPago webhook endpoint is active',
+    timestamp: new Date().toISOString(),
+    endpoint: '/api/payments/webhook'
+  }, { status: 200 });
+}
+
 export async function POST(request: NextRequest) {
   // ✅ MEJORADO: Logging estructurado con timestamp
   const requestStart = Date.now();
