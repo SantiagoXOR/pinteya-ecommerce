@@ -64,15 +64,36 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ✅ MEJORADO: Validar origen del webhook
-    if (!validateWebhookOrigin(request)) {
+    // ✅ MEJORADO: Validar origen del webhook con debugging mejorado
+    const originValidation = validateWebhookOrigin(request);
+    if (!originValidation) {
+      // ✅ DEBUGGING: Log detallado de headers para diagnóstico
+      const debugHeaders = {
+        origin: request.headers.get('origin'),
+        userAgent: request.headers.get('user-agent'),
+        referer: request.headers.get('referer'),
+        host: request.headers.get('host'),
+        'x-forwarded-for': request.headers.get('x-forwarded-for'),
+        'content-type': request.headers.get('content-type'),
+      };
+
       logger.security(LogLevel.ERROR, 'Invalid webhook origin detected', {
         threat: 'invalid_origin',
         blocked: true,
         reason: 'Webhook origin validation failed',
+        debugHeaders,
       }, { clientIP, userAgent: request.headers.get('user-agent') || 'unknown' });
 
-      return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
+      // ✅ DESARROLLO: Información adicional para debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[WEBHOOK_DEBUG] Headers completos para debugging:', debugHeaders);
+        console.log('[WEBHOOK_DEBUG] Para habilitar modo debug, configura: MERCADOPAGO_WEBHOOK_DEBUG=true');
+      }
+
+      return NextResponse.json({
+        error: 'Invalid origin',
+        debug: process.env.NODE_ENV === 'development' ? debugHeaders : undefined
+      }, { status: 403 });
     }
 
     // Obtener headers necesarios para validación
