@@ -27,16 +27,16 @@ CLERK_GOOGLE_CLIENT_SECRET=...
 # DESPUÉS (NextAuth)
 NEXTAUTH_URL=https://pinteya.com
 NEXTAUTH_SECRET=pinteya-nextauth-secret-2025-production-key-32chars-minimum
-AUTH_GOOGLE_ID=764779735O5-tqui6nk4dunjci0t2sta391bd63kl0pu.apps.googleusercontent.com
-AUTH_GOOGLE_SECRET=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
+AUTH_GOOGLE_ID=your_google_client_id_here
+AUTH_GOOGLE_SECRET=your_google_oauth_secret_here
 ```
 
 ### 2. Creación del archivo `.env.local`
 ```env
 NEXTAUTH_URL=http://localhost:3001
 NEXTAUTH_SECRET=pinteya-nextauth-development-secret-key-32chars-minimum-required
-AUTH_GOOGLE_ID=764779735O5-tqui6nk4dunjci0t2sta391bd63kl0pu.apps.googleusercontent.com
-AUTH_GOOGLE_SECRET=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
+AUTH_GOOGLE_ID=your_google_client_id_here
+AUTH_GOOGLE_SECRET=your_google_oauth_secret_here
 NODE_ENV=development
 ```
 
