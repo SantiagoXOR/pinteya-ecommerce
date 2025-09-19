@@ -162,8 +162,8 @@ const MAX_ACCURACY_THRESHOLD = 50; // 50 metros
 ### **1. Variables de Entorno:**
 
 ```env
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyCdNoDaoentvjXgxIkX2lMYTTdodZhY-BU
-GOOGLE_PLACES_API_KEY=AIzaSyBOti4mM-6x9WDnZIjIeyb21L_Hw_KC_1o
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
 ```
 
 ### **2. APIs de Google Maps Requeridas:**

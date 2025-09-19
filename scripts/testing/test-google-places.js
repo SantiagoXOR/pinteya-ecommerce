@@ -2,7 +2,7 @@ const { Client } = require('@googlemaps/google-maps-services-js');
 
 async function testGooglePlaces() {
   const googleMapsClient = new Client({});
-  const apiKey = 'AIzaSyBOti4mM-6x9WDnZIjIeyb21L_Hw_KC_1o';
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY || 'your_api_key_here';
   
   try {
     console.log('🔍 Testing Google Places API...');
