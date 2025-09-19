@@ -257,3 +257,6 @@ Cada sección del Design System incluye:
 ---
 
 *Última actualización: Enero 2025*
+
+
+

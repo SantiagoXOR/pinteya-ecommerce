@@ -47,7 +47,7 @@ const AnalyticsPage: React.FC = () => {
 
       if (!isAdmin && !hasPermission(['dashboard', 'access'])) {
         redirect('/');
-        return;
+        
       }
     }
   }, [user, isLoaded, isAdmin, hasPermission, roleLoading]);
@@ -313,3 +313,12 @@ const AnalyticsPage: React.FC = () => {
 };
 
 export default AnalyticsPage;
+
+
+
+
+
+
+
+
+

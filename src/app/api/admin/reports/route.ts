@@ -3,14 +3,14 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { checkRateLimit } from '@/lib/auth/rate-limiting';
-import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -240,7 +240,7 @@ async function generateSalesReport(filters: any): Promise<SalesReport> {
   }
 
   const { data: orders, error } = await ordersQuery;
-  if (error) throw error;
+  if (error) {throw error;}
 
   // Calcular métricas de resumen
   const completedOrders = orders?.filter(o => o.status === 'completed') || [];
@@ -353,7 +353,7 @@ async function generateProductsReport(filters: any): Promise<ProductsReport> {
   }
 
   const { data: products, error } = await productsQuery;
-  if (error) throw error;
+  if (error) {throw error;}
 
   // Calcular métricas de resumen
   const total_products = products?.length || 0;
@@ -469,7 +469,7 @@ async function generateUsersReport(filters: any): Promise<UsersReport> {
       )
     `);
 
-  if (error) throw error;
+  if (error) {throw error;}
 
   const dateStart = new Date(filters.date_range.start);
   const dateEnd = new Date(filters.date_range.end);
@@ -756,3 +756,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

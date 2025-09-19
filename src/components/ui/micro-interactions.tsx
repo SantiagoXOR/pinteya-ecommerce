@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Heart, ShoppingCart, Star, Zap } from 'lucide-react';
 
@@ -230,7 +230,7 @@ export const PulseIndicator: React.FC<PulseIndicatorProps> = ({
     error: 'bg-red-600'
   };
 
-  if (!active) return null;
+  if (!active) {return null;}
 
   return (
     <div className={cn('relative flex items-center justify-center', className)}>
@@ -273,7 +273,7 @@ export const AnimatedCounter: React.FC<{
     let animationFrame: number;
 
     const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
+      if (!startTime) {startTime = timestamp;}
       const progress = Math.min((timestamp - startTime) / duration, 1);
       
       setDisplayValue(Math.floor(progress * value));
@@ -363,3 +363,12 @@ export const InteractiveRating: React.FC<{
     </div>
   );
 };
+
+
+
+
+
+
+
+
+

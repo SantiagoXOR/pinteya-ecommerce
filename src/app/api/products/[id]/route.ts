@@ -3,7 +3,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient, handleSupabaseError } from '@/lib/supabase';
+import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase';
 import { validateData, ProductSchema } from '@/lib/validations';
 import { ApiResponse, ProductWithCategory } from '@/types/api';
 

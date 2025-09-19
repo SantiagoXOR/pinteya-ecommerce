@@ -347,3 +347,12 @@ describe('useHeroCarousel', () => {
     expect(jest.getTimerCount()).toBe(0);
   });
 });
+
+
+
+
+
+
+
+
+

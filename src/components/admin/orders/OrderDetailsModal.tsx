@@ -252,7 +252,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   // ===================================
 
   const handleCreatePaymentLink = async () => {
-    if (!order) return;
+    if (!order) {return;}
 
     try {
       notifications.showProcessingInfo('Creando link de pago...');
@@ -284,7 +284,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   };
 
   const handleMarkAsPaid = async () => {
-    if (!order) return;
+    if (!order) {return;}
 
     try {
       notifications.showProcessingInfo('Marcando orden como pagada...');
@@ -317,7 +317,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   };
 
   const handleProcessRefund = async () => {
-    if (!order) return;
+    if (!order) {return;}
 
     try {
       notifications.showProcessingInfo('Procesando reembolso...');
@@ -757,3 +757,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     </Dialog>
   );
 };
+
+
+
+
+
+
+
+
+

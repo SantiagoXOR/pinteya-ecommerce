@@ -35,8 +35,8 @@ import {
 } from '@/types/logistics';
 import { useCreateShipment } from '@/hooks/admin/useShipments';
 import { useCouriers, useShippingQuote } from '@/hooks/admin/useShippingQuote';
-import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/utils/format';
+import { cn } from '@/lib/core/utils';
+import { formatCurrency } from '@/lib/utils/consolidated-utils';
 
 // =====================================================
 // SCHEMAS DE VALIDACIÓN
@@ -539,3 +539,12 @@ export function CreateShipmentDialog({ children, onSuccess }: CreateShipmentDial
     </Dialog>
   );
 }
+
+
+
+
+
+
+
+
+

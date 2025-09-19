@@ -747,3 +747,6 @@ Este plan transformará Pinteya E-commerce en una **plataforma enterprise-ready*
 - [Mejoras de Seguridad](./SECURITY_IMPROVEMENTS.md)
 - [Optimizaciones de Performance](../PERFORMANCE_OPTIMIZATIONS.md)
 - [Configuración del Proyecto](./CONFIGURATION.md)
+
+
+

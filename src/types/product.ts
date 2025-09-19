@@ -10,3 +10,12 @@ export type Product = {
     previews: string[];
   };
 };
+
+
+
+
+
+
+
+
+

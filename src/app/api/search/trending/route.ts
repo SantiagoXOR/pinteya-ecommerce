@@ -3,8 +3,22 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { ApiResponse } from '@/types/api';
+
+// ===================================
+// MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
+// ===================================
+import {
+  withRateLimit,
+  RATE_LIMIT_CONFIGS
+} from '@/lib/rate-limiting/rate-limiter';
+import {
+  API_TIMEOUTS,
+  withDatabaseTimeout,
+  getEndpointTimeouts
+} from '@/lib/config/api-timeouts';
+import { createSecurityLogger } from '@/lib/logging/security-logger';
 
 export interface TrendingSearch {
   id: string;
@@ -121,8 +135,29 @@ function getFallbackTrendingSearches(limit: number = 6): TrendingSearch[] {
 }
 
 export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
+  // Crear logger de seguridad con contexto
+  const securityLogger = createSecurityLogger(request);
+
+  // Aplicar rate limiting para APIs de búsqueda
+  const rateLimitResult = await withRateLimit(
+    request,
+    RATE_LIMIT_CONFIGS.search,
+    async () => {
+      // Log de acceso a la API
+      securityLogger.log({
+        type: 'data_access',
+        severity: 'low',
+        message: 'Trending search API accessed',
+        context: securityLogger.context,
+        metadata: {
+          endpoint: '/api/search/trending',
+          method: 'GET',
+          userAgent: request.headers.get('user-agent')
+        }
+      });
+
+      try {
+        const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '6');
     const days = parseInt(searchParams.get('days') || '7');
     const category = searchParams.get('category');
@@ -156,7 +191,10 @@ export async function GET(request: NextRequest) {
           query = query.eq('metadata->>category', category);
         }
 
-        const { data: analyticsData, error } = await query;
+        const { data: analyticsData, error } = await withDatabaseTimeout(
+          async (signal) => await query,
+          API_TIMEOUTS.database
+        );
 
         if (!error && analyticsData && analyticsData.length > 0) {
           // Procesar datos de analytics para obtener trending
@@ -235,28 +273,64 @@ export async function GET(request: NextRequest) {
       success: true
     };
 
-    console.log('🔥 Trending searches response:', {
-      count: trendingSearches.length,
-      hasRealData: trendingSearches.some(s => s.id.includes('real')),
-      categories: [...new Set(trendingSearches.map(s => s.category).filter(Boolean))]
-    });
+        console.log('🔥 Trending searches response:', {
+          count: trendingSearches.length,
+          hasRealData: trendingSearches.some(s => s.id.includes('real')),
+          categories: [...new Set(trendingSearches.map(s => s.category).filter(Boolean))]
+        });
 
-    return NextResponse.json(response);
+        // Log de operación exitosa
+        securityLogger.log({
+          type: 'data_access',
+          severity: 'low',
+          message: 'Trending searches retrieved successfully',
+          context: securityLogger.context,
+          metadata: {
+            searchesCount: trendingSearches.length,
+            limit: limit,
+            days: days,
+            category: category
+          }
+        });
 
-  } catch (error) {
-    console.error('❌ Error en /api/search/trending:', error);
+        return NextResponse.json(response);
 
-    // En caso de error, devolver búsquedas por defecto
-    const fallbackResponse: ApiResponse<TrendingSearchesResponse> = {
-      data: {
-        trending: defaultTrendingSearches.slice(0, parseInt(request.nextUrl.searchParams.get('limit') || '6')),
-        lastUpdated: new Date().toISOString()
-      },
-      success: true
-    };
+      } catch (error) {
+        console.error('❌ Error en /api/search/trending:', error);
 
-    return NextResponse.json(fallbackResponse);
+        // Log de error de seguridad
+        securityLogger.logApiError(
+          securityLogger.context,
+          error instanceof Error ? error : new Error('Unknown error'),
+          {
+            endpoint: '/api/search/trending'
+          }
+        );
+
+        // En caso de error, devolver búsquedas por defecto
+        const fallbackResponse: ApiResponse<TrendingSearchesResponse> = {
+          data: {
+            trending: defaultTrendingSearches.slice(0, parseInt(request.nextUrl.searchParams.get('limit') || '6')),
+            lastUpdated: new Date().toISOString()
+          },
+          success: true
+        };
+
+        return NextResponse.json(fallbackResponse);
+      }
+    }
+  );
+
+  // Manejar rate limit excedido
+  if (rateLimitResult instanceof NextResponse) {
+    securityLogger.logRateLimitExceeded(
+      securityLogger.context,
+      { endpoint: '/api/search/trending', method: 'GET' }
+    );
+    return rateLimitResult;
   }
+
+  return rateLimitResult;
 }
 
 // Método POST para registrar una búsqueda (para analytics)
@@ -332,3 +406,12 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

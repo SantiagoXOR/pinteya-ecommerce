@@ -285,3 +285,12 @@ export function logConfig(): void {
 
 // Exportar configuración por defecto
 export default getConfig;
+
+
+
+
+
+
+
+
+

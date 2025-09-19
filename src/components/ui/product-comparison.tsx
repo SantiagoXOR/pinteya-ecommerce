@@ -408,3 +408,12 @@ export const ProductComparison = React.forwardRef<HTMLDivElement, ProductCompari
 )
 
 ProductComparison.displayName = "ProductComparison"
+
+
+
+
+
+
+
+
+

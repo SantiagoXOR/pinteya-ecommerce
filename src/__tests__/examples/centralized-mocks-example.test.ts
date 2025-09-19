@@ -235,3 +235,12 @@ describe('Ejemplo de Mocks Centralizados', () => {
  *    - Actualizar mocks cuando cambie la API
  *    - Mantener sincronizados con tipos TypeScript
  */
+
+
+
+
+
+
+
+
+

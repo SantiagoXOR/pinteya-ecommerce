@@ -40,7 +40,7 @@ export const useSwipeGestures = (config: SwipeGestureConfig) => {
   const touchEndRef = useRef<TouchPosition | null>(null);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
-    if (!enabled) return;
+    if (!enabled) {return;}
     
     const touch = e.touches[0];
     touchStartRef.current = {
@@ -52,7 +52,7 @@ export const useSwipeGestures = (config: SwipeGestureConfig) => {
   }, [enabled]);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!enabled || !touchStartRef.current) return;
+    if (!enabled || !touchStartRef.current) {return;}
     
     if (preventDefaultTouchmove) {
       // Solo prevenir el default si el movimiento es principalmente horizontal
@@ -67,7 +67,7 @@ export const useSwipeGestures = (config: SwipeGestureConfig) => {
   }, [enabled, preventDefaultTouchmove]);
 
   const handleTouchEnd = useCallback((e: TouchEvent) => {
-    if (!enabled || !touchStartRef.current) return;
+    if (!enabled || !touchStartRef.current) {return;}
     
     const touch = e.changedTouches[0];
     touchEndRef.current = {
@@ -81,7 +81,7 @@ export const useSwipeGestures = (config: SwipeGestureConfig) => {
     const deltaTime = touchEndRef.current.time - touchStartRef.current.time;
     
     // Verificar que el gesto sea lo suficientemente rápido (menos de 500ms)
-    if (deltaTime > 500) return;
+    if (deltaTime > 500) {return;}
     
     const absDeltaX = Math.abs(deltaX);
     const absDeltaY = Math.abs(deltaY);
@@ -114,7 +114,7 @@ export const useSwipeGestures = (config: SwipeGestureConfig) => {
 
   useEffect(() => {
     const element = elementRef.current;
-    if (!element || !enabled) return;
+    if (!element || !enabled) {return;}
 
     // Agregar event listeners
     element.addEventListener('touchstart', handleTouchStart, { passive: true });
@@ -133,3 +133,12 @@ export const useSwipeGestures = (config: SwipeGestureConfig) => {
 };
 
 export default useSwipeGestures;
+
+
+
+
+
+
+
+
+

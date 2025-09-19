@@ -258,3 +258,6 @@ appearance: {
 **📅 Migración completada**: Junio 2025  
 **🎨 Nueva identidad**: Blaze Orange + Fun Green + Bright Sun  
 **✅ Estado**: Lista para producción
+
+
+

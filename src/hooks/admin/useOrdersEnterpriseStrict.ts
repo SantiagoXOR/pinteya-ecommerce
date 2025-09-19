@@ -442,7 +442,7 @@ export function useOrderDetailStrict(orderId: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchOrder = useCallback(async () => {
-    if (!orderId) return;
+    if (!orderId) {return;}
 
     setIsLoading(true);
     setError(null);
@@ -506,3 +506,12 @@ export function useOrderDetailStrict(orderId: string | null) {
 // - cache.getCacheStats()
 // - cache.getPendingRequest()
 // - cache.setPendingRequest()
+
+
+
+
+
+
+
+
+

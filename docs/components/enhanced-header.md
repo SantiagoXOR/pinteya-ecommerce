@@ -218,3 +218,6 @@ El nuevo header de Pinteya ofrece:
 - ⚡ Performance optimizada
 - ♿ Accesibilidad completa
 - 🎨 Identidad de marca consistente
+
+
+

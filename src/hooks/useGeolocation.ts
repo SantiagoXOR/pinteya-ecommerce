@@ -264,3 +264,12 @@ export const useGeolocation = () => {
     testLocation // Función de test para debugging
   };
 };
+
+
+
+
+
+
+
+
+

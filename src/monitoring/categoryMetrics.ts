@@ -132,7 +132,7 @@ class PerformanceMeasurer {
    * Initialize performance observer
    */
   private initializeObserver(): void {
-    if (typeof window === 'undefined' || !window.PerformanceObserver) return;
+    if (typeof window === 'undefined' || !window.PerformanceObserver) {return;}
 
     try {
       this.observer = new PerformanceObserver((list) => {
@@ -178,7 +178,7 @@ class PerformanceMeasurer {
    */
   endMeasure(name: string): number {
     const startTime = this.startTimes.get(name);
-    if (!startTime) return 0;
+    if (!startTime) {return 0;}
 
     const endTime = performance.now();
     const duration = endTime - startTime;
@@ -196,7 +196,7 @@ class PerformanceMeasurer {
    * Get memory usage
    */
   getMemoryUsage(): number {
-    if (typeof window === 'undefined' || !window.performance.memory) return 0;
+    if (typeof window === 'undefined' || !window.performance.memory) {return 0;}
 
     const memory = window.performance.memory;
     return Number((memory.usedJSHeapSize / 1024 / 1024).toFixed(defaultConfig.precision));
@@ -246,7 +246,7 @@ class CategoryMetricsManager {
    * Initialize metrics manager
    */
   private initialize(): void {
-    if (!this.config.enabled) return;
+    if (!this.config.enabled) {return;}
 
     // Set up flush timer
     this.flushTimer = setInterval(() => {
@@ -279,7 +279,7 @@ class CategoryMetricsManager {
    * Start performance measurement
    */
   startPerformanceMeasure(name: string): void {
-    if (!this.config.enabled || !this.shouldSample()) return;
+    if (!this.config.enabled || !this.shouldSample()) {return;}
     this.performanceMeasurer.startMeasure(`category-${name}`);
   }
 
@@ -287,7 +287,7 @@ class CategoryMetricsManager {
    * End performance measurement
    */
   endPerformanceMeasure(name: string): number {
-    if (!this.config.enabled) return 0;
+    if (!this.config.enabled) {return 0;}
     return this.performanceMeasurer.endMeasure(`category-${name}`);
   }
 
@@ -304,7 +304,7 @@ class CategoryMetricsManager {
    * Record accessibility metrics
    */
   recordAccessibilityMetrics(metrics: Partial<AccessibilityMetrics>): void {
-    if (!this.config.enabled || !this.shouldSample()) return;
+    if (!this.config.enabled || !this.shouldSample()) {return;}
 
     const fullMetrics: AccessibilityMetrics = {
       wcagCompliance: 100,
@@ -324,7 +324,7 @@ class CategoryMetricsManager {
    * Record user experience metrics
    */
   recordUserExperienceMetrics(metrics: Partial<UserExperienceMetrics>): void {
-    if (!this.config.enabled || !this.shouldSample()) return;
+    if (!this.config.enabled || !this.shouldSample()) {return;}
 
     const fullMetrics: UserExperienceMetrics = {
       interactionRate: 0,
@@ -344,7 +344,7 @@ class CategoryMetricsManager {
    * Record business metrics
    */
   recordBusinessMetrics(metrics: Partial<BusinessMetrics>): void {
-    if (!this.config.enabled || !this.shouldSample()) return;
+    if (!this.config.enabled || !this.shouldSample()) {return;}
 
     const fullMetrics: BusinessMetrics = {
       conversionRate: 0,
@@ -416,7 +416,7 @@ class CategoryMetricsManager {
    * Flush metrics to endpoint
    */
   private async flush(): Promise<void> {
-    if (this.metricsQueue.length === 0) return;
+    if (this.metricsQueue.length === 0) {return;}
 
     const metricsToSend = [...this.metricsQueue];
     this.metricsQueue = [];
@@ -521,3 +521,12 @@ export const recordCategoryInteraction = (interactionTime: number) => {
  * Export manager class
  */
 export { CategoryMetricsManager };
+
+
+
+
+
+
+
+
+

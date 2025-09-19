@@ -233,7 +233,7 @@ export class ScreenshotManager {
    * Agrega anotaciones visuales a la página
    */
   private async addAnnotations(annotations: ScreenshotOptions['annotations']): Promise<void> {
-    if (!this.page || !annotations) return;
+    if (!this.page || !annotations) {return;}
 
     for (const annotation of annotations) {
       await this.page.evaluate((ann) => {
@@ -364,3 +364,12 @@ export class ScreenshotManager {
 
 // Instancia global del screenshot manager
 export const screenshotManager = new ScreenshotManager();
+
+
+
+
+
+
+
+
+

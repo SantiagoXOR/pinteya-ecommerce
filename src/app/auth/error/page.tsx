@@ -60,7 +60,7 @@ export default function AuthErrorPage() {
         {error && (
           <div className="mb-6 p-3 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-500">
-              Código de error: <span className="font-mono">{error}</span>
+              Código de error: <span className="font-mono">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</span>
             </p>
           </div>
         )}
@@ -95,3 +95,12 @@ export default function AuthErrorPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

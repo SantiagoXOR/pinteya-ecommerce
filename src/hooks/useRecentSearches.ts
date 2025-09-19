@@ -70,7 +70,7 @@ export function useRecentSearches(options: RecentSearchesOptions = {}): RecentSe
 
   // Función para verificar si los datos han expirado
   const isExpired = useCallback((timestamp: number): boolean => {
-    if (config.expirationDays === 0) return false;
+    if (config.expirationDays === 0) {return false;}
     const maxAge = config.expirationDays * 24 * 60 * 60 * 1000;
     return Date.now() - timestamp > maxAge;
   }, [config.expirationDays]);
@@ -149,7 +149,7 @@ export function useRecentSearches(options: RecentSearchesOptions = {}): RecentSe
   // Agregar una nueva búsqueda
   const addSearch = useCallback((search: string): void => {
     const sanitized = sanitizeSearch(search);
-    if (!sanitized || sanitized.length < 2) return;
+    if (!sanitized || sanitized.length < 2) {return;}
 
     setRecentSearches(prev => {
       let updated = [...prev];
@@ -209,7 +209,7 @@ export function useRecentSearches(options: RecentSearchesOptions = {}): RecentSe
       const filtered = prev.filter(s => sanitizeSearch(s) !== sanitized);
       const existing = prev.find(s => sanitizeSearch(s) === sanitized);
       
-      if (!existing) return prev;
+      if (!existing) {return prev;}
       
       const updated = [existing, ...filtered];
       saveToStorage(updated);
@@ -237,3 +237,12 @@ export function useRecentSearchesSimple(limit: number = 5): string[] {
 }
 
 export default useRecentSearches;
+
+
+
+
+
+
+
+
+

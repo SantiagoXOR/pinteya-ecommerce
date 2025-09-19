@@ -178,7 +178,7 @@ export class SampleE2ETest {
       'Buscar productos en la tienda',
       async () => {
         const page = this.screenshotManager.getPage();
-        if (!page) throw new Error('Página no disponible');
+        if (!page) {throw new Error('Página no disponible');}
 
         // Navegar a la sección de productos
         await this.screenshotManager.navigateTo(`${this.baseUrl}/shop`);
@@ -246,7 +246,7 @@ export class SampleE2ETest {
       'Seleccionar primer producto disponible',
       async () => {
         const page = this.screenshotManager.getPage();
-        if (!page) throw new Error('Página no disponible');
+        if (!page) {throw new Error('Página no disponible');}
 
         // Buscar el primer producto disponible
         const firstProduct = page.locator('[data-testid="product-card"]').first();
@@ -310,7 +310,7 @@ export class SampleE2ETest {
       'Agregar producto al carrito',
       async () => {
         const page = this.screenshotManager.getPage();
-        if (!page) throw new Error('Página no disponible');
+        if (!page) {throw new Error('Página no disponible');}
 
         // Validar estructura antes de agregar al carrito
         await this.validatePageStructure('product-detail', [
@@ -386,7 +386,7 @@ export class SampleE2ETest {
       'Verificar contenido del carrito',
       async () => {
         const page = this.screenshotManager.getPage();
-        if (!page) throw new Error('Página no disponible');
+        if (!page) {throw new Error('Página no disponible');}
 
         // Navegar al carrito
         await this.screenshotManager.navigateTo(`${this.baseUrl}/cart`);
@@ -433,7 +433,7 @@ export class SampleE2ETest {
       'Simular proceso de checkout',
       async () => {
         const page = this.screenshotManager.getPage();
-        if (!page) throw new Error('Página no disponible');
+        if (!page) {throw new Error('Página no disponible');}
 
         // Buscar botón de checkout
         const checkoutButton = page.locator('button:has-text("Finalizar Compra")').first();
@@ -483,7 +483,7 @@ export class SampleE2ETest {
       'Verificación final del test',
       async () => {
         const page = this.screenshotManager.getPage();
-        if (!page) throw new Error('Página no disponible');
+        if (!page) {throw new Error('Página no disponible');}
 
         // Capturar screenshot final
         await this.screenshotManager.captureScreenshot(
@@ -515,7 +515,7 @@ export class SampleE2ETest {
    */
   private async validatePageStructure(pageName: string, requiredElements: string[]): Promise<void> {
     const page = this.screenshotManager.getPage();
-    if (!page) throw new Error('Página no disponible para validación');
+    if (!page) {throw new Error('Página no disponible para validación');}
     
     console.log(`Validando estructura de ${pageName}...`);
     
@@ -578,3 +578,12 @@ if (require.main === module) {
   console.log(`🚀 Ejecutando test E2E en: ${baseUrl}`);
   SampleE2ETest.run(baseUrl);
 }
+
+
+
+
+
+
+
+
+

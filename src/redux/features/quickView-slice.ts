@@ -40,3 +40,12 @@ export const quickView = createSlice({
 
 export const { updateQuickView, resetQuickView } = quickView.actions;
 export default quickView.reducer;
+
+
+
+
+
+
+
+
+

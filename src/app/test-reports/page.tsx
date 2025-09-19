@@ -159,7 +159,7 @@ export default function TestReportsPage() {
   };
 
   const getStatusBadge = (status: string | undefined) => {
-    if (!status) return null;
+    if (!status) {return null;}
     
     const variants = {
       success: 'default',
@@ -176,7 +176,7 @@ export default function TestReportsPage() {
   };
 
   const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
+    if (ms < 1000) {return `${ms}ms`;}
     return `${(ms / 1000).toFixed(2)}s`;
   };
 
@@ -858,3 +858,12 @@ export default function TestReportsPage() {
      </div>
    );
  }
+
+
+
+
+
+
+
+
+

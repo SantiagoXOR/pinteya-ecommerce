@@ -19,19 +19,19 @@ jest.mock('@/lib/supabase');
 jest.mock('@/lib/mercadopago', () => ({
   getPaymentInfo: jest.fn()
 }));
-jest.mock('@/lib/rate-limiter', () => ({
+jest.mock('@/lib/enterprise/rate-limiter', () => ({
   checkRateLimit: jest.fn(() => Promise.resolve({ success: true, remaining: 10 })),
   addRateLimitHeaders: jest.fn(),
   RATE_LIMIT_CONFIGS: {
     ANALYTICS: { requests: 100, window: 3600 }
   }
 }));
-jest.mock('@/lib/metrics', () => ({
+jest.mock('@/lib/enterprise/metrics', () => ({
   metricsCollector: {
     recordApiCall: jest.fn(() => Promise.resolve())
   }
 }));
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -58,10 +58,10 @@ describe('/api/payments/integration-quality', () => {
     process.env.NODE_ENV = 'test';
 
     // Reset all mocks to default successful state
-    const { checkRateLimit } = require('@/lib/rate-limiter');
+    const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
     checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
-    const { metricsCollector } = require('@/lib/metrics');
+    const { metricsCollector } = require('@/lib/enterprise/metrics');
     metricsCollector.recordApiCall.mockResolvedValue(undefined);
   });
 
@@ -82,11 +82,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
@@ -114,11 +114,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality?include_recommendations=true');
@@ -141,7 +141,7 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter to return failure
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ 
         success: false, 
         remaining: 0,
@@ -162,11 +162,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
@@ -197,11 +197,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
@@ -230,11 +230,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
@@ -263,11 +263,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
@@ -297,11 +297,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
@@ -331,11 +331,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
@@ -392,11 +392,11 @@ describe('/api/payments/integration-quality', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
@@ -418,3 +418,12 @@ describe('/api/payments/integration-quality', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

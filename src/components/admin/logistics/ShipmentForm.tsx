@@ -41,8 +41,8 @@ import {
 import { useCreateShipment, useUpdateShipment } from '@/hooks/admin/useShipments';
 import { useCouriers } from '@/hooks/admin/useCouriers';
 import { useShippingQuote } from '@/hooks/admin/useShippingQuote';
-import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/utils/format';
+import { cn } from '@/lib/core/utils';
+import { formatCurrency } from '@/lib/utils/consolidated-utils';
 
 // =====================================================
 // SCHEMAS DE VALIDACIÓN
@@ -670,3 +670,12 @@ export function ShipmentForm({
     </Card>
   );
 }
+
+
+
+
+
+
+
+
+

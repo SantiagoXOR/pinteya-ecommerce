@@ -119,3 +119,12 @@ describe('useSidebar', () => {
     expect(result.current.close).toBe(initialClose);
   });
 });
+
+
+
+
+
+
+
+
+

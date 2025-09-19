@@ -68,7 +68,7 @@ export const useCartWithClerk = () => {
 
   // Efecto para manejar cambios en el estado de autenticación
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded) {return;}
 
     if (user) {
       // Usuario autenticado - migrar carrito temporal si existe
@@ -84,7 +84,7 @@ export const useCartWithClerk = () => {
 
   // Efecto para guardar carrito de usuario autenticado cuando cambie
   useEffect(() => {
-    if (!isLoaded || !user) return;
+    if (!isLoaded || !user) {return;}
 
     // Debounce para evitar guardados excesivos
     const timeoutId = setTimeout(() => {
@@ -120,3 +120,12 @@ export const useCart = () => {
     dispatch,
   };
 };
+
+
+
+
+
+
+
+
+

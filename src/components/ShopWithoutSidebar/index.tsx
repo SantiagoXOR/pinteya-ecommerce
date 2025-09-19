@@ -119,7 +119,9 @@ const ShopWithoutSidebar = () => {
               ) : error ? (
                 <div className="flex items-center justify-center py-20">
                   <div className="text-center">
-                    <p className="text-red-500 mb-4">Error: {error}</p>
+                    <p className="text-red-500 mb-4">
+                      Error: {error instanceof Error ? error.message : String(error) || 'Error desconocido'}
+                    </p>
                     <button
                       onClick={() => window.location.reload()}
                       className="bg-blue text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -278,3 +280,12 @@ const ShopWithoutSidebar = () => {
 };
 
 export default ShopWithoutSidebar;
+
+
+
+
+
+
+
+
+

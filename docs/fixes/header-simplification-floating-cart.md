@@ -213,3 +213,6 @@ Simplificar el header eliminando elementos redundantes y mejorar la UX con un ca
 ### Eliminados:
 - Elementos redundantes en componentes existentes
 - Funcionalidades duplicadas
+
+
+

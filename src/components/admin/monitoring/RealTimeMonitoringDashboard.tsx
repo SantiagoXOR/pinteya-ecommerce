@@ -85,7 +85,7 @@ export default function RealTimeMonitoringDashboard() {
    * Obtiene métricas del servidor
    */
   const fetchMetrics = useCallback(async () => {
-    if (isPaused) return;
+    if (isPaused) {return;}
 
     try {
       setError(null);
@@ -250,7 +250,7 @@ export default function RealTimeMonitoringDashboard() {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error de Conexión</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</AlertDescription>
         </Alert>
       )}
 
@@ -487,3 +487,12 @@ export default function RealTimeMonitoringDashboard() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

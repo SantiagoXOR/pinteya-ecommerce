@@ -13,12 +13,12 @@ const Testimonials = () => {
   const sliderRef = useRef<any>(null);
 
   const handlePrev = useCallback(() => {
-    if (!sliderRef.current) return;
+    if (!sliderRef.current) {return;}
     sliderRef.current.swiper.slidePrev();
   }, []);
 
   const handleNext = useCallback(() => {
-    if (!sliderRef.current) return;
+    if (!sliderRef.current) {return;}
     sliderRef.current.swiper.slideNext();
   }, []);
 
@@ -116,3 +116,12 @@ const Testimonials = () => {
 };
 
 export default Testimonials;
+
+
+
+
+
+
+
+
+

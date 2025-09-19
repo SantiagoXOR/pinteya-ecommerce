@@ -65,3 +65,12 @@ export const ForbiddenError = (message: string = 'Sin permisos') =>
 
 export const ConflictError = (message: string, details?: any) => 
   new ApiError(message, 409, 'CONFLICT', details);
+
+
+
+
+
+
+
+
+

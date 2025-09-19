@@ -2,8 +2,8 @@
 // PINTEYA E-COMMERCE - CACHE MANAGER
 // ===================================
 
-import { redisCache } from './redis';
-import { logger, LogLevel, LogCategory } from './logger';
+import { redisCache } from './integrations/redis';
+import { logger, LogLevel, LogCategory } from './enterprise/logger';
 
 // Configuración de cache
 export interface CacheConfig {
@@ -353,3 +353,12 @@ export const CacheUtils = {
     return cacheManager.delete(`product:${productId}`, CACHE_CONFIGS.PRODUCT_DATA);
   },
 };
+
+
+
+
+
+
+
+
+

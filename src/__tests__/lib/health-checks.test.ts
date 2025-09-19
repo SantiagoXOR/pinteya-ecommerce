@@ -10,7 +10,7 @@ import {
 } from '@/lib/monitoring/health-checks';
 
 // Mock dependencies
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -461,3 +461,12 @@ describe('Enterprise Health System', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

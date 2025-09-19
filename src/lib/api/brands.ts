@@ -196,3 +196,12 @@ export function getBrandLogo(brandName: string): string {
 
   return brandLogos[formatBrandName(brandName)] || '/images/brands/default.png';
 }
+
+
+
+
+
+
+
+
+

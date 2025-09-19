@@ -5,10 +5,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils';
-import { getSupabaseClient } from '@/lib/supabase';
-import { checkRateLimit } from '@/lib/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { metricsCollector } from '@/lib/metrics';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { checkRateLimit } from '@/lib/enterprise/rate-limiter';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 import { ApiResponse } from '@/types/api';
 import { Category } from '@/types/database';
 
@@ -554,3 +554,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

@@ -469,3 +469,12 @@ describe('Validator Integration', () => {
     expect(validatePaymentData(checkoutData.payment).isValid).toBe(true);
   });
 });
+
+
+
+
+
+
+
+
+

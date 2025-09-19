@@ -268,3 +268,12 @@ export default function CheckoutPendingPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

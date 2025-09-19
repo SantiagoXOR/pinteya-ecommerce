@@ -78,7 +78,7 @@ jest.mock('@/lib/cache-manager', () => ({
   }
 }));
 
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -496,3 +496,12 @@ describe('Monitoring APIs', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

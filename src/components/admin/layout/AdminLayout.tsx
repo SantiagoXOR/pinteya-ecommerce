@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface BreadcrumbItem {
   label: string;
@@ -67,3 +67,12 @@ export function AdminLayout({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

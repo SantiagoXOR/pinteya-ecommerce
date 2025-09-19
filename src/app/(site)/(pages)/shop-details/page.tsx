@@ -17,3 +17,12 @@ const ShopDetailsPage = () => {
 };
 
 export default ShopDetailsPage;
+
+
+
+
+
+
+
+
+

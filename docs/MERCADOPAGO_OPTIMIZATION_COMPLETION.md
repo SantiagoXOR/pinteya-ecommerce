@@ -278,3 +278,6 @@ El sistema ahora cuenta con:
 **Proyecto:** Pinteya E-commerce  
 **Tecnologías:** Next.js 15, TypeScript, Supabase, MercadoPago, Redis  
 **Fecha:** Enero 2025
+
+
+

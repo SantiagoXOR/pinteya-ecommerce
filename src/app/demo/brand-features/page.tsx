@@ -202,7 +202,7 @@ export default function BrandFeaturesDemo() {
               {error && (
                 <Card className="border-red-200 bg-red-50">
                   <CardContent className="pt-6">
-                    <p className="text-red-600">Error: {error}</p>
+                    <p className="text-red-600">Error: {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
                   </CardContent>
                 </Card>
               )}
@@ -274,3 +274,12 @@ export default function BrandFeaturesDemo() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

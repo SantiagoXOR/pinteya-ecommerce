@@ -33,3 +33,12 @@ const LatestProducts = ({ products }: { products: any[] }) => {
 };
 
 export default LatestProducts;
+
+
+
+
+
+
+
+
+

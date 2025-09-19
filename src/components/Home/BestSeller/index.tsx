@@ -91,7 +91,9 @@ const BestSeller: React.FC<BestSellerProps> = ({ selectedCategories = [] }) => {
                   <h3 className="font-semibold text-red-900 mb-1">
                     Error al cargar productos más vendidos
                   </h3>
-                  <p className="text-red-700 text-sm">{error}</p>
+                  <p className="text-red-700 text-sm">
+                    {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+                  </p>
                 </div>
                 <Button
                   variant="outline"
@@ -182,3 +184,12 @@ const BestSeller: React.FC<BestSellerProps> = ({ selectedCategories = [] }) => {
 };
 
 export default BestSeller;
+
+
+
+
+
+
+
+
+

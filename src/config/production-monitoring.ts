@@ -194,7 +194,7 @@ export class ProductionMonitor {
   }
   
   private async flushMetrics() {
-    if (this.metricsBuffer.length === 0) return;
+    if (this.metricsBuffer.length === 0) {return;}
     
     const metrics = [...this.metricsBuffer];
     this.metricsBuffer = [];
@@ -220,10 +220,10 @@ export class ProductionMonitor {
   
   private getRating(name: string, value: number): 'good' | 'needs-improvement' | 'poor' {
     const thresholds = this.config.webVitals[name as keyof typeof this.config.webVitals];
-    if (!thresholds) return 'good';
+    if (!thresholds) {return 'good';}
     
-    if (value <= thresholds.good) return 'good';
-    if (value <= thresholds.needsImprovement) return 'needs-improvement';
+    if (value <= thresholds.good) {return 'good';}
+    if (value <= thresholds.needsImprovement) {return 'needs-improvement';}
     return 'poor';
   }
   
@@ -240,7 +240,7 @@ export class ProductionMonitor {
   }
   
   private sendAlert(message: string, type: string) {
-    if (!this.config.alerts.enabled) return;
+    if (!this.config.alerts.enabled) {return;}
     
     const alert = {
       message,
@@ -370,3 +370,12 @@ export function useProductionMonitoring() {
     healthCheck: productionMonitor.healthCheck.bind(productionMonitor),
   };
 }
+
+
+
+
+
+
+
+
+

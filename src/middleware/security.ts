@@ -3,6 +3,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
+import { generateNonces, buildStrictCSP, buildDevelopmentCSP, createNonceHeaders } from '@/lib/security/csp-nonce';
 
 // ===================================
 // CONFIGURACIÓN DE RATE LIMITING
@@ -69,24 +70,21 @@ function checkRateLimit(request: NextRequest): boolean {
  * Agrega headers de seguridad a la respuesta
  */
 function addSecurityHeaders(response: NextResponse): NextResponse {
-  // Content Security Policy
-  const csp = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.mercadopago.com https://www.mercadopago.com https://*.clerk.accounts.dev https://*.clerk.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.accounts.dev https://*.clerk.com",
-    "font-src 'self' https://fonts.gstatic.com data:",
-    "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://api.mercadopago.com https://*.supabase.co https://*.clerk.accounts.dev https://*.clerk.com",
-    "frame-src 'self' https://www.mercadopago.com https://*.clerk.accounts.dev https://*.clerk.com",
-    "worker-src 'self' blob:",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests"
-  ].join('; ');
+  // Generar nonces para CSP
+  const nonces = generateNonces();
+  
+  // Content Security Policy con nonces
+  const csp = process.env.NODE_ENV === 'production' 
+    ? buildStrictCSP(nonces)
+    : buildDevelopmentCSP(nonces);
   
   response.headers.set('Content-Security-Policy', csp);
+  
+  // Agregar nonces a los headers para que estén disponibles en la aplicación
+  const nonceHeaders = createNonceHeaders(nonces);
+  Object.entries(nonceHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
   
   // Otros headers de seguridad
   response.headers.set('X-Frame-Options', 'DENY');
@@ -248,3 +246,12 @@ export function getRateLimitStats() {
     })),
   };
 }
+
+
+
+
+
+
+
+
+

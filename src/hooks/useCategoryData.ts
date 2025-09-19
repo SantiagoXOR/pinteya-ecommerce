@@ -122,7 +122,7 @@ export const useCategoryData = (
    * Track analytics event
    */
   const trackAnalytics = useCallback((event: string, data?: any) => {
-    if (!enableAnalytics) return;
+    if (!enableAnalytics) {return;}
 
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'category_data', {
@@ -263,7 +263,7 @@ export const useCategoryData = (
    * Background refresh interval
    */
   useEffect(() => {
-    if (!enableBackgroundRefresh || refreshInterval <= 0) return;
+    if (!enableBackgroundRefresh || refreshInterval <= 0) {return;}
 
     const interval = setInterval(() => {
       refresh();
@@ -290,7 +290,7 @@ export const useCategoryData = (
  * Utility to preload category images
  */
 export const preloadCategoryImages = (categories: Category[]): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {return;}
 
   categories.forEach(category => {
     if (category && category.icon) {
@@ -311,3 +311,12 @@ export const clearCategoryCache = (): void => {
  * Default export for convenience
  */
 export default useCategoryData;
+
+
+
+
+
+
+
+
+

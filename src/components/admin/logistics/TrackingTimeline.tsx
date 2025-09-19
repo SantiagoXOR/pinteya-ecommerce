@@ -29,8 +29,8 @@ import {
 } from 'lucide-react';
 import { TrackingEvent, Shipment, ShipmentStatus } from '@/types/logistics';
 import { useTrackingTimeline, useRealTimeTracking } from '@/hooks/admin/useTrackingEvents';
-import { cn } from '@/lib/utils';
-import { formatDate, formatTime, formatRelativeTime } from '@/lib/utils/format';
+import { cn } from '@/lib/core/utils';
+import { formatDate, formatRelativeTime } from '@/lib/utils/consolidated-utils';
 
 // =====================================================
 // INTERFACES
@@ -308,15 +308,15 @@ export function TrackingTimeline({
                     <Building className="w-4 h-4 text-muted-foreground" />
                     <span className="font-medium">Destino:</span>
                     <span>
-                      {shipment.delivery_address.city}, {shipment.delivery_address.state}
+                      {shipment.recipient_city || 'N/A'}, {shipment.recipient_country || 'N/A'}
                     </span>
                   </div>
                   
-                  {shipment.weight_kg && (
+                  {shipment.package_weight_kg && (
                     <div className="flex items-center gap-2">
                       <Package className="w-4 h-4 text-muted-foreground" />
                       <span className="font-medium">Peso:</span>
-                      <span>{shipment.weight_kg} kg</span>
+                      <span>{shipment.package_weight_kg} kg</span>
                     </div>
                   )}
                 </div>
@@ -493,3 +493,12 @@ function TrackingTimelineSkeleton({ compact }: { compact?: boolean }) {
     </Card>
   );
 }
+
+
+
+
+
+
+
+
+

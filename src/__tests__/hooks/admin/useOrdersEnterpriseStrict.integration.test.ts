@@ -374,3 +374,12 @@ describe('useOrdersEnterpriseStrict Integration', () => {
     expect(result.current.orders).toEqual(mockOrdersResponse.orders);
   });
 });
+
+
+
+
+
+
+
+
+

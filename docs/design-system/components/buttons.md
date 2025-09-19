@@ -384,3 +384,6 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 ---
 
 *Última actualización: Junio 2025*
+
+
+

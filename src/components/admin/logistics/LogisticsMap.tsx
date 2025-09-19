@@ -26,7 +26,7 @@ import {
   Filter
 } from 'lucide-react';
 import { Shipment, TrackingEvent } from '@/types/logistics';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 // =====================================================
 // INTERFACES
@@ -111,7 +111,7 @@ export function LogisticsMap({
   // =====================================================
   
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current) {return;}
     
     // Importar MapLibre GL JS dinámicamente
     import('maplibre-gl').then((maplibregl) => {
@@ -162,7 +162,7 @@ export function LogisticsMap({
   // =====================================================
   
   const initializeMapLayers = useCallback(() => {
-    if (!map.current || !mapLoaded) return;
+    if (!map.current || !mapLoaded) {return;}
     
     // Capa de geofences
     map.current.addSource('geofences', {
@@ -312,7 +312,7 @@ export function LogisticsMap({
   // =====================================================
   
   const updateShipmentsLayer = useCallback((shipmentsData: Shipment[]) => {
-    if (!map.current || !mapLoaded) return;
+    if (!map.current || !mapLoaded) {return;}
     
     const filteredShipments = filterStatus === 'all' 
       ? shipmentsData 
@@ -345,7 +345,7 @@ export function LogisticsMap({
   }, [mapLoaded, filterStatus, selectedShipment]);
   
   const updateGeofencesLayer = useCallback((geofencesData: GeofenceZone[]) => {
-    if (!map.current || !mapLoaded) return;
+    if (!map.current || !mapLoaded) {return;}
     
     const features = geofencesData
       .filter(zone => zone.active && showGeofences)
@@ -547,3 +547,12 @@ export function LogisticsMap({
     </Card>
   );
 }
+
+
+
+
+
+
+
+
+

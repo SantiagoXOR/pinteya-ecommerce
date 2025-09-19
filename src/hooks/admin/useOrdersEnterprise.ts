@@ -366,7 +366,7 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
 // =====================================================
 
 function calculateGrowthRate(dailyOrders: Array<{ date: string; revenue: number }>): number {
-  if (dailyOrders.length < 2) return 0;
+  if (dailyOrders.length < 2) {return 0;}
   
   const recent = dailyOrders.slice(-7); // Últimos 7 días
   const previous = dailyOrders.slice(-14, -7); // 7 días anteriores
@@ -374,7 +374,16 @@ function calculateGrowthRate(dailyOrders: Array<{ date: string; revenue: number 
   const recentAvg = recent.reduce((sum, day) => sum + day.revenue, 0) / recent.length;
   const previousAvg = previous.reduce((sum, day) => sum + day.revenue, 0) / previous.length;
   
-  if (previousAvg === 0) return 0;
+  if (previousAvg === 0) {return 0;}
   
   return ((recentAvg - previousAvg) / previousAvg) * 100;
 }
+
+
+
+
+
+
+
+
+

@@ -4,8 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
-import { getSupabaseClient } from '@/lib/supabase';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 interface ReportFilter {
   startDate: string;
@@ -310,9 +310,9 @@ async function generateSecurityReport(filter: ReportFilter): Promise<SecurityRep
 
   // Determinar nivel de riesgo
   let riskLevel = 'low';
-  if (criticalEvents.length > 10) riskLevel = 'critical';
-  else if (criticalEvents.length > 5) riskLevel = 'high';
-  else if (criticalEvents.length > 2) riskLevel = 'medium';
+  if (criticalEvents.length > 10) {riskLevel = 'critical';}
+  else if (criticalEvents.length > 5) {riskLevel = 'high';}
+  else if (criticalEvents.length > 2) {riskLevel = 'medium';}
 
   // Top amenazas (simulado basado en eventos reales)
   const topThreats = [
@@ -521,3 +521,12 @@ function generateCSVResponse(data: any, reportType: string) {
     }
   });
 }
+
+
+
+
+
+
+
+
+

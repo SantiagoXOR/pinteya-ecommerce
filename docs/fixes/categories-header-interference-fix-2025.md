@@ -212,3 +212,6 @@ box-shadow: 0 4px 12px rgba(0, 118, 57, 0.15);
 **Estado:** ✅ Completado  
 **Impacto:** 🟢 Alto - Problema crítico de interferencia Header-Categories resuelto  
 **Técnica:** Transform Scale → Ring/Shadow/Brightness (sin stacking contexts)
+
+
+

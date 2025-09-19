@@ -199,8 +199,8 @@ describe('Form Components', () => {
         defaultValues: { name: '', email: '' },
         validate: (data) => {
           const errors: Record<string, string> = {}
-          if (!data.name) errors.name = 'Name required'
-          if (!data.email) errors.email = 'Email required'
+          if (!data.name) {errors.name = 'Name required'}
+          if (!data.email) {errors.email = 'Email required'}
           return Object.keys(errors).length > 0 ? errors : null
         },
         onSubmit: (data) => {
@@ -330,3 +330,12 @@ describe('Form Components', () => {
     })
   })
 })
+
+
+
+
+
+
+
+
+

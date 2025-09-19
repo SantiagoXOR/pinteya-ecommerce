@@ -204,3 +204,12 @@ describe('CommercialProductCard', () => {
     expect(screen.getByText('$123.456')).toBeInTheDocument()
   })
 })
+
+
+
+
+
+
+
+
+

@@ -287,3 +287,6 @@ graph TD
 **Próxima revisión:** Septiembre 2025
 **Responsable:** Equipo de Desarrollo Pinteya
 **Versión:** 1.0
+
+
+

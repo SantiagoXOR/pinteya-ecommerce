@@ -2,14 +2,14 @@
 // PINTEYA E-COMMERCE - ENTERPRISE HEALTH CHECKS SYSTEM
 // ===================================
 
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { getSupabaseClient } from '@/lib/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { CacheUtils } from '@/lib/cache-manager';
 import { 
   mercadoPagoCriticalBreaker, 
   mercadoPagoStandardBreaker, 
   webhookProcessingBreaker 
-} from '@/lib/mercadopago/circuit-breaker';
+} from '@/lib/integrations/mercadopago/circuit-breaker';
 import { recordPerformanceMetric, recordSecurityMetric } from './enterprise-metrics';
 
 // Estados de salud
@@ -846,3 +846,12 @@ export class EnterpriseHealthSystem {
 
 // Instancia singleton
 export const enterpriseHealthSystem = EnterpriseHealthSystem.getInstance();
+
+
+
+
+
+
+
+
+

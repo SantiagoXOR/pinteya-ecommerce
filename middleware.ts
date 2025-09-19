@@ -44,6 +44,8 @@ export default auth((req) => {
   // Rutas que requieren autenticación
   const isAdminRoute = nextUrl.pathname.startsWith('/admin')
   const isApiAdminRoute = nextUrl.pathname.startsWith('/api/admin')
+  const isDashboardRoute = nextUrl.pathname.startsWith('/dashboard')
+  const isApiUserRoute = nextUrl.pathname.startsWith('/api/user')
 
   // Permitir rutas de autenticación NextAuth.js
   if (nextUrl.pathname.startsWith('/api/auth')) {
@@ -63,11 +65,11 @@ export default auth((req) => {
     return NextResponse.next()
   }
 
-  // Proteger rutas administrativas
-  if ((isAdminRoute || isApiAdminRoute) && !isLoggedIn) {
+  // Proteger rutas administrativas y de usuario
+  if ((isAdminRoute || isApiAdminRoute || isDashboardRoute || isApiUserRoute) && !isLoggedIn) {
     console.log(`[NextAuth Middleware] Blocking unauthorized access: ${nextUrl.pathname}`)
 
-    if (isApiAdminRoute) {
+    if (isApiAdminRoute || isApiUserRoute) {
       // Para APIs, devolver 401
       return new NextResponse(
         JSON.stringify({ error: 'Unauthorized', message: 'Authentication required' }),
@@ -81,6 +83,30 @@ export default auth((req) => {
       const signInUrl = new URL('/api/auth/signin', nextUrl.origin)
       signInUrl.searchParams.set('callbackUrl', nextUrl.href)
       return NextResponse.redirect(signInUrl)
+    }
+  }
+
+  // Verificar autorización para rutas admin (solo para usuarios autenticados)
+  if ((isAdminRoute || isApiAdminRoute) && isLoggedIn) {
+    const userEmail = req.auth?.user?.email
+    const isAdmin = userEmail === 'santiago@xor.com.ar'
+
+    if (!isAdmin) {
+      console.log(`[NextAuth Middleware] Blocking admin access for non-admin user: ${userEmail} -> ${nextUrl.pathname}`)
+
+      if (isApiAdminRoute) {
+        // Para APIs admin, devolver 403
+        return new NextResponse(
+          JSON.stringify({ error: 'Forbidden', message: 'Admin access required' }),
+          {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        )
+      } else {
+        // Para rutas UI admin, redirigir a página de acceso denegado
+        return NextResponse.redirect(new URL('/access-denied', nextUrl.origin))
+      }
     }
   }
 
@@ -109,9 +135,13 @@ export const config = {
      * Match specific paths that need protection:
      * - /admin/* (admin UI routes)
      * - /api/admin/* (admin API routes)
+     * - /dashboard/* (user dashboard routes)
+     * - /api/user/* (user API routes)
      * Exclude NextAuth.js routes and static files
      */
     "/admin/:path*",
     "/api/admin/:path*",
+    "/dashboard/:path*",
+    "/api/user/:path*",
   ],
 }

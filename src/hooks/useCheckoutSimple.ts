@@ -58,14 +58,14 @@ export const useCheckoutSimple = () => {
     const errors: Record<string, string> = {};
 
     // Validaciones básicas
-    if (!billing.firstName?.trim()) errors.firstName = 'Nombre es requerido';
-    if (!billing.lastName?.trim()) errors.lastName = 'Apellido es requerido';
-    if (!billing.email?.trim()) errors.email = 'Email es requerido';
-    if (!billing.phone?.trim()) errors.phone = 'Teléfono es requerido';
-    if (!billing.streetAddress?.trim()) errors.streetAddress = 'Dirección es requerida';
-    if (!billing.city?.trim()) errors.city = 'Ciudad es requerida';
-    if (!billing.state?.trim()) errors.state = 'Provincia es requerida';
-    if (!billing.zipCode?.trim()) errors.zipCode = 'Código postal es requerido';
+    if (!billing.firstName?.trim()) {errors.firstName = 'Nombre es requerido';}
+    if (!billing.lastName?.trim()) {errors.lastName = 'Apellido es requerido';}
+    if (!billing.email?.trim()) {errors.email = 'Email es requerido';}
+    if (!billing.phone?.trim()) {errors.phone = 'Teléfono es requerido';}
+    if (!billing.streetAddress?.trim()) {errors.streetAddress = 'Dirección es requerida';}
+    if (!billing.city?.trim()) {errors.city = 'Ciudad es requerida';}
+    if (!billing.state?.trim()) {errors.state = 'Provincia es requerida';}
+    if (!billing.zipCode?.trim()) {errors.zipCode = 'Código postal es requerido';}
 
     // Validar email
     if (billing.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(billing.email)) {
@@ -126,3 +126,12 @@ export const useCheckoutSimple = () => {
     processCheckout,
   };
 };
+
+
+
+
+
+
+
+
+

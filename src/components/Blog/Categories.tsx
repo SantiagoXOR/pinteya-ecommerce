@@ -22,3 +22,12 @@ const Categories = ({ categories }: { categories: any[] }) => {
 };
 
 export default Categories;
+
+
+
+
+
+
+
+
+

@@ -13,8 +13,8 @@ import {
   recordSecurityMetric,
   recordUserExperienceMetric
 } from '@/lib/monitoring/enterprise-metrics';
-import { getSupabaseClient } from '@/lib/supabase';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 interface CustomMetricDefinition {
   id: string;
@@ -636,3 +636,12 @@ async function aggregateMetricValues(values: any[], period: string) {
     max: data.max
   }));
 }
+
+
+
+
+
+
+
+
+

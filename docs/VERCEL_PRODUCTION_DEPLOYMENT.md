@@ -253,3 +253,6 @@ DEBUG=true
 **🚀 Estado:** Listo para despliegue inmediato
 **📅 Fecha:** 2024-01-09
 **👤 Responsable:** Santiago XOR (santiago@xor.com.ar)
+
+
+

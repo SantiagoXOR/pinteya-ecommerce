@@ -54,8 +54,8 @@ export function withValidation(schema: z.ZodSchema) {
           
           // Convertir tipos para números y booleans
           Object.keys(data).forEach(key => {
-            if (data[key] === 'true') data[key] = true;
-            else if (data[key] === 'false') data[key] = false;
+            if (data[key] === 'true') {data[key] = true;}
+            else if (data[key] === 'false') {data[key] = false;}
             else if (!isNaN(Number(data[key])) && data[key] !== '') {
               data[key] = Number(data[key]);
             }
@@ -99,3 +99,12 @@ export function withValidation(schema: z.ZodSchema) {
     };
   };
 }
+
+
+
+
+
+
+
+
+

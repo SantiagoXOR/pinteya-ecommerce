@@ -359,3 +359,6 @@ Usar el template de issue con:
 **Documentación actualizada**: Enero 2025  
 **Versión del sistema**: 2.0.0  
 **Mantenido por**: Equipo Pinteya E-commerce
+
+
+

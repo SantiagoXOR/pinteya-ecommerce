@@ -163,3 +163,6 @@ function extractBrandAndName(currentName) {
 - Índice en columna `brand` para búsquedas rápidas
 - Considerar cache de marcas populares
 - Optimizar queries que usen ambos campos
+
+
+

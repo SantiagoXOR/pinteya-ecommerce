@@ -221,3 +221,6 @@ El error **"Cannot read properties of undefined (reading 'call')"** ha sido **co
 ---
 
 *Solución basada en documentación oficial de Clerk - Pinteya E-commerce Team*
+
+
+

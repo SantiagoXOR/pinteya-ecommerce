@@ -78,8 +78,8 @@ export class ReportGenerator {
       }
 
       console.log(`📊 Reporte generado exitosamente:`);
-      if (results.jsonPath) console.log(`   📄 JSON: ${results.jsonPath}`);
-      if (results.htmlPath) console.log(`   🌐 HTML: ${results.htmlPath}`);
+      if (results.jsonPath) {console.log(`   📄 JSON: ${results.jsonPath}`);}
+      if (results.htmlPath) {console.log(`   🌐 HTML: ${results.htmlPath}`);}
 
       return results;
 
@@ -551,3 +551,12 @@ export class ReportGenerator {
     `;
   }
 }
+
+
+
+
+
+
+
+
+

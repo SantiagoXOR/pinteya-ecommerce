@@ -160,3 +160,6 @@ vercel logs --app=pinteya-ecommerce --since=1h
 **📝 Última actualización**: Enero 2025  
 **👤 Responsable**: Equipo de Desarrollo Pinteya  
 **🔄 Próxima revisión**: Abril 2025
+
+
+

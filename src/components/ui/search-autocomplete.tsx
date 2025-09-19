@@ -285,7 +285,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
 
     // Manejar teclas
     const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (!isOpen) return;
+      if (!isOpen) {return;}
 
       switch (e.key) {
         case 'ArrowDown':
@@ -549,3 +549,12 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
 SearchAutocomplete.displayName = "SearchAutocomplete";
 
 export { SearchAutocomplete, searchAutocompleteVariants };
+
+
+
+
+
+
+
+
+

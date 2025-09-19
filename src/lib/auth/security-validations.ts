@@ -4,8 +4,8 @@
  */
 
 import { auth } from '@/auth';
-import { supabaseAdmin } from '@/lib/supabase';
-import { logger } from '@/lib/logger';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
+import { logger } from '@/lib/enterprise/logger';
 
 export type Permission = 
   | 'read:products'
@@ -311,3 +311,12 @@ export async function getUserPermissions(userId: string): Promise<Permission[]> 
     return [];
   }
 }
+
+
+
+
+
+
+
+
+

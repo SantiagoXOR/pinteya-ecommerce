@@ -79,10 +79,22 @@ export const useCartWithBackend = (): UseCartWithBackendReturn => {
         ...options
       });
 
-      const data = await response.json();
+      // Verificar si la respuesta tiene contenido antes de parsear JSON
+      const text = await response.text();
+      let data = null;
+      
+      if (text.trim()) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          console.error(`JSON Parse Error (${url}):`, parseError);
+          console.error('Raw response:', text);
+          throw new Error(`Invalid JSON response: ${parseError.message}`);
+        }
+      }
       
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}`);
+        throw new Error(data?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       return data;
@@ -94,7 +106,7 @@ export const useCartWithBackend = (): UseCartWithBackendReturn => {
 
   // Cargar carrito desde el backend
   const loadCart = useCallback(async () => {
-    if (status === 'loading') return;
+    if (status === 'loading') {return;}
     
     if (!session?.user) {
       // Usuario no autenticado - carrito vacío
@@ -304,3 +316,12 @@ export const useCartWithBackend = (): UseCartWithBackendReturn => {
 };
 
 export default useCartWithBackend;
+
+
+
+
+
+
+
+
+

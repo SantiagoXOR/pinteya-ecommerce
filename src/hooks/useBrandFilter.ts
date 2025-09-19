@@ -106,7 +106,7 @@ export function useBrandFilter(options: UseBrandFilterOptions = {}): UseBrandFil
 
   // Actualizar URL cuando cambian las marcas seleccionadas
   const updateUrl = useCallback((newBrands: string[]) => {
-    if (!syncWithUrl) return;
+    if (!syncWithUrl) {return;}
 
     const params = new URLSearchParams(searchParams?.toString());
     
@@ -235,3 +235,12 @@ export function validateBrand(brandName: string, availableBrands: Brand[]): bool
 export function filterValidBrands(brandNames: string[], availableBrands: Brand[]): string[] {
   return brandNames.filter(name => validateBrand(name, availableBrands));
 }
+
+
+
+
+
+
+
+
+

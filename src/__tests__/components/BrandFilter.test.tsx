@@ -290,3 +290,12 @@ describe('BrandFilterCompact Component', () => {
     expect(container.firstChild).toHaveClass('custom-compact');
   });
 });
+
+
+
+
+
+
+
+
+

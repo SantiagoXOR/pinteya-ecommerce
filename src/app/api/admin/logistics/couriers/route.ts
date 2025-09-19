@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/integrations/supabase/server';
 import { z } from 'zod';
 import { 
   Courier,
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
   try {
     // Validar autenticación
     const authError = await validateAdminAuth(request);
-    if (authError) return authError;
+    if (authError) {return authError;}
     
     // Parsear query parameters
     const { searchParams } = new URL(request.url);
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
     const includeStats = searchParams.get('include_stats') === 'true';
     
     // Crear cliente Supabase
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Construir query
     let query = supabase
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
     
     const { data: couriers, error } = await query;
     
-    if (error) throw error;
+    if (error) {throw error;}
     
     // Si se solicitan estadísticas, obtenerlas
     let couriersWithStats = couriers;
@@ -208,14 +208,14 @@ export async function POST(request: NextRequest) {
   try {
     // Validar autenticación
     const authError = await validateAdminAuth(request);
-    if (authError) return authError;
+    if (authError) {return authError;}
     
     // Parsear y validar body
     const body = await request.json();
     const validatedData = CreateCourierSchema.parse(body);
     
     // Crear cliente Supabase
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Verificar que el código no exista
     const { data: existingCourier } = await supabase
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
       .select('*')
       .single();
     
-    if (courierError) throw courierError;
+    if (courierError) {throw courierError;}
     
     return NextResponse.json(
       { 
@@ -306,14 +306,14 @@ export async function POST_QUOTE(request: NextRequest) {
   try {
     // Validar autenticación
     const authError = await validateAdminAuth(request);
-    if (authError) return authError;
+    if (authError) {return authError;}
     
     // Parsear y validar body
     const body = await request.json();
     const validatedData = ShippingQuoteSchema.parse(body);
     
     // Crear cliente Supabase
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Obtener couriers activos
     let query = supabase
@@ -327,7 +327,7 @@ export async function POST_QUOTE(request: NextRequest) {
     
     const { data: couriers, error } = await query;
     
-    if (error) throw error;
+    if (error) {throw error;}
     
     // Generar cotizaciones
     const quotes: ShippingQuote[] = [];
@@ -429,3 +429,12 @@ export async function POST_QUOTE(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

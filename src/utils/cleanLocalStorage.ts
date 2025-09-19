@@ -91,7 +91,7 @@ export function inspectLocalStorage(): void {
  * Ejemplo: window.debugPinteyaStorage()
  */
 export function setupDebugHelpers(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {return;}
 
   // Agregar funciones de debug al objeto window
   (window as any).debugPinteyaStorage = () => {
@@ -157,3 +157,12 @@ export function detectJsonProblems(): void {
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   setupDebugHelpers();
 }
+
+
+
+
+
+
+
+
+

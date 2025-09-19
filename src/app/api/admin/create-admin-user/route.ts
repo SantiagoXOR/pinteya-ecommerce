@@ -180,3 +180,12 @@ export async function GET() {
     instructions: 'Usar POST con securityKey, email y password'
   });
 }
+
+
+
+
+
+
+
+
+

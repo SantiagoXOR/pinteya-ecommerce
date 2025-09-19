@@ -6,7 +6,7 @@
 
 import { renderHook, act } from '@testing-library/react';
 import { useAnalytics, useRealTimeMetrics } from '@/hooks/useAnalytics';
-import { analytics } from '@/lib/analytics';
+import { analytics } from '@/lib/integrations/analytics';
 
 // Mock useAuth hook
 jest.mock('@/hooks/useAuth', () => ({
@@ -65,7 +65,7 @@ jest.mock('@/lib/analytics', () => ({
 }));
 
 // Mock optimized analytics
-jest.mock('@/lib/analytics-optimized', () => ({
+jest.mock('@/lib/integrations/analytics/analytics-optimized', () => ({
   optimizedAnalytics: {
     trackEvent: jest.fn().mockResolvedValue(undefined),
   }
@@ -339,3 +339,12 @@ describe('useRealTimeMetrics Hook', () => {
 
 // useComponentTracking tests skipped due to dependency on useOptimizedAnalytics
 // This hook will be tested separately when useOptimizedAnalytics is properly mocked
+
+
+
+
+
+
+
+
+

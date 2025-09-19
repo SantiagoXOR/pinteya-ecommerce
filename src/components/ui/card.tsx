@@ -172,7 +172,7 @@ const ProductCard = React.memo(React.forwardRef<HTMLDivElement, ProductCardProps
     const [isAddingToCart, setIsAddingToCart] = React.useState(false);
 
     const handleAddToCart = async () => {
-      if (!onAddToCart) return;
+      if (!onAddToCart) {return;}
 
       if (showCartAnimation) {
         setIsAddingToCart(true);
@@ -408,3 +408,12 @@ export {
   ProductCard,
   cardVariants 
 }
+
+
+
+
+
+
+
+
+

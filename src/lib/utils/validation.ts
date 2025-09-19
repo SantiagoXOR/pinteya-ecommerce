@@ -203,3 +203,12 @@ export function validateShipment(shipment: any): ValidationResult {
     return { isValid: false, errors: ['Error de validación desconocido'] };
   }
 }
+
+
+
+
+
+
+
+
+

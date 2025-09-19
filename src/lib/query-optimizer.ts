@@ -4,7 +4,7 @@
 
 import { supabaseAdmin } from './supabase';
 import { cacheManager, CACHE_CONFIGS } from './cache-manager';
-import { logger, LogLevel, LogCategory } from './logger';
+import { logger, LogLevel, LogCategory } from './enterprise/logger';
 
 // Configuración de optimización
 interface QueryConfig {
@@ -388,3 +388,12 @@ export const OptimizedQueries = {
     await queryOptimizer.invalidateQueryCache(`user_orders:${userId}:*`);
   },
 };
+
+
+
+
+
+
+
+
+

@@ -39,7 +39,7 @@ export const useAccessibilityOptimized = () => {
 
   // Detectar preferencias del sistema
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     const updatePreferences = () => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -48,8 +48,8 @@ export const useAccessibilityOptimized = () => {
       const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
       
       let prefersColorScheme: 'light' | 'dark' | 'no-preference' = 'no-preference';
-      if (prefersDark) prefersColorScheme = 'dark';
-      else if (prefersLight) prefersColorScheme = 'light';
+      if (prefersDark) {prefersColorScheme = 'dark';}
+      else if (prefersLight) {prefersColorScheme = 'light';}
 
       setAccessibilityState(prev => ({
         ...prev,
@@ -77,7 +77,7 @@ export const useAccessibilityOptimized = () => {
 
   // Detectar navegación por teclado
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     let isKeyboardUser = false;
 
@@ -106,7 +106,7 @@ export const useAccessibilityOptimized = () => {
 
   // Detectar screen readers
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     // Detectar screen readers comunes
     const screenReaderActive = !!(
@@ -180,7 +180,7 @@ export const useAccessibilityOptimized = () => {
 
   // Funciones de utilidad
   const announceToScreenReader = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
-    if (typeof window === 'undefined' || !accessibilityState.screenReaderActive) return;
+    if (typeof window === 'undefined' || !accessibilityState.screenReaderActive) {return;}
 
     const announcement = document.createElement('div');
     announcement.setAttribute('aria-live', priority);
@@ -197,7 +197,7 @@ export const useAccessibilityOptimized = () => {
   }, [accessibilityState.screenReaderActive]);
 
   const focusElement = useCallback((selector: string | HTMLElement) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     const element = typeof selector === 'string' 
       ? document.querySelector(selector) as HTMLElement
@@ -259,3 +259,12 @@ export const useSkipLinks = () => {
 };
 
 export default useAccessibilityOptimized;
+
+
+
+
+
+
+
+
+

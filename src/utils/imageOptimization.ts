@@ -146,3 +146,12 @@ export const pinteyaDesktopLogoPngProps = {
   ...pinteyaDesktopLogoProps,
   src: '/images/logo/LOGO POSITIVO.svg' // Mantiene el SVG original
 };
+
+
+
+
+
+
+
+
+

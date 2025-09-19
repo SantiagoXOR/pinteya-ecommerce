@@ -2,8 +2,8 @@
 // PINTEYA E-COMMERCE - AUDIT TRAIL SYSTEM ENTERPRISE
 // ===================================
 
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { getSupabaseClient } from '@/lib/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import crypto from 'crypto';
 
 // Niveles de criticidad según ISO/IEC 27001:2013
@@ -480,3 +480,12 @@ export const logPaymentEvent = auditTrail.logPaymentEvent.bind(auditTrail);
 export const logSecurityViolation = auditTrail.logSecurityViolation.bind(auditTrail);
 export const logDataAccess = auditTrail.logDataAccess.bind(auditTrail);
 export const logAdminAction = auditTrail.logAdminAction.bind(auditTrail);
+
+
+
+
+
+
+
+
+

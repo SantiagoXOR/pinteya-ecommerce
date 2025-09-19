@@ -50,7 +50,7 @@ export function BrandFilter({
 
   // Filtrar marcas por término de búsqueda
   const filteredBrands = React.useMemo(() => {
-    if (!searchTerm) return brands;
+    if (!searchTerm) {return brands;}
     return brands.filter(brand =>
       brand.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -282,3 +282,12 @@ export function BrandFilterCompact({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

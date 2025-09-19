@@ -11,7 +11,7 @@ import {
 } from '@/lib/mercadopago/circuit-breaker';
 
 // Mock logger
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
@@ -30,7 +30,7 @@ jest.mock('@/lib/logger', () => ({
 }));
 
 // Mock metrics collector
-jest.mock('@/lib/metrics', () => ({
+jest.mock('@/lib/enterprise/metrics', () => ({
   metricsCollector: {
     recordMetric: jest.fn().mockResolvedValue(undefined),
   },
@@ -288,3 +288,12 @@ describe('Circuit Breaker Enterprise', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

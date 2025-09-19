@@ -76,7 +76,7 @@ const generateSessionId = (): string => {
 
 // Obtener o crear session ID
 const getSessionId = (): string => {
-  if (typeof window === 'undefined') return generateSessionId();
+  if (typeof window === 'undefined') {return generateSessionId();}
   
   let sessionId = sessionStorage.getItem('filter_analytics_session');
   if (!sessionId) {
@@ -88,7 +88,7 @@ const getSessionId = (): string => {
 
 // Enviar evento a Google Analytics 4
 const sendToGA4 = (event: FilterAnalyticsEvent) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
+  if (typeof window === 'undefined' || !window.gtag) {return;}
 
   window.gtag('event', event.action, {
     event_category: event.category,
@@ -155,7 +155,7 @@ export function useFilterAnalytics(options: UseFilterAnalyticsOptions = {}) {
 
   // Función para enviar evento
   const trackEvent = useCallback(async (event: FilterAnalyticsEvent) => {
-    if (!enabled) return;
+    if (!enabled) {return;}
 
     if (debug) {
     }
@@ -336,7 +336,7 @@ export function useFilterAnalytics(options: UseFilterAnalyticsOptions = {}) {
 
   // Tracking de sesión al montar
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {return;}
 
     const event = createBaseEvent('session_started', 'filter_system', 1, {
       user_agent: typeof window !== 'undefined' ? navigator.userAgent : '',
@@ -378,3 +378,12 @@ export function useFilterAnalytics(options: UseFilterAnalyticsOptions = {}) {
     enabled,
   };
 }
+
+
+
+
+
+
+
+
+

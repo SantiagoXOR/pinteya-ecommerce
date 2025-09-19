@@ -344,3 +344,6 @@ test('Flujo de checkout con screenshots', async ({ page }) => {
 **🚀 API completa**
 
 *Última actualización: Enero 2025*
+
+
+

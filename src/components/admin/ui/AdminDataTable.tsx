@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -81,7 +81,7 @@ export function AdminDataTable<T extends Record<string, any>>({
 
   // Filter and search data
   const filteredData = safeData.filter(row => {
-    if (!searchTerm) return true;
+    if (!searchTerm) {return true;}
     return Object.values(row).some(value => 
       String(value).toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -133,7 +133,9 @@ export function AdminDataTable<T extends Record<string, any>>({
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">Error: {error}</p>
+        <p className="text-red-800">
+          Error: {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+        </p>
       </div>
     );
   }
@@ -341,3 +343,12 @@ export function AdminDataTable<T extends Record<string, any>>({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

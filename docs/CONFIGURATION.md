@@ -318,3 +318,6 @@ npm run lint
 - Configuración de dominio
 - Optimizaciones de performance
 - Tests automatizados
+
+
+

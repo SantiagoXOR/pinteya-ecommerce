@@ -478,7 +478,7 @@ export function useInteractionState() {
 
 ```tsx
 // components/InteractiveCard.tsx
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/core/utils'
 import { useInteractionState } from '@/hooks/useInteractionState'
 
 interface InteractiveCardProps {
@@ -571,3 +571,6 @@ export function InteractiveCard({
 ---
 
 *Última actualización: Junio 2025*
+
+
+

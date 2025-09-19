@@ -84,3 +84,12 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({
 };
 
 export default FloatingCartButton;
+
+
+
+
+
+
+
+
+

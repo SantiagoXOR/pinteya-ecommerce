@@ -139,3 +139,6 @@ La resolución exitosa de estos errores de consola ha resultado en:
 - **Base sólida** para futuras funcionalidades
 
 Todos los errores de consola en el home han sido eliminados completamente, proporcionando una experiencia de navegación limpia y profesional.
+
+
+

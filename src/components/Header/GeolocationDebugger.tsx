@@ -71,7 +71,7 @@ const GeolocationDebugger = () => {
       
       {error && (
         <div className="mt-1 text-red-300">
-          <strong>Error Details:</strong> {error}
+          <strong>Error Details:</strong> {error instanceof Error ? error.message : String(error) || 'Error desconocido'}
         </div>
       )}
       
@@ -83,3 +83,12 @@ const GeolocationDebugger = () => {
 };
 
 export default GeolocationDebugger;
+
+
+
+
+
+
+
+
+

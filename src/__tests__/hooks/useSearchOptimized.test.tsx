@@ -327,3 +327,12 @@ describe('useSearchOptimized Hook', () => {
     expect(typeof result.current.buildSearchUrl).toBe('function');
   });
 });
+
+
+
+
+
+
+
+
+

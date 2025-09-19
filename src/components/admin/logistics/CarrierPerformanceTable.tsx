@@ -26,8 +26,8 @@ import {
   DollarSign
 } from 'lucide-react';
 import { CarrierPerformance } from '@/types/logistics';
-import { cn } from '@/lib/utils';
-import { formatCurrency, formatDate } from '@/lib/utils/format';
+import { cn } from '@/lib/core/utils';
+import { formatCurrency, formatDate } from '@/lib/utils/consolidated-utils';
 
 // =====================================================
 // INTERFACES
@@ -57,9 +57,9 @@ const performanceThresholds = {
 };
 
 const getPerformanceLevel = (rate: number) => {
-  if (rate >= performanceThresholds.excellent) return 'excellent';
-  if (rate >= performanceThresholds.good) return 'good';
-  if (rate >= performanceThresholds.average) return 'average';
+  if (rate >= performanceThresholds.excellent) {return 'excellent';}
+  if (rate >= performanceThresholds.good) {return 'good';}
+  if (rate >= performanceThresholds.average) {return 'average';}
   return 'poor';
 };
 
@@ -459,3 +459,12 @@ function PerformanceRow({ carrier, rank, showDetails, onToggleDetails }: Perform
     </>
   );
 }
+
+
+
+
+
+
+
+
+

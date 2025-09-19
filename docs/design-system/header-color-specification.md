@@ -167,3 +167,6 @@ Si encuentras colores incorrectos:
 3. Reemplazar hovers naranjas → hovers amarillos (`bright-sun`)
 4. Agregar `transition-all duration-200` a elementos interactivos
 5. Verificar que los tests sigan pasando después de cambios
+
+
+

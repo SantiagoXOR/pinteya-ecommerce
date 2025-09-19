@@ -267,3 +267,6 @@ curl -X GET \
 - [🚀 Deploy en Vercel](../deployment/vercel.md)
 - [🧪 Guía de Testing](../testing/README.md)
 - [🔍 Debugging](../development/debugging.md)
+
+
+

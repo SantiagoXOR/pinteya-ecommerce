@@ -229,3 +229,6 @@ curl http://localhost:3000/api/admin/debug
 - ✅ Documentación completa entregada
 
 **Commit:** `6e3bab0` - fix(admin): Corregir panel administrativo /admin/products
+
+
+

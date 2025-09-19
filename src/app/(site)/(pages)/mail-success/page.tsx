@@ -17,3 +17,12 @@ const MailSuccessPage = () => {
 };
 
 export default MailSuccessPage;
+
+
+
+
+
+
+
+
+

@@ -238,3 +238,6 @@ npm run test:e2e:admin
 **Responsable**: DevOps + Frontend Team
 **Fecha Límite**: 5 días hábiles
 **Prioridad**: 🚨 **CRÍTICA**
+
+
+

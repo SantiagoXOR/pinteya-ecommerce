@@ -5,12 +5,12 @@
 import { useState, useEffect } from 'react';
 
 export interface UserAddress {
-  id: number;
+  id: string;
   user_id: string;
-  name: string;
+  title: string;
   street: string;
   city: string;
-  state?: string;
+  state: string;
   postal_code: string;
   country: string;
   is_default: boolean;
@@ -19,23 +19,24 @@ export interface UserAddress {
 }
 
 export interface CreateAddressData {
-  name: string;
+  title: string;
   street: string;
   city: string;
-  state?: string;
+  state: string;
   postal_code: string;
-  country?: string;
-  is_default?: boolean;
+  country: string;
+  is_default: boolean;
 }
 
 export interface UseUserAddressesReturn {
   addresses: UserAddress[];
   loading: boolean;
   error: string | null;
-  createAddress: (data: CreateAddressData) => Promise<boolean>;
-  updateAddress: (id: number, data: Partial<CreateAddressData>) => Promise<boolean>;
-  deleteAddress: (id: number) => Promise<boolean>;
-  refreshAddresses: () => void;
+  addAddress: (data: CreateAddressData) => Promise<boolean>;
+  updateAddress: (id: string, data: CreateAddressData) => Promise<boolean>;
+  deleteAddress: (id: string) => Promise<boolean>;
+  setDefaultAddress: (id: string) => Promise<boolean>;
+  refreshAddresses: () => Promise<void>;
 }
 
 export function useUserAddresses(): UseUserAddressesReturn {
@@ -69,8 +70,8 @@ export function useUserAddresses(): UseUserAddressesReturn {
     }
   };
 
-  // Función para crear una nueva dirección
-  const createAddress = async (addressData: CreateAddressData): Promise<boolean> => {
+  // Función para agregar una nueva dirección
+  const addAddress = async (addressData: CreateAddressData): Promise<boolean> => {
     try {
       setError(null);
 
@@ -88,9 +89,8 @@ export function useUserAddresses(): UseUserAddressesReturn {
         throw new Error(data.error || 'Error al crear dirección');
       }
 
-      if (data.success) {
-        // Refrescar la lista de direcciones
-        await fetchAddresses();
+      if (data.success && data.address) {
+        setAddresses(prev => [...prev, data.address]);
         return true;
       } else {
         throw new Error('Error al crear dirección');
@@ -103,7 +103,7 @@ export function useUserAddresses(): UseUserAddressesReturn {
   };
 
   // Función para actualizar una dirección
-  const updateAddress = async (id: number, updateData: Partial<CreateAddressData>): Promise<boolean> => {
+  const updateAddress = async (id: string, updateData: CreateAddressData): Promise<boolean> => {
     try {
       setError(null);
 
@@ -121,9 +121,10 @@ export function useUserAddresses(): UseUserAddressesReturn {
         throw new Error(data.error || 'Error al actualizar dirección');
       }
 
-      if (data.success) {
-        // Refrescar la lista de direcciones
-        await fetchAddresses();
+      if (data.success && data.address) {
+        setAddresses(prev =>
+          prev.map(addr => addr.id === id ? data.address : addr)
+        );
         return true;
       } else {
         throw new Error('Error al actualizar dirección');
@@ -136,7 +137,7 @@ export function useUserAddresses(): UseUserAddressesReturn {
   };
 
   // Función para eliminar una dirección
-  const deleteAddress = async (id: number): Promise<boolean> => {
+  const deleteAddress = async (id: string): Promise<boolean> => {
     try {
       setError(null);
 
@@ -151,8 +152,7 @@ export function useUserAddresses(): UseUserAddressesReturn {
       }
 
       if (data.success) {
-        // Refrescar la lista de direcciones
-        await fetchAddresses();
+        setAddresses(prev => prev.filter(addr => addr.id !== id));
         return true;
       } else {
         throw new Error('Error al eliminar dirección');
@@ -164,9 +164,37 @@ export function useUserAddresses(): UseUserAddressesReturn {
     }
   };
 
+  // Función para marcar dirección como principal
+  const setDefaultAddress = async (id: string): Promise<boolean> => {
+    try {
+      setError(null);
+
+      const response = await fetch(`/api/user/addresses/${id}/default`, {
+        method: 'PATCH',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al cambiar dirección principal');
+      }
+
+      if (data.success && data.addresses) {
+        setAddresses(data.addresses);
+        return true;
+      } else {
+        throw new Error('Error al cambiar dirección principal');
+      }
+    } catch (err) {
+      console.error('Error al cambiar dirección principal:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+      return false;
+    }
+  };
+
   // Función para refrescar las direcciones
-  const refreshAddresses = () => {
-    fetchAddresses();
+  const refreshAddresses = async () => {
+    await fetchAddresses();
   };
 
   // Cargar direcciones al montar el componente
@@ -178,9 +206,19 @@ export function useUserAddresses(): UseUserAddressesReturn {
     addresses,
     loading,
     error,
-    createAddress,
+    addAddress,
     updateAddress,
     deleteAddress,
+    setDefaultAddress,
     refreshAddresses,
   };
 }
+
+
+
+
+
+
+
+
+

@@ -6,7 +6,7 @@
  */
 
 import React, { forwardRef } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { colors } from '../../../tokens/colors';
 import { spacing } from '../../../tokens/spacing';
 import { ecommerceTypography } from '../../../tokens/typography';

@@ -56,7 +56,7 @@ export async function recordPerformanceMetric(metric: PerformanceMetric): Promis
     
     cached.count++;
     cached.totalDuration += metric.duration;
-    if (metric.status >= 400) cached.errors++;
+    if (metric.status >= 400) {cached.errors++;}
     cached.avgDuration = cached.totalDuration / cached.count;
     cached.errorRate = (cached.errors / cached.count) * 100;
     
@@ -176,7 +176,7 @@ export async function getPerformanceMetrics(timeframe: '1h' | '24h' | '7d' = '24
       
       stats.endpoints[key].count++;
       stats.endpoints[key].totalDuration += metric.duration_ms;
-      if (metric.status_code >= 400) stats.endpoints[key].errors++;
+      if (metric.status_code >= 400) {stats.endpoints[key].errors++;}
     });
 
     // Calcular promedios por endpoint
@@ -328,3 +328,12 @@ export async function cleanupOldMetrics(daysToKeep: number = 30): Promise<void> 
     logStructured('error', 'Error cleaning up old metrics', { error });
   }
 }
+
+
+
+
+
+
+
+
+

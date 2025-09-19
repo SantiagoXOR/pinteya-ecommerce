@@ -168,7 +168,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
   };
 
   const updateItemQuantity = (itemId: number, newQuantity: number) => {
-    if (!order?.order_items) return;
+    if (!order?.order_items) {return;}
 
     const updatedItems = order.order_items.map(item =>
       item.id === itemId
@@ -189,7 +189,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
 
   const saveChanges = async () => {
     try {
-      if (!order || !hasChanges) return;
+      if (!order || !hasChanges) {return;}
 
       setIsSaving(true);
       const processingToast = notifications.showProcessingInfo('Guardando cambios');
@@ -232,7 +232,7 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
       const confirmed = window.confirm(
         '¿Estás seguro de que quieres cerrar? Los cambios no guardados se perderán.'
       );
-      if (!confirmed) return;
+      if (!confirmed) {return;}
     }
 
     setOrder(null);
@@ -589,3 +589,12 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
     </Dialog>
   );
 };
+
+
+
+
+
+
+
+
+

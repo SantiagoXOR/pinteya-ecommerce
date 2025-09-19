@@ -351,3 +351,12 @@ export function formatOrderStatus(status: string): { label: string; color: strin
     description: 'Estado no reconocido',
   };
 }
+
+
+
+
+
+
+
+
+

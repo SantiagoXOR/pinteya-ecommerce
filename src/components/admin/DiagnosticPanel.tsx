@@ -126,7 +126,7 @@ export function DiagnosticPanel() {
         diagnostics.push({
           name: 'API Logística',
           status: 'error',
-          message: `Error de conexión: ${error}`,
+          message: `Error de conexión: ${error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}`,
           details: error
         });
       }
@@ -171,8 +171,8 @@ export function DiagnosticPanel() {
         diagnostics.push({
           name: 'React Query',
           status: 'error',
-          message: `Error con React Query: ${error}`,
-          details: error
+          message: `Error con React Query: ${error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}`,
+          details: error instanceof Error ? error.message : error?.toString() || 'Error desconocido'
         });
       }
 
@@ -180,8 +180,8 @@ export function DiagnosticPanel() {
       diagnostics.push({
         name: 'Diagnóstico General',
         status: 'error',
-        message: `Error ejecutando diagnósticos: ${error}`,
-        details: error
+        message: `Error ejecutando diagnósticos: ${error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}`,
+        details: error instanceof Error ? error.message : error?.toString() || 'Error desconocido'
       });
     }
 
@@ -325,3 +325,12 @@ export function DiagnosticPanel() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

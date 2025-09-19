@@ -427,3 +427,12 @@ test.describe('Rendimiento del Flujo de Compra', () => {
     expect(processTime).toBeLessThan(5000);
   });
 });
+
+
+
+
+
+
+
+
+

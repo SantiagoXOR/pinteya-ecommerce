@@ -437,3 +437,6 @@ jobs:
 - ✅ Reportes JUnit
 - ✅ Artifacts de fallos
 - ✅ Notificaciones automáticas
+
+
+

@@ -9,7 +9,7 @@ import {
   getRateLimitStats, 
   cleanupRateLimitKeys,
   isRedisAvailable 
-} from '@/lib/redis';
+} from '@/lib/integrations/redis';
 import { 
   metricsCollector,
   memoryStore 
@@ -341,3 +341,12 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

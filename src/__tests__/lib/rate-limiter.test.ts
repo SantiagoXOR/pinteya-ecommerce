@@ -9,7 +9,7 @@ import {
   RATE_LIMIT_CONFIGS,
   endpointKeyGenerator,
   userKeyGenerator
-} from '@/lib/rate-limiter';
+} from '@/lib/enterprise/rate-limiter';
 
 // Mock para funciones faltantes (Patrón 1: Imports faltantes)
 const mockRateLimitConfigs = {
@@ -59,7 +59,7 @@ jest.mock('@/lib/redis', () => ({
 }));
 
 // Mock logger
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     debug: jest.fn(),
     warn: jest.fn(),
@@ -318,3 +318,12 @@ describe('Rate Limiter', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

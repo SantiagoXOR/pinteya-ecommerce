@@ -281,3 +281,6 @@ export default function HomePage() {
 **Estado**: ✅ Completado y optimizado  
 **Tests**: 11/11 pasando  
 **Performance**: Optimizado
+
+
+

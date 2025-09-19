@@ -43,3 +43,12 @@ const OrderModal = ({ showDetails, showEdit, toggleModal, order }: any) => {
 };
 
 export default OrderModal;
+
+
+
+
+
+
+
+
+

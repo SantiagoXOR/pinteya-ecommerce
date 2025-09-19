@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { proactiveMonitoring, startMonitoring } from '../lib/monitoring/proactive-monitoring'
-import { logger, LogLevel, LogCategory } from '../lib/logger'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { ErrorBoundaryWrapper } from '../components/ErrorBoundary'
 
 interface MonitoringContextType {
@@ -239,7 +239,7 @@ export function useMonitoringStats() {
   const [loading, setLoading] = useState(false)
 
   const refreshStats = React.useCallback(async () => {
-    if (!isInitialized) return
+    if (!isInitialized) {return}
 
     try {
       setLoading(true)
@@ -281,7 +281,16 @@ export function MonitoringStatus() {
     <div className="fixed bottom-4 right-4 z-50 bg-black text-white text-xs p-2 rounded shadow-lg">
       <div>Monitoring: {isInitialized ? '✅' : '❌'}</div>
       <div>Active: {isMonitoring ? '✅' : '❌'}</div>
-      {error && <div className="text-red-300">Error: {error}</div>}
+      {error && <div className="text-red-300">Error: {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</div>}
     </div>
   )
 }
+
+
+
+
+
+
+
+
+

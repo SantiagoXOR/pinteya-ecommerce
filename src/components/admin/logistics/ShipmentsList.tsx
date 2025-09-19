@@ -31,8 +31,8 @@ import {
 } from 'lucide-react';
 import { Shipment, ShipmentStatus } from '@/types/logistics';
 import { useShipments, useShipmentFilters, useBulkShipmentOperations } from '@/hooks/admin/useShipments';
-import { cn } from '@/lib/utils';
-import { formatDate, formatCurrency } from '@/lib/utils/format';
+import { cn } from '@/lib/core/utils';
+import { formatDate, formatCurrency } from '@/lib/utils/consolidated-utils';
 import Link from 'next/link';
 
 // =====================================================
@@ -122,10 +122,10 @@ export function ShipmentsList({
 
   // Filtrar shipments localmente si no se usan filtros de servidor
   const filteredShipments = !showFilters && searchTerm
-    ? shipments.filter(shipment => 
-        shipment.shipment_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ? shipments.filter(shipment =>
         shipment.tracking_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        shipment.order_id.toString().includes(searchTerm)
+        shipment.order_id.toString().includes(searchTerm) ||
+        shipment.recipient_name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : shipments;
 
@@ -208,7 +208,7 @@ export function ShipmentsList({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por número de envío, tracking o orden..."
+                  placeholder="Buscar por tracking, orden o destinatario..."
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="pl-10"
@@ -284,7 +284,7 @@ export function ShipmentsList({
                     <TableCell>
                       <div className="space-y-1">
                         <div className="font-medium">
-                          {shipment.shipment_number}
+                          Envío #{shipment.id.slice(0, 8)}
                         </div>
                         {shipment.tracking_number && (
                           <div className="text-sm text-muted-foreground">
@@ -318,7 +318,7 @@ export function ShipmentsList({
                     
                     <TableCell>
                       <div className="text-sm">
-                        {shipment.delivery_address.city}, {shipment.delivery_address.state}
+                        {shipment.recipient_city || 'N/A'}, {shipment.recipient_country || 'N/A'}
                       </div>
                     </TableCell>
                     
@@ -434,3 +434,12 @@ function StatusBadge({ status }: { status: ShipmentStatus }) {
     </Badge>
   );
 }
+
+
+
+
+
+
+
+
+

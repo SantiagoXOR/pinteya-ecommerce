@@ -481,7 +481,7 @@ export class EnterpriseAutomatedTesting {
    * Inicializa el sistema de testing automatizado
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {return;}
 
     try {
       // Cargar tests predefinidos
@@ -708,3 +708,12 @@ export class EnterpriseAutomatedTesting {
 // =====================================================
 
 export const enterpriseAutomatedTesting = EnterpriseAutomatedTesting.getInstance();
+
+
+
+
+
+
+
+
+

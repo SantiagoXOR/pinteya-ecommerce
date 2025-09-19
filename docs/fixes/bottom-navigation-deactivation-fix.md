@@ -159,3 +159,6 @@ import { BottomNavigation } from "@/components/ui/bottom-navigation";
 **Documentado por**: Sistema de documentación automática  
 **Fecha**: Enero 2025  
 **Versión**: 1.0
+
+
+

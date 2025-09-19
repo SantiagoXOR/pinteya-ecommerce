@@ -149,7 +149,7 @@ export class ScreenshotManager {
    * Inicializa el manager (para configuraciones que requieren setup)
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {return;}
     
     // Aquí se podría inicializar Playwright u otras dependencias
     console.log('📸 Inicializando Screenshot Manager...');
@@ -292,7 +292,7 @@ export class ScreenshotManager {
     let deletedCount = 0;
     for (const screenshot of screenshots) {
       const deleted = await this.deleteScreenshot(screenshot.id);
-      if (deleted) deletedCount++;
+      if (deleted) {deletedCount++;}
     }
     
     console.log(`🧹 Limpieza completada: ${deletedCount} screenshots eliminados`);
@@ -364,7 +364,7 @@ export class ScreenshotUtils {
    * Calcula el tamaño legible de un archivo
    */
   static formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {return '0 Bytes';}
     
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -398,3 +398,12 @@ export class ScreenshotUtils {
     return errors;
   }
 }
+
+
+
+
+
+
+
+
+

@@ -215,3 +215,6 @@ const { currentIndex, goToSlide, goToNext, goToPrevious } = useHeroCarousel({
 - [ ] Añadir indicadores de progreso durante swipe
 - [ ] Optimizar para pantallas ultra-wide
 - [ ] Implementar lazy loading más agresivo para imágenes laterales
+
+
+

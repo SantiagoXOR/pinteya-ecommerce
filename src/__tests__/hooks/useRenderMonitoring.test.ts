@@ -456,3 +456,12 @@ function render(element: React.ReactElement) {
   // Simulación básica de render para el test
   return { container };
 }
+
+
+
+
+
+
+
+
+

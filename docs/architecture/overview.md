@@ -206,3 +206,6 @@ Componentes → Redux Actions → Store → Componentes
 ---
 
 *Última actualización: Junio 2025*
+
+
+

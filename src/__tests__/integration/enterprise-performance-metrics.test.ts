@@ -402,3 +402,12 @@ describe('Performance y Métricas Enterprise', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

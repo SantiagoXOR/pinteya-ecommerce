@@ -25,8 +25,8 @@ import {
   MapPin
 } from 'lucide-react';
 import { LogisticsAlert } from '@/types/logistics';
-import { cn } from '@/lib/utils';
-import { formatDate, formatRelativeTime } from '@/lib/utils/format';
+import { cn } from '@/lib/core/utils';
+import { formatDate, formatRelativeTime } from '@/lib/utils/consolidated-utils';
 import Link from 'next/link';
 
 // =====================================================
@@ -408,3 +408,12 @@ export function LogisticsAlertsSummary({ alerts }: { alerts: LogisticsAlert[] })
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

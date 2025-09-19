@@ -3,14 +3,14 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { checkRateLimit } from '@/lib/auth/rate-limiting';
-import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -195,9 +195,9 @@ export async function POST(
     };
 
     // Agregar campos adicionales según el estado
-    if (tracking_number) updateData.tracking_number = tracking_number;
-    if (carrier) updateData.carrier = carrier;
-    if (estimated_delivery) updateData.estimated_delivery = estimated_delivery;
+    if (tracking_number) {updateData.tracking_number = tracking_number;}
+    if (carrier) {updateData.carrier = carrier;}
+    if (estimated_delivery) {updateData.estimated_delivery = estimated_delivery;}
 
     // Actualizar estado de pago automáticamente en ciertos casos
     if (newStatus === 'delivered') {

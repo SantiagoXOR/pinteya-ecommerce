@@ -10,7 +10,7 @@ export function ProductListSimple() {
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>;
+    return <div className="p-4 text-red-500">Error: {error instanceof Error ? error.message : String(error) || 'Error desconocido'}</div>;
   }
 
   return (
@@ -29,3 +29,12 @@ export function ProductListSimple() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

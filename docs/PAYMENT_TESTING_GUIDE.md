@@ -347,3 +347,6 @@ npx playwright test payment-flow.spec.ts --headed
 ---
 
 **✨ ¡El sistema de testing está completamente configurado y listo para usar!**
+
+
+

@@ -5,3 +5,12 @@ export type Menu = {
   newTab: boolean;
   submenu?: Menu[];
 };
+
+
+
+
+
+
+
+
+

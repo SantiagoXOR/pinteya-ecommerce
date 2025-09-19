@@ -271,3 +271,12 @@ export function calculateInstallments(price: number): {
     interestFree: true,
   }
 }
+
+
+
+
+
+
+
+
+

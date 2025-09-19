@@ -5,7 +5,7 @@
 "use client";
 
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 // ===================================
 // TIPOS
@@ -183,3 +183,12 @@ export const SearchPageSkeleton: React.FC<{ className?: string }> = ({ className
 };
 
 export default ProductSkeleton;
+
+
+
+
+
+
+
+
+

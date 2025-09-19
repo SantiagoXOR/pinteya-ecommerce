@@ -130,7 +130,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     queryKey: searchQueryKeys.search(debouncedQuery),
     queryFn: async ({ queryKey, signal }) => {
       const [, , searchQuery] = queryKey;
-      if (!searchQuery?.trim()) return [];
+      if (!searchQuery?.trim()) {return [];}
 
 
       try {
@@ -299,7 +299,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
   }, [updateDebouncedQuery, enablePrefetch, queryClient, maxSuggestions, navigation]);
 
   const executeSearch = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {return;}
 
     try {
       setHasSearched(true);
@@ -464,3 +464,12 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
 }
 
 export default useSearchOptimized;
+
+
+
+
+
+
+
+
+

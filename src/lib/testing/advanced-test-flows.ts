@@ -440,11 +440,11 @@ export class AdvancedTestFlowManager {
     const stepMap = new Map(steps.map(step => [step.id, step]));
 
     const visit = (stepId: string) => {
-      if (visited.has(stepId)) return;
+      if (visited.has(stepId)) {return;}
       visited.add(stepId);
 
       const step = stepMap.get(stepId);
-      if (!step) return;
+      if (!step) {return;}
 
       // Visitar dependencias primero
       step.dependencies.forEach(depId => visit(depId));
@@ -821,3 +821,12 @@ export class AdvancedTestFlowManager {
 
 // Instancia global del gestor
 export const testFlowManager = new AdvancedTestFlowManager();
+
+
+
+
+
+
+
+
+

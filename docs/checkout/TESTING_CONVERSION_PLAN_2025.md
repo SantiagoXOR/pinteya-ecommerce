@@ -402,3 +402,6 @@ const roi = {
 - [ ] Setup próximos tests
 
 **Objetivo Final**: Convertir el checkout de Pinteya en el más eficiente del mercado argentino de pinturería, con conversión superior al 4% y experiencia de usuario excepcional.
+
+
+

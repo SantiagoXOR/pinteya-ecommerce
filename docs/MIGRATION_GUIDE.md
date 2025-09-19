@@ -211,3 +211,6 @@ La documentación de Pinteya E-commerce ahora cumple con los estándares moderno
 ---
 
 *Refactorización completada: Junio 2025*
+
+
+

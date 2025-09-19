@@ -162,3 +162,6 @@ El componente es altamente personalizable a través de:
 ---
 
 *Implementación completada siguiendo exactamente el wireframe y especificaciones proporcionadas.*
+
+
+

@@ -85,8 +85,8 @@ describe('useCategoryNavigation Hook', () => {
 
     it('preserves other URL parameters when enabled', async () => {
       mockGet.mockImplementation((key: string) => {
-        if (key === 'categories') return null;
-        if (key === 'search') return 'test';
+        if (key === 'categories') {return null;}
+        if (key === 'search') {return 'test';}
         return null;
       });
       
@@ -114,8 +114,8 @@ describe('useCategoryNavigation Hook', () => {
 
     it('does not preserve other parameters when disabled', async () => {
       mockGet.mockImplementation((key: string) => {
-        if (key === 'categories') return null;
-        if (key === 'search') return 'test';
+        if (key === 'categories') {return null;}
+        if (key === 'search') {return 'test';}
         return null;
       });
 
@@ -350,3 +350,12 @@ describe('useCategoryNavigation Hook', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

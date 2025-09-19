@@ -17,3 +17,12 @@ const BlogDetailsWithSidebarPage = () => {
 };
 
 export default BlogDetailsWithSidebarPage;
+
+
+
+
+
+
+
+
+

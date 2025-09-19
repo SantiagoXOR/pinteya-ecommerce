@@ -257,7 +257,7 @@ export const MonitoringDashboard: React.FC = () => {
 
   // Auto-refresh
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {return;}
 
     const interval = setInterval(() => {
       // El hook ya se actualiza automáticamente
@@ -559,3 +559,12 @@ export const MonitoringDashboard: React.FC = () => {
 };
 
 export default MonitoringDashboard;
+
+
+
+
+
+
+
+
+

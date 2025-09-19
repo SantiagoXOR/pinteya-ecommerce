@@ -137,3 +137,6 @@ Se creó `src/app/css/variables.css` con las variables de shadcn/ui:
 - [Documentación Tailwind CSS](https://tailwindcss.com/docs/installation)
 - [Configuración shadcn/ui](https://ui.shadcn.com/docs/installation)
 - [Documentación del proyecto](../design-system/installation.md)
+
+
+

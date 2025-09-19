@@ -188,3 +188,12 @@ export default function CheckoutSuccessPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

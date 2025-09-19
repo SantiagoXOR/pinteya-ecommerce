@@ -637,3 +637,6 @@ export async function GET() {
 **Fecha**: Enero 2025  
 **Versión**: Enterprise v3.0  
 **Basado en**: MercadoPago Official Documentation + Context7
+
+
+

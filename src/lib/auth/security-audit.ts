@@ -3,7 +3,7 @@
  * Registra eventos de seguridad y detecta patrones sospechosos
  */
 
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import type { NextRequest, NextApiRequest } from 'next';
 import type { SecurityContext } from './security-validations';
 
@@ -247,7 +247,7 @@ export async function detectMultipleAuthFailures(
   maxAttempts: number = 5
 ): Promise<boolean> {
   try {
-    if (!supabaseAdmin) return false;
+    if (!supabaseAdmin) {return false;}
 
     const timeThreshold = new Date(Date.now() - timeWindowMinutes * 60 * 1000).toISOString();
 
@@ -297,7 +297,7 @@ export async function detectMultipleIPAccess(
   maxIPs: number = 3
 ): Promise<boolean> {
   try {
-    if (!supabaseAdmin) return false;
+    if (!supabaseAdmin) {return false;}
 
     const timeThreshold = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000).toISOString();
 
@@ -354,3 +354,12 @@ export async function runSecurityDetection(userId: string): Promise<void> {
     console.error('[SECURITY] Error en runSecurityDetection:', error);
   }
 }
+
+
+
+
+
+
+
+
+

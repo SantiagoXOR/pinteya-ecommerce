@@ -79,7 +79,10 @@ export async function getProducts(
 
     return result.data;
   } catch (error) {
-    console.error('❌ Error obteniendo productos:', error);
+    // Solo loggear errores que no sean AbortError
+    if (error instanceof Error && error.name !== 'AbortError') {
+      console.error('❌ Error obteniendo productos:', error);
+    }
 
     // Return a fallback response instead of throwing
     return {
@@ -240,7 +243,10 @@ export async function getRelatedProducts(
       .slice(0, limit);
 
   } catch (error) {
-    console.error('Error obteniendo productos relacionados:', error);
+    // Solo loggear errores que no sean AbortError
+    if (error instanceof Error && error.name !== 'AbortError') {
+      console.error('Error obteniendo productos relacionados:', error);
+    }
     return [];
   }
 }
@@ -328,3 +334,12 @@ export function getProductMainImage(product: ProductWithCategory): string {
   
   return '/images/products/placeholder.jpg';
 }
+
+
+
+
+
+
+
+
+

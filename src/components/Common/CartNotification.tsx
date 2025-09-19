@@ -50,7 +50,7 @@ const CartNotification: React.FC<CartNotificationProps> = ({
     onClose?.();
   };
 
-  if (!show || !isVisible) return null;
+  if (!show || !isVisible) {return null;}
 
   return (
     <div className="fixed top-4 right-4 z-notification animate-slide-in-right">
@@ -173,3 +173,12 @@ export const useCartNotification = () => {
 };
 
 export default CartNotification;
+
+
+
+
+
+
+
+
+

@@ -251,3 +251,6 @@ Configuración Photoshop:
 
 *Última actualización: Junio 2025*
 *Versión: 1.0*
+
+
+

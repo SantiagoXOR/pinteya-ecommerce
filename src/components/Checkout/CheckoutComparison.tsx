@@ -375,3 +375,12 @@ const CheckoutComparison = () => {
 };
 
 export default CheckoutComparison;
+
+
+
+
+
+
+
+
+

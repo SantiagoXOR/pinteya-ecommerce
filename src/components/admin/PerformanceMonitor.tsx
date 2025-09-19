@@ -98,7 +98,7 @@ const PerformanceMonitor: React.FC = () => {
 
   // Efecto para auto-refresh
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {return;}
 
     const interval = setInterval(fetchMetrics, refreshInterval);
     return () => clearInterval(interval);
@@ -126,8 +126,8 @@ const PerformanceMonitor: React.FC = () => {
 
   // Función para formatear tiempo
   const formatTime = (ms: number) => {
-    if (ms < 1000) return `${ms.toFixed(0)}ms`;
-    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+    if (ms < 1000) {return `${ms.toFixed(0)}ms`;}
+    if (ms < 60000) {return `${(ms / 1000).toFixed(1)}s`;}
     return `${(ms / 60000).toFixed(1)}min`;
   };
 
@@ -146,7 +146,7 @@ const PerformanceMonitor: React.FC = () => {
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Error al cargar métricas</AlertTitle>
         <AlertDescription>
-          {error}
+          {error instanceof Error ? error.message : String(error) || 'Error desconocido'}
           <Button 
             variant="outline" 
             size="sm" 
@@ -413,3 +413,12 @@ const PerformanceMonitor: React.FC = () => {
 };
 
 export default PerformanceMonitor;
+
+
+
+
+
+
+
+
+

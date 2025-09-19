@@ -61,3 +61,12 @@ export const {
   removeAllItemsFromWishlist,
 } = wishlist.actions;
 export default wishlist.reducer;
+
+
+
+
+
+
+
+
+

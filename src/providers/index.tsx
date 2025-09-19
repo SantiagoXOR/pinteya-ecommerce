@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { ClerkProvider } from '@clerk/nextjs'
+import { SessionProvider } from 'next-auth/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'sonner'
@@ -39,25 +39,7 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
-      appearance={{
-        baseTheme: undefined,
-        variables: {
-          colorPrimary: '#3b82f6',
-          colorBackground: '#ffffff',
-          colorInputBackground: '#f8fafc',
-          colorInputText: '#1e293b',
-          borderRadius: '0.5rem',
-        },
-        elements: {
-          formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white',
-          card: 'shadow-lg border border-gray-200',
-          headerTitle: 'text-gray-900',
-          headerSubtitle: 'text-gray-600',
-        },
-      }}
-    >
+    <SessionProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider
           attribute="class"
@@ -101,7 +83,7 @@ export function Providers({ children }: ProvidersProps) {
           </MonitoringProvider>
         </ThemeProvider>
       </QueryClientProvider>
-    </ClerkProvider>
+    </SessionProvider>
   )
 }
 
@@ -176,7 +158,7 @@ export function ProvidersStatus() {
         </div>
         
         <div className="flex justify-between">
-          <span>Clerk Auth:</span>
+          <span>NextAuth:</span>
           <span>✅</span>
         </div>
         
@@ -188,7 +170,7 @@ export function ProvidersStatus() {
         {error && (
           <div className="mt-2 p-2 bg-red-900 rounded text-red-200">
             <div className="font-semibold">Error:</div>
-            <div className="text-xs">{error}</div>
+            <div className="text-xs">{error instanceof Error ? error.message : String(error) || 'Error desconocido'}</div>
           </div>
         )}
       </div>
@@ -199,3 +181,12 @@ export function ProvidersStatus() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+

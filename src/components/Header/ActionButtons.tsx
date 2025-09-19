@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { User, ShoppingCart, LogIn, Package } from "lucide-react";
+import { User, ShoppingCart, LogIn, Package, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -108,6 +108,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Mi Dashboard
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
                 Mi Perfil
@@ -195,6 +201,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Mi Dashboard
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               Mi Perfil
@@ -231,3 +243,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 };
 
 export default ActionButtons;
+
+
+
+
+
+
+
+
+

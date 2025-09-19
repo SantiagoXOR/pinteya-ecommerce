@@ -103,3 +103,6 @@ El input de búsqueda ahora funciona perfectamente:
 - **Sincronización Controlada**: Actualiza el estado global solo cuando es necesario
 
 Este patrón previene conflictos entre el estado controlado del input y la lógica de búsqueda, asegurando una experiencia de usuario fluida.
+
+
+

@@ -230,3 +230,6 @@ tailwindcss.com
 **Próxima revisión**: Septiembre 2025  
 **Responsable**: Equipo de Desarrollo Pinteya  
 **Documento**: v2.0 - Auditoría Completa
+
+
+

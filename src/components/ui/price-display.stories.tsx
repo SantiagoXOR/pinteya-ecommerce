@@ -251,3 +251,12 @@ export const DifferentCurrencies: Story = {
     </div>
   ),
 }
+
+
+
+
+
+
+
+
+

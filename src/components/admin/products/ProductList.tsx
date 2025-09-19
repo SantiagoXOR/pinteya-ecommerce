@@ -7,7 +7,7 @@ import { AdminDataTable } from '../ui/AdminDataTable';
 import { ProductFilters } from './ProductFilters';
 import { ProductActions, ProductRowActions } from './ProductActions';
 import { useProductList } from '@/hooks/admin/useProductList';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { Package, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 
 interface Product {
@@ -330,3 +330,12 @@ export function ProductList({ className }: ProductListProps) {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

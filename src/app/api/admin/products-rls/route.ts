@@ -354,18 +354,18 @@ export async function PUT(request: NextRequest) {
         };
 
         // Solo actualizar campos proporcionados
-        if (body.name !== undefined) updateData.name = body.name;
-        if (body.description !== undefined) updateData.description = body.description;
-        if (body.price !== undefined) updateData.price = parseFloat(body.price);
+        if (body.name !== undefined) {updateData.name = body.name;}
+        if (body.description !== undefined) {updateData.description = body.description;}
+        if (body.price !== undefined) {updateData.price = parseFloat(body.price);}
         if (body.discounted_price !== undefined) {
           updateData.discounted_price = body.discounted_price ? parseFloat(body.discounted_price) : null;
         }
-        if (body.stock !== undefined) updateData.stock = parseInt(body.stock);
-        if (body.category_id !== undefined) updateData.category_id = parseInt(body.category_id);
-        if (body.brand !== undefined) updateData.brand = body.brand;
-        if (body.is_active !== undefined) updateData.is_active = body.is_active;
-        if (body.is_featured !== undefined) updateData.is_featured = body.is_featured;
-        if (body.images !== undefined) updateData.images = body.images;
+        if (body.stock !== undefined) {updateData.stock = parseInt(body.stock);}
+        if (body.category_id !== undefined) {updateData.category_id = parseInt(body.category_id);}
+        if (body.brand !== undefined) {updateData.brand = body.brand;}
+        if (body.is_active !== undefined) {updateData.is_active = body.is_active;}
+        if (body.is_featured !== undefined) {updateData.is_featured = body.is_featured;}
+        if (body.images !== undefined) {updateData.images = body.images;}
 
         const { data: product, error } = await client
           .from('products')
@@ -442,3 +442,12 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

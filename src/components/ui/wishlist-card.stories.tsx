@@ -141,3 +141,12 @@ export const RecentlyAdded: Story = {
     // showAddToCartButton: true,
   },
 };
+
+
+
+
+
+
+
+
+

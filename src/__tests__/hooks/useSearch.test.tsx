@@ -386,3 +386,12 @@ describe('useSearch - Cleanup', () => {
     expect(result.current.hasSearched).toBe(false);
   });
 });
+
+
+
+
+
+
+
+
+

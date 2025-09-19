@@ -47,8 +47,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Order, OrderStatus, PaymentStatus, OrderFilters } from '@/hooks/admin/useOrdersEnterprise';
-import { cn } from '@/lib/utils';
-import { formatDate, formatCurrency } from '@/lib/utils/formatters';
+import { cn } from '@/lib/core/utils';
+import { formatDate, formatCurrency } from '@/lib/utils/consolidated-utils';
 
 // =====================================================
 // INTERFACES
@@ -513,3 +513,12 @@ function EmptyOrdersList() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

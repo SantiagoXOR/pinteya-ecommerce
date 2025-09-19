@@ -17,3 +17,12 @@ const ShopWithoutSidebarPage = () => {
 };
 
 export default ShopWithoutSidebarPage;
+
+
+
+
+
+
+
+
+

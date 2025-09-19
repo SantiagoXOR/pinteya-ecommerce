@@ -34,3 +34,12 @@ export const productDetails = createSlice({
 
 export const { updateproductDetails } = productDetails.actions;
 export default productDetails.reducer;
+
+
+
+
+
+
+
+
+

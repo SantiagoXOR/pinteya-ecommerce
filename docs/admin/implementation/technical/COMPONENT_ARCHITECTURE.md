@@ -630,3 +630,6 @@ describe('AdminDataTable', () => {
 
 **Estado:** ✅ Completado  
 **Próxima actualización:** Al agregar nuevos patrones de componentes
+
+
+

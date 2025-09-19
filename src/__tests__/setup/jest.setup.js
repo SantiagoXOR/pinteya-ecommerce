@@ -290,13 +290,13 @@ global.FileReader = class FileReader {
   readAsDataURL() {
     this.readyState = 2;
     this.result = 'data:image/jpeg;base64,fake-base64-data';
-    if (this.onload) this.onload();
+    if (this.onload) {this.onload();}
   }
   
   readAsText() {
     this.readyState = 2;
     this.result = 'fake-text-content';
-    if (this.onload) this.onload();
+    if (this.onload) {this.onload();}
   }
 };
 
@@ -419,3 +419,7 @@ global.Headers = jest.fn().mockImplementation((init) => {
 
 // Increase timeout for integration tests
 jest.setTimeout(30000);
+
+
+
+

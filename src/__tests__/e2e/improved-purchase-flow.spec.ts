@@ -279,3 +279,12 @@ test.describe('Improved Purchase Flow - Post Implementation', () => {
     console.log('✅ Test de rendimiento completado');
   });
 });
+
+
+
+
+
+
+
+
+

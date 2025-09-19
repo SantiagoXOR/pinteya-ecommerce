@@ -181,3 +181,12 @@ export function useSalesReports(): UseSalesReportsReturn {
     generateCustomReport
   }
 }
+
+
+
+
+
+
+
+
+

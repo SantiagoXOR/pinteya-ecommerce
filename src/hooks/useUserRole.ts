@@ -165,11 +165,11 @@ export const useUserRole = (): UseUserRoleReturn => {
   }, [user]);
 
   const hasPermission = (permissionPath: string[]): boolean => {
-    if (!userProfile?.user_roles?.permissions) return false;
+    if (!userProfile?.user_roles?.permissions) {return false;}
 
     let current = userProfile.user_roles.permissions;
     for (const path of permissionPath) {
-      if (current[path] === undefined) return false;
+      if (current[path] === undefined) {return false;}
       current = current[path];
     }
 
@@ -251,3 +251,12 @@ export const useUserRole = (): UseUserRoleReturn => {
     refetch: fetchUserProfile,
   };
 };
+
+
+
+
+
+
+
+
+

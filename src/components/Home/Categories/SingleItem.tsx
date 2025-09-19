@@ -48,3 +48,12 @@ const SingleItem = ({ item }: { item: Category }) => {
 };
 
 export default SingleItem;
+
+
+
+
+
+
+
+
+

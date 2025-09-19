@@ -191,3 +191,6 @@ curl https://pinteya.com/api/admin/monitoring/metrics
 **🎯 Estado:** Listo para configuración en producción
 **📅 Última actualización:** 2024-01-09
 **👤 Responsable:** Santiago XOR (santiago@xor.com.ar)
+
+
+

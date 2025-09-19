@@ -265,3 +265,12 @@ async function postHandler(request: NextRequest) {
 // Aplicar middleware de monitoreo de performance
 export const GET = withPerformanceMonitoring(getHandler);
 export const POST = withPerformanceMonitoring(postHandler);
+
+
+
+
+
+
+
+
+

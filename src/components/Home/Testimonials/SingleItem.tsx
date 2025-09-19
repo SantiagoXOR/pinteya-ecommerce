@@ -78,3 +78,12 @@ const SingleItem = ({ testimonial }: { testimonial: Testimonial }) => {
 };
 
 export default SingleItem;
+
+
+
+
+
+
+
+
+

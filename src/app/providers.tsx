@@ -26,6 +26,7 @@ import PreLoader from "@/components/Common/PreLoader";
 import CartNotification, { useCartNotification } from "@/components/Common/CartNotification";
 // import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import FloatingCartButton from "@/components/ui/floating-cart-button";
+import { Toaster } from "@/components/ui/toast";
 
 // Componente NextAuthWrapper para manejar sesiones
 function NextAuthWrapper({ children }: { children: React.ReactNode }) {
@@ -44,7 +45,7 @@ function NextAuthWrapper({ children }: { children: React.ReactNode }) {
   console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce');
 
   return (
-    <SessionProvider>
+    <SessionProvider session={null}>
       {children}
     </SessionProvider>
   );
@@ -132,6 +133,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                         onClose={hideNotification}
                       />
                     )}
+
+                    {/* Toaster para notificaciones */}
+                    <Toaster />
                             </PreviewSliderProvider>
                           </ModalProvider>
                         </CartModalProvider>
@@ -159,3 +163,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Fallback sin autenticación
   return <AppContent />;
 }
+
+
+
+
+
+
+
+
+

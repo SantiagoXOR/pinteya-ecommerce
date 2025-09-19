@@ -3,7 +3,7 @@
 // ===================================
 
 import { useState, useEffect, useCallback } from 'react';
-import { logger, LogCategory } from '@/lib/logger';
+import { logger, LogCategory } from '@/lib/enterprise/logger';
 
 // Tipos para métricas de MercadoPago
 export interface MercadoPagoMetrics {
@@ -250,3 +250,12 @@ export function useMercadoPagoAlerts() {
     hasCriticalAlerts: criticalAlerts.length > 0,
   };
 }
+
+
+
+
+
+
+
+
+

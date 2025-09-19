@@ -43,13 +43,13 @@ export const useHeroCarousel = ({
 
   // Función para ir al siguiente slide
   const goToNext = useCallback(() => {
-    if (images.length <= 1) return; // No navegar si solo hay una imagen
+    if (images.length <= 1) {return;} // No navegar si solo hay una imagen
     setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
   }, [images.length]);
 
   // Función para ir al slide anterior
   const goToPrevious = useCallback(() => {
-    if (images.length <= 1) return; // No navegar si solo hay una imagen
+    if (images.length <= 1) {return;} // No navegar si solo hay una imagen
     setCurrentIndex((prevIndex) => 
       prevIndex === 0 ? images.length - 1 : prevIndex - 1
     );
@@ -142,3 +142,12 @@ export const useHeroCarousel = ({
 };
 
 export default useHeroCarousel;
+
+
+
+
+
+
+
+
+

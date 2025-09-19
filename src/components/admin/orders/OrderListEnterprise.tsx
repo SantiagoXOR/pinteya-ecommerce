@@ -80,7 +80,7 @@ interface OrderFiltersProps {
 }
 
 const OrderFilters = memo<OrderFiltersProps>(({ filters, onFilterChange, enabled }) => {
-  if (!enabled) return null;
+  if (!enabled) {return null;}
 
   return (
     <Card className="mb-6">
@@ -174,7 +174,7 @@ interface BulkActionsProps {
 }
 
 const BulkActions = memo<BulkActionsProps>(({ selectedCount, onBulkAction, enabled }) => {
-  if (!enabled || selectedCount === 0) return null;
+  if (!enabled || selectedCount === 0) {return null;}
 
   return (
     <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 rounded-lg">
@@ -422,7 +422,7 @@ export const OrderListEnterprise: React.FC<OrderListEnterpriseProps> = ({
     if (error) {
       return (
         <div className="text-center py-8">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-red-600 mb-4">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
           <Button onClick={handleRefresh} variant="outline">
             <RefreshCw className="w-4 h-4 mr-2" />
             Reintentar
@@ -584,7 +584,7 @@ export const OrderListEnterprise: React.FC<OrderListEnterpriseProps> = ({
   // ===================================
 
   const renderPagination = () => {
-    if (!pagination || pagination.totalPages <= 1) return null;
+    if (!pagination || pagination.totalPages <= 1) {return null;}
 
     return (
       <div className="flex items-center justify-between mt-6">
@@ -666,3 +666,12 @@ export const OrderListEnterprise: React.FC<OrderListEnterpriseProps> = ({
     </div>
   );
 };
+
+
+
+
+
+
+
+
+

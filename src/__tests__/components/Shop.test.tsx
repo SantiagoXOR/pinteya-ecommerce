@@ -247,3 +247,12 @@ describe('Shop Component', () => {
     expect(screen.getByRole('heading', { name: /productos de pinturería/i })).toBeInTheDocument()
   })
 })
+
+
+
+
+
+
+
+
+

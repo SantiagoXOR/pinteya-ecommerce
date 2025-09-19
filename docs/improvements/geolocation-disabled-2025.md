@@ -168,3 +168,6 @@ import GeolocationDebugger from "./GeolocationDebugger";
 **Estado:** ✅ Completado  
 **Impacto:** Mejora de UX - Menos intrusivo  
 **Reversible:** Sí
+
+
+

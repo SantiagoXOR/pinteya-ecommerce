@@ -23,7 +23,7 @@ jest.mock('swiper/react', () => ({
     };
 
     React.useEffect(() => {
-      if (onSwiper) onSwiper(mockSwiper);
+      if (onSwiper) {onSwiper(mockSwiper);}
     }, [onSwiper]);
 
     return (
@@ -231,3 +231,12 @@ describe('HeroImageCarousel', () => {
     expect(nextButton).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-yellow-400');
   });
 });
+
+
+
+
+
+
+
+
+

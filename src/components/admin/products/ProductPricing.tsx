@@ -3,7 +3,7 @@
 import { UseFormReturn, FieldErrors } from 'react-hook-form';
 import { AdminCard } from '../ui/AdminCard';
 import { Calculator, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface ProductFormData {
   price: number;
@@ -26,7 +26,7 @@ export function ProductPricing({ form, errors, className }: ProductPricingProps)
     const price = watchedData.price || 0;
     const cost = watchedData.cost_price || 0;
     
-    if (cost === 0) return 0;
+    if (cost === 0) {return 0;}
     return ((price - cost) / price) * 100;
   };
 
@@ -35,7 +35,7 @@ export function ProductPricing({ form, errors, className }: ProductPricingProps)
     const price = watchedData.price || 0;
     const cost = watchedData.cost_price || 0;
     
-    if (cost === 0) return 0;
+    if (cost === 0) {return 0;}
     return ((price - cost) / cost) * 100;
   };
 
@@ -44,7 +44,7 @@ export function ProductPricing({ form, errors, className }: ProductPricingProps)
     const price = watchedData.price || 0;
     const comparePrice = watchedData.compare_price || 0;
     
-    if (comparePrice === 0 || comparePrice <= price) return 0;
+    if (comparePrice === 0 || comparePrice <= price) {return 0;}
     return ((comparePrice - price) / comparePrice) * 100;
   };
 
@@ -54,7 +54,7 @@ export function ProductPricing({ form, errors, className }: ProductPricingProps)
 
   // Pricing suggestions
   const suggestPricing = (cost: number) => {
-    if (cost === 0) return [];
+    if (cost === 0) {return [];}
     
     return [
       { label: '50% Margen', value: cost / 0.5 },
@@ -291,3 +291,12 @@ export function ProductPricing({ form, errors, className }: ProductPricingProps)
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

@@ -137,3 +137,12 @@ describe('useCheckout Hook', () => {
     expect(typeof result.current.finalTotal).toBe('number')
   })
 })
+
+
+
+
+
+
+
+
+

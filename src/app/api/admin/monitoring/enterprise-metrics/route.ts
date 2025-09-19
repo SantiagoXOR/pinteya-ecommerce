@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils';
 import { enterpriseAuditSystem } from '@/lib/security/enterprise-audit-system';
 import { enterpriseCacheSystem } from '@/lib/optimization/enterprise-cache-system';
-import { metricsCollector } from '@/lib/metrics';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // =====================================================
 // TIPOS E INTERFACES
@@ -537,3 +537,12 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

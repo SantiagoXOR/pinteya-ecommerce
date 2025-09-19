@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/core/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, Eye, Star } from 'lucide-react'
 
@@ -58,7 +58,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [showQuickActions, setShowQuickActions] = React.useState(false)
 
     const handleAddToCart = async () => {
-      if (!onAddToCart) return
+      if (!onAddToCart) {return}
 
       if (showCartAnimation) {
         setIsAddingToCart(true)
@@ -326,3 +326,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 CommercialProductCard.displayName = "CommercialProductCard"
 
 export { CommercialProductCard }
+
+
+
+
+
+
+
+
+

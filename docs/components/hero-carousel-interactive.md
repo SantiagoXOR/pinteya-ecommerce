@@ -263,3 +263,6 @@ npm test -- --testPathPattern="Carousel"
 ## 📝 Notas de Implementación
 
 Este carrusel reemplaza la implementación anterior estática del hero section, proporcionando una experiencia más dinámica y atractiva para los usuarios de Pinteya e-commerce. La implementación sigue los estándares enterprise-ready del proyecto con testing completo, documentación detallada y optimizaciones de rendimiento.
+
+
+

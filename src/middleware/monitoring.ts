@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { proactiveMonitoring } from '../lib/monitoring/proactive-monitoring'
-import { logger, LogLevel, LogCategory } from '../lib/logger'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 
 /**
  * Middleware para capturar errores y métricas automáticamente
@@ -74,3 +74,12 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }
+
+
+
+
+
+
+
+
+

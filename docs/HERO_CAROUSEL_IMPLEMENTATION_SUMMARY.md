@@ -181,3 +181,6 @@ El carrusel interactivo está **100% funcional** y cumple con todos los requerim
 **Fecha**: Enero 2025  
 **Desarrollador**: Augment Agent  
 **Proyecto**: Pinteya E-commerce
+
+
+

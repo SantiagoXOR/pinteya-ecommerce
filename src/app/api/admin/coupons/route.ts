@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { auth } from '@/auth';
-import { checkRateLimit, addRateLimitHeaders } from '@/lib/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { metricsCollector } from '@/lib/metrics';
+import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // CONFIGURACIÓN
@@ -871,7 +871,7 @@ export async function POST(request: NextRequest) {
 
       for (const couponId of bulkAction.coupon_ids) {
         try {
-          let updateData: any = { updated_at: new Date().toISOString() };
+          const updateData: any = { updated_at: new Date().toISOString() };
 
           switch (bulkAction.action) {
             case 'activate':
@@ -901,7 +901,7 @@ export async function POST(request: NextRequest) {
                 .delete()
                 .eq('id', couponId);
               
-              if (deleteError) throw deleteError;
+              if (deleteError) {throw deleteError;}
               results.push({ coupon_id: couponId, success: true, action: 'deleted' });
               continue;
           }
@@ -912,7 +912,7 @@ export async function POST(request: NextRequest) {
               .update(updateData)
               .eq('id', couponId);
             
-            if (updateError) throw updateError;
+            if (updateError) {throw updateError;}
           }
 
           results.push({ coupon_id: couponId, success: true, action: bulkAction.action });
@@ -989,3 +989,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

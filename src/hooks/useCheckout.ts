@@ -6,7 +6,7 @@ import { selectCartItems, selectTotalPrice, removeAllItemsFromCart } from '@/red
 import { CheckoutFormData, CheckoutState, CreatePreferencePayload, PaymentPreferenceResponse } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
 import { useAuth } from './useAuth';
-import { validateEmail, validatePhoneNumber, validateDNI } from '@/lib/utils/validation';
+import { validateEmail, validatePhoneNumber, validateDNI } from '@/lib/utils/consolidated-utils';
 
 const initialFormData: CheckoutFormData = {
   billing: {
@@ -113,7 +113,7 @@ export const useCheckout = () => {
   }, [checkoutState.formData.shippingMethod, totalPrice]);
 
   const calculateDiscount = useCallback(() => {
-    if (!appliedCoupon) return 0;
+    if (!appliedCoupon) {return 0;}
 
     if (appliedCoupon.type === 'percentage') {
       return Math.round((totalPrice * appliedCoupon.discount) / 100);
@@ -217,14 +217,14 @@ export const useCheckout = () => {
     const errors: Record<string, string> = {};
 
     // Validaciones básicas
-    if (!billing.firstName?.trim()) errors.firstName = 'Nombre es requerido';
-    if (!billing.lastName?.trim()) errors.lastName = 'Apellido es requerido';
-    if (!billing.email?.trim()) errors.email = 'Email es requerido';
-    if (!billing.phone?.trim()) errors.phone = 'Teléfono es requerido';
-    if (!billing.streetAddress?.trim()) errors.streetAddress = 'Dirección es requerida';
-    if (!billing.city?.trim()) errors.city = 'Ciudad es requerida';
-    if (!billing.state?.trim()) errors.state = 'Provincia es requerida';
-    if (!billing.zipCode?.trim()) errors.zipCode = 'Código postal es requerido';
+    if (!billing.firstName?.trim()) {errors.firstName = 'Nombre es requerido';}
+    if (!billing.lastName?.trim()) {errors.lastName = 'Apellido es requerido';}
+    if (!billing.email?.trim()) {errors.email = 'Email es requerido';}
+    if (!billing.phone?.trim()) {errors.phone = 'Teléfono es requerido';}
+    if (!billing.streetAddress?.trim()) {errors.streetAddress = 'Dirección es requerida';}
+    if (!billing.city?.trim()) {errors.city = 'Ciudad es requerida';}
+    if (!billing.state?.trim()) {errors.state = 'Provincia es requerida';}
+    if (!billing.zipCode?.trim()) {errors.zipCode = 'Código postal es requerido';}
 
     // Validaciones avanzadas
     if (billing.email && !validateEmail(billing.email)) {
@@ -246,10 +246,10 @@ export const useCheckout = () => {
 
     // Validar envío si es dirección diferente
     if (shipping.differentAddress) {
-      if (!shipping.streetAddress?.trim()) errors.shippingStreetAddress = 'Dirección de envío es requerida';
-      if (!shipping.city?.trim()) errors.shippingCity = 'Ciudad de envío es requerida';
-      if (!shipping.state?.trim()) errors.shippingState = 'Provincia de envío es requerida';
-      if (!shipping.zipCode?.trim()) errors.shippingZipCode = 'Código postal de envío es requerido';
+      if (!shipping.streetAddress?.trim()) {errors.shippingStreetAddress = 'Dirección de envío es requerida';}
+      if (!shipping.city?.trim()) {errors.shippingCity = 'Ciudad de envío es requerida';}
+      if (!shipping.state?.trim()) {errors.shippingState = 'Provincia de envío es requerida';}
+      if (!shipping.zipCode?.trim()) {errors.shippingZipCode = 'Código postal de envío es requerido';}
 
       if (shipping.zipCode && !/^[A-Z]?\d{4}$/.test(shipping.zipCode.toUpperCase())) {
         errors.shippingZipCode = 'Código postal de envío inválido';
@@ -283,12 +283,12 @@ export const useCheckout = () => {
     });
 
     // Validaciones esenciales para checkout express
-    if (!billing.firstName?.trim()) errors.firstName = 'Nombre es requerido';
-    if (!billing.lastName?.trim()) errors.lastName = 'Apellido es requerido';
-    if (!billing.dni?.trim()) errors.dni = 'DNI/CUIT es requerido';
-    if (!billing.email?.trim()) errors.email = 'Email es requerido';
-    if (!billing.phone?.trim()) errors.phone = 'Teléfono es requerido';
-    if (!billing.streetAddress?.trim()) errors.streetAddress = 'Dirección es requerida';
+    if (!billing.firstName?.trim()) {errors.firstName = 'Nombre es requerido';}
+    if (!billing.lastName?.trim()) {errors.lastName = 'Apellido es requerido';}
+    if (!billing.dni?.trim()) {errors.dni = 'DNI/CUIT es requerido';}
+    if (!billing.email?.trim()) {errors.email = 'Email es requerido';}
+    if (!billing.phone?.trim()) {errors.phone = 'Teléfono es requerido';}
+    if (!billing.streetAddress?.trim()) {errors.streetAddress = 'Dirección es requerida';}
 
     // Validaciones avanzadas
     if (billing.email && !validateEmail(billing.email)) {
@@ -605,3 +605,12 @@ export const useCheckout = () => {
     handleWalletSubmit,
   };
 };
+
+
+
+
+
+
+
+
+

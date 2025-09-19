@@ -166,3 +166,6 @@ if (isUserRoute(request)) {
 ---
 
 *Esta solución elimina completamente el ciclo recursivo y establece una base sólida para el manejo de autenticación y autorización en el proyecto Pinteya e-commerce.*
+
+
+

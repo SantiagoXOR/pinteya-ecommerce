@@ -506,3 +506,12 @@ export const GET = async (request: NextRequest) => {
 
 // USAR VERSIÓN SIMPLIFICADA TEMPORALMENTE
 export const POST = postHandlerSimple;
+
+
+
+
+
+
+
+
+

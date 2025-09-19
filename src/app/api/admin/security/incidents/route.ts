@@ -11,7 +11,7 @@ import {
   type ResponseAction,
   type SecuritySeverity
 } from '@/lib/security/enterprise-audit-system';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 
 // =====================================================
 // GET /api/admin/security/incidents
@@ -537,3 +537,12 @@ async function notifySecurityTeam(incident: any, createdBy: string): Promise<voi
     console.error('[SECURITY_NOTIFICATION] Error enviando notificación:', error);
   }
 }
+
+
+
+
+
+
+
+
+

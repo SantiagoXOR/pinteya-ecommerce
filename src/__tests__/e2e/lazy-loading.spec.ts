@@ -284,3 +284,12 @@ test.describe('Performance - Lazy Loading', () => {
     expect(jsChunks.length).toBeGreaterThanOrEqual(1);
   });
 });
+
+
+
+
+
+
+
+
+

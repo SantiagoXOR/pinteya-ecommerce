@@ -271,3 +271,6 @@ Una vez completado el panel administrativo, se procederá con:
 ---
 
 *Roadmap creado el 23 de Agosto, 2025 - Pinteya E-commerce Team*
+
+
+

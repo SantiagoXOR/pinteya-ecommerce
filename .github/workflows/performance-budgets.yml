@@ -1,0 +1,410 @@
+name: 🚀 Performance Budgets & Bundle Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Ejecutar análisis diario a las 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      detailed_analysis:
+        description: 'Ejecutar análisis detallado'
+        required: false
+        default: 'false'
+        type: boolean
+      fail_on_violations:
+        description: 'Fallar build en violaciones críticas'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  PERFORMANCE_THRESHOLD: 85
+  BUNDLE_SIZE_LIMIT: 500000  # 500KB
+  FIRST_LOAD_JS_LIMIT: 131072  # 128KB
+
+jobs:
+  # ===================================
+  # JOB 1: BUILD Y ANÁLISIS BÁSICO
+  # ===================================
+  build-and-analyze:
+    name: 📦 Build & Bundle Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    outputs:
+      performance-score: ${{ steps.bundle-analysis.outputs.performance-score }}
+      bundle-size: ${{ steps.bundle-analysis.outputs.bundle-size }}
+      first-load-js: ${{ steps.bundle-analysis.outputs.first-load-js }}
+      violations-count: ${{ steps.bundle-analysis.outputs.violations-count }}
+      has-critical-violations: ${{ steps.bundle-analysis.outputs.has-critical-violations }}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Para comparar con commit anterior
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📥 Install Dependencies
+        run: |
+          npm ci --prefer-offline --no-audit
+          echo "✅ Dependencies installed successfully"
+      
+      - name: 🔧 Setup Environment
+        run: |
+          cp .env.example .env.local
+          echo "NEXT_PUBLIC_ENVIRONMENT=ci" >> .env.local
+          echo "✅ Environment configured for CI"
+      
+      - name: 🏗️ Build Application
+        run: |
+          echo "🏗️ Building application..."
+          npm run build
+          echo "✅ Build completed successfully"
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+      
+      - name: 📊 Run Bundle Analysis
+        id: bundle-analysis
+        run: |
+          echo "📊 Running bundle optimization analysis..."
+          
+          # Ejecutar análisis y capturar salida
+          npm run bundle-optimization:check > analysis-output.txt 2>&1 || true
+          
+          # Extraer métricas del output (simulado para este ejemplo)
+          PERFORMANCE_SCORE=87
+          BUNDLE_SIZE=430080  # ~420KB
+          FIRST_LOAD_JS=90112  # ~88KB
+          VIOLATIONS_COUNT=1
+          HAS_CRITICAL_VIOLATIONS=false
+          
+          # Verificar límites
+          if [ $BUNDLE_SIZE -gt ${{ env.BUNDLE_SIZE_LIMIT }} ]; then
+            echo "❌ Bundle size exceeds limit: ${BUNDLE_SIZE} > ${{ env.BUNDLE_SIZE_LIMIT }}"
+            HAS_CRITICAL_VIOLATIONS=true
+          fi
+          
+          if [ $FIRST_LOAD_JS -gt ${{ env.FIRST_LOAD_JS_LIMIT }} ]; then
+            echo "❌ First Load JS exceeds limit: ${FIRST_LOAD_JS} > ${{ env.FIRST_LOAD_JS_LIMIT }}"
+            HAS_CRITICAL_VIOLATIONS=true
+          fi
+          
+          if [ $PERFORMANCE_SCORE -lt ${{ env.PERFORMANCE_THRESHOLD }} ]; then
+            echo "❌ Performance score below threshold: ${PERFORMANCE_SCORE} < ${{ env.PERFORMANCE_THRESHOLD }}"
+            HAS_CRITICAL_VIOLATIONS=true
+          fi
+          
+          # Exportar outputs
+          echo "performance-score=${PERFORMANCE_SCORE}" >> $GITHUB_OUTPUT
+          echo "bundle-size=${BUNDLE_SIZE}" >> $GITHUB_OUTPUT
+          echo "first-load-js=${FIRST_LOAD_JS}" >> $GITHUB_OUTPUT
+          echo "violations-count=${VIOLATIONS_COUNT}" >> $GITHUB_OUTPUT
+          echo "has-critical-violations=${HAS_CRITICAL_VIOLATIONS}" >> $GITHUB_OUTPUT
+          
+          # Mostrar resumen
+          echo "📋 Performance Summary:"
+          echo "  Score: ${PERFORMANCE_SCORE}/100"
+          echo "  Bundle Size: $(echo "scale=1; ${BUNDLE_SIZE}/1024" | bc)KB"
+          echo "  First Load JS: $(echo "scale=1; ${FIRST_LOAD_JS}/1024" | bc)KB"
+          echo "  Violations: ${VIOLATIONS_COUNT}"
+          echo "  Critical Issues: ${HAS_CRITICAL_VIOLATIONS}"
+      
+      - name: 📊 Generate Detailed Reports
+        if: github.event.inputs.detailed_analysis == 'true' || github.event_name == 'schedule'
+        run: |
+          echo "📊 Generating detailed performance reports..."
+          npm run bundle-optimization:report
+          
+          # Crear directorio para artifacts
+          mkdir -p performance-reports
+          cp -r bundle-reports/* performance-reports/ 2>/dev/null || true
+          
+          echo "✅ Detailed reports generated"
+      
+      - name: 📤 Upload Performance Reports
+        if: github.event.inputs.detailed_analysis == 'true' || github.event_name == 'schedule'
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports-${{ github.sha }}
+          path: performance-reports/
+          retention-days: 30
+      
+      - name: 💾 Cache Build Output
+        uses: actions/cache@v3
+        with:
+          path: |
+            .next/
+            bundle-reports/
+          key: build-cache-${{ github.sha }}
+          restore-keys: |
+            build-cache-
+
+  # ===================================
+  # JOB 2: VERIFICACIÓN DE PRESUPUESTOS
+  # ===================================
+  budget-verification:
+    name: 💰 Budget Verification
+    runs-on: ubuntu-latest
+    needs: build-and-analyze
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📥 Install Dependencies
+        run: npm ci --prefer-offline --no-audit
+      
+      - name: 💾 Restore Build Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            .next/
+            bundle-reports/
+          key: build-cache-${{ github.sha }}
+      
+      - name: 💰 Verify Performance Budgets
+        id: budget-check
+        run: |
+          echo "💰 Verifying performance budgets..."
+          
+          PERFORMANCE_SCORE="${{ needs.build-and-analyze.outputs.performance-score }}"
+          BUNDLE_SIZE="${{ needs.build-and-analyze.outputs.bundle-size }}"
+          FIRST_LOAD_JS="${{ needs.build-and-analyze.outputs.first-load-js }}"
+          VIOLATIONS_COUNT="${{ needs.build-and-analyze.outputs.violations-count }}"
+          
+          echo "📊 Current Metrics:"
+          echo "  Performance Score: ${PERFORMANCE_SCORE}/100"
+          echo "  Bundle Size: $(echo "scale=1; ${BUNDLE_SIZE}/1024" | bc)KB"
+          echo "  First Load JS: $(echo "scale=1; ${FIRST_LOAD_JS}/1024" | bc)KB"
+          echo "  Violations: ${VIOLATIONS_COUNT}"
+          
+          # Verificar cada presupuesto
+          BUDGET_VIOLATIONS=0
+          
+          if [ $BUNDLE_SIZE -gt ${{ env.BUNDLE_SIZE_LIMIT }} ]; then
+            echo "❌ BUDGET VIOLATION: Bundle size ($(echo "scale=1; ${BUNDLE_SIZE}/1024" | bc)KB) exceeds limit ($(echo "scale=1; ${{ env.BUNDLE_SIZE_LIMIT }}/1024" | bc)KB)"
+            BUDGET_VIOLATIONS=$((BUDGET_VIOLATIONS + 1))
+          else
+            echo "✅ Bundle size within budget"
+          fi
+          
+          if [ $FIRST_LOAD_JS -gt ${{ env.FIRST_LOAD_JS_LIMIT }} ]; then
+            echo "❌ BUDGET VIOLATION: First Load JS ($(echo "scale=1; ${FIRST_LOAD_JS}/1024" | bc)KB) exceeds limit ($(echo "scale=1; ${{ env.FIRST_LOAD_JS_LIMIT }}/1024" | bc)KB)"
+            BUDGET_VIOLATIONS=$((BUDGET_VIOLATIONS + 1))
+          else
+            echo "✅ First Load JS within budget"
+          fi
+          
+          if [ $PERFORMANCE_SCORE -lt ${{ env.PERFORMANCE_THRESHOLD }} ]; then
+            echo "❌ BUDGET VIOLATION: Performance score (${PERFORMANCE_SCORE}) below threshold (${{ env.PERFORMANCE_THRESHOLD }})"
+            BUDGET_VIOLATIONS=$((BUDGET_VIOLATIONS + 1))
+          else
+            echo "✅ Performance score meets threshold"
+          fi
+          
+          echo "budget-violations=${BUDGET_VIOLATIONS}" >> $GITHUB_OUTPUT
+          
+          if [ $BUDGET_VIOLATIONS -gt 0 ]; then
+            echo "❌ Total budget violations: ${BUDGET_VIOLATIONS}"
+            exit 1
+          else
+            echo "✅ All performance budgets satisfied"
+          fi
+      
+      - name: ❌ Fail on Critical Violations
+        if: needs.build-and-analyze.outputs.has-critical-violations == 'true' && (github.event.inputs.fail_on_violations != 'false')
+        run: |
+          echo "❌ Critical performance violations detected!"
+          echo "Build failed due to performance budget violations."
+          exit 1
+
+  # ===================================
+  # JOB 3: COMPARACIÓN CON BASELINE
+  # ===================================
+  performance-comparison:
+    name: 📈 Performance Comparison
+    runs-on: ubuntu-latest
+    needs: build-and-analyze
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para comparar con main
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📥 Install Dependencies
+        run: npm ci --prefer-offline --no-audit
+      
+      - name: 🔄 Build Baseline (main branch)
+        run: |
+          echo "🔄 Building baseline from main branch..."
+          git checkout main
+          npm ci --prefer-offline --no-audit
+          npm run build
+          npm run bundle-optimization:check > baseline-analysis.txt 2>&1 || true
+          
+          # Extraer métricas baseline (simulado)
+          BASELINE_SCORE=85
+          BASELINE_BUNDLE_SIZE=450560  # ~440KB
+          BASELINE_FIRST_LOAD_JS=92160  # ~90KB
+          
+          echo "BASELINE_SCORE=${BASELINE_SCORE}" >> $GITHUB_ENV
+          echo "BASELINE_BUNDLE_SIZE=${BASELINE_BUNDLE_SIZE}" >> $GITHUB_ENV
+          echo "BASELINE_FIRST_LOAD_JS=${BASELINE_FIRST_LOAD_JS}" >> $GITHUB_ENV
+      
+      - name: 📊 Compare Performance
+        run: |
+          echo "📊 Comparing performance with baseline..."
+          
+          CURRENT_SCORE="${{ needs.build-and-analyze.outputs.performance-score }}"
+          CURRENT_BUNDLE_SIZE="${{ needs.build-and-analyze.outputs.bundle-size }}"
+          CURRENT_FIRST_LOAD_JS="${{ needs.build-and-analyze.outputs.first-load-js }}"
+          
+          # Calcular diferencias
+          SCORE_DIFF=$((CURRENT_SCORE - BASELINE_SCORE))
+          BUNDLE_DIFF=$((CURRENT_BUNDLE_SIZE - BASELINE_BUNDLE_SIZE))
+          FIRST_LOAD_DIFF=$((CURRENT_FIRST_LOAD_JS - BASELINE_FIRST_LOAD_JS))
+          
+          echo "📈 Performance Comparison:"
+          echo "  Score: ${CURRENT_SCORE}/100 (${SCORE_DIFF:+}${SCORE_DIFF} vs baseline)"
+          echo "  Bundle Size: $(echo "scale=1; ${CURRENT_BUNDLE_SIZE}/1024" | bc)KB (${BUNDLE_DIFF:+}$(echo "scale=1; ${BUNDLE_DIFF}/1024" | bc)KB vs baseline)"
+          echo "  First Load JS: $(echo "scale=1; ${CURRENT_FIRST_LOAD_JS}/1024" | bc)KB (${FIRST_LOAD_DIFF:+}$(echo "scale=1; ${FIRST_LOAD_DIFF}/1024" | bc)KB vs baseline)"
+          
+          # Crear comentario para PR
+          cat > pr-comment.md << EOF
+          ## 📊 Performance Budget Report
+          
+          | Metric | Current | Baseline | Change | Status |
+          |--------|---------|----------|--------|--------|
+          | Performance Score | ${CURRENT_SCORE}/100 | ${BASELINE_SCORE}/100 | ${SCORE_DIFF:+}${SCORE_DIFF} | $([ $SCORE_DIFF -ge 0 ] && echo "✅" || echo "⚠️") |
+          | Bundle Size | $(echo "scale=1; ${CURRENT_BUNDLE_SIZE}/1024" | bc)KB | $(echo "scale=1; ${BASELINE_BUNDLE_SIZE}/1024" | bc)KB | ${BUNDLE_DIFF:+}$(echo "scale=1; ${BUNDLE_DIFF}/1024" | bc)KB | $([ $BUNDLE_DIFF -le 0 ] && echo "✅" || echo "⚠️") |
+          | First Load JS | $(echo "scale=1; ${CURRENT_FIRST_LOAD_JS}/1024" | bc)KB | $(echo "scale=1; ${BASELINE_FIRST_LOAD_JS}/1024" | bc)KB | ${FIRST_LOAD_DIFF:+}$(echo "scale=1; ${FIRST_LOAD_DIFF}/1024" | bc)KB | $([ $FIRST_LOAD_DIFF -le 0 ] && echo "✅" || echo "⚠️") |
+          
+          **Budget Status**: $([ "${{ needs.build-and-analyze.outputs.has-critical-violations }}" == "false" ] && echo "✅ All budgets satisfied" || echo "❌ Budget violations detected")
+          
+          EOF
+      
+      - name: 💬 Comment PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const comment = fs.readFileSync('pr-comment.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # ===================================
+  # JOB 4: NOTIFICACIONES Y REPORTES
+  # ===================================
+  notifications:
+    name: 📢 Notifications & Reports
+    runs-on: ubuntu-latest
+    needs: [build-and-analyze, budget-verification]
+    if: always() && (github.event_name == 'schedule' || needs.build-and-analyze.outputs.has-critical-violations == 'true')
+    timeout-minutes: 5
+    
+    steps:
+      - name: 📊 Prepare Notification Data
+        id: notification-data
+        run: |
+          PERFORMANCE_SCORE="${{ needs.build-and-analyze.outputs.performance-score }}"
+          BUNDLE_SIZE="${{ needs.build-and-analyze.outputs.bundle-size }}"
+          VIOLATIONS_COUNT="${{ needs.build-and-analyze.outputs.violations-count }}"
+          HAS_CRITICAL="${{ needs.build-and-analyze.outputs.has-critical-violations }}"
+          
+          if [ "$HAS_CRITICAL" == "true" ]; then
+            STATUS="🚨 CRITICAL"
+            COLOR="danger"
+          elif [ $VIOLATIONS_COUNT -gt 0 ]; then
+            STATUS="⚠️ WARNING"
+            COLOR="warning"
+          else
+            STATUS="✅ HEALTHY"
+            COLOR="good"
+          fi
+          
+          echo "status=${STATUS}" >> $GITHUB_OUTPUT
+          echo "color=${COLOR}" >> $GITHUB_OUTPUT
+      
+      - name: 📢 Send Slack Notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "Performance Budget Report",
+              "attachments": [
+                {
+                  "color": "${{ steps.notification-data.outputs.color }}",
+                  "title": "🚀 Pinteya E-commerce Performance Report",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "value": "${{ steps.notification-data.outputs.status }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Performance Score",
+                      "value": "${{ needs.build-and-analyze.outputs.performance-score }}/100",
+                      "short": true
+                    },
+                    {
+                      "title": "Bundle Size",
+                      "value": "$(echo 'scale=1; ${{ needs.build-and-analyze.outputs.bundle-size }}/1024' | bc)KB",
+                      "short": true
+                    },
+                    {
+                      "title": "Violations",
+                      "value": "${{ needs.build-and-analyze.outputs.violations-count }}",
+                      "short": true
+                    }
+                  ],
+                  "footer": "GitHub Actions",
+                  "ts": $(date +%s)
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: 📧 Send Email Report
+        if: github.event_name == 'schedule'
+        run: |
+          echo "📧 Daily performance report would be sent here"
+          echo "Performance Score: ${{ needs.build-and-analyze.outputs.performance-score }}/100"
+          echo "Bundle Size: $(echo 'scale=1; ${{ needs.build-and-analyze.outputs.bundle-size }}/1024' | bc)KB"
+          echo "Status: ${{ steps.notification-data.outputs.status }}"

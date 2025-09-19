@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AdminCard } from '../ui/AdminCard';
 import { Plus, X, Edit, Trash2, Palette, Package } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface ProductVariant {
   name: string;
@@ -60,7 +60,7 @@ export function ProductVariantManager({
 
   // Add option to variant
   const addOption = (variantIndex: number, option: string) => {
-    if (!option.trim()) return;
+    if (!option.trim()) {return;}
     
     const newVariants = [...variants];
     const variant = newVariants[variantIndex];
@@ -82,7 +82,7 @@ export function ProductVariantManager({
 
   // Generate variant combinations
   const generateCombinations = () => {
-    if (variants.length === 0) return [];
+    if (variants.length === 0) {return [];}
     
     const combinations: string[][] = [[]];
     
@@ -177,7 +177,9 @@ export function ProductVariantManager({
 
           {/* Error Message */}
           {error && (
-            <div className="text-red-600 text-sm">{error}</div>
+            <div className="text-red-600 text-sm">
+              {error instanceof Error ? error.message : String(error) || 'Ha ocurrido un error'}
+            </div>
           )}
 
           {/* Existing Variants */}
@@ -320,3 +322,12 @@ export function ProductVariantManager({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

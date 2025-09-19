@@ -343,3 +343,12 @@ describe('HeroCarouselInteractive', () => {
     expect(nextButton).toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+

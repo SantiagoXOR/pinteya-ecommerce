@@ -167,3 +167,6 @@ Para cualquier consulta sobre esta migración o futuras mejoras:
 - **Soporte**: Disponible para optimizaciones adicionales
 
 **¡Migración NextAuth.js completada exitosamente!** 🎉
+
+
+

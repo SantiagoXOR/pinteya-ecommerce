@@ -39,16 +39,16 @@ const GeolocationTester = () => {
   };
 
   const getStatusIcon = () => {
-    if (isLoading) return <Loader2 className="w-5 h-5 animate-spin text-blue-500" />;
-    if (permissionStatus === 'granted') return <CheckCircle className="w-5 h-5 text-green-500" />;
-    if (permissionStatus === 'denied') return <XCircle className="w-5 h-5 text-red-500" />;
+    if (isLoading) {return <Loader2 className="w-5 h-5 animate-spin text-blue-500" />;}
+    if (permissionStatus === 'granted') {return <CheckCircle className="w-5 h-5 text-green-500" />;}
+    if (permissionStatus === 'denied') {return <XCircle className="w-5 h-5 text-red-500" />;}
     return <AlertCircle className="w-5 h-5 text-yellow-500" />;
   };
 
   const getStatusColor = () => {
-    if (permissionStatus === 'granted') return 'text-green-600 bg-green-50';
-    if (permissionStatus === 'denied') return 'text-red-600 bg-red-50';
-    if (isLoading) return 'text-blue-600 bg-blue-50';
+    if (permissionStatus === 'granted') {return 'text-green-600 bg-green-50';}
+    if (permissionStatus === 'denied') {return 'text-red-600 bg-red-50';}
+    if (isLoading) {return 'text-blue-600 bg-blue-50';}
     return 'text-yellow-600 bg-yellow-50';
   };
 
@@ -156,3 +156,12 @@ const GeolocationTester = () => {
 };
 
 export default GeolocationTester;
+
+
+
+
+
+
+
+
+

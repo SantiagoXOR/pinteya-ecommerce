@@ -4,7 +4,7 @@
 // Endpoint específico para agregar productos al carrito
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 
 /**
@@ -279,3 +279,12 @@ export async function GET() {
     }
   });
 }
+
+
+
+
+
+
+
+
+

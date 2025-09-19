@@ -22,3 +22,12 @@ export default function JsonSafetyInitializer() {
   // Este componente no renderiza nada
   return null;
 }
+
+
+
+
+
+
+
+
+

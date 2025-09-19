@@ -36,3 +36,12 @@ export const PreviewSliderProvider = ({ children }: { children: React.ReactNode 
     </PreviewSlider.Provider>
   );
 };
+
+
+
+
+
+
+
+
+

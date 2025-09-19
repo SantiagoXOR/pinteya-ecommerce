@@ -41,11 +41,11 @@ export const useFilteredProducts = (filters: ProductFilters = {}) => {
       const searchParams = new URLSearchParams();
       
       // Filtros básicos
-      if (filters.category) searchParams.set('category', filters.category);
-      if (filters.brand) searchParams.set('brand', filters.brand);
-      if (filters.search) searchParams.set('search', filters.search);
-      if (filters.priceMin !== undefined) searchParams.set('priceMin', filters.priceMin.toString());
-      if (filters.priceMax !== undefined) searchParams.set('priceMax', filters.priceMax.toString());
+      if (filters.category) {searchParams.set('category', filters.category);}
+      if (filters.brand) {searchParams.set('brand', filters.brand);}
+      if (filters.search) {searchParams.set('search', filters.search);}
+      if (filters.priceMin !== undefined) {searchParams.set('priceMin', filters.priceMin.toString());}
+      if (filters.priceMax !== undefined) {searchParams.set('priceMax', filters.priceMax.toString());}
       
       // Filtros avanzados (arrays)
       if (filters.categories && filters.categories.length > 0) {
@@ -59,10 +59,10 @@ export const useFilteredProducts = (filters: ProductFilters = {}) => {
       }
       
       // Paginación y ordenamiento
-      if (filters.page) searchParams.set('page', filters.page.toString());
-      if (filters.limit) searchParams.set('limit', filters.limit.toString());
-      if (filters.sortBy) searchParams.set('sortBy', filters.sortBy);
-      if (filters.sortOrder) searchParams.set('sortOrder', filters.sortOrder);
+      if (filters.page) {searchParams.set('page', filters.page.toString());}
+      if (filters.limit) {searchParams.set('limit', filters.limit.toString());}
+      if (filters.sortBy) {searchParams.set('sortBy', filters.sortBy);}
+      if (filters.sortOrder) {searchParams.set('sortOrder', filters.sortOrder);}
       
       const url = `/api/products?${searchParams.toString()}`;
       
@@ -102,11 +102,11 @@ export const useProductCount = (filters: Omit<ProductFilters, 'page' | 'limit'> 
       const searchParams = new URLSearchParams();
 
       // Aplicar los mismos filtros que useFilteredProducts
-      if (countFilters.category) searchParams.set('category', countFilters.category);
-      if (countFilters.brand) searchParams.set('brand', countFilters.brand);
-      if (countFilters.search) searchParams.set('search', countFilters.search);
-      if (countFilters.priceMin !== undefined) searchParams.set('priceMin', countFilters.priceMin.toString());
-      if (countFilters.priceMax !== undefined) searchParams.set('priceMax', countFilters.priceMax.toString());
+      if (countFilters.category) {searchParams.set('category', countFilters.category);}
+      if (countFilters.brand) {searchParams.set('brand', countFilters.brand);}
+      if (countFilters.search) {searchParams.set('search', countFilters.search);}
+      if (countFilters.priceMin !== undefined) {searchParams.set('priceMin', countFilters.priceMin.toString());}
+      if (countFilters.priceMax !== undefined) {searchParams.set('priceMax', countFilters.priceMax.toString());}
 
       if (countFilters.categories && countFilters.categories.length > 0) {
         searchParams.set('categories', countFilters.categories.join(','));
@@ -167,10 +167,10 @@ export const useCategoryProductCounts = (
         searchParams.set('categories', categoryId);
 
         // Aplicar filtros base
-        if (filters.brand) searchParams.set('brand', filters.brand);
-        if (filters.search) searchParams.set('search', filters.search);
-        if (filters.priceMin !== undefined) searchParams.set('priceMin', filters.priceMin.toString());
-        if (filters.priceMax !== undefined) searchParams.set('priceMax', filters.priceMax.toString());
+        if (filters.brand) {searchParams.set('brand', filters.brand);}
+        if (filters.search) {searchParams.set('search', filters.search);}
+        if (filters.priceMin !== undefined) {searchParams.set('priceMin', filters.priceMin.toString());}
+        if (filters.priceMax !== undefined) {searchParams.set('priceMax', filters.priceMax.toString());}
         if (filters.brands && filters.brands.length > 0) {
           searchParams.set('brands', filters.brands.join(','));
         }
@@ -222,11 +222,11 @@ export const useCategoryProductCounts = (
 export const getActiveFiltersCount = (filters: ProductFilters): number => {
   let count = 0;
   
-  if (filters.categories && filters.categories.length > 0) count += filters.categories.length;
-  if (filters.brands && filters.brands.length > 0) count += filters.brands.length;
-  if (filters.paintTypes && filters.paintTypes.length > 0) count += filters.paintTypes.length;
-  if (filters.priceMin !== undefined || filters.priceMax !== undefined) count += 1;
-  if (filters.search) count += 1;
+  if (filters.categories && filters.categories.length > 0) {count += filters.categories.length;}
+  if (filters.brands && filters.brands.length > 0) {count += filters.brands.length;}
+  if (filters.paintTypes && filters.paintTypes.length > 0) {count += filters.paintTypes.length;}
+  if (filters.priceMin !== undefined || filters.priceMax !== undefined) {count += 1;}
+  if (filters.search) {count += 1;}
   
   return count;
 };
@@ -234,3 +234,12 @@ export const getActiveFiltersCount = (filters: ProductFilters): number => {
 export const hasActiveFilters = (filters: ProductFilters): boolean => {
   return getActiveFiltersCount(filters) > 0;
 };
+
+
+
+
+
+
+
+
+

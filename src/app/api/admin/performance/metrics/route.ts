@@ -52,9 +52,9 @@ async function performHealthCheck(): Promise<HealthCheck> {
   const healthyCount = Object.values(checks).filter(Boolean).length;
   let status: 'healthy' | 'degraded' | 'unhealthy';
   
-  if (healthyCount === 4) status = 'healthy';
-  else if (healthyCount >= 2) status = 'degraded';
-  else status = 'unhealthy';
+  if (healthyCount === 4) {status = 'healthy';}
+  else if (healthyCount >= 2) {status = 'degraded';}
+  else {status = 'unhealthy';}
 
   return {
     status,
@@ -107,8 +107,8 @@ function formatTimeWindow(ms: number): string {
   const hours = minutes / 60;
   const days = hours / 24;
   
-  if (days >= 1) return `${Math.round(days)} día${days !== 1 ? 's' : ''}`;
-  if (hours >= 1) return `${Math.round(hours)} hora${hours !== 1 ? 's' : ''}`;
+  if (days >= 1) {return `${Math.round(days)} día${days !== 1 ? 's' : ''}`;}
+  if (hours >= 1) {return `${Math.round(hours)} hora${hours !== 1 ? 's' : ''}`;}
   return `${Math.round(minutes)} minuto${minutes !== 1 ? 's' : ''}`;
 }
 
@@ -260,7 +260,7 @@ export async function POST(request: NextRequest) {
     const processedMetrics: PerformanceMetric[] = [];
     
     for (const metric of metrics) {
-      if (!metric || typeof metric !== 'object') continue;
+      if (!metric || typeof metric !== 'object') {continue;}
       
       const newMetric: PerformanceMetric = {
         timestamp: timestamp || Date.now(),
@@ -409,3 +409,12 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

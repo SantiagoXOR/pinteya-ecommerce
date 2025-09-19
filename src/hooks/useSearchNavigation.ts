@@ -39,7 +39,7 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
     category?: string,
     additionalParams?: Record<string, string>
   ) => {
-    if (!query.trim()) return;
+    if (!query.trim()) {return;}
 
     // Construir URL de búsqueda
     const params = new URLSearchParams();
@@ -127,7 +127,7 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
   // ===================================
 
   const prefetchSearch = useCallback((query: string, category?: string) => {
-    if (!query.trim()) return;
+    if (!query.trim()) {return;}
     
     const params = new URLSearchParams();
     params.set('q', query.trim());
@@ -206,3 +206,12 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
 }
 
 export default useSearchNavigation;
+
+
+
+
+
+
+
+
+

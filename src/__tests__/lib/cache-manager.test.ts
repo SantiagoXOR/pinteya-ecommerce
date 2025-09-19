@@ -14,7 +14,7 @@ jest.mock('@/lib/redis', () => ({
 }));
 
 // Mock logger
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
@@ -73,7 +73,7 @@ describe('CacheManager', () => {
 
     it('should handle errors gracefully', async () => {
       const { redisCache } = require('@/lib/redis');
-      const { logger } = require('@/lib/logger');
+      const { logger } = require('@/lib/enterprise/logger');
       
       redisCache.get.mockRejectedValue(new Error('Redis error'));
 
@@ -102,7 +102,7 @@ describe('CacheManager', () => {
     });
 
     it('should handle serialization errors', async () => {
-      const { logger } = require('@/lib/logger');
+      const { logger } = require('@/lib/enterprise/logger');
       
       // Crear objeto circular que no se puede serializar
       const circularObj: any = { name: 'test' };
@@ -310,3 +310,12 @@ describe('CacheUtils', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

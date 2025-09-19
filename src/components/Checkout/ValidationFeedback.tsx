@@ -27,23 +27,23 @@ const ValidationFeedback: React.FC<ValidationFeedbackProps> = ({
 
   // Determinar el estado de validación
   const getValidationState = () => {
-    if (!showValidation || !value.trim()) return null;
+    if (!showValidation || !value.trim()) {return null;}
     
-    if (error) return 'error';
-    if (isValid !== undefined) return isValid ? 'valid' : 'error';
+    if (error) {return 'error';}
+    if (isValid !== undefined) {return isValid ? 'valid' : 'error';}
     
     // Validación automática basada en reglas
-    if (required && !value.trim()) return 'error';
-    if (minLength && value.length < minLength) return 'warning';
-    if (pattern && !pattern.test(value)) return 'error';
-    if (customValidator && !customValidator(value)) return 'error';
+    if (required && !value.trim()) {return 'error';}
+    if (minLength && value.length < minLength) {return 'warning';}
+    if (pattern && !pattern.test(value)) {return 'error';}
+    if (customValidator && !customValidator(value)) {return 'error';}
     
     return 'valid';
   };
 
   const validationState = getValidationState();
 
-  if (!showValidation || !validationState) return null;
+  if (!showValidation || !validationState) {return null;}
 
   const getIcon = () => {
     switch (validationState) {
@@ -59,7 +59,7 @@ const ValidationFeedback: React.FC<ValidationFeedbackProps> = ({
   };
 
   const getMessage = () => {
-    if (error) return error;
+    if (error) {return error;}
     
     switch (validationState) {
       case 'valid':
@@ -162,3 +162,12 @@ export const useRealTimeValidation = (field: string, value: string) => {
 
   return { isValid, showValidation };
 };
+
+
+
+
+
+
+
+
+

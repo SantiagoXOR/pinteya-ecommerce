@@ -62,3 +62,12 @@ export default function ProtectedRoute({ children, fallback }: ProtectedRoutePro
   // Usuario autenticado, mostrar contenido
   return <>{children}</>;
 }
+
+
+
+
+
+
+
+
+

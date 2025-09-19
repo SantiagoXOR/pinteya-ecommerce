@@ -20,7 +20,7 @@ import {
   FileText,
   BarChart3
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications';
 
 interface Product {
@@ -484,7 +484,7 @@ export function ProductActions({
                 onClick={() => {
                   if (onBulkEdit && selectedProducts.length > 0) {
                     const updates: any = {};
-                    if (bulkEditData.status) updates.status = bulkEditData.status;
+                    if (bulkEditData.status) {updates.status = bulkEditData.status;}
                     if (bulkEditData.categoryId) {
                       onBulkCategoryChange?.(selectedProducts.map(p => p.id), parseInt(bulkEditData.categoryId));
                     }
@@ -682,3 +682,12 @@ export function ProductRowActions({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

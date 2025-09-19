@@ -97,7 +97,7 @@ const Orders = () => {
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-red-500 mb-4">Error: {error}</p>
+              <p className="text-red-500 mb-4">Error: {error instanceof Error ? error.message : String(error) || 'Error desconocido'}</p>
               <button
                 onClick={refreshOrders}
                 className="bg-tahiti-gold-500 text-white px-4 py-2 rounded hover:bg-tahiti-gold-600"
@@ -281,3 +281,12 @@ const Orders = () => {
 };
 
 export default Orders;
+
+
+
+
+
+
+
+
+

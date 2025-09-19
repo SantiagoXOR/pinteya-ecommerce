@@ -136,3 +136,12 @@ function generateRecommendations(diagnostics: any): string[] {
 
   return recommendations;
 }
+
+
+
+
+
+
+
+
+

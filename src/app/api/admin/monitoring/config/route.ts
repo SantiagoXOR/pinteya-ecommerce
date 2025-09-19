@@ -10,9 +10,9 @@ import {
   mercadoPagoCriticalBreaker, 
   mercadoPagoStandardBreaker, 
   webhookProcessingBreaker 
-} from '@/lib/mercadopago/circuit-breaker';
-import { getSupabaseClient } from '@/lib/supabase';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+} from '@/lib/integrations/mercadopago/circuit-breaker';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 interface MonitoringConfig {
   metrics: {
@@ -378,3 +378,12 @@ async function updateComplianceConfig(config: any, userId: string) {
     message: 'Compliance configuration updated successfully'
   };
 }
+
+
+
+
+
+
+
+
+

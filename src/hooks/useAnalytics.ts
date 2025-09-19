@@ -6,7 +6,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useAuth } from './useAuth';
 import { usePathname } from 'next/navigation';
-import { analytics, AnalyticsEvent, ConversionMetrics, UserInteraction } from '@/lib/analytics';
+import { analytics, AnalyticsEvent, ConversionMetrics, UserInteraction } from '@/lib/integrations/analytics';
 
 export interface UseAnalyticsReturn {
   // Tracking functions
@@ -89,7 +89,7 @@ export const useAnalytics = (): UseAnalyticsReturn => {
     value?: number,
     metadata?: Record<string, any>
   ) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
     
     const enrichedMetadata = {
       ...metadata,
@@ -101,7 +101,7 @@ export const useAnalytics = (): UseAnalyticsReturn => {
   }, [isEnabled, user]);
 
   const trackEcommerceEvent = useCallback((action: string, data: Record<string, any>) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
     
     const enrichedData = {
       ...data,
@@ -113,12 +113,12 @@ export const useAnalytics = (): UseAnalyticsReturn => {
   }, [isEnabled, user]);
 
   const trackPageView = useCallback((page?: string) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
     analytics.trackPageView(page);
   }, [isEnabled]);
 
   const trackConversion = useCallback((type: string, value?: number, metadata?: Record<string, any>) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
     
     const enrichedMetadata = {
       ...metadata,
@@ -312,3 +312,12 @@ export const useComponentTracking = (componentName: string, trackMount: boolean 
 
   return { trackComponentEvent };
 };
+
+
+
+
+
+
+
+
+

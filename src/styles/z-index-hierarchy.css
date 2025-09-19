@@ -88,6 +88,8 @@
 .z-popover { z-index: 2500; }
 .z-tooltip { z-index: 3000; }
 .z-context-menu { z-index: 3500; }
+.z-select-content { z-index: 4000; }
+.z-select-in-modal { z-index: 6000; }
 
 /* Modales y dialogs */
 .z-modal-backdrop { z-index: 5000; }
@@ -151,6 +153,25 @@
   font-size: 10px;
   z-index: 99999;
   pointer-events: none;
+}
+
+/* ===================================
+   REGLAS ESPECÍFICAS PARA COMPONENTES
+   =================================== */
+
+/* Selectores dentro de modales */
+[data-radix-popper-content-wrapper] {
+  z-index: 6000 !important;
+}
+
+/* Selectores de shadcn/ui en modales */
+.z-select-in-modal [data-radix-select-content] {
+  z-index: 6000 !important;
+}
+
+/* Asegurar que los selectores aparezcan sobre modales */
+[data-radix-select-content] {
+  z-index: 6000 !important;
 }
 
 /* ===================================

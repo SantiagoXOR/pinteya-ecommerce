@@ -67,7 +67,7 @@ export const useMobileCheckoutNavigation = (
 
   // Función para vibración háptica
   const triggerHapticFeedback = useCallback((type: 'light' | 'medium' | 'heavy' = 'light') => {
-    if (!enableHapticFeedback || !isMobile) return;
+    if (!enableHapticFeedback || !isMobile) {return;}
     
     try {
       // Vibración háptica moderna
@@ -127,7 +127,7 @@ export const useMobileCheckoutNavigation = (
 
   // Navegación por teclado
   useEffect(() => {
-    if (!enableKeyboardNavigation) return;
+    if (!enableKeyboardNavigation) {return;}
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Solo activar si no estamos en un input
@@ -162,7 +162,7 @@ export const useMobileCheckoutNavigation = (
 
   // Detectar interacciones táctiles
   useEffect(() => {
-    if (!isMobile) return;
+    if (!isMobile) {return;}
 
     const handleTouchStart = () => setIsInteracting(true);
     const handleTouchEnd = () => {
@@ -192,3 +192,12 @@ export const useMobileCheckoutNavigation = (
 };
 
 export default useMobileCheckoutNavigation;
+
+
+
+
+
+
+
+
+

@@ -583,3 +583,12 @@ export function validateURL(url: any): boolean {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+

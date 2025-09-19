@@ -115,3 +115,12 @@ export const authOptions: NextAuthOptions = {
   // Configuración de secret
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+
+
+
+
+
+
+
+

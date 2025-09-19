@@ -446,3 +446,12 @@ describe('CheckoutTransitionAnimation - Tests de Integración', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

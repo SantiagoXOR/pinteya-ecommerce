@@ -239,7 +239,7 @@ class CategoryAlertsManager {
    * Evaluate metrics against alert rules
    */
   evaluateMetrics(metrics: CategoryMetrics): CategoryAlert[] {
-    if (!this.config.enabled) return [];
+    if (!this.config.enabled) {return [];}
 
     const triggeredAlerts: CategoryAlert[] = [];
     const now = Date.now();
@@ -255,11 +255,11 @@ class CategoryAlertsManager {
     }
 
     for (const rule of this.rules) {
-      if (!rule.enabled) continue;
+      if (!rule.enabled) {continue;}
 
       // Check cooldown
       const lastAlertTime = this.lastAlertTimes.get(rule.id) || 0;
-      if (now - lastAlertTime < rule.cooldown) continue;
+      if (now - lastAlertTime < rule.cooldown) {continue;}
 
       let shouldAlert = false;
 
@@ -415,7 +415,7 @@ class CategoryAlertsManager {
    * Send webhook notification
    */
   private async sendWebhookNotification(alert: CategoryAlert): Promise<void> {
-    if (typeof window === 'undefined' || !window.fetch) return;
+    if (typeof window === 'undefined' || !window.fetch) {return;}
 
     try {
       await fetch('/api/alerts/webhook', {
@@ -457,7 +457,7 @@ class CategoryAlertsManager {
    */
   resolveAlert(alertId: string): boolean {
     const alert = this.activeAlerts.get(alertId);
-    if (!alert) return false;
+    if (!alert) {return false;}
 
     alert.resolved = true;
     alert.resolvedAt = Date.now();
@@ -495,7 +495,7 @@ class CategoryAlertsManager {
    */
   removeRule(ruleId: string): boolean {
     const index = this.rules.findIndex(rule => rule.id === ruleId);
-    if (index === -1) return false;
+    if (index === -1) {return false;}
 
     this.rules.splice(index, 1);
     return true;
@@ -506,7 +506,7 @@ class CategoryAlertsManager {
    */
   updateRule(ruleId: string, updates: Partial<AlertRule>): boolean {
     const rule = this.rules.find(r => r.id === ruleId);
-    if (!rule) return false;
+    if (!rule) {return false;}
 
     Object.assign(rule, updates);
     return true;
@@ -589,3 +589,12 @@ export const useCategoryAlerts = (config?: Partial<AlertConfig>) => {
  */
 export { CategoryAlertsManager };
 export type { AlertRule, AlertConfig };
+
+
+
+
+
+
+
+
+

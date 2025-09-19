@@ -87,3 +87,12 @@ export const mockRecentSearches = [
   'esmalte negro',
   'látex azul',
 ];
+
+
+
+
+
+
+
+
+

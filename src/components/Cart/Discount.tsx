@@ -37,3 +37,12 @@ const Discount = () => {
 };
 
 export default Discount;
+
+
+
+
+
+
+
+
+

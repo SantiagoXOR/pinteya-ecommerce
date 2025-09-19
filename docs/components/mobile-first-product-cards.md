@@ -159,3 +159,6 @@ h-6 md:h-10
 ---
 
 *Implementado en Diciembre 2024 - Diseño mobile-first optimizado para e-commerce Pinteya*
+
+
+

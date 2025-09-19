@@ -75,18 +75,18 @@ function DashboardSkeleton() {
  */
 function SystemInfo({ stats, loading }: { stats: any; loading: boolean }) {
   const getPerformanceStatus = () => {
-    if (loading) return { text: 'Cargando...', color: 'text-gray-500' };
+    if (loading) {return { text: 'Cargando...', color: 'text-gray-500' };}
     const responseTime = stats?.avgResponseTime || 0;
-    if (responseTime < 500) return { text: 'Óptimo', color: 'text-green-600' };
-    if (responseTime < 1000) return { text: 'Bueno', color: 'text-yellow-600' };
+    if (responseTime < 500) {return { text: 'Óptimo', color: 'text-green-600' };}
+    if (responseTime < 1000) {return { text: 'Bueno', color: 'text-yellow-600' };}
     return { text: 'Lento', color: 'text-red-600' };
   };
 
   const getSecurityStatus = () => {
-    if (loading) return { text: 'Cargando...', color: 'text-gray-500' };
+    if (loading) {return { text: 'Cargando...', color: 'text-gray-500' };}
     const errors = stats?.totalErrors || 0;
-    if (errors === 0) return { text: 'Seguro', color: 'text-green-600' };
-    if (errors < 5) return { text: 'Advertencia', color: 'text-yellow-600' };
+    if (errors === 0) {return { text: 'Seguro', color: 'text-green-600' };}
+    if (errors < 5) {return { text: 'Advertencia', color: 'text-yellow-600' };}
     return { text: 'Crítico', color: 'text-red-600' };
   };
 
@@ -377,3 +377,12 @@ export function MonitoringClientPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

@@ -111,3 +111,12 @@ export const SearchAutocompleteIntegrated = React.memo(React.forwardRef<HTMLInpu
 SearchAutocompleteIntegrated.displayName = 'SearchAutocompleteIntegrated';
 
 export default SearchAutocompleteIntegrated;
+
+
+
+
+
+
+
+
+

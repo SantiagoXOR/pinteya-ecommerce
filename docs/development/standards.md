@@ -65,7 +65,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 // 2. Imports internos (absolutos)
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/integrations/supabase';
 import { ProductCard } from '@/components/Shop/ProductCard';
 import { useProducts } from '@/hooks/useProducts';
 
@@ -350,7 +350,7 @@ const buttonVariants = cva(
 // ✅ API Route bien estructurada
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/integrations/supabase';
 
 // Esquema de validación
 const createProductSchema = z.object({
@@ -502,3 +502,6 @@ describe('ProductCard', () => {
 ---
 
 *Última actualización: Junio 2025*
+
+
+

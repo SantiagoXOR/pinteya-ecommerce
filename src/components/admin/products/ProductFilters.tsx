@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Filter, X, Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { ProductFilters as ProductFiltersType } from '@/hooks/admin/useProductsEnterprise';
 
 interface Category {
@@ -348,3 +348,12 @@ export function ProductFilters({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

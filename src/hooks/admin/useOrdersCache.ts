@@ -115,12 +115,12 @@ export function useOrdersCache(options: CacheOptions): UseOrdersCacheReturn {
   const lastCleanupRef = useRef<number>(Date.now());
   
   const getCachedData = useCallback((filters: StrictOrderFilters): StrictOrdersListResponse | null => {
-    if (!options.enableCache) return null;
+    if (!options.enableCache) {return null;}
     
     const key = getCacheKey(filters);
     const entry = cache.get(key);
     
-    if (!entry) return null;
+    if (!entry) {return null;}
     
     const isExpired = Date.now() - entry.timestamp > options.cacheTimeout;
     if (isExpired) {
@@ -142,7 +142,7 @@ export function useOrdersCache(options: CacheOptions): UseOrdersCacheReturn {
   }, [options.enableCache, options.cacheTimeout]);
   
   const setCachedData = useCallback((filters: StrictOrderFilters, data: StrictOrdersListResponse): void => {
-    if (!options.enableCache) return;
+    if (!options.enableCache) {return;}
     
     const key = getCacheKey(filters);
     const requestId = Math.random().toString(36).substr(2, 9);
@@ -186,7 +186,7 @@ export function useOrdersCache(options: CacheOptions): UseOrdersCacheReturn {
     const key = getCacheKey(filters);
     const lastRequestTime = requestTimestamps.get(key);
     
-    if (!lastRequestTime) return false;
+    if (!lastRequestTime) {return false;}
     
     const timeSinceLastRequest = Date.now() - lastRequestTime;
     return timeSinceLastRequest < (options.minRequestInterval || CACHE_CONFIG.MIN_REQUEST_INTERVAL);
@@ -223,3 +223,12 @@ export function useOrdersCache(options: CacheOptions): UseOrdersCacheReturn {
     getCacheStats
   };
 }
+
+
+
+
+
+
+
+
+

@@ -176,3 +176,6 @@ El header mejorado está listo para ser integrado en el sitio principal de Pinte
 
 *Implementación completada exitosamente - Pinteya E-commerce Team*  
 *Fecha: 2025-07-07*
+
+
+

@@ -48,3 +48,12 @@ export const CategoryPill: React.FC<CategoryPillProps> = ({
 };
 
 export default CategoryPill;
+
+
+
+
+
+
+
+
+

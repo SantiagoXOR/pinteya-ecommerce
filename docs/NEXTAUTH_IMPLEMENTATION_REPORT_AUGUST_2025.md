@@ -242,3 +242,6 @@ const analyticsEnabled = false;
 **Impacto**: Esta migración elimina la dependencia problemática de Clerk y establece una base de autenticación más estable y controlable para el proyecto Pinteya E-commerce.
 
 **Recomendación**: Proceder con la limpieza de cache y finalización en las próximas 1-2 horas de trabajo.
+
+
+

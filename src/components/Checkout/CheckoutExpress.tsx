@@ -135,7 +135,7 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid) {return;}
 
     try {
       await processExpressCheckout();
@@ -484,3 +484,12 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
 };
 
 export default CheckoutExpress;
+
+
+
+
+
+
+
+
+

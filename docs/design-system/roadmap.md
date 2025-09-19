@@ -584,3 +584,6 @@ interface PerformanceMetrics {
 ---
 
 *Última actualización: Junio 2025*
+
+
+

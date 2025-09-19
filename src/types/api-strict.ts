@@ -246,7 +246,7 @@ export function isStrictApiError(obj: unknown): obj is StrictApiError {
  * Validador para verificar si una paginación es válida
  */
 export function isValidPagination(obj: unknown): obj is StrictPagination {
-  if (typeof obj !== 'object' || obj === null) return false;
+  if (typeof obj !== 'object' || obj === null) {return false;}
   
   const pagination = obj as any;
   return (
@@ -448,3 +448,12 @@ export interface StrictApiOptions {
   readonly validateResponse?: boolean;
   readonly throwOnError?: boolean;
 }
+
+
+
+
+
+
+
+
+

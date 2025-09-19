@@ -72,3 +72,12 @@ const AuthSectionSimple = ({ variant = 'desktop' }: AuthSectionProps) => {
 };
 
 export default AuthSectionSimple;
+
+
+
+
+
+
+
+
+

@@ -18,7 +18,7 @@ import {
   Loader2,
   Check
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { toast } from 'react-hot-toast';
 
 interface ProductImage {
@@ -44,8 +44,8 @@ interface ProductImageManagerEnterpriseProps {
 async function uploadImage(productId: string, file: File, altText?: string, isPrimary?: boolean) {
   const formData = new FormData();
   formData.append('file', file);
-  if (altText) formData.append('alt_text', altText);
-  if (isPrimary) formData.append('is_primary', 'true');
+  if (altText) {formData.append('alt_text', altText);}
+  if (isPrimary) {formData.append('is_primary', 'true');}
 
   const response = await fetch(`/api/admin/products/${productId}/images`, {
     method: 'POST',
@@ -171,7 +171,7 @@ export function ProductImageManagerEnterprise({
 
   // Handle file upload
   const handleFileUpload = useCallback(async (files: FileList) => {
-    if (files.length === 0) return;
+    if (files.length === 0) {return;}
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -207,13 +207,13 @@ export function ProductImageManagerEnterprise({
 
   // Handle set as primary
   const handleSetPrimary = useCallback((imageId: string) => {
-    if (!imageId) return;
+    if (!imageId) {return;}
     updateMutation.mutate({ imageId, data: { is_primary: true } });
   }, [updateMutation]);
 
   // Handle delete
   const handleDelete = useCallback((imageId: string) => {
-    if (!imageId) return;
+    if (!imageId) {return;}
     if (confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
       deleteMutation.mutate(imageId);
     }
@@ -226,10 +226,10 @@ export function ProductImageManagerEnterprise({
   }, [images]);
 
   const handleSaveAlt = useCallback(() => {
-    if (editingIndex === null) return;
+    if (editingIndex === null) {return;}
     
     const image = images[editingIndex];
-    if (!image?.id) return;
+    if (!image?.id) {return;}
 
     updateMutation.mutate({ 
       imageId: image.id, 
@@ -259,7 +259,9 @@ export function ProductImageManagerEnterprise({
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
             <AlertCircle className="w-4 h-4 text-red-500" />
-            <span className="text-sm text-red-700">{error}</span>
+            <span className="text-sm text-red-700">
+              {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+            </span>
           </div>
         )}
 
@@ -404,3 +406,12 @@ export function ProductImageManagerEnterprise({
     </AdminCard>
   );
 }
+
+
+
+
+
+
+
+
+

@@ -219,3 +219,12 @@ export function safeValidateData<T>(schema: z.ZodSchema<T>, data: unknown): {
     return { success: false, error: 'Error de validación desconocido' };
   }
 }
+
+
+
+
+
+
+
+
+

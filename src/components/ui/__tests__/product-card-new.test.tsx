@@ -189,3 +189,12 @@ describe('ProductCard - Nuevo Diseño', () => {
     expect(card).toHaveAttribute('data-custom', 'test-value')
   })
 })
+
+
+
+
+
+
+
+
+

@@ -11,3 +11,12 @@ export async function GET() {
     endpoint: '/api/test-admin-middleware'
   });
 }
+
+
+
+
+
+
+
+
+

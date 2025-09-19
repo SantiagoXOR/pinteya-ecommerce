@@ -78,15 +78,15 @@ export function MonitoringPanel({ className }: MonitoringPanelProps) {
   };
 
   const getStatusColor = (discrepancy: number) => {
-    if (discrepancy === 0) return 'bg-green-500';
-    if (discrepancy <= 2) return 'bg-yellow-500';
+    if (discrepancy === 0) {return 'bg-green-500';}
+    if (discrepancy <= 2) {return 'bg-yellow-500';}
     return 'bg-red-500';
   };
 
   const getIssueLevel = (expected: number, rendered: number) => {
     const diff = Math.abs(expected - rendered);
-    if (diff === 0) return { level: 'success', color: 'text-green-600' };
-    if (diff <= 2) return { level: 'warning', color: 'text-yellow-600' };
+    if (diff === 0) {return { level: 'success', color: 'text-green-600' };}
+    if (diff <= 2) {return { level: 'warning', color: 'text-yellow-600' };}
     return { level: 'error', color: 'text-red-600' };
   };
 
@@ -309,3 +309,12 @@ export function MonitoringPanel({ className }: MonitoringPanelProps) {
 }
 
 export default MonitoringPanel;
+
+
+
+
+
+
+
+
+

@@ -35,8 +35,8 @@ import {
 } from 'lucide-react';
 import { Courier, ShippingService } from '@/types/logistics';
 import { useCouriers } from '@/hooks/admin/useShippingQuote';
-import { cn } from '@/lib/utils';
-import { formatCurrency, formatDate } from '@/lib/utils/format';
+import { cn } from '@/lib/core/utils';
+import { formatCurrency, formatDate } from '@/lib/utils/consolidated-utils';
 
 // =====================================================
 // INTERFACES
@@ -496,7 +496,7 @@ function CourierCard({ courier, onEdit, onToggleStatus, onDelete }: CourierCardP
 // =====================================================
 
 function CourierStats({ courier }: CourierStatsProps) {
-  if (!courier.stats) return null;
+  if (!courier.stats) {return null;}
   
   return (
     <div className="grid grid-cols-2 gap-4 p-3 bg-muted/50 rounded-lg text-sm">
@@ -550,3 +550,12 @@ function EmptyState({ searchTerm }: { searchTerm: string }) {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

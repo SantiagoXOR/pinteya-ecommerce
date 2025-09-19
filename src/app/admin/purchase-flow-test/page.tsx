@@ -100,7 +100,7 @@ const PurchaseFlowTestPage: React.FC = () => {
   };
 
   const downloadLogs = () => {
-    if (!simulationLogs) return;
+    if (!simulationLogs) {return;}
     
     const dataStr = JSON.stringify(simulationLogs, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -278,7 +278,7 @@ const PurchaseFlowTestPage: React.FC = () => {
           <Alert className="mb-6 border-red-200 bg-red-50">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              <strong>Error en la simulación:</strong> {error}
+              <strong>Error en la simulación:</strong> {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
             </AlertDescription>
           </Alert>
         )}
@@ -364,3 +364,12 @@ const PurchaseFlowTestPage: React.FC = () => {
 };
 
 export default PurchaseFlowTestPage;
+
+
+
+
+
+
+
+
+

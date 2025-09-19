@@ -234,3 +234,6 @@
 **Desarrollado por:** Augment Agent  
 **Proyecto:** Pinteya E-commerce  
 **Última actualización:** 28 de Junio 2025
+
+
+

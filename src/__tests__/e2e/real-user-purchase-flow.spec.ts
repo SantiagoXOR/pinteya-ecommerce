@@ -483,3 +483,12 @@ async function simulateMercadoPagoPayment(page: Page): Promise<void> {
     console.log('⚠️ Error simulando pago:', error.message);
   }
 }
+
+
+
+
+
+
+
+
+

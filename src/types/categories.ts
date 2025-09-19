@@ -270,3 +270,12 @@ export const ARIA_LABELS = {
   CLEAR_FILTERS: 'Limpiar todos los filtros',
   FILTER_GROUP: 'Grupo de filtros de categorías',
 } as const;
+
+
+
+
+
+
+
+
+

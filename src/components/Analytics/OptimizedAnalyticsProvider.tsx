@@ -9,7 +9,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
-import { optimizedAnalytics, trackEventOptimized } from '@/lib/analytics-optimized';
+import { optimizedAnalytics, trackEventOptimized } from '@/lib/integrations/analytics/analytics-optimized';
 
 // Hook para NextAuth.js
 const useSafeUser = () => {
@@ -86,7 +86,7 @@ export const OptimizedAnalyticsProvider: React.FC<OptimizedAnalyticsProviderProp
     value?: number,
     metadata?: Record<string, any>
   ) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
 
     try {
       const enrichedMetadata = {
@@ -220,3 +220,12 @@ if (typeof window !== 'undefined') {
     optimizedAnalytics.flushEvents();
   });
 }
+
+
+
+
+
+
+
+
+

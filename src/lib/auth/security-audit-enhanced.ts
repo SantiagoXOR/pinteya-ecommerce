@@ -3,7 +3,7 @@
  * Extiende el sistema base con análisis avanzado, alertas automáticas y reportes
  */
 
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { 
   logSecurityEvent, 
   type SecurityEvent, 
@@ -219,7 +219,7 @@ export async function analyzeSecurityPatterns(
 
     // Analizar cada patrón
     for (const pattern of DEFAULT_SECURITY_PATTERNS) {
-      if (!pattern.enabled) continue;
+      if (!pattern.enabled) {continue;}
 
       const patternAlerts = await detectPattern(pattern, events);
       alerts.push(...patternAlerts);
@@ -269,7 +269,7 @@ async function detectPattern(
       matchesPatternConditions(event, pattern.conditions)
     );
 
-    if (matchingEvents.length < pattern.threshold) continue;
+    if (matchingEvents.length < pattern.threshold) {continue;}
 
     // Verificar ventana de tiempo
     const sortedEvents = matchingEvents.sort((a, b) => 
@@ -456,10 +456,10 @@ export async function getSecurityMetrics(): Promise<SecurityMetrics> {
 
     // Calcular score de seguridad (0-100)
     let securityScore = 100;
-    if (criticalEvents > 0) securityScore -= criticalEvents * 10;
-    if (authFailures > 10) securityScore -= (authFailures - 10) * 2;
-    if (suspiciousActivities > 5) securityScore -= (suspiciousActivities - 5) * 5;
-    if (activeAlerts > 0) securityScore -= activeAlerts * 3;
+    if (criticalEvents > 0) {securityScore -= criticalEvents * 10;}
+    if (authFailures > 10) {securityScore -= (authFailures - 10) * 2;}
+    if (suspiciousActivities > 5) {securityScore -= (suspiciousActivities - 5) * 5;}
+    if (activeAlerts > 0) {securityScore -= activeAlerts * 3;}
     securityScore = Math.max(0, Math.min(100, securityScore));
 
     const metrics: SecurityMetrics = {
@@ -862,25 +862,25 @@ export async function runSecurityHealthCheck(): Promise<{
 
     if (metrics.auth_failures_24h > 20) {
       issues.push(`Alto número de fallos de autenticación: ${metrics.auth_failures_24h}`);
-      if (status !== 'critical') status = 'warning';
+      if (status !== 'critical') {status = 'warning';}
       recommendations.push('Considerar implementar medidas anti-brute force');
     }
 
     if (metrics.suspicious_activities_24h > 10) {
       issues.push(`Actividad sospechosa elevada: ${metrics.suspicious_activities_24h} eventos`);
-      if (status !== 'critical') status = 'warning';
+      if (status !== 'critical') {status = 'warning';}
       recommendations.push('Revisar patrones de actividad sospechosa');
     }
 
     if (metrics.active_alerts > 5) {
       issues.push(`Muchas alertas activas sin resolver: ${metrics.active_alerts}`);
-      if (status !== 'critical') status = 'warning';
+      if (status !== 'critical') {status = 'warning';}
       recommendations.push('Revisar y resolver alertas pendientes');
     }
 
     if (metrics.security_score < 70) {
       issues.push(`Score de seguridad bajo: ${metrics.security_score}/100`);
-      if (status !== 'critical') status = 'warning';
+      if (status !== 'critical') {status = 'warning';}
       recommendations.push('Implementar medidas para mejorar el score de seguridad');
     }
 
@@ -989,3 +989,12 @@ export async function exportSecurityEvents(
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

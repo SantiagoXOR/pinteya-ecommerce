@@ -288,3 +288,6 @@ npm run test:e2e -- --grep="optimized hooks"
 5. **Proceder con migración** completa
 
 ¿Necesitas ayuda con la migración? Consulta la documentación técnica o contacta al equipo de desarrollo.
+
+
+

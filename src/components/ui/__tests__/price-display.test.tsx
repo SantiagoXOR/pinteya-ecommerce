@@ -148,3 +148,12 @@ describe('PriceDisplay', () => {
     expect(screen.getByText('$ 12.345,67')).toBeInTheDocument()
   })
 })
+
+
+
+
+
+
+
+
+

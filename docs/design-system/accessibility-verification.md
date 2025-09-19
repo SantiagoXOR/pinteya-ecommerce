@@ -177,3 +177,6 @@ const buttonVariants = {
 **✅ Conclusión**: La nueva paleta de colores cumple con los estándares WCAG 2.1 AA cuando se implementa con las combinaciones de texto recomendadas.
 
 *Verificación realizada: Junio 2025*
+
+
+

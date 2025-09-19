@@ -46,7 +46,7 @@ export const waitForGA = (): Promise<void> => {
 
 // Inicializar Google Analytics
 export const initGA = (): void => {
-  if (!isGAEnabled()) return;
+  if (!isGAEnabled()) {return;}
 
   // Crear dataLayer si no existe
   window.dataLayer = window.dataLayer || [];
@@ -67,7 +67,7 @@ export const initGA = (): void => {
 
 // Trackear page view
 export const trackPageView = (url: string, title?: string): void => {
-  if (!isGAEnabled()) return;
+  if (!isGAEnabled()) {return;}
 
   try {
     window.gtag('config', GA_TRACKING_ID, {
@@ -92,7 +92,7 @@ export const trackEvent = (
   value?: number,
   customParameters?: Record<string, any>
 ): void => {
-  if (!isGAEnabled()) return;
+  if (!isGAEnabled()) {return;}
 
   try {
     window.gtag('event', action, {
@@ -111,7 +111,7 @@ export const trackEcommerceEvent = (
   eventName: string,
   parameters: Record<string, any>
 ): void => {
-  if (!isGAEnabled()) return;
+  if (!isGAEnabled()) {return;}
 
   try {
     window.gtag('event', eventName, parameters);
@@ -311,7 +311,7 @@ export const setUserProperties = (
   userId: string,
   properties: Record<string, any>
 ): void => {
-  if (!isGAEnabled()) return;
+  if (!isGAEnabled()) {return;}
 
   window.gtag('config', GA_TRACKING_ID, {
     user_id: userId,
@@ -324,7 +324,7 @@ export const setConsent = (
   adStorage: 'granted' | 'denied',
   analyticsStorage: 'granted' | 'denied'
 ): void => {
-  if (!isGAEnabled()) return;
+  if (!isGAEnabled()) {return;}
 
   window.gtag('consent', 'update', {
     ad_storage: adStorage,
@@ -402,3 +402,12 @@ export const enhancedEcommerce = {
     });
   },
 };
+
+
+
+
+
+
+
+
+

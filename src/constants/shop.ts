@@ -104,3 +104,12 @@ export const SEARCH_CONSTANTS = {
   MIN_SEARCH_QUERY_LENGTH: 2,
   MAX_SUGGESTIONS: 8,
 } as const;
+
+
+
+
+
+
+
+
+

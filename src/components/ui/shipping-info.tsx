@@ -97,7 +97,7 @@ const formatShippingPrice = (price: number, isFree: boolean = false): string => 
  * Obtiene el ícono apropiado para cada tipo de envío
  */
 const getShippingIcon = (type: string, isExpress: boolean = false) => {
-  if (isExpress) return <Star className="w-4 h-4" />
+  if (isExpress) {return <Star className="w-4 h-4" />}
   
   switch (type) {
     case "free":
@@ -249,3 +249,12 @@ const ShippingInfo = React.forwardRef<HTMLDivElement, ShippingInfoProps>(
 ShippingInfo.displayName = "ShippingInfo"
 
 export { ShippingInfo, shippingInfoVariants }
+
+
+
+
+
+
+
+
+

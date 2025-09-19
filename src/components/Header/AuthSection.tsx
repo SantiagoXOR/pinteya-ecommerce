@@ -122,3 +122,12 @@ export default function AuthSection({ variant = 'default' }: AuthSectionProps) {
     </button>
   )
 }
+
+
+
+
+
+
+
+
+

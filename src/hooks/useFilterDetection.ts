@@ -24,7 +24,7 @@ export interface FilterSummary {
  */
 export function useFilterDetection(searchParams: ReadonlyURLSearchParams | null) {
   const filterSummary = useMemo<FilterSummary | null>(() => {
-    if (!searchParams) return null;
+    if (!searchParams) {return null;}
 
     const filters: Partial<FilterSummary> = {};
     let totalFilters = 0;
@@ -160,3 +160,12 @@ export function generateFilterDescription(filterSummary: FilterSummary | null): 
 }
 
 export default useFilterDetection;
+
+
+
+
+
+
+
+
+

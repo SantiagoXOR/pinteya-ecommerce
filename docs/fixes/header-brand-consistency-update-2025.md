@@ -190,3 +190,6 @@ className="sticky top-0 z-50 w-full bg-blaze-orange-600 border-b border-blaze-or
 ---
 
 *Actualización implementada exitosamente - Pinteya E-commerce Team*
+
+
+

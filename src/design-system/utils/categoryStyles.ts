@@ -4,7 +4,7 @@
  * Pinteya E-commerce - Enterprise Design System
  */
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { categoryDesignTokens } from '../tokens/categories';
 import type { CategoryPillProps, CategoriesProps } from '@/types/categories';
 
@@ -350,3 +350,12 @@ export const categoryStyleUtils = {
   getCSSCustomProperties,
   applyDesignTokens,
 };
+
+
+
+
+
+
+
+
+

@@ -255,3 +255,6 @@ El módulo de logística de Pinteya e-commerce ha alcanzado un **nivel enterpris
 
 **Documentación Actualizada**: 2 Septiembre 2025  
 **Versión del Módulo**: 1.0.0 Enterprise Production Ready
+
+
+

@@ -131,7 +131,7 @@ class ApiMonitoringService {
         event,
         recommendation: 'Check API validation logic and data filtering'
       });
-      return;
+      
     }
 
     // En producción, enviar a servicio de monitoreo
@@ -250,3 +250,12 @@ export function monitorApiCall(endpoint: string) {
     return descriptor;
   };
 }
+
+
+
+
+
+
+
+
+

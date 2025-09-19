@@ -154,3 +154,12 @@ describe('PinteyaRaffle', () => {
     expect(screen.getByText('* Solo necesitás seguirnos en redes sociales. Sin compra mínima.')).toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+

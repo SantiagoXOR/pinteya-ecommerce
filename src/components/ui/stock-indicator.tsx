@@ -198,3 +198,12 @@ const StockIndicator = React.forwardRef<HTMLDivElement, StockIndicatorProps>(
 StockIndicator.displayName = "StockIndicator"
 
 export { StockIndicator, stockIndicatorVariants }
+
+
+
+
+
+
+
+
+

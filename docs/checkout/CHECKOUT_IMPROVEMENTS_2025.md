@@ -276,3 +276,6 @@ NEXT_PUBLIC_BASE_URL=https://your-domain.com
 Las mejoras implementadas en el sistema de checkout de Pinteya representan una evolución significativa hacia una experiencia de usuario moderna, eficiente y alineada con las mejores prácticas de la industria. La integración del design system, las optimizaciones de performance y la atención al detalle en UX/UI posicionan a Pinteya como líder en experiencia de checkout para e-commerce de pinturería y ferretería.
 
 **Resultado**: Sistema de checkout enterprise-ready, optimizado para conversión y preparado para escalar con el crecimiento del negocio.
+
+
+

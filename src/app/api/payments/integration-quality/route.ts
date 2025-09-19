@@ -4,11 +4,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getPaymentInfo } from '@/lib/mercadopago';
-import { getSupabaseClient } from '@/lib/supabase';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { getPaymentInfo } from '@/lib/integrations/mercadopago';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // Tipos para medición de calidad
 interface QualityMetrics {
@@ -172,10 +172,10 @@ async function measureIntegrationQuality(
 
   // Determinar categoría
   let category: QualityMetrics['category'];
-  if (totalScore >= 90) category = 'excellent';
-  else if (totalScore >= 75) category = 'good';
-  else if (totalScore >= 60) category = 'needs_improvement';
-  else category = 'poor';
+  if (totalScore >= 90) {category = 'excellent';}
+  else if (totalScore >= 75) {category = 'good';}
+  else if (totalScore >= 60) {category = 'needs_improvement';}
+  else {category = 'poor';}
 
   // Generar recomendaciones
   const recommendations = includeRecommendations ? generateRecommendations({
@@ -436,3 +436,12 @@ function generateRecommendations(details: QualityMetrics['details']): string[] {
 
   return recommendations;
 }
+
+
+
+
+
+
+
+
+

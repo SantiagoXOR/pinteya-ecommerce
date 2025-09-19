@@ -4,7 +4,7 @@
 // Basado en: shadcn/ui patterns + Tailwind CSS
 // =====================================================
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface LoadingSkeletonProps {
   className?: string;
@@ -98,3 +98,12 @@ export function LoadingSkeleton({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { createAdminClient } from '@/lib/supabase/server';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { createAdminClient } from '@/lib/integrations/supabase/server';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 // Tipos para clientes
 interface Customer {
@@ -148,3 +148,12 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

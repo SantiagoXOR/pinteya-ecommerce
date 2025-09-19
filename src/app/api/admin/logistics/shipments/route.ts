@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/integrations/supabase/server';
 import { z } from 'zod';
 import { 
   CreateShipmentRequest, 
@@ -72,21 +72,23 @@ const GetShipmentsSchema = z.object({
 // =====================================================
 async function validateAdminAuth(request: NextRequest) {
   const session = await auth();
-  
+
   if (!session?.user) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
-  
-  if (session.user.role !== 'admin' && session.user.role !== 'manager') {
+
+  // Verificar rol de administrador usando el email
+  const adminEmails = ['santiago@xor.com.ar'];
+  if (!adminEmails.includes(session.user.email || '')) {
     return NextResponse.json(
       { error: 'Insufficient permissions' },
       { status: 403 }
     );
   }
-  
+
   return null;
 }
 
@@ -128,7 +130,7 @@ async function createShipmentItems(
     .from('shipment_items')
     .insert(shipmentItems);
   
-  if (error) throw error;
+  if (error) {throw error;}
 }
 
 // =====================================================
@@ -139,7 +141,7 @@ export async function GET(request: NextRequest) {
   try {
     // Validar autenticación
     const authError = await validateAdminAuth(request);
-    if (authError) return authError;
+    if (authError) {return authError;}
     
     // Parsear y validar query parameters
     const { searchParams } = new URL(request.url);
@@ -148,17 +150,17 @@ export async function GET(request: NextRequest) {
     const validatedParams = GetShipmentsSchema.parse(queryParams);
     
     // Crear cliente Supabase
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Construir query base
     let query = supabase
       .from('shipments')
       .select(`
         *,
-        carrier:couriers(id, name, code, logo_url),
+        carrier:couriers(id, name, code),
         items:shipment_items(
           id, quantity, weight_kg,
-          product:products(id, name, sku, image_url)
+          product:products(id, name, slug, images)
         )
       `, { count: 'exact' });
     
@@ -200,7 +202,7 @@ export async function GET(request: NextRequest) {
     // Ejecutar query
     const { data: shipments, error, count } = await query;
     
-    if (error) throw error;
+    if (error) {throw error;}
     
     // Construir respuesta paginada
     const totalPages = Math.ceil((count || 0) / validatedParams.limit);
@@ -253,14 +255,14 @@ export async function POST(request: NextRequest) {
   try {
     // Validar autenticación
     const authError = await validateAdminAuth(request);
-    if (authError) return authError;
+    if (authError) {return authError;}
     
     // Parsear y validar body
     const body = await request.json();
     const validatedData = CreateShipmentSchema.parse(body);
     
     // Crear cliente Supabase
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Validar que la orden existe
     const orderExists = await validateOrderExists(supabase, validatedData.order_id);
@@ -293,11 +295,11 @@ export async function POST(request: NextRequest) {
       })
       .select(`
         *,
-        carrier:couriers(id, name, code, logo_url)
+        carrier:couriers(id, name, code)
       `)
       .single();
     
-    if (shipmentError) throw shipmentError;
+    if (shipmentError) {throw shipmentError;}
     
     // Crear los items del envío
     await createShipmentItems(supabase, shipment.id, validatedData.items);
@@ -307,16 +309,16 @@ export async function POST(request: NextRequest) {
       .from('shipments')
       .select(`
         *,
-        carrier:couriers(id, name, code, logo_url),
+        carrier:couriers(id, name, code),
         items:shipment_items(
           id, quantity, weight_kg,
-          product:products(id, name, sku, image_url)
+          product:products(id, name, slug, images)
         )
       `)
       .eq('id', shipment.id)
       .single();
     
-    if (fetchError) throw fetchError;
+    if (fetchError) {throw fetchError;}
     
     // Crear evento de tracking inicial
     await supabase
@@ -361,3 +363,12 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

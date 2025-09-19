@@ -12,18 +12,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Package, 
-  Truck, 
-  MapPin, 
-  Clock, 
-  TrendingUp, 
+import {
+  Package,
+  Truck,
+  MapPin,
+  Clock,
+  TrendingUp,
   AlertTriangle,
   CheckCircle,
   Plus,
   RefreshCw,
   BarChart3,
-  Users
+  Users,
+  Route,
+  Navigation
 } from 'lucide-react';
 import { useLogisticsDashboard } from '@/hooks/admin/useLogisticsDashboard';
 import { LogisticsMetricsCards } from '@/components/admin/logistics/LogisticsMetricsCards';
@@ -32,6 +34,7 @@ import { LogisticsAlerts } from '@/components/admin/logistics/LogisticsAlerts';
 import { PerformanceChart } from '@/components/admin/logistics/PerformanceChart';
 import { CarrierPerformanceTable } from '@/components/admin/logistics/CarrierPerformanceTable';
 import { CreateShipmentDialog } from '@/components/admin/logistics/CreateShipmentDialog';
+import { GoogleMapsLogistics } from '@/components/admin/logistics/GoogleMapsLogistics';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
@@ -134,10 +137,18 @@ export default function LogisticsDashboard() {
 
       {/* Contenido principal en tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
             Resumen
+          </TabsTrigger>
+          <TabsTrigger value="maps" className="flex items-center gap-2">
+            <MapPin className="w-4 h-4" />
+            Mapas
+          </TabsTrigger>
+          <TabsTrigger value="routes" className="flex items-center gap-2">
+            <Route className="w-4 h-4" />
+            Rutas
           </TabsTrigger>
           <TabsTrigger value="shipments" className="flex items-center gap-2">
             <Package className="w-4 h-4" />
@@ -269,6 +280,45 @@ export default function LogisticsDashboard() {
           )}
         </TabsContent>
 
+        {/* Tab: Mapas */}
+        <TabsContent value="maps">
+          <Suspense fallback={<LoadingSkeleton className="h-96" />}>
+            <GoogleMapsLogistics
+              shipments={data.recent_shipments || []}
+              enableRouteOptimization={true}
+              enableRealTimeTracking={true}
+              height="700px"
+            />
+          </Suspense>
+        </TabsContent>
+
+        {/* Tab: Rutas */}
+        <TabsContent value="routes">
+          <Suspense fallback={<LoadingSkeleton className="h-96" />}>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Route className="w-5 h-5" />
+                    Optimización de Rutas para Carriers Propios
+                  </CardTitle>
+                  <CardDescription>
+                    Gestión inteligente de rutas diarias para maximizar eficiencia y reducir costos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <GoogleMapsLogistics
+                    shipments={data.recent_shipments || []}
+                    enableRouteOptimization={true}
+                    enableRealTimeTracking={true}
+                    height="600px"
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </Suspense>
+        </TabsContent>
+
         {/* Tab: Envíos */}
         <TabsContent value="shipments">
           <Suspense fallback={<LoadingSkeleton />}>
@@ -369,3 +419,12 @@ function EmptyDashboard() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

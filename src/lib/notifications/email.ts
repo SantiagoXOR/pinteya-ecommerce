@@ -224,3 +224,12 @@ export const sendWelcomeEmail = (userData: Parameters<EmailNotificationService['
 
 export const sendLowStockAlert = (productData: Parameters<EmailNotificationService['sendLowStockAlert']>[0]) => 
   emailService.sendLowStockAlert(productData)
+
+
+
+
+
+
+
+
+

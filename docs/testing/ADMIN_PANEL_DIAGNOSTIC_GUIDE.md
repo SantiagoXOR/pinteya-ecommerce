@@ -234,3 +234,6 @@ npx playwright test tests/e2e/admin-panel-enterprise-complete.spec.ts --trace on
 - [Panel Administrativo Architecture](../admin/ADMIN_PANEL_ARCHITECTURE_V2.md)
 - [Testing Strategy](../admin/TESTING_STRATEGY.md)
 - [API Documentation](../admin/api/ADMIN_APIS_DOCUMENTATION.md)
+
+
+

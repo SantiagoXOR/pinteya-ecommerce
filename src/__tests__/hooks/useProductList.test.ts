@@ -245,3 +245,12 @@ describe('useProductList Hook', () => {
     expect(result.current.error === null || typeof result.current.error === 'string').toBe(true);
   });
 });
+
+
+
+
+
+
+
+
+

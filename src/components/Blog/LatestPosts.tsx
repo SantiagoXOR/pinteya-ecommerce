@@ -61,3 +61,12 @@ const LatestPosts = ({ blogs }: { blogs: any[] }) => {
 };
 
 export default LatestPosts;
+
+
+
+
+
+
+
+
+

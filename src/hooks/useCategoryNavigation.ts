@@ -65,7 +65,7 @@ export const useCategoryNavigation = (
    * Track navigation analytics if enabled
    */
   const trackNavigation = useCallback((categories: CategoryId[], action: 'filter' | 'clear') => {
-    if (!enableAnalytics) return;
+    if (!enableAnalytics) {return;}
 
     // Track with analytics service
     if (typeof window !== 'undefined' && window.gtag) {
@@ -254,3 +254,12 @@ export const hasCategories = (url: string, paramName = 'categories'): boolean =>
  * Default export for convenience
  */
 export default useCategoryNavigation;
+
+
+
+
+
+
+
+
+

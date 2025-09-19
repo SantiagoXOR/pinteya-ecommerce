@@ -15,7 +15,7 @@ import {
   RefreshCw,
   AlertCircle
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface ProductHistoryPanelProps {
   productId: string;
@@ -249,3 +249,12 @@ export function ProductHistoryPanel({ productId, className }: ProductHistoryPane
     </AdminCard>
   );
 }
+
+
+
+
+
+
+
+
+

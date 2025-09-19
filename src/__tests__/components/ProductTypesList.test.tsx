@@ -158,3 +158,12 @@ describe('ProductTypesList', () => {
     expect(list).toHaveClass('space-y-2');
   });
 });
+
+
+
+
+
+
+
+
+

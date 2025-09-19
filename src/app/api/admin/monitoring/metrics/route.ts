@@ -9,10 +9,10 @@ import {
   mercadoPagoCriticalBreaker, 
   mercadoPagoStandardBreaker, 
   webhookProcessingBreaker 
-} from '@/lib/mercadopago/circuit-breaker';
-import { getSupabaseClient } from '@/lib/supabase';
+} from '@/lib/integrations/mercadopago/circuit-breaker';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { CacheUtils } from '@/lib/cache-manager';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 interface DashboardMetrics {
   performance: {
@@ -254,9 +254,9 @@ async function getSecurityMetrics() {
   
   // Determinar nivel de riesgo
   let riskLevel: 'low' | 'medium' | 'high' | 'critical' = 'low';
-  if (events.length > 10) riskLevel = 'critical';
-  else if (events.length > 5) riskLevel = 'high';
-  else if (events.length > 2) riskLevel = 'medium';
+  if (events.length > 10) {riskLevel = 'critical';}
+  else if (events.length > 5) {riskLevel = 'high';}
+  else if (events.length > 2) {riskLevel = 'medium';}
 
   return {
     securityEvents: events.length,
@@ -369,3 +369,12 @@ async function getMetricTrends() {
 
   return groupedTrends;
 }
+
+
+
+
+
+
+
+
+

@@ -266,7 +266,7 @@ export async function POST(request: NextRequest) {
  */
 function calculateTimeRange(timeRange: string): { startDate: string; endDate: string } {
   const endDate = new Date();
-  let startDate = new Date();
+  const startDate = new Date();
 
   switch (timeRange) {
     case '1h':
@@ -468,3 +468,12 @@ function generateSecurityRecommendations(metrics: EnterpriseSecurityMetrics): an
 
   return recommendations;
 }
+
+
+
+
+
+
+
+
+

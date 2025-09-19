@@ -256,3 +256,6 @@ Este cambio establece las bases para futuras optimizaciones y mejoras en la expe
 **Fecha**: Enero 2025  
 **Estado**: ✅ Completado  
 **Tests**: 11/11 Hero + 9/9 TrustSection ✅
+
+
+

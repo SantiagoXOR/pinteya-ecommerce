@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { createAdminClient } from '@/lib/supabase/server';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { createAdminClient } from '@/lib/integrations/supabase/server';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 /**
  * POST /api/admin/orders/[id]/mark-paid

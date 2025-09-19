@@ -90,7 +90,7 @@ export const useCategoryFilter = (
    * Track analytics event if enabled
    */
   const trackAnalytics = useCallback((event: CategoryChangeEvent) => {
-    if (!enableAnalytics) return;
+    if (!enableAnalytics) {return;}
 
     // Track with analytics service (placeholder for actual implementation)
     if (typeof window !== 'undefined' && window.gtag) {
@@ -150,7 +150,7 @@ export const useCategoryFilter = (
    */
   const clearAll = useCallback(() => {
     setSelectedCategories(prev => {
-      if (prev.length === 0) return prev;
+      if (prev.length === 0) {return prev;}
 
       const event = createChangeEvent('clear', undefined, [], prev);
       trackAnalytics(event);
@@ -232,3 +232,12 @@ export const validateCategoryIds = (categoryIds: unknown[]): CategoryId[] => {
  * Default export for convenience
  */
 export default useCategoryFilter;
+
+
+
+
+
+
+
+
+

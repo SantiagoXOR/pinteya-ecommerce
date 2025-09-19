@@ -293,3 +293,12 @@ Generated at: ${new Date().toISOString()}
 
 // Exportar el middleware como default
 export default performanceMonitoringMiddleware;
+
+
+
+
+
+
+
+
+

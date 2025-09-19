@@ -394,3 +394,12 @@ export interface OrdersConfig {
     emailTemplates: Record<string, string>;
   };
 }
+
+
+
+
+
+
+
+
+

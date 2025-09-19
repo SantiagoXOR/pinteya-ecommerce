@@ -128,3 +128,12 @@ const PriceDropdown = ({ onPriceRangeSelect, selectedPriceRange }: PriceDropdown
 };
 
 export default PriceDropdown;
+
+
+
+
+
+
+
+
+

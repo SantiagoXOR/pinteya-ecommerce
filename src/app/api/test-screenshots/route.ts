@@ -185,12 +185,12 @@ export async function DELETE(request: NextRequest) {
       let deletedCount = 0
 
       for (const file of files) {
-        if (!file.endsWith('.png')) continue
+        if (!file.endsWith('.png')) {continue}
 
         let shouldDelete = false
 
         // Filtrar por patrón si se especifica
-        if (pattern && !file.includes(pattern)) continue
+        if (pattern && !file.includes(pattern)) {continue}
 
         // Filtrar por antigüedad si se especifica
         if (olderThan) {
@@ -237,3 +237,12 @@ export async function DELETE(request: NextRequest) {
     }, { status: 500 })
   }
 }
+
+
+
+
+
+
+
+
+

@@ -41,7 +41,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   // Manejador para scroll horizontal con rueda del mouse
   useEffect(() => {
     const carousel = carouselRef.current;
-    if (!carousel) return;
+    if (!carousel) {return;}
 
     const handleWheel = (e: WheelEvent) => {
       // Solo aplicar scroll horizontal si hay contenido que se desborda
@@ -61,7 +61,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   // Manejadores para drag scroll
   const handleMouseDown = (e: React.MouseEvent) => {
     const carousel = carouselRef.current;
-    if (!carousel) return;
+    if (!carousel) {return;}
 
     setIsDragging(true);
     setStartX(e.pageX - carousel.offsetLeft);
@@ -86,11 +86,11 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging) {return;}
     e.preventDefault();
 
     const carousel = carouselRef.current;
-    if (!carousel) return;
+    if (!carousel) {return;}
 
     const x = e.pageX - carousel.offsetLeft;
     const walk = (x - startX) * 2; // Multiplicador para velocidad de scroll
@@ -99,7 +99,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
 
   const handleCategoryToggle = (categorySlug: string) => {
     // Prevenir click si se está arrastrando
-    if (isDragging) return;
+    if (isDragging) {return;}
 
     const isSelected = selectedCategories.includes(categorySlug);
     let newSelection: string[];
@@ -247,3 +247,12 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
 };
 
 export default CategoryTogglePills;
+
+
+
+
+
+
+
+
+

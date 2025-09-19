@@ -340,3 +340,6 @@ describe('GET /api/admin/products', () => {
 - [Zod Validation](https://zod.dev/)
 - [Clerk Authentication](https://clerk.com/docs)
 - [Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)
+
+
+

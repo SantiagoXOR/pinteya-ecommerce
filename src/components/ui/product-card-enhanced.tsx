@@ -66,8 +66,8 @@ const EnhancedProductCard = React.forwardRef<HTMLDivElement, EnhancedProductCard
     
     // Calcular cuotas automáticamente si no se proporcionan
     const autoInstallments = React.useMemo(() => {
-      if (customInstallments) return customInstallments
-      if (!shouldShowInstallments(price, config)) return undefined
+      if (customInstallments) {return customInstallments}
+      if (!shouldShowInstallments(price, config)) {return undefined}
       return calculateInstallments(price)
     }, [price, customInstallments, config])
     
@@ -229,3 +229,12 @@ export function ProductCardShowcase() {
 }
 
 export { EnhancedProductCard }
+
+
+
+
+
+
+
+
+

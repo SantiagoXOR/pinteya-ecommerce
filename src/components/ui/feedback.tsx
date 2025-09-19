@@ -101,7 +101,7 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
       }
     };
 
-    if (!isVisible) return null;
+    if (!isVisible) {return null;}
 
     return (
       <div
@@ -424,7 +424,7 @@ const RatingAnimation = React.forwardRef<HTMLDivElement, RatingAnimationProps>(
     };
 
     const handleClick = (newRating: number) => {
-      if (readonly) return;
+      if (readonly) {return;}
       
       setIsAnimating(true);
       onRate?.(newRating);
@@ -489,3 +489,12 @@ export {
   spinnerVariants,
   pulseVariants,
 };
+
+
+
+
+
+
+
+
+

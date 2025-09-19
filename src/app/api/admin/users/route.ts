@@ -3,14 +3,14 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { checkRateLimit } from '@/lib/auth/rate-limiting';
-import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -144,19 +144,21 @@ async function validateAdminAuth() {
 async function getUsersWithStats(filters: any, pagination: any) {
   try {
     let query = supabaseAdmin
-      .from('users')
+      .from('user_profiles')
       .select(`
         id,
         email,
-        name,
-        role,
+        first_name,
+        last_name,
+        role_id,
         is_active,
-        phone,
-        address,
+        metadata,
         created_at,
         updated_at,
-        last_login,
-        avatar_url
+        user_roles (
+          role_name,
+          permissions
+        )
       `, { count: 'exact' });
 
     // Aplicar filtros
@@ -551,3 +553,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

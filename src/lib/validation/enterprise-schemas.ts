@@ -515,3 +515,12 @@ export const EnterpriseFileUploadSchema = z.object({
   alt_text: z.string().max(200, 'Texto alternativo muy largo').optional(),
   metadata: z.record(z.any()).optional()
 });
+
+
+
+
+
+
+
+
+

@@ -5,7 +5,7 @@
 import { AssetOptimizer, assetOptimizer, ASSET_CONFIGS, AssetUtils } from '@/lib/asset-optimizer';
 
 // Mock logger
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
@@ -312,3 +312,12 @@ describe('AssetUtils', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

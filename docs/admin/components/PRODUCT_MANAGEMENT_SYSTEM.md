@@ -299,3 +299,6 @@ const calculateSeoScore = () => {
 - [ ] Product templates
 - [ ] Inventory forecasting
 - [ ] Advanced SEO analytics
+
+
+

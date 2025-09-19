@@ -670,3 +670,6 @@ describe('Orders API', () => {
 ---
 
 *Próxima actualización: Implementación de OrderList component*
+
+
+

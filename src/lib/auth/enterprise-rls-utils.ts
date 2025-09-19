@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import type { EnterpriseAuthContext } from './enterprise-auth-utils';
 
 // =====================================================
@@ -383,7 +383,7 @@ async function logRLSOperation(
   metadata: any
 ): Promise<void> {
   try {
-    if (!supabaseAdmin) return;
+    if (!supabaseAdmin) {return;}
 
     await supabaseAdmin
       .from('security_audit_logs')
@@ -448,3 +448,12 @@ export async function testRLSPolicies(
 
   return results;
 }
+
+
+
+
+
+
+
+
+

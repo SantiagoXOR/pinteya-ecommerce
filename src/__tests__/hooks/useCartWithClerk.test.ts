@@ -381,3 +381,12 @@ describe('useCartWithClerk Hook', () => {
     })
   })
 })
+
+
+
+
+
+
+
+
+

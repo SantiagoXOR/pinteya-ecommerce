@@ -91,3 +91,12 @@ const SingleListItem = ({ item }: { item: ExtendedProduct }) => {
 };
 
 export default SingleListItem;
+
+
+
+
+
+
+
+
+

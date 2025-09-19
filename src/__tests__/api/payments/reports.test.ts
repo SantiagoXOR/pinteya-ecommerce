@@ -27,8 +27,8 @@ jest.mock('next-auth/providers/google', () => {
 });
 
 jest.mock('@/lib/supabase');
-jest.mock('@/lib/rate-limiter');
-jest.mock('@/lib/metrics', () => ({
+jest.mock('@/lib/enterprise/rate-limiter');
+jest.mock('@/lib/enterprise/metrics', () => ({
   metricsCollector: {
     getPaymentReports: jest.fn(),
     createReport: jest.fn(),
@@ -38,7 +38,7 @@ jest.mock('@/lib/metrics', () => ({
     recordSuccess: jest.fn(),
   }
 }));
-jest.mock('@/lib/logger');
+jest.mock('@/lib/enterprise/logger');
 
 const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
@@ -68,7 +68,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector (Patrón 1: Imports faltantes)
@@ -85,7 +85,7 @@ describe('/api/payments/reports', () => {
       };
 
       // Reemplazar el mock global temporalmente
-      jest.doMock('@/lib/metrics', () => ({
+      jest.doMock('@/lib/enterprise/metrics', () => ({
         metricsCollector: mockMetricsCollector
       }));
 
@@ -148,7 +148,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector (Patrón 1: Imports faltantes)
@@ -209,7 +209,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       const request = new NextRequest('http://localhost:3000/api/payments/reports?type=invalid_type');
@@ -226,7 +226,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector (Patrón 1: Imports faltantes)
@@ -287,7 +287,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector (Patrón 1: Imports faltantes)
@@ -338,7 +338,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter to return failure
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ 
         success: false, 
         remaining: 0,
@@ -380,7 +380,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector (Patrón 1: Imports faltantes)
@@ -431,7 +431,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Test missing type
@@ -471,7 +471,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter to return failure
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ 
         success: false, 
         remaining: 0,
@@ -518,7 +518,7 @@ describe('/api/payments/reports', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector (Patrón 1: Imports faltantes)
@@ -559,3 +559,12 @@ describe('/api/payments/reports', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

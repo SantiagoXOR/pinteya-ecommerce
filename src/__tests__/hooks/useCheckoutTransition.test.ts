@@ -385,3 +385,12 @@ describe('useCheckoutTransition Hook - Tests Unitarios', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

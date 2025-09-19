@@ -3,6 +3,7 @@ import { Providers } from './providers';
 import './css/style.css';
 import './css/euclid-circular-a-font.css';
 import '../styles/checkout-mobile.css';
+import '../styles/z-index-hierarchy.css';
 import { metadata as defaultMetadata } from './metadata';
 import StructuredData from '@/components/SEO/StructuredData';
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
@@ -45,3 +46,12 @@ export default function RootLayout({
     </html>
   );
 }
+
+
+
+
+
+
+
+
+

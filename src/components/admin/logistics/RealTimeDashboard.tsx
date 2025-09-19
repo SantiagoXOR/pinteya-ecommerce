@@ -33,7 +33,7 @@ import { GeofenceManager } from './GeofenceManager';
 import { useLogisticsDashboard } from '@/hooks/admin/useLogisticsDashboard';
 import { useLogisticsWebSocket, useLogisticsAlerts } from '@/hooks/admin/useLogisticsWebSocket';
 import { useShipments } from '@/hooks/admin/useShipments';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 // =====================================================
 // INTERFACES
@@ -511,3 +511,12 @@ function DashboardSkeleton() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

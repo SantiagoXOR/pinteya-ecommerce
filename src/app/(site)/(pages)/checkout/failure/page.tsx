@@ -250,3 +250,12 @@ export default function CheckoutFailurePage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import type { NextApiRequest } from 'next';
 import { auth } from '@/auth';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { validateJWTIntegrity, validateJWTPermissions } from './jwt-validation';
 import { validateRequestOrigin } from './csrf-protection';
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from './rate-limiting';
@@ -645,3 +645,12 @@ export const withAdminAuth = (requiredPermissions?: string[]) =>
  * Middleware para pagos
  */
 export const withPaymentAuth = () => withEnterpriseAuth(requirePaymentAuth);
+
+
+
+
+
+
+
+
+

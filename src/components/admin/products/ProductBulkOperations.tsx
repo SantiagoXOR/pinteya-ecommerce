@@ -42,7 +42,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { Product } from '@/hooks/admin/useProductsEnterprise';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 // =====================================================
 // INTERFACES
@@ -473,3 +473,12 @@ function BulkEditDialog({
     </DialogContent>
   );
 }
+
+
+
+
+
+
+
+
+

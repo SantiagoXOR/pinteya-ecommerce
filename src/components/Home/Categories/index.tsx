@@ -22,12 +22,12 @@ const Categories = () => {
   });
 
   const handlePrev = useCallback(() => {
-    if (!sliderRef.current) return;
+    if (!sliderRef.current) {return;}
     sliderRef.current.swiper.slidePrev();
   }, []);
 
   const handleNext = useCallback(() => {
-    if (!sliderRef.current) return;
+    if (!sliderRef.current) {return;}
     sliderRef.current.swiper.slideNext();
   }, []);
 
@@ -103,7 +103,9 @@ const Categories = () => {
                     <h3 className="font-semibold text-red-900 mb-1">
                       Error al cargar categorías
                     </h3>
-                    <p className="text-red-700 text-sm">{error}</p>
+                    <p className="text-red-700 text-sm">
+                      {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+                    </p>
                   </div>
                   <Button
                     variant="outline"
@@ -168,3 +170,12 @@ const Categories = () => {
 };
 
 export default Categories;
+
+
+
+
+
+
+
+
+

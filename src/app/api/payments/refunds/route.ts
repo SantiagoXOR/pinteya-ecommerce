@@ -4,11 +4,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getSupabaseClient } from '@/lib/supabase';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
-import { createMercadoPagoClient } from '@/lib/mercadopago';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { metricsCollector } from '@/lib/enterprise/metrics';
+import { createMercadoPagoClient } from '@/lib/integrations/mercadopago';
 import { Payment } from 'mercadopago';
 
 interface RefundRequest {
@@ -385,3 +385,12 @@ async function processRefund(
     };
   }
 }
+
+
+
+
+
+
+
+
+

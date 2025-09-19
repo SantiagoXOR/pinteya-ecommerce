@@ -257,3 +257,12 @@ const Shipping: React.FC<ShippingProps> = ({
 };
 
 export default Shipping;
+
+
+
+
+
+
+
+
+

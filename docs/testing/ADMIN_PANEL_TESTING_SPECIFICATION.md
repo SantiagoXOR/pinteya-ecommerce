@@ -309,3 +309,6 @@ await page.locator('text=Productos').or(page.locator('[data-testid="products"]')
 - **Bug Tracking:** GitHub Issues
 - **Performance Monitoring:** Lighthouse CI
 - **Accessibility:** axe-core integration
+
+
+

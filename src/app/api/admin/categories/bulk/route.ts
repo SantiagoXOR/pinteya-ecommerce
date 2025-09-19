@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getSupabaseClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/integrations/supabase/server';
 import { requireAdminAuth } from '@/lib/auth/admin-auth';
-import { checkRateLimit } from '@/lib/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { metricsCollector } from '@/lib/metrics';
+import { checkRateLimit } from '@/lib/enterprise/rate-limiter';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // CONFIGURACIÓN
@@ -109,11 +109,7 @@ interface BulkOperationResult {
 // FUNCIONES AUXILIARES
 // ===================================
 async function getCategoriesByIds(categoryIds: string[]): Promise<Category[]> {
-  const supabase = getSupabaseClient(true);
-  
-  if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
-  }
+  const supabase = await createClient();
 
   const { data: categories, error } = await supabase
     .from('categories')
@@ -630,7 +626,7 @@ async function checkCircularHierarchy(categoryId: string, parentId: string): Pro
 async function logBulkAuditAction(action: string, categoryIds: string[], userId: string, details?: any): Promise<void> {
   try {
     const supabase = getSupabaseClient(true);
-    if (!supabase) return;
+    if (!supabase) {return;}
 
     const auditEntries = categoryIds.map(categoryId => ({
       table_name: 'categories',
@@ -871,3 +867,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

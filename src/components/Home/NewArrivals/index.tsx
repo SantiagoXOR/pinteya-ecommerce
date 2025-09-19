@@ -91,7 +91,9 @@ const NewArrival: React.FC<NewArrivalProps> = ({ selectedCategories = [] }) => {
                   <h3 className="font-semibold text-red-900 mb-1">
                     Error al cargar productos
                   </h3>
-                  <p className="text-red-700 text-sm">{error}</p>
+                  <p className="text-red-700 text-sm">
+                    {error instanceof Error ? error.message : (typeof error === 'string' ? error : 'Error desconocido')}
+                  </p>
                 </div>
                 <Button 
                   variant="outline" 
@@ -144,3 +146,12 @@ const NewArrival: React.FC<NewArrivalProps> = ({ selectedCategories = [] }) => {
 };
 
 export default NewArrival;
+
+
+
+
+
+
+
+
+

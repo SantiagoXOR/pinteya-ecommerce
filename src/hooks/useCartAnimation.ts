@@ -91,3 +91,12 @@ export const ANIMATION_DURATIONS = {
   NOTIFICATION: 4000,
   BUTTON_ANIMATION: 1000,
 } as const;
+
+
+
+
+
+
+
+
+

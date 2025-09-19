@@ -54,11 +54,12 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
           setError('No se pudieron cargar los productos');
         }
       } catch (err) {
-        // Solo mostrar error si no fue cancelado
+        // Solo mostrar error si no fue cancelado y no es AbortError
         if (!abortController.signal.aborted && err instanceof Error && err.name !== 'AbortError') {
           console.error('Error fetching popular products:', err);
           setError('Error al cargar productos populares');
         }
+        // No loggear AbortError ya que es comportamiento esperado durante cleanup
       } finally {
         // Solo actualizar loading si no fue cancelado
         if (!abortController.signal.aborted) {
@@ -123,7 +124,7 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
           </div>
         ) : error ? (
           <div className="text-center py-4">
-            <p className="text-sm text-red-500">{error}</p>
+            <p className="text-sm text-red-500">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-4">
@@ -205,3 +206,12 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
 };
 
 export default QuickAddSuggestions;
+
+
+
+
+
+
+
+
+

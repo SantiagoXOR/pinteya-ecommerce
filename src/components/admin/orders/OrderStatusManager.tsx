@@ -314,7 +314,7 @@ export const OrderStatusManager: React.FC<OrderStatusManagerProps> = ({
   // ===================================
 
   const renderChangeForm = () => {
-    if (!form.newStatus) return null;
+    if (!form.newStatus) {return null;}
 
     const selectedStatusInfo = formatOrderStatus(form.newStatus);
     const additionalInfo = statusRequiresAdditionalInfo(form.newStatus);
@@ -444,3 +444,12 @@ export const OrderStatusManager: React.FC<OrderStatusManagerProps> = ({
     </div>
   );
 };
+
+
+
+
+
+
+
+
+

@@ -269,3 +269,6 @@ w-full                     /* Ancho completo */
 **Estado**: 🚀 **OPTIMIZADO Y LISTO PARA MÁXIMA CONVERSIÓN**
 
 El checkout de Pinteya ahora es una experiencia ultra-optimizada que combina simplicidad, efectividad y elementos de conversión probados, posicionando a la empresa para maximizar las ventas online de manera inmediata.
+
+
+

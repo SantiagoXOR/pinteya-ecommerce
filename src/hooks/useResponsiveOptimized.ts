@@ -58,7 +58,7 @@ export const useResponsiveOptimized = (debounceMs: number = 150) => {
   }, [debounceMs]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     const resizeHandler = handleResize();
     
@@ -76,11 +76,11 @@ export const useResponsiveOptimized = (debounceMs: number = 150) => {
     
     // Determinar breakpoint actual
     let currentBreakpoint: Breakpoint | 'xs' = 'xs';
-    if (width >= BREAKPOINTS['2xl']) currentBreakpoint = '2xl';
-    else if (width >= BREAKPOINTS.xl) currentBreakpoint = 'xl';
-    else if (width >= BREAKPOINTS.lg) currentBreakpoint = 'lg';
-    else if (width >= BREAKPOINTS.md) currentBreakpoint = 'md';
-    else if (width >= BREAKPOINTS.sm) currentBreakpoint = 'sm';
+    if (width >= BREAKPOINTS['2xl']) {currentBreakpoint = '2xl';}
+    else if (width >= BREAKPOINTS.xl) {currentBreakpoint = 'xl';}
+    else if (width >= BREAKPOINTS.lg) {currentBreakpoint = 'lg';}
+    else if (width >= BREAKPOINTS.md) {currentBreakpoint = 'md';}
+    else if (width >= BREAKPOINTS.sm) {currentBreakpoint = 'sm';}
 
     return {
       width,
@@ -162,3 +162,12 @@ export const useResponsiveClasses = () => {
 };
 
 export default useResponsiveOptimized;
+
+
+
+
+
+
+
+
+

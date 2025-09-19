@@ -3,18 +3,18 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { CreatePreferencePayload } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
-import { createPaymentPreference } from '@/lib/mercadopago';
-import type { MercadoPagoItem } from '@/lib/mercadopago';
+import { createPaymentPreference } from '@/lib/integrations/mercadopago';
+import type { MercadoPagoItem } from '@/lib/integrations/mercadopago';
 import { auth } from '@/auth';
 import { CHECKOUT_CONSTANTS, VALIDATION_CONSTANTS } from '@/constants/shop';
 import { z } from 'zod';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, endpointKeyGenerator } from '@/lib/rate-limiter';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { checkRateLimit, addRateLimitHeaders, endpointKeyGenerator } from '@/lib/enterprise/rate-limiter';
 import { ENTERPRISE_RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/enterprise-rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // Schema de validación para la entrada
 const CreatePreferenceSchema = z.object({
@@ -318,7 +318,7 @@ export async function POST(request: NextRequest) {
     // ===================================
     const itemsTotal = orderData.items.reduce((total, item) => {
       const product = typedProducts.find(p => p.id === parseInt(item.id));
-      if (!product) return total;
+      if (!product) {return total;}
 
       // Usar precio con descuento si existe, sino precio normal
       const finalPrice = getFinalPrice(product);
@@ -567,3 +567,12 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

@@ -417,7 +417,7 @@ export default function EnterpriseMonitoringPage() {
                 <div className="mt-2">
                   <ul className="text-xs space-y-1">
                     {initResult.errors.map((error, index) => (
-                      <li key={index} className="text-red-600">• {error}</li>
+                      <li key={index} className="text-red-600">• {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</li>
                     ))}
                   </ul>
                 </div>
@@ -542,3 +542,12 @@ export default function EnterpriseMonitoringPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

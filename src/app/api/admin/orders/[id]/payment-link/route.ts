@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { createAdminClient } from '@/lib/supabase/server';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { createMercadoPagoPreference } from '@/lib/mercadopago';
+import { createAdminClient } from '@/lib/integrations/supabase/server';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { createPaymentPreference } from '@/lib/integrations/mercadopago';
 
 /**
  * POST /api/admin/orders/[id]/payment-link
@@ -111,7 +111,7 @@ export async function POST(
     };
 
     // Crear preferencia en MercadoPago
-    const preferenceResult = await createMercadoPagoPreference(preferenceData);
+    const preferenceResult = await createPaymentPreference(preferenceData);
 
     if (!preferenceResult.success || !preferenceResult.data) {
       logger.log(LogLevel.ERROR, LogCategory.PAYMENT, 'Error creating MercadoPago preference', { 

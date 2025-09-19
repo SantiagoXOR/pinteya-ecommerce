@@ -518,3 +518,6 @@ export const POST = composeMiddlewares(
 
 **Estado:** ✅ Completado
 **Próxima actualización:** Al implementar nuevos patrones de API
+
+
+

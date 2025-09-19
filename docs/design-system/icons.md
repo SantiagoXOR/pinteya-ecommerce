@@ -203,7 +203,7 @@ import {
 ```tsx
 // components/ui/icon.tsx
 import { LucideIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/core/utils'
 
 interface IconProps {
   icon: LucideIcon
@@ -455,3 +455,6 @@ export const PinteyaIcons = {
 ---
 
 *Última actualización: Junio 2025*
+
+
+

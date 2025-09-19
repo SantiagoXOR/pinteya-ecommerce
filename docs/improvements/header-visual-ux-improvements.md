@@ -191,3 +191,6 @@ El sticky header de Pinteya E-commerce ahora cuenta con:
 - ✅ **100% de tests pasando**
 
 Las mejoras mantienen la funcionalidad existente mientras elevan significativamente la calidad visual y la experiencia de usuario del header.
+
+
+

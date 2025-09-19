@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { auth } from '@/auth';
-import { checkRateLimit, addRateLimitHeaders } from '@/lib/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { metricsCollector } from '@/lib/metrics';
+import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // CONFIGURACIÓN
@@ -166,7 +166,7 @@ async function validateAdminAuth() {
 }
 
 async function getCouponById(couponId: string, includeUsage: boolean = false): Promise<CouponData> {
-  let query = supabase
+  const query = supabase
     .from('coupons')
     .select(`
       *,

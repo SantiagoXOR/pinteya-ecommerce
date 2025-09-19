@@ -146,7 +146,7 @@ export function useCreateTrackingEvent(shipmentId: number) {
       const queryKey = [...TRACKING_QUERY_KEY, shipmentId];
       
       queryClient.setQueryData(queryKey, (oldData: any) => {
-        if (!oldData) return oldData;
+        if (!oldData) {return oldData;}
         
         return {
           ...oldData,
@@ -185,7 +185,7 @@ export function useBulkTrackingEvents(shipmentId: number) {
       const queryKey = [...TRACKING_QUERY_KEY, shipmentId];
       
       queryClient.setQueryData(queryKey, (oldData: any) => {
-        if (!oldData) return oldData;
+        if (!oldData) {return oldData;}
         
         return {
           ...oldData,
@@ -380,3 +380,12 @@ export function useTrackingAnalytics(shipmentId: number) {
 export interface UseTrackingEventsExtendedReturn extends UseTrackingEventsReturn {
   shipment?: Shipment;
 }
+
+
+
+
+
+
+
+
+

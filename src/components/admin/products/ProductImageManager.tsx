@@ -18,7 +18,7 @@ import {
   CheckCircle,
   XCircle
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface ProductImage {
   id?: string;
@@ -132,7 +132,7 @@ export function ProductImageManager({
 
   // Enhanced file upload with validation and optimization
   const handleFileUpload = useCallback(async (files: FileList) => {
-    if (files.length === 0) return;
+    if (files.length === 0) {return;}
     
     const remainingSlots = maxImages - images.length;
     if (remainingSlots <= 0) {
@@ -289,7 +289,7 @@ export function ProductImageManager({
   };
 
   const saveAltText = () => {
-    if (editingIndex === null) return;
+    if (editingIndex === null) {return;}
     
     const newImages = [...images];
     newImages[editingIndex] = {
@@ -396,7 +396,7 @@ export function ProductImageManager({
                   <h4 className="text-sm font-medium text-red-800">Errores al subir imagenes:</h4>
                   <ul className="mt-1 text-sm text-red-700 space-y-1">
                     {uploadErrors.map((error, index) => (
-                      <li key={index}>• {error}</li>
+                      <li key={index}>• {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</li>
                     ))}
                   </ul>
                 </div>
@@ -409,7 +409,9 @@ export function ProductImageManager({
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-center space-x-2">
                 <XCircle className="w-5 h-5 text-red-500" />
-                <span className="text-sm text-red-700">{error}</span>
+                <span className="text-sm text-red-700">
+                  {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+                </span>
               </div>
             </div>
           )}
@@ -703,3 +705,12 @@ export function ProductImageManager({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

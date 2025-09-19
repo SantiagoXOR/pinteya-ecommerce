@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Buscar usuario existente en la tabla pública
     const { data: existingUser, error: fetchError } = await supabase
-      .from('users')
+      .from('user_profiles')
       .select('*')
       .eq('id', id)
       .single()
@@ -52,11 +52,16 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       // Actualizar usuario existente
       const { data: updatedUser, error: updateError } = await supabase
-        .from('users')
+        .from('user_profiles')
         .update({
-          name,
+          first_name: name?.split(' ')[0] || null,
+          last_name: name?.split(' ').slice(1).join(' ') || null,
           email,
-          image,
+          metadata: {
+            ...existingUser.metadata,
+            updated_via: 'sync_api',
+            last_sync: new Date().toISOString()
+          },
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
@@ -75,12 +80,19 @@ export async function POST(request: NextRequest) {
     } else {
       // Crear nuevo usuario
       const { data: newUser, error: insertError } = await supabase
-        .from('users')
+        .from('user_profiles')
         .insert({
           id,
-          name,
+          first_name: name?.split(' ')[0] || null,
+          last_name: name?.split(' ').slice(1).join(' ') || null,
           email,
-          image,
+          role_id: null,
+          is_active: true,
+          metadata: {
+            created_via: 'sync_api',
+            source: 'nextauth',
+            created_at: new Date().toISOString()
+          },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -111,3 +123,12 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+
+
+
+
+
+
+
+

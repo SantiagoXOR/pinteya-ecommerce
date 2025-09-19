@@ -168,3 +168,6 @@ import Header from '@/components/Header/NewHeader';
 
 **Mantenido por:** Pinteya E-commerce Team  
 **Última actualización:** 2025-01-15
+
+
+

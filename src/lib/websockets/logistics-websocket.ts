@@ -315,7 +315,7 @@ export class LogisticsWebSocketClient extends EventEmitter {
   // =====================================================
   
   getConnectionState(): 'connecting' | 'connected' | 'disconnected' | 'error' {
-    if (!this.ws) return 'disconnected';
+    if (!this.ws) {return 'disconnected';}
     
     switch (this.ws.readyState) {
       case WebSocket.CONNECTING:
@@ -367,7 +367,7 @@ export class LogisticsWebSocketSimulator extends EventEmitter {
   private isRunning = false;
   
   start(): void {
-    if (this.isRunning) return;
+    if (this.isRunning) {return;}
     
     this.isRunning = true;
     console.log('🎭 Iniciando simulador WebSocket');
@@ -452,3 +452,12 @@ export class LogisticsWebSocketSimulator extends EventEmitter {
     this.emit('geofence_event', event);
   }
 }
+
+
+
+
+
+
+
+
+

@@ -47,7 +47,7 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
 
   // Función para enviar métricas al servidor
   const sendMetrics = useCallback(async (metrics: PerformanceData[]) => {
-    if (!config.enabled || metrics.length === 0) return;
+    if (!config.enabled || metrics.length === 0) {return;}
 
     try {
       // Agregar validación de métricas
@@ -116,7 +116,7 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
 
   // Inicializar observers de performance
   useEffect(() => {
-    if (!config.enabled || typeof window === 'undefined') return;
+    if (!config.enabled || typeof window === 'undefined') {return;}
 
     // Observer para LCP (Largest Contentful Paint)
     if ('PerformanceObserver' in window) {
@@ -222,7 +222,7 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
 
   // Función para trackear bundle size
   const trackBundleSize = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     // Calcular tamaño aproximado del bundle basado en scripts cargados
     const scripts = Array.from(document.querySelectorAll('script[src]'));
@@ -241,10 +241,10 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
 
   // Función para obtener métricas actuales
   const getCurrentMetrics = useCallback((): PerformanceData | null => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined') {return null;}
 
     const navigation = performance.getEntriesByType('navigation')[0] as any;
-    if (!navigation) return null;
+    if (!navigation) {return null;}
 
     return {
       FCP: navigation.firstContentfulPaint,
@@ -265,7 +265,7 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
 
 // Función helper para obtener información de conexión
 function getConnectionInfo(): string {
-  if (typeof navigator === 'undefined') return 'unknown';
+  if (typeof navigator === 'undefined') {return 'unknown';}
   
   const connection = (navigator as any).connection || 
                     (navigator as any).mozConnection || 
@@ -305,3 +305,12 @@ export const useComponentPerformance = (componentName: string) => {
 };
 
 export default usePerformanceTracking;
+
+
+
+
+
+
+
+
+

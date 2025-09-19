@@ -1376,3 +1376,12 @@ const ShopDetails = () => {
 };
 
 export default ShopDetails;
+
+
+
+
+
+
+
+
+

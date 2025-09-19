@@ -416,3 +416,12 @@ describe('SimplifiedCheckout', () => {
     expect(screen.getByText('Pago')).toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+

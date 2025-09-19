@@ -234,3 +234,12 @@ describe('ProductCard with E-commerce Components', () => {
     expect(screen.getByText(/12 latas disponibles/)).toBeInTheDocument() // StockIndicator
   })
 })
+
+
+
+
+
+
+
+
+

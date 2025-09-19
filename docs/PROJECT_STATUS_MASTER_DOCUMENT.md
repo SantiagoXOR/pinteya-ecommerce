@@ -391,3 +391,6 @@ El proyecto Pinteya E-commerce ha alcanzado un **estado excepcional** con:
 ---
 
 *Este documento será actualizado trimestralmente o cuando se realicen cambios significativos al proyecto.*
+
+
+

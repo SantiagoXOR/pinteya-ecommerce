@@ -4,9 +4,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // Configuraciones avanzadas de preferencias según documentación oficial
 interface AdvancedPreferenceConfig {
@@ -427,3 +427,12 @@ function validatePreferenceConfig(config: AdvancedPreferenceConfig): { valid: bo
 
   return { valid: true };
 }
+
+
+
+
+
+
+
+
+

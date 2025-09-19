@@ -198,3 +198,12 @@ export function generateSlug(name: string): string {
     .replace(/-+/g, '-') // Remover guiones múltiples
     .replace(/^-|-$/g, ''); // Remover guiones al inicio y final
 }
+
+
+
+
+
+
+
+
+

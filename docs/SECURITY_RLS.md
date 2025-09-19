@@ -237,3 +237,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = 'public';
 **Responsable**: Augment Agent
 **Estado**: ✅ COMPLETADO - SEGURIDAD REFORZADA
 **Próxima revisión**: 2025-02-05
+
+
+

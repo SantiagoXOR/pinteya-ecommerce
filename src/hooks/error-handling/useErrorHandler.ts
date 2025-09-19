@@ -415,3 +415,12 @@ export function useSilentErrorHandler(options?: UseErrorHandlerOptions) {
 
 export type { ErrorState, UseErrorHandlerOptions, UseErrorHandlerReturn };
 export default useErrorHandler;
+
+
+
+
+
+
+
+
+

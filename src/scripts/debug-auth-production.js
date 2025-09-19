@@ -66,3 +66,7 @@ console.log('- API route usando función de auth diferente');
 console.log('\n================================================');
 console.log('🎯 PRÓXIMO PASO: Verificar Network tab en DevTools');
 console.log('📍 URL específica a revisar: /api/admin/monitoring/metrics');
+
+
+
+

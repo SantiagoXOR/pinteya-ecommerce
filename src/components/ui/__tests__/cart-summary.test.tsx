@@ -203,3 +203,12 @@ describe('CartSummary', () => {
     expect(screen.getByText('1 item')).toBeInTheDocument()
   })
 })
+
+
+
+
+
+
+
+
+

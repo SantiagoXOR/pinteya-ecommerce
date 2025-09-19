@@ -343,7 +343,7 @@ export class EnterpriseAlertSystem {
    * Inicializa el sistema de alertas
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {return;}
 
     try {
       // Cargar reglas predefinidas
@@ -370,7 +370,7 @@ export class EnterpriseAlertSystem {
    */
   async evaluateRules(): Promise<void> {
     for (const [ruleId, rule] of this.alertRules.entries()) {
-      if (!rule.enabled) continue;
+      if (!rule.enabled) {continue;}
 
       try {
         await this.evaluateRule(rule);
@@ -453,13 +453,13 @@ export class EnterpriseAlertSystem {
           
           switch (metricName) {
             case 'hit_rate':
-              if (cacheKeys.length === 0) return 0;
+              if (cacheKeys.length === 0) {return 0;}
               const totalHits = cacheKeys.reduce((sum, key) => sum + cacheMetrics[key].hits, 0);
               const totalMisses = cacheKeys.reduce((sum, key) => sum + cacheMetrics[key].misses, 0);
               const totalRequests = totalHits + totalMisses;
               return totalRequests > 0 ? totalHits / totalRequests : 0;
             case 'average_response_time':
-              if (cacheKeys.length === 0) return 0;
+              if (cacheKeys.length === 0) {return 0;}
               return cacheKeys.reduce((sum, key) => sum + cacheMetrics[key].avgResponseTime, 0) / cacheKeys.length;
             default:
               return 0;
@@ -561,7 +561,7 @@ export class EnterpriseAlertSystem {
    */
   private async sendNotifications(alert: Alert, channels: NotificationChannel[]): Promise<void> {
     for (const channel of channels) {
-      if (!channel.enabled) continue;
+      if (!channel.enabled) {continue;}
 
       try {
         switch (channel.type) {
@@ -861,3 +861,12 @@ export const EnterpriseAlertUtils = {
       .filter(alert => alert.severity === severity);
   }
 };
+
+
+
+
+
+
+
+
+

@@ -225,3 +225,6 @@ export default function middleware(req: NextRequest) {
 ---
 
 **Conclusión**: La desactivación temporal de Clerk ha restaurado parcialmente la funcionalidad. NextAuth.js es la mejor opción para migración completa.
+
+
+

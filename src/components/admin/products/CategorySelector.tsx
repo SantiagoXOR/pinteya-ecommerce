@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, Plus, Search, Folder, FolderOpen } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface Category {
   id: string;
@@ -233,7 +233,7 @@ export function CategorySelector({
 
       {/* Error Message */}
       {error && (
-        <p className="text-red-600 text-sm mt-1">{error}</p>
+        <p className="text-red-600 text-sm mt-1">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
       )}
 
       {/* Dropdown */}
@@ -295,3 +295,12 @@ export function CategorySelector({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

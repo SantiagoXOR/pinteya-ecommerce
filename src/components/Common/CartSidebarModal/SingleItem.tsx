@@ -116,3 +116,12 @@ const SingleItem = ({ item }: { item: any }) => {
 };
 
 export default SingleItem;
+
+
+
+
+
+
+
+
+

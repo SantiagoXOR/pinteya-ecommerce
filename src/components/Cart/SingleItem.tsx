@@ -32,7 +32,7 @@ const SingleItem = ({ item }: { item: any }) => {
       setQuantity(quantity - 1);
       dispatch(updateCartItemQuantity({ id: item.id, quantity: quantity - 1 }));
     } else {
-      return;
+      
     }
   };
 
@@ -145,3 +145,12 @@ const SingleItem = ({ item }: { item: any }) => {
 };
 
 export default SingleItem;
+
+
+
+
+
+
+
+
+

@@ -88,3 +88,12 @@ const SearchBox = ({ onSearch, currentSearch = "" }: SearchBoxProps) => {
 };
 
 export default SearchBox;
+
+
+
+
+
+
+
+
+

@@ -270,7 +270,7 @@ export function useSearch(options: UseSearchOptions = {}) {
    * Ejecuta una búsqueda completa y navega a resultados
    */
   const executeSearch = useCallback(async (searchQuery: string, category?: string) => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {return;}
 
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -502,3 +502,12 @@ export function useSearch(options: UseSearchOptions = {}) {
 }
 
 export default useSearch;
+
+
+
+
+
+
+
+
+

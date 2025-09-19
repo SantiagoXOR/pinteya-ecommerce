@@ -321,3 +321,12 @@ export interface PaymentPreferenceResponse {
   total_amount?: number;
   last_updated?: string;
 }
+
+
+
+
+
+
+
+
+

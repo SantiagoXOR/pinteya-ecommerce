@@ -245,7 +245,9 @@ const SelectField = React.forwardRef<
       </Select>
       
       {error && (
-        <p className="text-xs text-red-600">{error}</p>
+        <p className="text-xs text-red-600">
+          {error instanceof Error ? error.message : String(error) || 'Error desconocido'}
+        </p>
       )}
     </div>
   )
@@ -265,3 +267,12 @@ export {
   SelectScrollDownButton,
   SelectField,
 }
+
+
+
+
+
+
+
+
+

@@ -111,8 +111,8 @@ export function OrderListSimple({ onViewOrder, onEditOrder }: OrderListSimplePro
         sort_order: sortOrder,
       });
 
-      if (searchTerm) params.append('search', searchTerm);
-      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (searchTerm) {params.append('search', searchTerm);}
+      if (statusFilter !== 'all') {params.append('status', statusFilter);}
 
       const url = `/api/admin/orders?${params.toString()}`;
       console.log('🚀 [OrderListSimple] Fetching orders from:', url);
@@ -187,11 +187,11 @@ export function OrderListSimple({ onViewOrder, onEditOrder }: OrderListSimplePro
   };
 
   const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return 'Fecha no disponible';
+    if (!dateString) {return 'Fecha no disponible';}
 
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Fecha inválida';
+      if (isNaN(date.getTime())) {return 'Fecha inválida';}
 
       return date.toLocaleDateString('es-AR', {
         year: 'numeric',
@@ -314,7 +314,7 @@ export function OrderListSimple({ onViewOrder, onEditOrder }: OrderListSimplePro
       <Card>
         <CardHeader>
           <CardTitle>Error al cargar órdenes</CardTitle>
-          <CardDescription>{error}</CardDescription>
+          <CardDescription>{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={loadOrders} variant="outline">
@@ -587,3 +587,12 @@ export function OrderListSimple({ onViewOrder, onEditOrder }: OrderListSimplePro
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

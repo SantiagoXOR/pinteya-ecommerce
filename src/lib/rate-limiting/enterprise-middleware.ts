@@ -234,7 +234,7 @@ export async function checkRateLimitWithAuth(
   try {
     // Determinar configuración basada en contexto de autenticación
     let finalConfigName = configName;
-    let customConfig: Partial<EnterpriseRateLimitConfig> = {};
+    const customConfig: Partial<EnterpriseRateLimitConfig> = {};
 
     if (enterpriseContext && !finalConfigName) {
       // Seleccionar configuración basada en rol y permisos
@@ -390,3 +390,12 @@ export function getRateLimitMetrics() {
 export function resetRateLimitMetrics() {
   metricsCollector.reset();
 }
+
+
+
+
+
+
+
+
+

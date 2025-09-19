@@ -535,3 +535,6 @@ Viernes:   Testing + Deployment + Retrospectiva
 ---
 
 *Este roadmap será actualizado semanalmente con el progreso real y ajustes necesarios.*
+
+
+

@@ -221,3 +221,5 @@ curl -X POST "http://localhost:3000/api/admin/products/unified" \
 3. Migrar tests existentes
 4. Documentar en Swagger/OpenAPI
 5. Planificar eliminación de rutas antiguas
+
+

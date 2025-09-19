@@ -36,14 +36,7 @@ export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 // } from './sheet' // Archivo no existe
 
 // Feedback y estado
-export { 
-  Badge, 
-  DiscountBadge, 
-  ShippingBadge, 
-  StockBadge, 
-  NewBadge, 
-  OfferBadge 
-} from './badge'
+export { Badge, badgeVariants } from './badge'
 export { Progress } from './progress'
 export { Skeleton } from './skeleton'
 export { Spinner, SpinnerOverlay } from './spinner'
@@ -116,11 +109,13 @@ export { ConfirmModal } from './modal'
 // Formularios avanzados
 export {
   Form,
-  FormSection,
-  FormRow,
   FormField,
-  FormActions,
-  FormMessage
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+  useFormField
 } from './form'
 export { Calendar } from './calendar'
 export {
@@ -155,3 +150,12 @@ export * from './types'
 
 // Re-exports de Radix UI para casos avanzados
 // export * from '@radix-ui/react-icons' // TODO: Verificar si es necesario
+
+
+
+
+
+
+
+
+

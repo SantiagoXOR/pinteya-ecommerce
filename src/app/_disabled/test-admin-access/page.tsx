@@ -115,7 +115,7 @@ export default function TestAdminAccess() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <h3 className="text-red-800 font-semibold">Error</h3>
-              <p className="text-red-600">{error}</p>
+              <p className="text-red-600">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
             </div>
           )}
 
@@ -209,3 +209,12 @@ export default function TestAdminAccess() {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+

@@ -416,3 +416,6 @@ FROM pg_stat_user_indexes;
 - [🔐 Autenticación](./authentication.md) - Integración con Clerk
 - [📡 Real-time](./realtime.md) - Configuración tiempo real
 - [🗂️ Storage](./storage.md) - Gestión de archivos
+
+
+

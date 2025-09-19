@@ -4,7 +4,7 @@
  */
 
 import { auth } from '@/auth';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { NextRequest } from 'next/server';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -457,3 +457,12 @@ export async function getAuthFromHeaders(
     };
   }
 }
+
+
+
+
+
+
+
+
+

@@ -138,7 +138,7 @@ function toast({ ...props }: ToastProps) {
       id,
       open: true,
       onOpenChange: (open: boolean) => {
-        if (!open) dismiss();
+        if (!open) {dismiss();}
       },
     },
   });
@@ -175,3 +175,12 @@ function useToast() {
 }
 
 export { useToast, toast };
+
+
+
+
+
+
+
+
+

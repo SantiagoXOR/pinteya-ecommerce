@@ -3,7 +3,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient, handleSupabaseError } from '@/lib/supabase';
+import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase';
 import { ApiResponse } from '@/types/api';
 
 // ===================================
@@ -207,3 +207,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

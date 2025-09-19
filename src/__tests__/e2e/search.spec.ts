@@ -338,3 +338,12 @@ test.describe('Search Functionality', () => {
     console.log('✅ Flujo completo de búsqueda completado exitosamente');
   });
 });
+
+
+
+
+
+
+
+
+

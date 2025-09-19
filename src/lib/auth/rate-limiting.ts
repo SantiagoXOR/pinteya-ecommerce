@@ -376,3 +376,12 @@ export function getRateLimitStats(): {
     newestEntry: entries.length > 0 ? Math.max(...entries.map(e => e.firstRequest)) : null
   };
 }
+
+
+
+
+
+
+
+
+

@@ -36,7 +36,7 @@ const ConversionFunnel: React.FC<ConversionFunnelProps> = ({ data, className = '
   });
 
   useEffect(() => {
-    if (!data) return;
+    if (!data) {return;}
 
     // Animar los valores gradualmente
     const duration = 1500;
@@ -232,3 +232,12 @@ const ConversionFunnel: React.FC<ConversionFunnelProps> = ({ data, className = '
 };
 
 export default ConversionFunnel;
+
+
+
+
+
+
+
+
+

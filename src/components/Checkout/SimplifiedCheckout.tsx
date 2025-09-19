@@ -643,3 +643,12 @@ const SimplifiedCheckout = () => {
 };
 
 export default SimplifiedCheckout;
+
+
+
+
+
+
+
+
+

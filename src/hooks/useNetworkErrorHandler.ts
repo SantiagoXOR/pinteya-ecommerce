@@ -126,29 +126,38 @@ export function useNetworkErrorHandler(options: NetworkErrorHandlerOptions = {})
     return networkError;
   }, [classifyError, enableLogging, enableRetry, retryDelay, queryClient]);
 
-  // Función para interceptar errores globales
+  // Función para interceptar errores de abort y console.error
   const setupGlobalErrorHandling = useCallback(() => {
-    // Interceptar errores de fetch no manejados
-    const originalFetch = window.fetch;
-    window.fetch = async (...args) => {
-      try {
-        const response = await originalFetch(...args);
-        return response;
-      } catch (error) {
-        handleNetworkError(error, { type: 'fetch', url: args[0] });
-        throw error;
+    // Interceptar console.error para filtrar AbortErrors
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+      const message = args.join(' ');
+      const lowerMessage = message.toLowerCase();
+
+      // Filtrar errores de AbortError específicos
+      if (lowerMessage.includes('aborterror') ||
+          lowerMessage.includes('signal is aborted') ||
+          lowerMessage.includes('err_aborted') ||
+          message.includes('❌ Error obteniendo productos: AbortError') ||
+          message.includes('Error obteniendo productos: AbortError') ||
+          (lowerMessage.includes('error') && lowerMessage.includes('abort'))) {
+        if (enableLogging) {
+          console.debug('🔇 Suppressed AbortError from console.error:', ...args);
+        }
+        return;
       }
+      originalConsoleError(...args);
     };
 
-    // Interceptar errores de unhandled promise rejections
+    // Solo interceptar errores de unhandled promise rejections para AbortError
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      if (event.reason?.name === 'AbortError' || 
+      if (event.reason?.name === 'AbortError' ||
           event.reason?.code === 'ERR_ABORTED' ||
           event.reason?.message?.includes('aborted')) {
         // Prevenir que los errores de abort aparezcan en la consola
         event.preventDefault();
         if (enableLogging) {
-          console.debug('🔇 Suppressed AbortError from console');
+          console.debug('🔇 Suppressed AbortError from unhandledrejection');
         }
       }
     };
@@ -157,10 +166,10 @@ export function useNetworkErrorHandler(options: NetworkErrorHandlerOptions = {})
 
     // Cleanup function
     return () => {
-      window.fetch = originalFetch;
+      console.error = originalConsoleError;
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
-  }, [handleNetworkError, enableLogging]);
+  }, [enableLogging]);
 
   // Setup global error handling on mount
   useEffect(() => {
@@ -223,3 +232,12 @@ export function useNetworkErrorDebug() {
     retryDelay: 500
   });
 }
+
+
+
+
+
+
+
+
+

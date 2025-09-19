@@ -115,7 +115,7 @@ export const OrderFormEnterprise: React.FC<OrderFormEnterpriseProps> = ({
   // ===================================
 
   const performAutoSave = useCallback(async () => {
-    if (!autoSave || !state.isDirty || state.saving || !order) return;
+    if (!autoSave || !state.isDirty || state.saving || !order) {return;}
 
     setState(prev => ({ ...prev, saving: true }));
     
@@ -139,7 +139,7 @@ export const OrderFormEnterprise: React.FC<OrderFormEnterpriseProps> = ({
   }, [autoSave, state.isDirty, state.saving, order, onSave, state.data, toast]);
 
   useEffect(() => {
-    if (!autoSave || !order) return;
+    if (!autoSave || !order) {return;}
 
     const interval = setInterval(performAutoSave, autoSaveInterval);
     return () => clearInterval(interval);
@@ -555,3 +555,12 @@ export const OrderFormEnterprise: React.FC<OrderFormEnterpriseProps> = ({
     </div>
   );
 };
+
+
+
+
+
+
+
+
+

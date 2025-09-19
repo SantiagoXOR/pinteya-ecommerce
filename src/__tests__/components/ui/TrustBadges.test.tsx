@@ -260,3 +260,12 @@ describe('TrustBadgeGroup', () => {
     expect(screen.queryByText('unknown')).not.toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+

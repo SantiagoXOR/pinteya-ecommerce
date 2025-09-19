@@ -285,3 +285,12 @@ export interface CartItem {
 export interface WishlistItem extends CartItem {
   status?: string;
 }
+
+
+
+
+
+
+
+
+

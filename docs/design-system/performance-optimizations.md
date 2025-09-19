@@ -93,3 +93,6 @@ npm run test:performance
 - CI/CD checks para bundle size
 - Performance budgets en Lighthouse
 - Alertas automáticas para regresiones
+
+
+

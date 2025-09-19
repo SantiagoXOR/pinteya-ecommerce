@@ -42,7 +42,7 @@ export const UrgencyTimer: React.FC<UrgencyTimerProps> = ({
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 0) return 0;
+        if (prev <= 0) {return 0;}
         const newTime = prev - 1;
         setIsUrgent(newTime <= 300); // Últimos 5 minutos
         return newTime;
@@ -136,8 +136,8 @@ export const StockIndicator: React.FC<StockIndicatorProps> = ({
   }, []);
 
   const getStockColor = () => {
-    if (isCriticalStock) return 'red';
-    if (isLowStock) return 'yellow';
+    if (isCriticalStock) {return 'red';}
+    if (isLowStock) {return 'yellow';}
     return 'green';
   };
 
@@ -456,3 +456,12 @@ export const ExitIntentModal: React.FC<ExitIntentProps> = ({
     </div>
   );
 };
+
+
+
+
+
+
+
+
+

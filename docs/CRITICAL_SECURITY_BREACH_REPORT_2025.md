@@ -209,3 +209,6 @@ if (isAdminRoute(request)) {
 **Responsable:** Equipo de Seguridad  
 **Próxima actualización:** Cada 2 horas hasta resolución  
 **Estado:** 🚨 VULNERABILIDAD CRÍTICA - MITIGADA TEMPORALMENTE
+
+
+

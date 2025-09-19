@@ -102,7 +102,7 @@ const AdminSetupPage: React.FC = () => {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <h3 className="font-medium text-red-900 mb-2">❌ Error</h3>
-              <p className="text-red-800 text-sm">{error}</p>
+              <p className="text-red-800 text-sm">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
             </div>
           )}
 
@@ -159,3 +159,12 @@ const AdminSetupPage: React.FC = () => {
 };
 
 export default AdminSetupPage;
+
+
+
+
+
+
+
+
+

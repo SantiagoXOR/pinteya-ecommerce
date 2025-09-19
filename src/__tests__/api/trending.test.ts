@@ -82,3 +82,12 @@ describe('API /api/search/trending', () => {
     expect(data.data.trending.length).toBeGreaterThan(0);
   });
 });
+
+
+
+
+
+
+
+
+

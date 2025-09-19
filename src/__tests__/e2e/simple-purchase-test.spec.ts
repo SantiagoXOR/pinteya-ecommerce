@@ -221,3 +221,12 @@ test.describe('Simple Purchase Flow Capture', () => {
     console.log('✅ Test de APIs completado');
   });
 });
+
+
+
+
+
+
+
+
+

@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, MousePointer, Zap, BarChart3 } from 'lucide-react';
-import { UserInteraction } from '@/lib/analytics';
+import { UserInteraction } from '@/lib/integrations/analytics';
 
 interface HeatmapPoint {
   x: number;
@@ -46,7 +46,7 @@ const HeatmapViewer: React.FC<HeatmapViewerProps> = ({
 
   const processInteractions = () => {
     const filteredInteractions = interactions.filter(interaction => {
-      if (activeType === 'all') return true;
+      if (activeType === 'all') {return true;}
       return interaction.type === activeType;
     });
 
@@ -87,10 +87,10 @@ const HeatmapViewer: React.FC<HeatmapViewerProps> = ({
     const canvas = canvasRef.current;
     const container = containerRef.current;
     
-    if (!canvas || !container) return;
+    if (!canvas || !container) {return;}
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {return;}
 
     // Ajustar tamaño del canvas
     const rect = container.getBoundingClientRect();
@@ -110,8 +110,8 @@ const HeatmapViewer: React.FC<HeatmapViewerProps> = ({
 
       // Color basado en el tipo de interacción
       let color = 'rgba(255, 0, 0, '; // rojo para clicks por defecto
-      if (point.type === 'hover') color = 'rgba(0, 255, 0, ';
-      if (point.type === 'scroll') color = 'rgba(0, 0, 255, ';
+      if (point.type === 'hover') {color = 'rgba(0, 255, 0, ';}
+      if (point.type === 'scroll') {color = 'rgba(0, 0, 255, ';}
 
       gradient.addColorStop(0, `${color}${point.intensity * 0.8})`);
       gradient.addColorStop(0.5, `${color}${point.intensity * 0.4})`);
@@ -289,3 +289,12 @@ const HeatmapViewer: React.FC<HeatmapViewerProps> = ({
 };
 
 export default HeatmapViewer;
+
+
+
+
+
+
+
+
+

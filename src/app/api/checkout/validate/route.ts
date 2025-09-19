@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+// ===================================
+// MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
+// ===================================
+import {
+  withRateLimit,
+  RATE_LIMIT_CONFIGS
+} from '@/lib/rate-limiting/rate-limiter';
+import {
+  API_TIMEOUTS,
+  withDatabaseTimeout,
+  getEndpointTimeouts
+} from '@/lib/config/api-timeouts';
+import { createSecurityLogger } from '@/lib/logging/security-logger';
+
 // Schema de validación para checkout
 const checkoutValidationSchema = z.object({
   customerInfo: z.object({
@@ -36,8 +50,24 @@ const checkoutValidationSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+  // Crear logger de seguridad con contexto
+  const securityLogger = createSecurityLogger(request);
+
+  // Aplicar rate limiting para APIs de checkout
+  const rateLimitResult = await withRateLimit(
+    request,
+    RATE_LIMIT_CONFIGS.checkout,
+    async () => {
+      // Log de acceso a la API
+      securityLogger.logEvent('api_access', 'low', {
+        endpoint: '/api/checkout/validate',
+        method: 'POST',
+        userAgent: request.headers.get('user-agent'),
+        timestamp: new Date().toISOString()
+      });
+
+      try {
+        const body = await request.json();
     
     // Validar estructura básica
     const validatedData = checkoutValidationSchema.parse(body);
@@ -151,35 +181,63 @@ export async function POST(request: NextRequest) {
       message: validationResults.isValid ? 'Checkout válido' : 'Checkout con errores'
     };
     
-    return NextResponse.json(response, { 
-      status: validationResults.isValid ? 200 : 400 
-    });
-    
-  } catch (error) {
-    console.error('❌ Error validando checkout:', error);
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        error: 'Datos de entrada inválidos',
-        details: error.errors.map(err => ({
-          field: err.path.join('.'),
-          message: err.message
-        }))
-      }, { status: 400 });
+        // Log de validación exitosa
+        securityLogger.logEvent('checkout_validation', 'low', {
+          isValid: validationResults.isValid,
+          errorsCount: validationResults.errors.length,
+          warningsCount: validationResults.warnings.length,
+          total: validatedData.totals.total,
+          paymentMethod: validatedData.paymentMethod
+        });
+
+        return NextResponse.json(response, {
+          status: validationResults.isValid ? 200 : 400
+        });
+
+      } catch (error) {
+        console.error('❌ Error validando checkout:', error);
+
+        // Log de error de seguridad
+        securityLogger.logEvent('checkout_validation_error', 'medium', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          endpoint: '/api/checkout/validate'
+        });
+
+        if (error instanceof z.ZodError) {
+          return NextResponse.json({
+            success: false,
+            error: 'Datos de entrada inválidos',
+            details: error.errors.map(err => ({
+              field: err.path.join('.'),
+              message: err.message
+            }))
+          }, { status: 400 });
+        }
+
+        return NextResponse.json({
+          success: false,
+          error: 'Error interno del servidor'
+        }, { status: 500 });
+      }
     }
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Error interno del servidor'
-    }, { status: 500 });
+  );
+
+  // Manejar rate limit excedido
+  if (rateLimitResult instanceof NextResponse) {
+    securityLogger.logRateLimitExceeded(
+      securityLogger.context,
+      { endpoint: '/api/checkout/validate', method: 'POST' }
+    );
+    return rateLimitResult;
   }
+
+  return rateLimitResult;
 }
 
 // Función auxiliar para calcular costo de envío
 function calculateShippingCost(method: string, subtotal: number, state: string): number {
-  if (method === 'pickup') return 0;
-  if (method === 'free' && subtotal >= 25000) return 0;
+  if (method === 'pickup') {return 0;}
+  if (method === 'free' && subtotal >= 25000) {return 0;}
   
   const baseCost = method === 'express' ? 5000 : 2500;
   
@@ -238,3 +296,12 @@ export async function OPTIONS() {
     },
   });
 }
+
+
+
+
+
+
+
+
+

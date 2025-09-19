@@ -354,3 +354,6 @@ function ProductGrid() {
 - [🌈 Paleta de Colores](./colors.md)
 - [📱 Responsive Design](./responsive.md)
 - [🧭 Componentes de Navegación](./components/navigation.md)
+
+
+

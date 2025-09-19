@@ -11,7 +11,7 @@ import {
 } from '@/lib/retry-logic';
 
 // Mock logger
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     info: jest.fn(),
     debug: jest.fn(),
@@ -359,3 +359,12 @@ describe('Retry Logic', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

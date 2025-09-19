@@ -315,7 +315,7 @@ export function useOrdersEnterprise(initialFilters?: OrderFilters) {
       return order.status !== 'cancelled' && total > 0;
     });
 
-    if (validOrders.length === 0) return 0;
+    if (validOrders.length === 0) {return 0;}
 
     const total = validOrders.reduce((sum, order) =>
       sum + getOrderTotal(order), 0
@@ -386,7 +386,7 @@ export function useOrderDetail(orderId: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchOrder = useCallback(async () => {
-    if (!orderId) return;
+    if (!orderId) {return;}
 
     setLoading(true);
     setError(null);
@@ -418,3 +418,12 @@ export function useOrderDetail(orderId: string) {
     refresh: fetchOrder,
   };
 }
+
+
+
+
+
+
+
+
+

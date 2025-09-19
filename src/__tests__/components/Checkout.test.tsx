@@ -243,3 +243,12 @@ describe('Checkout Component', () => {
     expect(screen.getByText('El carrito está vacío')).toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+

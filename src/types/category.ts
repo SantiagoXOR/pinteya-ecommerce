@@ -24,3 +24,12 @@ export type CategoryDisplay = {
   img: string;
   slug: string;
 };
+
+
+
+
+
+
+
+
+

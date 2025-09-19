@@ -3,8 +3,8 @@
  * Servicio de sincronización de usuarios entre NextAuth y Supabase
  */
 
-import { supabaseAdmin } from '@/lib/supabase';
-import { logger } from '@/lib/logger';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
+import { logger } from '@/lib/enterprise/logger';
 
 export interface UserSyncData {
   id: string;
@@ -234,3 +234,12 @@ export async function getSyncStatistics() {
     return null;
   }
 }
+
+
+
+
+
+
+
+
+

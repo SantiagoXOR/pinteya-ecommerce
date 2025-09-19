@@ -229,3 +229,12 @@ export function getCategoryUrl(category: Category): string {
 export function getCategoryImage(category: Category): string {
   return (category && category.icon) ? category.icon : '/images/categories/default.jpg';
 }
+
+
+
+
+
+
+
+
+

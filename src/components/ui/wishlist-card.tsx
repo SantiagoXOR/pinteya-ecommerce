@@ -105,7 +105,7 @@ export const WishlistCard = React.forwardRef<HTMLDivElement, WishlistCardProps>(
     
     // Calcular cambio de precio
     const priceChange = React.useMemo(() => {
-      if (!item.priceHistory || item.priceHistory.length < 2) return null
+      if (!item.priceHistory || item.priceHistory.length < 2) {return null}
       
       const currentPrice = item.discountedPrice || item.price
       const previousPrice = item.priceHistory[item.priceHistory.length - 2].price
@@ -125,7 +125,7 @@ export const WishlistCard = React.forwardRef<HTMLDivElement, WishlistCardProps>(
     
     // Calcular días desde que se agregó
     const daysSinceAdded = React.useMemo(() => {
-      if (!item.addedAt) return null
+      if (!item.addedAt) {return null}
       const now = new Date()
       const diffTime = Math.abs(now.getTime() - item.addedAt.getTime())
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -417,3 +417,12 @@ export const WishlistCard = React.forwardRef<HTMLDivElement, WishlistCardProps>(
 )
 
 WishlistCard.displayName = "WishlistCard"
+
+
+
+
+
+
+
+
+

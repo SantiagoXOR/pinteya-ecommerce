@@ -2,8 +2,8 @@
 // PINTEYA E-COMMERCE - ENTERPRISE METRICS SYSTEM
 // ===================================
 
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { getSupabaseClient } from '@/lib/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { enterpriseAlertSystem, AlertLevel as AlertSystemLevel } from './alert-system';
 
 // ✅ IMPORT CONDICIONAL: Solo cargar CacheUtils en servidor para evitar errores de ioredis en cliente
@@ -545,7 +545,7 @@ export class EnterpriseMetricsCollector {
   private async storeAlert(alert: ActiveAlert): Promise<void> {
     try {
       const supabase = getSupabaseClient(true);
-      if (!supabase) return;
+      if (!supabase) {return;}
 
       await supabase.from('enterprise_alerts').insert({
         id: alert.id,
@@ -619,3 +619,12 @@ export const recordPerformanceMetric = enterpriseMetrics.recordPerformanceMetric
 export const recordBusinessMetric = enterpriseMetrics.recordBusinessMetric.bind(enterpriseMetrics);
 export const recordSecurityMetric = enterpriseMetrics.recordSecurityMetric.bind(enterpriseMetrics);
 export const recordUserExperienceMetric = enterpriseMetrics.recordUserExperienceMetric.bind(enterpriseMetrics);
+
+
+
+
+
+
+
+
+

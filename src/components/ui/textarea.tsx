@@ -174,7 +174,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {(error || helperText) && (
           <div className="space-y-1">
             {error && (
-              <p className="text-xs text-red-600">{error}</p>
+              <p className="text-xs text-red-600">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
             )}
             {helperText && !error && (
               <p className="text-xs text-gray-600">{helperText}</p>
@@ -241,3 +241,12 @@ export const ProductInquiryTextarea = React.forwardRef<HTMLTextAreaElement, Prod
 ProductInquiryTextarea.displayName = "ProductInquiryTextarea"
 
 export { Textarea }
+
+
+
+
+
+
+
+
+

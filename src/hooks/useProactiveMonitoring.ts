@@ -8,7 +8,7 @@ import {
   ErrorPattern,
   MonitoringConfig
 } from '../lib/monitoring/proactive-monitoring'
-import { logger, LogLevel, LogCategory } from '../lib/logger'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 
 export interface MonitoringStats {
   totalErrors: number
@@ -59,7 +59,7 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
 
   // Actualizar estadísticas periódicamente
   useEffect(() => {
-    if (!isMonitoring) return
+    if (!isMonitoring) {return}
 
     const interval = setInterval(() => {
       refreshStats()
@@ -188,7 +188,7 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
   }, [])
 
   const getHealthStatus = useCallback((): 'healthy' | 'warning' | 'critical' | 'down' | 'unknown' => {
-    if (!stats?.systemHealth) return 'unknown'
+    if (!stats?.systemHealth) {return 'unknown'}
     return stats.systemHealth.status
   }, [stats])
 
@@ -292,3 +292,12 @@ export function useSystemHealth() {
 
   return { health, loading }
 }
+
+
+
+
+
+
+
+
+

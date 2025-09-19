@@ -10,8 +10,8 @@ import {
   NotificationType,
   AlertStatus
 } from '@/lib/monitoring/alert-system';
-import { getSupabaseClient } from '@/lib/supabase';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 /**
  * GET /api/admin/monitoring/alerts
@@ -360,3 +360,12 @@ export async function PATCH(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

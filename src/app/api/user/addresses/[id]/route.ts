@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 
@@ -8,6 +8,69 @@ type RouteContext = {
     id: string;
   };
 };
+
+// ===================================
+// FUNCIONES HELPER PARA DIRECCIONES PREDETERMINADAS
+// ===================================
+
+/**
+ * Asegura que el usuario tenga exactamente una dirección predeterminada
+ */
+async function ensureOneDefaultAddress(userId: string) {
+  try {
+    console.log('🔍 Verificando direcciones predeterminadas para usuario:', userId);
+
+    // Obtener todas las direcciones predeterminadas del usuario
+    const { data: defaultAddresses } = await supabaseAdmin
+      .from('user_addresses')
+      .select('id, created_at')
+      .eq('user_id', userId)
+      .eq('is_default', true)
+      .order('created_at', { ascending: false });
+
+    if (!defaultAddresses) {
+      console.log('❌ Error al obtener direcciones predeterminadas');
+      return;
+    }
+
+    const defaultCount = defaultAddresses.length;
+    console.log(`🔍 Encontradas ${defaultCount} direcciones predeterminadas`);
+
+    if (defaultCount === 0) {
+      // No hay direcciones predeterminadas, marcar la más reciente
+      const { data: allAddresses } = await supabaseAdmin
+        .from('user_addresses')
+        .select('id')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (allAddresses && allAddresses.length > 0) {
+        console.log('🔄 Marcando dirección más reciente como predeterminada:', allAddresses[0].id);
+        await supabaseAdmin
+          .from('user_addresses')
+          .update({ is_default: true })
+          .eq('id', allAddresses[0].id);
+      }
+    } else if (defaultCount > 1) {
+      // Hay múltiples direcciones predeterminadas, mantener solo la más reciente
+      const keepDefaultId = defaultAddresses[0].id;
+      const idsToUpdate = defaultAddresses.slice(1).map(addr => addr.id);
+
+      console.log(`🔄 Desmarcando ${idsToUpdate.length} direcciones predeterminadas duplicadas`);
+      console.log('🔄 Manteniendo como predeterminada:', keepDefaultId);
+
+      await supabaseAdmin
+        .from('user_addresses')
+        .update({ is_default: false })
+        .in('id', idsToUpdate);
+    } else {
+      console.log('✅ Usuario tiene exactamente una dirección predeterminada');
+    }
+  } catch (error) {
+    console.error('❌ Error en ensureOneDefaultAddress:', error);
+  }
+}
 
 // ===================================
 // GET - Obtener una dirección específica
@@ -115,7 +178,19 @@ export async function PUT(
     const body = await request.json();
 
     // Validar datos requeridos
-    const { name, street, city, postal_code, state, country, is_default } = body;
+    const {
+      name,
+      street,
+      city,
+      postal_code,
+      state,
+      country,
+      is_default,
+      latitude,
+      longitude,
+      validation_status
+    } = body;
+
     if (!name || !street || !city || !postal_code) {
       return NextResponse.json(
         { error: 'Nombre, dirección, ciudad y código postal son requeridos' },
@@ -124,13 +199,14 @@ export async function PUT(
     }
 
     // Obtener usuario
+    const userId = session.user.id;
     const { data: user } = await supabaseAdmin
-      .from('users')
+      .from('user_profiles')
       .select('id')
-      .eq('clerk_id', userId)
+      .eq('id', userId)
       .single();
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }
@@ -162,18 +238,25 @@ export async function PUT(
     }
 
     // Actualizar dirección
+    const updateData: any = {
+      name,
+      street,
+      city,
+      state: state || '',
+      postal_code,
+      country: country || 'Argentina',
+      is_default: is_default || false,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Incluir campos de validación si están presentes
+    if (latitude !== undefined) updateData.latitude = latitude;
+    if (longitude !== undefined) updateData.longitude = longitude;
+    if (validation_status !== undefined) updateData.validation_status = validation_status;
+
     const { data: updatedAddress, error } = await supabaseAdmin
       .from('user_addresses')
-      .update({
-        name,
-        street,
-        city,
-        state: state || '',
-        postal_code,
-        country: country || 'Argentina',
-        is_default: is_default || false,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', addressId)
       .select()
       .single();
@@ -232,13 +315,18 @@ export async function DELETE(
     const addressId = params.id;
 
     // Obtener usuario
-    const { data: user } = await supabaseAdmin
-      .from('users')
+    console.log('🔍 DELETE - Buscando usuario con id:', session.user.id);
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('user_profiles')
       .select('id')
-      .eq('clerk_id', userId)
+      .eq('id', session.user.id)
       .single();
 
-    if (!session?.user) {
+    console.log('🔍 DELETE - Usuario encontrado:', user);
+    console.log('🔍 DELETE - Error de usuario:', userError);
+
+    if (!user) {
+      console.log('❌ DELETE - Usuario no encontrado en la base de datos');
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }
@@ -246,33 +334,70 @@ export async function DELETE(
     }
 
     // Verificar que la dirección pertenece al usuario
-    const { data: existingAddress } = await supabaseAdmin
+    console.log('🔍 DELETE - Buscando dirección:', { addressId, userId: user.id });
+    const { data: existingAddress, error: addressError } = await supabaseAdmin
       .from('user_addresses')
       .select('id, is_default')
       .eq('id', addressId)
       .eq('user_id', user.id)
       .single();
 
+    console.log('🔍 DELETE - Dirección encontrada:', existingAddress);
+    console.log('🔍 DELETE - Error de dirección:', addressError);
+
     if (!existingAddress) {
+      console.log('❌ DELETE - Dirección no encontrada o no pertenece al usuario');
       return NextResponse.json(
         { error: 'Dirección no encontrada' },
         { status: 404 }
       );
     }
 
+    // Verificar si se está eliminando la única dirección predeterminada
+    const wasDefault = existingAddress.is_default;
+
     // Eliminar dirección
+    console.log('🗑️ DELETE - Eliminando dirección:', addressId);
     const { error } = await supabaseAdmin
       .from('user_addresses')
       .delete()
       .eq('id', addressId);
 
     if (error) {
-      console.error('Error al eliminar dirección:', error);
+      console.error('❌ DELETE - Error al eliminar dirección:', error);
       return NextResponse.json(
         { error: 'Error al eliminar dirección' },
         { status: 500 }
       );
     }
+
+    // Si se eliminó la dirección predeterminada, marcar otra como predeterminada
+    if (wasDefault) {
+      console.log('🔄 DELETE - Se eliminó la dirección predeterminada, buscando otra para marcar');
+
+      // Buscar la dirección más reciente del usuario para marcarla como predeterminada
+      const { data: remainingAddresses } = await supabaseAdmin
+        .from('user_addresses')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (remainingAddresses && remainingAddresses.length > 0) {
+        const newDefaultId = remainingAddresses[0].id;
+        console.log('🔄 DELETE - Marcando dirección como nueva predeterminada:', newDefaultId);
+
+        await supabaseAdmin
+          .from('user_addresses')
+          .update({ is_default: true })
+          .eq('id', newDefaultId);
+      }
+    }
+
+    console.log('✅ DELETE - Dirección eliminada exitosamente:', addressId);
+
+    // Asegurar que el usuario tenga exactamente una dirección predeterminada
+    await ensureOneDefaultAddress(user.id);
 
     return NextResponse.json({
       success: true,

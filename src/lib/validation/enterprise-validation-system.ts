@@ -6,8 +6,26 @@
 import { z } from 'zod';
 import { NextRequest } from 'next/server';
 import type { NextApiRequest } from 'next';
-import DOMPurify from 'isomorphic-dompurify';
 import validator from 'validator';
+
+// Importación condicional de DOMPurify para evitar problemas con jsdom durante el build
+let DOMPurify: any = null;
+if (typeof window !== 'undefined') {
+  // Cliente: usar DOMPurify nativo
+  DOMPurify = require('dompurify');
+} else {
+  // Servidor: usar implementación mock para evitar jsdom
+  DOMPurify = {
+    sanitize: (dirty: string, options?: any) => {
+      // Sanitización básica en servidor sin jsdom
+      return dirty
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+        .replace(/javascript:/gi, '')
+        .replace(/on\w+\s*=/gi, '');
+    }
+  };
+}
 import { enterpriseAuditSystem } from '@/lib/security/enterprise-audit-system';
 import type { EnterpriseAuthContext } from '@/lib/auth/enterprise-auth-utils';
 
@@ -541,7 +559,7 @@ export class EnterpriseValidator {
   }
 
   private getClientIP(request?: NextRequest | NextApiRequest): string {
-    if (!request) return 'unknown';
+    if (!request) {return 'unknown';}
     
     if ('headers' in request && typeof request.headers.get === 'function') {
       return (request as NextRequest).headers.get('x-forwarded-for') || 'unknown';
@@ -554,7 +572,7 @@ export class EnterpriseValidator {
   }
 
   private getUserAgent(request?: NextRequest | NextApiRequest): string {
-    if (!request) return 'unknown';
+    if (!request) {return 'unknown';}
     
     if ('headers' in request && typeof request.headers.get === 'function') {
       return (request as NextRequest).headers.get('user-agent') || 'unknown';
@@ -582,3 +600,12 @@ export const criticalSanitizer = new EnterpriseSanitizer(ENTERPRISE_VALIDATION_C
 export const highSanitizer = new EnterpriseSanitizer(ENTERPRISE_VALIDATION_CONFIGS.HIGH_PAYMENT);
 export const standardSanitizer = new EnterpriseSanitizer(ENTERPRISE_VALIDATION_CONFIGS.STANDARD_PUBLIC);
 export const basicSanitizer = new EnterpriseSanitizer(ENTERPRISE_VALIDATION_CONFIGS.BASIC_USER);
+
+
+
+
+
+
+
+
+

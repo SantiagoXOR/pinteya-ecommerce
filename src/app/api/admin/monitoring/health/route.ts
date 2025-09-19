@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
 import { enterpriseHealthSystem, HealthStatus } from '@/lib/monitoring/health-checks';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 // Estados de salud
 export enum HealthStatus {
@@ -246,5 +246,14 @@ function getRecoveryActionId(service: string): string | null {
       return null;
   }
 }
+
+
+
+
+
+
+
+
+
 
 

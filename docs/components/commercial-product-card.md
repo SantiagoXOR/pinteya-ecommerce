@@ -207,3 +207,6 @@ npm test src/components/ui/__tests__/commercial-product-card.test.tsx
 ## 🔗 Demo
 
 Visita `/demo/commercial-product-card` para ver la comparación en vivo entre el diseño actual y el nuevo diseño comercial.
+
+
+

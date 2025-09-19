@@ -162,3 +162,12 @@ export function useTrendingSearchesByCategory(category: string, limit: number = 
 }
 
 export default useTrendingSearches;
+
+
+
+
+
+
+
+
+

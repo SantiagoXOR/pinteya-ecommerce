@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 
 // =====================================================
 // CONFIGURACIÓN DE RUTAS PROTEGIDAS
@@ -362,3 +362,12 @@ export const PUBLIC_ROUTES = [
   '/api/auth/:path*',
   '/api/public/:path*'
 ];
+
+
+
+
+
+
+
+
+

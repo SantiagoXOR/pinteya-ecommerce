@@ -158,3 +158,6 @@ Este proyecto es parte del e-commerce Pinteya y está bajo licencia privada.
 ---
 
 *Última actualización: 12 de Enero de 2025*
+
+
+

@@ -300,3 +300,6 @@ Todos los contribuidores serán reconocidos en:
 ---
 
 *Última actualización: Junio 2025*
+
+
+

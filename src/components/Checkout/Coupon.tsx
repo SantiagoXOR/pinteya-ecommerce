@@ -120,7 +120,9 @@ const Coupon: React.FC<CouponProps> = ({ onCouponApply, appliedCoupon, isLoading
             </div>
 
             {error && (
-              <p className="text-red-500 text-sm mt-2">{error}</p>
+              <p className="text-red-500 text-sm mt-2">
+                {error instanceof Error ? error.message : typeof error === 'string' ? error : 'Error desconocido'}
+              </p>
             )}
 
             {/* Cupones disponibles para testing */}
@@ -143,3 +145,12 @@ const Coupon: React.FC<CouponProps> = ({ onCouponApply, appliedCoupon, isLoading
 };
 
 export default Coupon;
+
+
+
+
+
+
+
+
+

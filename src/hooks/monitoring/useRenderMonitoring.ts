@@ -322,7 +322,7 @@ export function useRenderMonitoring(options: MonitoringOptions) {
     // Calcular promedio de tiempo de render
     const recentTimes = renderTimesRef.current.slice(-10); // Últimos 10 renders
     const averageRenderTime = recentTimes.reduce((sum, time, i, arr) => {
-      if (i === 0) return 0;
+      if (i === 0) {return 0;}
       return sum + (time - arr[i - 1]) / (arr.length - 1);
     }, 0);
 
@@ -362,7 +362,7 @@ export function useRenderMonitoring(options: MonitoringOptions) {
   // ===================================
 
   const trackError = useCallback((error: Error, errorInfo?: any) => {
-    if (!opts.enabled) return;
+    if (!opts.enabled) {return;}
 
     errorCountRef.current++;
     
@@ -525,3 +525,12 @@ export function exportMonitoringData(): string {
 export function clearAllAlerts(): void {
   monitoringStore.clearAlerts();
 }
+
+
+
+
+
+
+
+
+

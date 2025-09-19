@@ -103,3 +103,12 @@ export const SimpleAnalyticsProvider: React.FC<SimpleAnalyticsProviderProps> = (
     </AnalyticsContext.Provider>
   );
 };
+
+
+
+
+
+
+
+
+

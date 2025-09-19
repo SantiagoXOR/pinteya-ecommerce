@@ -247,3 +247,6 @@ npx playwright test src/components/Header/__tests__/e2e/
 - Tests en CI/CD pipeline
 - Alertas de fallos
 - Métricas de performance
+
+
+

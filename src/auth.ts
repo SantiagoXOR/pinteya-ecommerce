@@ -7,13 +7,11 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 
-// Configuración de NextAuth.js v5 optimizada para producción
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // Configuración de providers con validación
   providers: [
     GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
           prompt: "consent",
@@ -21,14 +19,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           response_type: "code"
         }
       }
-    }),
+    })
   ],
-
-  // Usar JWT strategy en lugar de adaptador de base de datos
-  // adapter: SupabaseAdapter({
-  //   url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  //   secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  // }),
 
   // Configuración de páginas personalizadas
   pages: {
@@ -36,35 +28,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/auth/error",
   },
 
-  // Configuración de base URL para producción
+  // Configuración de la ruta base
   basePath: "/api/auth",
 
   // Configuración de callbacks
   callbacks: {
-    // Callback de sesión - JWT strategy simplificado
-    async session({ session, token }) {
-      // Agregar información adicional del usuario desde el token
-      if (token.sub) {
-        session.user.id = token.sub
-      }
-
-      return session
-    },
-
-    // Callback de JWT
+    // Callback de JWT - Manejo de tokens
     async jwt({ token, user, account }) {
+      // Si es un nuevo login, agregar información del usuario al token
       if (user) {
         token.sub = user.id
-        token.email = user.email
       }
+      
       return token
     },
 
-    // Callback de autorización
+    // Callback de sesión - Información disponible en el cliente
+    async session({ session, token }) {
+      // Asegurar que el ID del usuario esté disponible en la sesión
+      if (token?.sub) {
+        session.user.id = token.sub
+      }
+      
+      return session
+    },
+
+    // Callback de autorización simplificado
     async signIn({ user, account, profile }) {
-      // Permitir todos los sign-ins por ahora
-      // Aquí se pueden agregar validaciones adicionales
-      return true
+      try {
+        console.log(`[NextAuth] Usuario autenticado: ${user.email}`)
+        return true
+      } catch (error) {
+        console.error(`[NextAuth] Error en signIn callback:`, error)
+        return true // Permitir el login incluso si hay errores
+      }
     },
   },
 
@@ -84,7 +81,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 
-  // Configuración de sesión con JWT
+  // ✅ FIXED: Configuración de sesión con JWT strategy para mejor compatibilidad
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 días
@@ -137,3 +134,12 @@ declare module "next-auth/jwt" {
     sub: string
   }
 }
+
+
+
+
+
+
+
+
+

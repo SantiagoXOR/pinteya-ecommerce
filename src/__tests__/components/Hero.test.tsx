@@ -154,3 +154,12 @@ describe('Hero Component', () => {
     consoleSpy.mockRestore();
   });
 });
+
+
+
+
+
+
+
+
+

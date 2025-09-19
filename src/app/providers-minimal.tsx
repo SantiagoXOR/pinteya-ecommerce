@@ -30,3 +30,12 @@ export default function ProvidersMinimal({ children }: ProvidersProps) {
     </SessionProvider>
   );
 }
+
+
+
+
+
+
+
+
+

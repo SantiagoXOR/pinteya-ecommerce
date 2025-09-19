@@ -13,7 +13,7 @@ jest.mock('../../components/Header/index', () => {
     const [searchTerm, setSearchTerm] = React.useState('')
     const [cartItems, setCartItems] = React.useState(0)
     
-    if (!isVisible) return null
+    if (!isVisible) {return null}
     
     return (
       <header role="banner" data-testid="header-component">
@@ -389,3 +389,12 @@ describe('Header Component - Ultra-Simplified Tests', () => {
     })
   })
 })
+
+
+
+
+
+
+
+
+

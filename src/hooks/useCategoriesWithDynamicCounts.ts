@@ -157,3 +157,12 @@ export const useCategoriesWithStaticCounts = () => {
     enableDynamicCounts: false,
   });
 };
+
+
+
+
+
+
+
+
+

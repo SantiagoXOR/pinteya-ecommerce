@@ -1,6 +1,6 @@
 'use client'
 
-import { logger, LogLevel, LogCategory } from '../logger'
+import { logger, LogLevel, LogCategory } from '../enterprise/logger'
 import { EnterpriseAlertSystem } from './alert-system'
 import { EnterpriseMetricsCollector } from './enterprise-metrics'
 import { emailService } from '../notifications/email'
@@ -196,7 +196,7 @@ export class ProactiveMonitoringService {
     if (typeof window === 'undefined') {
       // Analizar patrones de error
       for (const [patternId, pattern] of this.errorPatterns) {
-        if (!pattern.isActive) continue
+        if (!pattern.isActive) {continue}
 
         const regex = pattern.pattern instanceof RegExp ? pattern.pattern : new RegExp(pattern.pattern, 'i')
         if (regex.test(errorMessage)) {
@@ -397,7 +397,7 @@ export class ProactiveMonitoringService {
         lastSeen: new Date(),
         count: 1
       })
-      if (status === 'healthy') status = 'warning'
+      if (status === 'healthy') {status = 'warning'}
     }
 
     return {
@@ -538,3 +538,12 @@ export const reportError = (error: Error | string, context?: Record<string, any>
 
 export const startMonitoring = () => proactiveMonitoring.start()
 export const stopMonitoring = () => proactiveMonitoring.stop()
+
+
+
+
+
+
+
+
+

@@ -9,6 +9,7 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import { screenshotManager } from '@/lib/testing/screenshot-manager';
+import { API_TIMEOUTS } from '@/lib/config/api-timeouts';
 
 const execAsync = promisify(exec);
 
@@ -36,31 +37,31 @@ const TEST_SUITES: Record<string, TestSuiteConfig> = {
   unit: {
     name: 'Tests Unitarios',
     command: 'npm test -- --testPathPattern="__tests__/(hooks|utils|lib)" --passWithNoTests',
-    timeout: 60000,
+    timeout: API_TIMEOUTS.default, // Usar timeout centralizado
     description: 'Tests unitarios de hooks, utilities y librerías'
   },
   components: {
     name: 'Tests de Componentes',
     command: 'npm test -- --testPathPattern="__tests__/(components|optimization)" --passWithNoTests',
-    timeout: 90000,
+    timeout: API_TIMEOUTS.default + 30000, // 30s adicionales para componentes
     description: 'Tests de componentes React y optimizaciones'
   },
   e2e: {
     name: 'Tests E2E',
     command: 'npx playwright test --project=ui-admin --reporter=json',
-    timeout: 300000,
+    timeout: API_TIMEOUTS.upload * 2.5, // Timeout extendido para E2E
     description: 'Tests end-to-end con Playwright'
   },
   performance: {
     name: 'Tests de Performance',
     command: 'npm test -- --testPathPattern="performance" --passWithNoTests',
-    timeout: 120000,
+    timeout: API_TIMEOUTS.upload, // Usar timeout de upload para performance
     description: 'Tests de performance y Core Web Vitals'
   },
   api: {
     name: 'Tests de API',
     command: 'npm test -- --testPathPattern="api" --passWithNoTests',
-    timeout: 60000,
+    timeout: API_TIMEOUTS.default, // Usar timeout centralizado
     description: 'Tests de endpoints y APIs'
   }
 };
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
     for (const suiteKey of suites) {
       const suite = TEST_SUITES[suiteKey];
       const suiteStartTime = Date.now();
-      let suiteScreenshots = [];
+      const suiteScreenshots = [];
 
       try {
         console.log(`🧪 Ejecutando suite: ${suite.name}`);
@@ -298,8 +299,8 @@ function parseSuiteOutput(suiteKey: string, stdout: string, stderr: string, dura
         // Formato alternativo
         const passMatch = stdout.match(/(\d+) passing/);
         const failMatch = stdout.match(/(\d+) failing/);
-        if (passMatch) result.passed = parseInt(passMatch[1]);
-        if (failMatch) result.failed = parseInt(failMatch[1]);
+        if (passMatch) {result.passed = parseInt(passMatch[1]);}
+        if (failMatch) {result.failed = parseInt(failMatch[1]);}
         result.tests = result.passed + result.failed;
       }
 
@@ -422,3 +423,12 @@ async function generateTestReport(results: any) {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

@@ -39,15 +39,15 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
 
   // Configuración de duración optimizada
   const animationDuration = useMemo(() => {
-    if (customDuration) return customDuration;
-    if (skipAnimation) return 100;
-    if (enablePerformanceMode) return 1500; // Versión más rápida para dispositivos lentos
+    if (customDuration) {return customDuration;}
+    if (skipAnimation) {return 100;}
+    if (enablePerformanceMode) {return 1500;} // Versión más rápida para dispositivos lentos
     return 2500; // Duración completa
   }, [customDuration, skipAnimation, enablePerformanceMode]);
 
   // Secuencia de animaciones optimizada
   const animationSequence: AnimationSequence[] = useMemo(() => {
-    if (skipAnimation) return [];
+    if (skipAnimation) {return [];}
 
     const baseSequence = [
       { name: "wave", delay: 0.3, duration: 1.5, element: "wave" },
@@ -340,3 +340,12 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
 };
 
 export default CheckoutTransitionAnimation;
+
+
+
+
+
+
+
+
+

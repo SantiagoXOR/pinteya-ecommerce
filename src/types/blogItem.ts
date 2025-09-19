@@ -4,3 +4,12 @@ export type BlogItem = {
   title: string;
   img: string;
 };
+
+
+
+
+
+
+
+
+

@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - ASSET OPTIMIZER
 // ===================================
 
-import { logger, LogLevel, LogCategory } from './logger';
+import { logger, LogLevel, LogCategory } from './enterprise/logger';
 
 // Configuración de optimización de assets
 interface AssetConfig {
@@ -164,7 +164,7 @@ export class AssetOptimizer {
    * Precarga assets críticos
    */
   preloadCriticalAssets(assets: Array<{ url: string; type: 'image' | 'font' | 'style' }>): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     assets.forEach(asset => {
       try {
@@ -361,7 +361,7 @@ export const AssetUtils = {
    * Inicializa optimizaciones en el cliente
    */
   initializeClientOptimizations(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     // Configurar lazy loading
     assetOptimizer.setupLazyLoading();
@@ -372,3 +372,12 @@ export const AssetUtils = {
     logger.info(LogCategory.API, 'Client asset optimizations initialized');
   },
 };
+
+
+
+
+
+
+
+
+

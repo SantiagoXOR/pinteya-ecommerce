@@ -73,3 +73,12 @@ const MercadoPagoLogo: React.FC<MercadoPagoLogoProps> = ({
 };
 
 export default MercadoPagoLogo;
+
+
+
+
+
+
+
+
+

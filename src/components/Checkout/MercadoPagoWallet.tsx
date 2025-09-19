@@ -86,7 +86,7 @@ export default function MercadoPagoWallet({
 
   // Inicializar el Wallet Brick cuando el SDK esté listo
   useEffect(() => {
-    if (!sdkLoaded || !preferenceId) return;
+    if (!sdkLoaded || !preferenceId) {return;}
 
     // ✅ NUEVO: Verificar que estamos en la página correcta
     // No inicializar el Wallet Brick en páginas de resultado
@@ -270,7 +270,7 @@ export default function MercadoPagoWallet({
             </div>
             <div className="text-center space-y-2">
               <p className="font-medium text-red-800">Error al cargar el sistema de pagos</p>
-              <p className="text-sm text-red-600">{error}</p>
+              <p className="text-sm text-red-600">{error instanceof Error ? error.message : String(error) || 'Error desconocido'}</p>
             </div>
             <Button
               onClick={handleRetry}
@@ -430,3 +430,12 @@ export function MercadoPagoWalletFallback({
     </Card>
   );
 }
+
+
+
+
+
+
+
+
+

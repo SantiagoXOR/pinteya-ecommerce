@@ -100,7 +100,7 @@ class CategoryAnalyticsManager {
    * Initialize analytics
    */
   private initialize(): void {
-    if (typeof window === 'undefined' || this.isInitialized) return;
+    if (typeof window === 'undefined' || this.isInitialized) {return;}
 
     // Set up flush timer
     if (this.config.flushInterval > 0) {
@@ -142,13 +142,13 @@ class CategoryAnalyticsManager {
     if (typeof window !== 'undefined') {
       // From localStorage
       const storedUserId = localStorage.getItem('userId');
-      if (storedUserId) return storedUserId;
+      if (storedUserId) {return storedUserId;}
 
       // From cookies (if using cookie-based auth)
       const cookies = document.cookie.split(';');
       for (const cookie of cookies) {
         const [name, value] = cookie.trim().split('=');
-        if (name === 'userId') return value;
+        if (name === 'userId') {return value;}
       }
 
       // 🚨 TEMPORAL: Clerk removido durante migración a NextAuth.js
@@ -190,7 +190,7 @@ class CategoryAnalyticsManager {
     data?: Record<string, any>,
     categoryId?: CategoryId
   ): void {
-    if (!this.config.enabled || !this.shouldSample()) return;
+    if (!this.config.enabled || !this.shouldSample()) {return;}
 
     const event: AnalyticsEvent = {
       ...this.createBaseEvent(type),
@@ -275,7 +275,7 @@ class CategoryAnalyticsManager {
    * Flush events to analytics service
    */
   flush(): void {
-    if (this.events.length === 0) return;
+    if (this.events.length === 0) {return;}
 
     const eventsToSend = [...this.events];
     this.events = [];
@@ -431,3 +431,12 @@ export const useCategoryAnalytics = (config?: Partial<AnalyticsConfig>) => {
  * Export analytics manager class
  */
 export { CategoryAnalyticsManager };
+
+
+
+
+
+
+
+
+

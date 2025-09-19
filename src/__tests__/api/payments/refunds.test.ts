@@ -7,7 +7,7 @@ import { auth } from '@/auth';
 jest.mock('@/lib/supabase', () => ({
   getSupabaseClient: jest.fn()
 }));
-jest.mock('@/lib/rate-limiter', () => ({
+jest.mock('@/lib/enterprise/rate-limiter', () => ({
   checkRateLimit: jest.fn(),
   addRateLimitHeaders: jest.fn(),
   RATE_LIMIT_CONFIGS: {
@@ -15,12 +15,12 @@ jest.mock('@/lib/rate-limiter', () => ({
     ANALYTICS: { requests: 100, window: 3600 }
   }
 }));
-jest.mock('@/lib/metrics', () => ({
+jest.mock('@/lib/enterprise/metrics', () => ({
   metricsCollector: {
     recordApiCall: jest.fn()
   }
 }));
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -74,11 +74,11 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       // Mock Supabase
@@ -128,7 +128,7 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       const request = new NextRequest('http://localhost:3000/api/payments/refunds', {
@@ -150,7 +150,7 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock Supabase to return no order
@@ -185,7 +185,7 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock Supabase to return pending payment
@@ -225,7 +225,7 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock Supabase
@@ -266,7 +266,7 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter to return failure
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ 
         success: false, 
         remaining: 0,
@@ -306,11 +306,11 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       // Mock Supabase
@@ -364,11 +364,11 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       // Mock Supabase
@@ -403,11 +403,11 @@ describe('/api/payments/refunds', () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/rate-limiter');
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
       checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/metrics');
+      const { metricsCollector } = require('@/lib/enterprise/metrics');
       metricsCollector.recordApiCall.mockResolvedValue(undefined);
 
       // Mock Supabase
@@ -438,3 +438,12 @@ describe('/api/payments/refunds', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

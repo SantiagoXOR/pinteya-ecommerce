@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/auth/admin-auth';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 
 /**
  * GET /api/admin/users/stats
@@ -61,3 +61,12 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

@@ -168,3 +168,12 @@ export type ProductFeatures = {
   badge?: string;
   stock: number;
 };
+
+
+
+
+
+
+
+
+

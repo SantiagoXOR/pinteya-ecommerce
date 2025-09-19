@@ -299,3 +299,12 @@ describe('useSimpleBrandFilter Hook', () => {
     expect(result.current.selectedBrands).toEqual([]);
   });
 });
+
+
+
+
+
+
+
+
+

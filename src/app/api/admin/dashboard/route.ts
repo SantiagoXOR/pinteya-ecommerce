@@ -3,14 +3,15 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { checkRateLimit } from '@/lib/auth/rate-limiting';
-import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { metricsCollector } from '@/lib/enterprise/metrics';
+import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter';
+import { createSecurityLogger } from '@/lib/logging/security-logger';
+import { withTimeout, ENDPOINT_TIMEOUTS } from '@/lib/config/api-timeouts';
 
 // ===================================
 // CONFIGURACIÓN DE RATE LIMITING
@@ -348,110 +349,137 @@ async function logAuditAction(adminUserId: string, action: string, details?: any
 // ===================================
 
 export async function GET(request: NextRequest) {
-  const startTime = Date.now();
-  let adminUserId = '';
+  // Aplicar rate limiting para APIs administrativos
+  const rateLimitResult = await withRateLimit(
+    request,
+    RATE_LIMIT_CONFIGS.admin,
+    async () => {
+      // Crear logger de seguridad
+      const securityLogger = createSecurityLogger(request);
+      const startTime = Date.now();
+      let adminUserId = '';
 
-  try {
-    // Rate limiting
-    const rateLimitResult = await checkRateLimit(
-      request,
-      'dashboard',
-      DASHBOARD_RATE_LIMITS.dashboard
-    );
+      try {
+        // Log del acceso al dashboard administrativo
+        securityLogger.logApiAccess(securityLogger.context, 'admin/dashboard', 'read');
 
-    if (!rateLimitResult.success) {
-      return addRateLimitHeaders(
-        NextResponse.json(
-          { success: false, error: 'Rate limit exceeded' },
-          { status: 429 }
-        ),
-        rateLimitResult
-      );
-    }
+        // Autenticación con timeout
+        const authResult = await withTimeout(
+          () => validateAdminAuth(),
+          ENDPOINT_TIMEOUTS['/api/admin']?.request || 30000,
+          'Validación de autenticación de admin'
+        );
+        adminUserId = authResult.userId;
 
-    // Autenticación
-    const authResult = await validateAdminAuth();
-    adminUserId = authResult.userId;
+        // Validar parámetros
+        const { searchParams } = new URL(request.url);
+        const validationResult = DashboardFiltersSchema.safeParse({
+          period: searchParams.get('period'),
+          timezone: searchParams.get('timezone'),
+          include_comparisons: searchParams.get('include_comparisons') === 'true',
+          metrics: searchParams.get('metrics')?.split(',') || undefined
+        });
 
-    // Validar parámetros
-    const { searchParams } = new URL(request.url);
-    const validationResult = DashboardFiltersSchema.safeParse({
-      period: searchParams.get('period'),
-      timezone: searchParams.get('timezone'),
-      include_comparisons: searchParams.get('include_comparisons') === 'true',
-      metrics: searchParams.get('metrics')?.split(',') || undefined
-    });
+        if (!validationResult.success) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Invalid parameters',
+              details: validationResult.error.errors
+            },
+            { status: 400 }
+          );
+        }
 
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid parameters',
-          details: validationResult.error.errors
-        },
-        { status: 400 }
-      );
-    }
+        const { period, timezone, include_comparisons } = validationResult.data;
 
-    const { period, timezone, include_comparisons } = validationResult.data;
+        // Obtener métricas del dashboard con timeout
+        const metrics = await withTimeout(
+          () => getDashboardMetrics(period, timezone),
+          ENDPOINT_TIMEOUTS['/api/admin']?.request || 30000,
+          'Obtención de métricas del dashboard'
+        );
 
-    // Obtener métricas del dashboard
-    const metrics = await getDashboardMetrics(period, timezone);
+        // Métricas de rendimiento
+        const responseTime = Date.now() - startTime;
+        metricsCollector.recordApiCall('admin_dashboard_get', responseTime, 'success');
 
-    // Métricas de rendimiento
-    const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin_dashboard_get', responseTime, 'success');
+        // Log de seguridad para acceso exitoso
+        securityLogger.logAdminAction(securityLogger.context, 'dashboard_view', {
+          period,
+          timezone,
+          include_comparisons,
+          responseTime
+        });
 
-    // Audit log
-    await logAuditAction(adminUserId, 'dashboard_view', {
-      period,
-      timezone,
-      include_comparisons
-    });
+        // Audit log
+        await logAuditAction(adminUserId, 'dashboard_view', {
+          period,
+          timezone,
+          include_comparisons
+        });
 
-    const response: ApiResponse<DashboardMetrics> = {
-      success: true,
-      data: metrics,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        period,
-        timezone,
-        cache_duration: 300 // 5 minutos
+        const response: ApiResponse<DashboardMetrics> = {
+          success: true,
+          data: metrics,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            period,
+            timezone,
+            cache_duration: 300 // 5 minutos
+          }
+        };
+
+        return NextResponse.json(response);
+
+      } catch (error) {
+        const responseTime = Date.now() - startTime;
+        metricsCollector.recordApiCall('admin_dashboard_get', responseTime, 'error');
+
+        // Log del error de seguridad
+        securityLogger.logApiError(securityLogger.context, error as Error, {
+          endpoint: '/api/admin/dashboard',
+          method: 'GET',
+          adminUserId,
+          responseTime
+        });
+
+        logger.log(LogLevel.ERROR, LogCategory.API, 'Dashboard API error', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          adminUserId,
+          stack: error instanceof Error ? error.stack : undefined
+        });
+
+        if (error instanceof Error && error.message.includes('authentication')) {
+          return NextResponse.json(
+            { success: false, error: 'Authentication required' },
+            { status: 401 }
+          );
+        }
+
+        if (error instanceof Error && error.message.includes('permissions')) {
+          return NextResponse.json(
+            { success: false, error: 'Insufficient permissions' },
+            { status: 403 }
+          );
+        }
+
+        return NextResponse.json(
+          { success: false, error: 'Internal server error' },
+          { status: 500 }
+        );
       }
-    };
-
-    return addRateLimitHeaders(
-      NextResponse.json(response),
-      rateLimitResult
-    );
-
-  } catch (error) {
-    const responseTime = Date.now() - startTime;
-    metricsCollector.recordApiCall('admin_dashboard_get', responseTime, 'error');
-
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Dashboard API error', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      adminUserId,
-      stack: error instanceof Error ? error.stack : undefined
-    });
-
-    if (error instanceof Error && error.message.includes('authentication')) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
     }
+  );
 
-    if (error instanceof Error && error.message.includes('permissions')) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+  return rateLimitResult;
 }
+
+
+
+
+
+
+
+
+

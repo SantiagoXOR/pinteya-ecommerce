@@ -67,44 +67,11 @@ export function NetworkErrorProvider({
     };
   }, [enableDebugMode]);
 
-  // Setup global error handling
+  // Setup global error handling (solo para AbortError)
   useEffect(() => {
     const cleanup = setupGlobalErrorHandling();
-
-    // Interceptar errores de console para suprimir ERR_ABORTED
-    const originalConsoleError = console.error;
-    console.error = (...args) => {
-      // Filtrar errores de abort que no son críticos
-      const message = args.join(' ').toLowerCase();
-      if (message.includes('err_aborted') ||
-          message.includes('aborterror') ||
-          message.includes('signal is aborted') ||
-          message.includes('abort') ||
-          message.includes('the user aborted a request') ||
-          message.includes('error type: abort') ||
-          message.includes('🌐 network error handler') ||
-          message.includes('url: undefined') ||
-          message.includes('method: undefined') ||
-          message.includes('original error: aborterror') ||
-          message.includes('context: {type: fetch') ||
-          message.includes('wallet_container') ||
-          message.includes('could not find the brick container') ||
-          message.includes('checkout bricks error')) {
-        if (enableDebugMode) {
-          console.debug('🔇 Suppressed error:', ...args);
-        }
-        return;
-      }
-      
-      // Permitir otros errores
-      originalConsoleError(...args);
-    };
-
-    return () => {
-      cleanup();
-      console.error = originalConsoleError;
-    };
-  }, [setupGlobalErrorHandling, enableDebugMode]);
+    return cleanup;
+  }, [setupGlobalErrorHandling]);
 
   // Función para limpiar errores
   const clearError = () => {
@@ -203,5 +170,14 @@ export function NetworkErrorBoundary({ children }: { children: React.ReactNode }
 
   return <>{children}</>;
 }
+
+
+
+
+
+
+
+
+
 
 

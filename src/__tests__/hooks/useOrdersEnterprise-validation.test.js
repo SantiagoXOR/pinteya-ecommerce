@@ -220,3 +220,7 @@ describe('useOrdersEnterprise - Validación de Datos', () => {
     expect(avgOrderValue).not.toBeNaN();
   });
 });
+
+
+
+

@@ -163,3 +163,12 @@ const LazyCheckout = () => {
 
 export default LazyCheckout;
 export { CheckoutSkeleton };
+
+
+
+
+
+
+
+
+

@@ -104,8 +104,8 @@ describe('useSearchNavigation Hook', () => {
 
   it('should preserve existing parameters when configured', () => {
     mockSearchParams.get.mockImplementation((key) => {
-      if (key === 'sort') return 'price';
-      if (key === 'brand') return 'sherwin';
+      if (key === 'sort') {return 'price';}
+      if (key === 'brand') {return 'sherwin';}
       return null;
     });
 
@@ -228,7 +228,7 @@ describe('useSearchNavigation Hook', () => {
 
   it('should get current search query', () => {
     mockSearchParams.get.mockImplementation((key) => {
-      if (key === 'q') return 'current search';
+      if (key === 'q') {return 'current search';}
       return null;
     });
 
@@ -240,7 +240,7 @@ describe('useSearchNavigation Hook', () => {
 
   it('should get current category', () => {
     mockSearchParams.get.mockImplementation((key) => {
-      if (key === 'category') return 'pinturas';
+      if (key === 'category') {return 'pinturas';}
       return null;
     });
 
@@ -290,3 +290,12 @@ describe('useSearchNavigation Hook', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 });
+
+
+
+
+
+
+
+
+

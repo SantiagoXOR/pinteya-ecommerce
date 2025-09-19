@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { 
   requireCriticalAuth 
 } from '@/lib/auth/enterprise-auth-utils';
@@ -348,3 +348,12 @@ export async function GET() {
     ]
   });
 }
+
+
+
+
+
+
+
+
+

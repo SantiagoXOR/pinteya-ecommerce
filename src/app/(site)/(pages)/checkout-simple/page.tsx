@@ -67,3 +67,12 @@ const CheckoutSimplePage = () => {
 };
 
 export default CheckoutSimplePage;
+
+
+
+
+
+
+
+
+

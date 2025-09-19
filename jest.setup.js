@@ -755,7 +755,7 @@ jest.mock('@/lib/redis', () => ({
 }))
 
 // Mock Rate Limiter
-jest.mock('@/lib/rate-limiter', () => ({
+jest.mock('@/lib/enterprise/rate-limiter', () => ({
   checkRateLimit: jest.fn(() => Promise.resolve({
     success: true,
     remaining: 100,
@@ -776,3 +776,4 @@ afterEach(() => {
   localStorageMock.clear()
   sessionStorageMock.clear()
 })
+

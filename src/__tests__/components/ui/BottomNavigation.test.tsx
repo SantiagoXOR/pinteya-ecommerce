@@ -267,3 +267,12 @@ describe('BottomNavigation', () => {
     expect(menuLink).not.toHaveClass('text-primary-700');
   });
 });
+
+
+
+
+
+
+
+
+

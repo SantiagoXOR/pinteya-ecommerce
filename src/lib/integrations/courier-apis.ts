@@ -232,7 +232,7 @@ export class OCAApi extends CourierAPI {
   
   private parseOCAQuotes(response: any): ShippingQuote[] {
     // Parsear respuesta de OCA a formato estándar
-    if (!response.Tarifas) return [];
+    if (!response.Tarifas) {return [];}
     
     return response.Tarifas.map((tarifa: any) => ({
       courier: 'OCA',
@@ -355,7 +355,7 @@ export class AndreaniApi extends CourierAPI {
   }
   
   private parseAndreaniQuotes(response: any): ShippingQuote[] {
-    if (!response.cotizaciones) return [];
+    if (!response.cotizaciones) {return [];}
     
     return response.cotizaciones.map((cotizacion: any) => ({
       courier: 'Andreani',
@@ -570,3 +570,12 @@ export class CourierAPIFactory {
       .map(result => result.value!);
   }
 }
+
+
+
+
+
+
+
+
+

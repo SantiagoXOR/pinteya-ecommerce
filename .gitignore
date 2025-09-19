@@ -1,129 +1,94 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
+# Dependencies
+node_modules/
 /.pnp
 .pnp.js
 
-# testing
+# Testing
 /coverage
-/test-results/
-/playwright-report/
-*.log
-haste-map-*
-perf-cache-*
-logger_*
-*test_*.js
-*test_*.ts
+/test-results
+/playwright-report
+/tests/playwright-report
+/tests/test-results
+/e2e/test-results
+/e2e/playwright-report
 
-# playwright authentication
-/tests/e2e/.auth/
-*.auth.json
-auth-*.png
-auth-*.html
-
-# next.js
+# Next.js
 /.next/
 /out/
+.next
 
-# production
+# Production
 /build
+/dist
 
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
-.env*.local
+# Environment variables
 .env
 .env.local
-.env.production
-.env.development
-.env.staging
+.env.development.local
+.env.test.local
+.env.production.local
 
-# SECURITY: Additional patterns for credentials
-**/credentials/**
-**/*secret*
-**/*token*
-**/*key*
-.env*
-*.env*
-
-# SECURITY: Backup files that may contain credentials
-*.backup*
-.env*.backup*
-.env.local.backup.*
-.env.production.backup.*
-.env.development.backup.*
-*.env.backup
-backup.env*
-
-# Scripts with potential sensitive data
-scripts/fix-*.js
-scripts/organize-storage.js
-scripts/update-product-images.js
-
-# Storybook static files
-storybook-static/
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-*storybook.log
-storybook-static
-
-# ===== OPTIMIZACIONES ADICIONALES PARA VSCODE =====
-
-# Cache files que consumen recursos
-.eslintcache
-.stylelintcache
-*.cache
-**/.cache/
-**/cache/
-
-# Archivos temporales de VSCode
-.vscode/settings.json.backup
-.vscode/*.log
-
-# Archivos de testing masivos
-**/__tests__/coverage/
-**/test-coverage/
-**/.nyc_output/
-**/junit.xml
-**/*.lcov
-
-# Archivos de build adicionales
-**/.turbo/
-**/tsconfig.tsbuildinfo
-**/*.tsbuildinfo
-
-# Logs adicionales
-**/*.log.*
-**/logs/
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
+debug.log
+*.log
 
-# Archivos de sistema que VSCode indexa innecesariamente
-**/.DS_Store
-**/Thumbs.db
-**/*.tmp
-**/*.temp
-**/desktop.ini
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# Archivos de editor
-**/.vscode/settings.json.backup
-**/.idea/
-**/*.swp
-**/*.swo
-**/*~
+# Security reports
+/security-reports/
+/reports/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Backup files
+*.bak
+*.backup
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Bundle analysis
+/bundle-analysis/
+/bundle-reports/
+
+# Storybook
+storybook-static/
+
+# MCP logs
+.mcp-logs.json
+
+# Supabase
+/supabase/.branches
+/supabase/.temp

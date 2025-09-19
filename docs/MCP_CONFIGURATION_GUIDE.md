@@ -199,3 +199,6 @@ Para problemas con la configuración MCP:
 2. Ejecutar `npm run mcp:status` para diagnóstico
 3. Usar `npm run mcp:cleanup` para solución rápida
 4. Reiniciar Claude Desktop si es necesario
+
+
+

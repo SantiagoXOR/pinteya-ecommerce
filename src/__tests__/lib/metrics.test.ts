@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - METRICS TESTS
 // ===================================
 
-import { MetricsCollector, metricsCollector } from '@/lib/metrics';
+import { MetricsCollector, metricsCollector } from '@/lib/enterprise/metrics';
 
 // Mock Redis
 jest.mock('@/lib/redis', () => ({
@@ -20,7 +20,7 @@ jest.mock('@/lib/redis', () => ({
 }));
 
 // Mock logger
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
@@ -134,7 +134,7 @@ describe('MetricsCollector', () => {
 
     it('should handle errors gracefully', async () => {
       const { redisCache } = require('@/lib/redis');
-      const { logger } = require('@/lib/logger');
+      const { logger } = require('@/lib/enterprise/logger');
       
       redisCache.incr.mockRejectedValue(new Error('Redis error'));
       
@@ -213,9 +213,9 @@ describe('MetricsCollector', () => {
       
       // Mock counter data
       redisCache.get.mockImplementation((key) => {
-        if (key.includes('total')) return '100';
-        if (key.includes('success')) return '95';
-        if (key.includes('error')) return '5';
+        if (key.includes('total')) {return '100';}
+        if (key.includes('success')) {return '95';}
+        if (key.includes('error')) {return '5';}
         return '0';
       });
       
@@ -232,7 +232,7 @@ describe('MetricsCollector', () => {
 
     it('should handle errors gracefully and return empty metrics', async () => {
       const { redisCache } = require('@/lib/redis');
-      const { logger } = require('@/lib/logger');
+      const { logger } = require('@/lib/enterprise/logger');
       
       redisCache.get.mockRejectedValue(new Error('Redis error'));
       
@@ -300,3 +300,12 @@ describe('MetricsCollector', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

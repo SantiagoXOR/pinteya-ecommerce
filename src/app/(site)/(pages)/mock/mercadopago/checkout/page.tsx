@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { CreditCard, Shield, AlertCircle, CheckCircle } from 'lucide-react';
-import { processMockPayment, generateTestCardData } from '@/lib/mercadopago-mock';
+import { processMockPayment, generateTestCardData } from '@/lib/integrations/mercadopago/mercadopago-mock';
 
 export default function MockMercadoPagoCheckout() {
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function MockMercadoPagoCheckout() {
   };
 
   const handleProcessPayment = async () => {
-    if (!preferenceId) return;
+    if (!preferenceId) {return;}
 
     setIsProcessing(true);
 
@@ -274,3 +274,12 @@ export default function MockMercadoPagoCheckout() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

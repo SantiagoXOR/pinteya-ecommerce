@@ -76,7 +76,7 @@ export function MonitoringDashboard({ className }: MonitoringDashboardProps) {
   }
 
   const handleAddPattern = () => {
-    if (!newPattern.name || !newPattern.pattern) return
+    if (!newPattern.name || !newPattern.pattern) {return}
 
     const pattern: ErrorPattern = {
       id: `custom_${Date.now()}`,
@@ -171,7 +171,7 @@ export function MonitoringDashboard({ className }: MonitoringDashboardProps) {
       {error && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</AlertDescription>
         </Alert>
       )}
 
@@ -532,3 +532,12 @@ export function MonitoringDashboard({ className }: MonitoringDashboardProps) {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { Loader2, Package, ShoppingCart, CreditCard } from 'lucide-react';
 
 // ===================================
@@ -254,3 +254,12 @@ export const LoadingStyles = () => (
     }
   `}</style>
 );
+
+
+
+
+
+
+
+
+

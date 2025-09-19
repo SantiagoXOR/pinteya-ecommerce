@@ -189,3 +189,6 @@ npm run test:admin
 ---
 
 **Próximo paso:** Revisar [Fase 1: Implementación de Productos](./phase-1/PRODUCTS_IMPLEMENTATION.md)
+
+
+

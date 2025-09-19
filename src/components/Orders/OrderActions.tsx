@@ -49,3 +49,12 @@ const OrderActions = ({ toggleEdit, toggleDetails }: any) => {
 };
 
 export default OrderActions;
+
+
+
+
+
+
+
+
+

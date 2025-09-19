@@ -182,3 +182,6 @@ useQuery({
 2. Verificar performance de queries
 3. Considerar implementar cache persistente
 4. Evaluar migración a React Query v5 si es necesario
+
+
+

@@ -12,11 +12,23 @@ import { format, formatDistance, formatDistanceToNow, parseISO, isValid, es } fr
 
 export function formatDate(date: string | Date, pattern: string = 'dd/MM/yyyy'): string {
   try {
-    const dateObj = typeof date === 'string' ? parseISO(date) : date;
-    if (!isValid(dateObj)) {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) {
       return 'Fecha inválida';
     }
-    return format(dateObj, pattern, { locale: es });
+
+    // Usar formateo nativo para evitar problemas con date-fns
+    const day = dateObj.getDate().toString().padStart(2, '0');
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const hours = dateObj.getHours().toString().padStart(2, '0');
+    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+
+    if (pattern === 'dd/MM/yyyy hh:mm') {
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
+    return `${day}/${month}/${year}`;
   } catch (error) {
     console.error('Error formatting date:', error);
     return 'Fecha inválida';
@@ -24,7 +36,7 @@ export function formatDate(date: string | Date, pattern: string = 'dd/MM/yyyy'):
 }
 
 export function formatDateTime(date: string | Date): string {
-  return formatDate(date, 'dd/MM/yyyy HH:mm');
+  return formatDate(date, 'dd/MM/yyyy hh:mm');
 }
 
 export function formatTimeAgo(date: string | Date): string {
@@ -33,10 +45,37 @@ export function formatTimeAgo(date: string | Date): string {
     if (!isValid(dateObj)) {
       return 'Fecha inválida';
     }
-    return formatDistanceToNow(dateObj, {
-      addSuffix: true,
-      locale: es
-    });
+
+    // Usar implementación simple sin locale para evitar errores de formato
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+      return 'hace menos de un minuto';
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `hace ${diffInMinutes} minuto${diffInMinutes > 1 ? 's' : ''}`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `hace ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) {
+      return `hace ${diffInDays} día${diffInDays > 1 ? 's' : ''}`;
+    }
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) {
+      return `hace ${diffInMonths} mes${diffInMonths > 1 ? 'es' : ''}`;
+    }
+
+    const diffInYears = Math.floor(diffInMonths / 12);
+    return `hace ${diffInYears} año${diffInYears > 1 ? 's' : ''}`;
   } catch (error) {
     console.error('Error formatting time ago:', error);
     return 'Fecha inválida';
@@ -147,7 +186,7 @@ export function truncateText(text: string, maxLength: number = 50): string {
 }
 
 export function capitalizeFirst(text: string): string {
-  if (!text) return '';
+  if (!text) {return '';}
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
 
@@ -208,7 +247,7 @@ export function formatOrderStatus(status: string): {
 // =====================================================
 
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) {return '0 Bytes';}
   
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -246,3 +285,12 @@ export function formatDuration(minutes: number): string {
   
   return `${hours}h ${remainingMinutes}min`;
 }
+
+
+
+
+
+
+
+
+

@@ -70,3 +70,12 @@ const LazyFooter = () => {
 
 export default LazyFooter;
 export { FooterSkeleton };
+
+
+
+
+
+
+
+
+

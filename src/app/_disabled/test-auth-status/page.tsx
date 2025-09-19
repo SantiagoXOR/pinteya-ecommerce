@@ -71,7 +71,7 @@ export default function TestAuthStatusPage() {
                 <p><strong>Longitud:</strong> {tokenInfo?.tokenLength || 0} caracteres</p>
                 <p><strong>Preview:</strong> {tokenInfo?.tokenPreview || 'N/A'}</p>
                 {error && (
-                  <p className="text-red-600"><strong>Error:</strong> {error}</p>
+                  <p className="text-red-600"><strong>Error:</strong> {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
                 )}
               </div>
             </div>
@@ -177,3 +177,12 @@ export default function TestAuthStatusPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

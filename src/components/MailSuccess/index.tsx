@@ -255,3 +255,12 @@ const OrderSuccess: React.FC<Omit<MailSuccessProps, 'type'>> = (props) => (
 export type { MailSuccessProps };
 export { ContactSuccess, NewsletterSuccess, OrderSuccess };
 export default MailSuccess;
+
+
+
+
+
+
+
+
+

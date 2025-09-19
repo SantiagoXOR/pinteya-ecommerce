@@ -305,3 +305,6 @@ interface CheckoutEvents {
 5. **Lanzar Beta**: Testing con usuarios reales
 
 **Objetivo**: Tener el checkout express funcionando en 2 semanas con mejoras medibles en conversión desde el primer día.
+
+
+

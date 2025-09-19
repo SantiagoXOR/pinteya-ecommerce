@@ -169,3 +169,6 @@ export const menuData: Menu[] = [
 **Fecha de resolución**: 29 de Junio, 2025  
 **Estado**: ✅ Completamente resuelto  
 **Verificado**: Servidor funcionando, menú completo visible
+
+
+

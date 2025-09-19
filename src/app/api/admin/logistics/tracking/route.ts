@@ -12,7 +12,7 @@ import { withErrorHandler, ApiError, ValidationError, NotFoundError } from '@/li
 import { withApiLogging, logAdminAction } from '@/lib/api/api-logger';
 import { withAdminAuth } from '@/lib/auth/api-auth-middleware';
 import { withValidation } from '@/lib/validation/admin-schemas';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/integrations/supabase/server';
 import { auth } from '@/auth';
 import { checkRateLimit } from '@/lib/auth/rate-limiting';
 import { 
@@ -128,7 +128,7 @@ async function updateShipmentStatus(supabase: any, shipmentId: number, newStatus
 async function getHandler(request: NextRequest) {
   // Validar autenticación
   const authError = await validateAdminAuth(request);
-  if (authError) return authError;
+  if (authError) {return authError;}
 
   const { searchParams } = new URL(request.url);
   const filters = TrackingFiltersSchema.parse({
@@ -238,7 +238,7 @@ async function getHandler(request: NextRequest) {
 async function postHandler(request: NextRequest) {
   // Validar autenticación
   const authError = await validateAdminAuth(request);
-  if (authError) return authError;
+  if (authError) {return authError;}
 
   const session = await auth();
   const body = await request.json();
@@ -377,7 +377,7 @@ async function handleBulkUpdate(request: NextRequest, body: any) {
 async function putHandler(request: NextRequest) {
   // Validar autenticación
   const authError = await validateAdminAuth(request);
-  if (authError) return authError;
+  if (authError) {return authError;}
 
   const session = await auth();
   const { searchParams } = new URL(request.url);
@@ -438,7 +438,7 @@ async function putHandler(request: NextRequest) {
 async function deleteHandler(request: NextRequest) {
   // Validar autenticación
   const authError = await validateAdminAuth(request);
-  if (authError) return authError;
+  if (authError) {return authError;}
 
   const session = await auth();
   const { searchParams } = new URL(request.url);
@@ -530,3 +530,12 @@ export const DELETE = composeMiddlewares(
   withErrorHandler,
   withApiLogging
 )(deleteHandler);
+
+
+
+
+
+
+
+
+

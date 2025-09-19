@@ -373,3 +373,12 @@ export function useBulkShipmentOperations() {
     isLoading: bulkUpdateStatus.isPending || bulkDelete.isPending
   };
 }
+
+
+
+
+
+
+
+
+

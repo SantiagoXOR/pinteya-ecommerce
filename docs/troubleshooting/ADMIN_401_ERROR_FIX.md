@@ -197,3 +197,6 @@ curl -X GET "https://pinteya.com/api/admin/monitoring/metrics" \
 **Fecha de resolución**: 18 de Agosto, 2025
 **Responsable**: Augment Agent
 **Estado**: ✅ Resuelto y desplegado
+
+
+

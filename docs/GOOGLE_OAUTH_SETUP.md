@@ -74,3 +74,6 @@ Si persisten los problemas:
 ✅ Autenticación con Google funcionando
 ✅ Sin errores de client_id
 ✅ Usuarios sincronizados con Supabase automáticamente
+
+
+

@@ -37,7 +37,7 @@ async function detectSkeletonElements(page: Page) {
 async function verifySkeletonAnimations(page: Page, selector: string) {
   const element = page.locator(selector).first();
   
-  if (await element.count() === 0) return false;
+  if (await element.count() === 0) {return false;}
   
   // Verificar que tiene clases de animación
   const hasAnimation = await element.evaluate((el) => {
@@ -359,3 +359,12 @@ test.describe('Skeleton Performance', () => {
     expect(layoutShift).toBeLessThan(0.25);
   });
 });
+
+
+
+
+
+
+
+
+

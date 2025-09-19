@@ -216,3 +216,12 @@ const BottomNavigation = React.forwardRef<HTMLDivElement, BottomNavigationProps>
 BottomNavigation.displayName = "BottomNavigation";
 
 export { BottomNavigation, bottomNavigationVariants };
+
+
+
+
+
+
+
+
+

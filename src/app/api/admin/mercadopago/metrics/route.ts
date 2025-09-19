@@ -4,9 +4,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { metricsCollector } from '@/lib/metrics';
-import { isRedisAvailable } from '@/lib/redis';
-import { logger, LogCategory } from '@/lib/logger';
+import { metricsCollector } from '@/lib/enterprise/metrics';
+import { isRedisAvailable } from '@/lib/integrations/redis';
+import { logger, LogCategory } from '@/lib/enterprise/logger';
 
 // Tipos para la respuesta de métricas
 interface MetricsResponse {
@@ -232,3 +232,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 }
+
+
+
+
+
+
+
+
+

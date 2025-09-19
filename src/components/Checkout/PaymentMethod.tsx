@@ -158,3 +158,12 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onMethodC
 };
 
 export default PaymentMethod;
+
+
+
+
+
+
+
+
+

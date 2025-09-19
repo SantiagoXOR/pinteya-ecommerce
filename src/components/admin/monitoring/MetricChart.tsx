@@ -341,3 +341,12 @@ export function SimpleBarChart({
     </Card>
   );
 }
+
+
+
+
+
+
+
+
+

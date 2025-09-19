@@ -186,7 +186,7 @@ export class ApiErrorHandler {
    * Determina si un error es reintentable
    */
   private shouldRetry(error: ApiError, config: RetryConfig): boolean {
-    if (!error.retryable) return false;
+    if (!error.retryable) {return false;}
     
     if (error.status && !config.retryableStatuses.includes(error.status)) {
       return false;
@@ -457,3 +457,12 @@ export function createApiError(
 // ===================================
 
 export default ApiErrorHandler;
+
+
+
+
+
+
+
+
+

@@ -185,3 +185,6 @@ El Design System está ahora **listo para producción** con testing automatizado
 **Desarrollado por:** Augment Agent  
 **Proyecto:** Pinteya E-commerce  
 **Tecnologías:** Next.js 15, TypeScript, Tailwind CSS, Storybook, Chromatic, Playwright
+
+
+

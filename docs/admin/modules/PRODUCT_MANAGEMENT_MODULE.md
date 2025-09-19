@@ -596,3 +596,6 @@ test('complete product management flow', async ({ page }) => {
 ---
 
 *Próxima actualización: Implementación de ProductList component*
+
+
+

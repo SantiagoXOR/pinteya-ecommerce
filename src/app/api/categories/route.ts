@@ -3,17 +3,52 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient, handleSupabaseError } from '@/lib/supabase';
+import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase';
 import { validateData, CategoryFiltersSchema, CategorySchema } from '@/lib/validations';
 import { ApiResponse } from '@/types/api';
 import { Category } from '@/types/database';
 
 // ===================================
+// MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
+// ===================================
+import {
+  withRateLimit,
+  RATE_LIMIT_CONFIGS
+} from '@/lib/rate-limiting/rate-limiter';
+import {
+  API_TIMEOUTS,
+  withDatabaseTimeout,
+  getEndpointTimeouts
+} from '@/lib/config/api-timeouts';
+import { createSecurityLogger } from '@/lib/logging/security-logger';
+
+// ===================================
 // GET /api/categories - Obtener categorías
 // ===================================
 export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
+  // Crear logger de seguridad con contexto
+  const securityLogger = createSecurityLogger(request);
+
+  // Aplicar rate limiting para APIs de categorías
+  const rateLimitResult = await withRateLimit(
+    request,
+    RATE_LIMIT_CONFIGS.products, // Usar config de productos para categorías
+    async () => {
+      // Log de acceso a la API
+      securityLogger.log({
+        type: 'data_access',
+        severity: 'low',
+        message: 'Categories API accessed',
+        context: securityLogger.context,
+        metadata: {
+          endpoint: '/api/categories',
+          method: 'GET',
+          userAgent: request.headers.get('user-agent')
+        }
+      });
+
+      try {
+        const { searchParams } = new URL(request.url);
     
     // Extraer parámetros de query
     const queryParams = {
@@ -39,7 +74,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Construir query base - simplificado para la estructura actual
-    let query = supabase
+    const baseQuery = supabase
       .from('categories')
       .select(`
         *,
@@ -48,15 +83,32 @@ export async function GET(request: NextRequest) {
       .order('name');
 
     // Aplicar filtros
+    let query = baseQuery;
     if (filters.search) {
       query = query.ilike('name', `%${filters.search}%`);
     }
 
-    // Ejecutar query
-    const { data: categories, error } = await query;
+    // Ejecutar query con timeout de base de datos
+    const { data: categories, error } = await withDatabaseTimeout(
+      async (signal) => {
+        return await query.abortSignal(signal);
+      },
+      API_TIMEOUTS.database
+    );
 
     if (error) {
       console.error('Error en GET /api/categories:', error);
+
+      // Log de error de seguridad
+      securityLogger.logApiError(
+        securityLogger.context,
+        new Error(`Database error: ${error.message}`),
+        {
+          endpoint: '/api/categories',
+          operation: 'select_categories'
+        }
+      );
+
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -71,6 +123,19 @@ export async function GET(request: NextRequest) {
       products_count: category.products_count?.[0]?.count || 0,
     })) || [];
 
+    // Log de operación exitosa
+    securityLogger.log({
+      type: 'data_access',
+      severity: 'low',
+      message: 'Categories retrieved successfully',
+      context: securityLogger.context,
+      metadata: {
+        categoriesCount: processedCategories.length,
+        hasSearch: !!filters.search,
+        searchTerm: filters.search
+      }
+    });
+
     const response: ApiResponse<Category[]> = {
       data: processedCategories,
       success: true,
@@ -79,17 +144,38 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
 
-  } catch (error: any) {
-    console.error('Error en GET /api/categories:', error);
-    
-    const errorResponse: ApiResponse<null> = {
-      data: null,
-      success: false,
-      error: error.message || 'Error interno del servidor',
-    };
+    } catch (error: any) {
+      console.error('Error en GET /api/categories:', error);
 
-    return NextResponse.json(errorResponse, { status: 500 });
+      // Log de error de seguridad
+      securityLogger.logApiError(
+        securityLogger.context,
+        error instanceof Error ? error : new Error('Unknown error'),
+        {
+          endpoint: '/api/categories'
+        }
+      );
+
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: error.message || 'Error interno del servidor',
+      };
+
+      return NextResponse.json(errorResponse, { status: 500 });
+    }
+  });
+
+  // Manejar rate limit excedido
+  if (rateLimitResult instanceof NextResponse) {
+    securityLogger.logRateLimitExceeded(
+      securityLogger.context,
+      { endpoint: '/api/categories', method: 'GET' }
+    );
+    return rateLimitResult;
   }
+
+  return rateLimitResult;
 }
 
 // ===================================
@@ -173,5 +259,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+
 
 

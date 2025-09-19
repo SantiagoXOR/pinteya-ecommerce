@@ -89,7 +89,9 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
         <Card className="text-center p-8 max-w-md mx-auto border-destructive/20">
           <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-destructive mb-4">Error</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 mb-4">
+            {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+          </p>
           <Button variant="primary" size="lg" asChild>
             <a href="/shop">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -123,3 +125,12 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
 };
 
 export default ShopDetailsById;
+
+
+
+
+
+
+
+
+

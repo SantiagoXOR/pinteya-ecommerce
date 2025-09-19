@@ -75,7 +75,7 @@ export async function validateJWTIntegrity(
   request?: NextRequest | NextApiRequest
 ): Promise<JWTValidationResult> {
   try {
-    let token: string | null = null;
+    const token: string | null = null;
     let payload: any = null;
 
     // NextAuth.js - Obtener sesión en lugar de token JWT
@@ -414,3 +414,12 @@ export function withJWTValidation(
     };
   };
 }
+
+
+
+
+
+
+
+
+

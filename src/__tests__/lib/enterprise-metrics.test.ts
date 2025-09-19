@@ -14,7 +14,7 @@ import {
 } from '@/lib/monitoring/enterprise-metrics';
 
 // Mock logger
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
@@ -409,3 +409,12 @@ describe('Enterprise Metrics System', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

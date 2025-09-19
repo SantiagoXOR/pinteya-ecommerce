@@ -381,3 +381,12 @@ describe('SearchAutocompleteIntegrated', () => {
     expect(input).toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+

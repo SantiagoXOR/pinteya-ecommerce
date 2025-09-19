@@ -86,7 +86,7 @@ function generateBlurDataURL(width: number, height: number): string {
   canvas.height = height;
   
   const ctx = canvas.getContext('2d');
-  if (!ctx) return '';
+  if (!ctx) {return '';}
   
   // Crear gradiente suave
   const gradient = ctx.createLinearGradient(0, 0, width, height);
@@ -115,3 +115,12 @@ export function useImagePreload(src: string) {
     };
   });
 }
+
+
+
+
+
+
+
+
+

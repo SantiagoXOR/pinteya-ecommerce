@@ -357,3 +357,12 @@ describe('useSearchErrorHandler - State Management', () => {
     expect(result.current.retryCount).toBe(0);
   });
 });
+
+
+
+
+
+
+
+
+

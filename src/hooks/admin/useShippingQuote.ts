@@ -121,8 +121,8 @@ export function useCouriers(options?: { activeOnly?: boolean; includeStats?: boo
     queryKey,
     queryFn: () => {
       const params = new URLSearchParams();
-      if (options?.activeOnly) params.append('active_only', 'true');
-      if (options?.includeStats) params.append('include_stats', 'true');
+      if (options?.activeOnly) {params.append('active_only', 'true');}
+      if (options?.includeStats) {params.append('include_stats', 'true');}
       
       return fetch(`/api/admin/logistics/couriers?${params}`)
         .then(res => res.json())
@@ -191,7 +191,7 @@ export function useQuoteCalculator() {
   }, []);
   
   const calculateEstimate = useCallback((courier: Courier) => {
-    if (!calculatorData.weight || !courier) return null;
+    if (!calculatorData.weight || !courier) {return null;}
     
     // Cálculo básico basado en la configuración del courier
     let cost = courier.base_cost + (courier.cost_per_kg * calculatorData.weight);
@@ -300,3 +300,12 @@ export interface UseCouriersReturn {
   error: Error | null;
   refetch: () => void;
 }
+
+
+
+
+
+
+
+
+

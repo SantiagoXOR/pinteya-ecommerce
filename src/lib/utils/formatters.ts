@@ -146,7 +146,7 @@ export function formatPercentage(
  * Formatea el tamaño de archivo
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) {return '0 Bytes';}
   
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -224,7 +224,7 @@ export function formatAddress(address: {
  * Trunca un texto a una longitud específica
  */
 export function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
+  if (text.length <= maxLength) {return text;}
   return text.slice(0, maxLength - 3) + '...';
 }
 
@@ -304,3 +304,12 @@ export function formatPaymentStatus(status: string): string {
   
   return statusMap[status] || capitalizeWords(status);
 }
+
+
+
+
+
+
+
+
+

@@ -212,3 +212,6 @@ const Home = () => {
 - **Colores consistentes**: Sigue el design system de Pinteya
 - **Animaciones suaves**: Mejora la experiencia de usuario
 - **Código limpio**: TypeScript y ESLint compliant
+
+
+

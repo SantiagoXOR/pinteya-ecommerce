@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-// import { verifyToken } from '@clerk/backend'; // REMOVIDO: Migrado a NextAuth.js
+// REMOVIDO: Migrado a NextAuth.js
 import { getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -349,3 +349,12 @@ export async function getSecurityMetrics(): Promise<any> {
     return null;
   }
 }
+
+
+
+
+
+
+
+
+

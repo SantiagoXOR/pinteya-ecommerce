@@ -34,8 +34,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useOrderLogistics, CreateShipmentRequest, Shipment } from '@/hooks/admin/useOrderLogistics';
-import { formatDate, formatShipmentStatus } from '@/lib/utils/format';
-import { cn } from '@/lib/utils';
+import { formatDate, formatShipmentStatus } from '@/lib/utils/consolidated-utils';
+import { cn } from '@/lib/core/utils';
 
 // =====================================================
 // INTERFACES
@@ -123,7 +123,7 @@ export function OrderShipmentsManager({
 
   const isItemFullyShipped = (itemId: string) => {
     const item = orderItems.find(i => i.id === itemId);
-    if (!item) return false;
+    if (!item) {return false;}
 
     const shippedQuantity = shipments.reduce((total, shipment) => {
       const shipmentItem = shipment.items?.find(si => si.order_item.id === itemId);
@@ -135,7 +135,7 @@ export function OrderShipmentsManager({
 
   const getAvailableQuantity = (itemId: string) => {
     const item = orderItems.find(i => i.id === itemId);
-    if (!item) return 0;
+    if (!item) {return 0;}
 
     const shippedQuantity = shipments.reduce((total, shipment) => {
       const shipmentItem = shipment.items?.find(si => si.order_item.id === itemId);
@@ -438,7 +438,7 @@ function CreateShipmentDialog({
   const [notes, setNotes] = useState('');
 
   const handleSubmit = async () => {
-    if (!carrierId || !shippingService) return;
+    if (!carrierId || !shippingService) {return;}
 
     const shipmentData: CreateShipmentRequest = {
       carrier_id: carrierId,
@@ -526,3 +526,12 @@ function CreateShipmentDialog({
     </DialogContent>
   );
 }
+
+
+
+
+
+
+
+
+

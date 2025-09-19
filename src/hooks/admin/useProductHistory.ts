@@ -187,7 +187,7 @@ export function useFormChangeTracking(productId: string, watchedData: any) {
   const [previousData, setPreviousData] = useState(watchedData);
 
   useEffect(() => {
-    if (!previousData || !watchedData) return;
+    if (!previousData || !watchedData) {return;}
 
     // Compare current data with previous data
     Object.keys(watchedData).forEach(key => {
@@ -195,10 +195,10 @@ export function useFormChangeTracking(productId: string, watchedData: any) {
       const newValue = watchedData[key];
 
       // Skip if values are the same
-      if (JSON.stringify(oldValue) === JSON.stringify(newValue)) return;
+      if (JSON.stringify(oldValue) === JSON.stringify(newValue)) {return;}
 
       // Skip certain fields
-      if (['updated_at', 'created_at'].includes(key)) return;
+      if (['updated_at', 'created_at'].includes(key)) {return;}
 
       // Track the change
       trackChange(key, oldValue, newValue);
@@ -209,3 +209,12 @@ export function useFormChangeTracking(productId: string, watchedData: any) {
 
   return { trackChange };
 }
+
+
+
+
+
+
+
+
+

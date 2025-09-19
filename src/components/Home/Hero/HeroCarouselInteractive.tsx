@@ -55,7 +55,7 @@ export const HeroCarouselInteractive: React.FC<HeroCarouselInteractiveProps> = (
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    if (!autoPlay) return;
+    if (!autoPlay) {return;}
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -151,3 +151,12 @@ export const HeroCarouselInteractive: React.FC<HeroCarouselInteractiveProps> = (
 };
 
 export default HeroCarouselInteractive;
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,331 @@
+/* Mobile-First Modal System Styles */
+
+/* Base modal overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  transition: opacity 0.3s ease-out;
+}
+
+.modal-overlay.center {
+  align-items: center;
+}
+
+.modal-overlay.top {
+  align-items: flex-start;
+}
+
+/* Modal container */
+.modal-container {
+  width: 100%;
+  background-color: white;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: translateY(0);
+  transition: transform 0.3s ease-out;
+  overflow: hidden;
+}
+
+.modal-container.transitioning {
+  transform: translateY(100%);
+}
+
+.modal-container.center {
+  border-radius: 1rem;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.modal-container.center.transitioning {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+.modal-container.top {
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+.modal-container.top.transitioning {
+  transform: translateY(-100%);
+}
+
+.modal-container.bottom {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+}
+
+/* Size variants */
+.modal-container.small {
+  max-height: 40vh;
+}
+
+.modal-container.medium {
+  max-height: 60vh;
+}
+
+.modal-container.large {
+  max-height: 80vh;
+}
+
+.modal-container.fullscreen {
+  height: 100%;
+  max-height: 100%;
+}
+
+/* Swipe handle */
+.swipe-handle {
+  width: 2rem;
+  height: 0.25rem;
+  background-color: rgb(209, 213, 219);
+  border-radius: 9999px;
+  margin: 0 auto;
+}
+
+/* Modal header */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid rgb(229, 231, 235);
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgb(17, 24, 39);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Modal content */
+.modal-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Button styles */
+.modal-button {
+  padding: 0.25rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.modal-button:hover {
+  background-color: rgb(243, 244, 246);
+}
+
+.modal-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Floating Action Buttons */
+.fab-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.fab-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  border-radius: 9999px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: scale(1);
+  transition: all 0.2s ease;
+}
+
+.fab-button:hover {
+  transform: scale(1.1);
+}
+
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.fab-primary {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.fab-secondary {
+  width: 3rem;
+  height: 3rem;
+}
+
+.fab-main {
+  width: 4rem;
+  height: 4rem;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .modal-container.center {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+  
+  .modal-container.bottom {
+    border-radius: 1rem 1rem 0 0;
+  }
+  
+  .fab-container {
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .fab-button {
+    flex: 1;
+    max-width: 6.25rem;
+    height: 3rem;
+    border-radius: 9999px;
+  }
+  
+  .fab-main {
+    display: none;
+  }
+}
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+  .modal-container.bottom {
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .modal-container.fullscreen {
+    max-width: 64rem;
+    max-height: 90vh;
+    border-radius: 1rem;
+  }
+}
+
+/* Animation keyframes */
+@keyframes modalSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalSlideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-container,
+  .fab-button {
+    transition: none;
+  }
+  
+  .modal-container {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+  
+  .modal-container {
+    border: 2px solid black;
+  }
+  
+  .modal-header {
+    border-bottom: 2px solid black;
+  }
+}
+
+/* Focus management */
+.modal-container:focus {
+  outline: none;
+}
+
+.modal-container[data-focus-trap] {
+  isolation: isolate;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Touch-friendly sizing */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Safe area adjustments for mobile devices */
+@supports (padding: max(0px)) {
+  .modal-container.bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .fab-container {
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    left: max(1rem, env(safe-area-inset-left));
+    right: max(1rem, env(safe-area-inset-right));
+  }
+}

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     
     // Determinar qué script ejecutar
     let scriptPath: string
-    let scriptArgs: string[] = []
+    const scriptArgs: string[] = []
     
     switch (body.flow) {
       case 'checkout':
@@ -201,10 +201,10 @@ export async function DELETE(request: NextRequest) {
       let deletedCount = 0
 
       for (const file of files) {
-        if (!file.endsWith('.png')) continue
+        if (!file.endsWith('.png')) {continue}
 
         // Filtrar por flujo si se especifica
-        if (flow && !file.includes(flow)) continue
+        if (flow && !file.includes(flow)) {continue}
 
         // Filtrar por antigüedad si se especifica
         if (olderThan) {
@@ -212,7 +212,7 @@ export async function DELETE(request: NextRequest) {
           const stats = await fs.stat(filepath)
           const hoursOld = (Date.now() - stats.mtime.getTime()) / (1000 * 60 * 60)
           
-          if (hoursOld <= parseInt(olderThan)) continue
+          if (hoursOld <= parseInt(olderThan)) {continue}
         }
 
         // Eliminar archivo
@@ -245,3 +245,12 @@ export async function DELETE(request: NextRequest) {
     }, { status: 500 })
   }
 }
+
+
+
+
+
+
+
+
+

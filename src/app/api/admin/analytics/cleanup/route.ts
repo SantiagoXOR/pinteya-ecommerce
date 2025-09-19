@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 
 /**
@@ -185,7 +185,7 @@ export async function GET(request: NextRequest) {
 function generateCleanupRecommendations(stats: any) {
   const recommendations = [];
   
-  if (!stats) return recommendations;
+  if (!stats) {return recommendations;}
 
   const totalEvents = stats.total_events || 0;
   const avgEventsPerDay = stats.avg_events_per_day || 0;
@@ -222,3 +222,12 @@ function generateCleanupRecommendations(stats: any) {
 
   return recommendations;
 }
+
+
+
+
+
+
+
+
+

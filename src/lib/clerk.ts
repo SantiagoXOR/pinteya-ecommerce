@@ -206,3 +206,12 @@ export interface AuthenticatedUser {
   name?: string;
   image?: string;
 }
+
+
+
+
+
+
+
+
+

@@ -127,12 +127,12 @@ const PurchaseFlowVisualization: React.FC<PurchaseFlowVisualizationProps> = ({
   }, [simulationLogs]);
 
   const updateStepsFromLogs = (logsData: any) => {
-    if (!logsData || !logsData.logs) return;
+    if (!logsData || !logsData.logs) {return;}
 
     const updatedSteps = [...flowSteps];
     const logsByStep = logsData.logs.reduce((acc: any, log: any) => {
       const stepNumber = log.step.split('.')[0];
-      if (!acc[stepNumber]) acc[stepNumber] = [];
+      if (!acc[stepNumber]) {acc[stepNumber] = [];}
       acc[stepNumber].push(log);
       return acc;
     }, {});
@@ -340,3 +340,12 @@ const PurchaseFlowVisualization: React.FC<PurchaseFlowVisualizationProps> = ({
 };
 
 export default PurchaseFlowVisualization;
+
+
+
+
+
+
+
+
+

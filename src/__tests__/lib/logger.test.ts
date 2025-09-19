@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - LOGGER TESTS
 // ===================================
 
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
 // Mock console methods
 const originalConsole = { ...console };
@@ -139,3 +139,12 @@ describe('StructuredLogger', () => {
     );
   });
 });
+
+
+
+
+
+
+
+
+

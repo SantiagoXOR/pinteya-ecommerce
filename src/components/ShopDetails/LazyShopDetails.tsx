@@ -230,3 +230,12 @@ const LazyShopDetails = (props: any) => {
 
 export default LazyShopDetails;
 export { ShopDetailsSkeleton };
+
+
+
+
+
+
+
+
+

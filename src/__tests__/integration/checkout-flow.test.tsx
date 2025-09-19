@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CheckoutPage } from '@/app/checkout/page';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/integrations/supabase';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -634,3 +634,12 @@ describe('Flujo de Checkout - Integración', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

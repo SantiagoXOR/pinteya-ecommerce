@@ -169,3 +169,6 @@ useEffect(() => {
 **Documentado por**: Augment Agent
 **Fecha**: 28 de Julio 2025
 **Versión**: 1.0
+
+
+

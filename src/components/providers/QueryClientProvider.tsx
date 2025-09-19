@@ -29,3 +29,12 @@ export function QueryClientProvider({ children }: QueryClientProviderProps) {
     </TanStackQueryClientProvider>
   );
 }
+
+
+
+
+
+
+
+
+

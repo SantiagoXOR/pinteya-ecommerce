@@ -433,3 +433,12 @@ export const predefinedFlows: TestFlow[] = [
 
 // Instancia singleton del manager
 export const testFlowManager = new AdvancedTestFlowManager();
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface AdminCardProps {
   children: React.ReactNode;
@@ -72,3 +72,12 @@ export function AdminCard({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

@@ -3,9 +3,9 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { metricsCollector, MercadoPagoMetrics } from '@/lib/metrics';
-import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { metricsCollector, MercadoPagoMetrics } from '@/lib/enterprise/metrics';
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { auth } from '@/auth';
 
 export async function GET(request: NextRequest) {
@@ -255,3 +255,12 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
+

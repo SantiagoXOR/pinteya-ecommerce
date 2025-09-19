@@ -86,7 +86,7 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
 
   // Inicializar filtros desde URL (solo una vez)
   useEffect(() => {
-    if (!syncWithUrl || !searchParams) return;
+    if (!syncWithUrl || !searchParams) {return;}
 
     const urlFilters: ProductFilterState = {
       categories: searchParams.get('categories')?.split(',').filter(Boolean) || [],
@@ -104,7 +104,7 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
 
   // Función optimizada para actualizar URL
   const updateUrl = useCallback((newFilters: ProductFilterState) => {
-    if (!syncWithUrl) return;
+    if (!syncWithUrl) {return;}
 
     const params = new URLSearchParams();
 
@@ -223,8 +223,8 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
     let count = 0;
     count += filters.categories.length;
     count += filters.brands.length;
-    if (filters.priceMin !== undefined || filters.priceMax !== undefined) count += 1;
-    if (filters.search && filters.search.trim() !== '') count += 1;
+    if (filters.priceMin !== undefined || filters.priceMax !== undefined) {count += 1;}
+    if (filters.search && filters.search.trim() !== '') {count += 1;}
     return count;
   }, [filters]);
 
@@ -244,3 +244,12 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
     isLoading,
   };
 }
+
+
+
+
+
+
+
+
+

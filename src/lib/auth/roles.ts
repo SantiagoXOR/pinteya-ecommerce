@@ -275,3 +275,12 @@ export function useRolePermissions(userRole: Role) {
     roleDefinition: roleManager.getRoleDefinition(userRole)
   }
 }
+
+
+
+
+
+
+
+
+

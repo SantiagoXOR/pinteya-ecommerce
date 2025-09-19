@@ -43,7 +43,7 @@ import {
   withRLS
 } from '@/lib/auth/enterprise-rls-utils';
 import type { EnterpriseAuthContext } from '@/lib/auth/enterprise-auth-utils';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { createClient } from '@supabase/supabase-js';
 
 describe('Utilidades RLS Enterprise', () => {
@@ -411,3 +411,12 @@ describe('Utilidades RLS Enterprise', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

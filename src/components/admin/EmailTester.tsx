@@ -131,7 +131,7 @@ export default function EmailTester() {
       {error && (
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
           <div className="text-red-800">
-            <strong>Error:</strong> {error}
+            <strong>Error:</strong> {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
           </div>
         </div>
       )}
@@ -169,3 +169,12 @@ export default function EmailTester() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

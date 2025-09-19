@@ -388,3 +388,12 @@ export function stopGlobalSecurityDashboard(): void {
     dashboardInstance = null;
   }
 }
+
+
+
+
+
+
+
+
+

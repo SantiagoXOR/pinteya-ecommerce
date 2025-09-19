@@ -164,3 +164,6 @@ En caso de detectar una brecha de seguridad:
 2. **Contactar**: Administrador del proyecto
 3. **Documentar**: Incidente y pasos de mitigación
 4. **Revisar**: Logs y accesos recientes
+
+
+

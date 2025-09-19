@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/integrations/supabase/server';
 import { z } from 'zod';
 import { 
   TrackingEvent,
@@ -71,7 +71,7 @@ async function validateShipmentExists(supabase: any, shipmentId: number): Promis
     .eq('id', shipmentId)
     .single();
   
-  if (error || !data) return null;
+  if (error || !data) {return null;}
   return data;
 }
 
@@ -100,7 +100,7 @@ async function updateShipmentStatus(
     .update(updateData)
     .eq('id', shipmentId);
   
-  if (error) throw error;
+  if (error) {throw error;}
 }
 
 // =====================================================
@@ -114,7 +114,7 @@ export async function GET(
   try {
     // Validar autenticación
     const authError = await validateAdminAuth(request);
-    if (authError) return authError;
+    if (authError) {return authError;}
     
     // Validar ID del envío
     const shipmentId = parseInt(params.id);
@@ -144,7 +144,7 @@ export async function GET(
       .eq('shipment_id', shipmentId)
       .order('occurred_at', { ascending: false });
     
-    if (error) throw error;
+    if (error) {throw error;}
     
     return NextResponse.json({
       data: {
@@ -177,7 +177,7 @@ export async function POST(
   try {
     // Validar autenticación
     const authError = await validateAdminAuth(request);
-    if (authError) return authError;
+    if (authError) {return authError;}
     
     // Validar ID del envío
     const shipmentId = parseInt(params.id);
@@ -221,7 +221,7 @@ export async function POST(
       .select('*')
       .single();
     
-    if (trackingError) throw trackingError;
+    if (trackingError) {throw trackingError;}
     
     // Actualizar estado del envío si es necesario
     const statusesToUpdate = [
@@ -288,7 +288,7 @@ export async function PUT(
   try {
     // Validar autenticación
     const authError = await validateAdminAuth(request);
-    if (authError) return authError;
+    if (authError) {return authError;}
     
     // Validar ID del envío
     const shipmentId = parseInt(params.id);
@@ -338,7 +338,7 @@ export async function PUT(
       .insert(eventsToInsert)
       .select('*');
     
-    if (insertError) throw insertError;
+    if (insertError) {throw insertError;}
     
     // Actualizar estado del envío al último estado válido
     const lastValidStatus = validatedEvents

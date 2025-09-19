@@ -12,7 +12,7 @@ export default function AuthRedirectDebugger() {
 
   useEffect(() => {
     // Solo ejecutar en desarrollo
-    if (process.env.NODE_ENV !== 'development') return;
+    if (process.env.NODE_ENV !== 'development') {return;}
 
     console.log('[AUTH_DEBUGGER] 🚀 Debugger de autenticación iniciado');
     
@@ -75,3 +75,12 @@ export default function AuthRedirectDebugger() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

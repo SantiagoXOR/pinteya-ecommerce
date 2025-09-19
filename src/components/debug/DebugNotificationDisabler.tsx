@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 export default function DebugNotificationDisabler() {
   useEffect(() => {
     // Solo ejecutar en desarrollo
-    if (process.env.NODE_ENV !== 'development') return;
+    if (process.env.NODE_ENV !== 'development') {return;}
 
     console.log('🛡️ [DEBUG_DISABLER] Deshabilitando notificaciones de debugging...');
 
@@ -115,3 +115,12 @@ export default function DebugNotificationDisabler() {
   // Este componente no renderiza nada
   return null;
 }
+
+
+
+
+
+
+
+
+

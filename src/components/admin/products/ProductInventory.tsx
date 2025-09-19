@@ -3,7 +3,7 @@
 import { UseFormReturn, FieldErrors } from 'react-hook-form';
 import { AdminCard } from '../ui/AdminCard';
 import { Package, AlertTriangle, TrendingDown, BarChart3, Settings } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface ProductInventoryProps {
   form: UseFormReturn<any>;
@@ -22,9 +22,9 @@ export function ProductInventory({ form, errors, className }: ProductInventoryPr
 
   // Stock status
   const getStockStatus = () => {
-    if (!trackInventory) return { status: 'untracked', label: 'No rastreado', color: 'gray' };
-    if (stock === 0) return { status: 'out', label: 'Sin stock', color: 'red' };
-    if (stock <= lowStockThreshold) return { status: 'low', label: 'Stock bajo', color: 'yellow' };
+    if (!trackInventory) {return { status: 'untracked', label: 'No rastreado', color: 'gray' };}
+    if (stock === 0) {return { status: 'out', label: 'Sin stock', color: 'red' };}
+    if (stock <= lowStockThreshold) {return { status: 'low', label: 'Stock bajo', color: 'yellow' };}
     return { status: 'good', label: 'Stock disponible', color: 'green' };
   };
 
@@ -303,3 +303,12 @@ export function ProductInventory({ form, errors, className }: ProductInventoryPr
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

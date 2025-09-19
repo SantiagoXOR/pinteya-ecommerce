@@ -3,7 +3,7 @@
 import { UseFormReturn, FieldErrors } from 'react-hook-form';
 import { AdminCard } from '../ui/AdminCard';
 import { Search, Globe, Eye, AlertCircle, CheckCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 
 interface ProductSeoProps {
   form: UseFormReturn<any>;
@@ -22,7 +22,7 @@ export function ProductSeo({ form, errors, productName = '', className }: Produc
 
   // Generate slug from product name
   const generateSlug = () => {
-    if (!productName) return;
+    if (!productName) {return;}
     
     const generatedSlug = productName
       .toLowerCase()
@@ -36,7 +36,7 @@ export function ProductSeo({ form, errors, productName = '', className }: Produc
 
   // Auto-generate SEO title
   const generateSeoTitle = () => {
-    if (!productName) return;
+    if (!productName) {return;}
     
     const title = `${productName} - Pinteya E-commerce`;
     setValue('seo_title', title.slice(0, 60));
@@ -44,7 +44,7 @@ export function ProductSeo({ form, errors, productName = '', className }: Produc
 
   // Auto-generate SEO description
   const generateSeoDescription = () => {
-    if (!productName) return;
+    if (!productName) {return;}
     
     const description = `Compra ${productName} en Pinteya E-commerce. Productos de calidad para pinturería, ferretería y corralón. Envío rápido y seguro.`;
     setValue('seo_description', description.slice(0, 160));
@@ -354,3 +354,12 @@ export function ProductSeo({ form, errors, productName = '', className }: Produc
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

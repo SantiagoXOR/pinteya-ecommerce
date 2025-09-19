@@ -74,7 +74,7 @@ export function useCheckoutTransition(
 
   // Memoizar duración para evitar recálculos
   const animationDuration = useMemo(() => {
-    if (customDuration) return customDuration;
+    if (customDuration) {return customDuration;}
     return skipAnimation ? 200 : 2800;
   }, [skipAnimation, customDuration]);
 
@@ -243,3 +243,12 @@ export function useCheckoutTransition(
 }
 
 export default useCheckoutTransition;
+
+
+
+
+
+
+
+
+

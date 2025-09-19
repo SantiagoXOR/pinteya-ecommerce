@@ -360,9 +360,9 @@ async function debugAll(request: NextRequest, detailed: boolean = false) {
 
     // Calcular resumen
     Object.values(allResults).forEach(result => {
-      if (result.status === 'success') results.summary.success_count++;
-      else if (result.status === 'partial') results.summary.partial_count++;
-      else results.summary.failed_count++;
+      if (result.status === 'success') {results.summary.success_count++;}
+      else if (result.status === 'partial') {results.summary.partial_count++;}
+      else {results.summary.failed_count++;}
     });
 
     // Determinar estado general
@@ -494,3 +494,12 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

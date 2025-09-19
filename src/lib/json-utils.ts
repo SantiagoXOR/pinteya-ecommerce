@@ -268,7 +268,7 @@ export const STORAGE_KEYS = {
  * Función de inicialización para limpiar localStorage corrupto al cargar la app
  */
 export function initializeJsonSafety(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {return;}
 
   const keysToCheck = Object.values(STORAGE_KEYS);
   const cleanedCount = cleanCorruptedLocalStorage(keysToCheck);
@@ -276,3 +276,12 @@ export function initializeJsonSafety(): void {
   if (cleanedCount > 0) {
   }
 }
+
+
+
+
+
+
+
+
+

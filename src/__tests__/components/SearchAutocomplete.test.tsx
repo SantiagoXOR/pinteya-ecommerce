@@ -588,3 +588,12 @@ describe('SearchAutocomplete - Accessibility', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

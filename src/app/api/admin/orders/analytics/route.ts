@@ -3,14 +3,14 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { checkRateLimit, type RateLimitResult } from '@/lib/auth/rate-limiting';
-import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { metricsCollector } from '@/lib/metrics';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -383,3 +383,12 @@ async function generateStatusTimelineReport(filters: any) {
   // TODO: Implementar timeline de estados
   return { message: 'Status timeline report - To be implemented' };
 }
+
+
+
+
+
+
+
+
+

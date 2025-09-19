@@ -91,7 +91,7 @@ const RadioGroup = React.forwardRef<
       </RadioGroupPrimitive.Root>
       
       {error && (
-        <p className="text-xs text-red-600">{error}</p>
+        <p className="text-xs text-red-600">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
       )}
     </div>
   )
@@ -313,3 +313,12 @@ export function PaymentMethodRadio({
 }
 
 export { RadioGroup, RadioGroupItem, RadioCard }
+
+
+
+
+
+
+
+
+

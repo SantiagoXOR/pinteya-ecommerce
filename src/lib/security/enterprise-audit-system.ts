@@ -3,7 +3,7 @@
  * Unifica y extiende todas las funcionalidades de auditoría con capacidades enterprise
  */
 
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { 
   logSecurityEvent,
   type SecurityEvent,
@@ -621,7 +621,7 @@ export class EnterpriseAuditSystem {
 
       // Debug logs removidos para limpieza
 
-      if (authEvents.length < 3) return anomalies;
+      if (authEvents.length < 3) {return anomalies;}
 
       // Agrupar por usuario
       const userEvents = new Map<string, EnterpriseSecurityEvent[]>();
@@ -823,7 +823,7 @@ export class EnterpriseAuditSystem {
         (!userId || e.user_id === userId)
       );
 
-      if (authEvents.length < 3) return anomalies;
+      if (authEvents.length < 3) {return anomalies;}
 
       // Agrupar por usuario
       const userEvents = new Map<string, EnterpriseSecurityEvent[]>();
@@ -912,7 +912,7 @@ export class EnterpriseAuditSystem {
       // Obtener métricas de rate limiting
       const rateLimitStats = this.getRateLimitingStats();
 
-      if (rateLimitStats.blockedRequests === 0) return anomalies;
+      if (rateLimitStats.blockedRequests === 0) {return anomalies;}
 
       // Analizar IPs con más bloqueos
       const topBlockedIPs = rateLimitStats.topBlockedIPs || [];
@@ -1029,3 +1029,12 @@ export class EnterpriseAuditSystem {
 
 // Instancia singleton
 export const enterpriseAuditSystem = EnterpriseAuditSystem.getInstance();
+
+
+
+
+
+
+
+
+

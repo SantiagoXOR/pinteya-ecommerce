@@ -5,7 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import type { NextApiRequest } from 'next';
-import { isRedisAvailable, enterpriseRateLimit } from '@/lib/redis';
+import { isRedisAvailable, enterpriseRateLimit } from '@/lib/integrations/redis';
 
 // =====================================================
 // TIPOS Y INTERFACES
@@ -677,3 +677,12 @@ export async function checkEnterpriseRateLimit(
     };
   }
 }
+
+
+
+
+
+
+
+
+

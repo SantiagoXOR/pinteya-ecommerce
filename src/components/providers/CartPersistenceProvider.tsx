@@ -23,7 +23,7 @@ export const CartPersistenceProvider: React.FC<CartPersistenceProviderProps> = (
   // Efecto para cargar carrito desde localStorage SOLO al inicializar
   useEffect(() => {
     // Solo ejecutar en el cliente
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     try {
       const persistedItems = loadCartFromStorage();
@@ -44,3 +44,12 @@ export const CartPersistenceProvider: React.FC<CartPersistenceProviderProps> = (
 };
 
 export default CartPersistenceProvider;
+
+
+
+
+
+
+
+
+

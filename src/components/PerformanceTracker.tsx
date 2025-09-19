@@ -25,11 +25,11 @@ export const PerformanceTracker: React.FC<PerformanceTrackerProps> = ({
   });
 
   useEffect(() => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
 
     // Solo ejecutar en desarrollo para evitar spam en producción
     const isDevelopment = process.env.NODE_ENV === 'development';
-    if (!isDevelopment) return;
+    if (!isDevelopment) {return;}
 
     // Trackear bundle size al cargar (con delay mayor)
     const timer = setTimeout(() => {
@@ -70,3 +70,12 @@ export const PerformanceTracker: React.FC<PerformanceTrackerProps> = ({
 };
 
 export default PerformanceTracker;
+
+
+
+
+
+
+
+
+

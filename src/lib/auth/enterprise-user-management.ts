@@ -4,8 +4,8 @@
  */
 
 import { auth } from '@/auth';
-import { supabaseAdmin } from '@/lib/supabase';
-import { logger } from '@/lib/logger';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
+import { logger } from '@/lib/enterprise/logger';
 
 export interface EnterpriseUser {
   id: string;
@@ -232,3 +232,12 @@ export async function recordUserLogin(userId: string): Promise<void> {
     logger.error('Error registrando login de usuario:', error);
   }
 }
+
+
+
+
+
+
+
+
+

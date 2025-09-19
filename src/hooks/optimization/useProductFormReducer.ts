@@ -470,7 +470,7 @@ export function useProductFormValidation() {
     let isValid = true;
     fields.forEach(field => {
       const fieldValid = validateField(field, state[field]);
-      if (!fieldValid) isValid = false;
+      if (!fieldValid) {isValid = false;}
     });
     
     return isValid;
@@ -486,3 +486,12 @@ export function useProductFormValidation() {
 }
 
 export type { ProductFormState, ProductFormAction };
+
+
+
+
+
+
+
+
+

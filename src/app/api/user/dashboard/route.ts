@@ -3,7 +3,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 
@@ -32,14 +32,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 401 });
     }
 
-    // Obtener usuario
+    // Obtener usuario por email (NextAuth.js)
+    const userEmail = session.user.email;
     const { data: user } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('clerk_id', userId)
+      .eq('email', userEmail)
       .single();
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }
@@ -190,3 +191,12 @@ function calculateTopProducts(orderItems: any[]) {
     .sort((a: any, b: any) => b.total_quantity - a.total_quantity)
     .slice(0, 5);
 }
+
+
+
+
+
+
+
+
+

@@ -3,14 +3,14 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { auth } from '@/auth';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { checkRateLimit } from '@/lib/auth/rate-limiting';
-import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
-import { MetricsCollector } from '@/lib/metrics';
+import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
+import { MetricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -71,7 +71,7 @@ const stateTransitions: Record<string, string[]> = {
 };
 
 function validateStateTransition(currentStatus: string, newStatus: string): boolean {
-  if (currentStatus === newStatus) return true;
+  if (currentStatus === newStatus) {return true;}
   return stateTransitions[currentStatus]?.includes(newStatus) || false;
 }
 

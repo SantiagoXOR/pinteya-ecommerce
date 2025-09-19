@@ -57,3 +57,7 @@ console.log('\n================================================');
 console.log('✅ Verificación completada');
 console.log('📝 La corrección del error 401 ya está desplegada en producción');
 console.log('🔐 Solo falta configurar el rol admin en Clerk Dashboard');
+
+
+
+

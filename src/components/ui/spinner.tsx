@@ -70,7 +70,7 @@ export interface SpinnerOverlayProps extends SpinnerProps {
 
 const SpinnerOverlay = React.forwardRef<HTMLDivElement, SpinnerOverlayProps>(
   ({ show = true, text, className, ...spinnerProps }, ref) => {
-    if (!show) return null
+    if (!show) {return null}
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -87,3 +87,12 @@ const SpinnerOverlay = React.forwardRef<HTMLDivElement, SpinnerOverlayProps>(
 SpinnerOverlay.displayName = "SpinnerOverlay"
 
 export { Spinner, SpinnerOverlay, spinnerVariants }
+
+
+
+
+
+
+
+
+

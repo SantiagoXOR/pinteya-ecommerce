@@ -26,7 +26,7 @@ const STALE_TIME = 20000; // 20 segundos
 // =====================================================
 
 async function fetchLogisticsDashboard(): Promise<LogisticsDashboardResponse['data']> {
-  const response = await fetch('/api/admin/logistics', {
+  const response = await fetch('/api/admin/logistics/dashboard', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -147,9 +147,9 @@ export function useLogisticsDashboard(options?: {
   
   const systemHealth = data ? {
     status: (() => {
-      if (criticalAlerts.length > 0) return 'critical';
-      if (warningAlerts.length > 3) return 'warning';
-      if (data.stats.on_time_delivery_rate < 80) return 'warning';
+      if (criticalAlerts.length > 0) {return 'critical';}
+      if (warningAlerts.length > 3) {return 'warning';}
+      if (data.stats.on_time_delivery_rate < 80) {return 'warning';}
       return 'healthy';
     })(),
     score: Math.round(
@@ -270,3 +270,12 @@ export interface UseLogisticsDashboardExtendedReturn extends UseLogisticsDashboa
     score: number;
   } | null;
 }
+
+
+
+
+
+
+
+
+

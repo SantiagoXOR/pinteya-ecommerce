@@ -5,27 +5,38 @@
 export interface Database {
   public: {
     Tables: {
-      users: {
+      user_profiles: {
         Row: {
           id: string;
-          clerk_id: string;
           email: string;
-          name: string | null;
+          first_name: string | null;
+          last_name: string | null;
+          role_id: string | null;
+          is_active: boolean;
+          metadata: any; // JSONB
           created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
-          clerk_id: string;
           email: string;
-          name?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          role_id?: string | null;
+          is_active?: boolean;
+          metadata?: any;
           created_at?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
-          clerk_id?: string;
           email?: string;
-          name?: string | null;
-          created_at?: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          role_id?: string | null;
+          is_active?: boolean;
+          metadata?: any;
+          updated_at?: string;
         };
       };
       categories: {
@@ -156,22 +167,44 @@ export interface Database {
 }
 
 // Tipos auxiliares
-export type User = Database['public']['Tables']['users']['Row'];
+export type UserProfile = Database['public']['Tables']['user_profiles']['Row'];
 export type Category = Database['public']['Tables']['categories']['Row'];
 export type Product = Database['public']['Tables']['products']['Row'];
 export type Order = Database['public']['Tables']['orders']['Row'];
 export type OrderItem = Database['public']['Tables']['order_items']['Row'];
 
 // Tipos para inserción
-export type UserInsert = Database['public']['Tables']['users']['Insert'];
+export type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert'];
 export type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
 export type ProductInsert = Database['public']['Tables']['products']['Insert'];
 export type OrderInsert = Database['public']['Tables']['orders']['Insert'];
 export type OrderItemInsert = Database['public']['Tables']['order_items']['Insert'];
 
 // Tipos para actualización
-export type UserUpdate = Database['public']['Tables']['users']['Update'];
+export type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update'];
 export type CategoryUpdate = Database['public']['Tables']['categories']['Update'];
 export type ProductUpdate = Database['public']['Tables']['products']['Update'];
 export type OrderUpdate = Database['public']['Tables']['orders']['Update'];
 export type OrderItemUpdate = Database['public']['Tables']['order_items']['Update'];
+
+// Función helper para nombre completo
+export function getFullName(user: UserProfile): string {
+  if (user.first_name && user.last_name) {
+    return `${user.first_name} ${user.last_name}`;
+  }
+  return user.first_name || user.email.split('@')[0];
+}
+
+// Compatibilidad legacy (deprecated)
+export type User = UserProfile;
+export type UserInsert = UserProfileInsert;
+export type UserUpdate = UserProfileUpdate;
+
+
+
+
+
+
+
+
+

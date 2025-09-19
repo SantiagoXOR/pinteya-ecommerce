@@ -323,3 +323,12 @@ describe('CartSidebarModal Component', () => {
     expect(screen.getByText('🛒 Tu Selección')).toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+

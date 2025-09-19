@@ -280,7 +280,7 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
                 {Object.entries(errors).map(([field, error]) => (
                   <li key={field} className="flex items-start gap-2 text-sm text-red-700">
                     <span className="w-1 h-1 bg-red-500 rounded-full mt-2 flex-shrink-0" />
-                    <span><strong>{field}:</strong> {error}</span>
+                    <span><strong>{field}:</strong> {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</span>
                   </li>
                 ))}
               </ul>
@@ -399,3 +399,12 @@ CheckoutFlow.displayName = "CheckoutFlow"
 
 // Exportar tipos para uso externo
 export type { CheckoutStep, CheckoutMetrics }
+
+
+
+
+
+
+
+
+

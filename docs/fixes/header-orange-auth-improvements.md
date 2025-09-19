@@ -208,3 +208,6 @@ className="bg-yellow-400 hover:bg-yellow-500 text-black border-yellow-400 font-b
 - ✅ Icono Google en botón cuenta
 - ✅ Navegación hamburguesa eliminada
 - ✅ Buscador con contraste apropiado
+
+
+

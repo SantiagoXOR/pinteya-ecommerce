@@ -323,3 +323,12 @@ describe('useCart Hook', () => {
     expect(result.current.totalPrice).toBe(35000); // 15000 + 20000
   });
 });
+
+
+
+
+
+
+
+
+

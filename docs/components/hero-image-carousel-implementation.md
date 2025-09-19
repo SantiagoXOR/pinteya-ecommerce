@@ -223,3 +223,6 @@ npm test -- --watch --testPathPattern="HeroImageCarousel"
 **Versión**: 1.0.0  
 **Autor**: Pinteya Development Team  
 **Estado**: ✅ Producción Ready
+
+
+

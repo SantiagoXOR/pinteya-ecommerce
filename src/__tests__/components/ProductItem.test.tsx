@@ -272,3 +272,12 @@ describe('ProductItem Component', () => {
     expect(productCard).toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+

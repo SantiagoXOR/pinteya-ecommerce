@@ -406,3 +406,6 @@ export const colors = {
 ---
 
 **Conclusión**: Los design systems líderes comparten patrones comunes: tokens semánticos, componentes composables, documentación interactiva y testing robusto. Aplicar estas prácticas posicionará a Pinteya DS como referente en e-commerce argentino.
+
+
+

@@ -445,3 +445,12 @@ test.describe('Monitoring Dashboard E2E', () => {
     await expect(page.getByText('Alertas Activas')).not.toBeVisible();
   });
 });
+
+
+
+
+
+
+
+
+

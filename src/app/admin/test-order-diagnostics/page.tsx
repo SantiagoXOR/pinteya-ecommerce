@@ -124,7 +124,7 @@ export default function TestOrderDiagnosticsPage() {
   };
 
   const downloadReport = () => {
-    if (!testReport) return;
+    if (!testReport) {return;}
     
     const dataStr = JSON.stringify(testReport, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -161,7 +161,7 @@ export default function TestOrderDiagnosticsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-red-600 mb-4">{error}</p>
+            <p className="text-red-600 mb-4">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
             <Button onClick={loadLatestTestReport} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Reintentar
@@ -468,3 +468,12 @@ export default function TestOrderDiagnosticsPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

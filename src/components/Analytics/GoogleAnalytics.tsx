@@ -31,7 +31,11 @@ const GoogleAnalytics: React.FC = () => {
     }
   }, [pathname, isGALoaded]);
 
-  if (!GA_TRACKING_ID) {
+  // Solo renderizar si tenemos GA_TRACKING_ID válido
+  if (!GA_TRACKING_ID || GA_TRACKING_ID === 'G-XXXXXXXXXX' || GA_TRACKING_ID.length < 10) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Google Analytics no configurado. Configura NEXT_PUBLIC_GA_ID en .env.local');
+    }
     return null;
   }
 
@@ -63,3 +67,12 @@ const GoogleAnalytics: React.FC = () => {
 };
 
 export default GoogleAnalytics;
+
+
+
+
+
+
+
+
+

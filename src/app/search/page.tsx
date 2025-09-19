@@ -213,7 +213,9 @@ export default function SearchPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Error en la búsqueda
             </h2>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <p className="text-gray-600 mb-6">
+              {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+            </p>
             <Button
               onClick={() => window.location.reload()}
               className="bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white"
@@ -340,3 +342,12 @@ export default function SearchPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

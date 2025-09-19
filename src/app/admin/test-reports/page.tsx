@@ -601,8 +601,8 @@ const TestReportsDashboard = () => {
   };
 
   const getCoverageColor = (coverage: number) => {
-    if (coverage >= 90) return 'text-green-600';
-    if (coverage >= 80) return 'text-yellow-600';
+    if (coverage >= 90) {return 'text-green-600';}
+    if (coverage >= 80) {return 'text-yellow-600';}
     return 'text-red-600';
   };
 
@@ -1479,3 +1479,12 @@ const TestReportsDashboard = () => {
 };
 
 export default TestReportsDashboard;
+
+
+
+
+
+
+
+
+

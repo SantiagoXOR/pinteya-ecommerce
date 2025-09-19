@@ -31,3 +31,6 @@ Ver `.env.monitoring.example` para todas las opciones disponibles.
 - Monitorear uso de recursos
 
 Generado automáticamente el 2025-09-09T11:06:26.637Z
+
+
+

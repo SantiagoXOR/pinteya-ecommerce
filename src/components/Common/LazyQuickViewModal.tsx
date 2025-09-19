@@ -133,3 +133,12 @@ const LazyQuickViewModal = () => {
 
 export default LazyQuickViewModal;
 export { QuickViewModalSkeleton };
+
+
+
+
+
+
+
+
+

@@ -157,7 +157,7 @@ export function withNetworkErrorHandling(handler: Function) {
  * Función para configurar supresión de errores globalmente
  */
 export function setupGlobalErrorSuppression() {
-  if (typeof window === 'undefined') return; // Solo en el cliente
+  if (typeof window === 'undefined') {return;} // Solo en el cliente
 
   // Suprimir errores de unhandled promise rejections para AbortError
   window.addEventListener('unhandledrejection', (event) => {
@@ -202,3 +202,12 @@ export function useErrorSuppression() {
     setupGlobalErrorSuppression();
   }
 }
+
+
+
+
+
+
+
+
+

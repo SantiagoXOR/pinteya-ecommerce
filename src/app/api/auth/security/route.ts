@@ -28,6 +28,9 @@ import {
   exportSecurityEvents
 } from '@/lib/auth/security-audit-enhanced';
 import { ApiResponse } from '@/types/api';
+import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter';
+import { createSecurityLogger } from '@/lib/logging/security-logger';
+import { withTimeout, ENDPOINT_TIMEOUTS } from '@/lib/config/api-timeouts';
 
 // =====================================================
 // GET /api/auth/security
@@ -35,25 +38,43 @@ import { ApiResponse } from '@/types/api';
 // =====================================================
 
 export async function GET(request: NextRequest) {
-  try {
-    const url = new URL(request.url);
-    const action = url.searchParams.get('action') || 'metrics';
-    const userId = url.searchParams.get('userId');
-    const severity = url.searchParams.get('severity') as any;
+  // Aplicar rate limiting para APIs de autenticación
+  const rateLimitResult = await withRateLimit(
+    request,
+    RATE_LIMIT_CONFIGS.auth,
+    async () => {
+      // Crear logger de seguridad
+      const securityLogger = createSecurityLogger(request);
 
-    // ENTERPRISE: Autenticación enterprise con permisos específicos de seguridad
-    const enterpriseResult = await requireAdminAuth(request, ['security_read', 'admin_access']);
+      try {
+        // Log del acceso al API de seguridad
+        securityLogger.logApiAccess(securityLogger.context, 'auth/security', 'read');
 
-    if (!enterpriseResult.success) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: enterpriseResult.error || 'Permisos de administrador requeridos',
-        enterprise: true,
-        code: enterpriseResult.code
-      };
-      return NextResponse.json(errorResponse, { status: enterpriseResult.status || 403 });
-    }
+        const url = new URL(request.url);
+        const action = url.searchParams.get('action') || 'metrics';
+        const userId = url.searchParams.get('userId');
+        const severity = url.searchParams.get('severity') as any;
+
+        // ENTERPRISE: Autenticación enterprise con permisos específicos de seguridad
+        const enterpriseResult = await withTimeout(
+          () => requireAdminAuth(request, ['security_read', 'admin_access']),
+          ENDPOINT_TIMEOUTS['/api/auth']?.request || 15000,
+          'Autenticación enterprise'
+        );
+
+        if (!enterpriseResult.success) {
+          // Log del intento de acceso no autorizado
+          securityLogger.logPermissionDenied(securityLogger.context, 'auth/security', 'read');
+
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: enterpriseResult.error || 'Permisos de administrador requeridos',
+            enterprise: true,
+            code: enterpriseResult.code
+          };
+          return NextResponse.json(errorResponse, { status: enterpriseResult.status || 403 });
+        }
 
     const context = enterpriseResult.context!;
 
@@ -196,23 +217,33 @@ export async function GET(request: NextRequest) {
         
         return new Response(exportData, { headers });
 
-      default:
+        default:
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: `Acción no válida: ${action}`
+          };
+          return NextResponse.json(errorResponse, { status: 400 });
+      }
+      } catch (error) {
+        // Log del error de seguridad
+        securityLogger.logApiError(securityLogger.context, error as Error, {
+          endpoint: '/api/auth/security',
+          method: 'GET',
+          action: request.url
+        });
+
         const errorResponse: ApiResponse<null> = {
           data: null,
           success: false,
-          error: `Acción no válida: ${action}`
+          error: 'Error interno del servidor'
         };
-        return NextResponse.json(errorResponse, { status: 400 });
+        return NextResponse.json(errorResponse, { status: 500 });
+      }
     }
-  } catch (error) {
-    console.error('Error en GET /api/auth/security:', error);
-    const errorResponse: ApiResponse<null> = {
-      data: null,
-      success: false,
-      error: 'Error interno del servidor'
-    };
-    return NextResponse.json(errorResponse, { status: 500 });
-  }
+  );
+
+  return rateLimitResult;
 }
 
 // =====================================================
@@ -221,29 +252,53 @@ export async function GET(request: NextRequest) {
 // =====================================================
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { action, alertId, status, notes, assignedTo } = body;
+  // Aplicar rate limiting para APIs de autenticación (acciones administrativas)
+  const rateLimitResult = await withRateLimit(
+    request,
+    RATE_LIMIT_CONFIGS.admin,
+    async () => {
+      // Crear logger de seguridad
+      const securityLogger = createSecurityLogger(request);
 
-    if (!action) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Acción es requerida'
-      };
-      return NextResponse.json(errorResponse, { status: 400 });
-    }
+      try {
+        // Log del acceso al API de seguridad (POST)
+        securityLogger.logApiAccess(securityLogger.context, 'auth/security', 'write');
 
-    // Verificar autenticación y permisos de admin
-    const authResult = await getAuthenticatedUser(request);
-    if (!authResult.userId || !authResult.isAdmin) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Permisos de administrador requeridos'
-      };
-      return NextResponse.json(errorResponse, { status: 403 });
-    }
+        const body = await withTimeout(
+          () => request.json(),
+          ENDPOINT_TIMEOUTS['/api/auth']?.request || 15000,
+          'Lectura del body de la request'
+        );
+
+        const { action, alertId, status, notes, assignedTo } = body;
+
+        if (!action) {
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: 'Acción es requerida'
+          };
+          return NextResponse.json(errorResponse, { status: 400 });
+        }
+
+        // Verificar autenticación y permisos de admin
+        const authResult = await withTimeout(
+          () => getAuthenticatedUser(request),
+          ENDPOINT_TIMEOUTS['/api/auth']?.request || 15000,
+          'Verificación de autenticación'
+        );
+
+        if (!authResult.userId || !authResult.isAdmin) {
+          // Log del intento de acceso no autorizado
+          securityLogger.logPermissionDenied(securityLogger.context, 'auth/security', 'write');
+
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: 'Permisos de administrador requeridos'
+          };
+          return NextResponse.json(errorResponse, { status: 403 });
+        }
 
     switch (action) {
       case 'update_alert':
@@ -350,21 +405,40 @@ export async function POST(request: NextRequest) {
         };
         return NextResponse.json(forceResponse);
 
-      default:
+        default:
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: `Acción no válida: ${action}`
+          };
+          return NextResponse.json(errorResponse, { status: 400 });
+      }
+      } catch (error) {
+        // Log del error de seguridad
+        securityLogger.logApiError(securityLogger.context, error as Error, {
+          endpoint: '/api/auth/security',
+          method: 'POST',
+          action: request.url
+        });
+
         const errorResponse: ApiResponse<null> = {
           data: null,
           success: false,
-          error: `Acción no válida: ${action}`
+          error: 'Error interno del servidor'
         };
-        return NextResponse.json(errorResponse, { status: 400 });
+        return NextResponse.json(errorResponse, { status: 500 });
+      }
     }
-  } catch (error) {
-    console.error('Error en POST /api/auth/security:', error);
-    const errorResponse: ApiResponse<null> = {
-      data: null,
-      success: false,
-      error: 'Error interno del servidor'
-    };
-    return NextResponse.json(errorResponse, { status: 500 });
-  }
+  );
+
+  return rateLimitResult;
 }
+
+
+
+
+
+
+
+
+

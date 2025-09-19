@@ -4,8 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { getPaymentInfo } from '@/lib/mercadopago';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getPaymentInfo } from '@/lib/integrations/mercadopago';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { ApiResponse } from '@/types/api';
 
 interface RouteParams {

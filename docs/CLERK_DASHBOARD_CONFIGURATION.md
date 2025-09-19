@@ -142,3 +142,6 @@ Usuario → Sign Out → / ✅
 ❌ /admin → /my-account → /admin → /my-account (ELIMINADO)
 ✅ /admin → /admin (FUNCIONANDO)
 ```
+
+
+

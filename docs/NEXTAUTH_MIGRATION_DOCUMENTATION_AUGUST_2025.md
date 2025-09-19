@@ -218,3 +218,6 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ---
 
 **La migración de Clerk a NextAuth.js ha sido completada exitosamente. Todos los errores de build de Vercel han sido resueltos y el sistema está 100% operativo en producción.**
+
+
+

@@ -37,12 +37,12 @@ export interface UseAdvancedFiltersReturn {
 // ===================================
 
 const parseArrayParam = (param: string | null): string[] => {
-  if (!param) return [];
+  if (!param) {return [];}
   return param.split(',').filter(Boolean);
 };
 
 const parseNumberArrayParam = (param: string | null, defaultValue: [number, number]): [number, number] => {
-  if (!param) return defaultValue;
+  if (!param) {return defaultValue;}
   const parts = param.split(',').map(Number);
   if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
     return [parts[0], parts[1]];
@@ -196,3 +196,12 @@ export const useAdvancedFilters = (): UseAdvancedFiltersReturn => {
 };
 
 export default useAdvancedFilters;
+
+
+
+
+
+
+
+
+

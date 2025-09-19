@@ -318,3 +318,12 @@ describe('Sistema de Auditoría de Seguridad Mejorado', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

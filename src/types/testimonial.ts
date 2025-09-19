@@ -6,3 +6,12 @@ export type Testimonial = {
   product?: string;
   verified?: boolean;
 };
+
+
+
+
+
+
+
+
+

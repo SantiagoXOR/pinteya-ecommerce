@@ -223,7 +223,7 @@ export function useCartOptimized(
   // ===================================
 
   const saveToLocalStorage = useCallback((cartItems: CartItem[]) => {
-    if (!enablePersistence || typeof window === 'undefined') return;
+    if (!enablePersistence || typeof window === 'undefined') {return;}
     
     try {
       const cartData = {
@@ -239,11 +239,11 @@ export function useCartOptimized(
   }, [enablePersistence]);
 
   const loadFromLocalStorage = useCallback((): CartItem[] => {
-    if (!enablePersistence || typeof window === 'undefined') return [];
+    if (!enablePersistence || typeof window === 'undefined') {return [];}
     
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return [];
+      if (!stored) {return [];}
       
       const cartData = JSON.parse(stored);
       
@@ -260,7 +260,7 @@ export function useCartOptimized(
   }, [enablePersistence]);
 
   const saveCart = useCallback(async () => {
-    if (!enablePersistence) return;
+    if (!enablePersistence) {return;}
     
     // Guardar en localStorage
     saveToLocalStorage(items);
@@ -277,7 +277,7 @@ export function useCartOptimized(
   }, [items, enablePersistence, enableUserSync, user?.id, saveToLocalStorage]);
 
   const loadCart = useCallback(async () => {
-    if (!enablePersistence) return;
+    if (!enablePersistence) {return;}
     
     try {
       let cartItems: CartItem[] = [];
@@ -306,7 +306,7 @@ export function useCartOptimized(
   }, [enablePersistence, enableUserSync, user?.id, loadFromLocalStorage, dispatch]);
 
   const syncWithUser = useCallback(async () => {
-    if (!enableUserSync || !user?.id) return;
+    if (!enableUserSync || !user?.id) {return;}
     
     try {
       // Migrar carrito temporal a usuario autenticado
@@ -358,12 +358,12 @@ export function useCartOptimized(
 
   // Efecto para guardado automático con debounce
   useEffect(() => {
-    if (!enablePersistence) return;
+    if (!enablePersistence) {return;}
     
     const currentCartString = JSON.stringify(items);
     
     // Evitar guardados innecesarios
-    if (currentCartString === lastSaveRef.current) return;
+    if (currentCartString === lastSaveRef.current) {return;}
     
     lastSaveRef.current = currentCartString;
     
@@ -402,7 +402,7 @@ export function useCartOptimized(
   // Efecto para sincronización con usuario
   useEffect(() => {
     console.log('[useCartOptimized] 🚫 SYNC WITH USER TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN');
-    return;
+    
 
     // CÓDIGO COMENTADO TEMPORALMENTE
     // if (isLoaded && user && enableUserSync) {
@@ -446,3 +446,12 @@ export function useCartOptimized(
     getInvalidItems,
   };
 }
+
+
+
+
+
+
+
+
+

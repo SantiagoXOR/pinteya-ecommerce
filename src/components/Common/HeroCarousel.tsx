@@ -63,7 +63,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!swiperRef.current) return;
+      if (!swiperRef.current) {return;}
 
       switch (event.key) {
         case "ArrowLeft":
@@ -222,3 +222,12 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
 };
 
 export default HeroCarousel;
+
+
+
+
+
+
+
+
+

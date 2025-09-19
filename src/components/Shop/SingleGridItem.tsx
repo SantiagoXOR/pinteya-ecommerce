@@ -97,3 +97,12 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
 };
 
 export default SingleGridItem;
+
+
+
+
+
+
+
+
+

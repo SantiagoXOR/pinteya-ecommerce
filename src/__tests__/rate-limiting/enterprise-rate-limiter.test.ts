@@ -28,7 +28,7 @@ import {
   memoryStore,
   metricsCollector
 } from '@/lib/rate-limiting/enterprise-rate-limiter';
-import { isRedisAvailable, enterpriseRateLimit } from '@/lib/redis';
+import { isRedisAvailable, enterpriseRateLimit } from '@/lib/integrations/redis';
 
 describe('Sistema Enterprise de Rate Limiting', () => {
   let mockIsRedisAvailable: jest.MockedFunction<typeof isRedisAvailable>;
@@ -421,3 +421,12 @@ describe('Sistema Enterprise de Rate Limiting', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

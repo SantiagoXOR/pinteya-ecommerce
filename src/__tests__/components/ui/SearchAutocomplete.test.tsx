@@ -353,3 +353,12 @@ describe('SearchAutocomplete', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 });
+
+
+
+
+
+
+
+
+

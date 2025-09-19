@@ -384,3 +384,12 @@ export function withResponseCache(ttl: number = CACHE_CONFIG.ttl.user) {
 
 // Exportar instancia del cache para uso avanzado
 export { enterpriseCache };
+
+
+
+
+
+
+
+
+

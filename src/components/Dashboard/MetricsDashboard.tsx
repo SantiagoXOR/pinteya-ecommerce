@@ -20,7 +20,7 @@ import {
   Shield,
   BarChart3
 } from 'lucide-react';
-import { MercadoPagoMetrics } from '@/lib/metrics';
+import { MercadoPagoMetrics } from '@/lib/enterprise/metrics';
 
 interface Alert {
   type: string;
@@ -105,7 +105,7 @@ export default function MetricsDashboard() {
   // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN EN APIS DE AUTH
   useEffect(() => {
     console.log('[METRICS_DASHBOARD] 🚫 Auto-refresh temporalmente deshabilitado para evitar recursión');
-    if (!autoRefresh) return;
+    if (!autoRefresh) {return;}
 
     const interval = setInterval(() => {
       loadMetrics();
@@ -117,14 +117,14 @@ export default function MetricsDashboard() {
 
   // Formatear números
   const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    if (num >= 1000000) {return `${(num / 1000000).toFixed(1)}M`;}
+    if (num >= 1000) {return `${(num / 1000).toFixed(1)}K`;}
     return num.toString();
   };
 
   // Formatear tiempo
   const formatTime = (ms: number): string => {
-    if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
+    if (ms >= 1000) {return `${(ms / 1000).toFixed(2)}s`;}
     return `${ms.toFixed(0)}ms`;
   };
 
@@ -437,3 +437,12 @@ export default function MetricsDashboard() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

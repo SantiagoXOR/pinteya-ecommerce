@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getSupabaseClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/integrations/supabase/server';
 import { requireAdminAuth } from '@/lib/auth/admin-auth';
-import { checkRateLimit } from '@/lib/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { metricsCollector } from '@/lib/metrics';
+import { checkRateLimit } from '@/lib/enterprise/rate-limiter';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // ===================================
 // CONFIGURACIÓN
@@ -82,11 +82,7 @@ interface CategoryStats {
 // FUNCIONES AUXILIARES
 // ===================================
 async function getCategoryById(categoryId: string): Promise<Category | null> {
-  const supabase = getSupabaseClient(true);
-  
-  if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
-  }
+  const supabase = await createClient();
 
   const { data: category, error } = await supabase
     .from('categories')
@@ -119,11 +115,7 @@ async function getCategoryById(categoryId: string): Promise<Category | null> {
 }
 
 async function updateCategory(categoryId: string, updateData: any, userId: string): Promise<Category> {
-  const supabase = getSupabaseClient(true);
-  
-  if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
-  }
+  const supabase = await createClient();
 
   // Verificar que la categoría existe
   const existingCategory = await getCategoryById(categoryId);
@@ -185,11 +177,7 @@ async function updateCategory(categoryId: string, updateData: any, userId: strin
 }
 
 async function deleteCategory(categoryId: string, userId: string): Promise<void> {
-  const supabase = getSupabaseClient(true);
-  
-  if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
-  }
+  const supabase = await createClient();
 
   // Verificar que la categoría existe
   const category = await getCategoryById(categoryId);
@@ -218,11 +206,7 @@ async function deleteCategory(categoryId: string, userId: string): Promise<void>
 }
 
 async function getCategoryStats(categoryId: string): Promise<CategoryStats> {
-  const supabase = getSupabaseClient(true);
-  
-  if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
-  }
+  const supabase = await createClient();
 
   // Obtener estadísticas de productos
   const { data: productStats } = await supabase
@@ -259,11 +243,7 @@ async function getCategoryStats(categoryId: string): Promise<CategoryStats> {
 }
 
 async function checkCircularHierarchy(categoryId: string, parentId: string): Promise<boolean> {
-  const supabase = getSupabaseClient(true);
-  
-  if (!supabase) {
-    return false;
-  }
+  const supabase = await createClient();
 
   // Si el parent_id es el mismo categoryId, es circular
   if (categoryId === parentId) {
@@ -295,8 +275,7 @@ async function checkCircularHierarchy(categoryId: string, parentId: string): Pro
 
 async function logAuditAction(action: string, categoryId: string, userId: string, details?: any): Promise<void> {
   try {
-    const supabase = getSupabaseClient(true);
-    if (!supabase) return;
+    const supabase = await createClient();
 
     await supabase.from('audit_logs').insert({
       table_name: 'categories',

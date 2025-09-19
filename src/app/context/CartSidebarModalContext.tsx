@@ -38,3 +38,12 @@ export const CartModalProvider = ({ children }: { children: React.ReactNode }) =
     </CartModalContext.Provider>
   );
 };
+
+
+
+
+
+
+
+
+

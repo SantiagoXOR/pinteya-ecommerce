@@ -96,3 +96,12 @@ describe('Header - Ultra-Simplified Tests', () => {
     expect(screen.getByTestId('auth-section')).toBeInTheDocument()
   })
 })
+
+
+
+
+
+
+
+
+

@@ -220,3 +220,6 @@ SELECT public.is_admin() as is_admin_result;
 **Estado**: ✅ COMPLETADO - SEGURIDAD REFORZADA
 **Nivel de seguridad**: 🔐 ALTO
 **Próxima revisión**: 2025-02-05
+
+
+

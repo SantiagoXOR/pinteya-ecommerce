@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 // Importación robusta de iconos según mejores prácticas de Lucide React
 import {
   Package,
@@ -53,6 +53,12 @@ const sidebarItems: SidebarItem[] = [
     title: 'Analytics',
     href: '/admin/analytics',
     icon: BarChart3,
+  },
+  {
+    title: 'SEO Dashboard',
+    href: '/admin/seo',
+    icon: Search,
+    badge: 'Enterprise',
   },
   {
     title: 'Monitoreo',
@@ -120,7 +126,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-4 space-y-1">
         {sidebarItems.map((item) => {
-          if (!item || !item.icon) return null;
+          if (!item || !item.icon) {return null;}
 
           const isActive = pathname === item.href ||
             (item.href !== '/admin' && pathname.startsWith(item.href));
@@ -168,3 +174,12 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

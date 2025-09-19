@@ -187,13 +187,13 @@ REDIS_DB=0
 
 ```typescript
 // Rate Limiting
-import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiter';
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
 
 // Retry Logic
 import { retryMercadoPagoOperation } from '@/lib/retry-logic';
 
 // Métricas
-import { metricsCollector } from '@/lib/metrics';
+import { metricsCollector } from '@/lib/enterprise/metrics';
 
 // Cache
 import { CacheUtils } from '@/lib/cache-manager';
@@ -240,3 +240,6 @@ El sistema está ahora preparado para manejar **alto volumen de transacciones** 
 **Proyecto:** Pinteya E-commerce  
 **Tecnologías:** Next.js 15, TypeScript, Redis, Supabase, MercadoPago  
 **Fecha:** Enero 2025
+
+
+

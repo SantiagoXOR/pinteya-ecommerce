@@ -321,3 +321,6 @@ showSocialProof={false} /* Menos scroll en mobile */
 **Estado**: 🚀 **ULTRA-OPTIMIZADO Y LISTO PARA CONVERSIÓN MÁXIMA**
 
 El checkout de Pinteya ahora representa la experiencia más optimizada posible: limpia, directa, con identidad de marca sólida y enfocada 100% en la conversión, eliminando cualquier elemento que pueda distraer al usuario de completar su compra.
+
+
+

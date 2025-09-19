@@ -77,3 +77,12 @@ const SingleItem = ({ item }: { item: Product }) => {
 };
 
 export default SingleItem;
+
+
+
+
+
+
+
+
+

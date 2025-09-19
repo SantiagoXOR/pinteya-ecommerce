@@ -222,3 +222,6 @@ Push: Exitoso a origin/main
 ---
 
 *Documentación actualizada el 23 de Agosto, 2025 - Pinteya E-commerce Team*
+
+
+

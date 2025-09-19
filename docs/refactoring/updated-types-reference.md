@@ -195,3 +195,6 @@ CREATE INDEX IF NOT EXISTS idx_products_brand ON products(brand);
 - Todos los tests existentes deben seguir pasando
 - Nuevos tests deben incluir campo `brand`
 - Mocks deben incluir datos de marca
+
+
+

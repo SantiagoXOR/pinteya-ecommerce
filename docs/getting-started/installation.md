@@ -272,3 +272,6 @@ Una vez completada la instalación:
 ---
 
 *¿Problemas con la instalación? Consulta la [🔧 Guía de Troubleshooting](../deployment/troubleshooting.md)*
+
+
+

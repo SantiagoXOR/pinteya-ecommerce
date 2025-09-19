@@ -328,3 +328,12 @@ export function withGeneralSecurity() {
 export function withCustomSecurity(config: SecurityMiddlewareConfig) {
   return withEnhancedSecurity(config);
 }
+
+
+
+
+
+
+
+
+

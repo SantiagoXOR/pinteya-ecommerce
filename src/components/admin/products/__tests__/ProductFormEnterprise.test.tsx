@@ -78,7 +78,7 @@ jest.mock('../CategorySelector', () => ({
         <option value="category-1">Category 1</option>
         <option value="category-2">Category 2</option>
       </select>
-      {error && <span data-testid="category-error">{error}</span>}
+      {error && <span data-testid="category-error">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</span>}
     </div>
   ),
 }));
@@ -567,3 +567,12 @@ describe('ProductFormEnterprise', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

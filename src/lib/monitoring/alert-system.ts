@@ -2,8 +2,8 @@
 // PINTEYA E-COMMERCE - ENTERPRISE ALERT SYSTEM
 // ===================================
 
-import { logger, LogLevel, LogCategory } from '@/lib/logger';
-import { getSupabaseClient } from '@/lib/supabase';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { emailService } from '@/lib/notifications/email';
 import { slackService } from '@/lib/notifications/slack';
 
@@ -671,7 +671,7 @@ export class EnterpriseAlertSystem {
   private async storeAlert(alert: Alert): Promise<void> {
     try {
       const supabase = getSupabaseClient(true);
-      if (!supabase) return;
+      if (!supabase) {return;}
 
       await supabase.from('enterprise_alerts').insert({
         id: alert.id,
@@ -705,7 +705,7 @@ export class EnterpriseAlertSystem {
   private async updateAlert(alert: Alert): Promise<void> {
     try {
       const supabase = getSupabaseClient(true);
-      if (!supabase) return;
+      if (!supabase) {return;}
 
       await supabase
         .from('enterprise_alerts')
@@ -748,3 +748,12 @@ export const enterpriseAlertSystem = EnterpriseAlertSystem.getInstance();
 export const triggerAlert = enterpriseAlertSystem.triggerAlert.bind(enterpriseAlertSystem);
 export const acknowledgeAlert = enterpriseAlertSystem.acknowledgeAlert.bind(enterpriseAlertSystem);
 export const resolveAlert = enterpriseAlertSystem.resolveAlert.bind(enterpriseAlertSystem);
+
+
+
+
+
+
+
+
+

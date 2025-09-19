@@ -249,3 +249,6 @@ Para problemas con las herramientas de diagnóstico:
 **Última actualización:** 16 de Diciembre, 2024
 **Versión:** 1.0.0
 **Mantenido por:** Equipo de Desarrollo Pinteya
+
+
+

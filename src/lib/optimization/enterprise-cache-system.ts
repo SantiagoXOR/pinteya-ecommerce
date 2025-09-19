@@ -4,7 +4,7 @@
  */
 
 import { cacheManager, CACHE_CONFIGS, type CacheConfig } from '@/lib/cache-manager';
-import { redisCache } from '@/lib/redis';
+import { redisCache } from '@/lib/integrations/redis';
 import { enterpriseAuditSystem } from '@/lib/security/enterprise-audit-system';
 import { metricsCollector } from '@/lib/rate-limiting/enterprise-rate-limiter';
 import type { EnterpriseAuthContext } from '@/lib/auth/enterprise-auth-utils';
@@ -176,7 +176,7 @@ export class EnterpriseCacheSystem {
    * Inicializa el sistema enterprise de caché
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {return;}
 
     try {
       // Inicializar jobs de warmup programados
@@ -651,7 +651,7 @@ export const EnterpriseCacheUtils = {
    */
   async cacheAuthData<T>(key: string, fetcher: () => Promise<T>, context: EnterpriseAuthContext): Promise<T> {
     const cached = await enterpriseCacheSystem.get<T>(key, ENTERPRISE_CACHE_CONFIGS.AUTH_CRITICAL, context);
-    if (cached !== null) return cached;
+    if (cached !== null) {return cached;}
 
     const data = await fetcher();
     await enterpriseCacheSystem.set(key, data, ENTERPRISE_CACHE_CONFIGS.AUTH_CRITICAL, context);
@@ -663,7 +663,7 @@ export const EnterpriseCacheUtils = {
    */
   async cacheProductData<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
     const cached = await enterpriseCacheSystem.get<T>(key, ENTERPRISE_CACHE_CONFIGS.PRODUCTS_SMART);
-    if (cached !== null) return cached;
+    if (cached !== null) {return cached;}
 
     const data = await fetcher();
     await enterpriseCacheSystem.set(key, data, ENTERPRISE_CACHE_CONFIGS.PRODUCTS_SMART);
@@ -675,7 +675,7 @@ export const EnterpriseCacheUtils = {
    */
   async cachePublicData<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
     const cached = await enterpriseCacheSystem.get<T>(key, ENTERPRISE_CACHE_CONFIGS.PUBLIC_PERFORMANCE);
-    if (cached !== null) return cached;
+    if (cached !== null) {return cached;}
 
     const data = await fetcher();
     await enterpriseCacheSystem.set(key, data, ENTERPRISE_CACHE_CONFIGS.PUBLIC_PERFORMANCE);
@@ -692,3 +692,12 @@ export const EnterpriseCacheUtils = {
     await Promise.all(invalidationPromises);
   }
 };
+
+
+
+
+
+
+
+
+

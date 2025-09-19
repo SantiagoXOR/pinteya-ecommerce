@@ -306,3 +306,6 @@ Después del deploy exitoso:
 
 **🎉 ¡Felicitaciones! Tu aplicación está en producción:**
 **[pinteya.com](https://pinteya.com)**
+
+
+

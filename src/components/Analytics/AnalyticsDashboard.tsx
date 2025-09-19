@@ -73,7 +73,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   format = 'number' 
 }) => {
   const formatValue = (val: string | number) => {
-    if (typeof val === 'string') return val;
+    if (typeof val === 'string') {return val;}
     
     switch (format) {
       case 'currency':
@@ -334,3 +334,12 @@ const AnalyticsDashboard: React.FC = () => {
 };
 
 export default AnalyticsDashboard;
+
+
+
+
+
+
+
+
+

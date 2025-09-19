@@ -515,3 +515,12 @@ console.log('[ENTERPRISE_STARTUP] 🚫 Auto-inicialización DESHABILITADA para e
 //     });
 //   }, 1000);
 // }
+
+
+
+
+
+
+
+
+

@@ -125,7 +125,7 @@ const MetricCard: React.FC<{
   };
 
   const getChangeColor = () => {
-    if (change === undefined) return '';
+    if (change === undefined) {return '';}
     return change >= 0 ? 'text-green-600' : 'text-red-600';
   };
 
@@ -344,7 +344,7 @@ export const EnterpriseMonitoringDashboard: React.FC = () => {
   // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN EN APIS DE AUTH
   useEffect(() => {
     console.log('[ENTERPRISE_DASHBOARD] 🚫 Auto-refresh temporalmente deshabilitado para evitar recursión');
-    if (!autoRefresh) return;
+    if (!autoRefresh) {return;}
 
     const interval = setInterval(fetchMetrics, refreshInterval * 1000);
     return () => clearInterval(interval);
@@ -352,7 +352,7 @@ export const EnterpriseMonitoringDashboard: React.FC = () => {
 
   // Función para exportar métricas
   const exportMetrics = () => {
-    if (!metrics) return;
+    if (!metrics) {return;}
 
     const dataStr = JSON.stringify(metrics, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -796,3 +796,12 @@ export const EnterpriseMonitoringDashboard: React.FC = () => {
 };
 
 export default EnterpriseMonitoringDashboard;
+
+
+
+
+
+
+
+
+

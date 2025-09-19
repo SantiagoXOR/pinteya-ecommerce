@@ -8,7 +8,7 @@ import {
   RedisCache, 
   getRateLimitInfo, 
   incrementRateLimit 
-} from '@/lib/redis';
+} from '@/lib/integrations/redis';
 
 // Mock ioredis
 jest.mock('ioredis', () => {
@@ -34,7 +34,7 @@ const Redis = require('ioredis');
 const mockRedis = new Redis();
 
 // Mock logger
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     info: jest.fn(),
     debug: jest.fn(),
@@ -462,3 +462,12 @@ describe('Rate Limiting Functions', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

@@ -92,8 +92,8 @@ export async function GET(request: NextRequest) {
           const fileExtension = path.extname(filename).toLowerCase();
           
           let contentType = 'application/octet-stream';
-          if (fileExtension === '.png') contentType = 'image/png';
-          else if (fileExtension === '.jpg' || fileExtension === '.jpeg') contentType = 'image/jpeg';
+          if (fileExtension === '.png') {contentType = 'image/png';}
+          else if (fileExtension === '.jpg' || fileExtension === '.jpeg') {contentType = 'image/jpeg';}
 
           return new NextResponse(fileBuffer, {
             headers: {
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
           const fileExtension = path.extname(filename).toLowerCase();
           
           let mimeType = 'image/png';
-          if (fileExtension === '.jpg' || fileExtension === '.jpeg') mimeType = 'image/jpeg';
+          if (fileExtension === '.jpg' || fileExtension === '.jpeg') {mimeType = 'image/jpeg';}
 
           return NextResponse.json({
             success: true,
@@ -401,3 +401,12 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

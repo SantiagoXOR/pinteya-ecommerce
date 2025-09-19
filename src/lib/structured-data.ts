@@ -124,3 +124,12 @@ export const productStructuredData = (product: {
     }
   }
 });
+
+
+
+
+
+
+
+
+

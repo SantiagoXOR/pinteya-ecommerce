@@ -434,3 +434,6 @@ const checkoutVariant = useABTest('checkout-flow-v2', {
 **📝 Documentación actualizada**
 
 *Última actualización: Enero 2025*
+
+
+

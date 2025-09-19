@@ -192,7 +192,7 @@ export default function AdminPage() {
           <AdminCard className="border-red-200 bg-red-50">
             <div className="flex items-center space-x-2 text-red-700">
               <AlertTriangle className="h-5 w-5" />
-              <span>Error cargando estadísticas: {error}</span>
+              <span>Error cargando estadísticas: {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</span>
             </div>
           </AdminCard>
         )}
@@ -368,3 +368,12 @@ export default function AdminPage() {
     </AdminLayout>
   );
 }
+
+
+
+
+
+
+
+
+

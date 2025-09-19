@@ -229,3 +229,12 @@ export function useShopDetailsWithPersistence(productId?: string) {
 }
 
 export type { ShopDetailsState, ShopDetailsAction };
+
+
+
+
+
+
+
+
+

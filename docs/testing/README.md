@@ -176,7 +176,7 @@ describe('/api/products', () => {
 ### **Database Operations**
 ```typescript
 // Ejemplo: Supabase Integration Test
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/integrations/supabase';
 
 describe('Supabase Integration', () => {
   it('should fetch products from database', async () => {
@@ -368,3 +368,6 @@ jobs:
 ---
 
 *Última actualización: Enero 2025 - Enterprise Testing Optimizado*
+
+
+

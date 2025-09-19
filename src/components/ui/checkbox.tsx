@@ -95,7 +95,7 @@ const Checkbox = React.forwardRef<
       </div>
       
       {error && (
-        <p className="text-xs text-red-600 mt-1">{error}</p>
+        <p className="text-xs text-red-600 mt-1">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
       )}
     </div>
   )
@@ -153,7 +153,7 @@ export function CheckboxGroup({
       </div>
       
       {error && (
-        <p className="text-xs text-red-600">{error}</p>
+        <p className="text-xs text-red-600">{error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</p>
       )}
     </div>
   )
@@ -206,3 +206,12 @@ export const SwitchCheckbox = React.forwardRef<
 SwitchCheckbox.displayName = "SwitchCheckbox"
 
 export { Checkbox }
+
+
+
+
+
+
+
+
+

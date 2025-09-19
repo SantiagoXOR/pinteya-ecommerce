@@ -12,7 +12,7 @@ import { ProductPricing } from './ProductPricing';
 import { ProductInventory } from './ProductInventory';
 import { ProductSeo } from './ProductSeo';
 import { CategorySelector } from './CategorySelector';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { Save, X, Eye, Loader2, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -73,7 +73,7 @@ function useAutoSave(data: any, onSave: (data: any) => void, delay: number = 300
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!data || !onSave) return;
+    if (!data || !onSave) {return;}
 
     const timer = setTimeout(async () => {
       try {
@@ -97,7 +97,7 @@ function useAutoSave(data: any, onSave: (data: any) => void, delay: number = 300
 
 // Slug validation API
 async function validateSlug(slug: string, productId?: string): Promise<boolean> {
-  if (!slug) return true;
+  if (!slug) {return true;}
   
   const response = await fetch(`/api/admin/products/validate-slug`, {
     method: 'POST',
@@ -169,7 +169,7 @@ export function ProductFormEnterprise({
 
   // Validate slug uniqueness
   useEffect(() => {
-    if (!watchedSlug) return;
+    if (!watchedSlug) {return;}
 
     const validateSlugUnique = async () => {
       setSlugValidation({ isValid: true, isChecking: true });
@@ -460,3 +460,12 @@ export function ProductFormEnterprise({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

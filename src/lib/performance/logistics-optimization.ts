@@ -105,7 +105,7 @@ export const useMemoizedData = <T>(
   dependencies: any[] = []
 ): T[] => {
   return useMemo(() => {
-    if (!Array.isArray(data)) return [];
+    if (!Array.isArray(data)) {return [];}
     
     // Filtrar datos inválidos
     return data.filter(item => item != null);
@@ -118,12 +118,12 @@ export const useMemoizedFilters = (
   filters: Record<string, any>
 ) => {
   return useMemo(() => {
-    if (!data || !Array.isArray(data)) return [];
+    if (!data || !Array.isArray(data)) {return [];}
     
     return data.filter(item => {
       return Object.entries(filters).every(([key, value]) => {
-        if (value === null || value === undefined || value === '') return true;
-        if (value === 'all') return true;
+        if (value === null || value === undefined || value === '') {return true;}
+        if (value === 'all') {return true;}
         
         const itemValue = item[key];
         if (Array.isArray(value)) {
@@ -180,10 +180,10 @@ export class OptimizedWebSocketManager {
   private setupBatchedMessaging(url: string) {
     const sendBatch = () => {
       const queue = this.messageQueue.get(url);
-      if (!queue || queue.length === 0) return;
+      if (!queue || queue.length === 0) {return;}
 
       const ws = this.connections.get(url);
-      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      if (!ws || ws.readyState !== WebSocket.OPEN) {return;}
 
       // Enviar mensajes en batch
       const batch = queue.splice(0, this.BATCH_SIZE);
@@ -283,14 +283,14 @@ export class MapPerformanceOptimizer {
 
   // Clustering inteligente
   clusterMarkers(markers: any[], zoom: number): any[] {
-    if (zoom > 12) return markers; // No cluster en zoom alto
+    if (zoom > 12) {return markers;} // No cluster en zoom alto
     
     const clustered: any[] = [];
     const processed = new Set<string>();
     const clusterDistance = this.getClusterDistance(zoom);
 
     markers.forEach(marker => {
-      if (processed.has(marker.id)) return;
+      if (processed.has(marker.id)) {return;}
 
       const cluster = {
         id: `cluster-${marker.id}`,
@@ -301,7 +301,7 @@ export class MapPerformanceOptimizer {
 
       // Buscar markers cercanos
       markers.forEach(otherMarker => {
-        if (otherMarker.id === marker.id || processed.has(otherMarker.id)) return;
+        if (otherMarker.id === marker.id || processed.has(otherMarker.id)) {return;}
 
         const distance = this.calculateDistance(
           marker.coordinates,
@@ -465,3 +465,12 @@ export class PerformanceManager {
     this.wsManager.cleanup();
   }
 }
+
+
+
+
+
+
+
+
+

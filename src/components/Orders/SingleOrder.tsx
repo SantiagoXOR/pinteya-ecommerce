@@ -137,3 +137,12 @@ const SingleOrder = ({ orderItem, smallView }: any) => {
 };
 
 export default SingleOrder;
+
+
+
+
+
+
+
+
+

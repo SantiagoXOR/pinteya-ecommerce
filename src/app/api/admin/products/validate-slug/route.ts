@@ -57,3 +57,12 @@ export const POST = composeMiddlewares(
   withAdminAuth(['products_read']),
   withValidation(SlugValidationSchema)
 )(postHandler);
+
+
+
+
+
+
+
+
+

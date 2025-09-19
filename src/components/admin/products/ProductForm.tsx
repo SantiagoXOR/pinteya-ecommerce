@@ -13,7 +13,7 @@ import { ProductSeo } from './ProductSeo';
 import { CategorySelector } from './CategorySelector';
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications';
 import { useProductFormReducer } from '@/hooks/optimization/useProductFormReducer';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/core/utils';
 import { Save, X, Eye, Loader2 } from 'lucide-react';
 
 // Validation schema
@@ -883,3 +883,12 @@ export function ProductForm({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

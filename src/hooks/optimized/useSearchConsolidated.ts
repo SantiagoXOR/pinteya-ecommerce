@@ -148,7 +148,7 @@ export function useSearchConsolidated(
     queryKey: searchQueryKeys.search(debouncedQuery),
     queryFn: async ({ queryKey, signal }) => {
       const [, , searchQuery] = queryKey;
-      if (!searchQuery?.trim()) return [];
+      if (!searchQuery?.trim()) {return [];}
 
       // Cancelar request anterior
       if (abortControllerRef.current) {
@@ -246,7 +246,7 @@ export function useSearchConsolidated(
   }, [updateDebouncedQuery, enablePrefetch, router]);
 
   const executeSearch = useCallback(async (searchQuery: string, category?: string) => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {return;}
 
     try {
       setHasSearched(true);
@@ -314,7 +314,7 @@ export function useSearchConsolidated(
   }, [queryClient]);
 
   const prefetchSearch = useCallback((searchQuery: string) => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {return;}
     
     queryClient.prefetchQuery({
       queryKey: searchQueryKeys.search(searchQuery),
@@ -388,3 +388,12 @@ export function useSearchConsolidated(
     navigateToProduct,
   };
 }
+
+
+
+
+
+
+
+
+

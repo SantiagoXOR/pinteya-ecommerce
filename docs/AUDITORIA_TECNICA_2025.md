@@ -297,3 +297,6 @@ El sistema está **preparado para manejar crecimiento significativo** con las me
 - [Mejoras de Seguridad](./SECURITY_IMPROVEMENTS.md)
 - [Optimizaciones de Performance](../PERFORMANCE_OPTIMIZATIONS.md)
 - [Arquitectura del Sistema](./architecture/overview.md)
+
+
+

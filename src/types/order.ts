@@ -309,3 +309,12 @@ export function calculateOrderTotal(items: OrderItem[], shipping: number, discou
     total
   };
 }
+
+
+
+
+
+
+
+
+

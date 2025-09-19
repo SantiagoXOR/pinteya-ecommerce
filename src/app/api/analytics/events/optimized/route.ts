@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/integrations/supabase';
 
 interface OptimizedAnalyticsEvent {
   event: string;
@@ -282,3 +282,12 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
+
+

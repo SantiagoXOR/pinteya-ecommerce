@@ -477,3 +477,6 @@ npm run analyze
 ---
 
 *Última actualización: Junio 2025*
+
+
+

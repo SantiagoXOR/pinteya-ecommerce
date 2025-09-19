@@ -8,7 +8,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { analytics, initializeAnalytics } from '@/lib/analytics';
+import { analytics, initializeAnalytics } from '@/lib/integrations/analytics';
 import { initGA, trackPageView as gaTrackPageView } from '@/lib/google-analytics';
 import { useUserRole } from '@/hooks/useUserRole';
 
@@ -110,7 +110,7 @@ export const AnalyticsProvider: React.FC<OptimizedAnalyticsProviderProps> = ({
     value?: number,
     metadata?: Record<string, any>
   ) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
 
     try {
       const enrichedMetadata = {
@@ -144,7 +144,7 @@ export const AnalyticsProvider: React.FC<OptimizedAnalyticsProviderProps> = ({
   };
 
   const trackEcommerceEvent = (action: string, data: Record<string, any>) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
 
     const enrichedData = {
       ...data,
@@ -168,7 +168,7 @@ export const AnalyticsProvider: React.FC<OptimizedAnalyticsProviderProps> = ({
   };
 
   const trackPageView = (page?: string) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
 
     const currentPage = page || pathname;
 
@@ -184,7 +184,7 @@ export const AnalyticsProvider: React.FC<OptimizedAnalyticsProviderProps> = ({
   };
 
   const trackConversion = (type: string, value?: number, metadata?: Record<string, any>) => {
-    if (!isEnabled) return;
+    if (!isEnabled) {return;}
 
     const enrichedMetadata = {
       ...metadata,
@@ -357,3 +357,12 @@ export const useTrackEcommerce = () => {
     trackPurchase,
   };
 };
+
+
+
+
+
+
+
+
+
