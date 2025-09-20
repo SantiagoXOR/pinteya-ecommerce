@@ -1,101 +1,82 @@
-/**
- * NextAuth.js v4 Configuration for Pinteya E-commerce
- * Configuración optimizada para producción con Google OAuth
- * Migración completa desde Clerk a NextAuth.js
- */
-
 import NextAuth from "next-auth"
-import GoogleProvider from "next-auth/providers/google"
+import Google from "next-auth/providers/google"
+import { SupabaseAdapter } from "./lib/integrations/supabase/supabase-adapter"
 
-export default NextAuth({
+// Validación de variables de entorno requeridas
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl) {
+  throw new Error("NEXT_PUBLIC_SUPABASE_URL is required but not defined")
+}
+
+if (!supabaseServiceRoleKey) {
+  throw new Error("SUPABASE_SERVICE_ROLE_KEY is required but not defined")
+}
+
+const nextAuth = NextAuth({
+  adapter: SupabaseAdapter({
+    url: supabaseUrl,
+    secret: supabaseServiceRoleKey,
+  }),
   providers: [
-    GoogleProvider({
+    Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
-    })
+          prompt: "select_account",
+        },
+      },
+    }),
   ],
-
-  // Configuración de páginas personalizadas
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
   },
-
-  // Configuración de callbacks
   callbacks: {
-    // Callback de JWT - Manejo de tokens
     async jwt({ token, user, account }) {
-      // Si es un nuevo login, agregar información del usuario al token
-      if (user) {
-        token.sub = user.id
+      if (account && user) {
+        token.accessToken = account.access_token
+        token.refreshToken = account.refresh_token
+        token.userId = user.id
       }
-      
       return token
     },
-
-    // Callback de sesión - Información disponible en el cliente
     async session({ session, token }) {
-      // Asegurar que el ID del usuario esté disponible en la sesión
-      if (token?.sub) {
-        session.user.id = token.sub
+      if (token) {
+        session.accessToken = token.accessToken as string
+        session.refreshToken = token.refreshToken as string
+        session.user.id = token.userId as string
       }
-      
       return session
     },
-
-    // Callback de autorización simplificado
     async signIn({ user, account, profile }) {
-      try {
-        console.log(`[NextAuth] Usuario autenticado: ${user.email}`)
+      // Permitir el sign-in para todos los usuarios de Google
+      if (account?.provider === "google") {
         return true
-      } catch (error) {
-        console.error(`[NextAuth] Error en signIn callback:`, error)
-        return true // Permitir el login incluso si hay errores
       }
+      return false
     },
   },
-
-  // Configuración de eventos
   events: {
-    async signIn({ user, account, profile, isNewUser }) {
-      console.log(`[NextAuth] Usuario autenticado: ${user.email}`)
-      
-      // Si es un nuevo usuario, crear entrada en tabla pública
-      if (isNewUser) {
-        console.log(`[NextAuth] Nuevo usuario registrado: ${user.email}`)
-      }
+    async signIn({ user, account, profile }) {
+      console.log("Usuario autenticado:", user.email)
     },
-    
     async signOut({ session, token }) {
-      console.log(`[NextAuth] Usuario desconectado`)
+      console.log("Usuario desconectado")
     },
   },
-
-  // Configuración de sesión con JWT strategy para mejor compatibilidad
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 30 * 24 * 60 * 60, // 30 días
-    updateAge: 24 * 60 * 60, // 24 horas
   },
-
-  // Configuración de JWT para evitar problemas con Edge Runtime
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
-
-  // Configuración de debug
-  debug: process.env.NODE_ENV === "development",
-
-  // Configuración de secret para producción
-  secret: process.env.NEXTAUTH_SECRET,
 })
+
+export const { auth, handlers, signIn, signOut } = nextAuth
 
 // Tipos TypeScript para extender la sesión
 declare module "next-auth" {

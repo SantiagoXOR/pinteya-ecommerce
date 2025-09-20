@@ -1,41 +1,34 @@
 /**
- * Formulario de Inicio de Sesión - NextAuth.js
+ * Formulario de Inicio de Sesión - NextAuth.js v5
  * Componente personalizado para Pinteya E-commerce
  * Diseño moderno y responsive
  */
 
 "use client"
 
-import { signIn, getProviders } from "next-auth/react"
+import { useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Shield, ArrowRight, CheckCircle } from "lucide-react"
 
-interface Provider {
-  id: string
-  name: string
-  type: string
-  signinUrl: string
-  callbackUrl: string
-}
+import { signIn } from "next-auth/react"
 
 export function SignInForm() {
-  const [providers, setProviders] = useState<Record<string, Provider> | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/"
   const error = searchParams.get("error")
 
-  useEffect(() => {
-    const fetchProviders = async () => {
-      const res = await getProviders()
-      setProviders(res)
+  // Proveedores configurados manualmente para NextAuth v5
+  const providers = {
+    google: {
+      id: "google",
+      name: "Google",
+      type: "oauth"
     }
-    fetchProviders()
-  }, [])
+  }
 
   const handleSignIn = async (providerId: string) => {
     setIsLoading(true)
@@ -63,16 +56,6 @@ export function SignInForm() {
       Verification: "Error en la verificación. Intenta nuevamente."
     }
     return errorMessages[errorCode] || "Error de autenticación. Intenta nuevamente."
-  }
-
-  if (!providers) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardContent className="flex justify-center items-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-blaze-orange-600" />
-        </CardContent>
-      </Card>
-    )
   }
 
   return (
