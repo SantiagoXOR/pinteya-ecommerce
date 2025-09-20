@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import { Clock, Navigation, MapPin, AlertTriangle, Route, Gauge, TrendingUp } from 'lucide-react';
+import { Clock, Navigation, MapPin, AlertTriangle, Gauge, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/core/utils';
 
 interface RouteInfo {
@@ -127,7 +127,7 @@ export function RouteInfoDashboard({
         {/* Información de ruta total */}
         <div className="mt-2 grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center">
-            <Route className="w-4 h-4 text-gray-500 mr-2" />
+            <Navigation className="w-4 h-4 text-gray-500 mr-2" />
             <span className="text-gray-600">
               Total: <span className="font-medium">{routeInfo.totalDistance}</span>
             </span>
@@ -168,7 +168,7 @@ export function RouteInfoDashboard({
               : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
           )}
         >
-          <Route className="w-4 h-4" />
+          <Navigation className="w-4 h-4" />
           <span>
             {showTrafficLayer ? 'Ocultar' : 'Mostrar'} Información de Tráfico
           </span>

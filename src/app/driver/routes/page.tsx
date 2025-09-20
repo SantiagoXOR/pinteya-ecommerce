@@ -20,7 +20,6 @@ import {
   Play,
   CheckCircle,
   AlertCircle,
-  Route,
   Calendar
 } from 'lucide-react';
 import { useDriver } from '@/contexts/DriverContext';
@@ -64,7 +63,7 @@ export default function DriverRoutesPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Route className="h-5 w-5" />
+            <Navigation className="h-5 w-5" />
             Mis Rutas
           </CardTitle>
           <CardDescription>
@@ -132,7 +131,7 @@ export default function DriverRoutesPage() {
                   <span>{activeRoute.shipments.length} entregas</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Route className="h-4 w-4 text-green-600" />
+                  <Navigation className="h-4 w-4 text-green-600" />
                   <span>{activeRoute.total_distance} km</span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -189,7 +188,7 @@ export default function DriverRoutesPage() {
                     <span>{route.shipments.length} entregas</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Route className="h-4 w-4" />
+                    <Navigation className="h-4 w-4" />
                     <span>{route.total_distance} km</span>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -253,7 +252,7 @@ export default function DriverRoutesPage() {
                     <span>{route.shipments.length} entregas</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Route className="h-4 w-4" />
+                    <Navigation className="h-4 w-4" />
                     <span>{route.total_distance} km</span>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -275,7 +274,7 @@ export default function DriverRoutesPage() {
       {filteredRoutes.length === 0 && (
         <Card>
           <CardContent className="text-center py-8">
-            <Route className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <Navigation className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="font-medium text-gray-900 mb-2">
               No hay rutas para esta fecha
             </h3>

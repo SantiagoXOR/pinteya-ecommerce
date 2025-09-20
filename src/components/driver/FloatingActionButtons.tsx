@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { 
   Navigation, 
-  Route, 
   Settings, 
   AlertTriangle, 
   MapPin, 
@@ -53,7 +52,7 @@ export function FloatingActionButtons({
       priority: 1
     },
     {
-      icon: Route,
+      icon: MapPin,
       label: 'Info Ruta',
       action: () => modalActions.openRouteInfo(),
       show: hasActiveRoute,
@@ -236,7 +235,7 @@ export function MobileFloatingActions({
       color: 'bg-blue-600'
     },
     {
-      icon: Route,
+      icon: MapPin,
       label: 'Ruta',
       action: () => modalActions.openRouteInfo(),
       show: hasActiveRoute,

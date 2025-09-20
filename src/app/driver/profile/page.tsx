@@ -22,7 +22,7 @@ import {
   BarChart3,
   Calendar,
   Clock,
-  Route,
+  Navigation,
   CheckCircle,
   Star,
   Edit,
@@ -186,7 +186,7 @@ export default function DriverProfilePage() {
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center space-x-2">
-                <Route className="h-4 w-4 text-gray-400" />
+                <Navigation className="h-4 w-4 text-gray-400" />
                 <span>{stats.totalDistance} km recorridos</span>
               </div>
               <div className="flex items-center space-x-2">

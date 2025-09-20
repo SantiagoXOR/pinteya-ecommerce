@@ -22,7 +22,6 @@ import {
   CheckCircle,
   AlertTriangle,
   Search,
-  Route,
   Navigation,
   Zap,
   Settings
@@ -329,7 +328,7 @@ export function GoogleMapsLogistics({
               onClick={optimizeRoutes}
               className="flex items-center gap-2"
             >
-              <Route className="w-4 h-4" />
+              <Navigation className="w-4 h-4" />
               Optimizar Rutas
             </Button>
             <Button
@@ -474,7 +473,7 @@ export function GoogleMapsLogistics({
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Route className="w-5 h-5" />
+                    <Navigation className="w-5 h-5" />
                     Visualización de Rutas
                   </CardTitle>
                 </CardHeader>

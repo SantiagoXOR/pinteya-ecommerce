@@ -6,7 +6,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShieldX, Home, ArrowLeft } from 'lucide-react';
+import { Shield, Home, ArrowLeft } from 'lucide-react';
 
 // Metadata se maneja en layout.tsx para client components
 
@@ -18,7 +18,7 @@ export default function AccessDeniedPage() {
           {/* Icono de acceso denegado */}
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-              <ShieldX className="w-8 h-8 text-red-600" />
+              <Shield className="w-8 h-8 text-red-600" />
             </div>
           </div>
 
@@ -36,7 +36,7 @@ export default function AccessDeniedPage() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex">
               <div className="flex-shrink-0">
-                <ShieldX className="h-5 w-5 text-red-400" />
+                <Shield className="h-5 w-5 text-red-400" />
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-red-800">

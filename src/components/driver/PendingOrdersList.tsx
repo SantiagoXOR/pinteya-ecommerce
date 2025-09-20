@@ -245,10 +245,10 @@ export default function PendingOrdersList({ onStartRoute, onSelectOrder }: Pendi
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Route className="h-5 w-5" />
-              <span className="font-medium">
-                {selectedOrders.size} de {orders.length} órdenes seleccionadas
-              </span>
+              <Navigation className="h-5 w-5" />
+               <span className="font-medium">
+                 {selectedOrders.size} de {orders.length} órdenes seleccionadas
+               </span>
             </div>
             <Button 
               onClick={handleStartOptimizedRoute}

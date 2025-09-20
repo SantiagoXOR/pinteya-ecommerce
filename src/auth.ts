@@ -1,5 +1,5 @@
 /**
- * NextAuth.js v5 Configuration for Pinteya E-commerce
+ * NextAuth.js v4 Configuration for Pinteya E-commerce
  * Configuración optimizada para producción con Google OAuth
  * Migración completa desde Clerk a NextAuth.js
  */
@@ -7,7 +7,7 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 
-const authConfig = {
+export default NextAuth({
   providers: [
     GoogleProvider({
       clientId: process.env.AUTH_GOOGLE_ID!,
@@ -80,7 +80,7 @@ const authConfig = {
 
   // Configuración de sesión con JWT strategy para mejor compatibilidad
   session: {
-    strategy: "jwt" as const,
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 días
     updateAge: 24 * 60 * 60, // 24 horas
   },
@@ -93,27 +93,9 @@ const authConfig = {
   // Configuración de debug
   debug: process.env.NODE_ENV === "development",
 
-  // Configuración de trusted hosts para desarrollo y producción
-  trustHost: true,
-
-  // Configuración de cookies para producción
-  cookies: {
-    sessionToken: {
-      name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax" as const,
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
-  },
-
   // Configuración de secret para producción
   secret: process.env.NEXTAUTH_SECRET,
-}
-
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
+})
 
 // Tipos TypeScript para extender la sesión
 declare module "next-auth" {

@@ -14,7 +14,6 @@ import {
   MapPin,
   CheckCircle,
   Clock,
-  Route,
   AlertTriangle,
   Phone,
   Package
@@ -269,7 +268,9 @@ export default function LiveNavigationMap({
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Navigation className="h-5 w-5" />
-              Navegación GPS
+              <span className="font-medium">
+                {selectedOrders.size} de {orders.length} órdenes seleccionadas
+              </span>
             </div>
             <div className="flex gap-2">
               {!isNavigating ? (
@@ -376,7 +377,7 @@ export default function LiveNavigationMap({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Route className="h-5 w-5" />
+            <Navigation className="h-5 w-5" />
             Paradas del Recorrido
           </CardTitle>
         </CardHeader>

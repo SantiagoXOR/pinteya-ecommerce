@@ -9,7 +9,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { 
   ArrowUp, ArrowDown, ArrowLeft, ArrowRight, 
   RotateCcw, Navigation, Volume2, VolumeX,
-  MapPin, Clock, Route
+  MapPin, Clock
 } from 'lucide-react';
 import { cn } from '@/lib/core/utils';
 

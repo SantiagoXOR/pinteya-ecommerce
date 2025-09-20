@@ -24,7 +24,6 @@ import {
   RefreshCw,
   BarChart3,
   Users,
-  Route,
   Navigation
 } from 'lucide-react';
 import { useLogisticsDashboard } from '@/hooks/admin/useLogisticsDashboard';
@@ -147,7 +146,7 @@ export default function LogisticsDashboard() {
             Mapas
           </TabsTrigger>
           <TabsTrigger value="routes" className="flex items-center gap-2">
-            <Route className="w-4 h-4" />
+            <Navigation className="w-4 h-4" />
             Rutas
           </TabsTrigger>
           <TabsTrigger value="shipments" className="flex items-center gap-2">
@@ -299,7 +298,7 @@ export default function LogisticsDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Route className="w-5 h-5" />
+                    <Navigation className="w-5 h-5" />
                     Optimización de Rutas para Carriers Propios
                   </CardTitle>
                   <CardDescription>

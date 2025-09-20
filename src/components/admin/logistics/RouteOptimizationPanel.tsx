@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
-  Route, 
+  Navigation, 
   Truck, 
   User, 
   Clock, 
@@ -165,7 +165,7 @@ export function RouteOptimizationPanel({ shipments, onRouteSelect }: RouteOptimi
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Route className="w-4 h-4 text-blue-600" />
+              <Navigation className="w-4 h-4 text-blue-600" />
               <span className="text-sm font-medium">Total Rutas</span>
             </div>
             <p className="text-2xl font-bold text-blue-600">{routeStats.totalRoutes}</p>
@@ -300,7 +300,7 @@ export function RouteOptimizationPanel({ shipments, onRouteSelect }: RouteOptimi
             disabled={isOptimizing || isCreatingRoute}
             className="flex items-center gap-2"
           >
-            <Route className="w-4 h-4" />
+            <Navigation className="w-4 h-4" />
             {isOptimizing ? 'Optimizando...' : 'Optimizar Rutas'}
           </Button>
         </div>
@@ -312,7 +312,7 @@ export function RouteOptimizationPanel({ shipments, onRouteSelect }: RouteOptimi
           <Card>
             <CardContent className="flex items-center justify-center h-64">
               <div className="text-center space-y-4">
-                <Route className="w-12 h-12 text-gray-400 mx-auto" />
+                <Navigation className="w-12 h-12 text-gray-400 mx-auto" />
                 <div>
                   <h3 className="text-lg font-semibold">No hay rutas disponibles</h3>
                   <p className="text-gray-600 mt-2">

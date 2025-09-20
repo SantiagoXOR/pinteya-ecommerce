@@ -306,7 +306,7 @@ export function RouteVisualization({
       <Card>
         <CardContent className="flex items-center justify-center h-64">
           <div className="text-center space-y-4">
-            <Route className="w-12 h-12 text-gray-400 mx-auto" />
+            <Navigation className="w-12 h-12 text-gray-400 mx-auto" />
             <div>
               <h3 className="text-lg font-semibold">No hay rutas para mostrar</h3>
               <p className="text-gray-600 mt-2">
@@ -377,7 +377,7 @@ export function RouteVisualization({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Route className="w-5 h-5" />
+              <Navigation className="w-5 h-5" />
               Control de Rutas
               {isCalculating && (
                 <Badge variant="outline" className="ml-2">

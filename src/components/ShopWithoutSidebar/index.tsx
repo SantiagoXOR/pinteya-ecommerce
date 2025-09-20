@@ -8,7 +8,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Grid3X3, List, Package, TrendingUp } from "lucide-react";
+import { Grid, List, Package, TrendingUp } from "lucide-react";
 // import shopData from "../Shop/shopData"; // Comentado: ahora usamos datos dinámicos
 
 const ShopWithoutSidebar = () => {
@@ -94,7 +94,7 @@ const ShopWithoutSidebar = () => {
                       aria-label="Vista en grilla"
                       className="transition-all duration-200"
                     >
-                      <Grid3X3 className="w-4 h-4" />
+                      <Grid className="w-4 h-4" />
                     </Button>
 
                     <Button

@@ -7,7 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { 
-  Settings, Route, RefreshCw, MapPin, Clock, 
+  Settings, RefreshCw, MapPin, Clock, 
   Car, Truck, Bike, Navigation, AlertTriangle,
   ToggleLeft, ToggleRight, ChevronDown, ChevronUp
 } from 'lucide-react';

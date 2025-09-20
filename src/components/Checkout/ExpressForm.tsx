@@ -13,8 +13,7 @@ import {
   CheckCircle,
   AlertCircle,
   MessageSquare,
-  User,
-  IdCard
+  User
 } from 'lucide-react';
 
 interface ExpressFormProps {
@@ -205,7 +204,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
       {/* Campo DNI/CUIT */}
       <div className="space-y-2">
         <Label htmlFor="dni" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-          <IdCard className="w-4 h-4" />
+          <CreditCard className="w-4 h-4" />
           DNI / CUIT
         </Label>
         <div className="relative">
@@ -228,7 +227,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
             )}
             required
           />
-          <IdCard className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           {formData.dni && !errors.dni && (
             <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
           )}

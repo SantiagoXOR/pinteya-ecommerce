@@ -3,9 +3,9 @@
  * Maneja todas las rutas de autenticación (/api/auth/*)
  */
 
-import { handlers } from "@/auth"
+import NextAuth from "@/auth"
 
-export const { GET, POST } = handlers
+export default NextAuth
 
 // Configurar runtime para Node.js
 export const runtime = 'nodejs'
