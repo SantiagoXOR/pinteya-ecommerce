@@ -3,7 +3,7 @@
  * Implementa verificación de integridad, autenticidad y validez de tokens
  */
 
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { NextRequest } from 'next/server';
 import type { NextApiRequest } from 'next';
 

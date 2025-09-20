@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MERCADOPAGO WEBHOOK API
 // ===================================
@@ -575,6 +578,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 */
+
 
 
 

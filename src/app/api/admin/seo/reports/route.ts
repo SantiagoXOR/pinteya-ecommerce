@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - SEO REPORTS API
 // API para generación y gestión de reportes SEO
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { EnhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager';
 import { SEOTestingSuite } from '@/lib/seo/seo-testing-suite';
 import { DynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator';
@@ -501,6 +504,7 @@ async function generateMockReportData(reportId: string) {
     ]
   };
 }
+
 
 
 

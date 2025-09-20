@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - VALIDACIÓN DE DIRECCIONES PREDETERMINADAS
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 /**
  * POST - Validar y corregir direcciones predeterminadas duplicadas
@@ -216,6 +219,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

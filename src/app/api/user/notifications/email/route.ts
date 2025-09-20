@@ -1,9 +1,12 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API DE NOTIFICACIONES POR EMAIL
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
 
 // Tipos de notificaciones por email
@@ -232,6 +235,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

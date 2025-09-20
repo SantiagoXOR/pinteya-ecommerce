@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - DYNAMIC SITEMAP API
 // API para generar y servir sitemaps dinámicos
@@ -161,6 +164,7 @@ async function generateSampleSitemapXML(): Promise<string> {
   <!-- Páginas dinámicas se generarían aquí -->
 </urlset>`;
 }
+
 
 
 

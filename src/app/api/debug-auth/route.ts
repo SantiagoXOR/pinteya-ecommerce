@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // 🔧 API de Debug para Configuración de Auth en Producción
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -43,6 +46,7 @@ export async function GET(request: NextRequest) {
     ]
   });
 }
+
 
 
 

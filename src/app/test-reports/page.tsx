@@ -1,10 +1,34 @@
+/**
+ * Página de reportes de pruebas
+ * Dashboard para visualizar resultados de tests automatizados
+ */
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  Clock,
+  Play,
+  Pause,
+  RotateCcw,
+  Download,
+  Filter,
+  Search,
+  TrendingUp,
+  TrendingDown,
+  Activity
+} from 'lucide-react';
+
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
 
 interface TestStep {
   step: string;

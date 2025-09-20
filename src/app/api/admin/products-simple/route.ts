@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API SIMPLIFICADA DE PRODUCTOS ADMIN
 // ===================================
@@ -233,6 +236,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API de Demostración del Sistema Enterprise de Validación
  * Muestra todas las funcionalidades del sistema de validación y sanitización
@@ -492,6 +495,7 @@ export const POST = withCriticalValidation({
 export const PUT = withCriticalValidation({
   bodySchema: SecurityTestSchema
 })(putHandler);
+
 
 
 

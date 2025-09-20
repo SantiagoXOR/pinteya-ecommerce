@@ -1,5 +1,8 @@
 "use client";
 
+
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { searchProducts } from '@/lib/api/products';

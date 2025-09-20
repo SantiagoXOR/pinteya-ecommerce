@@ -3,7 +3,7 @@
 // ===================================
 // 🚨 MIGRADO DE CLERK A NEXTAUTH.JS - 21/08/2025
 
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { supabaseAdmin } from './supabase';
 
 // ===================================

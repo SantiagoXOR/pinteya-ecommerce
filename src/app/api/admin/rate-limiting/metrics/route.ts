@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API de Métricas de Rate Limiting Enterprise
  * Proporciona estadísticas detalladas del sistema de rate limiting
@@ -341,6 +344,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
 
 
 

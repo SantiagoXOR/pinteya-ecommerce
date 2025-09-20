@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // API: Test Flows Management
 // Endpoint para gestión de flujos de testing automatizados
@@ -177,6 +180,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

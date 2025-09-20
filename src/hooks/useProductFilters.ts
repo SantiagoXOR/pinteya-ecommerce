@@ -84,7 +84,7 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
     limit: defaultLimit,
   }));
 
-  // Inicializar filtros desde URL (solo una vez)
+  // Inicializar y sincronizar filtros desde URL
   useEffect(() => {
     if (!syncWithUrl || !searchParams) {return;}
 
@@ -100,7 +100,7 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
     };
 
     setFilters(urlFilters);
-  }, []); // Solo ejecutar una vez al montar
+  }, [searchParams, syncWithUrl, defaultSort, defaultLimit]); // Actualizar cuando cambien los searchParams
 
   // Función optimizada para actualizar URL
   const updateUrl = useCallback((newFilters: ProductFilterState) => {

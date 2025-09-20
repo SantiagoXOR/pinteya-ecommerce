@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // API: Test Execution
 // Endpoint para ejecutar tests automatizados desde el dashboard admin
@@ -423,6 +426,7 @@ async function generateTestReport(results: any) {
     throw error;
   }
 }
+
 
 
 

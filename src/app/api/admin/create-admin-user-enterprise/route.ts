@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API Enterprise para crear usuario administrador
  * Refactorizada con utilidades enterprise + RLS + validaciones robustas
@@ -348,6 +351,7 @@ export async function GET() {
     ]
   });
 }
+
 
 
 

@@ -6,3 +6,6 @@
 import { handlers } from "@/auth"
 
 export const { GET, POST } = handlers
+
+// Configurar runtime para Node.js
+export const runtime = 'nodejs'

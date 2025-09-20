@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - TEST ORDER CREATION
 // Endpoint para crear órdenes de prueba y validar el flujo completo
@@ -191,6 +194,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

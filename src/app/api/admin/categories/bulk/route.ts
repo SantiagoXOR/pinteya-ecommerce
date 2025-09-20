@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/integrations/supabase/server';
@@ -867,6 +870,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
 
 
 

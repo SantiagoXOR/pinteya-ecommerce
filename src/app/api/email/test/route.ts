@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API TEST EMAIL
 // ===================================
@@ -131,6 +134,7 @@ export async function GET() {
     );
   }
 }
+
 
 
 

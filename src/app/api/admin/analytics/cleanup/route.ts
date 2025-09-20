@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API PARA LIMPIEZA AUTOMÁTICA DE ANALYTICS - PINTEYA E-COMMERCE
  * Gestiona la limpieza automática de eventos antiguos y estadísticas
@@ -5,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 /**
  * POST /api/admin/analytics/cleanup
@@ -222,6 +225,7 @@ function generateCleanupRecommendations(stats: any) {
 
   return recommendations;
 }
+
 
 
 

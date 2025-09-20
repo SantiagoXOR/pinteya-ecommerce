@@ -5,6 +5,9 @@
 
 'use client';
 
+
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState } from 'react';
 import { LoadScript } from '@react-google-maps/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

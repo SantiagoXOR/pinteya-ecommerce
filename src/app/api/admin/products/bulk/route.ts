@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // =====================================================
 // API: OPERACIONES MASIVAS DE PRODUCTOS
 // Ruta: /api/admin/products/bulk
@@ -6,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { z } from 'zod';
 
 // =====================================================
@@ -341,6 +344,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,5 +1,8 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createAdminClient } from '@/lib/integrations/supabase/server';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 
@@ -148,6 +151,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

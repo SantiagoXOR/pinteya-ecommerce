@@ -1,9 +1,12 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API DE PREFERENCIAS DE USUARIO
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { logPreferenceActivity, getRequestInfo } from '@/lib/activity/activityLogger';
 
@@ -298,6 +301,7 @@ function validatePreferences(preferences: any): UserPreferences | null {
     return null;
   }
 }
+
 
 
 

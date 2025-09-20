@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MONITORING METRICS API
 // ===================================
@@ -369,6 +372,7 @@ async function getMetricTrends() {
 
   return groupedTrends;
 }
+
 
 
 

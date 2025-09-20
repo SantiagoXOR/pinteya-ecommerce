@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - DEBUG WEBHOOK
 // ===================================
@@ -117,6 +120,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

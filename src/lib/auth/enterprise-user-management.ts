@@ -3,7 +3,7 @@
  * Gestión avanzada de usuarios para el sistema enterprise
  */
 
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { logger } from '@/lib/enterprise/logger';
 

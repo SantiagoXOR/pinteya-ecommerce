@@ -1,9 +1,12 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - INTEGRATION QUALITY MEASUREMENT API
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { getPaymentInfo } from '@/lib/integrations/mercadopago';
 import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
@@ -436,6 +439,7 @@ function generateRecommendations(details: QualityMetrics['details']): string[] {
 
   return recommendations;
 }
+
 
 
 

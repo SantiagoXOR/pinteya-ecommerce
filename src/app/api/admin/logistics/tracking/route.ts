@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // =====================================================
 // API: SEGUIMIENTO DE ENVÍOS EN TIEMPO REAL ENTERPRISE
 // Endpoint: /api/admin/logistics/tracking
@@ -13,7 +16,7 @@ import { withApiLogging, logAdminAction } from '@/lib/api/api-logger';
 import { withAdminAuth } from '@/lib/auth/api-auth-middleware';
 import { withValidation } from '@/lib/validation/admin-schemas';
 import { createClient } from '@/lib/integrations/supabase/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { checkRateLimit } from '@/lib/auth/rate-limiting';
 import { 
   TrackingEvent,
@@ -530,6 +533,7 @@ export const DELETE = composeMiddlewares(
   withErrorHandler,
   withApiLogging
 )(deleteHandler);
+
 
 
 

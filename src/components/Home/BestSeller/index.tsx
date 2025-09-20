@@ -4,18 +4,16 @@ import React from "react";
 import SingleItem from "./SingleItem";
 import Link from "next/link";
 import { useFilteredProducts } from "@/hooks/useFilteredProducts";
+import { useProductFilters } from "@/hooks/useProductFilters";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, ArrowRight, Trophy } from "@/lib/optimized-imports";
 
-interface BestSellerProps {
-  selectedCategories?: string[];
-}
-
-const BestSeller: React.FC<BestSellerProps> = ({ selectedCategories = [] }) => {
+const BestSeller: React.FC = () => {
+  const { filters } = useProductFilters({ syncWithUrl: true });
   const { data, isLoading, error } = useFilteredProducts({
-    categories: selectedCategories.length > 0 ? selectedCategories : undefined,
+    categories: filters.categories.length > 0 ? filters.categories : undefined,
     limit: 6,
     sortBy: 'price',
     sortOrder: 'desc'
@@ -28,8 +26,8 @@ const BestSeller: React.FC<BestSellerProps> = ({ selectedCategories = [] }) => {
   ).slice(0, 6);
 
   // Mostrar título dinámico según si hay filtros activos
-  const sectionTitle = selectedCategories.length > 0
-    ? `Mejores Ofertas en ${selectedCategories.length === 1 ? 'esta categoría' : 'estas categorías'}`
+  const sectionTitle = filters.categories.length > 0
+    ? `Mejores Ofertas en ${filters.categories.length === 1 ? 'esta categoría' : 'estas categorías'}`
     : 'Mejores Ofertas';
 
   if (isLoading) {

@@ -13,12 +13,7 @@ import {
   Code,
   Eye
 } from 'lucide-react';
-import { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: "Demos y Ejemplos | Pinteya E-commerce",
-  description: "Explora todas las funcionalidades y componentes desarrollados para Pinteya E-commerce",
-};
 
 const demoPages = [
   {

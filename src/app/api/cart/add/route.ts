@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API AGREGAR AL CARRITO
 // ===================================
@@ -5,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 /**
  * POST /api/cart/add
@@ -279,6 +282,7 @@ export async function GET() {
     }
   });
 }
+
 
 
 

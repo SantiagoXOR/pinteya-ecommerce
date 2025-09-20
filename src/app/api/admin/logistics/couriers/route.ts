@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // =====================================================
 // API: GESTIÓN DE COURIERS ENTERPRISE
 // Endpoints: GET/POST/PUT /api/admin/logistics/couriers
@@ -6,7 +9,7 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@/lib/integrations/supabase/server';
 import { z } from 'zod';
 import { 
@@ -429,6 +432,7 @@ export async function POST_QUOTE(request: NextRequest) {
     );
   }
 }
+
 
 
 

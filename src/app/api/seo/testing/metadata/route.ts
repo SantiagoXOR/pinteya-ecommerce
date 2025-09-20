@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - METADATA TESTING API
 // API específica para validación de metadata SEO
@@ -329,6 +332,7 @@ export async function OPTIONS(request: NextRequest) {
     },
   });
 }
+
 
 
 

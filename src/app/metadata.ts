@@ -31,9 +31,6 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL('https://pinteya-ecommerce.vercel.app'),
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     title: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
     description: 'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales y todo lo necesario para tus proyectos.',

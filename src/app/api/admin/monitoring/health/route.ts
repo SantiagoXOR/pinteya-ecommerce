@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - HEALTH CHECKS API
 // ===================================
@@ -246,6 +249,7 @@ function getRecoveryActionId(service: string): string | null {
       return null;
   }
 }
+
 
 
 

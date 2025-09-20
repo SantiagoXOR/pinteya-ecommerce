@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API de Inicialización del Sistema Enterprise Completo
  * Inicializa todos los sistemas de optimización y monitoreo
@@ -489,6 +492,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

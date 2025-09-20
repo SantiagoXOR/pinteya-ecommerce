@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - CORE WEB VITALS API
 // API específica para análisis y optimización de Core Web Vitals
@@ -303,6 +306,7 @@ export async function OPTIONS(request: NextRequest) {
     headers: corsHeaders,
   });
 }
+
 
 
 

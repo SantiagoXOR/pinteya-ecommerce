@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para actualizar la ubicación del driver en tiempo real
  * POST /api/driver/location
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@/lib/integrations/supabase/server';
 
 export async function POST(request: NextRequest) {
@@ -223,6 +226,7 @@ function calculateDistance(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
 }
+
 
 
 

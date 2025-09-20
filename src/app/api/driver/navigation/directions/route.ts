@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para obtener direcciones de navegación usando Google Maps Directions API
  * POST /api/driver/navigation/directions
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -214,6 +217,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

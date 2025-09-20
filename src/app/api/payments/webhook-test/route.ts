@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MERCADOPAGO WEBHOOK TEST API
 // ===================================
@@ -283,6 +286,7 @@ async function processWebhookTestAsync(webhookData: MercadoPagoWebhookData, clie
     console.error('[WEBHOOK_TEST_ASYNC] Error stack:', error.stack);
   }
 }
+
 
 
 

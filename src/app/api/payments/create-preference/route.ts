@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - CREATE PAYMENT PREFERENCE API
 // ===================================
@@ -8,7 +11,7 @@ import { CreatePreferencePayload } from '@/types/checkout';
 import { ApiResponse } from '@/types/api';
 import { createPaymentPreference } from '@/lib/integrations/mercadopago';
 import type { MercadoPagoItem } from '@/lib/integrations/mercadopago';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { CHECKOUT_CONSTANTS, VALIDATION_CONSTANTS } from '@/constants/shop';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
@@ -567,6 +570,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

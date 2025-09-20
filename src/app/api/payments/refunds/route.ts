@@ -1,9 +1,12 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MERCADOPAGO REFUNDS API
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
@@ -385,6 +388,7 @@ async function processRefund(
     };
   }
 }
+
 
 
 

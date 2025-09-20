@@ -7,11 +7,11 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const authConfig = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       authorization: {
         params: {
           prompt: "consent",
@@ -27,9 +27,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/auth/signin",
     error: "/auth/error",
   },
-
-  // Configuración de la ruta base
-  basePath: "/api/auth",
 
   // Configuración de callbacks
   callbacks: {
@@ -81,9 +78,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 
-  // ✅ FIXED: Configuración de sesión con JWT strategy para mejor compatibilidad
+  // Configuración de sesión con JWT strategy para mejor compatibilidad
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 30 * 24 * 60 * 60, // 30 días
     updateAge: 24 * 60 * 60, // 24 horas
   },
@@ -105,7 +102,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "lax" as const,
         path: "/",
         secure: process.env.NODE_ENV === "production",
       },
@@ -114,7 +111,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   // Configuración de secret para producción
   secret: process.env.NEXTAUTH_SECRET,
-})
+}
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
 
 // Tipos TypeScript para extender la sesión
 declare module "next-auth" {

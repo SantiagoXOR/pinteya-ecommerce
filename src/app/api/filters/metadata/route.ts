@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API FILTERS METADATA
 // ===================================
@@ -154,6 +157,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

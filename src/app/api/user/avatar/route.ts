@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API DE AVATAR DE USUARIO
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@supabase/supabase-js';
 
 // Configuración de Supabase Storage
@@ -237,6 +240,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,9 +1,12 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MERCADOPAGO ADVANCED PREFERENCES API
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
 import { metricsCollector } from '@/lib/enterprise/metrics';
@@ -427,6 +430,7 @@ function validatePreferenceConfig(config: AdvancedPreferenceConfig): { valid: bo
 
   return { valid: true };
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -11,6 +14,7 @@ export async function GET() {
     endpoint: '/api/test-admin-middleware'
   });
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - SEO TESTING API
 // API endpoints para la suite de tests automatizados SEO
@@ -430,6 +433,7 @@ function generateComplianceRecommendations(results: any[]): string[] {
 
   return recommendations;
 }
+
 
 
 

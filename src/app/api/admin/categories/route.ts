@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - ADMIN CATEGORIES API
 // ===================================
@@ -554,6 +557,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
 
 
 

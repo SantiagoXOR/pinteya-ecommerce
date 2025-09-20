@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API UNIFICADA DE DEBUG
 // Consolida todas las funcionalidades de debug dispersas
@@ -5,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@supabase/supabase-js';
 import { getAuthenticatedUser, getAuthFromHeaders } from '@/lib/auth/admin-auth';
 import { checkCRUDPermissions } from '@/lib/auth/admin-auth';
@@ -494,6 +497,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

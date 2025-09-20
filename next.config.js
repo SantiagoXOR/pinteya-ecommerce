@@ -1,40 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ✅ OPTIMIZACIONES PARA ADMIN PANEL - Configuración simplificada y estable
-  experimental: {
-    // Optimizaciones críticas para admin panel + lazy loading
-    optimizePackageImports: [
-      'lucide-react',
-      '@radix-ui/react-icons',
-      '@clerk/nextjs',
-      'recharts',
-      'maplibre-gl',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-select',
-      '@radix-ui/react-tabs',
-      'date-fns',
-      'framer-motion'
-    ],
-    // Removidas optimizaciones experimentales que causan problemas de build
-  },
-
-  // ✅ CONFIGURACIÓN DE DESARROLLO OPTIMIZADA
-  ...(process.env.NODE_ENV === 'development' && {
-    // Configuraciones específicas para desarrollo
-    onDemandEntries: {
-      // Tiempo antes de eliminar páginas de memoria (ms)
-      maxInactiveAge: 60 * 1000,
-      // Páginas que se mantienen en memoria
-      pagesBufferLength: 5,
-    },
-
-  }),
-
-  // ✅ BUILD ID ÚNICO para evitar cache issues
-  generateBuildId: async () => {
-    return 'admin-panel-' + Date.now()
-  },
-
+  // ✅ Configuración mínima y estable para Next.js 15
+  
   // ✅ ESLint configuration - Simplificado para builds estables
   eslint: {
     ignoreDuringBuilds: true,
@@ -51,161 +18,37 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
 
-  // ✅ WEBPACK OPTIMIZADO - Configuración avanzada de bundle optimization
-  webpack: (config, { dev, isServer, buildId }) => {
-    // ===================================
-    // BUNDLE OPTIMIZATION SYSTEM
-    // ===================================
+  // ✅ Configuración experimental para resolver errores de webpack
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
 
-    if (!dev && !isServer) {
-      // Configuración avanzada de chunks optimizada
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        minSize: 20000,
-        maxSize: 250000,
-        minChunks: 1,
-        maxAsyncRequests: 30,
-        maxInitialRequests: 30,
-        enforceSizeThreshold: 50000,
-        cacheGroups: {
-          // Framework core (React, Next.js)
-          framework: {
-            name: 'framework',
-            test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
-            priority: 40,
-            chunks: 'all',
-            enforce: true,
-            reuseExistingChunk: true
-          },
-
-          // UI Components (Radix UI, Lucide)
-          uiComponents: {
-            name: 'ui-components',
-            test: /[\\/]node_modules[\\/](@radix-ui|lucide-react)[\\/]/,
-            priority: 35,
-            chunks: 'all',
-            enforce: true,
-            reuseExistingChunk: true
-          },
-
-          // Auth y seguridad
-          auth: {
-            name: 'auth',
-            test: /[\\/]node_modules[\\/](@clerk|@supabase)[\\/]/,
-            priority: 30,
-            chunks: 'all',
-            minSize: 40000,
-            reuseExistingChunk: true
-          },
-
-          // Charts y visualización
-          charts: {
-            name: 'charts',
-            test: /[\\/]node_modules[\\/](recharts|d3)[\\/]/,
-            priority: 30,
-            chunks: 'all',
-            minSize: 50000,
-            reuseExistingChunk: true
-          },
-
-          // Utilidades
-          utils: {
-            name: 'utils',
-            test: /[\\/]node_modules[\\/](lodash|date-fns|clsx|class-variance-authority)[\\/]/,
-            priority: 25,
-            chunks: 'all',
-            minSize: 20000,
-            maxSize: 100000,
-            reuseExistingChunk: true
-          },
-
-          // Animaciones
-          animations: {
-            name: 'animations',
-            test: /[\\/]node_modules[\\/](framer-motion)[\\/]/,
-            priority: 25,
-            chunks: 'all',
-            minSize: 50000,
-            reuseExistingChunk: true
-          },
-
-          // Forms y validación
-          forms: {
-            name: 'forms',
-            test: /[\\/]node_modules[\\/](react-hook-form|@hookform|zod)[\\/]/,
-            priority: 25,
-            chunks: 'all',
-            minSize: 30000,
-            reuseExistingChunk: true
-          },
-
-          // Sistema de diseño
-          designSystem: {
-            name: 'design-system',
-            test: /[\\/]src[\\/]components[\\/]ui[\\/]/,
-            priority: 20,
-            chunks: 'all',
-            minSize: 20000,
-            maxSize: 100000,
-            reuseExistingChunk: true
-          },
-
-          // Admin panel específico
-          admin: {
-            name: 'admin',
-            test: /[\\/]src[\\/](app[\\/]admin|components[\\/]admin)[\\/]/,
-            priority: 25,
-            chunks: 'async',
-            minSize: 40000,
-            maxSize: 150000,
-            reuseExistingChunk: true
-          },
-
-          // Vendor general
-          vendor: {
-            name: 'vendor',
-            test: /[\\/]node_modules[\\/](?!(react|react-dom|next|@radix-ui|lucide-react|@clerk|@supabase|recharts|framer-motion|react-hook-form|zod)[\\/])/,
-            priority: 20,
-            chunks: 'all',
-            minSize: 30000,
-            maxSize: 200000,
-            reuseExistingChunk: true
-          },
-
-          // Componentes comunes
-          common: {
-            name: 'common',
-            test: /[\\/]src[\\/]/,
-            priority: 5,
-            chunks: 'all',
-            minSize: 30000,
-            maxSize: 100000,
-            minChunks: 2,
-            reuseExistingChunk: true
-          }
-        }
+  // ✅ Configuración de webpack para resolver el error de 'call'
+  webpack: (config, { dev, isServer }) => {
+    // Resolver problemas de hidratación y carga dinámica
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
       };
-
-      // Runtime chunk para mejor caching
-      config.optimization.runtimeChunk = 'single';
-
-      // Optimizaciones adicionales
-      config.optimization.usedExports = true;
-      config.optimization.sideEffects = false;
-      config.optimization.concatenateModules = true;
     }
 
-    // Tree shaking mejorado
-    config.module.rules.push({
-      test: /\.js$/,
-      include: [
-        /node_modules\/lodash-es/,
-        /node_modules\/date-fns/,
-        /src\/lib/,
-        /src\/utils/
-      ],
-      sideEffects: false
-    });
+    // Optimizar chunks para evitar errores de carga
+    if (!dev) {
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...config.optimization.splitChunks.cacheGroups,
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
+      };
+    }
 
     return config;
   },
@@ -381,10 +224,5 @@ const nextConfig = {
   },
 };
 
-// Bundle analyzer configuration
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
-
-// Export configuration with bundle analyzer
-module.exports = process.env.ANALYZE === 'true' ? withBundleAnalyzer(nextConfig) : nextConfig;
+// Export configuration without bundle analyzer to avoid potential issues
+module.exports = nextConfig;

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para gestión de roles del sistema
  * Requiere permisos de administrador para modificar
@@ -381,6 +384,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
 
 
 

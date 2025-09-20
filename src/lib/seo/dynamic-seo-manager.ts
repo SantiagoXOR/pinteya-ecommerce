@@ -938,16 +938,22 @@ class DynamicSEOManager {
     const title = SEO_TEMPLATES.product.title(product);
     const description = SEO_TEMPLATES.product.description(product);
     const keywords = SEO_TEMPLATES.product.keywords(product);
-    const canonical = `${SITE_CONFIG.url}/products/${product.slug}`;
-    const ogImage = product.images[0] || SITE_CONFIG.defaultImage;
+    
+    // Validar que product.slug existe antes de generar canonical
+    if (!product.slug) {
+      console.warn('Product slug is missing, using fallback');
+    }
+    
+    const canonical = product.slug ? `${SITE_CONFIG.url}/products/${product.slug}` : SITE_CONFIG.url;
+    const ogImage = product.images?.[0] || SITE_CONFIG.defaultImage;
 
     return {
       title,
       description,
       keywords,
-      alternates: {
+      alternates: canonical ? {
         canonical,
-      },
+      } : undefined,
       openGraph: {
         title,
         description,
@@ -983,9 +989,9 @@ class DynamicSEOManager {
       },
       other: {
         'product:price:amount': product.price.toString(),
-        'product:price:currency': product.currency,
-        'product:availability': product.availability,
-        'product:condition': product.condition,
+        'product:price:currency': 'ARS',
+        'product:availability': product.stock > 0 ? 'InStock' : 'OutOfStock',
+        'product:condition': 'NewCondition',
         'product:brand': product.brand,
         'product:category': product.category,
       },
@@ -997,16 +1003,22 @@ class DynamicSEOManager {
     const title = SEO_TEMPLATES.category.title(category);
     const description = SEO_TEMPLATES.category.description(category);
     const keywords = SEO_TEMPLATES.category.keywords(category);
-    const canonical = `${SITE_CONFIG.url}/categories/${category.slug}`;
+    
+    // Validar que category.slug existe antes de generar canonical
+    if (!category.slug) {
+      console.warn('Category slug is missing, using fallback');
+    }
+    
+    const canonical = category.slug ? `${SITE_CONFIG.url}/categories/${category.slug}` : SITE_CONFIG.url;
     const ogImage = category.image || SITE_CONFIG.defaultImage;
 
     return {
       title,
       description,
       keywords,
-      alternates: {
+      alternates: canonical ? {
         canonical,
-      },
+      } : undefined,
       openGraph: {
         title,
         description,
@@ -1052,15 +1064,21 @@ class DynamicSEOManager {
     const title = SEO_TEMPLATES.page.title(page);
     const description = SEO_TEMPLATES.page.description(page);
     const keywords = SEO_TEMPLATES.page.keywords();
-    const canonical = `${SITE_CONFIG.url}${page.path}`;
+    
+    // Validar que page.path existe antes de generar canonical
+    if (!page.path) {
+      console.warn('Page path is missing, using fallback');
+    }
+    
+    const canonical = page.path ? `${SITE_CONFIG.url}${page.path}` : SITE_CONFIG.url;
 
     return {
       title,
       description,
       keywords,
-      alternates: {
+      alternates: canonical ? {
         canonical,
-      },
+      } : undefined,
       openGraph: {
         title,
         description,

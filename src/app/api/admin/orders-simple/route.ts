@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // =====================================================
 // API: ÓRDENES ADMIN SIMPLIFICADA (DESARROLLO)
 // Descripción: Versión simplificada sin Redis ni métricas complejas
@@ -284,6 +287,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

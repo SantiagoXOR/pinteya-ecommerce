@@ -8,6 +8,9 @@
 import { useState } from 'react';
 import { Shield, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
+
 interface TestResult {
   test: string;
   status: 'success' | 'error' | 'warning';

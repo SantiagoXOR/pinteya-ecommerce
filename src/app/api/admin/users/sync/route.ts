@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para sincronizar usuarios de NextAuth.js con Supabase
  * POST /api/admin/users/sync
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -123,6 +126,7 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
 
 
 

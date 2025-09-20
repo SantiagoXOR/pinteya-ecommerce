@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para obtener perfil de usuario
  * GET /api/admin/users/profile?email=user@example.com
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -75,6 +78,7 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
 
 
 

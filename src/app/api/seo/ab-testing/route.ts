@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - A/B TESTING API
 // API específica para gestión de A/B tests de metadata SEO
@@ -272,6 +275,7 @@ export async function OPTIONS(request: NextRequest) {
     },
   });
 }
+
 
 
 

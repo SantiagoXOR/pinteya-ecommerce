@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API PARA MÉTRICAS DE OPTIMIZACIÓN - PINTEYA E-COMMERCE
  * Proporciona métricas en tiempo real de las optimizaciones implementadas
@@ -5,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 interface OptimizationMetrics {
   analytics: {
@@ -287,6 +290,7 @@ function formatBytes(bytes: number): string {
   
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
+
 
 
 

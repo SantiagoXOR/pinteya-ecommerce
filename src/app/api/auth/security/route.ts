@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API Enterprise de Auditoría de Seguridad Mejorada
  * Refactorizada con utilidades enterprise + RLS + validaciones robustas
@@ -433,6 +436,7 @@ export async function POST(request: NextRequest) {
 
   return rateLimitResult;
 }
+
 
 
 

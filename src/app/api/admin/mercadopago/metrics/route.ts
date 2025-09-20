@@ -1,9 +1,12 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MERCADOPAGO METRICS API
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { metricsCollector } from '@/lib/enterprise/metrics';
 import { isRedisAvailable } from '@/lib/integrations/redis';
 import { logger, LogCategory } from '@/lib/enterprise/logger';
@@ -232,6 +235,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // 🔍 Enterprise Slug Validation API
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -57,6 +60,7 @@ export const POST = composeMiddlewares(
   withAdminAuth(['products_read']),
   withValidation(SlugValidationSchema)
 )(postHandler);
+
 
 
 

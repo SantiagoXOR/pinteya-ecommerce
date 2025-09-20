@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // API: Performance Metrics
 // Endpoint para recopilar y servir métricas de performance
@@ -5,7 +8,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { APIAnalytics } from '@/middleware/performance-monitoring';
 import { productionMonitor } from '@/config/production-monitoring';
 
@@ -409,6 +412,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
 
 
 

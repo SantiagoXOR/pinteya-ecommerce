@@ -1,7 +1,10 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { metricsCollector } from '@/lib/enterprise/metrics';
@@ -550,6 +553,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
 
 
 

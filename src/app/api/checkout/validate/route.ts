@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -296,6 +299,7 @@ export async function OPTIONS() {
     },
   });
 }
+
 
 
 

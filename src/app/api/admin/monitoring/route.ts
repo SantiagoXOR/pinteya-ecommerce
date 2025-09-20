@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API de monitoreo para panel administrativo
  * Proporciona métricas de performance y alertas de seguridad
@@ -265,6 +268,7 @@ async function postHandler(request: NextRequest) {
 // Aplicar middleware de monitoreo de performance
 export const GET = withPerformanceMonitoring(getHandler);
 export const POST = withPerformanceMonitoring(postHandler);
+
 
 
 

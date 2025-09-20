@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API de monitoreo de seguridad
  * Proporciona estadísticas y eventos de seguridad para el dashboard

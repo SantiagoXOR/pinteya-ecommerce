@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API del Dashboard de Seguridad Enterprise
  * Proporciona datos completos para el dashboard de seguridad en tiempo real
@@ -468,6 +471,7 @@ function generateSecurityRecommendations(metrics: EnterpriseSecurityMetrics): an
 
   return recommendations;
 }
+
 
 
 

@@ -1,5 +1,8 @@
 'use client';
 
+
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState } from 'react';
 import { MapPin, Plus, Edit, Trash2, Star, Building, Phone } from 'lucide-react';
 import { useSession } from 'next-auth/react';

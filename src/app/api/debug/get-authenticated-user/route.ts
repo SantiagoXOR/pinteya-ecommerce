@@ -1,6 +1,9 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser, getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,6 +81,7 @@ export async function GET(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

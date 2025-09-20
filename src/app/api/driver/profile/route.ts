@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para obtener el perfil del driver y sus rutas asignadas
  * GET /api/driver/profile
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@/lib/integrations/supabase/server';
 
 export async function GET(request: NextRequest) {
@@ -167,6 +170,7 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
 
 
 

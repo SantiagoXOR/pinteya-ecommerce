@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // API Unificada de Testing
 // Consolida todas las funcionalidades de testing en un solo endpoint
@@ -914,6 +917,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API OPTIMIZADA PARA ANALYTICS - PINTEYA E-COMMERCE
  * Procesamiento en lotes con inserción masiva optimizada
@@ -282,6 +285,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
 
 
 

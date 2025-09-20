@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API Route para métricas de analytics
  * Calcula y devuelve métricas de conversión y comportamiento
@@ -248,6 +251,7 @@ async function getAdditionalMetrics(startDate: string, endDate: string, userId?:
     };
   }
 }
+
 
 
 

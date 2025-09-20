@@ -35,7 +35,7 @@ export default function RootLayout({
         <GoogleAnalytics />
       </head>
       <body>
-        {/* <ClientErrorSuppression /> */}
+        <ClientErrorSuppression />
         {/* <JsonSafetyInitializer /> */}
         {/* <DebugNotificationDisabler /> */}
         {/* <PerformanceTracker /> */}

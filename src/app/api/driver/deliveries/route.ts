@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para gestión de entregas por parte de los drivers
  * GET /api/driver/deliveries - Obtener entregas asignadas
@@ -5,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@/lib/integrations/supabase/server';
 
 export async function GET(request: NextRequest) {
@@ -284,6 +287,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

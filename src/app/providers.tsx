@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
 
@@ -14,6 +14,7 @@ import { SimpleAnalyticsProvider as AnalyticsProvider } from '@/components/Analy
 import { QueryClientProvider } from "@/components/providers/QueryClientProvider";
 import { NetworkErrorProvider } from "@/components/providers/NetworkErrorProvider";
 import { MonitoringProvider } from "@/providers/MonitoringProvider";
+
 
 // Componentes UI
 import HeaderNextAuth from "../components/Header/HeaderNextAuth";
@@ -30,17 +31,6 @@ import { Toaster } from "@/components/ui/toast";
 
 // Componente NextAuthWrapper para manejar sesiones
 function NextAuthWrapper({ children }: { children: React.ReactNode }) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Durante SSG/hidratación inicial, renderizar sin SessionProvider para evitar mismatch
-  if (!isMounted) {
-    return <>{children}</>;
-  }
-
   // DEBUG: Log de configuración NextAuth
   console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce');
 
@@ -81,7 +71,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     // });
 
     return (
-      <div className="app-content-wrapper">{/* mobile-bottom-nav-padding TEMPORALMENTE DESACTIVADO */}
+      <>
         {loading ? (
           <PreLoader />
         ) : (
@@ -109,9 +99,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     <ScrollToTop />
 
                     {/* Contenido principal */}
-                    <div>
-                      {children}
-                    </div>
+                    {children}
 
                     {/* Footer solo para rutas públicas */}
                     {!isAdminRoute && <Footer />}
@@ -147,7 +135,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             </MonitoringProvider>
           </>
         )}
-      </div>
+      </>
     );
   };
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para crear el usuario administrador en Supabase Auth
  * Solo debe ejecutarse una vez para configurar el sistema
@@ -180,6 +183,7 @@ export async function GET() {
     instructions: 'Usar POST con securityKey, email y password'
   });
 }
+
 
 
 

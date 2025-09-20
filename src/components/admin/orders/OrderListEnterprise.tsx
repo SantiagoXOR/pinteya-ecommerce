@@ -73,13 +73,13 @@ interface OrderListEnterpriseProps {
 // COMPONENTES MEMOIZADOS
 // ===================================
 
-interface OrderFiltersProps {
+interface OrderFiltersComponentProps {
   filters: any;
   onFilterChange: (key: string, value: any) => void;
   enabled: boolean;
 }
 
-const OrderFilters = memo<OrderFiltersProps>(({ filters, onFilterChange, enabled }) => {
+const OrderFiltersComponent = memo<OrderFiltersComponentProps>(({ filters, onFilterChange, enabled }) => {
   if (!enabled) {return null;}
 
   return (
@@ -165,7 +165,7 @@ const OrderFilters = memo<OrderFiltersProps>(({ filters, onFilterChange, enabled
   );
 });
 
-OrderFilters.displayName = 'OrderFilters';
+OrderFiltersComponent.displayName = 'OrderFiltersComponent';
 
 interface BulkActionsProps {
   selectedCount: number;
@@ -641,7 +641,7 @@ export const OrderListEnterprise: React.FC<OrderListEnterpriseProps> = ({
       </div>
 
       {/* Filtros */}
-      <OrderFilters
+      <OrderFiltersComponent
         filters={filters}
         onFilterChange={memoizedHandlers.onFilterChange}
         enabled={enableFilters}

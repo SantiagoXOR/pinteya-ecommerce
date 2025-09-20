@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API de Productos con RLS Enterprise
  * Demuestra la integración completa de Row Level Security con utilidades enterprise
@@ -442,6 +445,7 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para obtener órdenes pendientes de entrega para drivers
  * GET /api/driver/pending-orders
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createAdminClient } from '@/lib/integrations/supabase/server';
 
 export async function GET(request: NextRequest) {
@@ -208,6 +211,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

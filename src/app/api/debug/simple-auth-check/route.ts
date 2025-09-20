@@ -1,5 +1,8 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 /**
  * API simple para verificar el estado de autenticación sin dependencias complejas
@@ -85,6 +88,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // =====================================================
 // API: EXPORTACIÓN DE PRODUCTOS CSV
 // Ruta: /api/admin/products/export
@@ -6,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { z } from 'zod';
 
 // =====================================================
@@ -360,6 +363,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

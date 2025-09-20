@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para optimizar rutas de entrega usando Google Maps
  * POST /api/driver/optimize-route
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 interface DeliveryStop {
   orderId: number;
@@ -208,6 +211,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

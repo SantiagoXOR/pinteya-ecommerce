@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API segura para gestión de productos del panel administrativo
  * Usa Supabase Auth directamente para evitar conflictos con Clerk
@@ -330,6 +333,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

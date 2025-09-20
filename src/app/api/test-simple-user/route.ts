@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { getAuthenticatedUser } from '@/lib/auth/admin-auth';
@@ -81,6 +84,7 @@ export async function GET(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Client } from '@googlemaps/google-maps-services-js';
@@ -367,6 +370,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // API ENDPOINT PARA GENERAR SCREENSHOTS DE TESTING
 // ===================================
@@ -237,6 +240,7 @@ export async function DELETE(request: NextRequest) {
     }, { status: 500 })
   }
 }
+
 
 
 

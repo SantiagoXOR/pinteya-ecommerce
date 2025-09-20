@@ -1,4 +1,7 @@
-import { auth } from '@/auth'
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
+import { auth } from '@/lib/auth/config'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -125,6 +128,7 @@ export async function GET() {
     }, { status: 500 })
   }
 }
+
 
 
 

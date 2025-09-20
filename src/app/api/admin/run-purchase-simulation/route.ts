@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -92,6 +95,7 @@ export async function GET() {
     timestamp: new Date().toISOString()
   });
 }
+
 
 
 

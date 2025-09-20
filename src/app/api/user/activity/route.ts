@@ -1,9 +1,12 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API DE GESTIÓN DE ACTIVIDAD DE USUARIO
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
 
 // Tipos para actividad
@@ -291,6 +294,7 @@ function getClientIP(request: NextRequest): string {
   
   return request.ip || 'unknown';
 }
+
 
 
 

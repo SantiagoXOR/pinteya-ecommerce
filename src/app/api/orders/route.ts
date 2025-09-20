@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 // Datos simulados básicos para órdenes
@@ -62,6 +65,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

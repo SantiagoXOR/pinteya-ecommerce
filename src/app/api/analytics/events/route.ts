@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API Route para recibir eventos de analytics
  * Optimizado para procesamiento asíncrono y cache
@@ -141,6 +144,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -136,6 +139,7 @@ function generateRecommendations(diagnostics: any): string[] {
 
   return recommendations;
 }
+
 
 
 

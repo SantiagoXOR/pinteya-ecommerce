@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - ADMIN USERS BULK OPERATIONS API ENTERPRISE
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { ApiResponse } from '@/types/api';
 import { z } from 'zod';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
@@ -721,6 +724,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
+
 
 
 

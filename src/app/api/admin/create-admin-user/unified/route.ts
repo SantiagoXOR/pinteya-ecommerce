@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // API Unificada para Creación de Usuario Administrador
 // Combina funcionalidad básica y enterprise en un solo endpoint
@@ -581,6 +584,7 @@ export async function GET() {
     }
   });
 }
+
 
 
 

@@ -1,5 +1,8 @@
 'use client';
 
+
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
 import React, { useState } from 'react';
 import { SimpleAddressForm } from '@/components/Address/SimpleAddressForm';
 import { AddressFormAdvanced, AdvancedAddress } from '@/components/Address/AddressFormAdvanced';

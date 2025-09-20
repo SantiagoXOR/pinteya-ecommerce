@@ -1,1262 +1,275 @@
-<testsuites id="" name="" tests="232" failures="3" skipped="229" errors="0" time="72.022603">
-<testsuite name="admin\admin-dashboard-fix.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="9" failures="3" skipped="6" time="56.705" errors="0">
-<testcase name="Admin Dashboard Fix Verification › should load /admin page without errors" classname="admin\admin-dashboard-fix.spec.ts" time="14.613">
-<failure message="admin-dashboard-fix.spec.ts:18:7 should load /admin page without errors" type="FAILURE">
-<![CDATA[  [Mobile Chrome] › admin\admin-dashboard-fix.spec.ts:18:7 › Admin Dashboard Fix Verification › should load /admin page without errors 
+<testsuites id="" name="" tests="5" failures="3" skipped="2" errors="0" time="45.302523">
+<testsuite name="product-card-hover.spec.ts" timestamp="2025-09-20T18:19:59.927Z" hostname="ui-public" tests="1" failures="1" skipped="0" time="10.614" errors="0">
+<testcase name="ProductCard - microinteracciones en hover › muestra efectos de hover (transform o quick actions visibles)" classname="product-card-hover.spec.ts" time="10.614">
+<failure message="product-card-hover.spec.ts:13:7 muestra efectos de hover (transform o quick actions visibles)" type="FAILURE">
+<![CDATA[  [ui-public] › product-card-hover.spec.ts:13:7 › ProductCard - microinteracciones en hover › muestra efectos de hover (transform o quick actions visibles) 
 
-    Error: expect(page).toHaveTitle(expected) failed
+    Error: expect(received).toBeTruthy()
 
-    Expected pattern: /Admin Panel/
-    Received string:  "Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón"
-    Timeout: 5000ms
+    Received: false
 
-    Call log:
-      - Expect "toHaveTitle" with timeout 5000ms
-        8 × unexpected value "Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón"
-
-
-      50 |
-      51 |     // Verificar que el título de la página es correcto
-    > 52 |     await expect(page).toHaveTitle(/Admin Panel/);
-         |                        ^
-      53 |
-      54 |     console.log('✅ /admin carga sin errores críticos');
-      55 |   });
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\admin\admin-dashboard-fix.spec.ts:52:24
+      81 |
+      82 |     // Afirmación final
+    > 83 |     expect(hasMicroInteractions).toBeTruthy();
+         |                                  ^
+      84 |   });
+      85 | });
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-card-hover.spec.ts:83:34
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome\test-failed-1.png
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome\video.webm
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome\error-context.md
+    Error Context: ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(page).toHaveTitle(expected) failed
+    Error: expect(received).toBeTruthy()
 
-    Expected pattern: /Admin Panel/
-    Received string:  "Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón"
-    Timeout: 5000ms
+    Received: false
 
-    Call log:
-      - Expect "toHaveTitle" with timeout 5000ms
-        9 × unexpected value "Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón"
-
-
-      50 |
-      51 |     // Verificar que el título de la página es correcto
-    > 52 |     await expect(page).toHaveTitle(/Admin Panel/);
-         |                        ^
-      53 |
-      54 |     console.log('✅ /admin carga sin errores críticos');
-      55 |   });
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\admin\admin-dashboard-fix.spec.ts:52:24
+      81 |
+      82 |     // Afirmación final
+    > 83 |     expect(hasMicroInteractions).toBeTruthy();
+         |                                  ^
+      84 |   });
+      85 | });
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-card-hover.spec.ts:83:34
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\test-failed-1.png
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\video.webm
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\error-context.md
+    Error Context: ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\trace.zip
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
-<![CDATA[🔍 Navegando a /admin...
+<![CDATA[🧪 Verificando microinteracciones de ProductCard al hacer hover
+🔎 Transform inicial: none
+🔎 Transform luego de hover: none
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome\video.webm]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public\video.webm]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome\error-context.md]]
-🔍 Navegando a /admin...
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public\error-context.md]]
+🧪 Verificando microinteracciones de ProductCard al hacer hover
+🔎 Transform inicial: none
+🔎 Transform luego de hover: none
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\video.webm]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\error-context.md]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\error-context.md]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3ffae-d-admin-page-without-errors-Mobile-Chrome-retry1\trace.zip]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--ui-public-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Admin Dashboard Fix Verification › should display admin dashboard components" classname="admin\admin-dashboard-fix.spec.ts" time="14.248">
-<failure message="admin-dashboard-fix.spec.ts:57:7 should display admin dashboard components" type="FAILURE">
-<![CDATA[  [Mobile Chrome] › admin\admin-dashboard-fix.spec.ts:57:7 › Admin Dashboard Fix Verification › should display admin dashboard components 
+</testsuite>
+<testsuite name="product-card-hover.spec.ts" timestamp="2025-09-20T18:19:59.927Z" hostname="firefox" tests="1" failures="1" skipped="0" time="12.748" errors="0">
+<testcase name="ProductCard - microinteracciones en hover › muestra efectos de hover (transform o quick actions visibles)" classname="product-card-hover.spec.ts" time="12.748">
+<failure message="product-card-hover.spec.ts:13:7 muestra efectos de hover (transform o quick actions visibles)" type="FAILURE">
+<![CDATA[  [firefox] › product-card-hover.spec.ts:13:7 › ProductCard - microinteracciones en hover › muestra efectos de hover (transform o quick actions visibles) 
 
-    Error: expect(locator).toBeVisible() failed
+    Error: expect(received).toBeTruthy()
 
-    Locator:  locator('[data-testid="admin-layout"], .admin-layout, main')
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  5000ms
+    Received: false
 
-    Call log:
-      - Expect "toBeVisible" with timeout 5000ms
-      - waiting for locator('[data-testid="admin-layout"], .admin-layout, main')
-
-
-      60 |
-      61 |     // Verificar que el layout principal está presente
-    > 62 |     await expect(page.locator('[data-testid="admin-layout"], .admin-layout, main')).toBeVisible();
-         |                                                                                     ^
-      63 |
-      64 |     // Verificar que el título de bienvenida está presente
-      65 |     await expect(page.locator('text=Bienvenido al Panel Administrativo')).toBeVisible();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\admin\admin-dashboard-fix.spec.ts:62:85
+      81 |
+      82 |     // Afirmación final
+    > 83 |     expect(hasMicroInteractions).toBeTruthy();
+         |                                  ^
+      84 |   });
+      85 | });
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-card-hover.spec.ts:83:34
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome\test-failed-1.png
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome\video.webm
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome\error-context.md
+    Error Context: ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(locator).toBeVisible() failed
+    Error: expect(received).toBeTruthy()
 
-    Locator:  locator('[data-testid="admin-layout"], .admin-layout, main')
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  5000ms
+    Received: false
 
-    Call log:
-      - Expect "toBeVisible" with timeout 5000ms
-      - waiting for locator('[data-testid="admin-layout"], .admin-layout, main')
-
-
-      60 |
-      61 |     // Verificar que el layout principal está presente
-    > 62 |     await expect(page.locator('[data-testid="admin-layout"], .admin-layout, main')).toBeVisible();
-         |                                                                                     ^
-      63 |
-      64 |     // Verificar que el título de bienvenida está presente
-      65 |     await expect(page.locator('text=Bienvenido al Panel Administrativo')).toBeVisible();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\admin\admin-dashboard-fix.spec.ts:62:85
+      81 |
+      82 |     // Afirmación final
+    > 83 |     expect(hasMicroInteractions).toBeTruthy();
+         |                                  ^
+      84 |   });
+      85 | });
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-card-hover.spec.ts:83:34
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\test-failed-1.png
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\video.webm
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\error-context.md
+    Error Context: ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\trace.zip
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome\test-failed-1.png]]
+<![CDATA[🧪 Verificando microinteracciones de ProductCard al hacer hover
+🔎 Transform inicial: none
+🔎 Transform luego de hover: none
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome\video.webm]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome\error-context.md]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\video.webm]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\error-context.md]]
+🧪 Verificando microinteracciones de ProductCard al hacer hover
+🔎 Transform inicial: none
+🔎 Transform luego de hover: none
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\error-context.md]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\video.webm]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--bd1f5--admin-dashboard-components-Mobile-Chrome-retry1\trace.zip]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Admin Dashboard Fix Verification › should load statistics without crashing" classname="admin\admin-dashboard-fix.spec.ts" time="27.844">
-<failure message="admin-dashboard-fix.spec.ts:82:7 should load statistics without crashing" type="FAILURE">
-<![CDATA[  [Mobile Chrome] › admin\admin-dashboard-fix.spec.ts:82:7 › Admin Dashboard Fix Verification › should load statistics without crashing 
+</testsuite>
+<testsuite name="product-card-hover.spec.ts" timestamp="2025-09-20T18:19:59.927Z" hostname="webkit" tests="1" failures="1" skipped="0" time="12.869" errors="0">
+<testcase name="ProductCard - microinteracciones en hover › muestra efectos de hover (transform o quick actions visibles)" classname="product-card-hover.spec.ts" time="12.869">
+<failure message="product-card-hover.spec.ts:13:7 muestra efectos de hover (transform o quick actions visibles)" type="FAILURE">
+<![CDATA[  [webkit] › product-card-hover.spec.ts:13:7 › ProductCard - microinteracciones en hover › muestra efectos de hover (transform o quick actions visibles) 
 
-    Error: expect(locator).toBeVisible() failed
+    Error: expect(received).toBeTruthy()
 
-    Locator:  locator('text=Total Productos').locator('..').locator('text=/^\\d+$/')
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
+    Received: false
 
-    Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('text=Total Productos').locator('..').locator('text=/^\\d+$/')
-
-
-      89 |     // Verificar que las estadísticas muestran números (no "Cargando..." indefinidamente)
-      90 |     const totalProductsElement = page.locator('text=Total Productos').locator('..').locator('text=/^\\d+$/');
-    > 91 |     await expect(totalProductsElement).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      92 |
-      93 |     // Verificar que no hay mensajes de error en las estadísticas
-      94 |     const errorMessages = page.locator('text=/Error cargando estadísticas|o\\.filter is not a function/');
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\admin\admin-dashboard-fix.spec.ts:91:40
+      81 |
+      82 |     // Afirmación final
+    > 83 |     expect(hasMicroInteractions).toBeTruthy();
+         |                                  ^
+      84 |   });
+      85 | });
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-card-hover.spec.ts:83:34
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome\test-failed-1.png
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome\video.webm
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome\error-context.md
+    Error Context: ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Test was interrupted.
+    Error: expect(received).toBeTruthy()
 
-    Error: expect(locator).toBeVisible() failed
+    Received: false
 
-    Locator:  locator('text=Total Productos').locator('..').locator('text=/^\\d+$/')
-    Expected: visible
-    Received: <element(s) not found>
-
-    Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('text=Total Productos').locator('..').locator('text=/^\\d+$/')
-
-
-      89 |     // Verificar que las estadísticas muestran números (no "Cargando..." indefinidamente)
-      90 |     const totalProductsElement = page.locator('text=Total Productos').locator('..').locator('text=/^\\d+$/');
-    > 91 |     await expect(totalProductsElement).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      92 |
-      93 |     // Verificar que no hay mensajes de error en las estadísticas
-      94 |     const errorMessages = page.locator('text=/Error cargando estadísticas|o\\.filter is not a function/');
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\admin\admin-dashboard-fix.spec.ts:91:40
+      81 |
+      82 |     // Afirmación final
+    > 83 |     expect(hasMicroInteractions).toBeTruthy();
+         |                                  ^
+      84 |   });
+      85 | });
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-card-hover.spec.ts:83:34
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome-retry1\test-failed-1.png
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome-retry1\video.webm
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome-retry1\trace.zip
+    Error Context: ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome\test-failed-1.png]]
+<![CDATA[🧪 Verificando microinteracciones de ProductCard al hacer hover
+🔎 Transform inicial: none
+🔎 Transform luego de hover: none
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome\video.webm]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome\error-context.md]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit\video.webm]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit\error-context.md]]
+🧪 Verificando microinteracciones de ProductCard al hacer hover
+🔎 Transform inicial: none
+🔎 Transform luego de hover: none
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\admin-admin-dashboard-fix--3cb6e-statistics-without-crashing-Mobile-Chrome-retry1\trace.zip]]
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\product-card-hover-Product-f637e-m-o-quick-actions-visibles--webkit-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Admin Dashboard Fix Verification › should navigate to /admin/products successfully" classname="admin\admin-dashboard-fix.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Admin Dashboard Fix Verification › should compare /admin with /admin/products functionality" classname="admin\admin-dashboard-fix.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Admin Dashboard Fix Verification › should handle authentication gracefully" classname="admin\admin-dashboard-fix.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Admin Dashboard Fix Verification › should test diagnostic tools accessibility" classname="admin\admin-dashboard-fix.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Admin Dashboard Fix Verification › should verify useAdminDashboardStats hook improvements" classname="admin\admin-dashboard-fix.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Admin Dashboard Fix Verification › should perform complete admin workflow" classname="admin\admin-dashboard-fix.spec.ts" time="0">
+</testsuite>
+<testsuite name="product-card-hover.spec.ts" timestamp="2025-09-20T18:19:59.927Z" hostname="Mobile Chrome" tests="1" failures="0" skipped="1" time="0.227" errors="0">
+<testcase name="ProductCard - microinteracciones en hover › muestra efectos de hover (transform o quick actions visibles)" classname="product-card-hover.spec.ts" time="0.227">
+<properties>
+<property name="skip" value="Hover no aplica para proyectos móviles">
+</property>
+</properties>
 <skipped>
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="admin\admin-dashboard.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="6" failures="0" skipped="6" time="0" errors="0">
-<testcase name="Panel Administrativo - Dashboard › debe cargar el dashboard administrativo correctamente" classname="admin\admin-dashboard.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Dashboard › debe mostrar métricas del dashboard" classname="admin\admin-dashboard.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Dashboard › debe permitir navegación entre secciones administrativas" classname="admin\admin-dashboard.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Dashboard › debe verificar acceso a APIs administrativas" classname="admin\admin-dashboard.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Dashboard › debe mantener autenticación durante la sesión" classname="admin\admin-dashboard.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Dashboard › debe mostrar información del usuario autenticado" classname="admin\admin-dashboard.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\admin-navigation.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="8" failures="0" skipped="8" time="0" errors="0">
-<testcase name="Panel Administrativo - Navegación › debe cargar el dashboard administrativo correctamente" classname="admin\admin-navigation.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Navegación › debe mostrar todos los módulos administrativos" classname="admin\admin-navigation.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Navegación › debe navegar correctamente al módulo de productos" classname="admin\admin-navigation.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Navegación › debe mostrar el sidebar con navegación funcional" classname="admin\admin-navigation.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Navegación › debe ser responsive en móviles" classname="admin\admin-navigation.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Navegación › debe mostrar breadcrumbs correctos" classname="admin\admin-navigation.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Navegación › debe mostrar el estado del sistema" classname="admin\admin-navigation.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Navegación › debe manejar errores de navegación gracefully" classname="admin\admin-navigation.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\admin-products.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="6" failures="0" skipped="6" time="0" errors="0">
-<testcase name="Panel Administrativo - Gestión de Productos › debe cargar la lista de productos correctamente" classname="admin\admin-products.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar controles de gestión de productos" classname="admin\admin-products.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe permitir búsqueda y filtrado de productos" classname="admin\admin-products.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar detalles de productos" classname="admin\admin-products.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe verificar APIs de productos" classname="admin\admin-products.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe manejar paginación si está presente" classname="admin\admin-products.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\auth-restoration-test.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="5" failures="0" skipped="5" time="0" errors="0">
-<testcase name="Authentication Restoration Tests › should require authentication for /admin in production" classname="admin\auth-restoration-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Authentication Restoration Tests › should test redirect from /my-account to /admin" classname="admin\auth-restoration-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Authentication Restoration Tests › should verify Clerk configuration is working" classname="admin\auth-restoration-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Authentication Restoration Tests › should test complete authentication flow" classname="admin\auth-restoration-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Authentication Restoration Tests › should verify all diagnostic tools still work" classname="admin\auth-restoration-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\basic-admin.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
-<testcase name="Panel Administrativo - Tests Básicos › debe cargar el dashboard administrativo" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Tests Básicos › debe navegar a la página de productos" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Tests Básicos › debe mostrar el formulario de crear producto" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Tests Básicos › debe validar campos requeridos en el formulario" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Tests Básicos › debe ser responsive en móviles" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Tests Básicos › debe cargar rápidamente" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Tests Básicos › debe manejar rutas no encontradas" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Tests Básicos › debe tener navegación funcional entre páginas" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Tests Básicos › debe mostrar contenido apropiado en cada página" classname="admin\basic-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\complete-workflow.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="5" failures="0" skipped="5" time="0" errors="0">
-<testcase name="Panel Administrativo - Flujo Completo E2E › debe completar el flujo completo de gestión de productos" classname="admin\complete-workflow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Flujo Completo E2E › debe manejar errores de red gracefully" classname="admin\complete-workflow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Flujo Completo E2E › debe ser responsive en diferentes tamaños de pantalla" classname="admin\complete-workflow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Flujo Completo E2E › debe mantener estado de navegación correctamente" classname="admin\complete-workflow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Flujo Completo E2E › debe cargar rápidamente y tener buena performance" classname="admin\complete-workflow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\components\category-selector.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="11" failures="0" skipped="11" time="0" errors="0">
-<testcase name="Componente CategorySelector › debe mostrar el selector de categorías correctamente" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe abrir el dropdown al hacer click" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe mostrar categorías en estructura de árbol" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe permitir búsqueda de categorías" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe seleccionar una categoría correctamente" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe expandir/colapsar categorías padre" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe cerrar el dropdown al hacer click fuera" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe mostrar estado de carga mientras obtiene categorías" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe manejar errores de carga de categorías" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe mostrar opción para crear nueva categoría si está habilitada" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente CategorySelector › debe ser accesible con navegación por teclado" classname="admin\components\category-selector.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\components\image-manager.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="13" failures="0" skipped="13" time="0" errors="0">
-<testcase name="Componente ProductImageManager › debe mostrar el área de upload de imágenes" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe permitir seleccionar archivos mediante input" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe mostrar vista previa de imágenes subidas" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe permitir establecer imagen principal" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe permitir editar texto alternativo" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe permitir eliminar imágenes" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe permitir reordenar imágenes por drag and drop" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe mostrar botón para agregar más imágenes" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe mostrar límite de imágenes alcanzado" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe mostrar contador de imágenes" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe mostrar consejos para mejores imágenes" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe manejar errores de upload" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Componente ProductImageManager › debe mostrar progreso de upload" classname="admin\components\image-manager.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\debug-admin-simple.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="3" failures="0" skipped="3" time="0" errors="0">
-<testcase name="Debug Admin Simple › should capture what happens when accessing /admin" classname="admin\debug-admin-simple.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Debug Admin Simple › should compare /admin with /admin/products" classname="admin\debug-admin-simple.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Debug Admin Simple › should test diagnostic pages" classname="admin\debug-admin-simple.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\final-verification.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="1" failures="0" skipped="1" time="0" errors="0">
-<testcase name="Final Authentication Verification › should verify final authentication state in production" classname="admin\final-verification.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\logistics-panel.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="11" failures="0" skipped="11" time="0" errors="0">
-<testcase name="Panel de Logística Admin › debe cargar el dashboard de logística correctamente" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe mostrar métricas de logística" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe mostrar las pestañas de navegación" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe permitir navegar entre pestañas" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe mostrar lista de envíos en la pestaña correspondiente" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe mostrar gráficos de performance" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe mostrar información de couriers" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe permitir actualizar los datos" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe abrir modal de crear envío" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe ser responsive en móvil" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística Admin › debe manejar errores de carga graciosamente" classname="admin\logistics-panel.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\product-form.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="11" failures="0" skipped="11" time="0" errors="0">
-<testcase name="Panel Administrativo - Formulario de Productos › debe cargar el formulario de crear producto correctamente" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe validar campos requeridos en el tab General" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe llenar correctamente el tab General" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe configurar precios correctamente en el tab Precios" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe configurar inventario en el tab Inventario" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe gestionar imágenes en el tab Imágenes" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe configurar variantes en el tab Variantes" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe optimizar SEO en el tab SEO" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe mostrar indicadores de error en tabs con problemas" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe permitir cancelar la creación" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Formulario de Productos › debe crear producto exitosamente con datos válidos" classname="admin\product-form.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\product-management.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="11" failures="0" skipped="11" time="0" errors="0">
-<testcase name="Panel Administrativo - Gestión de Productos › debe cargar la lista de productos correctamente" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar filtros de productos funcionales" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe navegar al formulario de crear producto" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar la tabla de productos con columnas correctas" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe permitir ordenar productos por diferentes columnas" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar acciones de producto en cada fila" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe manejar la paginación correctamente" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar estados de productos con badges correctos" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar información de stock con indicadores visuales" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe permitir selección múltiple de productos" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo - Gestión de Productos › debe mostrar mensaje cuando no hay productos" classname="admin\product-management.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin\production-admin-test.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="4" failures="0" skipped="4" time="0" errors="0">
-<testcase name="Production Admin Panel Tests › should load https://pinteya.com/admin without errors" classname="admin\production-admin-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Production Admin Panel Tests › should compare /admin with /admin/products in production" classname="admin\production-admin-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Production Admin Panel Tests › should test diagnostic tools in production" classname="admin\production-admin-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Production Admin Panel Tests › should verify current production status" classname="admin\production-admin-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin-panel-enterprise-complete.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="4" failures="0" skipped="4" time="0" errors="0">
-<testcase name="Panel Administrativo Enterprise - Suite Completa › Diagnóstico Completo del Panel Administrativo" classname="admin-panel-enterprise-complete.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo Enterprise - Suite Completa › Test Individual - Flujo de Órdenes Enterprise" classname="admin-panel-enterprise-complete.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo Enterprise - Suite Completa › Test Individual - Flujo de Productos Enterprise" classname="admin-panel-enterprise-complete.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo Enterprise - Suite Completa › Test Individual - Flujo de Logística Enterprise" classname="admin-panel-enterprise-complete.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin-panel-enterprise.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="5" failures="0" skipped="5" time="0" errors="0">
-<testcase name="Panel Administrativo Enterprise - Pinteya E-commerce › 1. Flujo de Órdenes Enterprise" classname="admin-panel-enterprise.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo Enterprise - Pinteya E-commerce › 2. Flujo de Productos Enterprise" classname="admin-panel-enterprise.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo Enterprise - Pinteya E-commerce › 3. Flujo de Logística Enterprise" classname="admin-panel-enterprise.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo Enterprise - Pinteya E-commerce › 4. Integración Órdenes-Logística" classname="admin-panel-enterprise.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel Administrativo Enterprise - Pinteya E-commerce › 5. Diagnóstico de APIs y Responsividad" classname="admin-panel-enterprise.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="admin-panel-structure-diagnostic.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="1" failures="0" skipped="1" time="0" errors="0">
-<testcase name="Diagnóstico Estructural del Panel Administrativo › Análisis Completo de Estructura de Archivos" classname="admin-panel-structure-diagnostic.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="advanced-filters.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="7" failures="0" skipped="7" time="0" errors="0">
-<testcase name="Sistema de Filtros Avanzados - ConditionalContent › Homepage normal - debe mostrar contenido completo sin filtros" classname="advanced-filters.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Filtros Avanzados - ConditionalContent › Vista filtrada con search - debe mostrar FilteredProductsSection" classname="advanced-filters.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Filtros Avanzados - ConditionalContent › Vista filtrada con category - debe mostrar FilteredProductsSection" classname="advanced-filters.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Filtros Avanzados - ConditionalContent › Vista filtrada con múltiples filtros" classname="advanced-filters.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Filtros Avanzados - FilteredProductsSection › Estructura del header de filtros" classname="advanced-filters.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Filtros Avanzados - FilteredProductsSection › Grid de productos filtrados" classname="advanced-filters.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Filtros Avanzados - FilteredProductsSection › Paginación en vista filtrada" classname="advanced-filters.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="api-admin.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="7" failures="0" skipped="7" time="0" errors="0">
-<testcase name="APIs Administrativas - Enfoque API-First › API /api/admin/products - Listar productos" classname="api-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Administrativas - Enfoque API-First › API /api/admin/products - Crear producto" classname="api-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Administrativas - Enfoque API-First › API /api/admin/orders - Listar órdenes" classname="api-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Administrativas - Enfoque API-First › API /api/admin/analytics - Dashboard analytics" classname="api-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Administrativas - Enfoque API-First › API /api/admin/categories - Gestión de categorías" classname="api-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Administrativas - Enfoque API-First › Flujo completo: Crear → Listar → Verificar producto" classname="api-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Administrativas - Enfoque API-First › Verificar estructura de respuestas de error" classname="api-admin.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="api-public.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
-<testcase name="APIs Públicas - Enfoque API-First › API /api/products - Listar productos públicos" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Públicas - Enfoque API-First › API /api/categories - Listar categorías públicas" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Públicas - Enfoque API-First › API /api/search - Búsqueda de productos" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Públicas - Enfoque API-First › API /api/products/[id] - Detalle de producto" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Públicas - Enfoque API-First › API /api/cart - Gestión de carrito" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Públicas - Enfoque API-First › API /api/trending - Productos trending" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Públicas - Enfoque API-First › Flujo completo: Buscar → Seleccionar → Agregar al carrito" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Públicas - Enfoque API-First › Verificar performance de APIs públicas" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="APIs Públicas - Enfoque API-First › Verificar headers de respuesta" classname="api-public.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="auth\admin-authentication.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="11" failures="0" skipped="11" time="0" errors="0">
-<testcase name="Sistema de Autenticación Administrativa › debe permitir login de usuario administrador" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe permitir acceso al panel administrativo para admin" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe denegar acceso al panel administrativo para customer" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe mostrar elementos del UI según permisos de admin" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe permitir navegación entre módulos administrativos" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe manejar logout correctamente" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe persistir sesión después de recargar página" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe mostrar información correcta del usuario autenticado" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe manejar errores de autenticación gracefully" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe verificar estado de carga durante autenticación" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Sistema de Autenticación Administrativa › debe funcionar correctamente en móviles" classname="auth\admin-authentication.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="auth\api-permissions.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="12" failures="0" skipped="12" time="0" errors="0">
-<testcase name="Verificación de Permisos en APIs Administrativas › API de productos debe requerir autenticación admin" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API de productos debe permitir acceso con autenticación admin" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API de crear producto debe verificar permisos de creación" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API de actualizar producto debe verificar permisos de edición" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API de eliminar producto debe verificar permisos de eliminación" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API debe validar datos de entrada correctamente" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API debe manejar errores de base de datos gracefully" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API debe registrar acciones en audit log" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API debe manejar rate limiting correctamente" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API debe retornar headers de seguridad apropiados" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API debe manejar timeouts correctamente" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Permisos en APIs Administrativas › API debe funcionar correctamente con paginación" classname="auth\api-permissions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="auth\rls-policies.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="13" failures="0" skipped="13" time="0" errors="0">
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe permitir a admin leer todos los productos" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe permitir a admin crear productos" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe permitir a admin actualizar productos" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe permitir a admin eliminar productos" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe proteger acceso a user_profiles" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe proteger acceso a analytics_events" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe proteger acceso a system_settings" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe registrar acciones en audit_log" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe manejar usuarios sin permisos correctamente" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe funcionar con filtros de búsqueda" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe funcionar con paginación" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe funcionar con ordenamiento" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Verificación de Políticas RLS (Row Level Security) › RLS debe manejar transacciones correctamente" classname="auth\rls-policies.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="auth-flow.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="6" failures="0" skipped="6" time="0" errors="0">
-<testcase name="Flujo de Autenticación NextAuth.js › debería cargar la página principal" classname="auth-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo de Autenticación NextAuth.js › debería mostrar la página de login" classname="auth-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo de Autenticación NextAuth.js › debería iniciar el flujo de Google OAuth" classname="auth-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo de Autenticación NextAuth.js › debería manejar el callback de Google" classname="auth-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo de Autenticación NextAuth.js › debería verificar el estado de la sesión" classname="auth-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo de Autenticación NextAuth.js › debería verificar los providers disponibles" classname="auth-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="filter-detection.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="11" failures="0" skipped="11" time="0" errors="0">
-<testcase name="Detección de Filtros - useFilterDetection Hook › Detección correcta: Sin filtros (homepage normal)" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Detección de Filtros - useFilterDetection Hook › Detección correcta: Filtro search activo" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Detección de Filtros - useFilterDetection Hook › Detección correcta: Filtro q (query alternativo)" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Detección de Filtros - useFilterDetection Hook › Detección con parámetros de paginación" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Detección de Filtros - useFilterDetection Hook › Detección con parámetros de ordenamiento" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Detección de Filtros - useFilterDetection Hook › Detección con múltiples parámetros" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Casos Edge - Detección de Filtros › Parámetros vacíos no deben activar filtros" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Casos Edge - Detección de Filtros › Parámetros no reconocidos no deben activar filtros" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Casos Edge - Detección de Filtros › Combinación de parámetros válidos e inválidos" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Performance y Estabilidad › Cambios rápidos entre URLs no deben causar errores" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Performance y Estabilidad › Recarga de página mantiene estado correcto" classname="filter-detection.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="filter-transitions.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="6" failures="0" skipped="6" time="0" errors="0">
-<testcase name="Transiciones entre Vistas - ConditionalContent › Transición de homepage a vista filtrada mediante navegación" classname="filter-transitions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Transiciones entre Vistas - ConditionalContent › Transición de vista filtrada a homepage" classname="filter-transitions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Transiciones entre Vistas - ConditionalContent › Cambio entre diferentes tipos de filtros" classname="filter-transitions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Elementos Específicos del DOM - FilteredProductsSection › Verificación detallada del header de filtros" classname="filter-transitions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Elementos Específicos del DOM - FilteredProductsSection › Estructura de productos en el grid" classname="filter-transitions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Elementos Específicos del DOM - FilteredProductsSection › Verificación de responsive design" classname="filter-transitions.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="header-verification.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="3" failures="0" skipped="3" time="0" errors="0">
-<testcase name="Header Verification - Post Fix › Header se renderiza correctamente en la página principal" classname="header-verification.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Header Verification - Post Fix › Header funciona correctamente en mobile" classname="header-verification.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Header Verification - Post Fix › Búsqueda funciona sin errores de renderizado" classname="header-verification.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="logistics-panel-exhaustive.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="13" failures="0" skipped="13" time="0" errors="0">
-<testcase name="Panel de Logística - Testing Exhaustivo › Setup: Navegar al panel de logística" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Validación: Datos provienen de APIs reales" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Funcionalidad: Pestaña Resumen" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Funcionalidad: Pestaña Envíos" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Funcionalidad: Pestaña Performance" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Funcionalidad: Pestaña Couriers" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Consistencia: Datos entre pestañas" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Validación: Formatos de datos" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Validación: Estados de envío válidos" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Interacciones: Botón Actualizar" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Interacciones: Botón Crear Envío" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Interacciones: Filtros y búsqueda" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Panel de Logística - Testing Exhaustivo › Database: Comparación con datos reales" classname="logistics-panel-exhaustive.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="middleware-test.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="3" failures="0" skipped="3" time="0" errors="0">
-<testcase name="Middleware de Testing › debe permitir acceso a /admin sin autenticación" classname="middleware-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Middleware de Testing › debe permitir acceso a /admin/products sin autenticación" classname="middleware-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Middleware de Testing › debe verificar headers de testing en middleware" classname="middleware-test.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="payment-flow.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="4" failures="0" skipped="4" time="0" errors="0">
-<testcase name="Flujo Completo de Pagos - MercadoPago › Flujo completo: Agregar producto → Checkout → Pago exitoso" classname="payment-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo Completo de Pagos - MercadoPago › Flujo de pago rechazado" classname="payment-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo Completo de Pagos - MercadoPago › Validación de webhook de MercadoPago" classname="payment-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo Completo de Pagos - MercadoPago › Performance del flujo de checkout" classname="payment-flow.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-</testsuite>
-<testsuite name="user-flow-verification.spec.ts" timestamp="2025-09-16T01:15:04.318Z" hostname="Mobile Chrome" tests="4" failures="0" skipped="4" time="0" errors="0">
-<testcase name="Flujo de Usuario - Verificación Datos Reales › Flujo completo: Homepage → Búsqueda → Verificación datos dinámicos" classname="user-flow-verification.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo de Usuario - Verificación Datos Reales › Verificación específica: Eliminación datos hardcodeados" classname="user-flow-verification.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo de Usuario - Verificación Datos Reales › Performance y carga de página" classname="user-flow-verification.spec.ts" time="0">
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Flujo de Usuario - Verificación Datos Reales › Funcionalidad de búsqueda avanzada" classname="user-flow-verification.spec.ts" time="0">
+<testsuite name="product-card-hover.spec.ts" timestamp="2025-09-20T18:19:59.927Z" hostname="Mobile Safari" tests="1" failures="0" skipped="1" time="0.222" errors="0">
+<testcase name="ProductCard - microinteracciones en hover › muestra efectos de hover (transform o quick actions visibles)" classname="product-card-hover.spec.ts" time="0.222">
+<properties>
+<property name="skip" value="Hover no aplica para proyectos móviles">
+</property>
+</properties>
 <skipped>
 </skipped>
 </testcase>

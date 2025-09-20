@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth';

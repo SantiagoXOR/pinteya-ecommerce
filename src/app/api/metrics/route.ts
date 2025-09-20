@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - METRICS API
 // ===================================
@@ -6,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { metricsCollector, MercadoPagoMetrics } from '@/lib/enterprise/metrics';
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
@@ -255,6 +258,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

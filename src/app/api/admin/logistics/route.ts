@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // =====================================================
 // API: LOGISTICS REDIRECT
 // Descripción: Redirección a dashboard de logística
@@ -36,6 +39,7 @@ export async function GET(request: NextRequest) {
   const data = await response.json();
   return NextResponse.json(data);
 }
+
 
 
 

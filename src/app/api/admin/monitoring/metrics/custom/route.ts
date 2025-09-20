@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - CUSTOM METRICS API
 // ===================================
@@ -636,6 +639,7 @@ async function aggregateMetricValues(values: any[], period: string) {
     max: data.max
   }));
 }
+
 
 
 

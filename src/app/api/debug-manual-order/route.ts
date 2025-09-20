@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - DEBUG MANUAL ORDER WEBHOOK
 // Endpoint específico para probar webhook con orden 108 (manual)
@@ -142,6 +145,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

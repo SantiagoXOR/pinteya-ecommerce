@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para marcar entregas como completadas
  * POST /api/driver/complete-delivery
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@/lib/integrations/supabase/server';
 
 
@@ -204,6 +207,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

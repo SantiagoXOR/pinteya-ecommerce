@@ -1,9 +1,12 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API DE DISPOSITIVOS DE CONFIANZA
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { logSecurityActivity, getRequestInfo } from '@/lib/activity/activityLogger';
 
@@ -172,6 +175,7 @@ function calculateTrustLevel(device: any): number {
   // Asegurar que esté en el rango 0-100
   return Math.min(100, Math.max(0, trustLevel));
 }
+
 
 
 

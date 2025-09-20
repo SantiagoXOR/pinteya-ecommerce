@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API DE DIRECCIONES DE USUARIO
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { ApiResponse } from '@/types/api';
 
 // ===================================
@@ -543,6 +546,7 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
 
 
 

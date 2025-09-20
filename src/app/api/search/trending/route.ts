@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // API: /api/search/trending - Búsquedas populares/trending
 // ===================================
@@ -406,6 +409,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { checkCRUDPermissions } from '@/lib/auth/admin-auth';
 import {
@@ -165,6 +168,7 @@ export async function GET(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

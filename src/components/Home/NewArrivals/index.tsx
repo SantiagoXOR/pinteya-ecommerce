@@ -4,20 +4,20 @@ import React from "react";
 import Link from "next/link";
 import ProductItem from "@/components/Common/ProductItem";
 import { useFilteredProducts } from "@/hooks/useFilteredProducts";
+import { useProductFilters } from "@/hooks/useProductFilters";
 import { adaptApiProductsToComponents } from "@/lib/adapters/product-adapter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, ArrowRight, Loader2 } from "@/lib/optimized-imports";
 
-interface NewArrivalProps {
-  selectedCategories?: string[];
-}
-
-const NewArrival: React.FC<NewArrivalProps> = ({ selectedCategories = [] }) => {
+const NewArrival: React.FC = () => {
+  // Hook para obtener filtros actuales
+  const { filters } = useProductFilters({ syncWithUrl: true });
+  
   // Hook para obtener productos más recientes filtrados
   const { data, isLoading, error } = useFilteredProducts({
-    categories: selectedCategories.length > 0 ? selectedCategories : undefined,
+    categories: filters.categories.length > 0 ? filters.categories : undefined,
     limit: 8,
     sortBy: 'created_at',
     sortOrder: 'desc',
@@ -28,8 +28,8 @@ const NewArrival: React.FC<NewArrivalProps> = ({ selectedCategories = [] }) => {
   const products = adaptApiProductsToComponents(apiProducts);
 
   // Título dinámico según filtros
-  const sectionTitle = selectedCategories.length > 0
-    ? `Novedades en ${selectedCategories.length === 1 ? 'esta categoría' : 'estas categorías'}`
+  const sectionTitle = filters.categories.length > 0
+    ? `Novedades en ${filters.categories.length === 1 ? 'esta categoría' : 'estas categorías'}`
     : 'Nuevos Productos';
 
   return (

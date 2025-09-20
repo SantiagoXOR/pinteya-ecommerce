@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MONITORING CONFIGURATION API
 // ===================================
@@ -378,6 +381,7 @@ async function updateComplianceConfig(config: any, userId: string) {
     message: 'Compliance configuration updated successfully'
   };
 }
+
 
 
 

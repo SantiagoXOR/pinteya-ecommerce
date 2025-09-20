@@ -141,7 +141,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
 
   return (
     <section className="bg-white border-b border-gray-200 py-3 sticky top-[110px] lg:top-[120px] z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="category-pills-container">
         {/* Contenedor con degradados en los bordes */}
         <div className="relative">
           {/* Degradado izquierdo */}
@@ -165,6 +165,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
               return (
                 <Button
                   key={category.id}
+                  data-testid={`category-pill-${category.slug}`}
                   variant={isSelected ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleCategoryToggle(category.slug)}

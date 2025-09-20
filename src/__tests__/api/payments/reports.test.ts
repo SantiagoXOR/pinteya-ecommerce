@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { GET, POST } from '@/app/api/payments/reports/route';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 // Mock dependencies - Clerk eliminado, usar NextAuth
 // jest.mock('@clerk/nextjs/server'); // ELIMINADO - migrado a NextAuth

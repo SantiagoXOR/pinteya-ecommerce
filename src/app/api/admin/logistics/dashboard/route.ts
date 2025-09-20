@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // =====================================================
 // API: DASHBOARD DE LOGÍSTICA ENTERPRISE
 // Endpoint: GET /api/admin/logistics/dashboard
@@ -6,7 +9,7 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@supabase/supabase-js';
 import {
   LogisticsDashboardResponse,
@@ -386,6 +389,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

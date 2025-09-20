@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - SEO ANALYSIS API
 // API para análisis y optimización SEO
@@ -188,6 +191,7 @@ export async function GET(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 

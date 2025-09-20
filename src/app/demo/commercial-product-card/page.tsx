@@ -1,5 +1,8 @@
 'use client'
 
+
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
 import { ProductCard } from '@/components/ui/card'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 

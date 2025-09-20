@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MONITORING REPORTS API
 // ===================================
@@ -521,6 +524,7 @@ function generateCSVResponse(data: any, reportType: string) {
     }
   });
 }
+
 
 
 

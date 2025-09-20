@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API para actualizar el tracking en tiempo real de drivers
  * Maneja ubicaciones, progreso de entregas y notificaciones a clientes
@@ -291,6 +294,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // =====================================================
 // API: GESTIÓN DE DRIVERS/CONDUCTORES
 // Ruta: /api/admin/logistics/drivers
@@ -6,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/integrations/supabase/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 // =====================================================
 // INTERFACES
@@ -431,6 +434,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
 
 
 

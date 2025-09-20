@@ -1,5 +1,8 @@
 'use client';
 
+
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { User, Camera, Mail, Phone } from 'lucide-react';

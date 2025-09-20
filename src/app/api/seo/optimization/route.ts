@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - SEO OPTIMIZATION API
 // API endpoints para herramientas de optimización SEO
@@ -276,6 +279,7 @@ export async function OPTIONS(request: NextRequest) {
     },
   });
 }
+
 
 
 

@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API DE DASHBOARD DE USUARIO
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { ApiResponse } from '@/types/api';
 
 // ===================================
@@ -191,6 +194,7 @@ function calculateTopProducts(orderItems: any[]) {
     .sort((a: any, b: any) => b.total_quantity - a.total_quantity)
     .slice(0, 5);
 }
+
 
 
 

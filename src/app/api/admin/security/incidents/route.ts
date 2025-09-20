@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API de Gestión de Incidentes de Seguridad
  * Permite crear, actualizar y gestionar incidentes de seguridad
@@ -537,6 +540,7 @@ async function notifySecurityTeam(incident: any, createdBy: string): Promise<voi
     console.error('[SECURITY_NOTIFICATION] Error enviando notificación:', error);
   }
 }
+
 
 
 

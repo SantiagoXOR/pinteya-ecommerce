@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
@@ -74,6 +77,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 
 

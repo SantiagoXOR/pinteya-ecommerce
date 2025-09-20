@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // API: Test Screenshots Management
 // Endpoint para gestión de screenshots de tests automatizados
@@ -401,6 +404,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
 
 
 

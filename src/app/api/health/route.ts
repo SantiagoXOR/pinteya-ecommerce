@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // HEALTH CHECK ENDPOINT
 // ===================================
@@ -12,6 +15,7 @@ export async function GET() {
     version: '1.0.0'
   })
 }
+
 
 
 

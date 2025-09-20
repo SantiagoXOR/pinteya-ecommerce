@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API ACTUALIZAR CARRITO
 // ===================================
@@ -5,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 /**
  * PUT /api/cart/update
@@ -280,6 +283,7 @@ export async function GET() {
     }
   });
 }
+
 
 
 

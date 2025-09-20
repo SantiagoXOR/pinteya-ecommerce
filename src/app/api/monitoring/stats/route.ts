@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - MONITORING STATS API
 // ===================================
@@ -347,6 +350,7 @@ function calculateSystemScore(performance: any, alerts: any, budgets: any): numb
 
   return Math.max(0, Math.min(100, Math.round(score)));
 }
+
 
 
 

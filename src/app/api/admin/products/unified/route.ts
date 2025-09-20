@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - API UNIFICADA DE PRODUCTOS ADMIN
 // Consolida todas las variantes: simple, direct, rls, secure, test
@@ -5,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { createClient } from '@supabase/supabase-js';
 import { checkCRUDPermissions } from '@/lib/auth/admin-auth';
 import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils';
@@ -284,6 +287,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 /**
  * API de Métricas Enterprise
  * Proporciona métricas completas de todos los sistemas enterprise
@@ -537,6 +540,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

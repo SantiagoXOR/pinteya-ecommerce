@@ -24,6 +24,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/core/utils';
 
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic';
+
 interface Delivery {
   id: string;
   route_id: string;

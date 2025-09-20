@@ -3,7 +3,7 @@
  * Migrado a NextAuth.js - Versión limpia y simplificada
  */
 
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { supabaseAdmin } from '@/lib/integrations/supabase';
 import { NextRequest } from 'next/server';
 import type { NextApiRequest, NextApiResponse } from 'next';

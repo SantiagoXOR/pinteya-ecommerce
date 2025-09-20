@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - STREAMING API ENDPOINT
 // ===================================
@@ -244,6 +247,7 @@ export async function OPTIONS() {
     }
   });
 }
+
 
 
 

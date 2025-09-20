@@ -1,10 +1,13 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - SEO DASHBOARD API
 // API principal para el dashboard administrativo SEO
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { EnhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager';
 import { DynamicSEOManager } from '@/lib/seo/dynamic-seo-manager';
 import { SEOTestingSuite } from '@/lib/seo/seo-testing-suite';
@@ -385,6 +388,7 @@ async function dismissAlert(alertId: string): Promise<NextResponse> {
     throw error;
   }
 }
+
 
 
 

@@ -1,3 +1,6 @@
+// Configuración para Node.js Runtime
+export const runtime = 'nodejs';
+
 // ===================================
 // PINTEYA E-COMMERCE - ALERTS MANAGEMENT API
 // ===================================
@@ -360,6 +363,7 @@ export async function PATCH(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 
 
