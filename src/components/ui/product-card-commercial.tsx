@@ -3,6 +3,7 @@
 import React from 'react'
 import { cn } from '@/lib/core/utils'
 import { Heart, Eye, Star, ShoppingCart, AlertCircle } from 'lucide-react'
+import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 
 // Verificar que Framer Motion esté disponible
 const isFramerMotionAvailable = false // Deshabilitado para usar fallbacks CSS
@@ -62,6 +63,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [isHovered, setIsHovered] = React.useState(false)
     const [isWishlisted, setIsWishlisted] = React.useState(false)
     const [showQuickActions, setShowQuickActions] = React.useState(false)
+    const [showShopDetailModal, setShowShopDetailModal] = React.useState(false)
 
     const handleAddToCart = async () => {
       if (!onAddToCart) {return}
@@ -171,7 +173,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 )}
                 onClick={(e) => {
                   e.stopPropagation()
-                  // Aquí iría la lógica de vista rápida
+                  setShowShopDetailModal(true)
                 }}
               >
                 <Eye className="w-4 h-4" />
@@ -302,6 +304,29 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         </div>
 
         {children}
+
+        {/* Shop Detail Modal */}
+         {showShopDetailModal && (
+           <ShopDetailModal
+             product={{
+               id: productId,
+               name: title || '',
+               brand: brand || '',
+               price: price || 0,
+               originalPrice,
+               image: image || '',
+               stock: stock || 0,
+               description: `${title} - ${brand}. Producto de alta calidad con garantía.`
+             }}
+             open={showShopDetailModal}
+             onOpenChange={setShowShopDetailModal}
+             onAddToCart={(product, variants) => {
+               if (onAddToCart) {
+                 onAddToCart(product);
+               }
+             }}
+           />
+         )}
       </div>
     )
   }
