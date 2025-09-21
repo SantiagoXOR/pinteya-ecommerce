@@ -36,6 +36,72 @@ export default function CommercialProductCardDemoPage() {
             </p>
           </div>
 
+          {/* Cards de prueba para animaciones - Visibles inmediatamente */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-center text-gray-800 mb-6">
+              🎯 Cards de Prueba para Animaciones
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <CommercialProductCard
+                image={productData.image}
+                title={productData.title}
+                brand={productData.brand}
+                price={productData.price}
+                originalPrice={productData.originalPrice}
+                discount={productData.discount}
+                isNew={true}
+                stock={productData.stock}
+                productId="test-1"
+                installments={productData.installments}
+                freeShipping={true}
+                onAddToCart={() => console.log('Test Card 1')}
+              />
+              <CommercialProductCard
+                image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/plavicon/cielorraso-10l-plavicon.jpg"
+                title="Pintura Látex Premium 20L"
+                brand="SHERWIN WILLIAMS"
+                price={25000}
+                stock={8}
+                productId="test-2"
+                installments={{
+                  quantity: 6,
+                  amount: 4167,
+                  interestFree: true
+                }}
+                freeShipping={true}
+                onAddToCart={() => console.log('Test Card 2')}
+              />
+              <CommercialProductCard
+                image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/petrilac/barniz-campbell-4l-petrilac.jpg"
+                title="Esmalte Sintético Brillante 1L"
+                brand="SINTEPLAST"
+                price={8500}
+                originalPrice={12000}
+                discount="30%"
+                isNew={true}
+                stock={15}
+                productId="test-3"
+                installments={{
+                  quantity: 3,
+                  amount: 2833,
+                  interestFree: true
+                }}
+                onAddToCart={() => console.log('Test Card 3')}
+              />
+              <CommercialProductCard
+                image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-interior-3kg-poxipol.png"
+                title="Impermeabilizante Acrílico 10L"
+                brand="PLAVICON"
+                price={18500}
+                originalPrice={20000}
+                discount="8%"
+                stock={0}
+                productId="test-4"
+                onAddToCart={() => console.log('Test Card 4')}
+              />
+            </div>
+          </div>
+
           {/* Comparación lado a lado */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             {/* Diseño Actual */}
