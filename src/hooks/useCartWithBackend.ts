@@ -94,6 +94,10 @@ export const useCartWithBackend = (): UseCartWithBackendReturn => {
       }
       
       if (!response.ok) {
+        // Si es 401 (Unauthorized), es un caso esperado, no un error
+        if (response.status === 401) {
+          return data; // Devolver la respuesta tal como está
+        }
         throw new Error(data?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -126,6 +130,20 @@ export const useCartWithBackend = (): UseCartWithBackendReturn => {
 
     try {
       const data = await apiRequest('/api/cart');
+      
+      // Si la respuesta indica que no hay autenticación, manejar como carrito vacío
+      if (!data.success && data.error === 'Usuario no autenticado') {
+        setCartState(prev => ({
+          ...prev,
+          items: [],
+          totalItems: 0,
+          totalAmount: 0,
+          itemCount: 0,
+          loading: false,
+          error: null
+        }));
+        return;
+      }
       
       setCartState(prev => ({
         ...prev,

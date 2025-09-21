@@ -20,7 +20,7 @@ import { MonitoringProvider } from "@/providers/MonitoringProvider";
 import HeaderNextAuth from "../components/Header/HeaderNextAuth";
 import Footer from "../components/layout/Footer";
 import QuickViewModal from "@/components/Common/QuickViewModal";
-import CartSidebarModal from "@/components/Common/CartSidebarModal";
+import CartSidebarModal from "@/components/Common/CartSidebarModal/index";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";
 import ScrollToTop from "@/components/Common/ScrollToTop";
 import PreLoader from "@/components/Common/PreLoader";
@@ -35,13 +35,13 @@ function NextAuthWrapper({ children }: { children: React.ReactNode }) {
   console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce');
 
   return (
-    <SessionProvider session={null}>
+    <SessionProvider>
       {children}
     </SessionProvider>
   );
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [isClient, setIsClient] = useState<boolean>(false);
 
@@ -102,7 +102,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     {children}
 
                     {/* Footer solo para rutas públicas */}
-                    {!isAdminRoute && <Footer />}
+            {!isAdminRoute && <Footer />}
 
                     {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
                     {/* <div className="md:hidden">

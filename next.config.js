@@ -35,6 +35,31 @@ const nextConfig = {
       };
     }
 
+    // Configuración específica para NextAuth v5 - Método alternativo
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'next-auth/react$': require.resolve('next-auth/react'),
+        'next-auth$': require.resolve('next-auth'),
+      };
+    }
+
+    // ✅ Configuración para resolver errores de hot-update
+    if (dev && !isServer) {
+      // Configurar el cliente de webpack para manejar errores de red
+      config.optimization = {
+        ...config.optimization,
+        runtimeChunk: 'single',
+      };
+
+      // Configurar el output para hot updates
+      config.output = {
+        ...config.output,
+        hotUpdateChunkFilename: 'static/webpack/[id].[fullhash].hot-update.js',
+        hotUpdateMainFilename: 'static/webpack/[fullhash].hot-update.json',
+      };
+    }
+
     // Optimizar chunks para evitar errores de carga
     if (!dev) {
       config.optimization.splitChunks = {

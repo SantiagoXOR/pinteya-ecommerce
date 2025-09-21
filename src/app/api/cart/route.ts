@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 
 // ===================================
 // MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
@@ -59,27 +59,41 @@ interface CartSummary {
  * Obtener todos los items del carrito del usuario autenticado
  */
 export async function GET(request: NextRequest) {
+  // Crear logger de seguridad
+  const securityLogger = createSecurityLogger(request);
+
   // Aplicar rate limiting para APIs de carrito
-  const rateLimitResult = await withRateLimit(
+  return await withRateLimit(
     request,
     RATE_LIMIT_CONFIGS.products, // Usar configuración similar a productos
     async () => {
-      // Crear logger de seguridad
-      const securityLogger = createSecurityLogger(request);
-
       try {
         console.log('🛒 Cart API: GET - Obteniendo carrito del usuario');
-        securityLogger.logEvent('api_access', 'low', {
-          endpoint: '/api/cart',
-          method: 'GET'
+        securityLogger.log({
+          type: 'data_access',
+          severity: 'low',
+          message: 'Cart API access',
+          context: {
+            endpoint: '/api/cart',
+            method: 'GET',
+            timestamp: new Date().toISOString()
+          }
         });
 
         // Verificar autenticación
         const session = await auth();
         if (!session?.user?.id) {
           console.log('❌ Cart API: Usuario no autenticado');
-          securityLogger.logEvent('auth_failure', 'medium', {
-            reason: 'No authenticated user'
+          securityLogger.log({
+            type: 'auth_failure',
+            severity: 'medium',
+            message: 'Unauthorized cart access attempt',
+            context: {
+              endpoint: '/api/cart',
+              method: 'GET',
+              timestamp: new Date().toISOString()
+            },
+            metadata: { reason: 'No authenticated user' }
           });
 
           return NextResponse.json(
@@ -234,12 +248,7 @@ export async function GET(request: NextRequest) {
 
       } catch (error: any) {
         console.error('❌ Cart API: Error inesperado:', error);
-        securityLogger.logEvent('api_error', 'high', {
-          endpoint: '/api/cart',
-          method: 'GET',
-          error: error.message
-        });
-
+        
         return NextResponse.json(
           {
             success: false,
@@ -252,8 +261,6 @@ export async function GET(request: NextRequest) {
       }
     }
   );
-
-  return rateLimitResult;
 }
 
 /**
@@ -261,27 +268,41 @@ export async function GET(request: NextRequest) {
  * Agregar un item al carrito (o actualizar cantidad si ya existe)
  */
 export async function POST(request: NextRequest) {
+  // Crear logger de seguridad
+  const securityLogger = createSecurityLogger(request);
+
   // Aplicar rate limiting para APIs de carrito
-  const rateLimitResult = await withRateLimit(
+  return await withRateLimit(
     request,
     RATE_LIMIT_CONFIGS.creation, // Usar configuración para creación
     async () => {
-      // Crear logger de seguridad
-      const securityLogger = createSecurityLogger(request);
-
       try {
         console.log('🛒 Cart API: POST - Agregando item al carrito');
-        securityLogger.logEvent('api_access', 'low', {
-          endpoint: '/api/cart',
-          method: 'POST'
+        securityLogger.log({
+          type: 'data_access',
+          severity: 'low',
+          message: 'Cart POST API access',
+          context: {
+            endpoint: '/api/cart',
+            method: 'POST',
+            timestamp: new Date().toISOString()
+          }
         });
 
         // Verificar autenticación
         const session = await auth();
         if (!session?.user?.id) {
           console.log('❌ Cart API: Usuario no autenticado');
-          securityLogger.logEvent('auth_failure', 'medium', {
-            reason: 'No authenticated user'
+          securityLogger.log({
+            type: 'auth_failure',
+            severity: 'medium',
+            message: 'Unauthorized cart POST attempt',
+            context: {
+              endpoint: '/api/cart',
+              method: 'POST',
+              timestamp: new Date().toISOString()
+            },
+            metadata: { reason: 'No authenticated user' }
           });
 
           return NextResponse.json(
@@ -408,8 +429,6 @@ export async function POST(request: NextRequest) {
   }
     }
   );
-
-  return rateLimitResult;
 }
 
 /**
@@ -417,8 +436,26 @@ export async function POST(request: NextRequest) {
  * Limpiar todo el carrito del usuario
  */
 export async function DELETE(request: NextRequest) {
-  try {
-    console.log('🛒 Cart API: DELETE - Limpiando carrito completo');
+  // Crear logger de seguridad
+  const securityLogger = createSecurityLogger(request);
+
+  // Aplicar rate limiting para APIs de carrito
+  return await withRateLimit(
+    request,
+    RATE_LIMIT_CONFIGS.products, // Usar configuración similar a productos
+    async () => {
+      try {
+        console.log('🛒 Cart API: DELETE - Limpiando carrito completo');
+        securityLogger.log({
+          type: 'data_access',
+          severity: 'low',
+          message: 'Cart DELETE API access',
+          context: {
+            endpoint: '/api/cart',
+            method: 'DELETE',
+            timestamp: new Date().toISOString()
+          }
+        });
 
     // Verificar autenticación
     const session = await auth();
@@ -476,6 +513,8 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
+    }
+  );
 }
 
 

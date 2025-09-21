@@ -68,7 +68,7 @@ export function withLazyLoading<T extends ComponentType<any>>(
 // Lazy loading para páginas pesadas
 // export const LazyProductGrid = lazy(() => import('@/components/Product/ProductGrid')); // Archivo no existe
 // export const LazyTestimonials = lazy(() => import('@/components/Home/Testimonials')); // Archivo no existe
-export const LazyNewsletter = lazy(() => import('@/components/Common/Newsletter'));
+// export const LazyNewsletter = lazy(() => import('@/components/Common/Newsletter'));
 
 
 

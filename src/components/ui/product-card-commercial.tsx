@@ -4,6 +4,7 @@ import React from 'react'
 import { cn } from '@/lib/core/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, Eye, Star } from 'lucide-react'
+import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 
 export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
   image?: string
@@ -56,6 +57,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [isHovered, setIsHovered] = React.useState(false)
     const [isWishlisted, setIsWishlisted] = React.useState(false)
     const [showQuickActions, setShowQuickActions] = React.useState(false)
+    const [showQuickView, setShowQuickView] = React.useState(false)
 
     const handleAddToCart = async () => {
       if (!onAddToCart) {return}
@@ -162,7 +164,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                   whileTap={{ scale: 0.9 }}
                   onClick={(e) => {
                     e.stopPropagation()
-                    // Aquí iría la lógica de vista rápida
+                    setShowQuickView(true)
                   }}
                 >
                   <Eye className="w-4 h-4" />
@@ -318,6 +320,23 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         </div>
 
         {children}
+
+        {/* Modal de Vista Rápida */}
+        <ShopDetailModal
+          isOpen={showQuickView}
+          onClose={() => setShowQuickView(false)}
+          product={{
+            id: productId || 0,
+            name: title || '',
+            brand: brand || '',
+            price: price || 0,
+            originalPrice: originalPrice,
+            image: image || '',
+            stock: stock,
+            description: `${brand ? brand + ' - ' : ''}${title || 'Producto'}`,
+            installments: installments
+          }}
+        />
       </motion.div>
     )
   }

@@ -93,14 +93,21 @@ export const LazyShopDetails = lazy(() =>
 
 // Admin Dashboard
 export const LazyAdminDashboard = lazy(() => 
-  import('@/app/admin/page').then(module => ({
-    default: module.default
+  import('@/components/admin/LazyAdminDashboard').then(module => {
+    // The LazyAdminDashboard is a named export, not the default export
+    if (module.LazyAdminDashboard) {
+      return { default: module.LazyAdminDashboard };
+    }
+    // Fallback if the named export doesn't exist
+    throw new Error('LazyAdminDashboard component not found');
+  }).catch(() => ({
+    default: () => <div>Admin Dashboard no disponible</div>
   }))
 );
 
 // Product Gallery
 export const LazyProductGallery = lazy(() => 
-  import('@/components/Product/ProductGallery').then(module => ({
+  import('@/components/ShopDetails').then(module => ({
     default: module.default
   })).catch(() => ({
     default: () => <div>Product Gallery no disponible</div>
@@ -109,7 +116,7 @@ export const LazyProductGallery = lazy(() =>
 
 // Checkout Form
 export const LazyCheckoutForm = lazy(() => 
-  import('@/components/Checkout/CheckoutForm').then(module => ({
+  import('@/components/Checkout').then(module => ({
     default: module.default
   })).catch(() => ({
     default: () => <div>Checkout Form no disponible</div>
@@ -118,7 +125,7 @@ export const LazyCheckoutForm = lazy(() =>
 
 // User Dashboard
 export const LazyUserDashboard = lazy(() => 
-  import('@/components/User/Dashboard').then(module => ({
+  import('@/components/User/UserDashboard').then(module => ({
     default: module.default
   })).catch(() => ({
     default: () => <div>User Dashboard no disponible</div>
