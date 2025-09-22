@@ -13,13 +13,13 @@ import quickViewReducer from '@/redux/features/quickView-slice';
 import productDetailsReducer from '@/redux/features/product-details';
 import { Product } from '@/types/product';
 
-// Mock del contexto de modal
-const mockOpenModal = jest.fn();
-jest.mock('@/app/context/QuickViewModalContext', () => ({
-  useModalContext: () => ({
-    openModal: mockOpenModal,
-  }),
-}));
+// Mock del contexto de modal - Eliminado ya que QuickViewModalContext fue removido
+// const mockOpenModal = jest.fn();
+// jest.mock('@/app/context/QuickViewModalContext', () => ({
+//   useModalContext: () => ({
+//     openModal: mockOpenModal,
+//   }),
+// }));
 
 // Mock de Next.js Link
 jest.mock('next/link', () => {

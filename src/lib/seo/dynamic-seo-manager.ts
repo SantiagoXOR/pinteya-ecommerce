@@ -5,6 +5,7 @@
 // ===================================
 
 import type { Metadata } from 'next';
+import { generateProductSEOText, generateCategorySEOText } from './dynamic-seo-text';
 import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger';
 import { getRedisClient } from '@/lib/integrations/redis';
 
@@ -880,8 +881,7 @@ const SEO_TEMPLATES = {
   product: {
     title: (product: ProductSEOData) =>
       `${product.name} - ${product.brand} | Pinteya E-commerce`,
-    description: (product: ProductSEOData) =>
-      `Compra ${product.name} de ${product.brand} en Pinteya. ${product.description.slice(0, 100)}... Envío gratis en compras superiores a $50.000. ¡Compra online ahora!`,
+    description: async (product: ProductSEOData) => await generateProductSEOText(product),
     keywords: (product: ProductSEOData) => [
       product.name.toLowerCase(),
       product.brand.toLowerCase(),

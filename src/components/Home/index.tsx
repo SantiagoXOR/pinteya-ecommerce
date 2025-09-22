@@ -1,7 +1,6 @@
 'use client';
 
 import Hero from './Hero';
-import NewArrival from './NewArrivals';
 import PromoBanner from './PromoBanner';
 import BestSeller from './BestSeller';
 import PinteyaRaffle from './PinteyaRaffle';
@@ -15,9 +14,8 @@ const Home = () => {
     <main>
       <Hero />
       <CategoryTogglePillsWithSearch />
-      <NewArrival />
-      <PromoBanner />
       <BestSeller />
+      <PromoBanner />
       <PinteyaRaffle />
       <TrustSection />
       <Testimonials />

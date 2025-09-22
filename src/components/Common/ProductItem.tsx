@@ -1,56 +1,51 @@
 "use client";
 import React from "react";
 import { Product } from "@/types/product";
-import { useModalContext } from "@/app/context/QuickViewModalContext";
-import { updateQuickView } from "@/redux/features/quickView-slice";
-import { addItemToCart } from "@/redux/features/cart-slice";
-import { addItemToWishlist } from "@/redux/features/wishlist-slice";
-import { updateproductDetails } from "@/redux/features/product-details";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
+import { useCartActions } from "@/hooks/useCartActions";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 
-const ProductItem = ({ item }: { item: Product }) => {
-  const { openModal } = useModalContext();
-  const dispatch = useDispatch<AppDispatch>();
+interface ProductItemProps {
+  product?: Product;
+  item?: Product; // Prop legacy para compatibilidad
+}
 
-  // update the QuickView state
-  const handleQuickViewUpdate = () => {
-    dispatch(updateQuickView({ ...item }));
-  };
+const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
+  const { addToCart } = useCartActions();
+  const { trackEvent } = useAnalytics();
+
+  // Usar product o item, con validación
+  const productData = product || item;
+  
+  // Early return si no hay datos del producto
+  if (!productData) {
+    console.warn('ProductItem: No product data provided');
+    return null;
+  }
 
   // add to cart
   const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...item,
-        quantity: 1,
-      })
-    );
-  };
-
-  const handleItemToWishList = () => {
-    dispatch(
-      addItemToWishlist({
-        ...item,
-        status: "available",
-        quantity: 1,
-      })
-    );
-  };
-
-  const handleProductDetails = () => {
-    dispatch(updateproductDetails({ ...item }));
+    addToCart({
+      ...productData,
+      quantity: 1,
+    });
+    
+    // Track analytics event
+    trackEvent('add_to_cart', {
+      product_id: productData.id,
+      product_name: productData.title,
+      price: productData.price,
+    });
   };
 
   // Calcular descuento si existe
-  const hasDiscount = item.discountedPrice && item.discountedPrice < item.price;
+  const hasDiscount = productData.discountedPrice && productData.discountedPrice < productData.price;
   const discount = hasDiscount
-    ? Math.round(((item.price - item.discountedPrice) / item.price) * 100)
+    ? Math.round(((productData.price - productData.discountedPrice) / productData.price) * 100)
     : undefined;
 
   // Precio final a mostrar
-  const finalPrice = hasDiscount ? item.discountedPrice : item.price;
+  const finalPrice = hasDiscount ? productData.discountedPrice : productData.price;
 
   // Determinar badge basado en precio y características
   const badge = finalPrice >= 15000
@@ -61,15 +56,15 @@ const ProductItem = ({ item }: { item: Product }) => {
 
   return (
     <CommercialProductCard
-      image={item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
-      title={item.title}
-      brand={item.brand}
+      image={productData.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
+      title={productData.title}
+      brand={productData.brand}
       price={finalPrice}
-      originalPrice={hasDiscount ? item.price : undefined}
+      originalPrice={hasDiscount ? productData.price : undefined}
       discount={discount ? `${discount}%` : undefined}
       isNew={badge === "Nuevo"}
       stock={50} // Stock por defecto para productos legacy
-      productId={item.id}
+      productId={productData.id}
       cta="Agregar al carrito"
       onAddToCart={handleAddToCart}
       showCartAnimation={true}

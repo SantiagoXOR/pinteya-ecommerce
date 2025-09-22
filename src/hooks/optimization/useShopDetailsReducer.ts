@@ -30,7 +30,7 @@ type ShopDetailsAction =
 
 // Estado inicial
 const initialState: ShopDetailsState = {
-  activeColor: 'blue',
+  activeColor: 'blanco-puro', // Usar ID del color por defecto
   previewImg: 0,
   storage: 'gb128',
   type: 'active',

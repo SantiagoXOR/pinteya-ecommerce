@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { Product } from "@/types/product";
-import { useModalContext } from "@/app/context/QuickViewModalContext";
 import { updateQuickView } from "@/redux/features/quickView-slice";
 import { addItemToCart } from "@/redux/features/cart-slice";
 import { addItemToWishlist } from "@/redux/features/wishlist-slice";
@@ -12,9 +11,13 @@ import Image from "next/image";
 import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 import { ExtendedProduct, calculateProductFeatures } from "@/lib/adapters/productAdapter";
 import { useCartWithBackend } from "@/hooks/useCartWithBackend";
+import { useCartActions } from "@/hooks/useCartActions";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, Eye } from "lucide-react";
 
 const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
-  const { openModal } = useModalContext();
   const dispatch = useDispatch<AppDispatch>();
 
   // Hook para carrito con backend

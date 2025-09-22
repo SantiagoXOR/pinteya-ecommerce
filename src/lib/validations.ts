@@ -33,6 +33,7 @@ export const ProductFiltersSchema = z.object({
   priceMin: z.number().positive().optional(),
   priceMax: z.number().positive().optional(),
   search: z.string().optional(),
+  hasDiscount: z.boolean().optional(),
   page: z.number().int().positive().default(1),
   limit: z.number().int().positive().max(100).default(12),
   sortBy: z.enum(['price', 'name', 'created_at', 'brand']).default('created_at'),

@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import SingleItem from "./SingleItem";
+import ProductItem from "@/components/Common/ProductItem";
+import { adaptApiProductsToComponents } from "@/lib/adapters/product-adapter";
 import Link from "next/link";
 import { useFilteredProducts } from "@/hooks/useFilteredProducts";
 import { useProductFilters } from "@/hooks/useProductFilters";
@@ -12,27 +13,56 @@ import { TrendingUp, ArrowRight, Trophy } from "@/lib/optimized-imports";
 
 const BestSeller: React.FC = () => {
   const { filters } = useProductFilters({ syncWithUrl: true });
+  
+  // IDs específicos de productos para Ofertas Especiales
+  const specialOfferProductIds = [52, 55, 59, 62, 66, 73, 75, 77];
+  
+  // Obtener productos con descuentos y más variados
   const { data, isLoading, error } = useFilteredProducts({
     categories: filters.categories.length > 0 ? filters.categories : undefined,
-    limit: 6,
-    sortBy: 'price',
-    sortOrder: 'desc'
+    limit: 50, // Aumentamos el límite para asegurar que obtenemos todos los productos
+    sortBy: 'created_at',
+    sortOrder: 'desc',
+    hasDiscount: true // Nuevo filtro para productos con descuento
   });
 
-  // Obtener productos y filtrar los que tienen descuento
-  const products = data?.data || [];
-  const bestSellerProducts = products.filter(product =>
-    product.discountedPrice && product.discountedPrice < product.price
-  ).slice(0, 6);
+  // Adaptar productos de la API al formato de componentes
+  const adaptedProducts = data?.data ? adaptApiProductsToComponents(data.data) : [];
+  
+  // Filtrar productos específicos para Ofertas Especiales
+  const specialOfferProducts = adaptedProducts.filter(p => 
+    specialOfferProductIds.includes(p.id)
+  );
+  
+  // Si no encontramos suficientes productos específicos, complementamos con productos con descuento
+  const fallbackProducts = adaptedProducts.filter(p => 
+    !specialOfferProductIds.includes(p.id) && 
+    p.discountedPrice && 
+    p.discountedPrice < p.price
+  );
+  
+  // Debug: Verificar productos filtrados
+  console.log('🔍 DEBUG - Productos adaptados:', adaptedProducts.length);
+  console.log('🔍 DEBUG - IDs buscados:', specialOfferProductIds);
+  console.log('🔍 DEBUG - Productos encontrados por ID:', specialOfferProducts.map(p => `ID: ${p.id} - ${p.brand} - ${p.name}`));
+  console.log('🔍 DEBUG - Productos de respaldo:', fallbackProducts.length);
+  
+  // Construir lista final priorizando productos específicos
+  const bestSellerProducts = [
+    ...specialOfferProducts,
+    ...fallbackProducts
+  ].slice(0, 8);
+
+  console.log('🔍 DEBUG - Productos finales ordenados:', bestSellerProducts.map(p => `${p.brand} - ${p.name}`));
 
   // Mostrar título dinámico según si hay filtros activos
   const sectionTitle = filters.categories.length > 0
-    ? `Mejores Ofertas en ${filters.categories.length === 1 ? 'esta categoría' : 'estas categorías'}`
-    : 'Mejores Ofertas';
+    ? `Top productos en ${filters.categories.length === 1 ? 'esta categoría' : 'estas categorías'}`
+    : 'Ofertas Especiales';
 
   if (isLoading) {
     return (
-      <section className="overflow-hidden py-4 sm:py-8">
+      <section className="overflow-hidden py-2 sm:py-4">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           {/* Header con Design System */}
           <div className="mb-10 flex items-center justify-between">
@@ -41,14 +71,12 @@ const BestSeller: React.FC = () => {
                 <div className="w-5 h-5 rounded-full bg-yellow-100 flex items-center justify-center">
                   <Trophy className="w-3 h-3 text-yellow-600" />
                 </div>
-                <span>Este Mes</span>
-                <Badge variant="warning" size="sm">
-                  Top
-                </Badge>
+                <span>Ofertas Especiales</span>
+              <Badge variant="warning" size="sm">
+                Descuentos
+              </Badge>
               </div>
-              <h2 className="font-semibold text-xl xl:text-heading-5 text-gray-900">
-                Más Vendidos
-              </h2>
+
             </div>
           </div>
 
@@ -76,7 +104,7 @@ const BestSeller: React.FC = () => {
 
   if (error) {
     return (
-      <section className="overflow-hidden py-4 sm:py-8">
+      <section className="overflow-hidden py-2 sm:py-4">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           {/* Error State mejorado */}
           <Card variant="outlined" className="border-red-200 bg-red-50">
@@ -87,7 +115,7 @@ const BestSeller: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-red-900 mb-1">
-                    Error al cargar productos más vendidos
+                    Error al cargar productos top
                   </h3>
                   <p className="text-red-700 text-sm">
                     {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
@@ -119,14 +147,12 @@ const BestSeller: React.FC = () => {
               <div className="w-5 h-5 rounded-full bg-yellow-100 flex items-center justify-center">
                 <Trophy className="w-3 h-3 text-yellow-600" />
               </div>
-              <span>Este Mes</span>
+              <span>Ofertas Especiales</span>
               <Badge variant="warning" size="sm">
-                Top
+                Descuentos
               </Badge>
             </div>
-            <h2 className="font-semibold text-xl xl:text-heading-5 text-gray-900">
-              {sectionTitle}
-            </h2>
+
           </div>
         </div>
 
@@ -134,7 +160,7 @@ const BestSeller: React.FC = () => {
           {/* Best Sellers Grid - Mobile-First 2 columnas */}
           {bestSellerProducts.length > 0 ? (
             bestSellerProducts.map((item, key) => (
-              <SingleItem item={item} key={key} />
+              <ProductItem key={key} product={item} />
             ))
           ) : (
             /* Empty State mejorado */
@@ -147,13 +173,13 @@ const BestSeller: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-2">
-                        No hay productos en oferta
+                        No hay productos disponibles
                       </h3>
                       <p className="text-gray-600 text-sm mb-4">
-                        Pronto tendremos nuevas ofertas disponibles
+                        No se encontraron productos en este momento.
                       </p>
                       <Button variant="outline" asChild>
-                        <Link href="/shop">
+                        <Link href="/shop-with-sidebar">
                           Ver Catálogo Completo
                         </Link>
                       </Button>
@@ -165,17 +191,6 @@ const BestSeller: React.FC = () => {
           )}
         </div>
 
-        {/* CTA Button mejorado */}
-        {bestSellerProducts.length > 0 && (
-          <div className="text-center mt-12.5">
-            <Button variant="outline" size="lg" asChild>
-              <Link href="/shop">
-                Ver Todos los Productos
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        )}
       </div>
     </section>
   );

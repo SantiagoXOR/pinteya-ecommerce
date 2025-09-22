@@ -324,23 +324,9 @@ const ProductCard = React.memo(React.forwardRef<HTMLDivElement, ProductCardProps
           </div>
         )}
 
-        {/* Stock info - Altura fija */}
+        {/* Stock info - Altura fija - OCULTO según solicitud del usuario */}
         <div className="h-[18px] flex items-start">
-          {useNewComponents ? (
-            <StockIndicator
-              quantity={stock || 0}
-              lowStockThreshold={lowStockThreshold}
-              showExactQuantity={showExactStock}
-              unit={stockUnit}
-              variant="minimal"
-            />
-          ) : (
-            stock !== undefined && stock <= 5 && stock > 0 && (
-              <p className="text-xs text-orange-600">
-                ¡Solo quedan {stock} unidades!
-              </p>
-            )
-          )}
+          {/* Badge de stock oculto por solicitud del usuario */}
         </div>
       </div>
 

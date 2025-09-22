@@ -4,7 +4,6 @@ import { ShoppingCart, Trash2, Eye, Heart, AlertTriangle } from 'lucide-react'
 import { 
   Modal, 
   ConfirmModal, 
-  QuickViewModal, 
   AddToCartModal,
   useModal 
 } from './modal'
@@ -26,7 +25,6 @@ Sistema completo de modales para e-commerce con múltiples variantes y casos de 
 
 - **Modal**: Modal básico y flexible para cualquier contenido
 - **ConfirmModal**: Modal de confirmación con variantes semánticas
-- **QuickViewModal**: Modal optimizado para vista rápida de productos
 - **AddToCartModal**: Modal específico para confirmación de agregado al carrito
 - **useModal**: Hook para manejo simplificado de estado de modales
 
@@ -182,6 +180,7 @@ export const ConfirmVariants: Story = {
 }
 
 // Quick View Modal para productos
+// Story de QuickView reemplazada por Modal estándar
 export const QuickView: Story = {
   render: () => {
     const sampleProduct = {
@@ -203,13 +202,15 @@ export const QuickView: Story = {
     }
     
     return (
-      <QuickViewModal
+      <Modal
         trigger={
           <Button>
             <Eye className="mr-2 h-4 w-4" />
             Vista Rápida
           </Button>
         }
+        title="Vista Rápida del Producto"
+        size="2xl"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -259,7 +260,7 @@ export const QuickView: Story = {
             </div>
           </div>
         </div>
-      </QuickViewModal>
+      </Modal>
     )
   },
 }
@@ -352,13 +353,17 @@ export const EcommerceExample: Story = {
           </CardContent>
         </Card>
         
-        {/* Quick View Modal */}
-        <QuickViewModal open={quickViewOpen} onOpenChange={closeQuickView}>
+        {/* Quick View Modal - Reemplazado por Modal estándar */}
+        <Modal 
+          open={quickViewOpen} 
+          onOpenChange={closeQuickView}
+          title="Vista Rápida del Producto"
+          size="lg"
+        >
           <div className="text-center py-8">
-            <h3 className="text-xl font-semibold mb-4">Vista Rápida del Producto</h3>
             <p>Aquí iría el contenido completo del producto...</p>
           </div>
-        </QuickViewModal>
+        </Modal>
         
         {/* Add to Cart Modal */}
         <AddToCartModal

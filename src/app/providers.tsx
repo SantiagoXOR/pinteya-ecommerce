@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { SessionProvider } from "next-auth/react";
 
 // Providers de la aplicación
-import { ModalProvider } from "./context/QuickViewModalContext";
 import { CartModalProvider } from "./context/CartSidebarModalContext";
 import { ReduxProvider } from "@/redux/provider";
 import { PreviewSliderProvider } from "./context/PreviewSliderContext";
@@ -19,7 +18,6 @@ import { MonitoringProvider } from "@/providers/MonitoringProvider";
 // Componentes UI
 import HeaderNextAuth from "../components/Header/HeaderNextAuth";
 import Footer from "../components/layout/Footer";
-import QuickViewModal from "@/components/Common/QuickViewModal";
 import CartSidebarModal from "@/components/Common/CartSidebarModal/index";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";
 import ScrollToTop from "@/components/Common/ScrollToTop";
@@ -86,13 +84,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     <CartPersistenceProvider>
                       <AnalyticsProvider>
                         <CartModalProvider>
-                          <ModalProvider>
                             <PreviewSliderProvider>
 
                     {/* Header y Footer solo para rutas públicas */}
                     {!isAdminRoute && <HeaderNextAuth />}
 
-                    <QuickViewModal />
                     {/* CartSidebarModal solo para rutas públicas */}
                     {!isAdminRoute && <CartSidebarModal />}
                     <PreviewSliderModal />
@@ -125,7 +121,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     {/* Toaster para notificaciones */}
                     <Toaster />
                             </PreviewSliderProvider>
-                          </ModalProvider>
                         </CartModalProvider>
                       </AnalyticsProvider>
                     </CartPersistenceProvider>

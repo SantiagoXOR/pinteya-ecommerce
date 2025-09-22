@@ -65,16 +65,43 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [showQuickActions, setShowQuickActions] = React.useState(false)
     const [showShopDetailModal, setShowShopDetailModal] = React.useState(false)
 
-    const handleAddToCart = async () => {
-      if (!onAddToCart) {return}
+    // Función para abrir el modal
+    const handleOpenModal = React.useCallback(() => {
+      setShowShopDetailModal(true);
+    }, []);
+
+    // Función para manejar el clic en el card
+    const handleCardClick = React.useCallback((e: React.MouseEvent) => {
+      // Evitar que se abra el modal si se hace clic en el botón de agregar al carrito
+      if ((e.target as HTMLElement).closest('[data-testid="add-to-cart"]')) {
+        return;
+      }
+      // Evitar propagación de eventos que puedan interferir con el modal
+      e.preventDefault();
+      e.stopPropagation();
+      handleOpenModal();
+    }, [handleOpenModal]);
+
+    const handleAddToCart = React.useCallback(async (e?: React.MouseEvent) => {
+      if (e) {
+        e.stopPropagation(); // Evitar que se propague al card
+      }
+      
+      if (!onAddToCart || isAddingToCart || stock === 0) return;
 
       if (showCartAnimation) {
         setIsAddingToCart(true)
         setTimeout(() => setIsAddingToCart(false), 1000)
       }
 
-      onAddToCart()
-    }
+      try {
+        await onAddToCart();
+        // También abrir el modal después de agregar al carrito
+        handleOpenModal();
+      } catch (error) {
+        console.error('Error al agregar al carrito:', error);
+      }
+    }, [onAddToCart, isAddingToCart, stock, showCartAnimation, handleOpenModal])
 
     // Calcular si mostrar envío gratis automáticamente
     const shouldShowFreeShipping = freeShipping || (price && price >= 15000)
@@ -110,6 +137,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           setIsHovered(false)
           setShowQuickActions(false)
         }}
+        onClick={handleCardClick}
         {...props}
       >
         {/* Contenedor de imagen completa con degradado - Responsive */}
@@ -137,49 +165,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           {/* Degradado suave hacia blanco en la parte inferior - Responsive */}
           <div className="absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none" />
 
-          {/* Quick Actions - Aparecen en hover */}
-          {showQuickActions && (
-            <div
-              className={cn(
-                "absolute top-2 right-2 flex flex-col gap-2 z-20",
-                isFramerMotionAvailable 
-                  ? "" 
-                  : "animate-in slide-in-from-right-5 duration-200"
-              )}
-            >
-              {/* Wishlist */}
-              <button
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200",
-                  "hover:scale-110 active:scale-95 transform-gpu will-change-transform",
-                  isWishlisted
-                    ? "bg-red-500 text-white"
-                    : "bg-white/80 text-gray-600 hover:bg-red-50 hover:text-red-500"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsWishlisted(!isWishlisted)
-                }}
-              >
-                <Heart className={cn("w-4 h-4", isWishlisted && "fill-current")} />
-              </button>
-
-              {/* Quick View */}
-              <button
-                className={cn(
-                  "w-8 h-8 rounded-full bg-white/80 text-gray-600 hover:bg-blue-50 hover:text-blue-500",
-                  "flex items-center justify-center backdrop-blur-sm transition-all duration-200",
-                  "hover:scale-110 active:scale-95 transform-gpu will-change-transform"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowShopDetailModal(true)
-                }}
-              >
-                <Eye className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+          {/* Quick Actions eliminados - Ya no se muestran los botones de wishlist y quick view */}
         </div>
 
         {/* Badge "Nuevo" en esquina superior derecha - Responsive */}
@@ -306,27 +292,35 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         {children}
 
         {/* Shop Detail Modal */}
-         {showShopDetailModal && (
-           <ShopDetailModal
-             product={{
-               id: productId,
-               name: title || '',
-               brand: brand || '',
-               price: price || 0,
-               originalPrice,
-               image: image || '',
-               stock: stock || 0,
-               description: `${title} - ${brand}. Producto de alta calidad con garantía.`
-             }}
-             open={showShopDetailModal}
-             onOpenChange={setShowShopDetailModal}
-             onAddToCart={(product, variants) => {
-               if (onAddToCart) {
-                 onAddToCart(product);
-               }
-             }}
-           />
-         )}
+        {showShopDetailModal && (
+          <ShopDetailModal
+            open={showShopDetailModal}
+            onOpenChange={setShowShopDetailModal}
+            product={{
+              id: String(productId || ''),
+              name: title || '',
+              price: price || 0,
+              originalPrice,
+              discount,
+              brand: brand || '',
+              category: '',
+              description: '',
+              images: image ? [image] : [],
+              stock: stock || 0,
+              isNew: isNew,
+              rating: 0,
+              reviews: 0,
+              colors: undefined, // Usará los colores por defecto del sistema
+              capacities: []
+            }}
+            onAddToCart={(productData, variants) => {
+              console.log('Agregando al carrito:', productData, variants);
+              if (onAddToCart) {
+                onAddToCart();
+              }
+            }}
+          />
+        )}
       </div>
     )
   }

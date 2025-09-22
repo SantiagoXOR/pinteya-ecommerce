@@ -188,6 +188,11 @@ export async function GET(request: NextRequest) {
             query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,brand.ilike.%${filters.search}%`);
           }
 
+          // Filtro por productos con descuento real (discounted_price < price)
+          if (filters.hasDiscount) {
+            query = query.not('discounted_price', 'is', null).lt('discounted_price', 'price');
+          }
+
           // Solo productos con stock (temporalmente comentado para testing)
           // query = query.gt('stock', 0);
 

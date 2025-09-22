@@ -4,6 +4,7 @@ import * as React from "react"
 import { X, ShoppingCart, Heart, Eye, AlertTriangle, CheckCircle, Info } from "lucide-react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import {
   Dialog,
   DialogContent,
@@ -179,17 +180,26 @@ export function QuickViewModal({
   open,
   onOpenChange,
 }: QuickViewModalProps) {
+  // Debug: Verificar que onOpenChange se propaga correctamente
+  console.log('QuickViewModal - onOpenChange recibido:', typeof onOpenChange, onOpenChange);
+  
   return (
-    <Modal
-      trigger={trigger}
-      size="4xl"
-      variant="elevated"
-      open={open}
-      onOpenChange={onOpenChange}
-      className="max-h-[90vh] overflow-y-auto"
-    >
-      {children}
-    </Modal>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent
+        size="4xl"
+        variant="elevated"
+        showCloseButton={true}
+        className="max-h-[90vh] overflow-y-auto"
+      >
+        <DialogHeader>
+          <VisuallyHidden.Root>
+            <DialogTitle>Vista rápida del producto</DialogTitle>
+          </VisuallyHidden.Root>
+        </DialogHeader>
+        {children}
+      </DialogContent>
+    </Dialog>
   )
 }
 

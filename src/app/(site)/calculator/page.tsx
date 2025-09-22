@@ -129,7 +129,7 @@ export default function CalculatorPage() {
                 <CardContent>
                   <div className="text-center py-8">
                     <div className="text-4xl font-bold text-primary mb-2">
-                      12.5 L
+                      12.5L
                     </div>
                     <p className="text-gray-600 mb-4">
                       Cantidad total de pintura necesaria

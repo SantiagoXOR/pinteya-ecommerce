@@ -1,17 +1,31 @@
 "use client";
 import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { Product } from "@/types/product";
-import { useModalContext } from "@/app/context/QuickViewModalContext";
+import { useCartActions } from "@/hooks/useCartActions";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { updateQuickView } from "@/redux/features/quickView-slice";
 import { addItemToCart } from "@/redux/features/cart-slice";
-import { addItemToWishlist } from "@/redux/features/wishlist-slice";
-import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 
-const SingleItem = ({ item }: { item: Product }) => {
-  const { openModal } = useModalContext();
+interface SingleItemProps {
+  product: Product;
+}
+
+const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
+  const { addToCart } = useCartActions();
+  const { trackEvent } = useAnalytics();
   const dispatch = useDispatch<AppDispatch>();
+
+  // Validar que product existe
+  if (!product) {
+    return null;
+  }
+
+  // Usar product directamente
+  const item = product;
 
   // update the QuickView state
   const handleQuickViewUpdate = () => {
@@ -43,10 +57,10 @@ const SingleItem = ({ item }: { item: Product }) => {
     ? Math.round(((item.price - item.discountedPrice) / item.price) * 100)
     : undefined;
 
-  // Badge para best sellers
+  // Badge para best sellers - usar precio base para envío gratis
   const badge = discount
     ? "Best Seller"
-    : item.discountedPrice >= 15000
+    : item.price >= 15000
     ? "Envío gratis"
     : "Destacado";
 

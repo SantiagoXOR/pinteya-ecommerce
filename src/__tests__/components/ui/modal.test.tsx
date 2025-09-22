@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Modal, ConfirmModal, QuickViewModal, AddToCartModal, useModal } from '@/components/ui/modal'
+import { Modal, ConfirmModal, AddToCartModal, useModal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
 
 // Mock para Radix UI Portal
@@ -181,18 +181,19 @@ describe('Modal Components', () => {
     })
   })
 
-  describe('QuickViewModal', () => {
-    it('renders with large size by default', () => {
-      render(
-        <QuickViewModal open={true}>
-          <div>Product details</div>
-        </QuickViewModal>
-      )
+  // Test de QuickViewModal eliminado ya que el componente fue removido
+  // describe('QuickViewModal', () => {
+  //   it('renders with large size by default', () => {
+  //     render(
+  //       <QuickViewModal open={true}>
+  //         <div>Product details</div>
+  //       </QuickViewModal>
+  //     )
 
-      expect(screen.getByText('Product details')).toBeInTheDocument()
-      expect(screen.getByRole('dialog')).toHaveClass('max-w-4xl')
-    })
-  })
+  //     expect(screen.getByText('Product details')).toBeInTheDocument()
+  //     expect(screen.getByRole('dialog')).toHaveClass('max-w-4xl')
+  //   })
+  // })
 
   describe('AddToCartModal', () => {
     it('renders product information', () => {

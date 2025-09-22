@@ -7,7 +7,7 @@ import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { Badge, DiscountBadge, ShippingBadge, StockBadge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { SearchAutocomplete } from '@/components/ui/search-autocomplete'
-import { Modal, ConfirmModal, QuickViewModal, AddToCartModal, useModal } from '@/components/ui/modal'
+import { Modal, ConfirmModal, AddToCartModal, useModal } from '@/components/ui/modal'
 import { Checkbox, CheckboxGroup } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem, ShippingMethodRadio, PaymentMethodRadio } from '@/components/ui/radio-group'
 import { SelectField, SelectItem } from '@/components/ui/select'
@@ -31,7 +31,7 @@ Casos de uso completos del Design System aplicados a escenarios reales de e-comm
 
 ### 🛍️ **Catálogo de Productos**
 - Cards de productos con badges dinámicos
-- Quick view modal con información completa
+- Modal de vista rápida con información completa del producto
 - Botones de acción (agregar al carrito, favoritos)
 - Estados de stock y envío
 
@@ -232,8 +232,8 @@ export const ProductCatalog: Story = {
           </div>
         </div>
 
-        {/* Quick View Modal */}
-        <QuickViewModal
+        {/* Quick View Modal - Reemplazado por Modal estándar */}
+        <Modal
           open={!!selectedProduct}
           onOpenChange={() => setSelectedProduct(null)}
         >
@@ -287,7 +287,7 @@ export const ProductCatalog: Story = {
               </div>
             </div>
           )}
-        </QuickViewModal>
+        </Modal>
 
         {/* Add to Cart Modal */}
         <AddToCartModal

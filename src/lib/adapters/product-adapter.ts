@@ -10,16 +10,21 @@ import { ProductWithCategory } from '@/types/api';
  * @param apiProduct - Producto desde la API
  * @returns Product - Producto en formato de componente
  */
-export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Product {
+export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Product & { name?: string } {
   // Mapear correctamente las imágenes desde la estructura de BD a la estructura de componentes
   const images = apiProduct.images || {};
 
   return {
     id: apiProduct.id,
     title: apiProduct.name,
+    name: apiProduct.name, // Agregar el campo name para compatibilidad
+    brand: apiProduct.brand, // Agregar el campo brand que faltaba
     reviews: Math.floor(Math.random() * 50) + 1, // Temporal: generar reviews aleatorias
     price: apiProduct.price,
-    discountedPrice: apiProduct.discounted_price || apiProduct.price,
+    // FIX CRÍTICO: Solo usar discounted_price si es menor que price, sino undefined
+    discountedPrice: (apiProduct.discounted_price && apiProduct.discounted_price < apiProduct.price) 
+      ? apiProduct.discounted_price 
+      : undefined,
     imgs: {
       // Mapear desde la estructura real de la BD: { main, gallery, thumbnail }
       thumbnails: images.thumbnail ? [images.thumbnail] : ['/images/products/placeholder.svg'],
@@ -33,7 +38,7 @@ export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Pro
  * @param apiProducts - Lista de productos desde la API
  * @returns Product[] - Lista de productos en formato de componente
  */
-export function adaptApiProductsToComponents(apiProducts: ProductWithCategory[]): Product[] {
+export function adaptApiProductsToComponents(apiProducts: ProductWithCategory[]): (Product & { name?: string })[] {
   return apiProducts.map(adaptApiProductToComponent);
 }
 
@@ -62,7 +67,7 @@ export function adaptComponentProductToApi(componentProduct: Product): Partial<P
  */
 export function hasDiscount(product: Product | ProductWithCategory): boolean {
   if ('discountedPrice' in product) {
-    return product.discountedPrice < product.price;
+    return product.discountedPrice !== undefined && product.discountedPrice < product.price;
   }
   if ('discounted_price' in product) {
     return product.discounted_price !== null && product.discounted_price < product.price;

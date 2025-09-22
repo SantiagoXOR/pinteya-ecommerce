@@ -1,24 +1,30 @@
 "use client";
 import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { Product } from "@/types/product";
-import { useModalContext } from "@/app/context/QuickViewModalContext";
-import { updateQuickView } from "@/redux/features/quickView-slice";
-import { addItemToCart } from "@/redux/features/cart-slice";
-import { addItemToWishlist } from "@/redux/features/wishlist-slice";
+import { useCartActions } from "@/hooks/useCartActions";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
-import Link from "next/link";
-import Image from "next/image";
+import { updateQuickView } from "@/redux/features/quickView-slice";
+import { addItemToWishlist } from "@/redux/features/wishlist-slice";
+import { useCartWithBackend } from "@/hooks/useCartWithBackend";
 import { CommercialProductCard } from "@/components/ui/product-card-commercial";
 import { ExtendedProduct, calculateProductFeatures } from "@/lib/adapters/productAdapter";
-import { useCartWithBackend } from "@/hooks/useCartWithBackend";
 
-const SingleListItem = ({ item }: { item: ExtendedProduct }) => {
-  const { openModal } = useModalContext();
+interface SingleListItemProps {
+  product: ExtendedProduct;
+}
+
+const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
+  const { addToCart } = useCartActions();
+  const { trackEvent } = useAnalytics();
   const dispatch = useDispatch<AppDispatch>();
+  const { addItem } = useCartWithBackend();
 
-  // Hook para carrito con backend
-  const { addItem, loading } = useCartWithBackend();
+  // Usar product directamente
+  const item = product;
 
   // update the QuickView state
   const handleQuickViewUpdate = () => {

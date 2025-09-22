@@ -119,7 +119,7 @@ export const MultipleOptions: Story = {
         price: 0,
         estimatedDays: { min: 5, max: 7 },
         isFree: true,
-        description: 'En compras mayores a $50.000'
+        description: 'En compras mayores a $15.000'
       },
       {
         id: 'standard',

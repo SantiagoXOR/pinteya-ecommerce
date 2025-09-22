@@ -15,6 +15,7 @@ export interface ProductFilters {
   search?: string;
   priceMin?: number;
   priceMax?: number;
+  hasDiscount?: boolean;
   
   // Filtros avanzados (múltiples valores)
   categories?: string[];
@@ -56,6 +57,11 @@ export const useFilteredProducts = (filters: ProductFilters = {}) => {
       }
       if (filters.paintTypes && filters.paintTypes.length > 0) {
         searchParams.set('paintTypes', filters.paintTypes.join(','));
+      }
+      
+      // Filtro de descuento
+      if (filters.hasDiscount !== undefined) {
+        searchParams.set('hasDiscount', filters.hasDiscount.toString());
       }
       
       // Paginación y ordenamiento
@@ -118,6 +124,11 @@ export const useProductCount = (filters: Omit<ProductFilters, 'page' | 'limit'> 
         searchParams.set('paintTypes', countFilters.paintTypes.join(','));
       }
 
+      // Filtro de descuento
+      if (countFilters.hasDiscount !== undefined) {
+        searchParams.set('hasDiscount', countFilters.hasDiscount.toString());
+      }
+
       searchParams.set('page', '1');
       searchParams.set('limit', '1');
 
@@ -176,6 +187,11 @@ export const useCategoryProductCounts = (
         }
         if (filters.paintTypes && filters.paintTypes.length > 0) {
           searchParams.set('paintTypes', filters.paintTypes.join(','));
+        }
+
+        // Filtro de descuento
+        if (filters.hasDiscount !== undefined) {
+          searchParams.set('hasDiscount', filters.hasDiscount.toString());
         }
 
         // Aplicar paginación al final
