@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/integrations/supabase/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 
 interface TrackingUpdateRequest {
   driverId: string;
@@ -23,14 +23,16 @@ interface TrackingUpdateRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const session = await auth();
     
-    if (!userId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'No autorizado' },
         { status: 401 }
       );
     }
+
+    const userId = session.user.id;
 
     const body: TrackingUpdateRequest = await request.json();
     

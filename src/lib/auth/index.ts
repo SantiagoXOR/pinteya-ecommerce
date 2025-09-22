@@ -12,7 +12,6 @@ export { auth, signIn, signOut, handlers } from '../../auth';
 // =====================================================
 // ADAPTADORES Y CONFIGURACIÓN
 // =====================================================
-export * from '../supabase-adapter';
 export * from '../auth-adapter';
 
 // =====================================================
