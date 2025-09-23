@@ -312,7 +312,7 @@ const Footer = () => {
             <div className="lg:col-span-1 order-1">
               <div className="mb-4 md:mb-6">
                 <Image
-                  src="/images/logo/LOGO NEGATIVO.svg"
+                  src="/images/logo/LOGO POSITIVO.svg"
                   alt="Pinteya - Pinturería"
                   width={200}
                   height={70}

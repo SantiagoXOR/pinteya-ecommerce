@@ -16,7 +16,7 @@ import { MonitoringProvider } from "@/providers/MonitoringProvider";
 
 
 // Componentes UI
-import HeaderNextAuth from "../components/Header/HeaderNextAuth";
+import Header from "../components/Header/index";
 import Footer from "../components/layout/Footer";
 import CartSidebarModal from "@/components/Common/CartSidebarModal/index";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";
@@ -86,8 +86,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                         <CartModalProvider>
                             <PreviewSliderProvider>
 
-                    {/* Header y Footer solo para rutas públicas */}
-                    {!isAdminRoute && <HeaderNextAuth />}
+                    {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
+                    {!isAdminRoute && <Header />}
 
                     {/* CartSidebarModal solo para rutas públicas */}
                     {!isAdminRoute && <CartSidebarModal />}

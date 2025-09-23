@@ -83,6 +83,14 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     enabled: true
   });
 
+  // Debug para trending searches
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔥 useSearchOptimized: Trending searches state:', {
+      trendingSearches: trendingSearches?.length || 0,
+      trendingSearchesData: trendingSearches?.map(t => ({ id: t.id, query: t.query })) || []
+    });
+  }
+
   const {
     recentSearches: recentSearchesList,
     addSearch: addRecentSearch,

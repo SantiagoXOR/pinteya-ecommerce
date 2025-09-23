@@ -72,18 +72,16 @@ export const getOptimizedImageProps = (
 
 /**
  * Configuración específica para el logo mobile de Pinteya
- * Optimizado para dispositivos móviles con tamaño cuadrado
+ * Usa el logo POSITIVO.svg (versión principal) para consistencia con desktop
+ * Sin sombras para un diseño más limpio
  */
 export const pinteyaMobileLogoProps = {
-  src: '/images/logo/optimized/LogoPinteYa-mobile.webp',
+  src: '/images/logo/LOGO POSITIVO.svg',
   alt: 'Pinteya - Tu Pinturería Online',
   width: 64,
   height: 64,
   priority: true,
-  className: 'rounded-xl shadow-lg object-contain',
-  style: {
-    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-  },
+  className: 'rounded-xl object-contain',
   quality: 90,
   placeholder: 'blur' as const,
   blurDataURL: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k='
@@ -91,7 +89,7 @@ export const pinteyaMobileLogoProps = {
 
 /**
  * Configuración específica para el logo desktop de Pinteya
- * Usa el logo POSITIVO.svg para mantener consistencia con el diseño original
+ * Usa el logo POSITIVO.svg (versión principal) para el header
  */
 export const pinteyaDesktopLogoProps = {
   src: '/images/logo/LOGO POSITIVO.svg',

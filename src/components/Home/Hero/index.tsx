@@ -72,7 +72,7 @@ const Hero = () => {
 
       {/* Layout desktop - COMPLETAMENTE SEPARADO del móvil */}
       <div className="hidden lg:block relative w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 pt-4 lg:py-8 lg:pt-16 overflow-hidden relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1 pt-2 lg:py-4 lg:pt-8 overflow-hidden relative z-10">
           {/* Banner principal */}
           <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-blaze-orange-500 via-blaze-orange-400 to-blaze-orange-600 min-h-[400px] lg:min-h-[500px]">
 

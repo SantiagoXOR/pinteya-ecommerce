@@ -138,7 +138,7 @@ const BestSeller: React.FC = () => {
   }
 
   return (
-    <section className="overflow-hidden py-4 sm:py-8">
+    <section className="overflow-hidden py-2 sm:py-4">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
         {/* Section Header - Migrado al Design System */}
         <div className="mb-10 flex items-center justify-between">

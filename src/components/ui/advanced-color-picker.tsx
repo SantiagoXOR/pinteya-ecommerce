@@ -318,7 +318,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
               Populares
             </Badge>
           </div>
-          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
+          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
             {colors.filter(color => {
               // Para productos látex, excluir colores de Madera y Sintético de los populares
               if (productType?.allowedColorCategories?.includes('Látex') && 
@@ -328,7 +328,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
               return color.isPopular;
             }).map((color) => (
               <ColorSwatch
-                key={color.id}
+                key={`${color.id}-${color.category.toLowerCase()}`}
                 color={color}
                 isSelected={selectedColor === color.id}
                 onClick={() => onColorChange(color.id)}
@@ -344,7 +344,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
           <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
             {filteredColors.map((color) => (
               <ColorSwatch
-                key={color.id}
+                key={`${color.id}-${color.category.toLowerCase()}`}
                 color={color}
                 isSelected={selectedColor === color.id}
                 onClick={() => onColorChange(color.id)}

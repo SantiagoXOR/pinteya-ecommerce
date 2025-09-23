@@ -13,7 +13,7 @@ const HomepageNormal = () => {
   return (
     <>
       <Hero />
-      <NewArrival selectedCategories={[]} />
+      <NewArrival />
       <PromoBanner />
       <BestSeller />
       <PinteyaRaffle />

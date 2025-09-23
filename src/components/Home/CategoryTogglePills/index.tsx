@@ -140,7 +140,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   }
 
   return (
-    <section className="bg-white border-b border-gray-200 py-3 sticky top-[110px] lg:top-[120px] z-40">
+    <section className="bg-white border-b border-gray-200 py-1 sticky top-[110px] lg:top-[120px] z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="category-pills-container">
         {/* Contenedor con degradados en los bordes */}
         <div className="relative">

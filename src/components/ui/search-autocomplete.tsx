@@ -367,7 +367,7 @@ const SearchAutocomplete = React.forwardRef<HTMLInputElement, SearchAutocomplete
               autoComplete="off"
               data-testid="search-input"
               className={cn(
-                "w-full rounded-r-[5px] bg-gray-1 border border-gray-3 py-2.5 pl-4 pr-10 outline-none transition-all duration-200",
+                "w-full rounded-r-[5px] bg-yellow-100 border border-gray-3 py-2.5 pl-4 pr-10 outline-none transition-all duration-200",
                 "focus:border-primary/50 focus:ring-2 focus:ring-primary/20",
                 "placeholder:text-gray-400 placeholder:font-normal",
                 size === "sm" && "py-2 text-sm",

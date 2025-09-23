@@ -1,5 +1,6 @@
 import Home from "@/components/Home";
 import { Metadata } from "next";
+import { TrendingSearchesTest } from "@/components/debug/TrendingSearchesTest";
 
 export const metadata: Metadata = {
   title: "Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón",
@@ -37,6 +38,7 @@ export default function HomePage() {
   return (
     <>
       <Home />
+      {/* {process.env.NODE_ENV === 'development' && <TrendingSearchesTest />} */}
     </>
   );
 }

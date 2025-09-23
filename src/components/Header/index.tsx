@@ -13,6 +13,7 @@ import { useCartAnimation } from "@/hooks/useCartAnimation";
 import { MapPin, Loader2, ShoppingCart } from "@/lib/optimized-imports";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { HeaderLogo } from "@/components/ui/OptimizedLogo";
+import ScrollingBanner from './ScrollingBanner'
 // import GeolocationDebugger from "./GeolocationDebugger"; // Componente de debugging desactivado
 
 const Header = () => {
@@ -92,83 +93,40 @@ const Header = () => {
 
   return (
     <>
+      {/* Banner deslizante arriba del header */}
+      <div className="fixed top-0 left-0 w-full z-[99999] bg-blaze-orange-600">
+        <ScrollingBanner />
+      </div>
+      
       <header className={`
-        fixed left-0 top-0 w-full z-header
+        fixed left-0 w-full z-header
         bg-blaze-orange-600 rounded-b-3xl shadow-lg
         header-sticky-transition
         ${isSticky ? 'shadow-2xl backdrop-blur-sm' : 'shadow-lg'}
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
-      `}>
-        {/* Topbar con ubicación y promociones - Estilo ML */}
-        <div className="bg-blaze-orange-700 py-1">
-          <div className="max-w-[1200px] mx-auto px-4 flex items-center justify-center text-xs min-h-[24px] gap-6">
-            {/* Ubicación compacta */}
-            <div
-              onClick={handleLocationClick}
-              className="flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-105 hover:text-yellow-300 group"
-              style={{ color: '#fff3c5' }}
-            >
-              <MapPin className="w-3 h-3 text-yellow-400 transition-all duration-200 group-hover:scale-110 group-hover:text-yellow-300" />
-              <span className="font-medium text-xs transition-colors duration-200">
-                {isLoading ? (
-                  <span className="flex items-center gap-1">
-                    <Loader2 className="w-3 h-3 animate-spin text-yellow-400" />
-                    <span className="animate-pulse">Detectando...</span>
-                  </span>
-                ) : (
-                  `Envíos en ${detectedZone?.name || "Córdoba Capital"}`
-                )}
-              </span>
-            </div>
-
-            {/* Separador */}
-            <div className="text-yellow-400 font-light">|</div>
-
-            {/* Promoción central */}
-            <div className="flex items-center gap-1" style={{ color: '#fff3c5' }}>
-              <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                <path d="M3 4a1 1 0 00-1 1v1a1 1 0 001 1h1l1.68 5.39A3 3 0 008.62 15h5.76a3 3 0 002.94-2.61L18 7H6.41l-.77-3H3z"/>
-              </svg>
-              <span className="font-medium text-xs">Envío gratis desde $15.000</span>
-            </div>
-
-            {/* Separador */}
-            <div className="hidden lg:block text-yellow-400 font-light">|</div>
-
-            {/* Contacto compacto */}
-            <div className="hidden lg:flex items-center gap-1" style={{ color: '#fff3c5' }}>
-              <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-              </svg>
-              <span className="text-xs">+54 351 341 1796</span>
-            </div>
-          </div>
-        </div>
-
+      `}
+      style={{ top: '34px' }}>
         {/* Header principal - Layout optimizado mobile-first */}
         <div className="max-w-[1200px] mx-auto px-2 sm:px-4 py-3">
           <div className="flex items-center justify-center gap-1 sm:gap-4 min-h-[60px]">
             {/* Logo compacto - Optimizado para mobile */}
-            <Link href="/" className="flex-shrink-0 group focus-ring">
-              <HeaderLogo
-                isMobile={false}
-                className={`
-                  hidden sm:block w-28 h-auto transition-all duration-300 ease-out
-                  group-hover:scale-110 group-hover:drop-shadow-lg
-                  ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
-                `}
-              />
-              <HeaderLogo
-                isMobile={true}
-                className={`
-                  sm:hidden w-12 h-auto transition-all duration-300 ease-out
-                  group-hover:scale-110 group-hover:drop-shadow-lg
-                  ${isSticky ? 'logo-sticky-scale scale-90' : 'scale-100'}
-                `}
-              />
-            </Link>
+            <HeaderLogo
+              isMobile={false}
+              className={`
+                hidden sm:block w-28 h-auto transition-all duration-300 ease-out
+                hover:scale-110 hover:drop-shadow-lg
+                ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
+              `}
+            />
+            <HeaderLogo
+              isMobile={true}
+              className={`
+                sm:hidden w-20 h-auto transition-all duration-300 ease-out
+                hover:scale-110 hover:drop-shadow-lg
+                ${isSticky ? 'logo-sticky-scale scale-90' : 'scale-100'}
+              `}
+            />
 
             {/* Buscador expandido - Máximo espacio en mobile */}
             <div className="flex-1 mx-1 sm:mx-4 max-w-none sm:max-w-2xl flex items-center">
@@ -200,38 +158,7 @@ const Header = () => {
                 <AuthSectionSimple variant="mobile" />
               </div>
 
-              {/* Carrito - Solo visible en desktop */}
-              <button
-                onClick={handleOpenCartModal}
-                data-testid="cart-icon"
-                className={`
-                  hidden sm:flex relative bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-2 py-1
-                  rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out
-                  transform hover:scale-110 active:scale-95 border-2 border-yellow-500 hover:border-yellow-600
-                  items-center gap-2 group floating-button focus-ring
-                  ${cartShake ? 'animate-bounce cart-badge-animate' : ''}
-                  ${isAnimating ? 'scale-110 cart-badge-animate' : 'scale-100'}
-                  hover:rotate-3 hover:shadow-2xl
-                `}
-              >
-                <div className="relative">
-                  <OptimizedCartIcon
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 transition-transform duration-200 group-hover:scale-110"
-                    alt="Carrito de compras"
-                  />
-                  {product.length > 0 && (
-                    <span
-                      className="absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-badge shadow-lg transition-all duration-200 group-hover:scale-125 animate-pulse"
-                      style={{ backgroundColor: '#007639', color: '#fbbf24' }}
-                    >
-                      {product.length > 99 ? '99+' : product.length}
-                    </span>
-                  )}
-                </div>
-                <span className="text-sm font-semibold text-blaze-orange-600" style={{ color: '#ea5a17' }}>Carrito</span>
-              </button>
+
             </div>
           </div>
         </div>

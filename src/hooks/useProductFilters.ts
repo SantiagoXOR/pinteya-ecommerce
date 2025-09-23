@@ -134,11 +134,16 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
       params.set('limit', newFilters.limit.toString());
     }
 
-    const newUrl = params.toString() 
-      ? `${window.location.pathname}?${params.toString()}`
-      : window.location.pathname;
+    const newQuery = params.toString();
+    const currentQuery = window.location.search.slice(1);
 
-    router.push(newUrl, { scroll: false });
+    if (newQuery !== currentQuery) {
+      const newUrl = newQuery 
+        ? `${window.location.pathname}?${newQuery}`
+        : window.location.pathname;
+
+      router.push(newUrl, { scroll: false });
+    }
   }, [syncWithUrl, router, defaultSort, defaultLimit]);
 
   // Función optimizada para actualizar filtros

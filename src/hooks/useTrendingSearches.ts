@@ -62,10 +62,11 @@ export function useTrendingSearches(options: UseTrendingSearchesOptions = {}): U
   } = useQuery({
     queryKey: [...searchQueryKeys.trending(), 'params', { limit, days, category }],
     queryFn: async (): Promise<TrendingSearchesResponse> => {
-      console.log('🔥 useTrendingSearches: Fetching trending searches', {
+      console.log('🔥 useTrendingSearches: Iniciando fetch de trending searches', {
         limit,
         days,
-        category
+        category,
+        enabled
       });
 
       const params = new URLSearchParams();
@@ -76,24 +77,37 @@ export function useTrendingSearches(options: UseTrendingSearchesOptions = {}): U
         params.set('category', category);
       }
 
-      const response = await fetch(`/api/search/trending?${params.toString()}`);
-      
-      if (!response.ok) {
-        throw new Error(`Error fetching trending searches: ${response.status}`);
+      const url = `/api/search/trending?${params.toString()}`;
+      console.log('🔥 useTrendingSearches: URL construida:', url);
+
+      try {
+        const response = await fetch(url);
+        console.log('🔥 useTrendingSearches: Response status:', response.status);
+        
+        if (!response.ok) {
+          console.error('🔥 useTrendingSearches: Response not OK:', response.status, response.statusText);
+          throw new Error(`Error fetching trending searches: ${response.status}`);
+        }
+
+        const result: ApiResponse<TrendingSearchesResponse> = await response.json();
+        console.log('🔥 useTrendingSearches: Raw API response:', result);
+        
+        if (!result.success || !result.data) {
+          console.error('🔥 useTrendingSearches: API response error:', result.error);
+          throw new Error(result.error || 'Error obteniendo búsquedas trending');
+        }
+
+        console.log('✅ useTrendingSearches: Trending searches fetched successfully', {
+          count: result.data.trending.length,
+          lastUpdated: result.data.lastUpdated,
+          data: result.data.trending
+        });
+
+        return result.data;
+      } catch (fetchError) {
+        console.error('🔥 useTrendingSearches: Fetch error:', fetchError);
+        throw fetchError;
       }
-
-      const result: ApiResponse<TrendingSearchesResponse> = await response.json();
-      
-      if (!result.success || !result.data) {
-        throw new Error(result.error || 'Error obteniendo búsquedas trending');
-      }
-
-      console.log('✅ useTrendingSearches: Trending searches fetched', {
-        count: result.data.trending.length,
-        lastUpdated: result.data.lastUpdated
-      });
-
-      return result.data;
     },
     enabled,
     refetchInterval,
@@ -130,7 +144,7 @@ export function useTrendingSearches(options: UseTrendingSearchesOptions = {}): U
     }
   };
 
-  return {
+  const result = {
     trendingSearches: data?.trending || [],
     isLoading,
     error: error as Error | null,
@@ -139,6 +153,17 @@ export function useTrendingSearches(options: UseTrendingSearchesOptions = {}): U
     lastUpdated: data?.lastUpdated || null,
     trackSearch,
   };
+
+  console.log('🔥 useTrendingSearches: Hook result:', {
+    trendingSearchesCount: result.trendingSearches.length,
+    isLoading: result.isLoading,
+    error: result.error,
+    data: data,
+    rawTrending: data?.trending,
+    enabled
+  });
+
+  return result;
 }
 
 /**
