@@ -8,6 +8,8 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { Database } from '@/types/database';
+import { createClient } from '@supabase/supabase-js';
 import { auth } from '@/lib/auth/config';
 
 interface OptimizationMetrics {
@@ -106,7 +108,7 @@ export async function GET(request: NextRequest) {
 /**
  * Obtener métricas de analytics
  */
-async function getAnalyticsMetrics(supabase: any) {
+async function getAnalyticsMetrics(supabase: ReturnType<typeof createClient<Database>>) {
   // Métricas de tabla original
   const { data: originalData } = await supabase
     .rpc('exec_sql', { 
@@ -152,7 +154,7 @@ async function getAnalyticsMetrics(supabase: any) {
 /**
  * Obtener métricas de productos
  */
-async function getProductsMetrics(supabase: any) {
+async function getProductsMetrics(supabase: ReturnType<typeof createClient<Database>>) {
   // Métricas de tabla original
   const { data: originalData } = await supabase
     .rpc('exec_sql', {

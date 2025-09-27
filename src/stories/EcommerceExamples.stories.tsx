@@ -126,7 +126,19 @@ export const ProductCatalog: Story = {
       },
     ]
 
-    const handleAddToCart = (product: any) => {
+    interface Product {
+      id: string;
+      name: string;
+      price: number;
+      originalPrice?: number;
+      image: string;
+      brand: string;
+      stock: number;
+      description?: string;
+      discount?: number;
+    }
+
+    const handleAddToCart = (product: Product) => {
       setAddedProduct(product)
       setCartModalOpen(true)
     }

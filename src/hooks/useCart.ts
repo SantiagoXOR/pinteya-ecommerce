@@ -8,7 +8,8 @@ import {
   addItemToCart,
   removeItemFromCart,
   updateCartItemQuantity,
-  removeAllItemsFromCart
+  removeAllItemsFromCart,
+  CartItem
 } from '@/redux/features/cart-slice';
 
 export const useCart = () => {
@@ -21,7 +22,7 @@ export const useCart = () => {
   const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   // Acciones del carrito
-  const addToCart = (item: any) => {
+  const addToCart = (item: CartItem) => {
     dispatch(addItemToCart(item));
   };
 

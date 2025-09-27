@@ -7,6 +7,35 @@
 import '@testing-library/jest-dom';
 import { configure } from '@testing-library/react';
 
+// Interfaces para tipado
+interface MockWebSocketInstance {
+  send: jest.Mock;
+  close: jest.Mock;
+  readyState: number;
+  CONNECTING: number;
+  OPEN: number;
+  CLOSING: number;
+  CLOSED: number;
+  addEventListener: jest.Mock;
+  removeEventListener: jest.Mock;
+  onopen: (() => void) | null;
+  onclose: (() => void) | null;
+  onmessage: (() => void) | null;
+  onerror: (() => void) | null;
+}
+
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+}
+
+interface GeolocationPosition {
+  coords: Coordinates;
+}
+
+type CoordinatesPair = [number, number];
+
 // =====================================================
 // CONFIGURACIÓN DE TESTING LIBRARY
 // =====================================================
@@ -93,7 +122,7 @@ global.WebSocket = jest.fn(() => ({
   OPEN: 1,
   CLOSING: 2,
   CLOSED: 3
-})) as any;
+})) as MockWebSocketInstance;
 
 // Mock de Notification API
 Object.defineProperty(window, 'Notification', {
@@ -131,14 +160,14 @@ global.IntersectionObserver = jest.fn(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn()
-})) as any;
+})) as jest.MockedClass<typeof IntersectionObserver>;
 
 // Mock de ResizeObserver
 global.ResizeObserver = jest.fn(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn()
-})) as any;
+})) as jest.MockedClass<typeof ResizeObserver>;
 
 // =====================================================
 // UTILIDADES DE TESTING
@@ -322,7 +351,7 @@ export const createMockWebSocket = () => {
     onerror: null
   };
   
-  global.WebSocket = jest.fn(() => mockWebSocket) as any;
+  global.WebSocket = jest.fn(() => mockWebSocket) as jest.MockedClass<typeof WebSocket>;
   return mockWebSocket;
 };
 
@@ -348,7 +377,7 @@ expect.extend({
     }
   },
   
-  toHaveValidCoordinates(received: any) {
+  toHaveValidCoordinates(received: CoordinatesPair) {
     const isValid = Array.isArray(received) && 
                    received.length === 2 && 
                    typeof received[0] === 'number' && 

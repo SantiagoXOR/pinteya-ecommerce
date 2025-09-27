@@ -82,8 +82,9 @@ export class PerformanceBudgetMonitor {
       // FID Observer
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          this.recordMetric('FID', entry.processingStart - entry.startTime);
+        entries.forEach((entry: PerformanceEntry) => {
+          const fidEntry = entry as PerformanceEventTiming;
+          this.recordMetric('FID', fidEntry.processingStart - fidEntry.startTime);
         });
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
@@ -93,9 +94,10 @@ export class PerformanceBudgetMonitor {
       const clsObserver = new PerformanceObserver((list) => {
         let clsValue = 0;
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          if (!entry.hadRecentInput) {
-            clsValue += entry.value;
+        entries.forEach((entry: PerformanceEntry) => {
+          const clsEntry = entry as LayoutShift;
+          if (!clsEntry.hadRecentInput) {
+            clsValue += clsEntry.value;
           }
         });
         this.recordMetric('CLS', clsValue);
@@ -106,9 +108,10 @@ export class PerformanceBudgetMonitor {
       // Navigation Observer
       const navObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          this.recordMetric('FCP', entry.firstContentfulPaint);
-          this.recordMetric('TTI', entry.domInteractive);
+        entries.forEach((entry: PerformanceEntry) => {
+          const navEntry = entry as PerformanceNavigationTiming;
+          this.recordMetric('FCP', navEntry.firstContentfulPaint || 0);
+          this.recordMetric('TTI', navEntry.domInteractive);
         });
       });
       navObserver.observe({ entryTypes: ['navigation'] });

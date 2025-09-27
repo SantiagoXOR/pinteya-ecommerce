@@ -1,0 +1,62 @@
+58bc1af24c220ec28538348e447a944d
+// ===================================
+// PINTEYA E-COMMERCE - CHECKOUT TYPES
+// ===================================
+"use strict";
+
+/* istanbul ignore next */
+function cov_1zwxftwxp9() {
+  var path = "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\types\\checkout.ts";
+  var hash = "1d6b99b38365759d94b4c7be6c931d5a578d5ddb";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\types\\checkout.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 7,
+          column: 3
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    inputSourceMap: {
+      version: 3,
+      sources: ["C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\types\\checkout.ts"],
+      sourcesContent: ["// ===================================\r\n// PINTEYA E-COMMERCE - CHECKOUT TYPES\r\n// ===================================\r\n\r\nexport interface BillingData {\r\n  firstName: string;\r\n  lastName: string;\r\n  dni?: string;\r\n  companyName?: string;\r\n  country: string;\r\n  streetAddress: string;\r\n  apartment?: string;\r\n  city: string;\r\n  state: string;\r\n  zipCode: string;\r\n  phone: string;\r\n  email: string;\r\n  orderNotes?: string;\r\n  observations?: string;\r\n}\r\n\r\nexport interface ShippingData {\r\n  differentAddress: boolean;\r\n  firstName?: string;\r\n  lastName?: string;\r\n  companyName?: string;\r\n  country?: string;\r\n  streetAddress?: string;\r\n  apartment?: string;\r\n  city?: string;\r\n  state?: string;\r\n  zipCode?: string;\r\n}\r\n\r\nexport interface CheckoutFormData {\r\n  billing: BillingData;\r\n  shipping: ShippingData;\r\n  paymentMethod: 'mercadopago' | 'bank' | 'cash';\r\n  shippingMethod: 'free' | 'express' | 'pickup';\r\n  couponCode?: string;\r\n}\r\n\r\nexport interface CheckoutState {\r\n  formData: CheckoutFormData;\r\n  isLoading: boolean;\r\n  errors: Record<string, string>;\r\n  step: 'form' | 'processing' | 'payment' | 'redirect';\r\n  preferenceId?: string;\r\n  initPoint?: string;\r\n}\r\n\r\nexport interface ShippingOption {\r\n  id: string;\r\n  name: string;\r\n  description: string;\r\n  cost: number;\r\n  estimatedDays: string;\r\n}\r\n\r\nexport interface CheckoutSummary {\r\n  subtotal: number;\r\n  shippingCost: number;\r\n  discount: number;\r\n  total: number;\r\n  itemCount: number;\r\n}\r\n\r\n// Tipos para la API de pagos\r\nexport interface PaymentPreferenceItem {\r\n  id: string;\r\n  name: string;\r\n  price: number;\r\n  image: string;\r\n  quantity: number;\r\n}\r\n\r\nexport interface PaymentPayer {\r\n  name: string;\r\n  surname: string;\r\n  email: string;\r\n  phone: string;\r\n  identification?: {\r\n    type: string;\r\n    number: string;\r\n  };\r\n}\r\n\r\nexport interface PaymentShippingAddress {\r\n  street_name: string;\r\n  street_number: string;\r\n  zip_code: string;\r\n  city_name: string;\r\n  state_name: string;\r\n}\r\n\r\nexport interface PaymentShipping {\r\n  cost: number;\r\n  address: PaymentShippingAddress;\r\n}\r\n\r\nexport interface CreatePreferencePayload {\r\n  items: PaymentPreferenceItem[];\r\n  payer: PaymentPayer;\r\n  shipping?: PaymentShipping;\r\n  external_reference?: string;\r\n}\r\n\r\nexport interface PaymentPreferenceResponse {\r\n  init_point: string;\r\n  preference_id: string;\r\n  success: boolean;\r\n  error?: string;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"],
+      names: [],
+      mappings: "AAAA,sCAAsC;AACtC,sCAAsC;AACtC,sCAAsC"
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "1d6b99b38365759d94b4c7be6c931d5a578d5ddb"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1zwxftwxp9 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1zwxftwxp9();
+cov_1zwxftwxp9().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiQzpcXFVzZXJzXFxtYXJ0aVxcRGVza3RvcFxcREVTQVJST0xMT1NXXFxCT0lMRVJQTEFUVEUgRS1DT01NRVJDRVxcc3JjXFx0eXBlc1xcY2hlY2tvdXQudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cclxuLy8gUElOVEVZQSBFLUNPTU1FUkNFIC0gQ0hFQ0tPVVQgVFlQRVNcclxuLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cclxuXHJcbmV4cG9ydCBpbnRlcmZhY2UgQmlsbGluZ0RhdGEge1xyXG4gIGZpcnN0TmFtZTogc3RyaW5nO1xyXG4gIGxhc3ROYW1lOiBzdHJpbmc7XHJcbiAgZG5pPzogc3RyaW5nO1xyXG4gIGNvbXBhbnlOYW1lPzogc3RyaW5nO1xyXG4gIGNvdW50cnk6IHN0cmluZztcclxuICBzdHJlZXRBZGRyZXNzOiBzdHJpbmc7XHJcbiAgYXBhcnRtZW50Pzogc3RyaW5nO1xyXG4gIGNpdHk6IHN0cmluZztcclxuICBzdGF0ZTogc3RyaW5nO1xyXG4gIHppcENvZGU6IHN0cmluZztcclxuICBwaG9uZTogc3RyaW5nO1xyXG4gIGVtYWlsOiBzdHJpbmc7XHJcbiAgb3JkZXJOb3Rlcz86IHN0cmluZztcclxuICBvYnNlcnZhdGlvbnM/OiBzdHJpbmc7XHJcbn1cclxuXHJcbmV4cG9ydCBpbnRlcmZhY2UgU2hpcHBpbmdEYXRhIHtcclxuICBkaWZmZXJlbnRBZGRyZXNzOiBib29sZWFuO1xyXG4gIGZpcnN0TmFtZT86IHN0cmluZztcclxuICBsYXN0TmFtZT86IHN0cmluZztcclxuICBjb21wYW55TmFtZT86IHN0cmluZztcclxuICBjb3VudHJ5Pzogc3RyaW5nO1xyXG4gIHN0cmVldEFkZHJlc3M/OiBzdHJpbmc7XHJcbiAgYXBhcnRtZW50Pzogc3RyaW5nO1xyXG4gIGNpdHk/OiBzdHJpbmc7XHJcbiAgc3RhdGU/OiBzdHJpbmc7XHJcbiAgemlwQ29kZT86IHN0cmluZztcclxufVxyXG5cclxuZXhwb3J0IGludGVyZmFjZSBDaGVja291dEZvcm1EYXRhIHtcclxuICBiaWxsaW5nOiBCaWxsaW5nRGF0YTtcclxuICBzaGlwcGluZzogU2hpcHBpbmdEYXRhO1xyXG4gIHBheW1lbnRNZXRob2Q6ICdtZXJjYWRvcGFnbycgfCAnYmFuaycgfCAnY2FzaCc7XHJcbiAgc2hpcHBpbmdNZXRob2Q6ICdmcmVlJyB8ICdleHByZXNzJyB8ICdwaWNrdXAnO1xyXG4gIGNvdXBvbkNvZGU/OiBzdHJpbmc7XHJcbn1cclxuXHJcbmV4cG9ydCBpbnRlcmZhY2UgQ2hlY2tvdXRTdGF0ZSB7XHJcbiAgZm9ybURhdGE6IENoZWNrb3V0Rm9ybURhdGE7XHJcbiAgaXNMb2FkaW5nOiBib29sZWFuO1xyXG4gIGVycm9yczogUmVjb3JkPHN0cmluZywgc3RyaW5nPjtcclxuICBzdGVwOiAnZm9ybScgfCAncHJvY2Vzc2luZycgfCAncGF5bWVudCcgfCAncmVkaXJlY3QnO1xyXG4gIHByZWZlcmVuY2VJZD86IHN0cmluZztcclxuICBpbml0UG9pbnQ/OiBzdHJpbmc7XHJcbn1cclxuXHJcbmV4cG9ydCBpbnRlcmZhY2UgU2hpcHBpbmdPcHRpb24ge1xyXG4gIGlkOiBzdHJpbmc7XHJcbiAgbmFtZTogc3RyaW5nO1xyXG4gIGRlc2NyaXB0aW9uOiBzdHJpbmc7XHJcbiAgY29zdDogbnVtYmVyO1xyXG4gIGVzdGltYXRlZERheXM6IHN0cmluZztcclxufVxyXG5cclxuZXhwb3J0IGludGVyZmFjZSBDaGVja291dFN1bW1hcnkge1xyXG4gIHN1YnRvdGFsOiBudW1iZXI7XHJcbiAgc2hpcHBpbmdDb3N0OiBudW1iZXI7XHJcbiAgZGlzY291bnQ6IG51bWJlcjtcclxuICB0b3RhbDogbnVtYmVyO1xyXG4gIGl0ZW1Db3VudDogbnVtYmVyO1xyXG59XHJcblxyXG4vLyBUaXBvcyBwYXJhIGxhIEFQSSBkZSBwYWdvc1xyXG5leHBvcnQgaW50ZXJmYWNlIFBheW1lbnRQcmVmZXJlbmNlSXRlbSB7XHJcbiAgaWQ6IHN0cmluZztcclxuICBuYW1lOiBzdHJpbmc7XHJcbiAgcHJpY2U6IG51bWJlcjtcclxuICBpbWFnZTogc3RyaW5nO1xyXG4gIHF1YW50aXR5OiBudW1iZXI7XHJcbn1cclxuXHJcbmV4cG9ydCBpbnRlcmZhY2UgUGF5bWVudFBheWVyIHtcclxuICBuYW1lOiBzdHJpbmc7XHJcbiAgc3VybmFtZTogc3RyaW5nO1xyXG4gIGVtYWlsOiBzdHJpbmc7XHJcbiAgcGhvbmU6IHN0cmluZztcclxuICBpZGVudGlmaWNhdGlvbj86IHtcclxuICAgIHR5cGU6IHN0cmluZztcclxuICAgIG51bWJlcjogc3RyaW5nO1xyXG4gIH07XHJcbn1cclxuXHJcbmV4cG9ydCBpbnRlcmZhY2UgUGF5bWVudFNoaXBwaW5nQWRkcmVzcyB7XHJcbiAgc3RyZWV0X25hbWU6IHN0cmluZztcclxuICBzdHJlZXRfbnVtYmVyOiBzdHJpbmc7XHJcbiAgemlwX2NvZGU6IHN0cmluZztcclxuICBjaXR5X25hbWU6IHN0cmluZztcclxuICBzdGF0ZV9uYW1lOiBzdHJpbmc7XHJcbn1cclxuXHJcbmV4cG9ydCBpbnRlcmZhY2UgUGF5bWVudFNoaXBwaW5nIHtcclxuICBjb3N0OiBudW1iZXI7XHJcbiAgYWRkcmVzczogUGF5bWVudFNoaXBwaW5nQWRkcmVzcztcclxufVxyXG5cclxuZXhwb3J0IGludGVyZmFjZSBDcmVhdGVQcmVmZXJlbmNlUGF5bG9hZCB7XHJcbiAgaXRlbXM6IFBheW1lbnRQcmVmZXJlbmNlSXRlbVtdO1xyXG4gIHBheWVyOiBQYXltZW50UGF5ZXI7XHJcbiAgc2hpcHBpbmc/OiBQYXltZW50U2hpcHBpbmc7XHJcbiAgZXh0ZXJuYWxfcmVmZXJlbmNlPzogc3RyaW5nO1xyXG59XHJcblxyXG5leHBvcnQgaW50ZXJmYWNlIFBheW1lbnRQcmVmZXJlbmNlUmVzcG9uc2Uge1xyXG4gIGluaXRfcG9pbnQ6IHN0cmluZztcclxuICBwcmVmZXJlbmNlX2lkOiBzdHJpbmc7XHJcbiAgc3VjY2VzczogYm9vbGVhbjtcclxuICBlcnJvcj86IHN0cmluZztcclxufVxyXG5cclxuXHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcblxyXG4iXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0E7QUFDQSIsImlnbm9yZUxpc3QiOltdfQ==

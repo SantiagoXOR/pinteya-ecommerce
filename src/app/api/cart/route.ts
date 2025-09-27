@@ -117,9 +117,11 @@ export async function GET(request: NextRequest) {
           supabase = getSupabaseClient(true);
         } catch (error: any) {
           console.error('❌ Cart API: Error obteniendo cliente de Supabase:', error);
-          securityLogger.logEvent('database_error', 'high', {
-            error: error.message || 'Supabase client initialization failed'
-          });
+          securityLogger.logApiError(
+            securityLogger.context,
+            error,
+            { operation: 'supabase_client_init' }
+          );
 
           return NextResponse.json(
             {
@@ -133,8 +135,12 @@ export async function GET(request: NextRequest) {
 
         if (!supabase) {
           console.error('❌ Cart API: Cliente de Supabase no disponible');
-          securityLogger.logEvent('database_error', 'high', {
-            error: 'Supabase client not available'
+          securityLogger.log({
+            type: 'api_error',
+            severity: 'high',
+            message: 'Supabase client not available',
+            context: securityLogger.context,
+            metadata: { operation: 'supabase_client_check' }
           });
 
           return NextResponse.json(
@@ -185,9 +191,15 @@ export async function GET(request: NextRequest) {
           error = result.error;
         } catch (timeoutError: any) {
           console.error('❌ Cart API: Timeout en consulta de carrito:', timeoutError);
-          securityLogger.logEvent('database_timeout', 'high', {
-            operation: 'get_cart_items',
-            timeout: API_TIMEOUTS.database
+          securityLogger.log({
+            type: 'api_error',
+            severity: 'high',
+            message: 'Database timeout in cart query',
+            context: securityLogger.context,
+            metadata: {
+              operation: 'get_cart_items',
+              timeout: API_TIMEOUTS.database
+            }
           });
 
           return NextResponse.json(
@@ -202,10 +214,11 @@ export async function GET(request: NextRequest) {
 
         if (error) {
           console.error('❌ Cart API: Error consultando carrito:', error);
-          securityLogger.logEvent('database_error', 'high', {
-            error: error.message,
-            operation: 'get_cart_items'
-          });
+          securityLogger.logApiError(
+            securityLogger.context,
+            error,
+            { operation: 'get_cart_items' }
+          );
 
           return NextResponse.json(
             {
@@ -234,10 +247,16 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ Cart API: Carrito obtenido exitosamente - ${response.itemCount} productos únicos, ${totalItems} items totales`);
 
-        securityLogger.logEvent('api_success', 'low', {
-          endpoint: '/api/cart',
-          method: 'GET',
-          itemCount: response.itemCount
+        securityLogger.log({
+          type: 'data_access',
+          severity: 'low',
+          message: 'Cart retrieved successfully',
+          context: securityLogger.context,
+          metadata: {
+            endpoint: '/api/cart',
+            method: 'GET',
+            itemCount: response.itemCount
+          }
         });
 
         return NextResponse.json({

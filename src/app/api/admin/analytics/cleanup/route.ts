@@ -185,7 +185,7 @@ export async function GET(request: NextRequest) {
 /**
  * Generar recomendaciones de limpieza
  */
-function generateCleanupRecommendations(stats: any) {
+function generateCleanupRecommendations(stats: Record<string, unknown> | null) {
   const recommendations = [];
   
   if (!stats) {return recommendations;}

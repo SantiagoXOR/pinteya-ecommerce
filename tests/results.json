@@ -268,20 +268,20 @@
   },
   "suites": [
     {
-      "title": "product-card-hover.spec.ts",
-      "file": "product-card-hover.spec.ts",
+      "title": "api-public.spec.ts",
+      "file": "api-public.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "ProductCard - microinteracciones en hover",
-          "file": "product-card-hover.spec.ts",
-          "line": 12,
+          "title": "APIs Públicas - Enfoque API-First",
+          "file": "api-public.spec.ts",
+          "line": 9,
           "column": 6,
           "specs": [
             {
-              "title": "muestra efectos de hover (transform o quick actions visibles)",
+              "title": "API /api/products - Listar productos públicos",
               "ok": false,
               "tags": [],
               "tests": [
@@ -289,138 +289,906 @@
                   "timeout": 30000,
                   "annotations": [],
                   "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 5184,
+                      "duration": 1098,
                       "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts:33:19",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"products\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 87, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"]}, \"name\": \"Lija al Agua Grano 40\", \"price\": 850, \"slug\": \"lija-al-agua-grano-40-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 89, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"]}, \"name\": \"Lija al Agua Grano 80\", \"price\": 780, \"slug\": \"lija-al-agua-grano-80-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 92, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"]}, \"name\": \"Bandeja Chata para Pintura\", \"price\": 1250, \"slug\": \"bandeja-chata-para-pintura\", \"stock\": 30}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 91, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"]}, \"name\": \"Lija al Agua Grano 180\", \"price\": 720, \"slug\": \"lija-al-agua-grano-180-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 90, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"]}, \"name\": \"Lija al Agua Grano 120\", \"price\": 750, \"slug\": \"lija-al-agua-grano-120-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 88, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"]}, \"name\": \"Lija al Agua Grano 50\", \"price\": 820, \"slug\": \"lija-al-agua-grano-50-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 93, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"]}, \"name\": \"Pinceleta para Obra\", \"price\": 980, \"slug\": \"pinceleta-para-obra\", \"stock\": 40}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 20250, \"id\": 86, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 5kg\", \"price\": 22500, \"slug\": \"poximix-exterior-5kg\", \"stock\": 6}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 13050, \"id\": 85, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 3kg\", \"price\": 14500, \"slug\": \"poximix-exterior-3kg\", \"stock\": 8}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 5850, \"id\": 84, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 1.25kg\", \"price\": 6500, \"slug\": \"poximix-exterior-125kg\", \"stock\": 12}, …], \"message\": \"12 productos encontrados\", \"pagination\": {\"limit\": 12, \"page\": 1, \"total\": 53, \"totalPages\": 5}, \"success\": true}\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"products\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 87, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"]}, \"name\": \"Lija al Agua Grano 40\", \"price\": 850, \"slug\": \"lija-al-agua-grano-40-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 89, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"]}, \"name\": \"Lija al Agua Grano 80\", \"price\": 780, \"slug\": \"lija-al-agua-grano-80-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 92, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"]}, \"name\": \"Bandeja Chata para Pintura\", \"price\": 1250, \"slug\": \"bandeja-chata-para-pintura\", \"stock\": 30}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 91, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"]}, \"name\": \"Lija al Agua Grano 180\", \"price\": 720, \"slug\": \"lija-al-agua-grano-180-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 90, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"]}, \"name\": \"Lija al Agua Grano 120\", \"price\": 750, \"slug\": \"lija-al-agua-grano-120-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 88, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"]}, \"name\": \"Lija al Agua Grano 50\", \"price\": 820, \"slug\": \"lija-al-agua-grano-50-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 93, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"]}, \"name\": \"Pinceleta para Obra\", \"price\": 980, \"slug\": \"pinceleta-para-obra\", \"stock\": 40}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 20250, \"id\": 86, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 5kg\", \"price\": 22500, \"slug\": \"poximix-exterior-5kg\", \"stock\": 6}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 13050, \"id\": 85, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 3kg\", \"price\": 14500, \"slug\": \"poximix-exterior-3kg\", \"stock\": 8}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 5850, \"id\": 84, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 1.25kg\", \"price\": 6500, \"slug\": \"poximix-exterior-125kg\", \"stock\": 12}, …], \"message\": \"12 productos encontrados\", \"pagination\": {\"limit\": 12, \"page\": 1, \"total\": 53, \"totalPages\": 5}, \"success\": true}\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:25:18",
                         "location": {
-                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts",
-                          "column": 19,
-                          "line": 33
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 18,
+                          "line": 25
                         },
-                        "snippet": "\u001b[0m \u001b[90m 31 |\u001b[39m     }\n \u001b[90m 32 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 33 |\u001b[39m     expect(count)\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 34 |\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[90m// Asegurar visibilidad (en viewport)\u001b[39m\n \u001b[90m 36 |\u001b[39m     \u001b[36mawait\u001b[39m card\u001b[33m.\u001b[39mscrollIntoViewIfNeeded()\u001b[33m;\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m     \n \u001b[90m 24 |\u001b[39m     \u001b[90m// Verificar estructura\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m     expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'products'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m     expect(\u001b[33mArray\u001b[39m\u001b[33m.\u001b[39misArray(data\u001b[33m.\u001b[39mproducts))\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 27 |\u001b[39m     \n \u001b[90m 28 |\u001b[39m     \u001b[36mif\u001b[39m (data\u001b[33m.\u001b[39mproducts\u001b[33m.\u001b[39mlength \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m) {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts",
-                            "column": 19,
-                            "line": 33
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 18,
+                            "line": 25
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n\u001b[0m \u001b[90m 31 |\u001b[39m     }\n \u001b[90m 32 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 33 |\u001b[39m     expect(count)\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 34 |\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[90m// Asegurar visibilidad (en viewport)\u001b[39m\n \u001b[90m 36 |\u001b[39m     \u001b[36mawait\u001b[39m card\u001b[33m.\u001b[39mscrollIntoViewIfNeeded()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts:33:19\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"products\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 87, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"]}, \"name\": \"Lija al Agua Grano 40\", \"price\": 850, \"slug\": \"lija-al-agua-grano-40-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 89, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"]}, \"name\": \"Lija al Agua Grano 80\", \"price\": 780, \"slug\": \"lija-al-agua-grano-80-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 92, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"]}, \"name\": \"Bandeja Chata para Pintura\", \"price\": 1250, \"slug\": \"bandeja-chata-para-pintura\", \"stock\": 30}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 91, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"]}, \"name\": \"Lija al Agua Grano 180\", \"price\": 720, \"slug\": \"lija-al-agua-grano-180-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 90, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"]}, \"name\": \"Lija al Agua Grano 120\", \"price\": 750, \"slug\": \"lija-al-agua-grano-120-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 88, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"]}, \"name\": \"Lija al Agua Grano 50\", \"price\": 820, \"slug\": \"lija-al-agua-grano-50-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 93, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"]}, \"name\": \"Pinceleta para Obra\", \"price\": 980, \"slug\": \"pinceleta-para-obra\", \"stock\": 40}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 20250, \"id\": 86, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 5kg\", \"price\": 22500, \"slug\": \"poximix-exterior-5kg\", \"stock\": 6}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 13050, \"id\": 85, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 3kg\", \"price\": 14500, \"slug\": \"poximix-exterior-3kg\", \"stock\": 8}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 5850, \"id\": 84, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 1.25kg\", \"price\": 6500, \"slug\": \"poximix-exterior-125kg\", \"stock\": 12}, …], \"message\": \"12 productos encontrados\", \"pagination\": {\"limit\": 12, \"page\": 1, \"total\": 53, \"totalPages\": 5}, \"success\": true}\u001b[39m\n\n\u001b[0m \u001b[90m 23 |\u001b[39m     \n \u001b[90m 24 |\u001b[39m     \u001b[90m// Verificar estructura\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m     expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'products'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m     expect(\u001b[33mArray\u001b[39m\u001b[33m.\u001b[39misArray(data\u001b[33m.\u001b[39mproducts))\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 27 |\u001b[39m     \n \u001b[90m 28 |\u001b[39m     \u001b[36mif\u001b[39m (data\u001b[33m.\u001b[39mproducts\u001b[33m.\u001b[39mlength \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m) {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:25:18\u001b[22m"
                         }
                       ],
                       "stdout": [
                         {
-                          "text": "🧪 Verificando microinteracciones de ProductCard al hacer hover\n"
+                          "text": "🧪 Testeando API pública de productos...\n"
+                        },
+                        {
+                          "text": "📊 Status: 200\n"
+                        },
+                        {
+                          "text": "✅ Productos públicos: 0\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-09-21T01:10:02.792Z",
+                      "startTime": "2025-09-27T20:26:41.907Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox\\error-context.md"
-                        }
-                      ],
+                      "attachments": [],
                       "errorLocation": {
-                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts",
-                        "column": 19,
-                        "line": 33
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 18,
+                        "line": 25
                       }
                     },
                     {
                       "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 29837,
+                      "duration": 342,
                       "error": {
-                        "message": "TimeoutError: locator.hover: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid-commercial=\"commercial-product-card\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <div data-testid=\"product-card\" data-testid-commercial=\"commercial-product-card\" class=\"relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer overflow-hidden h-[280px] sm:h-[320px] md:h-[400px] lg:h-[450px] md:rounded-2xl transform-gpu will-change-transform\">…</div>\u001b[22m\n\u001b[2m  - attempting hover action\u001b[22m\n\u001b[2m    - waiting for element to be visible and stable\u001b[22m\n",
-                        "stack": "TimeoutError: locator.hover: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid-commercial=\"commercial-product-card\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <div data-testid=\"product-card\" data-testid-commercial=\"commercial-product-card\" class=\"relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer overflow-hidden h-[280px] sm:h-[320px] md:h-[400px] lg:h-[450px] md:rounded-2xl transform-gpu will-change-transform\">…</div>\u001b[22m\n\u001b[2m  - attempting hover action\u001b[22m\n\u001b[2m    - waiting for element to be visible and stable\u001b[22m\n\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts:44:16",
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"products\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 87, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"]}, \"name\": \"Lija al Agua Grano 40\", \"price\": 850, \"slug\": \"lija-al-agua-grano-40-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 89, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"]}, \"name\": \"Lija al Agua Grano 80\", \"price\": 780, \"slug\": \"lija-al-agua-grano-80-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 92, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"]}, \"name\": \"Bandeja Chata para Pintura\", \"price\": 1250, \"slug\": \"bandeja-chata-para-pintura\", \"stock\": 30}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 91, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"]}, \"name\": \"Lija al Agua Grano 180\", \"price\": 720, \"slug\": \"lija-al-agua-grano-180-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 90, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"]}, \"name\": \"Lija al Agua Grano 120\", \"price\": 750, \"slug\": \"lija-al-agua-grano-120-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 88, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"]}, \"name\": \"Lija al Agua Grano 50\", \"price\": 820, \"slug\": \"lija-al-agua-grano-50-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 93, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"]}, \"name\": \"Pinceleta para Obra\", \"price\": 980, \"slug\": \"pinceleta-para-obra\", \"stock\": 40}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 20250, \"id\": 86, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 5kg\", \"price\": 22500, \"slug\": \"poximix-exterior-5kg\", \"stock\": 6}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 13050, \"id\": 85, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 3kg\", \"price\": 14500, \"slug\": \"poximix-exterior-3kg\", \"stock\": 8}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 5850, \"id\": 84, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 1.25kg\", \"price\": 6500, \"slug\": \"poximix-exterior-125kg\", \"stock\": 12}, …], \"message\": \"12 productos encontrados\", \"pagination\": {\"limit\": 12, \"page\": 1, \"total\": 53, \"totalPages\": 5}, \"success\": true}\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"products\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 87, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"]}, \"name\": \"Lija al Agua Grano 40\", \"price\": 850, \"slug\": \"lija-al-agua-grano-40-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 89, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"]}, \"name\": \"Lija al Agua Grano 80\", \"price\": 780, \"slug\": \"lija-al-agua-grano-80-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 92, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"]}, \"name\": \"Bandeja Chata para Pintura\", \"price\": 1250, \"slug\": \"bandeja-chata-para-pintura\", \"stock\": 30}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 91, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"]}, \"name\": \"Lija al Agua Grano 180\", \"price\": 720, \"slug\": \"lija-al-agua-grano-180-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 90, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"]}, \"name\": \"Lija al Agua Grano 120\", \"price\": 750, \"slug\": \"lija-al-agua-grano-120-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 88, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"]}, \"name\": \"Lija al Agua Grano 50\", \"price\": 820, \"slug\": \"lija-al-agua-grano-50-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 93, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"]}, \"name\": \"Pinceleta para Obra\", \"price\": 980, \"slug\": \"pinceleta-para-obra\", \"stock\": 40}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 20250, \"id\": 86, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 5kg\", \"price\": 22500, \"slug\": \"poximix-exterior-5kg\", \"stock\": 6}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 13050, \"id\": 85, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 3kg\", \"price\": 14500, \"slug\": \"poximix-exterior-3kg\", \"stock\": 8}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 5850, \"id\": 84, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 1.25kg\", \"price\": 6500, \"slug\": \"poximix-exterior-125kg\", \"stock\": 12}, …], \"message\": \"12 productos encontrados\", \"pagination\": {\"limit\": 12, \"page\": 1, \"total\": 53, \"totalPages\": 5}, \"success\": true}\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:25:18",
                         "location": {
-                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts",
-                          "column": 16,
-                          "line": 44
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 18,
+                          "line": 25
                         },
-                        "snippet": "\u001b[0m \u001b[90m 42 |\u001b[39m\n \u001b[90m 43 |\u001b[39m     \u001b[90m// Hover en la tarjeta\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 44 |\u001b[39m     \u001b[36mawait\u001b[39m card\u001b[33m.\u001b[39mhover()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 45 |\u001b[39m\n \u001b[90m 46 |\u001b[39m     \u001b[90m// 1) Intentar quick actions visibles\u001b[39m\n \u001b[90m 47 |\u001b[39m     \u001b[36mconst\u001b[39m quickAction \u001b[33m=\u001b[39m card\u001b[33m.\u001b[39mlocator(\u001b[32m'button.w-8.h-8'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 23 |\u001b[39m     \n \u001b[90m 24 |\u001b[39m     \u001b[90m// Verificar estructura\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m     expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'products'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m     expect(\u001b[33mArray\u001b[39m\u001b[33m.\u001b[39misArray(data\u001b[33m.\u001b[39mproducts))\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 27 |\u001b[39m     \n \u001b[90m 28 |\u001b[39m     \u001b[36mif\u001b[39m (data\u001b[33m.\u001b[39mproducts\u001b[33m.\u001b[39mlength \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m) {\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts",
-                            "column": 16,
-                            "line": 44
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 18,
+                            "line": 25
                           },
-                          "message": "TimeoutError: locator.hover: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid-commercial=\"commercial-product-card\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <div data-testid=\"product-card\" data-testid-commercial=\"commercial-product-card\" class=\"relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer overflow-hidden h-[280px] sm:h-[320px] md:h-[400px] lg:h-[450px] md:rounded-2xl transform-gpu will-change-transform\">…</div>\u001b[22m\n\u001b[2m  - attempting hover action\u001b[22m\n\u001b[2m    - waiting for element to be visible and stable\u001b[22m\n\n\n\u001b[0m \u001b[90m 42 |\u001b[39m\n \u001b[90m 43 |\u001b[39m     \u001b[90m// Hover en la tarjeta\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 44 |\u001b[39m     \u001b[36mawait\u001b[39m card\u001b[33m.\u001b[39mhover()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 45 |\u001b[39m\n \u001b[90m 46 |\u001b[39m     \u001b[90m// 1) Intentar quick actions visibles\u001b[39m\n \u001b[90m 47 |\u001b[39m     \u001b[36mconst\u001b[39m quickAction \u001b[33m=\u001b[39m card\u001b[33m.\u001b[39mlocator(\u001b[32m'button.w-8.h-8'\u001b[39m)\u001b[33m.\u001b[39mfirst()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts:44:16\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"products\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 87, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-40.png\"]}, \"name\": \"Lija al Agua Grano 40\", \"price\": 850, \"slug\": \"lija-al-agua-grano-40-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 89, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-80.png\"]}, \"name\": \"Lija al Agua Grano 80\", \"price\": 780, \"slug\": \"lija-al-agua-grano-80-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 92, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/bandeja-chata.png\"]}, \"name\": \"Bandeja Chata para Pintura\", \"price\": 1250, \"slug\": \"bandeja-chata-para-pintura\", \"stock\": 30}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 91, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-180.png\"]}, \"name\": \"Lija al Agua Grano 180\", \"price\": 720, \"slug\": \"lija-al-agua-grano-180-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 90, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-120.png\"]}, \"name\": \"Lija al Agua Grano 120\", \"price\": 750, \"slug\": \"lija-al-agua-grano-120-el-galgo\", \"stock\": 50}, {\"brand\": \"El Galgo\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 88, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/galgo/lija-al-agua-50.png\"]}, \"name\": \"Lija al Agua Grano 50\", \"price\": 820, \"slug\": \"lija-al-agua-grano-50-el-galgo\", \"stock\": 50}, {\"brand\": \"Genérico\", \"category\": {\"id\": 32, \"name\": \"Profesionales\", \"slug\": \"profesionales\"}, \"discounted_price\": null, \"id\": 93, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"], \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/genericos/pinceleta-obra.png\"]}, \"name\": \"Pinceleta para Obra\", \"price\": 980, \"slug\": \"pinceleta-para-obra\", \"stock\": 40}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 20250, \"id\": 86, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-5kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 5kg\", \"price\": 22500, \"slug\": \"poximix-exterior-5kg\", \"stock\": 6}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 13050, \"id\": 85, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-3kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 3kg\", \"price\": 14500, \"slug\": \"poximix-exterior-3kg\", \"stock\": 8}, {\"brand\": \"Akapol\", \"category\": {\"id\": 27, \"name\": \"Exteriores\", \"slug\": \"exteriores\"}, \"discounted_price\": 5850, \"id\": 84, \"images\": {\"gallery\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"main\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"previews\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"], \"thumbnail\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\", \"thumbnails\": [\"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/poximix/poximix-exterior-125kg-poxipol.png\"]}, \"name\": \"Poximix Exterior 1.25kg\", \"price\": 6500, \"slug\": \"poximix-exterior-125kg\", \"stock\": 12}, …], \"message\": \"12 productos encontrados\", \"pagination\": {\"limit\": 12, \"page\": 1, \"total\": 53, \"totalPages\": 5}, \"success\": true}\u001b[39m\n\n\u001b[0m \u001b[90m 23 |\u001b[39m     \n \u001b[90m 24 |\u001b[39m     \u001b[90m// Verificar estructura\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 25 |\u001b[39m     expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'products'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m     expect(\u001b[33mArray\u001b[39m\u001b[33m.\u001b[39misArray(data\u001b[33m.\u001b[39mproducts))\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 27 |\u001b[39m     \n \u001b[90m 28 |\u001b[39m     \u001b[36mif\u001b[39m (data\u001b[33m.\u001b[39mproducts\u001b[33m.\u001b[39mlength \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m) {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:25:18\u001b[22m"
                         }
                       ],
                       "stdout": [
                         {
-                          "text": "🧪 Verificando microinteracciones de ProductCard al hacer hover\n"
+                          "text": "🧪 Testeando API pública de productos...\n"
                         },
                         {
-                          "text": "🔎 Transform inicial: none\n"
+                          "text": "📊 Status: 200\n"
+                        },
+                        {
+                          "text": "✅ Productos públicos: 0\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 1,
-                      "startTime": "2025-09-21T01:10:11.571Z",
+                      "startTime": "2025-09-27T20:26:43.620Z",
                       "annotations": [],
                       "attachments": [
                         {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\\error-context.md"
-                        },
-                        {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-card-hover-Product-f637e-m-o-quick-actions-visibles--firefox-retry1\\trace.zip"
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\api-public-APIs-Públicas---b64dd---Listar-productos-públicos-api-public-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-card-hover.spec.ts",
-                        "column": 16,
-                        "line": 44
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 18,
+                        "line": 25
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "1e377858ae61244256a1-c971183be6e058e1dfaa",
-              "file": "product-card-hover.spec.ts",
-              "line": 13,
+              "id": "f23913d47f057f6079dd-7a5a1572918d75ce20de",
+              "file": "api-public.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "API /api/categories - Listar categorías públicas",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 319,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"categories\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 26, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/decoraciones.png\", \"name\": \"Decoraciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"decoraciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 27, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/exteriores.png\", \"name\": \"Exteriores\", \"parent_id\": null, \"products_count\": 10, \"slug\": \"exteriores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 28, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/humedades.png\", \"name\": \"Humedades\", \"parent_id\": null, \"products_count\": 2, \"slug\": \"humedades\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 29, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/interiores.png\", \"name\": \"Interiores\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"interiores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 30, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/maderas.png\", \"name\": \"Maderas\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"maderas\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 31, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/preparaciones.png\", \"name\": \"Preparaciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"preparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 32, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/profesionales.png\", \"name\": \"Profesionales\", \"parent_id\": null, \"products_count\": 17, \"slug\": \"profesionales\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 33, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/reparaciones.png\", \"name\": \"Reparaciones\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"reparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 34, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/sinteticos.png\", \"name\": \"Sintéticos\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"sinteticos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 35, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/techos.png\", \"name\": \"Techos\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"techos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, …], \"message\": \"11 categorías encontradas\", \"success\": true}\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"categories\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 26, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/decoraciones.png\", \"name\": \"Decoraciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"decoraciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 27, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/exteriores.png\", \"name\": \"Exteriores\", \"parent_id\": null, \"products_count\": 10, \"slug\": \"exteriores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 28, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/humedades.png\", \"name\": \"Humedades\", \"parent_id\": null, \"products_count\": 2, \"slug\": \"humedades\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 29, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/interiores.png\", \"name\": \"Interiores\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"interiores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 30, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/maderas.png\", \"name\": \"Maderas\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"maderas\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 31, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/preparaciones.png\", \"name\": \"Preparaciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"preparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 32, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/profesionales.png\", \"name\": \"Profesionales\", \"parent_id\": null, \"products_count\": 17, \"slug\": \"profesionales\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 33, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/reparaciones.png\", \"name\": \"Reparaciones\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"reparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 34, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/sinteticos.png\", \"name\": \"Sintéticos\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"sinteticos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 35, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/techos.png\", \"name\": \"Techos\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"techos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, …], \"message\": \"11 categorías encontradas\", \"success\": true}\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:49:18",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 18,
+                          "line": 49
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 47 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Categorías públicas: ${data.categories?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 48 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 49 |\u001b[39m     expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'categories'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 50 |\u001b[39m     expect(\u001b[33mArray\u001b[39m\u001b[33m.\u001b[39misArray(data\u001b[33m.\u001b[39mcategories))\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 51 |\u001b[39m     \n \u001b[90m 52 |\u001b[39m     \u001b[36mif\u001b[39m (data\u001b[33m.\u001b[39mcategories\u001b[33m.\u001b[39mlength \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 18,
+                            "line": 49
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"categories\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 26, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/decoraciones.png\", \"name\": \"Decoraciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"decoraciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 27, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/exteriores.png\", \"name\": \"Exteriores\", \"parent_id\": null, \"products_count\": 10, \"slug\": \"exteriores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 28, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/humedades.png\", \"name\": \"Humedades\", \"parent_id\": null, \"products_count\": 2, \"slug\": \"humedades\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 29, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/interiores.png\", \"name\": \"Interiores\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"interiores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 30, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/maderas.png\", \"name\": \"Maderas\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"maderas\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 31, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/preparaciones.png\", \"name\": \"Preparaciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"preparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 32, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/profesionales.png\", \"name\": \"Profesionales\", \"parent_id\": null, \"products_count\": 17, \"slug\": \"profesionales\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 33, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/reparaciones.png\", \"name\": \"Reparaciones\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"reparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 34, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/sinteticos.png\", \"name\": \"Sintéticos\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"sinteticos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 35, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/techos.png\", \"name\": \"Techos\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"techos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, …], \"message\": \"11 categorías encontradas\", \"success\": true}\u001b[39m\n\n\u001b[0m \u001b[90m 47 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Categorías públicas: ${data.categories?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 48 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 49 |\u001b[39m     expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'categories'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 50 |\u001b[39m     expect(\u001b[33mArray\u001b[39m\u001b[33m.\u001b[39misArray(data\u001b[33m.\u001b[39mcategories))\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 51 |\u001b[39m     \n \u001b[90m 52 |\u001b[39m     \u001b[36mif\u001b[39m (data\u001b[33m.\u001b[39mcategories\u001b[33m.\u001b[39mlength \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m) {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:49:18\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API pública de categorías...\n"
+                        },
+                        {
+                          "text": "📊 Status: 200\n"
+                        },
+                        {
+                          "text": "✅ Categorías públicas: 0\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-27T20:26:44.538Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 18,
+                        "line": 49
+                      }
+                    },
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 270,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"categories\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 26, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/decoraciones.png\", \"name\": \"Decoraciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"decoraciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 27, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/exteriores.png\", \"name\": \"Exteriores\", \"parent_id\": null, \"products_count\": 10, \"slug\": \"exteriores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 28, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/humedades.png\", \"name\": \"Humedades\", \"parent_id\": null, \"products_count\": 2, \"slug\": \"humedades\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 29, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/interiores.png\", \"name\": \"Interiores\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"interiores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 30, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/maderas.png\", \"name\": \"Maderas\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"maderas\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 31, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/preparaciones.png\", \"name\": \"Preparaciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"preparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 32, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/profesionales.png\", \"name\": \"Profesionales\", \"parent_id\": null, \"products_count\": 17, \"slug\": \"profesionales\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 33, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/reparaciones.png\", \"name\": \"Reparaciones\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"reparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 34, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/sinteticos.png\", \"name\": \"Sintéticos\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"sinteticos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 35, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/techos.png\", \"name\": \"Techos\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"techos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, …], \"message\": \"11 categorías encontradas\", \"success\": true}\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"categories\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 26, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/decoraciones.png\", \"name\": \"Decoraciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"decoraciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 27, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/exteriores.png\", \"name\": \"Exteriores\", \"parent_id\": null, \"products_count\": 10, \"slug\": \"exteriores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 28, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/humedades.png\", \"name\": \"Humedades\", \"parent_id\": null, \"products_count\": 2, \"slug\": \"humedades\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 29, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/interiores.png\", \"name\": \"Interiores\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"interiores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 30, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/maderas.png\", \"name\": \"Maderas\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"maderas\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 31, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/preparaciones.png\", \"name\": \"Preparaciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"preparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 32, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/profesionales.png\", \"name\": \"Profesionales\", \"parent_id\": null, \"products_count\": 17, \"slug\": \"profesionales\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 33, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/reparaciones.png\", \"name\": \"Reparaciones\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"reparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 34, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/sinteticos.png\", \"name\": \"Sintéticos\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"sinteticos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 35, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/techos.png\", \"name\": \"Techos\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"techos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, …], \"message\": \"11 categorías encontradas\", \"success\": true}\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:49:18",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 18,
+                          "line": 49
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 47 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Categorías públicas: ${data.categories?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 48 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 49 |\u001b[39m     expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'categories'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 50 |\u001b[39m     expect(\u001b[33mArray\u001b[39m\u001b[33m.\u001b[39misArray(data\u001b[33m.\u001b[39mcategories))\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 51 |\u001b[39m     \n \u001b[90m 52 |\u001b[39m     \u001b[36mif\u001b[39m (data\u001b[33m.\u001b[39mcategories\u001b[33m.\u001b[39mlength \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 18,
+                            "line": 49
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"categories\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nReceived value: \u001b[31m{\"data\": [{\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 26, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/decoraciones.png\", \"name\": \"Decoraciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"decoraciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 27, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/exteriores.png\", \"name\": \"Exteriores\", \"parent_id\": null, \"products_count\": 10, \"slug\": \"exteriores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 28, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/humedades.png\", \"name\": \"Humedades\", \"parent_id\": null, \"products_count\": 2, \"slug\": \"humedades\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 29, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/interiores.png\", \"name\": \"Interiores\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"interiores\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 30, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/maderas.png\", \"name\": \"Maderas\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"maderas\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 31, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/preparaciones.png\", \"name\": \"Preparaciones\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"preparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 32, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/profesionales.png\", \"name\": \"Profesionales\", \"parent_id\": null, \"products_count\": 17, \"slug\": \"profesionales\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 33, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/reparaciones.png\", \"name\": \"Reparaciones\", \"parent_id\": null, \"products_count\": 4, \"slug\": \"reparaciones\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 34, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/sinteticos.png\", \"name\": \"Sintéticos\", \"parent_id\": null, \"products_count\": 0, \"slug\": \"sinteticos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, {\"created_at\": \"2025-07-26T19:44:36.415058+00:00\", \"id\": 35, \"image_url\": \"https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/techos.png\", \"name\": \"Techos\", \"parent_id\": null, \"products_count\": 7, \"slug\": \"techos\", \"updated_at\": \"2025-07-26T19:44:36.415058+00:00\"}, …], \"message\": \"11 categorías encontradas\", \"success\": true}\u001b[39m\n\n\u001b[0m \u001b[90m 47 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Categorías públicas: ${data.categories?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 48 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 49 |\u001b[39m     expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'categories'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 50 |\u001b[39m     expect(\u001b[33mArray\u001b[39m\u001b[33m.\u001b[39misArray(data\u001b[33m.\u001b[39mcategories))\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m 51 |\u001b[39m     \n \u001b[90m 52 |\u001b[39m     \u001b[36mif\u001b[39m (data\u001b[33m.\u001b[39mcategories\u001b[33m.\u001b[39mlength \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m) {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:49:18\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API pública de categorías...\n"
+                        },
+                        {
+                          "text": "📊 Status: 200\n"
+                        },
+                        {
+                          "text": "✅ Categorías públicas: 0\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-09-27T20:26:45.422Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\api-public-APIs-Públicas---4a503--Listar-categorías-públicas-api-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 18,
+                        "line": 49
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f23913d47f057f6079dd-51908ce8707b9ea0f1d8",
+              "file": "api-public.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "API /api/search - Búsqueda de productos",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 69,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:67:31",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 31,
+                          "line": 67
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 65 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${response.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 66 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 67 |\u001b[39m     expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 68 |\u001b[39m     \n \u001b[90m 69 |\u001b[39m     \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Resultados de búsqueda: ${data.results?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 31,
+                            "line": 67
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 65 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${response.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 66 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 67 |\u001b[39m     expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 68 |\u001b[39m     \n \u001b[90m 69 |\u001b[39m     \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Resultados de búsqueda: ${data.results?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:67:31\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API de búsqueda...\n"
+                        },
+                        {
+                          "text": "📊 Status: 404\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-27T20:26:46.262Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 31,
+                        "line": 67
+                      }
+                    },
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 103,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:67:31",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 31,
+                          "line": 67
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 65 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${response.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 66 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 67 |\u001b[39m     expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 68 |\u001b[39m     \n \u001b[90m 69 |\u001b[39m     \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Resultados de búsqueda: ${data.results?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 31,
+                            "line": 67
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 65 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${response.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 66 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 67 |\u001b[39m     expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 68 |\u001b[39m     \n \u001b[90m 69 |\u001b[39m     \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Resultados de búsqueda: ${data.results?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:67:31\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API de búsqueda...\n"
+                        },
+                        {
+                          "text": "📊 Status: 404\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-09-27T20:26:46.896Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\api-public-APIs-Públicas---f109a-rch---Búsqueda-de-productos-api-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 31,
+                        "line": 67
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f23913d47f057f6079dd-554e5ff0641014583a83",
+              "file": "api-public.spec.ts",
+              "line": 59,
+              "column": 7
+            },
+            {
+              "title": "API /api/products/[id] - Detalle de producto",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 338,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API de detalle de producto...\n"
+                        },
+                        {
+                          "text": "⚠️ No hay productos para testear detalle\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-27T20:26:47.597Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f23913d47f057f6079dd-ee5255c430ad9e5b4eef",
+              "file": "api-public.spec.ts",
+              "line": 78,
+              "column": 7
+            },
+            {
+              "title": "API /api/cart - Gestión de carrito",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 76,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:118:34",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 34,
+                          "line": 118
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 116 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${getResponse.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 117 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 118 |\u001b[39m     expect(getResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 119 |\u001b[39m     \n \u001b[90m 120 |\u001b[39m     \u001b[36mconst\u001b[39m cartData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m getResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 121 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Carrito obtenido: ${cartData.items?.length || 0} items`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 34,
+                            "line": 118
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n\u001b[0m \u001b[90m 116 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${getResponse.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 117 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 118 |\u001b[39m     expect(getResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 119 |\u001b[39m     \n \u001b[90m 120 |\u001b[39m     \u001b[36mconst\u001b[39m cartData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m getResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 121 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Carrito obtenido: ${cartData.items?.length || 0} items`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:118:34\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API de carrito...\n"
+                        },
+                        {
+                          "text": "📊 Status: 401\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-27T20:26:47.953Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 34,
+                        "line": 118
+                      }
+                    },
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 114,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:118:34",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 34,
+                          "line": 118
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 116 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${getResponse.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 117 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 118 |\u001b[39m     expect(getResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 119 |\u001b[39m     \n \u001b[90m 120 |\u001b[39m     \u001b[36mconst\u001b[39m cartData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m getResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 121 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Carrito obtenido: ${cartData.items?.length || 0} items`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 34,
+                            "line": 118
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m401\u001b[39m\n\n\u001b[0m \u001b[90m 116 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${getResponse.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 117 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 118 |\u001b[39m     expect(getResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 119 |\u001b[39m     \n \u001b[90m 120 |\u001b[39m     \u001b[36mconst\u001b[39m cartData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m getResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 121 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Carrito obtenido: ${cartData.items?.length || 0} items`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:118:34\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API de carrito...\n"
+                        },
+                        {
+                          "text": "📊 Status: 401\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-09-27T20:26:48.586Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\api-public-APIs-Públicas---04c12-i-cart---Gestión-de-carrito-api-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 34,
+                        "line": 118
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f23913d47f057f6079dd-1b612d46e7645051d584",
+              "file": "api-public.spec.ts",
+              "line": 110,
+              "column": 7
+            },
+            {
+              "title": "API /api/trending - Productos trending",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 69,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:136:31",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 31,
+                          "line": 136
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 134 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${response.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 135 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 136 |\u001b[39m     expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 137 |\u001b[39m     \n \u001b[90m 138 |\u001b[39m     \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 139 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Productos trending: ${data.trending?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 31,
+                            "line": 136
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 134 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${response.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 135 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 136 |\u001b[39m     expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 137 |\u001b[39m     \n \u001b[90m 138 |\u001b[39m     \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 139 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Productos trending: ${data.trending?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:136:31\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API de productos trending...\n"
+                        },
+                        {
+                          "text": "📊 Status: 404\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-27T20:26:49.253Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 31,
+                        "line": 136
+                      }
+                    },
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 91,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:136:31",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 31,
+                          "line": 136
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 134 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${response.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 135 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 136 |\u001b[39m     expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 137 |\u001b[39m     \n \u001b[90m 138 |\u001b[39m     \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 139 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Productos trending: ${data.trending?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 31,
+                            "line": 136
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 134 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 Status: ${response.status()}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 135 |\u001b[39m     \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 136 |\u001b[39m     expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 137 |\u001b[39m     \n \u001b[90m 138 |\u001b[39m     \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 139 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m`✅ Productos trending: ${data.trending?.length || 0}`\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:136:31\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando API de productos trending...\n"
+                        },
+                        {
+                          "text": "📊 Status: 404\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-09-27T20:26:49.846Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\api-public-APIs-Públicas---19a76-ending---Productos-trending-api-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 31,
+                        "line": 136
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f23913d47f057f6079dd-0537e5b735a79828306a",
+              "file": "api-public.spec.ts",
+              "line": 129,
+              "column": 7
+            },
+            {
+              "title": "Flujo completo: Buscar → Seleccionar → Agregar al carrito",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 80,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:150:37",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 37,
+                          "line": 150
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 148 |\u001b[39m     \u001b[90m// 1. Buscar productos\u001b[39m\n \u001b[90m 149 |\u001b[39m     \u001b[36mconst\u001b[39m searchResponse \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39m\u001b[36mget\u001b[39m(\u001b[32m'/api/search?q=pintura'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 150 |\u001b[39m     expect(searchResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 151 |\u001b[39m     \n \u001b[90m 152 |\u001b[39m     \u001b[36mconst\u001b[39m searchData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m searchResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 153 |\u001b[39m     \u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 37,
+                            "line": 150
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 148 |\u001b[39m     \u001b[90m// 1. Buscar productos\u001b[39m\n \u001b[90m 149 |\u001b[39m     \u001b[36mconst\u001b[39m searchResponse \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39m\u001b[36mget\u001b[39m(\u001b[32m'/api/search?q=pintura'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 150 |\u001b[39m     expect(searchResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 151 |\u001b[39m     \n \u001b[90m 152 |\u001b[39m     \u001b[36mconst\u001b[39m searchData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m searchResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 153 |\u001b[39m     \u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:150:37\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando flujo completo de compra...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-27T20:26:50.489Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 37,
+                        "line": 150
+                      }
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 100,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:150:37",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 37,
+                          "line": 150
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 148 |\u001b[39m     \u001b[90m// 1. Buscar productos\u001b[39m\n \u001b[90m 149 |\u001b[39m     \u001b[36mconst\u001b[39m searchResponse \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39m\u001b[36mget\u001b[39m(\u001b[32m'/api/search?q=pintura'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 150 |\u001b[39m     expect(searchResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 151 |\u001b[39m     \n \u001b[90m 152 |\u001b[39m     \u001b[36mconst\u001b[39m searchData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m searchResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 153 |\u001b[39m     \u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 37,
+                            "line": 150
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 148 |\u001b[39m     \u001b[90m// 1. Buscar productos\u001b[39m\n \u001b[90m 149 |\u001b[39m     \u001b[36mconst\u001b[39m searchResponse \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39m\u001b[36mget\u001b[39m(\u001b[32m'/api/search?q=pintura'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 150 |\u001b[39m     expect(searchResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 151 |\u001b[39m     \n \u001b[90m 152 |\u001b[39m     \u001b[36mconst\u001b[39m searchData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m searchResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 153 |\u001b[39m     \u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:150:37\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando flujo completo de compra...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-09-27T20:26:51.152Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\api-public-APIs-Públicas---ef051-cionar-→-Agregar-al-carrito-api-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 37,
+                        "line": 150
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f23913d47f057f6079dd-50f14841bc898ce1fd86",
+              "file": "api-public.spec.ts",
+              "line": 145,
+              "column": 7
+            },
+            {
+              "title": "Verificar performance de APIs públicas",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 574,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:206:33",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 33,
+                          "line": 206
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 204 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 ${api}: ${response.status()} - ${duration}ms`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 205 |\u001b[39m       \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 206 |\u001b[39m       expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 207 |\u001b[39m       expect(duration)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m5000\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Máximo 5 segundos\u001b[39m\n \u001b[90m 208 |\u001b[39m       \n \u001b[90m 209 |\u001b[39m       \u001b[36mif\u001b[39m (duration \u001b[33m>\u001b[39m \u001b[35m1000\u001b[39m) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 33,
+                            "line": 206
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 204 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 ${api}: ${response.status()} - ${duration}ms`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 205 |\u001b[39m       \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 206 |\u001b[39m       expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 207 |\u001b[39m       expect(duration)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m5000\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Máximo 5 segundos\u001b[39m\n \u001b[90m 208 |\u001b[39m       \n \u001b[90m 209 |\u001b[39m       \u001b[36mif\u001b[39m (duration \u001b[33m>\u001b[39m \u001b[35m1000\u001b[39m) {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:206:33\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando performance de APIs...\n"
+                        },
+                        {
+                          "text": "📊 /api/products: 200 - 243ms\n"
+                        },
+                        {
+                          "text": "📊 /api/categories: 200 - 273ms\n"
+                        },
+                        {
+                          "text": "📊 /api/trending: 404 - 41ms\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-27T20:26:51.803Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 33,
+                        "line": 206
+                      }
+                    },
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 678,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:206:33",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                          "column": 33,
+                          "line": 206
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 204 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 ${api}: ${response.status()} - ${duration}ms`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 205 |\u001b[39m       \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 206 |\u001b[39m       expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 207 |\u001b[39m       expect(duration)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m5000\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Máximo 5 segundos\u001b[39m\n \u001b[90m 208 |\u001b[39m       \n \u001b[90m 209 |\u001b[39m       \u001b[36mif\u001b[39m (duration \u001b[33m>\u001b[39m \u001b[35m1000\u001b[39m) {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                            "column": 33,
+                            "line": 206
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 204 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m`📊 ${api}: ${response.status()} - ${duration}ms`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 205 |\u001b[39m       \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 206 |\u001b[39m       expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 207 |\u001b[39m       expect(duration)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m5000\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Máximo 5 segundos\u001b[39m\n \u001b[90m 208 |\u001b[39m       \n \u001b[90m 209 |\u001b[39m       \u001b[36mif\u001b[39m (duration \u001b[33m>\u001b[39m \u001b[35m1000\u001b[39m) {\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts:206:33\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando performance de APIs...\n"
+                        },
+                        {
+                          "text": "📊 /api/products: 200 - 291ms\n"
+                        },
+                        {
+                          "text": "📊 /api/categories: 200 - 301ms\n"
+                        },
+                        {
+                          "text": "📊 /api/trending: 404 - 51ms\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-09-27T20:26:52.954Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\api-public-APIs-Públicas---85481-erformance-de-APIs-públicas-api-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\api-public.spec.ts",
+                        "column": 33,
+                        "line": 206
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "f23913d47f057f6079dd-1ab9511d1caddbf4b636",
+              "file": "api-public.spec.ts",
+              "line": 189,
+              "column": 7
+            },
+            {
+              "title": "Verificar headers de respuesta",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "api-public",
+                  "projectName": "api-public",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 248,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testeando headers de respuesta...\n"
+                        },
+                        {
+                          "text": "✅ Headers verificados\n"
+                        },
+                        {
+                          "text": "🔒 X-Frame-Options: DENY\n"
+                        },
+                        {
+                          "text": "🔒 X-Content-Type-Options: nosniff\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-27T20:26:54.158Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f23913d47f057f6079dd-8714147348e929edf3f4",
+              "file": "api-public.spec.ts",
+              "line": 215,
               "column": 7
             }
           ]
@@ -430,11 +1198,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-09-21T01:09:50.056Z",
-    "duration": 53420.564,
-    "expected": 0,
+    "startTime": "2025-09-27T20:26:39.977Z",
+    "duration": 14480.78,
+    "expected": 2,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 7,
     "flaky": 0
   }
 }

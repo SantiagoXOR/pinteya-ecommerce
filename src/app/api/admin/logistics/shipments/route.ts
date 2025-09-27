@@ -11,6 +11,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/config';
 import { createClient } from '@/lib/integrations/supabase/server';
+import { Database } from '@/types/database';
 import { z } from 'zod';
 import { 
   CreateShipmentRequest, 
@@ -106,7 +107,7 @@ function generateShipmentNumber(): string {
   return `SH${dateStr}${randomStr}`;
 }
 
-async function validateOrderExists(supabase: any, orderId: number): Promise<boolean> {
+async function validateOrderExists(supabase: ReturnType<typeof createClient<Database>>, orderId: number): Promise<boolean> {
   const { data, error } = await supabase
     .from('orders')
     .select('id')
@@ -117,7 +118,7 @@ async function validateOrderExists(supabase: any, orderId: number): Promise<bool
 }
 
 async function createShipmentItems(
-  supabase: any, 
+  supabase: ReturnType<typeof createClient<Database>>, 
   shipmentId: number, 
   items: CreateShipmentRequest['items']
 ): Promise<void> {

@@ -156,27 +156,29 @@ export function calculateShipping(
 /**
  * Validates cart item structure
  */
-export function validateCartItem(item: any): boolean {
+export function validateCartItem(item: unknown): boolean {
   if (!item || typeof item !== 'object') {
     return false
   }
   
+  const cartItem = item as Record<string, unknown>;
+  
   // Required fields
-  if (!item.id || !item.name || !item.price || !item.quantity) {
+  if (!cartItem.id || !cartItem.name || !cartItem.price || !cartItem.quantity) {
     return false
   }
   
   // Validate types
-  if (typeof item.price !== 'number' || item.price <= 0) {
+  if (typeof cartItem.price !== 'number' || cartItem.price <= 0) {
     return false
   }
   
-  if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+  if (typeof cartItem.quantity !== 'number' || cartItem.quantity <= 0) {
     return false
   }
   
   // Validate stock if provided
-  if (item.stock !== undefined && item.quantity > item.stock) {
+  if (cartItem.stock !== undefined && typeof cartItem.stock === 'number' && cartItem.quantity > cartItem.stock) {
     return false
   }
   
@@ -200,7 +202,7 @@ export function sanitizeInput(input: string | null | undefined): string {
 /**
  * Debounce function for search inputs
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {

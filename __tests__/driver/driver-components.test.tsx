@@ -1,3 +1,16 @@
+interface MockSession {
+  data: {
+    user: { email: string; name: string };
+  };
+  status: 'authenticated' | 'loading' | 'unauthenticated';
+}
+
+interface MockRouter {
+  push: jest.MockedFunction<(url: string) => void>;
+  replace: jest.MockedFunction<(url: string) => void>;
+  back: jest.MockedFunction<() => void>;
+}
+
 /**
  * Tests unitarios para los componentes del sistema de drivers
  * Verifica la funcionalidad de todos los componentes React
@@ -81,13 +94,13 @@ describe('Driver Components Unit Tests', () => {
         user: { email: 'carlos@pinteya.com', name: 'Carlos Rodríguez' }
       },
       status: 'authenticated'
-    } as any);
+    } as MockSession);
 
     mockUseRouter.mockReturnValue({
       push: jest.fn(),
       replace: jest.fn(),
       back: jest.fn()
-    } as any);
+    } as MockRouter);
 
     mockUseDriver.mockReturnValue({
       state: mockDriverState,

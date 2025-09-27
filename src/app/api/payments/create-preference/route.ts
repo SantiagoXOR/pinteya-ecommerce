@@ -281,7 +281,7 @@ export async function POST(request: NextRequest) {
       price: number;
       discounted_price: number | null;
       stock: number;
-      images: any;
+      images: string[] | null;
       category: {
         name: string;
         slug: string;
@@ -539,7 +539,7 @@ export async function POST(request: NextRequest) {
     // Agregar headers de rate limiting a la respuesta exitosa
     return addRateLimitHeaders(response, rateLimitResult, rateLimitConfig);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     // ✅ MEJORADO: Logging estructurado de errores
     const processingTime = Date.now() - requestStart;
 

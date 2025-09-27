@@ -314,7 +314,7 @@ describe('LogisticsMap Component', () => {
     const invalidShipments = [
       { ...mockShipment, id: null },
       { ...mockShipment, status: 'invalid_status' }
-    ] as any;
+    ] as Partial<typeof mockShipment>[];
 
     expect(() => {
       renderWithProviders(

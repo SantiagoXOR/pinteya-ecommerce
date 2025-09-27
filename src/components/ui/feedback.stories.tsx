@@ -52,9 +52,10 @@ export default meta
 
 export const ToastExamples: StoryObj = {
   render: () => {
-    const [toasts, setToasts] = useState<Array<{ id: number; variant: any; title: string; description: string }>>([]);
+    type ToastVariant = 'default' | 'destructive' | 'success' | 'warning' | 'info';
+    const [toasts, setToasts] = useState<Array<{ id: number; variant: ToastVariant; title: string; description: string }>>([]);
 
-    const addToast = (variant: any, title: string, description: string) => {
+    const addToast = (variant: ToastVariant, title: string, description: string) => {
       const id = Date.now();
       setToasts(prev => [...prev, { id, variant, title, description }]);
     };

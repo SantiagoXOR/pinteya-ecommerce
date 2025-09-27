@@ -257,7 +257,7 @@ async function getTopProducts(dateFrom: string, dateTo: string) {
       .eq('orders.status', 'completed');
 
     // Agrupar por producto
-    const productStats = data?.reduce((acc: any, item) => {
+    const productStats = data?.reduce((acc: Record<string, any>, item) => {
       const productId = item.product_id;
       if (!acc[productId]) {
         acc[productId] = {
@@ -273,7 +273,7 @@ async function getTopProducts(dateFrom: string, dateTo: string) {
     }, {}) || {};
 
     return Object.values(productStats)
-      .sort((a: any, b: any) => b.revenue - a.revenue)
+      .sort((a: { revenue: number }, b: { revenue: number }) => b.revenue - a.revenue)
       .slice(0, 10);
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error obteniendo top productos', { error });
@@ -305,7 +305,7 @@ async function getTopCategories(dateFrom: string, dateTo: string) {
       .eq('orders.status', 'completed');
 
     // Agrupar por categoría
-    const categoryStats = data?.reduce((acc: any, item) => {
+    const categoryStats = data?.reduce((acc: Record<string, any>, item) => {
       const categoryId = item.products.category_id;
       const categoryName = item.products.categories?.name;
       if (!categoryId || !categoryName) {return acc;}
@@ -324,7 +324,7 @@ async function getTopCategories(dateFrom: string, dateTo: string) {
     }, {}) || {};
 
     return Object.values(categoryStats)
-      .sort((a: any, b: any) => b.revenue - a.revenue)
+      .sort((a: { revenue: number }, b: { revenue: number }) => b.revenue - a.revenue)
       .slice(0, 10);
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error obteniendo top categorías', { error });

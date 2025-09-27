@@ -5,16 +5,29 @@
 
 import { seoOptimizationTools, SEOOptimizationTools } from '@/lib/seo/seo-optimization-tools';
 
+interface MockElement {
+  getAttribute: (attr: string) => string | null;
+  textContent?: string;
+}
+
+interface MockDocument {
+  querySelectorAll: (selector: string) => MockElement[];
+  body?: {
+    textContent?: string;
+    innerHTML?: string;
+  };
+}
+
 // Mock DOM Parser para tests
 global.DOMParser = class DOMParser {
   parseFromString(html: string, type: string) {
     // Simulación básica de DOM parsing
-    const mockDoc = {
+    const mockDoc: MockDocument = {
       body: {
         textContent: html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
       },
       querySelectorAll: (selector: string) => {
-        const matches: any[] = [];
+        const matches: MockElement[] = [];
         
         if (selector === 'h1') {
           const h1Matches = html.match(/<h1[^>]*>/g);
@@ -59,7 +72,7 @@ global.DOMParser = class DOMParser {
       }
     };
     
-    return mockDoc as any;
+    return mockDoc as MockDocument;
   }
 };
 

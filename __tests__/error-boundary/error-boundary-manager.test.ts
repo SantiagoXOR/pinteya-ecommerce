@@ -338,7 +338,7 @@ describe('ErrorBoundaryManager - Métricas y Reportes', () => {
 
       errorBoundaryManager.reportError(error, { componentStack: '' }, {
         errorId: `error-${index}`,
-        level: errorData.level as any,
+        level: errorData.level as 'page' | 'section' | 'component',
         component: errorData.component,
         retryCount: 0
       });

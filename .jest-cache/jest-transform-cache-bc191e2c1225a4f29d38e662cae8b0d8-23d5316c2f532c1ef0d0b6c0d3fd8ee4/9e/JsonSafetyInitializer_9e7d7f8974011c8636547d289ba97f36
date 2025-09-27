@@ -1,0 +1,337 @@
+82f1e6e9fe54b7e8bf16251a8d150368
+"use client";
+"use strict";
+
+/* istanbul ignore next */
+function cov_1rcromsyjd() {
+  var path = "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\components\\JsonSafetyInitializer.tsx";
+  var hash = "03a8e7344d0c2e274a9a73e0570845cf300002c2";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\components\\JsonSafetyInitializer.tsx",
+    statementMap: {
+      "0": {
+        start: {
+          line: 3,
+          column: 0
+        },
+        end: {
+          line: 5,
+          column: 3
+        }
+      },
+      "1": {
+        start: {
+          line: 6,
+          column: 0
+        },
+        end: {
+          line: 14,
+          column: 3
+        }
+      },
+      "2": {
+        start: {
+          line: 12,
+          column: 8
+        },
+        end: {
+          line: 12,
+          column: 37
+        }
+      },
+      "3": {
+        start: {
+          line: 15,
+          column: 15
+        },
+        end: {
+          line: 15,
+          column: 31
+        }
+      },
+      "4": {
+        start: {
+          line: 16,
+          column: 19
+        },
+        end: {
+          line: 16,
+          column: 47
+        }
+      },
+      "5": {
+        start: {
+          line: 17,
+          column: 27
+        },
+        end: {
+          line: 17,
+          column: 64
+        }
+      },
+      "6": {
+        start: {
+          line: 19,
+          column: 4
+        },
+        end: {
+          line: 26,
+          column: 11
+        }
+      },
+      "7": {
+        start: {
+          line: 21,
+          column: 8
+        },
+        end: {
+          line: 21,
+          column: 47
+        }
+      },
+      "8": {
+        start: {
+          line: 23,
+          column: 8
+        },
+        end: {
+          line: 25,
+          column: 9
+        }
+      },
+      "9": {
+        start: {
+          line: 24,
+          column: 12
+        },
+        end: {
+          line: 24,
+          column: 56
+        }
+      },
+      "10": {
+        start: {
+          line: 28,
+          column: 4
+        },
+        end: {
+          line: 28,
+          column: 16
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 11,
+            column: 9
+          },
+          end: {
+            line: 11,
+            column: 10
+          }
+        },
+        loc: {
+          start: {
+            line: 11,
+            column: 20
+          },
+          end: {
+            line: 13,
+            column: 5
+          }
+        },
+        line: 11
+      },
+      "1": {
+        name: "JsonSafetyInitializer",
+        decl: {
+          start: {
+            line: 18,
+            column: 9
+          },
+          end: {
+            line: 18,
+            column: 30
+          }
+        },
+        loc: {
+          start: {
+            line: 18,
+            column: 33
+          },
+          end: {
+            line: 29,
+            column: 1
+          }
+        },
+        line: 18
+      },
+      "2": {
+        name: "(anonymous_2)",
+        decl: {
+          start: {
+            line: 19,
+            column: 26
+          },
+          end: {
+            line: 19,
+            column: 27
+          }
+        },
+        loc: {
+          start: {
+            line: 19,
+            column: 30
+          },
+          end: {
+            line: 26,
+            column: 5
+          }
+        },
+        line: 19
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 23,
+            column: 8
+          },
+          end: {
+            line: 25,
+            column: 9
+          }
+        },
+        type: "if",
+        locations: [{
+          start: {
+            line: 23,
+            column: 8
+          },
+          end: {
+            line: 25,
+            column: 9
+          }
+        }, {
+          start: {
+            line: undefined,
+            column: undefined
+          },
+          end: {
+            line: undefined,
+            column: undefined
+          }
+        }],
+        line: 23
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0,
+      "2": 0
+    },
+    b: {
+      "0": [0, 0]
+    },
+    inputSourceMap: {
+      version: 3,
+      sources: ["C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\components\\JsonSafetyInitializer.tsx"],
+      sourcesContent: ["\"use client\";\r\n\r\nimport { useEffect } from 'react';\r\nimport { initializeJsonSafety } from '@/lib/json-utils';\r\nimport { setupDebugHelpers } from '@/utils/cleanLocalStorage';\r\n\r\n/**\r\n * Componente que inicializa la limpieza de localStorage corrupto\r\n * Se ejecuta una vez al cargar la aplicaci\xF3n\r\n */\r\nexport default function JsonSafetyInitializer() {\r\n  useEffect(() => {\r\n    // Ejecutar limpieza de localStorage corrupto\r\n    initializeJsonSafety();\r\n\r\n    // Configurar helpers de debug en desarrollo\r\n    if (process.env.NODE_ENV === 'development') {\r\n      setupDebugHelpers();\r\n    }\r\n  }, []);\r\n\r\n  // Este componente no renderiza nada\r\n  return null;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"],
+      names: ["JsonSafetyInitializer", "useEffect", "initializeJsonSafety", "process", "env", "NODE_ENV", "setupDebugHelpers"],
+      mappings: "AAAA;;;;;+BAMA;;;CAGC,GACD;;;eAAwBA;;;uBARE;2BACW;mCACH;AAMnB,SAASA;IACtBC,IAAAA,gBAAS,EAAC;QACR,6CAA6C;QAC7CC,IAAAA,+BAAoB;QAEpB,4CAA4C;QAC5C,IAAIC,QAAQC,GAAG,CAACC,QAAQ,KAAK,eAAe;YAC1CC,IAAAA,oCAAiB;QACnB;IACF,GAAG,EAAE;IAEL,oCAAoC;IACpC,OAAO;AACT"
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "03a8e7344d0c2e274a9a73e0570845cf300002c2"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1rcromsyjd = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1rcromsyjd();
+cov_1rcromsyjd().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_1rcromsyjd().s[1]++;
+Object.defineProperty(exports,
+/**
+* Componente que inicializa la limpieza de localStorage corrupto
+* Se ejecuta una vez al cargar la aplicación
+*/
+"default", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_1rcromsyjd().f[0]++;
+    cov_1rcromsyjd().s[2]++;
+    return JsonSafetyInitializer;
+  }
+});
+const _react =
+/* istanbul ignore next */
+(cov_1rcromsyjd().s[3]++, require("react"));
+const _jsonutils =
+/* istanbul ignore next */
+(cov_1rcromsyjd().s[4]++, require("../lib/json-utils"));
+const _cleanLocalStorage =
+/* istanbul ignore next */
+(cov_1rcromsyjd().s[5]++, require("../utils/cleanLocalStorage"));
+function JsonSafetyInitializer() {
+  /* istanbul ignore next */
+  cov_1rcromsyjd().f[1]++;
+  cov_1rcromsyjd().s[6]++;
+  (0, _react.useEffect)(() => {
+    /* istanbul ignore next */
+    cov_1rcromsyjd().f[2]++;
+    cov_1rcromsyjd().s[7]++;
+    // Ejecutar limpieza de localStorage corrupto
+    (0, _jsonutils.initializeJsonSafety)();
+    // Configurar helpers de debug en desarrollo
+    /* istanbul ignore next */
+    cov_1rcromsyjd().s[8]++;
+    if (process.env.NODE_ENV === 'development') {
+      /* istanbul ignore next */
+      cov_1rcromsyjd().b[0][0]++;
+      cov_1rcromsyjd().s[9]++;
+      (0, _cleanLocalStorage.setupDebugHelpers)();
+    } else
+    /* istanbul ignore next */
+    {
+      cov_1rcromsyjd().b[0][1]++;
+    }
+  }, []);
+  // Este componente no renderiza nada
+  /* istanbul ignore next */
+  cov_1rcromsyjd().s[10]++;
+  return null;
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJKc29uU2FmZXR5SW5pdGlhbGl6ZXIiLCJjb3ZfMXJjcm9tc3lqZCIsImYiLCJzIiwiX3JlYWN0IiwidXNlRWZmZWN0IiwiX2pzb251dGlscyIsImluaXRpYWxpemVKc29uU2FmZXR5IiwicHJvY2VzcyIsImVudiIsIk5PREVfRU5WIiwiYiIsIl9jbGVhbkxvY2FsU3RvcmFnZSIsInNldHVwRGVidWdIZWxwZXJzIl0sInNvdXJjZXMiOlsiQzpcXFVzZXJzXFxtYXJ0aVxcRGVza3RvcFxcREVTQVJST0xMT1NXXFxCT0lMRVJQTEFUVEUgRS1DT01NRVJDRVxcc3JjXFxjb21wb25lbnRzXFxKc29uU2FmZXR5SW5pdGlhbGl6ZXIudHN4Il0sInNvdXJjZXNDb250ZW50IjpbIlwidXNlIGNsaWVudFwiO1xyXG5cclxuaW1wb3J0IHsgdXNlRWZmZWN0IH0gZnJvbSAncmVhY3QnO1xyXG5pbXBvcnQgeyBpbml0aWFsaXplSnNvblNhZmV0eSB9IGZyb20gJ0AvbGliL2pzb24tdXRpbHMnO1xyXG5pbXBvcnQgeyBzZXR1cERlYnVnSGVscGVycyB9IGZyb20gJ0AvdXRpbHMvY2xlYW5Mb2NhbFN0b3JhZ2UnO1xyXG5cclxuLyoqXHJcbiAqIENvbXBvbmVudGUgcXVlIGluaWNpYWxpemEgbGEgbGltcGllemEgZGUgbG9jYWxTdG9yYWdlIGNvcnJ1cHRvXHJcbiAqIFNlIGVqZWN1dGEgdW5hIHZleiBhbCBjYXJnYXIgbGEgYXBsaWNhY2nDs25cclxuICovXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIEpzb25TYWZldHlJbml0aWFsaXplcigpIHtcclxuICB1c2VFZmZlY3QoKCkgPT4ge1xyXG4gICAgLy8gRWplY3V0YXIgbGltcGllemEgZGUgbG9jYWxTdG9yYWdlIGNvcnJ1cHRvXHJcbiAgICBpbml0aWFsaXplSnNvblNhZmV0eSgpO1xyXG5cclxuICAgIC8vIENvbmZpZ3VyYXIgaGVscGVycyBkZSBkZWJ1ZyBlbiBkZXNhcnJvbGxvXHJcbiAgICBpZiAocHJvY2Vzcy5lbnYuTk9ERV9FTlYgPT09ICdkZXZlbG9wbWVudCcpIHtcclxuICAgICAgc2V0dXBEZWJ1Z0hlbHBlcnMoKTtcclxuICAgIH1cclxuICB9LCBbXSk7XHJcblxyXG4gIC8vIEVzdGUgY29tcG9uZW50ZSBubyByZW5kZXJpemEgbmFkYVxyXG4gIHJldHVybiBudWxsO1xyXG59XHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcbiJdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBTUE7Ozs7QUFJQTs7Ozs7O1dBQXdCQSxxQkFBQTs7Ozs7a0NBUkU7OztrQ0FDVzs7O2tDQUNIO0FBTW5CLFNBQVNBLHNCQUFBO0VBQUE7RUFBQUMsY0FBQSxHQUFBQyxDQUFBO0VBQUFELGNBQUEsR0FBQUUsQ0FBQTtFQUN0QixJQUFBQyxNQUFBLENBQUFDLFNBQVMsRUFBQztJQUFBO0lBQUFKLGNBQUEsR0FBQUMsQ0FBQTtJQUFBRCxjQUFBLEdBQUFFLENBQUE7SUFDUjtJQUNBLElBQUFHLFVBQUEsQ0FBQUMsb0JBQW9CO0lBRXBCO0lBQUE7SUFBQU4sY0FBQSxHQUFBRSxDQUFBO0lBQ0EsSUFBSUssT0FBQSxDQUFRQyxHQUFHLENBQUNDLFFBQVEsS0FBSyxlQUFlO01BQUE7TUFBQVQsY0FBQSxHQUFBVSxDQUFBO01BQUFWLGNBQUEsR0FBQUUsQ0FBQTtNQUMxQyxJQUFBUyxrQkFBQSxDQUFBQyxpQkFBaUI7SUFDbkI7SUFBQTtJQUFBO01BQUFaLGNBQUEsR0FBQVUsQ0FBQTtJQUFBO0VBQ0YsR0FBRyxFQUFFO0VBRUw7RUFBQTtFQUFBVixjQUFBLEdBQUFFLENBQUE7RUFDQSxPQUFPO0FBQ1QiLCJpZ25vcmVMaXN0IjpbXX0=

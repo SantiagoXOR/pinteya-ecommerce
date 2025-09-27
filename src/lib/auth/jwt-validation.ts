@@ -11,22 +11,49 @@ import type { NextApiRequest } from 'next';
 // TIPOS Y INTERFACES
 // =====================================================
 
+// Tipos específicos para JWT
+export interface JWTPayload {
+  sub?: string;
+  iss?: string;
+  aud?: string | string[];
+  exp?: number;
+  iat?: number;
+  nbf?: number;
+  jti?: string;
+  email?: string;
+  role?: string;
+  permissions?: string[];
+  sessionId?: string;
+  [key: string]: unknown;
+}
+
+export interface JWTMetadata {
+  tokenType?: string;
+  deviceId?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  lastActivity?: number;
+  [key: string]: unknown;
+}
+
+export interface JWTDetails {
+  issuer?: string;
+  audience?: string;
+  expiresAt?: number;
+  issuedAt?: number;
+  notBefore?: number;
+  subject?: string;
+  sessionId?: string;
+  metadata?: JWTMetadata;
+}
+
 export interface JWTValidationResult {
   valid: boolean;
-  payload?: any;
+  payload?: JWTPayload;
   error?: string;
   code?: string;
   severity?: 'low' | 'medium' | 'high' | 'critical';
-  details?: {
-    issuer?: string;
-    audience?: string;
-    expiresAt?: number;
-    issuedAt?: number;
-    notBefore?: number;
-    subject?: string;
-    sessionId?: string;
-    metadata?: any;
-  };
+  details?: JWTDetails;
 }
 
 export interface TokenSecurityChecks {
@@ -38,6 +65,22 @@ export interface TokenSecurityChecks {
   subjectValid: boolean;
   metadataValid: boolean;
   sessionValid: boolean;
+}
+
+export interface RequestWithJWT extends NextRequest {
+  jwtPayload?: JWTPayload;
+  jwtDetails?: JWTDetails;
+}
+
+export interface NextApiRequestWithJWT extends NextApiRequest {
+  jwtPayload?: JWTPayload;
+  jwtDetails?: JWTDetails;
+}
+
+export interface ResponseLike {
+  status: (code: number) => {
+    json: (data: unknown) => unknown;
+  };
 }
 
 // =====================================================
@@ -75,9 +118,6 @@ export async function validateJWTIntegrity(
   request?: NextRequest | NextApiRequest
 ): Promise<JWTValidationResult> {
   try {
-    const token: string | null = null;
-    let payload: any = null;
-
     // NextAuth.js - Obtener sesión en lugar de token JWT
     if (request && 'query' in request) {
       // Pages Router - No soportado con NextAuth.js
@@ -106,10 +146,10 @@ export async function validateJWTIntegrity(
             userId: session.user.id,
             email: session.user.email,
             name: session.user.name
-          },
-          claims: {
-            sub: session.user.id,
-            email: session.user.email
+          } as JWTPayload,
+          details: {
+            subject: session.user.id,
+            issuer: 'nextauth'
           }
         };
       } catch (error) {
@@ -121,96 +161,6 @@ export async function validateJWTIntegrity(
         };
       }
     }
-
-    if (!token) {
-      return {
-        valid: false,
-        error: 'Token JWT no encontrado',
-        code: 'TOKEN_NOT_FOUND',
-        severity: 'high'
-      };
-    }
-
-    // Decodificar token (sin verificar firma - solo para inspección)
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        return {
-          valid: false,
-          error: 'Formato de token JWT inválido',
-          code: 'INVALID_TOKEN_FORMAT',
-          severity: 'high'
-        };
-      }
-
-      const header = JSON.parse(atob(parts[0]));
-      payload = JSON.parse(atob(parts[1]));
-
-      // Validar algoritmo
-      if (!JWT_SECURITY_CONFIG.allowedAlgorithms.includes(header.alg)) {
-        return {
-          valid: false,
-          error: `Algoritmo de token no permitido: ${header.alg}`,
-          code: 'INVALID_ALGORITHM',
-          severity: 'critical'
-        };
-      }
-
-    } catch (decodeError) {
-      return {
-        valid: false,
-        error: 'Error decodificando token JWT',
-        code: 'TOKEN_DECODE_ERROR',
-        severity: 'high'
-      };
-    }
-
-    // Ejecutar verificaciones de seguridad
-    const securityChecks = await performTokenSecurityChecks(payload, token);
-    
-    if (!securityChecks.signatureValid) {
-      return {
-        valid: false,
-        error: 'Firma del token inválida',
-        code: 'INVALID_SIGNATURE',
-        severity: 'critical'
-      };
-    }
-
-    if (!securityChecks.notExpired) {
-      return {
-        valid: false,
-        error: 'Token expirado',
-        code: 'TOKEN_EXPIRED',
-        severity: 'high'
-      };
-    }
-
-    if (!securityChecks.issuerValid) {
-      return {
-        valid: false,
-        error: 'Issuer del token inválido',
-        code: 'INVALID_ISSUER',
-        severity: 'high'
-      };
-    }
-
-    // Token válido
-    return {
-      valid: true,
-      payload,
-      details: {
-        issuer: payload.iss,
-        audience: payload.aud,
-        expiresAt: payload.exp,
-        issuedAt: payload.iat,
-        notBefore: payload.nbf,
-        subject: payload.sub,
-        sessionId: payload.sid,
-        metadata: payload.metadata
-      }
-    };
-
   } catch (error) {
     console.error('[JWT] Error en validación de integridad:', error);
     return {
@@ -276,7 +226,7 @@ export async function validateJWTPermissions(
     const payload = jwtValidation.payload;
     
     // Verificar rol en metadata
-    const userRole = payload.metadata?.role || payload.role;
+    const userRole = payload?.role;
     if (requiredRole && userRole !== requiredRole) {
       return {
         valid: false,
@@ -288,7 +238,7 @@ export async function validateJWTPermissions(
 
     // Verificar permisos específicos si se proporcionan
     if (requiredPermissions.length > 0) {
-      const userPermissions = payload.metadata?.permissions || [];
+      const userPermissions = payload?.permissions || [];
       const hasAllPermissions = requiredPermissions.every(
         permission => userPermissions.includes(permission)
       );
@@ -343,7 +293,7 @@ export function withJWTValidation(
 
           if ('query' in request) {
             // Pages Router
-            const res = args[0] as any;
+            const res = args[0] as ResponseLike;
             return res.status(401).json(errorResponse);
           } else {
             // App Router
@@ -372,7 +322,7 @@ export function withJWTValidation(
 
             if ('query' in request) {
               // Pages Router
-              const res = args[0] as any;
+              const res = args[0] as ResponseLike;
               return res.status(403).json(errorResponse);
             } else {
               // App Router
@@ -385,9 +335,10 @@ export function withJWTValidation(
         }
 
         // Añadir información del JWT al request
-        (request as any).jwtPayload = jwtValidation.payload;
-        (request as any).jwtDetails = jwtValidation.details;
+        (request as RequestWithJWT).jwtPayload = jwtValidation.payload;
+        (request as RequestWithJWT).jwtDetails = jwtValidation.details;
 
+        // Continuar con el handler original
         return handler(request, ...args);
 
       } catch (error) {
@@ -401,7 +352,7 @@ export function withJWTValidation(
 
         if ('query' in request) {
           // Pages Router
-          const res = args[0] as any;
+          const res = args[0] as ResponseLike;
           return res.status(500).json(errorResponse);
         } else {
           // App Router

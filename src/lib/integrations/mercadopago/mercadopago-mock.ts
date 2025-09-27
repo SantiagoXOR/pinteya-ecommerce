@@ -79,10 +79,21 @@ export async function createMockPreference(data: any): Promise<MockPreferenceRes
   return mockResult;
 }
 
+// Interfaz para datos de tarjeta
+interface CardData {
+  cardNumber?: string;
+  securityCode?: string;
+  expirationMonth?: string;
+  expirationYear?: string;
+  cardholderName?: string;
+  identificationType?: string;
+  identificationNumber?: string;
+}
+
 /**
  * Mock de procesamiento de pago
  */
-export async function processMockPayment(preferenceId: string, cardData: any): Promise<MockPaymentResult> {
+export async function processMockPayment(preferenceId: string, cardData: CardData): Promise<MockPaymentResult> {
   console.log('🧪 MOCK: Procesando pago de prueba...');
   
   await delay(MOCK_CONFIG.networkDelay * 2); // Simular procesamiento más lento

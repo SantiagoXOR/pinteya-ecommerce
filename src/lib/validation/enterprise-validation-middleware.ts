@@ -10,7 +10,8 @@ import {
   EnterpriseValidator,
   ENTERPRISE_VALIDATION_CONFIGS,
   type EnterpriseValidationConfig,
-  type ValidationResult
+  type ValidationResult,
+  type ValidationError
 } from './enterprise-validation-system';
 import { getEnterpriseAuthContext } from '@/lib/auth/enterprise-auth-utils';
 import type { EnterpriseAuthContext } from '@/lib/auth/enterprise-auth-utils';
@@ -26,26 +27,51 @@ export interface ValidationMiddlewareOptions {
   configName?: keyof typeof ENTERPRISE_VALIDATION_CONFIGS;
   customConfig?: EnterpriseValidationConfig;
   skipValidation?: (request: NextRequest | NextApiRequest) => boolean;
-  onValidationError?: (errors: any[], request: NextRequest | NextApiRequest) => void;
+  onValidationError?: (errors: ValidationError[], request: NextRequest | NextApiRequest) => void;
   enableContextValidation?: boolean;
   strictMode?: boolean;
 }
 
 export interface ValidatedRequest extends NextRequest {
-  validatedBody?: any;
-  validatedQuery?: any;
-  validatedParams?: any;
-  validationMetadata?: any;
+  validatedBody?: unknown;
+  validatedQuery?: Record<string, unknown>;
+  validatedParams?: Record<string, string>;
+  validationMetadata?: ValidationMetadata;
   enterpriseContext?: EnterpriseAuthContext;
 }
 
 export interface ValidatedApiRequest extends NextApiRequest {
-  validatedBody?: any;
-  validatedQuery?: any;
-  validatedParams?: any;
-  validationMetadata?: any;
+  validatedBody?: unknown;
+  validatedQuery?: Record<string, unknown>;
+  validatedParams?: Record<string, string>;
+  validationMetadata?: ValidationMetadata;
   enterpriseContext?: EnterpriseAuthContext;
 }
+
+export interface ValidationMetadata {
+  body?: ValidationResult<unknown>['metadata'];
+  query?: ValidationResult<unknown>['metadata'];
+  params?: ValidationResult<unknown>['metadata'];
+}
+
+export interface ValidationErrorResponse {
+  success: false;
+  error: string;
+  code: string;
+  details: ValidationError[];
+  timestamp: string;
+  path: string;
+}
+
+export type ValidationMiddlewareHandler = (
+  request: NextRequest,
+  context?: { params?: Record<string, string> }
+) => Promise<NextResponse>;
+
+export type ApiValidationMiddlewareHandler = (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => Promise<void>;
 
 // =====================================================
 // MIDDLEWARE PARA NEXT.JS APP ROUTER
@@ -54,25 +80,22 @@ export interface ValidatedApiRequest extends NextApiRequest {
 /**
  * Middleware de validación para Next.js App Router
  */
-export function withEnterpriseValidation(options: ValidationMiddlewareOptions) {
-  return function <T extends any[]>(
-    handler: (request: ValidatedRequest, ...args: T) => Promise<NextResponse> | NextResponse
-  ) {
-    return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
+export function withEnterpriseValidation(options: ValidationMiddlewareOptions = {}) {
+  return function (handler: ValidationMiddlewareHandler) {
+    return async function (request: NextRequest, context?: { params?: Record<string, string> }): Promise<NextResponse> {
       try {
-        // Verificar si debe saltarse la validación
+        // 1. Verificar si se debe omitir validación
         if (options.skipValidation && options.skipValidation(request)) {
-          return await handler(request as ValidatedRequest, ...args);
+          return await handler(request, context);
         }
 
-        // Obtener configuración de validación
+        // 2. Obtener configuración de validación
         const config = options.customConfig || 
-                      (options.configName ? ENTERPRISE_VALIDATION_CONFIGS[options.configName] : 
-                       ENTERPRISE_VALIDATION_CONFIGS.STANDARD_PUBLIC);
-
+                      (options.configName ? ENTERPRISE_VALIDATION_CONFIGS[options.configName] : ENTERPRISE_VALIDATION_CONFIGS.STANDARD_PUBLIC);
+        
         const validator = new EnterpriseValidator(config);
-
-        // Obtener contexto enterprise si está habilitado
+        
+        // 3. Obtener contexto de autenticación enterprise
         let enterpriseContext: EnterpriseAuthContext | undefined;
         if (options.enableContextValidation) {
           try {
@@ -87,14 +110,18 @@ export function withEnterpriseValidation(options: ValidationMiddlewareOptions) {
           }
         }
 
+        // 4. Crear request validado
         const validatedRequest = request as ValidatedRequest;
-        const validationResults: any = {};
-        const allErrors: any[] = [];
+        validatedRequest.enterpriseContext = enterpriseContext;
+        
+        const validationResults: ValidationMetadata = {};
+        const allErrors: ValidationError[] = [];
 
-        // 1. Validar body si hay schema
-        if (options.bodySchema && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
+        // 5. Validar body si hay schema
+        if (options.bodySchema && ['POST', 'PUT', 'PATCH'].includes(request.method || '')) {
           try {
             const body = await request.json();
+            
             const bodyValidation = await validator.validateAndSanitize(
               options.bodySchema,
               body,
@@ -113,19 +140,19 @@ export function withEnterpriseValidation(options: ValidationMiddlewareOptions) {
               field: 'body',
               message: 'Error parsing JSON body',
               code: 'INVALID_JSON',
-              severity: 'high'
+              severity: 'high' as const
             });
           }
         }
 
-        // 2. Validar query parameters si hay schema
+        // 6. Validar query parameters si hay schema
         if (options.querySchema) {
-          const url = new URL(request.url);
-          const queryParams = Object.fromEntries(url.searchParams.entries());
+          const { searchParams } = new URL(request.url);
+          const queryData = Object.fromEntries(searchParams.entries());
           
           const queryValidation = await validator.validateAndSanitize(
             options.querySchema,
-            queryParams,
+            queryData,
             enterpriseContext,
             request
           );
@@ -138,28 +165,24 @@ export function withEnterpriseValidation(options: ValidationMiddlewareOptions) {
           }
         }
 
-        // 3. Validar params si hay schema
-        if (options.paramsSchema) {
-          // Extraer params de la URL (esto requeriría configuración adicional)
-          // Por ahora, asumimos que los params están disponibles en el contexto
-          const params = (request as any).params || {};
-          
+        // 7. Validar params si hay schema
+        if (options.paramsSchema && context?.params) {
           const paramsValidation = await validator.validateAndSanitize(
             options.paramsSchema,
-            params,
+            context.params,
             enterpriseContext,
             request
           );
 
           if (paramsValidation.success) {
-            validatedRequest.validatedParams = paramsValidation.data;
+            validatedRequest.validatedParams = paramsValidation.data as Record<string, string>;
             validationResults.params = paramsValidation.metadata;
           } else {
             allErrors.push(...(paramsValidation.errors || []));
           }
         }
 
-        // 4. Verificar errores de validación
+        // 8. Verificar errores de validación
         if (allErrors.length > 0) {
           // Callback personalizado para errores
           if (options.onValidationError) {
@@ -169,42 +192,43 @@ export function withEnterpriseValidation(options: ValidationMiddlewareOptions) {
           // Logging de errores
           console.warn('[VALIDATION_MIDDLEWARE] Errores de validación:', allErrors);
 
-          // Respuesta de error
-          return NextResponse.json(
-            {
-              error: 'Errores de validación',
-              code: 'VALIDATION_FAILED',
-              details: allErrors.map(err => ({
-                field: err.field,
-                message: err.message,
-                code: err.code
-              })),
-              enterprise: true,
-              timestamp: new Date().toISOString()
-            },
-            { status: 400 }
-          );
+          // Respuesta de error tipada
+          const errorResponse: ValidationErrorResponse = {
+            success: false,
+            error: 'Errores de validación encontrados',
+            code: 'VALIDATION_FAILED',
+            details: allErrors,
+            timestamp: new Date().toISOString(),
+            path: request.url
+          };
+
+          return NextResponse.json(errorResponse, { status: 400 });
         }
 
-        // 5. Añadir metadatos de validación
+        // 9. Agregar metadata de validación
         validatedRequest.validationMetadata = validationResults;
-        validatedRequest.enterpriseContext = enterpriseContext;
 
-        // 6. Ejecutar handler original
-        return await handler(validatedRequest, ...args);
+        // 10. Ejecutar handler con request validado
+        return await handler(validatedRequest, context);
 
       } catch (error) {
-        console.error('[VALIDATION_MIDDLEWARE] Error:', error);
+        console.error('[VALIDATION_MIDDLEWARE] Error interno:', error);
         
-        return NextResponse.json(
-          {
-            error: 'Error interno en validación',
-            code: 'VALIDATION_ERROR',
-            enterprise: true,
-            timestamp: new Date().toISOString()
-          },
-          { status: 500 }
-        );
+        const errorResponse: ValidationErrorResponse = {
+          success: false,
+          error: 'Error interno del middleware de validación',
+          code: 'VALIDATION_MIDDLEWARE_ERROR',
+          details: [{
+            field: 'general',
+            message: error instanceof Error ? error.message : 'Error desconocido',
+            code: 'INTERNAL_ERROR',
+            severity: 'critical' as const
+          }],
+          timestamp: new Date().toISOString(),
+          path: request.url
+        };
+
+        return NextResponse.json(errorResponse, { status: 500 });
       }
     };
   };

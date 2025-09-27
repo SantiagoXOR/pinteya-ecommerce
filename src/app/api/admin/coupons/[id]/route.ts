@@ -219,8 +219,8 @@ async function getCouponById(couponId: string, includeUsage: boolean = false): P
   const processedCoupon: CouponData = {
     ...coupon,
     status,
-    categories: coupon.categories?.map((cc: any) => cc.category) || [],
-    products: coupon.products?.map((cp: any) => cp.product) || []
+    categories: coupon.categories?.map((cc: { category: unknown }) => cc.category) || [],
+      products: coupon.products?.map((cp: { product: unknown }) => cp.product) || []
   };
 
   // Incluir historial de uso si se solicita

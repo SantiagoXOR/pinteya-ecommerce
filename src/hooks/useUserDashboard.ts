@@ -3,48 +3,18 @@
 // ===================================
 
 import { useState, useEffect } from 'react';
-import { UserProfile } from './useUserProfile';
-import { UserAddress } from './useUserAddresses';
-import { UserOrder } from './useUserOrders';
+import { DashboardData, UseUserDashboardReturn } from '@/types/hooks';
 
-export interface DashboardStatistics {
-  total_orders: number;
-  total_spent: number;
-  pending_orders: number;
-  completed_orders: number;
-  shipped_orders: number;
-  total_addresses: number;
-}
+// ===================================
+// INTERFACES
+// ===================================
+// Interfaces movidas a @/types/hooks para reutilización
 
-export interface MonthlySpending {
-  month: string;
-  amount: number;
-}
-
-export interface TopProduct {
-  product: {
-    name: string;
-    images: any;
-    price: string;
-  };
-  total_quantity: number;
-  total_orders: number;
-}
-
-export interface DashboardData {
-  user: UserProfile;
-  statistics: DashboardStatistics;
-  recent_orders: UserOrder[];
-  monthly_spending: MonthlySpending[];
-  top_products: TopProduct[];
-  addresses: UserAddress[];
-}
-
-export interface UseUserDashboardReturn {
-  dashboard: DashboardData | null;
+interface UseUserDashboardReturn {
+  data: DashboardData | null;
   loading: boolean;
   error: string | null;
-  refreshDashboard: () => void;
+  refreshDashboard: () => Promise<void>;
 }
 
 export function useUserDashboard(): UseUserDashboardReturn {

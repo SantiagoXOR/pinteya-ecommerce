@@ -3,9 +3,19 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { CheckoutFlow } from '../checkout-flow'
 
+interface ShippingInfoProps {
+  options: string[];
+  selectedOption: string;
+}
+
+interface CartSummaryProps {
+  cartItems: Array<{ id: number; title: string; price: number; quantity: number }>;
+  variant: string;
+}
+
 // Mock de los componentes del Design System
 jest.mock('../shipping-info', () => ({
-  ShippingInfo: ({ options, selectedOption }: any) => (
+  ShippingInfo: ({ options, selectedOption }: ShippingInfoProps) => (
     <div data-testid="shipping-info">
       Shipping options for: {selectedOption}
     </div>
@@ -13,7 +23,7 @@ jest.mock('../shipping-info', () => ({
 }))
 
 jest.mock('../cart-summary', () => ({
-  CartSummary: ({ cartItems, variant }: any) => (
+  CartSummary: ({ cartItems, variant }: CartSummaryProps) => (
     <div data-testid="cart-summary">
       Cart Summary - {cartItems.length} items - {variant}
     </div>

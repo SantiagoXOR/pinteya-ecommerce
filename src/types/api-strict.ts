@@ -208,13 +208,27 @@ export interface StrictOrderDetailResponse {
 }
 
 // ===================================
+// TIPOS GENÉRICOS PARA VALIDACIÓN
+// ===================================
+
+/**
+ * Tipo genérico para objetos que pueden ser validados
+ */
+type ValidatableObject = Record<string, any> | null;
+
+/**
+ * Tipo genérico para respuestas de API no tipadas
+ */
+type UntypedApiResponse = Record<string, any> | null;
+
+// ===================================
 // VALIDADORES DE TIPOS
 // ===================================
 
 /**
  * Validador para verificar si un objeto es una respuesta de API válida
  */
-export function isStrictApiResponse<T>(obj: unknown): obj is StrictApiResponse<T> {
+export function isStrictApiResponse<T>(obj: ValidatableObject): obj is StrictApiResponse<T> {
   return (
     typeof obj === 'object' &&
     obj !== null &&
@@ -222,62 +236,59 @@ export function isStrictApiResponse<T>(obj: unknown): obj is StrictApiResponse<T
     obj.success === true &&
     'data' in obj &&
     'timestamp' in obj &&
-    typeof (obj as any).timestamp === 'string'
+    typeof obj.timestamp === 'string'
   );
 }
 
 /**
  * Validador para verificar si un objeto es un error de API válido
  */
-export function isStrictApiError(obj: unknown): obj is StrictApiError {
+export function isStrictApiError(obj: ValidatableObject): obj is StrictApiError {
   return (
     typeof obj === 'object' &&
     obj !== null &&
     'success' in obj &&
     obj.success === false &&
     'error' in obj &&
-    typeof (obj as any).error === 'string' &&
+    typeof obj.error === 'string' &&
     'timestamp' in obj &&
-    typeof (obj as any).timestamp === 'string'
+    typeof obj.timestamp === 'string'
   );
 }
 
 /**
  * Validador para verificar si una paginación es válida
  */
-export function isValidPagination(obj: unknown): obj is StrictPagination {
+export function isValidPagination(obj: ValidatableObject): obj is StrictPagination {
   if (typeof obj !== 'object' || obj === null) {return false;}
   
-  const pagination = obj as any;
   return (
-    typeof pagination.page === 'number' &&
-    typeof pagination.limit === 'number' &&
-    typeof pagination.total === 'number' &&
-    typeof pagination.totalPages === 'number' &&
-    typeof pagination.hasNextPage === 'boolean' &&
-    typeof pagination.hasPreviousPage === 'boolean' &&
-    pagination.page > 0 &&
-    pagination.limit > 0 &&
-    pagination.total >= 0 &&
-    pagination.totalPages >= 0
+    typeof obj.page === 'number' &&
+    typeof obj.limit === 'number' &&
+    typeof obj.total === 'number' &&
+    typeof obj.totalPages === 'number' &&
+    typeof obj.hasNextPage === 'boolean' &&
+    typeof obj.hasPreviousPage === 'boolean' &&
+    obj.page > 0 &&
+    obj.limit > 0 &&
+    obj.total >= 0 &&
+    obj.totalPages >= 0
   );
 }
 
 /**
  * Validador para verificar si una orden es válida (versión más flexible)
  */
-export function isValidStrictOrder(obj: unknown): obj is StrictOrderEnterprise {
+export function isValidStrictOrder(obj: ValidatableObject): obj is StrictOrderEnterprise {
   if (typeof obj !== 'object' || obj === null) {
     return false;
   }
   
-  const order = obj as any;
-  
   // Validaciones mínimas - solo campos absolutamente esenciales
-  const hasId = order.id && (typeof order.id === 'string' || typeof order.id === 'number');
-  const hasTotal = typeof order.total === 'number' && order.total >= 0;
-  const hasCreatedAt = order.created_at && typeof order.created_at === 'string';
-  const hasStatus = order.status && typeof order.status === 'string';
+  const hasId = obj.id && (typeof obj.id === 'string' || typeof obj.id === 'number');
+  const hasTotal = typeof obj.total === 'number' && obj.total >= 0;
+  const hasCreatedAt = obj.created_at && typeof obj.created_at === 'string';
+  const hasStatus = obj.status && typeof obj.status === 'string';
   
   // Solo requerir los campos absolutamente esenciales
   return hasId && hasTotal && hasCreatedAt && hasStatus;
@@ -290,7 +301,7 @@ export function isValidStrictOrder(obj: unknown): obj is StrictOrderEnterprise {
 /**
  * Transforma una respuesta de API no tipada a una respuesta estricta
  */
-export function toStrictOrdersResponse(obj: unknown): StrictOrdersListResponse | StrictApiError {
+export function toStrictOrdersResponse(obj: UntypedApiResponse): StrictOrdersListResponse | StrictApiError {
   try {
     if (!isStrictApiResponse(obj)) {
       return {

@@ -1,0 +1,304 @@
+ca6504bc4a34f7ec5b914e1e0e890013
+"use strict";
+
+/* istanbul ignore next */
+function cov_1cpflep2df() {
+  var path = "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\types\\database.ts";
+  var hash = "4c0398758930766198e0346e4d940d0c7237351f";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\types\\database.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 3
+        }
+      },
+      "1": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 10,
+          column: 3
+        }
+      },
+      "2": {
+        start: {
+          line: 8,
+          column: 8
+        },
+        end: {
+          line: 8,
+          column: 27
+        }
+      },
+      "3": {
+        start: {
+          line: 12,
+          column: 4
+        },
+        end: {
+          line: 14,
+          column: 5
+        }
+      },
+      "4": {
+        start: {
+          line: 13,
+          column: 8
+        },
+        end: {
+          line: 13,
+          column: 54
+        }
+      },
+      "5": {
+        start: {
+          line: 15,
+          column: 4
+        },
+        end: {
+          line: 15,
+          column: 55
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 7,
+            column: 9
+          },
+          end: {
+            line: 7,
+            column: 10
+          }
+        },
+        loc: {
+          start: {
+            line: 7,
+            column: 20
+          },
+          end: {
+            line: 9,
+            column: 5
+          }
+        },
+        line: 7
+      },
+      "1": {
+        name: "getFullName",
+        decl: {
+          start: {
+            line: 11,
+            column: 9
+          },
+          end: {
+            line: 11,
+            column: 20
+          }
+        },
+        loc: {
+          start: {
+            line: 11,
+            column: 27
+          },
+          end: {
+            line: 16,
+            column: 1
+          }
+        },
+        line: 11
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 12,
+            column: 4
+          },
+          end: {
+            line: 14,
+            column: 5
+          }
+        },
+        type: "if",
+        locations: [{
+          start: {
+            line: 12,
+            column: 4
+          },
+          end: {
+            line: 14,
+            column: 5
+          }
+        }, {
+          start: {
+            line: undefined,
+            column: undefined
+          },
+          end: {
+            line: undefined,
+            column: undefined
+          }
+        }],
+        line: 12
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 12,
+            column: 8
+          },
+          end: {
+            line: 12,
+            column: 41
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 12,
+            column: 8
+          },
+          end: {
+            line: 12,
+            column: 23
+          }
+        }, {
+          start: {
+            line: 12,
+            column: 27
+          },
+          end: {
+            line: 12,
+            column: 41
+          }
+        }],
+        line: 12
+      },
+      "2": {
+        loc: {
+          start: {
+            line: 15,
+            column: 11
+          },
+          end: {
+            line: 15,
+            column: 54
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 15,
+            column: 11
+          },
+          end: {
+            line: 15,
+            column: 26
+          }
+        }, {
+          start: {
+            line: 15,
+            column: 30
+          },
+          end: {
+            line: 15,
+            column: 54
+          }
+        }],
+        line: 15
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0
+    },
+    b: {
+      "0": [0, 0],
+      "1": [0, 0],
+      "2": [0, 0]
+    },
+    inputSourceMap: {
+      version: 3,
+      sources: ["C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\types\\database.ts"],
+      sourcesContent: ["import { UserMetadata, ProductMetadata } from './hooks';\r\n\r\n// ===================================\r\n// PINTEYA E-COMMERCE - TIPOS DE BASE DE DATOS\r\n// ===================================\r\n\r\nexport interface Database {\r\n  public: {\r\n    Tables: {\r\n      user_profiles: {\r\n        Row: {\r\n          id: string;\r\n          email: string;\r\n          first_name: string | null;\r\n          last_name: string | null;\r\n          role_id: string | null;\r\n          is_active: boolean;\r\n          metadata: UserMetadata; // Reemplaza 'any' con UserMetadata\r\n          created_at: string;\r\n          updated_at: string;\r\n        };\r\n        Insert: {\r\n          id?: string;\r\n          email: string;\r\n          first_name?: string | null;\r\n          last_name?: string | null;\r\n          role_id?: string | null;\r\n          is_active?: boolean;\r\n          metadata?: UserMetadata;\r\n          created_at?: string;\r\n          updated_at?: string;\r\n        };\r\n        Update: {\r\n          id?: string;\r\n          email?: string;\r\n          first_name?: string | null;\r\n          last_name?: string | null;\r\n          role_id?: string | null;\r\n          is_active?: boolean;\r\n          metadata?: UserMetadata;\r\n          updated_at?: string;\r\n        };\r\n      };\r\n      categories: {\r\n        Row: {\r\n          id: number;\r\n          name: string;\r\n          slug: string;\r\n          description: string | null;\r\n          icon: string | null;\r\n          created_at: string;\r\n          updated_at: string | null;\r\n          products_count?: number; // Campo calculado desde la API\r\n        };\r\n        Insert: {\r\n          id?: number;\r\n          name: string;\r\n          slug: string;\r\n          description?: string | null;\r\n          icon?: string | null;\r\n          created_at?: string;\r\n          updated_at?: string | null;\r\n        };\r\n        Update: {\r\n          id?: number;\r\n          name?: string;\r\n          slug?: string;\r\n          description?: string | null;\r\n          icon?: string | null;\r\n          created_at?: string;\r\n          updated_at?: string | null;\r\n        };\r\n      };\r\n      products: {\r\n        Row: {\r\n          id: number;\r\n          name: string;\r\n          brand: string | null;\r\n          slug: string;\r\n          description: string | null;\r\n          price: number;\r\n          discounted_price: number | null;\r\n          stock: number;\r\n          category_id: number | null;\r\n          images: ProductMetadata | null; // Reemplaza 'any' con ProductMetadata\r\n          created_at: string;\r\n          updated_at: string | null;\r\n        };\r\n        Insert: {\r\n          id?: number;\r\n          name: string;\r\n          brand?: string | null;\r\n          slug: string;\r\n          description?: string | null;\r\n          price: number;\r\n          discounted_price?: number | null;\r\n          stock?: number;\r\n          category_id?: number | null;\r\n          images?: ProductMetadata | null;\r\n          created_at?: string;\r\n          updated_at?: string | null;\r\n        };\r\n        Update: {\r\n          id?: number;\r\n          name?: string;\r\n          brand?: string | null;\r\n          slug?: string;\r\n          description?: string | null;\r\n          price?: number;\r\n          discounted_price?: number | null;\r\n          stock?: number;\r\n          category_id?: number | null;\r\n          images?: ProductMetadata | null;\r\n          created_at?: string;\r\n          updated_at?: string | null;\r\n        };\r\n      };\r\n      orders: {\r\n        Row: {\r\n          id: number;\r\n          user_id: string;\r\n          total: number;\r\n          status: string;\r\n          payment_id: string | null;\r\n          created_at: string;\r\n        };\r\n        Insert: {\r\n          id?: number;\r\n          user_id: string;\r\n          total: number;\r\n          status?: string;\r\n          payment_id?: string | null;\r\n          created_at?: string;\r\n        };\r\n        Update: {\r\n          id?: number;\r\n          user_id?: string;\r\n          total?: number;\r\n          status?: string;\r\n          payment_id?: string | null;\r\n          created_at?: string;\r\n        };\r\n      };\r\n      order_items: {\r\n        Row: {\r\n          id: number;\r\n          order_id: number;\r\n          product_id: number;\r\n          quantity: number;\r\n          price: number;\r\n        };\r\n        Insert: {\r\n          id?: number;\r\n          order_id: number;\r\n          product_id: number;\r\n          quantity: number;\r\n          price: number;\r\n        };\r\n        Update: {\r\n          id?: number;\r\n          order_id?: number;\r\n          product_id?: number;\r\n          quantity?: number;\r\n          price?: number;\r\n        };\r\n      };\r\n    };\r\n  };\r\n}\r\n\r\n// Tipos auxiliares\r\nexport type UserProfile = Database['public']['Tables']['user_profiles']['Row'];\r\nexport type Category = Database['public']['Tables']['categories']['Row'];\r\nexport type Product = Database['public']['Tables']['products']['Row'];\r\nexport type Order = Database['public']['Tables']['orders']['Row'];\r\nexport type OrderItem = Database['public']['Tables']['order_items']['Row'];\r\n\r\n// Tipos para inserci\xF3n\r\nexport type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert'];\r\nexport type CategoryInsert = Database['public']['Tables']['categories']['Insert'];\r\nexport type ProductInsert = Database['public']['Tables']['products']['Insert'];\r\nexport type OrderInsert = Database['public']['Tables']['orders']['Insert'];\r\nexport type OrderItemInsert = Database['public']['Tables']['order_items']['Insert'];\r\n\r\n// Tipos para actualizaci\xF3n\r\nexport type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update'];\r\nexport type CategoryUpdate = Database['public']['Tables']['categories']['Update'];\r\nexport type ProductUpdate = Database['public']['Tables']['products']['Update'];\r\nexport type OrderUpdate = Database['public']['Tables']['orders']['Update'];\r\nexport type OrderItemUpdate = Database['public']['Tables']['order_items']['Update'];\r\n\r\n// Funci\xF3n helper para nombre completo\r\nexport function getFullName(user: UserProfile): string {\r\n  if (user.first_name && user.last_name) {\r\n    return `${user.first_name} ${user.last_name}`;\r\n  }\r\n  return user.first_name || user.email.split('@')[0];\r\n}\r\n\r\n// Compatibilidad legacy (deprecated)\r\nexport type User = UserProfile;\r\nexport type UserInsert = UserProfileInsert;\r\nexport type UserUpdate = UserProfileUpdate;\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"],
+      names: ["getFullName", "user", "first_name", "last_name", "email", "split"],
+      mappings: ";;;;+BAgMgBA;;;eAAAA;;;AAAT,SAASA,YAAYC,IAAiB;IAC3C,IAAIA,KAAKC,UAAU,IAAID,KAAKE,SAAS,EAAE;QACrC,OAAO,GAAGF,KAAKC,UAAU,CAAC,CAAC,EAAED,KAAKE,SAAS,EAAE;IAC/C;IACA,OAAOF,KAAKC,UAAU,IAAID,KAAKG,KAAK,CAACC,KAAK,CAAC,IAAI,CAAC,EAAE;AACpD"
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "4c0398758930766198e0346e4d940d0c7237351f"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1cpflep2df = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1cpflep2df();
+cov_1cpflep2df().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_1cpflep2df().s[1]++;
+Object.defineProperty(exports, "getFullName", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_1cpflep2df().f[0]++;
+    cov_1cpflep2df().s[2]++;
+    return getFullName;
+  }
+});
+function getFullName(user) {
+  /* istanbul ignore next */
+  cov_1cpflep2df().f[1]++;
+  cov_1cpflep2df().s[3]++;
+  if (
+  /* istanbul ignore next */
+  (cov_1cpflep2df().b[1][0]++, user.first_name) &&
+  /* istanbul ignore next */
+  (cov_1cpflep2df().b[1][1]++, user.last_name)) {
+    /* istanbul ignore next */
+    cov_1cpflep2df().b[0][0]++;
+    cov_1cpflep2df().s[4]++;
+    return `${user.first_name} ${user.last_name}`;
+  } else
+  /* istanbul ignore next */
+  {
+    cov_1cpflep2df().b[0][1]++;
+  }
+  cov_1cpflep2df().s[5]++;
+  return /* istanbul ignore next */(cov_1cpflep2df().b[2][0]++, user.first_name) ||
+  /* istanbul ignore next */
+  (cov_1cpflep2df().b[2][1]++, user.email.split('@')[0]);
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMWNwZmxlcDJkZiIsImFjdHVhbENvdmVyYWdlIiwicyIsImdldEZ1bGxOYW1lIiwidXNlciIsImYiLCJiIiwiZmlyc3RfbmFtZSIsImxhc3RfbmFtZSIsImVtYWlsIiwic3BsaXQiXSwic291cmNlcyI6WyJDOlxcVXNlcnNcXG1hcnRpXFxEZXNrdG9wXFxERVNBUlJPTExPU1dcXEJPSUxFUlBMQVRURSBFLUNPTU1FUkNFXFxzcmNcXHR5cGVzXFxkYXRhYmFzZS50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBVc2VyTWV0YWRhdGEsIFByb2R1Y3RNZXRhZGF0YSB9IGZyb20gJy4vaG9va3MnO1xyXG5cclxuLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cclxuLy8gUElOVEVZQSBFLUNPTU1FUkNFIC0gVElQT1MgREUgQkFTRSBERSBEQVRPU1xyXG4vLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxyXG5cclxuZXhwb3J0IGludGVyZmFjZSBEYXRhYmFzZSB7XHJcbiAgcHVibGljOiB7XHJcbiAgICBUYWJsZXM6IHtcclxuICAgICAgdXNlcl9wcm9maWxlczoge1xyXG4gICAgICAgIFJvdzoge1xyXG4gICAgICAgICAgaWQ6IHN0cmluZztcclxuICAgICAgICAgIGVtYWlsOiBzdHJpbmc7XHJcbiAgICAgICAgICBmaXJzdF9uYW1lOiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgbGFzdF9uYW1lOiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgcm9sZV9pZDogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIGlzX2FjdGl2ZTogYm9vbGVhbjtcclxuICAgICAgICAgIG1ldGFkYXRhOiBVc2VyTWV0YWRhdGE7IC8vIFJlZW1wbGF6YSAnYW55JyBjb24gVXNlck1ldGFkYXRhXHJcbiAgICAgICAgICBjcmVhdGVkX2F0OiBzdHJpbmc7XHJcbiAgICAgICAgICB1cGRhdGVkX2F0OiBzdHJpbmc7XHJcbiAgICAgICAgfTtcclxuICAgICAgICBJbnNlcnQ6IHtcclxuICAgICAgICAgIGlkPzogc3RyaW5nO1xyXG4gICAgICAgICAgZW1haWw6IHN0cmluZztcclxuICAgICAgICAgIGZpcnN0X25hbWU/OiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgbGFzdF9uYW1lPzogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIHJvbGVfaWQ/OiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgaXNfYWN0aXZlPzogYm9vbGVhbjtcclxuICAgICAgICAgIG1ldGFkYXRhPzogVXNlck1ldGFkYXRhO1xyXG4gICAgICAgICAgY3JlYXRlZF9hdD86IHN0cmluZztcclxuICAgICAgICAgIHVwZGF0ZWRfYXQ/OiBzdHJpbmc7XHJcbiAgICAgICAgfTtcclxuICAgICAgICBVcGRhdGU6IHtcclxuICAgICAgICAgIGlkPzogc3RyaW5nO1xyXG4gICAgICAgICAgZW1haWw/OiBzdHJpbmc7XHJcbiAgICAgICAgICBmaXJzdF9uYW1lPzogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIGxhc3RfbmFtZT86IHN0cmluZyB8IG51bGw7XHJcbiAgICAgICAgICByb2xlX2lkPzogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIGlzX2FjdGl2ZT86IGJvb2xlYW47XHJcbiAgICAgICAgICBtZXRhZGF0YT86IFVzZXJNZXRhZGF0YTtcclxuICAgICAgICAgIHVwZGF0ZWRfYXQ/OiBzdHJpbmc7XHJcbiAgICAgICAgfTtcclxuICAgICAgfTtcclxuICAgICAgY2F0ZWdvcmllczoge1xyXG4gICAgICAgIFJvdzoge1xyXG4gICAgICAgICAgaWQ6IG51bWJlcjtcclxuICAgICAgICAgIG5hbWU6IHN0cmluZztcclxuICAgICAgICAgIHNsdWc6IHN0cmluZztcclxuICAgICAgICAgIGRlc2NyaXB0aW9uOiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgaWNvbjogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIGNyZWF0ZWRfYXQ6IHN0cmluZztcclxuICAgICAgICAgIHVwZGF0ZWRfYXQ6IHN0cmluZyB8IG51bGw7XHJcbiAgICAgICAgICBwcm9kdWN0c19jb3VudD86IG51bWJlcjsgLy8gQ2FtcG8gY2FsY3VsYWRvIGRlc2RlIGxhIEFQSVxyXG4gICAgICAgIH07XHJcbiAgICAgICAgSW5zZXJ0OiB7XHJcbiAgICAgICAgICBpZD86IG51bWJlcjtcclxuICAgICAgICAgIG5hbWU6IHN0cmluZztcclxuICAgICAgICAgIHNsdWc6IHN0cmluZztcclxuICAgICAgICAgIGRlc2NyaXB0aW9uPzogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIGljb24/OiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgY3JlYXRlZF9hdD86IHN0cmluZztcclxuICAgICAgICAgIHVwZGF0ZWRfYXQ/OiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgIH07XHJcbiAgICAgICAgVXBkYXRlOiB7XHJcbiAgICAgICAgICBpZD86IG51bWJlcjtcclxuICAgICAgICAgIG5hbWU/OiBzdHJpbmc7XHJcbiAgICAgICAgICBzbHVnPzogc3RyaW5nO1xyXG4gICAgICAgICAgZGVzY3JpcHRpb24/OiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgaWNvbj86IHN0cmluZyB8IG51bGw7XHJcbiAgICAgICAgICBjcmVhdGVkX2F0Pzogc3RyaW5nO1xyXG4gICAgICAgICAgdXBkYXRlZF9hdD86IHN0cmluZyB8IG51bGw7XHJcbiAgICAgICAgfTtcclxuICAgICAgfTtcclxuICAgICAgcHJvZHVjdHM6IHtcclxuICAgICAgICBSb3c6IHtcclxuICAgICAgICAgIGlkOiBudW1iZXI7XHJcbiAgICAgICAgICBuYW1lOiBzdHJpbmc7XHJcbiAgICAgICAgICBicmFuZDogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIHNsdWc6IHN0cmluZztcclxuICAgICAgICAgIGRlc2NyaXB0aW9uOiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgcHJpY2U6IG51bWJlcjtcclxuICAgICAgICAgIGRpc2NvdW50ZWRfcHJpY2U6IG51bWJlciB8IG51bGw7XHJcbiAgICAgICAgICBzdG9jazogbnVtYmVyO1xyXG4gICAgICAgICAgY2F0ZWdvcnlfaWQ6IG51bWJlciB8IG51bGw7XHJcbiAgICAgICAgICBpbWFnZXM6IFByb2R1Y3RNZXRhZGF0YSB8IG51bGw7IC8vIFJlZW1wbGF6YSAnYW55JyBjb24gUHJvZHVjdE1ldGFkYXRhXHJcbiAgICAgICAgICBjcmVhdGVkX2F0OiBzdHJpbmc7XHJcbiAgICAgICAgICB1cGRhdGVkX2F0OiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgIH07XHJcbiAgICAgICAgSW5zZXJ0OiB7XHJcbiAgICAgICAgICBpZD86IG51bWJlcjtcclxuICAgICAgICAgIG5hbWU6IHN0cmluZztcclxuICAgICAgICAgIGJyYW5kPzogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIHNsdWc6IHN0cmluZztcclxuICAgICAgICAgIGRlc2NyaXB0aW9uPzogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIHByaWNlOiBudW1iZXI7XHJcbiAgICAgICAgICBkaXNjb3VudGVkX3ByaWNlPzogbnVtYmVyIHwgbnVsbDtcclxuICAgICAgICAgIHN0b2NrPzogbnVtYmVyO1xyXG4gICAgICAgICAgY2F0ZWdvcnlfaWQ/OiBudW1iZXIgfCBudWxsO1xyXG4gICAgICAgICAgaW1hZ2VzPzogUHJvZHVjdE1ldGFkYXRhIHwgbnVsbDtcclxuICAgICAgICAgIGNyZWF0ZWRfYXQ/OiBzdHJpbmc7XHJcbiAgICAgICAgICB1cGRhdGVkX2F0Pzogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICB9O1xyXG4gICAgICAgIFVwZGF0ZToge1xyXG4gICAgICAgICAgaWQ/OiBudW1iZXI7XHJcbiAgICAgICAgICBuYW1lPzogc3RyaW5nO1xyXG4gICAgICAgICAgYnJhbmQ/OiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgc2x1Zz86IHN0cmluZztcclxuICAgICAgICAgIGRlc2NyaXB0aW9uPzogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIHByaWNlPzogbnVtYmVyO1xyXG4gICAgICAgICAgZGlzY291bnRlZF9wcmljZT86IG51bWJlciB8IG51bGw7XHJcbiAgICAgICAgICBzdG9jaz86IG51bWJlcjtcclxuICAgICAgICAgIGNhdGVnb3J5X2lkPzogbnVtYmVyIHwgbnVsbDtcclxuICAgICAgICAgIGltYWdlcz86IFByb2R1Y3RNZXRhZGF0YSB8IG51bGw7XHJcbiAgICAgICAgICBjcmVhdGVkX2F0Pzogc3RyaW5nO1xyXG4gICAgICAgICAgdXBkYXRlZF9hdD86IHN0cmluZyB8IG51bGw7XHJcbiAgICAgICAgfTtcclxuICAgICAgfTtcclxuICAgICAgb3JkZXJzOiB7XHJcbiAgICAgICAgUm93OiB7XHJcbiAgICAgICAgICBpZDogbnVtYmVyO1xyXG4gICAgICAgICAgdXNlcl9pZDogc3RyaW5nO1xyXG4gICAgICAgICAgdG90YWw6IG51bWJlcjtcclxuICAgICAgICAgIHN0YXR1czogc3RyaW5nO1xyXG4gICAgICAgICAgcGF5bWVudF9pZDogc3RyaW5nIHwgbnVsbDtcclxuICAgICAgICAgIGNyZWF0ZWRfYXQ6IHN0cmluZztcclxuICAgICAgICB9O1xyXG4gICAgICAgIEluc2VydDoge1xyXG4gICAgICAgICAgaWQ/OiBudW1iZXI7XHJcbiAgICAgICAgICB1c2VyX2lkOiBzdHJpbmc7XHJcbiAgICAgICAgICB0b3RhbDogbnVtYmVyO1xyXG4gICAgICAgICAgc3RhdHVzPzogc3RyaW5nO1xyXG4gICAgICAgICAgcGF5bWVudF9pZD86IHN0cmluZyB8IG51bGw7XHJcbiAgICAgICAgICBjcmVhdGVkX2F0Pzogc3RyaW5nO1xyXG4gICAgICAgIH07XHJcbiAgICAgICAgVXBkYXRlOiB7XHJcbiAgICAgICAgICBpZD86IG51bWJlcjtcclxuICAgICAgICAgIHVzZXJfaWQ/OiBzdHJpbmc7XHJcbiAgICAgICAgICB0b3RhbD86IG51bWJlcjtcclxuICAgICAgICAgIHN0YXR1cz86IHN0cmluZztcclxuICAgICAgICAgIHBheW1lbnRfaWQ/OiBzdHJpbmcgfCBudWxsO1xyXG4gICAgICAgICAgY3JlYXRlZF9hdD86IHN0cmluZztcclxuICAgICAgICB9O1xyXG4gICAgICB9O1xyXG4gICAgICBvcmRlcl9pdGVtczoge1xyXG4gICAgICAgIFJvdzoge1xyXG4gICAgICAgICAgaWQ6IG51bWJlcjtcclxuICAgICAgICAgIG9yZGVyX2lkOiBudW1iZXI7XHJcbiAgICAgICAgICBwcm9kdWN0X2lkOiBudW1iZXI7XHJcbiAgICAgICAgICBxdWFudGl0eTogbnVtYmVyO1xyXG4gICAgICAgICAgcHJpY2U6IG51bWJlcjtcclxuICAgICAgICB9O1xyXG4gICAgICAgIEluc2VydDoge1xyXG4gICAgICAgICAgaWQ/OiBudW1iZXI7XHJcbiAgICAgICAgICBvcmRlcl9pZDogbnVtYmVyO1xyXG4gICAgICAgICAgcHJvZHVjdF9pZDogbnVtYmVyO1xyXG4gICAgICAgICAgcXVhbnRpdHk6IG51bWJlcjtcclxuICAgICAgICAgIHByaWNlOiBudW1iZXI7XHJcbiAgICAgICAgfTtcclxuICAgICAgICBVcGRhdGU6IHtcclxuICAgICAgICAgIGlkPzogbnVtYmVyO1xyXG4gICAgICAgICAgb3JkZXJfaWQ/OiBudW1iZXI7XHJcbiAgICAgICAgICBwcm9kdWN0X2lkPzogbnVtYmVyO1xyXG4gICAgICAgICAgcXVhbnRpdHk/OiBudW1iZXI7XHJcbiAgICAgICAgICBwcmljZT86IG51bWJlcjtcclxuICAgICAgICB9O1xyXG4gICAgICB9O1xyXG4gICAgfTtcclxuICB9O1xyXG59XHJcblxyXG4vLyBUaXBvcyBhdXhpbGlhcmVzXHJcbmV4cG9ydCB0eXBlIFVzZXJQcm9maWxlID0gRGF0YWJhc2VbJ3B1YmxpYyddWydUYWJsZXMnXVsndXNlcl9wcm9maWxlcyddWydSb3cnXTtcclxuZXhwb3J0IHR5cGUgQ2F0ZWdvcnkgPSBEYXRhYmFzZVsncHVibGljJ11bJ1RhYmxlcyddWydjYXRlZ29yaWVzJ11bJ1JvdyddO1xyXG5leHBvcnQgdHlwZSBQcm9kdWN0ID0gRGF0YWJhc2VbJ3B1YmxpYyddWydUYWJsZXMnXVsncHJvZHVjdHMnXVsnUm93J107XHJcbmV4cG9ydCB0eXBlIE9yZGVyID0gRGF0YWJhc2VbJ3B1YmxpYyddWydUYWJsZXMnXVsnb3JkZXJzJ11bJ1JvdyddO1xyXG5leHBvcnQgdHlwZSBPcmRlckl0ZW0gPSBEYXRhYmFzZVsncHVibGljJ11bJ1RhYmxlcyddWydvcmRlcl9pdGVtcyddWydSb3cnXTtcclxuXHJcbi8vIFRpcG9zIHBhcmEgaW5zZXJjacOzblxyXG5leHBvcnQgdHlwZSBVc2VyUHJvZmlsZUluc2VydCA9IERhdGFiYXNlWydwdWJsaWMnXVsnVGFibGVzJ11bJ3VzZXJfcHJvZmlsZXMnXVsnSW5zZXJ0J107XHJcbmV4cG9ydCB0eXBlIENhdGVnb3J5SW5zZXJ0ID0gRGF0YWJhc2VbJ3B1YmxpYyddWydUYWJsZXMnXVsnY2F0ZWdvcmllcyddWydJbnNlcnQnXTtcclxuZXhwb3J0IHR5cGUgUHJvZHVjdEluc2VydCA9IERhdGFiYXNlWydwdWJsaWMnXVsnVGFibGVzJ11bJ3Byb2R1Y3RzJ11bJ0luc2VydCddO1xyXG5leHBvcnQgdHlwZSBPcmRlckluc2VydCA9IERhdGFiYXNlWydwdWJsaWMnXVsnVGFibGVzJ11bJ29yZGVycyddWydJbnNlcnQnXTtcclxuZXhwb3J0IHR5cGUgT3JkZXJJdGVtSW5zZXJ0ID0gRGF0YWJhc2VbJ3B1YmxpYyddWydUYWJsZXMnXVsnb3JkZXJfaXRlbXMnXVsnSW5zZXJ0J107XHJcblxyXG4vLyBUaXBvcyBwYXJhIGFjdHVhbGl6YWNpw7NuXHJcbmV4cG9ydCB0eXBlIFVzZXJQcm9maWxlVXBkYXRlID0gRGF0YWJhc2VbJ3B1YmxpYyddWydUYWJsZXMnXVsndXNlcl9wcm9maWxlcyddWydVcGRhdGUnXTtcclxuZXhwb3J0IHR5cGUgQ2F0ZWdvcnlVcGRhdGUgPSBEYXRhYmFzZVsncHVibGljJ11bJ1RhYmxlcyddWydjYXRlZ29yaWVzJ11bJ1VwZGF0ZSddO1xyXG5leHBvcnQgdHlwZSBQcm9kdWN0VXBkYXRlID0gRGF0YWJhc2VbJ3B1YmxpYyddWydUYWJsZXMnXVsncHJvZHVjdHMnXVsnVXBkYXRlJ107XHJcbmV4cG9ydCB0eXBlIE9yZGVyVXBkYXRlID0gRGF0YWJhc2VbJ3B1YmxpYyddWydUYWJsZXMnXVsnb3JkZXJzJ11bJ1VwZGF0ZSddO1xyXG5leHBvcnQgdHlwZSBPcmRlckl0ZW1VcGRhdGUgPSBEYXRhYmFzZVsncHVibGljJ11bJ1RhYmxlcyddWydvcmRlcl9pdGVtcyddWydVcGRhdGUnXTtcclxuXHJcbi8vIEZ1bmNpw7NuIGhlbHBlciBwYXJhIG5vbWJyZSBjb21wbGV0b1xyXG5leHBvcnQgZnVuY3Rpb24gZ2V0RnVsbE5hbWUodXNlcjogVXNlclByb2ZpbGUpOiBzdHJpbmcge1xyXG4gIGlmICh1c2VyLmZpcnN0X25hbWUgJiYgdXNlci5sYXN0X25hbWUpIHtcclxuICAgIHJldHVybiBgJHt1c2VyLmZpcnN0X25hbWV9ICR7dXNlci5sYXN0X25hbWV9YDtcclxuICB9XHJcbiAgcmV0dXJuIHVzZXIuZmlyc3RfbmFtZSB8fCB1c2VyLmVtYWlsLnNwbGl0KCdAJylbMF07XHJcbn1cclxuXHJcbi8vIENvbXBhdGliaWxpZGFkIGxlZ2FjeSAoZGVwcmVjYXRlZClcclxuZXhwb3J0IHR5cGUgVXNlciA9IFVzZXJQcm9maWxlO1xyXG5leHBvcnQgdHlwZSBVc2VySW5zZXJ0ID0gVXNlclByb2ZpbGVJbnNlcnQ7XHJcbmV4cG9ydCB0eXBlIFVzZXJVcGRhdGUgPSBVc2VyUHJvZmlsZVVwZGF0ZTtcclxuXHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcblxyXG5cclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0lBcU1BO0lBQUFBLGNBQUEsWUFBQUEsQ0FBQTtNQUFBLE9BQUFDLGNBQUE7SUFBQTtFQUFBO0VBQUEsT0FBQUEsY0FBQTtBQUFBO0FBQUFELGNBQUE7QUFBQUEsY0FBQSxHQUFBRSxDQUFBOzs7Ozs7K0JBTGdCOzs7Ozs7V0FBQUMsV0FBQTs7O0FBQVQsU0FBU0EsWUFBWUMsSUFBaUI7RUFBQTtFQUFBSixjQUFBLEdBQUFLLENBQUE7RUFBQUwsY0FBQSxHQUFBRSxDQUFBO0VBQzNDO0VBQUk7RUFBQSxDQUFBRixjQUFBLEdBQUFNLENBQUEsVUFBQUYsSUFBQSxDQUFLRyxVQUFVO0VBQUE7RUFBQSxDQUFBUCxjQUFBLEdBQUFNLENBQUEsVUFBSUYsSUFBQSxDQUFLSSxTQUFTLEdBQUU7SUFBQTtJQUFBUixjQUFBLEdBQUFNLENBQUE7SUFBQU4sY0FBQSxHQUFBRSxDQUFBO0lBQ3JDLE9BQU8sR0FBR0UsSUFBQSxDQUFLRyxVQUFVLElBQUlILElBQUEsQ0FBS0ksU0FBUyxFQUFFO0VBQy9DO0VBQUE7RUFBQTtJQUFBUixjQUFBLEdBQUFNLENBQUE7RUFBQTtFQUFBTixjQUFBLEdBQUFFLENBQUE7RUFDQSxPQUFPLDJCQUFBRixjQUFBLEdBQUFNLENBQUEsVUFBQUYsSUFBQSxDQUFLRyxVQUFVO0VBQUE7RUFBQSxDQUFBUCxjQUFBLEdBQUFNLENBQUEsVUFBSUYsSUFBQSxDQUFLSyxLQUFLLENBQUNDLEtBQUssQ0FBQyxJQUFJLENBQUMsRUFBRTtBQUNwRCIsImlnbm9yZUxpc3QiOltdfQ==

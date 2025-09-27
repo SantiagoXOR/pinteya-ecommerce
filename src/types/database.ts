@@ -1,3 +1,5 @@
+import { UserMetadata, ProductMetadata } from './hooks';
+
 // ===================================
 // PINTEYA E-COMMERCE - TIPOS DE BASE DE DATOS
 // ===================================
@@ -13,7 +15,7 @@ export interface Database {
           last_name: string | null;
           role_id: string | null;
           is_active: boolean;
-          metadata: any; // JSONB
+          metadata: UserMetadata; // Reemplaza 'any' con UserMetadata
           created_at: string;
           updated_at: string;
         };
@@ -24,7 +26,7 @@ export interface Database {
           last_name?: string | null;
           role_id?: string | null;
           is_active?: boolean;
-          metadata?: any;
+          metadata?: UserMetadata;
           created_at?: string;
           updated_at?: string;
         };
@@ -35,7 +37,7 @@ export interface Database {
           last_name?: string | null;
           role_id?: string | null;
           is_active?: boolean;
-          metadata?: any;
+          metadata?: UserMetadata;
           updated_at?: string;
         };
       };
@@ -80,7 +82,7 @@ export interface Database {
           discounted_price: number | null;
           stock: number;
           category_id: number | null;
-          images: any | null; // JSONB
+          images: ProductMetadata | null; // Reemplaza 'any' con ProductMetadata
           created_at: string;
           updated_at: string | null;
         };
@@ -94,7 +96,7 @@ export interface Database {
           discounted_price?: number | null;
           stock?: number;
           category_id?: number | null;
-          images?: any | null;
+          images?: ProductMetadata | null;
           created_at?: string;
           updated_at?: string | null;
         };
@@ -108,7 +110,7 @@ export interface Database {
           discounted_price?: number | null;
           stock?: number;
           category_id?: number | null;
-          images?: any | null;
+          images?: ProductMetadata | null;
           created_at?: string;
           updated_at?: string | null;
         };

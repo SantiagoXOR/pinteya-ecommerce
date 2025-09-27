@@ -8,6 +8,7 @@ import { withApiLogging, logAdminAction } from '@/lib/api/api-logger';
 import { withAdminAuth } from '@/lib/auth/api-auth-middleware';
 import { withValidation } from '@/lib/validation/admin-schemas';
 import { createClient } from '@supabase/supabase-js';
+import { Database } from '@/types/database';
 
 // Validation schemas
 const ImageUpdateSchema = z.object({
@@ -44,7 +45,7 @@ async function deleteImageFromStorage(path: string) {
 }
 
 // Helper function to get image by ID
-async function getImageById(supabase: any, productId: string, imageId: string) {
+async function getImageById(supabase: ReturnType<typeof createClient<Database>>, productId: string, imageId: string) {
   const { data: image, error } = await supabase
     .from('product_images')
     .select('*')

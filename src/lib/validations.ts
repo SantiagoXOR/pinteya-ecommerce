@@ -180,13 +180,22 @@ export const SlugParamSchema = z.object({
 // FUNCIONES AUXILIARES
 // ===================================
 
+// Tipos genéricos para validación
+type ValidationInput = Record<string, any> | any[] | string | number | boolean | null;
+
+interface ValidationResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
 /**
  * Valida datos usando un schema de Zod
  * @param schema - Schema de Zod
  * @param data - Datos a validar
  * @returns Datos validados
  */
-export function validateData<T>(schema: z.ZodSchema<T>, data: unknown): T {
+export function validateData<T>(schema: z.ZodSchema<T>, data: ValidationInput): T {
   try {
     return schema.parse(data);
   } catch (error) {
@@ -204,11 +213,7 @@ export function validateData<T>(schema: z.ZodSchema<T>, data: unknown): T {
  * @param data - Datos a validar
  * @returns Resultado de la validación
  */
-export function safeValidateData<T>(schema: z.ZodSchema<T>, data: unknown): {
-  success: boolean;
-  data?: T;
-  error?: string;
-} {
+export function safeValidateData<T>(schema: z.ZodSchema<T>, data: ValidationInput): ValidationResult<T> {
   try {
     const validatedData = schema.parse(data);
     return { success: true, data: validatedData };

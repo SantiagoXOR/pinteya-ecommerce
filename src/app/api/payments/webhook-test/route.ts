@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       data_id: webhookData.data.id
     }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[WEBHOOK_TEST] Error en webhook:', error);
     console.error('[WEBHOOK_TEST] Stack trace:', error.stack);
 

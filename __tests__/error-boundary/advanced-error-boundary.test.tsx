@@ -86,7 +86,7 @@ const ThrowError: React.FC<{ shouldThrow?: boolean; errorType?: string }> = ({
 
 const TestWrapper: React.FC<{ 
   children: React.ReactNode;
-  errorBoundaryProps?: any;
+  errorBoundaryProps?: Partial<ErrorBoundaryProps>;
 }> = ({ children, errorBoundaryProps = {} }) => (
   <AdvancedErrorBoundary {...errorBoundaryProps}>
     {children}

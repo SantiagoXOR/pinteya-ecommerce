@@ -12,6 +12,7 @@ import { getSupabaseClient } from '@/lib/integrations/supabase';
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
 import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
 import { metricsCollector } from '@/lib/enterprise/metrics';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 // Tipos para medición de calidad
 interface QualityMetrics {
@@ -204,7 +205,7 @@ async function measureIntegrationQuality(
 /**
  * Verifica aspectos de seguridad
  */
-async function checkSecurity(supabase: any, paymentId?: string | null): Promise<QualityCheck> {
+async function checkSecurity(supabase: SupabaseClient, paymentId?: string | null): Promise<QualityCheck> {
   const checks = [];
   let totalScore = 0;
   const maxScore = 100;
@@ -298,7 +299,7 @@ async function checkPerformance(): Promise<QualityCheck> {
 /**
  * Verifica experiencia de usuario
  */
-async function checkUserExperience(supabase: any): Promise<QualityCheck> {
+async function checkUserExperience(supabase: SupabaseClient): Promise<QualityCheck> {
   const checks = [];
   let totalScore = 0;
   const maxScore = 100;
@@ -340,7 +341,7 @@ async function checkUserExperience(supabase: any): Promise<QualityCheck> {
 /**
  * Verifica completitud de la integración
  */
-async function checkIntegrationCompleteness(supabase: any, paymentId?: string | null): Promise<QualityCheck> {
+async function checkIntegrationCompleteness(supabase: SupabaseClient, paymentId?: string | null): Promise<QualityCheck> {
   const checks = [];
   let totalScore = 0;
   const maxScore = 100;

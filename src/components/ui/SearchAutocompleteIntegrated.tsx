@@ -3,7 +3,7 @@
 // ===================================
 
 import React, { useCallback, useState, useEffect } from 'react';
-import { SearchAutocomplete, SearchAutocompleteProps } from './search-autocomplete';
+import { SearchAutocomplete, SearchAutocompleteProps, SearchSuggestion } from './search-autocomplete';
 import { useSearchOptimized } from '@/hooks/useSearchOptimized';
 import { useTrendingSearches } from '@/hooks/useTrendingSearches';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
@@ -19,7 +19,7 @@ export interface SearchAutocompleteIntegratedProps
   
   // Callbacks adicionales
   onSearchExecuted?: (query: string, results: any[]) => void;
-  onSuggestionSelected?: (suggestion: any) => void;
+  onSuggestionSelected?: (suggestion: SearchSuggestion) => void;
 }
 
 /**
@@ -143,7 +143,7 @@ export const SearchAutocompleteIntegrated = React.memo(React.forwardRef<HTMLInpu
       }
 
       // Si no hay query, mostrar trending y recent searches como el componente original
-      const defaultSuggestions: any[] = [];
+      const defaultSuggestions: SearchSuggestion[] = [];
 
       console.log('🔍 Generando sugerencias por defecto (sin query)');
 
@@ -200,7 +200,7 @@ export const SearchAutocompleteIntegrated = React.memo(React.forwardRef<HTMLInpu
     };
 
     // Manejar selección de sugerencia
-    const handleSuggestionSelect = (suggestion: any) => {
+    const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
       if (isClient) {
         selectSuggestion(suggestion);
       }

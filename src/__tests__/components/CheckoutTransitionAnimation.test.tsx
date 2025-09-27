@@ -15,10 +15,10 @@ jest.mock('next/navigation', () => ({
 // Mock Framer Motion para tests más estables
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    div: ({ children, ...props }: React.ComponentProps<'div'> & { children?: React.ReactNode }) => <div {...props}>{children}</div>,
+    button: ({ children, ...props }: React.ComponentProps<'button'> & { children?: React.ReactNode }) => <button {...props}>{children}</button>,
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useAnimation: () => ({
     start: jest.fn(),
     stop: jest.fn(),
@@ -31,7 +31,7 @@ jest.mock('framer-motion', () => ({
 // Mock Next.js Image
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, ...props }: any) => (
+  default: ({ src, alt, ...props }: React.ComponentProps<'img'>) => (
     <img src={src} alt={alt} {...props} data-testid="logo-image" />
   ),
 }));

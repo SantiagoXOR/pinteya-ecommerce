@@ -274,7 +274,7 @@ async function getSystemStats() {
 /**
  * Actualiza configuración de métricas
  */
-async function updateMetricsConfig(config: any, userId: string) {
+async function updateMetricsConfig(config: Record<string, unknown>, userId: string) {
   // TODO: Implementar actualización de configuración de métricas
   // Por ahora solo validamos y retornamos confirmación
   
@@ -296,7 +296,7 @@ async function updateMetricsConfig(config: any, userId: string) {
 /**
  * Actualiza configuración de alertas
  */
-async function updateAlertsConfig(config: any, userId: string) {
+async function updateAlertsConfig(config: Record<string, unknown>, userId: string) {
   const validFields = ['enabled', 'escalationEnabled', 'defaultCooldown', 'maxAlertsPerHour'];
   const updates: Record<string, any> = {};
 
@@ -315,7 +315,7 @@ async function updateAlertsConfig(config: any, userId: string) {
 /**
  * Actualiza configuración de circuit breakers
  */
-async function updateCircuitBreakersConfig(config: any, userId: string) {
+async function updateCircuitBreakersConfig(config: Record<string, unknown>, userId: string) {
   const updates: Record<string, any> = {};
 
   if (config.enabled !== undefined) {
@@ -347,7 +347,7 @@ async function updateCircuitBreakersConfig(config: any, userId: string) {
 /**
  * Actualiza configuración del dashboard
  */
-async function updateDashboardConfig(config: any, userId: string) {
+async function updateDashboardConfig(config: Record<string, unknown>, userId: string) {
   const validFields = ['refreshInterval', 'maxDataPoints', 'cacheTimeout'];
   const updates: Record<string, any> = {};
 
@@ -366,7 +366,7 @@ async function updateDashboardConfig(config: any, userId: string) {
 /**
  * Actualiza configuración de compliance
  */
-async function updateComplianceConfig(config: any, userId: string) {
+async function updateComplianceConfig(config: Record<string, unknown>, userId: string) {
   const validFields = ['auditEnabled', 'retentionPolicies', 'encryptionEnabled'];
   const updates: Record<string, any> = {};
 

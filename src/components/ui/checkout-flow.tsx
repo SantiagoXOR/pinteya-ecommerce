@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { CartSummary } from "@/components/ui/cart-summary"
+import { CartItem } from "@/types/api"
 import {
   CheckCircle,
   CreditCard,
@@ -25,7 +26,7 @@ export interface CheckoutStep {
   id: string
   name: string
   description: string
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
   isComplete: boolean
   isActive: boolean
 }
@@ -43,7 +44,7 @@ export interface CheckoutMetrics {
 
 export interface CheckoutFlowProps {
   /** Items del carrito */
-  cartItems: any[]
+  cartItems: CartItem[]
   /** Datos del checkout */
   checkoutData?: {
     totalPrice: number

@@ -107,7 +107,16 @@ export async function GET(request: NextRequest, context: RouteParams) {
         created_at: order.created_at,
         updated_at: order.updated_at,
         external_reference: order.external_reference,
-        items: order.order_items?.map((item: any) => ({
+        items: order.order_items?.map((item: {
+          id: string;
+          quantity: number;
+          price: number;
+          product: {
+            id: string;
+            name: string;
+            images: string[] | null;
+          };
+        }) => ({
           id: item.id,
           quantity: item.quantity,
           price: item.price,
@@ -129,7 +138,7 @@ export async function GET(request: NextRequest, context: RouteParams) {
 
     return NextResponse.json(successResponse, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error getting payment status:', error);
     
     const errorResponse: ApiResponse<null> = {
@@ -259,7 +268,7 @@ export async function POST(request: NextRequest, context: RouteParams) {
 
     return NextResponse.json(successResponse, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating payment status:', error);
     
     const errorResponse: ApiResponse<null> = {

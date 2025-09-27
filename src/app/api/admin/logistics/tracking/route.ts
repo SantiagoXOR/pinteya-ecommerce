@@ -16,6 +16,7 @@ import { withApiLogging, logAdminAction } from '@/lib/api/api-logger';
 import { withAdminAuth } from '@/lib/auth/api-auth-middleware';
 import { withValidation } from '@/lib/validation/admin-schemas';
 import { createClient } from '@/lib/integrations/supabase/server';
+import { Database } from '@/types/database';
 import { auth } from '@/lib/auth/config';
 import { checkRateLimit } from '@/lib/auth/rate-limiting';
 import { 
@@ -105,7 +106,7 @@ async function validateAdminAuth(request: NextRequest) {
   return null;
 }
 
-async function updateShipmentStatus(supabase: any, shipmentId: number, newStatus: ShipmentStatus) {
+async function updateShipmentStatus(supabase: ReturnType<typeof createClient<Database>>, shipmentId: number, newStatus: ShipmentStatus) {
   // Actualizar estado del envío basado en el último evento
   const { error } = await supabase
     .from('shipments')

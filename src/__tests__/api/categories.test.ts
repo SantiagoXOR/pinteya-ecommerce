@@ -135,7 +135,7 @@ describe('/api/categories', () => {
       expect(data).toHaveProperty('message');
 
       // Verificar estructura de categorías
-      data.data.forEach((category: any) => {
+      data.data.forEach((category: { id: string; name: string; slug: string }) => {
         expect(category).toHaveProperty('id');
         expect(category).toHaveProperty('name');
         expect(category).toHaveProperty('slug');

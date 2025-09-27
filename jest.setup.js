@@ -657,10 +657,77 @@ jest.mock('@/lib/supabase', () => {
   }
 })
 
-// Mock adicional para importaciones directas
-jest.mock('@/lib/supabase/client', () => ({
-  createClient: jest.fn(() => mockSupabaseClient),
-}))
+// Mock para @/lib/integrations/supabase
+jest.mock('@/lib/integrations/supabase', () => {
+  const mockSupabaseClient = {
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      neq: jest.fn().mockReturnThis(),
+      gt: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lt: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+      like: jest.fn().mockReturnThis(),
+      ilike: jest.fn().mockReturnThis(),
+      is: jest.fn().mockReturnThis(),
+      in: jest.fn().mockReturnThis(),
+      contains: jest.fn().mockReturnThis(),
+      containedBy: jest.fn().mockReturnThis(),
+      rangeGt: jest.fn().mockReturnThis(),
+      rangeGte: jest.fn().mockReturnThis(),
+      rangeLt: jest.fn().mockReturnThis(),
+      rangeLte: jest.fn().mockReturnThis(),
+      rangeAdjacent: jest.fn().mockReturnThis(),
+      overlaps: jest.fn().mockReturnThis(),
+      textSearch: jest.fn().mockReturnThis(),
+      match: jest.fn().mockReturnThis(),
+      not: jest.fn().mockReturnThis(),
+      or: jest.fn().mockReturnThis(),
+      filter: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      range: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+      csv: jest.fn().mockResolvedValue({ data: '', error: null }),
+      geojson: jest.fn().mockResolvedValue({ data: null, error: null }),
+      explain: jest.fn().mockResolvedValue({ data: null, error: null }),
+      rollback: jest.fn().mockResolvedValue({ data: null, error: null }),
+      returns: jest.fn().mockReturnThis(),
+      then: jest.fn().mockResolvedValue({ data: [], error: null }),
+    })),
+    auth: {
+      getUser: jest.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      signUp: jest.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
+      signInWithPassword: jest.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
+      signOut: jest.fn().mockResolvedValue({ error: null }),
+      onAuthStateChange: jest.fn().mockReturnValue({ data: { subscription: { unsubscribe: jest.fn() } } }),
+    },
+    storage: {
+      from: jest.fn(() => ({
+        upload: jest.fn().mockResolvedValue({ data: null, error: null }),
+        download: jest.fn().mockResolvedValue({ data: null, error: null }),
+        remove: jest.fn().mockResolvedValue({ data: null, error: null }),
+        list: jest.fn().mockResolvedValue({ data: [], error: null }),
+        getPublicUrl: jest.fn().mockReturnValue({ data: { publicUrl: 'mock-url' } }),
+      })),
+    },
+    rpc: jest.fn().mockResolvedValue({ data: null, error: null }),
+  };
+
+  return {
+    supabase: mockSupabaseClient,
+    supabaseAdmin: mockSupabaseClient,
+    getSupabaseClient: jest.fn(() => mockSupabaseClient),
+    handleSupabaseError: jest.fn(),
+    mockSupabaseClient,
+  };
+})
 
 // Mock NextAuth.js para tests de API
 jest.mock('next-auth/next', () => ({
@@ -689,47 +756,38 @@ jest.mock('@/lib/auth/admin-auth', () => ({
 }))
 
 // Mock MercadoPago - Versión completa
-jest.mock('@/lib/mercadopago', () => ({
+jest.mock('@/lib/integrations/mercadopago', () => ({
+  createMercadoPagoClient: jest.fn(() => ({
+    accessToken: 'TEST-mock-token',
+    options: {
+      timeout: 5000,
+      idempotencyKey: 'mock-key'
+    }
+  })),
   preference: {
     create: jest.fn(() => Promise.resolve({
-      id: 'test-preference-id',
-      init_point: 'https://test-mercadopago.com/checkout',
-    })),
+      id: 'mock-preference-id',
+      init_point: 'https://mock-mercadopago.com/checkout',
+      sandbox_init_point: 'https://sandbox-mercadopago.com/checkout'
+    }))
   },
   payment: {
     get: jest.fn(() => Promise.resolve({
-      id: 'test-payment-id',
+      id: 'mock-payment-id',
       status: 'approved',
-      external_reference: 'test-order-id',
-    })),
+      transaction_amount: 100
+    }))
   },
+  createPaymentPreference: jest.fn(() => Promise.resolve({
+    id: 'mock-preference-id',
+    init_point: 'https://mock-mercadopago.com/checkout'
+  })),
   getPaymentInfo: jest.fn(() => Promise.resolve({
-    success: true,
-    data: {
-      id: 'test-payment-id',
-      status: 'approved',
-      external_reference: 'test-order-id',
-    },
+    id: 'mock-payment-id',
+    status: 'approved'
   })),
   validateWebhookSignature: jest.fn(() => true),
-  createPaymentPreference: jest.fn(() => Promise.resolve({
-    success: true,
-    data: {
-      id: 'test-preference-id',
-      init_point: 'https://test-mercadopago.com/checkout',
-      sandbox_init_point: 'https://test-mercadopago.com/checkout',
-    },
-  })),
-  mercadopago: {
-    preferences: {
-      create: jest.fn(() => Promise.resolve({
-        body: {
-          id: 'test-preference-id',
-          init_point: 'https://test-mercadopago.com/checkout',
-        },
-      })),
-    },
-  },
+  validateWebhookOrigin: jest.fn(() => true)
 }))
 
 // Mock Redis para tests

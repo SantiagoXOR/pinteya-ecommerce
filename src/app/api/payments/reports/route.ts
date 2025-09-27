@@ -317,7 +317,24 @@ async function generateReport(
 /**
  * Procesa los datos según el tipo de reporte
  */
-function processReportData(orders: any[], type: string) {
+function processReportData(orders: Array<{
+  id: string;
+  total_amount: number;
+  payment_status?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  external_reference?: string;
+  order_items?: Array<{
+    id: string;
+    quantity: number;
+    price: number;
+    product: {
+      id: string;
+      name: string;
+    };
+  }>;
+}>, type: string) {
   return orders.map(order => {
     const baseData = {
       order_id: order.id,
@@ -346,7 +363,20 @@ function processReportData(orders: any[], type: string) {
       case 'sales_report':
         return {
           ...baseData,
-          items: order.order_items?.map((item: any) => ({
+          items: order.order_items?.map((item: {
+            id: string;
+            quantity: number;
+            price: number;
+            unit_price?: number;
+            products?: {
+              name: string;
+              category_id?: string;
+            };
+            product: {
+              id: string;
+              name: string;
+            };
+          }) => ({
             name: item.products?.name,
             quantity: item.quantity,
             unit_price: item.unit_price,
@@ -364,7 +394,10 @@ function processReportData(orders: any[], type: string) {
 /**
  * Calcula métricas del reporte
  */
-function calculateReportMetrics(orders: any[]): ReportMetrics {
+function calculateReportMetrics(orders: Array<{
+  payment_status?: string;
+  total_amount?: number;
+}>): ReportMetrics {
   const totalTransactions = orders.length;
   const successfulPayments = orders.filter(o => o.payment_status === 'approved').length;
   const failedPayments = orders.filter(o => o.payment_status === 'rejected').length;

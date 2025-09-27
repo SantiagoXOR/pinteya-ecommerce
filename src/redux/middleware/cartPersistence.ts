@@ -2,21 +2,34 @@
 // PINTEYA E-COMMERCE - CART PERSISTENCE MIDDLEWARE
 // ===================================
 
-import { Middleware } from '@reduxjs/toolkit';
+import { Middleware, AnyAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
 // Clave para localStorage
 const CART_STORAGE_KEY = 'pinteya-cart';
 
+// Definición de CartItem (importada desde cart-slice)
+export interface CartItem {
+  id: number;
+  title: string;
+  price: number;
+  discountedPrice: number;
+  quantity: number;
+  imgs?: {
+    thumbnails: string[];
+    previews: string[];
+  };
+}
+
 // Tipos para el estado persistido
 interface PersistedCartState {
-  items: any[];
+  items: CartItem[];
   timestamp: number;
   version: string;
 }
 
 // Función para cargar el carrito desde localStorage
-export const loadCartFromStorage = (): any[] => {
+export const loadCartFromStorage = (): CartItem[] => {
   // Solo ejecutar en el cliente
   if (typeof window === 'undefined') {
     return [];
@@ -63,7 +76,7 @@ export const loadCartFromStorage = (): any[] => {
 };
 
 // Función para guardar el carrito en localStorage
-const saveCartToStorage = (cartItems: any[]): void => {
+const saveCartToStorage = (cartItems: CartItem[]): void => {
   // Solo ejecutar en el cliente
   if (typeof window === 'undefined') {
     return;
@@ -106,7 +119,7 @@ let saveTimeout: NodeJS.Timeout | null = null;
 
 // Middleware para persistir el carrito automáticamente
 export const cartPersistenceMiddleware: Middleware =
-  (store) => (next) => (action: any) => {
+  (store) => (next) => (action: AnyAction) => {
     // Ejecutar la acción primero
     const result = next(action);
 
@@ -146,7 +159,7 @@ export const useCartPersistence = () => {
 
 // Función para migrar carrito temporal a usuario autenticado
 export const migrateTemporaryCart = async (
-  temporaryCartItems: any[],
+  temporaryCartItems: CartItem[],
   userId: string
 ): Promise<boolean> => {
   try {
@@ -169,7 +182,7 @@ export const migrateTemporaryCart = async (
 };
 
 // Función para cargar carrito de usuario autenticado
-export const loadUserCart = async (userId: string): Promise<any[]> => {
+export const loadUserCart = async (userId: string): Promise<CartItem[]> => {
   try {
     // Aquí se implementaría la lógica para cargar el carrito
     // del usuario desde la base de datos
@@ -190,7 +203,7 @@ export const loadUserCart = async (userId: string): Promise<any[]> => {
 // Función para guardar carrito de usuario autenticado
 export const saveUserCart = async (
   userId: string, 
-  cartItems: any[]
+  cartItems: CartItem[]
 ): Promise<boolean> => {
   try {
     // Aquí se implementaría la lógica para guardar el carrito

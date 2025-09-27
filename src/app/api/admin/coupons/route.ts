@@ -294,8 +294,8 @@ async function getCoupons(filters: z.infer<typeof CouponFiltersSchema>) {
     return {
       ...coupon,
       status,
-      categories: coupon.categories?.map((cc: any) => cc.category) || [],
-      products: coupon.products?.map((cp: any) => cp.product) || []
+      categories: coupon.categories?.map((cc: { category: unknown }) => cc.category) || [],
+      products: coupon.products?.map((cp: { product: unknown }) => cp.product) || []
     };
   });
 
@@ -482,7 +482,7 @@ async function validateCoupon(validation: z.infer<typeof ValidateCouponSchema>):
 
   // Validar aplicabilidad a productos/categorías
   if (coupon.applicable_to === 'categories' && validation.category_ids?.length) {
-    const couponCategoryIds = coupon.categories.map((cc: any) => cc.category_id);
+    const couponCategoryIds = coupon.categories.map((cc: { category_id: string }) => cc.category_id);
     const hasValidCategory = validation.category_ids.some(catId => 
       couponCategoryIds.includes(catId)
     );
@@ -496,7 +496,7 @@ async function validateCoupon(validation: z.infer<typeof ValidateCouponSchema>):
   }
 
   if (coupon.applicable_to === 'products' && validation.product_ids?.length) {
-    const couponProductIds = coupon.products.map((cp: any) => cp.product_id);
+    const couponProductIds = coupon.products.map((cp: { product_id: string }) => cp.product_id);
     const hasValidProduct = validation.product_ids.some(prodId => 
       couponProductIds.includes(prodId)
     );

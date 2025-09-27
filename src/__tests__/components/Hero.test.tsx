@@ -6,7 +6,7 @@ import Hero from '@/components/Home/Hero';
 // Mock next/image
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, ...props }: any) => (
+  default: ({ src, alt, ...props }: React.ComponentProps<'img'>) => (
     <img src={src} alt={alt} {...props} />
   ),
 }));
@@ -14,7 +14,7 @@ jest.mock('next/image', () => ({
 // Mock next/link
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href, ...props }: any) => (
+  default: ({ children, href, ...props }: React.ComponentProps<'a'> & { children: React.ReactNode }) => (
     <a href={href} {...props}>
       {children}
     </a>

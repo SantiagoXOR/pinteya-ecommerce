@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { createClient } from '@/lib/integrations/supabase/server';
+import { Database } from '@/types/database';
 import { z } from 'zod';
 import { 
   TrackingEvent,
@@ -57,7 +58,7 @@ async function validateAdminAuth(request: NextRequest) {
 // FUNCIONES AUXILIARES
 // =====================================================
 
-async function validateShipmentExists(supabase: any, shipmentId: number): Promise<Shipment | null> {
+async function validateShipmentExists(supabase: ReturnType<typeof createClient<Database>>, shipmentId: number): Promise<Shipment | null> {
   const { data, error } = await supabase
     .from('shipments')
     .select(`
@@ -76,7 +77,7 @@ async function validateShipmentExists(supabase: any, shipmentId: number): Promis
 }
 
 async function updateShipmentStatus(
-  supabase: any, 
+  supabase: ReturnType<typeof createClient<Database>>, 
   shipmentId: number, 
   status: string
 ): Promise<void> {

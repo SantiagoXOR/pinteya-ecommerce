@@ -463,10 +463,26 @@ export function validateWebhookOrigin(request: Request): boolean {
   */
 }
 
+// Interfaz para items del carrito
+interface CartItem {
+  id: number | string;
+  name: string;
+  description?: string;
+  images?: {
+    previews?: string[];
+  };
+  category?: {
+    slug?: string;
+  };
+  quantity: number;
+  price: number;
+  discounted_price?: number;
+}
+
 /**
  * Convierte productos del carrito a formato MercadoPago
  */
-export function convertCartItemsToMercadoPago(cartItems: any[]): MercadoPagoItem[] {
+export function convertCartItemsToMercadoPago(cartItems: CartItem[]): MercadoPagoItem[] {
   return cartItems.map(item => ({
     id: item.id.toString(),
     title: item.name,

@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       data_id: webhookData.data.id
     }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error en webhook:', error);
 
     // Log del error para debugging
@@ -554,7 +554,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
     console.log('[WEBHOOK_ASYNC] Procesamiento completado exitosamente para payment:', payment.id);
     console.log('[WEBHOOK_ASYNC] Order actualizada:', order.id, 'Nuevo status:', newOrderStatus);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[WEBHOOK_ASYNC] Error en procesamiento asíncrono:', error);
 
     logger.error(LogLevel.ERROR, 'Async webhook processing failed', {

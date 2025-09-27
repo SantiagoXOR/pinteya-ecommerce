@@ -13,12 +13,37 @@ import {
   useLogisticsAlerts 
 } from '@/hooks/admin/useLogisticsWebSocket';
 
+// Interfaces para tipado
+interface MockWebSocketEventListeners {
+  [key: string]: Function[];
+}
+
+interface MockWebSocket {
+  send: jest.Mock;
+  close: jest.Mock;
+  addEventListener: jest.Mock;
+  removeEventListener: jest.Mock;
+  on: jest.Mock;
+  off: jest.Mock;
+  emit: jest.Mock;
+  readyState: number;
+  connect: jest.Mock;
+  disconnect: jest.Mock;
+  isConnected: boolean;
+  subscribeToShipment: jest.Mock;
+  unsubscribeFromShipment: jest.Mock;
+  subscribeToGeofence: jest.Mock;
+  unsubscribeFromGeofence: jest.Mock;
+  subscribeToAlerts: jest.Mock;
+  unsubscribeFromAlerts: jest.Mock;
+}
+
 // Mock WebSocket
-const createMockWebSocket = () => {
-  const listeners: { [key: string]: Function[] } = {};
+const createMockWebSocket = (): MockWebSocket => {
+  const listeners: MockWebSocketEventListeners = {};
   let connected = false;
   
-  const mockWs = {
+  const mockWs: MockWebSocket = {
     send: jest.fn(),
     close: jest.fn(),
     addEventListener: jest.fn(),
@@ -41,7 +66,7 @@ const createMockWebSocket = () => {
         listeners[event] = listeners[event].filter(cb => cb !== callback);
       }
     }),
-    emit: jest.fn((event: string, data?: any) => {
+    emit: jest.fn((event: string, data?: unknown) => {
       if (listeners[event]) {
         listeners[event].forEach(callback => callback(data));
       }
@@ -62,7 +87,7 @@ const createMockWebSocket = () => {
 };
 
 // Mock global del WebSocket
-let globalMockWebSocket: any;
+let globalMockWebSocket: MockWebSocket | null;
 
 // Mock del módulo de WebSocket
 jest.mock('@/lib/websockets/logistics-websocket', () => {
@@ -123,7 +148,7 @@ jest.mock('sonner', () => ({
 // =====================================================
 
 describe('useLogisticsWebSocket Hook', () => {
-  let mockWebSocket: any;
+  let mockWebSocket: MockWebSocket;
 
   beforeEach(() => {
     // Reset global mock WebSocket

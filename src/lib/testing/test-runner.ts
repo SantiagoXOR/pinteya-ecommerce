@@ -111,7 +111,7 @@ export class TestRunner {
   /**
    * Ejecuta un test individual
    */
-  private async runSingleTest(testConfig: any): Promise<TestResult> {
+  private async runSingleTest(testConfig: TestConfig): Promise<TestResult> {
     const startTime = new Date();
     let success = false;
     let error: string | null = null;
@@ -321,6 +321,23 @@ interface TestRunResults {
   duration: number;
   testResults: TestResult[];
   reportPaths: string[];
+}
+
+// Interface para configuración de tests
+interface TestConfig {
+  name: string;
+  description: string;
+  testClass: new (baseUrl: string) => TestInstance;
+  enabled: boolean;
+}
+
+// Interface para instancia de test
+interface TestInstance {
+  runTest(): Promise<{
+    success: boolean;
+    reportPath: string | null;
+    htmlReportPath?: string | null;
+  }>;
 }
 
 // CLI Support

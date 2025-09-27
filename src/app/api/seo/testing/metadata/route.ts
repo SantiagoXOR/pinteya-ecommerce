@@ -168,7 +168,12 @@ export async function POST(request: NextRequest) {
 // FUNCIONES DE UTILIDAD
 // ===================================
 
-function generateMetadataRecommendations(results: any[]): string[] {
+function generateMetadataRecommendations(results: Array<{
+  testName: string;
+  status: 'passed' | 'failed' | 'warning';
+  message?: string;
+  details?: any;
+}>): string[] {
   const recommendations = [];
   
   const failedTitles = results.filter(r => r.testName.includes('Title') && r.status === 'failed');
@@ -199,7 +204,13 @@ function generateMetadataRecommendations(results: any[]): string[] {
   return recommendations;
 }
 
-function analyzeMetadataResults(results: any[]): {
+function analyzeMetadataResults(results: Array<{
+  testName: string;
+  status: 'passed' | 'failed' | 'warning';
+  score: number;
+  message?: string;
+  details?: any;
+}>): {
   averageScore: number;
   titleIssues: number;
   descriptionIssues: number;
@@ -251,7 +262,24 @@ function analyzeMetadataResults(results: any[]): {
   };
 }
 
-function generateDetailedMetadataRecommendations(results: any[], analysis: any): Array<{
+function generateDetailedMetadataRecommendations(
+  results: Array<{
+    testName: string;
+    status: 'passed' | 'failed' | 'warning';
+    url: string;
+    message?: string;
+    details?: any;
+  }>, 
+  analysis: {
+    averageScore: number;
+    titleIssues: number;
+    descriptionIssues: number;
+    keywordIssues: number;
+    openGraphIssues: number;
+    mostCommonIssues: string[];
+    urlsWithIssues: string[];
+  }
+): Array<{
   priority: 'high' | 'medium' | 'low';
   category: string;
   issue: string;

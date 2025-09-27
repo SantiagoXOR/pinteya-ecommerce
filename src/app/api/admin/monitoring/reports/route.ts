@@ -513,7 +513,7 @@ function generateDailyBusinessTrends(orders: any[], filter: ReportFilter) {
   }));
 }
 
-function generateCSVResponse(data: any, reportType: string) {
+function generateCSVResponse(data: Record<string, unknown> | unknown[], reportType: string) {
   // Implementación básica de CSV
   const csv = `Report Type,${reportType}\nGenerated At,${new Date().toISOString()}\n\n${JSON.stringify(data)}`;
   

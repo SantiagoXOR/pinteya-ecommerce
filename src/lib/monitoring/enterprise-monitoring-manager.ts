@@ -7,12 +7,54 @@
 const perfHooks = typeof window === 'undefined' ? require('perf_hooks') : null;
 
 // ===================================
-// TIPOS Y INTERFACES
+// TIPOS Y INTERFACES ESPECÍFICAS
 // ===================================
+
+// Tipos base para métricas
+type MetricValue = number;
+type MetricTimestamp = Date;
+type MetricContext = Record<string, string | number | boolean>;
+
+// Interfaces específicas para Core Web Vitals
+interface CoreWebVitals {
+  lcp?: MetricValue; // Largest Contentful Paint
+  fid?: MetricValue; // First Input Delay
+  cls?: MetricValue; // Cumulative Layout Shift
+}
+
+// Interfaces específicas para métricas personalizadas
+interface CustomPerformanceMetrics {
+  loadTime: MetricValue;
+  renderTime: MetricValue;
+  memoryUsage: MetricValue;
+  bundleSize: MetricValue;
+}
+
+// Interfaces específicas para métricas de API
+interface ApiMetrics {
+  apiResponseTime: MetricValue;
+  apiErrorRate: MetricValue;
+}
+
+// Interfaces específicas para métricas de usuario
+interface UserMetrics {
+  sessionDuration: MetricValue;
+  pageViews: MetricValue;
+  bounceRate: MetricValue;
+}
+
+// Interface específica para contexto de métricas
+interface MetricsContext {
+  page: string;
+  userId?: string;
+  sessionId: string;
+  device: string;
+  browser: string;
+}
 
 interface ErrorEvent {
   id: string;
-  timestamp: Date;
+  timestamp: MetricTimestamp;
   message: string;
   stack?: string;
   level: 'info' | 'warning' | 'error' | 'critical';
@@ -30,91 +72,114 @@ interface ErrorEvent {
 }
 
 interface PerformanceMetrics {
-  timestamp: Date;
-  metrics: {
-    // Core Web Vitals
-    lcp?: number; // Largest Contentful Paint
-    fid?: number; // First Input Delay
-    cls?: number; // Cumulative Layout Shift
-    
-    // Custom Metrics
-    loadTime: number;
-    renderTime: number;
-    memoryUsage: number;
-    bundleSize: number;
-    
-    // API Metrics
-    apiResponseTime: number;
-    apiErrorRate: number;
-    
-    // User Metrics
-    sessionDuration: number;
-    pageViews: number;
-    bounceRate: number;
-  };
-  context: {
-    page: string;
-    userId?: string;
-    sessionId: string;
-    device: string;
-    browser: string;
-  };
+  timestamp: MetricTimestamp;
+  metrics: CoreWebVitals & CustomPerformanceMetrics & ApiMetrics & UserMetrics;
+  context: MetricsContext;
+}
+
+// Tipos específicos para alertas
+type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
+type AlertOperator = '>' | '<' | '=' | '>=' | '<=';
+type AlertMetricName = string;
+
+// Interface específica para contexto de alertas
+interface AlertContext {
+  page?: string;
+  userId?: string;
+  sessionId?: string;
+  component?: string;
+  action?: string;
+  metadata?: Record<string, string | number | boolean>;
+}
+
+// Interfaces específicas para configuración de monitoreo
+interface ErrorTrackingConfig {
+  enabled: boolean;
+  sampleRate: number;
+  ignoreErrors: string[];
+  maxBreadcrumbs: number;
+}
+
+interface PerformanceThresholds {
+  lcp: MetricValue;
+  fid: MetricValue;
+  cls: MetricValue;
+  loadTime: MetricValue;
+}
+
+interface PerformanceConfig {
+  enabled: boolean;
+  sampleRate: number;
+  thresholds: PerformanceThresholds;
+}
+
+interface AlertChannels {
+  email?: string[];
+  slack?: string;
+  webhook?: string;
+}
+
+interface AlertsConfig {
+  enabled: boolean;
+  channels: AlertChannels;
 }
 
 interface AlertRule {
   id: string;
   name: string;
-  metric: string;
-  threshold: number;
-  operator: '>' | '<' | '=' | '>=' | '<=';
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  metric: AlertMetricName;
+  threshold: MetricValue;
+  operator: AlertOperator;
+  severity: AlertSeverity;
   enabled: boolean;
   cooldown: number; // minutes
-  lastTriggered?: Date;
+  lastTriggered?: MetricTimestamp;
 }
 
 interface AlertEvent {
   id: string;
   ruleId: string;
-  timestamp: Date;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  timestamp: MetricTimestamp;
+  severity: AlertSeverity;
   message: string;
-  value: number;
-  threshold: number;
-  context: any;
+  value: MetricValue;
+  threshold: MetricValue;
+  context: AlertContext;
   acknowledged: boolean;
-  resolvedAt?: Date;
+  resolvedAt?: MetricTimestamp;
 }
 
 interface MonitoringConfig {
-  errorTracking: {
-    enabled: boolean;
-    sampleRate: number;
-    ignoreErrors: string[];
-    maxBreadcrumbs: number;
-  };
-  performance: {
-    enabled: boolean;
-    sampleRate: number;
-    thresholds: {
-      lcp: number;
-      fid: number;
-      cls: number;
-      loadTime: number;
-    };
-  };
-  alerts: {
-    enabled: boolean;
-    channels: {
-      email?: string[];
-      slack?: string;
-      webhook?: string;
-    };
-  };
+  errorTracking: ErrorTrackingConfig;
+  performance: PerformanceConfig;
+  alerts: AlertsConfig;
+}
+
+// ===================================
+// INTERFACES
+// ===================================
+
+// Interface para Navigation Timing
+interface NavigationTiming extends PerformanceEntry {
+  loadEventEnd: number;
+  loadEventStart: number;
+  domContentLoadedEventEnd: number;
+  domContentLoadedEventStart: number;
+}
+
+// Interface para Performance Memory
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+}
+
+interface PerformanceWithMemory extends Performance {
+  memory?: PerformanceMemory;
 }
 
 // ===================================
 // ENTERPRISE MONITORING MANAGER
+// ===================================
+// CLASE PRINCIPAL
 // ===================================
 
 class EnterpriseMonitoringManager {
@@ -295,9 +360,20 @@ class EnterpriseMonitoringManager {
     }).observe({ entryTypes: ['largest-contentful-paint'] });
 
     // FID - First Input Delay
+// Interfaces para Performance Observer entries
+interface PerformanceEventTiming extends PerformanceEntry {
+  processingStart: number;
+  startTime: number;
+}
+
+interface LayoutShiftEntry extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+
     new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
-      entries.forEach((entry: any) => {
+      entries.forEach((entry: PerformanceEventTiming) => {
         this.recordMetric('fid', entry.processingStart - entry.startTime);
       });
     }).observe({ entryTypes: ['first-input'] });
@@ -306,7 +382,7 @@ class EnterpriseMonitoringManager {
     let clsValue = 0;
     new PerformanceObserver((entryList) => {
       const entries = entryList.getEntries();
-      entries.forEach((entry: any) => {
+      entries.forEach((entry: LayoutShiftEntry) => {
         if (!entry.hadRecentInput) {
           clsValue += entry.value;
         }
@@ -369,7 +445,7 @@ class EnterpriseMonitoringManager {
   /**
    * Registrar métrica específica
    */
-  recordMetric(name: string, value: number, context: any = {}): void {
+  recordMetric(name: string, value: number, context: MetricContext = {}): void {
     const metric = {
       name,
       value,
@@ -542,7 +618,7 @@ class EnterpriseMonitoringManager {
     message: string;
     value: number;
     threshold: number;
-    context: any;
+    context: AlertContext;
   }): void {
     const rule = this.alertRules.get(ruleId);
     if (!rule) {return;}
@@ -630,21 +706,23 @@ class EnterpriseMonitoringManager {
     return hash.toString(36);
   }
 
+
+
   private getLoadTime(): number {
     if (typeof window === 'undefined') {return 0;}
-    const navigation = performance.getEntriesByType('navigation')[0] as any;
+    const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming;
     return navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0;
   }
 
   private getRenderTime(): number {
     if (typeof window === 'undefined') {return 0;}
-    const navigation = performance.getEntriesByType('navigation')[0] as any;
+    const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming;
     return navigation ? navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart : 0;
   }
 
   private getMemoryUsage(): number {
-    if (typeof window === 'undefined' || !(performance as any).memory) {return 0;}
-    return (performance as any).memory.usedJSHeapSize / 1024 / 1024; // MB
+    if (typeof window === 'undefined' || !(performance as PerformanceWithMemory).memory) {return 0;}
+    return (performance as PerformanceWithMemory).memory!.usedJSHeapSize / 1024 / 1024; // MB
   }
 
   private getBundleSize(): number {

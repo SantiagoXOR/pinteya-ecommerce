@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth';
+import { Database } from '@/types/database';
+import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
 // Enterprise middleware imports
@@ -38,7 +40,7 @@ const ProductParamsSchema = z.object({
 import { ApiError, NotFoundError, ValidationError } from '@/lib/api/error-handler';
 
 // Helper function to get product by ID with enhanced error handling
-async function getProductById(supabase: any, productId: string) {
+async function getProductById(supabase: ReturnType<typeof createClient<Database>>, productId: string) {
   const { data: product, error } = await supabase
     .from('products')
     .select(`

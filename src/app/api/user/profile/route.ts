@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
     RATE_LIMIT_CONFIGS.auth,
     async () => {
       // Log de acceso a la API
-      securityLogger.logEvent('api_access', 'low', {
+      securityLogger.log({
+        type: 'api_access',
         endpoint: '/api/user/profile',
         method: 'GET',
         userAgent: request.headers.get('user-agent'),
@@ -51,7 +52,8 @@ export async function GET(request: NextRequest) {
           console.error('Cliente administrativo de Supabase no disponible en GET /api/user/profile');
 
           // Log de error de seguridad
-          securityLogger.logEvent('service_unavailable', 'high', {
+          securityLogger.log({
+            type: 'service_unavailable',
             service: 'supabase_admin',
             endpoint: '/api/user/profile'
           });
@@ -66,7 +68,8 @@ export async function GET(request: NextRequest) {
         const session = await auth();
         if (!session?.user) {
           // Log de intento de acceso no autorizado
-          securityLogger.logEvent('unauthorized_access', 'medium', {
+          securityLogger.log({
+            type: 'unauthorized_access',
             endpoint: '/api/user/profile',
             reason: 'no_session'
           });
@@ -94,12 +97,10 @@ export async function GET(request: NextRequest) {
           console.error('Error al obtener usuario:', error);
 
           // Log de error de base de datos
-          securityLogger.logEvent('database_error', 'medium', {
-            error: error.message,
-            endpoint: '/api/user/profile',
-            operation: 'select_user',
-            userId: userId
-          });
+          securityLogger.logApiError(
+            error.message,
+            '/api/user/profile'
+          );
 
           return NextResponse.json(
             { error: 'Error al obtener perfil de usuario' },
@@ -136,7 +137,8 @@ export async function GET(request: NextRequest) {
     }
 
         // Log de operación exitosa
-        securityLogger.logEvent('user_profile_retrieved', 'low', {
+        securityLogger.log({
+          type: 'user_profile_retrieved',
           userId: userId,
           hasUser: !!user
         });
@@ -150,11 +152,10 @@ export async function GET(request: NextRequest) {
         console.error('Error en GET /api/user/profile:', error);
 
         // Log de error de seguridad
-        securityLogger.logEvent('api_error', 'high', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          endpoint: '/api/user/profile',
-          stack: error instanceof Error ? error.stack : undefined
-        });
+        securityLogger.logApiError(
+          error instanceof Error ? error.message : 'Unknown error',
+          '/api/user/profile'
+        );
 
         return NextResponse.json(
           { error: 'Error interno del servidor' },

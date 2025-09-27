@@ -28,7 +28,7 @@ export interface ErrorState {
 }
 
 export interface AsyncState extends LoadingState, ErrorState {
-  data?: any
+  data?: unknown
 }
 
 // Form types
@@ -47,16 +47,16 @@ export interface SelectOption {
 }
 
 // Table types
-export interface TableColumn<T = any> {
+export interface TableColumn<T = Record<string, unknown>> {
   key: keyof T | string
   title: string
   width?: string | number
   align?: 'left' | 'center' | 'right'
   sortable?: boolean
-  render?: (value: any, record: T, index: number) => React.ReactNode
+  render?: (value: unknown, record: T, index: number) => React.ReactNode
 }
 
-export interface TableProps<T = any> extends BaseComponentProps {
+export interface TableProps<T = Record<string, unknown>> extends BaseComponentProps {
   columns: TableColumn<T>[]
   data: T[]
   loading?: boolean

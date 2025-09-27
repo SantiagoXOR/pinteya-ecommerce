@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
     RATE_LIMIT_CONFIGS.checkout,
     async () => {
       // Log de acceso a la API
-      securityLogger.logEvent('api_access', 'low', {
+      securityLogger.log({
+        type: 'api_access',
         endpoint: '/api/checkout/validate',
         method: 'POST',
         userAgent: request.headers.get('user-agent'),
@@ -185,7 +186,8 @@ export async function POST(request: NextRequest) {
     };
     
         // Log de validación exitosa
-        securityLogger.logEvent('checkout_validation', 'low', {
+        securityLogger.log({
+          type: 'checkout_validation',
           isValid: validationResults.isValid,
           errorsCount: validationResults.errors.length,
           warningsCount: validationResults.warnings.length,
@@ -201,10 +203,10 @@ export async function POST(request: NextRequest) {
         console.error('❌ Error validando checkout:', error);
 
         // Log de error de seguridad
-        securityLogger.logEvent('checkout_validation_error', 'medium', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          endpoint: '/api/checkout/validate'
-        });
+        securityLogger.logApiError(
+          error instanceof Error ? error.message : 'Unknown error',
+          '/api/checkout/validate'
+        );
 
         if (error instanceof z.ZodError) {
           return NextResponse.json({

@@ -5,31 +5,15 @@
 
 "use client"
 
-import { useSession, signIn, signOut } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useCallback } from "react"
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { UseAuthReturn, AuthUser } from '@/types/hooks';
 
-export interface AuthUser {
-  id: string
-  name?: string | null
-  email?: string | null
-  image?: string | null
-}
-
-export interface UseAuthReturn {
-  // Estado de autenticación
-  user: AuthUser | null
-  isLoaded: boolean
-  isSignedIn: boolean
-  
-  // Funciones de autenticación
-  signIn: (provider?: string, options?: { callbackUrl?: string }) => Promise<void>
-  signOut: (options?: { callbackUrl?: string }) => Promise<void>
-  
-  // Información de sesión
-  session: any
-  status: "loading" | "authenticated" | "unauthenticated"
-}
+// ===================================
+// INTERFACES
+// ===================================
+// Interfaces movidas a @/types/hooks para reutilización
 
 export function useAuth(): UseAuthReturn {
   const { data: session, status } = useSession()

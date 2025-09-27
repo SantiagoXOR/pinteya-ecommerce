@@ -293,7 +293,7 @@ export class TimeoutUtils {
    */
   static getEnvironmentTimeout(baseTimeout: number): number {
     const env = process.env.NODE_ENV as keyof typeof ENVIRONMENT_TIMEOUTS || 'development';
-    const config = ENVIRONMENT_TIMEOUTS[env];
+    const config = ENVIRONMENT_TIMEOUTS[env] || ENVIRONMENT_TIMEOUTS.development;
     
     const adjustedTimeout = Math.min(
       baseTimeout * config.multiplier,

@@ -53,11 +53,12 @@ export function useCategories(options: UseCategoriesOptions = {}) {
           error: response.error || 'Error obteniendo categorías',
         }));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error inesperado';
       setState(prev => ({
         ...prev,
         loading: false,
-        error: error.message || 'Error inesperado',
+        error: errorMessage,
       }));
     }
   }, [filters]);

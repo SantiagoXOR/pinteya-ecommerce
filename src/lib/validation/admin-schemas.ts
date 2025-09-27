@@ -3,6 +3,44 @@
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 
+// =====================================================
+// INTERFACES PARA TIPADO ESPECÍFICO
+// =====================================================
+
+export interface ValidationContext {
+  params?: Record<string, string>;
+  user?: {
+    id: string;
+    role: string;
+    permissions?: string[];
+  };
+  metadata?: Record<string, unknown>;
+}
+
+export interface ValidationHandler {
+  (request: NextRequest & { validatedData?: unknown }, context: ValidationContext): Promise<NextResponse>;
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+  code: string;
+  value?: unknown;
+}
+
+export interface ValidationResponse {
+  success: boolean;
+  error?: string;
+  code?: string;
+  details?: ValidationError[];
+  timestamp: string;
+  path: string;
+}
+
+// =====================================================
+// SCHEMAS DE VALIDACIÓN
+// =====================================================
+
 export const ProductSchema = z.object({
   name: z.string().min(1, 'Nombre requerido').max(255),
   description: z.string().optional(),
@@ -40,10 +78,13 @@ export const ProductParamsSchema = z.object({
   id: z.string().uuid('ID de producto inválido')
 });
 
-// Middleware de validación
-export function withValidation(schema: z.ZodSchema) {
-  return function (handler: Function) {
-    return async function (request: NextRequest, context: any) {
+// =====================================================
+// MIDDLEWARE DE VALIDACIÓN TIPADO
+// =====================================================
+
+export function withValidation<T extends z.ZodSchema>(schema: T) {
+  return function (handler: ValidationHandler) {
+    return async function (request: NextRequest, context: ValidationContext): Promise<NextResponse> {
       try {
         let data;
         
@@ -68,33 +109,39 @@ export function withValidation(schema: z.ZodSchema) {
         const validationResult = schema.safeParse(data);
 
         if (!validationResult.success) {
-          return NextResponse.json(
-            {
-              success: false,
-              error: 'Datos de entrada inválidos',
-              code: 'VALIDATION_ERROR',
-              details: validationResult.error.errors,
-              timestamp: new Date().toISOString(),
-              path: request.url
-            },
-            { status: 422 }
-          );
-        }
-
-        (request as any).validatedData = validationResult.data;
-        return await handler(request, context);
-      } catch (error) {
-        console.error('Validation middleware error:', error);
-        return NextResponse.json(
-          {
+          const response: ValidationResponse = {
             success: false,
-            error: 'Error de validación',
-            code: 'VALIDATION_MIDDLEWARE_ERROR',
+            error: 'Datos de entrada inválidos',
+            code: 'VALIDATION_ERROR',
+            details: validationResult.error.errors.map(err => ({
+              field: err.path.join('.'),
+              message: err.message,
+              code: err.code,
+              value: err.input
+            })),
             timestamp: new Date().toISOString(),
             path: request.url
-          },
-          { status: 500 }
-        );
+          };
+
+          return NextResponse.json(response, { status: 422 });
+        }
+
+        const requestWithValidation = request as NextRequest & { validatedData: z.infer<T> };
+        requestWithValidation.validatedData = validationResult.data;
+        
+        return await handler(requestWithValidation, context);
+      } catch (error) {
+        console.error('Validation middleware error:', error);
+        
+        const errorResponse: ValidationResponse = {
+          success: false,
+          error: 'Error de validación',
+          code: 'VALIDATION_MIDDLEWARE_ERROR',
+          timestamp: new Date().toISOString(),
+          path: request.url
+        };
+
+        return NextResponse.json(errorResponse, { status: 500 });
       }
     };
   };

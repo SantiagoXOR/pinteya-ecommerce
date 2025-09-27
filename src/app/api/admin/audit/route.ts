@@ -324,8 +324,8 @@ async function createAuditLog(
   tableName: string,
   recordId: string,
   action: string,
-  oldValues: any,
-  newValues: any,
+  oldValues: Record<string, unknown>,
+  newValues: Record<string, unknown>,
   userId: string,
   request: NextRequest
 ) {

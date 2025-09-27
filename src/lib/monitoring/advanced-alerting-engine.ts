@@ -134,7 +134,7 @@ export interface AdvancedAlert {
   status: AlertStatus;
   title: string;
   message: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   source: string;
   timestamp: number;
   acknowledgedBy?: string;
@@ -307,7 +307,7 @@ export class AdvancedAlertingEngine {
     severity: AlertSeverity,
     title: string,
     message: string,
-    details: Record<string, any> = {},
+    details: Record<string, unknown> = {},
     source: string = 'system',
     tags: string[] = []
   ): Promise<string> {
@@ -890,7 +890,7 @@ export class AdvancedAlertingEngine {
     );
   }
 
-  private async updateExistingAlert(alertId: string, newDetails: Record<string, any>): Promise<string> {
+  private async updateExistingAlert(alertId: string, newDetails: Record<string, unknown>): Promise<string> {
     const alert = this.alerts.get(alertId);
     if (alert) {
       alert.details = { ...alert.details, ...newDetails };
@@ -1040,7 +1040,7 @@ export const AdvancedAlertingUtils = {
     title: string,
     message: string,
     severity: AlertSeverity = AlertSeverity.MEDIUM,
-    details: Record<string, any> = {}
+    details: Record<string, unknown> = {}
   ): Promise<string> {
     return advancedAlertingEngine.createAlert(
       AlertType.PERFORMANCE,
@@ -1059,7 +1059,7 @@ export const AdvancedAlertingUtils = {
     title: string,
     message: string,
     severity: AlertSeverity = AlertSeverity.HIGH,
-    details: Record<string, any> = {}
+    details: Record<string, unknown> = {}
   ): Promise<string> {
     return advancedAlertingEngine.createAlert(
       AlertType.ERROR,
@@ -1078,7 +1078,7 @@ export const AdvancedAlertingUtils = {
     title: string,
     message: string,
     severity: AlertSeverity = AlertSeverity.MEDIUM,
-    details: Record<string, any> = {}
+    details: Record<string, unknown> = {}
   ): Promise<string> {
     return advancedAlertingEngine.createAlert(
       AlertType.CAPACITY,

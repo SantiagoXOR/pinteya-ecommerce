@@ -7,6 +7,20 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
+// Tipos específicos para NextAuth
+interface UserWithRole {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  image?: string | null;
+  role?: string;
+}
+
+interface SessionWithRole {
+  user: UserWithRole;
+  expires: string;
+}
+
 export const authOptions: NextAuthOptions = {
   // Configuración de providers
   providers: [
@@ -39,7 +53,7 @@ export const authOptions: NextAuthOptions = {
       
       // Agregar rol de administrador para usuarios específicos
       if (session.user.email === 'santiago@xor.com.ar') {
-        (session.user as any).role = 'admin';
+        (session as SessionWithRole).user.role = 'admin';
       }
 
       return session;

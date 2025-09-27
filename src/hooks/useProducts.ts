@@ -77,11 +77,12 @@ export function useProducts(options: UseProductsOptions = {}) {
           error: response.error || 'Error obteniendo productos',
         }));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error inesperado';
       setState(prev => ({
         ...prev,
         loading: false,
-        error: error.message || 'Error inesperado',
+        error: errorMessage,
       }));
     }
   }, [filters]);

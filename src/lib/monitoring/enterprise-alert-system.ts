@@ -50,8 +50,34 @@ export interface AlertCondition {
 
 export interface NotificationChannel {
   type: 'email' | 'slack' | 'webhook' | 'sms' | 'dashboard';
-  config: Record<string, any>;
+  config: NotificationConfig;
   enabled: boolean;
+}
+
+// Configuraciones específicas para cada tipo de notificación
+export interface NotificationConfig {
+  // Email config
+  to?: string[];
+  from?: string;
+  subject?: string;
+  
+  // Slack config
+  webhook?: string;
+  channel?: string;
+  username?: string;
+  
+  // Webhook config
+  url?: string;
+  method?: 'POST' | 'PUT';
+  headers?: Record<string, string>;
+  
+  // SMS config
+  phoneNumbers?: string[];
+  provider?: string;
+  
+  // Dashboard config
+  displayDuration?: number;
+  priority?: number;
 }
 
 export interface EscalationRule {
@@ -86,8 +112,34 @@ export interface Alert {
   resolvedBy?: string;
   
   // Metadatos
-  metadata: Record<string, any>;
+  metadata: AlertMetadata;
   tags: string[];
+}
+
+// Metadatos específicos para alertas
+export interface AlertMetadata {
+  // Información del contexto
+  source?: string;
+  environment?: 'development' | 'staging' | 'production';
+  version?: string;
+  
+  // Información técnica
+  errorCode?: string;
+  stackTrace?: string;
+  requestId?: string;
+  userId?: string;
+  
+  // Métricas relacionadas
+  threshold?: number;
+  actualValue?: number;
+  previousValue?: number;
+  
+  // Información de recuperación
+  recoveryActions?: string[];
+  relatedAlerts?: string[];
+  
+  // Información adicional
+  customFields?: Record<string, string | number | boolean>;
 }
 
 export interface AlertMetrics {
@@ -592,33 +644,33 @@ export class EnterpriseAlertSystem {
   /**
    * Envía notificación por email
    */
-  private async sendEmailNotification(alert: Alert, config: any): Promise<void> {
+  private async sendEmailNotification(alert: Alert, config: NotificationConfig): Promise<void> {
     // Implementación de email - en producción usar servicios como SendGrid, SES, etc.
-    console.log(`[ENTERPRISE_ALERTS] Email notification sent to ${config.recipients?.join(', ')}:`, alert.title);
+    console.log(`[ENTERPRISE_ALERTS] Email notification sent to ${config.to?.join(', ')}:`, alert.title);
   }
 
   /**
    * Envía notificación por Slack
    */
-  private async sendSlackNotification(alert: Alert, config: any): Promise<void> {
-    // Implementación de Slack - en producción usar Slack API
-    console.log(`[ENTERPRISE_ALERTS] Slack notification sent:`, alert.title);
+  private async sendSlackNotification(alert: Alert, config: NotificationConfig): Promise<void> {
+    // Implementación de Slack webhook
+    console.log(`[ENTERPRISE_ALERTS] Slack notification sent to ${config.channel}:`, alert.title);
   }
 
   /**
    * Envía notificación por webhook
    */
-  private async sendWebhookNotification(alert: Alert, config: any): Promise<void> {
-    // Implementación de webhook - en producción hacer HTTP POST
+  private async sendWebhookNotification(alert: Alert, config: NotificationConfig): Promise<void> {
+    // Implementación de webhook HTTP
     console.log(`[ENTERPRISE_ALERTS] Webhook notification sent to ${config.url}:`, alert.title);
   }
 
   /**
    * Envía notificación por SMS
    */
-  private async sendSMSNotification(alert: Alert, config: any): Promise<void> {
-    // Implementación de SMS - en producción usar servicios como Twilio
-    console.log(`[ENTERPRISE_ALERTS] SMS notification sent to ${config.phone}:`, alert.title);
+  private async sendSMSNotification(alert: Alert, config: NotificationConfig): Promise<void> {
+    // Implementación de SMS - en producción usar servicios como Twilio, AWS SNS, etc.
+    console.log(`[ENTERPRISE_ALERTS] SMS notification sent to ${config.phoneNumbers?.join(', ')}:`, alert.title);
   }
 
   /**
@@ -651,9 +703,9 @@ export class EnterpriseAlertSystem {
     try {
       await enterpriseAuditSystem.logEnterpriseEvent({
         user_id: 'system',
-        event_type: 'ALERT_EVENT' as any,
+        event_type: 'ALERT_EVENT' as 'ALERT_EVENT',
         event_category: 'monitoring',
-        severity: alert.severity as any,
+        severity: alert.severity as 'low' | 'medium' | 'high' | 'critical',
         description: `Alert ${action}: ${alert.title}`,
         metadata: {
           alert_id: alert.id,
@@ -676,7 +728,7 @@ export class EnterpriseAlertSystem {
         securityLevel: 'critical',
         ipAddress: '127.0.0.1',
         userAgent: 'EnterpriseAlertSystem/1.0',
-        supabase: {} as any,
+        supabase: null,
         validations: {
           jwtValid: true,
           csrfValid: true,

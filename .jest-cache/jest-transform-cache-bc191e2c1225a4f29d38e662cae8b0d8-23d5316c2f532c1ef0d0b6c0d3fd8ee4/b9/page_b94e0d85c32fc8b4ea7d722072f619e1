@@ -1,0 +1,333 @@
+737b7efb512bb2a193b56069aae74a47
+// ===================================
+// PINTEYA E-COMMERCE - MONITORING DASHBOARD PAGE
+// ===================================
+"use strict";
+
+/* istanbul ignore next */
+function cov_21476y07fe() {
+  var path = "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\app\\admin\\monitoring\\page.tsx";
+  var hash = "b0aa071d6830610d3342f602486333e8e7916ec1";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\app\\admin\\monitoring\\page.tsx",
+    statementMap: {
+      "0": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 7,
+          column: 3
+        }
+      },
+      "1": {
+        start: {
+          line: 9,
+          column: 4
+        },
+        end: {
+          line: 12,
+          column: 7
+        }
+      },
+      "2": {
+        start: {
+          line: 9,
+          column: 24
+        },
+        end: {
+          line: 12,
+          column: 7
+        }
+      },
+      "3": {
+        start: {
+          line: 14,
+          column: 0
+        },
+        end: {
+          line: 23,
+          column: 3
+        }
+      },
+      "4": {
+        start: {
+          line: 18,
+          column: 8
+        },
+        end: {
+          line: 18,
+          column: 30
+        }
+      },
+      "5": {
+        start: {
+          line: 21,
+          column: 8
+        },
+        end: {
+          line: 21,
+          column: 24
+        }
+      },
+      "6": {
+        start: {
+          line: 24,
+          column: 20
+        },
+        end: {
+          line: 24,
+          column: 48
+        }
+      },
+      "7": {
+        start: {
+          line: 25,
+          column: 15
+        },
+        end: {
+          line: 25,
+          column: 31
+        }
+      },
+      "8": {
+        start: {
+          line: 26,
+          column: 30
+        },
+        end: {
+          line: 26,
+          column: 63
+        }
+      },
+      "9": {
+        start: {
+          line: 27,
+          column: 17
+        },
+        end: {
+          line: 30,
+          column: 1
+        }
+      },
+      "10": {
+        start: {
+          line: 32,
+          column: 4
+        },
+        end: {
+          line: 37,
+          column: 7
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "_export",
+        decl: {
+          start: {
+            line: 8,
+            column: 9
+          },
+          end: {
+            line: 8,
+            column: 16
+          }
+        },
+        loc: {
+          start: {
+            line: 8,
+            column: 30
+          },
+          end: {
+            line: 13,
+            column: 1
+          }
+        },
+        line: 8
+      },
+      "1": {
+        name: "(anonymous_1)",
+        decl: {
+          start: {
+            line: 15,
+            column: 4
+          },
+          end: {
+            line: 15,
+            column: 5
+          }
+        },
+        loc: {
+          start: {
+            line: 17,
+            column: 15
+          },
+          end: {
+            line: 19,
+            column: 5
+          }
+        },
+        line: 17
+      },
+      "2": {
+        name: "(anonymous_2)",
+        decl: {
+          start: {
+            line: 20,
+            column: 4
+          },
+          end: {
+            line: 20,
+            column: 5
+          }
+        },
+        loc: {
+          start: {
+            line: 20,
+            column: 20
+          },
+          end: {
+            line: 22,
+            column: 5
+          }
+        },
+        line: 20
+      },
+      "3": {
+        name: "MonitoringPage",
+        decl: {
+          start: {
+            line: 31,
+            column: 9
+          },
+          end: {
+            line: 31,
+            column: 23
+          }
+        },
+        loc: {
+          start: {
+            line: 31,
+            column: 26
+          },
+          end: {
+            line: 38,
+            column: 1
+          }
+        },
+        line: 31
+      }
+    },
+    branchMap: {},
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0
+    },
+    b: {},
+    inputSourceMap: {
+      version: 3,
+      sources: ["C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\src\\app\\admin\\monitoring\\page.tsx"],
+      sourcesContent: ["// ===================================\r\n// PINTEYA E-COMMERCE - MONITORING DASHBOARD PAGE\r\n// ===================================\r\n\r\nimport { Metadata } from 'next';\r\nimport { Suspense } from 'react';\r\nimport { MonitoringClientPage } from './MonitoringClientPage';\r\n\r\nexport const metadata: Metadata = {\r\n  title: 'Dashboard de Monitoreo | Pinteya E-commerce Admin',\r\n  description: 'Dashboard de monitoreo en tiempo real para el sistema Pinteya E-commerce',\r\n};\r\n\r\n/**\r\n * P\xE1gina principal del dashboard de monitoreo (Server Component)\r\n */\r\nexport default function MonitoringPage() {\r\n  return (\r\n    <Suspense fallback={<div>Cargando dashboard de monitoreo...</div>}>\r\n      <MonitoringClientPage />\r\n    </Suspense>\r\n  );\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"],
+      names: ["MonitoringPage", "metadata", "title", "description", "Suspense", "fallback", "div", "MonitoringClientPage"],
+      mappings: "AAAA,sCAAsC;AACtC,iDAAiD;AACjD,sCAAsC;;;;;;;;;;;;QAWtC;;CAEC,GACD;eAAwBA;;QARXC;eAAAA;;;;uBAHY;sCACY;AAE9B,MAAMA,WAAqB;IAChCC,OAAO;IACPC,aAAa;AACf;AAKe,SAASH;IACtB,qBACE,qBAACI,eAAQ;QAACC,wBAAU,qBAACC;sBAAI;;kBACvB,cAAA,qBAACC,0CAAoB;;AAG3B"
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "b0aa071d6830610d3342f602486333e8e7916ec1"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_21476y07fe = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_21476y07fe();
+cov_21476y07fe().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+function _export(target, all) {
+  /* istanbul ignore next */
+  cov_21476y07fe().f[0]++;
+  cov_21476y07fe().s[1]++;
+  for (var name in all) {
+    /* istanbul ignore next */
+    cov_21476y07fe().s[2]++;
+    Object.defineProperty(target, name, {
+      enumerable: true,
+      get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+  }
+}
+/* istanbul ignore next */
+cov_21476y07fe().s[3]++;
+_export(exports, {
+  get
+  /**
+  * Página principal del dashboard de monitoreo (Server Component)
+  */
+  default() {
+    /* istanbul ignore next */
+    cov_21476y07fe().f[1]++;
+    cov_21476y07fe().s[4]++;
+    return MonitoringPage;
+  },
+  get metadata() {
+    /* istanbul ignore next */
+    cov_21476y07fe().f[2]++;
+    cov_21476y07fe().s[5]++;
+    return metadata;
+  }
+});
+const _jsxruntime =
+/* istanbul ignore next */
+(cov_21476y07fe().s[6]++, require("react/jsx-runtime"));
+const _react =
+/* istanbul ignore next */
+(cov_21476y07fe().s[7]++, require("react"));
+const _MonitoringClientPage =
+/* istanbul ignore next */
+(cov_21476y07fe().s[8]++, require("./MonitoringClientPage"));
+const metadata =
+/* istanbul ignore next */
+(cov_21476y07fe().s[9]++, {
+  title: 'Dashboard de Monitoreo | Pinteya E-commerce Admin',
+  description: 'Dashboard de monitoreo en tiempo real para el sistema Pinteya E-commerce'
+});
+function MonitoringPage() {
+  /* istanbul ignore next */
+  cov_21476y07fe().f[3]++;
+  cov_21476y07fe().s[10]++;
+  return /*#__PURE__*/(0, _jsxruntime.jsx)(_react.Suspense, {
+    fallback: /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+      children: "Cargando dashboard de monitoreo..."
+    }),
+    children: /*#__PURE__*/(0, _jsxruntime.jsx)(_MonitoringClientPage.MonitoringClientPage, {})
+  });
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJkZWZhdWx0IiwiY292XzIxNDc2eTA3ZmUiLCJmIiwicyIsIk1vbml0b3JpbmdQYWdlIiwibWV0YWRhdGEiLCJ0aXRsZSIsImRlc2NyaXB0aW9uIiwiX2pzeHJ1bnRpbWUiLCJqc3giLCJfcmVhY3QiLCJTdXNwZW5zZSIsImZhbGxiYWNrIiwiX01vbml0b3JpbmdDbGllbnRQYWdlIiwiTW9uaXRvcmluZ0NsaWVudFBhZ2UiXSwic291cmNlcyI6WyJDOlxcVXNlcnNcXG1hcnRpXFxEZXNrdG9wXFxERVNBUlJPTExPU1dcXEJPSUxFUlBMQVRURSBFLUNPTU1FUkNFXFxzcmNcXGFwcFxcYWRtaW5cXG1vbml0b3JpbmdcXHBhZ2UudHN4Il0sInNvdXJjZXNDb250ZW50IjpbIi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XHJcbi8vIFBJTlRFWUEgRS1DT01NRVJDRSAtIE1PTklUT1JJTkcgREFTSEJPQVJEIFBBR0VcclxuLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cclxuXHJcbmltcG9ydCB7IE1ldGFkYXRhIH0gZnJvbSAnbmV4dCc7XHJcbmltcG9ydCB7IFN1c3BlbnNlIH0gZnJvbSAncmVhY3QnO1xyXG5pbXBvcnQgeyBNb25pdG9yaW5nQ2xpZW50UGFnZSB9IGZyb20gJy4vTW9uaXRvcmluZ0NsaWVudFBhZ2UnO1xyXG5cclxuZXhwb3J0IGNvbnN0IG1ldGFkYXRhOiBNZXRhZGF0YSA9IHtcclxuICB0aXRsZTogJ0Rhc2hib2FyZCBkZSBNb25pdG9yZW8gfCBQaW50ZXlhIEUtY29tbWVyY2UgQWRtaW4nLFxyXG4gIGRlc2NyaXB0aW9uOiAnRGFzaGJvYXJkIGRlIG1vbml0b3JlbyBlbiB0aWVtcG8gcmVhbCBwYXJhIGVsIHNpc3RlbWEgUGludGV5YSBFLWNvbW1lcmNlJyxcclxufTtcclxuXHJcbi8qKlxyXG4gKiBQw6FnaW5hIHByaW5jaXBhbCBkZWwgZGFzaGJvYXJkIGRlIG1vbml0b3JlbyAoU2VydmVyIENvbXBvbmVudClcclxuICovXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIE1vbml0b3JpbmdQYWdlKCkge1xyXG4gIHJldHVybiAoXHJcbiAgICA8U3VzcGVuc2UgZmFsbGJhY2s9ezxkaXY+Q2FyZ2FuZG8gZGFzaGJvYXJkIGRlIG1vbml0b3Jlby4uLjwvZGl2Pn0+XHJcbiAgICAgIDxNb25pdG9yaW5nQ2xpZW50UGFnZSAvPlxyXG4gICAgPC9TdXNwZW5zZT5cclxuICApO1xyXG59XHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcbiJdLCJtYXBwaW5ncyI6IkFBQUE7QUFDQTtBQUNBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQVdBOzs7RUFHQUEsUUFBQTtJQUFBO0lBQUFDLGNBQUEsR0FBQUMsQ0FBQTtJQUFBRCxjQUFBLEdBQUFFLENBQUE7V0FBd0JDLGNBQUE7O01BUlhDLFNBQUE7SUFBQTtJQUFBSixjQUFBLEdBQUFDLENBQUE7SUFBQUQsY0FBQSxHQUFBRSxDQUFBO1dBQUFFLFFBQUE7Ozs7Ozs7O2tDQUhZOzs7a0NBQ1k7QUFFOUIsTUFBTUEsUUFBQTtBQUFBO0FBQUEsQ0FBQUosY0FBQSxHQUFBRSxDQUFBLE9BQXFCO0VBQ2hDRyxLQUFBLEVBQU87RUFDUEMsV0FBQSxFQUFhO0FBQ2Y7QUFLZSxTQUFTSCxlQUFBO0VBQUE7RUFBQUgsY0FBQSxHQUFBQyxDQUFBO0VBQUFELGNBQUEsR0FBQUUsQ0FBQTtFQUN0QixvQkFDRSxJQUFBSyxXQUFBLENBQUFDLEdBQUEsRUFBQ0MsTUFBQSxDQUFBQyxRQUFRO0lBQUNDLFFBQUEsZUFBVSxJQUFBSixXQUFBLENBQUFDLEdBQUEsRUFBQztnQkFBSTs7Y0FDdkIsaUJBQUFELFdBQUEsQ0FBQUMsR0FBQSxFQUFDSSxxQkFBQSxDQUFBQyxvQkFBb0I7O0FBRzNCIiwiaWdub3JlTGlzdCI6W119

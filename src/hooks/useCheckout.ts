@@ -414,13 +414,14 @@ export const useCheckout = () => {
         isLoading: false
       }));
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error procesando el pago';
       console.error('Error en express checkout:', error);
       setCheckoutState(prev => ({
         ...prev,
         isLoading: false,
         step: 'form',
-        errors: { general: error.message || 'Error procesando el pago' },
+        errors: { general: errorMessage },
       }));
     }
   }, [checkoutState.formData, cartItems, validateExpressForm, calculateShippingCost, dispatch]);
@@ -497,13 +498,14 @@ export const useCheckout = () => {
         isLoading: false
       }));
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error procesando el pago';
       console.error('Error en checkout:', error);
       setCheckoutState(prev => ({
         ...prev,
         isLoading: false,
         step: 'form',
-        errors: { general: error.message || 'Error procesando el pago' },
+        errors: { general: errorMessage },
       }));
     }
   }, [checkoutState.formData, cartItems, validateForm, calculateShippingCost, dispatch]);

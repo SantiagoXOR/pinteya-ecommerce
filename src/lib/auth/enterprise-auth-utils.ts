@@ -26,7 +26,7 @@ export interface EnterpriseAuthContext {
   
   // Información de la sesión
   sessionValid: boolean;
-  sessionMetadata?: any;
+  sessionMetadata?: Record<string, unknown>;
   
   // Información de seguridad
   securityLevel: 'low' | 'medium' | 'high' | 'critical';
@@ -141,13 +141,7 @@ export async function getEnterpriseAuthContext(
             rateLimitPassed: true,
             originValid: true
           }
-        },
-        user: {
-          id: 'dev-admin',
-          email: 'santiago@xor.com.ar',
-          name: 'Dev Admin'
-        },
-        supabase: supabaseAdmin
+        }
       };
     }
 
@@ -205,7 +199,7 @@ export async function getEnterpriseAuthContext(
       }
     }
 
-    // 3. AUTENTICACIÓN BÁSICA CON CLERK
+    // 3. AUTENTICACIÓN BÁSICA CON NEXTAUTH
     let userId: string;
     let sessionId: string | undefined;
     let userEmail: string | undefined;
@@ -217,8 +211,8 @@ export async function getEnterpriseAuthContext(
         success: false,
         error: 'Pages Router no soportado con NextAuth.js',
         code: 'NOT_SUPPORTED',
-          status: 401
-        };
+        status: 401
+      };
     } else {
       // App Router - NextAuth.js
       const session = await auth();
@@ -565,7 +559,7 @@ export function withEnterpriseAuth(
 
           if ('query' in request) {
             // Pages Router
-            const res = args[0] as any;
+            const res = args[0] as ResponseLike;
             Object.entries(headers).forEach(([key, value]) => {
               res.setHeader(key, value);
             });
@@ -580,7 +574,7 @@ export function withEnterpriseAuth(
         }
 
         // Añadir contexto enterprise al request
-        (request as any).enterpriseAuth = authResult.context;
+        (request as RequestWithEnterpriseAuth).enterpriseAuth = authResult.context;
 
         return handler(request, ...args);
 
@@ -596,7 +590,7 @@ export function withEnterpriseAuth(
 
         if ('query' in request) {
           // Pages Router
-          const res = args[0] as any;
+          const res = args[0] as ResponseLike;
           return res.status(500).json(errorResponse);
         } else {
           // App Router
@@ -607,6 +601,22 @@ export function withEnterpriseAuth(
         }
       }
     };
+  };
+}
+
+// Tipos para request con contexto enterprise
+export interface RequestWithEnterpriseAuth extends NextRequest {
+  enterpriseAuth?: EnterpriseAuthContext;
+}
+
+export interface NextApiRequestWithEnterpriseAuth extends NextApiRequest {
+  enterpriseAuth?: EnterpriseAuthContext;
+}
+
+export interface ResponseLike {
+  setHeader: (key: string, value: string) => void;
+  status: (code: number) => {
+    json: (data: unknown) => unknown;
   };
 }
 
@@ -622,7 +632,7 @@ export const withCriticalAuth = () => withEnterpriseAuth(requireCriticalAuth);
 /**
  * Middleware para operaciones de alto nivel
  */
-export const withHighAuth = (requiredPermissions?: string[]) =>
+export const withHighAuth = (requiredPermissions?: string[]) => 
   withEnterpriseAuth((req) => requireHighAuth(req, requiredPermissions));
 
 /**
@@ -636,13 +646,13 @@ export const withMediumAuth = () => withEnterpriseAuth(requireMediumAuth);
 export const withBasicAuth = () => withEnterpriseAuth(requireBasicAuth);
 
 /**
- * Middleware para admin
+ * Middleware para admin con permisos personalizados
  */
 export const withAdminAuth = (requiredPermissions?: string[]) =>
   withEnterpriseAuth((req) => requireAdminAuth(req, requiredPermissions));
 
 /**
- * Middleware para pagos
+ * Middleware para APIs de pagos
  */
 export const withPaymentAuth = () => withEnterpriseAuth(requirePaymentAuth);
 

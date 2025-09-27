@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import { OrderEnterprise, OrderItemEnterprise } from '@/types/orders-enterprise';
 
 // =====================================================
 // CONFIGURACIÓN
@@ -110,13 +111,13 @@ async function validateOrderAccess(orderId: string, userId: string): Promise<any
   return order;
 }
 
-async function createShipmentRecord(orderData: any, validatedData: any): Promise<any> {
+async function createShipmentRecord(orderData: OrderEnterprise, validatedData: CreateShipmentFromOrderSchema): Promise<any> {
   const shipmentNumber = generateShipmentNumber();
   
   // Calcular peso total si no se proporciona
   let totalWeight = validatedData.weight_kg;
   if (!totalWeight) {
-    totalWeight = orderData.order_items.reduce((sum: number, item: any) => {
+    totalWeight = orderData.order_items.reduce((sum: number, item: OrderItemEnterprise) => {
       const itemWeight = item.products?.weight_kg || 0.5; // Peso por defecto 500g
       return sum + (itemWeight * item.quantity);
     }, 0);

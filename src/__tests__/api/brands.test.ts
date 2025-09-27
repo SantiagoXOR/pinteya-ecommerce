@@ -117,7 +117,7 @@ describe('API de Marcas', () => {
       expect(data.data).toBeInstanceOf(Array);
       
       // Verificar que todas las marcas tienen al menos 2 productos
-      data.data.forEach((brand: any) => {
+      data.data.forEach((brand: { products_count: number }) => {
         expect(brand.products_count).toBeGreaterThanOrEqual(2);
       });
     });
@@ -204,7 +204,7 @@ describe('API de Marcas', () => {
       expect(data.success).toBe(true);
       
       // Verificar que los precios promedio son números válidos
-      data.data.forEach((stat: any) => {
+      data.data.forEach((stat: { avg_price: number; min_price: number; max_price: number }) => {
         expect(typeof stat.avg_price).toBe('number');
         expect(stat.avg_price).toBeGreaterThan(0);
         expect(stat.min_price).toBeLessThanOrEqual(stat.max_price);
@@ -220,7 +220,7 @@ describe('API de Marcas', () => {
       expect(data.success).toBe(true);
       
       // Verificar conteo de productos con descuento
-      data.data.forEach((stat: any) => {
+      data.data.forEach((stat: { discounted_products: number; products_count: number }) => {
         expect(typeof stat.discounted_products).toBe('number');
         expect(stat.discounted_products).toBeGreaterThanOrEqual(0);
         expect(stat.discounted_products).toBeLessThanOrEqual(stat.products_count);

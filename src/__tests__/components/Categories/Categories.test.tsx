@@ -24,7 +24,7 @@ jest.mock('next/navigation', () => ({
 
 // Mock Next.js Image component
 jest.mock('next/image', () => {
-  return function MockImage({ src, alt, ...props }: any) {
+  return function MockImage({ src, alt, ...props }: React.ComponentProps<'img'>) {
     return <img src={src} alt={alt} {...props} />;
   };
 });

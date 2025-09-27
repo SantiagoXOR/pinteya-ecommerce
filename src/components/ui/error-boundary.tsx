@@ -14,13 +14,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
-  errorInfo?: any;
+  errorInfo?: React.ErrorInfo;
 }
 
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: any) => void;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   title?: string;
   description?: string;
   showDetails?: boolean;
@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
     this.setState({

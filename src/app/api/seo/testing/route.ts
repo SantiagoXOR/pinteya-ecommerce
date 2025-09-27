@@ -320,7 +320,12 @@ export async function OPTIONS(request: NextRequest) {
 // FUNCIONES DE UTILIDAD
 // ===================================
 
-function generateMetadataRecommendations(results: any[]): string[] {
+function generateMetadataRecommendations(results: Array<{
+  testName: string;
+  status: 'passed' | 'failed' | 'warning';
+  message?: string;
+  details?: any;
+}>): string[] {
   const recommendations = [];
 
   const failedTitles = results.filter(r => r.testName.includes('Title') && r.status === 'failed');
@@ -351,7 +356,12 @@ function generateMetadataRecommendations(results: any[]): string[] {
   return recommendations;
 }
 
-function generateStructuredDataRecommendations(results: any[]): string[] {
+function generateStructuredDataRecommendations(results: Array<{
+  testName: string;
+  status: 'passed' | 'failed' | 'warning';
+  message?: string;
+  details?: any;
+}>): string[] {
   const recommendations = [];
 
   const failedPresence = results.filter(r => r.testName.includes('Presence') && r.status === 'failed');
@@ -377,7 +387,12 @@ function generateStructuredDataRecommendations(results: any[]): string[] {
   return recommendations;
 }
 
-function generateLinksRecommendations(results: any[]): string[] {
+function generateLinksRecommendations(results: Array<{
+  testName: string;
+  status: 'passed' | 'failed' | 'warning';
+  message?: string;
+  details?: any;
+}>): string[] {
   const recommendations = [];
 
   const brokenLinks = results.filter(r => r.testName.includes('Broken') && r.status === 'failed');
@@ -403,7 +418,12 @@ function generateLinksRecommendations(results: any[]): string[] {
   return recommendations;
 }
 
-function generateComplianceRecommendations(results: any[]): string[] {
+function generateComplianceRecommendations(results: Array<{
+  testName: string;
+  status: 'passed' | 'failed' | 'warning';
+  message?: string;
+  details?: any;
+}>): string[] {
   const recommendations = [];
 
   const httpsIssues = results.filter(r => r.testName.includes('HTTPS') && r.status === 'failed');

@@ -19,7 +19,19 @@ export async function POST(request: NextRequest) {
 
     console.log(`🔍 Analizando ${type} para URL: ${url}`);
 
-    let result: any = {};
+    let result: {
+      contentAnalysis?: any;
+      suggestions?: any;
+      keywordSuggestions?: string[];
+      competitorAnalysis?: any;
+      technicalMetrics?: any;
+      coreWebVitals?: any;
+      indexationStatus?: any;
+      overallScore?: number;
+      currentMetadata?: any;
+      optimizedMetadata?: any;
+      recommendations?: string[];
+    } = {};
 
     switch (type) {
       case 'content':
@@ -161,7 +173,15 @@ export async function GET(request: NextRequest) {
     );
 
     // Filtrar datos según parámetros
-    const response: any = {
+    const response: {
+      success: boolean;
+      period: string;
+      metrics: any;
+      summary: any;
+      timestamp: string;
+      keywords?: any;
+      alerts?: any;
+    } = {
       success: true,
       period,
       metrics: report.metrics,

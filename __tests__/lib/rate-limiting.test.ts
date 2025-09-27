@@ -10,6 +10,13 @@ import {
   RateLimitConfig 
 } from '@/lib/rate-limiting/rate-limiter';
 
+interface MockNextRequest {
+  ip: string;
+  method: string;
+  headers: Map<string, string>;
+  url: string;
+}
+
 // Mock de NextRequest
 function createMockRequest(ip: string = '127.0.0.1', method: string = 'GET'): NextRequest {
   return {
@@ -20,7 +27,7 @@ function createMockRequest(ip: string = '127.0.0.1', method: string = 'GET'): Ne
       ['user-agent', 'test-agent']
     ]),
     url: 'http://localhost:3000/api/test',
-  } as any;
+  } as MockNextRequest as NextRequest;
 }
 
 describe('Rate Limiting Middleware', () => {
@@ -199,7 +206,7 @@ describe('Rate Limiting Middleware', () => {
           ['user-agent', 'test-agent']
         ]),
         url: 'http://localhost:3000/api/test',
-      } as any;
+      } as MockNextRequest as NextRequest;
 
       const config: RateLimitConfig = {
         windowMs: 60000,
@@ -225,7 +232,7 @@ describe('Rate Limiting Middleware', () => {
           ['user-agent', 'test-agent']
         ]),
         url: 'http://localhost:3000/api/test',
-      } as any;
+      } as MockNextRequest as NextRequest;
 
       const config: RateLimitConfig = {
         windowMs: 60000,
@@ -250,7 +257,7 @@ describe('Rate Limiting Middleware', () => {
           ['user-agent', 'test-agent']
         ]),
         url: 'http://localhost:3000/api/test',
-      } as any;
+      } as MockNextRequest as NextRequest;
 
       const config: RateLimitConfig = {
         windowMs: 60000,

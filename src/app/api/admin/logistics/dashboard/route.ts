@@ -11,6 +11,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/config';
 import { createClient } from '@supabase/supabase-js';
+import { Database } from '@/types/database';
 import {
   LogisticsDashboardResponse,
   LogisticsStats,
@@ -55,7 +56,7 @@ async function validateAdminAuth(request: NextRequest) {
 // FUNCIONES DE DATOS
 // =====================================================
 
-async function getLogisticsStats(supabase: any): Promise<LogisticsStats> {
+async function getLogisticsStats(supabase: ReturnType<typeof createClient<Database>>): Promise<LogisticsStats> {
   // Obtener estadísticas basadas en órdenes reales
   const { data: orders, error } = await supabase
     .from('orders')
@@ -113,7 +114,7 @@ async function getLogisticsStats(supabase: any): Promise<LogisticsStats> {
   };
 }
 
-async function getRecentShipments(supabase: any): Promise<Shipment[]> {
+async function getRecentShipments(supabase: ReturnType<typeof createClient<Database>>): Promise<Shipment[]> {
   // Obtener órdenes reales con información de envío
   const { data: orders, error } = await supabase
     .from('orders')
@@ -188,7 +189,7 @@ async function getRecentShipments(supabase: any): Promise<Shipment[]> {
   });
 }
 
-async function getLogisticsAlerts(supabase: any): Promise<LogisticsAlert[]> {
+async function getLogisticsAlerts(supabase: ReturnType<typeof createClient<Database>>): Promise<LogisticsAlert[]> {
   const alerts: LogisticsAlert[] = [];
 
   // Alertas por órdenes pendientes de envío (más de 2 días)
@@ -238,7 +239,7 @@ async function getLogisticsAlerts(supabase: any): Promise<LogisticsAlert[]> {
   return alerts;
 }
 
-async function getPerformanceMetrics(supabase: any): Promise<PerformanceMetric[]> {
+async function getPerformanceMetrics(supabase: ReturnType<typeof createClient<Database>>): Promise<PerformanceMetric[]> {
   // Obtener métricas basadas en órdenes reales de los últimos 30 días
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -277,7 +278,7 @@ async function getPerformanceMetrics(supabase: any): Promise<PerformanceMetric[]
   return Object.values(dailyMetrics).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-async function getCarrierPerformance(supabase: any): Promise<CarrierPerformance[]> {
+async function getCarrierPerformance(supabase: ReturnType<typeof createClient<Database>>): Promise<CarrierPerformance[]> {
   // Obtener órdenes reales y couriers
   const { data: orders } = await supabase
     .from('orders')

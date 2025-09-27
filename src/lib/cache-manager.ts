@@ -81,7 +81,7 @@ export class CacheManager {
   /**
    * Serializa datos para almacenamiento
    */
-  private serialize(data: any, config: CacheConfig): string {
+  private serialize<T>(data: T, config: CacheConfig): string {
     try {
       let serialized = config.serialize ? JSON.stringify(data) : data.toString();
       
@@ -100,7 +100,7 @@ export class CacheManager {
   /**
    * Deserializa datos del cache
    */
-  private deserialize(data: string, config: CacheConfig): any {
+  private deserialize<T>(data: string, config: CacheConfig): T {
     try {
       let deserialized = data;
       
@@ -145,7 +145,7 @@ export class CacheManager {
         return null;
       }
 
-      const result = this.deserialize(cached, config);
+      const result = this.deserialize<T>(cached, config);
       
       logger.info(LogCategory.API, 'Cache hit');
 
@@ -164,7 +164,7 @@ export class CacheManager {
     const cacheKey = this.generateKey(config, key);
 
     try {
-      const serialized = this.serialize(value, config);
+      const serialized = this.serialize<T>(value, config);
       const success = await redisCache.set(cacheKey, serialized, config.ttl);
       
       logger.info(LogCategory.API, 'Cache set');

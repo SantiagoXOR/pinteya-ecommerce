@@ -3,53 +3,12 @@
 // ===================================
 
 import { useState, useEffect } from 'react';
+import { UseUserOrdersReturn } from '@/types/hooks';
 
-export interface OrderItem {
-  id: number;
-  quantity: number;
-  price: string;
-  products: {
-    id: number;
-    name: string;
-    images: any;
-  };
-}
-
-export interface UserOrder {
-  id: number;
-  user_id: string;
-  total: string;
-  status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
-  payment_id: string;
-  shipping_address: any;
-  created_at: string;
-  updated_at: string;
-  order_items: OrderItem[];
-}
-
-export interface OrderStatistics {
-  total_orders: number;
-  total_spent: number;
-  pending_orders: number;
-  completed_orders: number;
-}
-
-export interface OrderPagination {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
-}
-
-export interface UseUserOrdersReturn {
-  orders: UserOrder[];
-  loading: boolean;
-  error: string | null;
-  pagination: OrderPagination;
-  statistics: OrderStatistics;
-  fetchOrders: (page?: number, status?: string) => void;
-  refreshOrders: () => void;
-}
+// ===================================
+// INTERFACES
+// ===================================
+// Interfaces movidas a @/types/hooks para reutilización
 
 export function useUserOrders(initialPage = 1, initialStatus = 'all'): UseUserOrdersReturn {
   const [orders, setOrders] = useState<UserOrder[]>([]);

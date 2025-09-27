@@ -353,7 +353,7 @@ async function refreshDashboardData(): Promise<NextResponse> {
   }
 }
 
-async function runQuickAudit(data: any): Promise<NextResponse> {
+async function runQuickAudit(data: { urls?: string[] }): Promise<NextResponse> {
   try {
     const testingSuite = SEOTestingSuite.getInstance();
     

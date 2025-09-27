@@ -8,6 +8,22 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { jest } from '@jest/globals';
 import '@testing-library/jest-dom';
 
+// Interfaces para tipado
+interface UIComponentProps {
+  children?: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  value?: number | string;
+  title?: string;
+  actions?: React.ReactNode;
+}
+
+interface MockFetchData {
+  success: boolean;
+  data: unknown;
+}
+
 // Mock de Next.js
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -39,15 +55,15 @@ jest.mock('@clerk/nextjs', () => ({
 
 // Mock de componentes UI
 jest.mock('@/components/ui/card', () => ({
-  Card: ({ children, className }: any) => <div className={className}>{children}</div>,
-  CardContent: ({ children }: any) => <div>{children}</div>,
-  CardDescription: ({ children }: any) => <div>{children}</div>,
-  CardHeader: ({ children }: any) => <div>{children}</div>,
-  CardTitle: ({ children }: any) => <h3>{children}</h3>,
+  Card: ({ children, className }: UIComponentProps) => <div className={className}>{children}</div>,
+  CardContent: ({ children }: UIComponentProps) => <div>{children}</div>,
+  CardDescription: ({ children }: UIComponentProps) => <div>{children}</div>,
+  CardHeader: ({ children }: UIComponentProps) => <div>{children}</div>,
+  CardTitle: ({ children }: UIComponentProps) => <h3>{children}</h3>,
 }));
 
 jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, disabled, ...props }: any) => (
+  Button: ({ children, onClick, disabled, ...props }: UIComponentProps) => (
     <button onClick={onClick} disabled={disabled} {...props}>
       {children}
     </button>
@@ -55,20 +71,20 @@ jest.mock('@/components/ui/button', () => ({
 }));
 
 jest.mock('@/components/ui/badge', () => ({
-  Badge: ({ children, className }: any) => <span className={className}>{children}</span>,
+  Badge: ({ children, className }: UIComponentProps) => <span className={className}>{children}</span>,
 }));
 
 jest.mock('@/components/ui/progress', () => ({
-  Progress: ({ value }: any) => <div data-testid="progress" data-value={value}></div>,
+  Progress: ({ value }: UIComponentProps) => <div data-testid="progress" data-value={value}></div>,
 }));
 
 jest.mock('@/components/ui/alert', () => ({
-  Alert: ({ children }: any) => <div role="alert">{children}</div>,
-  AlertDescription: ({ children }: any) => <div>{children}</div>,
+  Alert: ({ children }: UIComponentProps) => <div role="alert">{children}</div>,
+  AlertDescription: ({ children }: UIComponentProps) => <div>{children}</div>,
 }));
 
 jest.mock('@/components/admin/layout/AdminLayout', () => ({
-  AdminLayout: ({ children, title, actions }: any) => (
+  AdminLayout: ({ children, title, actions }: UIComponentProps) => (
     <div>
       <h1>{title}</h1>
       {actions && <div data-testid="actions">{actions}</div>}
@@ -150,11 +166,11 @@ const mockAlerts = [
 // SETUP Y HELPERS
 // ===================================
 
-const mockFetch = (data: any, status = 200) => {
+const mockFetch = (data: unknown, status = 200) => {
   (global.fetch as jest.Mock).mockResolvedValueOnce({
     ok: status >= 200 && status < 300,
     status,
-    json: async () => ({ success: true, data }),
+    json: async (): Promise<MockFetchData> => ({ success: true, data }),
   });
 };
 

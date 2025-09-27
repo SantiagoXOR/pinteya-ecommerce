@@ -3,9 +3,25 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { CartSummary } from '../cart-summary'
 
+interface PriceDisplayProps {
+  amount: number;
+  originalAmount?: number;
+  className?: string;
+}
+
+interface ShippingInfoProps {
+  options: string[];
+  selectedOption: string;
+}
+
+interface EnhancedProductCardProps {
+  title: string;
+  context: string;
+}
+
 // Mock de los componentes del Design System
 jest.mock('../price-display', () => ({
-  PriceDisplay: ({ amount, originalAmount, className }: any) => (
+  PriceDisplay: ({ amount, originalAmount, className }: PriceDisplayProps) => (
     <div data-testid="price-display" className={className}>
       ${(amount / 100).toFixed(2)}
       {originalAmount && ` (was $${(originalAmount / 100).toFixed(2)})`}
@@ -14,7 +30,7 @@ jest.mock('../price-display', () => ({
 }))
 
 jest.mock('../shipping-info', () => ({
-  ShippingInfo: ({ options, selectedOption }: any) => (
+  ShippingInfo: ({ options, selectedOption }: ShippingInfoProps) => (
     <div data-testid="shipping-info">
       Shipping: {selectedOption}
     </div>
@@ -22,7 +38,7 @@ jest.mock('../shipping-info', () => ({
 }))
 
 jest.mock('../product-card-enhanced', () => ({
-  EnhancedProductCard: ({ title, context }: any) => (
+  EnhancedProductCard: ({ title, context }: EnhancedProductCardProps) => (
     <div data-testid="enhanced-product-card">
       {title} - {context}
     </div>
