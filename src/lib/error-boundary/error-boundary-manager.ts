@@ -391,7 +391,7 @@ class ErrorBoundaryManager {
 
   private async reportToSupabaseAnalytics(errorMetrics: ErrorMetrics, error: Error) {
     try {
-      const { supabase } = await import('../../supabase/client');
+      const { supabase } = await import('../integrations/supabase/client');
       
       await supabase.from('analytics_events').insert({
         event_name: 'error_boundary_triggered',
