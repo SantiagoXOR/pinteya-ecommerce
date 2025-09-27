@@ -1,25 +1,18 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // API Unificada para Creación de Usuario Administrador
 // Combina funcionalidad básica y enterprise en un solo endpoint
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { createClient } from '@supabase/supabase-js';
-import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { 
-  requireCriticalAuth 
-} from '@/lib/auth/enterprise-auth-utils';
-import {
-  executeWithRLS,
-  checkRLSPermission
-} from '@/lib/auth/enterprise-rls-utils';
-import {
-  invalidateUserCache
-} from '@/lib/auth/enterprise-cache';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
+import { requireCriticalAuth } from '@/lib/auth/enterprise-auth-utils'
+import { executeWithRLS, checkRLSPermission } from '@/lib/auth/enterprise-rls-utils'
+import { invalidateUserCache } from '@/lib/auth/enterprise-cache'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -31,18 +24,20 @@ const CreateAdminUserSchema = z.object({
   password: z.string().min(8, 'Contraseña debe tener al menos 8 caracteres'),
   firstName: z.string().default('Admin'),
   lastName: z.string().default('User'),
-  permissions: z.array(z.string()).default([
-    'admin_access', 
-    'user_management', 
-    'products_create', 
-    'products_update', 
-    'products_delete'
-  ]),
+  permissions: z
+    .array(z.string())
+    .default([
+      'admin_access',
+      'user_management',
+      'products_create',
+      'products_update',
+      'products_delete',
+    ]),
   mode: z.enum(['basic', 'enterprise']).default('basic'),
-  enforceComplexPassword: z.boolean().default(false)
-});
+  enforceComplexPassword: z.boolean().default(false),
+})
 
-type CreateAdminUserRequest = z.infer<typeof CreateAdminUserSchema>;
+type CreateAdminUserRequest = z.infer<typeof CreateAdminUserSchema>
 
 // ===================================
 // CONFIGURACIÓN DE SEGURIDAD
@@ -50,56 +45,61 @@ type CreateAdminUserRequest = z.infer<typeof CreateAdminUserSchema>;
 
 const SECURITY_KEYS = {
   basic: 'CREATE_ADMIN_PINTEYA_2025',
-  enterprise: 'CREATE_ADMIN_PINTEYA_ENTERPRISE_2025'
-};
+  enterprise: 'CREATE_ADMIN_PINTEYA_ENTERPRISE_2025',
+}
 
 const PASSWORD_REQUIREMENTS = {
   basic: {
     minLength: 8,
-    requireComplexity: false
+    requireComplexity: false,
   },
   enterprise: {
     minLength: 12,
-    requireComplexity: true
-  }
-};
+    requireComplexity: true,
+  },
+}
 
 // ===================================
 // UTILIDADES DE VALIDACIÓN
 // ===================================
 
-function validatePassword(password: string, mode: 'basic' | 'enterprise', enforceComplexity: boolean = false) {
-  const requirements = PASSWORD_REQUIREMENTS[mode];
-  const shouldCheckComplexity = mode === 'enterprise' || enforceComplexity;
+function validatePassword(
+  password: string,
+  mode: 'basic' | 'enterprise',
+  enforceComplexity: boolean = false
+) {
+  const requirements = PASSWORD_REQUIREMENTS[mode]
+  const shouldCheckComplexity = mode === 'enterprise' || enforceComplexity
 
   // Validar longitud mínima
   if (password.length < requirements.minLength) {
     return {
       valid: false,
-      error: `La contraseña debe tener al menos ${requirements.minLength} caracteres${mode === 'enterprise' ? ' para admin enterprise' : ''}`
-    };
+      error: `La contraseña debe tener al menos ${requirements.minLength} caracteres${mode === 'enterprise' ? ' para admin enterprise' : ''}`,
+    }
   }
 
   // Validar complejidad si es requerida
   if (shouldCheckComplexity) {
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password)
+    const hasLowerCase = /[a-z]/.test(password)
+    const hasNumbers = /\d/.test(password)
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
 
     if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
       return {
         valid: false,
-        error: 'La contraseña debe contener mayúsculas, minúsculas, números y caracteres especiales'
-      };
+        error:
+          'La contraseña debe contener mayúsculas, minúsculas, números y caracteres especiales',
+      }
     }
   }
 
-  return { valid: true };
+  return { valid: true }
 }
 
 function validateSecurityKey(key: string, mode: 'basic' | 'enterprise') {
-  return key === SECURITY_KEYS[mode];
+  return key === SECURITY_KEYS[mode]
 }
 
 // ===================================
@@ -107,7 +107,7 @@ function validateSecurityKey(key: string, mode: 'basic' | 'enterprise') {
 // ===================================
 
 async function createAdminUserBasic(params: CreateAdminUserRequest) {
-  const { email, password, firstName, lastName } = params;
+  const { email, password, firstName, lastName } = params
 
   // Usar cliente básico de Supabase
   const supabase = createClient(
@@ -116,19 +116,19 @@ async function createAdminUserBasic(params: CreateAdminUserRequest) {
     {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     }
-  );
+  )
 
   // Verificar si el usuario ya existe en auth.users
-  const { data: existingAuthUser } = await supabase.auth.admin.listUsers();
-  const userExists = existingAuthUser.users.find(u => u.email === email);
+  const { data: existingAuthUser } = await supabase.auth.admin.listUsers()
+  const userExists = existingAuthUser.users.find(u => u.email === email)
 
-  let authUser;
+  let authUser
 
   if (userExists) {
-    authUser = userExists;
+    authUser = userExists
   } else {
     // Crear usuario en Supabase Auth
     const { data: newAuthUser, error: authError } = await supabase.auth.admin.createUser({
@@ -139,15 +139,15 @@ async function createAdminUserBasic(params: CreateAdminUserRequest) {
         first_name: firstName,
         last_name: lastName,
         role: 'admin',
-        created_via: 'basic_api'
-      }
-    });
+        created_via: 'basic_api',
+      },
+    })
 
     if (authError) {
-      throw new Error(`Error creando usuario en Auth: ${authError.message}`);
+      throw new Error(`Error creando usuario en Auth: ${authError.message}`)
     }
 
-    authUser = newAuthUser.user;
+    authUser = newAuthUser.user
   }
 
   // Verificar si el perfil ya existe
@@ -155,7 +155,7 @@ async function createAdminUserBasic(params: CreateAdminUserRequest) {
     .from('user_profiles')
     .select('*')
     .eq('email', email)
-    .single();
+    .single()
 
   if (existingProfile) {
     // Actualizar el perfil existente
@@ -165,37 +165,39 @@ async function createAdminUserBasic(params: CreateAdminUserRequest) {
         supabase_user_id: authUser.id,
         first_name: firstName,
         last_name: lastName,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('email', email)
-      .select(`
+      .select(
+        `
         *,
         user_roles (
           role_name,
           permissions
         )
-      `)
-      .single();
+      `
+      )
+      .single()
 
     if (updateError) {
-      throw new Error(`Error actualizando perfil: ${updateError.message}`);
+      throw new Error(`Error actualizando perfil: ${updateError.message}`)
     }
 
     return {
       action: 'updated',
       authUser,
-      profile: updatedProfile
-    };
+      profile: updatedProfile,
+    }
   } else {
     // Obtener rol de admin
     const { data: adminRole } = await supabase
       .from('user_roles')
       .select('id')
       .eq('role_name', 'admin')
-      .single();
+      .single()
 
     if (!adminRole) {
-      throw new Error('Rol de admin no encontrado en la base de datos');
+      throw new Error('Rol de admin no encontrado en la base de datos')
     }
 
     // Crear nuevo perfil
@@ -208,48 +210,50 @@ async function createAdminUserBasic(params: CreateAdminUserRequest) {
         last_name: lastName,
         role_id: adminRole.id,
         is_active: true,
-        metadata: { 
-          created_by: 'admin_setup', 
+        metadata: {
+          created_by: 'admin_setup',
           is_super_admin: true,
-          created_via: 'basic_api'
-        }
+          created_via: 'basic_api',
+        },
       })
-      .select(`
+      .select(
+        `
         *,
         user_roles (
           role_name,
           permissions
         )
-      `)
-      .single();
+      `
+      )
+      .single()
 
     if (profileError) {
-      throw new Error(`Error creando perfil: ${profileError.message}`);
+      throw new Error(`Error creando perfil: ${profileError.message}`)
     }
 
     return {
       action: 'created',
       authUser,
-      profile: newProfile
-    };
+      profile: newProfile,
+    }
   }
 }
 
 async function createAdminUserEnterprise(params: CreateAdminUserRequest, request: NextRequest) {
-  const { email, password, firstName, lastName, permissions } = params;
+  const { email, password, firstName, lastName, permissions } = params
 
   // Autenticación crítica enterprise
-  const authResult = await requireCriticalAuth(request);
+  const authResult = await requireCriticalAuth(request)
 
   if (!authResult.success) {
-    throw new Error(`Autenticación enterprise fallida: ${authResult.error}`);
+    throw new Error(`Autenticación enterprise fallida: ${authResult.error}`)
   }
 
-  const context = authResult.context!;
+  const context = authResult.context!
 
   // Verificar permisos específicos
   if (!context.permissions.includes('admin_create') && context.role !== 'admin') {
-    throw new Error('Permisos insuficientes para crear usuarios administradores');
+    throw new Error('Permisos insuficientes para crear usuarios administradores')
   }
 
   // Ejecutar con RLS y auditoría
@@ -258,17 +262,17 @@ async function createAdminUserEnterprise(params: CreateAdminUserRequest, request
     async (client, rlsContext) => {
       // Verificar permisos RLS
       if (!checkRLSPermission(rlsContext, 'admin_create')) {
-        throw new Error('Permisos RLS insuficientes para crear administradores');
+        throw new Error('Permisos RLS insuficientes para crear administradores')
       }
 
       // Verificar si el usuario ya existe
-      const { data: existingAuthUser } = await supabaseAdmin.auth.admin.listUsers();
-      const userExists = existingAuthUser.users.find(u => u.email === email);
+      const { data: existingAuthUser } = await supabaseAdmin.auth.admin.listUsers()
+      const userExists = existingAuthUser.users.find(u => u.email === email)
 
-      let authUser;
+      let authUser
 
       if (userExists) {
-        authUser = userExists;
+        authUser = userExists
       } else {
         // Crear usuario con metadata enterprise
         const { data: newAuthUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -282,15 +286,15 @@ async function createAdminUserEnterprise(params: CreateAdminUserRequest, request
             created_by: context.userId,
             enterprise_admin: true,
             security_level: 'critical',
-            created_via: 'enterprise_api'
-          }
-        });
+            created_via: 'enterprise_api',
+          },
+        })
 
         if (authError) {
-          throw new Error(`Error creando usuario en Auth: ${authError.message}`);
+          throw new Error(`Error creando usuario en Auth: ${authError.message}`)
         }
 
-        authUser = newAuthUser.user;
+        authUser = newAuthUser.user
       }
 
       // Verificar si el perfil ya existe
@@ -298,7 +302,7 @@ async function createAdminUserEnterprise(params: CreateAdminUserRequest, request
         .from('user_profiles')
         .select('*')
         .eq('email', email)
-        .single();
+        .single()
 
       if (existingProfile) {
         // Actualizar perfil con datos enterprise
@@ -313,40 +317,42 @@ async function createAdminUserEnterprise(params: CreateAdminUserRequest, request
               ...existingProfile.metadata,
               updated_by: context.userId,
               enterprise_admin: true,
-              last_admin_update: new Date().toISOString()
+              last_admin_update: new Date().toISOString(),
             },
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('email', email)
-          .select(`
+          .select(
+            `
             *,
             user_roles (
               role_name,
               permissions
             )
-          `)
-          .single();
+          `
+          )
+          .single()
 
         if (updateError) {
-          throw new Error(`Error actualizando perfil: ${updateError.message}`);
+          throw new Error(`Error actualizando perfil: ${updateError.message}`)
         }
 
         return {
           action: 'updated',
           authUser,
           profile: updatedProfile,
-          context
-        };
+          context,
+        }
       } else {
         // Obtener rol de admin
         const { data: adminRole } = await client
           .from('user_roles')
           .select('id')
           .eq('role_name', 'admin')
-          .single();
+          .single()
 
         if (!adminRole) {
-          throw new Error('Rol de admin no encontrado en la base de datos');
+          throw new Error('Rol de admin no encontrado en la base de datos')
         }
 
         // Crear nuevo perfil enterprise
@@ -365,44 +371,46 @@ async function createAdminUserEnterprise(params: CreateAdminUserRequest, request
               created_by: context.userId,
               enterprise_admin: true,
               security_level: 'critical',
-              created_via: 'enterprise_api'
+              created_via: 'enterprise_api',
             },
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
-          .select(`
+          .select(
+            `
             *,
             user_roles (
               role_name,
               permissions
             )
-          `)
-          .single();
+          `
+          )
+          .single()
 
         if (profileError) {
-          throw new Error(`Error creando perfil: ${profileError.message}`);
+          throw new Error(`Error creando perfil: ${profileError.message}`)
         }
 
         return {
           action: 'created',
           authUser,
           profile: newProfile,
-          context
-        };
+          context,
+        }
       }
     },
     {
       enforceRLS: true,
       auditLog: true,
-      adminOverride: true
+      adminOverride: true,
     }
-  );
+  )
 
   if (!result.success) {
-    throw new Error(`Error en operación enterprise: ${result.error}`);
+    throw new Error(`Error en operación enterprise: ${result.error}`)
   }
 
-  return result.data!;
+  return result.data!
 }
 
 // ===================================
@@ -411,57 +419,57 @@ async function createAdminUserEnterprise(params: CreateAdminUserRequest, request
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const params = CreateAdminUserSchema.parse(body);
-    const timestamp = new Date().toISOString();
+    const body = await request.json()
+    const params = CreateAdminUserSchema.parse(body)
+    const timestamp = new Date().toISOString()
 
-    console.log(`🔐 Unified Admin User Creation: Mode ${params.mode}`);
+    console.log(`🔐 Unified Admin User Creation: Mode ${params.mode}`)
 
     // Validar clave de seguridad
     if (!validateSecurityKey(params.securityKey, params.mode)) {
       return NextResponse.json(
-        { 
+        {
           error: `Clave de seguridad ${params.mode} incorrecta`,
           code: 'INVALID_SECURITY_KEY',
-          mode: params.mode
+          mode: params.mode,
         },
         { status: 403 }
-      );
+      )
     }
 
     // Validar contraseña
     const passwordValidation = validatePassword(
-      params.password, 
-      params.mode, 
+      params.password,
+      params.mode,
       params.enforceComplexPassword
-    );
+    )
 
     if (!passwordValidation.valid) {
       return NextResponse.json(
-        { 
+        {
           error: passwordValidation.error,
           code: params.mode === 'enterprise' ? 'PASSWORD_COMPLEXITY_FAILED' : 'WEAK_PASSWORD',
-          mode: params.mode
+          mode: params.mode,
         },
         { status: 400 }
-      );
+      )
     }
 
-    let result;
+    let result
 
     // Ejecutar según el modo
     if (params.mode === 'enterprise') {
-      result = await createAdminUserEnterprise(params, request);
-      
+      result = await createAdminUserEnterprise(params, request)
+
       // Invalidar cache en modo enterprise
       if (result.authUser) {
-        invalidateUserCache(result.authUser.id);
+        invalidateUserCache(result.authUser.id)
       }
     } else {
-      result = await createAdminUserBasic(params);
+      result = await createAdminUserBasic(params)
     }
 
-    const { action, authUser, profile, context } = result;
+    const { action, authUser, profile, context } = result
 
     // Respuesta unificada
     const response = {
@@ -478,17 +486,17 @@ export async function POST(request: NextRequest) {
             role: profile.user_roles?.role_name,
             permissions: profile.permissions || profile.user_roles?.permissions,
             is_active: profile.is_active,
-            created_at: profile.created_at
-          }
-        }
+            created_at: profile.created_at,
+          },
+        },
       },
       meta: {
         mode: params.mode,
         api_version: '1.0.0',
         unified: true,
-        timestamp
-      }
-    };
+        timestamp,
+      },
+    }
 
     // Agregar información enterprise si aplica
     if (params.mode === 'enterprise' && context) {
@@ -496,27 +504,26 @@ export async function POST(request: NextRequest) {
         security_level: 'critical',
         rls_enabled: true,
         created_by: context.userId,
-        permissions_granted: params.permissions
-      };
+        permissions_granted: params.permissions,
+      }
     }
 
-    return NextResponse.json(response, { 
-      status: action === 'created' ? 201 : 200 
-    });
-
+    return NextResponse.json(response, {
+      status: action === 'created' ? 201 : 200,
+    })
   } catch (error: any) {
-    console.error('❌ Error en Unified Admin User Creation:', error);
-    
+    console.error('❌ Error en Unified Admin User Creation:', error)
+
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Error interno del servidor',
         code: 'INTERNAL_SERVER_ERROR',
         mode: 'unknown',
         unified: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -530,9 +537,9 @@ export async function GET() {
         security_key: 'CREATE_ADMIN_PINTEYA_2025',
         password_requirements: {
           min_length: 8,
-          complexity: 'optional'
+          complexity: 'optional',
         },
-        features: ['Basic user creation', 'Simple validation', 'Standard profiles']
+        features: ['Basic user creation', 'Simple validation', 'Standard profiles'],
       },
       enterprise: {
         description: 'Creación enterprise con autenticación crítica y RLS',
@@ -540,7 +547,7 @@ export async function GET() {
         password_requirements: {
           min_length: 12,
           complexity: 'required',
-          must_contain: ['uppercase', 'lowercase', 'numbers', 'special_chars']
+          must_contain: ['uppercase', 'lowercase', 'numbers', 'special_chars'],
         },
         features: [
           'Enterprise authentication with critical security level',
@@ -548,9 +555,9 @@ export async function GET() {
           'Robust password validation',
           'Audit logging',
           'Cache invalidation',
-          'Comprehensive error handling'
-        ]
-      }
+          'Comprehensive error handling',
+        ],
+      },
     },
     usage: {
       method: 'POST',
@@ -561,7 +568,7 @@ export async function GET() {
           securityKey: 'CREATE_ADMIN_PINTEYA_2025',
           email: 'admin@example.com',
           password: 'password123',
-          mode: 'basic'
+          mode: 'basic',
         },
         enterprise: {
           securityKey: 'CREATE_ADMIN_PINTEYA_ENTERPRISE_2025',
@@ -570,27 +577,14 @@ export async function GET() {
           mode: 'enterprise',
           firstName: 'Admin',
           lastName: 'User',
-          permissions: ['admin_access', 'user_management']
-        }
-      }
+          permissions: ['admin_access', 'user_management'],
+        },
+      },
     },
     migration: {
-      from: [
-        '/api/admin/create-admin-user',
-        '/api/admin/create-admin-user-enterprise'
-      ],
+      from: ['/api/admin/create-admin-user', '/api/admin/create-admin-user-enterprise'],
       to: '/api/admin/create-admin-user/unified',
-      backward_compatible: true
-    }
-  });
+      backward_compatible: true,
+    },
+  })
 }
-
-
-
-
-
-
-
-
-
-

@@ -1,13 +1,13 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { createClient } from '@/lib/integrations/supabase/server';
-import { requireAdminAuth } from '@/lib/auth/admin-auth';
-import { checkRateLimit } from '@/lib/enterprise/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { metricsCollector } from '@/lib/enterprise/metrics';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { createClient } from '@/lib/integrations/supabase/server'
+import { requireAdminAuth } from '@/lib/auth/admin-auth'
+import { checkRateLimit } from '@/lib/enterprise/rate-limiter'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { metricsCollector } from '@/lib/enterprise/metrics'
 
 // ===================================
 // CONFIGURACIÓN
@@ -17,113 +17,135 @@ const RATE_LIMIT_CONFIGS = {
     windowMs: 15 * 60 * 1000, // 15 minutos
     maxRequests: 50, // Más restrictivo para operaciones masivas
   },
-};
+}
 
 // ===================================
 // ESQUEMAS DE VALIDACIÓN
 // ===================================
 const BulkCategoryActionSchema = z.object({
-  action: z.enum(['activate', 'deactivate', 'feature', 'unfeature', 'delete', 'update_parent', 'reorder']),
-  category_ids: z.array(z.string().uuid('ID de categoría inválido')).min(1, 'Debe seleccionar al menos una categoría').max(100, 'Máximo 100 categorías por operación'),
-  data: z.object({
-    parent_id: z.string().uuid('ID de categoría padre inválido').optional().nullable(),
-    sort_order: z.number().int().min(0).optional(),
-    is_active: z.boolean().optional(),
-    is_featured: z.boolean().optional(),
-  }).optional(),
-});
+  action: z.enum([
+    'activate',
+    'deactivate',
+    'feature',
+    'unfeature',
+    'delete',
+    'update_parent',
+    'reorder',
+  ]),
+  category_ids: z
+    .array(z.string().uuid('ID de categoría inválido'))
+    .min(1, 'Debe seleccionar al menos una categoría')
+    .max(100, 'Máximo 100 categorías por operación'),
+  data: z
+    .object({
+      parent_id: z.string().uuid('ID de categoría padre inválido').optional().nullable(),
+      sort_order: z.number().int().min(0).optional(),
+      is_active: z.boolean().optional(),
+      is_featured: z.boolean().optional(),
+    })
+    .optional(),
+})
 
 const BulkCategoryExportSchema = z.object({
   format: z.enum(['csv', 'json', 'xlsx']).default('csv'),
-  filters: z.object({
-    is_active: z.boolean().optional(),
-    is_featured: z.boolean().optional(),
-    parent_id: z.string().uuid().optional().nullable(),
-    search: z.string().optional(),
-  }).optional(),
+  filters: z
+    .object({
+      is_active: z.boolean().optional(),
+      is_featured: z.boolean().optional(),
+      parent_id: z.string().uuid().optional().nullable(),
+      search: z.string().optional(),
+    })
+    .optional(),
   fields: z.array(z.string()).optional(),
-});
+})
 
 const BulkCategoryImportSchema = z.object({
   format: z.enum(['csv', 'json']),
-  data: z.array(z.object({
-    name: z.string().min(1, 'El nombre es requerido'),
-    slug: z.string().optional(),
-    description: z.string().optional(),
-    parent_slug: z.string().optional(), // Para referenciar por slug
-    is_active: z.boolean().default(true),
-    is_featured: z.boolean().default(false),
-    sort_order: z.number().int().min(0).default(0),
-    meta_title: z.string().optional(),
-    meta_description: z.string().optional(),
-    meta_keywords: z.string().optional(),
-  })).min(1, 'Debe proporcionar al menos una categoría').max(1000, 'Máximo 1000 categorías por importación'),
-  options: z.object({
-    update_existing: z.boolean().default(false),
-    skip_duplicates: z.boolean().default(true),
-  }).optional(),
-});
+  data: z
+    .array(
+      z.object({
+        name: z.string().min(1, 'El nombre es requerido'),
+        slug: z.string().optional(),
+        description: z.string().optional(),
+        parent_slug: z.string().optional(), // Para referenciar por slug
+        is_active: z.boolean().default(true),
+        is_featured: z.boolean().default(false),
+        sort_order: z.number().int().min(0).default(0),
+        meta_title: z.string().optional(),
+        meta_description: z.string().optional(),
+        meta_keywords: z.string().optional(),
+      })
+    )
+    .min(1, 'Debe proporcionar al menos una categoría')
+    .max(1000, 'Máximo 1000 categorías por importación'),
+  options: z
+    .object({
+      update_existing: z.boolean().default(false),
+      skip_duplicates: z.boolean().default(true),
+    })
+    .optional(),
+})
 
 // ===================================
 // TIPOS
 // ===================================
 interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-  error?: string;
+  data: T
+  success: boolean
+  message?: string
+  error?: string
   meta?: {
-    total?: number;
-    processed?: number;
-    errors?: any[];
-  };
+    total?: number
+    processed?: number
+    errors?: any[]
+  }
 }
 
 interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  image_url?: string;
-  parent_id?: string;
-  is_active: boolean;
-  is_featured: boolean;
-  sort_order: number;
-  product_count: number;
-  meta_title?: string;
-  meta_description?: string;
-  meta_keywords?: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  name: string
+  slug: string
+  description?: string
+  image_url?: string
+  parent_id?: string
+  is_active: boolean
+  is_featured: boolean
+  sort_order: number
+  product_count: number
+  meta_title?: string
+  meta_description?: string
+  meta_keywords?: string
+  created_at: string
+  updated_at: string
 }
 
 interface BulkOperationResult {
-  success_count: number;
-  error_count: number;
+  success_count: number
+  error_count: number
   errors: Array<{
-    category_id?: string;
-    category_name?: string;
-    error: string;
-  }>;
-  processed_categories: Category[];
+    category_id?: string
+    category_name?: string
+    error: string
+  }>
+  processed_categories: Category[]
 }
 
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
 async function getCategoriesByIds(categoryIds: string[]): Promise<Category[]> {
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   const { data: categories, error } = await supabase
     .from('categories')
     .select('*')
-    .in('id', categoryIds);
+    .in('id', categoryIds)
 
   if (error) {
-    throw new Error(`Error obteniendo categorías: ${error.message}`);
+    throw new Error(`Error obteniendo categorías: ${error.message}`)
   }
 
-  return categories || [];
+  return categories || []
 }
 
 async function executeBulkAction(
@@ -132,209 +154,211 @@ async function executeBulkAction(
   data?: any,
   userId?: string
 ): Promise<BulkOperationResult> {
-  const supabase = getSupabaseClient(true);
-  
+  const supabase = getSupabaseClient(true)
+
   if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
+    throw new Error('Cliente administrativo de Supabase no disponible')
   }
 
   const result: BulkOperationResult = {
     success_count: 0,
     error_count: 0,
     errors: [],
-    processed_categories: []
-  };
+    processed_categories: [],
+  }
 
   // Obtener categorías existentes
-  const categories = await getCategoriesByIds(categoryIds);
-  const foundIds = categories.map(c => c.id);
-  const notFoundIds = categoryIds.filter(id => !foundIds.includes(id));
+  const categories = await getCategoriesByIds(categoryIds)
+  const foundIds = categories.map(c => c.id)
+  const notFoundIds = categoryIds.filter(id => !foundIds.includes(id))
 
   // Agregar errores para categorías no encontradas
   notFoundIds.forEach(id => {
     result.errors.push({
       category_id: id,
-      error: 'Categoría no encontrada'
-    });
-    result.error_count++;
-  });
+      error: 'Categoría no encontrada',
+    })
+    result.error_count++
+  })
 
   if (foundIds.length === 0) {
-    return result;
+    return result
   }
 
   try {
-    let updateData: any = {};
-    let shouldUpdate = true;
+    let updateData: any = {}
+    let shouldUpdate = true
 
     switch (action) {
       case 'activate':
-        updateData = { is_active: true };
-        break;
+        updateData = { is_active: true }
+        break
       case 'deactivate':
-        updateData = { is_active: false };
-        break;
+        updateData = { is_active: false }
+        break
       case 'feature':
-        updateData = { is_featured: true };
-        break;
+        updateData = { is_featured: true }
+        break
       case 'unfeature':
-        updateData = { is_featured: false };
-        break;
+        updateData = { is_featured: false }
+        break
       case 'update_parent':
-        updateData = { parent_id: data?.parent_id || null };
-        
+        updateData = { parent_id: data?.parent_id || null }
+
         // Verificar jerarquías circulares
         if (data?.parent_id) {
           for (const categoryId of foundIds) {
-            const isCircular = await checkCircularHierarchy(categoryId, data.parent_id);
+            const isCircular = await checkCircularHierarchy(categoryId, data.parent_id)
             if (isCircular) {
               result.errors.push({
                 category_id: categoryId,
                 category_name: categories.find(c => c.id === categoryId)?.name,
-                error: 'Crearía una jerarquía circular'
-              });
-              result.error_count++;
+                error: 'Crearía una jerarquía circular',
+              })
+              result.error_count++
             }
           }
         }
-        break;
+        break
       case 'reorder':
         // Para reordenar, necesitamos manejar cada categoría individualmente
-        shouldUpdate = false;
+        shouldUpdate = false
         for (let i = 0; i < foundIds.length; i++) {
-          const categoryId = foundIds[i];
-          const sortOrder = (data?.sort_order || 0) + i;
-          
+          const categoryId = foundIds[i]
+          const sortOrder = (data?.sort_order || 0) + i
+
           const { error } = await supabase
             .from('categories')
-            .update({ 
+            .update({
               sort_order: sortOrder,
-              updated_at: new Date().toISOString()
+              updated_at: new Date().toISOString(),
             })
-            .eq('id', categoryId);
+            .eq('id', categoryId)
 
           if (error) {
             result.errors.push({
               category_id: categoryId,
               category_name: categories.find(c => c.id === categoryId)?.name,
-              error: error.message
-            });
-            result.error_count++;
+              error: error.message,
+            })
+            result.error_count++
           } else {
-            result.success_count++;
+            result.success_count++
           }
         }
-        break;
+        break
       case 'delete':
         // Verificar que las categorías no tengan productos o subcategorías
-        const categoriesWithProducts = categories.filter(c => c.product_count > 0);
+        const categoriesWithProducts = categories.filter(c => c.product_count > 0)
         if (categoriesWithProducts.length > 0) {
           categoriesWithProducts.forEach(category => {
             result.errors.push({
               category_id: category.id,
               category_name: category.name,
-              error: `Tiene ${category.product_count} productos asociados`
-            });
-            result.error_count++;
-          });
+              error: `Tiene ${category.product_count} productos asociados`,
+            })
+            result.error_count++
+          })
         }
 
         // Verificar subcategorías
         const { data: subcategories } = await supabase
           .from('categories')
           .select('id, name, parent_id')
-          .in('parent_id', foundIds);
+          .in('parent_id', foundIds)
 
         if (subcategories && subcategories.length > 0) {
-          const parentIds = [...new Set(subcategories.map(s => s.parent_id))];
+          const parentIds = [...new Set(subcategories.map(s => s.parent_id))]
           parentIds.forEach(parentId => {
-            const parentCategory = categories.find(c => c.id === parentId);
-            const childCount = subcategories.filter(s => s.parent_id === parentId).length;
+            const parentCategory = categories.find(c => c.id === parentId)
+            const childCount = subcategories.filter(s => s.parent_id === parentId).length
             result.errors.push({
               category_id: parentId!,
               category_name: parentCategory?.name,
-              error: `Tiene ${childCount} subcategorías`
-            });
-            result.error_count++;
-          });
+              error: `Tiene ${childCount} subcategorías`,
+            })
+            result.error_count++
+          })
         }
 
         // Eliminar solo las categorías que no tienen restricciones
-        const categoriesToDelete = foundIds.filter(id => 
-          !result.errors.some(e => e.category_id === id)
-        );
+        const categoriesToDelete = foundIds.filter(
+          id => !result.errors.some(e => e.category_id === id)
+        )
 
         if (categoriesToDelete.length > 0) {
           const { data: deletedCategories, error: deleteError } = await supabase
             .from('categories')
             .delete()
             .in('id', categoriesToDelete)
-            .select();
+            .select()
 
           if (deleteError) {
             categoriesToDelete.forEach(id => {
               result.errors.push({
                 category_id: id,
                 category_name: categories.find(c => c.id === id)?.name,
-                error: deleteError.message
-              });
-              result.error_count++;
-            });
+                error: deleteError.message,
+              })
+              result.error_count++
+            })
           } else {
-            result.success_count = deletedCategories?.length || 0;
-            result.processed_categories = deletedCategories || [];
+            result.success_count = deletedCategories?.length || 0
+            result.processed_categories = deletedCategories || []
           }
         }
-        shouldUpdate = false;
-        break;
+        shouldUpdate = false
+        break
       default:
-        throw new Error(`Acción '${action}' no implementada`);
+        throw new Error(`Acción '${action}' no implementada`)
     }
 
     if (shouldUpdate && Object.keys(updateData).length > 0) {
       // Filtrar IDs que no tuvieron errores
-      const idsToUpdate = foundIds.filter(id => 
-        !result.errors.some(e => e.category_id === id)
-      );
+      const idsToUpdate = foundIds.filter(id => !result.errors.some(e => e.category_id === id))
 
       if (idsToUpdate.length > 0) {
         const { data: updatedCategories, error: updateError } = await supabase
           .from('categories')
           .update({
             ...updateData,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .in('id', idsToUpdate)
-          .select();
+          .select()
 
         if (updateError) {
           idsToUpdate.forEach(id => {
             result.errors.push({
               category_id: id,
               category_name: categories.find(c => c.id === id)?.name,
-              error: updateError.message
-            });
-            result.error_count++;
-          });
+              error: updateError.message,
+            })
+            result.error_count++
+          })
         } else {
-          result.success_count = updatedCategories?.length || 0;
-          result.processed_categories = updatedCategories || [];
+          result.success_count = updatedCategories?.length || 0
+          result.processed_categories = updatedCategories || []
         }
       }
     }
 
     // Registrar auditoría para operaciones exitosas
     if (userId && result.success_count > 0) {
-      await logBulkAuditAction(action, result.processed_categories.map(c => c.id), userId, {
+      await logBulkAuditAction(
         action,
-        data,
-        result: {
-          success_count: result.success_count,
-          error_count: result.error_count
+        result.processed_categories.map(c => c.id),
+        userId,
+        {
+          action,
+          data,
+          result: {
+            success_count: result.success_count,
+            error_count: result.error_count,
+          },
         }
-      });
+      )
     }
-
   } catch (error: any) {
     // Si hay un error general, marcarlo para todas las categorías
     foundIds.forEach(id => {
@@ -342,26 +366,24 @@ async function executeBulkAction(
         result.errors.push({
           category_id: id,
           category_name: categories.find(c => c.id === id)?.name,
-          error: error.message || 'Error desconocido'
-        });
-        result.error_count++;
+          error: error.message || 'Error desconocido',
+        })
+        result.error_count++
       }
-    });
+    })
   }
 
-  return result;
+  return result
 }
 
 async function exportCategories(filters: any, format: string, fields?: string[]): Promise<any> {
-  const supabase = getSupabaseClient(true);
-  
+  const supabase = getSupabaseClient(true)
+
   if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
+    throw new Error('Cliente administrativo de Supabase no disponible')
   }
 
-  let query = supabase
-    .from('categories')
-    .select(`
+  let query = supabase.from('categories').select(`
       id,
       name,
       slug,
@@ -378,135 +400,138 @@ async function exportCategories(filters: any, format: string, fields?: string[])
       created_at,
       updated_at,
       parent:parent_id(name, slug)
-    `);
+    `)
 
   // Aplicar filtros
   if (filters?.is_active !== undefined) {
-    query = query.eq('is_active', filters.is_active);
+    query = query.eq('is_active', filters.is_active)
   }
   if (filters?.is_featured !== undefined) {
-    query = query.eq('is_featured', filters.is_featured);
+    query = query.eq('is_featured', filters.is_featured)
   }
   if (filters?.parent_id !== undefined) {
     if (filters.parent_id === null) {
-      query = query.is('parent_id', null);
+      query = query.is('parent_id', null)
     } else {
-      query = query.eq('parent_id', filters.parent_id);
+      query = query.eq('parent_id', filters.parent_id)
     }
   }
   if (filters?.search) {
-    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
   }
 
-  const { data: categories, error } = await query.order('sort_order', { ascending: true });
+  const { data: categories, error } = await query.order('sort_order', { ascending: true })
 
   if (error) {
-    throw new Error(`Error exportando categorías: ${error.message}`);
+    throw new Error(`Error exportando categorías: ${error.message}`)
   }
 
   // Procesar datos según el formato
-  const processedData = categories?.map(category => {
-    const processed: any = {
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description || '',
-      image_url: category.image_url || '',
-      parent_name: category.parent?.name || '',
-      is_active: category.is_active,
-      is_featured: category.is_featured,
-      sort_order: category.sort_order,
-      product_count: category.product_count,
-      meta_title: category.meta_title || '',
-      meta_description: category.meta_description || '',
-      meta_keywords: category.meta_keywords || '',
-      created_at: category.created_at,
-      updated_at: category.updated_at
-    };
+  const processedData =
+    categories?.map(category => {
+      const processed: any = {
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        description: category.description || '',
+        image_url: category.image_url || '',
+        parent_name: category.parent?.name || '',
+        is_active: category.is_active,
+        is_featured: category.is_featured,
+        sort_order: category.sort_order,
+        product_count: category.product_count,
+        meta_title: category.meta_title || '',
+        meta_description: category.meta_description || '',
+        meta_keywords: category.meta_keywords || '',
+        created_at: category.created_at,
+        updated_at: category.updated_at,
+      }
 
-    // Filtrar campos si se especificaron
-    if (fields && fields.length > 0) {
-      const filtered: any = {};
-      fields.forEach(field => {
-        if (processed.hasOwnProperty(field)) {
-          filtered[field] = processed[field];
-        }
-      });
-      return filtered;
-    }
+      // Filtrar campos si se especificaron
+      if (fields && fields.length > 0) {
+        const filtered: any = {}
+        fields.forEach(field => {
+          if (processed.hasOwnProperty(field)) {
+            filtered[field] = processed[field]
+          }
+        })
+        return filtered
+      }
 
-    return processed;
-  }) || [];
+      return processed
+    }) || []
 
   return {
     data: processedData,
     total: processedData.length,
     format,
-    exported_at: new Date().toISOString()
-  };
+    exported_at: new Date().toISOString(),
+  }
 }
 
-async function importCategories(importData: any, options: any, userId: string): Promise<BulkOperationResult> {
-  const supabase = getSupabaseClient(true);
-  
+async function importCategories(
+  importData: any,
+  options: any,
+  userId: string
+): Promise<BulkOperationResult> {
+  const supabase = getSupabaseClient(true)
+
   if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
+    throw new Error('Cliente administrativo de Supabase no disponible')
   }
 
   const result: BulkOperationResult = {
     success_count: 0,
     error_count: 0,
     errors: [],
-    processed_categories: []
-  };
+    processed_categories: [],
+  }
 
   // Obtener categorías existentes para verificar duplicados
-  const { data: existingCategories } = await supabase
-    .from('categories')
-    .select('id, name, slug');
+  const { data: existingCategories } = await supabase.from('categories').select('id, name, slug')
 
-  const existingSlugs = new Set(existingCategories?.map(c => c.slug) || []);
-  const existingNames = new Set(existingCategories?.map(c => c.name.toLowerCase()) || []);
+  const existingSlugs = new Set(existingCategories?.map(c => c.slug) || [])
+  const existingNames = new Set(existingCategories?.map(c => c.name.toLowerCase()) || [])
 
   // Procesar cada categoría
   for (let i = 0; i < importData.length; i++) {
-    const categoryData = importData[i];
-    
+    const categoryData = importData[i]
+
     try {
       // Generar slug si no existe
       if (!categoryData.slug) {
         categoryData.slug = categoryData.name
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '');
+          .replace(/(^-|-$)/g, '')
       }
 
       // Verificar duplicados
-      const isDuplicateSlug = existingSlugs.has(categoryData.slug);
-      const isDuplicateName = existingNames.has(categoryData.name.toLowerCase());
+      const isDuplicateSlug = existingSlugs.has(categoryData.slug)
+      const isDuplicateName = existingNames.has(categoryData.name.toLowerCase())
 
       if ((isDuplicateSlug || isDuplicateName) && options?.skip_duplicates) {
         result.errors.push({
           category_name: categoryData.name,
-          error: 'Categoría duplicada (omitida)'
-        });
-        result.error_count++;
-        continue;
+          error: 'Categoría duplicada (omitida)',
+        })
+        result.error_count++
+        continue
       }
 
       // Resolver parent_id si se proporciona parent_slug
-      let parentId = null;
+      let parentId = null
       if (categoryData.parent_slug) {
-        const parentCategory = existingCategories?.find(c => c.slug === categoryData.parent_slug);
+        const parentCategory = existingCategories?.find(c => c.slug === categoryData.parent_slug)
         if (parentCategory) {
-          parentId = parentCategory.id;
+          parentId = parentCategory.id
         } else {
           result.errors.push({
             category_name: categoryData.name,
-            error: `Categoría padre no encontrada: ${categoryData.parent_slug}`
-          });
-          result.error_count++;
-          continue;
+            error: `Categoría padre no encontrada: ${categoryData.parent_slug}`,
+          })
+          result.error_count++
+          continue
         }
       }
 
@@ -522,29 +547,29 @@ async function importCategories(importData: any, options: any, userId: string): 
         meta_description: categoryData.meta_description || null,
         meta_keywords: categoryData.meta_keywords || null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+        updated_at: new Date().toISOString(),
+      }
 
       if (isDuplicateSlug && options?.update_existing) {
         // Actualizar categoría existente
-        const existingCategory = existingCategories?.find(c => c.slug === categoryData.slug);
+        const existingCategory = existingCategories?.find(c => c.slug === categoryData.slug)
         if (existingCategory) {
           const { data: updatedCategory, error } = await supabase
             .from('categories')
             .update(insertData)
             .eq('id', existingCategory.id)
             .select()
-            .single();
+            .single()
 
           if (error) {
             result.errors.push({
               category_name: categoryData.name,
-              error: `Error actualizando: ${error.message}`
-            });
-            result.error_count++;
+              error: `Error actualizando: ${error.message}`,
+            })
+            result.error_count++
           } else {
-            result.processed_categories.push(updatedCategory);
-            result.success_count++;
+            result.processed_categories.push(updatedCategory)
+            result.success_count++
           }
         }
       } else {
@@ -553,83 +578,94 @@ async function importCategories(importData: any, options: any, userId: string): 
           .from('categories')
           .insert(insertData)
           .select()
-          .single();
+          .single()
 
         if (error) {
           result.errors.push({
             category_name: categoryData.name,
-            error: `Error creando: ${error.message}`
-          });
-          result.error_count++;
+            error: `Error creando: ${error.message}`,
+          })
+          result.error_count++
         } else {
-          result.processed_categories.push(newCategory);
-          result.success_count++;
-          existingSlugs.add(newCategory.slug);
-          existingNames.add(newCategory.name.toLowerCase());
+          result.processed_categories.push(newCategory)
+          result.success_count++
+          existingSlugs.add(newCategory.slug)
+          existingNames.add(newCategory.name.toLowerCase())
         }
       }
-
     } catch (error: any) {
       result.errors.push({
         category_name: categoryData.name || `Fila ${i + 1}`,
-        error: error.message || 'Error desconocido'
-      });
-      result.error_count++;
+        error: error.message || 'Error desconocido',
+      })
+      result.error_count++
     }
   }
 
   // Registrar auditoría
   if (result.success_count > 0) {
-    await logBulkAuditAction('import', result.processed_categories.map(c => c.id), userId, {
-      action: 'import',
-      options,
-      result: {
-        success_count: result.success_count,
-        error_count: result.error_count
+    await logBulkAuditAction(
+      'import',
+      result.processed_categories.map(c => c.id),
+      userId,
+      {
+        action: 'import',
+        options,
+        result: {
+          success_count: result.success_count,
+          error_count: result.error_count,
+        },
       }
-    });
+    )
   }
 
-  return result;
+  return result
 }
 
 async function checkCircularHierarchy(categoryId: string, parentId: string): Promise<boolean> {
-  const supabase = getSupabaseClient(true);
-  
+  const supabase = getSupabaseClient(true)
+
   if (!supabase) {
-    return false;
+    return false
   }
 
   if (categoryId === parentId) {
-    return true;
+    return true
   }
 
-  let currentParentId = parentId;
-  const visited = new Set<string>();
+  let currentParentId = parentId
+  const visited = new Set<string>()
 
   while (currentParentId && !visited.has(currentParentId)) {
-    visited.add(currentParentId);
+    visited.add(currentParentId)
 
     if (currentParentId === categoryId) {
-      return true;
+      return true
     }
 
     const { data: parent } = await supabase
       .from('categories')
       .select('parent_id')
       .eq('id', currentParentId)
-      .single();
+      .single()
 
-    currentParentId = parent?.parent_id;
+    currentParentId = parent?.parent_id
   }
 
-  return false;
+  return false
 }
 
-async function logBulkAuditAction(action: string, categoryIds: string[], userId: string, details?: any): Promise<void> {
+async function logBulkAuditAction(
+  action: string,
+  categoryIds: string[],
+  userId: string,
+  details?: any
+): Promise<void> {
   try {
-    const supabase = getSupabaseClient(true);
-    if (!supabase) {return;}
+    const supabase = getSupabaseClient(true)
+    if (!supabase) {
+      return
+    }
 
     const auditEntries = categoryIds.map(categoryId => ({
       table_name: 'categories',
@@ -640,12 +676,16 @@ async function logBulkAuditAction(action: string, categoryIds: string[], userId:
       new_values: details || null,
       ip_address: null,
       user_agent: null,
-      created_at: new Date().toISOString()
-    }));
+      created_at: new Date().toISOString(),
+    }))
 
-    await supabase.from('audit_logs').insert(auditEntries);
+    await supabase.from('audit_logs').insert(auditEntries)
   } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.AUDIT, 'Error registrando auditoría masiva', { error, action, categoryIds });
+    logger.log(LogLevel.ERROR, LogCategory.AUDIT, 'Error registrando auditoría masiva', {
+      error,
+      action,
+      categoryIds,
+    })
   }
 }
 
@@ -653,7 +693,7 @@ async function logBulkAuditAction(action: string, categoryIds: string[], userId:
 // GET /api/admin/categories/bulk - Exportar categorías (Admin)
 // ===================================
 export async function GET(request: NextRequest) {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
   try {
     // Rate limiting
@@ -661,19 +701,16 @@ export async function GET(request: NextRequest) {
       request,
       RATE_LIMIT_CONFIGS.admin,
       'admin-categories-bulk-export'
-    );
+    )
 
     if (!rateLimitResult.success) {
-      const response = NextResponse.json(
-        { error: rateLimitResult.message },
-        { status: 429 }
-      );
+      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
       // Rate limit headers are handled internally
-      return response;
+      return response
     }
 
     // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_read']);
+    const authResult = await requireAdminAuth(request, ['categories_read'])
 
     if (!authResult.success) {
       return NextResponse.json(
@@ -681,40 +718,44 @@ export async function GET(request: NextRequest) {
           error: authResult.error,
           code: authResult.code,
           enterprise: true,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: authResult.status || 401 }
-      );
+      )
     }
 
-    const url = new URL(request.url);
-    const format = url.searchParams.get('format') || 'csv';
-    const fields = url.searchParams.get('fields')?.split(',');
-    
+    const url = new URL(request.url)
+    const format = url.searchParams.get('format') || 'csv'
+    const fields = url.searchParams.get('fields')?.split(',')
+
     // Parsear filtros
-    const filters: any = {};
+    const filters: any = {}
     if (url.searchParams.get('is_active') !== null) {
-      filters.is_active = url.searchParams.get('is_active') === 'true';
+      filters.is_active = url.searchParams.get('is_active') === 'true'
     }
     if (url.searchParams.get('is_featured') !== null) {
-      filters.is_featured = url.searchParams.get('is_featured') === 'true';
+      filters.is_featured = url.searchParams.get('is_featured') === 'true'
     }
     if (url.searchParams.get('parent_id')) {
-      filters.parent_id = url.searchParams.get('parent_id');
+      filters.parent_id = url.searchParams.get('parent_id')
     }
     if (url.searchParams.get('search')) {
-      filters.search = url.searchParams.get('search');
+      filters.search = url.searchParams.get('search')
     }
 
     // Validar parámetros
     const exportParams = BulkCategoryExportSchema.parse({
       format,
       filters,
-      fields
-    });
+      fields,
+    })
 
     // Exportar categorías
-    const exportResult = await exportCategories(exportParams.filters, exportParams.format, exportParams.fields);
+    const exportResult = await exportCategories(
+      exportParams.filters,
+      exportParams.format,
+      exportParams.fields
+    )
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -722,24 +763,25 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id
-    });
+      userId: authResult.user?.id,
+    })
 
     const response: ApiResponse<typeof exportResult> = {
       data: exportResult,
       success: true,
       message: `${exportResult.total} categorías exportadas en formato ${format}`,
       meta: {
-        total: exportResult.total
-      }
-    };
+        total: exportResult.total,
+      },
+    }
 
-    const nextResponse = NextResponse.json(response);
+    const nextResponse = NextResponse.json(response)
     // Rate limit headers are handled internally
-    return nextResponse;
-
+    return nextResponse
   } catch (error: any) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/categories/bulk', { error });
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/categories/bulk', {
+      error,
+    })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -747,16 +789,16 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 500,
       responseTime: Date.now() - startTime,
-      error: error.message || 'Unknown error'
-    });
+      error: error.message || 'Unknown error',
+    })
 
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
-      error: error.message || 'Error interno del servidor'
-    };
+      error: error.message || 'Error interno del servidor',
+    }
 
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }
 
@@ -764,7 +806,7 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/categories/bulk - Operaciones masivas e importación (Admin)
 // ===================================
 export async function POST(request: NextRequest) {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
   try {
     // Rate limiting más restrictivo para operaciones masivas
@@ -773,22 +815,23 @@ export async function POST(request: NextRequest) {
       {
         windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
         maxRequests: Math.floor(RATE_LIMIT_CONFIGS.admin.maxRequests / 4),
-        message: 'Demasiadas operaciones masivas'
+        message: 'Demasiadas operaciones masivas',
       },
       'admin-categories-bulk-operations'
-    );
+    )
 
     if (!rateLimitResult.success) {
-      const response = NextResponse.json(
-        { error: rateLimitResult.message },
-        { status: 429 }
-      );
+      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
       // Rate limit headers are handled internally
-      return response;
+      return response
     }
 
     // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_create', 'categories_update', 'categories_delete']);
+    const authResult = await requireAdminAuth(request, [
+      'categories_create',
+      'categories_update',
+      'categories_delete',
+    ])
 
     if (!authResult.success) {
       return NextResponse.json(
@@ -796,33 +839,33 @@ export async function POST(request: NextRequest) {
           error: authResult.error,
           code: authResult.code,
           enterprise: true,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: authResult.status || 401 }
-      );
+      )
     }
 
-    const body = await request.json();
-    const { operation } = body;
+    const body = await request.json()
+    const { operation } = body
 
-    let result: BulkOperationResult;
-    let message: string;
+    let result: BulkOperationResult
+    let message: string
 
     if (operation === 'import') {
       // Importación de categorías
-      const importParams = BulkCategoryImportSchema.parse(body);
-      result = await importCategories(importParams.data, importParams.options, authResult.user?.id!);
-      message = `Importación completada: ${result.success_count} categorías procesadas, ${result.error_count} errores`;
+      const importParams = BulkCategoryImportSchema.parse(body)
+      result = await importCategories(importParams.data, importParams.options, authResult.user?.id!)
+      message = `Importación completada: ${result.success_count} categorías procesadas, ${result.error_count} errores`
     } else {
       // Operaciones masivas estándar
-      const bulkParams = BulkCategoryActionSchema.parse(body);
+      const bulkParams = BulkCategoryActionSchema.parse(body)
       result = await executeBulkAction(
         bulkParams.action,
         bulkParams.category_ids,
         bulkParams.data,
         authResult.user?.id
-      );
-      message = `Operación '${bulkParams.action}' completada: ${result.success_count} categorías procesadas, ${result.error_count} errores`;
+      )
+      message = `Operación '${bulkParams.action}' completada: ${result.success_count} categorías procesadas, ${result.error_count} errores`
     }
 
     // Registrar métricas
@@ -831,8 +874,8 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id
-    });
+      userId: authResult.user?.id,
+    })
 
     const response: ApiResponse<BulkOperationResult> = {
       data: result,
@@ -841,16 +884,17 @@ export async function POST(request: NextRequest) {
       meta: {
         total: result.success_count + result.error_count,
         processed: result.success_count,
-        errors: result.errors
-      }
-    };
+        errors: result.errors,
+      },
+    }
 
-    const nextResponse = NextResponse.json(response);
+    const nextResponse = NextResponse.json(response)
     // Rate limit headers are handled internally
-    return nextResponse;
-
+    return nextResponse
   } catch (error: any) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/categories/bulk', { error });
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/categories/bulk', {
+      error,
+    })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -858,25 +902,15 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 500,
       responseTime: Date.now() - startTime,
-      error: error.message || 'Unknown error'
-    });
+      error: error.message || 'Unknown error',
+    })
 
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
-      error: error.message || 'Error interno del servidor'
-    };
+      error: error.message || 'Error interno del servidor',
+    }
 
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
-

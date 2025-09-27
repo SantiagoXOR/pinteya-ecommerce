@@ -3,29 +3,29 @@
 // Hook para persistir estado de órdenes durante Fast Refresh en desarrollo
 // ===================================
 
-'use client';
+'use client'
 
-import { useCallback, useRef, useEffect } from 'react';
-import { StrictOrderEnterprise } from '@/types/orders-enterprise';
-import { StrictOrderFilters } from './useOrdersEnterpriseStrict';
+import { useCallback, useRef, useEffect } from 'react'
+import { StrictOrderEnterprise } from '@/types/orders-enterprise'
+import { StrictOrderFilters } from './useOrdersEnterpriseStrict'
 
 // ===================================
 // TIPOS Y CONFIGURACIÓN
 // ===================================
 
 interface PersistedOrdersState {
-  orders: StrictOrderEnterprise[];
-  pagination: any;
-  analytics: any;
-  filters: StrictOrderFilters;
-  lastFetchTime: number;
-  hasData: boolean;
+  orders: StrictOrderEnterprise[]
+  pagination: any
+  analytics: any
+  filters: StrictOrderFilters
+  lastFetchTime: number
+  hasData: boolean
 }
 
 interface DevPersistenceOptions {
-  enabled: boolean;
-  maxAge: number; // Tiempo máximo para considerar datos válidos (ms)
-  storageKey: string;
+  enabled: boolean
+  maxAge: number // Tiempo máximo para considerar datos válidos (ms)
+  storageKey: string
 }
 
 // ===================================
@@ -33,7 +33,7 @@ interface DevPersistenceOptions {
 // ===================================
 
 // Usar Map global para persistir entre Fast Refresh
-const globalDevStorage = new Map<string, PersistedOrdersState>();
+const globalDevStorage = new Map<string, PersistedOrdersState>()
 
 // ===================================
 // UTILIDADES
@@ -46,11 +46,11 @@ function isValidPersistedState(state: any): state is PersistedOrdersState {
     Array.isArray(state.orders) &&
     typeof state.lastFetchTime === 'number' &&
     typeof state.hasData === 'boolean'
-  );
+  )
 }
 
 function isStateExpired(state: PersistedOrdersState, maxAge: number): boolean {
-  return Date.now() - state.lastFetchTime > maxAge;
+  return Date.now() - state.lastFetchTime > maxAge
 }
 
 // ===================================
@@ -58,50 +58,50 @@ function isStateExpired(state: PersistedOrdersState, maxAge: number): boolean {
 // ===================================
 
 export interface UseOrdersDevPersistenceReturn {
-  getPersistedState: () => PersistedOrdersState | null;
-  persistState: (state: Partial<PersistedOrdersState>) => void;
-  clearPersistedState: () => void;
-  hasValidPersistedData: () => boolean;
+  getPersistedState: () => PersistedOrdersState | null
+  persistState: (state: Partial<PersistedOrdersState>) => void
+  clearPersistedState: () => void
+  hasValidPersistedData: () => boolean
 }
 
 export function useOrdersDevPersistence(
   options: DevPersistenceOptions
 ): UseOrdersDevPersistenceReturn {
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
+  const optionsRef = useRef(options)
+  optionsRef.current = options
 
   const getPersistedState = useCallback((): PersistedOrdersState | null => {
     if (!optionsRef.current.enabled || process.env.NODE_ENV !== 'development') {
-      return null;
+      return null
     }
 
     try {
-      const state = globalDevStorage.get(optionsRef.current.storageKey);
-      
+      const state = globalDevStorage.get(optionsRef.current.storageKey)
+
       if (!state || !isValidPersistedState(state)) {
-        return null;
+        return null
       }
 
       if (isStateExpired(state, optionsRef.current.maxAge)) {
-        globalDevStorage.delete(optionsRef.current.storageKey);
-        return null;
+        globalDevStorage.delete(optionsRef.current.storageKey)
+        return null
       }
 
-      return state;
+      return state
     } catch (error) {
-      console.warn('[useOrdersDevPersistence] Error getting persisted state:', error);
-      return null;
+      console.warn('[useOrdersDevPersistence] Error getting persisted state:', error)
+      return null
     }
-  }, []);
+  }, [])
 
   const persistState = useCallback((newState: Partial<PersistedOrdersState>): void => {
     if (!optionsRef.current.enabled || process.env.NODE_ENV !== 'development') {
-      return;
+      return
     }
 
     try {
-      const currentState = globalDevStorage.get(optionsRef.current.storageKey);
-      
+      const currentState = globalDevStorage.get(optionsRef.current.storageKey)
+
       const updatedState: PersistedOrdersState = {
         orders: [],
         pagination: null,
@@ -111,55 +111,55 @@ export function useOrdersDevPersistence(
         hasData: false,
         ...currentState,
         ...newState,
-      };
+      }
 
-      globalDevStorage.set(optionsRef.current.storageKey, updatedState);
+      globalDevStorage.set(optionsRef.current.storageKey, updatedState)
 
       if (process.env.NODE_ENV === 'development') {
         console.log('[useOrdersDevPersistence] State persisted:', {
           key: optionsRef.current.storageKey,
           ordersCount: updatedState.orders.length,
           hasData: updatedState.hasData,
-          age: Date.now() - updatedState.lastFetchTime
-        });
+          age: Date.now() - updatedState.lastFetchTime,
+        })
       }
     } catch (error) {
-      console.warn('[useOrdersDevPersistence] Error persisting state:', error);
+      console.warn('[useOrdersDevPersistence] Error persisting state:', error)
     }
-  }, []);
+  }, [])
 
   const clearPersistedState = useCallback((): void => {
     if (!optionsRef.current.enabled || process.env.NODE_ENV !== 'development') {
-      return;
+      return
     }
 
-    globalDevStorage.delete(optionsRef.current.storageKey);
-    
+    globalDevStorage.delete(optionsRef.current.storageKey)
+
     if (process.env.NODE_ENV === 'development') {
-      console.log('[useOrdersDevPersistence] Persisted state cleared');
+      console.log('[useOrdersDevPersistence] Persisted state cleared')
     }
-  }, []);
+  }, [])
 
   const hasValidPersistedData = useCallback((): boolean => {
-    const state = getPersistedState();
-    return state !== null && state.hasData && state.orders.length > 0;
-  }, [getPersistedState]);
+    const state = getPersistedState()
+    return state !== null && state.hasData && state.orders.length > 0
+  }, [getPersistedState])
 
   // Cleanup al desmontar (solo en producción o cuando se deshabilita)
   useEffect(() => {
     return () => {
       if (!optionsRef.current.enabled || process.env.NODE_ENV !== 'development') {
-        clearPersistedState();
+        clearPersistedState()
       }
-    };
-  }, [clearPersistedState]);
+    }
+  }, [clearPersistedState])
 
   return {
     getPersistedState,
     persistState,
     clearPersistedState,
-    hasValidPersistedData
-  };
+    hasValidPersistedData,
+  }
 }
 
 // ===================================
@@ -170,15 +170,6 @@ export function useOrdersDevState(storageKey: string = 'orders-dev-state') {
   return useOrdersDevPersistence({
     enabled: true,
     maxAge: 5 * 60 * 1000, // 5 minutos
-    storageKey
-  });
+    storageKey,
+  })
 }
-
-
-
-
-
-
-
-
-

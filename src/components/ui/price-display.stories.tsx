@@ -156,22 +156,22 @@ export const Sizes: Story = {
     amount: 1500000,
   },
   render: () => (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <div>
-        <h3 className="text-sm font-medium mb-2">Small</h3>
-        <PriceDisplay amount={1550} originalAmount={2000} size="sm" />
+        <h3 className='text-sm font-medium mb-2'>Small</h3>
+        <PriceDisplay amount={1550} originalAmount={2000} size='sm' />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Medium (Default)</h3>
-        <PriceDisplay amount={1550} originalAmount={2000} size="md" />
+        <h3 className='text-sm font-medium mb-2'>Medium (Default)</h3>
+        <PriceDisplay amount={1550} originalAmount={2000} size='md' />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Large</h3>
-        <PriceDisplay amount={1550} originalAmount={2000} size="lg" />
+        <h3 className='text-sm font-medium mb-2'>Large</h3>
+        <PriceDisplay amount={1550} originalAmount={2000} size='lg' />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Extra Large</h3>
-        <PriceDisplay amount={1550} originalAmount={2000} size="xl" />
+        <h3 className='text-sm font-medium mb-2'>Extra Large</h3>
+        <PriceDisplay amount={1550} originalAmount={2000} size='xl' />
       </div>
     </div>
   ),
@@ -183,47 +183,38 @@ export const PaintProducts: Story = {
     amount: 1500000,
   },
   render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="border p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Pintura Sherwin Williams</h3>
-        <PriceDisplay 
+    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+      <div className='border p-4 rounded-lg'>
+        <h3 className='font-medium mb-2'>Pintura Sherwin Williams</h3>
+        <PriceDisplay
           amount={8500}
           originalAmount={10000}
           installments={{
             quantity: 6,
             amount: 1417,
-            interestFree: true
+            interestFree: true,
           }}
           showFreeShipping
         />
       </div>
-      <div className="border p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Poximix Adhesivo</h3>
-        <PriceDisplay 
+      <div className='border p-4 rounded-lg'>
+        <h3 className='font-medium mb-2'>Poximix Adhesivo</h3>
+        <PriceDisplay
           amount={2300}
           installments={{
             quantity: 3,
             amount: 767,
-            interestFree: true
+            interestFree: true,
           }}
         />
       </div>
-      <div className="border p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Lija El Galgo</h3>
-        <PriceDisplay 
-          amount={450}
-          variant="compact"
-          size="sm"
-        />
+      <div className='border p-4 rounded-lg'>
+        <h3 className='font-medium mb-2'>Lija El Galgo</h3>
+        <PriceDisplay amount={450} variant='compact' size='sm' />
       </div>
-      <div className="border p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Pincel Plavicon</h3>
-        <PriceDisplay
-          amount={1200}
-          originalAmount={1500}
-          showDiscountPercentage
-          variant="center"
-        />
+      <div className='border p-4 rounded-lg'>
+        <h3 className='font-medium mb-2'>Pincel Plavicon</h3>
+        <PriceDisplay amount={1200} originalAmount={1500} showDiscountPercentage variant='center' />
       </div>
     </div>
   ),
@@ -235,28 +226,19 @@ export const DifferentCurrencies: Story = {
     amount: 1500000,
   },
   render: () => (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <div>
-        <h3 className="text-sm font-medium mb-2">Pesos Argentinos (ARS)</h3>
-        <PriceDisplay amount={1550} currency="ARS" />
+        <h3 className='text-sm font-medium mb-2'>Pesos Argentinos (ARS)</h3>
+        <PriceDisplay amount={1550} currency='ARS' />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Dólares (USD)</h3>
-        <PriceDisplay amount={1550} currency="USD" />
+        <h3 className='text-sm font-medium mb-2'>Dólares (USD)</h3>
+        <PriceDisplay amount={1550} currency='USD' />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Símbolo personalizado</h3>
-        <PriceDisplay amount={1550} currencySymbol="$" />
+        <h3 className='text-sm font-medium mb-2'>Símbolo personalizado</h3>
+        <PriceDisplay amount={1550} currencySymbol='$' />
       </div>
     </div>
   ),
 }
-
-
-
-
-
-
-
-
-

@@ -1,14 +1,14 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 /**
  * API PARA LIMPIEZA AUTOMÁTICA DE ANALYTICS - PINTEYA E-COMMERCE
  * Gestiona la limpieza automática de eventos antiguos y estadísticas
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { auth } from '@/lib/auth/config';
+import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { auth } from '@/lib/auth/config'
 
 /**
  * POST /api/admin/analytics/cleanup
@@ -17,49 +17,40 @@ import { auth } from '@/lib/auth/config';
 export async function POST(request: NextRequest) {
   try {
     // Verificar autenticación de admin
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url);
-    const daysToKeep = parseInt(searchParams.get('days') || '30');
-    const dryRun = searchParams.get('dryRun') === 'true';
+    const { searchParams } = new URL(request.url)
+    const daysToKeep = parseInt(searchParams.get('days') || '30')
+    const dryRun = searchParams.get('dryRun') === 'true'
 
     // Validar parámetros
     if (daysToKeep < 1 || daysToKeep > 365) {
       return NextResponse.json(
         { error: 'Días a mantener debe estar entre 1 y 365' },
         { status: 400 }
-      );
+      )
     }
 
-    const supabase = getSupabaseClient(true); // Usar cliente admin
+    const supabase = getSupabaseClient(true) // Usar cliente admin
     if (!supabase) {
-      return NextResponse.json(
-        { error: 'Servicio administrativo no disponible' },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: 'Servicio administrativo no disponible' }, { status: 503 })
     }
 
     if (dryRun) {
       // Simular limpieza - solo contar registros
-      const cutoffTimestamp = Math.floor(Date.now() / 1000) - (daysToKeep * 24 * 60 * 60);
-      
+      const cutoffTimestamp = Math.floor(Date.now() / 1000) - daysToKeep * 24 * 60 * 60
+
       const { count, error } = await supabase
         .from('analytics_events_optimized')
         .select('*', { count: 'exact', head: true })
-        .lt('created_at', cutoffTimestamp);
+        .lt('created_at', cutoffTimestamp)
 
       if (error) {
-        console.error('Error en dry run de limpieza:', error);
-        return NextResponse.json(
-          { error: 'Error en simulación de limpieza' },
-          { status: 500 }
-        );
+        console.error('Error en dry run de limpieza:', error)
+        return NextResponse.json({ error: 'Error en simulación de limpieza' }, { status: 500 })
       }
 
       return NextResponse.json({
@@ -67,39 +58,32 @@ export async function POST(request: NextRequest) {
         dryRun: true,
         wouldDelete: count || 0,
         daysToKeep,
-        cutoffDate: new Date(cutoffTimestamp * 1000).toISOString()
-      });
+        cutoffDate: new Date(cutoffTimestamp * 1000).toISOString(),
+      })
     }
 
     // Ejecutar limpieza real
     const { data, error } = await supabase.rpc('cleanup_old_analytics_events', {
-      days_to_keep: daysToKeep
-    });
+      days_to_keep: daysToKeep,
+    })
 
     if (error) {
-      console.error('Error ejecutando limpieza:', error);
-      return NextResponse.json(
-        { error: 'Error ejecutando limpieza automática' },
-        { status: 500 }
-      );
+      console.error('Error ejecutando limpieza:', error)
+      return NextResponse.json({ error: 'Error ejecutando limpieza automática' }, { status: 500 })
     }
 
-    const result = data?.[0];
+    const result = data?.[0]
 
     return NextResponse.json({
       success: true,
       deleted: result?.deleted_count || 0,
       sizeFreed: result?.size_freed || '0 bytes',
       cleanupDate: result?.cleanup_date,
-      daysToKeep
-    });
-
+      daysToKeep,
+    })
   } catch (error) {
-    console.error('Error en API de limpieza:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
+    console.error('Error en API de limpieza:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
@@ -110,31 +94,22 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación de admin
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient(true)
     if (!supabase) {
-      return NextResponse.json(
-        { error: 'Servicio administrativo no disponible' },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: 'Servicio administrativo no disponible' }, { status: 503 })
     }
 
     // Obtener estadísticas generales
-    const { data: stats, error: statsError } = await supabase.rpc('get_analytics_stats');
+    const { data: stats, error: statsError } = await supabase.rpc('get_analytics_stats')
 
     if (statsError) {
-      console.error('Error obteniendo estadísticas:', statsError);
-      return NextResponse.json(
-        { error: 'Error obteniendo estadísticas' },
-        { status: 500 }
-      );
+      console.error('Error obteniendo estadísticas:', statsError)
+      return NextResponse.json({ error: 'Error obteniendo estadísticas' }, { status: 500 })
     }
 
     // Obtener distribución por días
@@ -142,22 +117,22 @@ export async function GET(request: NextRequest) {
       .from('analytics_events_optimized')
       .select('created_at')
       .order('created_at', { ascending: false })
-      .limit(1000);
+      .limit(1000)
 
     if (distError) {
-      console.error('Error obteniendo distribución:', distError);
+      console.error('Error obteniendo distribución:', distError)
     }
 
     // Calcular distribución por días
-    const dayDistribution: Record<string, number> = {};
+    const dayDistribution: Record<string, number> = {}
     if (distribution) {
       distribution.forEach(event => {
-        const date = new Date(event.created_at * 1000).toISOString().split('T')[0];
-        dayDistribution[date] = (dayDistribution[date] || 0) + 1;
-      });
+        const date = new Date(event.created_at * 1000).toISOString().split('T')[0]
+        dayDistribution[date] = (dayDistribution[date] || 0) + 1
+      })
     }
 
-    const statsResult = stats?.[0];
+    const statsResult = stats?.[0]
 
     return NextResponse.json({
       success: true,
@@ -170,15 +145,11 @@ export async function GET(request: NextRequest) {
         compressionRatio: statsResult?.compression_ratio || 0,
       },
       distribution: dayDistribution,
-      recommendations: generateCleanupRecommendations(statsResult)
-    });
-
+      recommendations: generateCleanupRecommendations(statsResult),
+    })
   } catch (error) {
-    console.error('Error en GET analytics cleanup:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
+    console.error('Error en GET analytics cleanup:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
@@ -186,12 +157,14 @@ export async function GET(request: NextRequest) {
  * Generar recomendaciones de limpieza
  */
 function generateCleanupRecommendations(stats: Record<string, unknown> | null) {
-  const recommendations = [];
-  
-  if (!stats) {return recommendations;}
+  const recommendations = []
 
-  const totalEvents = stats.total_events || 0;
-  const avgEventsPerDay = stats.avg_events_per_day || 0;
+  if (!stats) {
+    return recommendations
+  }
+
+  const totalEvents = stats.total_events || 0
+  const avgEventsPerDay = stats.avg_events_per_day || 0
 
   // Recomendación basada en volumen
   if (totalEvents > 10000) {
@@ -199,8 +172,8 @@ function generateCleanupRecommendations(stats: Record<string, unknown> | null) {
       type: 'warning',
       message: 'Alto volumen de eventos detectado',
       action: 'Considerar limpieza de eventos mayores a 30 días',
-      priority: 'high'
-    });
+      priority: 'high',
+    })
   }
 
   // Recomendación basada en crecimiento
@@ -209,8 +182,8 @@ function generateCleanupRecommendations(stats: Record<string, unknown> | null) {
       type: 'info',
       message: 'Crecimiento rápido de eventos',
       action: 'Configurar limpieza automática semanal',
-      priority: 'medium'
-    });
+      priority: 'medium',
+    })
   }
 
   // Recomendación de compresión
@@ -219,19 +192,9 @@ function generateCleanupRecommendations(stats: Record<string, unknown> | null) {
       type: 'success',
       message: 'Excelente ratio de compresión',
       action: 'Sistema optimizado funcionando correctamente',
-      priority: 'low'
-    });
+      priority: 'low',
+    })
   }
 
-  return recommendations;
+  return recommendations
 }
-
-
-
-
-
-
-
-
-
-

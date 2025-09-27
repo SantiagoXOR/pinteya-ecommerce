@@ -1,0 +1,200 @@
+43db85b4c1cd214abd65bc2b55899892
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "default", {
+    enumerable: true,
+    get: function() {
+        return _default;
+    }
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _react = /*#__PURE__*/ _interop_require_default(require("react"));
+const _image = /*#__PURE__*/ _interop_require_default(require("next/image"));
+function _interop_require_default(obj) {
+    return obj && obj.__esModule ? obj : {
+        default: obj
+    };
+}
+const PaymentMethod = ({ selectedMethod, onMethodChange })=>{
+    return /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+        className: "bg-white shadow-1 rounded-[10px] mt-7.5",
+        children: [
+            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                className: "border-b border-gray-3 py-5 px-4 sm:px-8.5",
+                children: /*#__PURE__*/ (0, _jsxruntime.jsx)("h3", {
+                    className: "font-medium text-xl text-dark",
+                    children: "M\xe9todo de Pago"
+                })
+            }),
+            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                className: "p-4 sm:p-8.5",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                        className: "flex flex-col gap-3",
+                        children: [
+                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("label", {
+                                htmlFor: "mercadopago",
+                                className: "flex cursor-pointer select-none items-center gap-4",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        className: "relative",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("input", {
+                                                type: "radio",
+                                                name: "payment",
+                                                id: "mercadopago",
+                                                className: "sr-only",
+                                                checked: selectedMethod === "mercadopago",
+                                                onChange: ()=>onMethodChange("mercadopago")
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                className: `flex h-4 w-4 items-center justify-center rounded-full ${selectedMethod === "mercadopago" ? "border-4 border-tahiti-gold-500" : "border border-gray-4"}`
+                                            })
+                                        ]
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                        className: `rounded-md border-[0.5px] py-3.5 px-5 ease-out duration-200 hover:bg-gray-2 hover:border-transparent hover:shadow-none ${selectedMethod === "mercadopago" ? "border-transparent bg-gray-2" : " border-gray-4 shadow-1"}`,
+                                        children: /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                            className: "flex items-center",
+                                            children: [
+                                                /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                    className: "pr-2.5",
+                                                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_image.default, {
+                                                        src: "/images/checkout/mercadopago.svg",
+                                                        alt: "MercadoPago",
+                                                        width: 24,
+                                                        height: 24
+                                                    })
+                                                }),
+                                                /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                                    className: "border-l border-gray-4 pl-2.5",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                            className: "font-medium",
+                                                            children: "MercadoPago"
+                                                        }),
+                                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                            className: "text-sm text-gray-600",
+                                                            children: "Tarjetas, efectivo, transferencias"
+                                                        })
+                                                    ]
+                                                })
+                                            ]
+                                        })
+                                    })
+                                ]
+                            }),
+                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("label", {
+                                htmlFor: "bank",
+                                className: "flex cursor-pointer select-none items-center gap-4",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        className: "relative",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("input", {
+                                                type: "radio",
+                                                name: "payment",
+                                                id: "bank",
+                                                className: "sr-only",
+                                                checked: selectedMethod === "bank",
+                                                onChange: ()=>onMethodChange("bank")
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                className: `flex h-4 w-4 items-center justify-center rounded-full ${selectedMethod === "bank" ? "border-4 border-tahiti-gold-500" : "border border-gray-4"}`
+                                            })
+                                        ]
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                        className: `rounded-md border-[0.5px] py-3.5 px-5 ease-out duration-200 hover:bg-gray-2 hover:border-transparent hover:shadow-none ${selectedMethod === "bank" ? "border-transparent bg-gray-2" : " border-gray-4 shadow-1"}`,
+                                        children: /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                            className: "flex items-center",
+                                            children: [
+                                                /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                    className: "pr-2.5",
+                                                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_image.default, {
+                                                        src: "/images/checkout/bank.svg",
+                                                        alt: "bank",
+                                                        width: 29,
+                                                        height: 12
+                                                    })
+                                                }),
+                                                /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                    className: "border-l border-gray-4 pl-2.5",
+                                                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                        children: "Transferencia bancaria"
+                                                    })
+                                                })
+                                            ]
+                                        })
+                                    })
+                                ]
+                            }),
+                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("label", {
+                                htmlFor: "cash",
+                                className: "flex cursor-pointer select-none items-center gap-4",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        className: "relative",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("input", {
+                                                type: "radio",
+                                                name: "payment",
+                                                id: "cash",
+                                                className: "sr-only",
+                                                checked: selectedMethod === "cash",
+                                                onChange: ()=>onMethodChange("cash")
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                className: `flex h-4 w-4 items-center justify-center rounded-full ${selectedMethod === "cash" ? "border-4 border-tahiti-gold-500" : "border border-gray-4"}`
+                                            })
+                                        ]
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                        className: `rounded-md border-[0.5px] py-3.5 px-5 ease-out duration-200 hover:bg-gray-2 hover:border-transparent hover:shadow-none min-w-[240px] ${selectedMethod === "cash" ? "border-transparent bg-gray-2" : " border-gray-4 shadow-1"}`,
+                                        children: /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                            className: "flex items-center",
+                                            children: [
+                                                /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                    className: "pr-2.5",
+                                                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_image.default, {
+                                                        src: "/images/checkout/cash.svg",
+                                                        alt: "cash",
+                                                        width: 21,
+                                                        height: 21
+                                                    })
+                                                }),
+                                                /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                    className: "border-l border-gray-4 pl-2.5",
+                                                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                        children: "Pag\xe1s cuando llega"
+                                                    })
+                                                })
+                                            ]
+                                        })
+                                    })
+                                ]
+                            })
+                        ]
+                    }),
+                    selectedMethod === "mercadopago" && /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                        className: "mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md",
+                        children: /*#__PURE__*/ (0, _jsxruntime.jsxs)("p", {
+                            className: "text-sm text-blue-800",
+                            children: [
+                                /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                    children: "MercadoPago:"
+                                }),
+                                " Ser\xe1s redirigido a la plataforma segura de MercadoPago para completar tu pago con tarjeta de cr\xe9dito, d\xe9bito, efectivo o transferencia."
+                            ]
+                        })
+                    })
+                ]
+            })
+        ]
+    });
+};
+const _default = PaymentMethod;
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcY29tcG9uZW50c1xcQ2hlY2tvdXRcXFBheW1lbnRNZXRob2QudHN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCBmcm9tIFwicmVhY3RcIjtcclxuaW1wb3J0IEltYWdlIGZyb20gXCJuZXh0L2ltYWdlXCI7XHJcblxyXG5pbnRlcmZhY2UgUGF5bWVudE1ldGhvZFByb3BzIHtcclxuICBzZWxlY3RlZE1ldGhvZDogc3RyaW5nO1xyXG4gIG9uTWV0aG9kQ2hhbmdlOiAobWV0aG9kOiBzdHJpbmcpID0+IHZvaWQ7XHJcbn1cclxuXHJcbmNvbnN0IFBheW1lbnRNZXRob2Q6IFJlYWN0LkZDPFBheW1lbnRNZXRob2RQcm9wcz4gPSAoeyBzZWxlY3RlZE1ldGhvZCwgb25NZXRob2RDaGFuZ2UgfSkgPT4ge1xyXG4gIHJldHVybiAoXHJcbiAgICA8ZGl2IGNsYXNzTmFtZT1cImJnLXdoaXRlIHNoYWRvdy0xIHJvdW5kZWQtWzEwcHhdIG10LTcuNVwiPlxyXG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cImJvcmRlci1iIGJvcmRlci1ncmF5LTMgcHktNSBweC00IHNtOnB4LTguNVwiPlxyXG4gICAgICAgIDxoMyBjbGFzc05hbWU9XCJmb250LW1lZGl1bSB0ZXh0LXhsIHRleHQtZGFya1wiPk3DqXRvZG8gZGUgUGFnbzwvaDM+XHJcbiAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTQgc206cC04LjVcIj5cclxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggZmxleC1jb2wgZ2FwLTNcIj5cclxuICAgICAgICAgIHsvKiBNZXJjYWRvUGFnbyAtIE3DqXRvZG8gcHJpbmNpcGFsICovfVxyXG4gICAgICAgICAgPGxhYmVsXHJcbiAgICAgICAgICAgIGh0bWxGb3I9XCJtZXJjYWRvcGFnb1wiXHJcbiAgICAgICAgICAgIGNsYXNzTmFtZT1cImZsZXggY3Vyc29yLXBvaW50ZXIgc2VsZWN0LW5vbmUgaXRlbXMtY2VudGVyIGdhcC00XCJcclxuICAgICAgICAgID5cclxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJyZWxhdGl2ZVwiPlxyXG4gICAgICAgICAgICAgIDxpbnB1dFxyXG4gICAgICAgICAgICAgICAgdHlwZT1cInJhZGlvXCJcclxuICAgICAgICAgICAgICAgIG5hbWU9XCJwYXltZW50XCJcclxuICAgICAgICAgICAgICAgIGlkPVwibWVyY2Fkb3BhZ29cIlxyXG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwic3Itb25seVwiXHJcbiAgICAgICAgICAgICAgICBjaGVja2VkPXtzZWxlY3RlZE1ldGhvZCA9PT0gXCJtZXJjYWRvcGFnb1wifVxyXG4gICAgICAgICAgICAgICAgb25DaGFuZ2U9eygpID0+IG9uTWV0aG9kQ2hhbmdlKFwibWVyY2Fkb3BhZ29cIil9XHJcbiAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgICA8ZGl2XHJcbiAgICAgICAgICAgICAgICBjbGFzc05hbWU9e2BmbGV4IGgtNCB3LTQgaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHJvdW5kZWQtZnVsbCAke1xyXG4gICAgICAgICAgICAgICAgICBzZWxlY3RlZE1ldGhvZCA9PT0gXCJtZXJjYWRvcGFnb1wiXHJcbiAgICAgICAgICAgICAgICAgICAgPyBcImJvcmRlci00IGJvcmRlci10YWhpdGktZ29sZC01MDBcIlxyXG4gICAgICAgICAgICAgICAgICAgIDogXCJib3JkZXIgYm9yZGVyLWdyYXktNFwiXHJcbiAgICAgICAgICAgICAgICB9YH1cclxuICAgICAgICAgICAgICA+PC9kaXY+XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICAgICAgPGRpdlxyXG4gICAgICAgICAgICAgIGNsYXNzTmFtZT17YHJvdW5kZWQtbWQgYm9yZGVyLVswLjVweF0gcHktMy41IHB4LTUgZWFzZS1vdXQgZHVyYXRpb24tMjAwIGhvdmVyOmJnLWdyYXktMiBob3Zlcjpib3JkZXItdHJhbnNwYXJlbnQgaG92ZXI6c2hhZG93LW5vbmUgJHtcclxuICAgICAgICAgICAgICAgIHNlbGVjdGVkTWV0aG9kID09PSBcIm1lcmNhZG9wYWdvXCJcclxuICAgICAgICAgICAgICAgICAgPyBcImJvcmRlci10cmFuc3BhcmVudCBiZy1ncmF5LTJcIlxyXG4gICAgICAgICAgICAgICAgICA6IFwiIGJvcmRlci1ncmF5LTQgc2hhZG93LTFcIlxyXG4gICAgICAgICAgICAgIH1gfVxyXG4gICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlclwiPlxyXG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwci0yLjVcIj5cclxuICAgICAgICAgICAgICAgICAgPEltYWdlIHNyYz1cIi9pbWFnZXMvY2hlY2tvdXQvbWVyY2Fkb3BhZ28uc3ZnXCIgYWx0PVwiTWVyY2Fkb1BhZ29cIiB3aWR0aD17MjR9IGhlaWdodD17MjR9IC8+XHJcbiAgICAgICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJvcmRlci1sIGJvcmRlci1ncmF5LTQgcGwtMi41XCI+XHJcbiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cImZvbnQtbWVkaXVtXCI+TWVyY2Fkb1BhZ288L3A+XHJcbiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1ncmF5LTYwMFwiPlRhcmpldGFzLCBlZmVjdGl2bywgdHJhbnNmZXJlbmNpYXM8L3A+XHJcbiAgICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICA8L2xhYmVsPlxyXG5cclxuICAgICAgICAgIHsvKiBUcmFuc2ZlcmVuY2lhIGJhbmNhcmlhICovfVxyXG4gICAgICAgICAgPGxhYmVsXHJcbiAgICAgICAgICAgIGh0bWxGb3I9XCJiYW5rXCJcclxuICAgICAgICAgICAgY2xhc3NOYW1lPVwiZmxleCBjdXJzb3ItcG9pbnRlciBzZWxlY3Qtbm9uZSBpdGVtcy1jZW50ZXIgZ2FwLTRcIlxyXG4gICAgICAgICAgPlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJlbGF0aXZlXCI+XHJcbiAgICAgICAgICAgICAgPGlucHV0XHJcbiAgICAgICAgICAgICAgICB0eXBlPVwicmFkaW9cIlxyXG4gICAgICAgICAgICAgICAgbmFtZT1cInBheW1lbnRcIlxyXG4gICAgICAgICAgICAgICAgaWQ9XCJiYW5rXCJcclxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInNyLW9ubHlcIlxyXG4gICAgICAgICAgICAgICAgY2hlY2tlZD17c2VsZWN0ZWRNZXRob2QgPT09IFwiYmFua1wifVxyXG4gICAgICAgICAgICAgICAgb25DaGFuZ2U9eygpID0+IG9uTWV0aG9kQ2hhbmdlKFwiYmFua1wiKX1cclxuICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgIDxkaXZcclxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YGZsZXggaC00IHctNCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgcm91bmRlZC1mdWxsICR7XHJcbiAgICAgICAgICAgICAgICAgIHNlbGVjdGVkTWV0aG9kID09PSBcImJhbmtcIlxyXG4gICAgICAgICAgICAgICAgICAgID8gXCJib3JkZXItNCBib3JkZXItdGFoaXRpLWdvbGQtNTAwXCJcclxuICAgICAgICAgICAgICAgICAgICA6IFwiYm9yZGVyIGJvcmRlci1ncmF5LTRcIlxyXG4gICAgICAgICAgICAgICAgfWB9XHJcbiAgICAgICAgICAgICAgPjwvZGl2PlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgIDxkaXZcclxuICAgICAgICAgICAgICBjbGFzc05hbWU9e2Byb3VuZGVkLW1kIGJvcmRlci1bMC41cHhdIHB5LTMuNSBweC01IGVhc2Utb3V0IGR1cmF0aW9uLTIwMCBob3ZlcjpiZy1ncmF5LTIgaG92ZXI6Ym9yZGVyLXRyYW5zcGFyZW50IGhvdmVyOnNoYWRvdy1ub25lICR7XHJcbiAgICAgICAgICAgICAgICBzZWxlY3RlZE1ldGhvZCA9PT0gXCJiYW5rXCJcclxuICAgICAgICAgICAgICAgICAgPyBcImJvcmRlci10cmFuc3BhcmVudCBiZy1ncmF5LTJcIlxyXG4gICAgICAgICAgICAgICAgICA6IFwiIGJvcmRlci1ncmF5LTQgc2hhZG93LTFcIlxyXG4gICAgICAgICAgICAgIH1gfVxyXG4gICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlclwiPlxyXG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwci0yLjVcIj5cclxuICAgICAgICAgICAgICAgICAgPEltYWdlIHNyYz1cIi9pbWFnZXMvY2hlY2tvdXQvYmFuay5zdmdcIiBhbHQ9XCJiYW5rXCIgd2lkdGg9ezI5fSBoZWlnaHQ9ezEyfS8+XHJcbiAgICAgICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJvcmRlci1sIGJvcmRlci1ncmF5LTQgcGwtMi41XCI+XHJcbiAgICAgICAgICAgICAgICAgIDxwPlRyYW5zZmVyZW5jaWEgYmFuY2FyaWE8L3A+XHJcbiAgICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICA8L2xhYmVsPlxyXG5cclxuICAgICAgICAgIHsvKiBQYWfDoXMgY3VhbmRvIGxsZWdhICovfVxyXG4gICAgICAgICAgPGxhYmVsXHJcbiAgICAgICAgICAgIGh0bWxGb3I9XCJjYXNoXCJcclxuICAgICAgICAgICAgY2xhc3NOYW1lPVwiZmxleCBjdXJzb3ItcG9pbnRlciBzZWxlY3Qtbm9uZSBpdGVtcy1jZW50ZXIgZ2FwLTRcIlxyXG4gICAgICAgICAgPlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJlbGF0aXZlXCI+XHJcbiAgICAgICAgICAgICAgPGlucHV0XHJcbiAgICAgICAgICAgICAgICB0eXBlPVwicmFkaW9cIlxyXG4gICAgICAgICAgICAgICAgbmFtZT1cInBheW1lbnRcIlxyXG4gICAgICAgICAgICAgICAgaWQ9XCJjYXNoXCJcclxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInNyLW9ubHlcIlxyXG4gICAgICAgICAgICAgICAgY2hlY2tlZD17c2VsZWN0ZWRNZXRob2QgPT09IFwiY2FzaFwifVxyXG4gICAgICAgICAgICAgICAgb25DaGFuZ2U9eygpID0+IG9uTWV0aG9kQ2hhbmdlKFwiY2FzaFwiKX1cclxuICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgIDxkaXZcclxuICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17YGZsZXggaC00IHctNCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgcm91bmRlZC1mdWxsICR7XHJcbiAgICAgICAgICAgICAgICAgIHNlbGVjdGVkTWV0aG9kID09PSBcImNhc2hcIlxyXG4gICAgICAgICAgICAgICAgICAgID8gXCJib3JkZXItNCBib3JkZXItdGFoaXRpLWdvbGQtNTAwXCJcclxuICAgICAgICAgICAgICAgICAgICA6IFwiYm9yZGVyIGJvcmRlci1ncmF5LTRcIlxyXG4gICAgICAgICAgICAgICAgfWB9XHJcbiAgICAgICAgICAgICAgPjwvZGl2PlxyXG4gICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgIDxkaXZcclxuICAgICAgICAgICAgICBjbGFzc05hbWU9e2Byb3VuZGVkLW1kIGJvcmRlci1bMC41cHhdIHB5LTMuNSBweC01IGVhc2Utb3V0IGR1cmF0aW9uLTIwMCBob3ZlcjpiZy1ncmF5LTIgaG92ZXI6Ym9yZGVyLXRyYW5zcGFyZW50IGhvdmVyOnNoYWRvdy1ub25lIG1pbi13LVsyNDBweF0gJHtcclxuICAgICAgICAgICAgICAgIHNlbGVjdGVkTWV0aG9kID09PSBcImNhc2hcIlxyXG4gICAgICAgICAgICAgICAgICA/IFwiYm9yZGVyLXRyYW5zcGFyZW50IGJnLWdyYXktMlwiXHJcbiAgICAgICAgICAgICAgICAgIDogXCIgYm9yZGVyLWdyYXktNCBzaGFkb3ctMVwiXHJcbiAgICAgICAgICAgICAgfWB9XHJcbiAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyXCI+XHJcbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInByLTIuNVwiPlxyXG4gICAgICAgICAgICAgICAgICA8SW1hZ2Ugc3JjPVwiL2ltYWdlcy9jaGVja291dC9jYXNoLnN2Z1wiIGFsdD1cImNhc2hcIiB3aWR0aD17MjF9IGhlaWdodD17MjF9IC8+XHJcbiAgICAgICAgICAgICAgICA8L2Rpdj5cclxuXHJcbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJvcmRlci1sIGJvcmRlci1ncmF5LTQgcGwtMi41XCI+XHJcbiAgICAgICAgICAgICAgICAgIDxwPlBhZ8OhcyBjdWFuZG8gbGxlZ2E8L3A+XHJcbiAgICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgICA8L2Rpdj5cclxuICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICA8L2xhYmVsPlxyXG4gICAgICAgIDwvZGl2PlxyXG5cclxuICAgICAgICB7LyogSW5mb3JtYWNpw7NuIGFkaWNpb25hbCBwYXJhIE1lcmNhZG9QYWdvICovfVxyXG4gICAgICAgIHtzZWxlY3RlZE1ldGhvZCA9PT0gXCJtZXJjYWRvcGFnb1wiICYmIChcclxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwibXQtNCBwLTQgYmctYmx1ZS01MCBib3JkZXIgYm9yZGVyLWJsdWUtMjAwIHJvdW5kZWQtbWRcIj5cclxuICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1zbSB0ZXh0LWJsdWUtODAwXCI+XHJcbiAgICAgICAgICAgICAgPHN0cm9uZz5NZXJjYWRvUGFnbzo8L3N0cm9uZz4gU2Vyw6FzIHJlZGlyaWdpZG8gYSBsYSBwbGF0YWZvcm1hIHNlZ3VyYSBkZSBNZXJjYWRvUGFnb1xyXG4gICAgICAgICAgICAgIHBhcmEgY29tcGxldGFyIHR1IHBhZ28gY29uIHRhcmpldGEgZGUgY3LDqWRpdG8sIGTDqWJpdG8sIGVmZWN0aXZvIG8gdHJhbnNmZXJlbmNpYS5cclxuICAgICAgICAgICAgPC9wPlxyXG4gICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgKX1cclxuICAgICAgPC9kaXY+XHJcbiAgICA8L2Rpdj5cclxuICApO1xyXG59O1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgUGF5bWVudE1ldGhvZDtcclxuXHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcblxyXG5cclxuIl0sIm5hbWVzIjpbIlBheW1lbnRNZXRob2QiLCJzZWxlY3RlZE1ldGhvZCIsIm9uTWV0aG9kQ2hhbmdlIiwiZGl2IiwiY2xhc3NOYW1lIiwiaDMiLCJsYWJlbCIsImh0bWxGb3IiLCJpbnB1dCIsInR5cGUiLCJuYW1lIiwiaWQiLCJjaGVja2VkIiwib25DaGFuZ2UiLCJJbWFnZSIsInNyYyIsImFsdCIsIndpZHRoIiwiaGVpZ2h0IiwicCIsInN0cm9uZyJdLCJtYXBwaW5ncyI6Ijs7OzsrQkErSkE7OztlQUFBOzs7OzhEQS9Ka0I7OERBQ0E7Ozs7OztBQU9sQixNQUFNQSxnQkFBOEMsQ0FBQyxFQUFFQyxjQUFjLEVBQUVDLGNBQWMsRUFBRTtJQUNyRixxQkFDRSxzQkFBQ0M7UUFBSUMsV0FBVTs7MEJBQ2IscUJBQUNEO2dCQUFJQyxXQUFVOzBCQUNiLGNBQUEscUJBQUNDO29CQUFHRCxXQUFVOzhCQUFnQzs7OzBCQUdoRCxzQkFBQ0Q7Z0JBQUlDLFdBQVU7O2tDQUNiLHNCQUFDRDt3QkFBSUMsV0FBVTs7MENBRWIsc0JBQUNFO2dDQUNDQyxTQUFRO2dDQUNSSCxXQUFV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

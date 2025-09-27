@@ -3,26 +3,28 @@
 // Descripción: Script para crear tablas de drivers y rutas
 // =====================================================
 
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
+const { createClient } = require('@supabase/supabase-js')
+require('dotenv').config({ path: '.env.local' })
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Error: Variables de entorno de Supabase no configuradas');
-  console.error('Asegúrate de tener NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en .env.local');
-  process.exit(1);
+  console.error('❌ Error: Variables de entorno de Supabase no configuradas')
+  console.error(
+    'Asegúrate de tener NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en .env.local'
+  )
+  process.exit(1)
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function createLogisticsTables() {
-  console.log('🚀 Iniciando creación de tablas de logística...');
+  console.log('🚀 Iniciando creación de tablas de logística...')
 
   try {
     // Insertar drivers de prueba directamente
-    console.log('📦 Insertando drivers de prueba...');
+    console.log('📦 Insertando drivers de prueba...')
 
     const driversData = [
       {
@@ -32,7 +34,7 @@ async function createLogisticsTables() {
         vehicle_type: 'Camioneta',
         license_plate: 'ABC123',
         status: 'available',
-        max_capacity: 30
+        max_capacity: 30,
       },
       {
         name: 'María González',
@@ -41,7 +43,7 @@ async function createLogisticsTables() {
         vehicle_type: 'Furgón',
         license_plate: 'DEF456',
         status: 'available',
-        max_capacity: 50
+        max_capacity: 50,
       },
       {
         name: 'Juan Pérez',
@@ -50,7 +52,7 @@ async function createLogisticsTables() {
         vehicle_type: 'Motocicleta',
         license_plate: 'GHI789',
         status: 'available',
-        max_capacity: 10
+        max_capacity: 10,
       },
       {
         name: 'Ana Martínez',
@@ -59,7 +61,7 @@ async function createLogisticsTables() {
         vehicle_type: 'Camión',
         license_plate: 'JKL012',
         status: 'available',
-        max_capacity: 100
+        max_capacity: 100,
       },
       {
         name: 'Luis Fernández',
@@ -68,27 +70,27 @@ async function createLogisticsTables() {
         vehicle_type: 'Camioneta',
         license_plate: 'MNO345',
         status: 'busy',
-        max_capacity: 30
-      }
-    ];
+        max_capacity: 30,
+      },
+    ]
 
     // Verificar si las tablas existen
     const { data: tables, error: tablesError } = await supabase
       .from('information_schema.tables')
       .select('table_name')
       .eq('table_schema', 'public')
-      .in('table_name', ['drivers', 'optimized_routes']);
+      .in('table_name', ['drivers', 'optimized_routes'])
 
     if (tablesError) {
-      console.log('⚠️ No se pudo verificar las tablas existentes. Continuando...');
+      console.log('⚠️ No se pudo verificar las tablas existentes. Continuando...')
     }
 
-    const existingTables = tables ? tables.map(t => t.table_name) : [];
-    console.log('📋 Tablas existentes:', existingTables);
+    const existingTables = tables ? tables.map(t => t.table_name) : []
+    console.log('📋 Tablas existentes:', existingTables)
 
     if (!existingTables.includes('drivers')) {
-      console.log('⚠️ Tabla drivers no existe. Necesitas crearla manualmente en Supabase.');
-      console.log('📝 SQL para crear tabla drivers:');
+      console.log('⚠️ Tabla drivers no existe. Necesitas crearla manualmente en Supabase.')
+      console.log('📝 SQL para crear tabla drivers:')
       console.log(`
 CREATE TABLE drivers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -103,27 +105,27 @@ CREATE TABLE drivers (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-      `);
+      `)
     } else {
-      console.log('✅ Tabla drivers ya existe');
+      console.log('✅ Tabla drivers ya existe')
 
       // Insertar drivers de prueba
       for (const driver of driversData) {
         const { error } = await supabase
           .from('drivers')
-          .upsert(driver, { onConflict: 'license_plate' });
+          .upsert(driver, { onConflict: 'license_plate' })
 
         if (error) {
-          console.log(`⚠️ Error insertando driver ${driver.name}:`, error.message);
+          console.log(`⚠️ Error insertando driver ${driver.name}:`, error.message)
         } else {
-          console.log(`✅ Driver ${driver.name} insertado/actualizado`);
+          console.log(`✅ Driver ${driver.name} insertado/actualizado`)
         }
       }
     }
 
     if (!existingTables.includes('optimized_routes')) {
-      console.log('⚠️ Tabla optimized_routes no existe. Necesitas crearla manualmente en Supabase.');
-      console.log('📝 SQL para crear tabla optimized_routes:');
+      console.log('⚠️ Tabla optimized_routes no existe. Necesitas crearla manualmente en Supabase.')
+      console.log('📝 SQL para crear tabla optimized_routes:')
       console.log(`
 CREATE TABLE optimized_routes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -139,28 +141,23 @@ CREATE TABLE optimized_routes (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-      `);
+      `)
     } else {
-      console.log('✅ Tabla optimized_routes ya existe');
+      console.log('✅ Tabla optimized_routes ya existe')
     }
 
-    console.log('🎉 ¡Proceso completado!');
-    console.log('');
-    console.log('📊 Resumen:');
-    console.log('  📋 Verificación de tablas completada');
-    console.log('  👥 Drivers de prueba procesados');
-    console.log('');
-    console.log('🔧 Si las tablas no existen, cópialas y pégalas en el SQL Editor de Supabase');
-
+    console.log('🎉 ¡Proceso completado!')
+    console.log('')
+    console.log('📊 Resumen:')
+    console.log('  📋 Verificación de tablas completada')
+    console.log('  👥 Drivers de prueba procesados')
+    console.log('')
+    console.log('🔧 Si las tablas no existen, cópialas y pégalas en el SQL Editor de Supabase')
   } catch (error) {
-    console.error('❌ Error durante el proceso:', error);
-    process.exit(1);
+    console.error('❌ Error durante el proceso:', error)
+    process.exit(1)
   }
 }
 
 // Ejecutar migración
-createLogisticsTables();
-
-
-
-
+createLogisticsTables()

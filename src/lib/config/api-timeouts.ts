@@ -9,23 +9,23 @@
 // ===================================
 
 export interface TimeoutConfig {
-  default: number;
-  database: number;
-  external: number;
-  upload: number;
-  payment: number;
-  auth: number;
-  admin: number;
-  webhook: number;
-  email: number;
-  image: number;
+  default: number
+  database: number
+  external: number
+  upload: number
+  payment: number
+  auth: number
+  admin: number
+  webhook: number
+  email: number
+  image: number
 }
 
 export interface EndpointTimeouts {
-  connection: number;
-  request: number;
-  response: number;
-  total: number;
+  connection: number
+  request: number
+  response: number
+  total: number
 }
 
 // ===================================
@@ -34,51 +34,55 @@ export interface EndpointTimeouts {
 
 const DEFAULT_TIMEOUTS = {
   // Timeout por defecto para operaciones generales
-  default: 30000,        // 30 segundos
-  
+  default: 30000, // 30 segundos
+
   // Timeout para operaciones de base de datos
-  database: 15000,       // 15 segundos
-  
+  database: 15000, // 15 segundos
+
   // Timeout para APIs externas (MercadoPago, etc.)
-  external: 45000,       // 45 segundos
-  
+  external: 45000, // 45 segundos
+
   // Timeout para uploads de archivos
-  upload: 120000,        // 2 minutos
-  
+  upload: 120000, // 2 minutos
+
   // Timeout para operaciones de pago
-  payment: 60000,        // 1 minuto
-  
+  payment: 60000, // 1 minuto
+
   // Timeout para operaciones de autenticación
-  auth: 20000,           // 20 segundos
-  
+  auth: 20000, // 20 segundos
+
   // Timeout para operaciones administrativas
-  admin: 45000,          // 45 segundos
-  
+  admin: 45000, // 45 segundos
+
   // Timeout para webhooks
-  webhook: 10000,        // 10 segundos
-  
+  webhook: 10000, // 10 segundos
+
   // Timeout para envío de emails
-  email: 30000,          // 30 segundos
-  
+  email: 30000, // 30 segundos
+
   // Timeout para procesamiento de imágenes
-  image: 90000,          // 1.5 minutos
-} as const;
+  image: 90000, // 1.5 minutos
+} as const
 
 // ===================================
 // FUNCIÓN PARA OBTENER TIMEOUT DESDE ENV
 // ===================================
 
 function getTimeoutFromEnv(key: string, defaultValue: number): number {
-  const envValue = process.env[`API_TIMEOUT_${key.toUpperCase()}`];
-  if (!envValue) {return defaultValue;}
-  
-  const parsed = parseInt(envValue, 10);
-  if (isNaN(parsed) || parsed <= 0) {
-    console.warn(`[TIMEOUT_CONFIG] Invalid timeout value for ${key}: ${envValue}, using default: ${defaultValue}`);
-    return defaultValue;
+  const envValue = process.env[`API_TIMEOUT_${key.toUpperCase()}`]
+  if (!envValue) {
+    return defaultValue
   }
-  
-  return parsed;
+
+  const parsed = parseInt(envValue, 10)
+  if (isNaN(parsed) || parsed <= 0) {
+    console.warn(
+      `[TIMEOUT_CONFIG] Invalid timeout value for ${key}: ${envValue}, using default: ${defaultValue}`
+    )
+    return defaultValue
+  }
+
+  return parsed
 }
 
 // ===================================
@@ -96,7 +100,7 @@ export const API_TIMEOUTS: TimeoutConfig = {
   webhook: getTimeoutFromEnv('WEBHOOK', DEFAULT_TIMEOUTS.webhook),
   email: getTimeoutFromEnv('EMAIL', DEFAULT_TIMEOUTS.email),
   image: getTimeoutFromEnv('IMAGE', DEFAULT_TIMEOUTS.image),
-};
+}
 
 // ===================================
 // TIMEOUTS ESPECÍFICOS POR ENDPOINT
@@ -118,7 +122,7 @@ export const ENDPOINT_TIMEOUTS: Record<string, EndpointTimeouts> = {
     response: 15000,
     total: API_TIMEOUTS.database + 20000, // database + buffer
   },
-  
+
   // APIs de pagos
   '/api/payments': {
     connection: 10000,
@@ -158,7 +162,7 @@ export const ENDPOINT_TIMEOUTS: Record<string, EndpointTimeouts> = {
     response: 30000,
     total: API_TIMEOUTS.upload + 40000,
   },
-};
+}
 
 // ===================================
 // HELPERS PARA OBTENER TIMEOUTS
@@ -168,7 +172,7 @@ export const ENDPOINT_TIMEOUTS: Record<string, EndpointTimeouts> = {
  * Obtiene el timeout apropiado para un tipo de operación
  */
 export function getTimeout(type: keyof TimeoutConfig): number {
-  return API_TIMEOUTS[type];
+  return API_TIMEOUTS[type]
 }
 
 /**
@@ -177,40 +181,38 @@ export function getTimeout(type: keyof TimeoutConfig): number {
 export function getEndpointTimeouts(path: string): EndpointTimeouts {
   // Buscar coincidencia exacta primero
   if (ENDPOINT_TIMEOUTS[path]) {
-    return ENDPOINT_TIMEOUTS[path];
+    return ENDPOINT_TIMEOUTS[path]
   }
-  
+
   // Buscar coincidencia por prefijo
-  const matchingPath = Object.keys(ENDPOINT_TIMEOUTS).find(key => 
-    path.startsWith(key)
-  );
-  
+  const matchingPath = Object.keys(ENDPOINT_TIMEOUTS).find(key => path.startsWith(key))
+
   if (matchingPath) {
-    return ENDPOINT_TIMEOUTS[matchingPath];
+    return ENDPOINT_TIMEOUTS[matchingPath]
   }
-  
+
   // Fallback a timeouts por defecto
   return {
     connection: 5000,
     request: API_TIMEOUTS.default,
     response: 10000,
     total: API_TIMEOUTS.default,
-  };
+  }
 }
 
 /**
  * Crea un AbortController con timeout automático
  */
 export function createTimeoutController(timeout: number): {
-  controller: AbortController;
-  timeoutId: NodeJS.Timeout;
+  controller: AbortController
+  timeoutId: NodeJS.Timeout
 } {
-  const controller = new AbortController();
+  const controller = new AbortController()
   const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, timeout);
-  
-  return { controller, timeoutId };
+    controller.abort()
+  }, timeout)
+
+  return { controller, timeoutId }
 }
 
 /**
@@ -220,25 +222,25 @@ export async function fetchWithTimeout(
   url: string,
   options: RequestInit & { timeout?: number } = {}
 ): Promise<Response> {
-  const timeout = options.timeout || API_TIMEOUTS.default;
-  const { controller, timeoutId } = createTimeoutController(timeout);
-  
+  const timeout = options.timeout || API_TIMEOUTS.default
+  const { controller, timeoutId } = createTimeoutController(timeout)
+
   try {
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
-    });
-    
-    clearTimeout(timeoutId);
-    return response;
+    })
+
+    clearTimeout(timeoutId)
+    return response
   } catch (error) {
-    clearTimeout(timeoutId);
-    
+    clearTimeout(timeoutId)
+
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Request timeout after ${timeout}ms`);
+      throw new Error(`Request timeout after ${timeout}ms`)
     }
-    
-    throw error;
+
+    throw error
   }
 }
 
@@ -249,10 +251,9 @@ export function withDatabaseTimeout<T>(
   operation: (signal: AbortSignal) => Promise<T>,
   timeout: number = API_TIMEOUTS.database
 ): Promise<T> {
-  const { controller, timeoutId } = createTimeoutController(timeout);
-  
-  return operation(controller.signal)
-    .finally(() => clearTimeout(timeoutId));
+  const { controller, timeoutId } = createTimeoutController(timeout)
+
+  return operation(controller.signal).finally(() => clearTimeout(timeoutId))
 }
 
 /**
@@ -262,10 +263,9 @@ export function withExternalTimeout<T>(
   operation: (signal: AbortSignal) => Promise<T>,
   timeout: number = API_TIMEOUTS.external
 ): Promise<T> {
-  const { controller, timeoutId } = createTimeoutController(timeout);
+  const { controller, timeoutId } = createTimeoutController(timeout)
 
-  return operation(controller.signal)
-    .finally(() => clearTimeout(timeoutId));
+  return operation(controller.signal).finally(() => clearTimeout(timeoutId))
 }
 
 /**
@@ -277,14 +277,14 @@ export function withTimeout<T>(
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
-      reject(new Error(`Operation timeout after ${timeout}ms`));
-    }, timeout);
+      reject(new Error(`Operation timeout after ${timeout}ms`))
+    }, timeout)
 
     operation()
       .then(resolve)
       .catch(reject)
-      .finally(() => clearTimeout(timeoutId));
-  });
+      .finally(() => clearTimeout(timeoutId))
+  })
 }
 
 // ===================================
@@ -300,11 +300,14 @@ export function logTimeoutConfig(): void {
     timeouts: API_TIMEOUTS,
     customEnvVars: Object.keys(process.env)
       .filter(key => key.startsWith('API_TIMEOUT_'))
-      .reduce((acc, key) => {
-        acc[key] = process.env[key];
-        return acc;
-      }, {} as Record<string, string | undefined>),
-  });
+      .reduce(
+        (acc, key) => {
+          acc[key] = process.env[key]
+          return acc
+        },
+        {} as Record<string, string | undefined>
+      ),
+  })
 }
 
 // ===================================
@@ -315,24 +318,25 @@ export function logTimeoutConfig(): void {
  * Valida que todos los timeouts estén configurados correctamente
  */
 export function validateTimeoutConfig(): boolean {
-  const errors: string[] = [];
-  
+  const errors: string[] = []
+
   Object.entries(API_TIMEOUTS).forEach(([key, value]) => {
     if (typeof value !== 'number' || value <= 0) {
-      errors.push(`Invalid timeout for ${key}: ${value}`);
+      errors.push(`Invalid timeout for ${key}: ${value}`)
     }
-    
-    if (value > 300000) { // 5 minutos máximo
-      errors.push(`Timeout too high for ${key}: ${value}ms (max: 300000ms)`);
+
+    if (value > 300000) {
+      // 5 minutos máximo
+      errors.push(`Timeout too high for ${key}: ${value}ms (max: 300000ms)`)
     }
-  });
-  
+  })
+
   if (errors.length > 0) {
-    console.error('[TIMEOUT_CONFIG] Validation errors:', errors);
-    return false;
+    console.error('[TIMEOUT_CONFIG] Validation errors:', errors)
+    return false
   }
-  
-  return true;
+
+  return true
 }
 
 // ===================================
@@ -341,18 +345,9 @@ export function validateTimeoutConfig(): boolean {
 
 // Validar configuración al cargar el módulo
 if (process.env.NODE_ENV !== 'test') {
-  validateTimeoutConfig();
-  
+  validateTimeoutConfig()
+
   if (process.env.NODE_ENV === 'development') {
-    logTimeoutConfig();
+    logTimeoutConfig()
   }
 }
-
-
-
-
-
-
-
-
-

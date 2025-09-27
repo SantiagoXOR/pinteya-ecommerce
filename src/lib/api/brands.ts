@@ -2,12 +2,12 @@
 // PINTEYA E-COMMERCE - FUNCIONES DE API PARA MARCAS
 // ===================================
 
-import { ApiResponse } from '@/types/api';
-import { Brand, BrandFilters } from '@/app/api/brands/route';
-import { safeApiResponseJson } from '@/lib/json-utils';
+import { ApiResponse } from '@/types/api'
+import { Brand, BrandFilters } from '@/app/api/brands/route'
+import { safeApiResponseJson } from '@/lib/json-utils'
 
 // Re-exportar tipos para uso en el frontend
-export type { Brand, BrandFilters };
+export type { Brand, BrandFilters }
 
 // ===================================
 // FUNCIONES PARA EL FRONTEND
@@ -20,14 +20,14 @@ export type { Brand, BrandFilters };
  */
 export async function getBrands(filters?: BrandFilters): Promise<ApiResponse<Brand[]>> {
   try {
-    const searchParams = new URLSearchParams();
-    
+    const searchParams = new URLSearchParams()
+
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          searchParams.append(key, value.toString());
+          searchParams.append(key, value.toString())
         }
-      });
+      })
     }
 
     const response = await fetch(`/api/brands?${searchParams.toString()}`, {
@@ -35,19 +35,19 @@ export async function getBrands(filters?: BrandFilters): Promise<ApiResponse<Bra
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    })
 
     // Usar parsing seguro de JSON
-    const result = await safeApiResponseJson<ApiResponse<Brand[]>>(response);
+    const result = await safeApiResponseJson<ApiResponse<Brand[]>>(response)
 
     if (!result || !result.success || !result.data) {
-      throw new Error(result?.error || 'Error parsing API response');
+      throw new Error(result?.error || 'Error parsing API response')
     }
 
-    return result.data;
+    return result.data
   } catch (error) {
-    console.error('Error obteniendo marcas:', error);
-    throw error;
+    console.error('Error obteniendo marcas:', error)
+    throw error
   }
 }
 
@@ -62,19 +62,19 @@ export async function getBrandStats(): Promise<ApiResponse<any[]>> {
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    })
 
     // Usar parsing seguro de JSON
-    const result = await safeApiResponseJson<ApiResponse<any[]>>(response);
+    const result = await safeApiResponseJson<ApiResponse<any[]>>(response)
 
     if (!result || !result.success || !result.data) {
-      throw new Error(result?.error || 'Error parsing API response');
+      throw new Error(result?.error || 'Error parsing API response')
     }
 
-    return result.data;
+    return result.data
   } catch (error) {
-    console.error('Error obteniendo estadísticas de marcas:', error);
-    throw error;
+    console.error('Error obteniendo estadísticas de marcas:', error)
+    throw error
   }
 }
 
@@ -86,7 +86,7 @@ export async function getBrandStats(): Promise<ApiResponse<any[]>> {
 export async function searchBrands(searchTerm: string): Promise<ApiResponse<Brand[]>> {
   return getBrands({
     search: searchTerm,
-  });
+  })
 }
 
 /**
@@ -97,7 +97,7 @@ export async function searchBrands(searchTerm: string): Promise<ApiResponse<Bran
 export async function getPopularBrands(minProducts: number = 3): Promise<ApiResponse<Brand[]>> {
   return getBrands({
     minProducts,
-  });
+  })
 }
 
 // ===================================
@@ -110,32 +110,28 @@ export async function getPopularBrands(minProducts: number = 3): Promise<ApiResp
  * @param page - Página
  * @param limit - Límite de resultados
  */
-export async function getProductsByBrand(
-  brandName: string,
-  page: number = 1,
-  limit: number = 12
-) {
+export async function getProductsByBrand(brandName: string, page: number = 1, limit: number = 12) {
   const searchParams = new URLSearchParams({
     brand: brandName,
     page: page.toString(),
     limit: limit.toString(),
-  });
+  })
 
   const response = await fetch(`/api/products?${searchParams.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },
-  });
+  })
 
   // Usar parsing seguro de JSON
-  const result = await safeApiResponseJson(response);
+  const result = await safeApiResponseJson(response)
 
   if (!result || !result.success || !result.data) {
-    throw new Error(result?.error || 'Error parsing API response');
+    throw new Error(result?.error || 'Error parsing API response')
   }
 
-  return result.data;
+  return result.data
 }
 
 /**
@@ -148,15 +144,15 @@ export function formatBrandName(brandName: string): string {
   const specialCases: Record<string, string> = {
     'el galgo': 'El Galgo',
     'sherwin williams': 'Sherwin Williams',
-    'genérico': 'Genérico',
-    'akapol': 'Akapol',
-    'plavicon': 'Plavicon',
-    'sinteplast': 'Sinteplast',
-    'petrilac': 'Petrilac',
-  };
+    genérico: 'Genérico',
+    akapol: 'Akapol',
+    plavicon: 'Plavicon',
+    sinteplast: 'Sinteplast',
+    petrilac: 'Petrilac',
+  }
 
-  const lowerCase = brandName.toLowerCase();
-  return specialCases[lowerCase] || brandName;
+  const lowerCase = brandName.toLowerCase()
+  return specialCases[lowerCase] || brandName
 }
 
 /**
@@ -168,14 +164,14 @@ export function getBrandColor(brandName: string): string {
   const brandColors: Record<string, string> = {
     'El Galgo': '#FF6B35',
     'Sherwin Williams': '#0066CC',
-    'Akapol': '#FF8C00',
-    'Plavicon': '#228B22',
-    'Sinteplast': '#8B4513',
-    'Petrilac': '#4169E1',
-    'Genérico': '#708090',
-  };
+    Akapol: '#FF8C00',
+    Plavicon: '#228B22',
+    Sinteplast: '#8B4513',
+    Petrilac: '#4169E1',
+    Genérico: '#708090',
+  }
 
-  return brandColors[formatBrandName(brandName)] || '#6B7280';
+  return brandColors[formatBrandName(brandName)] || '#6B7280'
 }
 
 /**
@@ -187,21 +183,12 @@ export function getBrandLogo(brandName: string): string {
   const brandLogos: Record<string, string> = {
     'El Galgo': '/images/brands/el-galgo.png',
     'Sherwin Williams': '/images/brands/sherwin-williams.png',
-    'Akapol': '/images/brands/akapol.png',
-    'Plavicon': '/images/brands/plavicon.png',
-    'Sinteplast': '/images/brands/sinteplast.png',
-    'Petrilac': '/images/brands/petrilac.png',
-    'Genérico': '/images/brands/generic.png',
-  };
+    Akapol: '/images/brands/akapol.png',
+    Plavicon: '/images/brands/plavicon.png',
+    Sinteplast: '/images/brands/sinteplast.png',
+    Petrilac: '/images/brands/petrilac.png',
+    Genérico: '/images/brands/generic.png',
+  }
 
-  return brandLogos[formatBrandName(brandName)] || '/images/brands/default.png';
+  return brandLogos[formatBrandName(brandName)] || '/images/brands/default.png'
 }
-
-
-
-
-
-
-
-
-

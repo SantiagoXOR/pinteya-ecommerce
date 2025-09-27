@@ -1,65 +1,56 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
 
-const priceDisplayVariants = cva(
-  "flex flex-col gap-0.5 w-full max-w-full",
-  {
-    variants: {
-      variant: {
-        default: "text-left",
-        center: "text-center items-center",
-        compact: "flex-col gap-0.5",
-      },
-      size: {
-        sm: "text-sm",
-        md: "text-base",
-        lg: "text-lg",
-        xl: "text-xl",
-      },
+const priceDisplayVariants = cva('flex flex-col gap-0.5 w-full max-w-full', {
+  variants: {
+    variant: {
+      default: 'text-left',
+      center: 'text-center items-center',
+      compact: 'flex-col gap-0.5',
     },
-    defaultVariants: {
-      variant: "default",
-      size: "md",
+    size: {
+      sm: 'text-sm',
+      md: 'text-base',
+      lg: 'text-lg',
+      xl: 'text-xl',
     },
-  }
-)
+  },
+  defaultVariants: {
+    variant: 'default',
+    size: 'md',
+  },
+})
 
-const priceVariants = cva(
-  "font-bold leading-tight",
-  {
-    variants: {
-      size: {
-        sm: "text-lg",
-        md: "text-xl",
-        lg: "text-2xl",
-        xl: "text-3xl",
-      },
+const priceVariants = cva('font-bold leading-tight', {
+  variants: {
+    size: {
+      sm: 'text-lg',
+      md: 'text-xl',
+      lg: 'text-2xl',
+      xl: 'text-3xl',
     },
-    defaultVariants: {
-      size: "md",
-    },
-  }
-)
+  },
+  defaultVariants: {
+    size: 'md',
+  },
+})
 
-const originalPriceVariants = cva(
-  "line-through text-muted-foreground font-medium",
-  {
-    variants: {
-      size: {
-        sm: "text-xs",
-        md: "text-sm",
-        lg: "text-base",
-        xl: "text-lg",
-      },
+const originalPriceVariants = cva('line-through text-muted-foreground font-medium', {
+  variants: {
+    size: {
+      sm: 'text-xs',
+      md: 'text-sm',
+      lg: 'text-base',
+      xl: 'text-lg',
     },
-    defaultVariants: {
-      size: "md",
-    },
-  }
-)
+  },
+  defaultVariants: {
+    size: 'md',
+  },
+})
 
 export interface PriceDisplayProps
   extends React.HTMLAttributes<HTMLDivElement>,
@@ -91,20 +82,16 @@ export interface PriceDisplayProps
 /**
  * Formatea un número como precio en pesos argentinos
  */
-const formatPrice = (
-  amount: number, 
-  currency: string = "ARS", 
-  currencySymbol?: string
-): string => {
+const formatPrice = (amount: number, currency: string = 'ARS', currencySymbol?: string): string => {
   const price = amount / 100
-  
+
   if (currencySymbol) {
-    return `${currencySymbol}${price.toLocaleString('es-AR', { 
+    return `${currencySymbol}${price.toLocaleString('es-AR', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2 
+      maximumFractionDigits: 2,
     })}`
   }
-  
+
   return price.toLocaleString('es-AR', {
     style: 'currency',
     currency: currency,
@@ -120,38 +107,37 @@ const calculateDiscountPercentage = (original: number, current: number): number 
 }
 
 const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
-  ({ 
-    className, 
-    variant, 
-    size, 
-    amount,
-    originalAmount,
-    currency = "ARS",
-    currencySymbol,
-    installments,
-    showDiscountPercentage = true,
-    installmentsText = "sin interés",
-    showFreeShipping = false,
-    priceColor,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      amount,
+      originalAmount,
+      currency = 'ARS',
+      currencySymbol,
+      installments,
+      showDiscountPercentage = true,
+      installmentsText = 'sin interés',
+      showFreeShipping = false,
+      priceColor,
+      ...props
+    },
+    ref
+  ) => {
     const hasDiscount = originalAmount && originalAmount > amount
     const discountPercentage = hasDiscount ? calculateDiscountPercentage(originalAmount, amount) : 0
 
     return (
-      <div
-        ref={ref}
-        className={cn(priceDisplayVariants({ variant, size, className }))}
-        {...props}
-      >
+      <div ref={ref} className={cn(priceDisplayVariants({ variant, size, className }))} {...props}>
         {/* Precio Original (si hay descuento) */}
         {hasDiscount && (
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             <span className={cn(originalPriceVariants({ size }))}>
               {formatPrice(originalAmount, currency, currencySymbol)}
             </span>
             {showDiscountPercentage && (
-              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+              <span className='bg-red-500 text-white text-xs font-bold px-2 py-1 rounded'>
                 -{discountPercentage}%
               </span>
             )}
@@ -159,30 +145,32 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
         )}
 
         {/* Precio Principal */}
-        <div className={cn(
-          priceVariants({ size }),
-          priceColor ? `text-[${priceColor}]` : "text-[#712F00]"
-        )}>
+        <div
+          className={cn(
+            priceVariants({ size }),
+            priceColor ? `text-[${priceColor}]` : 'text-[#712F00]'
+          )}
+        >
           {formatPrice(amount, currency, currencySymbol)}
         </div>
 
         {/* Información de Cuotas */}
         {installments && (
-          <div className="text-xs text-muted-foreground max-w-full overflow-hidden">
-            {variant === "compact" ? (
-              <span className="text-fun-green-500 font-medium truncate block text-xs leading-tight">
-                {installments.quantity}x de {formatPrice(installments.amount, currency, currencySymbol)}
+          <div className='text-xs text-muted-foreground max-w-full overflow-hidden'>
+            {variant === 'compact' ? (
+              <span className='text-fun-green-500 font-medium truncate block text-xs leading-tight'>
+                {installments.quantity}x de{' '}
+                {formatPrice(installments.amount, currency, currencySymbol)}
                 {installments.interestFree && ` ${installmentsText}`}
               </span>
             ) : (
               <>
-                <span className="text-fun-green-500 font-medium truncate block text-xs leading-tight">
-                  {installments.quantity}x de {formatPrice(installments.amount, currency, currencySymbol)}
+                <span className='text-fun-green-500 font-medium truncate block text-xs leading-tight'>
+                  {installments.quantity}x de{' '}
+                  {formatPrice(installments.amount, currency, currencySymbol)}
                 </span>
                 {installments.interestFree && (
-                  <span className="ml-1 text-green-600 truncate block">
-                    {installmentsText}
-                  </span>
+                  <span className='ml-1 text-green-600 truncate block'>{installmentsText}</span>
                 )}
               </>
             )}
@@ -191,12 +179,8 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
 
         {/* Envío Gratis */}
         {showFreeShipping && (
-          <div className="flex items-center gap-1 text-sm max-w-full mt-1">
-            <img
-              src="/images/icons/icon-envio.svg"
-              alt="Envío gratis"
-              className="h-6 w-auto"
-            />
+          <div className='flex items-center gap-1 text-sm max-w-full mt-1'>
+            <img src='/images/icons/icon-envio.svg' alt='Envío gratis' className='h-6 w-auto' />
           </div>
         )}
       </div>
@@ -204,15 +188,6 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
   }
 )
 
-PriceDisplay.displayName = "PriceDisplay"
+PriceDisplay.displayName = 'PriceDisplay'
 
 export { PriceDisplay, priceDisplayVariants }
-
-
-
-
-
-
-
-
-

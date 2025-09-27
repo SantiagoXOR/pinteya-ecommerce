@@ -129,25 +129,25 @@ export const Variants: Story = {
     quantity: 8,
   },
   render: () => (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <div>
-        <h3 className="text-sm font-medium mb-2">Default</h3>
-        <StockIndicator quantity={8} variant="default" showExactQuantity />
+        <h3 className='text-sm font-medium mb-2'>Default</h3>
+        <StockIndicator quantity={8} variant='default' showExactQuantity />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Compact</h3>
-        <StockIndicator quantity={3} variant="compact" showExactQuantity />
+        <h3 className='text-sm font-medium mb-2'>Compact</h3>
+        <StockIndicator quantity={3} variant='compact' showExactQuantity />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Badge</h3>
-        <div className="relative inline-block">
-          <div className="w-16 h-16 bg-gray-200 rounded"></div>
-          <StockIndicator quantity={2} variant="badge" />
+        <h3 className='text-sm font-medium mb-2'>Badge</h3>
+        <div className='relative inline-block'>
+          <div className='w-16 h-16 bg-gray-200 rounded'></div>
+          <StockIndicator quantity={2} variant='badge' />
         </div>
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Minimal</h3>
-        <StockIndicator quantity={12} variant="minimal" />
+        <h3 className='text-sm font-medium mb-2'>Minimal</h3>
+        <StockIndicator quantity={12} variant='minimal' />
       </div>
     </div>
   ),
@@ -159,22 +159,22 @@ export const DifferentUnits: Story = {
     quantity: 5,
   },
   render: () => (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <div>
-        <h3 className="text-sm font-medium mb-2">Unidades (default)</h3>
+        <h3 className='text-sm font-medium mb-2'>Unidades (default)</h3>
         <StockIndicator quantity={5} showExactQuantity />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Litros</h3>
-        <StockIndicator quantity={3} unit="litros" showExactQuantity />
+        <h3 className='text-sm font-medium mb-2'>Litros</h3>
+        <StockIndicator quantity={3} unit='litros' showExactQuantity />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Kilogramos</h3>
-        <StockIndicator quantity={8} unit="kg" showExactQuantity />
+        <h3 className='text-sm font-medium mb-2'>Kilogramos</h3>
+        <StockIndicator quantity={8} unit='kg' showExactQuantity />
       </div>
       <div>
-        <h3 className="text-sm font-medium mb-2">Metros</h3>
-        <StockIndicator quantity={2} unit="metros" showExactQuantity />
+        <h3 className='text-sm font-medium mb-2'>Metros</h3>
+        <StockIndicator quantity={2} unit='metros' showExactQuantity />
       </div>
     </div>
   ),
@@ -186,41 +186,26 @@ export const PaintProducts: Story = {
     quantity: 12,
   },
   render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="border p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Pintura Sherwin Williams 4L</h3>
-        <StockIndicator 
-          quantity={12}
-          unit="latas"
-          showExactQuantity
-          lowStockThreshold={5}
-        />
+    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+      <div className='border p-4 rounded-lg'>
+        <h3 className='font-medium mb-2'>Pintura Sherwin Williams 4L</h3>
+        <StockIndicator quantity={12} unit='latas' showExactQuantity lowStockThreshold={5} />
       </div>
-      <div className="border p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Poximix 250ml</h3>
-        <StockIndicator 
-          quantity={2}
-          unit="tubos"
-          showExactQuantity
-          lowStockThreshold={5}
-        />
+      <div className='border p-4 rounded-lg'>
+        <h3 className='font-medium mb-2'>Poximix 250ml</h3>
+        <StockIndicator quantity={2} unit='tubos' showExactQuantity lowStockThreshold={5} />
       </div>
-      <div className="border p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Lija El Galgo #120</h3>
-        <StockIndicator 
+      <div className='border p-4 rounded-lg'>
+        <h3 className='font-medium mb-2'>Lija El Galgo #120</h3>
+        <StockIndicator
           quantity={0}
           allowPreOrder
           restockDate={new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)}
         />
       </div>
-      <div className="border p-4 rounded-lg">
-        <h3 className="font-medium mb-2">Pincel Plavicon 2"</h3>
-        <StockIndicator 
-          quantity={25}
-          unit="pinceles"
-          showExactQuantity
-          variant="compact"
-        />
+      <div className='border p-4 rounded-lg'>
+        <h3 className='font-medium mb-2'>Pincel Plavicon 2"</h3>
+        <StockIndicator quantity={25} unit='pinceles' showExactQuantity variant='compact' />
       </div>
     </div>
   ),
@@ -232,7 +217,7 @@ export const WithoutIcons: Story = {
     quantity: 15,
   },
   render: () => (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <StockIndicator quantity={15} showIcon={false} showExactQuantity />
       <StockIndicator quantity={3} showIcon={false} showExactQuantity />
       <StockIndicator quantity={0} showIcon={false} />
@@ -247,19 +232,10 @@ export const CustomTexts: Story = {
     quantity: 3,
     lowStockThreshold: 5,
     customTexts: {
-      lowStock: "¡Últimas unidades disponibles!",
-      inStock: "Disponible para entrega inmediata",
-      outOfStock: "Temporalmente agotado",
-      preOrder: "Reservá tu producto",
+      lowStock: '¡Últimas unidades disponibles!',
+      inStock: 'Disponible para entrega inmediata',
+      outOfStock: 'Temporalmente agotado',
+      preOrder: 'Reservá tu producto',
     },
   },
 }
-
-
-
-
-
-
-
-
-

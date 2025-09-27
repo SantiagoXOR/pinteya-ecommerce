@@ -1,24 +1,24 @@
-import React from "react";
-import ShopDetailsById from "@/components/ShopDetails/ShopDetailsById";
-import { Metadata } from "next";
+import React from 'react'
+import ShopDetailsById from '@/components/ShopDetails/ShopDetailsById'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Detalles del Producto | Pinteya E-commerce",
-  description: "Detalles completos del producto seleccionado",
-};
+  title: 'Detalles del Producto | Pinteya E-commerce',
+  description: 'Detalles completos del producto seleccionado',
+}
 
 interface ShopDetailsPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }
 
 const ShopDetailsPage = async ({ params }: ShopDetailsPageProps) => {
-  const { id } = await params;
-  
+  const { id } = await params
+
   return (
     <main>
       <ShopDetailsById productId={id} />
     </main>
-  );
-};
+  )
+}
 
-export default ShopDetailsPage;
+export default ShopDetailsPage

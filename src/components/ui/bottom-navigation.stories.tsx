@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { BottomNavigation, type BottomNavigationItem } from './bottom-navigation'
-import { 
-  Home, 
-  Tag, 
-  Package, 
-  Calculator, 
+import {
+  Home,
+  Tag,
+  Package,
+  Calculator,
   Menu,
   ShoppingCart,
   User,
   Heart,
-  Search
+  Search,
 } from 'lucide-react'
 
 const meta = {
@@ -64,70 +64,70 @@ type Story = StoryObj<typeof meta>
 // Items personalizados para diferentes casos de uso
 const ecommerceItems: BottomNavigationItem[] = [
   {
-    id: "home",
-    label: "Inicio",
-    href: "/",
-    icon: <Home className="w-5 h-5" />,
+    id: 'home',
+    label: 'Inicio',
+    href: '/',
+    icon: <Home className='w-5 h-5' />,
   },
   {
-    id: "shop",
-    label: "Tienda",
-    href: "/shop",
-    icon: <Tag className="w-5 h-5" />,
+    id: 'shop',
+    label: 'Tienda',
+    href: '/shop',
+    icon: <Tag className='w-5 h-5' />,
   },
   {
-    id: "cart",
-    label: "Carrito",
-    href: "/cart",
-    icon: <ShoppingCart className="w-5 h-5" />,
+    id: 'cart',
+    label: 'Carrito',
+    href: '/cart',
+    icon: <ShoppingCart className='w-5 h-5' />,
     badge: 3,
   },
   {
-    id: "wishlist",
-    label: "Favoritos",
-    href: "/wishlist",
-    icon: <Heart className="w-5 h-5" />,
+    id: 'wishlist',
+    label: 'Favoritos',
+    href: '/wishlist',
+    icon: <Heart className='w-5 h-5' />,
     badge: 12,
   },
   {
-    id: "profile",
-    label: "Perfil",
-    href: "/my-account",
-    icon: <User className="w-5 h-5" />,
+    id: 'profile',
+    label: 'Perfil',
+    href: '/my-account',
+    icon: <User className='w-5 h-5' />,
   },
 ]
 
 const pinteyaItems: BottomNavigationItem[] = [
   {
-    id: "home",
-    label: "Inicio",
-    href: "/",
-    icon: <Home className="w-5 h-5 fill-current" strokeWidth={1.5} />,
+    id: 'home',
+    label: 'Inicio',
+    href: '/',
+    icon: <Home className='w-5 h-5 fill-current' strokeWidth={1.5} />,
   },
   {
-    id: "offers",
-    label: "Ofertas",
-    href: "/shop",
-    icon: <Tag className="w-5 h-5" strokeWidth={2} />,
+    id: 'offers',
+    label: 'Ofertas',
+    href: '/shop',
+    icon: <Tag className='w-5 h-5' strokeWidth={2} />,
   },
   {
-    id: "orders",
-    label: "Pedidos",
-    href: "/my-account",
-    icon: <Package className="w-5 h-5" strokeWidth={1.5} />,
+    id: 'orders',
+    label: 'Pedidos',
+    href: '/my-account',
+    icon: <Package className='w-5 h-5' strokeWidth={1.5} />,
     badge: 3,
   },
   {
-    id: "calculator",
-    label: "Cotizador",
-    href: "/calculator",
-    icon: <Calculator className="w-5 h-5" strokeWidth={1.5} />,
+    id: 'calculator',
+    label: 'Cotizador',
+    href: '/calculator',
+    icon: <Calculator className='w-5 h-5' strokeWidth={1.5} />,
   },
   {
-    id: "menu",
-    label: "Menú",
-    href: "/menu",
-    icon: <Menu className="w-5 h-5" strokeWidth={2} />,
+    id: 'menu',
+    label: 'Menú',
+    href: '/menu',
+    icon: <Menu className='w-5 h-5' strokeWidth={2} />,
   },
 ]
 
@@ -141,7 +141,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Navegación inferior con la nueva identidad visual de Pinteya - fondo cálido, íconos mejorados y estados activos con círculo naranja.',
+        story:
+          'Navegación inferior con la nueva identidad visual de Pinteya - fondo cálido, íconos mejorados y estados activos con círculo naranja.',
       },
     },
   },
@@ -249,35 +250,35 @@ export const ImprovedDesign: Story = {
     showLabels: true,
     items: [
       {
-        id: "home",
-        label: "Inicio",
-        href: "/",
-        icon: <Home className="w-5 h-5 fill-current" strokeWidth={1.5} />,
+        id: 'home',
+        label: 'Inicio',
+        href: '/',
+        icon: <Home className='w-5 h-5 fill-current' strokeWidth={1.5} />,
       },
       {
-        id: "offers",
-        label: "Ofertas",
-        href: "/shop",
-        icon: <Tag className="w-5 h-5" strokeWidth={2} />,
+        id: 'offers',
+        label: 'Ofertas',
+        href: '/shop',
+        icon: <Tag className='w-5 h-5' strokeWidth={2} />,
       },
       {
-        id: "orders",
-        label: "Pedidos",
-        href: "/my-account",
-        icon: <Package className="w-5 h-5" strokeWidth={1.5} />,
+        id: 'orders',
+        label: 'Pedidos',
+        href: '/my-account',
+        icon: <Package className='w-5 h-5' strokeWidth={1.5} />,
         badge: 5,
       },
       {
-        id: "calculator",
-        label: "Cotizador",
-        href: "/calculator",
-        icon: <Calculator className="w-5 h-5" strokeWidth={1.5} />,
+        id: 'calculator',
+        label: 'Cotizador',
+        href: '/calculator',
+        icon: <Calculator className='w-5 h-5' strokeWidth={1.5} />,
       },
       {
-        id: "menu",
-        label: "Menú",
-        href: "/menu",
-        icon: <Menu className="w-5 h-5" strokeWidth={2} />,
+        id: 'menu',
+        label: 'Menú',
+        href: '/menu',
+        icon: <Menu className='w-5 h-5' strokeWidth={2} />,
       },
     ],
     maxItems: 5,
@@ -285,15 +286,16 @@ export const ImprovedDesign: Story = {
   parameters: {
     docs: {
       description: {
-        story: '🎨 **Diseño Mejorado para Pinteya E-commerce**\n\n' +
-               '✅ **Fondo cálido** beige suave (#FFF7EB) en lugar de blanco plano\n' +
-               '✅ **Íconos redondeados** con strokeWidth optimizado para mejor legibilidad\n' +
-               '✅ **Estado activo** con fondo circular naranja y escala aumentada\n' +
-               '✅ **Badges animados** con efecto pulse para notificaciones\n' +
-               '✅ **Tipografía mejorada** con font-semibold para items activos\n' +
-               '✅ **Efectos de tap** optimizados para móviles\n' +
-               '✅ **Espaciado generoso** entre íconos y texto\n\n' +
-               'Esta versión implementa todas las mejoras UX/UI propuestas para alinearse con la identidad moderna y cálida de PinteYA!',
+        story:
+          '🎨 **Diseño Mejorado para Pinteya E-commerce**\n\n' +
+          '✅ **Fondo cálido** beige suave (#FFF7EB) en lugar de blanco plano\n' +
+          '✅ **Íconos redondeados** con strokeWidth optimizado para mejor legibilidad\n' +
+          '✅ **Estado activo** con fondo circular naranja y escala aumentada\n' +
+          '✅ **Badges animados** con efecto pulse para notificaciones\n' +
+          '✅ **Tipografía mejorada** con font-semibold para items activos\n' +
+          '✅ **Efectos de tap** optimizados para móviles\n' +
+          '✅ **Espaciado generoso** entre íconos y texto\n\n' +
+          'Esta versión implementa todas las mejoras UX/UI propuestas para alinearse con la identidad moderna y cálida de PinteYA!',
       },
     },
   },
@@ -306,17 +308,17 @@ export const WithHighBadges: Story = {
     items: [
       ...pinteyaItems.slice(0, 3),
       {
-        id: "notifications",
-        label: "Notificaciones",
-        href: "/notifications",
-        icon: <Package className="w-5 h-5" />,
+        id: 'notifications',
+        label: 'Notificaciones',
+        href: '/notifications',
+        icon: <Package className='w-5 h-5' />,
         badge: 99,
       },
       {
-        id: "messages",
-        label: "Mensajes",
-        href: "/messages",
-        icon: <Menu className="w-5 h-5" />,
+        id: 'messages',
+        label: 'Mensajes',
+        href: '/messages',
+        icon: <Menu className='w-5 h-5' />,
         badge: 150,
       },
     ],
@@ -330,12 +332,3 @@ export const WithHighBadges: Story = {
     },
   },
 }
-
-
-
-
-
-
-
-
-

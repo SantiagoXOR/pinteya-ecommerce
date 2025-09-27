@@ -7,34 +7,25 @@
 // =====================================================
 // MERCADOPAGO INTEGRATION
 // =====================================================
-export * from '../mercadopago';
-export * from '../mercadopago-mock';
+export * from '../mercadopago'
+export * from '../mercadopago-mock'
 
 // =====================================================
 // ANALYTICS INTEGRATION
 // =====================================================
-export * from '../analytics';
-export * from '../analytics-optimized';
-export * from '../google-analytics';
+export * from '../analytics'
+export * from '../analytics-optimized'
+export * from '../google-analytics'
 
 // =====================================================
 // DATABASE INTEGRATION
 // =====================================================
-export * from '../supabase';
-export * from '../integrations/redis';
+export * from '../supabase'
+export * from '../integrations/redis'
 
 // =====================================================
 // PERFORMANCE & MONITORING
 // =====================================================
-export * from '../metrics';
-export * from '../performance';
-export * from '../monitoring';
-
-
-
-
-
-
-
-
-
+export * from '../metrics'
+export * from '../performance'
+export * from '../monitoring'

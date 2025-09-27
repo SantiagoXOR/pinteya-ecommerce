@@ -10,14 +10,14 @@ import { render, screen } from '@testing-library/react'
 jest.mock('../index', () => {
   return function MockHeader() {
     return (
-      <header role="banner" data-testid="header">
-        <div data-testid="header-logo">
-          <img alt="Pinteya" src="/logo.svg" />
+      <header role='banner' data-testid='header'>
+        <div data-testid='header-logo'>
+          <img alt='Pinteya' src='/logo.svg' />
         </div>
-        <div data-testid="search-component">
-          <input role="searchbox" aria-label="Buscar productos" />
+        <div data-testid='search-component'>
+          <input role='searchbox' aria-label='Buscar productos' />
         </div>
-        <div data-testid="auth-section">
+        <div data-testid='auth-section'>
           <button>Iniciar Sesión</button>
         </div>
       </header>
@@ -96,12 +96,3 @@ describe('Header - Ultra-Simplified Tests', () => {
     expect(screen.getByTestId('auth-section')).toBeInTheDocument()
   })
 })
-
-
-
-
-
-
-
-
-

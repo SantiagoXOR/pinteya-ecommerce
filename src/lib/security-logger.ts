@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - SECURITY LOGGER
 // ===================================
 
-import { logger, LogCategory, LogLevel } from './enterprise/logger';
+import { logger, LogCategory, LogLevel } from './enterprise/logger'
 
 /**
  * Tipos de eventos de seguridad
@@ -26,7 +26,7 @@ export enum SecurityEventType {
   API_ABUSE = 'api_abuse',
   WEBHOOK_VALIDATION_FAILURE = 'webhook_validation_failure',
   ENCRYPTION_FAILURE = 'encryption_failure',
-  COMPLIANCE_VIOLATION = 'compliance_violation'
+  COMPLIANCE_VIOLATION = 'compliance_violation',
 }
 
 /**
@@ -36,7 +36,7 @@ export enum SecuritySeverity {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 /**
@@ -44,75 +44,75 @@ export enum SecuritySeverity {
  */
 export interface SecurityContext {
   // Información del usuario
-  userId?: string;
-  userEmail?: string;
-  userRole?: string;
-  sessionId?: string;
-  
+  userId?: string
+  userEmail?: string
+  userRole?: string
+  sessionId?: string
+
   // Información de la request
-  ip?: string;
-  userAgent?: string;
-  method?: string;
-  endpoint?: string;
-  headers?: Record<string, string>;
-  
+  ip?: string
+  userAgent?: string
+  method?: string
+  endpoint?: string
+  headers?: Record<string, string>
+
   // Información geográfica
-  country?: string;
-  region?: string;
-  city?: string;
-  
+  country?: string
+  region?: string
+  city?: string
+
   // Información del dispositivo
-  deviceType?: 'mobile' | 'desktop' | 'tablet' | 'unknown';
-  browser?: string;
-  os?: string;
-  
+  deviceType?: 'mobile' | 'desktop' | 'tablet' | 'unknown'
+  browser?: string
+  os?: string
+
   // Información adicional
-  referrer?: string;
-  timestamp?: number;
-  requestId?: string;
-  
+  referrer?: string
+  timestamp?: number
+  requestId?: string
+
   // Datos específicos del evento
-  resource?: string;
-  action?: string;
-  targetUserId?: string;
-  dataType?: string;
-  recordCount?: number;
-  
+  resource?: string
+  action?: string
+  targetUserId?: string
+  dataType?: string
+  recordCount?: number
+
   // Información de seguridad
-  riskScore?: number;
-  threatLevel?: SecuritySeverity;
-  mitigationApplied?: string[];
-  
+  riskScore?: number
+  threatLevel?: SecuritySeverity
+  mitigationApplied?: string[]
+
   // Metadatos adicionales
-  metadata?: Record<string, any>;
+  metadata?: Record<string, any>
 }
 
 /**
  * Evento de seguridad
  */
 export interface SecurityEvent {
-  id: string;
-  type: SecurityEventType;
-  severity: SecuritySeverity;
-  message: string;
-  context: SecurityContext;
-  timestamp: number;
-  source: string;
-  tags: string[];
+  id: string
+  type: SecurityEventType
+  severity: SecuritySeverity
+  message: string
+  context: SecurityContext
+  timestamp: number
+  source: string
+  tags: string[]
 }
 
 /**
  * Configuración del logger de seguridad
  */
 export interface SecurityLoggerConfig {
-  enabled: boolean;
-  logLevel: SecuritySeverity;
-  includeStackTrace: boolean;
-  maskSensitiveData: boolean;
-  alertOnCritical: boolean;
-  persistToDatabase: boolean;
-  exportToSIEM: boolean;
-  retentionDays: number;
+  enabled: boolean
+  logLevel: SecuritySeverity
+  includeStackTrace: boolean
+  maskSensitiveData: boolean
+  alertOnCritical: boolean
+  persistToDatabase: boolean
+  exportToSIEM: boolean
+  retentionDays: number
 }
 
 /**
@@ -126,8 +126,8 @@ const DEFAULT_CONFIG: SecurityLoggerConfig = {
   alertOnCritical: true,
   persistToDatabase: true,
   exportToSIEM: false,
-  retentionDays: 90
-};
+  retentionDays: 90,
+}
 
 /**
  * Datos sensibles que deben ser enmascarados
@@ -144,28 +144,28 @@ const SENSITIVE_FIELDS = [
   'ssn',
   'phone',
   'email',
-  'address'
-];
+  'address',
+]
 
 /**
  * Logger de seguridad especializado
  */
 export class SecurityLogger {
-  private static instance: SecurityLogger;
-  private config: SecurityLoggerConfig;
-  private eventBuffer: SecurityEvent[] = [];
-  private flushInterval?: NodeJS.Timeout;
+  private static instance: SecurityLogger
+  private config: SecurityLoggerConfig
+  private eventBuffer: SecurityEvent[] = []
+  private flushInterval?: NodeJS.Timeout
 
   private constructor(config: Partial<SecurityLoggerConfig> = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config };
-    this.startPeriodicFlush();
+    this.config = { ...DEFAULT_CONFIG, ...config }
+    this.startPeriodicFlush()
   }
 
   static getInstance(config?: Partial<SecurityLoggerConfig>): SecurityLogger {
     if (!SecurityLogger.instance) {
-      SecurityLogger.instance = new SecurityLogger(config);
+      SecurityLogger.instance = new SecurityLogger(config)
     }
-    return SecurityLogger.instance;
+    return SecurityLogger.instance
   }
 
   /**
@@ -179,10 +179,14 @@ export class SecurityLogger {
     source: string = 'api',
     tags: string[] = []
   ): void {
-    if (!this.config.enabled) {return;}
+    if (!this.config.enabled) {
+      return
+    }
 
     // Verificar si el nivel de severidad cumple el umbral
-    if (!this.shouldLog(severity)) {return;}
+    if (!this.shouldLog(severity)) {
+      return
+    }
 
     const event: SecurityEvent = {
       id: this.generateEventId(),
@@ -192,23 +196,23 @@ export class SecurityLogger {
       context: this.sanitizeContext(context),
       timestamp: Date.now(),
       source,
-      tags: [...tags, 'security', severity, type]
-    };
+      tags: [...tags, 'security', severity, type],
+    }
 
     // Agregar al buffer
-    this.eventBuffer.push(event);
+    this.eventBuffer.push(event)
 
     // Log inmediato para eventos críticos
     if (severity === SecuritySeverity.CRITICAL) {
-      this.logImmediate(event);
-      
+      this.logImmediate(event)
+
       if (this.config.alertOnCritical) {
-        this.triggerCriticalAlert(event);
+        this.triggerCriticalAlert(event)
       }
     }
 
     // Log normal para otros eventos
-    this.logToConsole(event);
+    this.logToConsole(event)
   }
 
   /**
@@ -226,7 +230,7 @@ export class SecurityLogger {
       context,
       'auth',
       ['authentication', 'success']
-    );
+    )
   }
 
   /**
@@ -240,7 +244,7 @@ export class SecurityLogger {
       { ...context, failureReason: reason },
       'auth',
       ['authentication', 'failure']
-    );
+    )
   }
 
   /**
@@ -254,7 +258,7 @@ export class SecurityLogger {
       { ...context, resource, action },
       'auth',
       ['authorization', 'denied', resource]
-    );
+    )
   }
 
   /**
@@ -268,16 +272,21 @@ export class SecurityLogger {
       { ...context, rateLimit: limit, timeWindow: window },
       'rate-limiter',
       ['rate-limit', 'exceeded']
-    );
+    )
   }
 
   /**
    * Log de actividad sospechosa
    */
   logSuspiciousActivity(context: SecurityContext, description: string, riskScore: number): void {
-    const severity = riskScore >= 80 ? SecuritySeverity.CRITICAL :
-                    riskScore >= 60 ? SecuritySeverity.HIGH :
-                    riskScore >= 40 ? SecuritySeverity.MEDIUM : SecuritySeverity.LOW;
+    const severity =
+      riskScore >= 80
+        ? SecuritySeverity.CRITICAL
+        : riskScore >= 60
+          ? SecuritySeverity.HIGH
+          : riskScore >= 40
+            ? SecuritySeverity.MEDIUM
+            : SecuritySeverity.LOW
 
     this.logSecurityEvent(
       SecurityEventType.SUSPICIOUS_ACTIVITY,
@@ -286,7 +295,7 @@ export class SecurityLogger {
       { ...context, riskScore, description },
       'security-monitor',
       ['suspicious', 'activity', `risk-${Math.floor(riskScore / 20) * 20}`]
-    );
+    )
   }
 
   /**
@@ -300,13 +309,18 @@ export class SecurityLogger {
       { ...context, dataType, recordCount },
       'data-access',
       ['data', 'access', dataType]
-    );
+    )
   }
 
   /**
    * Log de modificación de datos
    */
-  logDataModification(context: SecurityContext, dataType: string, action: string, recordCount: number = 1): void {
+  logDataModification(
+    context: SecurityContext,
+    dataType: string,
+    action: string,
+    recordCount: number = 1
+  ): void {
     this.logSecurityEvent(
       SecurityEventType.DATA_MODIFICATION,
       SecuritySeverity.MEDIUM,
@@ -314,7 +328,7 @@ export class SecurityLogger {
       { ...context, dataType, action, recordCount },
       'data-modification',
       ['data', 'modification', action, dataType]
-    );
+    )
   }
 
   /**
@@ -328,7 +342,7 @@ export class SecurityLogger {
       { ...context, fraudReason: reason, amount },
       'payment-security',
       ['payment', 'fraud', 'attempt']
-    );
+    )
   }
 
   /**
@@ -342,7 +356,7 @@ export class SecurityLogger {
       { ...context, suspiciousQuery: this.maskSensitiveData(query) },
       'sql-security',
       ['sql', 'injection', 'attempt']
-    );
+    )
   }
 
   /**
@@ -356,7 +370,7 @@ export class SecurityLogger {
       { ...context, xssPayload: this.maskSensitiveData(payload) },
       'xss-security',
       ['xss', 'attempt']
-    );
+    )
   }
 
   /**
@@ -370,7 +384,7 @@ export class SecurityLogger {
       { ...context, provider, validationFailure: reason },
       'webhook-security',
       ['webhook', 'validation', 'failure', provider]
-    );
+    )
   }
 
   /**
@@ -384,7 +398,7 @@ export class SecurityLogger {
       { ...context, abusePattern: pattern, frequency },
       'api-security',
       ['api', 'abuse', pattern]
-    );
+    )
   }
 
   /**
@@ -399,51 +413,53 @@ export class SecurityLogger {
       [SecuritySeverity.LOW]: 0,
       [SecuritySeverity.MEDIUM]: 1,
       [SecuritySeverity.HIGH]: 2,
-      [SecuritySeverity.CRITICAL]: 3
-    };
+      [SecuritySeverity.CRITICAL]: 3,
+    }
 
-    return severityLevels[severity] >= severityLevels[this.config.logLevel];
+    return severityLevels[severity] >= severityLevels[this.config.logLevel]
   }
 
   /**
    * Sanitiza el contexto removiendo datos sensibles
    */
   private sanitizeContext(context: SecurityContext): SecurityContext {
-    if (!this.config.maskSensitiveData) {return context;}
+    if (!this.config.maskSensitiveData) {
+      return context
+    }
 
-    const sanitized = { ...context };
+    const sanitized = { ...context }
 
     // Enmascarar headers sensibles
     if (sanitized.headers) {
-      sanitized.headers = this.maskSensitiveHeaders(sanitized.headers);
+      sanitized.headers = this.maskSensitiveHeaders(sanitized.headers)
     }
 
     // Enmascarar metadata sensible
     if (sanitized.metadata) {
-      sanitized.metadata = this.maskSensitiveData(sanitized.metadata);
+      sanitized.metadata = this.maskSensitiveData(sanitized.metadata)
     }
 
     // Enmascarar email parcialmente
     if (sanitized.userEmail) {
-      sanitized.userEmail = this.maskEmail(sanitized.userEmail);
+      sanitized.userEmail = this.maskEmail(sanitized.userEmail)
     }
 
-    return sanitized;
+    return sanitized
   }
 
   /**
    * Enmascara headers sensibles
    */
   private maskSensitiveHeaders(headers: Record<string, string>): Record<string, string> {
-    const masked = { ...headers };
+    const masked = { ...headers }
 
     Object.keys(masked).forEach(key => {
       if (SENSITIVE_FIELDS.some(field => key.toLowerCase().includes(field))) {
-        masked[key] = '***MASKED***';
+        masked[key] = '***MASKED***'
       }
-    });
+    })
 
-    return masked;
+    return masked
   }
 
   /**
@@ -451,53 +467,58 @@ export class SecurityLogger {
    */
   private maskSensitiveData(data: any): any {
     if (typeof data === 'string') {
-      return data.length > 100 ? data.substring(0, 100) + '...' : data;
+      return data.length > 100 ? data.substring(0, 100) + '...' : data
     }
 
     if (typeof data !== 'object' || data === null) {
-      return data;
+      return data
     }
 
-    const masked = Array.isArray(data) ? [...data] : { ...data };
+    const masked = Array.isArray(data) ? [...data] : { ...data }
 
     Object.keys(masked).forEach(key => {
       if (SENSITIVE_FIELDS.some(field => key.toLowerCase().includes(field))) {
-        masked[key] = '***MASKED***';
+        masked[key] = '***MASKED***'
       } else if (typeof masked[key] === 'object') {
-        masked[key] = this.maskSensitiveData(masked[key]);
+        masked[key] = this.maskSensitiveData(masked[key])
       }
-    });
+    })
 
-    return masked;
+    return masked
   }
 
   /**
    * Enmascara email parcialmente
    */
   private maskEmail(email: string): string {
-    const [local, domain] = email.split('@');
-    if (!domain) {return '***MASKED***';}
+    const [local, domain] = email.split('@')
+    if (!domain) {
+      return '***MASKED***'
+    }
 
-    const maskedLocal = local.length > 2 
-      ? local.substring(0, 2) + '***' 
-      : '***';
+    const maskedLocal = local.length > 2 ? local.substring(0, 2) + '***' : '***'
 
-    return `${maskedLocal}@${domain}`;
+    return `${maskedLocal}@${domain}`
   }
 
   /**
    * Log inmediato para eventos críticos
    */
   private logImmediate(event: SecurityEvent): void {
-    logger.error(LogLevel.ERROR, `SECURITY CRITICAL: ${event.message}`, event.context, LogCategory.SECURITY);
+    logger.error(
+      LogLevel.ERROR,
+      `SECURITY CRITICAL: ${event.message}`,
+      event.context,
+      LogCategory.SECURITY
+    )
   }
 
   /**
    * Log a consola
    */
   private logToConsole(event: SecurityEvent): void {
-    const logLevel = this.getLogLevel(event.severity);
-    logger.log(logLevel, `SECURITY: ${event.message}`, event.context, LogCategory.SECURITY);
+    const logLevel = this.getLogLevel(event.severity)
+    logger.log(logLevel, `SECURITY: ${event.message}`, event.context, LogCategory.SECURITY)
   }
 
   /**
@@ -506,15 +527,15 @@ export class SecurityLogger {
   private getLogLevel(severity: SecuritySeverity): LogLevel {
     switch (severity) {
       case SecuritySeverity.LOW:
-        return LogLevel.INFO;
+        return LogLevel.INFO
       case SecuritySeverity.MEDIUM:
-        return LogLevel.WARN;
+        return LogLevel.WARN
       case SecuritySeverity.HIGH:
-        return LogLevel.ERROR;
+        return LogLevel.ERROR
       case SecuritySeverity.CRITICAL:
-        return LogLevel.ERROR;
+        return LogLevel.ERROR
       default:
-        return LogLevel.INFO;
+        return LogLevel.INFO
     }
   }
 
@@ -527,15 +548,15 @@ export class SecurityLogger {
       type: event.type,
       message: event.message,
       timestamp: new Date(event.timestamp).toISOString(),
-      context: event.context
-    });
+      context: event.context,
+    })
   }
 
   /**
    * Genera ID único para evento
    */
   private generateEventId(): string {
-    return `sec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `sec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   /**
@@ -543,49 +564,62 @@ export class SecurityLogger {
    */
   private startPeriodicFlush(): void {
     this.flushInterval = setInterval(() => {
-      this.flushBuffer();
-    }, 60000); // Cada minuto
+      this.flushBuffer()
+    }, 60000) // Cada minuto
   }
 
   /**
    * Flush del buffer de eventos
    */
   private flushBuffer(): void {
-    if (this.eventBuffer.length === 0) {return;}
+    if (this.eventBuffer.length === 0) {
+      return
+    }
 
     // En implementación real, persistir en base de datos o SIEM
-    logger.info(LogLevel.INFO, `Flushing ${this.eventBuffer.length} security events`, {
-      eventCount: this.eventBuffer.length
-    }, LogCategory.SECURITY);
+    logger.info(
+      LogLevel.INFO,
+      `Flushing ${this.eventBuffer.length} security events`,
+      {
+        eventCount: this.eventBuffer.length,
+      },
+      LogCategory.SECURITY
+    )
 
-    this.eventBuffer = [];
+    this.eventBuffer = []
   }
 
   /**
    * Obtiene estadísticas de seguridad
    */
   getSecurityStats(): {
-    totalEvents: number;
-    eventsBySeverity: Record<SecuritySeverity, number>;
-    eventsByType: Record<SecurityEventType, number>;
-    recentEvents: SecurityEvent[];
+    totalEvents: number
+    eventsBySeverity: Record<SecuritySeverity, number>
+    eventsByType: Record<SecurityEventType, number>
+    recentEvents: SecurityEvent[]
   } {
-    const eventsBySeverity = this.eventBuffer.reduce((acc, event) => {
-      acc[event.severity] = (acc[event.severity] || 0) + 1;
-      return acc;
-    }, {} as Record<SecuritySeverity, number>);
+    const eventsBySeverity = this.eventBuffer.reduce(
+      (acc, event) => {
+        acc[event.severity] = (acc[event.severity] || 0) + 1
+        return acc
+      },
+      {} as Record<SecuritySeverity, number>
+    )
 
-    const eventsByType = this.eventBuffer.reduce((acc, event) => {
-      acc[event.type] = (acc[event.type] || 0) + 1;
-      return acc;
-    }, {} as Record<SecurityEventType, number>);
+    const eventsByType = this.eventBuffer.reduce(
+      (acc, event) => {
+        acc[event.type] = (acc[event.type] || 0) + 1
+        return acc
+      },
+      {} as Record<SecurityEventType, number>
+    )
 
     return {
       totalEvents: this.eventBuffer.length,
       eventsBySeverity,
       eventsByType,
-      recentEvents: this.eventBuffer.slice(-10)
-    };
+      recentEvents: this.eventBuffer.slice(-10),
+    }
   }
 
   /**
@@ -593,14 +627,14 @@ export class SecurityLogger {
    */
   destroy(): void {
     if (this.flushInterval) {
-      clearInterval(this.flushInterval);
+      clearInterval(this.flushInterval)
     }
-    this.flushBuffer();
+    this.flushBuffer()
   }
 }
 
 // Instancia singleton
-export const securityLogger = SecurityLogger.getInstance();
+export const securityLogger = SecurityLogger.getInstance()
 
 /**
  * Utilidades para logging de seguridad
@@ -610,9 +644,9 @@ export const SecurityLogUtils = {
    * Extrae contexto de seguridad de una request
    */
   extractSecurityContext(request: any): SecurityContext {
-    const headers = request.headers || {};
-    const userAgent = headers['user-agent'] || '';
-    
+    const headers = request.headers || {}
+    const userAgent = headers['user-agent'] || ''
+
     return {
       ip: headers['x-forwarded-for'] || headers['x-real-ip'] || request.ip,
       userAgent,
@@ -623,52 +657,57 @@ export const SecurityLogUtils = {
       requestId: headers['x-request-id'],
       deviceType: this.detectDeviceType(userAgent),
       browser: this.extractBrowser(userAgent),
-      headers: this.sanitizeHeaders(headers)
-    };
+      headers: this.sanitizeHeaders(headers),
+    }
   },
 
   /**
    * Detecta tipo de dispositivo
    */
   detectDeviceType(userAgent: string): SecurityContext['deviceType'] {
-    if (/mobile|android|iphone/i.test(userAgent)) {return 'mobile';}
-    if (/tablet|ipad/i.test(userAgent)) {return 'tablet';}
-    if (/desktop|windows|mac|linux/i.test(userAgent)) {return 'desktop';}
-    return 'unknown';
+    if (/mobile|android|iphone/i.test(userAgent)) {
+      return 'mobile'
+    }
+    if (/tablet|ipad/i.test(userAgent)) {
+      return 'tablet'
+    }
+    if (/desktop|windows|mac|linux/i.test(userAgent)) {
+      return 'desktop'
+    }
+    return 'unknown'
   },
 
   /**
    * Extrae información del navegador
    */
   extractBrowser(userAgent: string): string {
-    if (/chrome/i.test(userAgent)) {return 'Chrome';}
-    if (/firefox/i.test(userAgent)) {return 'Firefox';}
-    if (/safari/i.test(userAgent)) {return 'Safari';}
-    if (/edge/i.test(userAgent)) {return 'Edge';}
-    return 'Unknown';
+    if (/chrome/i.test(userAgent)) {
+      return 'Chrome'
+    }
+    if (/firefox/i.test(userAgent)) {
+      return 'Firefox'
+    }
+    if (/safari/i.test(userAgent)) {
+      return 'Safari'
+    }
+    if (/edge/i.test(userAgent)) {
+      return 'Edge'
+    }
+    return 'Unknown'
   },
 
   /**
    * Sanitiza headers para logging
    */
   sanitizeHeaders(headers: Record<string, any>): Record<string, string> {
-    const sanitized: Record<string, string> = {};
-    
+    const sanitized: Record<string, string> = {}
+
     Object.keys(headers).forEach(key => {
       if (!SENSITIVE_FIELDS.some(field => key.toLowerCase().includes(field))) {
-        sanitized[key] = String(headers[key]);
+        sanitized[key] = String(headers[key])
       }
-    });
-    
-    return sanitized;
-  }
-};
+    })
 
-
-
-
-
-
-
-
-
+    return sanitized
+  },
+}

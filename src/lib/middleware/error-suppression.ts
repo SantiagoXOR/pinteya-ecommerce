@@ -2,7 +2,7 @@
 // MIDDLEWARE: Error Suppression
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * Middleware para suprimir errores de red comunes que no son críticos
@@ -10,8 +10,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export function createErrorSuppressionMiddleware() {
   return function errorSuppressionMiddleware(request: NextRequest) {
     // Interceptar y suprimir errores comunes de red
-    const originalConsoleError = console.error;
-    const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error
+    const originalConsoleWarn = console.warn
 
     // Lista de patrones de errores a suprimir
     const suppressedErrorPatterns = [
@@ -23,73 +23,73 @@ export function createErrorSuppressionMiddleware() {
       'Failed to fetch',
       'NetworkError when attempting to fetch resource',
       'Load failed',
-      'Connection was aborted'
-    ];
+      'Connection was aborted',
+    ]
 
     // Función para verificar si un error debe ser suprimido
     const shouldSuppressError = (message: string): boolean => {
-      return suppressedErrorPatterns.some(pattern => 
+      return suppressedErrorPatterns.some(pattern =>
         message.toLowerCase().includes(pattern.toLowerCase())
-      );
-    };
+      )
+    }
 
     // Override console.error para filtrar errores
     console.error = (...args: any[]) => {
-      const message = args.join(' ');
-      
+      const message = args.join(' ')
+
       if (shouldSuppressError(message)) {
         // En desarrollo, mostrar como debug
         if (process.env.NODE_ENV === 'development') {
-          console.debug('🔇 [Suppressed Error]:', ...args);
+          console.debug('🔇 [Suppressed Error]:', ...args)
         }
-        return;
+        return
       }
-      
+
       // Permitir otros errores
-      originalConsoleError(...args);
-    };
+      originalConsoleError(...args)
+    }
 
     // Override console.warn para filtrar warnings
     console.warn = (...args: any[]) => {
-      const message = args.join(' ');
-      
+      const message = args.join(' ')
+
       if (shouldSuppressError(message)) {
         // En desarrollo, mostrar como debug
         if (process.env.NODE_ENV === 'development') {
-          console.debug('🔇 [Suppressed Warning]:', ...args);
+          console.debug('🔇 [Suppressed Warning]:', ...args)
         }
-        return;
+        return
       }
-      
+
       // Permitir otros warnings
-      originalConsoleWarn(...args);
-    };
+      originalConsoleWarn(...args)
+    }
 
     // Configurar headers para mejorar el manejo de errores de red
-    const response = NextResponse.next();
-    
+    const response = NextResponse.next()
+
     // Headers para mejorar la estabilidad de la conexión
-    response.headers.set('Connection', 'keep-alive');
-    response.headers.set('Keep-Alive', 'timeout=5, max=1000');
-    
+    response.headers.set('Connection', 'keep-alive')
+    response.headers.set('Keep-Alive', 'timeout=5, max=1000')
+
     // Headers para cache y performance
     if (request.nextUrl.pathname.startsWith('/api/')) {
-      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
+      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+      response.headers.set('Pragma', 'no-cache')
+      response.headers.set('Expires', '0')
     }
 
     // Cleanup function (se ejecutará cuando la request termine)
     const cleanup = () => {
-      console.error = originalConsoleError;
-      console.warn = originalConsoleWarn;
-    };
+      console.error = originalConsoleError
+      console.warn = originalConsoleWarn
+    }
 
     // Agregar cleanup al response
-    (response as any).__cleanup = cleanup;
+    ;(response as any).__cleanup = cleanup
 
-    return response;
-  };
+    return response
+  }
 }
 
 /**
@@ -99,16 +99,15 @@ export function withNetworkErrorHandling(handler: Function) {
   return async function (request: NextRequest, context?: any) {
     try {
       // Configurar timeout para la request
-      const timeoutSignal = AbortSignal.timeout(30000); // 30 segundos
-      
+      const timeoutSignal = AbortSignal.timeout(30000) // 30 segundos
+
       // Agregar signal de timeout al request si no existe
       if (!request.signal) {
-        (request as any).signal = timeoutSignal;
+        ;(request as any).signal = timeoutSignal
       }
 
-      const result = await handler(request, context);
-      return result;
-
+      const result = await handler(request, context)
+      return result
     } catch (error: any) {
       // Manejar diferentes tipos de errores
       if (error.name === 'AbortError' || error.code === 'ERR_ABORTED') {
@@ -117,16 +116,16 @@ export function withNetworkErrorHandling(handler: Function) {
           JSON.stringify({
             success: false,
             error: 'Request was cancelled',
-            code: 'REQUEST_CANCELLED'
+            code: 'REQUEST_CANCELLED',
           }),
           {
             status: 499, // Client Closed Request
             headers: {
               'Content-Type': 'application/json',
-              'X-Error-Type': 'abort'
-            }
+              'X-Error-Type': 'abort',
+            },
           }
-        );
+        )
       }
 
       if (error.name === 'TimeoutError' || error.code === 'TIMEOUT') {
@@ -135,63 +134,66 @@ export function withNetworkErrorHandling(handler: Function) {
           JSON.stringify({
             success: false,
             error: 'Request timeout',
-            code: 'REQUEST_TIMEOUT'
+            code: 'REQUEST_TIMEOUT',
           }),
           {
             status: 408,
             headers: {
               'Content-Type': 'application/json',
-              'X-Error-Type': 'timeout'
-            }
+              'X-Error-Type': 'timeout',
+            },
           }
-        );
+        )
       }
 
       // Re-throw otros errores para manejo normal
-      throw error;
+      throw error
     }
-  };
+  }
 }
 
 /**
  * Función para configurar supresión de errores globalmente
  */
 export function setupGlobalErrorSuppression() {
-  if (typeof window === 'undefined') {return;} // Solo en el cliente
+  if (typeof window === 'undefined') {
+    return
+  } // Solo en el cliente
 
   // Suprimir errores de unhandled promise rejections para AbortError
-  window.addEventListener('unhandledrejection', (event) => {
-    if (event.reason?.name === 'AbortError' || 
-        event.reason?.code === 'ERR_ABORTED' ||
-        event.reason?.message?.includes('aborted')) {
-      
+  window.addEventListener('unhandledrejection', event => {
+    if (
+      event.reason?.name === 'AbortError' ||
+      event.reason?.code === 'ERR_ABORTED' ||
+      event.reason?.message?.includes('aborted')
+    ) {
       // Prevenir que aparezca en la consola
-      event.preventDefault();
-      
+      event.preventDefault()
+
       if (process.env.NODE_ENV === 'development') {
-        console.debug('🔇 Suppressed unhandled AbortError:', event.reason);
+        console.debug('🔇 Suppressed unhandled AbortError:', event.reason)
       }
     }
-  });
+  })
 
   // Interceptar errores de fetch globalmente
-  const originalFetch = window.fetch;
+  const originalFetch = window.fetch
   window.fetch = async (...args) => {
     try {
-      return await originalFetch(...args);
+      return await originalFetch(...args)
     } catch (error: any) {
       // Suprimir errores de abort en fetch
       if (error.name === 'AbortError' || error.code === 'ERR_ABORTED') {
         if (process.env.NODE_ENV === 'development') {
-          console.debug('🔇 Suppressed fetch AbortError:', error);
+          console.debug('🔇 Suppressed fetch AbortError:', error)
         }
-        throw error; // Re-throw para que el código que llama pueda manejarlo
+        throw error // Re-throw para que el código que llama pueda manejarlo
       }
-      throw error;
+      throw error
     }
-  };
+  }
 
-  console.log('🔇 Global error suppression configured');
+  console.log('🔇 Global error suppression configured')
 }
 
 /**
@@ -199,15 +201,6 @@ export function setupGlobalErrorSuppression() {
  */
 export function useErrorSuppression() {
   if (typeof window !== 'undefined') {
-    setupGlobalErrorSuppression();
+    setupGlobalErrorSuppression()
   }
 }
-
-
-
-
-
-
-
-
-

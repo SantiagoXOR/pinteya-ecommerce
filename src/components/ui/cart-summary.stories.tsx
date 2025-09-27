@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { CartSummary } from './cart-summary';
+import type { Meta, StoryObj } from '@storybook/react'
+import { CartSummary } from './cart-summary'
 
 const meta: Meta<typeof CartSummary> = {
   title: 'Design System/E-commerce/CartSummary',
@@ -8,7 +8,8 @@ const meta: Meta<typeof CartSummary> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Componente para mostrar resumen del carrito de compras con diferentes variantes y configuraciones.',
+        component:
+          'Componente para mostrar resumen del carrito de compras con diferentes variantes y configuraciones.',
       },
     },
   },
@@ -28,10 +29,10 @@ const meta: Meta<typeof CartSummary> = {
     //   description: 'Mostrar información de impuestos',
     // },
   },
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockItems = [
   {
@@ -52,7 +53,7 @@ const mockItems = [
     image: '/images/products/rodillo-antigota.jpg',
     category: 'Herramientas',
   },
-];
+]
 
 export const Default: Story = {
   args: {
@@ -61,7 +62,7 @@ export const Default: Story = {
     // showShipping: true,
     // showTaxes: true,
   },
-};
+}
 
 export const Compact: Story = {
   args: {
@@ -70,7 +71,7 @@ export const Compact: Story = {
     // showShipping: false,
     // showTaxes: false,
   },
-};
+}
 
 export const Detailed: Story = {
   args: {
@@ -79,7 +80,7 @@ export const Detailed: Story = {
     // showShipping: true,
     // showTaxes: true,
   },
-};
+}
 
 export const EmptyCart: Story = {
   args: {
@@ -88,7 +89,7 @@ export const EmptyCart: Story = {
     // showShipping: true,
     // showTaxes: true,
   },
-};
+}
 
 export const SingleItem: Story = {
   args: {
@@ -97,7 +98,7 @@ export const SingleItem: Story = {
     // showShipping: true,
     // showTaxes: true,
   },
-};
+}
 
 export const WithoutShipping: Story = {
   args: {
@@ -106,7 +107,7 @@ export const WithoutShipping: Story = {
     // showShipping: false,
     // showTaxes: true,
   },
-};
+}
 
 export const WithoutTaxes: Story = {
   args: {
@@ -115,13 +116,4 @@ export const WithoutTaxes: Story = {
     // showShipping: true,
     // showTaxes: false,
   },
-};
-
-
-
-
-
-
-
-
-
+}

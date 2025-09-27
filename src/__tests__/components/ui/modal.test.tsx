@@ -6,23 +6,23 @@ import { Button } from '@/components/ui/button'
 // Mock para Radix UI Portal
 jest.mock('@radix-ui/react-dialog', () => ({
   ...jest.requireActual('@radix-ui/react-dialog'),
-  Portal: ({ children }: { children: React.ReactNode }) => <div data-testid="portal">{children}</div>,
+  Portal: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid='portal'>{children}</div>
+  ),
 }))
 
 jest.mock('@radix-ui/react-alert-dialog', () => ({
   ...jest.requireActual('@radix-ui/react-alert-dialog'),
-  Portal: ({ children }: { children: React.ReactNode }) => <div data-testid="alert-portal">{children}</div>,
+  Portal: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid='alert-portal'>{children}</div>
+  ),
 }))
 
 describe('Modal Components', () => {
   describe('Modal', () => {
     it('renders with title and description', () => {
       render(
-        <Modal
-          open={true}
-          title="Test Modal"
-          description="Test description"
-        >
+        <Modal open={true} title='Test Modal' description='Test description'>
           <div>Modal content</div>
         </Modal>
       )
@@ -37,11 +37,7 @@ describe('Modal Components', () => {
       const onOpenChange = jest.fn()
 
       render(
-        <Modal
-          open={true}
-          onOpenChange={onOpenChange}
-          title="Test Modal"
-        >
+        <Modal open={true} onOpenChange={onOpenChange} title='Test Modal'>
           <div>Content</div>
         </Modal>
       )
@@ -54,7 +50,7 @@ describe('Modal Components', () => {
 
     it('renders with different sizes', () => {
       const { rerender } = render(
-        <Modal open={true} size="sm" title="Small Modal">
+        <Modal open={true} size='sm' title='Small Modal'>
           Content
         </Modal>
       )
@@ -62,7 +58,7 @@ describe('Modal Components', () => {
       expect(screen.getByRole('dialog')).toHaveClass('max-w-sm')
 
       rerender(
-        <Modal open={true} size="lg" title="Large Modal">
+        <Modal open={true} size='lg' title='Large Modal'>
           Content
         </Modal>
       )
@@ -74,10 +70,7 @@ describe('Modal Components', () => {
       const user = userEvent.setup()
 
       render(
-        <Modal
-          trigger={<Button>Open Modal</Button>}
-          title="Triggered Modal"
-        >
+        <Modal trigger={<Button>Open Modal</Button>} title='Triggered Modal'>
           Modal content
         </Modal>
       )
@@ -96,11 +89,11 @@ describe('Modal Components', () => {
       render(
         <ConfirmModal
           open={true}
-          title="Confirm Action"
-          description="Are you sure?"
-          variant="destructive"
-          confirmText="Delete"
-          cancelText="Cancel"
+          title='Confirm Action'
+          description='Are you sure?'
+          variant='destructive'
+          confirmText='Delete'
+          cancelText='Cancel'
         />
       )
 
@@ -115,12 +108,7 @@ describe('Modal Components', () => {
       const onConfirm = jest.fn()
 
       render(
-        <ConfirmModal
-          open={true}
-          title="Confirm"
-          onConfirm={onConfirm}
-          confirmText="Confirm"
-        />
+        <ConfirmModal open={true} title='Confirm' onConfirm={onConfirm} confirmText='Confirm' />
       )
 
       const confirmButton = screen.getByRole('button', { name: /confirm/i })
@@ -133,14 +121,7 @@ describe('Modal Components', () => {
       const user = userEvent.setup()
       const onCancel = jest.fn()
 
-      render(
-        <ConfirmModal
-          open={true}
-          title="Confirm"
-          onCancel={onCancel}
-          cancelText="Cancel"
-        />
-      )
+      render(<ConfirmModal open={true} title='Confirm' onCancel={onCancel} cancelText='Cancel' />)
 
       const cancelButton = screen.getByRole('button', { name: /cancel/i })
       await user.click(cancelButton)
@@ -149,14 +130,7 @@ describe('Modal Components', () => {
     })
 
     it('shows loading state', () => {
-      render(
-        <ConfirmModal
-          open={true}
-          title="Confirm"
-          loading={true}
-          confirmText="Confirm"
-        />
-      )
+      render(<ConfirmModal open={true} title='Confirm' loading={true} confirmText='Confirm' />)
 
       expect(screen.getByText('Procesando...')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /procesando/i })).toBeDisabled()
@@ -167,11 +141,7 @@ describe('Modal Components', () => {
 
       variants.forEach(variant => {
         const { unmount } = render(
-          <ConfirmModal
-            open={true}
-            title={`${variant} modal`}
-            variant={variant}
-          />
+          <ConfirmModal open={true} title={`${variant} modal`} variant={variant} />
         )
 
         // Verificar que el modal se renderiza (el ícono específico es difícil de testear)
@@ -198,11 +168,7 @@ describe('Modal Components', () => {
   describe('AddToCartModal', () => {
     it('renders product information', () => {
       render(
-        <AddToCartModal
-          open={true}
-          productName="Test Product"
-          productImage="/test-image.jpg"
-        />
+        <AddToCartModal open={true} productName='Test Product' productImage='/test-image.jpg' />
       )
 
       expect(screen.getByText('¡Producto agregado al carrito!')).toBeInTheDocument()
@@ -218,7 +184,7 @@ describe('Modal Components', () => {
       render(
         <AddToCartModal
           open={true}
-          productName="Test Product"
+          productName='Test Product'
           onContinueShopping={onContinueShopping}
           onGoToCart={onGoToCart}
         />
@@ -241,7 +207,7 @@ describe('Modal Components', () => {
 
       return (
         <div>
-          <span data-testid="modal-state">{open ? 'open' : 'closed'}</span>
+          <span data-testid='modal-state'>{open ? 'open' : 'closed'}</span>
           <button onClick={openModal}>Open</button>
           <button onClick={closeModal}>Close</button>
           <button onClick={toggleModal}>Toggle</button>
@@ -280,7 +246,7 @@ describe('Modal Components', () => {
     it('accepts default open state', () => {
       function TestComponentWithDefault() {
         const { open } = useModal(true)
-        return <span data-testid="modal-state">{open ? 'open' : 'closed'}</span>
+        return <span data-testid='modal-state'>{open ? 'open' : 'closed'}</span>
       }
 
       render(<TestComponentWithDefault />)
@@ -291,11 +257,7 @@ describe('Modal Components', () => {
   describe('Accessibility', () => {
     it('has proper ARIA attributes', () => {
       render(
-        <Modal
-          open={true}
-          title="Accessible Modal"
-          description="Modal description"
-        >
+        <Modal open={true} title='Accessible Modal' description='Modal description'>
           Content
         </Modal>
       )
@@ -307,7 +269,7 @@ describe('Modal Components', () => {
 
     it('focuses close button when opened', () => {
       render(
-        <Modal open={true} title="Test Modal">
+        <Modal open={true} title='Test Modal'>
           Content
         </Modal>
       )
@@ -322,11 +284,7 @@ describe('Modal Components', () => {
       const onOpenChange = jest.fn()
 
       render(
-        <Modal
-          open={true}
-          onOpenChange={onOpenChange}
-          title="Test Modal"
-        >
+        <Modal open={true} onOpenChange={onOpenChange} title='Test Modal'>
           Content
         </Modal>
       )
@@ -337,12 +295,3 @@ describe('Modal Components', () => {
     })
   })
 })
-
-
-
-
-
-
-
-
-

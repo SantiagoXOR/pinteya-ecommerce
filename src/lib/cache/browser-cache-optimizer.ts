@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - BROWSER CACHE OPTIMIZER
 // ===================================
 
-import { logger, LogCategory } from '../enterprise/logger';
+import { logger, LogCategory } from '../enterprise/logger'
 
 /**
  * Estrategias de cache del navegador
@@ -12,21 +12,21 @@ export enum BrowserCacheStrategy {
   NETWORK_FIRST = 'network-first',
   STALE_WHILE_REVALIDATE = 'stale-while-revalidate',
   NETWORK_ONLY = 'network-only',
-  CACHE_ONLY = 'cache-only'
+  CACHE_ONLY = 'cache-only',
 }
 
 /**
  * Configuración de cache del navegador
  */
 export interface BrowserCacheConfig {
-  strategy: BrowserCacheStrategy;
-  cacheName: string;
-  maxAge: number;
-  maxEntries?: number;
-  networkTimeoutSeconds?: number;
-  urlPatterns: RegExp[];
-  excludePatterns?: RegExp[];
-  headers?: Record<string, string>;
+  strategy: BrowserCacheStrategy
+  cacheName: string
+  maxAge: number
+  maxEntries?: number
+  networkTimeoutSeconds?: number
+  urlPatterns: RegExp[]
+  excludePatterns?: RegExp[]
+  headers?: Record<string, string>
 }
 
 /**
@@ -39,13 +39,10 @@ export const BROWSER_CACHE_CONFIGS: Record<string, BrowserCacheConfig> = {
     cacheName: 'static-assets-v1',
     maxAge: 86400 * 30, // 30 días
     maxEntries: 100,
-    urlPatterns: [
-      /\.(css|js|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
-      /\/_next\/static\//
-    ],
+    urlPatterns: [/\.(css|js|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/, /\/_next\/static\//],
     headers: {
-      'Cache-Control': 'public, max-age=2592000, immutable'
-    }
+      'Cache-Control': 'public, max-age=2592000, immutable',
+    },
   },
 
   // Páginas HTML
@@ -55,17 +52,8 @@ export const BROWSER_CACHE_CONFIGS: Record<string, BrowserCacheConfig> = {
     maxAge: 3600, // 1 hora
     maxEntries: 50,
     networkTimeoutSeconds: 3,
-    urlPatterns: [
-      /\/$/,
-      /\/shop/,
-      /\/products/,
-      /\/categories/
-    ],
-    excludePatterns: [
-      /\/admin/,
-      /\/api/,
-      /\/auth/
-    ]
+    urlPatterns: [/\/$/, /\/shop/, /\/products/, /\/categories/],
+    excludePatterns: [/\/admin/, /\/api/, /\/auth/],
   },
 
   // APIs públicas
@@ -75,16 +63,8 @@ export const BROWSER_CACHE_CONFIGS: Record<string, BrowserCacheConfig> = {
     maxAge: 300, // 5 minutos
     maxEntries: 100,
     networkTimeoutSeconds: 5,
-    urlPatterns: [
-      /\/api\/products/,
-      /\/api\/categories/,
-      /\/api\/search/
-    ],
-    excludePatterns: [
-      /\/api\/auth/,
-      /\/api\/admin/,
-      /\/api\/user/
-    ]
+    urlPatterns: [/\/api\/products/, /\/api\/categories/, /\/api\/search/],
+    excludePatterns: [/\/api\/auth/, /\/api\/admin/, /\/api\/user/],
   },
 
   // Imágenes de productos
@@ -96,11 +76,11 @@ export const BROWSER_CACHE_CONFIGS: Record<string, BrowserCacheConfig> = {
     urlPatterns: [
       /\/images\/products\//,
       /\/uploads\/products\//,
-      /\.supabase\.co\/storage\/.*\/products\//
+      /\.supabase\.co\/storage\/.*\/products\//,
     ],
     headers: {
-      'Cache-Control': 'public, max-age=604800'
-    }
+      'Cache-Control': 'public, max-age=604800',
+    },
   },
 
   // Datos de usuario (cache corto)
@@ -110,12 +90,9 @@ export const BROWSER_CACHE_CONFIGS: Record<string, BrowserCacheConfig> = {
     maxAge: 300, // 5 minutos
     maxEntries: 20,
     networkTimeoutSeconds: 2,
-    urlPatterns: [
-      /\/api\/user\/profile/,
-      /\/api\/user\/preferences/
-    ]
-  }
-};
+    urlPatterns: [/\/api\/user\/profile/, /\/api\/user\/preferences/],
+  },
+}
 
 /**
  * Service Worker template para cache optimizado
@@ -327,25 +304,25 @@ self.addEventListener('message', (event) => {
     cleanupOldCaches();
   }
 });
-`;
+`
 
 /**
  * Optimizador de cache del navegador
  */
 export class BrowserCacheOptimizer {
-  private static instance: BrowserCacheOptimizer;
-  private isServiceWorkerSupported: boolean;
-  private isServiceWorkerRegistered: boolean = false;
+  private static instance: BrowserCacheOptimizer
+  private isServiceWorkerSupported: boolean
+  private isServiceWorkerRegistered: boolean = false
 
   private constructor() {
-    this.isServiceWorkerSupported = typeof window !== 'undefined' && 'serviceWorker' in navigator;
+    this.isServiceWorkerSupported = typeof window !== 'undefined' && 'serviceWorker' in navigator
   }
 
   static getInstance(): BrowserCacheOptimizer {
     if (!BrowserCacheOptimizer.instance) {
-      BrowserCacheOptimizer.instance = new BrowserCacheOptimizer();
+      BrowserCacheOptimizer.instance = new BrowserCacheOptimizer()
     }
-    return BrowserCacheOptimizer.instance;
+    return BrowserCacheOptimizer.instance
   }
 
   /**
@@ -353,18 +330,18 @@ export class BrowserCacheOptimizer {
    */
   async initialize(): Promise<void> {
     if (!this.isServiceWorkerSupported) {
-      logger.warn(LogCategory.CACHE, 'Service Worker no soportado en este navegador');
-      return;
+      logger.warn(LogCategory.CACHE, 'Service Worker no soportado en este navegador')
+      return
     }
 
     try {
-      await this.registerServiceWorker();
-      await this.setupCacheHeaders();
-      this.setupPerformanceObserver();
-      
-      logger.info(LogCategory.CACHE, 'Browser Cache Optimizer inicializado correctamente');
+      await this.registerServiceWorker()
+      await this.setupCacheHeaders()
+      this.setupPerformanceObserver()
+
+      logger.info(LogCategory.CACHE, 'Browser Cache Optimizer inicializado correctamente')
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Error inicializando Browser Cache Optimizer', error as Error);
+      logger.error(LogCategory.CACHE, 'Error inicializando Browser Cache Optimizer', error as Error)
     }
   }
 
@@ -372,33 +349,35 @@ export class BrowserCacheOptimizer {
    * Registra el Service Worker
    */
   private async registerServiceWorker(): Promise<void> {
-    if (this.isServiceWorkerRegistered) {return;}
+    if (this.isServiceWorkerRegistered) {
+      return
+    }
 
     try {
       // Crear y registrar Service Worker dinámicamente
-      const swBlob = new Blob([SERVICE_WORKER_TEMPLATE], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(swBlob);
-      
+      const swBlob = new Blob([SERVICE_WORKER_TEMPLATE], { type: 'application/javascript' })
+      const swUrl = URL.createObjectURL(swBlob)
+
       const registration = await navigator.serviceWorker.register(swUrl, {
-        scope: '/'
-      });
+        scope: '/',
+      })
 
       registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
+        const newWorker = registration.installing
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // Nuevo Service Worker disponible
-              this.notifyServiceWorkerUpdate();
+              this.notifyServiceWorkerUpdate()
             }
-          });
+          })
         }
-      });
+      })
 
-      this.isServiceWorkerRegistered = true;
-      logger.info(LogCategory.CACHE, 'Service Worker registrado correctamente');
+      this.isServiceWorkerRegistered = true
+      logger.info(LogCategory.CACHE, 'Service Worker registrado correctamente')
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Error registrando Service Worker', error as Error);
+      logger.error(LogCategory.CACHE, 'Error registrando Service Worker', error as Error)
     }
   }
 
@@ -408,13 +387,13 @@ export class BrowserCacheOptimizer {
   private async setupCacheHeaders(): Promise<void> {
     // Esta función se ejecuta en el cliente para configurar headers
     // Los headers reales se configuran en el servidor
-    
+
     if (typeof window !== 'undefined') {
       // Configurar meta tags para cache
-      this.addCacheMetaTags();
-      
+      this.addCacheMetaTags()
+
       // Configurar preload para recursos críticos
-      this.setupResourcePreloading();
+      this.setupResourcePreloading()
     }
   }
 
@@ -422,84 +401,89 @@ export class BrowserCacheOptimizer {
    * Añade meta tags para optimización de cache
    */
   private addCacheMetaTags(): void {
-    const head = document.head;
-    
+    const head = document.head
+
     // Cache-Control para la página actual
-    const cacheControlMeta = document.createElement('meta');
-    cacheControlMeta.httpEquiv = 'Cache-Control';
-    cacheControlMeta.content = 'public, max-age=3600, stale-while-revalidate=86400';
-    head.appendChild(cacheControlMeta);
-    
+    const cacheControlMeta = document.createElement('meta')
+    cacheControlMeta.httpEquiv = 'Cache-Control'
+    cacheControlMeta.content = 'public, max-age=3600, stale-while-revalidate=86400'
+    head.appendChild(cacheControlMeta)
+
     // Preconnect a dominios externos
     const preconnectDomains = [
       'https://fonts.googleapis.com',
       'https://fonts.gstatic.com',
-      'https://api.maptiler.com'
-    ];
-    
+      'https://api.maptiler.com',
+    ]
+
     preconnectDomains.forEach(domain => {
-      const link = document.createElement('link');
-      link.rel = 'preconnect';
-      link.href = domain;
-      head.appendChild(link);
-    });
+      const link = document.createElement('link')
+      link.rel = 'preconnect'
+      link.href = domain
+      head.appendChild(link)
+    })
   }
 
   /**
    * Configura preloading de recursos críticos
    */
   private setupResourcePreloading(): void {
-    const head = document.head;
-    
+    const head = document.head
+
     // Preload de recursos críticos
     const criticalResources = [
       { href: '/_next/static/css/app.css', as: 'style' },
       { href: '/_next/static/js/app.js', as: 'script' },
-      { href: '/fonts/inter.woff2', as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }
-    ];
-    
+      { href: '/fonts/inter.woff2', as: 'font', type: 'font/woff2', crossorigin: 'anonymous' },
+    ]
+
     criticalResources.forEach(resource => {
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.href = resource.href;
-      link.as = resource.as;
-      if (resource.type) {link.type = resource.type;}
-      if (resource.crossorigin) {link.crossOrigin = resource.crossorigin;}
-      head.appendChild(link);
-    });
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.href = resource.href
+      link.as = resource.as
+      if (resource.type) {
+        link.type = resource.type
+      }
+      if (resource.crossorigin) {
+        link.crossOrigin = resource.crossorigin
+      }
+      head.appendChild(link)
+    })
   }
 
   /**
    * Configura Performance Observer para monitoreo
    */
   private setupPerformanceObserver(): void {
-    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) {return;}
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) {
+      return
+    }
 
     try {
       // Observer para Navigation Timing
-      const navObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
+      const navObserver = new PerformanceObserver(list => {
+        const entries = list.getEntries()
         entries.forEach(entry => {
           if (entry.entryType === 'navigation') {
-            this.logNavigationMetrics(entry as PerformanceNavigationTiming);
+            this.logNavigationMetrics(entry as PerformanceNavigationTiming)
           }
-        });
-      });
-      navObserver.observe({ entryTypes: ['navigation'] });
+        })
+      })
+      navObserver.observe({ entryTypes: ['navigation'] })
 
       // Observer para Resource Timing
-      const resourceObserver = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
+      const resourceObserver = new PerformanceObserver(list => {
+        const entries = list.getEntries()
         entries.forEach(entry => {
           if (entry.entryType === 'resource') {
-            this.logResourceMetrics(entry as PerformanceResourceTiming);
+            this.logResourceMetrics(entry as PerformanceResourceTiming)
           }
-        });
-      });
-      resourceObserver.observe({ entryTypes: ['resource'] });
-
+        })
+      })
+      resourceObserver.observe({ entryTypes: ['resource'] })
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Error configurando Performance Observer', error as Error);
+      logger.error(LogCategory.CACHE, 'Error configurando Performance Observer', error as Error)
     }
   }
 
@@ -514,22 +498,22 @@ export class BrowserCacheOptimizer {
       response: entry.responseEnd - entry.responseStart,
       dom: entry.domContentLoadedEventEnd - entry.responseEnd,
       load: entry.loadEventEnd - entry.loadEventStart,
-      total: entry.loadEventEnd - entry.navigationStart
-    };
+      total: entry.loadEventEnd - entry.navigationStart,
+    }
 
-    logger.info(LogCategory.CACHE, 'Navigation metrics:', metrics);
+    logger.info(LogCategory.CACHE, 'Navigation metrics:', metrics)
   }
 
   /**
    * Registra métricas de recursos
    */
   private logResourceMetrics(entry: PerformanceResourceTiming): void {
-    const isCacheHit = entry.transferSize === 0 && entry.decodedBodySize > 0;
-    
+    const isCacheHit = entry.transferSize === 0 && entry.decodedBodySize > 0
+
     if (isCacheHit) {
-      logger.debug(LogCategory.CACHE, `Cache HIT: ${entry.name}`);
+      logger.debug(LogCategory.CACHE, `Cache HIT: ${entry.name}`)
     } else {
-      logger.debug(LogCategory.CACHE, `Cache MISS: ${entry.name} (${entry.transferSize} bytes)`);
+      logger.debug(LogCategory.CACHE, `Cache MISS: ${entry.name} (${entry.transferSize} bytes)`)
     }
   }
 
@@ -540,9 +524,9 @@ export class BrowserCacheOptimizer {
     // Mostrar notificación al usuario sobre nueva versión disponible
     if (typeof window !== 'undefined') {
       const event = new CustomEvent('sw-update-available', {
-        detail: { message: 'Nueva versión disponible. Recarga la página para actualizar.' }
-      });
-      window.dispatchEvent(event);
+        detail: { message: 'Nueva versión disponible. Recarga la página para actualizar.' },
+      })
+      window.dispatchEvent(event)
     }
   }
 
@@ -550,16 +534,18 @@ export class BrowserCacheOptimizer {
    * Limpia caches antiguos
    */
   async clearOldCaches(): Promise<void> {
-    if (!this.isServiceWorkerSupported || !navigator.serviceWorker.controller) {return;}
+    if (!this.isServiceWorkerSupported || !navigator.serviceWorker.controller) {
+      return
+    }
 
     try {
       navigator.serviceWorker.controller.postMessage({
-        type: 'CLEANUP_CACHES'
-      });
-      
-      logger.info(LogCategory.CACHE, 'Limpieza de caches antiguos iniciada');
+        type: 'CLEANUP_CACHES',
+      })
+
+      logger.info(LogCategory.CACHE, 'Limpieza de caches antiguos iniciada')
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Error limpiando caches antiguos', error as Error);
+      logger.error(LogCategory.CACHE, 'Error limpiando caches antiguos', error as Error)
     }
   }
 
@@ -567,21 +553,23 @@ export class BrowserCacheOptimizer {
    * Fuerza actualización del Service Worker
    */
   async updateServiceWorker(): Promise<void> {
-    if (!this.isServiceWorkerSupported) {return;}
+    if (!this.isServiceWorkerSupported) {
+      return
+    }
 
     try {
-      const registration = await navigator.serviceWorker.getRegistration();
+      const registration = await navigator.serviceWorker.getRegistration()
       if (registration) {
-        await registration.update();
-        
+        await registration.update()
+
         if (registration.waiting) {
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' })
         }
       }
-      
-      logger.info(LogCategory.CACHE, 'Service Worker actualizado');
+
+      logger.info(LogCategory.CACHE, 'Service Worker actualizado')
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Error actualizando Service Worker', error as Error);
+      logger.error(LogCategory.CACHE, 'Error actualizando Service Worker', error as Error)
     }
   }
 
@@ -589,41 +577,41 @@ export class BrowserCacheOptimizer {
    * Obtiene estadísticas de cache del navegador
    */
   async getCacheStats(): Promise<{
-    caches: Array<{ name: string; size: number; entries: number }>;
-    totalSize: number;
-    totalEntries: number;
+    caches: Array<{ name: string; size: number; entries: number }>
+    totalSize: number
+    totalEntries: number
   }> {
     if (!this.isServiceWorkerSupported) {
-      return { caches: [], totalSize: 0, totalEntries: 0 };
+      return { caches: [], totalSize: 0, totalEntries: 0 }
     }
 
     try {
-      const cacheNames = await caches.keys();
+      const cacheNames = await caches.keys()
       const cacheStats = await Promise.all(
-        cacheNames.map(async (name) => {
-          const cache = await caches.open(name);
-          const keys = await cache.keys();
-          
-          let size = 0;
+        cacheNames.map(async name => {
+          const cache = await caches.open(name)
+          const keys = await cache.keys()
+
+          let size = 0
           for (const request of keys) {
-            const response = await cache.match(request);
+            const response = await cache.match(request)
             if (response) {
-              const blob = await response.blob();
-              size += blob.size;
+              const blob = await response.blob()
+              size += blob.size
             }
           }
-          
-          return { name, size, entries: keys.length };
+
+          return { name, size, entries: keys.length }
         })
-      );
+      )
 
-      const totalSize = cacheStats.reduce((sum, cache) => sum + cache.size, 0);
-      const totalEntries = cacheStats.reduce((sum, cache) => sum + cache.entries, 0);
+      const totalSize = cacheStats.reduce((sum, cache) => sum + cache.size, 0)
+      const totalEntries = cacheStats.reduce((sum, cache) => sum + cache.entries, 0)
 
-      return { caches: cacheStats, totalSize, totalEntries };
+      return { caches: cacheStats, totalSize, totalEntries }
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Error obteniendo estadísticas de cache', error as Error);
-      return { caches: [], totalSize: 0, totalEntries: 0 };
+      logger.error(LogCategory.CACHE, 'Error obteniendo estadísticas de cache', error as Error)
+      return { caches: [], totalSize: 0, totalEntries: 0 }
     }
   }
 
@@ -631,12 +619,12 @@ export class BrowserCacheOptimizer {
    * Verifica si el Service Worker está activo
    */
   isServiceWorkerActive(): boolean {
-    return this.isServiceWorkerSupported && this.isServiceWorkerRegistered;
+    return this.isServiceWorkerSupported && this.isServiceWorkerRegistered
   }
 }
 
 // Instancia singleton
-export const browserCacheOptimizer = BrowserCacheOptimizer.getInstance();
+export const browserCacheOptimizer = BrowserCacheOptimizer.getInstance()
 
 /**
  * Utilidades para cache del navegador
@@ -646,43 +634,34 @@ export const BrowserCacheUtils = {
    * Inicializa cache del navegador
    */
   async initialize(): Promise<void> {
-    await browserCacheOptimizer.initialize();
+    await browserCacheOptimizer.initialize()
   },
 
   /**
    * Obtiene estadísticas de cache
    */
   async getStats() {
-    return browserCacheOptimizer.getCacheStats();
+    return browserCacheOptimizer.getCacheStats()
   },
 
   /**
    * Limpia caches antiguos
    */
   async clearOldCaches(): Promise<void> {
-    await browserCacheOptimizer.clearOldCaches();
+    await browserCacheOptimizer.clearOldCaches()
   },
 
   /**
    * Actualiza Service Worker
    */
   async updateServiceWorker(): Promise<void> {
-    await browserCacheOptimizer.updateServiceWorker();
+    await browserCacheOptimizer.updateServiceWorker()
   },
 
   /**
    * Verifica si está activo
    */
   isActive(): boolean {
-    return browserCacheOptimizer.isServiceWorkerActive();
-  }
-};
-
-
-
-
-
-
-
-
-
+    return browserCacheOptimizer.isServiceWorkerActive()
+  },
+}

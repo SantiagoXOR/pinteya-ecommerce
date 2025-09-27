@@ -14,7 +14,7 @@ import * as cartPersistence from '@/redux/middleware/cartPersistence'
 
 // Mock para evitar problemas de dependencias
 jest.mock('@/hooks/useAuth', () => ({
-  useAuth: jest.fn()
+  useAuth: jest.fn(),
 }))
 
 // Mock cart persistence functions
@@ -24,7 +24,7 @@ jest.mock('@/redux/middleware/cartPersistence', () => ({
   migrateTemporaryCart: jest.fn(() => Promise.resolve(true)),
   loadUserCart: jest.fn(() => Promise.resolve([])),
   saveUserCart: jest.fn(() => Promise.resolve()),
-  cartPersistenceMiddleware: jest.fn(() => (next) => (action) => next(action))
+  cartPersistenceMiddleware: jest.fn(() => next => action => next(action)),
 }))
 
 // Mock localStorage
@@ -32,7 +32,7 @@ const localStorageMock = {
   getItem: jest.fn(() => null),
   setItem: jest.fn(),
   removeItem: jest.fn(),
-  clear: jest.fn()
+  clear: jest.fn(),
 }
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })
 
@@ -50,7 +50,7 @@ afterAll(() => {
 const mockUser = {
   id: 'user_123',
   name: 'Juan Pérez',
-  email: 'juan@example.com'
+  email: 'juan@example.com',
 }
 
 // Mock product data
@@ -58,7 +58,7 @@ const mockProduct = {
   id: 1,
   name: 'Pintura Latex Interior',
   price: 5000,
-  category: 'Pinturas'
+  category: 'Pinturas',
 }
 
 describe('useCartWithClerk Hook', () => {
@@ -69,9 +69,9 @@ describe('useCartWithClerk Hook', () => {
   const renderHookWithStore = () => {
     store = configureStore({
       reducer: {
-        cartReducer
+        cartReducer,
       },
-      middleware: (getDefaultMiddleware) => getDefaultMiddleware()
+      middleware: getDefaultMiddleware => getDefaultMiddleware(),
     })
 
     const wrapper = ({ children }: { children: React.ReactNode }) =>
@@ -98,7 +98,7 @@ describe('useCartWithClerk Hook', () => {
         signIn: jest.fn(),
         signOut: jest.fn(),
         session: null,
-        status: 'unauthenticated'
+        status: 'unauthenticated',
       } as any)
     })
 
@@ -120,7 +120,7 @@ describe('useCartWithClerk Hook', () => {
         signIn: jest.fn(),
         signOut: jest.fn(),
         session: { user: mockUser },
-        status: 'authenticated'
+        status: 'authenticated',
       } as any)
     })
 
@@ -146,10 +146,12 @@ describe('useCartWithClerk Hook', () => {
 
       // Verificar que el item se agregó correctamente
       expect(result.current.cartItems).toHaveLength(1)
-      expect(result.current.cartItems[0]).toEqual(expect.objectContaining({
-        id: mockProduct.id,
-        price: mockProduct.price
-      }))
+      expect(result.current.cartItems[0]).toEqual(
+        expect.objectContaining({
+          id: mockProduct.id,
+          price: mockProduct.price,
+        })
+      )
     })
   })
 
@@ -162,7 +164,7 @@ describe('useCartWithClerk Hook', () => {
         signIn: jest.fn(),
         signOut: jest.fn(),
         session: null,
-        status: 'loading'
+        status: 'loading',
       } as any)
     })
 
@@ -190,7 +192,7 @@ describe('useCartWithClerk Hook', () => {
         signIn: jest.fn(),
         signOut: jest.fn(),
         session: { user: mockUser },
-        status: 'authenticated'
+        status: 'authenticated',
       } as any)
     })
 
@@ -257,7 +259,7 @@ describe('useCartWithClerk Hook', () => {
         signIn: jest.fn(),
         signOut: jest.fn(),
         session: { user: mockUser },
-        status: 'authenticated'
+        status: 'authenticated',
       } as any)
     })
 
@@ -268,12 +270,15 @@ describe('useCartWithClerk Hook', () => {
         store.dispatch(addItemToCart(mockProduct))
       })
 
-      await waitFor(() => {
-        expect(mockCartPersistence.saveUserCart).toHaveBeenCalledWith(
-          mockUser.id,
-          expect.arrayContaining([expect.objectContaining({ id: mockProduct.id })])
-        )
-      }, { timeout: 2000 })
+      await waitFor(
+        () => {
+          expect(mockCartPersistence.saveUserCart).toHaveBeenCalledWith(
+            mockUser.id,
+            expect.arrayContaining([expect.objectContaining({ id: mockProduct.id })])
+          )
+        },
+        { timeout: 2000 }
+      )
     })
 
     it('should handle save errors gracefully', async () => {
@@ -287,17 +292,20 @@ describe('useCartWithClerk Hook', () => {
       })
 
       // Wait for the debounced save to be called
-      await waitFor(() => {
-        expect(mockCartPersistence.saveUserCart).toHaveBeenCalled()
-      }, { timeout: 2000 })
+      await waitFor(
+        () => {
+          expect(mockCartPersistence.saveUserCart).toHaveBeenCalled()
+        },
+        { timeout: 2000 }
+      )
 
       // Wait for error to be logged
-      await waitFor(() => {
-        expect(console.error).toHaveBeenCalledWith(
-          'Error saving user cart:',
-          expect.any(Error)
-        )
-      }, { timeout: 2000 })
+      await waitFor(
+        () => {
+          expect(console.error).toHaveBeenCalledWith('Error saving user cart:', expect.any(Error))
+        },
+        { timeout: 2000 }
+      )
     })
   })
 
@@ -310,7 +318,7 @@ describe('useCartWithClerk Hook', () => {
         signIn: jest.fn(),
         signOut: jest.fn(),
         session: { user: mockUser },
-        status: 'authenticated'
+        status: 'authenticated',
       } as any)
     })
 
@@ -343,7 +351,7 @@ describe('useCartWithClerk Hook', () => {
         signIn: jest.fn(),
         signOut: jest.fn(),
         session: { user: mockUser },
-        status: 'authenticated'
+        status: 'authenticated',
       } as any)
     })
 
@@ -381,12 +389,3 @@ describe('useCartWithClerk Hook', () => {
     })
   })
 })
-
-
-
-
-
-
-
-
-

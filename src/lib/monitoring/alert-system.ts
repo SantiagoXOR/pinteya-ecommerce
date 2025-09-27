@@ -2,28 +2,28 @@
 // PINTEYA E-COMMERCE - ENTERPRISE ALERT SYSTEM
 // ===================================
 
-import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { emailService } from '@/lib/notifications/email';
-import { slackService } from '@/lib/notifications/slack';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { emailService } from '@/lib/notifications/email'
+import { slackService } from '@/lib/notifications/slack'
 
 // ✅ IMPORT CONDICIONAL: Solo cargar CacheUtils en servidor para evitar errores de ioredis en cliente
-let CacheUtils: any = null;
+let CacheUtils: any = null
 if (typeof window === 'undefined') {
   // Solo en servidor
   try {
-    CacheUtils = require('@/lib/cache-manager').CacheUtils;
+    CacheUtils = require('@/lib/cache-manager').CacheUtils
   } catch (error) {
-    console.warn('[EnterpriseAlertSystem] CacheUtils not available:', error);
+    console.warn('[EnterpriseAlertSystem] CacheUtils not available:', error)
   }
 }
 
 // Niveles de alerta con escalamiento
 export enum AlertLevel {
   INFO = 'info',
-  WARNING = 'warning', 
+  WARNING = 'warning',
   CRITICAL = 'critical',
-  EMERGENCY = 'emergency'
+  EMERGENCY = 'emergency',
 }
 
 // Tipos de notificación
@@ -33,7 +33,7 @@ export enum NotificationType {
   WEBHOOK = 'webhook',
   SMS = 'sms',
   PUSH = 'push',
-  LOG = 'log'
+  LOG = 'log',
 }
 
 // Estados de alerta
@@ -41,150 +41,165 @@ export enum AlertStatus {
   ACTIVE = 'active',
   ACKNOWLEDGED = 'acknowledged',
   RESOLVED = 'resolved',
-  SUPPRESSED = 'suppressed'
+  SUPPRESSED = 'suppressed',
 }
 
 // Configuración de canal de notificación
 export interface NotificationChannel {
-  id: string;
-  type: NotificationType;
-  name: string;
-  config: Record<string, any>;
-  enabled: boolean;
-  levels: AlertLevel[];
+  id: string
+  type: NotificationType
+  name: string
+  config: Record<string, any>
+  enabled: boolean
+  levels: AlertLevel[]
   rateLimit?: {
-    maxPerHour: number;
-    maxPerDay: number;
-  };
+    maxPerHour: number
+    maxPerDay: number
+  }
 }
 
 // Regla de escalamiento
 export interface EscalationRule {
-  id: string;
-  name: string;
-  enabled: boolean;
+  id: string
+  name: string
+  enabled: boolean
   conditions: {
-    level: AlertLevel;
-    duration: number; // minutos sin resolución
-    repeatCount?: number; // número de repeticiones
-  };
+    level: AlertLevel
+    duration: number // minutos sin resolución
+    repeatCount?: number // número de repeticiones
+  }
   actions: {
-    escalateToLevel?: AlertLevel;
-    notifyChannels: string[]; // IDs de canales
-    assignToUser?: string;
-  };
+    escalateToLevel?: AlertLevel
+    notifyChannels: string[] // IDs de canales
+    assignToUser?: string
+  }
 }
 
 // Configuración de alerta
 export interface AlertRule {
-  id: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  metricName: string;
-  condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte';
-  threshold: number;
-  level: AlertLevel;
-  cooldownMinutes: number;
-  channels: string[]; // IDs de canales de notificación
-  escalationRules: string[]; // IDs de reglas de escalamiento
-  tags: Record<string, string>;
-  metadata?: Record<string, any>;
+  id: string
+  name: string
+  description: string
+  enabled: boolean
+  metricName: string
+  condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte'
+  threshold: number
+  level: AlertLevel
+  cooldownMinutes: number
+  channels: string[] // IDs de canales de notificación
+  escalationRules: string[] // IDs de reglas de escalamiento
+  tags: Record<string, string>
+  metadata?: Record<string, any>
 }
 
 // Alerta activa
 export interface Alert {
-  id: string;
-  ruleId: string;
-  ruleName: string;
-  level: AlertLevel;
-  status: AlertStatus;
-  message: string;
-  metricName: string;
-  value: number;
-  threshold: number;
-  triggeredAt: string;
-  acknowledgedAt?: string;
-  acknowledgedBy?: string;
-  resolvedAt?: string;
-  resolvedBy?: string;
-  escalatedAt?: string;
-  escalatedFrom?: AlertLevel;
-  notificationsSent: NotificationLog[];
-  tags: Record<string, string>;
-  metadata?: Record<string, any>;
+  id: string
+  ruleId: string
+  ruleName: string
+  level: AlertLevel
+  status: AlertStatus
+  message: string
+  metricName: string
+  value: number
+  threshold: number
+  triggeredAt: string
+  acknowledgedAt?: string
+  acknowledgedBy?: string
+  resolvedAt?: string
+  resolvedBy?: string
+  escalatedAt?: string
+  escalatedFrom?: AlertLevel
+  notificationsSent: NotificationLog[]
+  tags: Record<string, string>
+  metadata?: Record<string, any>
 }
 
 // Log de notificación
 export interface NotificationLog {
-  id: string;
-  channelId: string;
-  channelType: NotificationType;
-  sentAt: string;
-  success: boolean;
-  error?: string;
-  responseTime: number;
+  id: string
+  channelId: string
+  channelType: NotificationType
+  sentAt: string
+  success: boolean
+  error?: string
+  responseTime: number
 }
 
 /**
  * Sistema de Alertas Enterprise con escalamiento automático
  */
 export class EnterpriseAlertSystem {
-  private static instance: EnterpriseAlertSystem;
-  private alertRules: Map<string, AlertRule> = new Map();
-  private notificationChannels: Map<string, NotificationChannel> = new Map();
-  private escalationRules: Map<string, EscalationRule> = new Map();
-  private activeAlerts: Map<string, Alert> = new Map();
-  private escalationInterval: NodeJS.Timeout | null = null;
+  private static instance: EnterpriseAlertSystem
+  private alertRules: Map<string, AlertRule> = new Map()
+  private notificationChannels: Map<string, NotificationChannel> = new Map()
+  private escalationRules: Map<string, EscalationRule> = new Map()
+  private activeAlerts: Map<string, Alert> = new Map()
+  private escalationInterval: NodeJS.Timeout | null = null
 
   constructor() {
-    this.initializeDefaultChannels();
-    this.initializeDefaultRules();
-    this.startEscalationMonitoring();
+    this.initializeDefaultChannels()
+    this.initializeDefaultRules()
+    this.startEscalationMonitoring()
   }
 
   static getInstance(): EnterpriseAlertSystem {
     if (!EnterpriseAlertSystem.instance) {
-      EnterpriseAlertSystem.instance = new EnterpriseAlertSystem();
+      EnterpriseAlertSystem.instance = new EnterpriseAlertSystem()
     }
-    return EnterpriseAlertSystem.instance;
+    return EnterpriseAlertSystem.instance
   }
 
   /**
    * Configura un canal de notificación
    */
   setNotificationChannel(channel: NotificationChannel): void {
-    this.notificationChannels.set(channel.id, channel);
-    logger.info(LogLevel.INFO, `Notification channel configured: ${channel.id}`, {
-      type: channel.type,
-      enabled: channel.enabled,
-      levels: channel.levels
-    }, LogCategory.SYSTEM);
+    this.notificationChannels.set(channel.id, channel)
+    logger.info(
+      LogLevel.INFO,
+      `Notification channel configured: ${channel.id}`,
+      {
+        type: channel.type,
+        enabled: channel.enabled,
+        levels: channel.levels,
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   /**
    * Configura una regla de escalamiento
    */
   setEscalationRule(rule: EscalationRule): void {
-    this.escalationRules.set(rule.id, rule);
-    logger.info(LogLevel.INFO, `Escalation rule configured: ${rule.id}`, {
-      level: rule.conditions.level,
-      duration: rule.conditions.duration,
-      enabled: rule.enabled
-    }, LogCategory.SYSTEM);
+    this.escalationRules.set(rule.id, rule)
+    logger.info(
+      LogLevel.INFO,
+      `Escalation rule configured: ${rule.id}`,
+      {
+        level: rule.conditions.level,
+        duration: rule.conditions.duration,
+        enabled: rule.enabled,
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   /**
    * Configura una regla de alerta
    */
   setAlertRule(rule: AlertRule): void {
-    this.alertRules.set(rule.id, rule);
-    logger.info(LogLevel.INFO, `Alert rule configured: ${rule.id}`, {
-      metricName: rule.metricName,
-      threshold: rule.threshold,
-      level: rule.level,
-      enabled: rule.enabled
-    }, LogCategory.SYSTEM);
+    this.alertRules.set(rule.id, rule)
+    logger.info(
+      LogLevel.INFO,
+      `Alert rule configured: ${rule.id}`,
+      {
+        metricName: rule.metricName,
+        threshold: rule.threshold,
+        level: rule.level,
+        enabled: rule.enabled,
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   /**
@@ -196,21 +211,22 @@ export class EnterpriseAlertSystem {
     value: number,
     message?: string
   ): Promise<Alert | null> {
-    const rule = this.alertRules.get(ruleId);
+    const rule = this.alertRules.get(ruleId)
     if (!rule || !rule.enabled) {
-      return null;
+      return null
     }
 
     // Verificar cooldown
-    const existingAlert = Array.from(this.activeAlerts.values())
-      .find(alert => alert.ruleId === ruleId && alert.status === AlertStatus.ACTIVE);
+    const existingAlert = Array.from(this.activeAlerts.values()).find(
+      alert => alert.ruleId === ruleId && alert.status === AlertStatus.ACTIVE
+    )
 
     if (existingAlert) {
-      const cooldownEnd = new Date(existingAlert.triggeredAt);
-      cooldownEnd.setMinutes(cooldownEnd.getMinutes() + rule.cooldownMinutes);
-      
+      const cooldownEnd = new Date(existingAlert.triggeredAt)
+      cooldownEnd.setMinutes(cooldownEnd.getMinutes() + rule.cooldownMinutes)
+
       if (new Date() < cooldownEnd) {
-        return null; // Aún en cooldown
+        return null // Aún en cooldown
       }
     }
 
@@ -228,76 +244,91 @@ export class EnterpriseAlertSystem {
       triggeredAt: new Date().toISOString(),
       notificationsSent: [],
       tags: rule.tags,
-      metadata: rule.metadata
-    };
+      metadata: rule.metadata,
+    }
 
-    this.activeAlerts.set(alert.id, alert);
+    this.activeAlerts.set(alert.id, alert)
 
     // Enviar notificaciones
-    await this.sendNotifications(alert, rule.channels);
+    await this.sendNotifications(alert, rule.channels)
 
     // Almacenar en base de datos
-    await this.storeAlert(alert);
+    await this.storeAlert(alert)
 
-    logger.warn(LogLevel.WARN, `Alert triggered: ${rule.name}`, {
-      alertId: alert.id,
-      level: alert.level,
-      metricName: alert.metricName,
-      value: alert.value,
-      threshold: alert.threshold
-    }, LogCategory.SYSTEM);
+    logger.warn(
+      LogLevel.WARN,
+      `Alert triggered: ${rule.name}`,
+      {
+        alertId: alert.id,
+        level: alert.level,
+        metricName: alert.metricName,
+        value: alert.value,
+        threshold: alert.threshold,
+      },
+      LogCategory.SYSTEM
+    )
 
-    return alert;
+    return alert
   }
 
   /**
    * Reconoce una alerta
    */
   async acknowledgeAlert(alertId: string, userId: string): Promise<boolean> {
-    const alert = this.activeAlerts.get(alertId);
+    const alert = this.activeAlerts.get(alertId)
     if (!alert || alert.status !== AlertStatus.ACTIVE) {
-      return false;
+      return false
     }
 
-    alert.status = AlertStatus.ACKNOWLEDGED;
-    alert.acknowledgedAt = new Date().toISOString();
-    alert.acknowledgedBy = userId;
+    alert.status = AlertStatus.ACKNOWLEDGED
+    alert.acknowledgedAt = new Date().toISOString()
+    alert.acknowledgedBy = userId
 
-    await this.updateAlert(alert);
+    await this.updateAlert(alert)
 
-    logger.info(LogLevel.INFO, `Alert acknowledged: ${alertId}`, {
-      userId,
-      level: alert.level,
-      ruleName: alert.ruleName
-    }, LogCategory.SYSTEM);
+    logger.info(
+      LogLevel.INFO,
+      `Alert acknowledged: ${alertId}`,
+      {
+        userId,
+        level: alert.level,
+        ruleName: alert.ruleName,
+      },
+      LogCategory.SYSTEM
+    )
 
-    return true;
+    return true
   }
 
   /**
    * Resuelve una alerta
    */
   async resolveAlert(alertId: string, userId?: string): Promise<boolean> {
-    const alert = this.activeAlerts.get(alertId);
+    const alert = this.activeAlerts.get(alertId)
     if (!alert) {
-      return false;
+      return false
     }
 
-    alert.status = AlertStatus.RESOLVED;
-    alert.resolvedAt = new Date().toISOString();
-    alert.resolvedBy = userId;
+    alert.status = AlertStatus.RESOLVED
+    alert.resolvedAt = new Date().toISOString()
+    alert.resolvedBy = userId
 
-    await this.updateAlert(alert);
-    this.activeAlerts.delete(alertId);
+    await this.updateAlert(alert)
+    this.activeAlerts.delete(alertId)
 
-    logger.info(LogLevel.INFO, `Alert resolved: ${alertId}`, {
-      userId,
-      level: alert.level,
-      ruleName: alert.ruleName,
-      duration: this.calculateDuration(alert.triggeredAt, alert.resolvedAt!)
-    }, LogCategory.SYSTEM);
+    logger.info(
+      LogLevel.INFO,
+      `Alert resolved: ${alertId}`,
+      {
+        userId,
+        level: alert.level,
+        ruleName: alert.ruleName,
+        duration: this.calculateDuration(alert.triggeredAt, alert.resolvedAt!),
+      },
+      LogCategory.SYSTEM
+    )
 
-    return true;
+    return true
   }
 
   /**
@@ -306,66 +337,76 @@ export class EnterpriseAlertSystem {
   private async sendNotifications(alert: Alert, channelIds: string[]): Promise<void> {
     const notifications = await Promise.allSettled(
       channelIds.map(channelId => this.sendNotification(alert, channelId))
-    );
+    )
 
     // Log resultados
     notifications.forEach((result, index) => {
-      const channelId = channelIds[index];
+      const channelId = channelIds[index]
       if (result.status === 'fulfilled' && result.value) {
-        alert.notificationsSent.push(result.value);
+        alert.notificationsSent.push(result.value)
       } else if (result.status === 'rejected') {
-        logger.error(LogLevel.ERROR, `Failed to send notification to channel: ${channelId}`, {
-          alertId: alert.id,
-          error: result.reason
-        }, LogCategory.SYSTEM);
+        logger.error(
+          LogLevel.ERROR,
+          `Failed to send notification to channel: ${channelId}`,
+          {
+            alertId: alert.id,
+            error: result.reason,
+          },
+          LogCategory.SYSTEM
+        )
       }
-    });
+    })
   }
 
   /**
    * Envía notificación a un canal específico
    */
   private async sendNotification(alert: Alert, channelId: string): Promise<NotificationLog | null> {
-    const channel = this.notificationChannels.get(channelId);
+    const channel = this.notificationChannels.get(channelId)
     if (!channel || !channel.enabled || !channel.levels.includes(alert.level)) {
-      return null;
+      return null
     }
 
     // Verificar rate limiting
     if (channel.rateLimit && !(await this.checkRateLimit(channelId, channel.rateLimit))) {
-      logger.warn(LogLevel.WARN, `Rate limit exceeded for channel: ${channelId}`, {
-        alertId: alert.id
-      }, LogCategory.SYSTEM);
-      return null;
+      logger.warn(
+        LogLevel.WARN,
+        `Rate limit exceeded for channel: ${channelId}`,
+        {
+          alertId: alert.id,
+        },
+        LogCategory.SYSTEM
+      )
+      return null
     }
 
-    const startTime = Date.now();
-    let success = false;
-    let error: string | undefined;
+    const startTime = Date.now()
+    let success = false
+    let error: string | undefined
 
     try {
       switch (channel.type) {
         case NotificationType.EMAIL:
-          await this.sendEmailNotification(alert, channel);
-          break;
+          await this.sendEmailNotification(alert, channel)
+          break
         case NotificationType.SLACK:
-          await this.sendSlackNotification(alert, channel);
-          break;
+          await this.sendSlackNotification(alert, channel)
+          break
         case NotificationType.WEBHOOK:
-          await this.sendWebhookNotification(alert, channel);
-          break;
+          await this.sendWebhookNotification(alert, channel)
+          break
         case NotificationType.SMS:
-          await this.sendSMSNotification(alert, channel);
-          break;
+          await this.sendSMSNotification(alert, channel)
+          break
         case NotificationType.LOG:
-          await this.sendLogNotification(alert, channel);
-          break;
+          await this.sendLogNotification(alert, channel)
+          break
         default:
-          throw new Error(`Unsupported notification type: ${channel.type}`);
+          throw new Error(`Unsupported notification type: ${channel.type}`)
       }
-      success = true;
+      success = true
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Unknown error';
+      error = err instanceof Error ? err.message : 'Unknown error'
     }
 
     const notificationLog: NotificationLog = {
@@ -375,10 +416,10 @@ export class EnterpriseAlertSystem {
       sentAt: new Date().toISOString(),
       success,
       error,
-      responseTime: Date.now() - startTime
-    };
+      responseTime: Date.now() - startTime,
+    }
 
-    return notificationLog;
+    return notificationLog
   }
 
   /**
@@ -387,24 +428,24 @@ export class EnterpriseAlertSystem {
   private async checkEscalations(): Promise<void> {
     for (const alert of this.activeAlerts.values()) {
       if (alert.status !== AlertStatus.ACTIVE) {
-        continue;
+        continue
       }
 
-      const rule = this.alertRules.get(alert.ruleId);
+      const rule = this.alertRules.get(alert.ruleId)
       if (!rule) {
-        continue;
+        continue
       }
 
       // Verificar reglas de escalamiento
       for (const escalationRuleId of rule.escalationRules) {
-        const escalationRule = this.escalationRules.get(escalationRuleId);
+        const escalationRule = this.escalationRules.get(escalationRuleId)
         if (!escalationRule || !escalationRule.enabled) {
-          continue;
+          continue
         }
 
         // Verificar condiciones de escalamiento
         if (this.shouldEscalate(alert, escalationRule)) {
-          await this.escalateAlert(alert, escalationRule);
+          await this.escalateAlert(alert, escalationRule)
         }
       }
     }
@@ -416,58 +457,63 @@ export class EnterpriseAlertSystem {
   private shouldEscalate(alert: Alert, rule: EscalationRule): boolean {
     // Verificar nivel
     if (alert.level !== rule.conditions.level) {
-      return false;
+      return false
     }
 
     // Verificar duración
-    const alertAge = Date.now() - new Date(alert.triggeredAt).getTime();
-    const requiredDuration = rule.conditions.duration * 60 * 1000; // convertir a ms
+    const alertAge = Date.now() - new Date(alert.triggeredAt).getTime()
+    const requiredDuration = rule.conditions.duration * 60 * 1000 // convertir a ms
 
     if (alertAge < requiredDuration) {
-      return false;
+      return false
     }
 
     // Verificar si ya fue escalada
     if (alert.escalatedAt) {
-      return false;
+      return false
     }
 
-    return true;
+    return true
   }
 
   /**
    * Escala una alerta
    */
   private async escalateAlert(alert: Alert, rule: EscalationRule): Promise<void> {
-    const originalLevel = alert.level;
-    
+    const originalLevel = alert.level
+
     // Actualizar nivel si es necesario
     if (rule.actions.escalateToLevel) {
-      alert.level = rule.actions.escalateToLevel;
-      alert.escalatedFrom = originalLevel;
+      alert.level = rule.actions.escalateToLevel
+      alert.escalatedFrom = originalLevel
     }
 
-    alert.escalatedAt = new Date().toISOString();
+    alert.escalatedAt = new Date().toISOString()
 
     // Enviar notificaciones de escalamiento
-    await this.sendNotifications(alert, rule.actions.notifyChannels);
+    await this.sendNotifications(alert, rule.actions.notifyChannels)
 
     // Asignar a usuario si es necesario
     if (rule.actions.assignToUser) {
       alert.metadata = {
         ...alert.metadata,
-        assignedTo: rule.actions.assignToUser
-      };
+        assignedTo: rule.actions.assignToUser,
+      }
     }
 
-    await this.updateAlert(alert);
+    await this.updateAlert(alert)
 
-    logger.error(LogLevel.ERROR, `Alert escalated: ${alert.id}`, {
-      originalLevel,
-      newLevel: alert.level,
-      escalationRule: rule.name,
-      duration: this.calculateDuration(alert.triggeredAt, alert.escalatedAt)
-    }, LogCategory.SYSTEM);
+    logger.error(
+      LogLevel.ERROR,
+      `Alert escalated: ${alert.id}`,
+      {
+        originalLevel,
+        newLevel: alert.level,
+        escalationRule: rule.name,
+        duration: this.calculateDuration(alert.triggeredAt, alert.escalatedAt),
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   /**
@@ -475,7 +521,7 @@ export class EnterpriseAlertSystem {
    */
   private async sendEmailNotification(alert: Alert, channel: NotificationChannel): Promise<void> {
     try {
-      const subject = `[${alert.level.toUpperCase()}] ${alert.ruleName}`;
+      const subject = `[${alert.level.toUpperCase()}] ${alert.ruleName}`
       const emailData = {
         to: channel.config.to || ['admin@example.com'],
         subject,
@@ -487,24 +533,37 @@ export class EnterpriseAlertSystem {
           message: alert.message,
           metricName: alert.metricName,
           value: alert.value,
-          threshold: alert.threshold
+          threshold: alert.threshold,
         },
-        priority: alert.level === AlertLevel.CRITICAL || alert.level === AlertLevel.EMERGENCY ? 'high' as const : 'normal' as const
-      };
+        priority:
+          alert.level === AlertLevel.CRITICAL || alert.level === AlertLevel.EMERGENCY
+            ? ('high' as const)
+            : ('normal' as const),
+      }
 
-      await emailService.sendNotification(emailData);
-      
-      logger.info(LogLevel.INFO, `Email notification sent successfully`, {
-        alertId: alert.id,
-        to: channel.config.to,
-        subject
-      }, LogCategory.SYSTEM);
+      await emailService.sendNotification(emailData)
+
+      logger.info(
+        LogLevel.INFO,
+        `Email notification sent successfully`,
+        {
+          alertId: alert.id,
+          to: channel.config.to,
+          subject,
+        },
+        LogCategory.SYSTEM
+      )
     } catch (error) {
-      logger.error(LogLevel.ERROR, `Failed to send email notification`, {
-        alertId: alert.id,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }, LogCategory.SYSTEM);
-      throw error;
+      logger.error(
+        LogLevel.ERROR,
+        `Failed to send email notification`,
+        {
+          alertId: alert.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        LogCategory.SYSTEM
+      )
+      throw error
     }
   }
 
@@ -513,79 +572,104 @@ export class EnterpriseAlertSystem {
       const alertData = {
         title: `${alert.level.toUpperCase()}: ${alert.ruleName}`,
         message: alert.message,
-        severity: alert.level === AlertLevel.CRITICAL || alert.level === AlertLevel.EMERGENCY ? 'error' as const : 
-                 alert.level === AlertLevel.WARNING ? 'warning' as const : 'info' as const,
+        severity:
+          alert.level === AlertLevel.CRITICAL || alert.level === AlertLevel.EMERGENCY
+            ? ('error' as const)
+            : alert.level === AlertLevel.WARNING
+              ? ('warning' as const)
+              : ('info' as const),
         details: {
           'Alert ID': alert.id,
-          'Timestamp': new Date(alert.triggeredAt).toLocaleString(),
-          'Metric': alert.metricName,
-          'Value': alert.value?.toString() || 'N/A',
-          'Threshold': alert.threshold?.toString() || 'N/A',
-          'Status': alert.status,
-          ...alert.tags
-        }
-      };
+          Timestamp: new Date(alert.triggeredAt).toLocaleString(),
+          Metric: alert.metricName,
+          Value: alert.value?.toString() || 'N/A',
+          Threshold: alert.threshold?.toString() || 'N/A',
+          Status: alert.status,
+          ...alert.tags,
+        },
+      }
 
-      await slackService.sendSystemAlert(alertData);
-      
-      logger.info(LogLevel.INFO, `Slack notification sent successfully`, {
-        alertId: alert.id,
-        channel: channel.config.channel,
-        webhook: channel.config.webhookUrl ? 'configured' : 'missing'
-      }, LogCategory.SYSTEM);
+      await slackService.sendSystemAlert(alertData)
+
+      logger.info(
+        LogLevel.INFO,
+        `Slack notification sent successfully`,
+        {
+          alertId: alert.id,
+          channel: channel.config.channel,
+          webhook: channel.config.webhookUrl ? 'configured' : 'missing',
+        },
+        LogCategory.SYSTEM
+      )
     } catch (error) {
-      logger.error(LogLevel.ERROR, `Failed to send Slack notification`, {
-        alertId: alert.id,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }, LogCategory.SYSTEM);
-      throw error;
+      logger.error(
+        LogLevel.ERROR,
+        `Failed to send Slack notification`,
+        {
+          alertId: alert.id,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        LogCategory.SYSTEM
+      )
+      throw error
     }
   }
 
   private async sendWebhookNotification(alert: Alert, channel: NotificationChannel): Promise<void> {
     if (!channel.config.url) {
-      throw new Error('Webhook URL not configured');
+      throw new Error('Webhook URL not configured')
     }
 
     const response = await fetch(channel.config.url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(channel.config.headers || {})
+        ...(channel.config.headers || {}),
       },
       body: JSON.stringify({
         alert,
         timestamp: new Date().toISOString(),
-        source: 'pinteya-ecommerce'
-      })
-    });
+        source: 'pinteya-ecommerce',
+      }),
+    })
 
     if (!response.ok) {
-      throw new Error(`Webhook failed: ${response.status} ${response.statusText}`);
+      throw new Error(`Webhook failed: ${response.status} ${response.statusText}`)
     }
   }
 
   private async sendSMSNotification(alert: Alert, channel: NotificationChannel): Promise<void> {
     // TODO: Implementar envío de SMS
-    logger.info(LogLevel.INFO, `SMS notification sent`, {
-      alertId: alert.id,
-      to: channel.config.phoneNumber
-    }, LogCategory.SYSTEM);
+    logger.info(
+      LogLevel.INFO,
+      `SMS notification sent`,
+      {
+        alertId: alert.id,
+        to: channel.config.phoneNumber,
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   private async sendLogNotification(alert: Alert, channel: NotificationChannel): Promise<void> {
-    const logLevel = alert.level === AlertLevel.EMERGENCY || alert.level === AlertLevel.CRITICAL 
-      ? LogLevel.ERROR 
-      : LogLevel.WARN;
+    const logLevel =
+      alert.level === AlertLevel.EMERGENCY || alert.level === AlertLevel.CRITICAL
+        ? LogLevel.ERROR
+        : LogLevel.WARN
 
-    logger.log(logLevel, `ALERT: ${alert.message}`, {
-      alertId: alert.id,
-      level: alert.level,
-      metricName: alert.metricName,
-      value: alert.value,
-      threshold: alert.threshold,
-      ruleName: alert.ruleName
-    }, LogCategory.SYSTEM);
+    logger.log(
+      logLevel,
+      `ALERT: ${alert.message}`,
+      {
+        alertId: alert.id,
+        level: alert.level,
+        metricName: alert.metricName,
+        value: alert.value,
+        threshold: alert.threshold,
+        ruleName: alert.ruleName,
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   /**
@@ -599,8 +683,8 @@ export class EnterpriseAlertSystem {
       name: 'Default Log Channel',
       config: {},
       enabled: true,
-      levels: [AlertLevel.INFO, AlertLevel.WARNING, AlertLevel.CRITICAL, AlertLevel.EMERGENCY]
-    });
+      levels: [AlertLevel.INFO, AlertLevel.WARNING, AlertLevel.CRITICAL, AlertLevel.EMERGENCY],
+    })
 
     // Canal de webhook por defecto (deshabilitado)
     this.setNotificationChannel({
@@ -608,15 +692,15 @@ export class EnterpriseAlertSystem {
       type: NotificationType.WEBHOOK,
       name: 'Default Webhook Channel',
       config: {
-        url: process.env.ALERT_WEBHOOK_URL || ''
+        url: process.env.ALERT_WEBHOOK_URL || '',
       },
       enabled: false,
       levels: [AlertLevel.CRITICAL, AlertLevel.EMERGENCY],
       rateLimit: {
         maxPerHour: 10,
-        maxPerDay: 50
-      }
-    });
+        maxPerDay: 50,
+      },
+    })
   }
 
   /**
@@ -630,13 +714,13 @@ export class EnterpriseAlertSystem {
       enabled: true,
       conditions: {
         level: AlertLevel.CRITICAL,
-        duration: 15 // 15 minutos
+        duration: 15, // 15 minutos
       },
       actions: {
         escalateToLevel: AlertLevel.EMERGENCY,
-        notifyChannels: ['default_log', 'default_webhook']
-      }
-    });
+        notifyChannels: ['default_log', 'default_webhook'],
+      },
+    })
   }
 
   /**
@@ -644,34 +728,39 @@ export class EnterpriseAlertSystem {
    */
   private startEscalationMonitoring(): void {
     this.escalationInterval = setInterval(() => {
-      this.checkEscalations();
-    }, 60000); // Verificar cada minuto
+      this.checkEscalations()
+    }, 60000) // Verificar cada minuto
   }
 
   /**
    * Funciones auxiliares
    */
   private generateAlertId(): string {
-    return `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   private generateNotificationId(): string {
-    return `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   private calculateDuration(start: string, end: string): number {
-    return Math.round((new Date(end).getTime() - new Date(start).getTime()) / 1000 / 60); // minutos
+    return Math.round((new Date(end).getTime() - new Date(start).getTime()) / 1000 / 60) // minutos
   }
 
-  private async checkRateLimit(channelId: string, rateLimit: { maxPerHour: number; maxPerDay: number }): Promise<boolean> {
+  private async checkRateLimit(
+    channelId: string,
+    rateLimit: { maxPerHour: number; maxPerDay: number }
+  ): Promise<boolean> {
     // TODO: Implementar verificación de rate limiting con Redis
-    return true;
+    return true
   }
 
   private async storeAlert(alert: Alert): Promise<void> {
     try {
-      const supabase = getSupabaseClient(true);
-      if (!supabase) {return;}
+      const supabase = getSupabaseClient(true)
+      if (!supabase) {
+        return
+      }
 
       await supabase.from('enterprise_alerts').insert({
         id: alert.id,
@@ -692,20 +781,27 @@ export class EnterpriseAlertSystem {
         escalated_from: alert.escalatedFrom,
         notifications_sent: alert.notificationsSent,
         tags: alert.tags,
-        metadata: alert.metadata
-      });
+        metadata: alert.metadata,
+      })
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to store alert', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        alertId: alert.id
-      }, LogCategory.SYSTEM);
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to store alert',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          alertId: alert.id,
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
   private async updateAlert(alert: Alert): Promise<void> {
     try {
-      const supabase = getSupabaseClient(true);
-      if (!supabase) {return;}
+      const supabase = getSupabaseClient(true)
+      if (!supabase) {
+        return
+      }
 
       await supabase
         .from('enterprise_alerts')
@@ -719,14 +815,19 @@ export class EnterpriseAlertSystem {
           escalated_at: alert.escalatedAt,
           escalated_from: alert.escalatedFrom,
           notifications_sent: alert.notificationsSent,
-          metadata: alert.metadata
+          metadata: alert.metadata,
         })
-        .eq('id', alert.id);
+        .eq('id', alert.id)
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to update alert', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        alertId: alert.id
-      }, LogCategory.SYSTEM);
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to update alert',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          alertId: alert.id,
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -735,25 +836,16 @@ export class EnterpriseAlertSystem {
    */
   destroy(): void {
     if (this.escalationInterval) {
-      clearInterval(this.escalationInterval);
-      this.escalationInterval = null;
+      clearInterval(this.escalationInterval)
+      this.escalationInterval = null
     }
   }
 }
 
 // Instancia singleton
-export const enterpriseAlertSystem = EnterpriseAlertSystem.getInstance();
+export const enterpriseAlertSystem = EnterpriseAlertSystem.getInstance()
 
 // Funciones de conveniencia
-export const triggerAlert = enterpriseAlertSystem.triggerAlert.bind(enterpriseAlertSystem);
-export const acknowledgeAlert = enterpriseAlertSystem.acknowledgeAlert.bind(enterpriseAlertSystem);
-export const resolveAlert = enterpriseAlertSystem.resolveAlert.bind(enterpriseAlertSystem);
-
-
-
-
-
-
-
-
-
+export const triggerAlert = enterpriseAlertSystem.triggerAlert.bind(enterpriseAlertSystem)
+export const acknowledgeAlert = enterpriseAlertSystem.acknowledgeAlert.bind(enterpriseAlertSystem)
+export const resolveAlert = enterpriseAlertSystem.resolveAlert.bind(enterpriseAlertSystem)

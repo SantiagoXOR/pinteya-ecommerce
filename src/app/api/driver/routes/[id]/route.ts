@@ -3,16 +3,13 @@
  * GET /api/driver/routes/[id]
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { createClient } from '@/lib/integrations/supabase/server';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { createClient } from '@/lib/integrations/supabase/server'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const routeId = params.id;
+    const routeId = params.id
 
     // Para pruebas, devolver datos de ejemplo
     const routeData = {
@@ -34,90 +31,75 @@ export async function GET(
             postal_code: '5000',
             coordinates: {
               lat: -31.4084841,
-              lng: -64.1917654
-            }
+              lng: -64.1917654,
+            },
           },
           items: [
             {
               name: 'Producto de Prueba',
               quantity: 1,
-              weight: 1
-            }
+              weight: 1,
+            },
           ],
           status: 'confirmed',
           estimated_delivery_time: '14:00 - 18:00',
-          requires_signature: false
-        }
+          requires_signature: false,
+        },
       ],
       waypoints: [
         {
           lat: -31.4084841,
-          lng: -64.1917654
-        }
+          lng: -64.1917654,
+        },
       ],
       driver: {
         id: 'driver-1',
-        name: 'Santiago Martinez'
+        name: 'Santiago Martinez',
       },
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+      updated_at: new Date().toISOString(),
+    }
 
-    return NextResponse.json(routeData);
-
-
-
+    return NextResponse.json(routeData)
   } catch (error) {
-    console.error('Error in driver route API:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
+    console.error('Error in driver route API:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Verificar autenticación
-    const session = await auth();
-    
+    const session = await auth()
+
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const routeId = params.id;
-    const body = await request.json();
-    const { status, shipments, current_shipment_index } = body;
+    const routeId = params.id
+    const body = await request.json()
+    const { status, shipments, current_shipment_index } = body
 
-    const supabase = await createClient();
+    const supabase = await createClient()
 
     // Obtener información del driver
     const { data: driver, error: driverError } = await supabase
       .from('drivers')
       .select('id')
       .eq('email', session.user.email)
-      .single();
+      .single()
 
     if (driverError || !driver) {
-      return NextResponse.json(
-        { error: 'Driver no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Driver no encontrado' }, { status: 404 })
     }
 
     // Actualizar la ruta
     const updateData: any = {
-      updated_at: new Date().toISOString()
-    };
+      updated_at: new Date().toISOString(),
+    }
 
-    if (status) updateData.status = status;
-    if (shipments) updateData.shipments = shipments;
+    if (status) updateData.status = status
+    if (shipments) updateData.shipments = shipments
 
     const { data: updatedRoute, error: updateError } = await supabase
       .from('optimized_routes')
@@ -125,23 +107,16 @@ export async function PUT(
       .eq('id', routeId)
       .eq('driver_id', driver.id)
       .select()
-      .single();
+      .single()
 
     if (updateError) {
-      console.error('Error updating route:', updateError);
-      return NextResponse.json(
-        { error: 'Error actualizando ruta' },
-        { status: 500 }
-      );
+      console.error('Error updating route:', updateError)
+      return NextResponse.json({ error: 'Error actualizando ruta' }, { status: 500 })
     }
 
-    return NextResponse.json(updatedRoute);
-
+    return NextResponse.json(updatedRoute)
   } catch (error) {
-    console.error('Error in driver route update API:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
+    console.error('Error in driver route update API:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

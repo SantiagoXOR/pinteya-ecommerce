@@ -3,8 +3,8 @@
  * Permite eliminar 'unsafe-inline' de la CSP para mayor seguridad
  */
 
-import { randomBytes } from 'crypto';
-import { headers } from 'next/headers';
+import { randomBytes } from 'crypto'
+import { headers } from 'next/headers'
 
 // ===================================
 // GENERACIÓN DE NONCES
@@ -14,7 +14,7 @@ import { headers } from 'next/headers';
  * Genera un nonce criptográficamente seguro para CSP
  */
 export function generateNonce(): string {
-  return randomBytes(16).toString('base64');
+  return randomBytes(16).toString('base64')
 }
 
 /**
@@ -25,8 +25,8 @@ export function generateNonces() {
     script: generateNonce(),
     style: generateNonce(),
     img: generateNonce(),
-    connect: generateNonce()
-  };
+    connect: generateNonce(),
+  }
 }
 
 // ===================================
@@ -38,10 +38,10 @@ export function generateNonces() {
  */
 export function getCurrentNonce(type: 'script' | 'style' = 'script'): string | null {
   try {
-    const headersList = headers();
-    return headersList.get(`x-nonce-${type}`) || null;
+    const headersList = headers()
+    return headersList.get(`x-nonce-${type}`) || null
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -53,8 +53,8 @@ export function createNonceHeaders(nonces: ReturnType<typeof generateNonces>) {
     'X-Nonce-Script': nonces.script,
     'X-Nonce-Style': nonces.style,
     'X-Nonce-Img': nonces.img,
-    'X-Nonce-Connect': nonces.connect
-  };
+    'X-Nonce-Connect': nonces.connect,
+  }
 }
 
 // ===================================
@@ -77,10 +77,10 @@ export function buildStrictCSP(nonces: ReturnType<typeof generateNonces>): strin
     `base-uri 'self'`,
     `form-action 'self' https://checkout.stripe.com`,
     `frame-ancestors 'none'`,
-    `upgrade-insecure-requests`
-  ];
+    `upgrade-insecure-requests`,
+  ]
 
-  return cspDirectives.join('; ');
+  return cspDirectives.join('; ')
 }
 
 /**
@@ -96,10 +96,10 @@ export function buildDevelopmentCSP(nonces: ReturnType<typeof generateNonces>): 
     `connect-src 'self' 'nonce-${nonces.connect}' https: wss: ws:`,
     `frame-src 'self' https://js.stripe.com https://checkout.stripe.com`,
     `object-src 'none'`,
-    `base-uri 'self'`
-  ];
+    `base-uri 'self'`,
+  ]
 
-  return cspDirectives.join('; ');
+  return cspDirectives.join('; ')
 }
 
 // ===================================
@@ -110,67 +110,45 @@ export function buildDevelopmentCSP(nonces: ReturnType<typeof generateNonces>): 
  * Hook para obtener nonces en componentes React
  */
 export function useNonces() {
-  const scriptNonce = getCurrentNonce('script');
-  const styleNonce = getCurrentNonce('style');
-  
+  const scriptNonce = getCurrentNonce('script')
+  const styleNonce = getCurrentNonce('style')
+
   return {
     script: scriptNonce,
     style: styleNonce,
     // Función helper para agregar nonce a scripts inline
-    addScriptNonce: (content: string) => 
+    addScriptNonce: (content: string) =>
       scriptNonce ? `<script nonce="${scriptNonce}">${content}</script>` : content,
     // Función helper para agregar nonce a estilos inline
-    addStyleNonce: (content: string) => 
-      styleNonce ? `<style nonce="${styleNonce}">${content}</style>` : content
-  };
+    addStyleNonce: (content: string) =>
+      styleNonce ? `<style nonce="${styleNonce}">${content}</style>` : content,
+  }
 }
 
 /**
  * Componente wrapper para scripts con nonce
  */
-export function NonceScript({ 
-  children, 
-  nonce 
-}: { 
-  children: string; 
-  nonce?: string; 
-}) {
-  const currentNonce = nonce || getCurrentNonce('script');
-  
+export function NonceScript({ children, nonce }: { children: string; nonce?: string }) {
+  const currentNonce = nonce || getCurrentNonce('script')
+
   if (!currentNonce) {
-    console.warn('No nonce available for script. CSP may block execution.');
-    return null;
+    console.warn('No nonce available for script. CSP may block execution.')
+    return null
   }
-  
-  return (
-    <script 
-      nonce={currentNonce}
-      dangerouslySetInnerHTML={{ __html: children }}
-    />
-  );
+
+  return <script nonce={currentNonce} dangerouslySetInnerHTML={{ __html: children }} />
 }
 
 /**
  * Componente wrapper para estilos con nonce
  */
-export function NonceStyle({ 
-  children, 
-  nonce 
-}: { 
-  children: string; 
-  nonce?: string; 
-}) {
-  const currentNonce = nonce || getCurrentNonce('style');
-  
+export function NonceStyle({ children, nonce }: { children: string; nonce?: string }) {
+  const currentNonce = nonce || getCurrentNonce('style')
+
   if (!currentNonce) {
-    console.warn('No nonce available for style. CSP may block execution.');
-    return null;
+    console.warn('No nonce available for style. CSP may block execution.')
+    return null
   }
-  
-  return (
-    <style 
-      nonce={currentNonce}
-      dangerouslySetInnerHTML={{ __html: children }}
-    />
-  );
+
+  return <style nonce={currentNonce} dangerouslySetInnerHTML={{ __html: children }} />
 }

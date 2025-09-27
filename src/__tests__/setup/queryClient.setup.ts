@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - SETUP QUERY CLIENT PARA TESTS
 // ===================================
 
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query'
 
 /**
  * Configuración global de QueryClient para tests
@@ -29,19 +29,19 @@ export const setupQueryClientForTests = () => {
       warn: () => {},
       error: () => {},
     },
-  });
+  })
 
-  return queryClient;
-};
+  return queryClient
+}
 
 /**
  * Limpiar QueryClient después de cada test
  */
 export const cleanupQueryClient = (queryClient: QueryClient) => {
-  queryClient.clear();
-  queryClient.getQueryCache().clear();
-  queryClient.getMutationCache().clear();
-};
+  queryClient.clear()
+  queryClient.getQueryCache().clear()
+  queryClient.getMutationCache().clear()
+}
 
 /**
  * Mock de datos para tests de búsqueda
@@ -66,7 +66,7 @@ export const mockSearchData = {
   total: 2,
   page: 1,
   totalPages: 1,
-};
+}
 
 /**
  * Mock de datos para trending searches
@@ -77,22 +77,9 @@ export const mockTrendingSearches = [
   'látex interior',
   'barniz marino',
   'imprimación',
-];
+]
 
 /**
  * Mock de datos para recent searches
  */
-export const mockRecentSearches = [
-  'pintura roja',
-  'esmalte negro',
-  'látex azul',
-];
-
-
-
-
-
-
-
-
-
+export const mockRecentSearches = ['pintura roja', 'esmalte negro', 'látex azul']

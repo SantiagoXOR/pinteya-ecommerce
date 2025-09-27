@@ -3,14 +3,18 @@
 // ===================================
 
 import { configureStore } from '@reduxjs/toolkit'
-import cartReducer, { addItemToCart, removeItemFromCart, removeAllItemsFromCart } from '@/redux/features/cart-slice'
-import { 
+import cartReducer, {
+  addItemToCart,
+  removeItemFromCart,
+  removeAllItemsFromCart,
+} from '@/redux/features/cart-slice'
+import {
   cartPersistenceMiddleware,
   loadCartFromStorage,
   clearCartFromStorage,
   migrateTemporaryCart,
   loadUserCart,
-  saveUserCart
+  saveUserCart,
 } from '@/redux/middleware/cartPersistence'
 
 // Mock localStorage
@@ -31,13 +35,13 @@ const localStorageMock = (() => {
     get length() {
       return Object.keys(store).length
     },
-    key: jest.fn((index: number) => Object.keys(store)[index] || null)
+    key: jest.fn((index: number) => Object.keys(store)[index] || null),
   }
 })()
 
 // Mock window object
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
+  value: localStorageMock,
 })
 
 // Simplificar tests - enfocarse en funcionalidad, no en logs de console
@@ -66,10 +70,9 @@ describe('Cart Persistence Middleware', () => {
     // Crear store con middleware
     store = configureStore({
       reducer: {
-        cartReducer
+        cartReducer,
       },
-      middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(cartPersistenceMiddleware)
+      middleware: getDefaultMiddleware => getDefaultMiddleware().concat(cartPersistenceMiddleware),
     })
   })
 
@@ -136,7 +139,7 @@ describe('Cart Persistence Middleware', () => {
       const cartData = {
         items: [mockProduct],
         timestamp: Date.now(),
-        version: '1.0.0'
+        version: '1.0.0',
       }
 
       localStorageMock.setItem('pinteya-cart', JSON.stringify(cartData))
@@ -148,8 +151,8 @@ describe('Cart Persistence Middleware', () => {
     it('should return empty array and clear localStorage for expired data', () => {
       const expiredData = {
         items: [mockProduct],
-        timestamp: Date.now() - (8 * 24 * 60 * 60 * 1000), // 8 días atrás
-        version: '1.0.0'
+        timestamp: Date.now() - 8 * 24 * 60 * 60 * 1000, // 8 días atrás
+        version: '1.0.0',
       }
 
       localStorageMock.setItem('pinteya-cart', JSON.stringify(expiredData))
@@ -184,9 +187,9 @@ describe('Cart Persistence Middleware', () => {
   describe('clearCartFromStorage', () => {
     it('should remove cart data from localStorage', () => {
       localStorageMock.setItem('pinteya-cart', 'some-data')
-      
+
       clearCartFromStorage()
-      
+
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('pinteya-cart')
     })
 
@@ -269,7 +272,7 @@ describe('Cart Persistence Middleware', () => {
       // Agregar múltiples productos
       store.dispatch(addItemToCart(mockProduct))
       store.dispatch(addItemToCart({ ...mockProduct, id: 2 }))
-      
+
       await new Promise(resolve => setTimeout(resolve, 150))
 
       // Verificar que el estado del carrito se actualizó correctamente
@@ -286,12 +289,3 @@ describe('Cart Persistence Middleware', () => {
     })
   })
 })
-
-
-
-
-
-
-
-
-

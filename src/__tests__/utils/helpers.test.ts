@@ -2,10 +2,10 @@
 // PINTEYA E-COMMERCE - TEST UTILITY HELPERS
 // ===================================
 
-import { 
-  formatPrice, 
-  calculateDiscount, 
-  validateEmail, 
+import {
+  formatPrice,
+  calculateDiscount,
+  validateEmail,
   generateSlug,
   formatPhoneNumber,
   calculateShipping,
@@ -17,7 +17,7 @@ describe('Utility Helpers', () => {
   describe('formatPrice', () => {
     it('formats prices correctly for Argentine pesos', () => {
       expect(formatPrice(1000)).toBe('$1.000')
-      expect(formatPrice(1500.50)).toBe('$1.501') // Rounded
+      expect(formatPrice(1500.5)).toBe('$1.501') // Rounded
       expect(formatPrice(10000)).toBe('$10.000')
       expect(formatPrice(0)).toBe('$0')
     })
@@ -80,7 +80,9 @@ describe('Utility Helpers', () => {
 
   describe('generateSlug', () => {
     it('generates slugs from product names', () => {
-      expect(generateSlug('Sherwin Williams ProClassic Blanco 4L')).toBe('sherwin-williams-proclassic-blanco-4l')
+      expect(generateSlug('Sherwin Williams ProClassic Blanco 4L')).toBe(
+        'sherwin-williams-proclassic-blanco-4l'
+      )
       expect(generateSlug('Pintura Látex Interior')).toBe('pintura-latex-interior')
       expect(generateSlug('Set 3 Pinceles Profesionales')).toBe('set-3-pinceles-profesionales')
     })
@@ -218,12 +220,3 @@ describe('Utility Helpers', () => {
     })
   })
 })
-
-
-
-
-
-
-
-
-

@@ -1,84 +1,88 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // PINTEYA E-COMMERCE - MERCADOPAGO ADVANCED PREFERENCES API
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/config';
-import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
-import { metricsCollector } from '@/lib/enterprise/metrics';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth/config'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  RATE_LIMIT_CONFIGS,
+} from '@/lib/enterprise/rate-limiter'
+import { metricsCollector } from '@/lib/enterprise/metrics'
 
 // Configuraciones avanzadas de preferencias según documentación oficial
 interface AdvancedPreferenceConfig {
   // Exclusión de medios de pago
   excluded_payment_methods?: Array<{
-    id: string;
-  }>;
+    id: string
+  }>
   excluded_payment_types?: Array<{
-    id: string;
-  }>;
-  
+    id: string
+  }>
+
   // Configuración de cuotas
   installments?: {
-    default_installments?: number;
-    max_installments?: number;
-    min_installments?: number;
-  };
-  
+    default_installments?: number
+    max_installments?: number
+    min_installments?: number
+  }
+
   // Configuración de envío
   shipments?: {
-    mode?: 'not_specified' | 'custom' | 'me2';
-    cost?: number;
-    free_shipping?: boolean;
+    mode?: 'not_specified' | 'custom' | 'me2'
+    cost?: number
+    free_shipping?: boolean
     receiver_address?: {
-      zip_code?: string;
-      street_name?: string;
-      street_number?: string;
-      floor?: string;
-      apartment?: string;
-      city_name?: string;
-      state_name?: string;
-      country_name?: string;
-    };
-  };
-  
+      zip_code?: string
+      street_name?: string
+      street_number?: string
+      floor?: string
+      apartment?: string
+      city_name?: string
+      state_name?: string
+      country_name?: string
+    }
+  }
+
   // Configuración de descuentos
   differential_pricing?: {
-    id: number;
-  };
-  
+    id: number
+  }
+
   // Configuración de marketplace
-  marketplace_fee?: number;
-  
+  marketplace_fee?: number
+
   // Configuración de notificaciones
-  notification_url?: string;
-  
+  notification_url?: string
+
   // Configuración de URLs de retorno
   back_urls?: {
-    success?: string;
-    failure?: string;
-    pending?: string;
-  };
-  
+    success?: string
+    failure?: string
+    pending?: string
+  }
+
   // Configuración de expiración
-  expires?: boolean;
-  expiration_date_from?: string;
-  expiration_date_to?: string;
-  
+  expires?: boolean
+  expiration_date_from?: string
+  expiration_date_to?: string
+
   // Configuración de modo binario
-  binary_mode?: boolean;
-  
+  binary_mode?: boolean
+
   // Configuración de procesamiento externo
-  processing_modes?: string[];
-  
+  processing_modes?: string[]
+
   // Configuración de propósito
-  purpose?: string;
-  
+  purpose?: string
+
   // Configuración de sponsor
-  sponsor_id?: number;
+  sponsor_id?: number
 }
 
 /**
@@ -86,38 +90,32 @@ interface AdvancedPreferenceConfig {
  * Obtiene configuraciones de preferencias disponibles
  */
 export async function GET(request: NextRequest) {
-  const startTime = Date.now();
-  const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+  const startTime = Date.now()
+  const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
 
   try {
     // Verificar autenticación
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
     }
 
     // Rate limiting
-    const rateLimitResult = await checkRateLimit(
-      request,
-      RATE_LIMIT_CONFIGS.QUERY_API
-    );
+    const rateLimitResult = await checkRateLimit(request, RATE_LIMIT_CONFIGS.QUERY_API)
 
     if (!rateLimitResult.success) {
       const response = NextResponse.json(
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
-      );
-      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
-      return response;
+      )
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API)
+      return response
     }
 
     logger.info(LogCategory.API, 'Preferences config request', {
       userId,
       clientIP,
-    });
+    })
 
     // Configuraciones disponibles según documentación de MercadoPago
     const availableConfigurations = {
@@ -166,7 +164,7 @@ export async function GET(request: NextRequest) {
         { id: 'onboarding_credits', name: 'Créditos de Onboarding' },
         { id: 'wallet_purchase', name: 'Compra con Wallet' },
       ],
-    };
+    }
 
     // Configuración actual del sistema
     const currentConfig: AdvancedPreferenceConfig = {
@@ -190,7 +188,7 @@ export async function GET(request: NextRequest) {
         pending: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/pending`,
       },
       notification_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payments/webhook`,
-    };
+    }
 
     // Registrar métricas
     await metricsCollector.recordRequest(
@@ -199,12 +197,12 @@ export async function GET(request: NextRequest) {
       200,
       Date.now() - startTime,
       { userId }
-    );
+    )
 
     logger.info(LogCategory.API, 'Preferences config retrieved', {
       userId,
       processingTime: Date.now() - startTime,
-    });
+    })
 
     const response = NextResponse.json({
       success: true,
@@ -224,34 +222,34 @@ export async function GET(request: NextRequest) {
       },
       timestamp: Date.now(),
       processing_time: Date.now() - startTime,
-    });
+    })
 
-    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
-    return response;
-
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API)
+    return response
   } catch (error) {
-    const processingTime = Date.now() - startTime;
-    
-    logger.performance(LogLevel.ERROR, 'Preferences config failed', {
-      operation: 'preferences-config-api',
-      duration: processingTime,
-      statusCode: 500,
-    }, {
-      clientIP,
-    });
+    const processingTime = Date.now() - startTime
 
-    await metricsCollector.recordRequest(
-      '/api/payments/preferences',
-      'GET',
-      500,
-      processingTime,
-      { error: (error as Error).message }
-    );
+    logger.performance(
+      LogLevel.ERROR,
+      'Preferences config failed',
+      {
+        operation: 'preferences-config-api',
+        duration: processingTime,
+        statusCode: 500,
+      },
+      {
+        clientIP,
+      }
+    )
+
+    await metricsCollector.recordRequest('/api/payments/preferences', 'GET', 500, processingTime, {
+      error: (error as Error).message,
+    })
 
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -260,8 +258,8 @@ export async function GET(request: NextRequest) {
  * Actualiza configuraciones de preferencias (ENTERPRISE)
  */
 const postHandler = async (request: NextRequest) => {
-  const startTime = Date.now();
-  const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+  const startTime = Date.now()
+  const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
 
   try {
     // ENTERPRISE: Verificar autenticación con contexto completo
@@ -269,40 +267,37 @@ const postHandler = async (request: NextRequest) => {
       securityLevel: 'high',
       enableJWTValidation: true,
       enableCSRFProtection: true,
-      enableRateLimit: false // Rate limiting manejado por middleware
-    });
+      enableRateLimit: false, // Rate limiting manejado por middleware
+    })
 
     if (!authResult.success) {
       return NextResponse.json(
         {
           error: authResult.error,
           code: authResult.code,
-          enterprise: true
+          enterprise: true,
         },
         { status: authResult.status || 401 }
-      );
+      )
     }
 
-    const context = authResult.context!;
-    const userId = context.userId;
+    const context = authResult.context!
+    const userId = context.userId
 
     // Rate limiting manejado por middleware enterprise
 
-    const config: AdvancedPreferenceConfig = await request.json();
+    const config: AdvancedPreferenceConfig = await request.json()
 
     logger.info(LogCategory.API, 'Preferences config update started', {
       userId,
       config: JSON.stringify(config),
       clientIP,
-    });
+    })
 
     // Validar configuración
-    const validationResult = validatePreferenceConfig(config);
+    const validationResult = validatePreferenceConfig(config)
     if (!validationResult.valid) {
-      return NextResponse.json(
-        { success: false, error: validationResult.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: validationResult.error }, { status: 400 })
     }
 
     // En una implementación real, aquí se guardaría la configuración en base de datos
@@ -311,7 +306,7 @@ const postHandler = async (request: NextRequest) => {
       ...config,
       updated_at: new Date().toISOString(),
       updated_by: userId,
-    };
+    }
 
     // Registrar métricas
     await metricsCollector.recordRequest(
@@ -320,13 +315,13 @@ const postHandler = async (request: NextRequest) => {
       200,
       Date.now() - startTime,
       { userId, configKeys: Object.keys(config).join(',') }
-    );
+    )
 
     logger.info(LogCategory.API, 'Preferences config updated successfully', {
       userId,
       configKeys: Object.keys(config),
       processingTime: Date.now() - startTime,
-    });
+    })
 
     const response = NextResponse.json({
       success: true,
@@ -336,107 +331,100 @@ const postHandler = async (request: NextRequest) => {
       },
       timestamp: Date.now(),
       processing_time: Date.now() - startTime,
-    });
+    })
 
-    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
-    return response;
-
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API)
+    return response
   } catch (error) {
-    const processingTime = Date.now() - startTime;
-    
-    logger.performance(LogLevel.ERROR, 'Preferences config update failed', {
-      operation: 'preferences-config-update-api',
-      duration: processingTime,
-      statusCode: 500,
-    }, {
-      clientIP,
-    });
+    const processingTime = Date.now() - startTime
 
-    await metricsCollector.recordRequest(
-      '/api/payments/preferences',
-      'POST',
-      500,
-      processingTime,
-      { error: (error as Error).message }
-    );
+    logger.performance(
+      LogLevel.ERROR,
+      'Preferences config update failed',
+      {
+        operation: 'preferences-config-update-api',
+        duration: processingTime,
+        statusCode: 500,
+      },
+      {
+        clientIP,
+      }
+    )
+
+    await metricsCollector.recordRequest('/api/payments/preferences', 'POST', 500, processingTime, {
+      error: (error as Error).message,
+    })
 
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
-    );
+    )
   }
 }
 
 /**
  * Valida la configuración de preferencias
  */
-function validatePreferenceConfig(config: AdvancedPreferenceConfig): { valid: boolean; error?: string } {
+function validatePreferenceConfig(config: AdvancedPreferenceConfig): {
+  valid: boolean
+  error?: string
+} {
   // Validar cuotas
   if (config.installments) {
-    const { min_installments, max_installments, default_installments } = config.installments;
-    
+    const { min_installments, max_installments, default_installments } = config.installments
+
     if (min_installments && min_installments < 1) {
-      return { valid: false, error: 'Las cuotas mínimas deben ser al menos 1' };
+      return { valid: false, error: 'Las cuotas mínimas deben ser al menos 1' }
     }
-    
+
     if (max_installments && max_installments > 24) {
-      return { valid: false, error: 'Las cuotas máximas no pueden ser más de 24' };
+      return { valid: false, error: 'Las cuotas máximas no pueden ser más de 24' }
     }
-    
+
     if (min_installments && max_installments && min_installments > max_installments) {
-      return { valid: false, error: 'Las cuotas mínimas no pueden ser mayores a las máximas' };
+      return { valid: false, error: 'Las cuotas mínimas no pueden ser mayores a las máximas' }
     }
-    
+
     if (default_installments && min_installments && default_installments < min_installments) {
-      return { valid: false, error: 'Las cuotas por defecto no pueden ser menores a las mínimas' };
+      return { valid: false, error: 'Las cuotas por defecto no pueden ser menores a las mínimas' }
     }
-    
+
     if (default_installments && max_installments && default_installments > max_installments) {
-      return { valid: false, error: 'Las cuotas por defecto no pueden ser mayores a las máximas' };
+      return { valid: false, error: 'Las cuotas por defecto no pueden ser mayores a las máximas' }
     }
   }
 
   // Validar envíos
   if (config.shipments) {
-    const { mode, cost } = config.shipments;
-    
+    const { mode, cost } = config.shipments
+
     if (mode && !['not_specified', 'custom', 'me2'].includes(mode)) {
-      return { valid: false, error: 'Modo de envío inválido' };
+      return { valid: false, error: 'Modo de envío inválido' }
     }
-    
+
     if (cost && cost < 0) {
-      return { valid: false, error: 'El costo de envío no puede ser negativo' };
+      return { valid: false, error: 'El costo de envío no puede ser negativo' }
     }
   }
 
   // Validar fechas de expiración
   if (config.expiration_date_from && config.expiration_date_to) {
-    const dateFrom = new Date(config.expiration_date_from);
-    const dateTo = new Date(config.expiration_date_to);
-    
+    const dateFrom = new Date(config.expiration_date_from)
+    const dateTo = new Date(config.expiration_date_to)
+
     if (dateFrom >= dateTo) {
-      return { valid: false, error: 'La fecha de inicio debe ser anterior a la fecha de fin' };
+      return { valid: false, error: 'La fecha de inicio debe ser anterior a la fecha de fin' }
     }
-    
+
     if (dateTo <= new Date()) {
-      return { valid: false, error: 'La fecha de expiración debe ser futura' };
+      return { valid: false, error: 'La fecha de expiración debe ser futura' }
     }
   }
 
   // Validar marketplace fee
   if (config.marketplace_fee && (config.marketplace_fee < 0 || config.marketplace_fee > 100)) {
-    return { valid: false, error: 'La comisión de marketplace debe estar entre 0 y 100%' };
+    return { valid: false, error: 'La comisión de marketplace debe estar entre 0 y 100%' }
   }
 
-  return { valid: true };
+  return { valid: true }
 }
-
-
-
-
-
-
-
-
-
-

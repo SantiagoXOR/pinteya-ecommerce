@@ -2,8 +2,8 @@
 // PINTEYA E-COMMERCE - FUNCIONES DE API PARA PRODUCTOS
 // ===================================
 
-import { ProductFilters, ProductWithCategory, ApiResponse, PaginatedResponse } from '@/types/api';
-import { safeApiResponseJson } from '@/lib/json-utils';
+import { ProductFilters, ProductWithCategory, ApiResponse, PaginatedResponse } from '@/types/api'
+import { safeApiResponseJson } from '@/lib/json-utils'
 
 // ===================================
 // FUNCIONES PARA EL FRONTEND
@@ -20,17 +20,17 @@ export async function getProducts(
   signal?: AbortSignal
 ): Promise<PaginatedResponse<ProductWithCategory>> {
   try {
-    const searchParams = new URLSearchParams();
+    const searchParams = new URLSearchParams()
 
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          searchParams.append(key, value.toString());
+          searchParams.append(key, value.toString())
         }
-      });
+      })
     }
 
-    const url = `/api/products?${searchParams.toString()}`;
+    const url = `/api/products?${searchParams.toString()}`
 
     const response = await fetch(url, {
       method: 'GET',
@@ -38,13 +38,13 @@ export async function getProducts(
         'Content-Type': 'application/json',
       },
       signal, // Agregar soporte para AbortController
-    });
+    })
 
     // Usar parsing seguro de JSON
-    const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response);
+    const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response)
 
     if (!result.success) {
-      console.error('❌ JSON parsing failed:', result.error);
+      console.error('❌ JSON parsing failed:', result.error)
 
       // Return a fallback response instead of throwing
       return {
@@ -57,11 +57,11 @@ export async function getProducts(
         },
         success: false,
         message: result.error || 'Error loading products',
-      };
+      }
     }
 
     if (!result.data) {
-      console.error('❌ Result data is null');
+      console.error('❌ Result data is null')
 
       // Return a fallback response instead of throwing
       return {
@@ -74,14 +74,14 @@ export async function getProducts(
         },
         success: false,
         message: 'Error: respuesta nula del servidor',
-      };
+      }
     }
 
-    return result.data;
+    return result.data
   } catch (error) {
     // Solo loggear errores que no sean AbortError
     if (error instanceof Error && error.name !== 'AbortError') {
-      console.error('❌ Error obteniendo productos:', error);
+      console.error('❌ Error obteniendo productos:', error)
     }
 
     // Return a fallback response instead of throwing
@@ -95,7 +95,7 @@ export async function getProducts(
       },
       success: false,
       message: error instanceof Error ? error.message : 'Error inesperado',
-    };
+    }
   }
 }
 
@@ -111,19 +111,19 @@ export async function getProductById(id: number): Promise<ApiResponse<ProductWit
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    })
 
     // Usar parsing seguro de JSON
-    const result = await safeApiResponseJson<ApiResponse<ProductWithCategory>>(response);
+    const result = await safeApiResponseJson<ApiResponse<ProductWithCategory>>(response)
 
     if (!result || !result.success || !result.data) {
-      throw new Error(result?.error || 'Error parsing API response');
+      throw new Error(result?.error || 'Error parsing API response')
     }
 
-    return result.data;
+    return result.data
   } catch (error) {
-    console.error(`Error obteniendo producto ${id}:`, error);
-    throw error;
+    console.error(`Error obteniendo producto ${id}:`, error)
+    throw error
   }
 }
 
@@ -134,14 +134,14 @@ export async function getProductById(id: number): Promise<ApiResponse<ProductWit
  * @returns Promise<PaginatedResponse<ProductWithCategory>>
  */
 export async function searchProducts(
-  searchTerm: string, 
+  searchTerm: string,
   limit: number = 12
 ): Promise<PaginatedResponse<ProductWithCategory>> {
   return getProducts({
     search: searchTerm,
     limit,
     page: 1,
-  });
+  })
 }
 
 /**
@@ -160,7 +160,7 @@ export async function getProductsByCategory(
     category: categorySlug,
     page,
     limit,
-  });
+  })
 }
 
 /**
@@ -175,17 +175,17 @@ export async function getDiscountedProducts(
 ): Promise<PaginatedResponse<ProductWithCategory>> {
   // Nota: Esto requeriría un filtro adicional en la API
   // Por ahora, obtenemos todos los productos y filtramos en el frontend
-  const response = await getProducts({ page, limit });
+  const response = await getProducts({ page, limit })
 
   // Filtrar productos con descuento
   const discountedProducts = response.data.filter(
     product => product.discounted_price && product.discounted_price < product.price
-  );
+  )
 
   return {
     ...response,
     data: discountedProducts,
-  };
+  }
 }
 
 /**
@@ -204,7 +204,7 @@ export async function getProductsByBrand(
     brand: brandName,
     page,
     limit,
-  });
+  })
 }
 
 /**
@@ -226,28 +226,25 @@ export async function getRelatedProducts(
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    })
 
     // Usar parsing seguro de JSON
-    const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response);
+    const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response)
 
     if (!result || !result.success || !result.data) {
-      throw new Error(result?.error || 'Error parsing API response');
+      throw new Error(result?.error || 'Error parsing API response')
     }
 
-    const data = result.data;
+    const data = result.data
 
     // Filtrar el producto actual y limitar resultados
-    return data.data
-      .filter(product => product.id !== productId)
-      .slice(0, limit);
-
+    return data.data.filter(product => product.id !== productId).slice(0, limit)
   } catch (error) {
     // Solo loggear errores que no sean AbortError
     if (error instanceof Error && error.name !== 'AbortError') {
-      console.error('Error obteniendo productos relacionados:', error);
+      console.error('Error obteniendo productos relacionados:', error)
     }
-    return [];
+    return []
   }
 }
 
@@ -274,7 +271,7 @@ export function convertLegacyProduct(oldProduct: any): ProductWithCategory {
     images: oldProduct.imgs,
     created_at: new Date().toISOString(),
     updated_at: null, // Campo requerido por el tipo
-  };
+  }
 }
 
 /**
@@ -288,10 +285,10 @@ export function calculateDiscountPercentage(
   discountedPrice: number
 ): number {
   if (!discountedPrice || discountedPrice >= originalPrice) {
-    return 0;
+    return 0
   }
-  
-  return Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
+
+  return Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
 }
 
 /**
@@ -306,7 +303,7 @@ export function formatPrice(price: number, currency: string = 'ARS'): string {
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(price);
+  }).format(price)
 }
 
 /**
@@ -315,7 +312,7 @@ export function formatPrice(price: number, currency: string = 'ARS'): string {
  * @returns boolean
  */
 export function isProductInStock(product: ProductWithCategory): boolean {
-  return product.stock > 0;
+  return product.stock > 0
 }
 
 /**
@@ -325,21 +322,12 @@ export function isProductInStock(product: ProductWithCategory): boolean {
  */
 export function getProductMainImage(product: ProductWithCategory): string {
   if (product.images?.previews?.[0]) {
-    return product.images.previews[0];
+    return product.images.previews[0]
   }
-  
+
   if (product.images?.thumbnails?.[0]) {
-    return product.images.thumbnails[0];
+    return product.images.thumbnails[0]
   }
-  
-  return '/images/products/placeholder.jpg';
+
+  return '/images/products/placeholder.jpg'
 }
-
-
-
-
-
-
-
-
-

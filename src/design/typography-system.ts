@@ -16,18 +16,12 @@ export const fontFamilies = {
     'Oxygen',
     'Ubuntu',
     'Cantarell',
-    'sans-serif'
+    'sans-serif',
   ].join(', '),
-  
+
   // Fuente secundaria - Para títulos y elementos destacados
-  secondary: [
-    'Poppins',
-    'Inter',
-    '-apple-system',
-    'BlinkMacSystemFont',
-    'sans-serif'
-  ].join(', '),
-  
+  secondary: ['Poppins', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'].join(', '),
+
   // Fuente monoespaciada - Para códigos y datos técnicos
   mono: [
     'JetBrains Mono',
@@ -36,26 +30,26 @@ export const fontFamilies = {
     'Consolas',
     'Liberation Mono',
     'Courier New',
-    'monospace'
-  ].join(', ')
-};
+    'monospace',
+  ].join(', '),
+}
 
 // Escala tipográfica modular (ratio 1.25 - Major Third)
 export const fontSizes = {
-  xs: '0.75rem',    // 12px
-  sm: '0.875rem',   // 14px
-  base: '1rem',     // 16px
-  lg: '1.125rem',   // 18px
-  xl: '1.25rem',    // 20px
-  '2xl': '1.5rem',  // 24px
+  xs: '0.75rem', // 12px
+  sm: '0.875rem', // 14px
+  base: '1rem', // 16px
+  lg: '1.125rem', // 18px
+  xl: '1.25rem', // 20px
+  '2xl': '1.5rem', // 24px
   '3xl': '1.875rem', // 30px
-  '4xl': '2.25rem',  // 36px
-  '5xl': '3rem',     // 48px
-  '6xl': '3.75rem',  // 60px
-  '7xl': '4.5rem',   // 72px
-  '8xl': '6rem',     // 96px
-  '9xl': '8rem'      // 128px
-};
+  '4xl': '2.25rem', // 36px
+  '5xl': '3rem', // 48px
+  '6xl': '3.75rem', // 60px
+  '7xl': '4.5rem', // 72px
+  '8xl': '6rem', // 96px
+  '9xl': '8rem', // 128px
+}
 
 // Pesos de fuente
 export const fontWeights = {
@@ -67,8 +61,8 @@ export const fontWeights = {
   semibold: '600',
   bold: '700',
   extrabold: '800',
-  black: '900'
-};
+  black: '900',
+}
 
 // Alturas de línea optimizadas para legibilidad
 export const lineHeights = {
@@ -77,8 +71,8 @@ export const lineHeights = {
   snug: '1.375',
   normal: '1.5',
   relaxed: '1.625',
-  loose: '2'
-};
+  loose: '2',
+}
 
 // Espaciado entre letras
 export const letterSpacing = {
@@ -87,8 +81,8 @@ export const letterSpacing = {
   normal: '0em',
   wide: '0.025em',
   wider: '0.05em',
-  widest: '0.1em'
-};
+  widest: '0.1em',
+}
 
 // Jerarquía tipográfica para diferentes elementos
 export const typography = {
@@ -101,13 +95,13 @@ export const typography = {
     letterSpacing: letterSpacing.tight,
     // Responsive
     mobile: {
-      fontSize: fontSizes['2xl']
+      fontSize: fontSizes['2xl'],
     },
     tablet: {
-      fontSize: fontSizes['3xl']
-    }
+      fontSize: fontSizes['3xl'],
+    },
   },
-  
+
   h2: {
     fontFamily: fontFamilies.secondary,
     fontSize: fontSizes['3xl'],
@@ -115,13 +109,13 @@ export const typography = {
     lineHeight: lineHeights.tight,
     letterSpacing: letterSpacing.tight,
     mobile: {
-      fontSize: fontSizes.xl
+      fontSize: fontSizes.xl,
     },
     tablet: {
-      fontSize: fontSizes['2xl']
-    }
+      fontSize: fontSizes['2xl'],
+    },
   },
-  
+
   h3: {
     fontFamily: fontFamilies.secondary,
     fontSize: fontSizes['2xl'],
@@ -129,13 +123,13 @@ export const typography = {
     lineHeight: lineHeights.snug,
     letterSpacing: letterSpacing.normal,
     mobile: {
-      fontSize: fontSizes.lg
+      fontSize: fontSizes.lg,
     },
     tablet: {
-      fontSize: fontSizes.xl
-    }
+      fontSize: fontSizes.xl,
+    },
   },
-  
+
   h4: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.xl,
@@ -143,178 +137,183 @@ export const typography = {
     lineHeight: lineHeights.snug,
     letterSpacing: letterSpacing.normal,
     mobile: {
-      fontSize: fontSizes.base
-    }
+      fontSize: fontSizes.base,
+    },
   },
-  
+
   h5: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacing.normal
+    letterSpacing: letterSpacing.normal,
   },
-  
+
   h6: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.base,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacing.wide
+    letterSpacing: letterSpacing.wide,
   },
-  
+
   // Texto de cuerpo
   body: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.base,
     fontWeight: fontWeights.normal,
     lineHeight: lineHeights.relaxed,
-    letterSpacing: letterSpacing.normal
+    letterSpacing: letterSpacing.normal,
   },
-  
+
   bodyLarge: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.lg,
     fontWeight: fontWeights.normal,
     lineHeight: lineHeights.relaxed,
-    letterSpacing: letterSpacing.normal
+    letterSpacing: letterSpacing.normal,
   },
-  
+
   bodySmall: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.sm,
     fontWeight: fontWeights.normal,
     lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacing.normal
+    letterSpacing: letterSpacing.normal,
   },
-  
+
   // Elementos de interfaz
   button: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.base,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.none,
-    letterSpacing: letterSpacing.wide
+    letterSpacing: letterSpacing.wide,
   },
-  
+
   buttonLarge: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.lg,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.none,
-    letterSpacing: letterSpacing.wide
+    letterSpacing: letterSpacing.wide,
   },
-  
+
   buttonSmall: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.sm,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.none,
-    letterSpacing: letterSpacing.wider
+    letterSpacing: letterSpacing.wider,
   },
-  
+
   // Navegación y menús
   nav: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.base,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.none,
-    letterSpacing: letterSpacing.normal
+    letterSpacing: letterSpacing.normal,
   },
-  
+
   navSmall: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.sm,
     fontWeight: fontWeights.normal,
     lineHeight: lineHeights.none,
-    letterSpacing: letterSpacing.normal
+    letterSpacing: letterSpacing.normal,
   },
-  
+
   // Precios y elementos comerciales
   price: {
     fontFamily: fontFamilies.secondary,
     fontSize: fontSizes.xl,
     fontWeight: fontWeights.bold,
     lineHeight: lineHeights.none,
-    letterSpacing: letterSpacing.tight
+    letterSpacing: letterSpacing.tight,
   },
-  
+
   priceSmall: {
     fontFamily: fontFamilies.secondary,
     fontSize: fontSizes.lg,
     fontWeight: fontWeights.semibold,
     lineHeight: lineHeights.none,
-    letterSpacing: letterSpacing.normal
+    letterSpacing: letterSpacing.normal,
   },
-  
+
   // Etiquetas y badges
   label: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.sm,
     fontWeight: fontWeights.medium,
     lineHeight: lineHeights.none,
-    letterSpacing: letterSpacing.wide
+    letterSpacing: letterSpacing.wide,
   },
-  
+
   caption: {
     fontFamily: fontFamilies.primary,
     fontSize: fontSizes.xs,
     fontWeight: fontWeights.normal,
     lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacing.wide
+    letterSpacing: letterSpacing.wide,
   },
-  
+
   // Código y elementos técnicos
   code: {
     fontFamily: fontFamilies.mono,
     fontSize: fontSizes.sm,
     fontWeight: fontWeights.normal,
     lineHeight: lineHeights.normal,
-    letterSpacing: letterSpacing.normal
-  }
-};
+    letterSpacing: letterSpacing.normal,
+  },
+}
 
 // Utilidades para generar clases CSS
 export const typographyUtils = {
   // Generar clase CSS para un elemento tipográfico
   generateCSS: (element: keyof typeof typography) => {
-    const styles = typography[element];
+    const styles = typography[element]
     return {
       fontFamily: styles.fontFamily,
       fontSize: styles.fontSize,
       fontWeight: styles.fontWeight,
       lineHeight: styles.lineHeight,
-      letterSpacing: styles.letterSpacing
-    };
+      letterSpacing: styles.letterSpacing,
+    }
   },
-  
+
   // Generar clases responsive
   generateResponsiveCSS: (element: keyof typeof typography) => {
-    const styles = typography[element];
+    const styles = typography[element]
     const css: any = {
       fontFamily: styles.fontFamily,
       fontSize: styles.fontSize,
       fontWeight: styles.fontWeight,
       lineHeight: styles.lineHeight,
-      letterSpacing: styles.letterSpacing
-    };
-    
+      letterSpacing: styles.letterSpacing,
+    }
+
     if ('mobile' in styles) {
-      css['@media (max-width: 640px)'] = styles.mobile;
+      css['@media (max-width: 640px)'] = styles.mobile
     }
-    
+
     if ('tablet' in styles) {
-      css['@media (min-width: 641px) and (max-width: 1024px)'] = styles.tablet;
+      css['@media (min-width: 641px) and (max-width: 1024px)'] = styles.tablet
     }
-    
-    return css;
+
+    return css
   },
-  
+
   // Calcular tamaño de fuente fluido
-  fluidFontSize: (minSize: string, maxSize: string, minViewport = '320px', maxViewport = '1200px') => {
-    return `clamp(${minSize}, calc(${minSize} + (${maxSize} - ${minSize}) * ((100vw - ${minViewport}) / (${maxViewport} - ${minViewport}))), ${maxSize})`;
-  }
-};
+  fluidFontSize: (
+    minSize: string,
+    maxSize: string,
+    minViewport = '320px',
+    maxViewport = '1200px'
+  ) => {
+    return `clamp(${minSize}, calc(${minSize} + (${maxSize} - ${minSize}) * ((100vw - ${minViewport}) / (${maxViewport} - ${minViewport}))), ${maxSize})`
+  },
+}
 
 // Configuración para Tailwind CSS
 export const tailwindTypographyConfig = {
@@ -322,8 +321,8 @@ export const tailwindTypographyConfig = {
   fontSize: fontSizes,
   fontWeight: fontWeights,
   lineHeight: lineHeights,
-  letterSpacing: letterSpacing
-};
+  letterSpacing: letterSpacing,
+}
 
 // Presets para elementos comunes del e-commerce
 export const ecommerceTypography = {
@@ -336,8 +335,8 @@ export const ecommerceTypography = {
   navLink: typography.nav,
   breadcrumb: typography.navSmall,
   badge: typography.label,
-  metadata: typography.caption
-};
+  metadata: typography.caption,
+}
 
 // Configuración de accesibilidad tipográfica
 export const accessibilityTypography = {
@@ -345,15 +344,15 @@ export const accessibilityTypography = {
   maxLineLength: '75ch', // Longitud máxima de línea para legibilidad
   contrastRequirements: {
     normal: 4.5, // WCAG AA
-    large: 3.0,  // WCAG AA para texto grande (18px+ o 14px+ bold)
-    enhanced: 7.0 // WCAG AAA
+    large: 3.0, // WCAG AA para texto grande (18px+ o 14px+ bold)
+    enhanced: 7.0, // WCAG AAA
   },
   focusIndicators: {
     outlineWidth: '2px',
     outlineStyle: 'solid',
-    outlineOffset: '2px'
-  }
-};
+    outlineOffset: '2px',
+  },
+}
 
 // Exportar configuración completa
 export const typographySystem = {
@@ -366,16 +365,7 @@ export const typographySystem = {
   utils: typographyUtils,
   tailwind: tailwindTypographyConfig,
   ecommerce: ecommerceTypography,
-  accessibility: accessibilityTypography
-};
+  accessibility: accessibilityTypography,
+}
 
-export default typographySystem;
-
-
-
-
-
-
-
-
-
+export default typographySystem

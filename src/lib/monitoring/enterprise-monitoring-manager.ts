@@ -4,155 +4,155 @@
 // ===================================
 
 // Importar performance hooks solo en servidor
-const perfHooks = typeof window === 'undefined' ? require('perf_hooks') : null;
+const perfHooks = typeof window === 'undefined' ? require('perf_hooks') : null
 
 // ===================================
 // TIPOS Y INTERFACES ESPECÍFICAS
 // ===================================
 
 // Tipos base para métricas
-type MetricValue = number;
-type MetricTimestamp = Date;
-type MetricContext = Record<string, string | number | boolean>;
+type MetricValue = number
+type MetricTimestamp = Date
+type MetricContext = Record<string, string | number | boolean>
 
 // Interfaces específicas para Core Web Vitals
 interface CoreWebVitals {
-  lcp?: MetricValue; // Largest Contentful Paint
-  fid?: MetricValue; // First Input Delay
-  cls?: MetricValue; // Cumulative Layout Shift
+  lcp?: MetricValue // Largest Contentful Paint
+  fid?: MetricValue // First Input Delay
+  cls?: MetricValue // Cumulative Layout Shift
 }
 
 // Interfaces específicas para métricas personalizadas
 interface CustomPerformanceMetrics {
-  loadTime: MetricValue;
-  renderTime: MetricValue;
-  memoryUsage: MetricValue;
-  bundleSize: MetricValue;
+  loadTime: MetricValue
+  renderTime: MetricValue
+  memoryUsage: MetricValue
+  bundleSize: MetricValue
 }
 
 // Interfaces específicas para métricas de API
 interface ApiMetrics {
-  apiResponseTime: MetricValue;
-  apiErrorRate: MetricValue;
+  apiResponseTime: MetricValue
+  apiErrorRate: MetricValue
 }
 
 // Interfaces específicas para métricas de usuario
 interface UserMetrics {
-  sessionDuration: MetricValue;
-  pageViews: MetricValue;
-  bounceRate: MetricValue;
+  sessionDuration: MetricValue
+  pageViews: MetricValue
+  bounceRate: MetricValue
 }
 
 // Interface específica para contexto de métricas
 interface MetricsContext {
-  page: string;
-  userId?: string;
-  sessionId: string;
-  device: string;
-  browser: string;
+  page: string
+  userId?: string
+  sessionId: string
+  device: string
+  browser: string
 }
 
 interface ErrorEvent {
-  id: string;
-  timestamp: MetricTimestamp;
-  message: string;
-  stack?: string;
-  level: 'info' | 'warning' | 'error' | 'critical';
+  id: string
+  timestamp: MetricTimestamp
+  message: string
+  stack?: string
+  level: 'info' | 'warning' | 'error' | 'critical'
   context: {
-    userId?: string;
-    sessionId: string;
-    url: string;
-    userAgent: string;
-    component?: string;
-    action?: string;
-  };
-  tags: string[];
-  fingerprint: string;
-  count: number;
+    userId?: string
+    sessionId: string
+    url: string
+    userAgent: string
+    component?: string
+    action?: string
+  }
+  tags: string[]
+  fingerprint: string
+  count: number
 }
 
 interface PerformanceMetrics {
-  timestamp: MetricTimestamp;
-  metrics: CoreWebVitals & CustomPerformanceMetrics & ApiMetrics & UserMetrics;
-  context: MetricsContext;
+  timestamp: MetricTimestamp
+  metrics: CoreWebVitals & CustomPerformanceMetrics & ApiMetrics & UserMetrics
+  context: MetricsContext
 }
 
 // Tipos específicos para alertas
-type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
-type AlertOperator = '>' | '<' | '=' | '>=' | '<=';
-type AlertMetricName = string;
+type AlertSeverity = 'low' | 'medium' | 'high' | 'critical'
+type AlertOperator = '>' | '<' | '=' | '>=' | '<='
+type AlertMetricName = string
 
 // Interface específica para contexto de alertas
 interface AlertContext {
-  page?: string;
-  userId?: string;
-  sessionId?: string;
-  component?: string;
-  action?: string;
-  metadata?: Record<string, string | number | boolean>;
+  page?: string
+  userId?: string
+  sessionId?: string
+  component?: string
+  action?: string
+  metadata?: Record<string, string | number | boolean>
 }
 
 // Interfaces específicas para configuración de monitoreo
 interface ErrorTrackingConfig {
-  enabled: boolean;
-  sampleRate: number;
-  ignoreErrors: string[];
-  maxBreadcrumbs: number;
+  enabled: boolean
+  sampleRate: number
+  ignoreErrors: string[]
+  maxBreadcrumbs: number
 }
 
 interface PerformanceThresholds {
-  lcp: MetricValue;
-  fid: MetricValue;
-  cls: MetricValue;
-  loadTime: MetricValue;
+  lcp: MetricValue
+  fid: MetricValue
+  cls: MetricValue
+  loadTime: MetricValue
 }
 
 interface PerformanceConfig {
-  enabled: boolean;
-  sampleRate: number;
-  thresholds: PerformanceThresholds;
+  enabled: boolean
+  sampleRate: number
+  thresholds: PerformanceThresholds
 }
 
 interface AlertChannels {
-  email?: string[];
-  slack?: string;
-  webhook?: string;
+  email?: string[]
+  slack?: string
+  webhook?: string
 }
 
 interface AlertsConfig {
-  enabled: boolean;
-  channels: AlertChannels;
+  enabled: boolean
+  channels: AlertChannels
 }
 
 interface AlertRule {
-  id: string;
-  name: string;
-  metric: AlertMetricName;
-  threshold: MetricValue;
-  operator: AlertOperator;
-  severity: AlertSeverity;
-  enabled: boolean;
-  cooldown: number; // minutes
-  lastTriggered?: MetricTimestamp;
+  id: string
+  name: string
+  metric: AlertMetricName
+  threshold: MetricValue
+  operator: AlertOperator
+  severity: AlertSeverity
+  enabled: boolean
+  cooldown: number // minutes
+  lastTriggered?: MetricTimestamp
 }
 
 interface AlertEvent {
-  id: string;
-  ruleId: string;
-  timestamp: MetricTimestamp;
-  severity: AlertSeverity;
-  message: string;
-  value: MetricValue;
-  threshold: MetricValue;
-  context: AlertContext;
-  acknowledged: boolean;
-  resolvedAt?: MetricTimestamp;
+  id: string
+  ruleId: string
+  timestamp: MetricTimestamp
+  severity: AlertSeverity
+  message: string
+  value: MetricValue
+  threshold: MetricValue
+  context: AlertContext
+  acknowledged: boolean
+  resolvedAt?: MetricTimestamp
 }
 
 interface MonitoringConfig {
-  errorTracking: ErrorTrackingConfig;
-  performance: PerformanceConfig;
-  alerts: AlertsConfig;
+  errorTracking: ErrorTrackingConfig
+  performance: PerformanceConfig
+  alerts: AlertsConfig
 }
 
 // ===================================
@@ -161,19 +161,19 @@ interface MonitoringConfig {
 
 // Interface para Navigation Timing
 interface NavigationTiming extends PerformanceEntry {
-  loadEventEnd: number;
-  loadEventStart: number;
-  domContentLoadedEventEnd: number;
-  domContentLoadedEventStart: number;
+  loadEventEnd: number
+  loadEventStart: number
+  domContentLoadedEventEnd: number
+  domContentLoadedEventStart: number
 }
 
 // Interface para Performance Memory
 interface PerformanceMemory {
-  usedJSHeapSize: number;
+  usedJSHeapSize: number
 }
 
 interface PerformanceWithMemory extends Performance {
-  memory?: PerformanceMemory;
+  memory?: PerformanceMemory
 }
 
 // ===================================
@@ -183,29 +183,29 @@ interface PerformanceWithMemory extends Performance {
 // ===================================
 
 class EnterpriseMonitoringManager {
-  private static instance: EnterpriseMonitoringManager;
-  private config: MonitoringConfig;
-  private errors: Map<string, ErrorEvent> = new Map();
-  private performanceData: PerformanceMetrics[] = [];
-  private alertRules: Map<string, AlertRule> = new Map();
-  private activeAlerts: Map<string, AlertEvent> = new Map();
-  private sessionId: string;
+  private static instance: EnterpriseMonitoringManager
+  private config: MonitoringConfig
+  private errors: Map<string, ErrorEvent> = new Map()
+  private performanceData: PerformanceMetrics[] = []
+  private alertRules: Map<string, AlertRule> = new Map()
+  private activeAlerts: Map<string, AlertEvent> = new Map()
+  private sessionId: string
 
   constructor(config: MonitoringConfig) {
-    this.config = config;
-    this.sessionId = this.generateSessionId();
-    this.initializeDefaultAlertRules();
-    this.startPerformanceMonitoring();
+    this.config = config
+    this.sessionId = this.generateSessionId()
+    this.initializeDefaultAlertRules()
+    this.startPerformanceMonitoring()
   }
 
   static getInstance(config?: MonitoringConfig): EnterpriseMonitoringManager {
     if (!EnterpriseMonitoringManager.instance) {
       if (!config) {
-        throw new Error('Configuration required for first initialization');
+        throw new Error('Configuration required for first initialization')
       }
-      EnterpriseMonitoringManager.instance = new EnterpriseMonitoringManager(config);
+      EnterpriseMonitoringManager.instance = new EnterpriseMonitoringManager(config)
     }
-    return EnterpriseMonitoringManager.instance;
+    return EnterpriseMonitoringManager.instance
   }
 
   // ===================================
@@ -222,26 +222,24 @@ class EnterpriseMonitoringManager {
     tags: string[] = []
   ): string {
     if (!this.config.errorTracking.enabled) {
-      return '';
+      return ''
     }
 
     // Sample rate check
     if (Math.random() > this.config.errorTracking.sampleRate) {
-      return '';
+      return ''
     }
 
-    const errorMessage = typeof error === 'string' ? error : error.message;
-    const stack = typeof error === 'string' ? undefined : error.stack;
+    const errorMessage = typeof error === 'string' ? error : error.message
+    const stack = typeof error === 'string' ? undefined : error.stack
 
     // Check if error should be ignored
-    if (this.config.errorTracking.ignoreErrors.some(pattern => 
-      errorMessage.includes(pattern)
-    )) {
-      return '';
+    if (this.config.errorTracking.ignoreErrors.some(pattern => errorMessage.includes(pattern))) {
+      return ''
     }
 
-    const fingerprint = this.generateErrorFingerprint(errorMessage, stack);
-    const errorId = this.generateErrorId();
+    const fingerprint = this.generateErrorFingerprint(errorMessage, stack)
+    const errorId = this.generateErrorId()
 
     const errorEvent: ErrorEvent = {
       id: errorId,
@@ -253,71 +251,71 @@ class EnterpriseMonitoringManager {
         sessionId: this.sessionId,
         url: typeof window !== 'undefined' ? window.location.href : '',
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-        ...context
+        ...context,
       },
       tags,
       fingerprint,
-      count: 1
-    };
+      count: 1,
+    }
 
     // Check if error already exists (deduplication)
-    const existingError = Array.from(this.errors.values())
-      .find(e => e.fingerprint === fingerprint);
+    const existingError = Array.from(this.errors.values()).find(e => e.fingerprint === fingerprint)
 
     if (existingError) {
-      existingError.count++;
-      existingError.timestamp = new Date();
+      existingError.count++
+      existingError.timestamp = new Date()
     } else {
-      this.errors.set(errorId, errorEvent);
+      this.errors.set(errorId, errorEvent)
     }
 
     // Check alert rules
-    this.checkErrorAlerts(errorEvent);
+    this.checkErrorAlerts(errorEvent)
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.error('[Monitoring] Error captured:', errorEvent);
+      console.error('[Monitoring] Error captured:', errorEvent)
     }
 
-    return errorId;
+    return errorId
   }
 
   /**
    * Obtener errores con filtros
    */
-  getErrors(filters: {
-    level?: ErrorEvent['level'];
-    timeRange?: { start: Date; end: Date };
-    component?: string;
-    limit?: number;
-  } = {}): ErrorEvent[] {
-    let errors = Array.from(this.errors.values());
+  getErrors(
+    filters: {
+      level?: ErrorEvent['level']
+      timeRange?: { start: Date; end: Date }
+      component?: string
+      limit?: number
+    } = {}
+  ): ErrorEvent[] {
+    let errors = Array.from(this.errors.values())
 
     // Apply filters
     if (filters.level) {
-      errors = errors.filter(e => e.level === filters.level);
+      errors = errors.filter(e => e.level === filters.level)
     }
 
     if (filters.timeRange) {
-      errors = errors.filter(e => 
-        e.timestamp >= filters.timeRange!.start && 
-        e.timestamp <= filters.timeRange!.end
-      );
+      errors = errors.filter(
+        e => e.timestamp >= filters.timeRange!.start && e.timestamp <= filters.timeRange!.end
+      )
     }
 
     if (filters.component) {
-      errors = errors.filter(e => e.context.component === filters.component);
+      errors = errors.filter(e => e.context.component === filters.component)
     }
 
     // Sort by timestamp (newest first)
-    errors.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    errors.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 
     // Apply limit
     if (filters.limit) {
-      errors = errors.slice(0, filters.limit);
+      errors = errors.slice(0, filters.limit)
     }
 
-    return errors;
+    return errors
   }
 
   // ===================================
@@ -329,23 +327,23 @@ class EnterpriseMonitoringManager {
    */
   private startPerformanceMonitoring(): void {
     if (!this.config.performance.enabled || typeof window === 'undefined') {
-      return;
+      return
     }
 
     // Monitor Core Web Vitals
-    this.monitorWebVitals();
+    this.monitorWebVitals()
 
     // Monitor custom metrics every 30 seconds
     setInterval(() => {
-      this.capturePerformanceMetrics();
-    }, 30000);
+      this.capturePerformanceMetrics()
+    }, 30000)
 
     // Monitor page visibility changes
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
-        this.capturePerformanceMetrics();
+        this.capturePerformanceMetrics()
       }
-    });
+    })
   }
 
   /**
@@ -353,42 +351,42 @@ class EnterpriseMonitoringManager {
    */
   private monitorWebVitals(): void {
     // LCP - Largest Contentful Paint
-    new PerformanceObserver((entryList) => {
-      const entries = entryList.getEntries();
-      const lastEntry = entries[entries.length - 1];
-      this.recordMetric('lcp', lastEntry.startTime);
-    }).observe({ entryTypes: ['largest-contentful-paint'] });
+    new PerformanceObserver(entryList => {
+      const entries = entryList.getEntries()
+      const lastEntry = entries[entries.length - 1]
+      this.recordMetric('lcp', lastEntry.startTime)
+    }).observe({ entryTypes: ['largest-contentful-paint'] })
 
     // FID - First Input Delay
-// Interfaces para Performance Observer entries
-interface PerformanceEventTiming extends PerformanceEntry {
-  processingStart: number;
-  startTime: number;
-}
+    // Interfaces para Performance Observer entries
+    interface PerformanceEventTiming extends PerformanceEntry {
+      processingStart: number
+      startTime: number
+    }
 
-interface LayoutShiftEntry extends PerformanceEntry {
-  value: number;
-  hadRecentInput: boolean;
-}
+    interface LayoutShiftEntry extends PerformanceEntry {
+      value: number
+      hadRecentInput: boolean
+    }
 
-    new PerformanceObserver((entryList) => {
-      const entries = entryList.getEntries();
+    new PerformanceObserver(entryList => {
+      const entries = entryList.getEntries()
       entries.forEach((entry: PerformanceEventTiming) => {
-        this.recordMetric('fid', entry.processingStart - entry.startTime);
-      });
-    }).observe({ entryTypes: ['first-input'] });
+        this.recordMetric('fid', entry.processingStart - entry.startTime)
+      })
+    }).observe({ entryTypes: ['first-input'] })
 
     // CLS - Cumulative Layout Shift
-    let clsValue = 0;
-    new PerformanceObserver((entryList) => {
-      const entries = entryList.getEntries();
+    let clsValue = 0
+    new PerformanceObserver(entryList => {
+      const entries = entryList.getEntries()
       entries.forEach((entry: LayoutShiftEntry) => {
         if (!entry.hadRecentInput) {
-          clsValue += entry.value;
+          clsValue += entry.value
         }
-      });
-      this.recordMetric('cls', clsValue);
-    }).observe({ entryTypes: ['layout-shift'] });
+      })
+      this.recordMetric('cls', clsValue)
+    }).observe({ entryTypes: ['layout-shift'] })
   }
 
   /**
@@ -396,12 +394,12 @@ interface LayoutShiftEntry extends PerformanceEntry {
    */
   capturePerformanceMetrics(): void {
     if (!this.config.performance.enabled) {
-      return;
+      return
     }
 
     // Sample rate check
     if (Math.random() > this.config.performance.sampleRate) {
-      return;
+      return
     }
 
     const metrics: PerformanceMetrics = {
@@ -415,30 +413,30 @@ interface LayoutShiftEntry extends PerformanceEntry {
         apiErrorRate: this.getApiErrorRate(),
         sessionDuration: this.getSessionDuration(),
         pageViews: this.getPageViews(),
-        bounceRate: this.getBounceRate()
+        bounceRate: this.getBounceRate(),
       },
       context: {
         page: typeof window !== 'undefined' ? window.location.pathname : '',
         sessionId: this.sessionId,
         device: this.getDeviceType(),
         browser: this.getBrowserType(),
-        userId: this.getUserId()
-      }
-    };
+        userId: this.getUserId(),
+      },
+    }
 
-    this.performanceData.push(metrics);
+    this.performanceData.push(metrics)
 
     // Keep only last 1000 entries
     if (this.performanceData.length > 1000) {
-      this.performanceData = this.performanceData.slice(-1000);
+      this.performanceData = this.performanceData.slice(-1000)
     }
 
     // Check performance alerts
-    this.checkPerformanceAlerts(metrics);
+    this.checkPerformanceAlerts(metrics)
 
     // Log in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Monitoring] Performance metrics captured:', metrics);
+      console.log('[Monitoring] Performance metrics captured:', metrics)
     }
   }
 
@@ -452,16 +450,16 @@ interface LayoutShiftEntry extends PerformanceEntry {
       timestamp: new Date(),
       context: {
         sessionId: this.sessionId,
-        ...context
-      }
-    };
+        ...context,
+      },
+    }
 
     // Check if metric triggers alerts
-    this.checkMetricAlerts(name, value);
+    this.checkMetricAlerts(name, value)
 
     // Log in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[Monitoring] Metric recorded: ${name} = ${value}`, metric);
+      console.log(`[Monitoring] Metric recorded: ${name} = ${value}`, metric)
     }
   }
 
@@ -482,7 +480,7 @@ interface LayoutShiftEntry extends PerformanceEntry {
         operator: '>',
         severity: 'high',
         enabled: true,
-        cooldown: 15
+        cooldown: 15,
       },
       {
         id: 'slow-page-load',
@@ -492,7 +490,7 @@ interface LayoutShiftEntry extends PerformanceEntry {
         operator: '>',
         severity: 'medium',
         enabled: true,
-        cooldown: 10
+        cooldown: 10,
       },
       {
         id: 'high-memory-usage',
@@ -502,7 +500,7 @@ interface LayoutShiftEntry extends PerformanceEntry {
         operator: '>',
         severity: 'medium',
         enabled: true,
-        cooldown: 20
+        cooldown: 20,
       },
       {
         id: 'poor-lcp',
@@ -512,13 +510,13 @@ interface LayoutShiftEntry extends PerformanceEntry {
         operator: '>',
         severity: 'medium',
         enabled: true,
-        cooldown: 15
-      }
-    ];
+        cooldown: 15,
+      },
+    ]
 
     defaultRules.forEach(rule => {
-      this.alertRules.set(rule.id, rule);
-    });
+      this.alertRules.set(rule.id, rule)
+    })
   }
 
   /**
@@ -529,13 +527,13 @@ interface LayoutShiftEntry extends PerformanceEntry {
     const recentErrors = this.getErrors({
       timeRange: {
         start: new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
-        end: new Date()
-      }
-    });
+        end: new Date(),
+      },
+    })
 
-    const errorRate = recentErrors.length / 100; // Assuming 100 requests per 5 minutes
+    const errorRate = recentErrors.length / 100 // Assuming 100 requests per 5 minutes
 
-    this.checkMetricAlerts('error_rate', errorRate);
+    this.checkMetricAlerts('error_rate', errorRate)
 
     // Check for critical errors
     if (errorEvent.level === 'critical') {
@@ -543,8 +541,8 @@ interface LayoutShiftEntry extends PerformanceEntry {
         message: `Critical error occurred: ${errorEvent.message}`,
         value: 1,
         threshold: 0,
-        context: errorEvent
-      });
+        context: errorEvent,
+      })
     }
   }
 
@@ -552,35 +550,36 @@ interface LayoutShiftEntry extends PerformanceEntry {
    * Verificar alertas de performance
    */
   private checkPerformanceAlerts(metrics: PerformanceMetrics): void {
-    const { metrics: m } = metrics;
+    const { metrics: m } = metrics
 
     // Check each metric against alert rules
     Object.entries(m).forEach(([metricName, value]) => {
       if (typeof value === 'number') {
-        this.checkMetricAlerts(metricName, value);
+        this.checkMetricAlerts(metricName, value)
       }
-    });
+    })
   }
 
   /**
    * Verificar alertas para una métrica específica
    */
   private checkMetricAlerts(metricName: string, value: number): void {
-    const relevantRules = Array.from(this.alertRules.values())
-      .filter(rule => rule.metric === metricName && rule.enabled);
+    const relevantRules = Array.from(this.alertRules.values()).filter(
+      rule => rule.metric === metricName && rule.enabled
+    )
 
     relevantRules.forEach(rule => {
-      const shouldTrigger = this.evaluateAlertCondition(rule, value);
-      
+      const shouldTrigger = this.evaluateAlertCondition(rule, value)
+
       if (shouldTrigger && this.canTriggerAlert(rule)) {
         this.triggerAlert(rule.id, {
           message: `${rule.name}: ${metricName} is ${value} (threshold: ${rule.threshold})`,
           value,
           threshold: rule.threshold,
-          context: { metricName, rule }
-        });
+          context: { metricName, rule },
+        })
       }
-    });
+    })
   }
 
   /**
@@ -588,12 +587,18 @@ interface LayoutShiftEntry extends PerformanceEntry {
    */
   private evaluateAlertCondition(rule: AlertRule, value: number): boolean {
     switch (rule.operator) {
-      case '>': return value > rule.threshold;
-      case '<': return value < rule.threshold;
-      case '>=': return value >= rule.threshold;
-      case '<=': return value <= rule.threshold;
-      case '=': return value === rule.threshold;
-      default: return false;
+      case '>':
+        return value > rule.threshold
+      case '<':
+        return value < rule.threshold
+      case '>=':
+        return value >= rule.threshold
+      case '<=':
+        return value <= rule.threshold
+      case '=':
+        return value === rule.threshold
+      default:
+        return false
     }
   }
 
@@ -602,28 +607,33 @@ interface LayoutShiftEntry extends PerformanceEntry {
    */
   private canTriggerAlert(rule: AlertRule): boolean {
     if (!rule.lastTriggered) {
-      return true;
+      return true
     }
 
-    const cooldownMs = rule.cooldown * 60 * 1000;
-    const timeSinceLastTrigger = Date.now() - rule.lastTriggered.getTime();
-    
-    return timeSinceLastTrigger >= cooldownMs;
+    const cooldownMs = rule.cooldown * 60 * 1000
+    const timeSinceLastTrigger = Date.now() - rule.lastTriggered.getTime()
+
+    return timeSinceLastTrigger >= cooldownMs
   }
 
   /**
    * Disparar alerta
    */
-  private triggerAlert(ruleId: string, alertData: {
-    message: string;
-    value: number;
-    threshold: number;
-    context: AlertContext;
-  }): void {
-    const rule = this.alertRules.get(ruleId);
-    if (!rule) {return;}
+  private triggerAlert(
+    ruleId: string,
+    alertData: {
+      message: string
+      value: number
+      threshold: number
+      context: AlertContext
+    }
+  ): void {
+    const rule = this.alertRules.get(ruleId)
+    if (!rule) {
+      return
+    }
 
-    const alertId = this.generateAlertId();
+    const alertId = this.generateAlertId()
     const alert: AlertEvent = {
       id: alertId,
       ruleId,
@@ -633,16 +643,16 @@ interface LayoutShiftEntry extends PerformanceEntry {
       value: alertData.value,
       threshold: alertData.threshold,
       context: alertData.context,
-      acknowledged: false
-    };
+      acknowledged: false,
+    }
 
-    this.activeAlerts.set(alertId, alert);
-    rule.lastTriggered = new Date();
+    this.activeAlerts.set(alertId, alert)
+    rule.lastTriggered = new Date()
 
     // Send notifications
-    this.sendAlertNotifications(alert);
+    this.sendAlertNotifications(alert)
 
-    console.warn('[Monitoring] Alert triggered:', alert);
+    console.warn('[Monitoring] Alert triggered:', alert)
   }
 
   /**
@@ -650,30 +660,30 @@ interface LayoutShiftEntry extends PerformanceEntry {
    */
   private async sendAlertNotifications(alert: AlertEvent): Promise<void> {
     if (!this.config.alerts.enabled) {
-      return;
+      return
     }
 
-    const { channels } = this.config.alerts;
+    const { channels } = this.config.alerts
 
     // Email notifications
     if (channels.email && channels.email.length > 0) {
       // Implementation would integrate with email service
-      console.log(`[Monitoring] Email alert sent to: ${channels.email.join(', ')}`);
+      console.log(`[Monitoring] Email alert sent to: ${channels.email.join(', ')}`)
     }
 
     // Slack notifications
     if (channels.slack) {
       // Implementation would integrate with Slack webhook
-      console.log(`[Monitoring] Slack alert sent to: ${channels.slack}`);
+      console.log(`[Monitoring] Slack alert sent to: ${channels.slack}`)
     }
 
     // Webhook notifications
     if (channels.webhook) {
       try {
         // Implementation would send HTTP POST to webhook
-        console.log(`[Monitoring] Webhook alert sent to: ${channels.webhook}`);
+        console.log(`[Monitoring] Webhook alert sent to: ${channels.webhook}`)
       } catch (error) {
-        console.error('[Monitoring] Failed to send webhook alert:', error);
+        console.error('[Monitoring] Failed to send webhook alert:', error)
       }
     }
   }
@@ -683,98 +693,120 @@ interface LayoutShiftEntry extends PerformanceEntry {
   // ===================================
 
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   private generateErrorId(): string {
-    return `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   private generateAlertId(): string {
-    return `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   private generateErrorFingerprint(message: string, stack?: string): string {
-    const content = `${message}${stack || ''}`;
+    const content = `${message}${stack || ''}`
     // Simple hash function for fingerprinting
-    let hash = 0;
+    let hash = 0
     for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
+      const char = content.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
     }
-    return hash.toString(36);
+    return hash.toString(36)
   }
 
-
-
   private getLoadTime(): number {
-    if (typeof window === 'undefined') {return 0;}
-    const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming;
-    return navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0;
+    if (typeof window === 'undefined') {
+      return 0
+    }
+    const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming
+    return navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0
   }
 
   private getRenderTime(): number {
-    if (typeof window === 'undefined') {return 0;}
-    const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming;
-    return navigation ? navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart : 0;
+    if (typeof window === 'undefined') {
+      return 0
+    }
+    const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming
+    return navigation
+      ? navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart
+      : 0
   }
 
   private getMemoryUsage(): number {
-    if (typeof window === 'undefined' || !(performance as PerformanceWithMemory).memory) {return 0;}
-    return (performance as PerformanceWithMemory).memory!.usedJSHeapSize / 1024 / 1024; // MB
+    if (typeof window === 'undefined' || !(performance as PerformanceWithMemory).memory) {
+      return 0
+    }
+    return (performance as PerformanceWithMemory).memory!.usedJSHeapSize / 1024 / 1024 // MB
   }
 
   private getBundleSize(): number {
     // This would be calculated based on loaded resources
-    return 0; // Placeholder
+    return 0 // Placeholder
   }
 
   private getAverageApiResponseTime(): number {
     // This would be calculated from API call metrics
-    return 0; // Placeholder
+    return 0 // Placeholder
   }
 
   private getApiErrorRate(): number {
     // This would be calculated from API call metrics
-    return 0; // Placeholder
+    return 0 // Placeholder
   }
 
   private getSessionDuration(): number {
-    return Date.now() - parseInt(this.sessionId.split('_')[1]);
+    return Date.now() - parseInt(this.sessionId.split('_')[1])
   }
 
   private getPageViews(): number {
     // This would be tracked separately
-    return 1; // Placeholder
+    return 1 // Placeholder
   }
 
   private getBounceRate(): number {
     // This would be calculated from user behavior
-    return 0; // Placeholder
+    return 0 // Placeholder
   }
 
   private getDeviceType(): string {
-    if (typeof window === 'undefined') {return 'unknown';}
-    const width = window.innerWidth;
-    if (width < 768) {return 'mobile';}
-    if (width < 1024) {return 'tablet';}
-    return 'desktop';
+    if (typeof window === 'undefined') {
+      return 'unknown'
+    }
+    const width = window.innerWidth
+    if (width < 768) {
+      return 'mobile'
+    }
+    if (width < 1024) {
+      return 'tablet'
+    }
+    return 'desktop'
   }
 
   private getBrowserType(): string {
-    if (typeof navigator === 'undefined') {return 'unknown';}
-    const userAgent = navigator.userAgent;
-    if (userAgent.includes('Chrome')) {return 'chrome';}
-    if (userAgent.includes('Firefox')) {return 'firefox';}
-    if (userAgent.includes('Safari')) {return 'safari';}
-    if (userAgent.includes('Edge')) {return 'edge';}
-    return 'other';
+    if (typeof navigator === 'undefined') {
+      return 'unknown'
+    }
+    const userAgent = navigator.userAgent
+    if (userAgent.includes('Chrome')) {
+      return 'chrome'
+    }
+    if (userAgent.includes('Firefox')) {
+      return 'firefox'
+    }
+    if (userAgent.includes('Safari')) {
+      return 'safari'
+    }
+    if (userAgent.includes('Edge')) {
+      return 'edge'
+    }
+    return 'other'
   }
 
   private getUserId(): string | undefined {
     // This would be retrieved from authentication context
-    return undefined; // Placeholder
+    return undefined // Placeholder
   }
 
   // ===================================
@@ -785,15 +817,13 @@ interface LayoutShiftEntry extends PerformanceEntry {
    * Obtener métricas de performance
    */
   getPerformanceMetrics(timeRange?: { start: Date; end: Date }): PerformanceMetrics[] {
-    let data = this.performanceData;
+    let data = this.performanceData
 
     if (timeRange) {
-      data = data.filter(m => 
-        m.timestamp >= timeRange.start && m.timestamp <= timeRange.end
-      );
+      data = data.filter(m => m.timestamp >= timeRange.start && m.timestamp <= timeRange.end)
     }
 
-    return data;
+    return data
   }
 
   /**
@@ -802,75 +832,78 @@ interface LayoutShiftEntry extends PerformanceEntry {
   getActiveAlerts(): AlertEvent[] {
     return Array.from(this.activeAlerts.values())
       .filter(alert => !alert.resolvedAt)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
   }
 
   /**
    * Reconocer alerta
    */
   acknowledgeAlert(alertId: string): boolean {
-    const alert = this.activeAlerts.get(alertId);
+    const alert = this.activeAlerts.get(alertId)
     if (alert) {
-      alert.acknowledged = true;
-      return true;
+      alert.acknowledged = true
+      return true
     }
-    return false;
+    return false
   }
 
   /**
    * Resolver alerta
    */
   resolveAlert(alertId: string): boolean {
-    const alert = this.activeAlerts.get(alertId);
+    const alert = this.activeAlerts.get(alertId)
     if (alert) {
-      alert.resolvedAt = new Date();
-      return true;
+      alert.resolvedAt = new Date()
+      return true
     }
-    return false;
+    return false
   }
 
   /**
    * Obtener resumen de monitoreo
    */
   getMonitoringSummary() {
-    const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const now = new Date()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
 
     const recentErrors = this.getErrors({
-      timeRange: { start: oneHourAgo, end: now }
-    });
+      timeRange: { start: oneHourAgo, end: now },
+    })
 
     const recentMetrics = this.getPerformanceMetrics({
       start: oneHourAgo,
-      end: now
-    });
+      end: now,
+    })
 
-    const activeAlerts = this.getActiveAlerts();
+    const activeAlerts = this.getActiveAlerts()
 
     return {
       errors: {
         total: recentErrors.length,
         critical: recentErrors.filter(e => e.level === 'critical').length,
-        warning: recentErrors.filter(e => e.level === 'warning').length
+        warning: recentErrors.filter(e => e.level === 'warning').length,
       },
       performance: {
-        averageLoadTime: recentMetrics.length > 0 
-          ? recentMetrics.reduce((sum, m) => sum + m.metrics.loadTime, 0) / recentMetrics.length 
-          : 0,
-        averageMemoryUsage: recentMetrics.length > 0
-          ? recentMetrics.reduce((sum, m) => sum + m.metrics.memoryUsage, 0) / recentMetrics.length
-          : 0
+        averageLoadTime:
+          recentMetrics.length > 0
+            ? recentMetrics.reduce((sum, m) => sum + m.metrics.loadTime, 0) / recentMetrics.length
+            : 0,
+        averageMemoryUsage:
+          recentMetrics.length > 0
+            ? recentMetrics.reduce((sum, m) => sum + m.metrics.memoryUsage, 0) /
+              recentMetrics.length
+            : 0,
       },
       alerts: {
         active: activeAlerts.length,
         critical: activeAlerts.filter(a => a.severity === 'critical').length,
-        unacknowledged: activeAlerts.filter(a => !a.acknowledged).length
+        unacknowledged: activeAlerts.filter(a => !a.acknowledged).length,
       },
       system: {
         uptime: this.getSessionDuration(),
-        sessionId: this.sessionId
-      }
-    };
+        sessionId: this.sessionId,
+      },
+    }
   }
 }
 
@@ -878,21 +911,6 @@ interface LayoutShiftEntry extends PerformanceEntry {
 // EXPORTS
 // ===================================
 
-export default EnterpriseMonitoringManager;
+export default EnterpriseMonitoringManager
 
-export type {
-  ErrorEvent,
-  PerformanceMetrics,
-  AlertRule,
-  AlertEvent,
-  MonitoringConfig
-};
-
-
-
-
-
-
-
-
-
+export type { ErrorEvent, PerformanceMetrics, AlertRule, AlertEvent, MonitoringConfig }

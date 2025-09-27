@@ -116,10 +116,10 @@ export const WithLabel: Story = {
 // Tamaños
 export const Sizes: Story = {
   render: () => (
-    <div className="space-y-4 w-80">
-      <Input size="sm" placeholder="Pequeño" label="Input pequeño" />
-      <Input size="md" placeholder="Mediano" label="Input mediano" />
-      <Input size="lg" placeholder="Grande" label="Input grande" />
+    <div className='space-y-4 w-80'>
+      <Input size='sm' placeholder='Pequeño' label='Input pequeño' />
+      <Input size='md' placeholder='Mediano' label='Input mediano' />
+      <Input size='lg' placeholder='Grande' label='Input grande' />
     </div>
   ),
   parameters: {
@@ -134,30 +134,30 @@ export const Sizes: Story = {
 // Estados
 export const States: Story = {
   render: () => (
-    <div className="space-y-4 w-80">
-      <Input 
-        label="Estado normal" 
-        placeholder="Input normal" 
-        helperText="Este es un texto de ayuda"
+    <div className='space-y-4 w-80'>
+      <Input
+        label='Estado normal'
+        placeholder='Input normal'
+        helperText='Este es un texto de ayuda'
       />
-      <Input 
-        label="Estado de error" 
-        placeholder="Input con error" 
-        error="Este campo es requerido"
-        value="texto inválido"
+      <Input
+        label='Estado de error'
+        placeholder='Input con error'
+        error='Este campo es requerido'
+        value='texto inválido'
       />
-      <Input 
-        label="Estado de éxito" 
-        variant="success" 
-        placeholder="Input válido" 
-        helperText="¡Perfecto!"
-        value="texto válido"
+      <Input
+        label='Estado de éxito'
+        variant='success'
+        placeholder='Input válido'
+        helperText='¡Perfecto!'
+        value='texto válido'
       />
-      <Input 
-        label="Estado deshabilitado" 
-        placeholder="Input deshabilitado" 
+      <Input
+        label='Estado deshabilitado'
+        placeholder='Input deshabilitado'
         disabled
-        value="no editable"
+        value='no editable'
       />
     </div>
   ),
@@ -173,23 +173,27 @@ export const States: Story = {
 // Con íconos
 export const WithIcons: Story = {
   render: () => (
-    <div className="space-y-4 w-80">
-      <Input 
-        label="Búsqueda" 
-        placeholder="Buscar productos..." 
-        leftIcon={<Search className="w-4 h-4" />}
+    <div className='space-y-4 w-80'>
+      <Input
+        label='Búsqueda'
+        placeholder='Buscar productos...'
+        leftIcon={<Search className='w-4 h-4' />}
       />
-      <Input 
-        label="Email" 
-        type="email"
-        placeholder="tu@email.com" 
-        leftIcon={<Mail className="w-4 h-4" />}
+      <Input
+        label='Email'
+        type='email'
+        placeholder='tu@email.com'
+        leftIcon={<Mail className='w-4 h-4' />}
       />
-      <Input 
-        label="Usuario" 
-        placeholder="nombre_usuario" 
-        leftIcon={<User className="w-4 h-4" />}
-        rightIcon={<Button variant="ghost" size="icon-sm">✓</Button>}
+      <Input
+        label='Usuario'
+        placeholder='nombre_usuario'
+        leftIcon={<User className='w-4 h-4' />}
+        rightIcon={
+          <Button variant='ghost' size='icon-sm'>
+            ✓
+          </Button>
+        }
       />
     </div>
   ),
@@ -206,21 +210,21 @@ export const WithIcons: Story = {
 export const PasswordToggle: Story = {
   render: () => {
     const [showPassword, setShowPassword] = useState(false)
-    
+
     return (
-      <div className="w-80">
+      <div className='w-80'>
         <Input
-          label="Contraseña"
+          label='Contraseña'
           type={showPassword ? 'text' : 'password'}
-          placeholder="Tu contraseña"
-          leftIcon={<Lock className="w-4 h-4" />}
+          placeholder='Tu contraseña'
+          leftIcon={<Lock className='w-4 h-4' />}
           rightIcon={
             <button
-              type="button"
+              type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className="text-gray-400 hover:text-gray-600"
+              className='text-gray-400 hover:text-gray-600'
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <EyeOff className='w-4 h-4' /> : <Eye className='w-4 h-4' />}
             </button>
           }
           required
@@ -240,34 +244,28 @@ export const PasswordToggle: Story = {
 // Tipos especializados
 export const SpecializedTypes: Story = {
   render: () => (
-    <div className="space-y-4 w-80">
-      <Input 
-        label="Email" 
-        type="email"
-        placeholder="tu@email.com" 
-        leftIcon={<Mail className="w-4 h-4" />}
-        helperText="Usaremos este email para enviarte actualizaciones"
+    <div className='space-y-4 w-80'>
+      <Input
+        label='Email'
+        type='email'
+        placeholder='tu@email.com'
+        leftIcon={<Mail className='w-4 h-4' />}
+        helperText='Usaremos este email para enviarte actualizaciones'
       />
-      <Input 
-        label="Teléfono" 
-        type="tel"
-        placeholder="+54 11 1234-5678" 
-        leftIcon={<Phone className="w-4 h-4" />}
+      <Input
+        label='Teléfono'
+        type='tel'
+        placeholder='+54 11 1234-5678'
+        leftIcon={<Phone className='w-4 h-4' />}
       />
-      <Input 
-        label="Código postal" 
-        type="text"
-        placeholder="1234" 
-        leftIcon={<MapPin className="w-4 h-4" />}
-        helperText="Para calcular el costo de envío"
+      <Input
+        label='Código postal'
+        type='text'
+        placeholder='1234'
+        leftIcon={<MapPin className='w-4 h-4' />}
+        helperText='Para calcular el costo de envío'
       />
-      <Input 
-        label="Cantidad" 
-        type="number"
-        placeholder="1" 
-        min="1"
-        max="99"
-      />
+      <Input label='Cantidad' type='number' placeholder='1' min='1' max='99' />
     </div>
   ),
   parameters: {
@@ -282,65 +280,49 @@ export const SpecializedTypes: Story = {
 // Formulario de ejemplo
 export const FormExample: Story = {
   render: () => (
-    <div className="space-y-6 w-96">
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Información de contacto</h3>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <Input 
-            label="Nombre" 
-            placeholder="Juan" 
-            required
-          />
-          <Input 
-            label="Apellido" 
-            placeholder="Pérez" 
-            required
-          />
+    <div className='space-y-6 w-96'>
+      <div className='space-y-4'>
+        <h3 className='text-lg font-semibold'>Información de contacto</h3>
+
+        <div className='grid grid-cols-2 gap-4'>
+          <Input label='Nombre' placeholder='Juan' required />
+          <Input label='Apellido' placeholder='Pérez' required />
         </div>
-        
-        <Input 
-          label="Email" 
-          type="email"
-          placeholder="juan@email.com" 
-          leftIcon={<Mail className="w-4 h-4" />}
+
+        <Input
+          label='Email'
+          type='email'
+          placeholder='juan@email.com'
+          leftIcon={<Mail className='w-4 h-4' />}
           required
         />
-        
-        <Input 
-          label="Teléfono" 
-          type="tel"
-          placeholder="+54 11 1234-5678" 
-          leftIcon={<Phone className="w-4 h-4" />}
-          helperText="Para coordinar la entrega"
+
+        <Input
+          label='Teléfono'
+          type='tel'
+          placeholder='+54 11 1234-5678'
+          leftIcon={<Phone className='w-4 h-4' />}
+          helperText='Para coordinar la entrega'
         />
       </div>
-      
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Dirección de envío</h3>
-        
-        <Input 
-          label="Dirección" 
-          placeholder="Av. Corrientes 1234" 
-          required
-        />
-        
-        <div className="grid grid-cols-2 gap-4">
-          <Input 
-            label="Ciudad" 
-            placeholder="Córdoba" 
-            required
-          />
-          <Input 
-            label="Código postal" 
-            placeholder="5000" 
-            leftIcon={<MapPin className="w-4 h-4" />}
+
+      <div className='space-y-4'>
+        <h3 className='text-lg font-semibold'>Dirección de envío</h3>
+
+        <Input label='Dirección' placeholder='Av. Corrientes 1234' required />
+
+        <div className='grid grid-cols-2 gap-4'>
+          <Input label='Ciudad' placeholder='Córdoba' required />
+          <Input
+            label='Código postal'
+            placeholder='5000'
+            leftIcon={<MapPin className='w-4 h-4' />}
             required
           />
         </div>
       </div>
-      
-      <Button variant="primary" fullWidth size="lg">
+
+      <Button variant='primary' fullWidth size='lg'>
         Continuar con el pedido
       </Button>
     </div>
@@ -357,31 +339,31 @@ export const FormExample: Story = {
 // Búsqueda avanzada
 export const SearchExample: Story = {
   render: () => (
-    <div className="space-y-4 w-96">
-      <Input 
-        label="Buscar productos" 
-        placeholder="Ej: pintura blanca interior" 
-        leftIcon={<Search className="w-4 h-4" />}
+    <div className='space-y-4 w-96'>
+      <Input
+        label='Buscar productos'
+        placeholder='Ej: pintura blanca interior'
+        leftIcon={<Search className='w-4 h-4' />}
         rightIcon={
-          <Button variant="primary" size="sm">
+          <Button variant='primary' size='sm'>
             Buscar
           </Button>
         }
-        helperText="Busca por nombre, marca o categoría"
+        helperText='Busca por nombre, marca o categoría'
       />
-      
-      <div className="grid grid-cols-2 gap-4">
-        <Input 
-          label="Precio mínimo" 
-          type="number"
-          placeholder="1000" 
-          helperText="En pesos argentinos"
+
+      <div className='grid grid-cols-2 gap-4'>
+        <Input
+          label='Precio mínimo'
+          type='number'
+          placeholder='1000'
+          helperText='En pesos argentinos'
         />
-        <Input 
-          label="Precio máximo" 
-          type="number"
-          placeholder="10000" 
-          helperText="En pesos argentinos"
+        <Input
+          label='Precio máximo'
+          type='number'
+          placeholder='10000'
+          helperText='En pesos argentinos'
         />
       </div>
     </div>
@@ -400,34 +382,44 @@ export const ValidationExample: Story = {
   render: () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    
+
     const isValidEmail = email.includes('@') && email.includes('.')
     const isValidPassword = password.length >= 8
-    
+
     return (
-      <div className="space-y-4 w-80">
-        <Input 
-          label="Email" 
-          type="email"
+      <div className='space-y-4 w-80'>
+        <Input
+          label='Email'
+          type='email'
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="tu@email.com" 
-          leftIcon={<Mail className="w-4 h-4" />}
+          onChange={e => setEmail(e.target.value)}
+          placeholder='tu@email.com'
+          leftIcon={<Mail className='w-4 h-4' />}
           variant={email && !isValidEmail ? 'error' : email && isValidEmail ? 'success' : 'default'}
           error={email && !isValidEmail ? 'Email inválido' : undefined}
           helperText={email && isValidEmail ? '¡Email válido!' : 'Ingresa un email válido'}
           required
         />
-        
-        <Input 
-          label="Contraseña" 
-          type="password"
+
+        <Input
+          label='Contraseña'
+          type='password'
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Mínimo 8 caracteres" 
-          leftIcon={<Lock className="w-4 h-4" />}
-          variant={password && !isValidPassword ? 'error' : password && isValidPassword ? 'success' : 'default'}
-          error={password && !isValidPassword ? 'La contraseña debe tener al menos 8 caracteres' : undefined}
+          onChange={e => setPassword(e.target.value)}
+          placeholder='Mínimo 8 caracteres'
+          leftIcon={<Lock className='w-4 h-4' />}
+          variant={
+            password && !isValidPassword
+              ? 'error'
+              : password && isValidPassword
+                ? 'success'
+                : 'default'
+          }
+          error={
+            password && !isValidPassword
+              ? 'La contraseña debe tener al menos 8 caracteres'
+              : undefined
+          }
           helperText={password && isValidPassword ? '¡Contraseña válida!' : 'Mínimo 8 caracteres'}
           required
         />
@@ -442,12 +434,3 @@ export const ValidationExample: Story = {
     },
   },
 }
-
-
-
-
-
-
-
-
-

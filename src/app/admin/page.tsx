@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
-import { AdminCard } from '@/components/admin/ui/AdminCard';
+import Link from 'next/link'
+import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { AdminCard } from '@/components/admin/ui/AdminCard'
 import {
   Package,
   ShoppingCart,
@@ -17,15 +17,15 @@ import {
   Activity,
   Truck,
   Gauge,
-  GitBranch
-} from 'lucide-react';
-import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats';
-import { useMonitoringStats } from '@/providers/MonitoringProvider';
-import { MonitoringStatus } from '@/providers/MonitoringProvider';
+  GitBranch,
+} from 'lucide-react'
+import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
+import { useMonitoringStats } from '@/providers/MonitoringProvider'
+import { MonitoringStatus } from '@/providers/MonitoringProvider'
 
 export default function AdminPage() {
-  const { stats, loading, error } = useAdminDashboardStats();
-  const { stats: monitoringStats, loading: monitoringLoading } = useMonitoringStats();
+  const { stats, loading, error } = useAdminDashboardStats()
+  const { stats: monitoringStats, loading: monitoringLoading } = useMonitoringStats()
   const adminSections = [
     {
       title: 'Productos',
@@ -33,7 +33,7 @@ export default function AdminPage() {
       href: '/admin/products',
       icon: Package,
       color: 'bg-blue-500',
-      stats: loading ? 'Cargando...' : `${stats?.totalProducts || 0} productos`
+      stats: loading ? 'Cargando...' : `${stats?.totalProducts || 0} productos`,
     },
     {
       title: 'Órdenes',
@@ -42,7 +42,7 @@ export default function AdminPage() {
       icon: ShoppingCart,
       color: 'bg-green-500',
       stats: '23 pendientes',
-      badge: 'Beta'
+      badge: 'Beta',
     },
     {
       title: 'Clientes',
@@ -51,7 +51,7 @@ export default function AdminPage() {
       icon: Users,
       color: 'bg-purple-500',
       stats: '1,247 usuarios',
-      badge: 'Beta'
+      badge: 'Beta',
     },
     {
       title: 'Logística',
@@ -60,7 +60,7 @@ export default function AdminPage() {
       icon: Truck,
       color: 'bg-orange-500',
       stats: 'Enterprise',
-      badge: 'Enterprise'
+      badge: 'Enterprise',
     },
     {
       title: 'Analytics',
@@ -68,7 +68,7 @@ export default function AdminPage() {
       href: '/admin/analytics',
       icon: BarChart3,
       color: 'bg-yellow-500',
-      stats: 'Tiempo real'
+      stats: 'Tiempo real',
     },
     {
       title: 'MercadoPago',
@@ -76,7 +76,7 @@ export default function AdminPage() {
       href: '/admin/mercadopago',
       icon: CreditCard,
       color: 'bg-indigo-500',
-      stats: 'Enterprise'
+      stats: 'Enterprise',
     },
     {
       title: 'Monitoreo',
@@ -85,7 +85,7 @@ export default function AdminPage() {
       icon: Activity,
       color: 'bg-emerald-500',
       stats: 'Tiempo real',
-      badge: 'Enterprise'
+      badge: 'Enterprise',
     },
     {
       title: 'Performance',
@@ -94,7 +94,7 @@ export default function AdminPage() {
       icon: Gauge,
       color: 'bg-purple-500',
       stats: 'Optimizado',
-      badge: 'New'
+      badge: 'New',
     },
     {
       title: 'Test Flows',
@@ -103,7 +103,7 @@ export default function AdminPage() {
       icon: GitBranch,
       color: 'bg-cyan-500',
       stats: 'Automatizado',
-      badge: 'New'
+      badge: 'New',
     },
     {
       title: 'Diagnósticos',
@@ -111,7 +111,7 @@ export default function AdminPage() {
       href: '/admin/diagnostics',
       icon: Search,
       color: 'bg-red-500',
-      stats: 'Sistema OK'
+      stats: 'Sistema OK',
     },
     {
       title: 'Configuración',
@@ -120,7 +120,7 @@ export default function AdminPage() {
       icon: Settings,
       color: 'bg-gray-500',
       stats: 'Solo lectura',
-      badge: 'Beta'
+      badge: 'Beta',
     },
     {
       title: 'Base de Datos',
@@ -129,9 +129,9 @@ export default function AdminPage() {
       icon: Database,
       color: 'bg-orange-500',
       stats: 'Próximamente',
-      disabled: true
-    }
-  ];
+      disabled: true,
+    },
+  ]
 
   // Quick stats data - usando datos reales
   const quickStats = [
@@ -146,7 +146,8 @@ export default function AdminPage() {
       title: 'Stock Bajo',
       value: loading ? 'Cargando...' : (stats?.lowStockProducts || 0).toString(),
       change: loading ? '...' : `${stats?.noStockProducts || 0} sin stock`,
-      changeType: (stats?.lowStockProducts || 0) > 0 ? 'negative' as const : 'positive' as const,
+      changeType:
+        (stats?.lowStockProducts || 0) > 0 ? ('negative' as const) : ('positive' as const),
       icon: AlertTriangle,
     },
     {
@@ -163,25 +164,23 @@ export default function AdminPage() {
       changeType: 'positive' as const,
       icon: Users,
     },
-  ];
+  ]
 
   return (
-    <AdminLayout title="Dashboard">
-      <div className="space-y-6">
+    <AdminLayout title='Dashboard'>
+      <div className='space-y-6'>
         {/* Welcome Section */}
-        <AdminCard className="bg-gradient-to-r from-blaze-orange-500 to-blaze-orange-600 text-white border-0">
-          <div className="flex items-center justify-between">
+        <AdminCard className='bg-gradient-to-r from-blaze-orange-500 to-blaze-orange-600 text-white border-0'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h1 className="text-2xl font-bold mb-2">
-                ¡Bienvenido al Panel Administrativo!
-              </h1>
-              <p className="text-blaze-orange-100">
+              <h1 className='text-2xl font-bold mb-2'>¡Bienvenido al Panel Administrativo!</h1>
+              <p className='text-blaze-orange-100'>
                 Gestiona y monitorea tu tienda de e-commerce desde aquí
               </p>
             </div>
-            <div className="hidden md:block">
-              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                <BarChart3 className="w-8 h-8" />
+            <div className='hidden md:block'>
+              <div className='w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center'>
+                <BarChart3 className='w-8 h-8' />
               </div>
             </div>
           </div>
@@ -189,51 +188,56 @@ export default function AdminPage() {
 
         {/* Error Message */}
         {error && (
-          <AdminCard className="border-red-200 bg-red-50">
-            <div className="flex items-center space-x-2 text-red-700">
-              <AlertTriangle className="h-5 w-5" />
-              <span>Error cargando estadísticas: {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</span>
+          <AdminCard className='border-red-200 bg-red-50'>
+            <div className='flex items-center space-x-2 text-red-700'>
+              <AlertTriangle className='h-5 w-5' />
+              <span>
+                Error cargando estadísticas:{' '}
+                {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+              </span>
             </div>
           </AdminCard>
         )}
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {quickStats.map((stat) => (
-            <AdminCard key={stat.title} className="p-6">
-              <div className="flex items-center justify-between">
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+          {quickStats.map(stat => (
+            <AdminCard key={stat.title} className='p-6'>
+              <div className='flex items-center justify-between'>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    {stat.title}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
-                    {stat.value}
-                  </p>
-                  <p className={`text-sm mt-1 ${
-                    stat.changeType === 'positive'
-                      ? 'text-green-600'
-                      : stat.changeType === 'negative'
-                      ? 'text-red-600'
-                      : 'text-gray-600'
-                  }`}>
-                    {stat.change} desde ayer
-                  </p>
-                </div>
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                  stat.changeType === 'positive'
-                    ? 'bg-green-100'
-                    : stat.changeType === 'negative'
-                    ? 'bg-red-100'
-                    : 'bg-gray-100'
-                }`}>
-                  {stat && stat.icon && (
-                    <stat.icon className={`w-6 h-6 ${
+                  <p className='text-sm font-medium text-gray-600'>{stat.title}</p>
+                  <p className='text-2xl font-bold text-gray-900 mt-1'>{stat.value}</p>
+                  <p
+                    className={`text-sm mt-1 ${
                       stat.changeType === 'positive'
                         ? 'text-green-600'
                         : stat.changeType === 'negative'
-                        ? 'text-red-600'
-                        : 'text-gray-600'
-                    }`} />
+                          ? 'text-red-600'
+                          : 'text-gray-600'
+                    }`}
+                  >
+                    {stat.change} desde ayer
+                  </p>
+                </div>
+                <div
+                  className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                    stat.changeType === 'positive'
+                      ? 'bg-green-100'
+                      : stat.changeType === 'negative'
+                        ? 'bg-red-100'
+                        : 'bg-gray-100'
+                  }`}
+                >
+                  {stat && stat.icon && (
+                    <stat.icon
+                      className={`w-6 h-6 ${
+                        stat.changeType === 'positive'
+                          ? 'text-green-600'
+                          : stat.changeType === 'negative'
+                            ? 'text-red-600'
+                            : 'text-gray-600'
+                      }`}
+                    />
                   )}
                 </div>
               </div>
@@ -243,14 +247,14 @@ export default function AdminPage() {
 
         {/* Admin Sections Grid */}
         <AdminCard
-          title="Módulos Administrativos"
-          description="Accede a las diferentes secciones del panel"
-          padding="none"
+          title='Módulos Administrativos'
+          description='Accede a las diferentes secciones del panel'
+          padding='none'
         >
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {adminSections.map((section) => {
-                const IconComponent = section && section.icon ? section.icon : null;
+          <div className='p-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              {adminSections.map(section => {
+                const IconComponent = section && section.icon ? section.icon : null
 
                 return (
                   <div
@@ -261,46 +265,42 @@ export default function AdminPage() {
                         : 'hover:shadow-md hover:bg-white cursor-pointer'
                     }`}
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`w-12 h-12 ${section.color} rounded-lg flex items-center justify-center text-white`}>
-                        {IconComponent && <IconComponent className="w-6 h-6" />}
+                    <div className='flex items-start justify-between mb-4'>
+                      <div
+                        className={`w-12 h-12 ${section.color} rounded-lg flex items-center justify-center text-white`}
+                      >
+                        {IconComponent && <IconComponent className='w-6 h-6' />}
                       </div>
                       {section.disabled ? (
-                        <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-medium">
+                        <span className='bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-medium'>
                           Próximamente
                         </span>
                       ) : section.badge ? (
-                        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">
+                        <span className='bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium'>
                           {section.badge}
                         </span>
                       ) : (
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                        <span className='bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium'>
                           {section.stats}
                         </span>
                       )}
                     </div>
 
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {section.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      {section.description}
-                    </p>
+                    <h3 className='text-lg font-semibold text-gray-900 mb-2'>{section.title}</h3>
+                    <p className='text-gray-600 text-sm mb-4'>{section.description}</p>
 
                     {section.disabled ? (
-                      <div className="text-gray-400 text-sm">
-                        Funcionalidad en desarrollo
-                      </div>
+                      <div className='text-gray-400 text-sm'>Funcionalidad en desarrollo</div>
                     ) : (
                       <Link
                         href={section.href}
-                        className="inline-flex items-center text-blaze-orange-600 hover:text-blaze-orange-800 text-sm font-medium"
+                        className='inline-flex items-center text-blaze-orange-600 hover:text-blaze-orange-800 text-sm font-medium'
                       >
                         {section.badge ? 'Ver Preview →' : 'Acceder →'}
                       </Link>
                     )}
                   </div>
-                );
+                )
               })}
             </div>
           </div>
@@ -308,72 +308,71 @@ export default function AdminPage() {
 
         {/* System Status */}
         <AdminCard
-          title="Estado del Sistema"
-          description="Monitoreo proactivo en tiempo real del estado de la aplicación"
+          title='Estado del Sistema'
+          description='Monitoreo proactivo en tiempo real del estado de la aplicación'
         >
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Activity className="w-6 h-6 text-green-600" />
+          <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
+            <div className='text-center p-4 bg-green-50 rounded-lg'>
+              <div className='w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <Activity className='w-6 h-6 text-green-600' />
               </div>
-              <div className="text-sm font-medium text-green-800">Monitoreo Activo</div>
-              <div className="text-xs text-green-600 mt-1">
-                {monitoringLoading ? 'Cargando...' : (monitoringStats ? 'Sistema operativo' : 'Inicializando...')}
+              <div className='text-sm font-medium text-green-800'>Monitoreo Activo</div>
+              <div className='text-xs text-green-600 mt-1'>
+                {monitoringLoading
+                  ? 'Cargando...'
+                  : monitoringStats
+                    ? 'Sistema operativo'
+                    : 'Inicializando...'}
               </div>
             </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <AlertTriangle className="w-6 h-6 text-blue-600" />
+            <div className='text-center p-4 bg-blue-50 rounded-lg'>
+              <div className='w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <AlertTriangle className='w-6 h-6 text-blue-600' />
               </div>
-              <div className="text-sm font-medium text-blue-800">Errores Detectados</div>
-              <div className="text-xs text-blue-600 mt-1">
+              <div className='text-sm font-medium text-blue-800'>Errores Detectados</div>
+              <div className='text-xs text-blue-600 mt-1'>
                 {monitoringLoading ? 'Cargando...' : `${monitoringStats?.totalErrors || 0} errores`}
               </div>
             </div>
-            <div className="text-center p-4 bg-yellow-50 rounded-lg">
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="w-6 h-6 text-yellow-600" />
+            <div className='text-center p-4 bg-yellow-50 rounded-lg'>
+              <div className='w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <TrendingUp className='w-6 h-6 text-yellow-600' />
               </div>
-              <div className="text-sm font-medium text-yellow-800">Performance</div>
-              <div className="text-xs text-yellow-600 mt-1">
-                {monitoringLoading ? 'Cargando...' : `${monitoringStats?.avgResponseTime || 0}ms promedio`}
+              <div className='text-sm font-medium text-yellow-800'>Performance</div>
+              <div className='text-xs text-yellow-600 mt-1'>
+                {monitoringLoading
+                  ? 'Cargando...'
+                  : `${monitoringStats?.avgResponseTime || 0}ms promedio`}
               </div>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Gauge className="w-6 h-6 text-purple-600" />
+            <div className='text-center p-4 bg-purple-50 rounded-lg'>
+              <div className='w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3'>
+                <Gauge className='w-6 h-6 text-purple-600' />
               </div>
-              <div className="text-sm font-medium text-purple-800">Salud del Sistema</div>
-              <div className="text-xs text-purple-600 mt-1">
-                {monitoringLoading ? 'Cargando...' : `${monitoringStats?.systemHealth || 0}% saludable`}
+              <div className='text-sm font-medium text-purple-800'>Salud del Sistema</div>
+              <div className='text-xs text-purple-600 mt-1'>
+                {monitoringLoading
+                  ? 'Cargando...'
+                  : `${monitoringStats?.systemHealth || 0}% saludable`}
               </div>
             </div>
           </div>
-          
+
           {/* Enlace al dashboard completo de monitoreo */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className='mt-6 pt-4 border-t border-gray-200'>
             <Link
-              href="/admin/monitoring"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              href='/admin/monitoring'
+              className='inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors'
             >
-              <Activity className="w-4 h-4 mr-2" />
+              <Activity className='w-4 h-4 mr-2' />
               Ver Dashboard Completo de Monitoreo
             </Link>
           </div>
         </AdminCard>
       </div>
-      
+
       {/* Componente de estado de monitoreo para desarrollo */}
       <MonitoringStatus />
     </AdminLayout>
-  );
+  )
 }
-
-
-
-
-
-
-
-
-

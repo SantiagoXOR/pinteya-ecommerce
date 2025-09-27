@@ -55,7 +55,10 @@ const mockFetch = jest.fn()
 global.fetch = mockFetch
 
 // Helper function to create complete mock response
-const createMockResponse = (data: any, options: { ok?: boolean; status?: number; statusText?: string } = {}) => ({
+const createMockResponse = (
+  data: any,
+  options: { ok?: boolean; status?: number; statusText?: string } = {}
+) => ({
   ok: options.ok ?? true,
   status: options.status ?? 200,
   statusText: options.statusText ?? 'OK',
@@ -88,7 +91,7 @@ describe('useProducts Hook', () => {
       expect.stringContaining('/api/products'),
       expect.objectContaining({
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     )
     expect(result.current.products).toHaveLength(2)
@@ -120,10 +123,12 @@ describe('useProducts Hook', () => {
     mockFetch.mockClear()
 
     // Mock search response
-    mockFetch.mockResolvedValueOnce(createMockResponse({
-      ...mockProductsResponse,
-      data: [mockProductsResponse.data[0]], // Only first product
-    }))
+    mockFetch.mockResolvedValueOnce(
+      createMockResponse({
+        ...mockProductsResponse,
+        data: [mockProductsResponse.data[0]], // Only first product
+      })
+    )
 
     // Perform search
     await act(async () => {
@@ -134,7 +139,7 @@ describe('useProducts Hook', () => {
       expect.stringContaining('/api/products'),
       expect.objectContaining({
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     )
   })
@@ -150,10 +155,12 @@ describe('useProducts Hook', () => {
     mockFetch.mockClear()
 
     // Mock category filter response
-    mockFetch.mockResolvedValueOnce(createMockResponse({
-      ...mockProductsResponse,
-      data: [mockProductsResponse.data[0]], // Only first product
-    }))
+    mockFetch.mockResolvedValueOnce(
+      createMockResponse({
+        ...mockProductsResponse,
+        data: [mockProductsResponse.data[0]], // Only first product
+      })
+    )
 
     // Filter by category
     await act(async () => {
@@ -164,7 +171,7 @@ describe('useProducts Hook', () => {
       expect.stringMatching(/\/api\/products\?.*category=1/),
       expect.objectContaining({
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     )
   })
@@ -180,10 +187,12 @@ describe('useProducts Hook', () => {
     mockFetch.mockClear()
 
     // Mock page 2 response
-    mockFetch.mockResolvedValueOnce(createMockResponse({
-      ...mockProductsResponse,
-      pagination: { ...mockProductsResponse.pagination, page: 2 },
-    }))
+    mockFetch.mockResolvedValueOnce(
+      createMockResponse({
+        ...mockProductsResponse,
+        pagination: { ...mockProductsResponse.pagination, page: 2 },
+      })
+    )
 
     // Go to page 2
     await act(async () => {
@@ -194,7 +203,7 @@ describe('useProducts Hook', () => {
       expect.stringMatching(/\/api\/products\?.*page=2/),
       expect.objectContaining({
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     )
     expect(result.current.pagination.page).toBe(2)
@@ -222,7 +231,7 @@ describe('useProducts Hook', () => {
       expect.stringMatching(/\/api\/products\?.*priceMin=500.*priceMax=1500/),
       expect.objectContaining({
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     )
   })
@@ -249,7 +258,7 @@ describe('useProducts Hook', () => {
       expect.stringMatching(/\/api\/products\?.*sortBy=price.*sortOrder=asc/),
       expect.objectContaining({
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     )
   })
@@ -270,10 +279,12 @@ describe('useProducts Hook', () => {
   })
 
   it('handles HTTP error responses', async () => {
-    mockFetch.mockResolvedValueOnce(createMockResponse(
-      { error: 'Server Error' },
-      { ok: false, status: 500, statusText: 'Internal Server Error' }
-    ))
+    mockFetch.mockResolvedValueOnce(
+      createMockResponse(
+        { error: 'Server Error' },
+        { ok: false, status: 500, statusText: 'Internal Server Error' }
+      )
+    )
 
     const { result } = renderHook(() => useProducts())
 
@@ -319,7 +330,7 @@ describe('useProducts Hook', () => {
       expect.stringMatching(/\/api\/products\?.*page=1/),
       expect.objectContaining({
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       })
     )
   })
@@ -363,12 +374,3 @@ describe('useProducts Hook', () => {
     })
   })
 })
-
-
-
-
-
-
-
-
-

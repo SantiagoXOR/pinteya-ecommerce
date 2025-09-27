@@ -7,7 +7,7 @@
  * Incluye estados realistas y funciones mock completas
  */
 
-import { mockProducts, mockCategories, mockOrders } from './api-mocks';
+import { mockProducts, mockCategories, mockOrders } from './api-mocks'
 
 // ===================================
 // MOCKS PARA useProducts
@@ -23,14 +23,14 @@ export const mockUseProductsState = {
       page: 1,
       limit: 12,
       total: 0,
-      totalPages: 0
+      totalPages: 0,
     },
     filters: {},
     hasProducts: false,
     isEmpty: false,
     hasError: false,
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   },
 
   // Estado con productos cargados
@@ -42,14 +42,14 @@ export const mockUseProductsState = {
       page: 1,
       limit: 12,
       total: mockProducts.length,
-      totalPages: 1
+      totalPages: 1,
     },
     filters: {},
     hasProducts: true,
     isEmpty: false,
     hasError: false,
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   },
 
   // Estado con error
@@ -61,14 +61,14 @@ export const mockUseProductsState = {
       page: 1,
       limit: 12,
       total: 0,
-      totalPages: 0
+      totalPages: 0,
     },
     filters: {},
     hasProducts: false,
     isEmpty: true,
     hasError: true,
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   },
 
   // Estado cargando
@@ -80,16 +80,16 @@ export const mockUseProductsState = {
       page: 1,
       limit: 12,
       total: 0,
-      totalPages: 0
+      totalPages: 0,
     },
     filters: {},
     hasProducts: false,
     isEmpty: false,
     hasError: false,
     hasNextPage: false,
-    hasPrevPage: false
-  }
-};
+    hasPrevPage: false,
+  },
+}
 
 export const mockUseProductsFunctions = {
   fetchProducts: jest.fn(),
@@ -101,14 +101,14 @@ export const mockUseProductsFunctions = {
   filterByCategory: jest.fn(),
   filterByPriceRange: jest.fn(),
   clearFilters: jest.fn(),
-  refresh: jest.fn()
-};
+  refresh: jest.fn(),
+}
 
 export function createMockUseProducts(state = mockUseProductsState.loaded) {
   return {
     ...state,
-    ...mockUseProductsFunctions
-  };
+    ...mockUseProductsFunctions,
+  }
 }
 
 // ===================================
@@ -126,8 +126,8 @@ export const mockUseSearchErrorHandlerState = {
       maxRetries: 3,
       baseDelay: 1000,
       maxDelay: 10000,
-      backoffFactor: 2
-    }
+      backoffFactor: 2,
+    },
   },
 
   // Estado con error
@@ -136,7 +136,7 @@ export const mockUseSearchErrorHandlerState = {
       type: 'network' as const,
       message: 'Error de conexión. Verifica tu conexión a internet.',
       retryable: true,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     },
     retryCount: 0,
     isRetrying: false,
@@ -145,8 +145,8 @@ export const mockUseSearchErrorHandlerState = {
       maxRetries: 3,
       baseDelay: 1000,
       maxDelay: 10000,
-      backoffFactor: 2
-    }
+      backoffFactor: 2,
+    },
   },
 
   // Estado reintentando
@@ -155,7 +155,7 @@ export const mockUseSearchErrorHandlerState = {
       type: 'server' as const,
       message: 'Error del servidor. Intenta nuevamente en unos momentos.',
       retryable: true,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     },
     retryCount: 1,
     isRetrying: true,
@@ -164,23 +164,23 @@ export const mockUseSearchErrorHandlerState = {
       maxRetries: 3,
       baseDelay: 1000,
       maxDelay: 10000,
-      backoffFactor: 2
-    }
-  }
-};
+      backoffFactor: 2,
+    },
+  },
+}
 
 export const mockUseSearchErrorHandlerFunctions = {
   handleError: jest.fn(),
   executeWithRetry: jest.fn(),
   clearError: jest.fn(),
-  retryManually: jest.fn()
-};
+  retryManually: jest.fn(),
+}
 
 export function createMockUseSearchErrorHandler(state = mockUseSearchErrorHandlerState.initial) {
   return {
     ...state,
-    ...mockUseSearchErrorHandlerFunctions
-  };
+    ...mockUseSearchErrorHandlerFunctions,
+  }
 }
 
 // ===================================
@@ -193,16 +193,16 @@ export const mockCartItems = [
     product: mockProducts[0],
     quantity: 2,
     price: mockProducts[0].discounted_price || mockProducts[0].price,
-    subtotal: (mockProducts[0].discounted_price || mockProducts[0].price) * 2
+    subtotal: (mockProducts[0].discounted_price || mockProducts[0].price) * 2,
   },
   {
     id: 2,
     product: mockProducts[1],
     quantity: 1,
     price: mockProducts[1].price,
-    subtotal: mockProducts[1].price
-  }
-];
+    subtotal: mockProducts[1].price,
+  },
+]
 
 export const mockUseCartState = {
   // Carrito vacío
@@ -214,7 +214,7 @@ export const mockUseCartState = {
     tax: 0,
     shipping: 0,
     isEmpty: true,
-    isLoading: false
+    isLoading: false,
   },
 
   // Carrito con items
@@ -226,9 +226,9 @@ export const mockUseCartState = {
     tax: 0,
     shipping: 0,
     isEmpty: false,
-    isLoading: false
-  }
-};
+    isLoading: false,
+  },
+}
 
 export const mockUseCartFunctions = {
   addItem: jest.fn(),
@@ -236,14 +236,14 @@ export const mockUseCartFunctions = {
   updateQuantity: jest.fn(),
   clearCart: jest.fn(),
   getItemQuantity: jest.fn(),
-  isInCart: jest.fn()
-};
+  isInCart: jest.fn(),
+}
 
 export function createMockUseCart(state = mockUseCartState.empty) {
   return {
     ...state,
-    ...mockUseCartFunctions
-  };
+    ...mockUseCartFunctions,
+  }
 }
 
 // ===================================
@@ -255,36 +255,36 @@ export const mockUser = {
   name: 'Juan Pérez',
   email: 'juan.perez@example.com',
   image: '/images/avatars/user-123.jpg',
-  role: 'customer'
-};
+  role: 'customer',
+}
 
 export const mockSession = {
   user: mockUser,
-  expires: '2024-12-31T23:59:59.999Z'
-};
+  expires: '2024-12-31T23:59:59.999Z',
+}
 
 export const mockUseSessionState = {
   // No autenticado
   unauthenticated: {
     data: null,
-    status: 'unauthenticated' as const
+    status: 'unauthenticated' as const,
   },
 
   // Autenticado
   authenticated: {
     data: mockSession,
-    status: 'authenticated' as const
+    status: 'authenticated' as const,
   },
 
   // Cargando
   loading: {
     data: null,
-    status: 'loading' as const
-  }
-};
+    status: 'loading' as const,
+  },
+}
 
 export function createMockUseSession(state = mockUseSessionState.unauthenticated) {
-  return state;
+  return state
 }
 
 // ===================================
@@ -297,7 +297,7 @@ export const mockGeolocationState = {
     location: null,
     loading: false,
     error: null,
-    supported: true
+    supported: true,
   },
 
   // Ubicación obtenida
@@ -306,11 +306,11 @@ export const mockGeolocationState = {
       latitude: -34.6037,
       longitude: -58.3816,
       accuracy: 10,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     },
     loading: false,
     error: null,
-    supported: true
+    supported: true,
   },
 
   // Error de geolocalización
@@ -318,7 +318,7 @@ export const mockGeolocationState = {
     location: null,
     loading: false,
     error: 'Geolocation permission denied',
-    supported: true
+    supported: true,
   },
 
   // No soportado
@@ -326,21 +326,21 @@ export const mockGeolocationState = {
     location: null,
     loading: false,
     error: 'Geolocation not supported',
-    supported: false
-  }
-};
+    supported: false,
+  },
+}
 
 export const mockUseGeolocationFunctions = {
   getCurrentLocation: jest.fn(),
   watchPosition: jest.fn(),
-  clearWatch: jest.fn()
-};
+  clearWatch: jest.fn(),
+}
 
 export function createMockUseGeolocation(state = mockGeolocationState.initial) {
   return {
     ...state,
-    ...mockUseGeolocationFunctions
-  };
+    ...mockUseGeolocationFunctions,
+  }
 }
 
 // ===================================
@@ -352,19 +352,19 @@ export function createMockUseGeolocation(state = mockGeolocationState.initial) {
  */
 export function setupHooksMocks() {
   // Mock useProducts
-  const mockUseProducts = jest.fn(() => createMockUseProducts());
-  
+  const mockUseProducts = jest.fn(() => createMockUseProducts())
+
   // Mock useSearchErrorHandler
-  const mockUseSearchErrorHandler = jest.fn(() => createMockUseSearchErrorHandler());
-  
+  const mockUseSearchErrorHandler = jest.fn(() => createMockUseSearchErrorHandler())
+
   // Mock useCart
-  const mockUseCart = jest.fn(() => createMockUseCart());
-  
+  const mockUseCart = jest.fn(() => createMockUseCart())
+
   // Mock useSession
-  const mockUseSession = jest.fn(() => createMockUseSession());
-  
+  const mockUseSession = jest.fn(() => createMockUseSession())
+
   // Mock useGeolocation
-  const mockUseGeolocation = jest.fn(() => createMockUseGeolocation());
+  const mockUseGeolocation = jest.fn(() => createMockUseGeolocation())
 
   return {
     mockUseProducts,
@@ -373,21 +373,12 @@ export function setupHooksMocks() {
     mockUseSession,
     mockUseGeolocation,
     resetAllMocks: () => {
-      jest.clearAllMocks();
-      mockUseProducts.mockReturnValue(createMockUseProducts());
-      mockUseSearchErrorHandler.mockReturnValue(createMockUseSearchErrorHandler());
-      mockUseCart.mockReturnValue(createMockUseCart());
-      mockUseSession.mockReturnValue(createMockUseSession());
-      mockUseGeolocation.mockReturnValue(createMockUseGeolocation());
-    }
-  };
+      jest.clearAllMocks()
+      mockUseProducts.mockReturnValue(createMockUseProducts())
+      mockUseSearchErrorHandler.mockReturnValue(createMockUseSearchErrorHandler())
+      mockUseCart.mockReturnValue(createMockUseCart())
+      mockUseSession.mockReturnValue(createMockUseSession())
+      mockUseGeolocation.mockReturnValue(createMockUseGeolocation())
+    },
+  }
 }
-
-
-
-
-
-
-
-
-

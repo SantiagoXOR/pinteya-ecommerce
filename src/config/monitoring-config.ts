@@ -5,63 +5,63 @@
 
 export interface MonitoringConfig {
   // Configuración general
-  enabled: boolean;
-  environment: 'development' | 'production' | 'staging';
-  version: string;
-  
+  enabled: boolean
+  environment: 'development' | 'production' | 'staging'
+  version: string
+
   // Configuración de métricas
   metrics: {
-    collectInterval: number; // ms
-    retentionPeriod: number; // ms
-    batchSize: number;
-    enableWebVitals: boolean;
-    enableApiMetrics: boolean;
-    enableErrorTracking: boolean;
-  };
-  
+    collectInterval: number // ms
+    retentionPeriod: number // ms
+    batchSize: number
+    enableWebVitals: boolean
+    enableApiMetrics: boolean
+    enableErrorTracking: boolean
+  }
+
   // Configuración de alertas
   alerts: {
-    enabled: boolean;
+    enabled: boolean
     thresholds: {
-      responseTime: number; // ms
-      errorRate: number; // percentage (0-1)
-      memoryUsage: number; // MB
-      cpuUsage: number; // percentage (0-1)
-    };
+      responseTime: number // ms
+      errorRate: number // percentage (0-1)
+      memoryUsage: number // MB
+      cpuUsage: number // percentage (0-1)
+    }
     channels: {
-      console: boolean;
-      webhook?: string;
-      email?: string[];
-    };
-  };
-  
+      console: boolean
+      webhook?: string
+      email?: string[]
+    }
+  }
+
   // Configuración de health checks
   healthCheck: {
-    enabled: boolean;
-    interval: number; // ms
-    timeout: number; // ms
+    enabled: boolean
+    interval: number // ms
+    timeout: number // ms
     endpoints: {
-      api: boolean;
-      database: boolean;
-      memory: boolean;
-      performance: boolean;
-    };
-  };
-  
+      api: boolean
+      database: boolean
+      memory: boolean
+      performance: boolean
+    }
+  }
+
   // Configuración de storage
   storage: {
-    type: 'memory' | 'redis' | 'database';
-    maxEntries: number;
-    compression: boolean;
-  };
-  
+    type: 'memory' | 'redis' | 'database'
+    maxEntries: number
+    compression: boolean
+  }
+
   // Configuración de reporting
   reporting: {
-    enabled: boolean;
-    interval: number; // ms
-    includeDetails: boolean;
-    exportFormats: ('json' | 'csv' | 'pdf')[];
-  };
+    enabled: boolean
+    interval: number // ms
+    includeDetails: boolean
+    exportFormats: ('json' | 'csv' | 'pdf')[]
+  }
 }
 
 // Configuración por defecto
@@ -69,7 +69,7 @@ const defaultConfig: MonitoringConfig = {
   enabled: true,
   environment: (process.env.NODE_ENV as any) || 'development',
   version: process.env.npm_package_version || '1.0.0',
-  
+
   metrics: {
     collectInterval: 5000, // 5 segundos
     retentionPeriod: 24 * 60 * 60 * 1000, // 24 horas
@@ -78,7 +78,7 @@ const defaultConfig: MonitoringConfig = {
     enableApiMetrics: true,
     enableErrorTracking: true,
   },
-  
+
   alerts: {
     enabled: process.env.NODE_ENV === 'production',
     thresholds: {
@@ -93,7 +93,7 @@ const defaultConfig: MonitoringConfig = {
       email: process.env.MONITORING_EMAIL_ALERTS?.split(','),
     },
   },
-  
+
   healthCheck: {
     enabled: true,
     interval: 30000, // 30 segundos
@@ -105,20 +105,20 @@ const defaultConfig: MonitoringConfig = {
       performance: true,
     },
   },
-  
+
   storage: {
-    type: process.env.MONITORING_STORAGE_TYPE as any || 'memory',
+    type: (process.env.MONITORING_STORAGE_TYPE as any) || 'memory',
     maxEntries: 10000,
     compression: process.env.NODE_ENV === 'production',
   },
-  
+
   reporting: {
     enabled: true,
     interval: 60000, // 1 minuto
     includeDetails: process.env.NODE_ENV !== 'production',
     exportFormats: ['json'],
   },
-};
+}
 
 // Configuraciones específicas por entorno
 const environmentConfigs: Record<string, Partial<MonitoringConfig>> = {
@@ -134,7 +134,7 @@ const environmentConfigs: Record<string, Partial<MonitoringConfig>> = {
       maxEntries: 1000, // Menos entradas en desarrollo
     },
   },
-  
+
   staging: {
     metrics: {
       collectInterval: 5000,
@@ -151,7 +151,7 @@ const environmentConfigs: Record<string, Partial<MonitoringConfig>> = {
       maxEntries: 5000,
     },
   },
-  
+
   production: {
     metrics: {
       collectInterval: 3000, // Más frecuente en producción
@@ -177,13 +177,13 @@ const environmentConfigs: Record<string, Partial<MonitoringConfig>> = {
       exportFormats: ['json', 'csv'],
     },
   },
-};
+}
 
 // Función para obtener la configuración final
 export function getMonitoringConfig(): MonitoringConfig {
-  const environment = process.env.NODE_ENV || 'development';
-  const envConfig = environmentConfigs[environment] || {};
-  
+  const environment = process.env.NODE_ENV || 'development'
+  const envConfig = environmentConfigs[environment] || {}
+
   // Merge deep de configuraciones
   const config = {
     ...defaultConfig,
@@ -220,53 +220,53 @@ export function getMonitoringConfig(): MonitoringConfig {
       ...defaultConfig.reporting,
       ...envConfig.reporting,
     },
-  };
-  
-  return config;
+  }
+
+  return config
 }
 
 // Configuración singleton
-let configInstance: MonitoringConfig | null = null;
+let configInstance: MonitoringConfig | null = null
 
 export function getConfig(): MonitoringConfig {
   if (!configInstance) {
-    configInstance = getMonitoringConfig();
+    configInstance = getMonitoringConfig()
   }
-  return configInstance;
+  return configInstance
 }
 
 // Función para validar la configuración
 export function validateConfig(config: MonitoringConfig): string[] {
-  const errors: string[] = [];
-  
+  const errors: string[] = []
+
   if (config.metrics.collectInterval < 1000) {
-    errors.push('metrics.collectInterval debe ser al menos 1000ms');
+    errors.push('metrics.collectInterval debe ser al menos 1000ms')
   }
-  
+
   if (config.metrics.retentionPeriod < 60000) {
-    errors.push('metrics.retentionPeriod debe ser al menos 60000ms (1 minuto)');
+    errors.push('metrics.retentionPeriod debe ser al menos 60000ms (1 minuto)')
   }
-  
+
   if (config.alerts.thresholds.responseTime < 100) {
-    errors.push('alerts.thresholds.responseTime debe ser al menos 100ms');
+    errors.push('alerts.thresholds.responseTime debe ser al menos 100ms')
   }
-  
+
   if (config.alerts.thresholds.errorRate < 0 || config.alerts.thresholds.errorRate > 1) {
-    errors.push('alerts.thresholds.errorRate debe estar entre 0 y 1');
+    errors.push('alerts.thresholds.errorRate debe estar entre 0 y 1')
   }
-  
+
   if (config.storage.maxEntries < 100) {
-    errors.push('storage.maxEntries debe ser al menos 100');
+    errors.push('storage.maxEntries debe ser al menos 100')
   }
-  
-  return errors;
+
+  return errors
 }
 
 // Función para logging de configuración
 export function logConfig(): void {
-  const config = getConfig();
-  const errors = validateConfig(config);
-  
+  const config = getConfig()
+  const errors = validateConfig(config)
+
   console.log('🔧 Monitoring Configuration:', {
     environment: config.environment,
     version: config.version,
@@ -274,23 +274,14 @@ export function logConfig(): void {
     metricsInterval: config.metrics.collectInterval,
     alertsEnabled: config.alerts.enabled,
     storageType: config.storage.type,
-  });
-  
+  })
+
   if (errors.length > 0) {
-    console.warn('⚠️ Configuration warnings:', errors);
+    console.warn('⚠️ Configuration warnings:', errors)
   } else {
-    console.log('✅ Configuration is valid');
+    console.log('✅ Configuration is valid')
   }
 }
 
 // Exportar configuración por defecto
-export default getConfig;
-
-
-
-
-
-
-
-
-
+export default getConfig

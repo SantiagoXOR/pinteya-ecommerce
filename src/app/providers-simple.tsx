@@ -1,10 +1,10 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect } from "react";
-import { SessionProvider } from "next-auth/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReduxProvider } from "@/redux/provider";
-import HeaderNextAuth from "@/components/Header/HeaderNextAuth";
+import React, { useState, useEffect } from 'react'
+import { SessionProvider } from 'next-auth/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReduxProvider } from '@/redux/provider'
+import HeaderNextAuth from '@/components/Header/HeaderNextAuth'
 
 // Crear QueryClient
 const queryClient = new QueryClient({
@@ -14,10 +14,10 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 10, // 10 minutos
     },
   },
-});
+})
 
 interface ProvidersProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function Providers({ children }: ProvidersProps) {
@@ -25,21 +25,12 @@ export default function Providers({ children }: ProvidersProps) {
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
         <ReduxProvider>
-          <div className="app-content-wrapper">
+          <div className='app-content-wrapper'>
             <HeaderNextAuth />
             {children}
           </div>
         </ReduxProvider>
       </QueryClientProvider>
     </SessionProvider>
-  );
+  )
 }
-
-
-
-
-
-
-
-
-

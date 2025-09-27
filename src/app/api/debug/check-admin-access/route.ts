@@ -1,82 +1,85 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-import { NextRequest, NextResponse } from 'next/server';
-import { checkAdminAccess, getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
-import {
-  requireAdminAuth,
-  getEnterpriseAuthContext
-} from '@/lib/auth/enterprise-auth-utils';
-import {
-  validateRLSContext
-} from '@/lib/auth/enterprise-rls-utils';
-import {
-  getCacheStats
-} from '@/lib/auth/enterprise-cache';
+import { NextRequest, NextResponse } from 'next/server'
+import { checkAdminAccess, getAuthenticatedAdmin } from '@/lib/auth/admin-auth'
+import { requireAdminAuth, getEnterpriseAuthContext } from '@/lib/auth/enterprise-auth-utils'
+import { validateRLSContext } from '@/lib/auth/enterprise-rls-utils'
+import { getCacheStats } from '@/lib/auth/enterprise-cache'
 
 export async function GET(request: NextRequest) {
   try {
     // ENTERPRISE: Usar nueva autenticación enterprise para comparación
-    const enterpriseResult = await requireAdminAuth(request, ['admin_access']);
+    const enterpriseResult = await requireAdminAuth(request, ['admin_access'])
 
     // LEGACY: Mantener método anterior para comparación
-    const adminResult = await getAuthenticatedAdmin(request);
+    const adminResult = await getAuthenticatedAdmin(request)
 
     if (!adminResult.userId && !enterpriseResult.success) {
-      return NextResponse.json({
-        success: false,
-        error: 'Usuario no autenticado en ningún método',
-        enterprise: {
-          error: enterpriseResult.error,
-          code: enterpriseResult.code
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Usuario no autenticado en ningún método',
+          enterprise: {
+            error: enterpriseResult.error,
+            code: enterpriseResult.code,
+          },
+          legacy: {
+            error: adminResult.error,
+          },
+          migration: {
+            status: 'ENTERPRISE_MIGRATED',
+            comparison: 'Both methods failed - user not authenticated',
+          },
         },
-        legacy: {
-          error: adminResult.error
-        },
-        migration: {
-          status: 'ENTERPRISE_MIGRATED',
-          comparison: 'Both methods failed - user not authenticated'
-        }
-      }, { status: 401 });
+        { status: 401 }
+      )
     }
 
     // ENTERPRISE: Obtener contexto completo y validación RLS
-    let enterpriseContext = null;
-    let rlsValidation = null;
+    let enterpriseContext = null
+    let rlsValidation = null
 
     if (enterpriseResult.success) {
-      enterpriseContext = enterpriseResult.context;
-      rlsValidation = await validateRLSContext(enterpriseContext!);
+      enterpriseContext = enterpriseResult.context
+      rlsValidation = await validateRLSContext(enterpriseContext!)
     }
 
     // LEGACY: Comparar con método legacy para verificar migración
-    const clerkUserId = adminResult.userId || (enterpriseResult.success ? enterpriseResult.context!.userId : null);
+    const clerkUserId =
+      adminResult.userId || (enterpriseResult.success ? enterpriseResult.context!.userId : null)
 
-    console.log('🔍 Debug Enterprise vs Legacy: Testing with user:', clerkUserId);
+    console.log('🔍 Debug Enterprise vs Legacy: Testing with user:', clerkUserId)
 
-    const legacyResult = clerkUserId ? await checkAdminAccess(clerkUserId) : { success: false, error: 'No user ID' };
+    const legacyResult = clerkUserId
+      ? await checkAdminAccess(clerkUserId)
+      : { success: false, error: 'No user ID' }
 
     // ENTERPRISE: Obtener estadísticas de cache
-    const cacheStats = getCacheStats();
+    const cacheStats = getCacheStats()
 
     return NextResponse.json({
       success: enterpriseResult.success || adminResult.isAdmin,
       enterprise: {
         status: enterpriseResult.success ? 'SUCCESS' : 'FAILED',
-        context: enterpriseResult.success ? {
-          userId: enterpriseContext?.userId,
-          role: enterpriseContext?.role,
-          permissions: enterpriseContext?.permissions,
-          securityLevel: enterpriseContext?.securityLevel,
-          validations: enterpriseContext?.validations
-        } : null,
-        rls: rlsValidation ? {
-          valid: rlsValidation.valid,
-          error: rlsValidation.error
-        } : null,
+        context: enterpriseResult.success
+          ? {
+              userId: enterpriseContext?.userId,
+              role: enterpriseContext?.role,
+              permissions: enterpriseContext?.permissions,
+              securityLevel: enterpriseContext?.securityLevel,
+              validations: enterpriseContext?.validations,
+            }
+          : null,
+        rls: rlsValidation
+          ? {
+              valid: rlsValidation.valid,
+              error: rlsValidation.error,
+            }
+          : null,
         cache: cacheStats,
         error: enterpriseResult.error,
-        code: enterpriseResult.code
+        code: enterpriseResult.code,
       },
       legacy: {
         status: adminResult.isAdmin ? 'SUCCESS' : 'FAILED',
@@ -86,8 +89,8 @@ export async function GET(request: NextRequest) {
         error: adminResult.error,
         checkAdminAccess: {
           success: legacyResult.success,
-          error: legacyResult.error
-        }
+          error: legacyResult.error,
+        },
       },
       migration: {
         status: 'ENTERPRISE_COMPLETED',
@@ -95,7 +98,7 @@ export async function GET(request: NextRequest) {
           enterprise_success: enterpriseResult.success,
           legacy_success: adminResult.isAdmin,
           methods_agree: enterpriseResult.success === adminResult.isAdmin,
-          recommended: 'enterprise'
+          recommended: 'enterprise',
         },
         improvements: [
           '✅ ENTERPRISE: Autenticación con múltiples validaciones de seguridad',
@@ -103,8 +106,8 @@ export async function GET(request: NextRequest) {
           '✅ ENTERPRISE: Cache inteligente con estadísticas',
           '✅ ENTERPRISE: Contexto completo de seguridad',
           '✅ ENTERPRISE: Permisos granulares',
-          '⚠️ LEGACY: Método anterior aún funcional para compatibilidad'
-        ]
+          '⚠️ LEGACY: Método anterior aún funcional para compatibilidad',
+        ],
       },
       debug: {
         clerkUserId,
@@ -112,29 +115,21 @@ export async function GET(request: NextRequest) {
         request_info: {
           method: request.method,
           url: request.url,
-          user_agent: request.headers.get('user-agent')?.substring(0, 100)
-        }
-      }
-    });
-
+          user_agent: request.headers.get('user-agent')?.substring(0, 100),
+        },
+      },
+    })
   } catch (error) {
-    console.error('🔍 Debug checkAdminAccess: Error:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Unexpected error',
-      debug: {
-        errorMessage: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+    console.error('🔍 Debug checkAdminAccess: Error:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Unexpected error',
+        debug: {
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        },
+      },
+      { status: 500 }
+    )
   }
 }
-
-
-
-
-
-
-
-
-
-

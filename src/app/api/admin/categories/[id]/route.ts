@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { createClient } from '@/lib/integrations/supabase/server';
-import { requireAdminAuth } from '@/lib/auth/admin-auth';
-import { checkRateLimit } from '@/lib/enterprise/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { metricsCollector } from '@/lib/enterprise/metrics';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { createClient } from '@/lib/integrations/supabase/server'
+import { requireAdminAuth } from '@/lib/auth/admin-auth'
+import { checkRateLimit } from '@/lib/enterprise/rate-limiter'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { metricsCollector } from '@/lib/enterprise/metrics'
 
 // ===================================
 // CONFIGURACIÓN
@@ -14,7 +14,7 @@ const RATE_LIMIT_CONFIGS = {
     windowMs: 15 * 60 * 1000, // 15 minutos
     maxRequests: 100,
   },
-};
+}
 
 // ===================================
 // ESQUEMAS DE VALIDACIÓN
@@ -31,62 +31,63 @@ const UpdateCategorySchema = z.object({
   meta_title: z.string().max(60, 'El meta título es muy largo').optional().nullable(),
   meta_description: z.string().max(160, 'La meta descripción es muy larga').optional().nullable(),
   meta_keywords: z.string().max(255, 'Las meta keywords son muy largas').optional().nullable(),
-});
+})
 
 // ===================================
 // TIPOS
 // ===================================
 interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-  error?: string;
+  data: T
+  success: boolean
+  message?: string
+  error?: string
   meta?: {
-    total?: number;
-    page?: number;
-    limit?: number;
-    pages?: number;
-  };
+    total?: number
+    page?: number
+    limit?: number
+    pages?: number
+  }
 }
 
 interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  image_url?: string;
-  parent_id?: string;
-  is_active: boolean;
-  is_featured: boolean;
-  sort_order: number;
-  product_count: number;
-  meta_title?: string;
-  meta_description?: string;
-  meta_keywords?: string;
-  created_at: string;
-  updated_at: string;
-  parent?: Category;
-  children?: Category[];
+  id: string
+  name: string
+  slug: string
+  description?: string
+  image_url?: string
+  parent_id?: string
+  is_active: boolean
+  is_featured: boolean
+  sort_order: number
+  product_count: number
+  meta_title?: string
+  meta_description?: string
+  meta_keywords?: string
+  created_at: string
+  updated_at: string
+  parent?: Category
+  children?: Category[]
 }
 
 interface CategoryStats {
-  total_products: number;
-  active_products: number;
-  inactive_products: number;
-  subcategories_count: number;
-  avg_product_price: number;
-  total_revenue: number;
+  total_products: number
+  active_products: number
+  inactive_products: number
+  subcategories_count: number
+  avg_product_price: number
+  total_revenue: number
 }
 
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
 async function getCategoryById(categoryId: string): Promise<Category | null> {
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   const { data: category, error } = await supabase
     .from('categories')
-    .select(`
+    .select(
+      `
       *,
       parent:parent_id(
         id,
@@ -100,27 +101,32 @@ async function getCategoryById(categoryId: string): Promise<Category | null> {
         is_active,
         product_count
       )
-    `)
+    `
+    )
     .eq('id', categoryId)
-    .single();
+    .single()
 
   if (error) {
     if (error.code === 'PGRST116') {
-      return null; // No encontrado
+      return null // No encontrado
     }
-    throw new Error(`Error obteniendo categoría: ${error.message}`);
+    throw new Error(`Error obteniendo categoría: ${error.message}`)
   }
 
-  return category;
+  return category
 }
 
-async function updateCategory(categoryId: string, updateData: any, userId: string): Promise<Category> {
-  const supabase = await createClient();
+async function updateCategory(
+  categoryId: string,
+  updateData: any,
+  userId: string
+): Promise<Category> {
+  const supabase = await createClient()
 
   // Verificar que la categoría existe
-  const existingCategory = await getCategoryById(categoryId);
+  const existingCategory = await getCategoryById(categoryId)
   if (!existingCategory) {
-    throw new Error('Categoría no encontrada');
+    throw new Error('Categoría no encontrada')
   }
 
   // Verificar slug único si se está actualizando
@@ -130,18 +136,18 @@ async function updateCategory(categoryId: string, updateData: any, userId: strin
       .select('id')
       .eq('slug', updateData.slug)
       .neq('id', categoryId)
-      .single();
+      .single()
 
     if (existingSlug) {
-      throw new Error('Ya existe una categoría con ese slug');
+      throw new Error('Ya existe una categoría con ese slug')
     }
   }
 
   // Verificar jerarquía circular si se está actualizando parent_id
   if (updateData.parent_id) {
-    const isCircular = await checkCircularHierarchy(categoryId, updateData.parent_id);
+    const isCircular = await checkCircularHierarchy(categoryId, updateData.parent_id)
     if (isCircular) {
-      throw new Error('No se puede crear una jerarquía circular');
+      throw new Error('No se puede crear una jerarquía circular')
     }
   }
 
@@ -149,10 +155,11 @@ async function updateCategory(categoryId: string, updateData: any, userId: strin
     .from('categories')
     .update({
       ...updateData,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', categoryId)
-    .select(`
+    .select(
+      `
       *,
       parent:parent_id(
         id,
@@ -166,71 +173,69 @@ async function updateCategory(categoryId: string, updateData: any, userId: strin
         is_active,
         product_count
       )
-    `)
-    .single();
+    `
+    )
+    .single()
 
   if (error) {
-    throw new Error(`Error actualizando categoría: ${error.message}`);
+    throw new Error(`Error actualizando categoría: ${error.message}`)
   }
 
-  return updatedCategory;
+  return updatedCategory
 }
 
 async function deleteCategory(categoryId: string, userId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   // Verificar que la categoría existe
-  const category = await getCategoryById(categoryId);
+  const category = await getCategoryById(categoryId)
   if (!category) {
-    throw new Error('Categoría no encontrada');
+    throw new Error('Categoría no encontrada')
   }
 
   // Verificar que no tenga productos
   if (category.product_count > 0) {
-    throw new Error('No se puede eliminar una categoría que tiene productos');
+    throw new Error('No se puede eliminar una categoría que tiene productos')
   }
 
   // Verificar que no tenga subcategorías
   if (category.children && category.children.length > 0) {
-    throw new Error('No se puede eliminar una categoría que tiene subcategorías');
+    throw new Error('No se puede eliminar una categoría que tiene subcategorías')
   }
 
-  const { error } = await supabase
-    .from('categories')
-    .delete()
-    .eq('id', categoryId);
+  const { error } = await supabase.from('categories').delete().eq('id', categoryId)
 
   if (error) {
-    throw new Error(`Error eliminando categoría: ${error.message}`);
+    throw new Error(`Error eliminando categoría: ${error.message}`)
   }
 }
 
 async function getCategoryStats(categoryId: string): Promise<CategoryStats> {
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   // Obtener estadísticas de productos
   const { data: productStats } = await supabase
     .from('products')
     .select('is_active, price')
-    .eq('category_id', categoryId);
+    .eq('category_id', categoryId)
 
   // Obtener subcategorías
   const { data: subcategories } = await supabase
     .from('categories')
     .select('id')
-    .eq('parent_id', categoryId);
+    .eq('parent_id', categoryId)
 
   // Calcular estadísticas
-  const totalProducts = productStats?.length || 0;
-  const activeProducts = productStats?.filter(p => p.is_active).length || 0;
-  const inactiveProducts = totalProducts - activeProducts;
-  const subcategoriesCount = subcategories?.length || 0;
-  
-  const prices = productStats?.map(p => p.price).filter(p => p > 0) || [];
-  const avgProductPrice = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+  const totalProducts = productStats?.length || 0
+  const activeProducts = productStats?.filter(p => p.is_active).length || 0
+  const inactiveProducts = totalProducts - activeProducts
+  const subcategoriesCount = subcategories?.length || 0
+
+  const prices = productStats?.map(p => p.price).filter(p => p > 0) || []
+  const avgProductPrice = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0
 
   // TODO: Calcular revenue real desde orders
-  const totalRevenue = 0;
+  const totalRevenue = 0
 
   return {
     total_products: totalProducts,
@@ -238,44 +243,49 @@ async function getCategoryStats(categoryId: string): Promise<CategoryStats> {
     inactive_products: inactiveProducts,
     subcategories_count: subcategoriesCount,
     avg_product_price: avgProductPrice,
-    total_revenue: totalRevenue
-  };
+    total_revenue: totalRevenue,
+  }
 }
 
 async function checkCircularHierarchy(categoryId: string, parentId: string): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   // Si el parent_id es el mismo categoryId, es circular
   if (categoryId === parentId) {
-    return true;
+    return true
   }
 
   // Buscar hacia arriba en la jerarquía
-  let currentParentId = parentId;
-  const visited = new Set<string>();
+  let currentParentId = parentId
+  const visited = new Set<string>()
 
   while (currentParentId && !visited.has(currentParentId)) {
-    visited.add(currentParentId);
+    visited.add(currentParentId)
 
     if (currentParentId === categoryId) {
-      return true; // Encontramos una referencia circular
+      return true // Encontramos una referencia circular
     }
 
     const { data: parent } = await supabase
       .from('categories')
       .select('parent_id')
       .eq('id', currentParentId)
-      .single();
+      .single()
 
-    currentParentId = parent?.parent_id;
+    currentParentId = parent?.parent_id
   }
 
-  return false;
+  return false
 }
 
-async function logAuditAction(action: string, categoryId: string, userId: string, details?: any): Promise<void> {
+async function logAuditAction(
+  action: string,
+  categoryId: string,
+  userId: string,
+  details?: any
+): Promise<void> {
   try {
-    const supabase = await createClient();
+    const supabase = await createClient()
 
     await supabase.from('audit_logs').insert({
       table_name: 'categories',
@@ -286,21 +296,22 @@ async function logAuditAction(action: string, categoryId: string, userId: string
       new_values: details?.newValues || details || null,
       ip_address: details?.ipAddress || null,
       user_agent: details?.userAgent || null,
-      created_at: new Date().toISOString()
-    });
+      created_at: new Date().toISOString(),
+    })
   } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.AUDIT, 'Error registrando auditoría', { error, action, categoryId });
+    logger.log(LogLevel.ERROR, LogCategory.AUDIT, 'Error registrando auditoría', {
+      error,
+      action,
+      categoryId,
+    })
   }
 }
 
 // ===================================
 // GET /api/admin/categories/[id] - Obtener categoría específica (Admin)
 // ===================================
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const startTime = Date.now();
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const startTime = Date.now()
 
   try {
     // Rate limiting
@@ -308,19 +319,16 @@ export async function GET(
       request,
       RATE_LIMIT_CONFIGS.admin,
       'admin-categories-get'
-    );
+    )
 
     if (!rateLimitResult.success) {
-      const response = NextResponse.json(
-        { error: rateLimitResult.message },
-        { status: 429 }
-      );
+      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
       // Rate limit headers are handled internally
-      return response;
+      return response
     }
 
     // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_read']);
+    const authResult = await requireAdminAuth(request, ['categories_read'])
 
     if (!authResult.success) {
       return NextResponse.json(
@@ -328,32 +336,32 @@ export async function GET(
           error: authResult.error,
           code: authResult.code,
           enterprise: true,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: authResult.status || 401 }
-      );
+      )
     }
 
-    const categoryId = params.id;
-    const url = new URL(request.url);
-    const includeStats = url.searchParams.get('include_stats') === 'true';
+    const categoryId = params.id
+    const url = new URL(request.url)
+    const includeStats = url.searchParams.get('include_stats') === 'true'
 
     // Obtener categoría
-    const category = await getCategoryById(categoryId);
+    const category = await getCategoryById(categoryId)
 
     if (!category) {
       const notFoundResponse: ApiResponse<null> = {
         data: null,
         success: false,
-        error: 'Categoría no encontrada'
-      };
-      return NextResponse.json(notFoundResponse, { status: 404 });
+        error: 'Categoría no encontrada',
+      }
+      return NextResponse.json(notFoundResponse, { status: 404 })
     }
 
     // Obtener estadísticas si se solicitan
-    let stats: CategoryStats | undefined;
+    let stats: CategoryStats | undefined
     if (includeStats) {
-      stats = await getCategoryStats(categoryId);
+      stats = await getCategoryStats(categoryId)
     }
 
     // Registrar métricas
@@ -362,24 +370,26 @@ export async function GET(
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id
-    });
+      userId: authResult.user?.id,
+    })
 
     const response: ApiResponse<Category & { stats?: CategoryStats }> = {
       data: {
         ...category,
-        ...(stats && { stats })
+        ...(stats && { stats }),
       },
       success: true,
-      message: 'Categoría obtenida exitosamente'
-    };
+      message: 'Categoría obtenida exitosamente',
+    }
 
-    const nextResponse = NextResponse.json(response);
+    const nextResponse = NextResponse.json(response)
     // Rate limit headers are handled internally
-    return nextResponse;
-
+    return nextResponse
   } catch (error: any) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/categories/[id]', { error, categoryId: params.id });
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/categories/[id]', {
+      error,
+      categoryId: params.id,
+    })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -387,27 +397,24 @@ export async function GET(
       method: 'GET',
       statusCode: 500,
       responseTime: Date.now() - startTime,
-      error: error.message || 'Unknown error'
-    });
+      error: error.message || 'Unknown error',
+    })
 
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
-      error: error.message || 'Error interno del servidor'
-    };
+      error: error.message || 'Error interno del servidor',
+    }
 
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }
 
 // ===================================
 // PUT /api/admin/categories/[id] - Actualizar categoría (Admin)
 // ===================================
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const startTime = Date.now();
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  const startTime = Date.now()
 
   try {
     // Rate limiting
@@ -416,22 +423,19 @@ export async function PUT(
       {
         windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
         maxRequests: Math.floor(RATE_LIMIT_CONFIGS.admin.maxRequests / 2),
-        message: 'Demasiadas actualizaciones de categorías'
+        message: 'Demasiadas actualizaciones de categorías',
       },
       'admin-categories-update'
-    );
+    )
 
     if (!rateLimitResult.success) {
-      const response = NextResponse.json(
-        { error: rateLimitResult.message },
-        { status: 429 }
-      );
+      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
       // Rate limit headers are handled internally
-      return response;
+      return response
     }
 
     // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_update']);
+    const authResult = await requireAdminAuth(request, ['categories_update'])
 
     if (!authResult.success) {
       return NextResponse.json(
@@ -439,39 +443,39 @@ export async function PUT(
           error: authResult.error,
           code: authResult.code,
           enterprise: true,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: authResult.status || 401 }
-      );
+      )
     }
 
-    const categoryId = params.id;
-    const body = await request.json();
-    
+    const categoryId = params.id
+    const body = await request.json()
+
     // Validar datos de entrada
-    const updateData = UpdateCategorySchema.parse(body);
+    const updateData = UpdateCategorySchema.parse(body)
 
     // Obtener categoría actual para auditoría
-    const oldCategory = await getCategoryById(categoryId);
+    const oldCategory = await getCategoryById(categoryId)
     if (!oldCategory) {
       const notFoundResponse: ApiResponse<null> = {
         data: null,
         success: false,
-        error: 'Categoría no encontrada'
-      };
-      return NextResponse.json(notFoundResponse, { status: 404 });
+        error: 'Categoría no encontrada',
+      }
+      return NextResponse.json(notFoundResponse, { status: 404 })
     }
 
     // Actualizar categoría
-    const updatedCategory = await updateCategory(categoryId, updateData, authResult.user?.id!);
+    const updatedCategory = await updateCategory(categoryId, updateData, authResult.user?.id!)
 
     // Registrar auditoría
     await logAuditAction('update', categoryId, authResult.user?.id!, {
       oldValues: oldCategory,
       newValues: updatedCategory,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-      userAgent: request.headers.get('user-agent')
-    });
+      userAgent: request.headers.get('user-agent'),
+    })
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -479,21 +483,23 @@ export async function PUT(
       method: 'PUT',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id
-    });
+      userId: authResult.user?.id,
+    })
 
     const response: ApiResponse<Category> = {
       data: updatedCategory,
       success: true,
-      message: 'Categoría actualizada exitosamente'
-    };
+      message: 'Categoría actualizada exitosamente',
+    }
 
-    const nextResponse = NextResponse.json(response);
+    const nextResponse = NextResponse.json(response)
     // Rate limit headers are handled internally
-    return nextResponse;
-
+    return nextResponse
   } catch (error: any) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PUT /api/admin/categories/[id]', { error, categoryId: params.id });
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PUT /api/admin/categories/[id]', {
+      error,
+      categoryId: params.id,
+    })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -501,27 +507,24 @@ export async function PUT(
       method: 'PUT',
       statusCode: 500,
       responseTime: Date.now() - startTime,
-      error: error.message || 'Unknown error'
-    });
+      error: error.message || 'Unknown error',
+    })
 
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
-      error: error.message || 'Error interno del servidor'
-    };
+      error: error.message || 'Error interno del servidor',
+    }
 
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }
 
 // ===================================
 // DELETE /api/admin/categories/[id] - Eliminar categoría (Admin)
 // ===================================
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const startTime = Date.now();
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const startTime = Date.now()
 
   try {
     // Rate limiting
@@ -530,22 +533,19 @@ export async function DELETE(
       {
         windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
         maxRequests: Math.floor(RATE_LIMIT_CONFIGS.admin.maxRequests / 4),
-        message: 'Demasiadas eliminaciones de categorías'
+        message: 'Demasiadas eliminaciones de categorías',
       },
       'admin-categories-delete'
-    );
+    )
 
     if (!rateLimitResult.success) {
-      const response = NextResponse.json(
-        { error: rateLimitResult.message },
-        { status: 429 }
-      );
+      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
       // Rate limit headers are handled internally
-      return response;
+      return response
     }
 
     // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_delete']);
+    const authResult = await requireAdminAuth(request, ['categories_delete'])
 
     if (!authResult.success) {
       return NextResponse.json(
@@ -553,34 +553,34 @@ export async function DELETE(
           error: authResult.error,
           code: authResult.code,
           enterprise: true,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: authResult.status || 401 }
-      );
+      )
     }
 
-    const categoryId = params.id;
+    const categoryId = params.id
 
     // Obtener categoría para auditoría
-    const category = await getCategoryById(categoryId);
+    const category = await getCategoryById(categoryId)
     if (!category) {
       const notFoundResponse: ApiResponse<null> = {
         data: null,
         success: false,
-        error: 'Categoría no encontrada'
-      };
-      return NextResponse.json(notFoundResponse, { status: 404 });
+        error: 'Categoría no encontrada',
+      }
+      return NextResponse.json(notFoundResponse, { status: 404 })
     }
 
     // Eliminar categoría
-    await deleteCategory(categoryId, authResult.user?.id!);
+    await deleteCategory(categoryId, authResult.user?.id!)
 
     // Registrar auditoría
     await logAuditAction('delete', categoryId, authResult.user?.id!, {
       oldValues: category,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-      userAgent: request.headers.get('user-agent')
-    });
+      userAgent: request.headers.get('user-agent'),
+    })
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -588,21 +588,23 @@ export async function DELETE(
       method: 'DELETE',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id
-    });
+      userId: authResult.user?.id,
+    })
 
     const response: ApiResponse<null> = {
       data: null,
       success: true,
-      message: 'Categoría eliminada exitosamente'
-    };
+      message: 'Categoría eliminada exitosamente',
+    }
 
-    const nextResponse = NextResponse.json(response);
+    const nextResponse = NextResponse.json(response)
     // Rate limit headers are handled internally
-    return nextResponse;
-
+    return nextResponse
   } catch (error: any) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en DELETE /api/admin/categories/[id]', { error, categoryId: params.id });
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en DELETE /api/admin/categories/[id]', {
+      error,
+      categoryId: params.id,
+    })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -610,15 +612,15 @@ export async function DELETE(
       method: 'DELETE',
       statusCode: 500,
       responseTime: Date.now() - startTime,
-      error: error.message || 'Unknown error'
-    });
+      error: error.message || 'Unknown error',
+    })
 
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
-      error: error.message || 'Error interno del servidor'
-    };
+      error: error.message || 'Error interno del servidor',
+    }
 
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }

@@ -1,40 +1,43 @@
 // 🔧 Enterprise Validation Schemas
 
-import { z } from 'zod';
-import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod'
+import { NextRequest, NextResponse } from 'next/server'
 
 // =====================================================
 // INTERFACES PARA TIPADO ESPECÍFICO
 // =====================================================
 
 export interface ValidationContext {
-  params?: Record<string, string>;
+  params?: Record<string, string>
   user?: {
-    id: string;
-    role: string;
-    permissions?: string[];
-  };
-  metadata?: Record<string, unknown>;
+    id: string
+    role: string
+    permissions?: string[]
+  }
+  metadata?: Record<string, unknown>
 }
 
 export interface ValidationHandler {
-  (request: NextRequest & { validatedData?: unknown }, context: ValidationContext): Promise<NextResponse>;
+  (
+    request: NextRequest & { validatedData?: unknown },
+    context: ValidationContext
+  ): Promise<NextResponse>
 }
 
 export interface ValidationError {
-  field: string;
-  message: string;
-  code: string;
-  value?: unknown;
+  field: string
+  message: string
+  code: string
+  value?: unknown
 }
 
 export interface ValidationResponse {
-  success: boolean;
-  error?: string;
-  code?: string;
-  details?: ValidationError[];
-  timestamp: string;
-  path: string;
+  success: boolean
+  error?: string
+  code?: string
+  details?: ValidationError[]
+  timestamp: string
+  path: string
 }
 
 // =====================================================
@@ -51,15 +54,19 @@ export const ProductSchema = z.object({
   low_stock_threshold: z.number().int().min(0).optional(),
   category_id: z.string().uuid('ID de categoría inválido'),
   brand: z.string().optional(),
-  images: z.array(z.object({
-    url: z.string().url(),
-    alt_text: z.string().optional(),
-    is_primary: z.boolean().default(false)
-  })).optional(),
+  images: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        alt_text: z.string().optional(),
+        is_primary: z.boolean().default(false),
+      })
+    )
+    .optional(),
   is_active: z.boolean().default(true),
   is_featured: z.boolean().default(false),
-  status: z.enum(['active', 'inactive', 'draft']).default('draft')
-});
+  status: z.enum(['active', 'inactive', 'draft']).default('draft'),
+})
 
 export const ProductFiltersSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
@@ -71,12 +78,12 @@ export const ProductFiltersSchema = z.object({
   price_min: z.coerce.number().positive().optional(),
   price_max: z.coerce.number().positive().optional(),
   sort_by: z.enum(['name', 'price', 'stock', 'created_at']).default('created_at'),
-  sort_order: z.enum(['asc', 'desc']).default('desc')
-});
+  sort_order: z.enum(['asc', 'desc']).default('desc'),
+})
 
 export const ProductParamsSchema = z.object({
-  id: z.string().uuid('ID de producto inválido')
-});
+  id: z.string().uuid('ID de producto inválido'),
+})
 
 // =====================================================
 // MIDDLEWARE DE VALIDACIÓN TIPADO
@@ -84,29 +91,34 @@ export const ProductParamsSchema = z.object({
 
 export function withValidation<T extends z.ZodSchema>(schema: T) {
   return function (handler: ValidationHandler) {
-    return async function (request: NextRequest, context: ValidationContext): Promise<NextResponse> {
+    return async function (
+      request: NextRequest,
+      context: ValidationContext
+    ): Promise<NextResponse> {
       try {
-        let data;
-        
+        let data
+
         if (request.method === 'GET') {
           // Validar query parameters
-          const { searchParams } = new URL(request.url);
-          data = Object.fromEntries(searchParams.entries());
-          
+          const { searchParams } = new URL(request.url)
+          data = Object.fromEntries(searchParams.entries())
+
           // Convertir tipos para números y booleans
           Object.keys(data).forEach(key => {
-            if (data[key] === 'true') {data[key] = true;}
-            else if (data[key] === 'false') {data[key] = false;}
-            else if (!isNaN(Number(data[key])) && data[key] !== '') {
-              data[key] = Number(data[key]);
+            if (data[key] === 'true') {
+              data[key] = true
+            } else if (data[key] === 'false') {
+              data[key] = false
+            } else if (!isNaN(Number(data[key])) && data[key] !== '') {
+              data[key] = Number(data[key])
             }
-          });
+          })
         } else {
           // Validar body para POST/PUT
-          data = await request.json();
+          data = await request.json()
         }
 
-        const validationResult = schema.safeParse(data);
+        const validationResult = schema.safeParse(data)
 
         if (!validationResult.success) {
           const response: ValidationResponse = {
@@ -117,41 +129,32 @@ export function withValidation<T extends z.ZodSchema>(schema: T) {
               field: err.path.join('.'),
               message: err.message,
               code: err.code,
-              value: err.input
+              value: err.input,
             })),
             timestamp: new Date().toISOString(),
-            path: request.url
-          };
+            path: request.url,
+          }
 
-          return NextResponse.json(response, { status: 422 });
+          return NextResponse.json(response, { status: 422 })
         }
 
-        const requestWithValidation = request as NextRequest & { validatedData: z.infer<T> };
-        requestWithValidation.validatedData = validationResult.data;
-        
-        return await handler(requestWithValidation, context);
+        const requestWithValidation = request as NextRequest & { validatedData: z.infer<T> }
+        requestWithValidation.validatedData = validationResult.data
+
+        return await handler(requestWithValidation, context)
       } catch (error) {
-        console.error('Validation middleware error:', error);
-        
+        console.error('Validation middleware error:', error)
+
         const errorResponse: ValidationResponse = {
           success: false,
           error: 'Error de validación',
           code: 'VALIDATION_MIDDLEWARE_ERROR',
           timestamp: new Date().toISOString(),
-          path: request.url
-        };
+          path: request.url,
+        }
 
-        return NextResponse.json(errorResponse, { status: 500 });
+        return NextResponse.json(errorResponse, { status: 500 })
       }
-    };
-  };
+    }
+  }
 }
-
-
-
-
-
-
-
-
-

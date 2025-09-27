@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { CheckoutFlow } from './checkout-flow';
+import type { Meta, StoryObj } from '@storybook/react'
+import { CheckoutFlow } from './checkout-flow'
 
 const meta: Meta<typeof CheckoutFlow> = {
   title: 'Design System/E-commerce/CheckoutFlow',
@@ -8,7 +8,8 @@ const meta: Meta<typeof CheckoutFlow> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Componente para mostrar el flujo de checkout paso a paso con diferentes estados y configuraciones.',
+        component:
+          'Componente para mostrar el flujo de checkout paso a paso con diferentes estados y configuraciones.',
       },
     },
   },
@@ -28,10 +29,10 @@ const meta: Meta<typeof CheckoutFlow> = {
     //   description: 'Mostrar barra de progreso',
     // },
   },
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockData = {
   totalPrice: 30000,
@@ -40,7 +41,7 @@ const mockData = {
   finalTotal: 31500,
   shippingMethod: 'standard' as const,
   appliedCoupon: null,
-};
+}
 
 export const StepCart: Story = {
   args: {
@@ -49,7 +50,7 @@ export const StepCart: Story = {
     variant: 'default',
     // showProgress: true,
   },
-};
+}
 
 export const StepShipping: Story = {
   args: {
@@ -58,7 +59,7 @@ export const StepShipping: Story = {
     variant: 'default',
     // showProgress: true,
   },
-};
+}
 
 export const StepPayment: Story = {
   args: {
@@ -67,7 +68,7 @@ export const StepPayment: Story = {
     variant: 'default',
     // showProgress: true,
   },
-};
+}
 
 export const StepConfirmation: Story = {
   args: {
@@ -76,7 +77,7 @@ export const StepConfirmation: Story = {
     variant: 'default',
     // showProgress: true,
   },
-};
+}
 
 export const CompactVariant: Story = {
   args: {
@@ -85,7 +86,7 @@ export const CompactVariant: Story = {
     variant: 'compact',
     // showProgress: false,
   },
-};
+}
 
 export const DetailedVariant: Story = {
   args: {
@@ -94,7 +95,7 @@ export const DetailedVariant: Story = {
     variant: 'detailed',
     // showProgress: true,
   },
-};
+}
 
 export const WithoutProgress: Story = {
   args: {
@@ -103,13 +104,4 @@ export const WithoutProgress: Story = {
     variant: 'default',
     // showProgress: false,
   },
-};
-
-
-
-
-
-
-
-
-
+}

@@ -4,277 +4,283 @@
 // structured data, robots.txt, enlaces internos y compliance general
 // ===================================
 
-import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger';
-import { getRedisClient } from '@/lib/integrations/redis';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { enhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager';
-import { dynamicSEOManager } from '@/lib/seo/dynamic-seo-manager';
-import { advancedSchemaMarkup } from '@/lib/seo/advanced-schema-markup';
+import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger'
+import { getRedisClient } from '@/lib/integrations/redis'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { enhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager'
+import { dynamicSEOManager } from '@/lib/seo/dynamic-seo-manager'
+import { advancedSchemaMarkup } from '@/lib/seo/advanced-schema-markup'
 
 // ===================================
 // INTERFACES Y TIPOS PRINCIPALES
 // ===================================
 
 export interface SEOTestingConfig {
-  enableMetadataTests: boolean;
-  enableStructuredDataTests: boolean;
-  enableRobotsTxtTests: boolean;
-  enableInternalLinksTests: boolean;
-  enableComplianceTests: boolean;
-  enablePerformanceTests: boolean;
-  
+  enableMetadataTests: boolean
+  enableStructuredDataTests: boolean
+  enableRobotsTxtTests: boolean
+  enableInternalLinksTests: boolean
+  enableComplianceTests: boolean
+  enablePerformanceTests: boolean
+
   // Configuración de tests
-  testTimeout: number; // segundos
-  maxConcurrentTests: number;
-  retryAttempts: number;
-  
+  testTimeout: number // segundos
+  maxConcurrentTests: number
+  retryAttempts: number
+
   // Umbrales de validación
   thresholds: {
-    titleMinLength: number;
-    titleMaxLength: number;
-    descriptionMinLength: number;
-    descriptionMaxLength: number;
-    maxInternalLinksPerPage: number;
-    minInternalLinksPerPage: number;
-    maxPageLoadTime: number;
-    minSEOScore: number;
-  };
-  
+    titleMinLength: number
+    titleMaxLength: number
+    descriptionMinLength: number
+    descriptionMaxLength: number
+    maxInternalLinksPerPage: number
+    minInternalLinksPerPage: number
+    maxPageLoadTime: number
+    minSEOScore: number
+  }
+
   // URLs a testear
-  testUrls: string[];
-  excludePatterns: string[];
-  
+  testUrls: string[]
+  excludePatterns: string[]
+
   // Configuración de cache
-  cacheEnabled: boolean;
-  cacheTTL: number;
-  
+  cacheEnabled: boolean
+  cacheTTL: number
+
   // Configuración de reportes
-  enableDetailedReports: boolean;
-  enableScreenshots: boolean;
-  reportFormat: 'json' | 'html' | 'pdf';
+  enableDetailedReports: boolean
+  enableScreenshots: boolean
+  reportFormat: 'json' | 'html' | 'pdf'
 }
 
 export interface SEOTestResult {
-  testId: string;
-  testName: string;
-  testType: 'metadata' | 'structured_data' | 'robots_txt' | 'internal_links' | 'compliance' | 'performance';
-  url: string;
-  status: 'passed' | 'failed' | 'warning' | 'skipped';
-  score: number;
-  
+  testId: string
+  testName: string
+  testType:
+    | 'metadata'
+    | 'structured_data'
+    | 'robots_txt'
+    | 'internal_links'
+    | 'compliance'
+    | 'performance'
+  url: string
+  status: 'passed' | 'failed' | 'warning' | 'skipped'
+  score: number
+
   details: {
-    description: string;
-    expectedValue?: any;
-    actualValue?: any;
-    impact: 'critical' | 'high' | 'medium' | 'low';
-    category: string;
-  };
-  
-  suggestions: string[];
-  executionTime: number;
-  timestamp: Date;
+    description: string
+    expectedValue?: any
+    actualValue?: any
+    impact: 'critical' | 'high' | 'medium' | 'low'
+    category: string
+  }
+
+  suggestions: string[]
+  executionTime: number
+  timestamp: Date
 }
 
 export interface SEOTestSuite {
-  suiteId: string;
-  suiteName: string;
-  description: string;
-  tests: SEOTestResult[];
-  
+  suiteId: string
+  suiteName: string
+  description: string
+  tests: SEOTestResult[]
+
   summary: {
-    totalTests: number;
-    passed: number;
-    failed: number;
-    warnings: number;
-    skipped: number;
-    overallScore: number;
-    executionTime: number;
-  };
-  
+    totalTests: number
+    passed: number
+    failed: number
+    warnings: number
+    skipped: number
+    overallScore: number
+    executionTime: number
+  }
+
   coverage: {
-    metadataTests: number;
-    structuredDataTests: number;
-    robotsTxtTests: number;
-    internalLinksTests: number;
-    complianceTests: number;
-    performanceTests: number;
-  };
-  
-  startTime: Date;
-  endTime: Date;
-  status: 'running' | 'completed' | 'failed' | 'cancelled';
+    metadataTests: number
+    structuredDataTests: number
+    robotsTxtTests: number
+    internalLinksTests: number
+    complianceTests: number
+    performanceTests: number
+  }
+
+  startTime: Date
+  endTime: Date
+  status: 'running' | 'completed' | 'failed' | 'cancelled'
 }
 
 export interface MetadataTestResult {
-  url: string;
+  url: string
   title: {
-    exists: boolean;
-    length: number;
-    isUnique: boolean;
-    containsKeywords: boolean;
-    issues: string[];
-  };
+    exists: boolean
+    length: number
+    isUnique: boolean
+    containsKeywords: boolean
+    issues: string[]
+  }
   description: {
-    exists: boolean;
-    length: number;
-    isUnique: boolean;
-    containsKeywords: boolean;
-    issues: string[];
-  };
+    exists: boolean
+    length: number
+    isUnique: boolean
+    containsKeywords: boolean
+    issues: string[]
+  }
   keywords: {
-    exists: boolean;
-    count: number;
-    density: number;
-    issues: string[];
-  };
+    exists: boolean
+    count: number
+    density: number
+    issues: string[]
+  }
   openGraph: {
-    hasOgTitle: boolean;
-    hasOgDescription: boolean;
-    hasOgImage: boolean;
-    hasOgUrl: boolean;
-    issues: string[];
-  };
+    hasOgTitle: boolean
+    hasOgDescription: boolean
+    hasOgImage: boolean
+    hasOgUrl: boolean
+    issues: string[]
+  }
   twitter: {
-    hasTwitterCard: boolean;
-    hasTwitterTitle: boolean;
-    hasTwitterDescription: boolean;
-    hasTwitterImage: boolean;
-    issues: string[];
-  };
+    hasTwitterCard: boolean
+    hasTwitterTitle: boolean
+    hasTwitterDescription: boolean
+    hasTwitterImage: boolean
+    issues: string[]
+  }
   canonical: {
-    exists: boolean;
-    isValid: boolean;
-    issues: string[];
-  };
+    exists: boolean
+    isValid: boolean
+    issues: string[]
+  }
   robots: {
-    exists: boolean;
-    isValid: boolean;
-    allowsIndexing: boolean;
-    issues: string[];
-  };
+    exists: boolean
+    isValid: boolean
+    allowsIndexing: boolean
+    issues: string[]
+  }
 }
 
 export interface StructuredDataTestResult {
-  url: string;
+  url: string
   schemas: Array<{
-    type: string;
-    isValid: boolean;
-    errors: string[];
-    warnings: string[];
-    data: any;
-  }>;
-  
+    type: string
+    isValid: boolean
+    errors: string[]
+    warnings: string[]
+    data: any
+  }>
+
   coverage: {
-    hasOrganization: boolean;
-    hasWebSite: boolean;
-    hasWebPage: boolean;
-    hasBreadcrumb: boolean;
-    hasProduct: boolean;
-    hasReview: boolean;
-    hasFAQ: boolean;
-    hasArticle: boolean;
-  };
-  
+    hasOrganization: boolean
+    hasWebSite: boolean
+    hasWebPage: boolean
+    hasBreadcrumb: boolean
+    hasProduct: boolean
+    hasReview: boolean
+    hasFAQ: boolean
+    hasArticle: boolean
+  }
+
   validation: {
-    syntaxValid: boolean;
-    schemaValid: boolean;
-    googleValid: boolean;
-    issues: string[];
-  };
+    syntaxValid: boolean
+    schemaValid: boolean
+    googleValid: boolean
+    issues: string[]
+  }
 }
 
 export interface RobotsTxtTestResult {
-  exists: boolean;
-  isAccessible: boolean;
+  exists: boolean
+  isAccessible: boolean
   syntax: {
-    isValid: boolean;
-    errors: string[];
-    warnings: string[];
-  };
-  
+    isValid: boolean
+    errors: string[]
+    warnings: string[]
+  }
+
   directives: {
-    userAgents: string[];
-    disallowRules: string[];
-    allowRules: string[];
-    crawlDelay: number | null;
-    sitemapUrls: string[];
-  };
-  
+    userAgents: string[]
+    disallowRules: string[]
+    allowRules: string[]
+    crawlDelay: number | null
+    sitemapUrls: string[]
+  }
+
   analysis: {
-    blocksImportantPages: boolean;
-    allowsCriticalResources: boolean;
-    hasSitemapReference: boolean;
-    issues: string[];
-    suggestions: string[];
-  };
+    blocksImportantPages: boolean
+    allowsCriticalResources: boolean
+    hasSitemapReference: boolean
+    issues: string[]
+    suggestions: string[]
+  }
 }
 
 export interface InternalLinksTestResult {
-  url: string;
+  url: string
   links: {
-    total: number;
-    internal: number;
-    external: number;
-    broken: number;
-    noFollow: number;
-  };
-  
+    total: number
+    internal: number
+    external: number
+    broken: number
+    noFollow: number
+  }
+
   structure: {
-    depth: number;
-    hasProperHierarchy: boolean;
-    orphanedPages: string[];
-    circularReferences: string[];
-  };
-  
+    depth: number
+    hasProperHierarchy: boolean
+    orphanedPages: string[]
+    circularReferences: string[]
+  }
+
   anchors: {
-    descriptive: number;
-    generic: number;
-    empty: number;
-    overOptimized: number;
-  };
-  
+    descriptive: number
+    generic: number
+    empty: number
+    overOptimized: number
+  }
+
   analysis: {
-    linkEquity: number;
-    crawlability: number;
-    userExperience: number;
-    issues: string[];
-    suggestions: string[];
-  };
+    linkEquity: number
+    crawlability: number
+    userExperience: number
+    issues: string[]
+    suggestions: string[]
+  }
 }
 
 export interface ComplianceTestResult {
-  url: string;
+  url: string
   accessibility: {
-    score: number;
-    hasAltText: boolean;
-    hasProperHeadings: boolean;
-    hasSkipLinks: boolean;
-    colorContrast: boolean;
-    issues: string[];
-  };
-  
+    score: number
+    hasAltText: boolean
+    hasProperHeadings: boolean
+    hasSkipLinks: boolean
+    colorContrast: boolean
+    issues: string[]
+  }
+
   mobile: {
-    isMobileFriendly: boolean;
-    hasViewportMeta: boolean;
-    touchTargetsOk: boolean;
-    textReadable: boolean;
-    issues: string[];
-  };
-  
+    isMobileFriendly: boolean
+    hasViewportMeta: boolean
+    touchTargetsOk: boolean
+    textReadable: boolean
+    issues: string[]
+  }
+
   security: {
-    hasHttps: boolean;
-    hasSecurityHeaders: boolean;
-    noMixedContent: boolean;
-    issues: string[];
-  };
-  
+    hasHttps: boolean
+    hasSecurityHeaders: boolean
+    noMixedContent: boolean
+    issues: string[]
+  }
+
   performance: {
-    loadTime: number;
-    firstContentfulPaint: number;
-    largestContentfulPaint: number;
-    cumulativeLayoutShift: number;
-    issues: string[];
-  };
+    loadTime: number
+    firstContentfulPaint: number
+    largestContentfulPaint: number
+    cumulativeLayoutShift: number
+    issues: string[]
+  }
 }
 
 // Configuración por defecto
@@ -285,11 +291,11 @@ const DEFAULT_SEO_TESTING_CONFIG: SEOTestingConfig = {
   enableInternalLinksTests: true,
   enableComplianceTests: true,
   enablePerformanceTests: true,
-  
+
   testTimeout: 30, // 30 segundos
   maxConcurrentTests: 5,
   retryAttempts: 3,
-  
+
   thresholds: {
     titleMinLength: 30,
     titleMaxLength: 60,
@@ -298,80 +304,76 @@ const DEFAULT_SEO_TESTING_CONFIG: SEOTestingConfig = {
     maxInternalLinksPerPage: 100,
     minInternalLinksPerPage: 3,
     maxPageLoadTime: 3000, // 3 segundos
-    minSEOScore: 80
+    minSEOScore: 80,
   },
-  
+
   testUrls: [
     '/',
     '/shop',
     '/categories/pinturas',
     '/products/pintura-interior',
     '/about',
-    '/contact'
+    '/contact',
   ],
-  
-  excludePatterns: [
-    '/admin',
-    '/api',
-    '/auth',
-    '/checkout',
-    '/cart',
-    '/_next',
-    '/test',
-    '/debug'
-  ],
-  
+
+  excludePatterns: ['/admin', '/api', '/auth', '/checkout', '/cart', '/_next', '/test', '/debug'],
+
   cacheEnabled: true,
   cacheTTL: 1800, // 30 minutos
-  
+
   enableDetailedReports: true,
   enableScreenshots: false,
-  reportFormat: 'json'
-};
+  reportFormat: 'json',
+}
 
 // ===================================
 // ENHANCED SEO TESTING SUITE CLASS
 // ===================================
 
 export class EnhancedSEOTestingSuite {
-  private static instance: EnhancedSEOTestingSuite;
-  private config: SEOTestingConfig;
-  private redis: any;
-  private cache: Map<string, { data: any; timestamp: number }> = new Map();
-  private activeTestSuites: Map<string, SEOTestSuite> = new Map();
-  private testHistory: SEOTestSuite[] = [];
+  private static instance: EnhancedSEOTestingSuite
+  private config: SEOTestingConfig
+  private redis: any
+  private cache: Map<string, { data: any; timestamp: number }> = new Map()
+  private activeTestSuites: Map<string, SEOTestSuite> = new Map()
+  private testHistory: SEOTestSuite[] = []
 
   private constructor(config?: Partial<SEOTestingConfig>) {
-    this.config = { ...DEFAULT_SEO_TESTING_CONFIG, ...config };
-    this.initializeRedis();
+    this.config = { ...DEFAULT_SEO_TESTING_CONFIG, ...config }
+    this.initializeRedis()
 
-    logger.info(LogLevel.INFO, 'Enhanced SEO Testing Suite initialized', {
-      enabledTests: {
-        metadata: this.config.enableMetadataTests,
-        structuredData: this.config.enableStructuredDataTests,
-        robotsTxt: this.config.enableRobotsTxtTests,
-        internalLinks: this.config.enableInternalLinksTests,
-        compliance: this.config.enableComplianceTests,
-        performance: this.config.enablePerformanceTests
+    logger.info(
+      LogLevel.INFO,
+      'Enhanced SEO Testing Suite initialized',
+      {
+        enabledTests: {
+          metadata: this.config.enableMetadataTests,
+          structuredData: this.config.enableStructuredDataTests,
+          robotsTxt: this.config.enableRobotsTxtTests,
+          internalLinks: this.config.enableInternalLinksTests,
+          compliance: this.config.enableComplianceTests,
+          performance: this.config.enablePerformanceTests,
+        },
+        testUrls: this.config.testUrls.length,
+        maxConcurrent: this.config.maxConcurrentTests,
       },
-      testUrls: this.config.testUrls.length,
-      maxConcurrent: this.config.maxConcurrentTests
-    }, LogCategory.SEO);
+      LogCategory.SEO
+    )
   }
 
   public static getInstance(config?: Partial<SEOTestingConfig>): EnhancedSEOTestingSuite {
     if (!EnhancedSEOTestingSuite.instance) {
-      EnhancedSEOTestingSuite.instance = new EnhancedSEOTestingSuite(config);
+      EnhancedSEOTestingSuite.instance = new EnhancedSEOTestingSuite(config)
     }
-    return EnhancedSEOTestingSuite.instance;
+    return EnhancedSEOTestingSuite.instance
   }
 
   private async initializeRedis(): Promise<void> {
     try {
-      this.redis = await getRedisClient();
-      logger.info(LogLevel.INFO, 'Redis initialized for SEO testing suite', {}, LogCategory.SEO);
+      this.redis = await getRedisClient()
+      logger.info(LogLevel.INFO, 'Redis initialized for SEO testing suite', {}, LogCategory.SEO)
     } catch (error) {
-      logger.warn(LogLevel.WARN, 'Redis not available for SEO testing suite', {}, LogCategory.SEO);
+      logger.warn(LogLevel.WARN, 'Redis not available for SEO testing suite', {}, LogCategory.SEO)
     }
   }
 
@@ -383,19 +385,25 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar suite completa de tests SEO
    */
   public async runFullTestSuite(urls?: string[]): Promise<SEOTestSuite> {
-    const suiteId = `suite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const testUrls = urls || this.config.testUrls;
+    const suiteId = `suite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const testUrls = urls || this.config.testUrls
 
     try {
-      logger.info(LogLevel.INFO, 'Starting full SEO test suite', {
-        suiteId,
-        urlsCount: testUrls.length
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'Starting full SEO test suite',
+        {
+          suiteId,
+          urlsCount: testUrls.length,
+        },
+        LogCategory.SEO
+      )
 
       const testSuite: SEOTestSuite = {
         suiteId,
         suiteName: 'Full SEO Test Suite',
-        description: 'Comprehensive SEO testing including metadata, structured data, robots.txt, internal links, and compliance',
+        description:
+          'Comprehensive SEO testing including metadata, structured data, robots.txt, internal links, and compliance',
         tests: [],
         summary: {
           totalTests: 0,
@@ -404,7 +412,7 @@ export class EnhancedSEOTestingSuite {
           warnings: 0,
           skipped: 0,
           overallScore: 0,
-          executionTime: 0
+          executionTime: 0,
         },
         coverage: {
           metadataTests: 0,
@@ -412,33 +420,36 @@ export class EnhancedSEOTestingSuite {
           robotsTxtTests: 0,
           internalLinksTests: 0,
           complianceTests: 0,
-          performanceTests: 0
+          performanceTests: 0,
         },
         startTime: new Date(),
         endTime: new Date(),
-        status: 'running'
-      };
+        status: 'running',
+      }
 
-      this.activeTestSuites.set(suiteId, testSuite);
+      this.activeTestSuites.set(suiteId, testSuite)
 
       // Ejecutar tests en paralelo con límite de concurrencia
-      const testPromises = testUrls.map(url => this.runTestsForUrl(url));
-      const urlResults = await this.executeWithConcurrencyLimit(testPromises, this.config.maxConcurrentTests);
+      const testPromises = testUrls.map(url => this.runTestsForUrl(url))
+      const urlResults = await this.executeWithConcurrencyLimit(
+        testPromises,
+        this.config.maxConcurrentTests
+      )
 
       // Consolidar resultados
-      testSuite.tests = urlResults.flat();
-      testSuite.summary = this.calculateSummary(testSuite.tests);
-      testSuite.coverage = this.calculateCoverage(testSuite.tests);
-      testSuite.endTime = new Date();
-      testSuite.summary.executionTime = testSuite.endTime.getTime() - testSuite.startTime.getTime();
-      testSuite.status = 'completed';
+      testSuite.tests = urlResults.flat()
+      testSuite.summary = this.calculateSummary(testSuite.tests)
+      testSuite.coverage = this.calculateCoverage(testSuite.tests)
+      testSuite.endTime = new Date()
+      testSuite.summary.executionTime = testSuite.endTime.getTime() - testSuite.startTime.getTime()
+      testSuite.status = 'completed'
 
       // Guardar en historial
-      this.testHistory.push(testSuite);
-      this.activeTestSuites.delete(suiteId);
+      this.testHistory.push(testSuite)
+      this.activeTestSuites.delete(suiteId)
 
       // Cachear resultados
-      await this.setCachedData(`test_suite:${suiteId}`, testSuite);
+      await this.setCachedData(`test_suite:${suiteId}`, testSuite)
 
       // Integrar con SEO Analytics
       enhancedSEOAnalyticsManager.trackSEOMetrics({
@@ -447,30 +458,34 @@ export class EnhancedSEOTestingSuite {
           totalTests: testSuite.summary.totalTests,
           overallScore: testSuite.summary.overallScore,
           executionTime: testSuite.summary.executionTime,
-          timestamp: new Date()
-        }
-      });
+          timestamp: new Date(),
+        },
+      })
 
-      logger.info(LogLevel.INFO, 'SEO test suite completed', {
-        suiteId,
-        totalTests: testSuite.summary.totalTests,
-        overallScore: testSuite.summary.overallScore,
-        executionTime: testSuite.summary.executionTime
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'SEO test suite completed',
+        {
+          suiteId,
+          totalTests: testSuite.summary.totalTests,
+          overallScore: testSuite.summary.overallScore,
+          executionTime: testSuite.summary.executionTime,
+        },
+        LogCategory.SEO
+      )
 
-      return testSuite;
-
+      return testSuite
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to run SEO test suite', error as Error, LogCategory.SEO);
+      logger.error(LogLevel.ERROR, 'Failed to run SEO test suite', error as Error, LogCategory.SEO)
 
-      const failedSuite = this.activeTestSuites.get(suiteId);
+      const failedSuite = this.activeTestSuites.get(suiteId)
       if (failedSuite) {
-        failedSuite.status = 'failed';
-        failedSuite.endTime = new Date();
-        this.activeTestSuites.delete(suiteId);
+        failedSuite.status = 'failed'
+        failedSuite.endTime = new Date()
+        this.activeTestSuites.delete(suiteId)
       }
 
-      throw error;
+      throw error
     }
   }
 
@@ -478,49 +493,48 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar tests para una URL específica
    */
   private async runTestsForUrl(url: string): Promise<SEOTestResult[]> {
-    const results: SEOTestResult[] = [];
+    const results: SEOTestResult[] = []
 
     try {
       // Tests de metadata
       if (this.config.enableMetadataTests) {
-        const metadataTests = await this.runMetadataTests(url);
-        results.push(...metadataTests);
+        const metadataTests = await this.runMetadataTests(url)
+        results.push(...metadataTests)
       }
 
       // Tests de structured data
       if (this.config.enableStructuredDataTests) {
-        const structuredDataTests = await this.runStructuredDataTests(url);
-        results.push(...structuredDataTests);
+        const structuredDataTests = await this.runStructuredDataTests(url)
+        results.push(...structuredDataTests)
       }
 
       // Tests de robots.txt (solo para la homepage)
       if (this.config.enableRobotsTxtTests && (url === '/' || url === '')) {
-        const robotsTests = await this.runRobotsTxtTests();
-        results.push(...robotsTests);
+        const robotsTests = await this.runRobotsTxtTests()
+        results.push(...robotsTests)
       }
 
       // Tests de enlaces internos
       if (this.config.enableInternalLinksTests) {
-        const linksTests = await this.runInternalLinksTests(url);
-        results.push(...linksTests);
+        const linksTests = await this.runInternalLinksTests(url)
+        results.push(...linksTests)
       }
 
       // Tests de compliance
       if (this.config.enableComplianceTests) {
-        const complianceTests = await this.runComplianceTests(url);
-        results.push(...complianceTests);
+        const complianceTests = await this.runComplianceTests(url)
+        results.push(...complianceTests)
       }
 
       // Tests de performance
       if (this.config.enablePerformanceTests) {
-        const performanceTests = await this.runPerformanceTests(url);
-        results.push(...performanceTests);
+        const performanceTests = await this.runPerformanceTests(url)
+        results.push(...performanceTests)
       }
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to run tests for URL', error as Error, LogCategory.SEO);
+      logger.error(LogLevel.ERROR, 'Failed to run tests for URL', error as Error, LogCategory.SEO)
 
       // Crear test de error
       results.push({
@@ -534,14 +548,14 @@ export class EnhancedSEOTestingSuite {
           description: 'Failed to execute tests for this URL',
           actualValue: error instanceof Error ? error.message : 'Unknown error',
           impact: 'critical',
-          category: 'execution'
+          category: 'execution',
         },
         suggestions: ['Check URL accessibility', 'Verify server response', 'Review error logs'],
         executionTime: 0,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
+      return results
     }
   }
 
@@ -549,13 +563,13 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar tests de metadata
    */
   private async runMetadataTests(url: string): Promise<SEOTestResult[]> {
-    const startTime = Date.now();
-    const results: SEOTestResult[] = [];
+    const startTime = Date.now()
+    const results: SEOTestResult[] = []
 
     try {
       // Obtener metadata usando Dynamic SEO Manager
-      const metadata = await dynamicSEOManager.generateSEOMetadata(url, 'page');
-      const analysis = await dynamicSEOManager.analyzeSEO(metadata);
+      const metadata = await dynamicSEOManager.generateSEOMetadata(url, 'page')
+      const analysis = await dynamicSEOManager.analyzeSEO(metadata)
 
       // Test de título
       results.push({
@@ -570,12 +584,12 @@ export class EnhancedSEOTestingSuite {
           expectedValue: `${this.config.thresholds.titleMinLength}-${this.config.thresholds.titleMaxLength} characters`,
           actualValue: `${metadata.title?.length || 0} characters`,
           impact: 'high',
-          category: 'metadata'
+          category: 'metadata',
         },
         suggestions: this.getTitleSuggestions(metadata.title),
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de descripción
       results.push({
@@ -590,12 +604,12 @@ export class EnhancedSEOTestingSuite {
           expectedValue: `${this.config.thresholds.descriptionMinLength}-${this.config.thresholds.descriptionMaxLength} characters`,
           actualValue: `${metadata.description?.length || 0} characters`,
           impact: 'high',
-          category: 'metadata'
+          category: 'metadata',
         },
         suggestions: this.getDescriptionSuggestions(metadata.description),
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de keywords
       results.push({
@@ -610,12 +624,12 @@ export class EnhancedSEOTestingSuite {
           expectedValue: '3-5 relevant keywords',
           actualValue: `${metadata.keywords?.length || 0} keywords`,
           impact: 'medium',
-          category: 'metadata'
+          category: 'metadata',
         },
         suggestions: this.getKeywordsSuggestions(metadata.keywords),
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de Open Graph
       results.push({
@@ -630,17 +644,16 @@ export class EnhancedSEOTestingSuite {
           expectedValue: 'og:title, og:description, og:image, og:url',
           actualValue: this.getOpenGraphStatus(metadata),
           impact: 'medium',
-          category: 'metadata'
+          category: 'metadata',
         },
         suggestions: this.getOpenGraphSuggestions(metadata),
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to run metadata tests', error as Error, LogCategory.SEO);
+      logger.error(LogLevel.ERROR, 'Failed to run metadata tests', error as Error, LogCategory.SEO)
 
       results.push({
         testId: `metadata_error_${Date.now()}`,
@@ -653,14 +666,14 @@ export class EnhancedSEOTestingSuite {
           description: 'Failed to analyze metadata',
           actualValue: error instanceof Error ? error.message : 'Unknown error',
           impact: 'critical',
-          category: 'metadata'
+          category: 'metadata',
         },
         suggestions: ['Check URL accessibility', 'Verify metadata generation'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
+      return results
     }
   }
 
@@ -668,14 +681,14 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar tests de structured data
    */
   private async runStructuredDataTests(url: string): Promise<SEOTestResult[]> {
-    const startTime = Date.now();
-    const results: SEOTestResult[] = [];
+    const startTime = Date.now()
+    const results: SEOTestResult[] = []
 
     try {
       // Simular análisis de structured data (en producción se analizaría el HTML real)
-      const hasValidSchema = Math.random() > 0.2; // 80% de probabilidad de tener schema válido
-      const schemaTypes = ['Organization', 'WebSite', 'WebPage', 'Product', 'BreadcrumbList'];
-      const detectedSchemas = schemaTypes.filter(() => Math.random() > 0.4);
+      const hasValidSchema = Math.random() > 0.2 // 80% de probabilidad de tener schema válido
+      const schemaTypes = ['Organization', 'WebSite', 'WebPage', 'Product', 'BreadcrumbList']
+      const detectedSchemas = schemaTypes.filter(() => Math.random() > 0.4)
 
       // Test de presencia de structured data
       results.push({
@@ -690,14 +703,15 @@ export class EnhancedSEOTestingSuite {
           expectedValue: 'At least one valid schema type',
           actualValue: `${detectedSchemas.length} schema types detected`,
           impact: 'high',
-          category: 'structured_data'
+          category: 'structured_data',
         },
-        suggestions: detectedSchemas.length === 0
-          ? ['Add JSON-LD structured data', 'Implement Organization schema', 'Add WebPage schema']
-          : ['Consider adding more specific schemas', 'Validate existing schemas'],
+        suggestions:
+          detectedSchemas.length === 0
+            ? ['Add JSON-LD structured data', 'Implement Organization schema', 'Add WebPage schema']
+            : ['Consider adding more specific schemas', 'Validate existing schemas'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de validación de schema
       results.push({
@@ -712,18 +726,22 @@ export class EnhancedSEOTestingSuite {
           expectedValue: 'Valid JSON-LD syntax',
           actualValue: hasValidSchema ? 'Valid' : 'Syntax errors detected',
           impact: 'high',
-          category: 'structured_data'
+          category: 'structured_data',
         },
         suggestions: hasValidSchema
           ? ['Schema is valid', 'Consider adding more properties']
-          : ['Fix JSON-LD syntax errors', 'Validate against Schema.org', 'Use Google Rich Results Test'],
+          : [
+              'Fix JSON-LD syntax errors',
+              'Validate against Schema.org',
+              'Use Google Rich Results Test',
+            ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test específico para productos (si es página de producto)
       if (url.includes('/products/')) {
-        const hasProductSchema = detectedSchemas.includes('Product');
+        const hasProductSchema = detectedSchemas.includes('Product')
         results.push({
           testId: `product_schema_${Date.now()}`,
           testName: 'Product Schema Validation',
@@ -736,20 +754,24 @@ export class EnhancedSEOTestingSuite {
             expectedValue: 'Valid Product schema with price, availability, reviews',
             actualValue: hasProductSchema ? 'Product schema present' : 'No Product schema found',
             impact: 'critical',
-            category: 'structured_data'
+            category: 'structured_data',
           },
           suggestions: hasProductSchema
             ? ['Product schema is present', 'Ensure all required properties are included']
             : ['Add Product schema', 'Include price and availability', 'Add review aggregation'],
           executionTime: Date.now() - startTime,
-          timestamp: new Date()
-        });
+          timestamp: new Date(),
+        })
       }
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to run structured data tests', error as Error, LogCategory.SEO);
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to run structured data tests',
+        error as Error,
+        LogCategory.SEO
+      )
 
       results.push({
         testId: `schema_error_${Date.now()}`,
@@ -762,14 +784,14 @@ export class EnhancedSEOTestingSuite {
           description: 'Failed to analyze structured data',
           actualValue: error instanceof Error ? error.message : 'Unknown error',
           impact: 'critical',
-          category: 'structured_data'
+          category: 'structured_data',
         },
         suggestions: ['Check page accessibility', 'Verify structured data implementation'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
+      return results
     }
   }
 
@@ -777,14 +799,14 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar tests de robots.txt
    */
   private async runRobotsTxtTests(): Promise<SEOTestResult[]> {
-    const startTime = Date.now();
-    const results: SEOTestResult[] = [];
+    const startTime = Date.now()
+    const results: SEOTestResult[] = []
 
     try {
       // Simular análisis de robots.txt
-      const robotsTxtExists = true; // En producción se verificaría la existencia real
-      const hasValidSyntax = Math.random() > 0.1; // 90% de probabilidad de sintaxis válida
-      const hasSitemapReference = Math.random() > 0.3; // 70% de probabilidad de referencia a sitemap
+      const robotsTxtExists = true // En producción se verificaría la existencia real
+      const hasValidSyntax = Math.random() > 0.1 // 90% de probabilidad de sintaxis válida
+      const hasSitemapReference = Math.random() > 0.3 // 70% de probabilidad de referencia a sitemap
 
       // Test de existencia de robots.txt
       results.push({
@@ -799,14 +821,14 @@ export class EnhancedSEOTestingSuite {
           expectedValue: 'robots.txt file accessible at /robots.txt',
           actualValue: robotsTxtExists ? 'File exists' : 'File not found',
           impact: 'high',
-          category: 'robots_txt'
+          category: 'robots_txt',
         },
         suggestions: robotsTxtExists
           ? ['robots.txt file is present']
           : ['Create robots.txt file', 'Add basic user-agent and disallow rules'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       if (robotsTxtExists) {
         // Test de sintaxis válida
@@ -822,14 +844,14 @@ export class EnhancedSEOTestingSuite {
             expectedValue: 'Valid robots.txt syntax',
             actualValue: hasValidSyntax ? 'Valid syntax' : 'Syntax errors detected',
             impact: 'medium',
-            category: 'robots_txt'
+            category: 'robots_txt',
           },
           suggestions: hasValidSyntax
             ? ['Syntax is valid']
             : ['Fix syntax errors', 'Validate directives', 'Check user-agent declarations'],
           executionTime: Date.now() - startTime,
-          timestamp: new Date()
-        });
+          timestamp: new Date(),
+        })
 
         // Test de referencia a sitemap
         results.push({
@@ -844,17 +866,17 @@ export class EnhancedSEOTestingSuite {
             expectedValue: 'Sitemap URL declared in robots.txt',
             actualValue: hasSitemapReference ? 'Sitemap reference found' : 'No sitemap reference',
             impact: 'medium',
-            category: 'robots_txt'
+            category: 'robots_txt',
           },
           suggestions: hasSitemapReference
             ? ['Sitemap reference is present']
             : ['Add sitemap reference to robots.txt', 'Ensure sitemap URL is accessible'],
           executionTime: Date.now() - startTime,
-          timestamp: new Date()
-        });
+          timestamp: new Date(),
+        })
 
         // Test de bloqueo de páginas importantes
-        const blocksImportantPages = Math.random() > 0.8; // 20% de probabilidad de bloquear páginas importantes
+        const blocksImportantPages = Math.random() > 0.8 // 20% de probabilidad de bloquear páginas importantes
         results.push({
           testId: `robots_blocking_${Date.now()}`,
           testName: 'Important Pages Accessibility',
@@ -865,22 +887,32 @@ export class EnhancedSEOTestingSuite {
           details: {
             description: 'Validates that important pages are not blocked',
             expectedValue: 'Important pages accessible to crawlers',
-            actualValue: blocksImportantPages ? 'Important pages blocked' : 'Important pages accessible',
+            actualValue: blocksImportantPages
+              ? 'Important pages blocked'
+              : 'Important pages accessible',
             impact: blocksImportantPages ? 'critical' : 'low',
-            category: 'robots_txt'
+            category: 'robots_txt',
           },
           suggestions: blocksImportantPages
-            ? ['Remove disallow rules for important pages', 'Review robots.txt directives', 'Test with Google Search Console']
+            ? [
+                'Remove disallow rules for important pages',
+                'Review robots.txt directives',
+                'Test with Google Search Console',
+              ]
             : ['Important pages are accessible'],
           executionTime: Date.now() - startTime,
-          timestamp: new Date()
-        });
+          timestamp: new Date(),
+        })
       }
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to run robots.txt tests', error as Error, LogCategory.SEO);
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to run robots.txt tests',
+        error as Error,
+        LogCategory.SEO
+      )
 
       results.push({
         testId: `robots_error_${Date.now()}`,
@@ -893,14 +925,14 @@ export class EnhancedSEOTestingSuite {
           description: 'Failed to analyze robots.txt',
           actualValue: error instanceof Error ? error.message : 'Unknown error',
           impact: 'critical',
-          category: 'robots_txt'
+          category: 'robots_txt',
         },
         suggestions: ['Check robots.txt accessibility', 'Verify server configuration'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
+      return results
     }
   }
 
@@ -908,20 +940,21 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar tests de enlaces internos
    */
   private async runInternalLinksTests(url: string): Promise<SEOTestResult[]> {
-    const startTime = Date.now();
-    const results: SEOTestResult[] = [];
+    const startTime = Date.now()
+    const results: SEOTestResult[] = []
 
     try {
       // Simular análisis de enlaces internos
-      const totalLinks = Math.floor(Math.random() * 50) + 10; // 10-60 enlaces
-      const internalLinks = Math.floor(totalLinks * 0.7); // 70% internos
-      const externalLinks = totalLinks - internalLinks;
-      const brokenLinks = Math.floor(Math.random() * 3); // 0-3 enlaces rotos
-      const noFollowLinks = Math.floor(externalLinks * 0.3); // 30% de externos son nofollow
+      const totalLinks = Math.floor(Math.random() * 50) + 10 // 10-60 enlaces
+      const internalLinks = Math.floor(totalLinks * 0.7) // 70% internos
+      const externalLinks = totalLinks - internalLinks
+      const brokenLinks = Math.floor(Math.random() * 3) // 0-3 enlaces rotos
+      const noFollowLinks = Math.floor(externalLinks * 0.3) // 30% de externos son nofollow
 
       // Test de cantidad de enlaces internos
-      const linksInRange = internalLinks >= this.config.thresholds.minInternalLinksPerPage &&
-                          internalLinks <= this.config.thresholds.maxInternalLinksPerPage;
+      const linksInRange =
+        internalLinks >= this.config.thresholds.minInternalLinksPerPage &&
+        internalLinks <= this.config.thresholds.maxInternalLinksPerPage
 
       results.push({
         testId: `links_count_${Date.now()}`,
@@ -935,16 +968,21 @@ export class EnhancedSEOTestingSuite {
           expectedValue: `${this.config.thresholds.minInternalLinksPerPage}-${this.config.thresholds.maxInternalLinksPerPage} internal links`,
           actualValue: `${internalLinks} internal links`,
           impact: 'medium',
-          category: 'internal_links'
+          category: 'internal_links',
         },
-        suggestions: internalLinks < this.config.thresholds.minInternalLinksPerPage
-          ? ['Add more internal links', 'Link to related content', 'Improve navigation']
-          : internalLinks > this.config.thresholds.maxInternalLinksPerPage
-          ? ['Reduce number of links', 'Focus on most important links', 'Use pagination if needed']
-          : ['Internal links count is optimal'],
+        suggestions:
+          internalLinks < this.config.thresholds.minInternalLinksPerPage
+            ? ['Add more internal links', 'Link to related content', 'Improve navigation']
+            : internalLinks > this.config.thresholds.maxInternalLinksPerPage
+              ? [
+                  'Reduce number of links',
+                  'Focus on most important links',
+                  'Use pagination if needed',
+                ]
+              : ['Internal links count is optimal'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de enlaces rotos
       results.push({
@@ -953,24 +991,25 @@ export class EnhancedSEOTestingSuite {
         testType: 'internal_links',
         url,
         status: brokenLinks === 0 ? 'passed' : 'failed',
-        score: brokenLinks === 0 ? 100 : Math.max(0, 100 - (brokenLinks * 25)),
+        score: brokenLinks === 0 ? 100 : Math.max(0, 100 - brokenLinks * 25),
         details: {
           description: 'Detects broken internal and external links',
           expectedValue: '0 broken links',
           actualValue: `${brokenLinks} broken links`,
           impact: brokenLinks > 0 ? 'high' : 'low',
-          category: 'internal_links'
+          category: 'internal_links',
         },
-        suggestions: brokenLinks === 0
-          ? ['No broken links detected']
-          : ['Fix broken links', 'Update or remove invalid URLs', 'Implement 301 redirects'],
+        suggestions:
+          brokenLinks === 0
+            ? ['No broken links detected']
+            : ['Fix broken links', 'Update or remove invalid URLs', 'Implement 301 redirects'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de anchor text descriptivo
-      const descriptiveAnchors = Math.floor(internalLinks * 0.8); // 80% descriptivos
-      const genericAnchors = internalLinks - descriptiveAnchors;
+      const descriptiveAnchors = Math.floor(internalLinks * 0.8) // 80% descriptivos
+      const genericAnchors = internalLinks - descriptiveAnchors
 
       results.push({
         testId: `links_anchors_${Date.now()}`,
@@ -984,17 +1023,22 @@ export class EnhancedSEOTestingSuite {
           expectedValue: '>70% descriptive anchor text',
           actualValue: `${Math.round((descriptiveAnchors / internalLinks) * 100)}% descriptive`,
           impact: 'medium',
-          category: 'internal_links'
+          category: 'internal_links',
         },
-        suggestions: descriptiveAnchors / internalLinks > 0.7
-          ? ['Good use of descriptive anchor text']
-          : ['Use more descriptive anchor text', 'Avoid generic terms like "click here"', 'Include relevant keywords'],
+        suggestions:
+          descriptiveAnchors / internalLinks > 0.7
+            ? ['Good use of descriptive anchor text']
+            : [
+                'Use more descriptive anchor text',
+                'Avoid generic terms like "click here"',
+                'Include relevant keywords',
+              ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de estructura de enlaces
-      const hasProperHierarchy = Math.random() > 0.2; // 80% de probabilidad de buena jerarquía
+      const hasProperHierarchy = Math.random() > 0.2 // 80% de probabilidad de buena jerarquía
       results.push({
         testId: `links_hierarchy_${Date.now()}`,
         testName: 'Link Hierarchy Structure',
@@ -1007,19 +1051,27 @@ export class EnhancedSEOTestingSuite {
           expectedValue: 'Clear hierarchical structure',
           actualValue: hasProperHierarchy ? 'Good hierarchy' : 'Hierarchy issues detected',
           impact: 'medium',
-          category: 'internal_links'
+          category: 'internal_links',
         },
         suggestions: hasProperHierarchy
           ? ['Link hierarchy is well structured']
-          : ['Improve link hierarchy', 'Create clear navigation paths', 'Link to parent/child pages'],
+          : [
+              'Improve link hierarchy',
+              'Create clear navigation paths',
+              'Link to parent/child pages',
+            ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to run internal links tests', error as Error, LogCategory.SEO);
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to run internal links tests',
+        error as Error,
+        LogCategory.SEO
+      )
 
       results.push({
         testId: `links_error_${Date.now()}`,
@@ -1032,14 +1084,14 @@ export class EnhancedSEOTestingSuite {
           description: 'Failed to analyze internal links',
           actualValue: error instanceof Error ? error.message : 'Unknown error',
           impact: 'critical',
-          category: 'internal_links'
+          category: 'internal_links',
         },
         suggestions: ['Check page accessibility', 'Verify link analysis'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
+      return results
     }
   }
 
@@ -1047,12 +1099,12 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar tests de compliance
    */
   private async runComplianceTests(url: string): Promise<SEOTestResult[]> {
-    const startTime = Date.now();
-    const results: SEOTestResult[] = [];
+    const startTime = Date.now()
+    const results: SEOTestResult[] = []
 
     try {
       // Test de HTTPS
-      const hasHttps = url.startsWith('https://') || !url.startsWith('http://');
+      const hasHttps = url.startsWith('https://') || !url.startsWith('http://')
       results.push({
         testId: `compliance_https_${Date.now()}`,
         testName: 'HTTPS Security',
@@ -1065,17 +1117,17 @@ export class EnhancedSEOTestingSuite {
           expectedValue: 'HTTPS protocol',
           actualValue: hasHttps ? 'HTTPS enabled' : 'HTTP only',
           impact: hasHttps ? 'low' : 'critical',
-          category: 'security'
+          category: 'security',
         },
         suggestions: hasHttps
           ? ['HTTPS is properly implemented']
           : ['Implement HTTPS', 'Install SSL certificate', 'Redirect HTTP to HTTPS'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de mobile-friendly
-      const isMobileFriendly = Math.random() > 0.1; // 90% de probabilidad de ser mobile-friendly
+      const isMobileFriendly = Math.random() > 0.1 // 90% de probabilidad de ser mobile-friendly
       results.push({
         testId: `compliance_mobile_${Date.now()}`,
         testName: 'Mobile Friendliness',
@@ -1088,67 +1140,88 @@ export class EnhancedSEOTestingSuite {
           expectedValue: 'Mobile-optimized layout',
           actualValue: isMobileFriendly ? 'Mobile-friendly' : 'Not mobile-optimized',
           impact: isMobileFriendly ? 'low' : 'high',
-          category: 'mobile'
+          category: 'mobile',
         },
         suggestions: isMobileFriendly
           ? ['Page is mobile-friendly']
           : ['Implement responsive design', 'Add viewport meta tag', 'Optimize for touch'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de accesibilidad
-      const accessibilityScore = Math.floor(Math.random() * 30) + 70; // 70-100
+      const accessibilityScore = Math.floor(Math.random() * 30) + 70 // 70-100
       results.push({
         testId: `compliance_accessibility_${Date.now()}`,
         testName: 'Accessibility Compliance',
         testType: 'compliance',
         url,
-        status: accessibilityScore >= 80 ? 'passed' : accessibilityScore >= 60 ? 'warning' : 'failed',
+        status:
+          accessibilityScore >= 80 ? 'passed' : accessibilityScore >= 60 ? 'warning' : 'failed',
         score: accessibilityScore,
         details: {
           description: 'Validates accessibility standards compliance',
           expectedValue: 'WCAG 2.1 AA compliance',
           actualValue: `${accessibilityScore}% accessibility score`,
           impact: accessibilityScore >= 80 ? 'low' : 'medium',
-          category: 'accessibility'
+          category: 'accessibility',
         },
-        suggestions: accessibilityScore >= 80
-          ? ['Good accessibility compliance']
-          : ['Add alt text to images', 'Improve color contrast', 'Add ARIA labels', 'Ensure keyboard navigation'],
+        suggestions:
+          accessibilityScore >= 80
+            ? ['Good accessibility compliance']
+            : [
+                'Add alt text to images',
+                'Improve color contrast',
+                'Add ARIA labels',
+                'Ensure keyboard navigation',
+              ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de velocidad de carga
-      const loadTime = Math.floor(Math.random() * 4000) + 1000; // 1-5 segundos
-      const isLoadTimeFast = loadTime <= this.config.thresholds.maxPageLoadTime;
+      const loadTime = Math.floor(Math.random() * 4000) + 1000 // 1-5 segundos
+      const isLoadTimeFast = loadTime <= this.config.thresholds.maxPageLoadTime
 
       results.push({
         testId: `compliance_speed_${Date.now()}`,
         testName: 'Page Load Speed',
         testType: 'performance',
         url,
-        status: isLoadTimeFast ? 'passed' : loadTime <= this.config.thresholds.maxPageLoadTime * 1.5 ? 'warning' : 'failed',
+        status: isLoadTimeFast
+          ? 'passed'
+          : loadTime <= this.config.thresholds.maxPageLoadTime * 1.5
+            ? 'warning'
+            : 'failed',
         score: Math.max(0, 100 - Math.floor((loadTime - 1000) / 50)),
         details: {
           description: 'Validates page loading performance',
           expectedValue: `<${this.config.thresholds.maxPageLoadTime}ms load time`,
           actualValue: `${loadTime}ms load time`,
           impact: isLoadTimeFast ? 'low' : 'high',
-          category: 'performance'
+          category: 'performance',
         },
         suggestions: isLoadTimeFast
           ? ['Page load speed is optimal']
-          : ['Optimize images', 'Minify CSS/JS', 'Use CDN', 'Enable compression', 'Reduce server response time'],
+          : [
+              'Optimize images',
+              'Minify CSS/JS',
+              'Use CDN',
+              'Enable compression',
+              'Reduce server response time',
+            ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to run compliance tests', error as Error, LogCategory.SEO);
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to run compliance tests',
+        error as Error,
+        LogCategory.SEO
+      )
 
       results.push({
         testId: `compliance_error_${Date.now()}`,
@@ -1161,14 +1234,14 @@ export class EnhancedSEOTestingSuite {
           description: 'Failed to analyze compliance',
           actualValue: error instanceof Error ? error.message : 'Unknown error',
           impact: 'critical',
-          category: 'compliance'
+          category: 'compliance',
         },
         suggestions: ['Check page accessibility', 'Verify compliance analysis'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
+      return results
     }
   }
 
@@ -1176,14 +1249,14 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar tests de performance
    */
   private async runPerformanceTests(url: string): Promise<SEOTestResult[]> {
-    const startTime = Date.now();
-    const results: SEOTestResult[] = [];
+    const startTime = Date.now()
+    const results: SEOTestResult[] = []
 
     try {
       // Simular métricas de Core Web Vitals
-      const lcp = Math.random() * 3 + 1.5; // 1.5-4.5 segundos
-      const fid = Math.random() * 200 + 50; // 50-250ms
-      const cls = Math.random() * 0.3; // 0-0.3
+      const lcp = Math.random() * 3 + 1.5 // 1.5-4.5 segundos
+      const fid = Math.random() * 200 + 50 // 50-250ms
+      const cls = Math.random() * 0.3 // 0-0.3
 
       // Test de Largest Contentful Paint (LCP)
       results.push({
@@ -1198,14 +1271,20 @@ export class EnhancedSEOTestingSuite {
           expectedValue: '≤2.5 seconds',
           actualValue: `${lcp.toFixed(2)} seconds`,
           impact: lcp <= 2.5 ? 'low' : 'high',
-          category: 'core_web_vitals'
+          category: 'core_web_vitals',
         },
-        suggestions: lcp <= 2.5
-          ? ['LCP is within good range']
-          : ['Optimize largest content element', 'Preload critical resources', 'Optimize images', 'Use CDN'],
+        suggestions:
+          lcp <= 2.5
+            ? ['LCP is within good range']
+            : [
+                'Optimize largest content element',
+                'Preload critical resources',
+                'Optimize images',
+                'Use CDN',
+              ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de First Input Delay (FID)
       results.push({
@@ -1220,14 +1299,20 @@ export class EnhancedSEOTestingSuite {
           expectedValue: '≤100 milliseconds',
           actualValue: `${fid.toFixed(0)} milliseconds`,
           impact: fid <= 100 ? 'low' : 'high',
-          category: 'core_web_vitals'
+          category: 'core_web_vitals',
         },
-        suggestions: fid <= 100
-          ? ['FID is within good range']
-          : ['Reduce JavaScript execution time', 'Split long tasks', 'Use web workers', 'Optimize third-party scripts'],
+        suggestions:
+          fid <= 100
+            ? ['FID is within good range']
+            : [
+                'Reduce JavaScript execution time',
+                'Split long tasks',
+                'Use web workers',
+                'Optimize third-party scripts',
+              ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de Cumulative Layout Shift (CLS)
       results.push({
@@ -1242,42 +1327,62 @@ export class EnhancedSEOTestingSuite {
           expectedValue: '≤0.1',
           actualValue: cls.toFixed(3),
           impact: cls <= 0.1 ? 'low' : 'medium',
-          category: 'core_web_vitals'
+          category: 'core_web_vitals',
         },
-        suggestions: cls <= 0.1
-          ? ['CLS is within good range']
-          : ['Set dimensions for images and videos', 'Reserve space for ads', 'Avoid inserting content above existing content'],
+        suggestions:
+          cls <= 0.1
+            ? ['CLS is within good range']
+            : [
+                'Set dimensions for images and videos',
+                'Reserve space for ads',
+                'Avoid inserting content above existing content',
+              ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
       // Test de SEO Score general
-      const seoScore = Math.floor(Math.random() * 30) + 70; // 70-100
+      const seoScore = Math.floor(Math.random() * 30) + 70 // 70-100
       results.push({
         testId: `perf_seo_score_${Date.now()}`,
         testName: 'Overall SEO Score',
         testType: 'performance',
         url,
-        status: seoScore >= this.config.thresholds.minSEOScore ? 'passed' : seoScore >= 70 ? 'warning' : 'failed',
+        status:
+          seoScore >= this.config.thresholds.minSEOScore
+            ? 'passed'
+            : seoScore >= 70
+              ? 'warning'
+              : 'failed',
         score: seoScore,
         details: {
           description: 'Overall SEO performance assessment',
           expectedValue: `≥${this.config.thresholds.minSEOScore} SEO score`,
           actualValue: `${seoScore} SEO score`,
           impact: seoScore >= this.config.thresholds.minSEOScore ? 'low' : 'medium',
-          category: 'seo_performance'
+          category: 'seo_performance',
         },
-        suggestions: seoScore >= this.config.thresholds.minSEOScore
-          ? ['SEO score is good']
-          : ['Improve metadata optimization', 'Add structured data', 'Optimize content', 'Fix technical issues'],
+        suggestions:
+          seoScore >= this.config.thresholds.minSEOScore
+            ? ['SEO score is good']
+            : [
+                'Improve metadata optimization',
+                'Add structured data',
+                'Optimize content',
+                'Fix technical issues',
+              ],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to run performance tests', error as Error, LogCategory.SEO);
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to run performance tests',
+        error as Error,
+        LogCategory.SEO
+      )
 
       results.push({
         testId: `perf_error_${Date.now()}`,
@@ -1290,14 +1395,14 @@ export class EnhancedSEOTestingSuite {
           description: 'Failed to analyze performance',
           actualValue: error instanceof Error ? error.message : 'Unknown error',
           impact: 'critical',
-          category: 'performance'
+          category: 'performance',
         },
         suggestions: ['Check page accessibility', 'Verify performance analysis'],
         executionTime: Date.now() - startTime,
-        timestamp: new Date()
-      });
+        timestamp: new Date(),
+      })
 
-      return results;
+      return results
     }
   }
 
@@ -1306,143 +1411,202 @@ export class EnhancedSEOTestingSuite {
   // ===================================
 
   private validateTitle(title?: string): 'passed' | 'failed' | 'warning' {
-    if (!title) {return 'failed';}
-    const length = title.length;
-    if (length >= this.config.thresholds.titleMinLength && length <= this.config.thresholds.titleMaxLength) {
-      return 'passed';
+    if (!title) {
+      return 'failed'
     }
-    return 'warning';
+    const length = title.length
+    if (
+      length >= this.config.thresholds.titleMinLength &&
+      length <= this.config.thresholds.titleMaxLength
+    ) {
+      return 'passed'
+    }
+    return 'warning'
   }
 
   private calculateTitleScore(title?: string): number {
-    if (!title) {return 0;}
-    const length = title.length;
-    const optimal = (this.config.thresholds.titleMinLength + this.config.thresholds.titleMaxLength) / 2;
-    const deviation = Math.abs(length - optimal);
-    return Math.max(0, 100 - deviation * 2);
+    if (!title) {
+      return 0
+    }
+    const length = title.length
+    const optimal =
+      (this.config.thresholds.titleMinLength + this.config.thresholds.titleMaxLength) / 2
+    const deviation = Math.abs(length - optimal)
+    return Math.max(0, 100 - deviation * 2)
   }
 
   private getTitleSuggestions(title?: string): string[] {
-    if (!title) {return ['Add a title tag', 'Include primary keywords', 'Make it descriptive'];}
+    if (!title) {
+      return ['Add a title tag', 'Include primary keywords', 'Make it descriptive']
+    }
 
-    const suggestions = [];
-    const length = title.length;
+    const suggestions = []
+    const length = title.length
 
     if (length < this.config.thresholds.titleMinLength) {
-      suggestions.push('Title is too short, add more descriptive text');
+      suggestions.push('Title is too short, add more descriptive text')
     }
     if (length > this.config.thresholds.titleMaxLength) {
-      suggestions.push('Title is too long, consider shortening');
+      suggestions.push('Title is too long, consider shortening')
     }
     if (!title.includes('|') && !title.includes('-')) {
-      suggestions.push('Consider adding brand name separated by | or -');
+      suggestions.push('Consider adding brand name separated by | or -')
     }
 
-    return suggestions.length > 0 ? suggestions : ['Title looks good'];
+    return suggestions.length > 0 ? suggestions : ['Title looks good']
   }
 
   private validateDescription(description?: string): 'passed' | 'failed' | 'warning' {
-    if (!description) {return 'failed';}
-    const length = description.length;
-    if (length >= this.config.thresholds.descriptionMinLength && length <= this.config.thresholds.descriptionMaxLength) {
-      return 'passed';
+    if (!description) {
+      return 'failed'
     }
-    return 'warning';
+    const length = description.length
+    if (
+      length >= this.config.thresholds.descriptionMinLength &&
+      length <= this.config.thresholds.descriptionMaxLength
+    ) {
+      return 'passed'
+    }
+    return 'warning'
   }
 
   private calculateDescriptionScore(description?: string): number {
-    if (!description) {return 0;}
-    const length = description.length;
-    const optimal = (this.config.thresholds.descriptionMinLength + this.config.thresholds.descriptionMaxLength) / 2;
-    const deviation = Math.abs(length - optimal);
-    return Math.max(0, 100 - deviation);
+    if (!description) {
+      return 0
+    }
+    const length = description.length
+    const optimal =
+      (this.config.thresholds.descriptionMinLength + this.config.thresholds.descriptionMaxLength) /
+      2
+    const deviation = Math.abs(length - optimal)
+    return Math.max(0, 100 - deviation)
   }
 
   private getDescriptionSuggestions(description?: string): string[] {
-    if (!description) {return ['Add a meta description', 'Include call-to-action', 'Describe page content'];}
+    if (!description) {
+      return ['Add a meta description', 'Include call-to-action', 'Describe page content']
+    }
 
-    const suggestions = [];
-    const length = description.length;
+    const suggestions = []
+    const length = description.length
 
     if (length < this.config.thresholds.descriptionMinLength) {
-      suggestions.push('Description is too short, add more details');
+      suggestions.push('Description is too short, add more details')
     }
     if (length > this.config.thresholds.descriptionMaxLength) {
-      suggestions.push('Description is too long, consider shortening');
+      suggestions.push('Description is too long, consider shortening')
     }
     if (!description.includes('!') && !description.includes('?')) {
-      suggestions.push('Consider adding a call-to-action');
+      suggestions.push('Consider adding a call-to-action')
     }
 
-    return suggestions.length > 0 ? suggestions : ['Description looks good'];
+    return suggestions.length > 0 ? suggestions : ['Description looks good']
   }
 
   private validateKeywords(keywords?: string[]): 'passed' | 'failed' | 'warning' {
-    if (!keywords || keywords.length === 0) {return 'warning';}
-    if (keywords.length >= 3 && keywords.length <= 5) {return 'passed';}
-    return 'warning';
+    if (!keywords || keywords.length === 0) {
+      return 'warning'
+    }
+    if (keywords.length >= 3 && keywords.length <= 5) {
+      return 'passed'
+    }
+    return 'warning'
   }
 
   private calculateKeywordsScore(keywords?: string[]): number {
-    if (!keywords) {return 50;}
-    const count = keywords.length;
-    if (count >= 3 && count <= 5) {return 90;}
-    if (count >= 1 && count <= 7) {return 70;}
-    return 40;
+    if (!keywords) {
+      return 50
+    }
+    const count = keywords.length
+    if (count >= 3 && count <= 5) {
+      return 90
+    }
+    if (count >= 1 && count <= 7) {
+      return 70
+    }
+    return 40
   }
 
   private getKeywordsSuggestions(keywords?: string[]): string[] {
     if (!keywords || keywords.length === 0) {
-      return ['Add relevant keywords', 'Include primary and secondary keywords'];
+      return ['Add relevant keywords', 'Include primary and secondary keywords']
     }
 
-    const suggestions = [];
+    const suggestions = []
     if (keywords.length < 3) {
-      suggestions.push('Add more relevant keywords');
+      suggestions.push('Add more relevant keywords')
     }
     if (keywords.length > 5) {
-      suggestions.push('Consider reducing number of keywords');
+      suggestions.push('Consider reducing number of keywords')
     }
 
-    return suggestions.length > 0 ? suggestions : ['Keywords look good'];
+    return suggestions.length > 0 ? suggestions : ['Keywords look good']
   }
 
   private validateOpenGraph(metadata: any): 'passed' | 'failed' | 'warning' {
-    const hasOgTitle = !!metadata.ogTitle;
-    const hasOgDescription = !!metadata.ogDescription;
-    const hasOgImage = !!metadata.ogImage;
+    const hasOgTitle = !!metadata.ogTitle
+    const hasOgDescription = !!metadata.ogDescription
+    const hasOgImage = !!metadata.ogImage
 
-    if (hasOgTitle && hasOgDescription && hasOgImage) {return 'passed';}
-    if (hasOgTitle || hasOgDescription) {return 'warning';}
-    return 'failed';
+    if (hasOgTitle && hasOgDescription && hasOgImage) {
+      return 'passed'
+    }
+    if (hasOgTitle || hasOgDescription) {
+      return 'warning'
+    }
+    return 'failed'
   }
 
   private calculateOpenGraphScore(metadata: any): number {
-    let score = 0;
-    if (metadata.ogTitle) {score += 25;}
-    if (metadata.ogDescription) {score += 25;}
-    if (metadata.ogImage) {score += 25;}
-    if (metadata.ogUrl) {score += 25;}
-    return score;
+    let score = 0
+    if (metadata.ogTitle) {
+      score += 25
+    }
+    if (metadata.ogDescription) {
+      score += 25
+    }
+    if (metadata.ogImage) {
+      score += 25
+    }
+    if (metadata.ogUrl) {
+      score += 25
+    }
+    return score
   }
 
   private getOpenGraphStatus(metadata: any): string {
-    const tags = [];
-    if (metadata.ogTitle) {tags.push('og:title');}
-    if (metadata.ogDescription) {tags.push('og:description');}
-    if (metadata.ogImage) {tags.push('og:image');}
-    if (metadata.ogUrl) {tags.push('og:url');}
-    return tags.length > 0 ? tags.join(', ') : 'No Open Graph tags';
+    const tags = []
+    if (metadata.ogTitle) {
+      tags.push('og:title')
+    }
+    if (metadata.ogDescription) {
+      tags.push('og:description')
+    }
+    if (metadata.ogImage) {
+      tags.push('og:image')
+    }
+    if (metadata.ogUrl) {
+      tags.push('og:url')
+    }
+    return tags.length > 0 ? tags.join(', ') : 'No Open Graph tags'
   }
 
   private getOpenGraphSuggestions(metadata: any): string[] {
-    const suggestions = [];
-    if (!metadata.ogTitle) {suggestions.push('Add og:title tag');}
-    if (!metadata.ogDescription) {suggestions.push('Add og:description tag');}
-    if (!metadata.ogImage) {suggestions.push('Add og:image tag');}
-    if (!metadata.ogUrl) {suggestions.push('Add og:url tag');}
+    const suggestions = []
+    if (!metadata.ogTitle) {
+      suggestions.push('Add og:title tag')
+    }
+    if (!metadata.ogDescription) {
+      suggestions.push('Add og:description tag')
+    }
+    if (!metadata.ogImage) {
+      suggestions.push('Add og:image tag')
+    }
+    if (!metadata.ogUrl) {
+      suggestions.push('Add og:url tag')
+    }
 
-    return suggestions.length > 0 ? suggestions : ['Open Graph tags are complete'];
+    return suggestions.length > 0 ? suggestions : ['Open Graph tags are complete']
   }
 
   // ===================================
@@ -1456,40 +1620,43 @@ export class EnhancedSEOTestingSuite {
     promises: Promise<T>[],
     limit: number
   ): Promise<T[]> {
-    const results: T[] = [];
-    const executing: Promise<void>[] = [];
+    const results: T[] = []
+    const executing: Promise<void>[] = []
 
     for (const promise of promises) {
       const execute = promise.then(result => {
-        results.push(result);
-      });
+        results.push(result)
+      })
 
-      executing.push(execute);
+      executing.push(execute)
 
       if (executing.length >= limit) {
-        await Promise.race(executing);
-        executing.splice(executing.findIndex(p => p === execute), 1);
+        await Promise.race(executing)
+        executing.splice(
+          executing.findIndex(p => p === execute),
+          1
+        )
       }
     }
 
-    await Promise.all(executing);
-    return results;
+    await Promise.all(executing)
+    return results
   }
 
   /**
    * Calcular resumen de resultados
    */
   private calculateSummary(tests: SEOTestResult[]): SEOTestSuite['summary'] {
-    const totalTests = tests.length;
-    const passed = tests.filter(t => t.status === 'passed').length;
-    const failed = tests.filter(t => t.status === 'failed').length;
-    const warnings = tests.filter(t => t.status === 'warning').length;
-    const skipped = tests.filter(t => t.status === 'skipped').length;
+    const totalTests = tests.length
+    const passed = tests.filter(t => t.status === 'passed').length
+    const failed = tests.filter(t => t.status === 'failed').length
+    const warnings = tests.filter(t => t.status === 'warning').length
+    const skipped = tests.filter(t => t.status === 'skipped').length
 
-    const totalScore = tests.reduce((sum, test) => sum + test.score, 0);
-    const overallScore = totalTests > 0 ? Math.round(totalScore / totalTests) : 0;
+    const totalScore = tests.reduce((sum, test) => sum + test.score, 0)
+    const overallScore = totalTests > 0 ? Math.round(totalScore / totalTests) : 0
 
-    const totalExecutionTime = tests.reduce((sum, test) => sum + test.executionTime, 0);
+    const totalExecutionTime = tests.reduce((sum, test) => sum + test.executionTime, 0)
 
     return {
       totalTests,
@@ -1498,8 +1665,8 @@ export class EnhancedSEOTestingSuite {
       warnings,
       skipped,
       overallScore,
-      executionTime: totalExecutionTime
-    };
+      executionTime: totalExecutionTime,
+    }
   }
 
   /**
@@ -1512,36 +1679,37 @@ export class EnhancedSEOTestingSuite {
       robotsTxtTests: tests.filter(t => t.testType === 'robots_txt').length,
       internalLinksTests: tests.filter(t => t.testType === 'internal_links').length,
       complianceTests: tests.filter(t => t.testType === 'compliance').length,
-      performanceTests: tests.filter(t => t.testType === 'performance').length
-    };
+      performanceTests: tests.filter(t => t.testType === 'performance').length,
+    }
   }
 
   /**
    * Obtener datos del cache
    */
   private async getCachedData(key: string): Promise<any> {
-    if (!this.config.cacheEnabled) {return null;}
+    if (!this.config.cacheEnabled) {
+      return null
+    }
 
     try {
       // Intentar Redis primero
       if (this.redis) {
-        const cached = await this.redis.get(`seo_testing:${key}`);
+        const cached = await this.redis.get(`seo_testing:${key}`)
         if (cached) {
-          return JSON.parse(cached);
+          return JSON.parse(cached)
         }
       }
 
       // Fallback a cache en memoria
-      const cached = this.cache.get(key);
+      const cached = this.cache.get(key)
       if (cached && Date.now() - cached.timestamp < this.config.cacheTTL * 1000) {
-        return cached.data;
+        return cached.data
       }
 
-      return null;
-
+      return null
     } catch (error) {
-      logger.warn(LogLevel.WARN, 'Error accessing cache', {}, LogCategory.SEO);
-      return null;
+      logger.warn(LogLevel.WARN, 'Error accessing cache', {}, LogCategory.SEO)
+      return null
     }
   }
 
@@ -1549,19 +1717,20 @@ export class EnhancedSEOTestingSuite {
    * Guardar datos en cache
    */
   private async setCachedData(key: string, data: any): Promise<void> {
-    if (!this.config.cacheEnabled) {return;}
+    if (!this.config.cacheEnabled) {
+      return
+    }
 
     try {
       // Cachear en Redis
       if (this.redis) {
-        await this.redis.setex(`seo_testing:${key}`, this.config.cacheTTL, JSON.stringify(data));
+        await this.redis.setex(`seo_testing:${key}`, this.config.cacheTTL, JSON.stringify(data))
       }
 
       // Cachear en memoria como fallback
-      this.cache.set(key, { data, timestamp: Date.now() });
-
+      this.cache.set(key, { data, timestamp: Date.now() })
     } catch (error) {
-      logger.warn(LogLevel.WARN, 'Error caching data', {}, LogCategory.SEO);
+      logger.warn(LogLevel.WARN, 'Error caching data', {}, LogCategory.SEO)
     }
   }
 
@@ -1573,57 +1742,77 @@ export class EnhancedSEOTestingSuite {
    * Ejecutar tests específicos por tipo
    */
   public async runTestsByType(
-    testType: 'metadata' | 'structured_data' | 'robots_txt' | 'internal_links' | 'compliance' | 'performance',
+    testType:
+      | 'metadata'
+      | 'structured_data'
+      | 'robots_txt'
+      | 'internal_links'
+      | 'compliance'
+      | 'performance',
     urls?: string[]
   ): Promise<SEOTestResult[]> {
-    const testUrls = urls || this.config.testUrls;
-    const results: SEOTestResult[] = [];
+    const testUrls = urls || this.config.testUrls
+    const results: SEOTestResult[] = []
 
     try {
-      logger.info(LogLevel.INFO, `Running ${testType} tests`, {
-        testType,
-        urlsCount: testUrls.length
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        `Running ${testType} tests`,
+        {
+          testType,
+          urlsCount: testUrls.length,
+        },
+        LogCategory.SEO
+      )
 
       for (const url of testUrls) {
-        let urlResults: SEOTestResult[] = [];
+        let urlResults: SEOTestResult[] = []
 
         switch (testType) {
           case 'metadata':
-            urlResults = await this.runMetadataTests(url);
-            break;
+            urlResults = await this.runMetadataTests(url)
+            break
           case 'structured_data':
-            urlResults = await this.runStructuredDataTests(url);
-            break;
+            urlResults = await this.runStructuredDataTests(url)
+            break
           case 'robots_txt':
             if (url === '/' || url === '') {
-              urlResults = await this.runRobotsTxtTests();
+              urlResults = await this.runRobotsTxtTests()
             }
-            break;
+            break
           case 'internal_links':
-            urlResults = await this.runInternalLinksTests(url);
-            break;
+            urlResults = await this.runInternalLinksTests(url)
+            break
           case 'compliance':
-            urlResults = await this.runComplianceTests(url);
-            break;
+            urlResults = await this.runComplianceTests(url)
+            break
           case 'performance':
-            urlResults = await this.runPerformanceTests(url);
-            break;
+            urlResults = await this.runPerformanceTests(url)
+            break
         }
 
-        results.push(...urlResults);
+        results.push(...urlResults)
       }
 
-      logger.info(LogLevel.INFO, `${testType} tests completed`, {
-        testType,
-        testsRun: results.length
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        `${testType} tests completed`,
+        {
+          testType,
+          testsRun: results.length,
+        },
+        LogCategory.SEO
+      )
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, `Failed to run ${testType} tests`, error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(
+        LogLevel.ERROR,
+        `Failed to run ${testType} tests`,
+        error as Error,
+        LogCategory.SEO
+      )
+      throw error
     }
   }
 
@@ -1631,38 +1820,42 @@ export class EnhancedSEOTestingSuite {
    * Obtener historial de tests
    */
   public getTestHistory(limit?: number): SEOTestSuite[] {
-    const history = [...this.testHistory].reverse(); // Más recientes primero
-    return limit ? history.slice(0, limit) : history;
+    const history = [...this.testHistory].reverse() // Más recientes primero
+    return limit ? history.slice(0, limit) : history
   }
 
   /**
    * Obtener tests activos
    */
   public getActiveTestSuites(): SEOTestSuite[] {
-    return Array.from(this.activeTestSuites.values());
+    return Array.from(this.activeTestSuites.values())
   }
 
   /**
    * Obtener estadísticas de testing
    */
   public getTestingStats(): {
-    totalTestsRun: number;
-    averageScore: number;
-    mostCommonIssues: string[];
-    testsByType: Record<string, number>;
-    cacheHitRate: number;
+    totalTestsRun: number
+    averageScore: number
+    mostCommonIssues: string[]
+    testsByType: Record<string, number>
+    cacheHitRate: number
   } {
-    const allTests = this.testHistory.flatMap(suite => suite.tests);
+    const allTests = this.testHistory.flatMap(suite => suite.tests)
 
-    const totalTestsRun = allTests.length;
-    const averageScore = totalTestsRun > 0
-      ? Math.round(allTests.reduce((sum, test) => sum + test.score, 0) / totalTestsRun)
-      : 0;
+    const totalTestsRun = allTests.length
+    const averageScore =
+      totalTestsRun > 0
+        ? Math.round(allTests.reduce((sum, test) => sum + test.score, 0) / totalTestsRun)
+        : 0
 
-    const testsByType = allTests.reduce((acc, test) => {
-      acc[test.testType] = (acc[test.testType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const testsByType = allTests.reduce(
+      (acc, test) => {
+        acc[test.testType] = (acc[test.testType] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>
+    )
 
     // Simular issues más comunes
     const mostCommonIssues = [
@@ -1670,26 +1863,31 @@ export class EnhancedSEOTestingSuite {
       'Title too long',
       'No structured data',
       'Slow page load',
-      'Missing alt text'
-    ];
+      'Missing alt text',
+    ]
 
     return {
       totalTestsRun,
       averageScore,
       mostCommonIssues,
       testsByType,
-      cacheHitRate: this.cache.size > 0 ? 0.85 : 0 // Simular 85% hit rate
-    };
+      cacheHitRate: this.cache.size > 0 ? 0.85 : 0, // Simular 85% hit rate
+    }
   }
 
   /**
    * Configurar suite de testing
    */
   public configure(config: Partial<SEOTestingConfig>): void {
-    this.config = { ...this.config, ...config };
-    logger.info(LogLevel.INFO, 'SEO Testing Suite reconfigured', {
-      updatedKeys: Object.keys(config)
-    }, LogCategory.SEO);
+    this.config = { ...this.config, ...config }
+    logger.info(
+      LogLevel.INFO,
+      'SEO Testing Suite reconfigured',
+      {
+        updatedKeys: Object.keys(config),
+      },
+      LogCategory.SEO
+    )
   }
 
   /**
@@ -1699,19 +1897,18 @@ export class EnhancedSEOTestingSuite {
     try {
       // Limpiar Redis
       if (this.redis) {
-        const keys = await this.redis.keys('seo_testing:*');
+        const keys = await this.redis.keys('seo_testing:*')
         if (keys.length > 0) {
-          await this.redis.del(...keys);
+          await this.redis.del(...keys)
         }
       }
 
       // Limpiar cache en memoria
-      this.cache.clear();
+      this.cache.clear()
 
-      logger.info(LogLevel.INFO, 'SEO testing cache cleared', {}, LogCategory.SEO);
-
+      logger.info(LogLevel.INFO, 'SEO testing cache cleared', {}, LogCategory.SEO)
     } catch (error) {
-      logger.warn(LogLevel.WARN, 'Error clearing cache', {}, LogCategory.SEO);
+      logger.warn(LogLevel.WARN, 'Error clearing cache', {}, LogCategory.SEO)
     }
   }
 
@@ -1720,19 +1917,23 @@ export class EnhancedSEOTestingSuite {
    */
   public async destroy(): Promise<void> {
     try {
-      await this.clearCache();
+      await this.clearCache()
 
-      this.activeTestSuites.clear();
-      this.testHistory = [];
+      this.activeTestSuites.clear()
+      this.testHistory = []
 
       if (this.redis) {
-        this.redis = null;
+        this.redis = null
       }
 
-      logger.info(LogLevel.INFO, 'Enhanced SEO Testing Suite destroyed', {}, LogCategory.SEO);
-
+      logger.info(LogLevel.INFO, 'Enhanced SEO Testing Suite destroyed', {}, LogCategory.SEO)
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Error destroying SEO testing suite', error as Error, LogCategory.SEO);
+      logger.error(
+        LogLevel.ERROR,
+        'Error destroying SEO testing suite',
+        error as Error,
+        LogCategory.SEO
+      )
     }
   }
 }
@@ -1742,10 +1943,10 @@ export class EnhancedSEOTestingSuite {
 // ===================================
 
 // Instancia singleton
-export const enhancedSEOTestingSuite = EnhancedSEOTestingSuite.getInstance();
+export const enhancedSEOTestingSuite = EnhancedSEOTestingSuite.getInstance()
 
 // Exportar clase para uso directo
-export { EnhancedSEOTestingSuite as SEOTestingSuite };
+export { EnhancedSEOTestingSuite as SEOTestingSuite }
 
 // Exportar todos los tipos
 export type {
@@ -1756,14 +1957,5 @@ export type {
   StructuredDataTestResult,
   RobotsTxtTestResult,
   InternalLinksTestResult,
-  ComplianceTestResult
-};
-
-
-
-
-
-
-
-
-
+  ComplianceTestResult,
+}

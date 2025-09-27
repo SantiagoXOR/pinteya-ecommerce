@@ -1,33 +1,33 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuthenticatedUser, getAuthenticatedAdmin } from '@/lib/auth/admin-auth';
-import { auth } from '@/lib/auth/config';
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedUser, getAuthenticatedAdmin } from '@/lib/auth/admin-auth'
+import { auth } from '@/lib/auth/config'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔍 Debug getAuthenticatedUser: Testing MIGRATED authentication methods');
+    console.log('🔍 Debug getAuthenticatedUser: Testing MIGRATED authentication methods')
 
     // Test 1: Función migrada getAuthenticatedUser
-    const userResult = await getAuthenticatedUser(request);
+    const userResult = await getAuthenticatedUser(request)
 
     // Test 2: Función nueva getAuthenticatedAdmin
-    const adminResult = await getAuthenticatedAdmin(request);
+    const adminResult = await getAuthenticatedAdmin(request)
 
     // Test 3: auth() directo
-    let directAuth;
+    let directAuth
     try {
-      directAuth = await auth();
+      directAuth = await auth()
     } catch (authError) {
-      directAuth = { error: authError.message };
+      directAuth = { error: authError.message }
     }
 
     console.log('🔍 Resultados de migración:', {
       userResult,
       adminResult,
-      directAuth
-    });
+      directAuth,
+    })
 
     return NextResponse.json({
       success: !!userResult.userId,
@@ -41,21 +41,21 @@ export async function GET(request: NextRequest) {
             isAdmin: userResult.isAdmin,
             error: userResult.error,
             usesHeaders: false,
-            usesOfficialClerkMethods: true
+            usesOfficialClerkMethods: true,
           },
           getAuthenticatedAdmin: {
             userId: adminResult.userId,
             sessionId: adminResult.sessionId,
             isAdmin: adminResult.isAdmin,
             error: adminResult.error,
-            status: adminResult.status
+            status: adminResult.status,
           },
           directAuth: {
             userId: directAuth.userId,
             sessionId: directAuth.sessionId,
-            error: directAuth.error
-          }
-        }
+            error: directAuth.error,
+          },
+        },
       },
       debug: {
         migrationNotes: [
@@ -63,31 +63,23 @@ export async function GET(request: NextRequest) {
           '✅ MIGRADO: Usa getAuth(req) y auth() oficiales',
           '✅ NUEVO: Función getAuthenticatedAdmin() combinada',
           '✅ NUEVO: Detección automática de admin desde token',
-          '⚠️ DEPRECADO: Fallbacks a headers eliminados'
+          '⚠️ DEPRECADO: Fallbacks a headers eliminados',
         ],
         hasRequest: !!request,
-        deprecatedHeader: request.headers.get('x-clerk-user-id') || 'Not used anymore'
-      }
-    });
-
+        deprecatedHeader: request.headers.get('x-clerk-user-id') || 'Not used anymore',
+      },
+    })
   } catch (error) {
-    console.error('🔍 Debug getAuthenticatedUser: Error:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Unexpected error',
-      debug: {
-        errorMessage: error instanceof Error ? error.message : 'Unknown error'
-      }
-    }, { status: 500 });
+    console.error('🔍 Debug getAuthenticatedUser: Error:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Unexpected error',
+        debug: {
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        },
+      },
+      { status: 500 }
+    )
   }
 }
-
-
-
-
-
-
-
-
-
-

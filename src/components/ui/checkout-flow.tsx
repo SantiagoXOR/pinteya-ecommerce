@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { CartSummary } from "@/components/ui/cart-summary"
-import { CartItem } from "@/types/api"
+import * as React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { CartSummary } from '@/components/ui/cart-summary'
+import { CartItem } from '@/types/api'
 import {
   CheckCircle,
   CreditCard,
@@ -17,9 +17,9 @@ import {
   Truck,
   User,
   Clock,
-  Shield
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+  Shield,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 // Tipos mejorados con mejor tipado
 export interface CheckoutStep {
@@ -82,7 +82,7 @@ const DEFAULT_CHECKOUT_STEPS: CheckoutStep[] = [
     description: 'Revisar productos',
     icon: ShoppingCart,
     isComplete: false,
-    isActive: true
+    isActive: true,
   },
   {
     id: 'shipping',
@@ -90,7 +90,7 @@ const DEFAULT_CHECKOUT_STEPS: CheckoutStep[] = [
     description: 'Información de entrega',
     icon: Truck,
     isComplete: false,
-    isActive: false
+    isActive: false,
   },
   {
     id: 'payment',
@@ -98,7 +98,7 @@ const DEFAULT_CHECKOUT_STEPS: CheckoutStep[] = [
     description: 'Datos del comprador',
     icon: User,
     isComplete: false,
-    isActive: false
+    isActive: false,
   },
   {
     id: 'confirmation',
@@ -106,8 +106,8 @@ const DEFAULT_CHECKOUT_STEPS: CheckoutStep[] = [
     description: 'Finalizar compra',
     icon: CheckCircle,
     isComplete: false,
-    isActive: false
-  }
+    isActive: false,
+  },
 ]
 
 /**
@@ -137,21 +137,24 @@ const DEFAULT_CHECKOUT_STEPS: CheckoutStep[] = [
  * ```
  */
 export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
-  ({
-    cartItems = [],
-    checkoutData = {},
-    isLoading = false,
-    errors = {},
-    onComplete,
-    onStepChange,
-    currentStep = 0,
-    showProgress = true,
-    metrics,
-    testMode = false,
-    className,
-    children,
-    ...props
-  }, ref) => {
+  (
+    {
+      cartItems = [],
+      checkoutData = {},
+      isLoading = false,
+      errors = {},
+      onComplete,
+      onStepChange,
+      currentStep = 0,
+      showProgress = true,
+      metrics,
+      testMode = false,
+      className,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     // Estado interno para pasos
     const [steps, setSteps] = React.useState<CheckoutStep[]>(DEFAULT_CHECKOUT_STEPS)
     const [startTime] = React.useState<Date>(new Date())
@@ -162,7 +165,7 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
         prevSteps.map((step, index) => ({
           ...step,
           isComplete: index < currentStep,
-          isActive: index === currentStep
+          isActive: index === currentStep,
         }))
       )
     }, [currentStep])
@@ -171,68 +174,74 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
     const progressPercentage = ((currentStep + 1) / steps.length) * 100
 
     // Helper para generar data-testids para testing
-    const getTestId = (suffix: string) => testMode ? `checkout-flow-${suffix}` : undefined
+    const getTestId = (suffix: string) => (testMode ? `checkout-flow-${suffix}` : undefined)
 
     return (
       <div
         ref={ref}
-        className={cn("w-full max-w-4xl mx-auto space-y-6 p-4", className)}
+        className={cn('w-full max-w-4xl mx-auto space-y-6 p-4', className)}
         data-testid={getTestId('container')}
         {...props}
       >
         {/* Indicador de progreso */}
         {showProgress && (
           <Card data-testid={getTestId('progress-card')}>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
+            <CardContent className='pt-6'>
+              <div className='space-y-4'>
                 {/* Barra de progreso */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-700">
-                      Progreso del checkout
-                    </span>
-                    <Badge variant="secondary" data-testid={getTestId('progress-badge')}>
+                <div className='space-y-2'>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-sm font-medium text-gray-700'>Progreso del checkout</span>
+                    <Badge variant='secondary' data-testid={getTestId('progress-badge')}>
                       {currentStep + 1} de {steps.length}
                     </Badge>
                   </div>
                   <Progress
                     value={progressPercentage}
-                    className="h-2"
+                    className='h-2'
                     data-testid={getTestId('progress-bar')}
                   />
                 </div>
 
                 {/* Pasos visuales */}
-                <div className="flex justify-between items-center">
+                <div className='flex justify-between items-center'>
                   {steps.map((step, index) => {
                     const Icon = step.icon
                     return (
                       <div
                         key={step.id}
                         className={cn(
-                          "flex flex-col items-center space-y-2 flex-1",
-                          index < steps.length - 1 && "border-r border-gray-200 pr-4"
+                          'flex flex-col items-center space-y-2 flex-1',
+                          index < steps.length - 1 && 'border-r border-gray-200 pr-4'
                         )}
                         data-testid={getTestId(`step-${step.id}`)}
                       >
-                        <div className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors",
-                          step.isComplete && "bg-green-500 border-green-500 text-white",
-                          step.isActive && !step.isComplete && "bg-primary border-primary text-white",
-                          !step.isActive && !step.isComplete && "bg-gray-100 border-gray-300 text-gray-500"
-                        )}>
-                          <Icon className="w-5 h-5" />
+                        <div
+                          className={cn(
+                            'w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors',
+                            step.isComplete && 'bg-green-500 border-green-500 text-white',
+                            step.isActive &&
+                              !step.isComplete &&
+                              'bg-primary border-primary text-white',
+                            !step.isActive &&
+                              !step.isComplete &&
+                              'bg-gray-100 border-gray-300 text-gray-500'
+                          )}
+                        >
+                          <Icon className='w-5 h-5' />
                         </div>
-                        <div className="text-center">
-                          <p className={cn(
-                            "text-xs font-medium",
-                            step.isActive && "text-primary",
-                            step.isComplete && "text-green-600",
-                            !step.isActive && !step.isComplete && "text-gray-500"
-                          )}>
+                        <div className='text-center'>
+                          <p
+                            className={cn(
+                              'text-xs font-medium',
+                              step.isActive && 'text-primary',
+                              step.isComplete && 'text-green-600',
+                              !step.isActive && !step.isComplete && 'text-gray-500'
+                            )}
+                          >
                             {step.name}
                           </p>
-                          <p className="text-xs text-gray-400 hidden sm:block">
+                          <p className='text-xs text-gray-400 hidden sm:block'>
                             {step.description}
                           </p>
                         </div>
@@ -247,22 +256,30 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
 
         {/* Métricas de rendimiento (solo en modo test) */}
         {testMode && metrics && (
-          <Card className="border-dashed border-blue-200 bg-blue-50" data-testid={getTestId('metrics-card')}>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">Métricas de Testing</span>
+          <Card
+            className='border-dashed border-blue-200 bg-blue-50'
+            data-testid={getTestId('metrics-card')}
+          >
+            <CardContent className='pt-4'>
+              <div className='flex items-center gap-2 mb-2'>
+                <Clock className='w-4 h-4 text-blue-600' />
+                <span className='text-sm font-medium text-blue-800'>Métricas de Testing</span>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className='grid grid-cols-2 gap-4 text-xs'>
                 <div>
-                  <span className="text-blue-600">Tiempo transcurrido:</span>
-                  <span className="ml-1 font-mono">
-                    {metrics.startTime ? Math.round((Date.now() - metrics.startTime.getTime()) / 1000) : 0}s
+                  <span className='text-blue-600'>Tiempo transcurrido:</span>
+                  <span className='ml-1 font-mono'>
+                    {metrics.startTime
+                      ? Math.round((Date.now() - metrics.startTime.getTime()) / 1000)
+                      : 0}
+                    s
                   </span>
                 </div>
                 <div>
-                  <span className="text-blue-600">Paso actual:</span>
-                  <span className="ml-1 font-mono">{metrics.currentStep || steps[currentStep]?.name}</span>
+                  <span className='text-blue-600'>Paso actual:</span>
+                  <span className='ml-1 font-mono'>
+                    {metrics.currentStep || steps[currentStep]?.name}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -271,17 +288,22 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
 
         {/* Errores mejorados */}
         {Object.keys(errors).length > 0 && (
-          <Card className="border-red-200 bg-red-50" data-testid={getTestId('errors-card')}>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-red-800 mb-3">
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">Se encontraron errores</span>
+          <Card className='border-red-200 bg-red-50' data-testid={getTestId('errors-card')}>
+            <CardContent className='pt-4'>
+              <div className='flex items-center gap-2 text-red-800 mb-3'>
+                <AlertCircle className='w-5 h-5' />
+                <span className='font-medium'>Se encontraron errores</span>
               </div>
-              <ul className="space-y-2">
+              <ul className='space-y-2'>
                 {Object.entries(errors).map(([field, error]) => (
-                  <li key={field} className="flex items-start gap-2 text-sm text-red-700">
-                    <span className="w-1 h-1 bg-red-500 rounded-full mt-2 flex-shrink-0" />
-                    <span><strong>{field}:</strong> {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</span>
+                  <li key={field} className='flex items-start gap-2 text-sm text-red-700'>
+                    <span className='w-1 h-1 bg-red-500 rounded-full mt-2 flex-shrink-0' />
+                    <span>
+                      <strong>{field}:</strong>{' '}
+                      {error instanceof Error
+                        ? error.message
+                        : error?.toString() || 'Error desconocido'}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -290,44 +312,44 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
         )}
 
         {/* Layout principal con grid responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
           {/* Formulario principal */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className='lg:col-span-2 space-y-4'>
             <Card data-testid={getTestId('main-form')}>
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl flex items-center gap-3">
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center",
-                    "bg-primary text-white"
-                  )}>
-                    <CreditCard className="w-4 h-4" />
+              <CardHeader className='pb-4'>
+                <CardTitle className='text-xl flex items-center gap-3'>
+                  <div
+                    className={cn(
+                      'w-8 h-8 rounded-full flex items-center justify-center',
+                      'bg-primary text-white'
+                    )}
+                  >
+                    <CreditCard className='w-4 h-4' />
                   </div>
                   <div>
                     <span>Finalizar Compra</span>
                     {steps[currentStep] && (
-                      <p className="text-sm text-gray-500 font-normal mt-1">
+                      <p className='text-sm text-gray-500 font-normal mt-1'>
                         {steps[currentStep].description}
                       </p>
                     )}
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className='space-y-6'>
                 {/* Contenido del formulario */}
-                <div data-testid={getTestId('form-content')}>
-                  {children}
-                </div>
+                <div data-testid={getTestId('form-content')}>{children}</div>
 
                 {/* Botones de acción */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+                <div className='flex flex-col sm:flex-row gap-3 pt-4 border-t'>
                   {currentStep > 0 && (
                     <Button
-                      variant="outline"
+                      variant='outline'
                       onClick={() => onStepChange?.(steps[currentStep - 1]?.id)}
-                      className="sm:w-auto"
+                      className='sm:w-auto'
                       data-testid={getTestId('back-button')}
                     >
-                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      <ArrowLeft className='w-4 h-4 mr-2' />
                       Anterior
                     </Button>
                   )}
@@ -335,23 +357,23 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
                   <Button
                     onClick={onComplete}
                     disabled={isLoading}
-                    className="flex-1 sm:flex-none sm:min-w-[200px] h-12 text-base font-medium"
-                    size="lg"
+                    className='flex-1 sm:flex-none sm:min-w-[200px] h-12 text-base font-medium'
+                    size='lg'
                     data-testid={getTestId('submit-button')}
                   >
                     {isLoading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2' />
                         Procesando...
                       </>
                     ) : currentStep < steps.length - 1 ? (
                       <>
                         Continuar
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                        <ArrowRight className='w-4 h-4 ml-2' />
                       </>
                     ) : (
                       <>
-                        <Shield className="w-4 h-4 mr-2" />
+                        <Shield className='w-4 h-4 mr-2' />
                         Completar Pedido
                       </>
                     )}
@@ -362,30 +384,30 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
           </div>
 
           {/* Sidebar con resumen */}
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <CartSummary
               cartItems={cartItems}
               totalPrice={checkoutData.totalPrice || 0}
               shippingCost={checkoutData.shippingCost}
               discount={checkoutData.discount}
               finalTotal={checkoutData.finalTotal}
-              variant="detailed"
+              variant='detailed'
               showProductCards={true}
-              productCardContext="checkout"
+              productCardContext='checkout'
               showShippingDetails={true}
               data-testid={getTestId('cart-summary')}
             />
 
             {/* Información de seguridad */}
-            <Card className="border-green-200 bg-green-50">
-              <CardContent className="pt-4">
-                <div className="flex items-center gap-2 text-green-800 mb-2">
-                  <Shield className="w-4 h-4" />
-                  <span className="text-sm font-medium">Compra Segura</span>
+            <Card className='border-green-200 bg-green-50'>
+              <CardContent className='pt-4'>
+                <div className='flex items-center gap-2 text-green-800 mb-2'>
+                  <Shield className='w-4 h-4' />
+                  <span className='text-sm font-medium'>Compra Segura</span>
                 </div>
-                <p className="text-xs text-green-700">
-                  Tus datos están protegidos con encriptación SSL de 256 bits.
-                  Procesamiento seguro con MercadoPago.
+                <p className='text-xs text-green-700'>
+                  Tus datos están protegidos con encriptación SSL de 256 bits. Procesamiento seguro
+                  con MercadoPago.
                 </p>
               </CardContent>
             </Card>
@@ -396,16 +418,7 @@ export const CheckoutFlow = React.forwardRef<HTMLDivElement, CheckoutFlowProps>(
   }
 )
 
-CheckoutFlow.displayName = "CheckoutFlow"
+CheckoutFlow.displayName = 'CheckoutFlow'
 
 // Exportar tipos para uso externo
 export type { CheckoutStep, CheckoutMetrics }
-
-
-
-
-
-
-
-
-

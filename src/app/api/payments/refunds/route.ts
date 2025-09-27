@@ -1,34 +1,38 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // PINTEYA E-COMMERCE - MERCADOPAGO REFUNDS API
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/config';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter';
-import { metricsCollector } from '@/lib/enterprise/metrics';
-import { createMercadoPagoClient } from '@/lib/integrations/mercadopago';
-import { Payment } from 'mercadopago';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth/config'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  RATE_LIMIT_CONFIGS,
+} from '@/lib/enterprise/rate-limiter'
+import { metricsCollector } from '@/lib/enterprise/metrics'
+import { createMercadoPagoClient } from '@/lib/integrations/mercadopago'
+import { Payment } from 'mercadopago'
 
 interface RefundRequest {
-  payment_id: string;
-  amount?: number;
-  reason?: string;
-  metadata?: Record<string, any>;
+  payment_id: string
+  amount?: number
+  reason?: string
+  metadata?: Record<string, any>
 }
 
 interface RefundResponse {
-  id: string;
-  payment_id: string;
-  amount: number;
-  status: 'pending' | 'approved' | 'rejected';
-  reason?: string;
-  created_at: string;
-  metadata?: Record<string, any>;
+  id: string
+  payment_id: string
+  amount: number
+  status: 'pending' | 'approved' | 'rejected'
+  reason?: string
+  created_at: string
+  metadata?: Record<string, any>
 }
 
 /**
@@ -36,49 +40,43 @@ interface RefundResponse {
  * Procesa reembolsos según documentación oficial de MercadoPago
  */
 export async function POST(request: NextRequest) {
-  const startTime = Date.now();
-  const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
-  const userAgent = request.headers.get('user-agent') || 'unknown';
+  const startTime = Date.now()
+  const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
+  const userAgent = request.headers.get('user-agent') || 'unknown'
 
   try {
     // Verificar autenticación
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
     }
 
     // Rate limiting
-    const rateLimitResult = await checkRateLimit(
-      request,
-      RATE_LIMIT_CONFIGS.PAYMENT_API
-    );
+    const rateLimitResult = await checkRateLimit(request, RATE_LIMIT_CONFIGS.PAYMENT_API)
 
     if (!rateLimitResult.success) {
       logger.warn(LogCategory.API, 'Rate limit exceeded for refunds', {
         clientIP,
         userId,
-      });
+      })
 
       const response = NextResponse.json(
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
-      );
-      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
-      return response;
+      )
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API)
+      return response
     }
 
-    const body: RefundRequest = await request.json();
-    const { payment_id, amount, reason, metadata } = body;
+    const body: RefundRequest = await request.json()
+    const { payment_id, amount, reason, metadata } = body
 
     // Validar datos requeridos
     if (!payment_id) {
       return NextResponse.json(
         { success: false, error: 'payment_id es requerido' },
         { status: 400 }
-      );
+      )
     }
 
     logger.info(LogCategory.PAYMENT, 'Refund request started', {
@@ -87,78 +85,73 @@ export async function POST(request: NextRequest) {
       amount,
       reason,
       clientIP,
-    });
+    })
 
     // Verificar que el pago existe y pertenece al usuario
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient()
     if (!supabase) {
       return NextResponse.json(
         { success: false, error: 'Error de configuración de base de datos' },
         { status: 500 }
-      );
+      )
     }
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('id, total_amount, payment_status, external_reference')
       .eq('external_reference', payment_id)
-      .single();
+      .single()
 
     if (orderError || !order) {
-      return NextResponse.json(
-        { success: false, error: 'Pago no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Pago no encontrado' }, { status: 404 })
     }
 
     if (order.payment_status !== 'approved') {
       return NextResponse.json(
         { success: false, error: 'Solo se pueden reembolsar pagos aprobados' },
         { status: 400 }
-      );
+      )
     }
 
     // Validar monto del reembolso
-    const refundAmount = amount || order.total_amount;
+    const refundAmount = amount || order.total_amount
     if (refundAmount > order.total_amount) {
       return NextResponse.json(
         { success: false, error: 'El monto del reembolso no puede ser mayor al pago original' },
         { status: 400 }
-      );
+      )
     }
 
     // Procesar reembolso con MercadoPago
-    const refundResult = await processRefund(payment_id, refundAmount, reason, metadata);
+    const refundResult = await processRefund(payment_id, refundAmount, reason, metadata)
 
     // Actualizar estado en base de datos
     await supabase
       .from('orders')
-      .update({ 
+      .update({
         payment_status: refundResult.status === 'approved' ? 'refunded' : 'refund_pending',
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', order.id);
+      .eq('id', order.id)
 
     // Registrar reembolso en tabla de refunds (si existe)
     try {
-      await supabase
-        .from('refunds')
-        .insert({
-          order_id: order.id,
-          payment_id,
-          refund_id: refundResult.id,
-          amount: refundAmount,
-          status: refundResult.status,
-          reason: reason || 'Reembolso solicitado por el cliente',
-          metadata: metadata || {},
-          created_at: new Date().toISOString(),
-        });
+      await supabase.from('refunds').insert({
+        order_id: order.id,
+        payment_id,
+        refund_id: refundResult.id,
+        amount: refundAmount,
+        status: refundResult.status,
+        reason: reason || 'Reembolso solicitado por el cliente',
+        metadata: metadata || {},
+        created_at: new Date().toISOString(),
+      })
     } catch (refundInsertError) {
       // Si la tabla refunds no existe, solo loggeamos el warning
       logger.warn(LogCategory.PAYMENT, 'Refunds table not found, skipping insert', {
         payment_id,
         refund_id: refundResult.id,
-      });
+      })
     }
 
     // Registrar métricas
@@ -168,7 +161,7 @@ export async function POST(request: NextRequest) {
       200,
       Date.now() - startTime,
       { userId, payment_id, amount: refundAmount }
-    );
+    )
 
     logger.info(LogCategory.PAYMENT, 'Refund processed successfully', {
       userId,
@@ -177,42 +170,42 @@ export async function POST(request: NextRequest) {
       amount: refundAmount,
       status: refundResult.status,
       processingTime: Date.now() - startTime,
-    });
+    })
 
     const response = NextResponse.json({
       success: true,
       data: refundResult,
       timestamp: Date.now(),
       processing_time: Date.now() - startTime,
-    });
+    })
 
-    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API);
-    return response;
-
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.PAYMENT_API)
+    return response
   } catch (error) {
-    const processingTime = Date.now() - startTime;
-    
-    logger.performance(LogLevel.ERROR, 'Refund processing failed', {
-      operation: 'refund-processing-api',
-      duration: processingTime,
-      statusCode: 500,
-    }, {
-      clientIP,
-      userAgent,
-    });
+    const processingTime = Date.now() - startTime
 
-    await metricsCollector.recordRequest(
-      '/api/payments/refunds',
-      'POST',
-      500,
-      processingTime,
-      { error: (error as Error).message }
-    );
+    logger.performance(
+      LogLevel.ERROR,
+      'Refund processing failed',
+      {
+        operation: 'refund-processing-api',
+        duration: processingTime,
+        statusCode: 500,
+      },
+      {
+        clientIP,
+        userAgent,
+      }
+    )
+
+    await metricsCollector.recordRequest('/api/payments/refunds', 'POST', 500, processingTime, {
+      error: (error as Error).message,
+    })
 
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -221,70 +214,66 @@ export async function POST(request: NextRequest) {
  * Lista reembolsos del usuario
  */
 export async function GET(request: NextRequest) {
-  const startTime = Date.now();
-  const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+  const startTime = Date.now()
+  const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
 
   try {
     // Verificar autenticación
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
     }
 
     // Rate limiting
-    const rateLimitResult = await checkRateLimit(
-      request,
-      RATE_LIMIT_CONFIGS.QUERY_API
-    );
+    const rateLimitResult = await checkRateLimit(request, RATE_LIMIT_CONFIGS.QUERY_API)
 
     if (!rateLimitResult.success) {
       const response = NextResponse.json(
         { success: false, error: 'Demasiadas solicitudes' },
         { status: 429 }
-      );
-      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
-      return response;
+      )
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API)
+      return response
     }
 
     // Obtener parámetros de consulta
-    const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get('limit') || '10');
-    const offset = parseInt(url.searchParams.get('offset') || '0');
-    const status = url.searchParams.get('status');
+    const url = new URL(request.url)
+    const limit = parseInt(url.searchParams.get('limit') || '10')
+    const offset = parseInt(url.searchParams.get('offset') || '0')
+    const status = url.searchParams.get('status')
 
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient()
     if (!supabase) {
       return NextResponse.json(
         { success: false, error: 'Error de configuración de base de datos' },
         { status: 500 }
-      );
+      )
     }
 
     // Construir query
     let query = supabase
       .from('refunds')
-      .select(`
+      .select(
+        `
         *,
         orders (
           id,
           total_amount,
           created_at
         )
-      `)
+      `
+      )
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limit - 1)
 
     if (status) {
-      query = query.eq('status', status);
+      query = query.eq('status', status)
     }
 
-    const { data: refunds, error } = await query;
+    const { data: refunds, error } = await query
 
     if (error) {
-      throw new Error(`Error al obtener reembolsos: ${error.message}`);
+      throw new Error(`Error al obtener reembolsos: ${error.message}`)
     }
 
     // Registrar métricas
@@ -294,13 +283,13 @@ export async function GET(request: NextRequest) {
       200,
       Date.now() - startTime,
       { userId, count: (refunds?.length || 0).toString() }
-    );
+    )
 
     logger.info(LogCategory.API, 'Refunds list retrieved', {
       userId,
       count: refunds?.length || 0,
       processingTime: Date.now() - startTime,
-    });
+    })
 
     const response = NextResponse.json({
       success: true,
@@ -312,26 +301,30 @@ export async function GET(request: NextRequest) {
       },
       timestamp: Date.now(),
       processing_time: Date.now() - startTime,
-    });
+    })
 
-    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API);
-    return response;
-
+    addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.QUERY_API)
+    return response
   } catch (error) {
-    const processingTime = Date.now() - startTime;
-    
-    logger.performance(LogLevel.ERROR, 'Refunds list failed', {
-      operation: 'refunds-list-api',
-      duration: processingTime,
-      statusCode: 500,
-    }, {
-      clientIP,
-    });
+    const processingTime = Date.now() - startTime
+
+    logger.performance(
+      LogLevel.ERROR,
+      'Refunds list failed',
+      {
+        operation: 'refunds-list-api',
+        duration: processingTime,
+        statusCode: 500,
+      },
+      {
+        clientIP,
+      }
+    )
 
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -346,13 +339,13 @@ async function processRefund(
 ): Promise<RefundResponse> {
   try {
     // Crear cliente de MercadoPago
-    const client = createMercadoPagoClient();
-    const payment = new Payment(client);
+    const client = createMercadoPagoClient()
+    const payment = new Payment(client)
 
     // En una implementación real, aquí se haría la llamada a la API de MercadoPago
     // Por ahora simulamos el reembolso
-    const refundId = `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+    const refundId = `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
     // Simular respuesta de MercadoPago
     const refundResponse: RefundResponse = {
       id: refundId,
@@ -362,19 +355,18 @@ async function processRefund(
       reason: reason || 'Reembolso solicitado',
       created_at: new Date().toISOString(),
       metadata: metadata || {},
-    };
+    }
 
     logger.info(LogCategory.PAYMENT, 'MercadoPago refund simulated', {
       payment_id: paymentId,
       refund_id: refundId,
       amount,
       status: refundResponse.status,
-    });
+    })
 
-    return refundResponse;
-
+    return refundResponse
   } catch (error) {
-    logger.error(LogCategory.PAYMENT, 'MercadoPago refund failed', error as Error);
+    logger.error(LogCategory.PAYMENT, 'MercadoPago refund failed', error as Error)
 
     // En caso de error, devolver estado pendiente
     return {
@@ -385,16 +377,6 @@ async function processRefund(
       reason: 'Error al procesar reembolso, se procesará manualmente',
       created_at: new Date().toISOString(),
       metadata: metadata || {},
-    };
+    }
   }
 }
-
-
-
-
-
-
-
-
-
-

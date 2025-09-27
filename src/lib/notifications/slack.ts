@@ -60,9 +60,9 @@ export class SlackNotificationService {
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(config)
+        body: JSON.stringify(config),
       })
 
       if (!response.ok) {
@@ -76,7 +76,7 @@ export class SlackNotificationService {
       toast({
         title: 'Error',
         description: 'No se pudo enviar la notificación a Slack',
-        variant: 'destructive'
+        variant: 'destructive',
       })
       return false
     }
@@ -96,33 +96,33 @@ export class SlackNotificationService {
         {
           title: 'Cliente',
           value: orderData.customerName,
-          short: true
+          short: true,
         },
         {
           title: 'Total',
           value: `$${orderData.total.toFixed(2)}`,
-          short: true
+          short: true,
         },
         {
           title: 'Estado',
           value: orderData.status,
-          short: true
+          short: true,
         },
         {
           title: 'Productos',
           value: orderData.items.map(item => `${item.name} (x${item.quantity})`).join('\n'),
-          short: false
-        }
+          short: false,
+        },
       ],
       footer: 'Sistema E-commerce',
-      ts: Math.floor(Date.now() / 1000)
+      ts: Math.floor(Date.now() / 1000),
     }
 
     return this.sendNotification({
       channel: '#orders',
       message: `Nueva orden recibida: #${orderData.orderId}`,
       attachments: [attachment],
-      priority: 'normal'
+      priority: 'normal',
     })
   }
 
@@ -139,33 +139,33 @@ export class SlackNotificationService {
         {
           title: 'Producto',
           value: productData.productName,
-          short: true
+          short: true,
         },
         {
           title: 'Stock Actual',
           value: productData.currentStock.toString(),
-          short: true
+          short: true,
         },
         {
           title: 'Stock Mínimo',
           value: productData.minimumStock.toString(),
-          short: true
+          short: true,
         },
         {
           title: 'ID Producto',
           value: productData.productId,
-          short: true
-        }
+          short: true,
+        },
       ],
       footer: 'Sistema de Inventario',
-      ts: Math.floor(Date.now() / 1000)
+      ts: Math.floor(Date.now() / 1000),
     }
 
     return this.sendNotification({
       channel: '#inventory',
       message: `🚨 Stock bajo detectado para: ${productData.productName}`,
       attachments: [attachment],
-      priority: 'high'
+      priority: 'high',
     })
   }
 
@@ -180,7 +180,7 @@ export class SlackNotificationService {
       low: 'good',
       medium: 'warning',
       high: 'danger',
-      critical: 'danger'
+      critical: 'danger',
     }
 
     const attachment: SlackAttachment = {
@@ -190,33 +190,33 @@ export class SlackNotificationService {
         {
           title: 'Error',
           value: errorData.error,
-          short: false
+          short: false,
         },
         {
           title: 'Contexto',
           value: errorData.context,
-          short: false
+          short: false,
         },
         {
           title: 'Usuario',
           value: errorData.userId || 'N/A',
-          short: true
+          short: true,
         },
         {
           title: 'Severidad',
           value: errorData.severity.toUpperCase(),
-          short: true
-        }
+          short: true,
+        },
       ],
       footer: 'Sistema de Monitoreo',
-      ts: Math.floor(errorData.timestamp.getTime() / 1000)
+      ts: Math.floor(errorData.timestamp.getTime() / 1000),
     }
 
     return this.sendNotification({
       channel: '#errors',
       message: `Error detectado en el sistema`,
       attachments: [attachment],
-      priority: errorData.severity === 'critical' ? 'critical' : 'high'
+      priority: errorData.severity === 'critical' ? 'critical' : 'high',
     })
   }
 
@@ -234,33 +234,33 @@ export class SlackNotificationService {
         {
           title: 'Ventas Totales',
           value: `$${reportData.totalSales.toFixed(2)}`,
-          short: true
+          short: true,
         },
         {
           title: 'Órdenes Totales',
           value: reportData.totalOrders.toString(),
-          short: true
+          short: true,
         },
         {
           title: 'Valor Promedio por Orden',
           value: `$${reportData.averageOrderValue.toFixed(2)}`,
-          short: true
+          short: true,
         },
         {
           title: 'Top Productos',
           value: reportData.topProducts.map(p => `${p.name}: ${p.sales} ventas`).join('\n'),
-          short: false
-        }
+          short: false,
+        },
       ],
       footer: 'Reporte Automático',
-      ts: Math.floor(Date.now() / 1000)
+      ts: Math.floor(Date.now() / 1000),
     }
 
     return this.sendNotification({
       channel: '#sales',
       message: `Reporte de ventas generado para ${reportData.period}`,
       attachments: [attachment],
-      priority: 'low'
+      priority: 'low',
     })
   }
 
@@ -273,40 +273,42 @@ export class SlackNotificationService {
     const colorMap = {
       info: 'good',
       warning: 'warning',
-      error: 'danger'
+      error: 'danger',
     }
 
     const emojiMap = {
       info: 'ℹ️',
       warning: '⚠️',
-      error: '🚨'
+      error: '🚨',
     }
 
     const attachment: SlackAttachment = {
       color: colorMap[alertData.severity],
       title: `${emojiMap[alertData.severity]} ${alertData.title}`,
       text: alertData.message,
-      fields: alertData.details ? Object.entries(alertData.details).map(([key, value]) => ({
-        title: key,
-        value: String(value),
-        short: true
-      })) : undefined,
+      fields: alertData.details
+        ? Object.entries(alertData.details).map(([key, value]) => ({
+            title: key,
+            value: String(value),
+            short: true,
+          }))
+        : undefined,
       footer: 'Sistema de Alertas',
-      ts: Math.floor(Date.now() / 1000)
+      ts: Math.floor(Date.now() / 1000),
     }
 
     return this.sendNotification({
       channel: '#system',
       message: alertData.message,
       attachments: [attachment],
-      priority: alertData.severity === 'error' ? 'high' : 'normal'
+      priority: alertData.severity === 'error' ? 'high' : 'normal',
     })
   }
 
   async testConnection(): Promise<boolean> {
     try {
       const response = await fetch('/api/notifications/slack/test', {
-        method: 'POST'
+        method: 'POST',
       })
       return response.ok
     } catch (error) {
@@ -320,26 +322,22 @@ export class SlackNotificationService {
 export const slackService = SlackNotificationService.getInstance()
 
 // Funciones de conveniencia
-export const sendOrderAlert = (orderData: Parameters<SlackNotificationService['sendOrderAlert']>[0]) => 
-  slackService.sendOrderAlert(orderData)
+export const sendOrderAlert = (
+  orderData: Parameters<SlackNotificationService['sendOrderAlert']>[0]
+) => slackService.sendOrderAlert(orderData)
 
-export const sendLowStockAlert = (productData: Parameters<SlackNotificationService['sendLowStockAlert']>[0]) => 
-  slackService.sendLowStockAlert(productData)
+export const sendLowStockAlert = (
+  productData: Parameters<SlackNotificationService['sendLowStockAlert']>[0]
+) => slackService.sendLowStockAlert(productData)
 
-export const sendErrorAlert = (errorData: Parameters<SlackNotificationService['sendErrorAlert']>[0]) => 
-  slackService.sendErrorAlert(errorData)
+export const sendErrorAlert = (
+  errorData: Parameters<SlackNotificationService['sendErrorAlert']>[0]
+) => slackService.sendErrorAlert(errorData)
 
-export const sendSalesReport = (reportData: Parameters<SlackNotificationService['sendSalesReport']>[0]) => 
-  slackService.sendSalesReport(reportData)
+export const sendSalesReport = (
+  reportData: Parameters<SlackNotificationService['sendSalesReport']>[0]
+) => slackService.sendSalesReport(reportData)
 
-export const sendSystemAlert = (alertData: Parameters<SlackNotificationService['sendSystemAlert']>[0]) => 
-  slackService.sendSystemAlert(alertData)
-
-
-
-
-
-
-
-
-
+export const sendSystemAlert = (
+  alertData: Parameters<SlackNotificationService['sendSystemAlert']>[0]
+) => slackService.sendSystemAlert(alertData)

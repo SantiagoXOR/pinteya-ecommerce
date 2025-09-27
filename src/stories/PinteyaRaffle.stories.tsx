@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import PinteyaRaffle from '@/components/Home/PinteyaRaffle';
+import type { Meta, StoryObj } from '@storybook/react'
+import PinteyaRaffle from '@/components/Home/PinteyaRaffle'
 
 const meta: Meta<typeof PinteyaRaffle> = {
   title: 'Components/PinteyaRaffle',
@@ -37,10 +37,10 @@ Perfecto para promociones especiales, sorteos de productos y campañas de market
   argTypes: {
     // No hay props configurables por ahora
   },
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 // Historia principal
 export const Default: Story = {
@@ -52,14 +52,14 @@ export const Default: Story = {
       },
     },
   },
-};
+}
 
 // Historia con fondo oscuro para contraste
 export const DarkBackground: Story = {
   name: 'Con Fondo Oscuro',
   decorators: [
-    (Story) => (
-      <div className="bg-gray-900 min-h-screen">
+    Story => (
+      <div className='bg-gray-900 min-h-screen'>
         <Story />
       </div>
     ),
@@ -71,14 +71,14 @@ export const DarkBackground: Story = {
       },
     },
   },
-};
+}
 
 // Historia con padding reducido
 export const Compact: Story = {
   name: 'Versión Compacta',
   decorators: [
-    (Story) => (
-      <div className="py-4">
+    Story => (
+      <div className='py-4'>
         <Story />
       </div>
     ),
@@ -90,7 +90,7 @@ export const Compact: Story = {
       },
     },
   },
-};
+}
 
 // Historia mostrando responsive design
 export const Mobile: Story = {
@@ -105,7 +105,7 @@ export const Mobile: Story = {
       },
     },
   },
-};
+}
 
 export const Tablet: Story = {
   name: 'Vista Tablet',
@@ -119,41 +119,41 @@ export const Tablet: Story = {
       },
     },
   },
-};
+}
 
 // Historia con contexto de página completa
 export const InPageContext: Story = {
   name: 'En Contexto de Página',
   decorators: [
-    (Story) => (
-      <div className="min-h-screen bg-gray-50">
+    Story => (
+      <div className='min-h-screen bg-gray-50'>
         {/* Header simulado */}
-        <div className="bg-white shadow-sm p-4 mb-8">
-          <div className="max-w-[1170px] mx-auto">
-            <h1 className="text-2xl font-bold text-blaze-orange-600">Pinteya E-commerce</h1>
+        <div className='bg-white shadow-sm p-4 mb-8'>
+          <div className='max-w-[1170px] mx-auto'>
+            <h1 className='text-2xl font-bold text-blaze-orange-600'>Pinteya E-commerce</h1>
           </div>
         </div>
-        
+
         {/* Contenido antes del sorteo */}
-        <div className="max-w-[1170px] mx-auto px-4 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Promociones Especiales</h2>
-          <p className="text-gray-600 mb-8">
+        <div className='max-w-[1170px] mx-auto px-4 mb-8'>
+          <h2 className='text-xl font-semibold mb-4'>Promociones Especiales</h2>
+          <p className='text-gray-600 mb-8'>
             Descubrí nuestras ofertas exclusivas y participá en sorteos increíbles.
           </p>
         </div>
-        
+
         {/* Componente de sorteo */}
         <Story />
-        
+
         {/* Contenido después del sorteo */}
-        <div className="max-w-[1170px] mx-auto px-4 mt-8">
-          <h3 className="text-lg font-semibold mb-4">Otros Productos Destacados</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white p-4 rounded-lg shadow-sm">
-                <div className="bg-gray-200 h-32 rounded mb-3"></div>
-                <h4 className="font-medium">Producto {i}</h4>
-                <p className="text-sm text-gray-600">Descripción del producto</p>
+        <div className='max-w-[1170px] mx-auto px-4 mt-8'>
+          <h3 className='text-lg font-semibold mb-4'>Otros Productos Destacados</h3>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            {[1, 2, 3].map(i => (
+              <div key={i} className='bg-white p-4 rounded-lg shadow-sm'>
+                <div className='bg-gray-200 h-32 rounded mb-3'></div>
+                <h4 className='font-medium'>Producto {i}</h4>
+                <p className='text-sm text-gray-600'>Descripción del producto</p>
               </div>
             ))}
           </div>
@@ -168,7 +168,7 @@ export const InPageContext: Story = {
       },
     },
   },
-};
+}
 
 // Historia para testing de accesibilidad
 export const AccessibilityTest: Story = {
@@ -194,13 +194,4 @@ export const AccessibilityTest: Story = {
       },
     },
   },
-};
-
-
-
-
-
-
-
-
-
+}

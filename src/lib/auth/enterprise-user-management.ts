@@ -3,27 +3,27 @@
  * Gestión avanzada de usuarios para el sistema enterprise
  */
 
-import { auth } from '@/lib/auth/config';
-import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { logger } from '@/lib/enterprise/logger';
+import { auth } from '@/lib/auth/config'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
+import { logger } from '@/lib/enterprise/logger'
 
 export interface EnterpriseUser {
-  id: string;
-  email: string;
-  name?: string;
-  role: 'admin' | 'customer' | 'moderator';
-  permissions: string[];
-  isActive: boolean;
-  lastLogin?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  email: string
+  name?: string
+  role: 'admin' | 'customer' | 'moderator'
+  permissions: string[]
+  isActive: boolean
+  lastLogin?: Date
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface UserManagementOptions {
-  includePermissions?: boolean;
-  includeLastLogin?: boolean;
-  filterByRole?: string;
-  isActive?: boolean;
+  includePermissions?: boolean
+  includeLastLogin?: boolean
+  filterByRole?: string
+  isActive?: boolean
 }
 
 /**
@@ -36,7 +36,8 @@ export async function getEnterpriseUser(
   try {
     const { data, error } = await supabaseAdmin
       .from('users')
-      .select(`
+      .select(
+        `
         id,
         email,
         name,
@@ -46,13 +47,14 @@ export async function getEnterpriseUser(
         created_at,
         updated_at
         ${options.includePermissions ? ', permissions' : ''}
-      `)
+      `
+      )
       .eq('id', userId)
-      .single();
+      .single()
 
     if (error) {
-      logger.error('Error obteniendo usuario enterprise:', error);
-      return null;
+      logger.error('Error obteniendo usuario enterprise:', error)
+      return null
     }
 
     return {
@@ -65,10 +67,10 @@ export async function getEnterpriseUser(
       lastLogin: data.last_login ? new Date(data.last_login) : undefined,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
-    };
+    }
   } catch (error) {
-    logger.error('Error en getEnterpriseUser:', error);
-    return null;
+    logger.error('Error en getEnterpriseUser:', error)
+    return null
   }
 }
 
@@ -79,9 +81,7 @@ export async function listEnterpriseUsers(
   options: UserManagementOptions = {}
 ): Promise<EnterpriseUser[]> {
   try {
-    let query = supabaseAdmin
-      .from('users')
-      .select(`
+    let query = supabaseAdmin.from('users').select(`
         id,
         email,
         name,
@@ -91,21 +91,21 @@ export async function listEnterpriseUsers(
         created_at,
         updated_at
         ${options.includePermissions ? ', permissions' : ''}
-      `);
+      `)
 
     if (options.filterByRole) {
-      query = query.eq('role', options.filterByRole);
+      query = query.eq('role', options.filterByRole)
     }
 
     if (options.isActive !== undefined) {
-      query = query.eq('is_active', options.isActive);
+      query = query.eq('is_active', options.isActive)
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', { ascending: false })
 
     if (error) {
-      logger.error('Error listando usuarios enterprise:', error);
-      return [];
+      logger.error('Error listando usuarios enterprise:', error)
+      return []
     }
 
     return data.map(user => ({
@@ -118,10 +118,10 @@ export async function listEnterpriseUsers(
       lastLogin: user.last_login ? new Date(user.last_login) : undefined,
       createdAt: new Date(user.created_at),
       updatedAt: new Date(user.updated_at),
-    }));
+    }))
   } catch (error) {
-    logger.error('Error en listEnterpriseUsers:', error);
-    return [];
+    logger.error('Error en listEnterpriseUsers:', error)
+    return []
   }
 }
 
@@ -135,51 +135,48 @@ export async function updateUserRole(
   try {
     const { error } = await supabaseAdmin
       .from('users')
-      .update({ 
+      .update({
         role: newRole,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', userId);
+      .eq('id', userId)
 
     if (error) {
-      logger.error('Error actualizando rol de usuario:', error);
-      return false;
+      logger.error('Error actualizando rol de usuario:', error)
+      return false
     }
 
-    logger.info(`Rol de usuario ${userId} actualizado a ${newRole}`);
-    return true;
+    logger.info(`Rol de usuario ${userId} actualizado a ${newRole}`)
+    return true
   } catch (error) {
-    logger.error('Error en updateUserRole:', error);
-    return false;
+    logger.error('Error en updateUserRole:', error)
+    return false
   }
 }
 
 /**
  * Activa o desactiva un usuario
  */
-export async function toggleUserStatus(
-  userId: string,
-  isActive: boolean
-): Promise<boolean> {
+export async function toggleUserStatus(userId: string, isActive: boolean): Promise<boolean> {
   try {
     const { error } = await supabaseAdmin
       .from('users')
-      .update({ 
+      .update({
         is_active: isActive,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', userId);
+      .eq('id', userId)
 
     if (error) {
-      logger.error('Error cambiando estado de usuario:', error);
-      return false;
+      logger.error('Error cambiando estado de usuario:', error)
+      return false
     }
 
-    logger.info(`Usuario ${userId} ${isActive ? 'activado' : 'desactivado'}`);
-    return true;
+    logger.info(`Usuario ${userId} ${isActive ? 'activado' : 'desactivado'}`)
+    return true
   } catch (error) {
-    logger.error('Error en toggleUserStatus:', error);
-    return false;
+    logger.error('Error en toggleUserStatus:', error)
+    return false
   }
 }
 
@@ -191,11 +188,11 @@ export async function getUserStatistics() {
     const { data, error } = await supabaseAdmin
       .from('users')
       .select('role, is_active')
-      .not('role', 'is', null);
+      .not('role', 'is', null)
 
     if (error) {
-      logger.error('Error obteniendo estadísticas de usuarios:', error);
-      return null;
+      logger.error('Error obteniendo estadísticas de usuarios:', error)
+      return null
     }
 
     const stats = {
@@ -206,13 +203,13 @@ export async function getUserStatistics() {
         admin: data.filter(u => u.role === 'admin').length,
         customer: data.filter(u => u.role === 'customer').length,
         moderator: data.filter(u => u.role === 'moderator').length,
-      }
-    };
+      },
+    }
 
-    return stats;
+    return stats
   } catch (error) {
-    logger.error('Error en getUserStatistics:', error);
-    return null;
+    logger.error('Error en getUserStatistics:', error)
+    return null
   }
 }
 
@@ -223,21 +220,12 @@ export async function recordUserLogin(userId: string): Promise<void> {
   try {
     await supabaseAdmin
       .from('users')
-      .update({ 
+      .update({
         last_login: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', userId);
+      .eq('id', userId)
   } catch (error) {
-    logger.error('Error registrando login de usuario:', error);
+    logger.error('Error registrando login de usuario:', error)
   }
 }
-
-
-
-
-
-
-
-
-

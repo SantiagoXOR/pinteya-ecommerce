@@ -2,9 +2,9 @@
 // PINTEYA E-COMMERCE - PERFORMANCE BUDGETS MONITOR
 // ===================================
 
-import { logger, LogCategory } from '../enterprise/logger';
-import { getRedisClient } from '../integrations/redis';
-import { advancedAlertingEngine, AlertSeverity, AlertType } from './advanced-alerting-engine';
+import { logger, LogCategory } from '../enterprise/logger'
+import { getRedisClient } from '../integrations/redis'
+import { advancedAlertingEngine, AlertSeverity, AlertType } from './advanced-alerting-engine'
 
 /**
  * Tipos de métricas de performance
@@ -22,62 +22,62 @@ export enum PerformanceMetricType {
   THROUGHPUT = 'throughput',
   ERROR_RATE = 'errorRate',
   MEMORY_USAGE = 'memoryUsage',
-  CPU_USAGE = 'cpuUsage'
+  CPU_USAGE = 'cpuUsage',
 }
 
 /**
  * Presupuesto de performance
  */
 export interface PerformanceBudget {
-  id: string;
-  name: string;
-  description: string;
-  enabled: boolean;
-  metricType: PerformanceMetricType;
-  target: number;
-  warning: number;
-  critical: number;
-  unit: string;
+  id: string
+  name: string
+  description: string
+  enabled: boolean
+  metricType: PerformanceMetricType
+  target: number
+  warning: number
+  critical: number
+  unit: string
   context?: {
-    page?: string;
-    device?: 'mobile' | 'desktop' | 'tablet';
-    network?: '3g' | '4g' | 'wifi';
-    environment?: 'development' | 'staging' | 'production';
-  };
-  tags: string[];
-  createdAt: number;
-  updatedAt: number;
+    page?: string
+    device?: 'mobile' | 'desktop' | 'tablet'
+    network?: '3g' | '4g' | 'wifi'
+    environment?: 'development' | 'staging' | 'production'
+  }
+  tags: string[]
+  createdAt: number
+  updatedAt: number
 }
 
 /**
  * Medición de performance
  */
 export interface PerformanceMeasurement {
-  id: string;
-  budgetId: string;
-  value: number;
-  timestamp: number;
+  id: string
+  budgetId: string
+  value: number
+  timestamp: number
   context: {
-    page?: string;
-    device?: string;
-    network?: string;
-    userAgent?: string;
-    sessionId?: string;
-  };
-  metadata?: Record<string, any>;
+    page?: string
+    device?: string
+    network?: string
+    userAgent?: string
+    sessionId?: string
+  }
+  metadata?: Record<string, any>
 }
 
 /**
  * Resultado de evaluación de presupuesto
  */
 export interface BudgetEvaluation {
-  budgetId: string;
-  measurement: PerformanceMeasurement;
-  status: 'good' | 'warning' | 'critical';
-  deviation: number; // Porcentaje de desviación del target
-  threshold: number; // Umbral que se superó
-  message: string;
-  recommendations?: string[];
+  budgetId: string
+  measurement: PerformanceMeasurement
+  status: 'good' | 'warning' | 'critical'
+  deviation: number // Porcentaje de desviación del target
+  threshold: number // Umbral que se superó
+  message: string
+  recommendations?: string[]
 }
 
 /**
@@ -85,25 +85,25 @@ export interface BudgetEvaluation {
  */
 export interface BudgetReport {
   period: {
-    start: number;
-    end: number;
-  };
+    start: number
+    end: number
+  }
   summary: {
-    totalBudgets: number;
-    passingBudgets: number;
-    warningBudgets: number;
-    failingBudgets: number;
-    overallScore: number; // 0-100
-  };
+    totalBudgets: number
+    passingBudgets: number
+    warningBudgets: number
+    failingBudgets: number
+    overallScore: number // 0-100
+  }
   budgetResults: Array<{
-    budget: PerformanceBudget;
-    measurements: PerformanceMeasurement[];
-    averageValue: number;
-    status: 'good' | 'warning' | 'critical';
-    trend: 'improving' | 'stable' | 'degrading';
-    violations: number;
-  }>;
-  recommendations: string[];
+    budget: PerformanceBudget
+    measurements: PerformanceMeasurement[]
+    averageValue: number
+    status: 'good' | 'warning' | 'critical'
+    trend: 'improving' | 'stable' | 'degrading'
+    violations: number
+  }>
+  recommendations: string[]
 }
 
 /**
@@ -123,7 +123,7 @@ export const DEFAULT_PERFORMANCE_BUDGETS: PerformanceBudget[] = [
     context: { device: 'mobile' },
     tags: ['core-web-vitals', 'mobile'],
     createdAt: Date.now(),
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
   },
   {
     id: 'lcp_desktop',
@@ -138,7 +138,7 @@ export const DEFAULT_PERFORMANCE_BUDGETS: PerformanceBudget[] = [
     context: { device: 'desktop' },
     tags: ['core-web-vitals', 'desktop'],
     createdAt: Date.now(),
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
   },
   {
     id: 'fid_global',
@@ -152,7 +152,7 @@ export const DEFAULT_PERFORMANCE_BUDGETS: PerformanceBudget[] = [
     unit: 'ms',
     tags: ['core-web-vitals', 'interactivity'],
     createdAt: Date.now(),
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
   },
   {
     id: 'cls_global',
@@ -166,7 +166,7 @@ export const DEFAULT_PERFORMANCE_BUDGETS: PerformanceBudget[] = [
     unit: 'score',
     tags: ['core-web-vitals', 'visual-stability'],
     createdAt: Date.now(),
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
   },
   {
     id: 'bundle_size_js',
@@ -180,7 +180,7 @@ export const DEFAULT_PERFORMANCE_BUDGETS: PerformanceBudget[] = [
     unit: 'bytes',
     tags: ['bundle-size', 'javascript'],
     createdAt: Date.now(),
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
   },
   {
     id: 'api_response_time',
@@ -194,7 +194,7 @@ export const DEFAULT_PERFORMANCE_BUDGETS: PerformanceBudget[] = [
     unit: 'ms',
     tags: ['api', 'backend'],
     createdAt: Date.now(),
-    updatedAt: Date.now()
+    updatedAt: Date.now(),
   },
   {
     id: 'error_rate',
@@ -208,30 +208,30 @@ export const DEFAULT_PERFORMANCE_BUDGETS: PerformanceBudget[] = [
     unit: 'percentage',
     tags: ['reliability', 'errors'],
     createdAt: Date.now(),
-    updatedAt: Date.now()
-  }
-];
+    updatedAt: Date.now(),
+  },
+]
 
 /**
  * Monitor de presupuestos de performance
  */
 export class PerformanceBudgetsMonitor {
-  private static instance: PerformanceBudgetsMonitor;
-  private redis = getRedisClient();
-  private budgets: Map<string, PerformanceBudget> = new Map();
-  private measurements: Map<string, PerformanceMeasurement[]> = new Map();
-  private evaluationInterval?: NodeJS.Timeout;
+  private static instance: PerformanceBudgetsMonitor
+  private redis = getRedisClient()
+  private budgets: Map<string, PerformanceBudget> = new Map()
+  private measurements: Map<string, PerformanceMeasurement[]> = new Map()
+  private evaluationInterval?: NodeJS.Timeout
 
   private constructor() {
-    this.initializeDefaultBudgets();
-    this.startPeriodicEvaluation();
+    this.initializeDefaultBudgets()
+    this.startPeriodicEvaluation()
   }
 
   static getInstance(): PerformanceBudgetsMonitor {
     if (!PerformanceBudgetsMonitor.instance) {
-      PerformanceBudgetsMonitor.instance = new PerformanceBudgetsMonitor();
+      PerformanceBudgetsMonitor.instance = new PerformanceBudgetsMonitor()
     }
-    return PerformanceBudgetsMonitor.instance;
+    return PerformanceBudgetsMonitor.instance
   }
 
   /**
@@ -239,12 +239,12 @@ export class PerformanceBudgetsMonitor {
    */
   private initializeDefaultBudgets(): void {
     DEFAULT_PERFORMANCE_BUDGETS.forEach(budget => {
-      this.budgets.set(budget.id, budget);
-    });
+      this.budgets.set(budget.id, budget)
+    })
 
     logger.info(LogCategory.MONITORING, 'Performance budgets initialized', {
-      count: this.budgets.size
-    });
+      count: this.budgets.size,
+    })
   }
 
   /**
@@ -252,8 +252,8 @@ export class PerformanceBudgetsMonitor {
    */
   private startPeriodicEvaluation(): void {
     this.evaluationInterval = setInterval(() => {
-      this.evaluateAllBudgets();
-    }, 60000); // Cada minuto
+      this.evaluateAllBudgets()
+    }, 60000) // Cada minuto
   }
 
   /**
@@ -265,97 +265,105 @@ export class PerformanceBudgetsMonitor {
     context: PerformanceMeasurement['context'] = {},
     metadata?: Record<string, any>
   ): string {
-    const budget = this.budgets.get(budgetId);
+    const budget = this.budgets.get(budgetId)
     if (!budget || !budget.enabled) {
-      logger.warn(LogCategory.MONITORING, `Budget not found or disabled: ${budgetId}`);
-      return '';
+      logger.warn(LogCategory.MONITORING, `Budget not found or disabled: ${budgetId}`)
+      return ''
     }
 
-    const measurementId = `measurement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+    const measurementId = `measurement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
     const measurement: PerformanceMeasurement = {
       id: measurementId,
       budgetId,
       value,
       timestamp: Date.now(),
       context,
-      metadata
-    };
+      metadata,
+    }
 
     // Almacenar medición
     if (!this.measurements.has(budgetId)) {
-      this.measurements.set(budgetId, []);
+      this.measurements.set(budgetId, [])
     }
-    
-    const budgetMeasurements = this.measurements.get(budgetId)!;
-    budgetMeasurements.push(measurement);
+
+    const budgetMeasurements = this.measurements.get(budgetId)!
+    budgetMeasurements.push(measurement)
 
     // Mantener solo las últimas 1000 mediciones por presupuesto
     if (budgetMeasurements.length > 1000) {
-      budgetMeasurements.splice(0, budgetMeasurements.length - 1000);
+      budgetMeasurements.splice(0, budgetMeasurements.length - 1000)
     }
 
     // Evaluar presupuesto inmediatamente
-    this.evaluateBudget(budgetId, measurement);
+    this.evaluateBudget(budgetId, measurement)
 
     // Persistir en Redis
-    this.persistMeasurement(measurement);
+    this.persistMeasurement(measurement)
 
     logger.debug(LogCategory.MONITORING, `Performance measurement recorded`, {
       budgetId,
       value,
-      unit: budget.unit
-    });
+      unit: budget.unit,
+    })
 
-    return measurementId;
+    return measurementId
   }
 
   /**
    * Evalúa un presupuesto específico
    */
-  private async evaluateBudget(budgetId: string, measurement: PerformanceMeasurement): Promise<BudgetEvaluation | null> {
-    const budget = this.budgets.get(budgetId);
-    if (!budget) {return null;}
-
-    const evaluation = this.createEvaluation(budget, measurement);
-    
-    // Generar alerta si es necesario
-    if (evaluation.status === 'warning' || evaluation.status === 'critical') {
-      await this.createBudgetAlert(evaluation);
+  private async evaluateBudget(
+    budgetId: string,
+    measurement: PerformanceMeasurement
+  ): Promise<BudgetEvaluation | null> {
+    const budget = this.budgets.get(budgetId)
+    if (!budget) {
+      return null
     }
 
-    return evaluation;
+    const evaluation = this.createEvaluation(budget, measurement)
+
+    // Generar alerta si es necesario
+    if (evaluation.status === 'warning' || evaluation.status === 'critical') {
+      await this.createBudgetAlert(evaluation)
+    }
+
+    return evaluation
   }
 
   /**
    * Crea evaluación de presupuesto
    */
-  private createEvaluation(budget: PerformanceBudget, measurement: PerformanceMeasurement): BudgetEvaluation {
-    let status: 'good' | 'warning' | 'critical';
-    let threshold: number;
-    let message: string;
+  private createEvaluation(
+    budget: PerformanceBudget,
+    measurement: PerformanceMeasurement
+  ): BudgetEvaluation {
+    let status: 'good' | 'warning' | 'critical'
+    let threshold: number
+    let message: string
 
     if (measurement.value <= budget.target) {
-      status = 'good';
-      threshold = budget.target;
-      message = `${budget.name} dentro del objetivo: ${measurement.value}${budget.unit}`;
+      status = 'good'
+      threshold = budget.target
+      message = `${budget.name} dentro del objetivo: ${measurement.value}${budget.unit}`
     } else if (measurement.value <= budget.warning) {
-      status = 'warning';
-      threshold = budget.warning;
-      message = `${budget.name} excede objetivo pero dentro de advertencia: ${measurement.value}${budget.unit}`;
+      status = 'warning'
+      threshold = budget.warning
+      message = `${budget.name} excede objetivo pero dentro de advertencia: ${measurement.value}${budget.unit}`
     } else if (measurement.value <= budget.critical) {
-      status = 'warning';
-      threshold = budget.critical;
-      message = `${budget.name} en nivel de advertencia: ${measurement.value}${budget.unit}`;
+      status = 'warning'
+      threshold = budget.critical
+      message = `${budget.name} en nivel de advertencia: ${measurement.value}${budget.unit}`
     } else {
-      status = 'critical';
-      threshold = budget.critical;
-      message = `${budget.name} en nivel crítico: ${measurement.value}${budget.unit}`;
+      status = 'critical'
+      threshold = budget.critical
+      message = `${budget.name} en nivel crítico: ${measurement.value}${budget.unit}`
     }
 
-    const deviation = ((measurement.value - budget.target) / budget.target) * 100;
+    const deviation = ((measurement.value - budget.target) / budget.target) * 100
 
-    const recommendations = this.generateRecommendations(budget, measurement, status);
+    const recommendations = this.generateRecommendations(budget, measurement, status)
 
     return {
       budgetId: budget.id,
@@ -364,8 +372,8 @@ export class PerformanceBudgetsMonitor {
       deviation,
       threshold,
       message,
-      recommendations
-    };
+      recommendations,
+    }
   }
 
   /**
@@ -376,9 +384,11 @@ export class PerformanceBudgetsMonitor {
     measurement: PerformanceMeasurement,
     status: 'good' | 'warning' | 'critical'
   ): string[] {
-    if (status === 'good') {return [];}
+    if (status === 'good') {
+      return []
+    }
 
-    const recommendations: string[] = [];
+    const recommendations: string[] = []
 
     switch (budget.metricType) {
       case PerformanceMetricType.LARGEST_CONTENTFUL_PAINT:
@@ -387,8 +397,8 @@ export class PerformanceBudgetsMonitor {
           'Implementar lazy loading para imágenes',
           'Reducir el tamaño del bundle JavaScript crítico',
           'Usar CDN para recursos estáticos'
-        );
-        break;
+        )
+        break
 
       case PerformanceMetricType.FIRST_INPUT_DELAY:
         recommendations.push(
@@ -396,8 +406,8 @@ export class PerformanceBudgetsMonitor {
           'Dividir tareas largas en chunks más pequeños',
           'Usar Web Workers para procesamiento pesado',
           'Optimizar event listeners'
-        );
-        break;
+        )
+        break
 
       case PerformanceMetricType.CUMULATIVE_LAYOUT_SHIFT:
         recommendations.push(
@@ -405,8 +415,8 @@ export class PerformanceBudgetsMonitor {
           'Reservar espacio para contenido dinámico',
           'Evitar insertar contenido sobre contenido existente',
           'Usar transform en lugar de cambiar propiedades de layout'
-        );
-        break;
+        )
+        break
 
       case PerformanceMetricType.BUNDLE_SIZE:
         recommendations.push(
@@ -414,8 +424,8 @@ export class PerformanceBudgetsMonitor {
           'Remover dependencias no utilizadas',
           'Usar tree shaking',
           'Comprimir assets con gzip/brotli'
-        );
-        break;
+        )
+        break
 
       case PerformanceMetricType.RESPONSE_TIME:
         recommendations.push(
@@ -423,8 +433,8 @@ export class PerformanceBudgetsMonitor {
           'Implementar cache en múltiples niveles',
           'Usar connection pooling',
           'Optimizar algoritmos de procesamiento'
-        );
-        break;
+        )
+        break
 
       case PerformanceMetricType.ERROR_RATE:
         recommendations.push(
@@ -432,25 +442,27 @@ export class PerformanceBudgetsMonitor {
           'Implementar circuit breakers',
           'Mejorar validación de entrada',
           'Aumentar cobertura de tests'
-        );
-        break;
+        )
+        break
     }
 
-    return recommendations;
+    return recommendations
   }
 
   /**
    * Crea alerta de presupuesto
    */
   private async createBudgetAlert(evaluation: BudgetEvaluation): Promise<void> {
-    const budget = this.budgets.get(evaluation.budgetId);
-    if (!budget) {return;}
+    const budget = this.budgets.get(evaluation.budgetId)
+    if (!budget) {
+      return
+    }
 
-    const severity = evaluation.status === 'critical' ? AlertSeverity.HIGH : AlertSeverity.MEDIUM;
-    
-    const title = `Presupuesto de Performance Excedido: ${budget.name}`;
-    const message = evaluation.message;
-    
+    const severity = evaluation.status === 'critical' ? AlertSeverity.HIGH : AlertSeverity.MEDIUM
+
+    const title = `Presupuesto de Performance Excedido: ${budget.name}`
+    const message = evaluation.message
+
     const details = {
       budgetId: budget.id,
       metricType: budget.metricType,
@@ -460,8 +472,8 @@ export class PerformanceBudgetsMonitor {
       deviation: evaluation.deviation,
       unit: budget.unit,
       context: evaluation.measurement.context,
-      recommendations: evaluation.recommendations
-    };
+      recommendations: evaluation.recommendations,
+    }
 
     await advancedAlertingEngine.createAlert(
       AlertType.PERFORMANCE,
@@ -471,36 +483,41 @@ export class PerformanceBudgetsMonitor {
       details,
       'performance-budgets',
       ['performance', 'budget', budget.metricType, ...budget.tags]
-    );
+    )
   }
 
   /**
    * Evalúa todos los presupuestos
    */
   private async evaluateAllBudgets(): Promise<void> {
-    const now = Date.now();
-    const fiveMinutesAgo = now - (5 * 60 * 1000);
+    const now = Date.now()
+    const fiveMinutesAgo = now - 5 * 60 * 1000
 
     for (const [budgetId, budget] of this.budgets) {
-      if (!budget.enabled) {continue;}
+      if (!budget.enabled) {
+        continue
+      }
 
-      const measurements = this.measurements.get(budgetId) || [];
-      const recentMeasurements = measurements.filter(m => m.timestamp > fiveMinutesAgo);
+      const measurements = this.measurements.get(budgetId) || []
+      const recentMeasurements = measurements.filter(m => m.timestamp > fiveMinutesAgo)
 
-      if (recentMeasurements.length === 0) {continue;}
+      if (recentMeasurements.length === 0) {
+        continue
+      }
 
       // Evaluar promedio de mediciones recientes
-      const averageValue = recentMeasurements.reduce((sum, m) => sum + m.value, 0) / recentMeasurements.length;
-      
+      const averageValue =
+        recentMeasurements.reduce((sum, m) => sum + m.value, 0) / recentMeasurements.length
+
       const syntheticMeasurement: PerformanceMeasurement = {
         id: `synthetic_${budgetId}_${now}`,
         budgetId,
         value: averageValue,
         timestamp: now,
-        context: { synthetic: true }
-      };
+        context: { synthetic: true },
+      }
 
-      await this.evaluateBudget(budgetId, syntheticMeasurement);
+      await this.evaluateBudget(budgetId, syntheticMeasurement)
     }
   }
 
@@ -508,14 +525,15 @@ export class PerformanceBudgetsMonitor {
    * Genera reporte de presupuestos
    */
   generateReport(periodHours: number = 24): BudgetReport {
-    const now = Date.now();
-    const periodStart = now - (periodHours * 60 * 60 * 1000);
+    const now = Date.now()
+    const periodStart = now - periodHours * 60 * 60 * 1000
 
     const budgetResults = Array.from(this.budgets.values())
       .filter(budget => budget.enabled)
       .map(budget => {
-        const measurements = (this.measurements.get(budget.id) || [])
-          .filter(m => m.timestamp >= periodStart);
+        const measurements = (this.measurements.get(budget.id) || []).filter(
+          m => m.timestamp >= periodStart
+        )
 
         if (measurements.length === 0) {
           return {
@@ -524,40 +542,40 @@ export class PerformanceBudgetsMonitor {
             averageValue: 0,
             status: 'good' as const,
             trend: 'stable' as const,
-            violations: 0
-          };
+            violations: 0,
+          }
         }
 
-        const averageValue = measurements.reduce((sum, m) => sum + m.value, 0) / measurements.length;
-        
-        let status: 'good' | 'warning' | 'critical';
+        const averageValue = measurements.reduce((sum, m) => sum + m.value, 0) / measurements.length
+
+        let status: 'good' | 'warning' | 'critical'
         if (averageValue <= budget.target) {
-          status = 'good';
+          status = 'good'
         } else if (averageValue <= budget.warning) {
-          status = 'warning';
+          status = 'warning'
         } else {
-          status = 'critical';
+          status = 'critical'
         }
 
-        const violations = measurements.filter(m => m.value > budget.critical).length;
-        
+        const violations = measurements.filter(m => m.value > budget.critical).length
+
         // Calcular tendencia
-        const halfPeriod = measurements.length / 2;
-        const firstHalf = measurements.slice(0, halfPeriod);
-        const secondHalf = measurements.slice(halfPeriod);
-        
-        const firstAvg = firstHalf.reduce((sum, m) => sum + m.value, 0) / firstHalf.length;
-        const secondAvg = secondHalf.reduce((sum, m) => sum + m.value, 0) / secondHalf.length;
-        
-        let trend: 'improving' | 'stable' | 'degrading';
-        const change = ((secondAvg - firstAvg) / firstAvg) * 100;
-        
+        const halfPeriod = measurements.length / 2
+        const firstHalf = measurements.slice(0, halfPeriod)
+        const secondHalf = measurements.slice(halfPeriod)
+
+        const firstAvg = firstHalf.reduce((sum, m) => sum + m.value, 0) / firstHalf.length
+        const secondAvg = secondHalf.reduce((sum, m) => sum + m.value, 0) / secondHalf.length
+
+        let trend: 'improving' | 'stable' | 'degrading'
+        const change = ((secondAvg - firstAvg) / firstAvg) * 100
+
         if (change < -5) {
-          trend = 'improving';
+          trend = 'improving'
         } else if (change > 5) {
-          trend = 'degrading';
+          trend = 'degrading'
         } else {
-          trend = 'stable';
+          trend = 'stable'
         }
 
         return {
@@ -566,137 +584,153 @@ export class PerformanceBudgetsMonitor {
           averageValue,
           status,
           trend,
-          violations
-        };
-      });
+          violations,
+        }
+      })
 
-    const totalBudgets = budgetResults.length;
-    const passingBudgets = budgetResults.filter(r => r.status === 'good').length;
-    const warningBudgets = budgetResults.filter(r => r.status === 'warning').length;
-    const failingBudgets = budgetResults.filter(r => r.status === 'critical').length;
-    
-    const overallScore = totalBudgets > 0 ? Math.round((passingBudgets / totalBudgets) * 100) : 100;
+    const totalBudgets = budgetResults.length
+    const passingBudgets = budgetResults.filter(r => r.status === 'good').length
+    const warningBudgets = budgetResults.filter(r => r.status === 'warning').length
+    const failingBudgets = budgetResults.filter(r => r.status === 'critical').length
 
-    const recommendations = this.generateReportRecommendations(budgetResults);
+    const overallScore = totalBudgets > 0 ? Math.round((passingBudgets / totalBudgets) * 100) : 100
+
+    const recommendations = this.generateReportRecommendations(budgetResults)
 
     return {
       period: {
         start: periodStart,
-        end: now
+        end: now,
       },
       summary: {
         totalBudgets,
         passingBudgets,
         warningBudgets,
         failingBudgets,
-        overallScore
+        overallScore,
       },
       budgetResults,
-      recommendations
-    };
+      recommendations,
+    }
   }
 
   /**
    * Genera recomendaciones para el reporte
    */
   private generateReportRecommendations(budgetResults: BudgetReport['budgetResults']): string[] {
-    const recommendations: string[] = [];
-    
-    const failingBudgets = budgetResults.filter(r => r.status === 'critical');
-    const degradingBudgets = budgetResults.filter(r => r.trend === 'degrading');
+    const recommendations: string[] = []
+
+    const failingBudgets = budgetResults.filter(r => r.status === 'critical')
+    const degradingBudgets = budgetResults.filter(r => r.trend === 'degrading')
 
     if (failingBudgets.length > 0) {
-      recommendations.push(`${failingBudgets.length} presupuestos están en estado crítico y requieren atención inmediata`);
+      recommendations.push(
+        `${failingBudgets.length} presupuestos están en estado crítico y requieren atención inmediata`
+      )
     }
 
     if (degradingBudgets.length > 0) {
-      recommendations.push(`${degradingBudgets.length} presupuestos muestran tendencia de degradación`);
+      recommendations.push(
+        `${degradingBudgets.length} presupuestos muestran tendencia de degradación`
+      )
     }
 
-    const highViolationBudgets = budgetResults.filter(r => r.violations > 10);
+    const highViolationBudgets = budgetResults.filter(r => r.violations > 10)
     if (highViolationBudgets.length > 0) {
-      recommendations.push('Revisar presupuestos con alta frecuencia de violaciones');
+      recommendations.push('Revisar presupuestos con alta frecuencia de violaciones')
     }
 
-    if (budgetResults.some(r => r.budget.metricType === PerformanceMetricType.BUNDLE_SIZE && r.status !== 'good')) {
-      recommendations.push('Implementar estrategias de optimización de bundle size');
+    if (
+      budgetResults.some(
+        r => r.budget.metricType === PerformanceMetricType.BUNDLE_SIZE && r.status !== 'good'
+      )
+    ) {
+      recommendations.push('Implementar estrategias de optimización de bundle size')
     }
 
-    if (budgetResults.some(r => r.budget.metricType === PerformanceMetricType.LARGEST_CONTENTFUL_PAINT && r.status !== 'good')) {
-      recommendations.push('Optimizar Core Web Vitals para mejorar experiencia de usuario');
+    if (
+      budgetResults.some(
+        r =>
+          r.budget.metricType === PerformanceMetricType.LARGEST_CONTENTFUL_PAINT &&
+          r.status !== 'good'
+      )
+    ) {
+      recommendations.push('Optimizar Core Web Vitals para mejorar experiencia de usuario')
     }
 
-    return recommendations;
+    return recommendations
   }
 
   /**
    * Obtiene presupuestos activos
    */
   getActiveBudgets(): PerformanceBudget[] {
-    return Array.from(this.budgets.values()).filter(budget => budget.enabled);
+    return Array.from(this.budgets.values()).filter(budget => budget.enabled)
   }
 
   /**
    * Obtiene mediciones recientes
    */
   getRecentMeasurements(budgetId: string, hours: number = 1): PerformanceMeasurement[] {
-    const measurements = this.measurements.get(budgetId) || [];
-    const cutoff = Date.now() - (hours * 60 * 60 * 1000);
-    return measurements.filter(m => m.timestamp >= cutoff);
+    const measurements = this.measurements.get(budgetId) || []
+    const cutoff = Date.now() - hours * 60 * 60 * 1000
+    return measurements.filter(m => m.timestamp >= cutoff)
   }
 
   /**
    * Agrega presupuesto personalizado
    */
   addBudget(budget: Omit<PerformanceBudget, 'id' | 'createdAt' | 'updatedAt'>): string {
-    const id = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const now = Date.now();
-    
+    const id = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const now = Date.now()
+
     const fullBudget: PerformanceBudget = {
       ...budget,
       id,
       createdAt: now,
-      updatedAt: now
-    };
+      updatedAt: now,
+    }
 
-    this.budgets.set(id, fullBudget);
-    
-    logger.info(LogCategory.MONITORING, `Custom performance budget added: ${budget.name}`, { id });
-    
-    return id;
+    this.budgets.set(id, fullBudget)
+
+    logger.info(LogCategory.MONITORING, `Custom performance budget added: ${budget.name}`, { id })
+
+    return id
   }
 
   /**
    * Actualiza presupuesto
    */
   updateBudget(id: string, updates: Partial<PerformanceBudget>): boolean {
-    const budget = this.budgets.get(id);
-    if (!budget) {return false;}
+    const budget = this.budgets.get(id)
+    if (!budget) {
+      return false
+    }
 
     const updatedBudget = {
       ...budget,
       ...updates,
       id, // Mantener ID original
-      updatedAt: Date.now()
-    };
+      updatedAt: Date.now(),
+    }
 
-    this.budgets.set(id, updatedBudget);
-    
-    logger.info(LogCategory.MONITORING, `Performance budget updated: ${id}`);
-    
-    return true;
+    this.budgets.set(id, updatedBudget)
+
+    logger.info(LogCategory.MONITORING, `Performance budget updated: ${id}`)
+
+    return true
   }
 
   /**
    * Elimina presupuesto
    */
   removeBudget(id: string): boolean {
-    const deleted = this.budgets.delete(id);
+    const deleted = this.budgets.delete(id)
     if (deleted) {
-      this.measurements.delete(id);
-      logger.info(LogCategory.MONITORING, `Performance budget removed: ${id}`);
+      this.measurements.delete(id)
+      logger.info(LogCategory.MONITORING, `Performance budget removed: ${id}`)
     }
-    return deleted;
+    return deleted
   }
 
   /**
@@ -708,9 +742,9 @@ export class PerformanceBudgetsMonitor {
         `measurement:${measurement.id}`,
         86400 * 7, // 7 días
         JSON.stringify(measurement)
-      );
+      )
     } catch (error) {
-      logger.error(LogCategory.MONITORING, 'Error persisting measurement', error as Error);
+      logger.error(LogCategory.MONITORING, 'Error persisting measurement', error as Error)
     }
   }
 
@@ -719,13 +753,13 @@ export class PerformanceBudgetsMonitor {
    */
   destroy(): void {
     if (this.evaluationInterval) {
-      clearInterval(this.evaluationInterval);
+      clearInterval(this.evaluationInterval)
     }
   }
 }
 
 // Instancia singleton
-export const performanceBudgetsMonitor = PerformanceBudgetsMonitor.getInstance();
+export const performanceBudgetsMonitor = PerformanceBudgetsMonitor.getInstance()
 
 /**
  * Utilidades para presupuestos de performance
@@ -734,25 +768,28 @@ export const PerformanceBudgetUtils = {
   /**
    * Registra Core Web Vitals
    */
-  recordWebVitals(vitals: {
-    lcp?: number;
-    fid?: number;
-    cls?: number;
-    fcp?: number;
-    ttfb?: number;
-    inp?: number;
-  }, context: PerformanceMeasurement['context'] = {}): void {
+  recordWebVitals(
+    vitals: {
+      lcp?: number
+      fid?: number
+      cls?: number
+      fcp?: number
+      ttfb?: number
+      inp?: number
+    },
+    context: PerformanceMeasurement['context'] = {}
+  ): void {
     if (vitals.lcp) {
-      const budgetId = context.device === 'mobile' ? 'lcp_mobile' : 'lcp_desktop';
-      performanceBudgetsMonitor.recordMeasurement(budgetId, vitals.lcp, context);
+      const budgetId = context.device === 'mobile' ? 'lcp_mobile' : 'lcp_desktop'
+      performanceBudgetsMonitor.recordMeasurement(budgetId, vitals.lcp, context)
     }
 
     if (vitals.fid) {
-      performanceBudgetsMonitor.recordMeasurement('fid_global', vitals.fid, context);
+      performanceBudgetsMonitor.recordMeasurement('fid_global', vitals.fid, context)
     }
 
     if (vitals.cls) {
-      performanceBudgetsMonitor.recordMeasurement('cls_global', vitals.cls, context);
+      performanceBudgetsMonitor.recordMeasurement('cls_global', vitals.cls, context)
     }
   },
 
@@ -760,50 +797,41 @@ export const PerformanceBudgetUtils = {
    * Registra métricas de API
    */
   recordAPIMetrics(responseTime: number, context: PerformanceMeasurement['context'] = {}): void {
-    performanceBudgetsMonitor.recordMeasurement('api_response_time', responseTime, context);
+    performanceBudgetsMonitor.recordMeasurement('api_response_time', responseTime, context)
   },
 
   /**
    * Registra tasa de errores
    */
   recordErrorRate(errorRate: number, context: PerformanceMeasurement['context'] = {}): void {
-    performanceBudgetsMonitor.recordMeasurement('error_rate', errorRate, context);
+    performanceBudgetsMonitor.recordMeasurement('error_rate', errorRate, context)
   },
 
   /**
    * Registra tamaño de bundle
    */
   recordBundleSize(size: number, context: PerformanceMeasurement['context'] = {}): void {
-    performanceBudgetsMonitor.recordMeasurement('bundle_size_js', size, context);
+    performanceBudgetsMonitor.recordMeasurement('bundle_size_js', size, context)
   },
 
   /**
    * Obtiene estado general de presupuestos
    */
   getBudgetStatus(): {
-    totalBudgets: number;
-    passingBudgets: number;
-    overallScore: number;
-    criticalBudgets: string[];
+    totalBudgets: number
+    passingBudgets: number
+    overallScore: number
+    criticalBudgets: string[]
   } {
-    const report = performanceBudgetsMonitor.generateReport(1); // Última hora
-    
+    const report = performanceBudgetsMonitor.generateReport(1) // Última hora
+
     return {
       totalBudgets: report.summary.totalBudgets,
       passingBudgets: report.summary.passingBudgets,
       overallScore: report.summary.overallScore,
       criticalBudgets: report.budgetResults
         .filter(r => r.status === 'critical')
-        .map(r => r.budget.name)
-    };
-  }
-};
-
-
-
-
-
-
-
-
-
+        .map(r => r.budget.name),
+    }
+  },
+}

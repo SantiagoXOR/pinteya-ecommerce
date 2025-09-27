@@ -3,29 +3,29 @@
  * Registra eventos de seguridad y detecta patrones sospechosos
  */
 
-import { supabaseAdmin } from '@/lib/integrations/supabase';
-import type { NextRequest, NextApiRequest } from 'next';
-import type { SecurityContext } from './security-validations';
+import { supabaseAdmin } from '@/lib/integrations/supabase'
+import type { NextRequest, NextApiRequest } from 'next'
+import type { SecurityContext } from './security-validations'
 
 // =====================================================
 // TIPOS Y INTERFACES
 // =====================================================
 
 export interface SecurityEvent {
-  id?: string;
-  user_id: string;
-  event_type: SecurityEventType;
-  event_category: SecurityEventCategory;
-  severity: SecuritySeverity;
-  description: string;
-  metadata?: Record<string, any>;
-  ip_address?: string;
-  user_agent?: string;
-  timestamp: string;
-  resolved: boolean;
+  id?: string
+  user_id: string
+  event_type: SecurityEventType
+  event_category: SecurityEventCategory
+  severity: SecuritySeverity
+  description: string
+  metadata?: Record<string, any>
+  ip_address?: string
+  user_agent?: string
+  timestamp: string
+  resolved: boolean
 }
 
-export type SecurityEventType = 
+export type SecurityEventType =
   | 'AUTH_SUCCESS'
   | 'AUTH_FAILURE'
   | 'PERMISSION_DENIED'
@@ -33,28 +33,28 @@ export type SecurityEventType =
   | 'ROLE_CHANGE'
   | 'DATA_ACCESS'
   | 'ADMIN_ACTION'
-  | 'SECURITY_VIOLATION';
+  | 'SECURITY_VIOLATION'
 
-export type SecurityEventCategory = 
+export type SecurityEventCategory =
   | 'authentication'
   | 'authorization'
   | 'data_access'
   | 'admin_operations'
-  | 'suspicious_behavior';
+  | 'suspicious_behavior'
 
-export type SecuritySeverity = 'low' | 'medium' | 'high' | 'critical';
+export type SecuritySeverity = 'low' | 'medium' | 'high' | 'critical'
 
 export interface SecurityAlert {
-  id?: string;
-  user_id: string;
-  alert_type: string;
-  severity: SecuritySeverity;
-  description: string;
-  event_count: number;
-  first_occurrence: string;
-  last_occurrence: string;
-  resolved: boolean;
-  metadata?: Record<string, any>;
+  id?: string
+  user_id: string
+  alert_type: string
+  severity: SecuritySeverity
+  description: string
+  event_count: number
+  first_occurrence: string
+  last_occurrence: string
+  resolved: boolean
+  metadata?: Record<string, any>
 }
 
 // =====================================================
@@ -69,30 +69,28 @@ export async function logSecurityEvent(
 ): Promise<void> {
   try {
     if (!supabaseAdmin) {
-      console.warn('[SECURITY] Supabase admin no disponible para logging');
-      return;
+      console.warn('[SECURITY] Supabase admin no disponible para logging')
+      return
     }
 
     const securityEvent: SecurityEvent = {
       ...event,
       timestamp: new Date().toISOString(),
-      resolved: false
-    };
+      resolved: false,
+    }
 
-    const { error } = await supabaseAdmin
-      .from('security_events')
-      .insert(securityEvent);
+    const { error } = await supabaseAdmin.from('security_events').insert(securityEvent)
 
     if (error) {
-      console.error('[SECURITY] Error guardando evento de seguridad:', error);
+      console.error('[SECURITY] Error guardando evento de seguridad:', error)
     } else {
-      console.log(`[SECURITY] Evento registrado: ${event.event_type} - ${event.description}`);
+      console.log(`[SECURITY] Evento registrado: ${event.event_type} - ${event.description}`)
     }
 
     // También log en consola para desarrollo
-    console.log('[SECURITY EVENT]', JSON.stringify(securityEvent, null, 2));
+    console.log('[SECURITY EVENT]', JSON.stringify(securityEvent, null, 2))
   } catch (error) {
-    console.error('[SECURITY] Error en logSecurityEvent:', error);
+    console.error('[SECURITY] Error en logSecurityEvent:', error)
   }
 }
 
@@ -113,11 +111,11 @@ export async function logAuthSuccess(
     metadata: {
       role: context.userRole,
       permissions: context.permissions,
-      emailVerified: context.metadata.emailVerified
+      emailVerified: context.metadata.emailVerified,
     },
     ip_address: context.ipAddress,
-    user_agent: context.userAgent
-  });
+    user_agent: context.userAgent,
+  })
 }
 
 /**
@@ -128,17 +126,17 @@ export async function logAuthFailure(
   reason: string,
   request?: NextRequest | NextApiRequest
 ): Promise<void> {
-  let ipAddress: string | undefined;
-  let userAgent: string | undefined;
+  let ipAddress: string | undefined
+  let userAgent: string | undefined
 
   if (request) {
     if ('headers' in request && typeof request.headers.get === 'function') {
-      ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
-      userAgent = request.headers.get('user-agent') || 'unknown';
+      ipAddress = request.headers.get('x-forwarded-for') || 'unknown'
+      userAgent = request.headers.get('user-agent') || 'unknown'
     } else if ('headers' in request) {
-      const req = request as NextApiRequest;
-      ipAddress = req.headers['x-forwarded-for'] as string || 'unknown';
-      userAgent = req.headers['user-agent'] || 'unknown';
+      const req = request as NextApiRequest
+      ipAddress = (req.headers['x-forwarded-for'] as string) || 'unknown'
+      userAgent = req.headers['user-agent'] || 'unknown'
     }
   }
 
@@ -150,8 +148,8 @@ export async function logAuthFailure(
     description: `Fallo de autenticación: ${reason}`,
     metadata: { reason },
     ip_address: ipAddress,
-    user_agent: userAgent
-  });
+    user_agent: userAgent,
+  })
 }
 
 /**
@@ -173,11 +171,11 @@ export async function logPermissionDenied(
       operation,
       requiredPermissions,
       userRole: context.userRole,
-      userPermissions: context.permissions
+      userPermissions: context.permissions,
     },
     ip_address: context.ipAddress,
-    user_agent: context.userAgent
-  });
+    user_agent: context.userAgent,
+  })
 }
 
 /**
@@ -200,11 +198,11 @@ export async function logDataAccess(
       resource,
       action,
       userRole: context.userRole,
-      ...metadata
+      ...metadata,
     },
     ip_address: context.ipAddress,
-    user_agent: context.userAgent
-  });
+    user_agent: context.userAgent,
+  })
 }
 
 /**
@@ -227,11 +225,11 @@ export async function logAdminAction(
       action,
       target,
       userRole: context.userRole,
-      ...metadata
+      ...metadata,
     },
     ip_address: context.ipAddress,
-    user_agent: context.userAgent
-  });
+    user_agent: context.userAgent,
+  })
 }
 
 // =====================================================
@@ -247,24 +245,26 @@ export async function detectMultipleAuthFailures(
   maxAttempts: number = 5
 ): Promise<boolean> {
   try {
-    if (!supabaseAdmin) {return false;}
+    if (!supabaseAdmin) {
+      return false
+    }
 
-    const timeThreshold = new Date(Date.now() - timeWindowMinutes * 60 * 1000).toISOString();
+    const timeThreshold = new Date(Date.now() - timeWindowMinutes * 60 * 1000).toISOString()
 
     const { data, error } = await supabaseAdmin
       .from('security_events')
       .select('id')
       .eq('user_id', userId)
       .eq('event_type', 'AUTH_FAILURE')
-      .gte('timestamp', timeThreshold);
+      .gte('timestamp', timeThreshold)
 
     if (error) {
-      console.error('[SECURITY] Error detectando fallos de auth:', error);
-      return false;
+      console.error('[SECURITY] Error detectando fallos de auth:', error)
+      return false
     }
 
-    const failureCount = data?.length || 0;
-    
+    const failureCount = data?.length || 0
+
     if (failureCount >= maxAttempts) {
       await logSecurityEvent({
         user_id: userId,
@@ -275,16 +275,16 @@ export async function detectMultipleAuthFailures(
         metadata: {
           failureCount,
           timeWindowMinutes,
-          threshold: maxAttempts
-        }
-      });
-      return true;
+          threshold: maxAttempts,
+        },
+      })
+      return true
     }
 
-    return false;
+    return false
   } catch (error) {
-    console.error('[SECURITY] Error en detectMultipleAuthFailures:', error);
-    return false;
+    console.error('[SECURITY] Error en detectMultipleAuthFailures:', error)
+    return false
   }
 }
 
@@ -297,9 +297,11 @@ export async function detectMultipleIPAccess(
   maxIPs: number = 3
 ): Promise<boolean> {
   try {
-    if (!supabaseAdmin) {return false;}
+    if (!supabaseAdmin) {
+      return false
+    }
 
-    const timeThreshold = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000).toISOString();
+    const timeThreshold = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000).toISOString()
 
     const { data, error } = await supabaseAdmin
       .from('security_events')
@@ -307,15 +309,15 @@ export async function detectMultipleIPAccess(
       .eq('user_id', userId)
       .eq('event_type', 'AUTH_SUCCESS')
       .gte('timestamp', timeThreshold)
-      .not('ip_address', 'is', null);
+      .not('ip_address', 'is', null)
 
     if (error) {
-      console.error('[SECURITY] Error detectando múltiples IPs:', error);
-      return false;
+      console.error('[SECURITY] Error detectando múltiples IPs:', error)
+      return false
     }
 
-    const uniqueIPs = new Set(data?.map(event => event.ip_address));
-    const ipCount = uniqueIPs.size;
+    const uniqueIPs = new Set(data?.map(event => event.ip_address))
+    const ipCount = uniqueIPs.size
 
     if (ipCount >= maxIPs) {
       await logSecurityEvent({
@@ -328,16 +330,16 @@ export async function detectMultipleIPAccess(
           ipCount,
           timeWindowHours,
           threshold: maxIPs,
-          ips: Array.from(uniqueIPs)
-        }
-      });
-      return true;
+          ips: Array.from(uniqueIPs),
+        },
+      })
+      return true
     }
 
-    return false;
+    return false
   } catch (error) {
-    console.error('[SECURITY] Error en detectMultipleIPAccess:', error);
-    return false;
+    console.error('[SECURITY] Error en detectMultipleIPAccess:', error)
+    return false
   }
 }
 
@@ -346,20 +348,8 @@ export async function detectMultipleIPAccess(
  */
 export async function runSecurityDetection(userId: string): Promise<void> {
   try {
-    await Promise.all([
-      detectMultipleAuthFailures(userId),
-      detectMultipleIPAccess(userId)
-    ]);
+    await Promise.all([detectMultipleAuthFailures(userId), detectMultipleIPAccess(userId)])
   } catch (error) {
-    console.error('[SECURITY] Error en runSecurityDetection:', error);
+    console.error('[SECURITY] Error en runSecurityDetection:', error)
   }
 }
-
-
-
-
-
-
-
-
-

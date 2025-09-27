@@ -21,7 +21,7 @@ export const categoryColors = {
     900: '#14532d',
     950: '#052e16',
   },
-  
+
   // Brand colors (Pinteya specific)
   brand: {
     green: {
@@ -74,7 +74,7 @@ export const categoryColors = {
     inverse: '#ffffff',
     muted: '#d1d5db',
   },
-} as const;
+} as const
 
 /**
  * Spacing tokens
@@ -84,28 +84,28 @@ export const categorySpacing = {
   pill: {
     padding: {
       sm: { x: '0.75rem', y: '0.375rem' }, // px-3 py-1.5
-      md: { x: '1rem', y: '0.5rem' },      // px-4 py-2
-      lg: { x: '1.25rem', y: '0.75rem' },  // px-5 py-3
+      md: { x: '1rem', y: '0.5rem' }, // px-4 py-2
+      lg: { x: '1.25rem', y: '0.75rem' }, // px-5 py-3
     },
     margin: {
-      gap: '0.5rem',     // gap-2
-      row: '0.75rem',    // mb-3
+      gap: '0.5rem', // gap-2
+      row: '0.75rem', // mb-3
     },
     icon: {
-      sm: { left: '1.5rem' },  // pl-6
-      md: { left: '2rem' },    // pl-8
-      lg: { left: '2.5rem' },  // pl-10
+      sm: { left: '1.5rem' }, // pl-6
+      md: { left: '2rem' }, // pl-8
+      lg: { left: '2.5rem' }, // pl-10
     },
   },
 
   // Container spacing
   container: {
     padding: {
-      x: '1rem',        // px-4
-      y: '3rem',        // py-12
+      x: '1rem', // px-4
+      y: '3rem', // py-12
     },
     margin: {
-      header: '2rem',   // mb-8
+      header: '2rem', // mb-8
       content: '0',
     },
   },
@@ -113,17 +113,17 @@ export const categorySpacing = {
   // Icon spacing
   icon: {
     size: {
-      sm: '1.5rem',     // w-6 h-6
-      md: '2.5rem',     // w-10 h-10
-      lg: '3rem',       // w-12 h-12
+      sm: '1.5rem', // w-6 h-6
+      md: '2.5rem', // w-10 h-10
+      lg: '3rem', // w-12 h-12
     },
     position: {
-      sm: '-0.125rem',  // -left-0.5
-      md: '-0.25rem',   // -left-1
-      lg: '-0.375rem',  // -left-1.5
+      sm: '-0.125rem', // -left-0.5
+      md: '-0.25rem', // -left-1
+      lg: '-0.375rem', // -left-1.5
     },
   },
-} as const;
+} as const
 
 /**
  * Typography tokens
@@ -137,13 +137,13 @@ export const categoryTypography = {
 
   // Font sizes
   fontSize: {
-    xs: '0.75rem',      // text-xs
-    sm: '0.875rem',     // text-sm
-    base: '1rem',       // text-base
-    lg: '1.125rem',     // text-lg
-    xl: '1.25rem',      // text-xl
-    '2xl': '1.5rem',    // text-2xl
-    '3xl': '1.875rem',  // text-3xl
+    xs: '0.75rem', // text-xs
+    sm: '0.875rem', // text-sm
+    base: '1rem', // text-base
+    lg: '1.125rem', // text-lg
+    xl: '1.25rem', // text-xl
+    '2xl': '1.5rem', // text-2xl
+    '3xl': '1.875rem', // text-3xl
   },
 
   // Font weights
@@ -167,21 +167,21 @@ export const categoryTypography = {
     normal: '0',
     wide: '0.025em',
   },
-} as const;
+} as const
 
 /**
  * Border radius tokens
  */
 export const categoryBorderRadius = {
   none: '0',
-  sm: '0.125rem',     // rounded-sm
+  sm: '0.125rem', // rounded-sm
   DEFAULT: '0.25rem', // rounded
-  md: '0.375rem',     // rounded-md
-  lg: '0.5rem',       // rounded-lg
-  xl: '0.75rem',      // rounded-xl
-  '2xl': '1rem',      // rounded-2xl
-  full: '9999px',     // rounded-full
-} as const;
+  md: '0.375rem', // rounded-md
+  lg: '0.5rem', // rounded-lg
+  xl: '0.75rem', // rounded-xl
+  '2xl': '1rem', // rounded-2xl
+  full: '9999px', // rounded-full
+} as const
 
 /**
  * Shadow tokens
@@ -195,7 +195,7 @@ export const categoryShadows = {
   xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
   inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
   focus: '0 0 0 3px rgb(234 90 23 / 0.5)', // focus ring
-} as const;
+} as const
 
 /**
  * Animation tokens
@@ -232,7 +232,7 @@ export const categoryAnimations = {
       down: 'translateY(1px)',
     },
   },
-} as const;
+} as const
 
 /**
  * Z-index tokens
@@ -244,7 +244,7 @@ export const categoryZIndex = {
   modal: 30,
   popover: 40,
   tooltip: 50,
-} as const;
+} as const
 
 /**
  * Breakpoint tokens
@@ -255,7 +255,7 @@ export const categoryBreakpoints = {
   lg: '1024px',
   xl: '1280px',
   '2xl': '1536px',
-} as const;
+} as const
 
 /**
  * Component variants
@@ -299,7 +299,7 @@ export const categoryVariants = {
       border: 'none',
     },
   },
-} as const;
+} as const
 
 /**
  * Accessibility tokens
@@ -325,7 +325,7 @@ export const categoryA11y = {
     large: 3,
     enhanced: 7,
   },
-} as const;
+} as const
 
 /**
  * Complete design token export
@@ -341,22 +341,13 @@ export const categoryDesignTokens = {
   breakpoints: categoryBreakpoints,
   variants: categoryVariants,
   a11y: categoryA11y,
-} as const;
+} as const
 
 /**
  * Type definitions for design tokens
  */
-export type CategoryColors = typeof categoryColors;
-export type CategorySpacing = typeof categorySpacing;
-export type CategoryTypography = typeof categoryTypography;
-export type CategoryVariants = typeof categoryVariants;
-export type CategoryDesignTokens = typeof categoryDesignTokens;
-
-
-
-
-
-
-
-
-
+export type CategoryColors = typeof categoryColors
+export type CategorySpacing = typeof categorySpacing
+export type CategoryTypography = typeof categoryTypography
+export type CategoryVariants = typeof categoryVariants
+export type CategoryDesignTokens = typeof categoryDesignTokens

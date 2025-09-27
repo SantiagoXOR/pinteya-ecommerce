@@ -4,16 +4,7 @@ const CheckoutTest = () => {
       <h1>Checkout Test Simple</h1>
       <p>Este es un componente de prueba muy básico.</p>
     </div>
-  );
-};
+  )
+}
 
-export default CheckoutTest;
-
-
-
-
-
-
-
-
-
+export default CheckoutTest

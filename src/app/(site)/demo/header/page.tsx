@@ -1,87 +1,85 @@
-"use client";
+'use client'
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TopBar from '@/components/Header/TopBar';
-import EnhancedSearchBar from '@/components/Header/EnhancedSearchBar';
-import ActionButtons from '@/components/Header/ActionButtons';
-import DropdownTester from '@/components/Header/DropdownTester';
-import { CheckCircle, AlertCircle, Info, Smartphone, Monitor, Tablet } from 'lucide-react';
+import React, { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import TopBar from '@/components/Header/TopBar'
+import EnhancedSearchBar from '@/components/Header/EnhancedSearchBar'
+import ActionButtons from '@/components/Header/ActionButtons'
+import DropdownTester from '@/components/Header/DropdownTester'
+import { CheckCircle, AlertCircle, Info, Smartphone, Monitor, Tablet } from 'lucide-react'
 
 const HeaderDemoPage = () => {
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-  const [selectedDevice, setSelectedDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [searchResults, setSearchResults] = useState<string[]>([])
+  const [selectedDevice, setSelectedDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
 
   const handleSearch = (query: string, category?: string) => {
     setSearchResults([
       `Resultado para "${query}" en categoría ${category}`,
       'Látex Interior Premium 20L',
       'Esmalte Sintético Brillante',
-      'Pincel Profesional Set'
-    ]);
-  };
+      'Pincel Profesional Set',
+    ])
+  }
 
   const deviceClasses = {
     mobile: 'max-w-sm mx-auto',
     tablet: 'max-w-2xl mx-auto',
-    desktop: 'max-w-full'
-  };
+    desktop: 'max-w-full',
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className='min-h-screen bg-gray-50 py-8'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header de la página */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Demo: Header Mejorado Pinteya
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Demostración interactiva del header mejorado con estructura de 3 niveles, 
-            dropdowns funcionales y diseño responsive.
+        <div className='text-center mb-8'>
+          <h1 className='text-4xl font-bold text-gray-900 mb-4'>Demo: Header Mejorado Pinteya</h1>
+          <p className='text-xl text-gray-600 max-w-3xl mx-auto'>
+            Demostración interactiva del header mejorado con estructura de 3 niveles, dropdowns
+            funcionales y diseño responsive.
           </p>
         </div>
 
         {/* Estado del sistema */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-8'>
           <Card>
-            <CardContent className="flex items-center p-4">
-              <CheckCircle className="w-8 h-8 text-green-500 mr-3" />
+            <CardContent className='flex items-center p-4'>
+              <CheckCircle className='w-8 h-8 text-green-500 mr-3' />
               <div>
-                <p className="font-semibold text-green-700">Dropdown Menu</p>
-                <p className="text-sm text-gray-600">Componente instalado</p>
+                <p className='font-semibold text-green-700'>Dropdown Menu</p>
+                <p className='text-sm text-gray-600'>Componente instalado</p>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
-            <CardContent className="flex items-center p-4">
-              <CheckCircle className="w-8 h-8 text-green-500 mr-3" />
+            <CardContent className='flex items-center p-4'>
+              <CheckCircle className='w-8 h-8 text-green-500 mr-3' />
               <div>
-                <p className="font-semibold text-green-700">Responsive Design</p>
-                <p className="text-sm text-gray-600">Mobile-first implementado</p>
+                <p className='font-semibold text-green-700'>Responsive Design</p>
+                <p className='text-sm text-gray-600'>Mobile-first implementado</p>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
-            <CardContent className="flex items-center p-4">
-              <CheckCircle className="w-8 h-8 text-green-500 mr-3" />
+            <CardContent className='flex items-center p-4'>
+              <CheckCircle className='w-8 h-8 text-green-500 mr-3' />
               <div>
-                <p className="font-semibold text-green-700">Microinteracciones</p>
-                <p className="text-sm text-gray-600">Animaciones activas</p>
+                <p className='font-semibold text-green-700'>Microinteracciones</p>
+                <p className='text-sm text-gray-600'>Animaciones activas</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Selector de dispositivo */}
-        <Card className="mb-8">
+        <Card className='mb-8'>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Monitor className="w-5 h-5" />
+            <CardTitle className='flex items-center gap-2'>
+              <Monitor className='w-5 h-5' />
               Vista Responsive
             </CardTitle>
             <CardDescription>
@@ -89,54 +87,54 @@ const HeaderDemoPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-2 mb-4">
+            <div className='flex gap-2 mb-4'>
               <Button
                 variant={selectedDevice === 'mobile' ? 'primary' : 'outline'}
-                size="sm"
+                size='sm'
                 onClick={() => setSelectedDevice('mobile')}
-                className="flex items-center gap-2"
+                className='flex items-center gap-2'
               >
-                <Smartphone className="w-4 h-4" />
+                <Smartphone className='w-4 h-4' />
                 Mobile
               </Button>
               <Button
                 variant={selectedDevice === 'tablet' ? 'primary' : 'outline'}
-                size="sm"
+                size='sm'
                 onClick={() => setSelectedDevice('tablet')}
-                className="flex items-center gap-2"
+                className='flex items-center gap-2'
               >
-                <Tablet className="w-4 h-4" />
+                <Tablet className='w-4 h-4' />
                 Tablet
               </Button>
               <Button
                 variant={selectedDevice === 'desktop' ? 'primary' : 'outline'}
-                size="sm"
+                size='sm'
                 onClick={() => setSelectedDevice('desktop')}
-                className="flex items-center gap-2"
+                className='flex items-center gap-2'
               >
-                <Monitor className="w-4 h-4" />
+                <Monitor className='w-4 h-4' />
                 Desktop
               </Button>
             </div>
-            
-            <Badge variant="outline" className="mb-4">
+
+            <Badge variant='outline' className='mb-4'>
               Vista actual: {selectedDevice}
             </Badge>
           </CardContent>
         </Card>
 
         {/* Demo de componentes */}
-        <Tabs defaultValue="topbar" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="topbar">TopBar</TabsTrigger>
-            <TabsTrigger value="search">Búsqueda</TabsTrigger>
-            <TabsTrigger value="actions">Acciones</TabsTrigger>
-            <TabsTrigger value="complete">Completo</TabsTrigger>
-            <TabsTrigger value="testing">Testing</TabsTrigger>
+        <Tabs defaultValue='topbar' className='space-y-6'>
+          <TabsList className='grid w-full grid-cols-5'>
+            <TabsTrigger value='topbar'>TopBar</TabsTrigger>
+            <TabsTrigger value='search'>Búsqueda</TabsTrigger>
+            <TabsTrigger value='actions'>Acciones</TabsTrigger>
+            <TabsTrigger value='complete'>Completo</TabsTrigger>
+            <TabsTrigger value='testing'>Testing</TabsTrigger>
           </TabsList>
 
           {/* TopBar Demo */}
-          <TabsContent value="topbar">
+          <TabsContent value='topbar'>
             <Card>
               <CardHeader>
                 <CardTitle>TopBar - Información Superior</CardTitle>
@@ -145,12 +143,14 @@ const HeaderDemoPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className={`border rounded-lg overflow-hidden ${deviceClasses[selectedDevice]}`}>
+                <div
+                  className={`border rounded-lg overflow-hidden ${deviceClasses[selectedDevice]}`}
+                >
                   <TopBar />
                 </div>
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-blue-900 mb-2">Funcionalidades:</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
+                <div className='mt-4 p-4 bg-blue-50 rounded-lg'>
+                  <h4 className='font-semibold text-blue-900 mb-2'>Funcionalidades:</h4>
+                  <ul className='text-sm text-blue-800 space-y-1'>
                     <li>• Teléfono clickeable para llamadas directas</li>
                     <li>• Horarios de atención claramente visibles</li>
                     <li>• Selector de zona de entrega con dropdown</li>
@@ -163,7 +163,7 @@ const HeaderDemoPage = () => {
           </TabsContent>
 
           {/* Search Demo */}
-          <TabsContent value="search">
+          <TabsContent value='search'>
             <Card>
               <CardHeader>
                 <CardTitle>Buscador Mejorado</CardTitle>
@@ -173,16 +173,16 @@ const HeaderDemoPage = () => {
               </CardHeader>
               <CardContent>
                 <div className={`border rounded-lg p-4 bg-white ${deviceClasses[selectedDevice]}`}>
-                  <EnhancedSearchBar 
+                  <EnhancedSearchBar
                     onSearch={handleSearch}
                     size={selectedDevice === 'mobile' ? 'sm' : 'md'}
                   />
                 </div>
-                
+
                 {searchResults.length > 0 && (
-                  <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-semibold text-green-900 mb-2">Resultados de búsqueda:</h4>
-                    <ul className="text-sm text-green-800 space-y-1">
+                  <div className='mt-4 p-4 bg-green-50 rounded-lg'>
+                    <h4 className='font-semibold text-green-900 mb-2'>Resultados de búsqueda:</h4>
+                    <ul className='text-sm text-green-800 space-y-1'>
                       {searchResults.map((result, index) => (
                         <li key={index}>• {result}</li>
                       ))}
@@ -190,9 +190,9 @@ const HeaderDemoPage = () => {
                   </div>
                 )}
 
-                <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-                  <h4 className="font-semibold text-yellow-900 mb-2">Características:</h4>
-                  <ul className="text-sm text-yellow-800 space-y-1">
+                <div className='mt-4 p-4 bg-yellow-50 rounded-lg'>
+                  <h4 className='font-semibold text-yellow-900 mb-2'>Características:</h4>
+                  <ul className='text-sm text-yellow-800 space-y-1'>
                     <li>• Selector de categorías con iconos</li>
                     <li>• Placeholder dinámico según categoría</li>
                     <li>• Botón de búsqueda prominente en naranja Pinteya</li>
@@ -205,7 +205,7 @@ const HeaderDemoPage = () => {
           </TabsContent>
 
           {/* Actions Demo */}
-          <TabsContent value="actions">
+          <TabsContent value='actions'>
             <Card>
               <CardHeader>
                 <CardTitle>Botones de Acción</CardTitle>
@@ -215,14 +215,12 @@ const HeaderDemoPage = () => {
               </CardHeader>
               <CardContent>
                 <div className={`border rounded-lg p-4 bg-white ${deviceClasses[selectedDevice]}`}>
-                  <ActionButtons 
-                    variant={selectedDevice === 'mobile' ? 'mobile' : 'header'} 
-                  />
+                  <ActionButtons variant={selectedDevice === 'mobile' ? 'mobile' : 'header'} />
                 </div>
-                
-                <div className="mt-4 p-4 bg-purple-50 rounded-lg">
-                  <h4 className="font-semibold text-purple-900 mb-2">Funcionalidades:</h4>
-                  <ul className="text-sm text-purple-800 space-y-1">
+
+                <div className='mt-4 p-4 bg-purple-50 rounded-lg'>
+                  <h4 className='font-semibold text-purple-900 mb-2'>Funcionalidades:</h4>
+                  <ul className='text-sm text-purple-800 space-y-1'>
                     <li>• Botón de Google Sign In con ícono</li>
                     <li>• Carrito con badge de cantidad animado</li>
                     <li>• Wishlist (oculto en mobile)</li>
@@ -235,7 +233,7 @@ const HeaderDemoPage = () => {
           </TabsContent>
 
           {/* Complete Demo */}
-          <TabsContent value="complete">
+          <TabsContent value='complete'>
             <Card>
               <CardHeader>
                 <CardTitle>Header Completo</CardTitle>
@@ -244,54 +242,57 @@ const HeaderDemoPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className={`border rounded-lg overflow-hidden bg-white ${deviceClasses[selectedDevice]}`}>
+                <div
+                  className={`border rounded-lg overflow-hidden bg-white ${deviceClasses[selectedDevice]}`}
+                >
                   {/* Simulación del header completo */}
-                  <div className="space-y-0">
+                  <div className='space-y-0'>
                     {selectedDevice !== 'mobile' && <TopBar />}
-                    <div className="p-4 bg-white border-b">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex-shrink-0">
-                          <img 
-                            src="/images/logo/LOGO POSITIVO.svg" 
-                            alt="Pinteya Logo" 
-                            className="h-8 w-auto"
+                    <div className='p-4 bg-white border-b'>
+                      <div className='flex items-center justify-between gap-4'>
+                        <div className='flex-shrink-0'>
+                          <img
+                            src='/images/logo/LOGO POSITIVO.svg'
+                            alt='Pinteya Logo'
+                            className='h-8 w-auto'
                           />
                         </div>
                         {selectedDevice !== 'mobile' && (
-                          <div className="flex-1 max-w-2xl">
-                            <EnhancedSearchBar 
-                              onSearch={handleSearch}
-                              size="sm"
-                            />
+                          <div className='flex-1 max-w-2xl'>
+                            <EnhancedSearchBar onSearch={handleSearch} size='sm' />
                           </div>
                         )}
-                        <div className="flex-shrink-0">
-                          <ActionButtons 
-                            variant={selectedDevice === 'mobile' ? 'mobile' : 'header'} 
+                        <div className='flex-shrink-0'>
+                          <ActionButtons
+                            variant={selectedDevice === 'mobile' ? 'mobile' : 'header'}
                           />
                         </div>
                       </div>
                       {selectedDevice === 'mobile' && (
-                        <div className="mt-4">
-                          <EnhancedSearchBar 
-                            onSearch={handleSearch}
-                            size="sm"
-                          />
+                        <div className='mt-4'>
+                          <EnhancedSearchBar onSearch={handleSearch} size='sm' />
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <Info className="w-5 h-5 text-blue-500 mt-0.5" />
+                <div className='mt-4 p-4 bg-gray-50 rounded-lg'>
+                  <div className='flex items-start gap-2'>
+                    <Info className='w-5 h-5 text-blue-500 mt-0.5' />
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">Estructura de 3 Niveles:</h4>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li><strong>Nivel 1:</strong> TopBar con información de contacto (solo desktop)</li>
-                        <li><strong>Nivel 2:</strong> Header principal con logo, búsqueda y acciones</li>
-                        <li><strong>Nivel 3:</strong> Navegación integrada (responsive)</li>
+                      <h4 className='font-semibold text-gray-900 mb-1'>Estructura de 3 Niveles:</h4>
+                      <ul className='text-sm text-gray-700 space-y-1'>
+                        <li>
+                          <strong>Nivel 1:</strong> TopBar con información de contacto (solo
+                          desktop)
+                        </li>
+                        <li>
+                          <strong>Nivel 2:</strong> Header principal con logo, búsqueda y acciones
+                        </li>
+                        <li>
+                          <strong>Nivel 3:</strong> Navegación integrada (responsive)
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -301,7 +302,7 @@ const HeaderDemoPage = () => {
           </TabsContent>
 
           {/* Testing Tab */}
-          <TabsContent value="testing">
+          <TabsContent value='testing'>
             <Card>
               <CardHeader>
                 <CardTitle>Testing Interactivo</CardTitle>
@@ -317,22 +318,13 @@ const HeaderDemoPage = () => {
         </Tabs>
 
         {/* Footer de la demo */}
-        <div className="mt-8 text-center text-gray-500">
+        <div className='mt-8 text-center text-gray-500'>
           <p>Demo del Header Mejorado - Pinteya E-commerce</p>
-          <p className="text-sm">Todos los dropdowns están completamente funcionales</p>
+          <p className='text-sm'>Todos los dropdowns están completamente funcionales</p>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default HeaderDemoPage;
-
-
-
-
-
-
-
-
-
+export default HeaderDemoPage

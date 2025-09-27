@@ -38,27 +38,30 @@ export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDiv
 }
 
 const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProductCardProps>(
-  ({
-    className,
-    image,
-    title,
-    brand,
-    price,
-    originalPrice,
-    discount,
-    isNew = false,
-    cta = "Agregar al carrito",
-    stock = 0,
-    productId,
-    onAddToCart,
-    showCartAnimation = true,
-    installments,
-    freeShipping = false,
-    shippingText,
-    deliveryLocation,
-    children,
-    ...props
-  }, ref) => {
+  (
+    {
+      className,
+      image,
+      title,
+      brand,
+      price,
+      originalPrice,
+      discount,
+      isNew = false,
+      cta = 'Agregar al carrito',
+      stock = 0,
+      productId,
+      onAddToCart,
+      showCartAnimation = true,
+      installments,
+      freeShipping = false,
+      shippingText,
+      deliveryLocation,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const [isAddingToCart, setIsAddingToCart] = React.useState(false)
     const [isHovered, setIsHovered] = React.useState(false)
     const [isWishlisted, setIsWishlisted] = React.useState(false)
@@ -67,41 +70,47 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
     // Función para abrir el modal
     const handleOpenModal = React.useCallback(() => {
-      setShowShopDetailModal(true);
-    }, []);
+      setShowShopDetailModal(true)
+    }, [])
 
     // Función para manejar el clic en el card
-    const handleCardClick = React.useCallback((e: React.MouseEvent) => {
-      // Evitar que se abra el modal si se hace clic en el botón de agregar al carrito
-      if ((e.target as HTMLElement).closest('[data-testid="add-to-cart"]')) {
-        return;
-      }
-      // Evitar propagación de eventos que puedan interferir con el modal
-      e.preventDefault();
-      e.stopPropagation();
-      handleOpenModal();
-    }, [handleOpenModal]);
+    const handleCardClick = React.useCallback(
+      (e: React.MouseEvent) => {
+        // Evitar que se abra el modal si se hace clic en el botón de agregar al carrito
+        if ((e.target as HTMLElement).closest('[data-testid="add-to-cart"]')) {
+          return
+        }
+        // Evitar propagación de eventos que puedan interferir con el modal
+        e.preventDefault()
+        e.stopPropagation()
+        handleOpenModal()
+      },
+      [handleOpenModal]
+    )
 
-    const handleAddToCart = React.useCallback(async (e?: React.MouseEvent) => {
-      if (e) {
-        e.stopPropagation(); // Evitar que se propague al card
-      }
-      
-      if (!onAddToCart || isAddingToCart || stock === 0) return;
+    const handleAddToCart = React.useCallback(
+      async (e?: React.MouseEvent) => {
+        if (e) {
+          e.stopPropagation() // Evitar que se propague al card
+        }
 
-      if (showCartAnimation) {
-        setIsAddingToCart(true)
-        setTimeout(() => setIsAddingToCart(false), 1000)
-      }
+        if (!onAddToCart || isAddingToCart || stock === 0) return
 
-      try {
-        await onAddToCart();
-        // También abrir el modal después de agregar al carrito
-        handleOpenModal();
-      } catch (error) {
-        console.error('Error al agregar al carrito:', error);
-      }
-    }, [onAddToCart, isAddingToCart, stock, showCartAnimation, handleOpenModal])
+        if (showCartAnimation) {
+          setIsAddingToCart(true)
+          setTimeout(() => setIsAddingToCart(false), 1000)
+        }
+
+        try {
+          await onAddToCart()
+          // También abrir el modal después de agregar al carrito
+          handleOpenModal()
+        } catch (error) {
+          console.error('Error al agregar al carrito:', error)
+        }
+      },
+      [onAddToCart, isAddingToCart, stock, showCartAnimation, handleOpenModal]
+    )
 
     // Calcular si mostrar envío gratis automáticamente
     const shouldShowFreeShipping = freeShipping || (price && price >= 15000)
@@ -111,23 +120,23 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         ref={ref}
         className={cn(
           // Mobile-first: diseño compacto para 2 columnas
-          "relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer overflow-hidden",
+          'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer overflow-hidden',
           // Mobile: más compacto
-          "h-[280px] sm:h-[320px]",
+          'h-[280px] sm:h-[320px]',
           // Tablet y desktop: tamaño completo
-          "md:h-[400px] lg:h-[450px]",
-          "md:rounded-2xl",
-          "transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl",
-          "transform-gpu will-change-transform",
+          'md:h-[400px] lg:h-[450px]',
+          'md:rounded-2xl',
+          'transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl',
+          'transform-gpu will-change-transform',
           className
         )}
-        data-testid="product-card"
-        data-testid-commercial="commercial-product-card"
+        data-testid='product-card'
+        data-testid-commercial='commercial-product-card'
         style={{
-          transformOrigin: "center",
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          transform: isHovered ? "scale(1.02)" : "scale(1)",
-          boxShadow: isHovered ? "0 10px 25px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.1)"
+          transformOrigin: 'center',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          transform: isHovered ? 'scale(1.02)' : 'scale(1)',
+          boxShadow: isHovered ? '0 10px 25px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.1)',
         }}
         onMouseEnter={() => {
           setIsHovered(true)
@@ -141,29 +150,29 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         {...props}
       >
         {/* Contenedor de imagen completa con degradado - Responsive */}
-        <div className="relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-2 md:mb-3 flex-1">
+        <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-2 md:mb-3 flex-1'>
           {image ? (
             <img
               src={image}
               alt={title || 'Producto'}
-              className="object-contain w-full h-full scale-110 z-0"
-              onError={(e) => {
+              className='object-contain w-full h-full scale-110 z-0'
+              onError={e => {
                 const target = e.target as HTMLImageElement
                 target.src = '/images/products/placeholder.svg'
               }}
             />
           ) : (
-            <div className="flex items-center justify-center w-full h-full z-0">
+            <div className='flex items-center justify-center w-full h-full z-0'>
               <img
-                src="/images/products/placeholder.svg"
-                alt="Sin imagen"
-                className="w-64 h-64 opacity-60"
+                src='/images/products/placeholder.svg'
+                alt='Sin imagen'
+                className='w-64 h-64 opacity-60'
               />
             </div>
           )}
 
           {/* Degradado suave hacia blanco en la parte inferior - Responsive */}
-          <div className="absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none" />
+          <div className='absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none' />
 
           {/* Quick Actions eliminados - Ya no se muestran los botones de wishlist y quick view */}
         </div>
@@ -171,7 +180,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         {/* Badge "Nuevo" en esquina superior derecha - Responsive */}
         {isNew && (
           <span
-            className="absolute top-2 right-2 md:top-3 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-30 shadow"
+            className='absolute top-2 right-2 md:top-3 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-30 shadow'
             style={{ backgroundColor: '#FFD600', color: '#EA5A17' }}
           >
             Nuevo
@@ -180,15 +189,15 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
         {/* Badge de descuento compacto en esquina superior izquierda - Responsive */}
         {discount && (
-          <div className="absolute top-2 left-2 md:top-3 md:left-3 z-30">
+          <div className='absolute top-2 left-2 md:top-3 md:left-3 z-30'>
             <div
-              className="text-white text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-t"
+              className='text-white text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-t'
               style={{ backgroundColor: '#EA5A17' }}
             >
               {discount}
             </div>
             <div
-              className="bg-white text-xs font-semibold px-1.5 py-0.5 md:px-2 md:py-1 rounded-b shadow-sm text-left leading-none"
+              className='bg-white text-xs font-semibold px-1.5 py-0.5 md:px-2 md:py-1 rounded-b shadow-sm text-left leading-none'
               style={{ color: '#EA5A17' }}
             >
               <div>Descuento</div>
@@ -198,31 +207,34 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         )}
 
         {/* Content con transición suave - Responsive */}
-        <div className="relative z-20 text-left p-2 md:p-4 bg-white -mt-2 md:-mt-3 flex-shrink-0">
+        <div className='relative z-20 text-left p-2 md:p-4 bg-white -mt-2 md:-mt-3 flex-shrink-0'>
           {/* Marca del producto - Responsive */}
           {brand && (
-            <div className="text-xs md:text-sm uppercase text-gray-600 font-semibold tracking-wide drop-shadow-sm">
+            <div className='text-xs md:text-sm uppercase text-gray-600 font-semibold tracking-wide drop-shadow-sm'>
               {brand}
             </div>
           )}
 
           {/* Título del producto - Con mejor contraste y responsive */}
-          <h3 className="font-bold text-gray-900 text-sm md:text-lg drop-shadow-sm line-clamp-2 leading-tight mb-1 md:mb-2">
+          <h3 className='font-bold text-gray-900 text-sm md:text-lg drop-shadow-sm line-clamp-2 leading-tight mb-1 md:mb-2'>
             {title}
           </h3>
 
           {/* Precios - Optimizados para el gradiente y responsive */}
-          <div className="flex flex-col items-start space-y-1">
+          <div className='flex flex-col items-start space-y-1'>
             {/* Precios en línea horizontal - Responsive */}
-            <div className="flex items-center gap-1 md:gap-2">
+            <div className='flex items-center gap-1 md:gap-2'>
               {/* Precio actual - Grande y destacado, responsive */}
-              <div className="text-lg md:text-2xl font-bold drop-shadow-sm" style={{ color: '#EA5A17' }}>
+              <div
+                className='text-lg md:text-2xl font-bold drop-shadow-sm'
+                style={{ color: '#EA5A17' }}
+              >
                 ${price?.toLocaleString('es-AR') || '0'}
               </div>
 
               {/* Precio anterior tachado - Responsive */}
               {originalPrice && originalPrice > (price || 0) && (
-                <div className="text-gray-500 line-through text-xs md:text-sm drop-shadow-sm">
+                <div className='text-gray-500 line-through text-xs md:text-sm drop-shadow-sm'>
                   ${originalPrice.toLocaleString('es-AR')}
                 </div>
               )}
@@ -230,7 +242,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
             {/* Cuotas en verde más oscuro - Responsive */}
             {installments && (
-              <div className="text-green-800 text-xs md:text-sm font-medium drop-shadow-sm">
+              <div className='text-green-800 text-xs md:text-sm font-medium drop-shadow-sm'>
                 {installments.quantity}x de ${installments.amount.toLocaleString('es-AR')}
                 {installments.interestFree ? ' sin interés' : ''}
               </div>
@@ -239,52 +251,52 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
           {/* Badge de envío gratis - Compacto y responsive */}
           {shouldShowFreeShipping && (
-            <div className="flex justify-start mt-1 md:mt-2">
+            <div className='flex justify-start mt-1 md:mt-2'>
               <img
-                src="/images/icons/icon-envio.svg"
-                alt="Envío gratis"
-                className="h-6 md:h-10 w-auto object-contain drop-shadow-sm"
+                src='/images/icons/icon-envio.svg'
+                alt='Envío gratis'
+                className='h-6 md:h-10 w-auto object-contain drop-shadow-sm'
               />
             </div>
           )}
 
           {/* Botón "Agregar al carrito" - Animado y responsive */}
-          <div className="w-full mt-2 md:mt-3">
+          <div className='w-full mt-2 md:mt-3'>
             {onAddToCart && (
               <button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || stock === 0}
-                data-testid="add-to-cart"
-                data-testid-btn="add-to-cart-btn"
+                data-testid='add-to-cart'
+                data-testid-btn='add-to-cart-btn'
                 className={cn(
-                  "w-full py-2 md:py-3 rounded-lg md:rounded-xl text-center shadow-md font-semibold flex items-center justify-center gap-1 md:gap-2 text-sm md:text-base relative overflow-hidden",
-                  "transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] transform-gpu will-change-transform",
+                  'w-full py-2 md:py-3 rounded-lg md:rounded-xl text-center shadow-md font-semibold flex items-center justify-center gap-1 md:gap-2 text-sm md:text-base relative overflow-hidden',
+                  'transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] transform-gpu will-change-transform',
                   stock === 0
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-yellow-400 hover:bg-yellow-500 text-[#EA5A17]"
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-yellow-400 hover:bg-yellow-500 text-[#EA5A17]'
                 )}
                 style={{
                   backgroundColor: stock !== 0 ? '#facc15' : undefined,
-                  transformOrigin: "center"
+                  transformOrigin: 'center',
                 }}
               >
-                  {isAddingToCart ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin" />
-                      <span>Agregando...</span>
-                    </div>
-                  ) : stock === 0 ? (
-                    <>
-                      <AlertCircle className="w-4 h-4" />
-                      <span>Sin stock</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>Agregar al carrito</span>
-                    </>
-                  )}
-                </button>
+                {isAddingToCart ? (
+                  <div className='flex items-center justify-center gap-2'>
+                    <div className='w-4 h-4 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
+                    <span>Agregando...</span>
+                  </div>
+                ) : stock === 0 ? (
+                  <>
+                    <AlertCircle className='w-4 h-4' />
+                    <span>Sin stock</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className='w-4 h-4' />
+                    <span>Agregar al carrito</span>
+                  </>
+                )}
+              </button>
             )}
           </div>
         </div>
@@ -311,12 +323,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               rating: 0,
               reviews: 0,
               colors: undefined, // Usará los colores por defecto del sistema
-              capacities: []
+              capacities: [],
             }}
             onAddToCart={(productData, variants) => {
-              console.log('Agregando al carrito:', productData, variants);
+              console.log('Agregando al carrito:', productData, variants)
               if (onAddToCart) {
-                onAddToCart();
+                onAddToCart()
               }
             }}
           />
@@ -326,15 +338,6 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
   }
 )
 
-CommercialProductCard.displayName = "CommercialProductCard"
+CommercialProductCard.displayName = 'CommercialProductCard'
 
 export { CommercialProductCard }
-
-
-
-
-
-
-
-
-

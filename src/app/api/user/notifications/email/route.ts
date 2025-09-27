@@ -1,29 +1,29 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // PINTEYA E-COMMERCE - API DE NOTIFICACIONES POR EMAIL
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/config';
-import { supabaseAdmin } from '@/lib/integrations/supabase';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth/config'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
 
 // Tipos de notificaciones por email
-export type EmailNotificationType = 
+export type EmailNotificationType =
   | 'profile_email_changed'
   | 'profile_phone_changed'
   | 'profile_updated'
   | 'avatar_changed'
   | 'address_added'
   | 'address_updated'
-  | 'security_alert';
+  | 'security_alert'
 
 interface EmailNotificationData {
-  type: EmailNotificationType;
-  oldValue?: string;
-  newValue?: string;
-  metadata?: Record<string, any>;
+  type: EmailNotificationType
+  oldValue?: string
+  newValue?: string
+  metadata?: Record<string, any>
 }
 
 // Plantillas de email
@@ -73,7 +73,7 @@ const EMAIL_TEMPLATES = {
       <p>Saludos,<br>Equipo Pinteya</p>
     `,
   },
-};
+}
 
 // ===================================
 // POST - Enviar notificación por email
@@ -81,24 +81,21 @@ const EMAIL_TEMPLATES = {
 export async function POST(request: NextRequest) {
   try {
     // Verificar autenticación
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'Usuario no autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Usuario no autenticado' }, { status: 401 })
     }
 
-    const userId = session.user.id;
-    const body = await request.json();
-    const { type, oldValue, newValue, metadata }: EmailNotificationData = body;
+    const userId = session.user.id
+    const body = await request.json()
+    const { type, oldValue, newValue, metadata }: EmailNotificationData = body
 
     // Validar tipo de notificación
     if (!type || !EMAIL_TEMPLATES[type]) {
       return NextResponse.json(
         { success: false, error: 'Tipo de notificación inválido' },
         { status: 400 }
-      );
+      )
     }
 
     // Obtener datos del usuario
@@ -106,14 +103,14 @@ export async function POST(request: NextRequest) {
       .from('users')
       .select('name, email')
       .eq('clerk_id', userId)
-      .single();
+      .single()
 
     if (userError || !userData) {
-      console.error('Error al obtener usuario:', userError);
+      console.error('Error al obtener usuario:', userError)
       return NextResponse.json(
         { success: false, error: 'Error al obtener datos del usuario' },
         { status: 500 }
-      );
+      )
     }
 
     // Preparar datos para la plantilla
@@ -123,19 +120,19 @@ export async function POST(request: NextRequest) {
       oldValue,
       newValue,
       ...metadata,
-    };
+    }
 
     // Obtener plantilla de email
-    const emailTemplate = EMAIL_TEMPLATES[type];
-    const subject = emailTemplate.subject;
-    const htmlContent = emailTemplate.template(templateData);
+    const emailTemplate = EMAIL_TEMPLATES[type]
+    const subject = emailTemplate.subject
+    const htmlContent = emailTemplate.template(templateData)
 
     // En un entorno de producción, aquí enviarías el email usando un servicio como:
     // - SendGrid
     // - AWS SES
     // - Resend
     // - Nodemailer
-    
+
     // Por ahora, simularemos el envío y guardaremos la notificación en la base de datos
     const { data: notification, error: notificationError } = await supabaseAdmin
       .from('user_notifications')
@@ -154,10 +151,10 @@ export async function POST(request: NextRequest) {
         created_at: new Date().toISOString(),
       })
       .select()
-      .single();
+      .single()
 
     if (notificationError) {
-      console.error('Error al guardar notificación:', notificationError);
+      console.error('Error al guardar notificación:', notificationError)
       // No fallar si no se puede guardar la notificación
     }
 
@@ -167,21 +164,20 @@ export async function POST(request: NextRequest) {
       recipient: userData.email,
       subject,
       userId,
-    });
+    })
 
     return NextResponse.json({
       success: true,
       message: 'Notificación por email enviada correctamente',
       notification_id: notification?.id,
       email_sent: true,
-    });
-
+    })
   } catch (error) {
-    console.error('Error en POST /api/user/notifications/email:', error);
+    console.error('Error en POST /api/user/notifications/email:', error)
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -191,18 +187,15 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'Usuario no autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Usuario no autenticado' }, { status: 401 })
     }
 
-    const userId = session.user.id;
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const userId = session.user.id
+    const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const offset = parseInt(searchParams.get('offset') || '0')
 
     // Obtener notificaciones del usuario
     const { data: notifications, error } = await supabaseAdmin
@@ -211,37 +204,26 @@ export async function GET(request: NextRequest) {
       .eq('user_id', userId)
       .eq('type', 'email')
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limit - 1)
 
     if (error) {
-      console.error('Error al obtener notificaciones:', error);
+      console.error('Error al obtener notificaciones:', error)
       return NextResponse.json(
         { success: false, error: 'Error al obtener notificaciones' },
         { status: 500 }
-      );
+      )
     }
 
     return NextResponse.json({
       success: true,
       notifications: notifications || [],
       total: notifications?.length || 0,
-    });
-
+    })
   } catch (error) {
-    console.error('Error en GET /api/user/notifications/email:', error);
+    console.error('Error en GET /api/user/notifications/email:', error)
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
-    );
+    )
   }
 }
-
-
-
-
-
-
-
-
-
-

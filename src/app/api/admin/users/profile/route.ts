@@ -1,5 +1,5 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 /**
  * API para obtener perfil de usuario
@@ -20,33 +20,29 @@ export async function GET(request: NextRequest) {
     // Verificar autenticación
     const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
     const email = searchParams.get('email')
 
     if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Email es requerido' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'Email es requerido' }, { status: 400 })
     }
 
     // Buscar usuario con roles
     const { data: user, error } = await supabase
       .from('users')
-      .select(`
+      .select(
+        `
         *,
         user_roles (
           role_name,
           description,
           permissions
         )
-      `)
+      `
+      )
       .eq('email', email)
       .single()
 
@@ -57,7 +53,7 @@ export async function GET(request: NextRequest) {
           { status: 404 }
         )
       }
-      
+
       console.error('Error al buscar usuario:', error)
       return NextResponse.json(
         { success: false, error: 'Error al buscar usuario' },
@@ -69,7 +65,6 @@ export async function GET(request: NextRequest) {
       success: true,
       user,
     })
-
   } catch (error) {
     console.error('Error al obtener perfil de usuario:', error)
     return NextResponse.json(
@@ -78,13 +73,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-
-
-
-
-
-
-
-
-
-

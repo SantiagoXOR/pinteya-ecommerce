@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { ProductComparison } from './product-comparison';
+import type { Meta, StoryObj } from '@storybook/react'
+import { ProductComparison } from './product-comparison'
 
 const meta: Meta<typeof ProductComparison> = {
   title: 'Design System/E-commerce/ProductComparison',
@@ -27,10 +27,10 @@ const meta: Meta<typeof ProductComparison> = {
     //   description: 'Mostrar reseñas y calificaciones',
     // },
   },
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockProducts = [
   {
@@ -43,10 +43,10 @@ const mockProducts = [
     rating: 4.5,
     reviews: 128,
     specs: {
-      'Rendimiento': '12-14 m²/L',
+      Rendimiento: '12-14 m²/L',
       'Tiempo de secado': '2-4 horas',
-      'Dilución': 'Agua hasta 10%',
-      'Acabado': 'Mate',
+      Dilución: 'Agua hasta 10%',
+      Acabado: 'Mate',
     },
   },
   {
@@ -59,10 +59,10 @@ const mockProducts = [
     rating: 4.2,
     reviews: 89,
     specs: {
-      'Rendimiento': '10-12 m²/L',
+      Rendimiento: '10-12 m²/L',
       'Tiempo de secado': '3-5 horas',
-      'Dilución': 'Agua hasta 15%',
-      'Acabado': 'Satinado',
+      Dilución: 'Agua hasta 15%',
+      Acabado: 'Satinado',
     },
   },
   {
@@ -74,13 +74,13 @@ const mockProducts = [
     rating: 4.8,
     reviews: 256,
     specs: {
-      'Rendimiento': '14-16 m²/L',
+      Rendimiento: '14-16 m²/L',
       'Tiempo de secado': '1-2 horas',
-      'Dilución': 'Agua hasta 5%',
-      'Acabado': 'Semi-mate',
+      Dilución: 'Agua hasta 5%',
+      Acabado: 'Semi-mate',
     },
   },
-];
+]
 
 export const TwoProducts: Story = {
   args: {
@@ -89,7 +89,7 @@ export const TwoProducts: Story = {
     // showSpecs: true,
     // showReviews: true,
   },
-};
+}
 
 export const ThreeProducts: Story = {
   args: {
@@ -98,7 +98,7 @@ export const ThreeProducts: Story = {
     // showSpecs: true,
     // showReviews: true,
   },
-};
+}
 
 export const WithoutSpecs: Story = {
   args: {
@@ -107,7 +107,7 @@ export const WithoutSpecs: Story = {
     // showSpecs: false,
     // showReviews: true,
   },
-};
+}
 
 export const WithoutReviews: Story = {
   args: {
@@ -116,7 +116,7 @@ export const WithoutReviews: Story = {
     // showSpecs: true,
     // showReviews: false,
   },
-};
+}
 
 export const MinimalComparison: Story = {
   args: {
@@ -125,7 +125,7 @@ export const MinimalComparison: Story = {
     // showSpecs: false,
     // showReviews: false,
   },
-};
+}
 
 export const EmptyComparison: Story = {
   args: {
@@ -134,13 +134,4 @@ export const EmptyComparison: Story = {
     // showSpecs: true,
     // showReviews: true,
   },
-};
-
-
-
-
-
-
-
-
-
+}

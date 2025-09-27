@@ -1,23 +1,23 @@
-'use client';
+'use client'
 
-import { useMemo } from 'react';
-import { useCategories } from './useCategories';
-import { useCategoryProductCounts, ProductFilters } from './useFilteredProducts';
-import { Category } from '@/types/database';
+import { useMemo } from 'react'
+import { useCategories } from './useCategories'
+import { useCategoryProductCounts, ProductFilters } from './useFilteredProducts'
+import { Category } from '@/types/database'
 
 // ===================================
 // TIPOS
 // ===================================
 
 export interface CategoryWithDynamicCount extends Category {
-  products_count: number;
-  isLoading?: boolean;
+  products_count: number
+  isLoading?: boolean
 }
 
 export interface UseCategoriesWithDynamicCountsOptions {
-  baseFilters?: Omit<ProductFilters, 'categories' | 'category'>;
-  selectedCategories?: string[];
-  enableDynamicCounts?: boolean;
+  baseFilters?: Omit<ProductFilters, 'categories' | 'category'>
+  selectedCategories?: string[]
+  enableDynamicCounts?: boolean
 }
 
 // ===================================
@@ -34,76 +34,76 @@ export const useCategoriesWithDynamicCounts = ({
   enableDynamicCounts = true,
 }: UseCategoriesWithDynamicCountsOptions = {}) => {
   // Obtener categorías base
-  const { categories: baseCategories, loading: categoriesLoading, error: categoriesError } = useCategories();
+  const {
+    categories: baseCategories,
+    loading: categoriesLoading,
+    error: categoriesError,
+  } = useCategories()
 
   // Extraer slugs de categorías para obtener conteos
   const categoryIds = useMemo(() => {
-    return baseCategories.map(cat => cat.slug).filter(Boolean);
-  }, [baseCategories]);
+    return baseCategories.map(cat => cat.slug).filter(Boolean)
+  }, [baseCategories])
 
   // Obtener conteos dinámicos solo si está habilitado
   const {
     data: dynamicCounts,
     isLoading: countsLoading,
-    error: countsError
-  } = useCategoryProductCounts(
-    enableDynamicCounts ? categoryIds : [],
-    baseFilters
-  );
+    error: countsError,
+  } = useCategoryProductCounts(enableDynamicCounts ? categoryIds : [], baseFilters)
 
   // Combinar categorías con conteos dinámicos
   const categoriesWithDynamicCounts = useMemo((): CategoryWithDynamicCount[] => {
     // Si no hay categorías base, retornar array vacío
     if (baseCategories.length === 0) {
-      return [];
+      return []
     }
 
     return baseCategories.map(category => {
-      const dynamicCount = enableDynamicCounts && dynamicCounts
-        ? dynamicCounts[category.slug]
-        : undefined;
+      const dynamicCount =
+        enableDynamicCounts && dynamicCounts ? dynamicCounts[category.slug] : undefined
 
       return {
         ...category,
-        products_count: dynamicCount !== undefined ? dynamicCount : (category.products_count || 0),
+        products_count: dynamicCount !== undefined ? dynamicCount : category.products_count || 0,
         isLoading: enableDynamicCounts && countsLoading,
-      };
-    });
-  }, [baseCategories, dynamicCounts, enableDynamicCounts, countsLoading]);
-  
+      }
+    })
+  }, [baseCategories, dynamicCounts, enableDynamicCounts, countsLoading])
+
   // Filtrar categorías seleccionadas si es necesario
   const availableCategories = useMemo(() => {
     if (selectedCategories.length === 0) {
-      return categoriesWithDynamicCounts;
+      return categoriesWithDynamicCounts
     }
-    
+
     // Mostrar todas las categorías, pero marcar las seleccionadas
     return categoriesWithDynamicCounts.map(category => ({
       ...category,
       isSelected: selectedCategories.includes(category.slug),
-    }));
-  }, [categoriesWithDynamicCounts, selectedCategories]);
-  
+    }))
+  }, [categoriesWithDynamicCounts, selectedCategories])
+
   // Estados combinados
-  const isLoading = categoriesLoading || (enableDynamicCounts && countsLoading);
-  const error = categoriesError || countsError;
-  
+  const isLoading = categoriesLoading || (enableDynamicCounts && countsLoading)
+  const error = categoriesError || countsError
+
   // Estadísticas útiles
   const stats = useMemo(() => {
-    const totalCategories = availableCategories.length;
-    const categoriesWithProducts = availableCategories.filter(cat => cat.products_count > 0).length;
-    const totalProducts = availableCategories.reduce((sum, cat) => sum + cat.products_count, 0);
-    const selectedCount = selectedCategories.length;
-    
+    const totalCategories = availableCategories.length
+    const categoriesWithProducts = availableCategories.filter(cat => cat.products_count > 0).length
+    const totalProducts = availableCategories.reduce((sum, cat) => sum + cat.products_count, 0)
+    const selectedCount = selectedCategories.length
+
     return {
       totalCategories,
       categoriesWithProducts,
       totalProducts,
       selectedCount,
       hasSelection: selectedCount > 0,
-    };
-  }, [availableCategories, selectedCategories]);
-  
+    }
+  }, [availableCategories, selectedCategories])
+
   return {
     categories: availableCategories,
     loading: isLoading,
@@ -111,13 +111,14 @@ export const useCategoriesWithDynamicCounts = ({
     stats,
     // Funciones de utilidad
     getCategoryBySlug: (slug: string) => availableCategories.find(cat => cat.slug === slug),
-    getCategoryCount: (slug: string) => availableCategories.find(cat => cat.slug === slug)?.products_count || 0,
+    getCategoryCount: (slug: string) =>
+      availableCategories.find(cat => cat.slug === slug)?.products_count || 0,
     // Configuración
     enableDynamicCounts,
     baseFilters,
     selectedCategories,
-  };
-};
+  }
+}
 
 // ===================================
 // HOOK SIMPLIFICADO PARA CASOS COMUNES
@@ -132,17 +133,20 @@ export const useCategoriesForFilters = (
   selectedCategories: string[] = [],
   otherFilters: Omit<ProductFilters, 'categories' | 'category' | 'search'> = {}
 ) => {
-  const baseFilters = useMemo(() => ({
-    ...otherFilters,
-    ...(searchTerm && { search: searchTerm }),
-  }), [searchTerm, otherFilters]);
-  
+  const baseFilters = useMemo(
+    () => ({
+      ...otherFilters,
+      ...(searchTerm && { search: searchTerm }),
+    }),
+    [searchTerm, otherFilters]
+  )
+
   return useCategoriesWithDynamicCounts({
     baseFilters,
     selectedCategories,
     enableDynamicCounts: true,
-  });
-};
+  })
+}
 
 // ===================================
 // HOOK PARA CONTEOS ESTÁTICOS (FALLBACK)
@@ -155,14 +159,5 @@ export const useCategoriesForFilters = (
 export const useCategoriesWithStaticCounts = () => {
   return useCategoriesWithDynamicCounts({
     enableDynamicCounts: false,
-  });
-};
-
-
-
-
-
-
-
-
-
+  })
+}

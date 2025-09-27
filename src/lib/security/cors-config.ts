@@ -10,20 +10,17 @@
 const PRODUCTION_ORIGINS = [
   'https://yourdomain.com',
   'https://www.yourdomain.com',
-  'https://admin.yourdomain.com'
-];
+  'https://admin.yourdomain.com',
+]
 
 const DEVELOPMENT_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://127.0.0.1:3000',
-  'https://localhost:3000'
-];
+  'https://localhost:3000',
+]
 
-const STAGING_ORIGINS = [
-  'https://staging.yourdomain.com',
-  'https://preview.yourdomain.com'
-];
+const STAGING_ORIGINS = ['https://staging.yourdomain.com', 'https://preview.yourdomain.com']
 
 // ===================================
 // UTILIDADES CORS
@@ -33,18 +30,18 @@ const STAGING_ORIGINS = [
  * Obtiene los orígenes permitidos según el entorno
  */
 export function getAllowedOrigins(): string[] {
-  const env = process.env.NODE_ENV;
-  const customOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || [];
-  
+  const env = process.env.NODE_ENV
+  const customOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || []
+
   switch (env) {
     case 'production':
-      return [...PRODUCTION_ORIGINS, ...customOrigins];
+      return [...PRODUCTION_ORIGINS, ...customOrigins]
     case 'staging':
-      return [...STAGING_ORIGINS, ...customOrigins];
+      return [...STAGING_ORIGINS, ...customOrigins]
     case 'development':
     case 'test':
     default:
-      return [...DEVELOPMENT_ORIGINS, ...customOrigins];
+      return [...DEVELOPMENT_ORIGINS, ...customOrigins]
   }
 }
 
@@ -52,10 +49,10 @@ export function getAllowedOrigins(): string[] {
  * Verifica si un origen está permitido
  */
 export function isOriginAllowed(origin: string | undefined): boolean {
-  if (!origin) return false;
-  
-  const allowedOrigins = getAllowedOrigins();
-  return allowedOrigins.includes(origin);
+  if (!origin) return false
+
+  const allowedOrigins = getAllowedOrigins()
+  return allowedOrigins.includes(origin)
 }
 
 /**
@@ -64,17 +61,17 @@ export function isOriginAllowed(origin: string | undefined): boolean {
 export function getCorsOriginHeader(requestOrigin?: string): string {
   // En desarrollo, permitir todos los orígenes para facilitar el desarrollo
   if (process.env.NODE_ENV === 'development') {
-    return '*';
+    return '*'
   }
-  
+
   // En producción, verificar origen específico
   if (requestOrigin && isOriginAllowed(requestOrigin)) {
-    return requestOrigin;
+    return requestOrigin
   }
-  
+
   // Por defecto, usar el primer origen permitido
-  const allowedOrigins = getAllowedOrigins();
-  return allowedOrigins[0] || 'null';
+  const allowedOrigins = getAllowedOrigins()
+  return allowedOrigins[0] || 'null'
 }
 
 /**
@@ -85,23 +82,23 @@ export const CORS_CONFIG = {
   public: {
     methods: ['GET', 'POST', 'OPTIONS'],
     headers: ['Content-Type', 'Authorization'],
-    credentials: false
+    credentials: false,
   },
-  
+
   // Para APIs de administración (muy restrictivo)
   admin: {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     headers: ['Content-Type', 'Authorization', 'X-Admin-Token'],
-    credentials: true
+    credentials: true,
   },
-  
+
   // Para webhooks (específico)
   webhook: {
     methods: ['POST', 'OPTIONS'],
     headers: ['Content-Type', 'X-Signature', 'User-Agent'],
-    credentials: false
-  }
-} as const;
+    credentials: false,
+  },
+} as const
 
 /**
  * Genera headers CORS completos para una respuesta
@@ -110,14 +107,14 @@ export function generateCorsHeaders(
   requestOrigin?: string,
   configType: keyof typeof CORS_CONFIG = 'public'
 ): Record<string, string> {
-  const config = CORS_CONFIG[configType];
-  
+  const config = CORS_CONFIG[configType]
+
   return {
     'Access-Control-Allow-Origin': getCorsOriginHeader(requestOrigin),
     'Access-Control-Allow-Methods': config.methods.join(', '),
     'Access-Control-Allow-Headers': config.headers.join(', '),
     'Access-Control-Allow-Credentials': config.credentials.toString(),
     'Access-Control-Max-Age': '86400', // 24 horas
-    'Vary': 'Origin'
-  };
+    Vary: 'Origin',
+  }
 }

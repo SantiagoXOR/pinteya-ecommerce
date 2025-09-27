@@ -1,11 +1,12 @@
-import type { Metadata } from 'next';
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: {
     default: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
-    template: '%s | Pinteya E-commerce'
+    template: '%s | Pinteya E-commerce',
   },
-  description: 'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales, accesorios y todo lo necesario para tus proyectos de construcción y decoración. Envío gratis en compras superiores a $50.000.',
+  description:
+    'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales, accesorios y todo lo necesario para tus proyectos de construcción y decoración. Envío gratis en compras superiores a $50.000.',
   keywords: [
     'pinturería online',
     'pinturas',
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
     'Plavicon',
     'Akapol',
     'envío gratis',
-    'Argentina'
+    'Argentina',
   ],
   authors: [{ name: 'Pinteya E-commerce' }],
   creator: 'Pinteya E-commerce',
@@ -33,7 +34,8 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://pinteya-ecommerce.vercel.app'),
   openGraph: {
     title: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
-    description: 'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales y todo lo necesario para tus proyectos.',
+    description:
+      'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales y todo lo necesario para tus proyectos.',
     url: 'https://pinteya-ecommerce.vercel.app',
     siteName: 'Pinteya E-commerce',
     images: [
@@ -50,7 +52,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
-    description: 'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad y herramientas profesionales.',
+    description:
+      'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad y herramientas profesionales.',
     images: ['/images/logo/LOGO POSITIVO.svg'],
   },
   robots: {
@@ -72,9 +75,7 @@ export const metadata: Metadata = {
       { url: '/favicon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
     shortcut: '/favicon.ico',
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
     other: [
       {
         rel: 'icon',
@@ -102,13 +103,4 @@ export const metadata: Metadata = {
     'msapplication-config': '/browserconfig.xml',
     'theme-color': '#ea5a17',
   },
-};
-
-
-
-
-
-
-
-
-
+}

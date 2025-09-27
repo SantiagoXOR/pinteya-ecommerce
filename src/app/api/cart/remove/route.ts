@@ -1,14 +1,14 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // PINTEYA E-COMMERCE - API REMOVER DEL CARRITO
 // ===================================
 // Endpoint para remover productos del carrito
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { auth } from '@/lib/auth/config';
+import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { auth } from '@/lib/auth/config'
 
 /**
  * DELETE /api/cart/remove
@@ -16,59 +16,60 @@ import { auth } from '@/lib/auth/config';
  */
 export async function DELETE(request: NextRequest) {
   try {
-    console.log('🛒 Cart Remove API: Iniciando proceso de remoción');
+    console.log('🛒 Cart Remove API: Iniciando proceso de remoción')
 
     // Verificar autenticación
-    const session = await auth();
+    const session = await auth()
     if (!session?.user?.id) {
-      console.log('❌ Cart Remove API: Usuario no autenticado');
+      console.log('❌ Cart Remove API: Usuario no autenticado')
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Usuario no autenticado',
-          requiresAuth: true
-        }, 
+          requiresAuth: true,
+        },
         { status: 401 }
-      );
+      )
     }
 
-    const userId = session.user.id;
+    const userId = session.user.id
 
     // Obtener datos del request
-    const body = await request.json();
-    const { productId, quantity } = body;
+    const body = await request.json()
+    const { productId, quantity } = body
 
     // Validaciones
     if (!productId) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'ID del producto es requerido',
-          field: 'productId'
-        }, 
+          field: 'productId',
+        },
         { status: 400 }
-      );
+      )
     }
 
-    console.log(`🔍 Cart Remove API: Removiendo producto ${productId} para usuario ${userId}`);
+    console.log(`🔍 Cart Remove API: Removiendo producto ${productId} para usuario ${userId}`)
 
     // Obtener cliente de Supabase
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient(true)
     if (!supabase) {
-      console.error('❌ Cart Remove API: Cliente de Supabase no disponible');
+      console.error('❌ Cart Remove API: Cliente de Supabase no disponible')
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Servicio de base de datos no disponible'
-        }, 
+        {
+          success: false,
+          error: 'Servicio de base de datos no disponible',
+        },
         { status: 503 }
-      );
+      )
     }
 
     // Verificar que el item existe en el carrito
     const { data: existingItem, error: existingError } = await supabase
       .from('cart_items')
-      .select(`
+      .select(
+        `
         id,
         quantity,
         products (
@@ -77,53 +78,54 @@ export async function DELETE(request: NextRequest) {
           price,
           discounted_price
         )
-      `)
+      `
+      )
       .eq('user_id', userId)
       .eq('product_id', productId)
-      .single();
+      .single()
 
     if (existingError || !existingItem) {
-      console.log(`❌ Cart Remove API: Producto ${productId} no está en el carrito`);
+      console.log(`❌ Cart Remove API: Producto ${productId} no está en el carrito`)
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'El producto no está en tu carrito',
-          productId
-        }, 
+          productId,
+        },
         { status: 404 }
-      );
+      )
     }
 
-    let operation = 'removed';
-    let responseMessage = '';
+    let operation = 'removed'
+    let responseMessage = ''
 
     if (quantity && quantity > 0 && quantity < existingItem.quantity) {
       // Reducir cantidad específica
-      const newQuantity = existingItem.quantity - quantity;
-      
+      const newQuantity = existingItem.quantity - quantity
+
       const { data: updatedItem, error: updateError } = await supabase
         .from('cart_items')
         .update({ quantity: newQuantity })
         .eq('id', existingItem.id)
         .select()
-        .single();
+        .single()
 
       if (updateError) {
-        console.error('❌ Cart Remove API: Error actualizando cantidad:', updateError);
+        console.error('❌ Cart Remove API: Error actualizando cantidad:', updateError)
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: 'Error actualizando cantidad en el carrito',
-            details: updateError.message
-          }, 
+            details: updateError.message,
+          },
           { status: 500 }
-        );
+        )
       }
 
-      operation = 'quantity_reduced';
-      responseMessage = `Se removieron ${quantity} unidades de ${existingItem.products.name}. Quedan ${newQuantity} en el carrito`;
-      
-      console.log(`✅ Cart Remove API: Cantidad reducida - ${responseMessage}`);
+      operation = 'quantity_reduced'
+      responseMessage = `Se removieron ${quantity} unidades de ${existingItem.products.name}. Quedan ${newQuantity} en el carrito`
+
+      console.log(`✅ Cart Remove API: Cantidad reducida - ${responseMessage}`)
 
       return NextResponse.json({
         success: true,
@@ -135,33 +137,32 @@ export async function DELETE(request: NextRequest) {
           productName: existingItem.products.name,
           previousQuantity: existingItem.quantity,
           newQuantity: newQuantity,
-          removedQuantity: quantity
-        }
-      });
-
+          removedQuantity: quantity,
+        },
+      })
     } else {
       // Remover completamente del carrito
       const { error: deleteError } = await supabase
         .from('cart_items')
         .delete()
-        .eq('id', existingItem.id);
+        .eq('id', existingItem.id)
 
       if (deleteError) {
-        console.error('❌ Cart Remove API: Error removiendo del carrito:', deleteError);
+        console.error('❌ Cart Remove API: Error removiendo del carrito:', deleteError)
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: 'Error removiendo producto del carrito',
-            details: deleteError.message
-          }, 
+            details: deleteError.message,
+          },
           { status: 500 }
-        );
+        )
       }
 
-      operation = 'completely_removed';
-      responseMessage = `${existingItem.products.name} removido del carrito`;
-      
-      console.log(`✅ Cart Remove API: Producto removido completamente - ${responseMessage}`);
+      operation = 'completely_removed'
+      responseMessage = `${existingItem.products.name} removido del carrito`
+
+      console.log(`✅ Cart Remove API: Producto removido completamente - ${responseMessage}`)
 
       return NextResponse.json({
         success: true,
@@ -170,21 +171,20 @@ export async function DELETE(request: NextRequest) {
         item: {
           productId: productId,
           productName: existingItem.products.name,
-          removedQuantity: existingItem.quantity
-        }
-      });
+          removedQuantity: existingItem.quantity,
+        },
+      })
     }
-
   } catch (error: any) {
-    console.error('❌ Cart Remove API: Error inesperado:', error);
+    console.error('❌ Cart Remove API: Error inesperado:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Error interno del servidor',
-        details: error.message
-      }, 
+        details: error.message,
+      },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -193,7 +193,7 @@ export async function DELETE(request: NextRequest) {
  * Alias para DELETE (para compatibilidad)
  */
 export async function POST(request: NextRequest) {
-  return DELETE(request);
+  return DELETE(request)
 }
 
 /**
@@ -207,16 +207,17 @@ export async function GET() {
     description: 'Remover productos del carrito de compras',
     parameters: {
       productId: 'number - ID del producto a remover (requerido)',
-      quantity: 'number - Cantidad específica a remover (opcional). Si no se especifica o es mayor/igual a la cantidad actual, se remueve completamente'
+      quantity:
+        'number - Cantidad específica a remover (opcional). Si no se especifica o es mayor/igual a la cantidad actual, se remueve completamente',
     },
     examples: {
       removeCompletely: {
-        productId: 123
+        productId: 123,
       },
       reduceQuantity: {
         productId: 123,
-        quantity: 1
-      }
+        quantity: 1,
+      },
     },
     authentication: 'Requerida - Usuario debe estar autenticado',
     responses: {
@@ -224,17 +225,7 @@ export async function GET() {
       400: 'Datos inválidos',
       401: 'Usuario no autenticado',
       404: 'Producto no está en el carrito',
-      500: 'Error interno del servidor'
-    }
-  });
+      500: 'Error interno del servidor',
+    },
+  })
 }
-
-
-
-
-
-
-
-
-
-

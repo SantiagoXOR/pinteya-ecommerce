@@ -2,50 +2,50 @@
 // HOOK: useSearch - Sistema de búsqueda centralizado
 // ===================================
 
-import React, { useState, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useDebouncedCallback } from 'use-debounce';
-import { searchProducts } from '@/lib/api/products';
-import { ProductWithCategory } from '@/types/api';
-import { useSearchErrorHandler } from './useSearchErrorHandler';
-import { useSearchToast } from './useSearchToast';
+import React, { useState, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { useDebouncedCallback } from 'use-debounce'
+import { searchProducts } from '@/lib/api/products'
+import { ProductWithCategory } from '@/types/api'
+import { useSearchErrorHandler } from './useSearchErrorHandler'
+import { useSearchToast } from './useSearchToast'
 
 // ===================================
 // TIPOS
 // ===================================
 
 export interface SearchState {
-  query: string;
-  results: ProductWithCategory[];
-  suggestions: SearchSuggestion[];
-  isLoading: boolean;
-  error: string | null;
-  hasSearched: boolean;
+  query: string
+  results: ProductWithCategory[]
+  suggestions: SearchSuggestion[]
+  isLoading: boolean
+  error: string | null
+  hasSearched: boolean
 }
 
 export interface SearchSuggestion {
-  id: string;
-  type: 'product' | 'category' | 'recent' | 'trending';
-  title: string;
-  subtitle?: string;
-  image?: string;
-  badge?: string;
-  href: string;
+  id: string
+  type: 'product' | 'category' | 'recent' | 'trending'
+  title: string
+  subtitle?: string
+  image?: string
+  badge?: string
+  href: string
 }
 
 export interface UseSearchOptions {
   /** Tiempo de debounce en milisegundos */
-  debounceMs?: number;
+  debounceMs?: number
   /** Número máximo de sugerencias */
-  maxSuggestions?: number;
+  maxSuggestions?: number
   /** Límite de resultados de búsqueda */
-  searchLimit?: number;
+  searchLimit?: number
   /** Guardar búsquedas recientes */
-  saveRecentSearches?: boolean;
+  saveRecentSearches?: boolean
   /** Callback cuando se realiza una búsqueda */
-  onSearch?: (query: string, results: ProductWithCategory[]) => void;
+  onSearch?: (query: string, results: ProductWithCategory[]) => void
   /** Callback cuando se selecciona una sugerencia */
-  onSuggestionSelect?: (suggestion: SearchSuggestion) => void;
+  onSuggestionSelect?: (suggestion: SearchSuggestion) => void
 }
 
 // ===================================
@@ -54,30 +54,30 @@ export interface UseSearchOptions {
 
 const defaultTrendingSearches: SearchSuggestion[] = [
   {
-    id: "trending-1",
-    type: "trending",
-    title: "Pintura látex",
-    href: "/search?q=pintura+latex",
+    id: 'trending-1',
+    type: 'trending',
+    title: 'Pintura látex',
+    href: '/search?q=pintura+latex',
   },
   {
-    id: "trending-2",
-    type: "trending",
-    title: "Sherwin Williams",
-    href: "/search?q=sherwin+williams",
+    id: 'trending-2',
+    type: 'trending',
+    title: 'Sherwin Williams',
+    href: '/search?q=sherwin+williams',
   },
   {
-    id: "trending-3",
-    type: "trending",
-    title: "Rodillos premium",
-    href: "/search?q=rodillos+premium",
+    id: 'trending-3',
+    type: 'trending',
+    title: 'Rodillos premium',
+    href: '/search?q=rodillos+premium',
   },
   {
-    id: "trending-4",
-    type: "trending",
-    title: "Pinceles",
-    href: "/search?q=pinceles",
+    id: 'trending-4',
+    type: 'trending',
+    title: 'Pinceles',
+    href: '/search?q=pinceles',
   },
-];
+]
 
 // ===================================
 // HOOK PRINCIPAL
@@ -90,35 +90,35 @@ export function useSearch(options: UseSearchOptions = {}) {
     searchLimit = 12,
     saveRecentSearches = true,
     onSearch,
-    onSuggestionSelect
-  } = options;
+    onSuggestionSelect,
+  } = options
 
-  const router = useRouter();
-  const debounceRef = useRef<NodeJS.Timeout>();
-  const safetyTimeoutRef = useRef<NodeJS.Timeout>(); // Timeout de seguridad para evitar loading permanente
-  const optionsRef = useRef(options); // Ref para opciones estables
-  const recentSearchesRef = useRef<string[]>([]); // Ref para búsquedas recientes
+  const router = useRouter()
+  const debounceRef = useRef<NodeJS.Timeout>()
+  const safetyTimeoutRef = useRef<NodeJS.Timeout>() // Timeout de seguridad para evitar loading permanente
+  const optionsRef = useRef(options) // Ref para opciones estables
+  const recentSearchesRef = useRef<string[]>([]) // Ref para búsquedas recientes
 
   // Hooks para manejo de errores y toast notifications
   const errorHandler = useSearchErrorHandler({
-    onError: (error) => {
-      console.error('Error de búsqueda:', error);
+    onError: error => {
+      console.error('Error de búsqueda:', error)
     },
     onRetrySuccess: () => {
-      toastHandler.showRetrySuccessToast();
+      toastHandler.showRetrySuccessToast()
     },
     onRetryFailed: (error, attempts) => {
-      toastHandler.showRetryFailedToast(attempts);
+      toastHandler.showRetryFailedToast(attempts)
     },
-  });
+  })
 
   const toastHandler = useSearchToast({
     defaultDuration: 4000,
     maxToasts: 2,
-  });
+  })
 
   // Actualizar ref cuando cambien las opciones
-  optionsRef.current = options;
+  optionsRef.current = options
 
   // Estado principal
   const [state, setState] = useState<SearchState>({
@@ -128,14 +128,14 @@ export function useSearch(options: UseSearchOptions = {}) {
     isLoading: false,
     error: null,
     hasSearched: false,
-  });
+  })
 
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
 
   // Sincronizar referencia con estado para evitar dependencias en useCallback
   React.useEffect(() => {
-    recentSearchesRef.current = recentSearches;
-  }, [recentSearches]);
+    recentSearchesRef.current = recentSearches
+  }, [recentSearches])
 
   // ===================================
   // FUNCIONES AUXILIARES SIMPLIFICADAS
@@ -148,52 +148,51 @@ export function useSearch(options: UseSearchOptions = {}) {
   /**
    * Función de búsqueda interna optimizada
    */
-  const performSearch = useCallback(async (searchQuery: string) => {
-
-    // Limpiar timeout de seguridad anterior
-    if (safetyTimeoutRef.current) {
-      clearTimeout(safetyTimeoutRef.current);
-    }
-
-    // Si la query está vacía, mostrar sugerencias por defecto
-    if (!searchQuery.trim()) {
-      const defaultSuggestions = [
-        ...defaultTrendingSearches.slice(0, 4),
-        ...recentSearchesRef.current.slice(0, 3).map((search, index) => ({
-          id: `recent-${index}`,
-          type: 'recent' as const,
-          title: search,
-          href: `/search?q=${encodeURIComponent(search)}`,
-        }))
-      ].slice(0, maxSuggestions);
-
-      setState(prev => ({
-        ...prev,
-        query: searchQuery,
-        suggestions: defaultSuggestions,
-        isLoading: false,
-      }));
-      return;
-    }
-
-    // Timeout de seguridad para evitar loading permanente (5 segundos)
-    safetyTimeoutRef.current = setTimeout(() => {
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: 'Tiempo de espera agotado. Intenta nuevamente.',
-      }));
-    }, 5000);
-
-    // Ejecutar búsqueda directamente (el debounce se maneja en searchWithDebounce)
-    try {
-
-      const response = await searchProducts(searchQuery, maxSuggestions);
-
-      // Limpiar timeout de seguridad ya que la API respondió
+  const performSearch = useCallback(
+    async (searchQuery: string) => {
+      // Limpiar timeout de seguridad anterior
       if (safetyTimeoutRef.current) {
-        clearTimeout(safetyTimeoutRef.current);
+        clearTimeout(safetyTimeoutRef.current)
       }
+
+      // Si la query está vacía, mostrar sugerencias por defecto
+      if (!searchQuery.trim()) {
+        const defaultSuggestions = [
+          ...defaultTrendingSearches.slice(0, 4),
+          ...recentSearchesRef.current.slice(0, 3).map((search, index) => ({
+            id: `recent-${index}`,
+            type: 'recent' as const,
+            title: search,
+            href: `/search?q=${encodeURIComponent(search)}`,
+          })),
+        ].slice(0, maxSuggestions)
+
+        setState(prev => ({
+          ...prev,
+          query: searchQuery,
+          suggestions: defaultSuggestions,
+          isLoading: false,
+        }))
+        return
+      }
+
+      // Timeout de seguridad para evitar loading permanente (5 segundos)
+      safetyTimeoutRef.current = setTimeout(() => {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Tiempo de espera agotado. Intenta nuevamente.',
+        }))
+      }, 5000)
+
+      // Ejecutar búsqueda directamente (el debounce se maneja en searchWithDebounce)
+      try {
+        const response = await searchProducts(searchQuery, maxSuggestions)
+
+        // Limpiar timeout de seguridad ya que la API respondió
+        if (safetyTimeoutRef.current) {
+          clearTimeout(safetyTimeoutRef.current)
+        }
 
         if (response.success && response.data && Array.isArray(response.data)) {
           const productSuggestions = response.data.map(product => ({
@@ -204,8 +203,7 @@ export function useSearch(options: UseSearchOptions = {}) {
             image: product.images?.previews?.[0] || '/images/products/placeholder.jpg',
             badge: product.stock > 0 ? 'En stock' : 'Sin stock',
             href: `/shop-details/${product.id}`,
-          }));
-
+          }))
 
           setState(prev => ({
             ...prev,
@@ -213,7 +211,7 @@ export function useSearch(options: UseSearchOptions = {}) {
             suggestions: productSuggestions,
             isLoading: false,
             error: null,
-          }));
+          }))
         } else {
           setState(prev => ({
             ...prev,
@@ -221,14 +219,14 @@ export function useSearch(options: UseSearchOptions = {}) {
             suggestions: [],
             isLoading: false,
             error: response.error || 'No se encontraron resultados',
-          }));
+          }))
         }
       } catch (error) {
-        console.error('❌ useSearch: Error en búsqueda:', error);
+        console.error('❌ useSearch: Error en búsqueda:', error)
 
         // Limpiar timeout de seguridad
         if (safetyTimeoutRef.current) {
-          clearTimeout(safetyTimeoutRef.current);
+          clearTimeout(safetyTimeoutRef.current)
         }
 
         setState(prev => ({
@@ -237,26 +235,28 @@ export function useSearch(options: UseSearchOptions = {}) {
           suggestions: [],
           isLoading: false,
           error: 'Error en la búsqueda. Intenta nuevamente.',
-        }));
+        }))
       }
-  }, [maxSuggestions]); // Solo maxSuggestions es necesario como dependencia
+    },
+    [maxSuggestions]
+  ) // Solo maxSuggestions es necesario como dependencia
 
   /**
    * Función de búsqueda con debounce optimizado usando use-debounce
    */
   const searchWithDebounce = useDebouncedCallback(
     (searchQuery: string) => {
-      console.log('🔍 useSearch: searchWithDebounce (use-debounce) llamado con:', searchQuery);
+      console.log('🔍 useSearch: searchWithDebounce (use-debounce) llamado con:', searchQuery)
 
       // Actualizar estado de loading inmediatamente
       setState(prev => ({
         ...prev,
         isLoading: !!searchQuery.trim(),
         error: null,
-      }));
+      }))
 
       // Ejecutar búsqueda
-      performSearch(searchQuery);
+      performSearch(searchQuery)
     },
     debounceMs,
     {
@@ -264,148 +264,155 @@ export function useSearch(options: UseSearchOptions = {}) {
       leading: false,
       trailing: true,
     }
-  );
+  )
 
   /**
    * Ejecuta una búsqueda completa y navega a resultados
    */
-  const executeSearch = useCallback(async (searchQuery: string, category?: string) => {
-    if (!searchQuery.trim()) {return;}
-
-    try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
-
-      // Guardar en historial
-      if (saveRecentSearches && searchQuery.trim()) {
-        const updated = [
-          searchQuery.trim(),
-          ...recentSearchesRef.current.filter(s => s !== searchQuery.trim())
-        ].slice(0, 5);
-
-        setRecentSearches(updated);
-        try {
-          localStorage.setItem('pinteya-recent-searches', JSON.stringify(updated));
-        } catch (error) {
-          console.warn('Error guardando búsqueda reciente:', error);
-        }
+  const executeSearch = useCallback(
+    async (searchQuery: string, category?: string) => {
+      if (!searchQuery.trim()) {
+        return
       }
 
-      // Realizar búsqueda con manejo robusto de errores
-      const response = await errorHandler.executeWithRetry(
-        () => searchProducts(searchQuery.trim(), searchLimit),
-        `búsqueda de "${searchQuery.trim()}"`
-      );
+      try {
+        setState(prev => ({ ...prev, isLoading: true, error: null }))
 
-      if (response.success && response.data) {
-        const resultCount = response.data.length;
+        // Guardar en historial
+        if (saveRecentSearches && searchQuery.trim()) {
+          const updated = [
+            searchQuery.trim(),
+            ...recentSearchesRef.current.filter(s => s !== searchQuery.trim()),
+          ].slice(0, 5)
 
-        setState(prev => ({
-          ...prev,
-          results: response.data || [],
-          isLoading: false,
-          hasSearched: true,
-          error: null,
-        }));
+          setRecentSearches(updated)
+          try {
+            localStorage.setItem('pinteya-recent-searches', JSON.stringify(updated))
+          } catch (error) {
+            console.warn('Error guardando búsqueda reciente:', error)
+          }
+        }
 
-        // Limpiar errores previos
-        errorHandler.clearError();
+        // Realizar búsqueda con manejo robusto de errores
+        const response = await errorHandler.executeWithRetry(
+          () => searchProducts(searchQuery.trim(), searchLimit),
+          `búsqueda de "${searchQuery.trim()}"`
+        )
 
-        // Mostrar toast de éxito si hay resultados
-        if (resultCount > 0) {
-          toastHandler.showSuccessToast(searchQuery.trim(), resultCount);
+        if (response.success && response.data) {
+          const resultCount = response.data.length
+
+          setState(prev => ({
+            ...prev,
+            results: response.data || [],
+            isLoading: false,
+            hasSearched: true,
+            error: null,
+          }))
+
+          // Limpiar errores previos
+          errorHandler.clearError()
+
+          // Mostrar toast de éxito si hay resultados
+          if (resultCount > 0) {
+            toastHandler.showSuccessToast(searchQuery.trim(), resultCount)
+          } else {
+            toastHandler.showNoResultsToast(searchQuery.trim())
+          }
+
+          // Callback personalizado
+          optionsRef.current.onSearch?.(searchQuery.trim(), response.data || [])
+
+          // Navegar a resultados
+          const searchParams = new URLSearchParams()
+          searchParams.set('q', searchQuery.trim())
+          if (category) {
+            searchParams.set('category', category)
+          }
+
+          router.push(`/search?${searchParams.toString()}`)
         } else {
-          toastHandler.showNoResultsToast(searchQuery.trim());
+          const errorMessage = response.error || 'No se encontraron resultados'
+
+          setState(prev => ({
+            ...prev,
+            results: [],
+            isLoading: false,
+            hasSearched: true,
+            error: errorMessage,
+          }))
+
+          // Mostrar toast de advertencia para respuestas sin éxito
+          toastHandler.showWarningToast('Búsqueda sin resultados', errorMessage)
         }
+      } catch (error) {
+        console.error('❌ Error ejecutando búsqueda:', error)
 
-        // Callback personalizado
-        optionsRef.current.onSearch?.(searchQuery.trim(), response.data || []);
-
-        // Navegar a resultados
-        const searchParams = new URLSearchParams();
-        searchParams.set('q', searchQuery.trim());
-        if (category) {
-          searchParams.set('category', category);
-        }
-
-        router.push(`/search?${searchParams.toString()}`);
-      } else {
-        const errorMessage = response.error || 'No se encontraron resultados';
+        // Manejar error con el error handler
+        const searchError = errorHandler.handleError(error)
 
         setState(prev => ({
           ...prev,
           results: [],
           isLoading: false,
           hasSearched: true,
-          error: errorMessage,
-        }));
+          error: searchError.message,
+        }))
 
-        // Mostrar toast de advertencia para respuestas sin éxito
-        toastHandler.showWarningToast('Búsqueda sin resultados', errorMessage);
+        // Mostrar toast de error
+        toastHandler.showErrorToast(searchError, errorHandler.retryCount, () => {
+          executeSearch(searchQuery.trim(), category)
+        })
       }
-    } catch (error) {
-      console.error('❌ Error ejecutando búsqueda:', error);
-
-      // Manejar error con el error handler
-      const searchError = errorHandler.handleError(error);
-
-      setState(prev => ({
-        ...prev,
-        results: [],
-        isLoading: false,
-        hasSearched: true,
-        error: searchError.message,
-      }));
-
-      // Mostrar toast de error
-      toastHandler.showErrorToast(searchError, errorHandler.retryCount, () => {
-        executeSearch(searchQuery.trim(), category);
-      });
-    }
-  }, [searchLimit, saveRecentSearches, router, errorHandler, toastHandler]); // Remover recentSearches de dependencias para evitar bucle infinito
+    },
+    [searchLimit, saveRecentSearches, router, errorHandler, toastHandler]
+  ) // Remover recentSearches de dependencias para evitar bucle infinito
 
   /**
    * Maneja la selección de una sugerencia
    */
-  const selectSuggestion = useCallback((suggestion: SearchSuggestion) => {
-    // Guardar en historial si es producto o categoría
-    if ((suggestion.type === 'product' || suggestion.type === 'category') && saveRecentSearches) {
-      const updated = [
-        suggestion.title,
-        ...recentSearchesRef.current.filter(s => s !== suggestion.title)
-      ].slice(0, 5);
+  const selectSuggestion = useCallback(
+    (suggestion: SearchSuggestion) => {
+      // Guardar en historial si es producto o categoría
+      if ((suggestion.type === 'product' || suggestion.type === 'category') && saveRecentSearches) {
+        const updated = [
+          suggestion.title,
+          ...recentSearchesRef.current.filter(s => s !== suggestion.title),
+        ].slice(0, 5)
 
-      setRecentSearches(updated);
-      try {
-        localStorage.setItem('pinteya-recent-searches', JSON.stringify(updated));
-      } catch (error) {
-        console.warn('Error guardando búsqueda reciente:', error);
+        setRecentSearches(updated)
+        try {
+          localStorage.setItem('pinteya-recent-searches', JSON.stringify(updated))
+        } catch (error) {
+          console.warn('Error guardando búsqueda reciente:', error)
+        }
       }
-    }
 
-    // Actualizar estado
-    setState(prev => ({
-      ...prev,
-      query: suggestion.title,
-    }));
+      // Actualizar estado
+      setState(prev => ({
+        ...prev,
+        query: suggestion.title,
+      }))
 
-    // Callback personalizado
-    optionsRef.current.onSuggestionSelect?.(suggestion);
+      // Callback personalizado
+      optionsRef.current.onSuggestionSelect?.(suggestion)
 
-    // Navegar
-    router.push(suggestion.href);
-  }, [saveRecentSearches, router]); // Remover recentSearches de dependencias para evitar bucle infinito
+      // Navegar
+      router.push(suggestion.href)
+    },
+    [saveRecentSearches, router]
+  ) // Remover recentSearches de dependencias para evitar bucle infinito
 
   /**
    * Limpia el estado de búsqueda
    */
   const clearSearch = useCallback(() => {
-
     // Limpiar todos los timeouts
     if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+      clearTimeout(debounceRef.current)
     }
     if (safetyTimeoutRef.current) {
-      clearTimeout(safetyTimeoutRef.current);
+      clearTimeout(safetyTimeoutRef.current)
     }
 
     // Resetear estado completamente (sin sugerencias por defecto para tests)
@@ -416,8 +423,8 @@ export function useSearch(options: UseSearchOptions = {}) {
       isLoading: false,
       error: null,
       hasSearched: false,
-    });
-  }, []); // Remover dependencia circular
+    })
+  }, []) // Remover dependencia circular
 
   /**
    * Inicializa el hook (cargar búsquedas recientes)
@@ -425,31 +432,31 @@ export function useSearch(options: UseSearchOptions = {}) {
   const initialize = useCallback(() => {
     if (saveRecentSearches) {
       try {
-        const stored = localStorage.getItem('pinteya-recent-searches');
+        const stored = localStorage.getItem('pinteya-recent-searches')
         if (stored && stored.trim() !== '' && stored !== '""' && stored !== "''") {
           // Validar que no esté corrupto
           if (stored.includes('""') && stored.length < 5) {
-            console.warn('Detected corrupted recent searches data, cleaning up');
-            localStorage.removeItem('pinteya-recent-searches');
-            return;
+            console.warn('Detected corrupted recent searches data, cleaning up')
+            localStorage.removeItem('pinteya-recent-searches')
+            return
           }
 
-          const parsed = JSON.parse(stored);
+          const parsed = JSON.parse(stored)
           // Verificar que sea un array válido
           if (Array.isArray(parsed)) {
-            setRecentSearches(parsed);
+            setRecentSearches(parsed)
           } else {
-            console.warn('Invalid recent searches format, resetting');
-            localStorage.removeItem('pinteya-recent-searches');
+            console.warn('Invalid recent searches format, resetting')
+            localStorage.removeItem('pinteya-recent-searches')
           }
         }
       } catch (error) {
-        console.warn('Error cargando búsquedas recientes:', error);
+        console.warn('Error cargando búsquedas recientes:', error)
         // Limpiar datos corruptos
-        localStorage.removeItem('pinteya-recent-searches');
+        localStorage.removeItem('pinteya-recent-searches')
       }
     }
-  }, [saveRecentSearches]);
+  }, [saveRecentSearches])
 
   // ===================================
   // CLEANUP
@@ -457,16 +464,16 @@ export function useSearch(options: UseSearchOptions = {}) {
 
   const cleanup = useCallback(() => {
     // Cancelar debounce de use-debounce
-    searchWithDebounce.cancel();
+    searchWithDebounce.cancel()
 
     // Limpiar timeouts manuales restantes
     if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+      clearTimeout(debounceRef.current)
     }
     if (safetyTimeoutRef.current) {
-      clearTimeout(safetyTimeoutRef.current);
+      clearTimeout(safetyTimeoutRef.current)
     }
-  }, [searchWithDebounce]);
+  }, [searchWithDebounce])
 
   // ===================================
   // RETURN
@@ -498,16 +505,7 @@ export function useSearch(options: UseSearchOptions = {}) {
     // Funciones de toast
     removeToast: toastHandler.removeToast,
     clearToasts: toastHandler.clearToasts,
-  };
+  }
 }
 
-export default useSearch;
-
-
-
-
-
-
-
-
-
+export default useSearch

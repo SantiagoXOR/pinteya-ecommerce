@@ -1,25 +1,25 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect, useRef } from "react";
-import { useCategoriesWithDynamicCounts } from "@/hooks/useCategoriesWithDynamicCounts";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Filter, X, Tag } from "lucide-react";
-import Image from "next/image";
+import React, { useState, useEffect, useRef } from 'react'
+import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import { Filter, X, Tag } from 'lucide-react'
+import Image from 'next/image'
 
 interface CategoryTogglePillsProps {
-  onCategoryChange: (selectedCategories: string[]) => void;
-  selectedCategories: string[];
-  searchTerm?: string;
-  otherFilters?: any;
+  onCategoryChange: (selectedCategories: string[]) => void
+  selectedCategories: string[]
+  searchTerm?: string
+  otherFilters?: any
 }
 
 const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   onCategoryChange,
   selectedCategories,
   searchTerm,
-  otherFilters = {}
+  otherFilters = {},
 }) => {
   const { categories, loading, error, stats } = useCategoriesWithDynamicCounts({
     baseFilters: {
@@ -28,215 +28,230 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     },
     selectedCategories,
     enableDynamicCounts: false, // Deshabilitar conteos dinámicos para evitar errores de API
-  });
+  })
 
   // Referencia para el contenedor del carrusel
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null)
 
   // Estados para el drag scroll
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [scrollLeft, setScrollLeft] = useState(0)
 
   // Manejador para scroll horizontal con rueda del mouse
   useEffect(() => {
-    const carousel = carouselRef.current;
-    if (!carousel) {return;}
+    const carousel = carouselRef.current
+    if (!carousel) {
+      return
+    }
 
     const handleWheel = (e: WheelEvent) => {
       // Solo aplicar scroll horizontal si hay contenido que se desborda
       if (carousel.scrollWidth > carousel.clientWidth) {
-        e.preventDefault();
-        carousel.scrollLeft += e.deltaY;
+        e.preventDefault()
+        carousel.scrollLeft += e.deltaY
       }
-    };
+    }
 
-    carousel.addEventListener('wheel', handleWheel, { passive: false });
+    carousel.addEventListener('wheel', handleWheel, { passive: false })
 
     return () => {
-      carousel.removeEventListener('wheel', handleWheel);
-    };
-  }, [categories]);
+      carousel.removeEventListener('wheel', handleWheel)
+    }
+  }, [categories])
 
   // Manejadores para drag scroll
   const handleMouseDown = (e: React.MouseEvent) => {
-    const carousel = carouselRef.current;
-    if (!carousel) {return;}
+    const carousel = carouselRef.current
+    if (!carousel) {
+      return
+    }
 
-    setIsDragging(true);
-    setStartX(e.pageX - carousel.offsetLeft);
-    setScrollLeft(carousel.scrollLeft);
-    carousel.style.cursor = 'grabbing';
-  };
+    setIsDragging(true)
+    setStartX(e.pageX - carousel.offsetLeft)
+    setScrollLeft(carousel.scrollLeft)
+    carousel.style.cursor = 'grabbing'
+  }
 
   const handleMouseLeave = () => {
-    setIsDragging(false);
-    const carousel = carouselRef.current;
+    setIsDragging(false)
+    const carousel = carouselRef.current
     if (carousel) {
-      carousel.style.cursor = 'grab';
+      carousel.style.cursor = 'grab'
     }
-  };
+  }
 
   const handleMouseUp = () => {
-    setIsDragging(false);
-    const carousel = carouselRef.current;
+    setIsDragging(false)
+    const carousel = carouselRef.current
     if (carousel) {
-      carousel.style.cursor = 'grab';
+      carousel.style.cursor = 'grab'
     }
-  };
+  }
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) {return;}
-    e.preventDefault();
+    if (!isDragging) {
+      return
+    }
+    e.preventDefault()
 
-    const carousel = carouselRef.current;
-    if (!carousel) {return;}
+    const carousel = carouselRef.current
+    if (!carousel) {
+      return
+    }
 
-    const x = e.pageX - carousel.offsetLeft;
-    const walk = (x - startX) * 2; // Multiplicador para velocidad de scroll
-    carousel.scrollLeft = scrollLeft - walk;
-  };
+    const x = e.pageX - carousel.offsetLeft
+    const walk = (x - startX) * 2 // Multiplicador para velocidad de scroll
+    carousel.scrollLeft = scrollLeft - walk
+  }
 
   const handleCategoryToggle = (categorySlug: string) => {
     // Prevenir click si se está arrastrando
-    if (isDragging) {return;}
+    if (isDragging) {
+      return
+    }
 
-    const isSelected = selectedCategories.includes(categorySlug);
-    let newSelection: string[];
+    const isSelected = selectedCategories.includes(categorySlug)
+    let newSelection: string[]
 
     if (isSelected) {
       // Remover categoría
-      newSelection = selectedCategories.filter(slug => slug !== categorySlug);
+      newSelection = selectedCategories.filter(slug => slug !== categorySlug)
     } else {
       // Agregar categoría
-      newSelection = [...selectedCategories, categorySlug];
+      newSelection = [...selectedCategories, categorySlug]
     }
 
-    onCategoryChange(newSelection);
-  };
+    onCategoryChange(newSelection)
+  }
 
   const clearAllFilters = () => {
-    onCategoryChange([]);
-  };
+    onCategoryChange([])
+  }
 
   if (loading) {
     return (
-      <section className="bg-white border-b border-gray-200 py-2">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 overflow-x-auto pb-2">
+      <section className='bg-white border-b border-gray-200 py-2'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='flex items-center gap-3 overflow-x-auto pb-2'>
             {[...Array(8)].map((_, index) => (
-              <div key={index} className="flex-shrink-0 animate-pulse">
-                <div className="h-10 w-24 bg-gray-200 rounded-full"></div>
+              <div key={index} className='flex-shrink-0 animate-pulse'>
+                <div className='h-10 w-24 bg-gray-200 rounded-full'></div>
               </div>
             ))}
           </div>
         </div>
       </section>
-    );
+    )
   }
 
   if (error || categories.length === 0) {
-    return null; // No mostrar nada si hay error o no hay categorías
+    return null // No mostrar nada si hay error o no hay categorías
   }
 
   return (
-    <section className="bg-white border-b border-gray-200 py-1 sticky top-[110px] lg:top-[120px] z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-testid="category-pills-container">
+    <section className='bg-white border-b border-gray-200 py-1 sticky top-[110px] lg:top-[120px] z-40'>
+      <div
+        className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
+        data-testid='category-pills-container'
+      >
         {/* Contenedor con degradados en los bordes */}
-        <div className="relative">
+        <div className='relative'>
           {/* Degradado izquierdo */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+          <div className='absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none'></div>
 
           {/* Degradado derecho */}
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+          <div className='absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none'></div>
 
           {/* Pills de categorías */}
           <div
             ref={carouselRef}
-            className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide py-1 cursor-grab select-none"
+            className='flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide py-1 cursor-grab select-none'
             onMouseDown={handleMouseDown}
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
           >
-            {categories.map((category) => {
-              const isSelected = selectedCategories.includes(category.slug);
-              
+            {categories.map(category => {
+              const isSelected = selectedCategories.includes(category.slug)
+
               return (
                 <Button
                   key={category.id}
                   data-testid={`category-pill-${category.slug}`}
-                  variant={isSelected ? "default" : "outline"}
-                  size="sm"
+                  variant={isSelected ? 'default' : 'outline'}
+                  size='sm'
                   onClick={() => handleCategoryToggle(category.slug)}
                   className={`
                     group flex-shrink-0 transition-all duration-200 border-2 rounded-full
                     h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm
-                    ${isSelected
-                      ? 'bg-[#009e44] text-white border-[#eb6313]'
-                      : 'bg-[#007639] hover:bg-[#009e44] text-white border-[#007639]'
+                    ${
+                      isSelected
+                        ? 'bg-[#009e44] text-white border-[#eb6313]'
+                        : 'bg-[#007639] hover:bg-[#009e44] text-white border-[#007639]'
                     }
                   `}
                 >
-                  <div className="flex items-center gap-1 sm:gap-2">
+                  <div className='flex items-center gap-1 sm:gap-2'>
                     {category.image_url && (
-                      <div className={`
+                      <div
+                        className={`
                         rounded-full overflow-hidden bg-white/30 transition-all duration-200
-                        ${isSelected
-                          ? 'w-3 h-3 sm:w-5 sm:h-5'
-                          : 'w-3 h-3 group-hover:w-4 group-hover:h-4 sm:w-4 sm:h-4 sm:group-hover:w-5 sm:group-hover:h-5'
+                        ${
+                          isSelected
+                            ? 'w-3 h-3 sm:w-5 sm:h-5'
+                            : 'w-3 h-3 group-hover:w-4 group-hover:h-4 sm:w-4 sm:h-4 sm:group-hover:w-5 sm:group-hover:h-5'
                         }
-                      `}>
+                      `}
+                      >
                         <Image
                           src={category.image_url}
-                          alt=""
+                          alt=''
                           width={20}
                           height={20}
-                          className="w-full h-full object-cover"
+                          className='w-full h-full object-cover'
                         />
                       </div>
                     )}
-                    <span className="text-xs font-medium sm:text-sm">
-                      {category.name}
-                    </span>
+                    <span className='text-xs font-medium sm:text-sm'>{category.name}</span>
                   </div>
                 </Button>
-              );
+              )
             })}
           </div>
 
           {/* Botón limpiar filtros e indicador de filtros activos en la misma línea */}
           {selectedCategories.length > 0 && (
-            <div className="mt-3 flex items-center gap-3 flex-nowrap overflow-x-auto">
+            <div className='mt-3 flex items-center gap-3 flex-nowrap overflow-x-auto'>
               {/* Botón limpiar */}
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={clearAllFilters}
-                className="flex-shrink-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                className='flex-shrink-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100'
               >
-                <X className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Limpiar</span>
+                <X className='w-4 h-4 mr-1' />
+                <span className='hidden sm:inline'>Limpiar</span>
               </Button>
 
               {/* Indicador de filtros */}
-              <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">
+              <span className='text-xs text-gray-500 whitespace-nowrap flex-shrink-0'>
                 Filtrando por:
               </span>
 
               {/* Badges de categorías */}
-              <div className="flex items-center gap-1 flex-nowrap">
-                {selectedCategories.map((slug) => {
-                  const category = categories.find(cat => cat.slug === slug);
+              <div className='flex items-center gap-1 flex-nowrap'>
+                {selectedCategories.map(slug => {
+                  const category = categories.find(cat => cat.slug === slug)
                   return category ? (
                     <Badge
                       key={slug}
-                      variant="secondary"
-                      className="text-xs bg-blaze-orange-100 text-blaze-orange-800 flex-shrink-0"
+                      variant='secondary'
+                      className='text-xs bg-blaze-orange-100 text-blaze-orange-800 flex-shrink-0'
                     >
                       {category.name}
                     </Badge>
-                  ) : null;
+                  ) : null
                 })}
               </div>
             </div>
@@ -244,16 +259,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default CategoryTogglePills;
-
-
-
-
-
-
-
-
-
+export default CategoryTogglePills

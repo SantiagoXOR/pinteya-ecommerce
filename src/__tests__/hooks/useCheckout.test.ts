@@ -118,17 +118,17 @@ describe('useCheckout Hook', () => {
   })
 
   it('validates form correctly', () => {
-    const { result } = renderHookWithStore();
+    const { result } = renderHookWithStore()
 
     act(() => {
-      const isValid = result.current.validateForm();
-      expect(isValid).toBe(false);
-    });
+      const isValid = result.current.validateForm()
+      expect(isValid).toBe(false)
+    })
 
     // Verificar que los errores se establecieron correctamente
-    expect(result.current.errors.firstName).toBe('Nombre es requerido');
-    expect(result.current.errors.email).toBe('Email es requerido');
-  });
+    expect(result.current.errors.firstName).toBe('Nombre es requerido')
+    expect(result.current.errors.email).toBe('Email es requerido')
+  })
 
   it('calculates total correctly', () => {
     const { result } = renderHookWithStore()
@@ -137,12 +137,3 @@ describe('useCheckout Hook', () => {
     expect(typeof result.current.finalTotal).toBe('number')
   })
 })
-
-
-
-
-
-
-
-
-

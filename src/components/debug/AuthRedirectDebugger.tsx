@@ -1,41 +1,43 @@
-"use client";
+'use client'
 
-import { useAuthRedirectDebug } from '@/hooks/useAuthRedirectDebug';
-import { useEffect } from 'react';
+import { useAuthRedirectDebug } from '@/hooks/useAuthRedirectDebug'
+import { useEffect } from 'react'
 
 /**
  * Componente de debug para rastrear redirecciones de autenticación
  * Solo se ejecuta en desarrollo
  */
 export default function AuthRedirectDebugger() {
-  const { forceAdminRedirect, isAdmin, debugInfo } = useAuthRedirectDebug();
+  const { forceAdminRedirect, isAdmin, debugInfo } = useAuthRedirectDebug()
 
   useEffect(() => {
     // Solo ejecutar en desarrollo
-    if (process.env.NODE_ENV !== 'development') {return;}
+    if (process.env.NODE_ENV !== 'development') {
+      return
+    }
 
-    console.log('[AUTH_DEBUGGER] 🚀 Debugger de autenticación iniciado');
-    
+    console.log('[AUTH_DEBUGGER] 🚀 Debugger de autenticación iniciado')
+
     // Agregar función global para debug manual
-    (window as any).debugAuth = {
+    ;(window as any).debugAuth = {
       forceAdminRedirect,
       isAdmin,
       debugInfo,
       info: () => {
-        console.log('[AUTH_DEBUGGER] 📊 Estado actual:', debugInfo);
-      }
-    };
+        console.log('[AUTH_DEBUGGER] 📊 Estado actual:', debugInfo)
+      },
+    }
 
-    console.log('[AUTH_DEBUGGER] 💡 Funciones de debug disponibles en window.debugAuth');
-  }, [forceAdminRedirect, isAdmin, debugInfo]);
+    console.log('[AUTH_DEBUGGER] 💡 Funciones de debug disponibles en window.debugAuth')
+  }, [forceAdminRedirect, isAdmin, debugInfo])
 
   // No renderizar nada en producción
   if (process.env.NODE_ENV !== 'development') {
-    return null;
+    return null
   }
 
   return (
-    <div 
+    <div
       style={{
         position: 'fixed',
         top: '10px',
@@ -46,10 +48,12 @@ export default function AuthRedirectDebugger() {
         borderRadius: '5px',
         fontSize: '12px',
         zIndex: 9999,
-        maxWidth: '300px'
+        maxWidth: '300px',
       }}
     >
-      <div><strong>🔍 Auth Debug</strong></div>
+      <div>
+        <strong>🔍 Auth Debug</strong>
+      </div>
       <div>Signed In: {debugInfo.status === 'authenticated' ? '✅' : '❌'}</div>
       <div>User ID: {debugInfo.userId || 'N/A'}</div>
       <div>Role: {debugInfo.userRole || 'N/A'}</div>
@@ -57,7 +61,7 @@ export default function AuthRedirectDebugger() {
       <div>Is Admin: {isAdmin ? '✅' : '❌'}</div>
       <div>Path: {debugInfo.pathname || 'N/A'}</div>
       {isAdmin && debugInfo.pathname === '/my-account' && (
-        <button 
+        <button
           onClick={forceAdminRedirect}
           style={{
             background: '#ff4444',
@@ -66,21 +70,12 @@ export default function AuthRedirectDebugger() {
             padding: '5px 10px',
             borderRadius: '3px',
             cursor: 'pointer',
-            marginTop: '5px'
+            marginTop: '5px',
           }}
         >
           🚀 Force Admin Redirect
         </button>
       )}
     </div>
-  );
+  )
 }
-
-
-
-
-
-
-
-
-

@@ -1,15 +1,23 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { PriceDisplay } from "@/components/ui/price-display"
-import { ShippingInfo } from "@/components/ui/shipping-info"
-import { EnhancedProductCard } from "@/components/ui/product-card-enhanced"
-import { ShoppingCart, CreditCard, Truck, Gift, Percent, ChevronDown, ChevronUp } from "lucide-react"
-import { cn } from "@/lib/utils"
+import * as React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { PriceDisplay } from '@/components/ui/price-display'
+import { ShippingInfo } from '@/components/ui/shipping-info'
+import { EnhancedProductCard } from '@/components/ui/product-card-enhanced'
+import {
+  ShoppingCart,
+  CreditCard,
+  Truck,
+  Gift,
+  Percent,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export interface CartItem {
   id: number | string
@@ -67,7 +75,7 @@ export interface CartSummaryProps {
 
 /**
  * CartSummary avanzado con integración del Design System
- * 
+ *
  * Características:
  * - Integra PriceDisplay para precios consistentes
  * - Usa ShippingInfo para información de envío
@@ -76,121 +84,123 @@ export interface CartSummaryProps {
  * - Múltiples variantes (default, compact, detailed)
  */
 export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
-  ({
-    cartItems = [],
-    totalPrice = 0,
-    shippingCost = 0,
-    discount = 0,
-    finalTotal,
-    shippingMethod = 'standard',
-    appliedCoupon,
-    variant = 'default',
-    showProductCards = false,
-    productCardContext = 'checkout',
-    onCheckout,
-    onApplyCoupon,
-    onRemoveCoupon,
-    showShippingDetails = false,
-    initiallyCollapsed = false,
-    className,
-    ...props
-  }, ref) => {
-    const calculatedFinalTotal = finalTotal ?? (totalPrice + (shippingCost || 0) - (discount || 0))
+  (
+    {
+      cartItems = [],
+      totalPrice = 0,
+      shippingCost = 0,
+      discount = 0,
+      finalTotal,
+      shippingMethod = 'standard',
+      appliedCoupon,
+      variant = 'default',
+      showProductCards = false,
+      productCardContext = 'checkout',
+      onCheckout,
+      onApplyCoupon,
+      onRemoveCoupon,
+      showShippingDetails = false,
+      initiallyCollapsed = false,
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    const calculatedFinalTotal = finalTotal ?? totalPrice + (shippingCost || 0) - (discount || 0)
     const isCompact = variant === 'compact'
     const isDetailed = variant === 'detailed'
     const isMobile = variant === 'mobile'
-    
+
     // Estado para colapso en variante mobile
     const [isCollapsed, setIsCollapsed] = React.useState(isMobile ? initiallyCollapsed : false)
 
     // Calcular si califica para envío gratis
     const qualifiesForFreeShipping = totalPrice >= 50000
-    const actualShippingCost = qualifiesForFreeShipping ? 0 : (shippingCost || 0)
+    const actualShippingCost = qualifiesForFreeShipping ? 0 : shippingCost || 0
 
     return (
-      <Card ref={ref} className={cn(
-        "w-full",
-        isMobile && "border-0 shadow-lg bg-white/90 backdrop-blur-sm rounded-xl",
-        className
-      )} {...props}>
+      <Card
+        ref={ref}
+        className={cn(
+          'w-full',
+          isMobile && 'border-0 shadow-lg bg-white/90 backdrop-blur-sm rounded-xl',
+          className
+        )}
+        {...props}
+      >
         <CardHeader
-          className={cn(
-            "pb-4",
-            isCompact && "pb-2",
-            isMobile && "pb-0 px-0 cursor-pointer"
-          )}
+          className={cn('pb-4', isCompact && 'pb-2', isMobile && 'pb-0 px-0 cursor-pointer')}
           onClick={isMobile ? () => setIsCollapsed(!isCollapsed) : undefined}
         >
-          <CardTitle className={cn(
-            "flex items-center gap-2",
-            isMobile && "justify-between text-base p-5 hover:bg-gray-50/50 transition-colors rounded-xl"
-          )}>
-            <div className={cn(
-              "flex items-center gap-2",
-              isMobile && "gap-3"
-            )}>
+          <CardTitle
+            className={cn(
+              'flex items-center gap-2',
+              isMobile &&
+                'justify-between text-base p-5 hover:bg-gray-50/50 transition-colors rounded-xl'
+            )}
+          >
+            <div className={cn('flex items-center gap-2', isMobile && 'gap-3')}>
               {isMobile ? (
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 text-green-600" />
+                <div className='w-10 h-10 rounded-full bg-green-100 flex items-center justify-center'>
+                  <ShoppingCart className='w-5 h-5 text-green-600' />
                 </div>
               ) : (
-                <ShoppingCart className="w-5 h-5 text-primary" />
+                <ShoppingCart className='w-5 h-5 text-primary' />
               )}
               <div>
-                <span className={cn(
-                  "font-semibold",
-                  isMobile && "text-gray-900 block"
-                )}>
-                  {isMobile ? "Resumen del Pedido" : "Resumen del Pedido"}
+                <span className={cn('font-semibold', isMobile && 'text-gray-900 block')}>
+                  {isMobile ? 'Resumen del Pedido' : 'Resumen del Pedido'}
                 </span>
                 {isMobile && (
-                  <span className="text-sm text-gray-600">
+                  <span className='text-sm text-gray-600'>
                     {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
                   </span>
                 )}
               </div>
               {!isMobile && (
-                <Badge variant="outline" size="sm">
+                <Badge variant='outline' size='sm'>
                   {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
                 </Badge>
               )}
             </div>
             {isMobile && (
-              <div className="flex items-center gap-3">
-                <div className="text-right">
+              <div className='flex items-center gap-3'>
+                <div className='text-right'>
                   <PriceDisplay
                     amount={calculatedFinalTotal * 100}
-                    variant="compact"
-                    size="lg"
-                    className="text-green-600 font-bold text-xl"
+                    variant='compact'
+                    size='lg'
+                    className='text-green-600 font-bold text-xl'
                   />
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Total</div>
+                  <div className='text-xs text-gray-500 uppercase tracking-wide'>Total</div>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                  {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                <div className='w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center'>
+                  {isCollapsed ? (
+                    <ChevronDown className='w-4 h-4' />
+                  ) : (
+                    <ChevronUp className='w-4 h-4' />
+                  )}
                 </div>
               </div>
             )}
           </CardTitle>
         </CardHeader>
 
-        <CardContent className={cn(
-          "space-y-4",
-          isMobile && "px-5 pb-5",
-          isMobile && isCollapsed && "hidden"
-        )}>
-          {isMobile && !isCollapsed && (
-            <div className="border-t pt-4" />
-          )}
+        <CardContent
+          className={cn('space-y-4', isMobile && 'px-5 pb-5', isMobile && isCollapsed && 'hidden')}
+        >
+          {isMobile && !isCollapsed && <div className='border-t pt-4' />}
 
           {/* Items del carrito */}
           {cartItems.length > 0 ? (
-            <div className={cn(
-              "space-y-3",
-              isCompact ? "max-h-40" : isMobile ? "max-h-48" : "max-h-80",
-              "overflow-y-auto",
-              isMobile && "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-            )}>
+            <div
+              className={cn(
+                'space-y-3',
+                isCompact ? 'max-h-40' : isMobile ? 'max-h-48' : 'max-h-80',
+                'overflow-y-auto',
+                isMobile && 'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'
+              )}
+            >
               {cartItems.map((item, index) => (
                 <div key={`${item.id}-${index}`}>
                   {showProductCards ? (
@@ -202,9 +212,9 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                       price={item.discountedPrice}
                       originalPrice={item.discountedPrice < item.price ? item.price : undefined}
                       stock={item.quantity}
-                      stockUnit="en carrito"
+                      stockUnit='en carrito'
                       productId={item.id}
-                      badge={item.discountedPrice >= 15000 ? "Envío gratis" : undefined}
+                      badge={item.discountedPrice >= 15000 ? 'Envío gratis' : undefined}
                       cta={`Total: $${(item.discountedPrice * item.quantity).toLocaleString()}`}
                       onAddToCart={() => {}}
                       showCartAnimation={false}
@@ -215,26 +225,35 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                     />
                   ) : (
                     // Mostrar como item simple
-                    <div className={cn(
-                      "flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0",
-                      isMobile && "py-1.5"
-                    )}>
-                      <div className="flex-1 pr-4">
-                        <p className={cn(
-                          "font-medium text-gray-900 line-clamp-2",
-                          isMobile && "text-sm line-clamp-1"
-                        )}>{item.title}</p>
-                        <p className={cn(
-                          "text-sm text-gray-500",
-                          isMobile && "text-xs"
-                        )}>Cantidad: {item.quantity}</p>
+                    <div
+                      className={cn(
+                        'flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0',
+                        isMobile && 'py-1.5'
+                      )}
+                    >
+                      <div className='flex-1 pr-4'>
+                        <p
+                          className={cn(
+                            'font-medium text-gray-900 line-clamp-2',
+                            isMobile && 'text-sm line-clamp-1'
+                          )}
+                        >
+                          {item.title}
+                        </p>
+                        <p className={cn('text-sm text-gray-500', isMobile && 'text-xs')}>
+                          Cantidad: {item.quantity}
+                        </p>
                       </div>
-                      <div className="text-right">
+                      <div className='text-right'>
                         <PriceDisplay
-                          amount={(item.discountedPrice * item.quantity) * 100}
-                          originalAmount={item.discountedPrice < item.price ? (item.price * item.quantity) * 100 : undefined}
-                          variant="compact"
-                          size={isMobile ? "xs" : "sm"}
+                          amount={item.discountedPrice * item.quantity * 100}
+                          originalAmount={
+                            item.discountedPrice < item.price
+                              ? item.price * item.quantity * 100
+                              : undefined
+                          }
+                          variant='compact'
+                          size={isMobile ? 'xs' : 'sm'}
                         />
                       </div>
                     </div>
@@ -243,8 +262,8 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <ShoppingCart className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <div className='text-center py-8 text-gray-500'>
+              <ShoppingCart className='w-12 h-12 mx-auto mb-2 text-gray-300' />
               <p>No hay productos en el carrito</p>
             </div>
           )}
@@ -254,36 +273,36 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
               <Separator />
 
               {/* Totales */}
-              <div className={cn("space-y-3", isMobile && "space-y-2")}>
+              <div className={cn('space-y-3', isMobile && 'space-y-2')}>
                 {/* Subtotal - Solo mostrar en desktop o si no es mobile */}
                 {!isMobile && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Subtotal</span>
-                    <PriceDisplay
-                      amount={totalPrice * 100}
-                      variant="compact"
-                      size="sm"
-                    />
+                  <div className='flex items-center justify-between'>
+                    <span className='text-gray-600'>Subtotal</span>
+                    <PriceDisplay amount={totalPrice * 100} variant='compact' size='sm' />
                   </div>
                 )}
 
                 {/* Envío - Versión compacta para mobile */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Truck className={cn("w-4 h-4 text-gray-500", isMobile && "w-3 h-3")} />
-                    <span className={cn("text-gray-600", isMobile && "text-sm")}>Envío</span>
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center gap-2'>
+                    <Truck className={cn('w-4 h-4 text-gray-500', isMobile && 'w-3 h-3')} />
+                    <span className={cn('text-gray-600', isMobile && 'text-sm')}>Envío</span>
                     {qualifiesForFreeShipping && (
-                      <Badge variant="success" size={isMobile ? "xs" : "sm"}>Gratis</Badge>
+                      <Badge variant='success' size={isMobile ? 'xs' : 'sm'}>
+                        Gratis
+                      </Badge>
                     )}
                   </div>
-                  <div className="text-right">
+                  <div className='text-right'>
                     {qualifiesForFreeShipping ? (
-                      <span className={cn("text-green-600 font-medium", isMobile && "text-sm")}>Gratis</span>
+                      <span className={cn('text-green-600 font-medium', isMobile && 'text-sm')}>
+                        Gratis
+                      </span>
                     ) : (
                       <PriceDisplay
                         amount={actualShippingCost * 100}
-                        variant="compact"
-                        size={isMobile ? "xs" : "sm"}
+                        variant='compact'
+                        size={isMobile ? 'xs' : 'sm'}
                       />
                     )}
                   </div>
@@ -291,21 +310,21 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
 
                 {/* Descuento */}
                 {(discount > 0 || appliedCoupon) && (
-                  <div className="flex items-center justify-between text-green-600">
-                    <div className="flex items-center gap-2">
-                      <Percent className={cn("w-4 h-4", isMobile && "w-3 h-3")} />
-                      <span className={cn(isMobile && "text-sm")}>Descuento</span>
+                  <div className='flex items-center justify-between text-green-600'>
+                    <div className='flex items-center gap-2'>
+                      <Percent className={cn('w-4 h-4', isMobile && 'w-3 h-3')} />
+                      <span className={cn(isMobile && 'text-sm')}>Descuento</span>
                       {appliedCoupon && (
-                        <Badge variant="success" size={isMobile ? "xs" : "sm"}>
+                        <Badge variant='success' size={isMobile ? 'xs' : 'sm'}>
                           {appliedCoupon.code}
                         </Badge>
                       )}
                     </div>
                     <PriceDisplay
                       amount={-(discount * 100)}
-                      variant="compact"
-                      size={isMobile ? "xs" : "sm"}
-                      className="text-green-600"
+                      variant='compact'
+                      size={isMobile ? 'xs' : 'sm'}
+                      className='text-green-600'
                     />
                   </div>
                 )}
@@ -313,31 +332,27 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                 <Separator />
 
                 {/* Total final */}
-                <div className={cn(
-                  "flex items-center justify-between font-semibold text-lg",
-                  isMobile && "bg-green-50 p-4 rounded-lg border border-green-200"
-                )}>
-                  <div className={cn(isMobile && "flex flex-col")}>
-                    <span className={cn(
-                      "text-gray-900",
-                      isMobile && "text-lg font-bold"
-                    )}>
+                <div
+                  className={cn(
+                    'flex items-center justify-between font-semibold text-lg',
+                    isMobile && 'bg-green-50 p-4 rounded-lg border border-green-200'
+                  )}
+                >
+                  <div className={cn(isMobile && 'flex flex-col')}>
+                    <span className={cn('text-gray-900', isMobile && 'text-lg font-bold')}>
                       Total
                     </span>
                     {isMobile && (
-                      <span className="text-xs text-gray-600 uppercase tracking-wide">
+                      <span className='text-xs text-gray-600 uppercase tracking-wide'>
                         Precio final
                       </span>
                     )}
                   </div>
                   <PriceDisplay
                     amount={calculatedFinalTotal * 100}
-                    variant="default"
-                    size={isMobile ? "xl" : "lg"}
-                    className={cn(
-                      "text-primary",
-                      isMobile && "text-green-600 text-2xl font-bold"
-                    )}
+                    variant='default'
+                    size={isMobile ? 'xl' : 'lg'}
+                    className={cn('text-primary', isMobile && 'text-green-600 text-2xl font-bold')}
                   />
                 </div>
               </div>
@@ -347,7 +362,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                 <>
                   <Separator />
                   <ShippingInfo
-                    variant="inline"
+                    variant='inline'
                     options={[
                       {
                         id: 'free',
@@ -355,14 +370,14 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                         price: 0,
                         estimatedDays: { min: 5, max: 7 },
                         isFree: true,
-                        description: 'En compras mayores a $50.000'
+                        description: 'En compras mayores a $50.000',
                       },
                       {
                         id: 'standard',
                         name: 'Envío estándar',
                         price: 2500,
                         estimatedDays: { min: 3, max: 5 },
-                        description: 'Entrega a domicilio'
+                        description: 'Entrega a domicilio',
                       },
                       {
                         id: 'express',
@@ -370,8 +385,8 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                         price: 4500,
                         estimatedDays: { min: 1, max: 2 },
                         isExpress: true,
-                        description: 'Entrega prioritaria'
-                      }
+                        description: 'Entrega prioritaria',
+                      },
                     ]}
                     selectedOption={shippingMethod}
                     showCalculator={false}
@@ -384,12 +399,12 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
               {!isCompact && !isMobile && (
                 <>
                   <Separator />
-                  <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 text-green-700 text-sm">
-                      <Gift className="w-4 h-4" />
-                      <span className="font-medium">Compra protegida</span>
+                  <div className='bg-green-50 p-3 rounded-lg'>
+                    <div className='flex items-center gap-2 text-green-700 text-sm'>
+                      <Gift className='w-4 h-4' />
+                      <span className='font-medium'>Compra protegida</span>
                     </div>
-                    <p className="text-xs text-green-600 mt-1">
+                    <p className='text-xs text-green-600 mt-1'>
                       Tu dinero está protegido con MercadoPago
                     </p>
                   </div>
@@ -402,18 +417,12 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                   <Separator />
                   <Button
                     onClick={onCheckout}
-                    className={cn(
-                      "w-full",
-                      isMobile && "h-12 text-base font-semibold"
-                    )}
-                    size="lg"
+                    className={cn('w-full', isMobile && 'h-12 text-base font-semibold')}
+                    size='lg'
                     disabled={cartItems.length === 0}
                   >
-                    <CreditCard className={cn(
-                      "w-4 h-4 mr-2",
-                      isMobile && "w-5 h-5"
-                    )} />
-                    {isMobile ? "Comprar ahora" : "Proceder al Pago"}
+                    <CreditCard className={cn('w-4 h-4 mr-2', isMobile && 'w-5 h-5')} />
+                    {isMobile ? 'Comprar ahora' : 'Proceder al Pago'}
                   </Button>
                 </>
               )}
@@ -425,13 +434,4 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
   }
 )
 
-CartSummary.displayName = "CartSummary"
-
-
-
-
-
-
-
-
-
+CartSummary.displayName = 'CartSummary'

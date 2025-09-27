@@ -2,43 +2,43 @@
 // HOOK: useRecentSearches - Gestión de búsquedas recientes con localStorage
 // ===================================
 
-import { useState, useEffect, useCallback } from 'react';
-import { safeLocalStorageGet, safeLocalStorageSet, STORAGE_KEYS } from '@/lib/json-utils';
+import { useState, useEffect, useCallback } from 'react'
+import { safeLocalStorageGet, safeLocalStorageSet, STORAGE_KEYS } from '@/lib/json-utils'
 
 export interface RecentSearchesOptions {
   /** Número máximo de búsquedas recientes a mantener */
-  maxSearches?: number;
+  maxSearches?: number
   /** Clave de localStorage para persistir las búsquedas */
-  storageKey?: string;
+  storageKey?: string
   /** Habilitar/deshabilitar persistencia en localStorage */
-  enablePersistence?: boolean;
+  enablePersistence?: boolean
   /** Filtrar búsquedas duplicadas */
-  filterDuplicates?: boolean;
+  filterDuplicates?: boolean
   /** Tiempo de expiración en días (0 = sin expiración) */
-  expirationDays?: number;
+  expirationDays?: number
 }
 
 export interface RecentSearchesReturn {
   /** Array de búsquedas recientes */
-  recentSearches: string[];
+  recentSearches: string[]
   /** Agregar una nueva búsqueda */
-  addSearch: (search: string) => void;
+  addSearch: (search: string) => void
   /** Remover una búsqueda específica */
-  removeSearch: (search: string) => void;
+  removeSearch: (search: string) => void
   /** Limpiar todas las búsquedas */
-  clearSearches: () => void;
+  clearSearches: () => void
   /** Verificar si una búsqueda existe */
-  hasSearch: (search: string) => boolean;
+  hasSearch: (search: string) => boolean
   /** Obtener las N búsquedas más recientes */
-  getRecentSearches: (limit?: number) => string[];
+  getRecentSearches: (limit?: number) => string[]
   /** Reordenar búsquedas (mover al principio) */
-  moveToTop: (search: string) => void;
+  moveToTop: (search: string) => void
 }
 
 interface PersistedSearchData {
-  searches: string[];
-  timestamp: number;
-  version: string;
+  searches: string[]
+  timestamp: number
+  version: string
 }
 
 const DEFAULT_OPTIONS: Required<RecentSearchesOptions> = {
@@ -47,11 +47,11 @@ const DEFAULT_OPTIONS: Required<RecentSearchesOptions> = {
   enablePersistence: true,
   filterDuplicates: true,
   expirationDays: 30, // 30 días de expiración
-};
+}
 
 /**
  * Hook para gestionar búsquedas recientes con persistencia en localStorage
- * 
+ *
  * Características:
  * - Persistencia automática en localStorage
  * - Límite configurable de búsquedas
@@ -60,39 +60,44 @@ const DEFAULT_OPTIONS: Required<RecentSearchesOptions> = {
  * - Manejo de errores robusto
  */
 export function useRecentSearches(options: RecentSearchesOptions = {}): RecentSearchesReturn {
-  const config = { ...DEFAULT_OPTIONS, ...options };
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const config = { ...DEFAULT_OPTIONS, ...options }
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
 
   // Función para validar y limpiar una búsqueda
   const sanitizeSearch = useCallback((search: string): string => {
-    return search.trim().toLowerCase();
-  }, []);
+    return search.trim().toLowerCase()
+  }, [])
 
   // Función para verificar si los datos han expirado
-  const isExpired = useCallback((timestamp: number): boolean => {
-    if (config.expirationDays === 0) {return false;}
-    const maxAge = config.expirationDays * 24 * 60 * 60 * 1000;
-    return Date.now() - timestamp > maxAge;
-  }, [config.expirationDays]);
+  const isExpired = useCallback(
+    (timestamp: number): boolean => {
+      if (config.expirationDays === 0) {
+        return false
+      }
+      const maxAge = config.expirationDays * 24 * 60 * 60 * 1000
+      return Date.now() - timestamp > maxAge
+    },
+    [config.expirationDays]
+  )
 
   // Cargar búsquedas desde localStorage
   const loadFromStorage = useCallback((): string[] => {
     if (!config.enablePersistence) {
-      return [];
+      return []
     }
 
     // Usar utilidad segura para cargar desde localStorage
-    const result = safeLocalStorageGet<PersistedSearchData | string[]>(config.storageKey);
+    const result = safeLocalStorageGet<PersistedSearchData | string[]>(config.storageKey)
 
     if (!result.success) {
-      return [];
+      return []
     }
 
-    const data = result.data;
+    const data = result.data
 
     // Verificar si es formato nuevo (con metadata)
     if (data && typeof data === 'object' && 'searches' in data && Array.isArray(data.searches)) {
-      const persistedData = data as PersistedSearchData;
+      const persistedData = data as PersistedSearchData
 
       // Verificar expiración
       if (persistedData.timestamp && isExpired(persistedData.timestamp)) {
@@ -100,122 +105,144 @@ export function useRecentSearches(options: RecentSearchesOptions = {}): RecentSe
         safeLocalStorageSet(config.storageKey, {
           searches: [],
           timestamp: Date.now(),
-          version: '1.0'
-        });
-        return [];
+          version: '1.0',
+        })
+        return []
       }
 
-      return persistedData.searches.slice(0, config.maxSearches);
+      return persistedData.searches.slice(0, config.maxSearches)
     }
 
     // Formato antiguo (array simple)
     if (Array.isArray(data)) {
-      return data.slice(0, config.maxSearches);
+      return data.slice(0, config.maxSearches)
     }
 
-    return [];
-  }, [config.enablePersistence, config.storageKey, config.maxSearches, isExpired]);
+    return []
+  }, [config.enablePersistence, config.storageKey, config.maxSearches, isExpired])
 
   // Guardar búsquedas en localStorage
-  const saveToStorage = useCallback((searches: string[]): void => {
-    if (!config.enablePersistence || typeof window === 'undefined') {
-      return;
-    }
-
-    try {
-      if (searches.length === 0) {
-        localStorage.removeItem(config.storageKey);
-        return;
+  const saveToStorage = useCallback(
+    (searches: string[]): void => {
+      if (!config.enablePersistence || typeof window === 'undefined') {
+        return
       }
 
-      const dataToStore: PersistedSearchData = {
-        searches: searches.slice(0, config.maxSearches),
-        timestamp: Date.now(),
-        version: '1.0.0'
-      };
+      try {
+        if (searches.length === 0) {
+          localStorage.removeItem(config.storageKey)
+          return
+        }
 
-      localStorage.setItem(config.storageKey, JSON.stringify(dataToStore));
-    } catch (error) {
-      console.warn('Error saving recent searches to localStorage:', error);
-    }
-  }, [config.enablePersistence, config.storageKey, config.maxSearches]);
+        const dataToStore: PersistedSearchData = {
+          searches: searches.slice(0, config.maxSearches),
+          timestamp: Date.now(),
+          version: '1.0.0',
+        }
+
+        localStorage.setItem(config.storageKey, JSON.stringify(dataToStore))
+      } catch (error) {
+        console.warn('Error saving recent searches to localStorage:', error)
+      }
+    },
+    [config.enablePersistence, config.storageKey, config.maxSearches]
+  )
 
   // Cargar búsquedas al inicializar
   useEffect(() => {
-    const loaded = loadFromStorage();
-    setRecentSearches(loaded);
-  }, [loadFromStorage]);
+    const loaded = loadFromStorage()
+    setRecentSearches(loaded)
+  }, [loadFromStorage])
 
   // Agregar una nueva búsqueda
-  const addSearch = useCallback((search: string): void => {
-    const sanitized = sanitizeSearch(search);
-    if (!sanitized || sanitized.length < 2) {return;}
-
-    setRecentSearches(prev => {
-      let updated = [...prev];
-
-      // Remover duplicados si está habilitado
-      if (config.filterDuplicates) {
-        updated = updated.filter(s => sanitizeSearch(s) !== sanitized);
+  const addSearch = useCallback(
+    (search: string): void => {
+      const sanitized = sanitizeSearch(search)
+      if (!sanitized || sanitized.length < 2) {
+        return
       }
 
-      // Agregar al principio
-      updated.unshift(search.trim());
+      setRecentSearches(prev => {
+        let updated = [...prev]
 
-      // Limitar al máximo configurado
-      updated = updated.slice(0, config.maxSearches);
+        // Remover duplicados si está habilitado
+        if (config.filterDuplicates) {
+          updated = updated.filter(s => sanitizeSearch(s) !== sanitized)
+        }
 
-      // Guardar en localStorage
-      saveToStorage(updated);
+        // Agregar al principio
+        updated.unshift(search.trim())
 
-      return updated;
-    });
-  }, [sanitizeSearch, config.filterDuplicates, config.maxSearches, saveToStorage]);
+        // Limitar al máximo configurado
+        updated = updated.slice(0, config.maxSearches)
+
+        // Guardar en localStorage
+        saveToStorage(updated)
+
+        return updated
+      })
+    },
+    [sanitizeSearch, config.filterDuplicates, config.maxSearches, saveToStorage]
+  )
 
   // Remover una búsqueda específica
-  const removeSearch = useCallback((search: string): void => {
-    const sanitized = sanitizeSearch(search);
-    
-    setRecentSearches(prev => {
-      const updated = prev.filter(s => sanitizeSearch(s) !== sanitized);
-      saveToStorage(updated);
-      return updated;
-    });
-  }, [sanitizeSearch, saveToStorage]);
+  const removeSearch = useCallback(
+    (search: string): void => {
+      const sanitized = sanitizeSearch(search)
+
+      setRecentSearches(prev => {
+        const updated = prev.filter(s => sanitizeSearch(s) !== sanitized)
+        saveToStorage(updated)
+        return updated
+      })
+    },
+    [sanitizeSearch, saveToStorage]
+  )
 
   // Limpiar todas las búsquedas
   const clearSearches = useCallback((): void => {
-    setRecentSearches([]);
-    saveToStorage([]);
-  }, [saveToStorage]);
+    setRecentSearches([])
+    saveToStorage([])
+  }, [saveToStorage])
 
   // Verificar si una búsqueda existe
-  const hasSearch = useCallback((search: string): boolean => {
-    const sanitized = sanitizeSearch(search);
-    return recentSearches.some(s => sanitizeSearch(s) === sanitized);
-  }, [recentSearches, sanitizeSearch]);
+  const hasSearch = useCallback(
+    (search: string): boolean => {
+      const sanitized = sanitizeSearch(search)
+      return recentSearches.some(s => sanitizeSearch(s) === sanitized)
+    },
+    [recentSearches, sanitizeSearch]
+  )
 
   // Obtener las N búsquedas más recientes
-  const getRecentSearches = useCallback((limit?: number): string[] => {
-    const actualLimit = limit ?? config.maxSearches;
-    return recentSearches.slice(0, actualLimit);
-  }, [recentSearches, config.maxSearches]);
+  const getRecentSearches = useCallback(
+    (limit?: number): string[] => {
+      const actualLimit = limit ?? config.maxSearches
+      return recentSearches.slice(0, actualLimit)
+    },
+    [recentSearches, config.maxSearches]
+  )
 
   // Mover una búsqueda al principio (reordenar)
-  const moveToTop = useCallback((search: string): void => {
-    const sanitized = sanitizeSearch(search);
-    
-    setRecentSearches(prev => {
-      const filtered = prev.filter(s => sanitizeSearch(s) !== sanitized);
-      const existing = prev.find(s => sanitizeSearch(s) === sanitized);
-      
-      if (!existing) {return prev;}
-      
-      const updated = [existing, ...filtered];
-      saveToStorage(updated);
-      return updated;
-    });
-  }, [sanitizeSearch, saveToStorage]);
+  const moveToTop = useCallback(
+    (search: string): void => {
+      const sanitized = sanitizeSearch(search)
+
+      setRecentSearches(prev => {
+        const filtered = prev.filter(s => sanitizeSearch(s) !== sanitized)
+        const existing = prev.find(s => sanitizeSearch(s) === sanitized)
+
+        if (!existing) {
+          return prev
+        }
+
+        const updated = [existing, ...filtered]
+        saveToStorage(updated)
+        return updated
+      })
+    },
+    [sanitizeSearch, saveToStorage]
+  )
 
   return {
     recentSearches,
@@ -225,24 +252,15 @@ export function useRecentSearches(options: RecentSearchesOptions = {}): RecentSe
     hasSearch,
     getRecentSearches,
     moveToTop,
-  };
+  }
 }
 
 /**
  * Hook simplificado para solo obtener búsquedas recientes
  */
 export function useRecentSearchesSimple(limit: number = 5): string[] {
-  const { getRecentSearches } = useRecentSearches({ maxSearches: limit });
-  return getRecentSearches();
+  const { getRecentSearches } = useRecentSearches({ maxSearches: limit })
+  return getRecentSearches()
 }
 
-export default useRecentSearches;
-
-
-
-
-
-
-
-
-
+export default useRecentSearches

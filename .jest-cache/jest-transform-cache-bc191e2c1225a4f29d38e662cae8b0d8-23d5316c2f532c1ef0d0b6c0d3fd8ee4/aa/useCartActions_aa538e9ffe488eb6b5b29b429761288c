@@ -1,0 +1,27 @@
+5b3be0d51003e66df258f5ef279e4051
+// ===================================
+// HOOK DE ACCIONES DEL CARRITO
+// Hook simplificado para acciones del carrito
+// ===================================
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "useCartActions", {
+    enumerable: true,
+    get: function() {
+        return useCartActions;
+    }
+});
+const _useCart = require("./useCart");
+const useCartActions = ()=>{
+    const { addToCart, removeFromCart, updateQuantity, clearCart } = (0, _useCart.useCart)();
+    return {
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart
+    };
+};
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcaG9va3NcXHVzZUNhcnRBY3Rpb25zLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XHJcbi8vIEhPT0sgREUgQUNDSU9ORVMgREVMIENBUlJJVE9cclxuLy8gSG9vayBzaW1wbGlmaWNhZG8gcGFyYSBhY2Npb25lcyBkZWwgY2Fycml0b1xyXG4vLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxyXG5cclxuaW1wb3J0IHsgdXNlQ2FydCB9IGZyb20gJy4vdXNlQ2FydCc7XHJcblxyXG5leHBvcnQgY29uc3QgdXNlQ2FydEFjdGlvbnMgPSAoKSA9PiB7XHJcbiAgY29uc3QgeyBhZGRUb0NhcnQsIHJlbW92ZUZyb21DYXJ0LCB1cGRhdGVRdWFudGl0eSwgY2xlYXJDYXJ0IH0gPSB1c2VDYXJ0KCk7XHJcblxyXG4gIHJldHVybiB7XHJcbiAgICBhZGRUb0NhcnQsXHJcbiAgICByZW1vdmVGcm9tQ2FydCxcclxuICAgIHVwZGF0ZVF1YW50aXR5LFxyXG4gICAgY2xlYXJDYXJ0XHJcbiAgfTtcclxufTsiXSwibmFtZXMiOlsidXNlQ2FydEFjdGlvbnMiLCJhZGRUb0NhcnQiLCJyZW1vdmVGcm9tQ2FydCIsInVwZGF0ZVF1YW50aXR5IiwiY2xlYXJDYXJ0IiwidXNlQ2FydCJdLCJtYXBwaW5ncyI6IkFBQUEsc0NBQXNDO0FBQ3RDLCtCQUErQjtBQUMvQiw4Q0FBOEM7QUFDOUMsc0NBQXNDOzs7OzsrQkFJekJBOzs7ZUFBQUE7Ozt5QkFGVztBQUVqQixNQUFNQSxpQkFBaUI7SUFDNUIsTUFBTSxFQUFFQyxTQUFTLEVBQUVDLGNBQWMsRUFBRUMsY0FBYyxFQUFFQyxTQUFTLEVBQUUsR0FBR0MsSUFBQUEsZ0JBQU87SUFFeEUsT0FBTztRQUNMSjtRQUNBQztRQUNBQztRQUNBQztJQUNGO0FBQ0YifQ==

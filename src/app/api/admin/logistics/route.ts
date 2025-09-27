@@ -1,5 +1,5 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // =====================================================
 // API: LOGISTICS REDIRECT
@@ -7,45 +7,35 @@ export const runtime = 'nodejs';
 // Endpoint: GET /api/admin/logistics
 // =====================================================
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   // Redirigir a la API del dashboard
-  const url = new URL('/api/admin/logistics/dashboard', request.url);
-  
+  const url = new URL('/api/admin/logistics/dashboard', request.url)
+
   // Copiar query parameters si los hay
-  const searchParams = new URL(request.url).searchParams;
+  const searchParams = new URL(request.url).searchParams
   searchParams.forEach((value, key) => {
-    url.searchParams.set(key, value);
-  });
-  
+    url.searchParams.set(key, value)
+  })
+
   // Hacer la llamada interna
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Cookie': request.headers.get('cookie') || '',
-      'Authorization': request.headers.get('authorization') || '',
+      Cookie: request.headers.get('cookie') || '',
+      Authorization: request.headers.get('authorization') || '',
     },
-  });
-  
+  })
+
   if (!response.ok) {
     return NextResponse.json(
       { error: 'Error al obtener datos de logística' },
       { status: response.status }
-    );
+    )
   }
-  
-  const data = await response.json();
-  return NextResponse.json(data);
+
+  const data = await response.json()
+  return NextResponse.json(data)
 }
-
-
-
-
-
-
-
-
-
-

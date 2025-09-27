@@ -3,101 +3,104 @@
  * Ejecuta tests continuos de todos los sistemas enterprise
  */
 
-import { enterpriseAuditSystem } from '@/lib/security/enterprise-audit-system';
-import { enterpriseAlertSystem, EnterpriseAlertUtils } from '@/lib/monitoring/enterprise-alert-system';
-import { metricsCollector } from '@/lib/rate-limiting/enterprise-rate-limiter';
-import { enterpriseCacheSystem } from '@/lib/optimization/enterprise-cache-system';
-import type { EnterpriseAuthContext } from '@/lib/auth/enterprise-auth-utils';
+import { enterpriseAuditSystem } from '@/lib/security/enterprise-audit-system'
+import {
+  enterpriseAlertSystem,
+  EnterpriseAlertUtils,
+} from '@/lib/monitoring/enterprise-alert-system'
+import { metricsCollector } from '@/lib/rate-limiting/enterprise-rate-limiter'
+import { enterpriseCacheSystem } from '@/lib/optimization/enterprise-cache-system'
+import type { EnterpriseAuthContext } from '@/lib/auth/enterprise-auth-utils'
 
 // =====================================================
 // TIPOS E INTERFACES
 // =====================================================
 
-export type TestType = 'unit' | 'integration' | 'e2e' | 'security' | 'performance' | 'smoke';
-export type TestStatus = 'pending' | 'running' | 'passed' | 'failed' | 'skipped' | 'timeout';
-export type TestSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type TestType = 'unit' | 'integration' | 'e2e' | 'security' | 'performance' | 'smoke'
+export type TestStatus = 'pending' | 'running' | 'passed' | 'failed' | 'skipped' | 'timeout'
+export type TestSeverity = 'low' | 'medium' | 'high' | 'critical'
 
 export interface TestCase {
-  id: string;
-  name: string;
-  description: string;
-  type: TestType;
-  severity: TestSeverity;
-  enabled: boolean;
-  
+  id: string
+  name: string
+  description: string
+  type: TestType
+  severity: TestSeverity
+  enabled: boolean
+
   // Configuración de ejecución
-  timeout: number; // milisegundos
-  retries: number;
-  interval: number; // segundos para tests continuos
-  
+  timeout: number // milisegundos
+  retries: number
+  interval: number // segundos para tests continuos
+
   // Función de test
-  testFunction: () => Promise<TestResult>;
-  
+  testFunction: () => Promise<TestResult>
+
   // Configuración de alertas
-  alertOnFailure: boolean;
-  alertThreshold: number; // número de fallos consecutivos
-  
+  alertOnFailure: boolean
+  alertThreshold: number // número de fallos consecutivos
+
   // Metadatos
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
+  tags: string[]
+  createdAt: string
+  updatedAt: string
 }
 
 export interface TestResult {
-  testId: string;
-  status: TestStatus;
-  startTime: string;
-  endTime: string;
-  duration: number; // milisegundos
-  
+  testId: string
+  status: TestStatus
+  startTime: string
+  endTime: string
+  duration: number // milisegundos
+
   // Resultados
-  passed: boolean;
-  error?: string;
-  details?: any;
-  
+  passed: boolean
+  error?: string
+  details?: any
+
   // Métricas
-  assertions: number;
-  assertionsPassed: number;
-  assertionsFailed: number;
-  
+  assertions: number
+  assertionsPassed: number
+  assertionsFailed: number
+
   // Metadatos
-  environment: string;
-  version: string;
-  runId: string;
+  environment: string
+  version: string
+  runId: string
 }
 
 export interface TestSuite {
-  id: string;
-  name: string;
-  description: string;
-  tests: TestCase[];
-  enabled: boolean;
-  
+  id: string
+  name: string
+  description: string
+  tests: TestCase[]
+  enabled: boolean
+
   // Configuración de ejecución
-  parallel: boolean;
-  maxConcurrency: number;
-  
+  parallel: boolean
+  maxConcurrency: number
+
   // Configuración de programación
   schedule?: {
-    enabled: boolean;
-    cron: string;
-    timezone: string;
-  };
-  
+    enabled: boolean
+    cron: string
+    timezone: string
+  }
+
   // Metadatos
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string
+  updatedAt: string
 }
 
 export interface TestMetrics {
-  totalTests: number;
-  passedTests: number;
-  failedTests: number;
-  skippedTests: number;
-  successRate: number;
-  averageDuration: number;
-  totalDuration: number;
-  lastRun: string;
+  totalTests: number
+  passedTests: number
+  failedTests: number
+  skippedTests: number
+  successRate: number
+  averageDuration: number
+  totalDuration: number
+  lastRun: string
 }
 
 // =====================================================
@@ -117,23 +120,23 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
     retries: 2,
     interval: 300, // 5 minutos
     testFunction: async () => {
-      const startTime = new Date().toISOString();
-      const runId = `test_${Date.now()}`;
-      
+      const startTime = new Date().toISOString()
+      const runId = `test_${Date.now()}`
+
       try {
         // Simular requests para probar rate limiting
-        const metrics = metricsCollector.getMetrics();
-        
+        const metrics = metricsCollector.getMetrics()
+
         // Verificar que las métricas existen
         if (typeof metrics.totalRequests !== 'number') {
-          throw new Error('Rate limiting metrics not available');
+          throw new Error('Rate limiting metrics not available')
         }
-        
+
         // Verificar que el sistema está respondiendo
         if (metrics.averageResponseTime > 5000) {
-          throw new Error(`Response time too high: ${metrics.averageResponseTime}ms`);
+          throw new Error(`Response time too high: ${metrics.averageResponseTime}ms`)
         }
-        
+
         return {
           testId: 'security_rate_limiting_basic',
           status: 'passed' as TestStatus,
@@ -149,9 +152,9 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
           runId,
           details: {
             totalRequests: metrics.totalRequests,
-            averageResponseTime: metrics.averageResponseTime
-          }
-        };
+            averageResponseTime: metrics.averageResponseTime,
+          },
+        }
       } catch (error) {
         return {
           testId: 'security_rate_limiting_basic',
@@ -166,15 +169,15 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
           assertionsFailed: 2,
           environment: 'production',
           version: '1.0.0',
-          runId
-        };
+          runId,
+        }
       }
     },
     alertOnFailure: true,
     alertThreshold: 2,
     tags: ['security', 'rate-limiting', 'critical'],
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
 
   {
@@ -188,9 +191,9 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
     retries: 1,
     interval: 600, // 10 minutos
     testFunction: async () => {
-      const startTime = new Date().toISOString();
-      const runId = `test_${Date.now()}`;
-      
+      const startTime = new Date().toISOString()
+      const runId = `test_${Date.now()}`
+
       try {
         // Crear evento de prueba
         const testContext: EnterpriseAuthContext = {
@@ -208,23 +211,26 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
             jwtValid: true,
             csrfValid: true,
             rateLimitPassed: true,
-            originValid: true
-          }
-        };
+            originValid: true,
+          },
+        }
 
-        const correlationId = await enterpriseAuditSystem.logEnterpriseEvent({
-          user_id: 'test_user',
-          event_type: 'TEST_EVENT' as any,
-          event_category: 'automated_testing',
-          severity: 'low' as any,
-          description: 'Automated test event',
-          metadata: { test: true, runId },
-          ip_address: '127.0.0.1',
-          user_agent: 'AutomatedTest/1.0'
-        }, testContext);
+        const correlationId = await enterpriseAuditSystem.logEnterpriseEvent(
+          {
+            user_id: 'test_user',
+            event_type: 'TEST_EVENT' as any,
+            event_category: 'automated_testing',
+            severity: 'low' as any,
+            description: 'Automated test event',
+            metadata: { test: true, runId },
+            ip_address: '127.0.0.1',
+            user_agent: 'AutomatedTest/1.0',
+          },
+          testContext
+        )
 
         if (!correlationId || !correlationId.startsWith('corr_')) {
-          throw new Error('Audit system did not return valid correlation ID');
+          throw new Error('Audit system did not return valid correlation ID')
         }
 
         return {
@@ -241,9 +247,9 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
           version: '1.0.0',
           runId,
           details: {
-            correlationId
-          }
-        };
+            correlationId,
+          },
+        }
       } catch (error) {
         return {
           testId: 'security_audit_logging',
@@ -258,15 +264,15 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
           assertionsFailed: 1,
           environment: 'production',
           version: '1.0.0',
-          runId
-        };
+          runId,
+        }
       }
     },
     alertOnFailure: true,
     alertThreshold: 1,
     tags: ['security', 'audit', 'logging'],
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
 
   // Tests de performance
@@ -281,13 +287,13 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
     retries: 1,
     interval: 300, // 5 minutos
     testFunction: async () => {
-      const startTime = new Date().toISOString();
-      const runId = `test_${Date.now()}`;
-      
+      const startTime = new Date().toISOString()
+      const runId = `test_${Date.now()}`
+
       try {
-        const cacheMetrics = enterpriseCacheSystem.getMetrics();
-        const cacheKeys = Object.keys(cacheMetrics);
-        
+        const cacheMetrics = enterpriseCacheSystem.getMetrics()
+        const cacheKeys = Object.keys(cacheMetrics)
+
         if (cacheKeys.length === 0) {
           // Si no hay métricas de cache, el test pasa pero con advertencia
           return {
@@ -305,20 +311,20 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
             runId,
             details: {
               warning: 'No cache metrics available',
-              cacheKeysCount: 0
-            }
-          };
+              cacheKeysCount: 0,
+            },
+          }
         }
 
         // Calcular hit rate promedio
-        const totalHits = cacheKeys.reduce((sum, key) => sum + cacheMetrics[key].hits, 0);
-        const totalMisses = cacheKeys.reduce((sum, key) => sum + cacheMetrics[key].misses, 0);
-        const totalRequests = totalHits + totalMisses;
-        const hitRate = totalRequests > 0 ? totalHits / totalRequests : 0;
+        const totalHits = cacheKeys.reduce((sum, key) => sum + cacheMetrics[key].hits, 0)
+        const totalMisses = cacheKeys.reduce((sum, key) => sum + cacheMetrics[key].misses, 0)
+        const totalRequests = totalHits + totalMisses
+        const hitRate = totalRequests > 0 ? totalHits / totalRequests : 0
 
         // Verificar que el hit rate sea aceptable (> 70%)
         if (hitRate < 0.7) {
-          throw new Error(`Cache hit rate too low: ${(hitRate * 100).toFixed(2)}% (expected > 70%)`);
+          throw new Error(`Cache hit rate too low: ${(hitRate * 100).toFixed(2)}% (expected > 70%)`)
         }
 
         return {
@@ -339,9 +345,9 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
             hitRatePercent: (hitRate * 100).toFixed(2),
             totalHits,
             totalMisses,
-            cacheKeysCount: cacheKeys.length
-          }
-        };
+            cacheKeysCount: cacheKeys.length,
+          },
+        }
       } catch (error) {
         return {
           testId: 'performance_cache_hit_rate',
@@ -356,15 +362,15 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
           assertionsFailed: 1,
           environment: 'production',
           version: '1.0.0',
-          runId
-        };
+          runId,
+        }
       }
     },
     alertOnFailure: true,
     alertThreshold: 3,
     tags: ['performance', 'cache', 'optimization'],
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
 
   // Tests de integración
@@ -379,14 +385,14 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
     retries: 1,
     interval: 900, // 15 minutos
     testFunction: async () => {
-      const startTime = new Date().toISOString();
-      const runId = `test_${Date.now()}`;
-      
+      const startTime = new Date().toISOString()
+      const runId = `test_${Date.now()}`
+
       try {
         // Verificar que el sistema de alertas esté inicializado
-        const activeAlerts = enterpriseAlertSystem.getActiveAlerts();
-        const alertMetrics = enterpriseAlertSystem.getAlertMetrics();
-        
+        const activeAlerts = enterpriseAlertSystem.getActiveAlerts()
+        const alertMetrics = enterpriseAlertSystem.getAlertMetrics()
+
         // Crear una alerta de prueba
         const testAlertId = await EnterpriseAlertUtils.createManualAlert(
           'Test Alert',
@@ -394,21 +400,22 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
           'low',
           'availability',
           'automated_test'
-        );
+        )
 
         // Verificar que la alerta se creó
-        const createdAlert = enterpriseAlertSystem.getActiveAlerts()
-          .find(alert => alert.id === testAlertId);
+        const createdAlert = enterpriseAlertSystem
+          .getActiveAlerts()
+          .find(alert => alert.id === testAlertId)
 
         if (!createdAlert) {
-          throw new Error('Test alert was not created successfully');
+          throw new Error('Test alert was not created successfully')
         }
 
         // Resolver la alerta de prueba
-        const resolved = await enterpriseAlertSystem.resolveAlert(testAlertId, 'automated_test');
-        
+        const resolved = await enterpriseAlertSystem.resolveAlert(testAlertId, 'automated_test')
+
         if (!resolved) {
-          throw new Error('Test alert could not be resolved');
+          throw new Error('Test alert could not be resolved')
         }
 
         return {
@@ -427,9 +434,9 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
           details: {
             testAlertId,
             activeAlertsCount: activeAlerts.length,
-            totalAlerts: alertMetrics.totalAlerts
-          }
-        };
+            totalAlerts: alertMetrics.totalAlerts,
+          },
+        }
       } catch (error) {
         return {
           testId: 'integration_alert_system',
@@ -444,59 +451,61 @@ export const ENTERPRISE_TEST_CASES: TestCase[] = [
           assertionsFailed: 3,
           environment: 'production',
           version: '1.0.0',
-          runId
-        };
+          runId,
+        }
       }
     },
     alertOnFailure: true,
     alertThreshold: 1,
     tags: ['integration', 'alerts', 'monitoring'],
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+    updatedAt: new Date().toISOString(),
+  },
+]
 
 // =====================================================
 // SISTEMA ENTERPRISE DE TESTING AUTOMATIZADO
 // =====================================================
 
 export class EnterpriseAutomatedTesting {
-  private static instance: EnterpriseAutomatedTesting;
-  private testCases: Map<string, TestCase> = new Map();
-  private testResults: Map<string, TestResult[]> = new Map();
-  private runningTests: Set<string> = new Set();
-  private testTimers: Map<string, NodeJS.Timeout> = new Map();
-  private isInitialized = false;
+  private static instance: EnterpriseAutomatedTesting
+  private testCases: Map<string, TestCase> = new Map()
+  private testResults: Map<string, TestResult[]> = new Map()
+  private runningTests: Set<string> = new Set()
+  private testTimers: Map<string, NodeJS.Timeout> = new Map()
+  private isInitialized = false
 
   private constructor() {}
 
   public static getInstance(): EnterpriseAutomatedTesting {
     if (!EnterpriseAutomatedTesting.instance) {
-      EnterpriseAutomatedTesting.instance = new EnterpriseAutomatedTesting();
+      EnterpriseAutomatedTesting.instance = new EnterpriseAutomatedTesting()
     }
-    return EnterpriseAutomatedTesting.instance;
+    return EnterpriseAutomatedTesting.instance
   }
 
   /**
    * Inicializa el sistema de testing automatizado
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) {return;}
+    if (this.isInitialized) {
+      return
+    }
 
     try {
       // Cargar tests predefinidos
       ENTERPRISE_TEST_CASES.forEach(testCase => {
-        this.testCases.set(testCase.id, testCase);
-      });
+        this.testCases.set(testCase.id, testCase)
+      })
 
       // Iniciar ejecución programada de tests
-      this.startScheduledTests();
+      this.startScheduledTests()
 
-      this.isInitialized = true;
-      console.log('[ENTERPRISE_TESTING] Sistema inicializado con', this.testCases.size, 'tests');
+      this.isInitialized = true
+      console.log('[ENTERPRISE_TESTING] Sistema inicializado con', this.testCases.size, 'tests')
     } catch (error) {
-      console.error('[ENTERPRISE_TESTING] Error inicializando sistema:', error);
-      throw error;
+      console.error('[ENTERPRISE_TESTING] Error inicializando sistema:', error)
+      throw error
     }
   }
 
@@ -504,9 +513,9 @@ export class EnterpriseAutomatedTesting {
    * Ejecuta un test específico
    */
   async runTest(testId: string): Promise<TestResult> {
-    const testCase = this.testCases.get(testId);
+    const testCase = this.testCases.get(testId)
     if (!testCase) {
-      throw new Error(`Test case not found: ${testId}`);
+      throw new Error(`Test case not found: ${testId}`)
     }
 
     if (!testCase.enabled) {
@@ -522,37 +531,37 @@ export class EnterpriseAutomatedTesting {
         assertionsFailed: 0,
         environment: 'production',
         version: '1.0.0',
-        runId: `skip_${Date.now()}`
-      };
+        runId: `skip_${Date.now()}`,
+      }
     }
 
     if (this.runningTests.has(testId)) {
-      throw new Error(`Test is already running: ${testId}`);
+      throw new Error(`Test is already running: ${testId}`)
     }
 
-    this.runningTests.add(testId);
+    this.runningTests.add(testId)
 
     try {
       // Ejecutar test con timeout
       const result = await Promise.race([
         testCase.testFunction(),
-        new Promise<TestResult>((_, reject) => 
+        new Promise<TestResult>((_, reject) =>
           setTimeout(() => reject(new Error('Test timeout')), testCase.timeout)
-        )
-      ]);
+        ),
+      ])
 
       // Guardar resultado
       if (!this.testResults.has(testId)) {
-        this.testResults.set(testId, []);
+        this.testResults.set(testId, [])
       }
-      this.testResults.get(testId)!.push(result);
+      this.testResults.get(testId)!.push(result)
 
       // Verificar si necesita alerta
       if (!result.passed && testCase.alertOnFailure) {
-        await this.checkAlertThreshold(testCase, result);
+        await this.checkAlertThreshold(testCase, result)
       }
 
-      return result;
+      return result
     } catch (error) {
       const failedResult: TestResult = {
         testId,
@@ -567,23 +576,23 @@ export class EnterpriseAutomatedTesting {
         assertionsFailed: 1,
         environment: 'production',
         version: '1.0.0',
-        runId: `error_${Date.now()}`
-      };
+        runId: `error_${Date.now()}`,
+      }
 
       // Guardar resultado fallido
       if (!this.testResults.has(testId)) {
-        this.testResults.set(testId, []);
+        this.testResults.set(testId, [])
       }
-      this.testResults.get(testId)!.push(failedResult);
+      this.testResults.get(testId)!.push(failedResult)
 
       // Verificar si necesita alerta
       if (testCase.alertOnFailure) {
-        await this.checkAlertThreshold(testCase, failedResult);
+        await this.checkAlertThreshold(testCase, failedResult)
       }
 
-      return failedResult;
+      return failedResult
     } finally {
-      this.runningTests.delete(testId);
+      this.runningTests.delete(testId)
     }
   }
 
@@ -591,27 +600,27 @@ export class EnterpriseAutomatedTesting {
    * Ejecuta todos los tests habilitados
    */
   async runAllTests(): Promise<TestResult[]> {
-    const enabledTests = Array.from(this.testCases.values()).filter(test => test.enabled);
-    const results: TestResult[] = [];
+    const enabledTests = Array.from(this.testCases.values()).filter(test => test.enabled)
+    const results: TestResult[] = []
 
     for (const testCase of enabledTests) {
       try {
-        const result = await this.runTest(testCase.id);
-        results.push(result);
+        const result = await this.runTest(testCase.id)
+        results.push(result)
       } catch (error) {
-        console.error(`[ENTERPRISE_TESTING] Error running test ${testCase.id}:`, error);
+        console.error(`[ENTERPRISE_TESTING] Error running test ${testCase.id}:`, error)
       }
     }
 
-    return results;
+    return results
   }
 
   /**
    * Obtiene métricas de testing
    */
   getTestMetrics(): TestMetrics {
-    const allResults = Array.from(this.testResults.values()).flat();
-    
+    const allResults = Array.from(this.testResults.values()).flat()
+
     if (allResults.length === 0) {
       return {
         totalTests: 0,
@@ -621,18 +630,20 @@ export class EnterpriseAutomatedTesting {
         successRate: 0,
         averageDuration: 0,
         totalDuration: 0,
-        lastRun: new Date().toISOString()
-      };
+        lastRun: new Date().toISOString(),
+      }
     }
 
-    const passedTests = allResults.filter(r => r.passed).length;
-    const failedTests = allResults.filter(r => !r.passed && r.status !== 'skipped').length;
-    const skippedTests = allResults.filter(r => r.status === 'skipped').length;
-    const totalDuration = allResults.reduce((sum, r) => sum + r.duration, 0);
-    const averageDuration = totalDuration / allResults.length;
-    const successRate = allResults.length > 0 ? passedTests / allResults.length : 0;
-    const lastRun = allResults.reduce((latest, r) => 
-      r.endTime > latest ? r.endTime : latest, allResults[0].endTime);
+    const passedTests = allResults.filter(r => r.passed).length
+    const failedTests = allResults.filter(r => !r.passed && r.status !== 'skipped').length
+    const skippedTests = allResults.filter(r => r.status === 'skipped').length
+    const totalDuration = allResults.reduce((sum, r) => sum + r.duration, 0)
+    const averageDuration = totalDuration / allResults.length
+    const successRate = allResults.length > 0 ? passedTests / allResults.length : 0
+    const lastRun = allResults.reduce(
+      (latest, r) => (r.endTime > latest ? r.endTime : latest),
+      allResults[0].endTime
+    )
 
     return {
       totalTests: allResults.length,
@@ -642,23 +653,23 @@ export class EnterpriseAutomatedTesting {
       successRate,
       averageDuration,
       totalDuration,
-      lastRun
-    };
+      lastRun,
+    }
   }
 
   /**
    * Obtiene resultados de un test específico
    */
   getTestResults(testId: string, limit: number = 10): TestResult[] {
-    const results = this.testResults.get(testId) || [];
-    return results.slice(-limit).reverse(); // Últimos N resultados, más reciente primero
+    const results = this.testResults.get(testId) || []
+    return results.slice(-limit).reverse() // Últimos N resultados, más reciente primero
   }
 
   /**
    * Obtiene todos los tests
    */
   getAllTests(): TestCase[] {
-    return Array.from(this.testCases.values());
+    return Array.from(this.testCases.values())
   }
 
   // =====================================================
@@ -666,8 +677,8 @@ export class EnterpriseAutomatedTesting {
   // =====================================================
 
   private startScheduledTests(): void {
-    console.log('[ENTERPRISE_TESTING] 🚫 TESTS PROGRAMADOS TEMPORALMENTE DESHABILITADOS');
-    console.log('[ENTERPRISE_TESTING] 📋 Razón: Evitar llamadas recursivas a APIs de auth');
+    console.log('[ENTERPRISE_TESTING] 🚫 TESTS PROGRAMADOS TEMPORALMENTE DESHABILITADOS')
+    console.log('[ENTERPRISE_TESTING] 📋 Razón: Evitar llamadas recursivas a APIs de auth')
 
     // CÓDIGO COMENTADO TEMPORALMENTE PARA EVITAR RECURSIÓN
     // for (const [testId, testCase] of this.testCases.entries()) {
@@ -686,19 +697,22 @@ export class EnterpriseAutomatedTesting {
   }
 
   private async checkAlertThreshold(testCase: TestCase, result: TestResult): Promise<void> {
-    const recentResults = this.getTestResults(testCase.id, testCase.alertThreshold);
-    const recentFailures = recentResults.filter(r => !r.passed).length;
+    const recentResults = this.getTestResults(testCase.id, testCase.alertThreshold)
+    const recentFailures = recentResults.filter(r => !r.passed).length
 
     if (recentFailures >= testCase.alertThreshold) {
       // Crear alerta
       await EnterpriseAlertUtils.createManualAlert(
         `Test Failure: ${testCase.name}`,
         `Test ${testCase.name} has failed ${recentFailures} times consecutively. Last error: ${result.error}`,
-        testCase.severity === 'critical' ? 'critical' : 
-        testCase.severity === 'high' ? 'high' : 'medium',
+        testCase.severity === 'critical'
+          ? 'critical'
+          : testCase.severity === 'high'
+            ? 'high'
+            : 'medium',
         'availability',
         'automated_testing'
-      );
+      )
     }
   }
 }
@@ -707,13 +721,4 @@ export class EnterpriseAutomatedTesting {
 // INSTANCIA SINGLETON
 // =====================================================
 
-export const enterpriseAutomatedTesting = EnterpriseAutomatedTesting.getInstance();
-
-
-
-
-
-
-
-
-
+export const enterpriseAutomatedTesting = EnterpriseAutomatedTesting.getInstance()

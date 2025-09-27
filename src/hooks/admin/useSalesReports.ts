@@ -46,7 +46,7 @@ export function useSalesReports(): UseSalesReportsReturn {
   const [error, setError] = useState<string | null>(null)
   const [filters, setFiltersState] = useState<SalesFilters>({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0]
+    endDate: new Date().toISOString().split('T')[0],
   })
 
   const fetchSalesData = useCallback(async () => {
@@ -58,11 +58,11 @@ export function useSalesReports(): UseSalesReportsReturn {
         startDate: filters.startDate,
         endDate: filters.endDate,
         ...(filters.category && { category: filters.category }),
-        ...(filters.status && { status: filters.status })
+        ...(filters.status && { status: filters.status }),
       })
 
       const response = await fetch(`/api/admin/sales/reports?${queryParams}`)
-      
+
       if (!response.ok) {
         throw new Error('Error al obtener datos de ventas')
       }
@@ -75,7 +75,7 @@ export function useSalesReports(): UseSalesReportsReturn {
       toast({
         title: 'Error',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
       })
     } finally {
       setIsLoading(false)
@@ -90,81 +90,87 @@ export function useSalesReports(): UseSalesReportsReturn {
     await fetchSalesData()
   }, [fetchSalesData])
 
-  const exportReport = useCallback(async (format: 'csv' | 'pdf' | 'excel') => {
-    try {
-      setIsLoading(true)
-      
-      const queryParams = new URLSearchParams({
-        ...filters,
-        format
-      })
+  const exportReport = useCallback(
+    async (format: 'csv' | 'pdf' | 'excel') => {
+      try {
+        setIsLoading(true)
 
-      const response = await fetch(`/api/admin/sales/export?${queryParams}`)
-      
-      if (!response.ok) {
-        throw new Error('Error al exportar reporte')
+        const queryParams = new URLSearchParams({
+          ...filters,
+          format,
+        })
+
+        const response = await fetch(`/api/admin/sales/export?${queryParams}`)
+
+        if (!response.ok) {
+          throw new Error('Error al exportar reporte')
+        }
+
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `sales-report-${filters.startDate}-${filters.endDate}.${format}`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+
+        toast({
+          title: 'Éxito',
+          description: 'Reporte exportado correctamente',
+        })
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error al exportar'
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        })
+      } finally {
+        setIsLoading(false)
       }
+    },
+    [filters]
+  )
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `sales-report-${filters.startDate}-${filters.endDate}.${format}`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+  const generateCustomReport = useCallback(
+    async (config: any) => {
+      try {
+        setIsLoading(true)
 
-      toast({
-        title: 'Éxito',
-        description: 'Reporte exportado correctamente'
-      })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al exportar'
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [filters])
+        const response = await fetch('/api/admin/sales/custom-report', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ...config, filters }),
+        })
 
-  const generateCustomReport = useCallback(async (config: any) => {
-    try {
-      setIsLoading(true)
-      
-      const response = await fetch('/api/admin/sales/custom-report', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ...config, filters })
-      })
-      
-      if (!response.ok) {
-        throw new Error('Error al generar reporte personalizado')
+        if (!response.ok) {
+          throw new Error('Error al generar reporte personalizado')
+        }
+
+        const data = await response.json()
+        setSalesData(data)
+
+        toast({
+          title: 'Éxito',
+          description: 'Reporte personalizado generado correctamente',
+        })
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error al generar reporte'
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        })
+      } finally {
+        setIsLoading(false)
       }
-
-      const data = await response.json()
-      setSalesData(data)
-
-      toast({
-        title: 'Éxito',
-        description: 'Reporte personalizado generado correctamente'
-      })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al generar reporte'
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [filters])
+    },
+    [filters]
+  )
 
   useEffect(() => {
     fetchSalesData()
@@ -178,15 +184,6 @@ export function useSalesReports(): UseSalesReportsReturn {
     setFilters,
     refreshData,
     exportReport,
-    generateCustomReport
+    generateCustomReport,
   }
 }
-
-
-
-
-
-
-
-
-

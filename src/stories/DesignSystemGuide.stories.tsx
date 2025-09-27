@@ -226,25 +226,25 @@ type Story = StoryObj<typeof meta>
 // Guía visual de colores
 export const ColorPalette: Story = {
   render: () => (
-    <div className="p-6 space-y-8">
+    <div className='p-6 space-y-8'>
       <div>
-        <h2 className="text-2xl font-bold mb-4">Paleta de Colores</h2>
-        
+        <h2 className='text-2xl font-bold mb-4'>Paleta de Colores</h2>
+
         {/* Primary Colors */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">Colores Primarios</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className='mb-6'>
+          <h3 className='text-lg font-semibold mb-3'>Colores Primarios</h3>
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
             {[
               { name: 'Primary', value: '#fc9d04', class: 'bg-primary' },
               { name: 'Primary Hover', value: '#ef7d00', class: 'bg-primary-hover' },
               { name: 'Primary Active', value: '#b95004', class: 'bg-primary-active' },
               { name: 'Primary Light', value: '#ffd448', class: 'bg-primary/20' },
-            ].map((color) => (
+            ].map(color => (
               <Card key={color.name}>
                 <div className={`h-20 ${color.class} rounded-t-lg`}></div>
-                <CardContent className="p-3">
-                  <p className="font-medium text-sm">{color.name}</p>
-                  <p className="text-xs text-gray-600">{color.value}</p>
+                <CardContent className='p-3'>
+                  <p className='font-medium text-sm'>{color.name}</p>
+                  <p className='text-xs text-gray-600'>{color.value}</p>
                 </CardContent>
               </Card>
             ))}
@@ -252,20 +252,20 @@ export const ColorPalette: Story = {
         </div>
 
         {/* Semantic Colors */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">Colores Semánticos</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className='mb-6'>
+          <h3 className='text-lg font-semibold mb-3'>Colores Semánticos</h3>
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
             {[
               { name: 'Success', value: '#22ad5c', class: 'bg-green-600' },
               { name: 'Error', value: '#f23030', class: 'bg-red-600' },
               { name: 'Warning', value: '#fbbf24', class: 'bg-yellow-500' },
               { name: 'Info', value: '#3b82f6', class: 'bg-blue-600' },
-            ].map((color) => (
+            ].map(color => (
               <Card key={color.name}>
                 <div className={`h-20 ${color.class} rounded-t-lg`}></div>
-                <CardContent className="p-3">
-                  <p className="font-medium text-sm">{color.name}</p>
-                  <p className="text-xs text-gray-600">{color.value}</p>
+                <CardContent className='p-3'>
+                  <p className='font-medium text-sm'>{color.name}</p>
+                  <p className='text-xs text-gray-600'>{color.value}</p>
                 </CardContent>
               </Card>
             ))}
@@ -279,43 +279,43 @@ export const ColorPalette: Story = {
 // Guía de tipografía
 export const Typography: Story = {
   render: () => (
-    <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-bold mb-4">Tipografía</h2>
-      
-      <div className="space-y-4">
+    <div className='p-6 space-y-6'>
+      <h2 className='text-2xl font-bold mb-4'>Tipografía</h2>
+
+      <div className='space-y-4'>
         <div>
-          <h1 className="text-heading-1 font-bold">Heading 1 - 60px</h1>
-          <code className="text-sm text-gray-600">text-heading-1 font-bold</code>
+          <h1 className='text-heading-1 font-bold'>Heading 1 - 60px</h1>
+          <code className='text-sm text-gray-600'>text-heading-1 font-bold</code>
         </div>
-        
+
         <div>
-          <h2 className="text-heading-2 font-bold">Heading 2 - 48px</h2>
-          <code className="text-sm text-gray-600">text-heading-2 font-bold</code>
+          <h2 className='text-heading-2 font-bold'>Heading 2 - 48px</h2>
+          <code className='text-sm text-gray-600'>text-heading-2 font-bold</code>
         </div>
-        
+
         <div>
-          <h3 className="text-heading-3 font-semibold">Heading 3 - 40px</h3>
-          <code className="text-sm text-gray-600">text-heading-3 font-semibold</code>
+          <h3 className='text-heading-3 font-semibold'>Heading 3 - 40px</h3>
+          <code className='text-sm text-gray-600'>text-heading-3 font-semibold</code>
         </div>
-        
+
         <div>
-          <p className="text-lg">Large text - 18px</p>
-          <code className="text-sm text-gray-600">text-lg</code>
+          <p className='text-lg'>Large text - 18px</p>
+          <code className='text-sm text-gray-600'>text-lg</code>
         </div>
-        
+
         <div>
-          <p className="text-base">Base text - 16px</p>
-          <code className="text-sm text-gray-600">text-base</code>
+          <p className='text-base'>Base text - 16px</p>
+          <code className='text-sm text-gray-600'>text-base</code>
         </div>
-        
+
         <div>
-          <p className="text-sm">Small text - 14px</p>
-          <code className="text-sm text-gray-600">text-sm</code>
+          <p className='text-sm'>Small text - 14px</p>
+          <code className='text-sm text-gray-600'>text-sm</code>
         </div>
-        
+
         <div>
-          <p className="text-xs">Extra small text - 12px</p>
-          <code className="text-sm text-gray-600">text-xs</code>
+          <p className='text-xs'>Extra small text - 12px</p>
+          <code className='text-sm text-gray-600'>text-xs</code>
         </div>
       </div>
     </div>
@@ -325,10 +325,10 @@ export const Typography: Story = {
 // Guía de espaciado
 export const Spacing: Story = {
   render: () => (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Sistema de Espaciado</h2>
-      
-      <div className="space-y-4">
+    <div className='p-6'>
+      <h2 className='text-2xl font-bold mb-4'>Sistema de Espaciado</h2>
+
+      <div className='space-y-4'>
         {[
           { name: 'space-1', value: '4px', class: 'w-1 h-4' },
           { name: 'space-2', value: '8px', class: 'w-2 h-4' },
@@ -338,12 +338,12 @@ export const Spacing: Story = {
           { name: 'space-8', value: '32px', class: 'w-8 h-4' },
           { name: 'space-12', value: '48px', class: 'w-12 h-4' },
           { name: 'space-16', value: '64px', class: 'w-16 h-4' },
-        ].map((space) => (
-          <div key={space.name} className="flex items-center gap-4">
+        ].map(space => (
+          <div key={space.name} className='flex items-center gap-4'>
             <div className={`${space.class} bg-primary`}></div>
             <div>
-              <span className="font-medium">{space.name}</span>
-              <span className="text-gray-600 ml-2">({space.value})</span>
+              <span className='font-medium'>{space.name}</span>
+              <span className='text-gray-600 ml-2'>({space.value})</span>
             </div>
           </div>
         ))}
@@ -355,55 +355,55 @@ export const Spacing: Story = {
 // Guía de componentes
 export const ComponentShowcase: Story = {
   render: () => (
-    <div className="p-6 space-y-8">
-      <h2 className="text-2xl font-bold mb-4">Showcase de Componentes</h2>
-      
+    <div className='p-6 space-y-8'>
+      <h2 className='text-2xl font-bold mb-4'>Showcase de Componentes</h2>
+
       {/* Buttons */}
       <div>
-        <h3 className="text-lg font-semibold mb-3">Botones</h3>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="primary">Primary</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="outline">Outline</Button>
-          <Button variant="ghost">Ghost</Button>
-          <Button variant="destructive">Destructive</Button>
+        <h3 className='text-lg font-semibold mb-3'>Botones</h3>
+        <div className='flex flex-wrap gap-3'>
+          <Button variant='primary'>Primary</Button>
+          <Button variant='secondary'>Secondary</Button>
+          <Button variant='outline'>Outline</Button>
+          <Button variant='ghost'>Ghost</Button>
+          <Button variant='destructive'>Destructive</Button>
         </div>
       </div>
 
       {/* Badges */}
       <div>
-        <h3 className="text-lg font-semibold mb-3">Badges</h3>
-        <div className="flex flex-wrap gap-3">
-          <Badge variant="default">Default</Badge>
-          <Badge variant="secondary">Secondary</Badge>
-          <Badge variant="success">Success</Badge>
-          <Badge variant="destructive">Error</Badge>
-          <Badge variant="warning">Warning</Badge>
+        <h3 className='text-lg font-semibold mb-3'>Badges</h3>
+        <div className='flex flex-wrap gap-3'>
+          <Badge variant='default'>Default</Badge>
+          <Badge variant='secondary'>Secondary</Badge>
+          <Badge variant='success'>Success</Badge>
+          <Badge variant='destructive'>Error</Badge>
+          <Badge variant='warning'>Warning</Badge>
         </div>
       </div>
 
       {/* Cards */}
       <div>
-        <h3 className="text-lg font-semibold mb-3">Cards</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card variant="default">
-            <CardContent className="p-4">
-              <h4 className="font-semibold mb-2">Default Card</h4>
-              <p className="text-sm text-gray-600">Contenido de la card por defecto</p>
+        <h3 className='text-lg font-semibold mb-3'>Cards</h3>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <Card variant='default'>
+            <CardContent className='p-4'>
+              <h4 className='font-semibold mb-2'>Default Card</h4>
+              <p className='text-sm text-gray-600'>Contenido de la card por defecto</p>
             </CardContent>
           </Card>
-          
-          <Card variant="elevated">
-            <CardContent className="p-4">
-              <h4 className="font-semibold mb-2">Elevated Card</h4>
-              <p className="text-sm text-gray-600">Card con sombra elevada</p>
+
+          <Card variant='elevated'>
+            <CardContent className='p-4'>
+              <h4 className='font-semibold mb-2'>Elevated Card</h4>
+              <p className='text-sm text-gray-600'>Card con sombra elevada</p>
             </CardContent>
           </Card>
-          
-          <Card variant="outlined">
-            <CardContent className="p-4">
-              <h4 className="font-semibold mb-2">Outlined Card</h4>
-              <p className="text-sm text-gray-600">Card con borde definido</p>
+
+          <Card variant='outlined'>
+            <CardContent className='p-4'>
+              <h4 className='font-semibold mb-2'>Outlined Card</h4>
+              <p className='text-sm text-gray-600'>Card con borde definido</p>
             </CardContent>
           </Card>
         </div>
@@ -411,12 +411,3 @@ export const ComponentShowcase: Story = {
     </div>
   ),
 }
-
-
-
-
-
-
-
-
-

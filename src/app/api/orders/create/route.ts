@@ -1,8 +1,8 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 // Schema de validación para crear una orden
 const createOrderSchema = z.object({
@@ -21,13 +21,15 @@ const createOrderSchema = z.object({
     country: z.string().default('Argentina'),
     observations: z.string().optional(),
   }),
-  items: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    price: z.number(),
-    quantity: z.number(),
-    image: z.string().optional(),
-  })),
+  items: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      price: z.number(),
+      quantity: z.number(),
+      image: z.string().optional(),
+    })
+  ),
   paymentMethod: z.enum(['mercadopago', 'bank', 'cash']),
   shippingMethod: z.enum(['free', 'express', 'pickup']),
   totals: z.object({
@@ -37,18 +39,18 @@ const createOrderSchema = z.object({
     total: z.number(),
   }),
   orderNotes: z.string().optional(),
-});
+})
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    
+    const body = await request.json()
+
     // Validar datos de entrada
-    const validatedData = createOrderSchema.parse(body);
-    
+    const validatedData = createOrderSchema.parse(body)
+
     // Generar ID único para la orden
-    const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+    const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
     // Crear objeto de orden
     const order = {
       id: orderId,
@@ -58,8 +60,8 @@ export async function POST(request: NextRequest) {
       ...validatedData,
       trackingNumber: null,
       estimatedDelivery: calculateEstimatedDelivery(validatedData.shippingMethod),
-    };
-    
+    }
+
     // En un entorno real, aquí guardarías en la base de datos
     // Por ahora, simularemos el guardado
     console.log('📦 Nueva orden creada:', {
@@ -67,27 +69,27 @@ export async function POST(request: NextRequest) {
       customer: `${order.customerInfo.firstName} ${order.customerInfo.lastName}`,
       total: order.totals.total,
       items: order.items.length,
-      observations: order.shippingAddress.observations || 'Sin observaciones'
-    });
-    
+      observations: order.shippingAddress.observations || 'Sin observaciones',
+    })
+
     // Simular procesamiento de pago según el método
-    let paymentStatus = 'pending';
-    let paymentUrl = null;
-    
+    let paymentStatus = 'pending'
+    let paymentUrl = null
+
     switch (validatedData.paymentMethod) {
       case 'mercadopago':
         // En un entorno real, aquí crearías la preferencia de MercadoPago
-        paymentUrl = `https://mercadopago.com/checkout/${orderId}`;
-        paymentStatus = 'pending';
-        break;
+        paymentUrl = `https://mercadopago.com/checkout/${orderId}`
+        paymentStatus = 'pending'
+        break
       case 'bank':
-        paymentStatus = 'awaiting_transfer';
-        break;
+        paymentStatus = 'awaiting_transfer'
+        break
       case 'cash':
-        paymentStatus = 'cash_on_delivery';
-        break;
+        paymentStatus = 'cash_on_delivery'
+        break
     }
-    
+
     const response = {
       success: true,
       data: {
@@ -95,50 +97,55 @@ export async function POST(request: NextRequest) {
           ...order,
           paymentStatus,
           paymentUrl,
-        }
+        },
       },
-      message: 'Orden creada exitosamente'
-    };
-    
-    return NextResponse.json(response, { status: 201 });
-    
-  } catch (error) {
-    console.error('❌ Error creando orden:', error);
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        error: 'Datos de entrada inválidos',
-        details: error.errors
-      }, { status: 400 });
+      message: 'Orden creada exitosamente',
     }
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Error interno del servidor'
-    }, { status: 500 });
+
+    return NextResponse.json(response, { status: 201 })
+  } catch (error) {
+    console.error('❌ Error creando orden:', error)
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Datos de entrada inválidos',
+          details: error.errors,
+        },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Error interno del servidor',
+      },
+      { status: 500 }
+    )
   }
 }
 
 // Función auxiliar para calcular fecha estimada de entrega
 function calculateEstimatedDelivery(shippingMethod: string): string {
-  const now = new Date();
-  let daysToAdd = 7; // Por defecto 7 días
-  
+  const now = new Date()
+  let daysToAdd = 7 // Por defecto 7 días
+
   switch (shippingMethod) {
     case 'express':
-      daysToAdd = 2;
-      break;
+      daysToAdd = 2
+      break
     case 'free':
-      daysToAdd = 7;
-      break;
+      daysToAdd = 7
+      break
     case 'pickup':
-      daysToAdd = 1;
-      break;
+      daysToAdd = 1
+      break
   }
-  
-  const estimatedDate = new Date(now.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
-  return estimatedDate.toISOString();
+
+  const estimatedDate = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000)
+  return estimatedDate.toISOString()
 }
 
 // Método OPTIONS para CORS
@@ -150,15 +157,5 @@ export async function OPTIONS() {
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
-  });
+  })
 }
-
-
-
-
-
-
-
-
-
-

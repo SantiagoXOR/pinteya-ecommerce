@@ -21,7 +21,7 @@ export {
   CardFooter,
   CardHeader,
   CardTitle,
-  ProductCard as ProductCardBase // Componente base interno
+  ProductCard as ProductCardBase, // Componente base interno
 } from './card'
 export { Separator } from './separator'
 // export { ScrollArea } from './scroll-area' // Archivo no existe
@@ -47,7 +47,7 @@ export {
   ToastDescription,
   ToastProvider,
   ToastTitle,
-  ToastViewport
+  ToastViewport,
 } from './toast'
 export { useToast, toast } from './use-toast'
 
@@ -61,49 +61,40 @@ export {
   NavigationMenuTrigger,
   NavigationMenuIndicator,
   NavigationMenuViewport,
-  navigationMenuTriggerStyle
+  navigationMenuTriggerStyle,
 } from './navigation-menu'
-export { 
-  Breadcrumb, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbList, 
-  BreadcrumbPage, 
-  BreadcrumbSeparator 
+export {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from './breadcrumb'
 
 // Overlays y modales
-export { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+export {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from './dialog'
-export { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
+export {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from './alert-dialog'
-export {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from './popover'
-export {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from './tooltip'
+export { Popover, PopoverContent, PopoverTrigger } from './popover'
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip'
 export { ConfirmModal } from './modal'
 
 // Formularios avanzados
@@ -115,13 +106,10 @@ export {
   FormControl,
   FormDescription,
   FormMessage,
-  useFormField
+  useFormField,
 } from './form'
 export { Calendar } from './calendar'
-export {
-  DatePicker,
-  DateRangePicker
-} from './date-picker'
+export { DatePicker, DateRangePicker } from './date-picker'
 
 // Componentes E-commerce del Design System
 export { PriceDisplay } from './price-display'
@@ -150,12 +138,3 @@ export * from './types'
 
 // Re-exports de Radix UI para casos avanzados
 // export * from '@radix-ui/react-icons' // TODO: Verificar si es necesario
-
-
-
-
-
-
-
-
-

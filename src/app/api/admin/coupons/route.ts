@@ -1,13 +1,13 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { createClient } from '@supabase/supabase-js';
-import { auth } from '@/lib/auth/config';
-import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter';
-import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { metricsCollector } from '@/lib/enterprise/metrics';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { createClient } from '@supabase/supabase-js'
+import { auth } from '@/lib/auth/config'
+import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { metricsCollector } from '@/lib/enterprise/metrics'
 
 // ===================================
 // CONFIGURACIÓN
@@ -15,15 +15,15 @@ import { metricsCollector } from '@/lib/enterprise/metrics';
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+)
 
 const RATE_LIMIT_CONFIGS = {
   admin: {
     windowMs: 15 * 60 * 1000, // 15 minutos
     maxRequests: 100,
-    message: 'Demasiadas solicitudes de cupones'
-  }
-};
+    message: 'Demasiadas solicitudes de cupones',
+  },
+}
 
 // ===================================
 // ESQUEMAS DE VALIDACIÓN
@@ -38,12 +38,21 @@ const CouponFiltersSchema = z.object({
   date_to: z.string().optional(),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
-  sort_by: z.enum(['created_at', 'code', 'discount_value', 'usage_count', 'expires_at']).default('created_at'),
-  sort_order: z.enum(['asc', 'desc']).default('desc')
-});
+  sort_by: z
+    .enum(['created_at', 'code', 'discount_value', 'usage_count', 'expires_at'])
+    .default('created_at'),
+  sort_order: z.enum(['asc', 'desc']).default('desc'),
+})
 
 const CreateCouponSchema = z.object({
-  code: z.string().min(3).max(50).regex(/^[A-Z0-9_-]+$/, 'El código debe contener solo letras mayúsculas, números, guiones y guiones bajos'),
+  code: z
+    .string()
+    .min(3)
+    .max(50)
+    .regex(
+      /^[A-Z0-9_-]+$/,
+      'El código debe contener solo letras mayúsculas, números, guiones y guiones bajos'
+    ),
   name: z.string().min(1, 'El nombre es requerido'),
   description: z.string().optional(),
   type: z.enum(['percentage', 'fixed_amount', 'free_shipping']),
@@ -59,119 +68,119 @@ const CreateCouponSchema = z.object({
   category_ids: z.array(z.string().uuid()).optional(),
   product_ids: z.array(z.string().uuid()).optional(),
   exclude_sale_items: z.boolean().default(false),
-  first_time_customers_only: z.boolean().default(false)
-});
+  first_time_customers_only: z.boolean().default(false),
+})
 
-const UpdateCouponSchema = CreateCouponSchema.partial().omit({ code: true });
+const UpdateCouponSchema = CreateCouponSchema.partial().omit({ code: true })
 
 const BulkCouponActionSchema = z.object({
   coupon_ids: z.array(z.string().uuid()).min(1),
   action: z.enum(['activate', 'deactivate', 'delete', 'extend_expiry']),
-  extend_days: z.number().int().min(1).optional()
-});
+  extend_days: z.number().int().min(1).optional(),
+})
 
 const ValidateCouponSchema = z.object({
   code: z.string(),
   user_id: z.string().uuid().optional(),
   cart_total: z.number().min(0),
   product_ids: z.array(z.string().uuid()).optional(),
-  category_ids: z.array(z.string().uuid()).optional()
-});
+  category_ids: z.array(z.string().uuid()).optional(),
+})
 
 // ===================================
 // TIPOS
 // ===================================
 interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-  error?: string;
+  data: T
+  success: boolean
+  message?: string
+  error?: string
   pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
 }
 
 interface CouponData {
-  id: string;
-  code: string;
-  name: string;
-  description?: string;
-  type: 'percentage' | 'fixed_amount' | 'free_shipping';
-  discount_value: number;
-  minimum_order_amount?: number;
-  maximum_discount_amount?: number;
-  usage_limit?: number;
-  usage_limit_per_user?: number;
-  usage_count: number;
-  starts_at: string;
-  expires_at?: string;
-  is_active: boolean;
-  applicable_to: 'all' | 'categories' | 'products';
-  category_ids?: string[];
-  product_ids?: string[];
-  exclude_sale_items: boolean;
-  first_time_customers_only: boolean;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
-  status: 'active' | 'inactive' | 'expired' | 'used_up';
+  id: string
+  code: string
+  name: string
+  description?: string
+  type: 'percentage' | 'fixed_amount' | 'free_shipping'
+  discount_value: number
+  minimum_order_amount?: number
+  maximum_discount_amount?: number
+  usage_limit?: number
+  usage_limit_per_user?: number
+  usage_count: number
+  starts_at: string
+  expires_at?: string
+  is_active: boolean
+  applicable_to: 'all' | 'categories' | 'products'
+  category_ids?: string[]
+  product_ids?: string[]
+  exclude_sale_items: boolean
+  first_time_customers_only: boolean
+  created_at: string
+  updated_at: string
+  created_by: string
+  status: 'active' | 'inactive' | 'expired' | 'used_up'
   categories?: Array<{
-    id: string;
-    name: string;
-  }>;
+    id: string
+    name: string
+  }>
   products?: Array<{
-    id: string;
-    name: string;
-    sku: string;
-  }>;
+    id: string
+    name: string
+    sku: string
+  }>
   creator?: {
-    full_name: string;
-    email: string;
-  };
+    full_name: string
+    email: string
+  }
 }
 
 interface CouponStats {
-  total_coupons: number;
-  active_coupons: number;
-  expired_coupons: number;
-  used_up_coupons: number;
-  total_usage: number;
-  total_discount_given: number;
-  average_discount: number;
+  total_coupons: number
+  active_coupons: number
+  expired_coupons: number
+  used_up_coupons: number
+  total_usage: number
+  total_discount_given: number
+  average_discount: number
   top_coupons: Array<{
-    id: string;
-    code: string;
-    name: string;
-    usage_count: number;
-    total_discount: number;
-  }>;
-  usage_by_type: Record<string, number>;
+    id: string
+    code: string
+    name: string
+    usage_count: number
+    total_discount: number
+  }>
+  usage_by_type: Record<string, number>
   recent_usage: {
-    last_24h: number;
-    last_7d: number;
-    last_30d: number;
-  };
+    last_24h: number
+    last_7d: number
+    last_30d: number
+  }
 }
 
 interface CouponValidationResult {
-  valid: boolean;
-  coupon?: CouponData;
-  discount_amount?: number;
-  error?: string;
-  warnings?: string[];
+  valid: boolean
+  coupon?: CouponData
+  discount_amount?: number
+  error?: string
+  warnings?: string[]
 }
 
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
 async function validateAdminAuth() {
-  const session = await auth();
-  
+  const session = await auth()
+
   if (!session?.user) {
-    return { error: 'No autorizado', status: 401 };
+    return { error: 'No autorizado', status: 401 }
   }
 
   // Verificar rol de administrador o manager
@@ -179,19 +188,17 @@ async function validateAdminAuth() {
     .from('profiles')
     .select('role')
     .eq('id', session.user.id)
-    .single();
+    .single()
 
   if (!['admin', 'manager'].includes(profile?.role)) {
-    return { error: 'Acceso denegado', status: 403 };
+    return { error: 'Acceso denegado', status: 403 }
   }
 
-  return { userId: session.user.id, role: profile.role };
+  return { userId: session.user.id, role: profile.role }
 }
 
 async function getCoupons(filters: z.infer<typeof CouponFiltersSchema>) {
-  let query = supabase
-    .from('coupons')
-    .select(`
+  let query = supabase.from('coupons').select(`
       *,
       categories:coupon_categories!coupon_categories_coupon_id_fkey(
         category:categories!coupon_categories_category_id_fkey(
@@ -210,100 +217,99 @@ async function getCoupons(filters: z.infer<typeof CouponFiltersSchema>) {
         full_name,
         email
       )
-    `);
+    `)
 
   // Aplicar filtros
   if (filters.status) {
-    const now = new Date().toISOString();
+    const now = new Date().toISOString()
     switch (filters.status) {
       case 'active':
         query = query
           .eq('is_active', true)
           .lte('starts_at', now)
-          .or(`expires_at.is.null,expires_at.gt.${now}`);
-        break;
+          .or(`expires_at.is.null,expires_at.gt.${now}`)
+        break
       case 'inactive':
-        query = query.eq('is_active', false);
-        break;
+        query = query.eq('is_active', false)
+        break
       case 'expired':
-        query = query
-          .eq('is_active', true)
-          .not('expires_at', 'is', null)
-          .lt('expires_at', now);
-        break;
+        query = query.eq('is_active', true).not('expires_at', 'is', null).lt('expires_at', now)
+        break
       case 'used_up':
         query = query
           .eq('is_active', true)
           .not('usage_limit', 'is', null)
-          .gte('usage_count', supabase.rpc('get_usage_limit'));
-        break;
+          .gte('usage_count', supabase.rpc('get_usage_limit'))
+        break
     }
   }
 
   if (filters.type) {
-    query = query.eq('type', filters.type);
+    query = query.eq('type', filters.type)
   }
 
   if (filters.search) {
-    query = query.or(`code.ilike.%${filters.search}%,name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    query = query.or(
+      `code.ilike.%${filters.search}%,name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`
+    )
   }
 
   if (filters.date_from) {
-    query = query.gte('created_at', filters.date_from);
+    query = query.gte('created_at', filters.date_from)
   }
 
   if (filters.date_to) {
-    query = query.lte('created_at', filters.date_to);
+    query = query.lte('created_at', filters.date_to)
   }
 
   // Contar total
-  const { count } = await query.select('*', { count: 'exact', head: true });
+  const { count } = await query.select('*', { count: 'exact', head: true })
 
   // Aplicar paginación y ordenamiento
-  const offset = (filters.page - 1) * filters.limit;
+  const offset = (filters.page - 1) * filters.limit
   query = query
     .order(filters.sort_by, { ascending: filters.sort_order === 'asc' })
-    .range(offset, offset + filters.limit - 1);
+    .range(offset, offset + filters.limit - 1)
 
-  const { data, error } = await query;
+  const { data, error } = await query
 
   if (error) {
-    throw new Error(`Error al obtener cupones: ${error.message}`);
+    throw new Error(`Error al obtener cupones: ${error.message}`)
   }
 
   // Procesar datos para incluir estado calculado
   const processedData = (data || []).map(coupon => {
-    const now = new Date();
-    const startsAt = new Date(coupon.starts_at);
-    const expiresAt = coupon.expires_at ? new Date(coupon.expires_at) : null;
-    
-    let status: 'active' | 'inactive' | 'expired' | 'used_up';
-    
+    const now = new Date()
+    const startsAt = new Date(coupon.starts_at)
+    const expiresAt = coupon.expires_at ? new Date(coupon.expires_at) : null
+
+    let status: 'active' | 'inactive' | 'expired' | 'used_up'
+
     if (!coupon.is_active) {
-      status = 'inactive';
+      status = 'inactive'
     } else if (now < startsAt) {
-      status = 'inactive';
+      status = 'inactive'
     } else if (expiresAt && now > expiresAt) {
-      status = 'expired';
+      status = 'expired'
     } else if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
-      status = 'used_up';
+      status = 'used_up'
     } else {
-      status = 'active';
+      status = 'active'
     }
 
     return {
       ...coupon,
       status,
       categories: coupon.categories?.map((cc: { category: unknown }) => cc.category) || [],
-      products: coupon.products?.map((cp: { product: unknown }) => cp.product) || []
-    };
-  });
+      products: coupon.products?.map((cp: { product: unknown }) => cp.product) || [],
+    }
+  })
 
   return {
     coupons: processedData,
     total: count || 0,
-    totalPages: Math.ceil((count || 0) / filters.limit)
-  };
+    totalPages: Math.ceil((count || 0) / filters.limit),
+  }
 }
 
 async function createCoupon(couponData: z.infer<typeof CreateCouponSchema>, userId: string) {
@@ -312,23 +318,23 @@ async function createCoupon(couponData: z.infer<typeof CreateCouponSchema>, user
     .from('coupons')
     .select('id')
     .eq('code', couponData.code)
-    .single();
+    .single()
 
   if (existingCoupon) {
-    throw new Error('Ya existe un cupón con este código');
+    throw new Error('Ya existe un cupón con este código')
   }
 
   // Validar fechas
-  const startsAt = new Date(couponData.starts_at);
-  const expiresAt = couponData.expires_at ? new Date(couponData.expires_at) : null;
-  
+  const startsAt = new Date(couponData.starts_at)
+  const expiresAt = couponData.expires_at ? new Date(couponData.expires_at) : null
+
   if (expiresAt && startsAt >= expiresAt) {
-    throw new Error('La fecha de inicio debe ser anterior a la fecha de expiración');
+    throw new Error('La fecha de inicio debe ser anterior a la fecha de expiración')
   }
 
   // Validar descuento
   if (couponData.type === 'percentage' && couponData.discount_value > 100) {
-    throw new Error('El descuento porcentual no puede ser mayor al 100%');
+    throw new Error('El descuento porcentual no puede ser mayor al 100%')
   }
 
   // Crear cupón
@@ -353,28 +359,28 @@ async function createCoupon(couponData: z.infer<typeof CreateCouponSchema>, user
       first_time_customers_only: couponData.first_time_customers_only,
       created_by: userId,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .select()
-    .single();
+    .single()
 
   if (couponError) {
-    throw new Error(`Error al crear cupón: ${couponError.message}`);
+    throw new Error(`Error al crear cupón: ${couponError.message}`)
   }
 
   // Asociar categorías si aplica
   if (couponData.applicable_to === 'categories' && couponData.category_ids?.length) {
     const categoryInserts = couponData.category_ids.map(categoryId => ({
       coupon_id: newCoupon.id,
-      category_id: categoryId
-    }));
+      category_id: categoryId,
+    }))
 
     const { error: categoryError } = await supabase
       .from('coupon_categories')
-      .insert(categoryInserts);
+      .insert(categoryInserts)
 
     if (categoryError) {
-      throw new Error(`Error al asociar categorías: ${categoryError.message}`);
+      throw new Error(`Error al asociar categorías: ${categoryError.message}`)
     }
   }
 
@@ -382,26 +388,27 @@ async function createCoupon(couponData: z.infer<typeof CreateCouponSchema>, user
   if (couponData.applicable_to === 'products' && couponData.product_ids?.length) {
     const productInserts = couponData.product_ids.map(productId => ({
       coupon_id: newCoupon.id,
-      product_id: productId
-    }));
+      product_id: productId,
+    }))
 
-    const { error: productError } = await supabase
-      .from('coupon_products')
-      .insert(productInserts);
+    const { error: productError } = await supabase.from('coupon_products').insert(productInserts)
 
     if (productError) {
-      throw new Error(`Error al asociar productos: ${productError.message}`);
+      throw new Error(`Error al asociar productos: ${productError.message}`)
     }
   }
 
-  return newCoupon;
+  return newCoupon
 }
 
-async function validateCoupon(validation: z.infer<typeof ValidateCouponSchema>): Promise<CouponValidationResult> {
+async function validateCoupon(
+  validation: z.infer<typeof ValidateCouponSchema>
+): Promise<CouponValidationResult> {
   // Obtener cupón
   const { data: coupon, error } = await supabase
     .from('coupons')
-    .select(`
+    .select(
+      `
       *,
       categories:coupon_categories!coupon_categories_coupon_id_fkey(
         category_id
@@ -409,51 +416,52 @@ async function validateCoupon(validation: z.infer<typeof ValidateCouponSchema>):
       products:coupon_products!coupon_products_coupon_id_fkey(
         product_id
       )
-    `)
+    `
+    )
     .eq('code', validation.code.toUpperCase())
-    .single();
+    .single()
 
   if (error || !coupon) {
     return {
       valid: false,
-      error: 'Cupón no encontrado'
-    };
+      error: 'Cupón no encontrado',
+    }
   }
 
-  const warnings: string[] = [];
-  const now = new Date();
-  const startsAt = new Date(coupon.starts_at);
-  const expiresAt = coupon.expires_at ? new Date(coupon.expires_at) : null;
+  const warnings: string[] = []
+  const now = new Date()
+  const startsAt = new Date(coupon.starts_at)
+  const expiresAt = coupon.expires_at ? new Date(coupon.expires_at) : null
 
   // Validar estado activo
   if (!coupon.is_active) {
     return {
       valid: false,
-      error: 'Este cupón está desactivado'
-    };
+      error: 'Este cupón está desactivado',
+    }
   }
 
   // Validar fechas
   if (now < startsAt) {
     return {
       valid: false,
-      error: 'Este cupón aún no está disponible'
-    };
+      error: 'Este cupón aún no está disponible',
+    }
   }
 
   if (expiresAt && now > expiresAt) {
     return {
       valid: false,
-      error: 'Este cupón ha expirado'
-    };
+      error: 'Este cupón ha expirado',
+    }
   }
 
   // Validar límite de uso
   if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
     return {
       valid: false,
-      error: 'Este cupón ha alcanzado su límite de uso'
-    };
+      error: 'Este cupón ha alcanzado su límite de uso',
+    }
   }
 
   // Validar límite por usuario
@@ -462,13 +470,13 @@ async function validateCoupon(validation: z.infer<typeof ValidateCouponSchema>):
       .from('coupon_usage')
       .select('*', { count: 'exact', head: true })
       .eq('coupon_id', coupon.id)
-      .eq('user_id', validation.user_id);
+      .eq('user_id', validation.user_id)
 
     if (userUsage && userUsage >= coupon.usage_limit_per_user) {
       return {
         valid: false,
-        error: 'Has alcanzado el límite de uso de este cupón'
-      };
+        error: 'Has alcanzado el límite de uso de este cupón',
+      }
     }
   }
 
@@ -476,36 +484,34 @@ async function validateCoupon(validation: z.infer<typeof ValidateCouponSchema>):
   if (coupon.minimum_order_amount && validation.cart_total < coupon.minimum_order_amount) {
     return {
       valid: false,
-      error: `El monto mínimo para este cupón es $${coupon.minimum_order_amount}`
-    };
+      error: `El monto mínimo para este cupón es $${coupon.minimum_order_amount}`,
+    }
   }
 
   // Validar aplicabilidad a productos/categorías
   if (coupon.applicable_to === 'categories' && validation.category_ids?.length) {
-    const couponCategoryIds = coupon.categories.map((cc: { category_id: string }) => cc.category_id);
-    const hasValidCategory = validation.category_ids.some(catId => 
+    const couponCategoryIds = coupon.categories.map((cc: { category_id: string }) => cc.category_id)
+    const hasValidCategory = validation.category_ids.some(catId =>
       couponCategoryIds.includes(catId)
-    );
-    
+    )
+
     if (!hasValidCategory) {
       return {
         valid: false,
-        error: 'Este cupón no es válido para los productos en tu carrito'
-      };
+        error: 'Este cupón no es válido para los productos en tu carrito',
+      }
     }
   }
 
   if (coupon.applicable_to === 'products' && validation.product_ids?.length) {
-    const couponProductIds = coupon.products.map((cp: { product_id: string }) => cp.product_id);
-    const hasValidProduct = validation.product_ids.some(prodId => 
-      couponProductIds.includes(prodId)
-    );
-    
+    const couponProductIds = coupon.products.map((cp: { product_id: string }) => cp.product_id)
+    const hasValidProduct = validation.product_ids.some(prodId => couponProductIds.includes(prodId))
+
     if (!hasValidProduct) {
       return {
         valid: false,
-        error: 'Este cupón no es válido para los productos en tu carrito'
-      };
+        error: 'Este cupón no es válido para los productos en tu carrito',
+      }
     }
   }
 
@@ -515,39 +521,39 @@ async function validateCoupon(validation: z.infer<typeof ValidateCouponSchema>):
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', validation.user_id)
-      .eq('status', 'completed');
+      .eq('status', 'completed')
 
     if (orderCount && orderCount > 0) {
       return {
         valid: false,
-        error: 'Este cupón es solo para clientes nuevos'
-      };
+        error: 'Este cupón es solo para clientes nuevos',
+      }
     }
   }
 
   // Calcular descuento
-  let discountAmount = 0;
-  
+  let discountAmount = 0
+
   switch (coupon.type) {
     case 'percentage':
-      discountAmount = (validation.cart_total * coupon.discount_value) / 100;
+      discountAmount = (validation.cart_total * coupon.discount_value) / 100
       if (coupon.maximum_discount_amount) {
-        discountAmount = Math.min(discountAmount, coupon.maximum_discount_amount);
+        discountAmount = Math.min(discountAmount, coupon.maximum_discount_amount)
       }
-      break;
+      break
     case 'fixed_amount':
-      discountAmount = Math.min(coupon.discount_value, validation.cart_total);
-      break;
+      discountAmount = Math.min(coupon.discount_value, validation.cart_total)
+      break
     case 'free_shipping':
-      discountAmount = 0; // El descuento se aplica al envío, no al total
-      break;
+      discountAmount = 0 // El descuento se aplica al envío, no al total
+      break
   }
 
   // Advertencias
   if (expiresAt) {
-    const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     if (daysUntilExpiry <= 3) {
-      warnings.push(`Este cupón expira en ${daysUntilExpiry} día(s)`);
+      warnings.push(`Este cupón expira en ${daysUntilExpiry} día(s)`)
     }
   }
 
@@ -555,98 +561,100 @@ async function validateCoupon(validation: z.infer<typeof ValidateCouponSchema>):
     valid: true,
     coupon,
     discount_amount: discountAmount,
-    warnings: warnings.length > 0 ? warnings : undefined
-  };
+    warnings: warnings.length > 0 ? warnings : undefined,
+  }
 }
 
 async function getCouponStats(): Promise<CouponStats> {
   // Obtener todos los cupones
-  const { data: coupons, error } = await supabase
-    .from('coupons')
-    .select('*');
+  const { data: coupons, error } = await supabase.from('coupons').select('*')
 
   if (error) {
-    throw new Error(`Error al obtener estadísticas de cupones: ${error.message}`);
+    throw new Error(`Error al obtener estadísticas de cupones: ${error.message}`)
   }
 
-  const now = new Date();
-  const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const last30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const now = new Date()
+  const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const last30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
   // Obtener uso de cupones
-  const { data: usage } = await supabase
-    .from('coupon_usage')
-    .select('*');
+  const { data: usage } = await supabase.from('coupon_usage').select('*')
 
-  const totalCoupons = coupons?.length || 0;
-  let activeCoupons = 0;
-  let expiredCoupons = 0;
-  let usedUpCoupons = 0;
+  const totalCoupons = coupons?.length || 0
+  let activeCoupons = 0
+  let expiredCoupons = 0
+  let usedUpCoupons = 0
 
   // Clasificar cupones por estado
-  (coupons || []).forEach(coupon => {
-    const startsAt = new Date(coupon.starts_at);
-    const expiresAt = coupon.expires_at ? new Date(coupon.expires_at) : null;
-    
+  ;(coupons || []).forEach(coupon => {
+    const startsAt = new Date(coupon.starts_at)
+    const expiresAt = coupon.expires_at ? new Date(coupon.expires_at) : null
+
     if (!coupon.is_active) {
-      return;
+      return
     }
-    
+
     if (now < startsAt) {
-      return;
+      return
     }
-    
+
     if (expiresAt && now > expiresAt) {
-      expiredCoupons++;
+      expiredCoupons++
     } else if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
-      usedUpCoupons++;
+      usedUpCoupons++
     } else {
-      activeCoupons++;
+      activeCoupons++
     }
-  });
+  })
 
   // Estadísticas de uso
-  const totalUsage = (usage || []).length;
-  const totalDiscountGiven = (usage || []).reduce((sum, u) => sum + (u.discount_amount || 0), 0);
-  const averageDiscount = totalUsage > 0 ? totalDiscountGiven / totalUsage : 0;
+  const totalUsage = (usage || []).length
+  const totalDiscountGiven = (usage || []).reduce((sum, u) => sum + (u.discount_amount || 0), 0)
+  const averageDiscount = totalUsage > 0 ? totalDiscountGiven / totalUsage : 0
 
   // Uso reciente
   const recentUsage = {
     last_24h: (usage || []).filter(u => new Date(u.created_at) >= last24h).length,
     last_7d: (usage || []).filter(u => new Date(u.created_at) >= last7d).length,
-    last_30d: (usage || []).filter(u => new Date(u.created_at) >= last30d).length
-  };
+    last_30d: (usage || []).filter(u => new Date(u.created_at) >= last30d).length,
+  }
 
   // Top cupones
-  const couponUsageMap = (usage || []).reduce((acc, u) => {
-    if (!acc[u.coupon_id]) {
-      acc[u.coupon_id] = { count: 0, totalDiscount: 0 };
-    }
-    acc[u.coupon_id].count++;
-    acc[u.coupon_id].totalDiscount += u.discount_amount || 0;
-    return acc;
-  }, {} as Record<string, { count: number; totalDiscount: number }>);
+  const couponUsageMap = (usage || []).reduce(
+    (acc, u) => {
+      if (!acc[u.coupon_id]) {
+        acc[u.coupon_id] = { count: 0, totalDiscount: 0 }
+      }
+      acc[u.coupon_id].count++
+      acc[u.coupon_id].totalDiscount += u.discount_amount || 0
+      return acc
+    },
+    {} as Record<string, { count: number; totalDiscount: number }>
+  )
 
   const topCoupons = Object.entries(couponUsageMap)
     .map(([couponId, stats]) => {
-      const coupon = coupons?.find(c => c.id === couponId);
+      const coupon = coupons?.find(c => c.id === couponId)
       return {
         id: couponId,
         code: coupon?.code || '',
         name: coupon?.name || '',
         usage_count: stats.count,
-        total_discount: stats.totalDiscount
-      };
+        total_discount: stats.totalDiscount,
+      }
     })
     .sort((a, b) => b.usage_count - a.usage_count)
-    .slice(0, 10);
+    .slice(0, 10)
 
   // Uso por tipo
-  const usageByType = (coupons || []).reduce((acc, coupon) => {
-    acc[coupon.type] = (acc[coupon.type] || 0) + coupon.usage_count;
-    return acc;
-  }, {} as Record<string, number>);
+  const usageByType = (coupons || []).reduce(
+    (acc, coupon) => {
+      acc[coupon.type] = (acc[coupon.type] || 0) + coupon.usage_count
+      return acc
+    },
+    {} as Record<string, number>
+  )
 
   return {
     total_coupons: totalCoupons,
@@ -658,15 +666,15 @@ async function getCouponStats(): Promise<CouponStats> {
     average_discount: averageDiscount,
     top_coupons: topCoupons,
     usage_by_type: usageByType,
-    recent_usage: recentUsage
-  };
+    recent_usage: recentUsage,
+  }
 }
 
 // ===================================
 // GET - Obtener cupones
 // ===================================
 export async function GET(request: NextRequest) {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
   try {
     // Rate limiting
@@ -675,39 +683,36 @@ export async function GET(request: NextRequest) {
       {
         windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
         maxRequests: RATE_LIMIT_CONFIGS.admin.maxRequests,
-        message: RATE_LIMIT_CONFIGS.admin.message
+        message: RATE_LIMIT_CONFIGS.admin.message,
       },
       'admin-coupons'
-    );
+    )
 
     if (!rateLimitResult.success) {
-      const response = NextResponse.json(
-        { error: rateLimitResult.message },
-        { status: 429 }
-      );
-      addRateLimitHeaders(response, rateLimitResult);
-      return response;
+      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
+      addRateLimitHeaders(response, rateLimitResult)
+      return response
     }
 
     // Validar autenticación admin
-    const authResult = await validateAdminAuth();
+    const authResult = await validateAdminAuth()
     if (authResult.error) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
         error: authResult.error,
-      };
-      return NextResponse.json(errorResponse, { status: authResult.status });
+      }
+      return NextResponse.json(errorResponse, { status: authResult.status })
     }
 
     // Parsear parámetros de consulta
-    const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action');
+    const { searchParams } = new URL(request.url)
+    const action = searchParams.get('action')
 
     // Manejar diferentes acciones
     if (action === 'stats') {
       // Obtener estadísticas
-      const stats = await getCouponStats();
+      const stats = await getCouponStats()
 
       // Registrar métricas
       metricsCollector.recordApiCall({
@@ -715,18 +720,18 @@ export async function GET(request: NextRequest) {
         method: 'GET',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId
-      });
+        userId: authResult.userId,
+      })
 
       const response: ApiResponse<CouponStats> = {
         data: stats,
         success: true,
-        message: 'Estadísticas de cupones obtenidas exitosamente'
-      };
+        message: 'Estadísticas de cupones obtenidas exitosamente',
+      }
 
-      const nextResponse = NextResponse.json(response);
-      addRateLimitHeaders(nextResponse, rateLimitResult);
-      return nextResponse;
+      const nextResponse = NextResponse.json(response)
+      addRateLimitHeaders(nextResponse, rateLimitResult)
+      return nextResponse
     }
 
     if (action === 'validate') {
@@ -736,10 +741,10 @@ export async function GET(request: NextRequest) {
         user_id: searchParams.get('user_id'),
         cart_total: parseFloat(searchParams.get('cart_total') || '0'),
         product_ids: searchParams.get('product_ids')?.split(','),
-        category_ids: searchParams.get('category_ids')?.split(',')
-      });
+        category_ids: searchParams.get('category_ids')?.split(','),
+      })
 
-      const validationResult = await validateCoupon(validation);
+      const validationResult = await validateCoupon(validation)
 
       // Registrar métricas
       metricsCollector.recordApiCall({
@@ -747,18 +752,18 @@ export async function GET(request: NextRequest) {
         method: 'GET',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId
-      });
+        userId: authResult.userId,
+      })
 
       const response: ApiResponse<CouponValidationResult> = {
         data: validationResult,
         success: true,
-        message: validationResult.valid ? 'Cupón válido' : 'Cupón inválido'
-      };
+        message: validationResult.valid ? 'Cupón válido' : 'Cupón inválido',
+      }
 
-      const nextResponse = NextResponse.json(response);
-      addRateLimitHeaders(nextResponse, rateLimitResult);
-      return nextResponse;
+      const nextResponse = NextResponse.json(response)
+      addRateLimitHeaders(nextResponse, rateLimitResult)
+      return nextResponse
     }
 
     // Obtener cupones normales
@@ -773,10 +778,10 @@ export async function GET(request: NextRequest) {
       page: searchParams.get('page'),
       limit: searchParams.get('limit'),
       sort_by: searchParams.get('sort_by'),
-      sort_order: searchParams.get('sort_order')
-    });
+      sort_order: searchParams.get('sort_order'),
+    })
 
-    const { coupons, total, totalPages } = await getCoupons(filters);
+    const { coupons, total, totalPages } = await getCoupons(filters)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -784,8 +789,8 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId
-    });
+      userId: authResult.userId,
+    })
 
     const response: ApiResponse<CouponData[]> = {
       data: coupons,
@@ -795,16 +800,15 @@ export async function GET(request: NextRequest) {
         page: filters.page,
         limit: filters.limit,
         total,
-        totalPages
-      }
-    };
+        totalPages,
+      },
+    }
 
-    const nextResponse = NextResponse.json(response);
-    addRateLimitHeaders(nextResponse, rateLimitResult);
-    return nextResponse;
-
+    const nextResponse = NextResponse.json(response)
+    addRateLimitHeaders(nextResponse, rateLimitResult)
+    return nextResponse
   } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/coupons', { error });
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/coupons', { error })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -812,16 +816,16 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 500,
       responseTime: Date.now() - startTime,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
 
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
       error: error instanceof Error ? error.message : 'Error interno del servidor',
-    };
+    }
 
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }
 
@@ -829,7 +833,7 @@ export async function GET(request: NextRequest) {
 // POST - Crear cupón o acción masiva
 // ===================================
 export async function POST(request: NextRequest) {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
   try {
     // Rate limiting
@@ -838,93 +842,94 @@ export async function POST(request: NextRequest) {
       {
         windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
         maxRequests: Math.floor(RATE_LIMIT_CONFIGS.admin.maxRequests / 2),
-        message: 'Demasiadas operaciones de cupones'
+        message: 'Demasiadas operaciones de cupones',
       },
       'admin-coupons-modify'
-    );
+    )
 
     if (!rateLimitResult.success) {
-      const response = NextResponse.json(
-        { error: rateLimitResult.message },
-        { status: 429 }
-      );
-      addRateLimitHeaders(response, rateLimitResult);
-      return response;
+      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
+      addRateLimitHeaders(response, rateLimitResult)
+      return response
     }
 
     // Validar autenticación admin
-    const authResult = await validateAdminAuth();
+    const authResult = await validateAdminAuth()
     if (authResult.error) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
         error: authResult.error,
-      };
-      return NextResponse.json(errorResponse, { status: authResult.status });
+      }
+      return NextResponse.json(errorResponse, { status: authResult.status })
     }
 
     // Validar datos de entrada
-    const body = await request.json();
-    const { action } = body;
+    const body = await request.json()
+    const { action } = body
 
     if (action === 'bulk') {
       // Acción masiva
-      const bulkAction = BulkCouponActionSchema.parse(body);
-      const results = [];
+      const bulkAction = BulkCouponActionSchema.parse(body)
+      const results = []
 
       for (const couponId of bulkAction.coupon_ids) {
         try {
-          const updateData: any = { updated_at: new Date().toISOString() };
+          const updateData: any = { updated_at: new Date().toISOString() }
 
           switch (bulkAction.action) {
             case 'activate':
-              updateData.is_active = true;
-              break;
+              updateData.is_active = true
+              break
             case 'deactivate':
-              updateData.is_active = false;
-              break;
+              updateData.is_active = false
+              break
             case 'extend_expiry':
               if (bulkAction.extend_days) {
                 const { data: coupon } = await supabase
                   .from('coupons')
                   .select('expires_at')
                   .eq('id', couponId)
-                  .single();
-                
+                  .single()
+
                 if (coupon?.expires_at) {
-                  const newExpiryDate = new Date(coupon.expires_at);
-                  newExpiryDate.setDate(newExpiryDate.getDate() + bulkAction.extend_days);
-                  updateData.expires_at = newExpiryDate.toISOString();
+                  const newExpiryDate = new Date(coupon.expires_at)
+                  newExpiryDate.setDate(newExpiryDate.getDate() + bulkAction.extend_days)
+                  updateData.expires_at = newExpiryDate.toISOString()
                 }
               }
-              break;
+              break
             case 'delete':
               const { error: deleteError } = await supabase
                 .from('coupons')
                 .delete()
-                .eq('id', couponId);
-              
-              if (deleteError) {throw deleteError;}
-              results.push({ coupon_id: couponId, success: true, action: 'deleted' });
-              continue;
+                .eq('id', couponId)
+
+              if (deleteError) {
+                throw deleteError
+              }
+              results.push({ coupon_id: couponId, success: true, action: 'deleted' })
+              continue
           }
 
           if (bulkAction.action !== 'delete') {
             const { error: updateError } = await supabase
               .from('coupons')
               .update(updateData)
-              .eq('id', couponId);
-            
-            if (updateError) {throw updateError;}
+              .eq('id', couponId)
+
+            if (updateError) {
+              throw updateError
+            }
           }
 
-          results.push({ coupon_id: couponId, success: true, action: bulkAction.action });
+          results.push({ coupon_id: couponId, success: true, action: bulkAction.action })
         } catch (error) {
-          results.push({ 
-            coupon_id: couponId, 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Error desconocido'
-          });
+          results.push({
+            coupon_id: couponId,
+            success: false,
+            error: error instanceof Error ? error.message : 'Error desconocido',
+          })
         }
       }
 
@@ -934,23 +939,23 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId
-      });
+        userId: authResult.userId,
+      })
 
       const response: ApiResponse<typeof results> = {
         data: results,
         success: true,
-        message: `Acción masiva completada. ${results.filter(r => r.success).length}/${results.length} exitosos`
-      };
+        message: `Acción masiva completada. ${results.filter(r => r.success).length}/${results.length} exitosos`,
+      }
 
-      const nextResponse = NextResponse.json(response);
-      addRateLimitHeaders(nextResponse, rateLimitResult);
-      return nextResponse;
+      const nextResponse = NextResponse.json(response)
+      addRateLimitHeaders(nextResponse, rateLimitResult)
+      return nextResponse
     }
 
     // Crear cupón normal
-    const couponData = CreateCouponSchema.parse(body);
-    const newCoupon = await createCoupon(couponData, authResult.userId!);
+    const couponData = CreateCouponSchema.parse(body)
+    const newCoupon = await createCoupon(couponData, authResult.userId!)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -958,21 +963,20 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 201,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId
-    });
+      userId: authResult.userId,
+    })
 
     const response: ApiResponse<typeof newCoupon> = {
       data: newCoupon,
       success: true,
-      message: 'Cupón creado exitosamente'
-    };
+      message: 'Cupón creado exitosamente',
+    }
 
-    const nextResponse = NextResponse.json(response, { status: 201 });
-    addRateLimitHeaders(nextResponse, rateLimitResult);
-    return nextResponse;
-
+    const nextResponse = NextResponse.json(response, { status: 201 })
+    addRateLimitHeaders(nextResponse, rateLimitResult)
+    return nextResponse
   } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/coupons', { error });
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/coupons', { error })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -980,25 +984,15 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 500,
       responseTime: Date.now() - startTime,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
 
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
       error: error instanceof Error ? error.message : 'Error interno del servidor',
-    };
+    }
 
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
-

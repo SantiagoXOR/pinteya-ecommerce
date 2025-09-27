@@ -3,8 +3,8 @@
 // ===================================
 // 🚨 MIGRADO DE CLERK A NEXTAUTH.JS - 21/08/2025
 
-import { auth } from '@/lib/auth/config';
-import { supabaseAdmin } from './supabase';
+import { auth } from '@/lib/auth/config'
+import { supabaseAdmin } from './supabase'
 
 // ===================================
 // FUNCIONES DE AUTENTICACIÓN
@@ -16,11 +16,11 @@ import { supabaseAdmin } from './supabase';
  */
 export async function getAuthUser(): Promise<any | null> {
   try {
-    const session = await auth();
-    return session?.user || null;
+    const session = await auth()
+    return session?.user || null
   } catch (error) {
-    console.error('Error obteniendo usuario autenticado:', error);
-    return null;
+    console.error('Error obteniendo usuario autenticado:', error)
+    return null
   }
 }
 
@@ -30,11 +30,11 @@ export async function getAuthUser(): Promise<any | null> {
  */
 export async function getAuthUserId(): Promise<string | null> {
   try {
-    const session = await auth();
-    return session?.user?.id || null;
+    const session = await auth()
+    return session?.user?.id || null
   } catch (error) {
-    console.error('Error obteniendo ID de usuario:', error);
-    return null;
+    console.error('Error obteniendo ID de usuario:', error)
+    return null
   }
 }
 
@@ -44,10 +44,10 @@ export async function getAuthUserId(): Promise<string | null> {
  */
 export async function isUserAuthenticated(): Promise<boolean> {
   try {
-    const session = await auth();
-    return !!session?.user;
+    const session = await auth()
+    return !!session?.user
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -57,10 +57,10 @@ export async function isUserAuthenticated(): Promise<boolean> {
 // 🚨 FUNCIONES TEMPORALMENTE DESHABILITADAS - Migración a NextAuth.js
 
 interface NextAuthUser {
-  id: string;
-  email: string;
-  name?: string | null;
-  image?: string | null;
+  id: string
+  email: string
+  name?: string | null
+  image?: string | null
 }
 
 /**
@@ -70,7 +70,7 @@ interface NextAuthUser {
  */
 export async function syncUserWithSupabase(user: NextAuthUser): Promise<void> {
   if (!supabaseAdmin) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
+    throw new Error('Cliente administrativo de Supabase no disponible')
   }
 
   try {
@@ -80,24 +80,21 @@ export async function syncUserWithSupabase(user: NextAuthUser): Promise<void> {
       name: user.name,
       image: user.image,
       updated_at: new Date().toISOString(),
-    };
-
-    // Intentar insertar o actualizar el usuario
-    const { error } = await supabaseAdmin
-      .from('users')
-      .upsert(userData, {
-        onConflict: 'id',
-        ignoreDuplicates: false,
-      });
-
-    if (error) {
-      console.error('Error sincronizando usuario con Supabase:', error);
-      throw error;
     }
 
+    // Intentar insertar o actualizar el usuario
+    const { error } = await supabaseAdmin.from('users').upsert(userData, {
+      onConflict: 'id',
+      ignoreDuplicates: false,
+    })
+
+    if (error) {
+      console.error('Error sincronizando usuario con Supabase:', error)
+      throw error
+    }
   } catch (error) {
-    console.error('Error en sincronización de usuario:', error);
-    throw error;
+    console.error('Error en sincronización de usuario:', error)
+    throw error
   }
 }
 
@@ -108,24 +105,20 @@ export async function syncUserWithSupabase(user: NextAuthUser): Promise<void> {
  */
 export async function getUserFromSupabase(userId: string) {
   if (!supabaseAdmin) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
+    throw new Error('Cliente administrativo de Supabase no disponible')
   }
 
   try {
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    const { data, error } = await supabaseAdmin.from('users').select('*').eq('id', userId).single()
 
     if (error && error.code !== 'PGRST116') {
-      throw error;
+      throw error
     }
 
-    return data;
+    return data
   } catch (error) {
-    console.error('Error obteniendo usuario de Supabase:', error);
-    return null;
+    console.error('Error obteniendo usuario de Supabase:', error)
+    return null
   }
 }
 
@@ -136,23 +129,19 @@ export async function getUserFromSupabase(userId: string) {
  */
 export async function deleteUserFromSupabase(userId: string): Promise<void> {
   if (!supabaseAdmin) {
-    throw new Error('Cliente administrativo de Supabase no disponible');
+    throw new Error('Cliente administrativo de Supabase no disponible')
   }
 
   try {
-    const { error } = await supabaseAdmin
-      .from('users')
-      .delete()
-      .eq('id', userId);
+    const { error } = await supabaseAdmin.from('users').delete().eq('id', userId)
 
     if (error) {
-      console.error('Error eliminando usuario de Supabase:', error);
-      throw error;
+      console.error('Error eliminando usuario de Supabase:', error)
+      throw error
     }
-
   } catch (error) {
-    console.error('Error en eliminación de usuario:', error);
-    throw error;
+    console.error('Error en eliminación de usuario:', error)
+    throw error
   }
 }
 
@@ -174,7 +163,7 @@ export const publicRoutes = [
   '/api/products/(.*)',
   '/api/categories',
   '/api/auth/webhook',
-];
+]
 
 /**
  * Rutas que requieren autenticación
@@ -185,7 +174,7 @@ export const protectedRoutes = [
   '/orders',
   '/orders/(.*)',
   '/wishlist',
-];
+]
 
 /**
  * Rutas de API que requieren autenticación
@@ -195,23 +184,14 @@ export const protectedApiRoutes = [
   '/api/orders/(.*)',
   '/api/user/(.*)',
   '/api/payments/(.*)',
-];
+]
 
 // ===================================
 // TIPOS
 // ===================================
 export interface AuthenticatedUser {
-  id: string;
-  email: string;
-  name?: string;
-  image?: string;
+  id: string
+  email: string
+  name?: string
+  image?: string
 }
-
-
-
-
-
-
-
-
-

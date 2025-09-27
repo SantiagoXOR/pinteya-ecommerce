@@ -1,6 +1,6 @@
 /**
  * Configuración del Design System Pinteya
- * 
+ *
  * Este archivo centraliza la configuración de características del design system,
  * permitiendo activar/desactivar funcionalidades de forma controlada.
  */
@@ -10,7 +10,7 @@ export interface DesignSystemConfig {
   ecommerce: {
     // Activar nuevos componentes e-commerce globalmente
     enableNewComponents: boolean
-    
+
     // Configuración de PriceDisplay
     priceDisplay: {
       defaultCurrency: string
@@ -18,7 +18,7 @@ export interface DesignSystemConfig {
       defaultVariant: 'default' | 'center' | 'compact'
       defaultSize: 'sm' | 'md' | 'lg' | 'xl'
     }
-    
+
     // Configuración de StockIndicator
     stockIndicator: {
       defaultLowStockThreshold: number
@@ -26,7 +26,7 @@ export interface DesignSystemConfig {
       defaultUnit: string
       defaultVariant: 'default' | 'compact' | 'badge' | 'minimal'
     }
-    
+
     // Configuración de ShippingInfo
     shippingInfo: {
       highlightFreeShippingByDefault: boolean
@@ -35,7 +35,7 @@ export interface DesignSystemConfig {
       freeShippingThreshold: number // En pesos argentinos
     }
   }
-  
+
   // Configuración de CommercialProductCard
   productCard: {
     useNewComponentsByDefault: boolean
@@ -44,20 +44,20 @@ export interface DesignSystemConfig {
     showExactStockByDefault: boolean
     defaultStockUnit: string
   }
-  
+
   // Configuración de temas
   theme: {
     enableDarkMode: boolean
     defaultTheme: 'light' | 'dark' | 'auto'
   }
-  
+
   // Configuración de testing
   testing: {
     enableVisualRegression: boolean
     enableAccessibilityTests: boolean
     enablePerformanceTests: boolean
   }
-  
+
   // Configuración de desarrollo
   development: {
     enableStorybook: boolean
@@ -72,21 +72,21 @@ export interface DesignSystemConfig {
 export const defaultDesignSystemConfig: DesignSystemConfig = {
   ecommerce: {
     enableNewComponents: true, // Activar nuevos componentes por defecto
-    
+
     priceDisplay: {
       defaultCurrency: 'ARS',
       showDiscountByDefault: true,
       defaultVariant: 'compact', // Mejor para ProductCard
       defaultSize: 'sm', // Mejor para grids de productos
     },
-    
+
     stockIndicator: {
       defaultLowStockThreshold: 5,
       showExactQuantityByDefault: false, // Solo en páginas de detalle
       defaultUnit: 'unidades',
       defaultVariant: 'minimal', // Mejor para ProductCard
     },
-    
+
     shippingInfo: {
       highlightFreeShippingByDefault: true,
       showCalculatorByDefault: false, // Solo en checkout/detalle
@@ -94,7 +94,7 @@ export const defaultDesignSystemConfig: DesignSystemConfig = {
       freeShippingThreshold: 50000, // $50.000 ARS
     },
   },
-  
+
   productCard: {
     useNewComponentsByDefault: true, // ✅ ACTIVADO: Migración completada
     showInstallmentsByDefault: false, // Solo productos > $10.000
@@ -102,18 +102,18 @@ export const defaultDesignSystemConfig: DesignSystemConfig = {
     showExactStockByDefault: false, // Solo en páginas de detalle
     defaultStockUnit: 'unidades',
   },
-  
+
   theme: {
     enableDarkMode: false, // Fase 2
     defaultTheme: 'light',
   },
-  
+
   testing: {
     enableVisualRegression: false, // Fase 2
     enableAccessibilityTests: true,
     enablePerformanceTests: true,
   },
-  
+
   development: {
     enableStorybook: true,
     enableDebugMode: process.env.NODE_ENV === 'development',
@@ -148,7 +148,7 @@ export const contextConfigs = {
       },
     },
   },
-  
+
   // Configuración para checkout
   checkout: {
     ...defaultDesignSystemConfig,
@@ -166,7 +166,7 @@ export const contextConfigs = {
       },
     },
   },
-  
+
   // Configuración para demos y testing
   demo: {
     ...defaultDesignSystemConfig,
@@ -198,19 +198,19 @@ export function useDesignSystemConfig(context?: keyof typeof contextConfigs): De
  * Función para verificar si una característica está habilitada
  */
 export function isFeatureEnabled(
-  feature: string, 
+  feature: string,
   config: DesignSystemConfig = defaultDesignSystemConfig
 ): boolean {
   const keys = feature.split('.')
   let current: any = config
-  
+
   for (const key of keys) {
     if (current[key] === undefined) {
       return false
     }
     current = current[key]
   }
-  
+
   return Boolean(current)
 }
 
@@ -218,7 +218,7 @@ export function isFeatureEnabled(
  * Función para determinar si mostrar cuotas basado en el precio
  */
 export function shouldShowInstallments(
-  price: number, 
+  price: number,
   config: DesignSystemConfig = defaultDesignSystemConfig
 ): boolean {
   // Mostrar cuotas para productos > $10.000
@@ -229,11 +229,13 @@ export function shouldShowInstallments(
  * Función para determinar si mostrar envío gratis basado en el precio
  */
 export function shouldShowFreeShipping(
-  price: number, 
+  price: number,
   config: DesignSystemConfig = defaultDesignSystemConfig
 ): boolean {
-  return price >= config.ecommerce.shippingInfo.freeShippingThreshold || 
-         config.ecommerce.shippingInfo.highlightFreeShippingByDefault
+  return (
+    price >= config.ecommerce.shippingInfo.freeShippingThreshold ||
+    config.ecommerce.shippingInfo.highlightFreeShippingByDefault
+  )
 }
 
 /**
@@ -264,19 +266,10 @@ export function calculateInstallments(price: number): {
       interestFree: true,
     }
   }
-  
+
   return {
     quantity: 1,
     amount: price,
     interestFree: true,
   }
 }
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,58 @@
+43b7bb59f4700682c69b11b4b01fcb8f
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "AdminCard", {
+    enumerable: true,
+    get: function() {
+        return AdminCard;
+    }
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _utils = require("../../../lib/core/utils");
+function AdminCard({ children, title, description, actions, className, padding = 'md', variant = 'default' }) {
+    const paddingClasses = {
+        none: '',
+        sm: 'p-4',
+        md: 'p-6',
+        lg: 'p-8'
+    };
+    const variantClasses = {
+        default: 'bg-white border border-gray-200',
+        outlined: 'bg-white border-2 border-gray-300',
+        elevated: 'bg-white shadow-lg border border-gray-200'
+    };
+    return /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+        className: (0, _utils.cn)("rounded-lg", variantClasses[variant], paddingClasses[padding], className),
+        children: [
+            (title || description || actions) && /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                className: (0, _utils.cn)("flex items-start justify-between", padding !== 'none' && "mb-4"),
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                        className: "flex-1",
+                        children: [
+                            title && /*#__PURE__*/ (0, _jsxruntime.jsx)("h3", {
+                                className: "text-lg font-semibold text-gray-900 mb-1",
+                                children: title
+                            }),
+                            description && /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                className: "text-sm text-gray-600",
+                                children: description
+                            })
+                        ]
+                    }),
+                    actions && /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                        className: "flex items-center space-x-2 ml-4",
+                        children: actions
+                    })
+                ]
+            }),
+            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                children: children
+            })
+        ]
+    });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcY29tcG9uZW50c1xcYWRtaW5cXHVpXFxBZG1pbkNhcmQudHN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IGNuIH0gZnJvbSAnQC9saWIvY29yZS91dGlscyc7XHJcblxyXG5pbnRlcmZhY2UgQWRtaW5DYXJkUHJvcHMge1xyXG4gIGNoaWxkcmVuOiBSZWFjdC5SZWFjdE5vZGU7XHJcbiAgdGl0bGU/OiBzdHJpbmc7XHJcbiAgZGVzY3JpcHRpb24/OiBzdHJpbmc7XHJcbiAgYWN0aW9ucz86IFJlYWN0LlJlYWN0Tm9kZTtcclxuICBjbGFzc05hbWU/OiBzdHJpbmc7XHJcbiAgcGFkZGluZz86ICdub25lJyB8ICdzbScgfCAnbWQnIHwgJ2xnJztcclxuICB2YXJpYW50PzogJ2RlZmF1bHQnIHwgJ291dGxpbmVkJyB8ICdlbGV2YXRlZCc7XHJcbn1cclxuXHJcbmV4cG9ydCBmdW5jdGlvbiBBZG1pbkNhcmQoeyBcclxuICBjaGlsZHJlbiwgXHJcbiAgdGl0bGUsIFxyXG4gIGRlc2NyaXB0aW9uLCBcclxuICBhY3Rpb25zLFxyXG4gIGNsYXNzTmFtZSxcclxuICBwYWRkaW5nID0gJ21kJyxcclxuICB2YXJpYW50ID0gJ2RlZmF1bHQnXHJcbn06IEFkbWluQ2FyZFByb3BzKSB7XHJcbiAgY29uc3QgcGFkZGluZ0NsYXNzZXMgPSB7XHJcbiAgICBub25lOiAnJyxcclxuICAgIHNtOiAncC00JyxcclxuICAgIG1kOiAncC02JyxcclxuICAgIGxnOiAncC04J1xyXG4gIH07XHJcblxyXG4gIGNvbnN0IHZhcmlhbnRDbGFzc2VzID0ge1xyXG4gICAgZGVmYXVsdDogJ2JnLXdoaXRlIGJvcmRlciBib3JkZXItZ3JheS0yMDAnLFxyXG4gICAgb3V0bGluZWQ6ICdiZy13aGl0ZSBib3JkZXItMiBib3JkZXItZ3JheS0zMDAnLFxyXG4gICAgZWxldmF0ZWQ6ICdiZy13aGl0ZSBzaGFkb3ctbGcgYm9yZGVyIGJvcmRlci1ncmF5LTIwMCdcclxuICB9O1xyXG5cclxuICByZXR1cm4gKFxyXG4gICAgPGRpdiBjbGFzc05hbWU9e2NuKFxyXG4gICAgICBcInJvdW5kZWQtbGdcIixcclxuICAgICAgdmFyaWFudENsYXNzZXNbdmFyaWFudF0sXHJcbiAgICAgIHBhZGRpbmdDbGFzc2VzW3BhZGRpbmddLFxyXG4gICAgICBjbGFzc05hbWVcclxuICAgICl9PlxyXG4gICAgICB7LyogSGVhZGVyICovfVxyXG4gICAgICB7KHRpdGxlIHx8IGRlc2NyaXB0aW9uIHx8IGFjdGlvbnMpICYmIChcclxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT17Y24oXHJcbiAgICAgICAgICBcImZsZXggaXRlbXMtc3RhcnQganVzdGlmeS1iZXR3ZWVuXCIsXHJcbiAgICAgICAgICBwYWRkaW5nICE9PSAnbm9uZScgJiYgXCJtYi00XCJcclxuICAgICAgICApfT5cclxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleC0xXCI+XHJcbiAgICAgICAgICAgIHt0aXRsZSAmJiAoXHJcbiAgICAgICAgICAgICAgPGgzIGNsYXNzTmFtZT1cInRleHQtbGcgZm9udC1zZW1pYm9sZCB0ZXh0LWdyYXktOTAwIG1iLTFcIj5cclxuICAgICAgICAgICAgICAgIHt0aXRsZX1cclxuICAgICAgICAgICAgICA8L2gzPlxyXG4gICAgICAgICAgICApfVxyXG4gICAgICAgICAgICB7ZGVzY3JpcHRpb24gJiYgKFxyXG4gICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1ncmF5LTYwMFwiPlxyXG4gICAgICAgICAgICAgICAge2Rlc2NyaXB0aW9ufVxyXG4gICAgICAgICAgICAgIDwvcD5cclxuICAgICAgICAgICAgKX1cclxuICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAge2FjdGlvbnMgJiYgKFxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIHNwYWNlLXgtMiBtbC00XCI+XHJcbiAgICAgICAgICAgICAge2FjdGlvbnN9XHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgKX1cclxuICAgICAgICA8L2Rpdj5cclxuICAgICAgKX1cclxuXHJcbiAgICAgIHsvKiBDb250ZW50ICovfVxyXG4gICAgICA8ZGl2PlxyXG4gICAgICAgIHtjaGlsZHJlbn1cclxuICAgICAgPC9kaXY+XHJcbiAgICA8L2Rpdj5cclxuICApO1xyXG59XHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcblxyXG5cclxuXHJcbiJdLCJuYW1lcyI6WyJBZG1pbkNhcmQiLCJjaGlsZHJlbiIsInRpdGxlIiwiZGVzY3JpcHRpb24iLCJhY3Rpb25zIiwiY2xhc3NOYW1lIiwicGFkZGluZyIsInZhcmlhbnQiLCJwYWRkaW5nQ2xhc3NlcyIsIm5vbmUiLCJzbSIsIm1kIiwibGciLCJ2YXJpYW50Q2xhc3NlcyIsImRlZmF1bHQiLCJvdXRsaW5lZCIsImVsZXZhdGVkIiwiZGl2IiwiY24iLCJoMyIsInAiXSwibWFwcGluZ3MiOiI7Ozs7K0JBWWdCQTs7O2VBQUFBOzs7O3VCQVpHO0FBWVosU0FBU0EsVUFBVSxFQUN4QkMsUUFBUSxFQUNSQyxLQUFLLEVBQ0xDLFdBQVcsRUFDWEMsT0FBTyxFQUNQQyxTQUFTLEVBQ1RDLFVBQVUsSUFBSSxFQUNkQyxVQUFVLFNBQVMsRUFDSjtJQUNmLE1BQU1DLGlCQUFpQjtRQUNyQkMsTUFBTTtRQUNOQyxJQUFJO1FBQ0pDLElBQUk7UUFDSkMsSUFBSTtJQUNOO0lBRUEsTUFBTUMsaUJBQWlCO1FBQ3JCQyxTQUFTO1FBQ1RDLFVBQVU7UUFDVkMsVUFBVTtJQUNaO0lBRUEscUJBQ0Usc0JBQUNDO1FBQUlaLFdBQVdhLElBQUFBLFNBQUUsRUFDaEIsY0FDQUwsY0FBYyxDQUFDTixRQUFRLEVBQ3ZCQyxjQUFjLENBQUNGLFFBQVEsRUFDdkJEOztZQUdFSCxDQUFBQSxTQUFTQyxlQUFlQyxPQUFNLG1CQUM5QixzQkFBQ2E7Z0JBQUlaLFdBQVdhLElBQUFBLFNBQUUsRUFDaEIsb0NBQ0FaLFlBQVksVUFBVTs7a0NBRXRCLHNCQUFDVzt3QkFBSVosV0FBVTs7NEJBQ1pILHVCQUNDLHFCQUFDaUI7Z0NBQUdkLFdBQVU7MENBQ1hIOzs0QkFHSkMsNkJBQ0MscUJBQUNpQjtnQ0FBRWYsV0FBVTswQ0FDVkY7Ozs7b0JBSU5DLHlCQUNDLHFCQUFDYTt3QkFBSVosV0FBVTtrQ0FDWkQ7Ozs7MEJBT1QscUJBQUNhOzBCQUNFaEI7Ozs7QUFJVCJ9

@@ -39,7 +39,16 @@ import { Button } from '@/components/ui/button'
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'outline', 'ghost', 'destructive', 'success', 'warning', 'link'],
+      options: [
+        'primary',
+        'secondary',
+        'outline',
+        'ghost',
+        'destructive',
+        'success',
+        'warning',
+        'link',
+      ],
       description: 'Variante visual del botón',
     },
     size: {
@@ -129,11 +138,19 @@ export const Link: Story = {
 // Tamaños
 export const Sizes: Story = {
   render: () => (
-    <div className="flex items-center gap-4 flex-wrap">
-      <Button variant="primary" size="sm">Pequeño</Button>
-      <Button variant="primary" size="md">Mediano</Button>
-      <Button variant="primary" size="lg">Grande</Button>
-      <Button variant="primary" size="xl">Extra Grande</Button>
+    <div className='flex items-center gap-4 flex-wrap'>
+      <Button variant='primary' size='sm'>
+        Pequeño
+      </Button>
+      <Button variant='primary' size='md'>
+        Mediano
+      </Button>
+      <Button variant='primary' size='lg'>
+        Grande
+      </Button>
+      <Button variant='primary' size='xl'>
+        Extra Grande
+      </Button>
     </div>
   ),
   parameters: {
@@ -148,14 +165,18 @@ export const Sizes: Story = {
 // Con íconos
 export const WithIcons: Story = {
   render: () => (
-    <div className="flex items-center gap-4 flex-wrap">
-      <Button variant="primary" leftIcon={<ShoppingCart className="w-4 h-4" />}>
+    <div className='flex items-center gap-4 flex-wrap'>
+      <Button variant='primary' leftIcon={<ShoppingCart className='w-4 h-4' />}>
         Agregar al carrito
       </Button>
-      <Button variant="outline" rightIcon={<ArrowRight className="w-4 h-4" />}>
+      <Button variant='outline' rightIcon={<ArrowRight className='w-4 h-4' />}>
         Ver más
       </Button>
-      <Button variant="secondary" leftIcon={<Download className="w-4 h-4" />} rightIcon={<ArrowRight className="w-4 h-4" />}>
+      <Button
+        variant='secondary'
+        leftIcon={<Download className='w-4 h-4' />}
+        rightIcon={<ArrowRight className='w-4 h-4' />}
+      >
         Descargar catálogo
       </Button>
     </div>
@@ -172,18 +193,18 @@ export const WithIcons: Story = {
 // Botones de íconos
 export const IconButtons: Story = {
   render: () => (
-    <div className="flex items-center gap-4 flex-wrap">
-      <Button variant="primary" size="icon">
-        <ShoppingCart className="w-4 h-4" />
+    <div className='flex items-center gap-4 flex-wrap'>
+      <Button variant='primary' size='icon'>
+        <ShoppingCart className='w-4 h-4' />
       </Button>
-      <Button variant="outline" size="icon">
-        <Heart className="w-4 h-4" />
+      <Button variant='outline' size='icon'>
+        <Heart className='w-4 h-4' />
       </Button>
-      <Button variant="ghost" size="icon-sm">
-        <Plus className="w-3 h-3" />
+      <Button variant='ghost' size='icon-sm'>
+        <Plus className='w-3 h-3' />
       </Button>
-      <Button variant="secondary" size="icon-lg">
-        <Download className="w-5 h-5" />
+      <Button variant='secondary' size='icon-lg'>
+        <Download className='w-5 h-5' />
       </Button>
     </div>
   ),
@@ -245,41 +266,41 @@ export const FullWidth: Story = {
 // Casos de uso específicos para e-commerce
 export const EcommerceExamples: Story = {
   render: () => (
-    <div className="space-y-6 w-full max-w-md">
+    <div className='space-y-6 w-full max-w-md'>
       {/* Producto card actions */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-sm text-gray-600">Acciones de producto</h3>
-        <div className="flex gap-2">
-          <Button variant="primary" size="lg" className="flex-1">
+      <div className='space-y-2'>
+        <h3 className='font-semibold text-sm text-gray-600'>Acciones de producto</h3>
+        <div className='flex gap-2'>
+          <Button variant='primary' size='lg' className='flex-1'>
             Agregar al carrito
           </Button>
-          <Button variant="outline" size="lg">
-            <Heart className="w-4 h-4" />
+          <Button variant='outline' size='lg'>
+            <Heart className='w-4 h-4' />
           </Button>
         </div>
       </div>
 
       {/* Checkout flow */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-sm text-gray-600">Flujo de compra</h3>
-        <div className="space-y-2">
-          <Button variant="primary" fullWidth size="lg">
+      <div className='space-y-2'>
+        <h3 className='font-semibold text-sm text-gray-600'>Flujo de compra</h3>
+        <div className='space-y-2'>
+          <Button variant='primary' fullWidth size='lg'>
             🚀 Comprar ahora
           </Button>
-          <Button variant="outline" fullWidth>
+          <Button variant='outline' fullWidth>
             Agregar al carrito
           </Button>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-sm text-gray-600">Navegación</h3>
-        <div className="flex gap-2">
-          <Button variant="outline" leftIcon={<ArrowRight className="w-4 h-4 rotate-180" />}>
+      <div className='space-y-2'>
+        <h3 className='font-semibold text-sm text-gray-600'>Navegación</h3>
+        <div className='flex gap-2'>
+          <Button variant='outline' leftIcon={<ArrowRight className='w-4 h-4 rotate-180' />}>
             Anterior
           </Button>
-          <Button variant="primary" rightIcon={<ArrowRight className="w-4 h-4" />}>
+          <Button variant='primary' rightIcon={<ArrowRight className='w-4 h-4' />}>
             Siguiente
           </Button>
         </div>
@@ -298,15 +319,15 @@ export const EcommerceExamples: Story = {
 // Todas las variantes juntas
 export const AllVariants: Story = {
   render: () => (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Button variant="primary">Primary</Button>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="outline">Outline</Button>
-      <Button variant="ghost">Ghost</Button>
-      <Button variant="destructive">Destructive</Button>
-      <Button variant="success">Success</Button>
-      <Button variant="warning">Warning</Button>
-      <Button variant="link">Link</Button>
+    <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+      <Button variant='primary'>Primary</Button>
+      <Button variant='secondary'>Secondary</Button>
+      <Button variant='outline'>Outline</Button>
+      <Button variant='ghost'>Ghost</Button>
+      <Button variant='destructive'>Destructive</Button>
+      <Button variant='success'>Success</Button>
+      <Button variant='warning'>Warning</Button>
+      <Button variant='link'>Link</Button>
     </div>
   ),
   parameters: {
@@ -317,12 +338,3 @@ export const AllVariants: Story = {
     },
   },
 }
-
-
-
-
-
-
-
-
-

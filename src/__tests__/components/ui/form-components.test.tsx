@@ -12,9 +12,9 @@ jest.mock('@radix-ui/react-checkbox', () => ({
   Root: ({ children, onCheckedChange, checked, ...props }: any) => (
     <div>
       <input
-        type="checkbox"
+        type='checkbox'
         checked={checked}
-        onChange={(e) => onCheckedChange?.(e.target.checked)}
+        onChange={e => onCheckedChange?.(e.target.checked)}
         {...props}
       />
       {children}
@@ -26,13 +26,13 @@ jest.mock('@radix-ui/react-checkbox', () => ({
 jest.mock('@radix-ui/react-radio-group', () => ({
   ...jest.requireActual('@radix-ui/react-radio-group'),
   Root: ({ children, onValueChange, value, ...props }: any) => (
-    <div role="radiogroup" {...props}>
+    <div role='radiogroup' {...props}>
       {children}
     </div>
   ),
   Item: ({ children, value, ...props }: any) => (
     <div>
-      <input type="radio" value={value} {...props} />
+      <input type='radio' value={value} {...props} />
       {children}
     </div>
   ),
@@ -42,24 +42,19 @@ jest.mock('@radix-ui/react-radio-group', () => ({
 describe('Form Components', () => {
   describe('Checkbox', () => {
     it('renders with label and description', () => {
-      render(
-        <Checkbox 
-          label="Accept terms" 
-          description="Please read our terms and conditions"
-        />
-      )
+      render(<Checkbox label='Accept terms' description='Please read our terms and conditions' />)
 
       expect(screen.getByText('Accept terms')).toBeInTheDocument()
       expect(screen.getByText('Please read our terms and conditions')).toBeInTheDocument()
     })
 
     it('shows required indicator', () => {
-      render(<Checkbox label="Required field" required />)
+      render(<Checkbox label='Required field' required />)
       expect(screen.getByText('*')).toBeInTheDocument()
     })
 
     it('displays error message', () => {
-      render(<Checkbox label="Field" error="This field is required" />)
+      render(<Checkbox label='Field' error='This field is required' />)
       expect(screen.getByText('This field is required')).toBeInTheDocument()
     })
 
@@ -67,7 +62,7 @@ describe('Form Components', () => {
       const user = userEvent.setup()
       const onCheckedChange = jest.fn()
 
-      render(<Checkbox label="Test checkbox" onCheckedChange={onCheckedChange} />)
+      render(<Checkbox label='Test checkbox' onCheckedChange={onCheckedChange} />)
 
       const checkbox = screen.getByRole('checkbox')
       await user.click(checkbox)
@@ -79,12 +74,9 @@ describe('Form Components', () => {
   describe('CheckboxGroup', () => {
     it('renders group with label and description', () => {
       render(
-        <CheckboxGroup 
-          label="Preferences" 
-          description="Select your preferences"
-        >
-          <Checkbox label="Option 1" />
-          <Checkbox label="Option 2" />
+        <CheckboxGroup label='Preferences' description='Select your preferences'>
+          <Checkbox label='Option 1' />
+          <Checkbox label='Option 2' />
         </CheckboxGroup>
       )
 
@@ -96,8 +88,8 @@ describe('Form Components', () => {
 
     it('displays error message', () => {
       render(
-        <CheckboxGroup error="Please select at least one option">
-          <Checkbox label="Option 1" />
+        <CheckboxGroup error='Please select at least one option'>
+          <Checkbox label='Option 1' />
         </CheckboxGroup>
       )
 
@@ -108,9 +100,9 @@ describe('Form Components', () => {
   describe('RadioGroup', () => {
     it('renders with label and items', () => {
       render(
-        <RadioGroup label="Choose option">
-          <RadioGroupItem value="option1" label="Option 1" />
-          <RadioGroupItem value="option2" label="Option 2" />
+        <RadioGroup label='Choose option'>
+          <RadioGroupItem value='option1' label='Option 1' />
+          <RadioGroupItem value='option2' label='Option 2' />
         </RadioGroup>
       )
 
@@ -121,8 +113,8 @@ describe('Form Components', () => {
 
     it('shows required indicator', () => {
       render(
-        <RadioGroup label="Required choice" required>
-          <RadioGroupItem value="option1" label="Option 1" />
+        <RadioGroup label='Required choice' required>
+          <RadioGroupItem value='option1' label='Option 1' />
         </RadioGroup>
       )
 
@@ -132,43 +124,32 @@ describe('Form Components', () => {
 
   describe('Textarea', () => {
     it('renders with label and placeholder', () => {
-      render(
-        <Textarea 
-          label="Message" 
-          placeholder="Enter your message"
-        />
-      )
+      render(<Textarea label='Message' placeholder='Enter your message' />)
 
       expect(screen.getByText('Message')).toBeInTheDocument()
       expect(screen.getByPlaceholderText('Enter your message')).toBeInTheDocument()
     })
 
     it('shows character count when enabled', () => {
-      render(
-        <Textarea
-          showCharCount
-          maxLength={100}
-          defaultValue="Hello"
-        />
-      )
+      render(<Textarea showCharCount maxLength={100} defaultValue='Hello' />)
 
       // El componente muestra el contador de caracteres
       expect(screen.getByText(/\/100/)).toBeInTheDocument()
     })
 
     it('displays error message', () => {
-      render(<Textarea label="Message" error="Message is required" />)
+      render(<Textarea label='Message' error='Message is required' />)
       expect(screen.getByText('Message is required')).toBeInTheDocument()
     })
 
     it('enforces max length', async () => {
       const user = userEvent.setup()
-      
+
       render(<Textarea maxLength={5} />)
-      
+
       const textarea = screen.getByRole('textbox')
       await user.type(textarea, 'This is a long message')
-      
+
       expect(textarea).toHaveValue('This ')
     })
   })
@@ -177,7 +158,7 @@ describe('Form Components', () => {
     it('renders form with sections and rows', () => {
       render(
         <Form>
-          <FormSection title="Personal Info" description="Your details">
+          <FormSection title='Personal Info' description='Your details'>
             <FormRow columns={2}>
               <div>Field 1</div>
               <div>Field 2</div>
@@ -197,32 +178,30 @@ describe('Form Components', () => {
     function TestForm() {
       const { values, errors, handleSubmit, register } = useForm({
         defaultValues: { name: '', email: '' },
-        validate: (data) => {
+        validate: data => {
           const errors: Record<string, string> = {}
-          if (!data.name) {errors.name = 'Name required'}
-          if (!data.email) {errors.email = 'Email required'}
+          if (!data.name) {
+            errors.name = 'Name required'
+          }
+          if (!data.email) {
+            errors.email = 'Email required'
+          }
           return Object.keys(errors).length > 0 ? errors : null
         },
-        onSubmit: (data) => {
+        onSubmit: data => {
           console.log('Submitted:', data)
-        }
+        },
       })
 
       return (
         <form onSubmit={handleSubmit}>
-          <input 
-            placeholder="Name"
-            {...register('name')}
-          />
+          <input placeholder='Name' {...register('name')} />
           {errors.name && <span>{errors.name}</span>}
-          
-          <input 
-            placeholder="Email"
-            {...register('email')}
-          />
+
+          <input placeholder='Email' {...register('email')} />
           {errors.email && <span>{errors.email}</span>}
-          
-          <button type="submit">Submit</button>
+
+          <button type='submit'>Submit</button>
         </form>
       )
     }
@@ -268,20 +247,20 @@ describe('Form Components', () => {
 
   describe('Accessibility', () => {
     it('checkbox has proper labels', () => {
-      render(<Checkbox label="Accept terms" id="terms" />)
-      
+      render(<Checkbox label='Accept terms' id='terms' />)
+
       const checkbox = screen.getByRole('checkbox')
       const label = screen.getByText('Accept terms')
-      
+
       expect(checkbox).toHaveAttribute('id', 'terms')
       expect(label).toHaveAttribute('for', 'terms')
     })
 
     it('radio group has proper structure', () => {
       render(
-        <RadioGroup label="Choose option">
-          <RadioGroupItem value="option1" label="Option 1" />
-          <RadioGroupItem value="option2" label="Option 2" />
+        <RadioGroup label='Choose option'>
+          <RadioGroupItem value='option1' label='Option 1' />
+          <RadioGroupItem value='option2' label='Option 2' />
         </RadioGroup>
       )
 
@@ -289,11 +268,11 @@ describe('Form Components', () => {
     })
 
     it('textarea has proper labeling', () => {
-      render(<Textarea label="Message" id="message" />)
-      
+      render(<Textarea label='Message' id='message' />)
+
       const textarea = screen.getByRole('textbox')
       const label = screen.getByText('Message')
-      
+
       expect(textarea).toHaveAttribute('id', 'message')
       expect(label).toHaveAttribute('for', 'message')
     })
@@ -301,8 +280,8 @@ describe('Form Components', () => {
     it('form fields support required attribute', () => {
       render(
         <div>
-          <Checkbox label="Required checkbox" required />
-          <Textarea label="Required textarea" required />
+          <Checkbox label='Required checkbox' required />
+          <Textarea label='Required textarea' required />
         </div>
       )
 
@@ -314,8 +293,8 @@ describe('Form Components', () => {
     it('shows error styling for invalid fields', () => {
       render(
         <div>
-          <Checkbox label="Field" error="Error message" />
-          <Textarea label="Field" error="Error message" />
+          <Checkbox label='Field' error='Error message' />
+          <Textarea label='Field' error='Error message' />
         </div>
       )
 
@@ -323,19 +302,10 @@ describe('Form Components', () => {
     })
 
     it('applies error variant to components', () => {
-      render(<Textarea variant="error" />)
-      
+      render(<Textarea variant='error' />)
+
       const textarea = screen.getByRole('textbox')
       expect(textarea).toHaveClass('border-red-500')
     })
   })
 })
-
-
-
-
-
-
-
-
-

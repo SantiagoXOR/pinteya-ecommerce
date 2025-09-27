@@ -2,8 +2,8 @@
 // PINTEYA E-COMMERCE - FUNCIONES DE API PARA CATEGORÍAS
 // ===================================
 
-import { CategoryFilters, ApiResponse } from '@/types/api';
-import { Category } from '@/types/database';
+import { CategoryFilters, ApiResponse } from '@/types/api'
+import { Category } from '@/types/database'
 
 // ===================================
 // FUNCIONES PARA EL FRONTEND
@@ -16,14 +16,14 @@ import { Category } from '@/types/database';
  */
 export async function getCategories(filters?: CategoryFilters): Promise<ApiResponse<Category[]>> {
   try {
-    const searchParams = new URLSearchParams();
-    
+    const searchParams = new URLSearchParams()
+
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          searchParams.append(key, value.toString());
+          searchParams.append(key, value.toString())
         }
-      });
+      })
     }
 
     const response = await fetch(`/api/categories?${searchParams.toString()}`, {
@@ -31,16 +31,16 @@ export async function getCategories(filters?: CategoryFilters): Promise<ApiRespo
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      throw new Error(`Error ${response.status}: ${response.statusText}`)
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
-    console.error('Error obteniendo categorías:', error);
-    throw error;
+    console.error('Error obteniendo categorías:', error)
+    throw error
   }
 }
 
@@ -50,11 +50,11 @@ export async function getCategories(filters?: CategoryFilters): Promise<ApiRespo
  */
 export async function getMainCategories(): Promise<Category[]> {
   try {
-    const response = await getCategories();
-    return response.data || [];
+    const response = await getCategories()
+    return response.data || []
   } catch (error) {
-    console.error('Error obteniendo categorías:', error);
-    return [];
+    console.error('Error obteniendo categorías:', error)
+    return []
   }
 }
 
@@ -66,8 +66,8 @@ export async function getMainCategories(): Promise<Category[]> {
 export async function getSubcategories(parentId: number): Promise<Category[]> {
   // Nota: La tabla categories actual no soporta jerarquías (no tiene parent_id)
   // Retornamos array vacío por ahora
-  console.warn('getSubcategories: La tabla categories no soporta jerarquías');
-  return [];
+  console.warn('getSubcategories: La tabla categories no soporta jerarquías')
+  return []
 }
 
 /**
@@ -77,11 +77,11 @@ export async function getSubcategories(parentId: number): Promise<Category[]> {
  */
 export async function searchCategories(searchTerm: string): Promise<Category[]> {
   try {
-    const response = await getCategories({ search: searchTerm });
-    return response.data || [];
+    const response = await getCategories({ search: searchTerm })
+    return response.data || []
   } catch (error) {
-    console.error('Error buscando categorías:', error);
-    return [];
+    console.error('Error buscando categorías:', error)
+    return []
   }
 }
 
@@ -96,18 +96,18 @@ export async function getCategoriesHierarchy(): Promise<CategoryHierarchy[]> {
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    })
 
     if (!response.ok) {
       // Si no existe el endpoint de jerarquía, construirla manualmente
-      return await buildCategoriesHierarchy();
+      return await buildCategoriesHierarchy()
     }
 
-    const data = await response.json();
-    return data.data || [];
+    const data = await response.json()
+    return data.data || []
   } catch (error) {
-    console.error('Error obteniendo jerarquía de categorías:', error);
-    return await buildCategoriesHierarchy();
+    console.error('Error obteniendo jerarquía de categorías:', error)
+    return await buildCategoriesHierarchy()
   }
 }
 
@@ -116,7 +116,7 @@ export async function getCategoriesHierarchy(): Promise<CategoryHierarchy[]> {
 // ===================================
 
 export interface CategoryHierarchy extends Category {
-  children: CategoryHierarchy[];
+  children: CategoryHierarchy[]
 }
 
 /**
@@ -125,19 +125,19 @@ export interface CategoryHierarchy extends Category {
  */
 async function buildCategoriesHierarchy(): Promise<CategoryHierarchy[]> {
   try {
-    const response = await getCategories();
-    const categories = response.data || [];
+    const response = await getCategories()
+    const categories = response.data || []
 
     // Como no hay parent_id, todas las categorías son de nivel raíz
     const rootCategories: CategoryHierarchy[] = categories.map(category => ({
       ...category,
-      children: []
-    }));
+      children: [],
+    }))
 
-    return rootCategories;
+    return rootCategories
   } catch (error) {
-    console.error('Error construyendo jerarquía de categorías:', error);
-    return [];
+    console.error('Error construyendo jerarquía de categorías:', error)
+    return []
   }
 }
 
@@ -153,14 +153,14 @@ export async function getCategoryBySlug(
 ): Promise<Category | null> {
   try {
     if (!categories) {
-      const response = await getCategories();
-      categories = response.data || [];
+      const response = await getCategories()
+      categories = response.data || []
     }
 
-    return categories.find(category => category.slug === slug) || null;
+    return categories.find(category => category.slug === slug) || null
   } catch (error) {
-    console.error(`Error obteniendo categoría por slug ${slug}:`, error);
-    return null;
+    console.error(`Error obteniendo categoría por slug ${slug}:`, error)
+    return null
   }
 }
 
@@ -176,16 +176,16 @@ export async function getCategoryBreadcrumb(
 ): Promise<Category[]> {
   try {
     if (!categories) {
-      const response = await getCategories();
-      categories = response.data || [];
+      const response = await getCategories()
+      categories = response.data || []
     }
 
     // Como no hay jerarquías, el breadcrumb solo incluye la categoría actual
-    const currentCategory = categories.find(cat => cat.id === categoryId);
-    return currentCategory ? [currentCategory] : [];
+    const currentCategory = categories.find(cat => cat.id === categoryId)
+    return currentCategory ? [currentCategory] : []
   } catch (error) {
-    console.error(`Error obteniendo breadcrumb de categoría ${categoryId}:`, error);
-    return [];
+    console.error(`Error obteniendo breadcrumb de categoría ${categoryId}:`, error)
+    return []
   }
 }
 
@@ -200,7 +200,7 @@ export async function hasSubcategories(
   categories?: Category[]
 ): Promise<boolean> {
   // Como no hay jerarquías, ninguna categoría tiene subcategorías
-  return false;
+  return false
 }
 
 /**
@@ -209,7 +209,7 @@ export async function hasSubcategories(
  * @returns string
  */
 export function formatCategoryName(category: Category): string {
-  return category.name.charAt(0).toUpperCase() + category.name.slice(1).toLowerCase();
+  return category.name.charAt(0).toUpperCase() + category.name.slice(1).toLowerCase()
 }
 
 /**
@@ -218,7 +218,7 @@ export function formatCategoryName(category: Category): string {
  * @returns string
  */
 export function getCategoryUrl(category: Category): string {
-  return `/shop?category=${category.slug}`;
+  return `/shop?category=${category.slug}`
 }
 
 /**
@@ -227,14 +227,5 @@ export function getCategoryUrl(category: Category): string {
  * @returns string
  */
 export function getCategoryImage(category: Category): string {
-  return (category && category.icon) ? category.icon : '/images/categories/default.jpg';
+  return category && category.icon ? category.icon : '/images/categories/default.jpg'
 }
-
-
-
-
-
-
-
-
-

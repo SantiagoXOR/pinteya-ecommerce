@@ -4,279 +4,279 @@
 // A/B testing de metadata, optimización de Core Web Vitals y recomendaciones automáticas
 // ===================================
 
-import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger';
-import { getRedisClient } from '@/lib/integrations/redis';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { enhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager';
+import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger'
+import { getRedisClient } from '@/lib/integrations/redis'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { enhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager'
 
 // ===================================
 // INTERFACES Y TIPOS PRINCIPALES
 // ===================================
 
 export interface SEOOptimizationConfig {
-  enableCompetitorAnalysis: boolean;
-  enableABTesting: boolean;
-  enableCoreWebVitalsOptimization: boolean;
-  enableKeywordResearch: boolean;
-  enableContentOptimization: boolean;
-  enableTechnicalAudit: boolean;
-  
+  enableCompetitorAnalysis: boolean
+  enableABTesting: boolean
+  enableCoreWebVitalsOptimization: boolean
+  enableKeywordResearch: boolean
+  enableContentOptimization: boolean
+  enableTechnicalAudit: boolean
+
   // Configuración de análisis
-  competitorAnalysisDepth: 'basic' | 'detailed' | 'comprehensive';
-  abTestDuration: number; // días
-  coreWebVitalsThresholds: CoreWebVitalsThresholds;
-  
+  competitorAnalysisDepth: 'basic' | 'detailed' | 'comprehensive'
+  abTestDuration: number // días
+  coreWebVitalsThresholds: CoreWebVitalsThresholds
+
   // Configuración de cache
-  cacheEnabled: boolean;
-  cacheTTL: number; // segundos
-  
+  cacheEnabled: boolean
+  cacheTTL: number // segundos
+
   // APIs externas (opcional)
   externalAPIs: {
-    semrush?: { apiKey: string; enabled: boolean };
-    ahrefs?: { apiKey: string; enabled: boolean };
-    googlePageSpeed?: { apiKey: string; enabled: boolean };
-  };
+    semrush?: { apiKey: string; enabled: boolean }
+    ahrefs?: { apiKey: string; enabled: boolean }
+    googlePageSpeed?: { apiKey: string; enabled: boolean }
+  }
 }
 
 export interface CoreWebVitalsThresholds {
-  lcp: { good: number; needsImprovement: number }; // Largest Contentful Paint
-  fid: { good: number; needsImprovement: number }; // First Input Delay
-  cls: { good: number; needsImprovement: number }; // Cumulative Layout Shift
-  fcp: { good: number; needsImprovement: number }; // First Contentful Paint
-  ttfb: { good: number; needsImprovement: number }; // Time to First Byte
-  inp: { good: number; needsImprovement: number }; // Interaction to Next Paint
+  lcp: { good: number; needsImprovement: number } // Largest Contentful Paint
+  fid: { good: number; needsImprovement: number } // First Input Delay
+  cls: { good: number; needsImprovement: number } // Cumulative Layout Shift
+  fcp: { good: number; needsImprovement: number } // First Contentful Paint
+  ttfb: { good: number; needsImprovement: number } // Time to First Byte
+  inp: { good: number; needsImprovement: number } // Interaction to Next Paint
 }
 
 export interface CompetitorAnalysisResult {
-  competitor: string;
-  domain: string;
-  overallScore: number;
-  strengths: string[];
-  weaknesses: string[];
-  opportunities: string[];
-  keywordGaps: KeywordGap[];
-  contentGaps: ContentGap[];
-  technicalAdvantages: string[];
-  backlinksAnalysis: BacklinksAnalysis;
-  socialSignals: SocialSignalsAnalysis;
-  lastAnalyzed: Date;
+  competitor: string
+  domain: string
+  overallScore: number
+  strengths: string[]
+  weaknesses: string[]
+  opportunities: string[]
+  keywordGaps: KeywordGap[]
+  contentGaps: ContentGap[]
+  technicalAdvantages: string[]
+  backlinksAnalysis: BacklinksAnalysis
+  socialSignals: SocialSignalsAnalysis
+  lastAnalyzed: Date
 }
 
 export interface KeywordGap {
-  keyword: string;
-  competitorRanking: number;
-  ourRanking: number | null;
-  searchVolume: number;
-  difficulty: number;
-  opportunity: 'high' | 'medium' | 'low';
-  intent: 'informational' | 'navigational' | 'transactional' | 'commercial';
-  estimatedTraffic: number;
-  estimatedRevenue: number;
+  keyword: string
+  competitorRanking: number
+  ourRanking: number | null
+  searchVolume: number
+  difficulty: number
+  opportunity: 'high' | 'medium' | 'low'
+  intent: 'informational' | 'navigational' | 'transactional' | 'commercial'
+  estimatedTraffic: number
+  estimatedRevenue: number
 }
 
 export interface ContentGap {
-  topic: string;
+  topic: string
   competitorContent: {
-    title: string;
-    url: string;
-    wordCount: number;
-    socialShares: number;
-    backlinks: number;
-  };
+    title: string
+    url: string
+    wordCount: number
+    socialShares: number
+    backlinks: number
+  }
   ourContent: {
-    exists: boolean;
-    url?: string;
-    wordCount?: number;
-    socialShares?: number;
-    backlinks?: number;
-  };
-  opportunity: 'create' | 'improve' | 'expand';
-  priority: 'high' | 'medium' | 'low';
-  estimatedEffort: 'low' | 'medium' | 'high';
+    exists: boolean
+    url?: string
+    wordCount?: number
+    socialShares?: number
+    backlinks?: number
+  }
+  opportunity: 'create' | 'improve' | 'expand'
+  priority: 'high' | 'medium' | 'low'
+  estimatedEffort: 'low' | 'medium' | 'high'
 }
 
 export interface BacklinksAnalysis {
-  totalBacklinks: number;
-  uniqueDomains: number;
-  domainAuthority: number;
+  totalBacklinks: number
+  uniqueDomains: number
+  domainAuthority: number
   topReferringDomains: Array<{
-    domain: string;
-    authority: number;
-    backlinks: number;
-    traffic: number;
-  }>;
-  anchorTextDistribution: Record<string, number>;
+    domain: string
+    authority: number
+    backlinks: number
+    traffic: number
+  }>
+  anchorTextDistribution: Record<string, number>
   linkTypes: {
-    doFollow: number;
-    noFollow: number;
-    sponsored: number;
-    ugc: number;
-  };
+    doFollow: number
+    noFollow: number
+    sponsored: number
+    ugc: number
+  }
 }
 
 export interface SocialSignalsAnalysis {
-  facebook: { likes: number; shares: number; comments: number };
-  twitter: { tweets: number; retweets: number; likes: number };
-  linkedin: { shares: number; likes: number; comments: number };
-  instagram: { posts: number; likes: number; comments: number };
-  totalEngagement: number;
-  viralityScore: number;
+  facebook: { likes: number; shares: number; comments: number }
+  twitter: { tweets: number; retweets: number; likes: number }
+  linkedin: { shares: number; likes: number; comments: number }
+  instagram: { posts: number; likes: number; comments: number }
+  totalEngagement: number
+  viralityScore: number
 }
 
 export interface ABTestResult {
-  testId: string;
-  testName: string;
-  status: 'running' | 'completed' | 'paused' | 'cancelled';
-  startDate: Date;
-  endDate?: Date;
-  
+  testId: string
+  testName: string
+  status: 'running' | 'completed' | 'paused' | 'cancelled'
+  startDate: Date
+  endDate?: Date
+
   variants: Array<{
-    id: string;
-    name: string;
+    id: string
+    name: string
     metadata: {
-      title?: string;
-      description?: string;
-      keywords?: string[];
-    };
+      title?: string
+      description?: string
+      keywords?: string[]
+    }
     metrics: {
-      impressions: number;
-      clicks: number;
-      ctr: number;
-      conversions: number;
-      conversionRate: number;
-      revenue: number;
-    };
-    confidence: number;
-    isWinner: boolean;
-  }>;
-  
+      impressions: number
+      clicks: number
+      ctr: number
+      conversions: number
+      conversionRate: number
+      revenue: number
+    }
+    confidence: number
+    isWinner: boolean
+  }>
+
   results: {
-    winningVariant: string;
-    improvement: number;
-    significance: number;
-    recommendation: string;
-  };
+    winningVariant: string
+    improvement: number
+    significance: number
+    recommendation: string
+  }
 }
 
 export interface CoreWebVitalsOptimization {
-  url: string;
+  url: string
   currentMetrics: {
-    lcp: number;
-    fid: number;
-    cls: number;
-    fcp: number;
-    ttfb: number;
-    inp: number;
-  };
-  
+    lcp: number
+    fid: number
+    cls: number
+    fcp: number
+    ttfb: number
+    inp: number
+  }
+
   targetMetrics: {
-    lcp: number;
-    fid: number;
-    cls: number;
-    fcp: number;
-    ttfb: number;
-    inp: number;
-  };
-  
+    lcp: number
+    fid: number
+    cls: number
+    fcp: number
+    ttfb: number
+    inp: number
+  }
+
   optimizations: Array<{
-    metric: string;
-    issue: string;
-    solution: string;
-    priority: 'critical' | 'high' | 'medium' | 'low';
-    estimatedImpact: number; // percentage improvement
-    implementationEffort: 'low' | 'medium' | 'high';
-    resources: string[];
-  }>;
-  
-  overallScore: number;
-  improvementPotential: number;
+    metric: string
+    issue: string
+    solution: string
+    priority: 'critical' | 'high' | 'medium' | 'low'
+    estimatedImpact: number // percentage improvement
+    implementationEffort: 'low' | 'medium' | 'high'
+    resources: string[]
+  }>
+
+  overallScore: number
+  improvementPotential: number
 }
 
 export interface ContentOptimizationSuggestion {
-  url: string;
-  contentType: 'product' | 'category' | 'blog' | 'page';
-  currentScore: number;
-  targetScore: number;
-  
+  url: string
+  contentType: 'product' | 'category' | 'blog' | 'page'
+  currentScore: number
+  targetScore: number
+
   suggestions: Array<{
-    type: 'title' | 'description' | 'headings' | 'content' | 'images' | 'links' | 'schema';
-    current: string;
-    suggested: string;
-    reason: string;
-    impact: 'high' | 'medium' | 'low';
-    difficulty: 'easy' | 'medium' | 'hard';
-  }>;
-  
+    type: 'title' | 'description' | 'headings' | 'content' | 'images' | 'links' | 'schema'
+    current: string
+    suggested: string
+    reason: string
+    impact: 'high' | 'medium' | 'low'
+    difficulty: 'easy' | 'medium' | 'hard'
+  }>
+
   keywordOptimization: {
-    primaryKeyword: string;
-    currentDensity: number;
-    targetDensity: number;
-    relatedKeywords: string[];
-    semanticKeywords: string[];
-  };
-  
+    primaryKeyword: string
+    currentDensity: number
+    targetDensity: number
+    relatedKeywords: string[]
+    semanticKeywords: string[]
+  }
+
   readabilityAnalysis: {
-    score: number;
-    grade: string;
-    suggestions: string[];
-  };
+    score: number
+    grade: string
+    suggestions: string[]
+  }
 }
 
 export interface TechnicalSEOAuditResult {
-  url: string;
-  overallScore: number;
-  
+  url: string
+  overallScore: number
+
   issues: Array<{
-    category: 'critical' | 'error' | 'warning' | 'notice';
-    type: string;
-    description: string;
-    solution: string;
-    impact: 'high' | 'medium' | 'low';
-    effort: 'low' | 'medium' | 'high';
-    resources: string[];
-  }>;
-  
+    category: 'critical' | 'error' | 'warning' | 'notice'
+    type: string
+    description: string
+    solution: string
+    impact: 'high' | 'medium' | 'low'
+    effort: 'low' | 'medium' | 'high'
+    resources: string[]
+  }>
+
   categories: {
-    crawlability: { score: number; issues: number };
-    indexability: { score: number; issues: number };
-    performance: { score: number; issues: number };
-    mobile: { score: number; issues: number };
-    security: { score: number; issues: number };
-    structured_data: { score: number; issues: number };
-  };
-  
+    crawlability: { score: number; issues: number }
+    indexability: { score: number; issues: number }
+    performance: { score: number; issues: number }
+    mobile: { score: number; issues: number }
+    security: { score: number; issues: number }
+    structured_data: { score: number; issues: number }
+  }
+
   recommendations: Array<{
-    priority: 'immediate' | 'short_term' | 'long_term';
-    action: string;
-    expectedImpact: string;
-    resources: string[];
-  }>;
+    priority: 'immediate' | 'short_term' | 'long_term'
+    action: string
+    expectedImpact: string
+    resources: string[]
+  }>
 }
 
 export interface AutomatedRecommendation {
-  id: string;
-  type: 'keyword' | 'content' | 'technical' | 'competitor' | 'performance';
-  priority: 'critical' | 'high' | 'medium' | 'low';
-  title: string;
-  description: string;
-  
+  id: string
+  type: 'keyword' | 'content' | 'technical' | 'competitor' | 'performance'
+  priority: 'critical' | 'high' | 'medium' | 'low'
+  title: string
+  description: string
+
   actionItems: Array<{
-    task: string;
-    effort: 'low' | 'medium' | 'high';
-    impact: 'high' | 'medium' | 'low';
-    timeline: string;
-    resources: string[];
-  }>;
-  
+    task: string
+    effort: 'low' | 'medium' | 'high'
+    impact: 'high' | 'medium' | 'low'
+    timeline: string
+    resources: string[]
+  }>
+
   expectedResults: {
-    trafficIncrease: number; // percentage
-    rankingImprovement: number; // positions
-    conversionIncrease: number; // percentage
-    timeframe: string;
-  };
-  
-  createdAt: Date;
-  status: 'pending' | 'in_progress' | 'completed' | 'dismissed';
+    trafficIncrease: number // percentage
+    rankingImprovement: number // positions
+    conversionIncrease: number // percentage
+    timeframe: string
+  }
+
+  createdAt: Date
+  status: 'pending' | 'in_progress' | 'completed' | 'dismissed'
 }
 
 // Configuración por defecto
@@ -287,70 +287,85 @@ const DEFAULT_SEO_OPTIMIZATION_CONFIG: SEOOptimizationConfig = {
   enableKeywordResearch: true,
   enableContentOptimization: true,
   enableTechnicalAudit: true,
-  
+
   competitorAnalysisDepth: 'detailed',
   abTestDuration: 14, // 2 semanas
-  
+
   coreWebVitalsThresholds: {
     lcp: { good: 2.5, needsImprovement: 4.0 },
     fid: { good: 100, needsImprovement: 300 },
     cls: { good: 0.1, needsImprovement: 0.25 },
     fcp: { good: 1.8, needsImprovement: 3.0 },
     ttfb: { good: 600, needsImprovement: 1500 },
-    inp: { good: 200, needsImprovement: 500 }
+    inp: { good: 200, needsImprovement: 500 },
   },
-  
+
   cacheEnabled: true,
   cacheTTL: 3600, // 1 hora
-  
+
   externalAPIs: {
     semrush: { apiKey: '', enabled: false },
     ahrefs: { apiKey: '', enabled: false },
-    googlePageSpeed: { apiKey: '', enabled: false }
-  }
-};
+    googlePageSpeed: { apiKey: '', enabled: false },
+  },
+}
 
 // ===================================
 // ENHANCED SEO OPTIMIZATION TOOLS CLASS
 // ===================================
 
 export class EnhancedSEOOptimizationTools {
-  private static instance: EnhancedSEOOptimizationTools;
-  private config: SEOOptimizationConfig;
-  private redis: any;
-  private cache: Map<string, { data: any; timestamp: number }> = new Map();
-  private activeABTests: Map<string, ABTestResult> = new Map();
-  private recommendations: AutomatedRecommendation[] = [];
+  private static instance: EnhancedSEOOptimizationTools
+  private config: SEOOptimizationConfig
+  private redis: any
+  private cache: Map<string, { data: any; timestamp: number }> = new Map()
+  private activeABTests: Map<string, ABTestResult> = new Map()
+  private recommendations: AutomatedRecommendation[] = []
 
   private constructor(config?: Partial<SEOOptimizationConfig>) {
-    this.config = { ...DEFAULT_SEO_OPTIMIZATION_CONFIG, ...config };
-    this.initializeRedis();
+    this.config = { ...DEFAULT_SEO_OPTIMIZATION_CONFIG, ...config }
+    this.initializeRedis()
 
-    logger.info(LogLevel.INFO, 'Enhanced SEO Optimization Tools initialized', {
-      enabledFeatures: {
-        competitorAnalysis: this.config.enableCompetitorAnalysis,
-        abTesting: this.config.enableABTesting,
-        coreWebVitals: this.config.enableCoreWebVitalsOptimization,
-        keywordResearch: this.config.enableKeywordResearch,
-        contentOptimization: this.config.enableContentOptimization,
-        technicalAudit: this.config.enableTechnicalAudit
-      }
-    }, LogCategory.SEO);
+    logger.info(
+      LogLevel.INFO,
+      'Enhanced SEO Optimization Tools initialized',
+      {
+        enabledFeatures: {
+          competitorAnalysis: this.config.enableCompetitorAnalysis,
+          abTesting: this.config.enableABTesting,
+          coreWebVitals: this.config.enableCoreWebVitalsOptimization,
+          keywordResearch: this.config.enableKeywordResearch,
+          contentOptimization: this.config.enableContentOptimization,
+          technicalAudit: this.config.enableTechnicalAudit,
+        },
+      },
+      LogCategory.SEO
+    )
   }
 
   public static getInstance(config?: Partial<SEOOptimizationConfig>): EnhancedSEOOptimizationTools {
     if (!EnhancedSEOOptimizationTools.instance) {
-      EnhancedSEOOptimizationTools.instance = new EnhancedSEOOptimizationTools(config);
+      EnhancedSEOOptimizationTools.instance = new EnhancedSEOOptimizationTools(config)
     }
-    return EnhancedSEOOptimizationTools.instance;
+    return EnhancedSEOOptimizationTools.instance
   }
 
   private async initializeRedis(): Promise<void> {
     try {
-      this.redis = await getRedisClient();
-      logger.info(LogLevel.INFO, 'Redis initialized for SEO optimization tools', {}, LogCategory.SEO);
+      this.redis = await getRedisClient()
+      logger.info(
+        LogLevel.INFO,
+        'Redis initialized for SEO optimization tools',
+        {},
+        LogCategory.SEO
+      )
     } catch (error) {
-      logger.warn(LogLevel.WARN, 'Redis not available for SEO optimization tools', {}, LogCategory.SEO);
+      logger.warn(
+        LogLevel.WARN,
+        'Redis not available for SEO optimization tools',
+        {},
+        LogCategory.SEO
+      )
     }
   }
 
@@ -363,47 +378,51 @@ export class EnhancedSEOOptimizationTools {
    */
   public async analyzeCompetitors(competitors: string[]): Promise<CompetitorAnalysisResult[]> {
     if (!this.config.enableCompetitorAnalysis) {
-      throw new Error('Competitor analysis is disabled');
+      throw new Error('Competitor analysis is disabled')
     }
 
     try {
-      logger.info(LogLevel.INFO, 'Starting competitor analysis', { competitors }, LogCategory.SEO);
+      logger.info(LogLevel.INFO, 'Starting competitor analysis', { competitors }, LogCategory.SEO)
 
-      const results: CompetitorAnalysisResult[] = [];
+      const results: CompetitorAnalysisResult[] = []
 
       for (const competitor of competitors) {
         // Verificar cache
-        const cached = await this.getCachedData(`competitor:${competitor}`);
+        const cached = await this.getCachedData(`competitor:${competitor}`)
         if (cached) {
-          results.push(cached);
-          continue;
+          results.push(cached)
+          continue
         }
 
         // Realizar análisis completo
-        const analysis = await this.performCompetitorAnalysis(competitor);
-        results.push(analysis);
+        const analysis = await this.performCompetitorAnalysis(competitor)
+        results.push(analysis)
 
         // Cachear resultado
-        await this.setCachedData(`competitor:${competitor}`, analysis);
+        await this.setCachedData(`competitor:${competitor}`, analysis)
       }
 
       // Integrar con SEO Analytics
       enhancedSEOAnalyticsManager.trackSEOMetrics({
         competitorAnalysis: {
           competitorsAnalyzed: competitors.length,
-          timestamp: new Date()
-        }
-      });
+          timestamp: new Date(),
+        },
+      })
 
-      logger.info(LogLevel.INFO, 'Competitor analysis completed', {
-        competitorsAnalyzed: competitors.length
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'Competitor analysis completed',
+        {
+          competitorsAnalyzed: competitors.length,
+        },
+        LogCategory.SEO
+      )
 
-      return results;
-
+      return results
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to analyze competitors', error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(LogLevel.ERROR, 'Failed to analyze competitors', error as Error, LogCategory.SEO)
+      throw error
     }
   }
 
@@ -411,7 +430,7 @@ export class EnhancedSEOOptimizationTools {
    * Realizar análisis detallado de un competidor
    */
   private async performCompetitorAnalysis(competitor: string): Promise<CompetitorAnalysisResult> {
-    const domain = this.extractDomain(competitor);
+    const domain = this.extractDomain(competitor)
 
     // Simular análisis comprehensivo (en producción se integraría con APIs reales)
     const analysis: CompetitorAnalysisResult = {
@@ -424,7 +443,7 @@ export class EnhancedSEOOptimizationTools {
         'Excellent content marketing strategy',
         'High-quality backlink profile',
         'Optimized Core Web Vitals',
-        'Comprehensive keyword coverage'
+        'Comprehensive keyword coverage',
       ].slice(0, Math.floor(Math.random() * 3) + 2),
 
       weaknesses: [
@@ -432,7 +451,7 @@ export class EnhancedSEOOptimizationTools {
         'Slow page load times',
         'Poor mobile optimization',
         'Thin content on product pages',
-        'Missing structured data'
+        'Missing structured data',
       ].slice(0, Math.floor(Math.random() * 3) + 1),
 
       opportunities: [
@@ -440,7 +459,7 @@ export class EnhancedSEOOptimizationTools {
         'Content gap in how-to guides',
         'Local SEO optimization',
         'Video content creation',
-        'Voice search optimization'
+        'Voice search optimization',
       ].slice(0, Math.floor(Math.random() * 3) + 2),
 
       keywordGaps: await this.analyzeKeywordGaps(competitor),
@@ -449,7 +468,7 @@ export class EnhancedSEOOptimizationTools {
         'HTTPS implementation',
         'XML sitemap optimization',
         'Clean URL structure',
-        'Proper canonical tags'
+        'Proper canonical tags',
       ],
 
       backlinksAnalysis: {
@@ -459,21 +478,21 @@ export class EnhancedSEOOptimizationTools {
         topReferringDomains: [
           { domain: 'industry-blog.com', authority: 85, backlinks: 150, traffic: 50000 },
           { domain: 'news-site.com', authority: 78, backlinks: 89, traffic: 75000 },
-          { domain: 'partner-site.com', authority: 72, backlinks: 234, traffic: 30000 }
+          { domain: 'partner-site.com', authority: 72, backlinks: 234, traffic: 30000 },
         ],
         anchorTextDistribution: {
           'brand name': 35,
           'generic terms': 25,
           'exact match': 15,
           'partial match': 20,
-          'other': 5
+          other: 5,
         },
         linkTypes: {
           doFollow: 75,
           noFollow: 20,
           sponsored: 3,
-          ugc: 2
-        }
+          ugc: 2,
+        },
       },
 
       socialSignals: {
@@ -482,13 +501,13 @@ export class EnhancedSEOOptimizationTools {
         linkedin: { shares: 800, likes: 1500, comments: 200 },
         instagram: { posts: 1200, likes: 25000, comments: 1800 },
         totalEngagement: 61900,
-        viralityScore: Math.floor(Math.random() * 40) + 60
+        viralityScore: Math.floor(Math.random() * 40) + 60,
       },
 
-      lastAnalyzed: new Date()
-    };
+      lastAnalyzed: new Date(),
+    }
 
-    return analysis;
+    return analysis
   }
 
   /**
@@ -497,10 +516,17 @@ export class EnhancedSEOOptimizationTools {
   private async analyzeKeywordGaps(competitor: string): Promise<KeywordGap[]> {
     // Simular análisis de keyword gaps
     const keywords = [
-      'pintura interior', 'pintura exterior', 'esmalte sintético', 'látex acrílico',
-      'pintura antihumedad', 'barniz para madera', 'imprimación', 'rodillos de pintura',
-      'pinceles profesionales', 'pistola de pintar'
-    ];
+      'pintura interior',
+      'pintura exterior',
+      'esmalte sintético',
+      'látex acrílico',
+      'pintura antihumedad',
+      'barniz para madera',
+      'imprimación',
+      'rodillos de pintura',
+      'pinceles profesionales',
+      'pistola de pintar',
+    ]
 
     return keywords.map(keyword => ({
       keyword,
@@ -509,10 +535,12 @@ export class EnhancedSEOOptimizationTools {
       searchVolume: Math.floor(Math.random() * 5000) + 500,
       difficulty: Math.floor(Math.random() * 100),
       opportunity: Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low',
-      intent: ['informational', 'navigational', 'transactional', 'commercial'][Math.floor(Math.random() * 4)] as any,
+      intent: ['informational', 'navigational', 'transactional', 'commercial'][
+        Math.floor(Math.random() * 4)
+      ] as any,
       estimatedTraffic: Math.floor(Math.random() * 1000) + 100,
-      estimatedRevenue: Math.floor(Math.random() * 5000) + 500
-    }));
+      estimatedRevenue: Math.floor(Math.random() * 5000) + 500,
+    }))
   }
 
   /**
@@ -524,8 +552,8 @@ export class EnhancedSEOOptimizationTools {
       'Cómo preparar superficies antes de pintar',
       'Técnicas de pintura profesional',
       'Mantenimiento de herramientas de pintura',
-      'Tendencias en decoración 2024'
-    ];
+      'Tendencias en decoración 2024',
+    ]
 
     return topics.map(topic => ({
       topic,
@@ -534,19 +562,19 @@ export class EnhancedSEOOptimizationTools {
         url: `https://${competitor}/blog/${topic.toLowerCase().replace(/\s+/g, '-')}`,
         wordCount: Math.floor(Math.random() * 2000) + 1000,
         socialShares: Math.floor(Math.random() * 500) + 50,
-        backlinks: Math.floor(Math.random() * 50) + 10
+        backlinks: Math.floor(Math.random() * 50) + 10,
       },
       ourContent: {
         exists: Math.random() > 0.5,
         url: Math.random() > 0.5 ? `/blog/${topic.toLowerCase().replace(/\s+/g, '-')}` : undefined,
         wordCount: Math.random() > 0.5 ? Math.floor(Math.random() * 1500) + 500 : undefined,
         socialShares: Math.random() > 0.5 ? Math.floor(Math.random() * 200) + 20 : undefined,
-        backlinks: Math.random() > 0.5 ? Math.floor(Math.random() * 20) + 5 : undefined
+        backlinks: Math.random() > 0.5 ? Math.floor(Math.random() * 20) + 5 : undefined,
       },
       opportunity: Math.random() > 0.6 ? 'create' : Math.random() > 0.3 ? 'improve' : 'expand',
       priority: Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low',
-      estimatedEffort: Math.random() > 0.6 ? 'low' : Math.random() > 0.3 ? 'medium' : 'high'
-    }));
+      estimatedEffort: Math.random() > 0.6 ? 'low' : Math.random() > 0.3 ? 'medium' : 'high',
+    }))
   }
 
   // ===================================
@@ -557,23 +585,23 @@ export class EnhancedSEOOptimizationTools {
    * Crear nuevo A/B test para metadata
    */
   public async createABTest(testConfig: {
-    name: string;
-    url: string;
+    name: string
+    url: string
     variants: Array<{
-      name: string;
+      name: string
       metadata: {
-        title?: string;
-        description?: string;
-        keywords?: string[];
-      };
-    }>;
+        title?: string
+        description?: string
+        keywords?: string[]
+      }
+    }>
   }): Promise<string> {
     if (!this.config.enableABTesting) {
-      throw new Error('A/B Testing is disabled');
+      throw new Error('A/B Testing is disabled')
     }
 
     try {
-      const testId = `ab_test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const testId = `ab_test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
       const abTest: ABTestResult = {
         testId,
@@ -591,94 +619,113 @@ export class EnhancedSEOOptimizationTools {
             ctr: 0,
             conversions: 0,
             conversionRate: 0,
-            revenue: 0
+            revenue: 0,
           },
           confidence: 0,
-          isWinner: false
+          isWinner: false,
         })),
 
         results: {
           winningVariant: '',
           improvement: 0,
           significance: 0,
-          recommendation: ''
-        }
-      };
+          recommendation: '',
+        },
+      }
 
-      this.activeABTests.set(testId, abTest);
+      this.activeABTests.set(testId, abTest)
 
       // Cachear en Redis
-      await this.setCachedData(`ab_test:${testId}`, abTest);
+      await this.setCachedData(`ab_test:${testId}`, abTest)
 
-      logger.info(LogLevel.INFO, 'A/B Test created', {
-        testId,
-        testName: testConfig.name,
-        variants: testConfig.variants.length
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'A/B Test created',
+        {
+          testId,
+          testName: testConfig.name,
+          variants: testConfig.variants.length,
+        },
+        LogCategory.SEO
+      )
 
-      return testId;
-
+      return testId
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to create A/B test', error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(LogLevel.ERROR, 'Failed to create A/B test', error as Error, LogCategory.SEO)
+      throw error
     }
   }
 
   /**
    * Actualizar métricas de A/B test
    */
-  public async updateABTestMetrics(testId: string, variantId: string, metrics: {
-    impressions?: number;
-    clicks?: number;
-    conversions?: number;
-    revenue?: number;
-  }): Promise<void> {
+  public async updateABTestMetrics(
+    testId: string,
+    variantId: string,
+    metrics: {
+      impressions?: number
+      clicks?: number
+      conversions?: number
+      revenue?: number
+    }
+  ): Promise<void> {
     try {
-      const test = this.activeABTests.get(testId);
+      const test = this.activeABTests.get(testId)
       if (!test) {
-        throw new Error(`A/B Test ${testId} not found`);
+        throw new Error(`A/B Test ${testId} not found`)
       }
 
-      const variant = test.variants.find(v => v.id === variantId);
+      const variant = test.variants.find(v => v.id === variantId)
       if (!variant) {
-        throw new Error(`Variant ${variantId} not found in test ${testId}`);
+        throw new Error(`Variant ${variantId} not found in test ${testId}`)
       }
 
       // Actualizar métricas
       if (metrics.impressions !== undefined) {
-        variant.metrics.impressions += metrics.impressions;
+        variant.metrics.impressions += metrics.impressions
       }
       if (metrics.clicks !== undefined) {
-        variant.metrics.clicks += metrics.clicks;
+        variant.metrics.clicks += metrics.clicks
       }
       if (metrics.conversions !== undefined) {
-        variant.metrics.conversions += metrics.conversions;
+        variant.metrics.conversions += metrics.conversions
       }
       if (metrics.revenue !== undefined) {
-        variant.metrics.revenue += metrics.revenue;
+        variant.metrics.revenue += metrics.revenue
       }
 
       // Recalcular métricas derivadas
-      variant.metrics.ctr = variant.metrics.impressions > 0
-        ? (variant.metrics.clicks / variant.metrics.impressions) * 100
-        : 0;
+      variant.metrics.ctr =
+        variant.metrics.impressions > 0
+          ? (variant.metrics.clicks / variant.metrics.impressions) * 100
+          : 0
 
-      variant.metrics.conversionRate = variant.metrics.clicks > 0
-        ? (variant.metrics.conversions / variant.metrics.clicks) * 100
-        : 0;
+      variant.metrics.conversionRate =
+        variant.metrics.clicks > 0
+          ? (variant.metrics.conversions / variant.metrics.clicks) * 100
+          : 0
 
       // Actualizar cache
-      await this.setCachedData(`ab_test:${testId}`, test);
+      await this.setCachedData(`ab_test:${testId}`, test)
 
-      logger.info(LogLevel.INFO, 'A/B Test metrics updated', {
-        testId,
-        variantId,
-        metrics: variant.metrics
-      }, LogCategory.SEO);
-
+      logger.info(
+        LogLevel.INFO,
+        'A/B Test metrics updated',
+        {
+          testId,
+          variantId,
+          metrics: variant.metrics,
+        },
+        LogCategory.SEO
+      )
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to update A/B test metrics', error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to update A/B test metrics',
+        error as Error,
+        LogCategory.SEO
+      )
+      throw error
     }
   }
 
@@ -687,55 +734,63 @@ export class EnhancedSEOOptimizationTools {
    */
   public async analyzeABTestResults(testId: string): Promise<ABTestResult> {
     try {
-      const test = this.activeABTests.get(testId);
+      const test = this.activeABTests.get(testId)
       if (!test) {
-        throw new Error(`A/B Test ${testId} not found`);
+        throw new Error(`A/B Test ${testId} not found`)
       }
 
       // Calcular significancia estadística (simplificado)
-      const controlVariant = test.variants[0];
-      const testVariants = test.variants.slice(1);
+      const controlVariant = test.variants[0]
+      const testVariants = test.variants.slice(1)
 
-      let bestVariant = controlVariant;
-      let maxImprovement = 0;
+      let bestVariant = controlVariant
+      let maxImprovement = 0
 
       testVariants.forEach(variant => {
-        const improvement = ((variant.metrics.conversionRate - controlVariant.metrics.conversionRate)
-          / controlVariant.metrics.conversionRate) * 100;
+        const improvement =
+          ((variant.metrics.conversionRate - controlVariant.metrics.conversionRate) /
+            controlVariant.metrics.conversionRate) *
+          100
 
         if (improvement > maxImprovement) {
-          maxImprovement = improvement;
-          bestVariant = variant;
+          maxImprovement = improvement
+          bestVariant = variant
         }
 
         // Calcular confianza (simplificado)
-        variant.confidence = Math.min(95, Math.max(0,
-          (variant.metrics.conversions / Math.max(1, variant.metrics.clicks)) * 100
-        ));
-      });
+        variant.confidence = Math.min(
+          95,
+          Math.max(0, (variant.metrics.conversions / Math.max(1, variant.metrics.clicks)) * 100)
+        )
+      })
 
       // Marcar ganador
-      test.variants.forEach(v => v.isWinner = false);
-      bestVariant.isWinner = true;
+      test.variants.forEach(v => (v.isWinner = false))
+      bestVariant.isWinner = true
 
       // Actualizar resultados
       test.results = {
         winningVariant: bestVariant.id,
         improvement: maxImprovement,
         significance: bestVariant.confidence,
-        recommendation: maxImprovement > 10
-          ? `Implement ${bestVariant.name} - shows ${maxImprovement.toFixed(1)}% improvement`
-          : 'Continue testing - no significant difference detected'
-      };
+        recommendation:
+          maxImprovement > 10
+            ? `Implement ${bestVariant.name} - shows ${maxImprovement.toFixed(1)}% improvement`
+            : 'Continue testing - no significant difference detected',
+      }
 
       // Actualizar cache
-      await this.setCachedData(`ab_test:${testId}`, test);
+      await this.setCachedData(`ab_test:${testId}`, test)
 
-      return test;
-
+      return test
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to analyze A/B test results', error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to analyze A/B test results',
+        error as Error,
+        LogCategory.SEO
+      )
+      throw error
     }
   }
 
@@ -748,11 +803,11 @@ export class EnhancedSEOOptimizationTools {
    */
   public async analyzeCoreWebVitals(url: string): Promise<CoreWebVitalsOptimization> {
     if (!this.config.enableCoreWebVitalsOptimization) {
-      throw new Error('Core Web Vitals optimization is disabled');
+      throw new Error('Core Web Vitals optimization is disabled')
     }
 
     try {
-      logger.info(LogLevel.INFO, 'Analyzing Core Web Vitals', { url }, LogCategory.SEO);
+      logger.info(LogLevel.INFO, 'Analyzing Core Web Vitals', { url }, LogCategory.SEO)
 
       // Simular métricas actuales (en producción se usaría PageSpeed Insights API)
       const currentMetrics = {
@@ -761,8 +816,8 @@ export class EnhancedSEOOptimizationTools {
         cls: 0.05 + Math.random() * 0.2, // 0.05-0.25
         fcp: 1.5 + Math.random() * 1.5, // 1.5-3s
         ttfb: 400 + Math.random() * 800, // 400-1200ms
-        inp: 150 + Math.random() * 300 // 150-450ms
-      };
+        inp: 150 + Math.random() * 300, // 150-450ms
+      }
 
       const targetMetrics = {
         lcp: this.config.coreWebVitalsThresholds.lcp.good,
@@ -770,13 +825,13 @@ export class EnhancedSEOOptimizationTools {
         cls: this.config.coreWebVitalsThresholds.cls.good,
         fcp: this.config.coreWebVitalsThresholds.fcp.good,
         ttfb: this.config.coreWebVitalsThresholds.ttfb.good,
-        inp: this.config.coreWebVitalsThresholds.inp.good
-      };
+        inp: this.config.coreWebVitalsThresholds.inp.good,
+      }
 
-      const optimizations = this.generateCoreWebVitalsOptimizations(currentMetrics, targetMetrics);
+      const optimizations = this.generateCoreWebVitalsOptimizations(currentMetrics, targetMetrics)
 
-      const overallScore = this.calculateCoreWebVitalsScore(currentMetrics);
-      const improvementPotential = this.calculateImprovementPotential(currentMetrics, targetMetrics);
+      const overallScore = this.calculateCoreWebVitalsScore(currentMetrics)
+      const improvementPotential = this.calculateImprovementPotential(currentMetrics, targetMetrics)
 
       const result: CoreWebVitalsOptimization = {
         url,
@@ -784,51 +839,64 @@ export class EnhancedSEOOptimizationTools {
         targetMetrics,
         optimizations,
         overallScore,
-        improvementPotential
-      };
+        improvementPotential,
+      }
 
       // Cachear resultado
-      await this.setCachedData(`cwv:${url}`, result);
+      await this.setCachedData(`cwv:${url}`, result)
 
-      logger.info(LogLevel.INFO, 'Core Web Vitals analysis completed', {
-        url,
-        overallScore,
-        improvementPotential
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'Core Web Vitals analysis completed',
+        {
+          url,
+          overallScore,
+          improvementPotential,
+        },
+        LogCategory.SEO
+      )
 
-      return result;
-
+      return result
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to analyze Core Web Vitals', error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to analyze Core Web Vitals',
+        error as Error,
+        LogCategory.SEO
+      )
+      throw error
     }
   }
 
   /**
    * Generar optimizaciones específicas para Core Web Vitals
    */
-  private generateCoreWebVitalsOptimizations(current: any, target: any): Array<{
-    metric: string;
-    issue: string;
-    solution: string;
-    priority: 'critical' | 'high' | 'medium' | 'low';
-    estimatedImpact: number;
-    implementationEffort: 'low' | 'medium' | 'high';
-    resources: string[];
+  private generateCoreWebVitalsOptimizations(
+    current: any,
+    target: any
+  ): Array<{
+    metric: string
+    issue: string
+    solution: string
+    priority: 'critical' | 'high' | 'medium' | 'low'
+    estimatedImpact: number
+    implementationEffort: 'low' | 'medium' | 'high'
+    resources: string[]
   }> {
-    const optimizations = [];
+    const optimizations = []
 
     // LCP Optimizations
     if (current.lcp > target.lcp) {
       optimizations.push({
         metric: 'LCP',
         issue: `LCP is ${current.lcp.toFixed(2)}s, target is ${target.lcp}s`,
-        solution: 'Optimize largest contentful paint by compressing images, using CDN, and preloading critical resources',
-        priority: current.lcp > 4.0 ? 'critical' : 'high' as any,
+        solution:
+          'Optimize largest contentful paint by compressing images, using CDN, and preloading critical resources',
+        priority: current.lcp > 4.0 ? 'critical' : ('high' as any),
         estimatedImpact: 25,
         implementationEffort: 'medium' as any,
-        resources: ['Image optimization tools', 'CDN setup', 'Critical resource preloading']
-      });
+        resources: ['Image optimization tools', 'CDN setup', 'Critical resource preloading'],
+      })
     }
 
     // FID Optimizations
@@ -837,11 +905,11 @@ export class EnhancedSEOOptimizationTools {
         metric: 'FID',
         issue: `FID is ${current.fid.toFixed(0)}ms, target is ${target.fid}ms`,
         solution: 'Reduce JavaScript execution time and optimize third-party scripts',
-        priority: current.fid > 300 ? 'critical' : 'high' as any,
+        priority: current.fid > 300 ? 'critical' : ('high' as any),
         estimatedImpact: 30,
         implementationEffort: 'high' as any,
-        resources: ['JavaScript optimization', 'Code splitting', 'Third-party script audit']
-      });
+        resources: ['JavaScript optimization', 'Code splitting', 'Third-party script audit'],
+      })
     }
 
     // CLS Optimizations
@@ -849,26 +917,31 @@ export class EnhancedSEOOptimizationTools {
       optimizations.push({
         metric: 'CLS',
         issue: `CLS is ${current.cls.toFixed(3)}, target is ${target.cls}`,
-        solution: 'Set explicit dimensions for images and ads, avoid inserting content above existing content',
-        priority: current.cls > 0.25 ? 'critical' : 'medium' as any,
+        solution:
+          'Set explicit dimensions for images and ads, avoid inserting content above existing content',
+        priority: current.cls > 0.25 ? 'critical' : ('medium' as any),
         estimatedImpact: 20,
         implementationEffort: 'low' as any,
-        resources: ['CSS layout optimization', 'Image dimension attributes', 'Font loading optimization']
-      });
+        resources: [
+          'CSS layout optimization',
+          'Image dimension attributes',
+          'Font loading optimization',
+        ],
+      })
     }
 
-    return optimizations;
+    return optimizations
   }
 
   /**
    * Calcular score general de Core Web Vitals
    */
   private calculateCoreWebVitalsScore(metrics: any): number {
-    const lcpScore = metrics.lcp <= 2.5 ? 100 : metrics.lcp <= 4.0 ? 75 : 25;
-    const fidScore = metrics.fid <= 100 ? 100 : metrics.fid <= 300 ? 75 : 25;
-    const clsScore = metrics.cls <= 0.1 ? 100 : metrics.cls <= 0.25 ? 75 : 25;
+    const lcpScore = metrics.lcp <= 2.5 ? 100 : metrics.lcp <= 4.0 ? 75 : 25
+    const fidScore = metrics.fid <= 100 ? 100 : metrics.fid <= 300 ? 75 : 25
+    const clsScore = metrics.cls <= 0.1 ? 100 : metrics.cls <= 0.25 ? 75 : 25
 
-    return Math.round((lcpScore + fidScore + clsScore) / 3);
+    return Math.round((lcpScore + fidScore + clsScore) / 3)
   }
 
   /**
@@ -876,12 +949,12 @@ export class EnhancedSEOOptimizationTools {
    */
   private calculateImprovementPotential(current: any, target: any): number {
     const improvements = [
-      Math.max(0, (current.lcp - target.lcp) / current.lcp * 100),
-      Math.max(0, (current.fid - target.fid) / current.fid * 100),
-      Math.max(0, (current.cls - target.cls) / current.cls * 100)
-    ];
+      Math.max(0, ((current.lcp - target.lcp) / current.lcp) * 100),
+      Math.max(0, ((current.fid - target.fid) / current.fid) * 100),
+      Math.max(0, ((current.cls - target.cls) / current.cls) * 100),
+    ]
 
-    return Math.round(improvements.reduce((a, b) => a + b, 0) / improvements.length);
+    return Math.round(improvements.reduce((a, b) => a + b, 0) / improvements.length)
   }
 
   // ===================================
@@ -891,21 +964,29 @@ export class EnhancedSEOOptimizationTools {
   /**
    * Analizar y optimizar contenido de una página
    */
-  public async optimizeContent(url: string, contentType: 'product' | 'category' | 'blog' | 'page'): Promise<ContentOptimizationSuggestion> {
+  public async optimizeContent(
+    url: string,
+    contentType: 'product' | 'category' | 'blog' | 'page'
+  ): Promise<ContentOptimizationSuggestion> {
     if (!this.config.enableContentOptimization) {
-      throw new Error('Content optimization is disabled');
+      throw new Error('Content optimization is disabled')
     }
 
     try {
-      logger.info(LogLevel.INFO, 'Analyzing content for optimization', { url, contentType }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'Analyzing content for optimization',
+        { url, contentType },
+        LogCategory.SEO
+      )
 
       // Simular análisis de contenido actual
-      const currentScore = Math.floor(Math.random() * 40) + 40; // 40-80
-      const targetScore = 85;
+      const currentScore = Math.floor(Math.random() * 40) + 40 // 40-80
+      const targetScore = 85
 
-      const suggestions = this.generateContentSuggestions(contentType, currentScore);
-      const keywordOptimization = this.analyzeKeywordOptimization(contentType);
-      const readabilityAnalysis = this.analyzeReadability();
+      const suggestions = this.generateContentSuggestions(contentType, currentScore)
+      const keywordOptimization = this.analyzeKeywordOptimization(contentType)
+      const readabilityAnalysis = this.analyzeReadability()
 
       const result: ContentOptimizationSuggestion = {
         url,
@@ -914,38 +995,45 @@ export class EnhancedSEOOptimizationTools {
         targetScore,
         suggestions,
         keywordOptimization,
-        readabilityAnalysis
-      };
+        readabilityAnalysis,
+      }
 
       // Cachear resultado
-      await this.setCachedData(`content:${url}`, result);
+      await this.setCachedData(`content:${url}`, result)
 
-      logger.info(LogLevel.INFO, 'Content optimization analysis completed', {
-        url,
-        currentScore,
-        suggestionsCount: suggestions.length
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'Content optimization analysis completed',
+        {
+          url,
+          currentScore,
+          suggestionsCount: suggestions.length,
+        },
+        LogCategory.SEO
+      )
 
-      return result;
-
+      return result
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to optimize content', error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(LogLevel.ERROR, 'Failed to optimize content', error as Error, LogCategory.SEO)
+      throw error
     }
   }
 
   /**
    * Generar sugerencias de contenido
    */
-  private generateContentSuggestions(contentType: string, currentScore: number): Array<{
-    type: 'title' | 'description' | 'headings' | 'content' | 'images' | 'links' | 'schema';
-    current: string;
-    suggested: string;
-    reason: string;
-    impact: 'high' | 'medium' | 'low';
-    difficulty: 'easy' | 'medium' | 'hard';
+  private generateContentSuggestions(
+    contentType: string,
+    currentScore: number
+  ): Array<{
+    type: 'title' | 'description' | 'headings' | 'content' | 'images' | 'links' | 'schema'
+    current: string
+    suggested: string
+    reason: string
+    impact: 'high' | 'medium' | 'low'
+    difficulty: 'easy' | 'medium' | 'hard'
   }> {
-    const suggestions = [];
+    const suggestions = []
 
     if (currentScore < 70) {
       suggestions.push({
@@ -954,28 +1042,30 @@ export class EnhancedSEOOptimizationTools {
         suggested: 'Pintura para Interiores de Alta Calidad - Colores Vibrantes | Pinteya',
         reason: 'Include target keywords and brand name for better SEO',
         impact: 'high' as any,
-        difficulty: 'easy' as any
-      });
+        difficulty: 'easy' as any,
+      })
 
       suggestions.push({
         type: 'description' as any,
         current: 'Venta de pinturas',
-        suggested: 'Descubre nuestra amplia gama de pinturas para interiores de alta calidad. Colores vibrantes, acabados duraderos y precios competitivos. ¡Envío gratis!',
+        suggested:
+          'Descubre nuestra amplia gama de pinturas para interiores de alta calidad. Colores vibrantes, acabados duraderos y precios competitivos. ¡Envío gratis!',
         reason: 'More descriptive and includes call-to-action',
         impact: 'high' as any,
-        difficulty: 'easy' as any
-      });
+        difficulty: 'easy' as any,
+      })
     }
 
     if (contentType === 'product') {
       suggestions.push({
         type: 'content' as any,
         current: 'Descripción básica del producto',
-        suggested: 'Descripción detallada con beneficios, especificaciones técnicas, casos de uso y testimonios',
+        suggested:
+          'Descripción detallada con beneficios, especificaciones técnicas, casos de uso y testimonios',
         reason: 'Richer content improves user engagement and SEO',
         impact: 'medium' as any,
-        difficulty: 'medium' as any
-      });
+        difficulty: 'medium' as any,
+      })
 
       suggestions.push({
         type: 'images' as any,
@@ -983,59 +1073,66 @@ export class EnhancedSEOOptimizationTools {
         suggested: 'Agregar alt text descriptivo a todas las imágenes',
         reason: 'Alt text improves accessibility and image SEO',
         impact: 'medium' as any,
-        difficulty: 'easy' as any
-      });
+        difficulty: 'easy' as any,
+      })
     }
 
-    return suggestions;
+    return suggestions
   }
 
   /**
    * Analizar optimización de keywords
    */
   private analyzeKeywordOptimization(contentType: string): {
-    primaryKeyword: string;
-    currentDensity: number;
-    targetDensity: number;
-    relatedKeywords: string[];
-    semanticKeywords: string[];
+    primaryKeyword: string
+    currentDensity: number
+    targetDensity: number
+    relatedKeywords: string[]
+    semanticKeywords: string[]
   } {
     const keywordsByType = {
       product: 'pintura interior',
       category: 'pinturas',
       blog: 'como pintar',
-      page: 'pintura profesional'
-    };
+      page: 'pintura profesional',
+    }
 
     return {
       primaryKeyword: keywordsByType[contentType as keyof typeof keywordsByType] || 'pintura',
       currentDensity: Math.random() * 3 + 0.5, // 0.5-3.5%
       targetDensity: 2.0, // 2%
       relatedKeywords: ['pintura acrílica', 'esmalte sintético', 'látex', 'barniz'],
-      semanticKeywords: ['decoración', 'hogar', 'renovación', 'color', 'acabado']
-    };
+      semanticKeywords: ['decoración', 'hogar', 'renovación', 'color', 'acabado'],
+    }
   }
 
   /**
    * Analizar legibilidad del contenido
    */
   private analyzeReadability(): {
-    score: number;
-    grade: string;
-    suggestions: string[];
+    score: number
+    grade: string
+    suggestions: string[]
   } {
-    const score = Math.floor(Math.random() * 40) + 50; // 50-90
+    const score = Math.floor(Math.random() * 40) + 50 // 50-90
 
     return {
       score,
-      grade: score >= 80 ? 'Excelente' : score >= 70 ? 'Bueno' : score >= 60 ? 'Regular' : 'Necesita mejora',
+      grade:
+        score >= 80
+          ? 'Excelente'
+          : score >= 70
+            ? 'Bueno'
+            : score >= 60
+              ? 'Regular'
+              : 'Necesita mejora',
       suggestions: [
         'Usar oraciones más cortas (máximo 20 palabras)',
         'Incluir más subtítulos para dividir el contenido',
         'Usar palabras más simples cuando sea posible',
-        'Agregar listas con viñetas para mejorar la escaneabilidad'
-      ].slice(0, Math.floor(Math.random() * 3) + 1)
-    };
+        'Agregar listas con viñetas para mejorar la escaneabilidad',
+      ].slice(0, Math.floor(Math.random() * 3) + 1),
+    }
   }
 
   // ===================================
@@ -1047,39 +1144,48 @@ export class EnhancedSEOOptimizationTools {
    */
   public async performTechnicalAudit(url: string): Promise<TechnicalSEOAuditResult> {
     if (!this.config.enableTechnicalAudit) {
-      throw new Error('Technical SEO audit is disabled');
+      throw new Error('Technical SEO audit is disabled')
     }
 
     try {
-      logger.info(LogLevel.INFO, 'Starting technical SEO audit', { url }, LogCategory.SEO);
+      logger.info(LogLevel.INFO, 'Starting technical SEO audit', { url }, LogCategory.SEO)
 
-      const issues = this.generateTechnicalIssues();
-      const categories = this.categorizeTechnicalIssues(issues);
-      const overallScore = this.calculateTechnicalScore(categories);
-      const recommendations = this.generateTechnicalRecommendations(issues);
+      const issues = this.generateTechnicalIssues()
+      const categories = this.categorizeTechnicalIssues(issues)
+      const overallScore = this.calculateTechnicalScore(categories)
+      const recommendations = this.generateTechnicalRecommendations(issues)
 
       const result: TechnicalSEOAuditResult = {
         url,
         overallScore,
         issues,
         categories,
-        recommendations
-      };
+        recommendations,
+      }
 
       // Cachear resultado
-      await this.setCachedData(`technical:${url}`, result);
+      await this.setCachedData(`technical:${url}`, result)
 
-      logger.info(LogLevel.INFO, 'Technical SEO audit completed', {
-        url,
-        overallScore,
-        issuesCount: issues.length
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'Technical SEO audit completed',
+        {
+          url,
+          overallScore,
+          issuesCount: issues.length,
+        },
+        LogCategory.SEO
+      )
 
-      return result;
-
+      return result
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to perform technical audit', error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to perform technical audit',
+        error as Error,
+        LogCategory.SEO
+      )
+      throw error
     }
   }
 
@@ -1087,13 +1193,13 @@ export class EnhancedSEOOptimizationTools {
    * Generar issues técnicos simulados
    */
   private generateTechnicalIssues(): Array<{
-    category: 'critical' | 'error' | 'warning' | 'notice';
-    type: string;
-    description: string;
-    solution: string;
-    impact: 'high' | 'medium' | 'low';
-    effort: 'low' | 'medium' | 'high';
-    resources: string[];
+    category: 'critical' | 'error' | 'warning' | 'notice'
+    type: string
+    description: string
+    solution: string
+    impact: 'high' | 'medium' | 'low'
+    effort: 'low' | 'medium' | 'high'
+    resources: string[]
   }> {
     const possibleIssues = [
       {
@@ -1103,7 +1209,7 @@ export class EnhancedSEOOptimizationTools {
         solution: 'Add unique, descriptive meta descriptions to all pages',
         impact: 'high' as any,
         effort: 'low' as any,
-        resources: ['SEO writing guide', 'Meta description best practices']
+        resources: ['SEO writing guide', 'Meta description best practices'],
       },
       {
         category: 'error' as any,
@@ -1112,7 +1218,7 @@ export class EnhancedSEOOptimizationTools {
         solution: 'Create unique title tags for each page',
         impact: 'high' as any,
         effort: 'medium' as any,
-        resources: ['Title tag optimization guide', 'SEO templates']
+        resources: ['Title tag optimization guide', 'SEO templates'],
       },
       {
         category: 'warning' as any,
@@ -1121,7 +1227,7 @@ export class EnhancedSEOOptimizationTools {
         solution: 'Compress images and use modern formats like WebP',
         impact: 'medium' as any,
         effort: 'low' as any,
-        resources: ['Image compression tools', 'WebP conversion guide']
+        resources: ['Image compression tools', 'WebP conversion guide'],
       },
       {
         category: 'notice' as any,
@@ -1130,82 +1236,91 @@ export class EnhancedSEOOptimizationTools {
         solution: 'Implement JSON-LD structured data for products',
         impact: 'medium' as any,
         effort: 'medium' as any,
-        resources: ['Schema.org documentation', 'JSON-LD generator']
-      }
-    ];
+        resources: ['Schema.org documentation', 'JSON-LD generator'],
+      },
+    ]
 
     // Retornar subset aleatorio de issues
-    return possibleIssues.slice(0, Math.floor(Math.random() * 3) + 2);
+    return possibleIssues.slice(0, Math.floor(Math.random() * 3) + 2)
   }
 
   /**
    * Categorizar issues técnicos
    */
   private categorizeTechnicalIssues(issues: any[]): {
-    crawlability: { score: number; issues: number };
-    indexability: { score: number; issues: number };
-    performance: { score: number; issues: number };
-    mobile: { score: number; issues: number };
-    security: { score: number; issues: number };
-    structured_data: { score: number; issues: number };
+    crawlability: { score: number; issues: number }
+    indexability: { score: number; issues: number }
+    performance: { score: number; issues: number }
+    mobile: { score: number; issues: number }
+    security: { score: number; issues: number }
+    structured_data: { score: number; issues: number }
   } {
-    const criticalIssues = issues.filter(i => i.category === 'critical').length;
-    const errorIssues = issues.filter(i => i.category === 'error').length;
+    const criticalIssues = issues.filter(i => i.category === 'critical').length
+    const errorIssues = issues.filter(i => i.category === 'error').length
 
     return {
       crawlability: { score: Math.max(50, 100 - criticalIssues * 20), issues: criticalIssues },
       indexability: { score: Math.max(60, 100 - errorIssues * 15), issues: errorIssues },
-      performance: { score: Math.floor(Math.random() * 30) + 70, issues: Math.floor(Math.random() * 3) },
+      performance: {
+        score: Math.floor(Math.random() * 30) + 70,
+        issues: Math.floor(Math.random() * 3),
+      },
       mobile: { score: Math.floor(Math.random() * 20) + 80, issues: Math.floor(Math.random() * 2) },
-      security: { score: Math.floor(Math.random() * 10) + 90, issues: Math.floor(Math.random() * 1) },
-      structured_data: { score: Math.floor(Math.random() * 40) + 60, issues: Math.floor(Math.random() * 3) }
-    };
+      security: {
+        score: Math.floor(Math.random() * 10) + 90,
+        issues: Math.floor(Math.random() * 1),
+      },
+      structured_data: {
+        score: Math.floor(Math.random() * 40) + 60,
+        issues: Math.floor(Math.random() * 3),
+      },
+    }
   }
 
   /**
    * Calcular score técnico general
    */
   private calculateTechnicalScore(categories: any): number {
-    const scores = Object.values(categories).map((cat: any) => cat.score);
-    return Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length);
+    const scores = Object.values(categories).map((cat: any) => cat.score)
+    return Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length)
   }
 
   /**
    * Generar recomendaciones técnicas
    */
   private generateTechnicalRecommendations(issues: any[]): Array<{
-    priority: 'immediate' | 'short_term' | 'long_term';
-    action: string;
-    expectedImpact: string;
-    resources: string[];
+    priority: 'immediate' | 'short_term' | 'long_term'
+    action: string
+    expectedImpact: string
+    resources: string[]
   }> {
-    const recommendations = [];
+    const recommendations = []
 
-    const criticalIssues = issues.filter(i => i.category === 'critical');
+    const criticalIssues = issues.filter(i => i.category === 'critical')
     if (criticalIssues.length > 0) {
       recommendations.push({
         priority: 'immediate' as any,
         action: 'Fix critical SEO issues affecting crawlability',
         expectedImpact: 'Immediate improvement in search engine indexing',
-        resources: ['SEO audit checklist', 'Technical SEO guide']
-      });
+        resources: ['SEO audit checklist', 'Technical SEO guide'],
+      })
     }
 
     recommendations.push({
       priority: 'short_term' as any,
       action: 'Implement comprehensive structured data markup',
       expectedImpact: 'Enhanced search result appearance and click-through rates',
-      resources: ['Schema.org implementation guide', 'Rich snippets testing tool']
-    });
+      resources: ['Schema.org implementation guide', 'Rich snippets testing tool'],
+    })
 
     recommendations.push({
       priority: 'long_term' as any,
       action: 'Optimize Core Web Vitals and overall site performance',
       expectedImpact: 'Better user experience and search rankings',
-      resources: ['PageSpeed Insights', 'Web Vitals optimization guide']
-    });
+      resources: ['PageSpeed Insights', 'Web Vitals optimization guide'],
+    })
 
-    return recommendations;
+    return recommendations
   }
 
   // ===================================
@@ -1217,9 +1332,9 @@ export class EnhancedSEOOptimizationTools {
    */
   public async generateAutomatedRecommendations(): Promise<AutomatedRecommendation[]> {
     try {
-      logger.info(LogLevel.INFO, 'Generating automated SEO recommendations', {}, LogCategory.SEO);
+      logger.info(LogLevel.INFO, 'Generating automated SEO recommendations', {}, LogCategory.SEO)
 
-      const recommendations: AutomatedRecommendation[] = [];
+      const recommendations: AutomatedRecommendation[] = []
 
       // Recomendación de keywords
       recommendations.push({
@@ -1227,7 +1342,8 @@ export class EnhancedSEOOptimizationTools {
         type: 'keyword',
         priority: 'high',
         title: 'Optimizar keywords de cola larga',
-        description: 'Se han identificado oportunidades en keywords de cola larga con baja competencia',
+        description:
+          'Se han identificado oportunidades en keywords de cola larga con baja competencia',
 
         actionItems: [
           {
@@ -1235,27 +1351,27 @@ export class EnhancedSEOOptimizationTools {
             effort: 'low',
             impact: 'high',
             timeline: '1 semana',
-            resources: ['Keyword research tools', 'Competitor analysis']
+            resources: ['Keyword research tools', 'Competitor analysis'],
           },
           {
             task: 'Crear contenido optimizado para estas keywords',
             effort: 'medium',
             impact: 'high',
             timeline: '2-3 semanas',
-            resources: ['Content creation team', 'SEO writing guidelines']
-          }
+            resources: ['Content creation team', 'SEO writing guidelines'],
+          },
         ],
 
         expectedResults: {
           trafficIncrease: 25,
           rankingImprovement: 5,
           conversionIncrease: 15,
-          timeframe: '2-3 meses'
+          timeframe: '2-3 meses',
         },
 
         createdAt: new Date(),
-        status: 'pending'
-      });
+        status: 'pending',
+      })
 
       // Recomendación técnica
       recommendations.push({
@@ -1271,39 +1387,48 @@ export class EnhancedSEOOptimizationTools {
             effort: 'medium',
             impact: 'high',
             timeline: '1 semana',
-            resources: ['Image optimization tools', 'Development team']
+            resources: ['Image optimization tools', 'Development team'],
           },
           {
             task: 'Minimizar JavaScript y CSS',
             effort: 'high',
             impact: 'high',
             timeline: '2 semanas',
-            resources: ['Build optimization tools', 'Performance audit']
-          }
+            resources: ['Build optimization tools', 'Performance audit'],
+          },
         ],
 
         expectedResults: {
           trafficIncrease: 15,
           rankingImprovement: 3,
           conversionIncrease: 20,
-          timeframe: '1-2 meses'
+          timeframe: '1-2 meses',
         },
 
         createdAt: new Date(),
-        status: 'pending'
-      });
+        status: 'pending',
+      })
 
-      this.recommendations = recommendations;
+      this.recommendations = recommendations
 
-      logger.info(LogLevel.INFO, 'Automated recommendations generated', {
-        count: recommendations.length
-      }, LogCategory.SEO);
+      logger.info(
+        LogLevel.INFO,
+        'Automated recommendations generated',
+        {
+          count: recommendations.length,
+        },
+        LogCategory.SEO
+      )
 
-      return recommendations;
-
+      return recommendations
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to generate automated recommendations', error as Error, LogCategory.SEO);
-      throw error;
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to generate automated recommendations',
+        error as Error,
+        LogCategory.SEO
+      )
+      throw error
     }
   }
 
@@ -1316,9 +1441,9 @@ export class EnhancedSEOOptimizationTools {
    */
   private extractDomain(url: string): string {
     try {
-      return new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+      return new URL(url.startsWith('http') ? url : `https://${url}`).hostname
     } catch {
-      return url;
+      return url
     }
   }
 
@@ -1326,28 +1451,29 @@ export class EnhancedSEOOptimizationTools {
    * Obtener datos del cache
    */
   private async getCachedData(key: string): Promise<any> {
-    if (!this.config.cacheEnabled) {return null;}
+    if (!this.config.cacheEnabled) {
+      return null
+    }
 
     try {
       // Intentar Redis primero
       if (this.redis) {
-        const cached = await this.redis.get(`seo_tools:${key}`);
+        const cached = await this.redis.get(`seo_tools:${key}`)
         if (cached) {
-          return JSON.parse(cached);
+          return JSON.parse(cached)
         }
       }
 
       // Fallback a cache en memoria
-      const cached = this.cache.get(key);
+      const cached = this.cache.get(key)
       if (cached && Date.now() - cached.timestamp < this.config.cacheTTL * 1000) {
-        return cached.data;
+        return cached.data
       }
 
-      return null;
-
+      return null
     } catch (error) {
-      logger.warn(LogLevel.WARN, 'Error accessing cache', {}, LogCategory.SEO);
-      return null;
+      logger.warn(LogLevel.WARN, 'Error accessing cache', {}, LogCategory.SEO)
+      return null
     }
   }
 
@@ -1355,19 +1481,20 @@ export class EnhancedSEOOptimizationTools {
    * Guardar datos en cache
    */
   private async setCachedData(key: string, data: any): Promise<void> {
-    if (!this.config.cacheEnabled) {return;}
+    if (!this.config.cacheEnabled) {
+      return
+    }
 
     try {
       // Cachear en Redis
       if (this.redis) {
-        await this.redis.setex(`seo_tools:${key}`, this.config.cacheTTL, JSON.stringify(data));
+        await this.redis.setex(`seo_tools:${key}`, this.config.cacheTTL, JSON.stringify(data))
       }
 
       // Cachear en memoria como fallback
-      this.cache.set(key, { data, timestamp: Date.now() });
-
+      this.cache.set(key, { data, timestamp: Date.now() })
     } catch (error) {
-      logger.warn(LogLevel.WARN, 'Error caching data', {}, LogCategory.SEO);
+      logger.warn(LogLevel.WARN, 'Error caching data', {}, LogCategory.SEO)
     }
   }
 
@@ -1375,10 +1502,15 @@ export class EnhancedSEOOptimizationTools {
    * Configurar herramientas
    */
   public configure(config: Partial<SEOOptimizationConfig>): void {
-    this.config = { ...this.config, ...config };
-    logger.info(LogLevel.INFO, 'SEO Optimization Tools reconfigured', {
-      enabledFeatures: Object.keys(config)
-    }, LogCategory.SEO);
+    this.config = { ...this.config, ...config }
+    logger.info(
+      LogLevel.INFO,
+      'SEO Optimization Tools reconfigured',
+      {
+        enabledFeatures: Object.keys(config),
+      },
+      LogCategory.SEO
+    )
   }
 
   /**
@@ -1388,19 +1520,18 @@ export class EnhancedSEOOptimizationTools {
     try {
       // Limpiar Redis
       if (this.redis) {
-        const keys = await this.redis.keys('seo_tools:*');
+        const keys = await this.redis.keys('seo_tools:*')
         if (keys.length > 0) {
-          await this.redis.del(...keys);
+          await this.redis.del(...keys)
         }
       }
 
       // Limpiar cache en memoria
-      this.cache.clear();
+      this.cache.clear()
 
-      logger.info(LogLevel.INFO, 'SEO tools cache cleared', {}, LogCategory.SEO);
-
+      logger.info(LogLevel.INFO, 'SEO tools cache cleared', {}, LogCategory.SEO)
     } catch (error) {
-      logger.warn(LogLevel.WARN, 'Error clearing cache', {}, LogCategory.SEO);
+      logger.warn(LogLevel.WARN, 'Error clearing cache', {}, LogCategory.SEO)
     }
   }
 
@@ -1408,10 +1539,10 @@ export class EnhancedSEOOptimizationTools {
    * Obtener estadísticas de uso
    */
   public getUsageStats(): {
-    activeABTests: number;
-    totalRecommendations: number;
-    cacheSize: number;
-    enabledFeatures: string[];
+    activeABTests: number
+    totalRecommendations: number
+    cacheSize: number
+    enabledFeatures: string[]
   } {
     return {
       activeABTests: this.activeABTests.size,
@@ -1419,8 +1550,8 @@ export class EnhancedSEOOptimizationTools {
       cacheSize: this.cache.size,
       enabledFeatures: Object.entries(this.config)
         .filter(([key, value]) => key.startsWith('enable') && value)
-        .map(([key]) => key.replace('enable', ''))
-    };
+        .map(([key]) => key.replace('enable', '')),
+    }
   }
 
   /**
@@ -1428,19 +1559,23 @@ export class EnhancedSEOOptimizationTools {
    */
   public async destroy(): Promise<void> {
     try {
-      await this.clearCache();
+      await this.clearCache()
 
-      this.activeABTests.clear();
-      this.recommendations = [];
+      this.activeABTests.clear()
+      this.recommendations = []
 
       if (this.redis) {
-        this.redis = null;
+        this.redis = null
       }
 
-      logger.info(LogLevel.INFO, 'Enhanced SEO Optimization Tools destroyed', {}, LogCategory.SEO);
-
+      logger.info(LogLevel.INFO, 'Enhanced SEO Optimization Tools destroyed', {}, LogCategory.SEO)
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Error destroying SEO optimization tools', error as Error, LogCategory.SEO);
+      logger.error(
+        LogLevel.ERROR,
+        'Error destroying SEO optimization tools',
+        error as Error,
+        LogCategory.SEO
+      )
     }
   }
 }
@@ -1450,10 +1585,10 @@ export class EnhancedSEOOptimizationTools {
 // ===================================
 
 // Instancia singleton
-export const enhancedSEOOptimizationTools = EnhancedSEOOptimizationTools.getInstance();
+export const enhancedSEOOptimizationTools = EnhancedSEOOptimizationTools.getInstance()
 
 // Exportar clase para uso directo
-export { EnhancedSEOOptimizationTools as SEOOptimizationTools };
+export { EnhancedSEOOptimizationTools as SEOOptimizationTools }
 
 // Exportar todos los tipos
 export type {
@@ -1468,14 +1603,5 @@ export type {
   CoreWebVitalsOptimization,
   ContentOptimizationSuggestion,
   TechnicalSEOAuditResult,
-  AutomatedRecommendation
-};
-
-
-
-
-
-
-
-
-
+  AutomatedRecommendation,
+}

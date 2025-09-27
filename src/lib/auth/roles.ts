@@ -1,6 +1,6 @@
 'use client'
 
-export type Permission = 
+export type Permission =
   | 'products:read'
   | 'products:write'
   | 'products:delete'
@@ -45,43 +45,57 @@ export interface UserWithRole {
 // Definición de roles y sus permisos
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   super_admin: [
-    'products:read', 'products:write', 'products:delete',
-    'orders:read', 'orders:write', 'orders:delete',
-    'users:read', 'users:write', 'users:delete',
+    'products:read',
+    'products:write',
+    'products:delete',
+    'orders:read',
+    'orders:write',
+    'orders:delete',
+    'users:read',
+    'users:write',
+    'users:delete',
     'analytics:read',
-    'settings:read', 'settings:write',
-    'inventory:read', 'inventory:write',
-    'reports:read', 'reports:generate',
+    'settings:read',
+    'settings:write',
+    'inventory:read',
+    'inventory:write',
+    'reports:read',
+    'reports:generate',
     'notifications:send',
-    'admin:access'
+    'admin:access',
   ],
   admin: [
-    'products:read', 'products:write', 'products:delete',
-    'orders:read', 'orders:write',
-    'users:read', 'users:write',
+    'products:read',
+    'products:write',
+    'products:delete',
+    'orders:read',
+    'orders:write',
+    'users:read',
+    'users:write',
     'analytics:read',
-    'settings:read', 'settings:write',
-    'inventory:read', 'inventory:write',
-    'reports:read', 'reports:generate',
+    'settings:read',
+    'settings:write',
+    'inventory:read',
+    'inventory:write',
+    'reports:read',
+    'reports:generate',
     'notifications:send',
-    'admin:access'
+    'admin:access',
   ],
   manager: [
-    'products:read', 'products:write',
-    'orders:read', 'orders:write',
+    'products:read',
+    'products:write',
+    'orders:read',
+    'orders:write',
     'users:read',
     'analytics:read',
-    'inventory:read', 'inventory:write',
-    'reports:read',
-    'admin:access'
-  ],
-  employee: [
-    'products:read',
-    'orders:read', 'orders:write',
     'inventory:read',
-    'admin:access'
+    'inventory:write',
+    'reports:read',
+    'admin:access',
   ],
-  customer: []
+  employee: ['products:read', 'orders:read', 'orders:write', 'inventory:read', 'admin:access'],
+  customer: [],
 }
 
 export const ROLE_DEFINITIONS: Record<Role, Omit<UserRole, 'id' | 'createdAt' | 'updatedAt'>> = {
@@ -90,36 +104,36 @@ export const ROLE_DEFINITIONS: Record<Role, Omit<UserRole, 'id' | 'createdAt' | 
     displayName: 'Super Administrador',
     description: 'Acceso completo a todas las funcionalidades del sistema',
     permissions: ROLE_PERMISSIONS.super_admin,
-    isActive: true
+    isActive: true,
   },
   admin: {
     name: 'admin',
     displayName: 'Administrador',
     description: 'Acceso administrativo con la mayoría de permisos',
     permissions: ROLE_PERMISSIONS.admin,
-    isActive: true
+    isActive: true,
   },
   manager: {
     name: 'manager',
     displayName: 'Gerente',
     description: 'Gestión de productos, órdenes e inventario',
     permissions: ROLE_PERMISSIONS.manager,
-    isActive: true
+    isActive: true,
   },
   employee: {
     name: 'employee',
     displayName: 'Empleado',
     description: 'Acceso básico para gestión de órdenes',
     permissions: ROLE_PERMISSIONS.employee,
-    isActive: true
+    isActive: true,
   },
   customer: {
     name: 'customer',
     displayName: 'Cliente',
     description: 'Usuario cliente con acceso a la tienda',
     permissions: ROLE_PERMISSIONS.customer,
-    isActive: true
-  }
+    isActive: true,
+  },
 }
 
 export class RoleManager {
@@ -177,7 +191,7 @@ export class RoleManager {
       employee: 1,
       manager: 2,
       admin: 3,
-      super_admin: 4
+      super_admin: 4,
     }
     return hierarchy[role1] > hierarchy[role2]
   }
@@ -187,22 +201,22 @@ export class RoleManager {
    */
   getAssignableRoles(currentUserRole: Role): Role[] {
     const allRoles: Role[] = ['customer', 'employee', 'manager', 'admin', 'super_admin']
-    
+
     // Solo super_admin puede asignar cualquier rol
     if (currentUserRole === 'super_admin') {
       return allRoles
     }
-    
+
     // Admin puede asignar roles inferiores
     if (currentUserRole === 'admin') {
       return ['customer', 'employee', 'manager']
     }
-    
+
     // Manager puede asignar solo customer y employee
     if (currentUserRole === 'manager') {
       return ['customer', 'employee']
     }
-    
+
     // Otros roles no pueden asignar roles
     return []
   }
@@ -249,19 +263,18 @@ export class RoleManager {
 export const roleManager = RoleManager.getInstance()
 
 // Funciones de conveniencia
-export const hasPermission = (userRole: Role, permission: Permission) => 
+export const hasPermission = (userRole: Role, permission: Permission) =>
   roleManager.hasPermission(userRole, permission)
 
-export const hasPermissions = (userRole: Role, permissions: Permission[]) => 
+export const hasPermissions = (userRole: Role, permissions: Permission[]) =>
   roleManager.hasPermissions(userRole, permissions)
 
-export const hasAnyPermission = (userRole: Role, permissions: Permission[]) => 
+export const hasAnyPermission = (userRole: Role, permissions: Permission[]) =>
   roleManager.hasAnyPermission(userRole, permissions)
 
-export const canAccessAdmin = (role: Role) => 
-  roleManager.canAccessAdmin(role)
+export const canAccessAdmin = (role: Role) => roleManager.canAccessAdmin(role)
 
-export const canAssignRole = (assignerRole: Role, targetRole: Role) => 
+export const canAssignRole = (assignerRole: Role, targetRole: Role) =>
   roleManager.canAssignRole(assignerRole, targetRole)
 
 // Hook para usar en componentes React
@@ -272,15 +285,6 @@ export function useRolePermissions(userRole: Role) {
     hasAnyPermission: (permissions: Permission[]) => hasAnyPermission(userRole, permissions),
     canAccessAdmin: () => canAccessAdmin(userRole),
     rolePermissions: roleManager.getRolePermissions(userRole),
-    roleDefinition: roleManager.getRoleDefinition(userRole)
+    roleDefinition: roleManager.getRoleDefinition(userRole),
   }
 }
-
-
-
-
-
-
-
-
-

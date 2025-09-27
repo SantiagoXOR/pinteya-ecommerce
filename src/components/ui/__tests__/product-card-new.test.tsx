@@ -21,9 +21,11 @@ describe('ProductCard - Nuevo Diseño', () => {
 
   it('renderiza correctamente con todas las props', () => {
     render(<ProductCard {...defaultProps} />)
-    
+
     expect(screen.getByTestId('product-card')).toBeInTheDocument()
-    expect(screen.getByTestId('product-name')).toHaveTextContent('Pintura Látex Premium Sherwin Williams')
+    expect(screen.getByTestId('product-name')).toHaveTextContent(
+      'Pintura Látex Premium Sherwin Williams'
+    )
     expect(screen.getByTestId('product-price')).toBeInTheDocument()
     expect(screen.getByTestId('add-to-cart-btn')).toHaveTextContent('Agregar al carrito')
   })
@@ -38,13 +40,13 @@ describe('ProductCard - Nuevo Diseño', () => {
 
   it('muestra el badge de envío', () => {
     render(<ProductCard {...defaultProps} />)
-    
+
     expect(screen.getByText('Llega gratis hoy')).toBeInTheDocument()
   })
 
   it('muestra precios correctamente formateados', () => {
     render(<ProductCard {...defaultProps} />)
-    
+
     expect(screen.getByText('$2.500')).toBeInTheDocument()
     expect(screen.getByText('$3.200')).toBeInTheDocument()
   })
@@ -52,7 +54,7 @@ describe('ProductCard - Nuevo Diseño', () => {
   it('no muestra precio original si no se proporciona', () => {
     const props = { ...defaultProps, originalPrice: undefined }
     render(<ProductCard {...props} />)
-    
+
     expect(screen.getByText('$2.500')).toBeInTheDocument()
     expect(screen.queryByText('$3.200')).not.toBeInTheDocument()
   })
@@ -60,7 +62,7 @@ describe('ProductCard - Nuevo Diseño', () => {
   it('no muestra badge de descuento si no se proporciona', () => {
     const props = { ...defaultProps, discount: undefined }
     render(<ProductCard {...props} />)
-    
+
     expect(screen.queryByText('25%')).not.toBeInTheDocument()
     expect(screen.queryByText('Descuento especial')).not.toBeInTheDocument()
   })
@@ -76,10 +78,10 @@ describe('ProductCard - Nuevo Diseño', () => {
 
   it('llama a onAddToCart cuando se hace click en el botón', () => {
     render(<ProductCard {...defaultProps} />)
-    
+
     const button = screen.getByTestId('add-to-cart-btn')
     fireEvent.click(button)
-    
+
     expect(defaultProps.onAddToCart).toHaveBeenCalledTimes(1)
   })
 
@@ -94,16 +96,19 @@ describe('ProductCard - Nuevo Diseño', () => {
     expect(button).toBeDisabled()
 
     // Debe volver al estado original después de 1 segundo
-    await waitFor(() => {
-      expect(screen.getByText('Agregar al carrito')).toBeInTheDocument()
-      expect(button).not.toBeDisabled()
-    }, { timeout: 1500 })
+    await waitFor(
+      () => {
+        expect(screen.getByText('Agregar al carrito')).toBeInTheDocument()
+        expect(button).not.toBeDisabled()
+      },
+      { timeout: 1500 }
+    )
   })
 
   it('deshabilita el botón cuando stock es 0', () => {
     const props = { ...defaultProps, stock: 0 }
     render(<ProductCard {...props} />)
-    
+
     const button = screen.getByTestId('add-to-cart-btn')
     expect(button).toBeDisabled()
     expect(button).toHaveTextContent('Sin stock')
@@ -112,28 +117,28 @@ describe('ProductCard - Nuevo Diseño', () => {
   it('permite personalizar el texto del CTA', () => {
     const props = { ...defaultProps, cta: 'Comprar ahora' }
     render(<ProductCard {...props} />)
-    
+
     expect(screen.getByText('Comprar ahora')).toBeInTheDocument()
   })
 
   it('usa CTA por defecto si no se proporciona', () => {
     const props = { ...defaultProps, cta: undefined }
     render(<ProductCard {...props} />)
-    
+
     expect(screen.getByText('Agregar al carrito')).toBeInTheDocument()
   })
 
   it('renderiza link al producto si se proporciona productId', () => {
     const props = { ...defaultProps, productId: '123' }
     render(<ProductCard {...props} />)
-    
+
     const link = screen.getByRole('link')
     expect(link).toHaveAttribute('href', '/shop-details/123')
   })
 
   it('no renderiza link si no se proporciona productId', () => {
     render(<ProductCard {...defaultProps} />)
-    
+
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
 
@@ -149,7 +154,7 @@ describe('ProductCard - Nuevo Diseño', () => {
 
   it('muestra ícono de carrito en el botón CTA', () => {
     render(<ProductCard {...defaultProps} />)
-    
+
     const button = screen.getByTestId('add-to-cart-btn')
     const icon = button.querySelector('svg')
     expect(icon).toBeInTheDocument()
@@ -167,34 +172,25 @@ describe('ProductCard - Nuevo Diseño', () => {
   it('renderiza children adicionales si se proporcionan', () => {
     render(
       <ProductCard {...defaultProps}>
-        <div data-testid="custom-content">Contenido personalizado</div>
+        <div data-testid='custom-content'>Contenido personalizado</div>
       </ProductCard>
     )
-    
+
     expect(screen.getByTestId('custom-content')).toBeInTheDocument()
     expect(screen.getByText('Contenido personalizado')).toBeInTheDocument()
   })
 
   it('aplica className personalizada', () => {
-    render(<ProductCard {...defaultProps} className="custom-class" />)
-    
+    render(<ProductCard {...defaultProps} className='custom-class' />)
+
     const card = screen.getByTestId('product-card')
     expect(card).toHaveClass('custom-class')
   })
 
   it('pasa props adicionales al componente Card', () => {
-    render(<ProductCard {...defaultProps} data-custom="test-value" />)
-    
+    render(<ProductCard {...defaultProps} data-custom='test-value' />)
+
     const card = screen.getByTestId('product-card')
     expect(card).toHaveAttribute('data-custom', 'test-value')
   })
 })
-
-
-
-
-
-
-
-
-

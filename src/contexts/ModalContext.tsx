@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
-export type ModalType = 
+export type ModalType =
   | 'navigation-instructions'
   | 'route-info'
   | 'real-time-tracker'
@@ -10,37 +10,37 @@ export type ModalType =
   | 'delivery-details'
   | 'gps-debug'
   | 'emergency-options'
-  | null;
+  | null
 
 interface ModalState {
-  activeModal: ModalType;
-  modalData?: any;
-  isTransitioning: boolean;
-  modalHistory: ModalType[];
+  activeModal: ModalType
+  modalData?: any
+  isTransitioning: boolean
+  modalHistory: ModalType[]
 }
 
 interface ModalContextType {
-  modalState: ModalState;
-  openModal: (type: ModalType, data?: any) => void;
-  closeModal: () => void;
-  closeAllModals: () => void;
-  goBack: () => void;
-  isModalOpen: (type: ModalType) => boolean;
-  canGoBack: boolean;
+  modalState: ModalState
+  openModal: (type: ModalType, data?: any) => void
+  closeModal: () => void
+  closeAllModals: () => void
+  goBack: () => void
+  isModalOpen: (type: ModalType) => boolean
+  canGoBack: boolean
 }
 
-const ModalContext = createContext<ModalContextType | undefined>(undefined);
+const ModalContext = createContext<ModalContextType | undefined>(undefined)
 
 export function useModal() {
-  const context = useContext(ModalContext);
+  const context = useContext(ModalContext)
   if (!context) {
-    throw new Error('useModal must be used within a ModalProvider');
+    throw new Error('useModal must be used within a ModalProvider')
   }
-  return context;
+  return context
 }
 
 interface ModalProviderProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export function ModalProvider({ children }: ModalProviderProps) {
@@ -48,47 +48,50 @@ export function ModalProvider({ children }: ModalProviderProps) {
     activeModal: null,
     modalData: undefined,
     isTransitioning: false,
-    modalHistory: []
-  });
+    modalHistory: [],
+  })
 
   // Función para abrir un modal
-  const openModal = useCallback((type: ModalType, data?: any) => {
-    if (type === modalState.activeModal) return;
+  const openModal = useCallback(
+    (type: ModalType, data?: any) => {
+      if (type === modalState.activeModal) return
 
-    setModalState(prev => ({
-      ...prev,
-      isTransitioning: true
-    }));
-
-    // Pequeño delay para animación
-    setTimeout(() => {
       setModalState(prev => ({
-        activeModal: type,
-        modalData: data,
-        isTransitioning: false,
-        modalHistory: prev.activeModal 
-          ? [...prev.modalHistory, prev.activeModal]
-          : prev.modalHistory
-      }));
-    }, 150);
-  }, [modalState.activeModal]);
+        ...prev,
+        isTransitioning: true,
+      }))
+
+      // Pequeño delay para animación
+      setTimeout(() => {
+        setModalState(prev => ({
+          activeModal: type,
+          modalData: data,
+          isTransitioning: false,
+          modalHistory: prev.activeModal
+            ? [...prev.modalHistory, prev.activeModal]
+            : prev.modalHistory,
+        }))
+      }, 150)
+    },
+    [modalState.activeModal]
+  )
 
   // Función para cerrar el modal actual
   const closeModal = useCallback(() => {
     setModalState(prev => ({
       ...prev,
-      isTransitioning: true
-    }));
+      isTransitioning: true,
+    }))
 
     setTimeout(() => {
       setModalState(prev => ({
         activeModal: null,
         modalData: undefined,
         isTransitioning: false,
-        modalHistory: prev.modalHistory
-      }));
-    }, 150);
-  }, []);
+        modalHistory: prev.modalHistory,
+      }))
+    }, 150)
+  }, [])
 
   // Función para cerrar todos los modales
   const closeAllModals = useCallback(() => {
@@ -96,71 +99,74 @@ export function ModalProvider({ children }: ModalProviderProps) {
       activeModal: null,
       modalData: undefined,
       isTransitioning: false,
-      modalHistory: []
-    });
-  }, []);
+      modalHistory: [],
+    })
+  }, [])
 
   // Función para volver al modal anterior
   const goBack = useCallback(() => {
     if (modalState.modalHistory.length === 0) {
-      closeModal();
-      return;
+      closeModal()
+      return
     }
 
-    const previousModal = modalState.modalHistory[modalState.modalHistory.length - 1];
-    const newHistory = modalState.modalHistory.slice(0, -1);
+    const previousModal = modalState.modalHistory[modalState.modalHistory.length - 1]
+    const newHistory = modalState.modalHistory.slice(0, -1)
 
     setModalState(prev => ({
       ...prev,
-      isTransitioning: true
-    }));
+      isTransitioning: true,
+    }))
 
     setTimeout(() => {
       setModalState({
         activeModal: previousModal,
         modalData: undefined,
         isTransitioning: false,
-        modalHistory: newHistory
-      });
-    }, 150);
-  }, [modalState.modalHistory, closeModal]);
+        modalHistory: newHistory,
+      })
+    }, 150)
+  }, [modalState.modalHistory, closeModal])
 
   // Función para verificar si un modal específico está abierto
-  const isModalOpen = useCallback((type: ModalType) => {
-    return modalState.activeModal === type;
-  }, [modalState.activeModal]);
+  const isModalOpen = useCallback(
+    (type: ModalType) => {
+      return modalState.activeModal === type
+    },
+    [modalState.activeModal]
+  )
 
   // Verificar si se puede volver atrás
-  const canGoBack = modalState.modalHistory.length > 0;
+  const canGoBack = modalState.modalHistory.length > 0
 
   // Manejar tecla Escape
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && modalState.activeModal) {
         if (canGoBack) {
-          goBack();
+          goBack()
         } else {
-          closeModal();
+          closeModal()
         }
       }
-    };
+    }
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [modalState.activeModal, canGoBack, goBack, closeModal]);
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [modalState.activeModal, canGoBack, goBack, closeModal])
 
   // Prevenir scroll del body cuando hay modal activo
   useEffect(() => {
     if (modalState.activeModal) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = 'unset'
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [modalState.activeModal]);
+      document.body.style.overflow = 'unset'
+    }
+  }, [modalState.activeModal])
 
   const contextValue: ModalContextType = {
     modalState,
@@ -169,19 +175,15 @@ export function ModalProvider({ children }: ModalProviderProps) {
     closeAllModals,
     goBack,
     isModalOpen,
-    canGoBack
-  };
+    canGoBack,
+  }
 
-  return (
-    <ModalContext.Provider value={contextValue}>
-      {children}
-    </ModalContext.Provider>
-  );
+  return <ModalContext.Provider value={contextValue}>{children}</ModalContext.Provider>
 }
 
 // Hook para gestionar modales específicos
 export function useModalActions() {
-  const { openModal, closeModal, isModalOpen } = useModal();
+  const { openModal, closeModal, isModalOpen } = useModal()
 
   return {
     openNavigationInstructions: (data?: any) => openModal('navigation-instructions', data),
@@ -198,15 +200,6 @@ export function useModalActions() {
     isAdvancedControlsOpen: () => isModalOpen('advanced-controls'),
     isDeliveryDetailsOpen: () => isModalOpen('delivery-details'),
     isGPSDebugOpen: () => isModalOpen('gps-debug'),
-    isEmergencyOptionsOpen: () => isModalOpen('emergency-options')
-  };
+    isEmergencyOptionsOpen: () => isModalOpen('emergency-options'),
+  }
 }
-
-
-
-
-
-
-
-
-

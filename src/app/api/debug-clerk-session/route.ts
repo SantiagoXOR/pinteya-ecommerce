@@ -1,12 +1,12 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-import { auth } from '@/lib/auth/config';
-import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth/config'
+import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const { userId, sessionClaims } = auth();
+    const { userId, sessionClaims } = auth()
 
     // Log detallado para debugging
     console.log('🔍 CLERK DEBUG INFO:', {
@@ -15,8 +15,8 @@ export async function GET() {
       publicMetadata: sessionClaims?.publicMetadata,
       metadata: sessionClaims?.metadata,
       role_from_publicMetadata: sessionClaims?.publicMetadata?.role,
-      role_from_metadata: sessionClaims?.metadata?.role
-    });
+      role_from_metadata: sessionClaims?.metadata?.role,
+    })
 
     // Verificar todas las posibles ubicaciones del rol
     const possibleRoles = {
@@ -24,8 +24,8 @@ export async function GET() {
       'sessionClaims.metadata.role': sessionClaims?.metadata?.role,
       'sessionClaims.role': sessionClaims?.role,
       'sessionClaims.public_metadata.role': sessionClaims?.public_metadata?.role,
-      'sessionClaims.user_metadata.role': sessionClaims?.user_metadata?.role
-    };
+      'sessionClaims.user_metadata.role': sessionClaims?.user_metadata?.role,
+    }
 
     return NextResponse.json({
       success: true,
@@ -37,25 +37,18 @@ export async function GET() {
         metadata: sessionClaims?.metadata,
         possibleRoleLocations: possibleRoles,
         detectedRole: Object.values(possibleRoles).find(role => role === 'admin') || 'none',
-        fullSessionClaimsStructure: sessionClaims
-      }
-    });
+        fullSessionClaimsStructure: sessionClaims,
+      },
+    })
   } catch (error) {
-    console.error('Debug error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message,
-      errorType: error.constructor.name
-    }, { status: 500 });
+    console.error('Debug error:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+        errorType: error.constructor.name,
+      },
+      { status: 500 }
+    )
   }
 }
-
-
-
-
-
-
-
-
-
-

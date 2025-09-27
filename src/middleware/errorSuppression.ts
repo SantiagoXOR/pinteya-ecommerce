@@ -2,29 +2,29 @@
 // MIDDLEWARE: Error Suppression
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * Middleware para suprimir errores ERR_ABORTED y mejorar el manejo de errores de red
  */
 export function errorSuppressionMiddleware(request: NextRequest) {
-  const response = NextResponse.next();
+  const response = NextResponse.next()
 
   // Configurar headers para mejorar el manejo de errores de red
-  response.headers.set('Connection', 'keep-alive');
-  response.headers.set('Keep-Alive', 'timeout=5, max=1000');
-  
+  response.headers.set('Connection', 'keep-alive')
+  response.headers.set('Keep-Alive', 'timeout=5, max=1000')
+
   // Headers para prevenir problemas de CORS que pueden causar ERR_ABORTED
-  response.headers.set('Access-Control-Allow-Origin', '*');
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
   // Headers para mejorar la estabilidad de la conexión
-  response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  response.headers.set('Pragma', 'no-cache');
-  response.headers.set('Expires', '0');
-  
-  return response;
+  response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+
+  return response
 }
 
 /**
@@ -43,12 +43,12 @@ export function suppressServerErrors() {
     'Load failed',
     'Connection was aborted',
     'The operation was aborted',
-    'Request timeout'
-  ];
+    'Request timeout',
+  ]
 
   // TEMPORALMENTE DESHABILITADO PARA DEBUG
   // Interceptar console.error en el servidor
-  const originalConsoleError = console.error;
+  const originalConsoleError = console.error
   /*
   console.error = (...args: any[]) => {
     const message = args.join(' ');
@@ -104,14 +104,5 @@ export function restoreOriginalConsoleFunctions() {
 
 // Inicializar supresión de errores del servidor automáticamente
 if (typeof window === 'undefined') {
-  suppressServerErrors();
+  suppressServerErrors()
 }
-
-
-
-
-
-
-
-
-

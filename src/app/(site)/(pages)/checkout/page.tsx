@@ -1,21 +1,12 @@
-import React from "react";
-import CheckoutExpress from "@/components/Checkout/CheckoutExpress";
+import React from 'react'
+import CheckoutExpress from '@/components/Checkout/CheckoutExpress'
 
 const CheckoutPage = () => {
   return (
-    <main className="min-h-screen">
+    <main className='min-h-screen'>
       <CheckoutExpress />
     </main>
-  );
-};
+  )
+}
 
-export default CheckoutPage;
-
-
-
-
-
-
-
-
-
+export default CheckoutPage

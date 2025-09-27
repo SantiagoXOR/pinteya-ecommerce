@@ -1,15 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
 import { Mail, User, MessageSquare, CreditCard, Truck, Package } from 'lucide-react'
-import { 
-  Form, 
-  FormSection, 
-  FormRow, 
-  FormField, 
-  FormActions, 
-  FormMessage,
-  useForm 
-} from './form'
+import { Form, FormSection, FormRow, FormField, FormActions, FormMessage, useForm } from './form'
 import { Input } from './input'
 import { Textarea } from './textarea'
 import { Checkbox, CheckboxGroup } from './checkbox'
@@ -79,49 +71,49 @@ export const BasicForm: Story = {
   render: () => {
     const { values, errors, isSubmitting, handleSubmit, register } = useForm({
       defaultValues: { name: '', email: '', message: '' },
-      onSubmit: async (data) => {
+      onSubmit: async data => {
         await new Promise(resolve => setTimeout(resolve, 1000))
         alert(`Formulario enviado: ${JSON.stringify(data, null, 2)}`)
       },
-      validate: (data) => {
+      validate: data => {
         const errors: Record<string, string> = {}
         if (!data.name) errors.name = 'Nombre requerido'
         if (!data.email) errors.email = 'Email requerido'
         if (!data.message) errors.message = 'Mensaje requerido'
         return Object.keys(errors).length > 0 ? errors : null
-      }
+      },
     })
 
     return (
-      <div className="w-full max-w-md">
+      <div className='w-full max-w-md'>
         <Form onSubmit={handleSubmit}>
-          <FormSection title="Contacto" description="Envíanos un mensaje">
+          <FormSection title='Contacto' description='Envíanos un mensaje'>
             <Input
-              label="Nombre"
-              placeholder="Tu nombre completo"
-              leftIcon={<User className="h-4 w-4" />}
+              label='Nombre'
+              placeholder='Tu nombre completo'
+              leftIcon={<User className='h-4 w-4' />}
               {...register('name')}
               required
             />
-            
+
             <Input
-              label="Email"
-              type="email"
-              placeholder="tu@email.com"
-              leftIcon={<Mail className="h-4 w-4" />}
+              label='Email'
+              type='email'
+              placeholder='tu@email.com'
+              leftIcon={<Mail className='h-4 w-4' />}
               {...register('email')}
               required
             />
-            
+
             <Textarea
-              label="Mensaje"
-              placeholder="Escribe tu mensaje aquí..."
+              label='Mensaje'
+              placeholder='Escribe tu mensaje aquí...'
               {...register('message')}
               required
             />
-            
+
             <FormActions>
-              <Button type="submit" loading={isSubmitting}>
+              <Button type='submit' loading={isSubmitting}>
                 Enviar Mensaje
               </Button>
             </FormActions>
@@ -135,38 +127,32 @@ export const BasicForm: Story = {
 // Formulario con múltiples secciones
 export const MultiSectionForm: Story = {
   render: () => (
-    <div className="w-full max-w-2xl">
+    <div className='w-full max-w-2xl'>
       <Form>
-        <FormSection 
-          title="Información Personal" 
-          description="Datos básicos del usuario"
-        >
+        <FormSection title='Información Personal' description='Datos básicos del usuario'>
           <FormRow columns={2}>
-            <Input label="Nombre" placeholder="Juan" required />
-            <Input label="Apellido" placeholder="Pérez" required />
+            <Input label='Nombre' placeholder='Juan' required />
+            <Input label='Apellido' placeholder='Pérez' required />
           </FormRow>
-          
+
           <FormRow columns={2}>
-            <Input label="Email" type="email" placeholder="juan@email.com" required />
-            <Input label="Teléfono" placeholder="+54 11 1234-5678" />
+            <Input label='Email' type='email' placeholder='juan@email.com' required />
+            <Input label='Teléfono' placeholder='+54 11 1234-5678' />
           </FormRow>
         </FormSection>
 
-        <FormSection 
-          title="Dirección" 
-          description="Información de envío"
-        >
-          <Input label="Dirección" placeholder="Av. Corrientes 1234" required />
-          
+        <FormSection title='Dirección' description='Información de envío'>
+          <Input label='Dirección' placeholder='Av. Corrientes 1234' required />
+
           <FormRow columns={3}>
-            <Input label="Ciudad" placeholder="Buenos Aires" required />
-            <Input label="Provincia" placeholder="CABA" required />
-            <Input label="Código Postal" placeholder="1043" required />
+            <Input label='Ciudad' placeholder='Buenos Aires' required />
+            <Input label='Provincia' placeholder='CABA' required />
+            <Input label='Código Postal' placeholder='1043' required />
           </FormRow>
         </FormSection>
 
-        <FormActions align="between">
-          <Button variant="outline">Cancelar</Button>
+        <FormActions align='between'>
+          <Button variant='outline'>Cancelar</Button>
           <Button>Guardar Información</Button>
         </FormActions>
       </Form>
@@ -179,14 +165,14 @@ export const CheckboxAndRadio: Story = {
   render: () => {
     const [shippingMethod, setShippingMethod] = useState('standard')
     const [paymentMethod, setPaymentMethod] = useState('mercadopago')
-    
+
     const shippingMethods = [
       {
         id: 'standard',
         name: 'Envío Estándar',
         description: '5-7 días hábiles',
         price: 'Gratis',
-        icon: <Package className="h-4 w-4" />,
+        icon: <Package className='h-4 w-4' />,
       },
       {
         id: 'express',
@@ -194,7 +180,7 @@ export const CheckboxAndRadio: Story = {
         description: '2-3 días hábiles',
         price: '$1.500',
         badge: 'Rápido',
-        icon: <Truck className="h-4 w-4" />,
+        icon: <Truck className='h-4 w-4' />,
       },
     ]
 
@@ -203,26 +189,26 @@ export const CheckboxAndRadio: Story = {
         id: 'mercadopago',
         name: 'MercadoPago',
         description: 'Tarjetas, efectivo, transferencia',
-        icon: <CreditCard className="h-4 w-4" />,
+        icon: <CreditCard className='h-4 w-4' />,
       },
       {
         id: 'transfer',
         name: 'Transferencia Bancaria',
         description: '5% de descuento',
         badge: 'Descuento',
-        icon: <CreditCard className="h-4 w-4" />,
+        icon: <CreditCard className='h-4 w-4' />,
       },
     ]
 
     return (
-      <div className="w-full max-w-lg space-y-6">
-        <CheckboxGroup 
-          label="Preferencias de Marketing"
-          description="Selecciona las comunicaciones que deseas recibir"
+      <div className='w-full max-w-lg space-y-6'>
+        <CheckboxGroup
+          label='Preferencias de Marketing'
+          description='Selecciona las comunicaciones que deseas recibir'
         >
-          <Checkbox label="Newsletter semanal" description="Ofertas y novedades" />
-          <Checkbox label="Promociones especiales" description="Descuentos exclusivos" />
-          <Checkbox label="Notificaciones de stock" description="Cuando lleguen productos" />
+          <Checkbox label='Newsletter semanal' description='Ofertas y novedades' />
+          <Checkbox label='Promociones especiales' description='Descuentos exclusivos' />
+          <Checkbox label='Notificaciones de stock' description='Cuando lleguen productos' />
         </CheckboxGroup>
 
         <ShippingMethodRadio
@@ -248,38 +234,38 @@ export const AdvancedFields: Story = {
     const [rating, setRating] = useState('')
 
     return (
-      <div className="w-full max-w-md space-y-6">
+      <div className='w-full max-w-md space-y-6'>
         <SelectField
-          label="Categoría de Producto"
-          description="Selecciona la categoría que mejor describe tu consulta"
-          placeholder="Elegir categoría..."
+          label='Categoría de Producto'
+          description='Selecciona la categoría que mejor describe tu consulta'
+          placeholder='Elegir categoría...'
           value={category}
           onValueChange={setCategory}
           required
         >
-          <SelectItem value="pinturas">Pinturas</SelectItem>
-          <SelectItem value="herramientas">Herramientas</SelectItem>
-          <SelectItem value="accesorios">Accesorios</SelectItem>
-          <SelectItem value="otros">Otros</SelectItem>
+          <SelectItem value='pinturas'>Pinturas</SelectItem>
+          <SelectItem value='herramientas'>Herramientas</SelectItem>
+          <SelectItem value='accesorios'>Accesorios</SelectItem>
+          <SelectItem value='otros'>Otros</SelectItem>
         </SelectField>
 
         <SelectField
-          label="Calificación"
-          placeholder="¿Cómo calificarías el producto?"
+          label='Calificación'
+          placeholder='¿Cómo calificarías el producto?'
           value={rating}
           onValueChange={setRating}
         >
-          <SelectItem value="5">⭐⭐⭐⭐⭐ Excelente</SelectItem>
-          <SelectItem value="4">⭐⭐⭐⭐ Muy bueno</SelectItem>
-          <SelectItem value="3">⭐⭐⭐ Bueno</SelectItem>
-          <SelectItem value="2">⭐⭐ Regular</SelectItem>
-          <SelectItem value="1">⭐ Malo</SelectItem>
+          <SelectItem value='5'>⭐⭐⭐⭐⭐ Excelente</SelectItem>
+          <SelectItem value='4'>⭐⭐⭐⭐ Muy bueno</SelectItem>
+          <SelectItem value='3'>⭐⭐⭐ Bueno</SelectItem>
+          <SelectItem value='2'>⭐⭐ Regular</SelectItem>
+          <SelectItem value='1'>⭐ Malo</SelectItem>
         </SelectField>
 
         <Textarea
-          label="Reseña del Producto"
-          placeholder="Comparte tu experiencia con este producto..."
-          description="Ayuda a otros compradores con tu opinión"
+          label='Reseña del Producto'
+          placeholder='Comparte tu experiencia con este producto...'
+          description='Ayuda a otros compradores con tu opinión'
           maxLength={500}
           showCharCount
           autoResize
@@ -292,28 +278,32 @@ export const AdvancedFields: Story = {
 // Estados de formulario
 export const FormStates: Story = {
   render: () => (
-    <div className="w-full max-w-md space-y-6">
-      <FormMessage variant="info">
+    <div className='w-full max-w-md space-y-6'>
+      <FormMessage variant='info'>
         <strong>Información:</strong> Completa todos los campos requeridos.
       </FormMessage>
 
-      <FormMessage variant="success">
+      <FormMessage variant='success'>
         <strong>¡Éxito!</strong> Tu formulario se envió correctamente.
       </FormMessage>
 
-      <FormMessage variant="warning">
+      <FormMessage variant='warning'>
         <strong>Advertencia:</strong> Algunos campos necesitan revisión.
       </FormMessage>
 
-      <FormMessage variant="error">
+      <FormMessage variant='error'>
         <strong>Error:</strong> Hubo un problema al enviar el formulario.
       </FormMessage>
 
-      <div className="space-y-4">
-        <Input label="Campo Normal" placeholder="Estado normal" />
-        <Input label="Campo con Error" placeholder="Estado de error" error="Este campo es requerido" />
-        <Input label="Campo Exitoso" placeholder="Estado exitoso" variant="success" />
-        <Input label="Campo Deshabilitado" placeholder="Estado deshabilitado" disabled />
+      <div className='space-y-4'>
+        <Input label='Campo Normal' placeholder='Estado normal' />
+        <Input
+          label='Campo con Error'
+          placeholder='Estado de error'
+          error='Este campo es requerido'
+        />
+        <Input label='Campo Exitoso' placeholder='Estado exitoso' variant='success' />
+        <Input label='Campo Deshabilitado' placeholder='Estado deshabilitado' disabled />
       </div>
     </div>
   ),
@@ -323,77 +313,68 @@ export const FormStates: Story = {
 export const CheckoutForm: Story = {
   render: () => {
     const [sameAsShipping, setSameAsShipping] = useState(true)
-    
+
     return (
-      <div className="w-full max-w-4xl">
+      <div className='w-full max-w-4xl'>
         <Form>
-          <FormSection 
-            title="Información de Envío"
-            description="Datos para la entrega de tu pedido"
+          <FormSection
+            title='Información de Envío'
+            description='Datos para la entrega de tu pedido'
           >
             <FormRow columns={2}>
-              <Input label="Nombre" placeholder="Juan" required />
-              <Input label="Apellido" placeholder="Pérez" required />
+              <Input label='Nombre' placeholder='Juan' required />
+              <Input label='Apellido' placeholder='Pérez' required />
             </FormRow>
-            
-            <Input label="Dirección" placeholder="Av. Corrientes 1234" required />
-            
+
+            <Input label='Dirección' placeholder='Av. Corrientes 1234' required />
+
             <FormRow columns={3}>
-              <Input label="Ciudad" placeholder="Buenos Aires" required />
-              <SelectField label="Provincia" placeholder="Seleccionar..." required>
-                <SelectItem value="caba">CABA</SelectItem>
-                <SelectItem value="bsas">Buenos Aires</SelectItem>
-                <SelectItem value="cordoba">Córdoba</SelectItem>
+              <Input label='Ciudad' placeholder='Buenos Aires' required />
+              <SelectField label='Provincia' placeholder='Seleccionar...' required>
+                <SelectItem value='caba'>CABA</SelectItem>
+                <SelectItem value='bsas'>Buenos Aires</SelectItem>
+                <SelectItem value='cordoba'>Córdoba</SelectItem>
               </SelectField>
-              <Input label="CP" placeholder="1043" required />
+              <Input label='CP' placeholder='1043' required />
             </FormRow>
           </FormSection>
 
-          <FormSection title="Información de Facturación">
-            <Checkbox 
-              label="Usar la misma dirección para facturación"
+          <FormSection title='Información de Facturación'>
+            <Checkbox
+              label='Usar la misma dirección para facturación'
               checked={sameAsShipping}
-              onCheckedChange={(checked) => setSameAsShipping(checked === true)}
+              onCheckedChange={checked => setSameAsShipping(checked === true)}
             />
-            
+
             {!sameAsShipping && (
-              <div className="space-y-4 mt-4">
-                <Input label="Dirección de Facturación" placeholder="Dirección diferente" />
+              <div className='space-y-4 mt-4'>
+                <Input label='Dirección de Facturación' placeholder='Dirección diferente' />
                 <FormRow columns={3}>
-                  <Input label="Ciudad" placeholder="Ciudad" />
-                  <SelectField label="Provincia" placeholder="Provincia">
-                    <SelectItem value="caba">CABA</SelectItem>
-                    <SelectItem value="bsas">Buenos Aires</SelectItem>
+                  <Input label='Ciudad' placeholder='Ciudad' />
+                  <SelectField label='Provincia' placeholder='Provincia'>
+                    <SelectItem value='caba'>CABA</SelectItem>
+                    <SelectItem value='bsas'>Buenos Aires</SelectItem>
                   </SelectField>
-                  <Input label="CP" placeholder="CP" />
+                  <Input label='CP' placeholder='CP' />
                 </FormRow>
               </div>
             )}
           </FormSection>
 
-          <FormSection title="Comentarios Adicionales">
+          <FormSection title='Comentarios Adicionales'>
             <Textarea
-              label="Instrucciones de Entrega (Opcional)"
-              placeholder="Ej: Tocar timbre, dejar en portería, etc."
-              helperText="Cualquier información adicional para el repartidor"
+              label='Instrucciones de Entrega (Opcional)'
+              placeholder='Ej: Tocar timbre, dejar en portería, etc.'
+              helperText='Cualquier información adicional para el repartidor'
             />
           </FormSection>
 
-          <FormActions align="between">
-            <Button variant="outline">Volver al Carrito</Button>
-            <Button size="lg">Continuar al Pago</Button>
+          <FormActions align='between'>
+            <Button variant='outline'>Volver al Carrito</Button>
+            <Button size='lg'>Continuar al Pago</Button>
           </FormActions>
         </Form>
       </div>
     )
   },
 }
-
-
-
-
-
-
-
-
-

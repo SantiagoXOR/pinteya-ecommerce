@@ -19,7 +19,10 @@ export function formatPrice(price: number | null | undefined): string {
 /**
  * Calculates discount percentage
  */
-export function calculateDiscount(originalPrice: number | null, discountedPrice: number | null): number {
+export function calculateDiscount(
+  originalPrice: number | null,
+  discountedPrice: number | null
+): number {
   // Handle null/undefined cases
   if (originalPrice === null || originalPrice === undefined || originalPrice <= 0) {
     return 0
@@ -72,7 +75,7 @@ export function generateSlug(text: string | null | undefined): string {
   if (!text) {
     return ''
   }
-  
+
   return String(text)
     .toLowerCase()
     .trim()
@@ -135,11 +138,11 @@ export function calculateShipping(
 
   // Base rates by location
   const locationRates: { [key: string]: number } = {
-    'CABA': 500,
+    CABA: 500,
     'Buenos Aires': 800,
-    'Córdoba': 1200,
+    Córdoba: 1200,
     'Santa Fe': 1100,
-    'Mendoza': 1400,
+    Mendoza: 1400,
   }
 
   const baseRate = locationRates[location] || 1500
@@ -160,28 +163,32 @@ export function validateCartItem(item: unknown): boolean {
   if (!item || typeof item !== 'object') {
     return false
   }
-  
-  const cartItem = item as Record<string, unknown>;
-  
+
+  const cartItem = item as Record<string, unknown>
+
   // Required fields
   if (!cartItem.id || !cartItem.name || !cartItem.price || !cartItem.quantity) {
     return false
   }
-  
+
   // Validate types
   if (typeof cartItem.price !== 'number' || cartItem.price <= 0) {
     return false
   }
-  
+
   if (typeof cartItem.quantity !== 'number' || cartItem.quantity <= 0) {
     return false
   }
-  
+
   // Validate stock if provided
-  if (cartItem.stock !== undefined && typeof cartItem.stock === 'number' && cartItem.quantity > cartItem.stock) {
+  if (
+    cartItem.stock !== undefined &&
+    typeof cartItem.stock === 'number' &&
+    cartItem.quantity > cartItem.stock
+  ) {
     return false
   }
-  
+
   return true
 }
 
@@ -192,7 +199,7 @@ export function sanitizeInput(input: string | null | undefined): string {
   if (!input) {
     return ''
   }
-  
+
   return String(input)
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/<[^>]*>/g, '')
@@ -207,7 +214,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
@@ -219,7 +226,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
  */
 export function formatDate(date: string | Date): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-  
+
   return new Intl.DateTimeFormat('es-AR', {
     year: 'numeric',
     month: 'long',
@@ -233,26 +240,26 @@ export function formatDate(date: string | Date): string {
 export function calculateDeliveryDate(location: string, express: boolean = false): Date {
   const now = new Date()
   let daysToAdd = 3 // Default delivery time
-  
+
   // Location-based delivery times
   const deliveryTimes: { [key: string]: number } = {
-    'CABA': 1,
+    CABA: 1,
     'Buenos Aires': 2,
-    'Córdoba': 4,
+    Córdoba: 4,
     'Santa Fe': 3,
-    'Mendoza': 5,
+    Mendoza: 5,
   }
-  
+
   daysToAdd = deliveryTimes[location] || 7
-  
+
   // Express shipping halves delivery time (minimum 1 day)
   if (express) {
     daysToAdd = Math.max(1, Math.floor(daysToAdd / 2))
   }
-  
+
   const deliveryDate = new Date(now)
   deliveryDate.setDate(now.getDate() + daysToAdd)
-  
+
   return deliveryDate
 }
 
@@ -263,10 +270,10 @@ export function validateDNI(dni: string): boolean {
   if (!dni) {
     return false
   }
-  
+
   // Remove dots and spaces
   const cleaned = dni.replace(/[.\s]/g, '')
-  
+
   // Check if it's 7-8 digits
   return /^\d{7,8}$/.test(cleaned)
 }
@@ -278,17 +285,17 @@ export function formatDNI(dni: string): string {
   if (!dni) {
     return ''
   }
-  
+
   const cleaned = dni.replace(/[.\s]/g, '')
-  
+
   if (cleaned.length === 8) {
     return `${cleaned.slice(0, 2)}.${cleaned.slice(2, 5)}.${cleaned.slice(5)}`
   }
-  
+
   if (cleaned.length === 7) {
     return `${cleaned.slice(0, 1)}.${cleaned.slice(1, 4)}.${cleaned.slice(4)}`
   }
-  
+
   return dni
 }
 
@@ -312,16 +319,5 @@ export function isNumeric(str: string): boolean {
  * Capitalizes first letter of each word
  */
 export function capitalizeWords(str: string): string {
-  return str.replace(/\w\S*/g, (txt) => 
-    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-  )
+  return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
 }
-
-
-
-
-
-
-
-
-

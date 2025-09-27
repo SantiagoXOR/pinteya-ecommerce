@@ -1,15 +1,15 @@
-'use client';
+'use client'
 
-import Hero from './Hero';
+import Hero from './Hero'
 // import PromoBanner from './PromoBanner';
-import BestSeller from './BestSeller';
+import BestSeller from './BestSeller'
 // import PinteyaRaffle from './PinteyaRaffle';
-import NewArrivals from './NewArrivals';
-import TrustSection from './TrustSection';
-import Testimonials from './Testimonials';
-import Newsletter from '@/components/Common/Newsletter';
-import CategoryTogglePillsWithSearch from './CategoryTogglePillsWithSearch';
-import CombosSection from './CombosSection';
+import NewArrivals from './NewArrivals'
+import TrustSection from './TrustSection'
+import Testimonials from './Testimonials'
+import Newsletter from '@/components/Common/Newsletter'
+import CategoryTogglePillsWithSearch from './CategoryTogglePillsWithSearch'
+import CombosSection from './CombosSection'
 
 const Home = () => {
   return (
@@ -28,16 +28,7 @@ const Home = () => {
       <Testimonials />
       <Newsletter />
     </main>
-  );
-};
+  )
+}
 
-export default Home;
-
-
-
-
-
-
-
-
-
+export default Home

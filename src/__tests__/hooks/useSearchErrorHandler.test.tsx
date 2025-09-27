@@ -2,25 +2,25 @@
 // TESTS: useSearchErrorHandler Hook - Manejo robusto de errores
 // ===================================
 
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { useSearchErrorHandler } from '@/hooks/useSearchErrorHandler';
+import { renderHook, act, waitFor } from '@testing-library/react'
+import { useSearchErrorHandler } from '@/hooks/useSearchErrorHandler'
 
 // ===================================
 // SETUP
 // ===================================
 
 beforeEach(() => {
-  jest.clearAllMocks();
-  jest.useFakeTimers();
+  jest.clearAllMocks()
+  jest.useFakeTimers()
   // Mock console methods to reduce noise
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+})
 
 afterEach(() => {
-  jest.useRealTimers();
-  jest.restoreAllMocks();
-});
+  jest.useRealTimers()
+  jest.restoreAllMocks()
+})
 
 // ===================================
 // TESTS BÁSICOS
@@ -28,28 +28,28 @@ afterEach(() => {
 
 describe('useSearchErrorHandler Hook', () => {
   it('should initialize with default state', () => {
-    const { result } = renderHook(() => useSearchErrorHandler());
+    const { result } = renderHook(() => useSearchErrorHandler())
 
-    expect(result.current.currentError).toBe(null);
-    expect(result.current.retryCount).toBe(0);
-    expect(result.current.isRetrying).toBe(false);
-    expect(result.current.hasError).toBe(false);
-  });
+    expect(result.current.currentError).toBe(null)
+    expect(result.current.retryCount).toBe(0)
+    expect(result.current.isRetrying).toBe(false)
+    expect(result.current.hasError).toBe(false)
+  })
 
   it('should accept custom retry configuration', () => {
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useSearchErrorHandler({
         retryConfig: {
           maxRetries: 5,
           baseDelay: 500,
-        }
+        },
       })
-    );
+    )
 
-    expect(result.current.retryConfig.maxRetries).toBe(5);
-    expect(result.current.retryConfig.baseDelay).toBe(500);
-  });
-});
+    expect(result.current.retryConfig.maxRetries).toBe(5)
+    expect(result.current.retryConfig.baseDelay).toBe(500)
+  })
+})
 
 // ===================================
 // TESTS DE CLASIFICACIÓN DE ERRORES
@@ -57,59 +57,59 @@ describe('useSearchErrorHandler Hook', () => {
 
 describe('useSearchErrorHandler - Error Classification', () => {
   it('should classify network errors correctly', () => {
-    const { result } = renderHook(() => useSearchErrorHandler());
+    const { result } = renderHook(() => useSearchErrorHandler())
 
-    const networkError = new TypeError('fetch failed');
-    networkError.name = 'TypeError';
+    const networkError = new TypeError('fetch failed')
+    networkError.name = 'TypeError'
 
     act(() => {
-      const error = result.current.handleError(networkError);
-      expect(error.type).toBe('network');
-      expect(error.retryable).toBe(true);
-      expect(error.message).toContain('conexión');
-    });
-  });
+      const error = result.current.handleError(networkError)
+      expect(error.type).toBe('network')
+      expect(error.retryable).toBe(true)
+      expect(error.message).toContain('conexión')
+    })
+  })
 
   it('should classify timeout errors correctly', () => {
-    const { result } = renderHook(() => useSearchErrorHandler());
+    const { result } = renderHook(() => useSearchErrorHandler())
 
-    const timeoutError = new Error('timeout');
-    timeoutError.name = 'AbortError';
+    const timeoutError = new Error('timeout')
+    timeoutError.name = 'AbortError'
 
     act(() => {
-      const error = result.current.handleError(timeoutError);
-      expect(error.type).toBe('timeout');
-      expect(error.retryable).toBe(true);
-      expect(error.message).toContain('tardó demasiado');
-    });
-  });
+      const error = result.current.handleError(timeoutError)
+      expect(error.type).toBe('timeout')
+      expect(error.retryable).toBe(true)
+      expect(error.message).toContain('tardó demasiado')
+    })
+  })
 
   it('should classify server errors correctly', () => {
-    const { result } = renderHook(() => useSearchErrorHandler());
+    const { result } = renderHook(() => useSearchErrorHandler())
 
-    const serverError = { status: 500, message: 'Internal Server Error' };
+    const serverError = { status: 500, message: 'Internal Server Error' }
 
     act(() => {
-      const error = result.current.handleError(serverError);
-      expect(error.type).toBe('server');
-      expect(error.retryable).toBe(true);
-      expect(error.code).toBe('500');
-    });
-  });
+      const error = result.current.handleError(serverError)
+      expect(error.type).toBe('server')
+      expect(error.retryable).toBe(true)
+      expect(error.code).toBe('500')
+    })
+  })
 
   it('should classify validation errors correctly', () => {
-    const { result } = renderHook(() => useSearchErrorHandler());
+    const { result } = renderHook(() => useSearchErrorHandler())
 
-    const validationError = { status: 400, message: 'Bad Request' };
+    const validationError = { status: 400, message: 'Bad Request' }
 
     act(() => {
-      const error = result.current.handleError(validationError);
-      expect(error.type).toBe('validation');
-      expect(error.retryable).toBe(false);
-      expect(error.code).toBe('400');
-    });
-  });
-});
+      const error = result.current.handleError(validationError)
+      expect(error.type).toBe('validation')
+      expect(error.retryable).toBe(false)
+      expect(error.code).toBe('400')
+    })
+  })
+})
 
 // ===================================
 // TESTS DE RETRY AUTOMÁTICO
@@ -117,88 +117,83 @@ describe('useSearchErrorHandler - Error Classification', () => {
 
 describe('useSearchErrorHandler - Retry Logic', () => {
   it('should retry failed operations with exponential backoff', async () => {
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useSearchErrorHandler({
         retryConfig: {
           maxRetries: 3,
           baseDelay: 100,
           backoffFactor: 2,
-        }
+        },
       })
-    );
+    )
 
-    let callCount = 0;
+    let callCount = 0
     const failingOperation = jest.fn().mockImplementation(() => {
-      callCount++;
+      callCount++
       if (callCount < 3) {
-        throw new Error('Network error');
+        throw new Error('Network error')
       }
-      return Promise.resolve('success');
-    });
+      return Promise.resolve('success')
+    })
 
-    let executePromise: Promise<any>;
+    let executePromise: Promise<any>
 
     await act(async () => {
-      executePromise = result.current.executeWithRetry(failingOperation, 'test operation');
-    });
+      executePromise = result.current.executeWithRetry(failingOperation, 'test operation')
+    })
 
     // Avanzar timers para los retries
     await act(async () => {
-      jest.advanceTimersByTime(100); // Primer retry
-      await Promise.resolve();
-      jest.advanceTimersByTime(200); // Segundo retry
-      await Promise.resolve();
-    });
+      jest.advanceTimersByTime(100) // Primer retry
+      await Promise.resolve()
+      jest.advanceTimersByTime(200) // Segundo retry
+      await Promise.resolve()
+    })
 
-    const result_value = await executePromise!;
+    const result_value = await executePromise!
 
-    expect(result_value).toBe('success');
-    expect(failingOperation).toHaveBeenCalledTimes(3);
-  });
+    expect(result_value).toBe('success')
+    expect(failingOperation).toHaveBeenCalledTimes(3)
+  })
 
   it('should not retry non-retryable errors', async () => {
-    const { result } = renderHook(() => useSearchErrorHandler());
+    const { result } = renderHook(() => useSearchErrorHandler())
 
-    const error = new Error('Bad Request');
-    (error as any).status = 400;
-    const nonRetryableOperation = jest.fn().mockRejectedValue(error);
+    const error = new Error('Bad Request')
+    ;(error as any).status = 400
+    const nonRetryableOperation = jest.fn().mockRejectedValue(error)
 
     await act(async () => {
       await expect(
         result.current.executeWithRetry(nonRetryableOperation, 'validation test')
-      ).rejects.toThrow();
-    });
+      ).rejects.toThrow()
+    })
 
-    expect(nonRetryableOperation).toHaveBeenCalledTimes(1);
-  });
+    expect(nonRetryableOperation).toHaveBeenCalledTimes(1)
+  })
 
   it('should stop retrying after max attempts', async () => {
     const { result } = renderHook(() =>
       useSearchErrorHandler({
-        retryConfig: { maxRetries: 2, baseDelay: 1 } // Delay muy pequeño
+        retryConfig: { maxRetries: 2, baseDelay: 1 }, // Delay muy pequeño
       })
-    );
+    )
 
-    const alwaysFailingOperation = jest.fn().mockRejectedValue(
-      new Error('Persistent error')
-    );
+    const alwaysFailingOperation = jest.fn().mockRejectedValue(new Error('Persistent error'))
 
     // Usar real timers para este test
-    jest.useRealTimers();
+    jest.useRealTimers()
 
     await expect(
-      result.current.executeWithRetry(
-        alwaysFailingOperation,
-        'persistent failure test'
-      )
-    ).rejects.toThrow('Persistent error');
+      result.current.executeWithRetry(alwaysFailingOperation, 'persistent failure test')
+    ).rejects.toThrow('Persistent error')
 
-    expect(alwaysFailingOperation).toHaveBeenCalledTimes(3); // Original + 2 retries
+    expect(alwaysFailingOperation).toHaveBeenCalledTimes(3) // Original + 2 retries
 
     // Restaurar fake timers
-    jest.useFakeTimers();
-  });
-});
+    jest.useFakeTimers()
+  })
+})
 
 // ===================================
 // TESTS DE CALLBACKS
@@ -206,14 +201,14 @@ describe('useSearchErrorHandler - Retry Logic', () => {
 
 describe('useSearchErrorHandler - Callbacks', () => {
   it('should call onError callback when error occurs', () => {
-    const onError = jest.fn();
-    const { result } = renderHook(() => useSearchErrorHandler({ onError }));
+    const onError = jest.fn()
+    const { result } = renderHook(() => useSearchErrorHandler({ onError }))
 
-    const testError = new Error('Test error');
+    const testError = new Error('Test error')
 
     act(() => {
-      result.current.handleError(testError);
-    });
+      result.current.handleError(testError)
+    })
 
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -221,60 +216,58 @@ describe('useSearchErrorHandler - Callbacks', () => {
         message: 'Test error',
         retryable: true,
       })
-    );
-  });
+    )
+  })
 
   it('should call onRetrySuccess callback on successful retry', async () => {
-    const onRetrySuccess = jest.fn();
-    const { result } = renderHook(() => 
-      useSearchErrorHandler({ 
+    const onRetrySuccess = jest.fn()
+    const { result } = renderHook(() =>
+      useSearchErrorHandler({
         onRetrySuccess,
-        retryConfig: { maxRetries: 2, baseDelay: 50 }
+        retryConfig: { maxRetries: 2, baseDelay: 50 },
       })
-    );
+    )
 
-    let callCount = 0;
+    let callCount = 0
     const retryOperation = jest.fn().mockImplementation(() => {
-      callCount++;
+      callCount++
       if (callCount === 1) {
-        throw new Error('First failure');
+        throw new Error('First failure')
       }
-      return Promise.resolve('success');
-    });
+      return Promise.resolve('success')
+    })
 
-    let executePromise: Promise<any>;
-
-    await act(async () => {
-      executePromise = result.current.executeWithRetry(retryOperation);
-    });
+    let executePromise: Promise<any>
 
     await act(async () => {
-      jest.advanceTimersByTime(50);
-      await Promise.resolve();
-    });
+      executePromise = result.current.executeWithRetry(retryOperation)
+    })
 
-    await executePromise!;
+    await act(async () => {
+      jest.advanceTimersByTime(50)
+      await Promise.resolve()
+    })
 
-    expect(onRetrySuccess).toHaveBeenCalled();
-  });
+    await executePromise!
+
+    expect(onRetrySuccess).toHaveBeenCalled()
+  })
 
   it('should call onRetryFailed callback when all retries fail', async () => {
-    const onRetryFailed = jest.fn();
+    const onRetryFailed = jest.fn()
     const { result } = renderHook(() =>
       useSearchErrorHandler({
         onRetryFailed,
-        retryConfig: { maxRetries: 1, baseDelay: 1 } // Delay muy pequeño
+        retryConfig: { maxRetries: 1, baseDelay: 1 }, // Delay muy pequeño
       })
-    );
+    )
 
-    const failingOperation = jest.fn().mockRejectedValue(new Error('Always fails'));
+    const failingOperation = jest.fn().mockRejectedValue(new Error('Always fails'))
 
     // Usar real timers para este test
-    jest.useRealTimers();
+    jest.useRealTimers()
 
-    await expect(
-      result.current.executeWithRetry(failingOperation)
-    ).rejects.toThrow();
+    await expect(result.current.executeWithRetry(failingOperation)).rejects.toThrow()
 
     expect(onRetryFailed).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -282,12 +275,12 @@ describe('useSearchErrorHandler - Callbacks', () => {
         message: 'Always fails',
       }),
       1 // número de intentos
-    );
+    )
 
     // Restaurar fake timers
-    jest.useFakeTimers();
-  });
-});
+    jest.useFakeTimers()
+  })
+})
 
 // ===================================
 // TESTS DE ESTADO
@@ -295,74 +288,65 @@ describe('useSearchErrorHandler - Callbacks', () => {
 
 describe('useSearchErrorHandler - State Management', () => {
   it('should update retry state during retries', async () => {
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useSearchErrorHandler({
-        retryConfig: { maxRetries: 2, baseDelay: 50 }
+        retryConfig: { maxRetries: 2, baseDelay: 50 },
       })
-    );
+    )
 
-    let callCount = 0;
+    let callCount = 0
     const retryOperation = jest.fn().mockImplementation(() => {
-      callCount++;
+      callCount++
       if (callCount < 3) {
-        throw new Error('Retry test');
+        throw new Error('Retry test')
       }
-      return Promise.resolve('success');
-    });
+      return Promise.resolve('success')
+    })
 
-    let executePromise: Promise<any>;
+    let executePromise: Promise<any>
 
     await act(async () => {
-      executePromise = result.current.executeWithRetry(retryOperation);
-    });
+      executePromise = result.current.executeWithRetry(retryOperation)
+    })
 
     // Verificar estado durante primer retry
     await act(async () => {
-      jest.advanceTimersByTime(50);
-      await Promise.resolve();
-    });
+      jest.advanceTimersByTime(50)
+      await Promise.resolve()
+    })
 
-    expect(result.current.isRetrying).toBe(true);
-    expect(result.current.retryCount).toBe(1);
+    expect(result.current.isRetrying).toBe(true)
+    expect(result.current.retryCount).toBe(1)
 
     // Completar la operación
     await act(async () => {
-      jest.advanceTimersByTime(100);
-      await Promise.resolve();
-    });
+      jest.advanceTimersByTime(100)
+      await Promise.resolve()
+    })
 
-    await executePromise!;
+    await executePromise!
 
-    expect(result.current.isRetrying).toBe(false);
-    expect(result.current.retryCount).toBe(0);
-  });
+    expect(result.current.isRetrying).toBe(false)
+    expect(result.current.retryCount).toBe(0)
+  })
 
   it('should clear error state', () => {
-    const { result } = renderHook(() => useSearchErrorHandler());
+    const { result } = renderHook(() => useSearchErrorHandler())
 
     // Simular error
     act(() => {
-      result.current.handleError(new Error('Test error'));
-    });
+      result.current.handleError(new Error('Test error'))
+    })
 
-    expect(result.current.hasError).toBe(true);
+    expect(result.current.hasError).toBe(true)
 
     // Limpiar error
     act(() => {
-      result.current.clearError();
-    });
+      result.current.clearError()
+    })
 
-    expect(result.current.hasError).toBe(false);
-    expect(result.current.currentError).toBe(null);
-    expect(result.current.retryCount).toBe(0);
-  });
-});
-
-
-
-
-
-
-
-
-
+    expect(result.current.hasError).toBe(false)
+    expect(result.current.currentError).toBe(null)
+    expect(result.current.retryCount).toBe(0)
+  })
+})

@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import { useEffect } from 'react';
-import { initializeJsonSafety } from '@/lib/json-utils';
-import { setupDebugHelpers } from '@/utils/cleanLocalStorage';
+import { useEffect } from 'react'
+import { initializeJsonSafety } from '@/lib/json-utils'
+import { setupDebugHelpers } from '@/utils/cleanLocalStorage'
 
 /**
  * Componente que inicializa la limpieza de localStorage corrupto
@@ -11,23 +11,14 @@ import { setupDebugHelpers } from '@/utils/cleanLocalStorage';
 export default function JsonSafetyInitializer() {
   useEffect(() => {
     // Ejecutar limpieza de localStorage corrupto
-    initializeJsonSafety();
+    initializeJsonSafety()
 
     // Configurar helpers de debug en desarrollo
     if (process.env.NODE_ENV === 'development') {
-      setupDebugHelpers();
+      setupDebugHelpers()
     }
-  }, []);
+  }, [])
 
   // Este componente no renderiza nada
-  return null;
+  return null
 }
-
-
-
-
-
-
-
-
-

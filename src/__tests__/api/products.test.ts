@@ -165,7 +165,7 @@ describe('/api/products', () => {
 
     mockSupabase.getSupabaseClient.mockReturnValue({
       from: jest.fn(() => mockQueryBuilder),
-      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) }
+      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) },
     })
 
     const request = new NextRequest('http://localhost:3001/api/products')
@@ -200,7 +200,7 @@ describe('/api/products', () => {
 
     mockSupabase.getSupabaseClient.mockReturnValue({
       from: jest.fn(() => mockQueryBuilder),
-      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) }
+      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) },
     })
 
     const request = new NextRequest('http://localhost:3001/api/products')
@@ -252,7 +252,7 @@ describe('/api/products', () => {
 
     mockSupabase.getSupabaseClient.mockReturnValue({
       from: jest.fn(() => mockQueryBuilder),
-      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) }
+      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) },
     })
 
     const request = new NextRequest('http://localhost:3001/api/products')
@@ -277,7 +277,9 @@ describe('/api/products', () => {
   })
 
   it('sanitizes search input', async () => {
-    const request = new NextRequest('http://localhost:3001/api/products?search=<script>alert("xss")</script>')
+    const request = new NextRequest(
+      'http://localhost:3001/api/products?search=<script>alert("xss")</script>'
+    )
     const response = await GET(request)
     const data = await response.json()
 
@@ -323,17 +325,19 @@ describe('/api/products', () => {
       like: jest.fn(() => mockQueryBuilder),
       in: jest.fn(() => mockQueryBuilder),
       order: jest.fn(() => mockQueryBuilder),
-      range: jest.fn(() => Promise.resolve({
-        data: mockSupabaseResponse.data,
-        error: null,
-        count: 25 // 25 total items
-      })),
+      range: jest.fn(() =>
+        Promise.resolve({
+          data: mockSupabaseResponse.data,
+          error: null,
+          count: 25, // 25 total items
+        })
+      ),
       single: jest.fn(() => Promise.resolve({ data: null, error: null })),
     }
 
     mockSupabase.getSupabaseClient.mockReturnValue({
       from: jest.fn(() => mockQueryBuilder),
-      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) }
+      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) },
     })
 
     const request = new NextRequest('http://localhost:3001/api/products?limit=10')
@@ -381,7 +385,9 @@ describe('/api/products', () => {
   })
 
   it('validates sort parameters', async () => {
-    const request = new NextRequest('http://localhost:3001/api/products?sortBy=invalid&sortOrder=invalid')
+    const request = new NextRequest(
+      'http://localhost:3001/api/products?sortBy=invalid&sortOrder=invalid'
+    )
     const response = await GET(request)
     const data = await response.json()
 
@@ -440,12 +446,12 @@ describe('/api/products', () => {
 
     mockSupabase.getSupabaseClient.mockReturnValue({
       from: jest.fn(() => mockQueryBuilder),
-      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) }
+      auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })) },
     })
 
-    const requests = Array(5).fill(null).map(() =>
-      GET(new NextRequest('http://localhost:3001/api/products'))
-    )
+    const requests = Array(5)
+      .fill(null)
+      .map(() => GET(new NextRequest('http://localhost:3001/api/products')))
 
     const responses = await Promise.all(requests)
 
@@ -454,12 +460,3 @@ describe('/api/products', () => {
     })
   })
 })
-
-
-
-
-
-
-
-
-

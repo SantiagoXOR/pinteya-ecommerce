@@ -36,9 +36,9 @@ export class EmailNotificationService {
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(config)
+        body: JSON.stringify(config),
       })
 
       if (!response.ok) {
@@ -52,7 +52,7 @@ export class EmailNotificationService {
       toast({
         title: 'Error',
         description: 'No se pudo enviar la notificación por email',
-        variant: 'destructive'
+        variant: 'destructive',
       })
       return false
     }
@@ -71,7 +71,7 @@ export class EmailNotificationService {
       subject: `Confirmación de pedido #${orderData.orderId}`,
       template: 'order-confirmation',
       data: orderData,
-      priority: 'high'
+      priority: 'high',
     })
   }
 
@@ -86,7 +86,7 @@ export class EmailNotificationService {
       subject: `Tu pedido #${shippingData.orderId} está en camino`,
       template: 'shipping-notification',
       data: shippingData,
-      priority: 'normal'
+      priority: 'normal',
     })
   }
 
@@ -100,7 +100,7 @@ export class EmailNotificationService {
       subject: 'Restablecer contraseña',
       template: 'password-reset',
       data: userData,
-      priority: 'high'
+      priority: 'high',
     })
   }
 
@@ -114,7 +114,7 @@ export class EmailNotificationService {
       subject: '¡Bienvenido a nuestra tienda!',
       template: 'welcome',
       data: userData,
-      priority: 'normal'
+      priority: 'normal',
     })
   }
 
@@ -130,7 +130,7 @@ export class EmailNotificationService {
       subject: `Alerta: Stock bajo - ${productData.productName}`,
       template: 'low-stock-alert',
       data: productData,
-      priority: 'high'
+      priority: 'high',
     })
   }
 
@@ -146,7 +146,7 @@ export class EmailNotificationService {
       subject: `Actualización de pedido #${statusData.orderId}`,
       template: 'order-status-update',
       data: statusData,
-      priority: 'normal'
+      priority: 'normal',
     })
   }
 
@@ -163,7 +163,7 @@ export class EmailNotificationService {
       subject: promoData.subject,
       template: 'promotional',
       data: promoData,
-      priority: 'low'
+      priority: 'low',
     })
   }
 
@@ -189,9 +189,9 @@ export class EmailNotificationService {
       const response = await fetch('/api/notifications/email/schedule', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(config)
+        body: JSON.stringify(config),
       })
 
       if (!response.ok) {
@@ -210,26 +210,22 @@ export class EmailNotificationService {
 export const emailService = EmailNotificationService.getInstance()
 
 // Funciones de conveniencia
-export const sendOrderConfirmation = (orderData: Parameters<EmailNotificationService['sendOrderConfirmation']>[0]) => 
-  emailService.sendOrderConfirmation(orderData)
+export const sendOrderConfirmation = (
+  orderData: Parameters<EmailNotificationService['sendOrderConfirmation']>[0]
+) => emailService.sendOrderConfirmation(orderData)
 
-export const sendShippingNotification = (shippingData: Parameters<EmailNotificationService['sendShippingNotification']>[0]) => 
-  emailService.sendShippingNotification(shippingData)
+export const sendShippingNotification = (
+  shippingData: Parameters<EmailNotificationService['sendShippingNotification']>[0]
+) => emailService.sendShippingNotification(shippingData)
 
-export const sendPasswordReset = (userData: Parameters<EmailNotificationService['sendPasswordReset']>[0]) => 
-  emailService.sendPasswordReset(userData)
+export const sendPasswordReset = (
+  userData: Parameters<EmailNotificationService['sendPasswordReset']>[0]
+) => emailService.sendPasswordReset(userData)
 
-export const sendWelcomeEmail = (userData: Parameters<EmailNotificationService['sendWelcomeEmail']>[0]) => 
-  emailService.sendWelcomeEmail(userData)
+export const sendWelcomeEmail = (
+  userData: Parameters<EmailNotificationService['sendWelcomeEmail']>[0]
+) => emailService.sendWelcomeEmail(userData)
 
-export const sendLowStockAlert = (productData: Parameters<EmailNotificationService['sendLowStockAlert']>[0]) => 
-  emailService.sendLowStockAlert(productData)
-
-
-
-
-
-
-
-
-
+export const sendLowStockAlert = (
+  productData: Parameters<EmailNotificationService['sendLowStockAlert']>[0]
+) => emailService.sendLowStockAlert(productData)

@@ -1,13 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { Tag, Truck, Package, Star, X } from 'lucide-react'
-import { 
-  Badge, 
-  DiscountBadge, 
-  ShippingBadge, 
-  StockBadge, 
-  NewBadge, 
-  OfferBadge 
-} from './badge'
+import { Badge, DiscountBadge, ShippingBadge, StockBadge, NewBadge, OfferBadge } from './badge'
 
 const meta = {
   title: 'Design System/Components/Badge',
@@ -55,9 +48,18 @@ import { Badge, DiscountBadge, ShippingBadge } from '@/components/ui/badge'
     variant: {
       control: 'select',
       options: [
-        'default', 'secondary', 'destructive', 'success', 'warning', 'info',
-        'outline', 'outline-primary', 'outline-destructive', 'outline-success', 
-        'outline-warning', 'outline-info'
+        'default',
+        'secondary',
+        'destructive',
+        'success',
+        'warning',
+        'info',
+        'outline',
+        'outline-primary',
+        'outline-destructive',
+        'outline-success',
+        'outline-warning',
+        'outline-info',
       ],
       description: 'Variante visual del badge',
     },
@@ -98,13 +100,13 @@ export const Default: Story = {
 // Variantes de color
 export const ColorVariants: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-2">
-      <Badge variant="default">Default</Badge>
-      <Badge variant="secondary">Secondary</Badge>
-      <Badge variant="destructive">Destructive</Badge>
-      <Badge variant="success">Success</Badge>
-      <Badge variant="warning">Warning</Badge>
-      <Badge variant="info">Info</Badge>
+    <div className='flex flex-wrap gap-2'>
+      <Badge variant='default'>Default</Badge>
+      <Badge variant='secondary'>Secondary</Badge>
+      <Badge variant='destructive'>Destructive</Badge>
+      <Badge variant='success'>Success</Badge>
+      <Badge variant='warning'>Warning</Badge>
+      <Badge variant='info'>Info</Badge>
     </div>
   ),
   parameters: {
@@ -119,13 +121,13 @@ export const ColorVariants: Story = {
 // Variantes outline
 export const OutlineVariants: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-2">
-      <Badge variant="outline">Outline</Badge>
-      <Badge variant="outline-primary">Primary</Badge>
-      <Badge variant="outline-destructive">Destructive</Badge>
-      <Badge variant="outline-success">Success</Badge>
-      <Badge variant="outline-warning">Warning</Badge>
-      <Badge variant="outline-info">Info</Badge>
+    <div className='flex flex-wrap gap-2'>
+      <Badge variant='outline'>Outline</Badge>
+      <Badge variant='outline-primary'>Primary</Badge>
+      <Badge variant='outline-destructive'>Destructive</Badge>
+      <Badge variant='outline-success'>Success</Badge>
+      <Badge variant='outline-warning'>Warning</Badge>
+      <Badge variant='outline-info'>Info</Badge>
     </div>
   ),
   parameters: {
@@ -140,10 +142,16 @@ export const OutlineVariants: Story = {
 // Tamaños
 export const Sizes: Story = {
   render: () => (
-    <div className="flex items-center gap-4">
-      <Badge variant="default" size="sm">Pequeño</Badge>
-      <Badge variant="default" size="md">Mediano</Badge>
-      <Badge variant="default" size="lg">Grande</Badge>
+    <div className='flex items-center gap-4'>
+      <Badge variant='default' size='sm'>
+        Pequeño
+      </Badge>
+      <Badge variant='default' size='md'>
+        Mediano
+      </Badge>
+      <Badge variant='default' size='lg'>
+        Grande
+      </Badge>
     </div>
   ),
   parameters: {
@@ -158,17 +166,17 @@ export const Sizes: Story = {
 // Con íconos
 export const WithIcons: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-2">
-      <Badge variant="success" icon={<Truck className="w-3 h-3" />}>
+    <div className='flex flex-wrap gap-2'>
+      <Badge variant='success' icon={<Truck className='w-3 h-3' />}>
         Envío gratis
       </Badge>
-      <Badge variant="warning" icon={<Package className="w-3 h-3" />}>
+      <Badge variant='warning' icon={<Package className='w-3 h-3' />}>
         Stock limitado
       </Badge>
-      <Badge variant="info" icon={<Star className="w-3 h-3" />}>
+      <Badge variant='info' icon={<Star className='w-3 h-3' />}>
         Destacado
       </Badge>
-      <Badge variant="destructive" icon={<Tag className="w-3 h-3" />}>
+      <Badge variant='destructive' icon={<Tag className='w-3 h-3' />}>
         Oferta
       </Badge>
     </div>
@@ -185,14 +193,14 @@ export const WithIcons: Story = {
 // Closable badges
 export const Closable: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-2">
-      <Badge variant="default" closable onClose={() => alert('Badge cerrado')}>
+    <div className='flex flex-wrap gap-2'>
+      <Badge variant='default' closable onClose={() => alert('Badge cerrado')}>
         Filtro aplicado
       </Badge>
-      <Badge variant="info" closable onClose={() => alert('Badge cerrado')}>
+      <Badge variant='info' closable onClose={() => alert('Badge cerrado')}>
         Categoría: Pinturas
       </Badge>
-      <Badge variant="warning" closable onClose={() => alert('Badge cerrado')}>
+      <Badge variant='warning' closable onClose={() => alert('Badge cerrado')}>
         Precio: $1000-$5000
       </Badge>
     </div>
@@ -209,17 +217,17 @@ export const Closable: Story = {
 // Animaciones
 export const Animations: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-4">
-      <Badge variant="destructive" animation="pulse">
+    <div className='flex flex-wrap gap-4'>
+      <Badge variant='destructive' animation='pulse'>
         Pulse
       </Badge>
-      <Badge variant="warning" animation="bounce">
+      <Badge variant='warning' animation='bounce'>
         Bounce
       </Badge>
-      <Badge variant="info" animation="ping">
+      <Badge variant='info' animation='ping'>
         Ping
       </Badge>
-      <Badge variant="success" animation="none">
+      <Badge variant='success' animation='none'>
         Sin animación
       </Badge>
     </div>
@@ -236,11 +244,11 @@ export const Animations: Story = {
 // Badges especializados para e-commerce
 export const EcommerceBadges: Story = {
   render: () => (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Descuentos */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-sm text-gray-600">Descuentos</h3>
-        <div className="flex flex-wrap gap-2">
+      <div className='space-y-2'>
+        <h3 className='font-semibold text-sm text-gray-600'>Descuentos</h3>
+        <div className='flex flex-wrap gap-2'>
           <DiscountBadge percentage={10} />
           <DiscountBadge percentage={25} />
           <DiscountBadge percentage={50} />
@@ -248,19 +256,19 @@ export const EcommerceBadges: Story = {
       </div>
 
       {/* Envío */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-sm text-gray-600">Envío</h3>
-        <div className="flex flex-wrap gap-2">
+      <div className='space-y-2'>
+        <h3 className='font-semibold text-sm text-gray-600'>Envío</h3>
+        <div className='flex flex-wrap gap-2'>
           <ShippingBadge free />
           <ShippingBadge fast />
-          <ShippingBadge text="Envío express" />
+          <ShippingBadge text='Envío express' />
         </div>
       </div>
 
       {/* Stock */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-sm text-gray-600">Stock</h3>
-        <div className="flex flex-wrap gap-2">
+      <div className='space-y-2'>
+        <h3 className='font-semibold text-sm text-gray-600'>Stock</h3>
+        <div className='flex flex-wrap gap-2'>
           <StockBadge stock={0} />
           <StockBadge stock={3} />
           <StockBadge stock={15} />
@@ -268,12 +276,12 @@ export const EcommerceBadges: Story = {
       </div>
 
       {/* Promocionales */}
-      <div className="space-y-2">
-        <h3 className="font-semibold text-sm text-gray-600">Promocionales</h3>
-        <div className="flex flex-wrap gap-2">
+      <div className='space-y-2'>
+        <h3 className='font-semibold text-sm text-gray-600'>Promocionales</h3>
+        <div className='flex flex-wrap gap-2'>
           <NewBadge />
           <OfferBadge />
-          <NewBadge text="LANZAMIENTO" />
+          <NewBadge text='LANZAMIENTO' />
         </div>
       </div>
     </div>
@@ -290,45 +298,53 @@ export const EcommerceBadges: Story = {
 // Casos de uso en productos
 export const ProductUseCases: Story = {
   render: () => (
-    <div className="space-y-6 w-full max-w-md">
+    <div className='space-y-6 w-full max-w-md'>
       {/* Producto con oferta */}
-      <div className="border rounded-lg p-4 space-y-3">
-        <div className="flex items-start justify-between">
-          <h3 className="font-semibold">Pintura Sherwin Williams</h3>
+      <div className='border rounded-lg p-4 space-y-3'>
+        <div className='flex items-start justify-between'>
+          <h3 className='font-semibold'>Pintura Sherwin Williams</h3>
           <DiscountBadge percentage={30} />
         </div>
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           <ShippingBadge free />
           <StockBadge stock={5} />
         </div>
-        <div className="text-lg font-bold">$15.500</div>
+        <div className='text-lg font-bold'>$15.500</div>
       </div>
 
       {/* Producto nuevo */}
-      <div className="border rounded-lg p-4 space-y-3">
-        <div className="flex items-start justify-between">
-          <h3 className="font-semibold">Rodillo Profesional</h3>
+      <div className='border rounded-lg p-4 space-y-3'>
+        <div className='flex items-start justify-between'>
+          <h3 className='font-semibold'>Rodillo Profesional</h3>
           <NewBadge />
         </div>
-        <div className="flex gap-2">
-          <Badge variant="success" size="sm">Calidad premium</Badge>
-          <Badge variant="info" size="sm">Recomendado</Badge>
+        <div className='flex gap-2'>
+          <Badge variant='success' size='sm'>
+            Calidad premium
+          </Badge>
+          <Badge variant='info' size='sm'>
+            Recomendado
+          </Badge>
         </div>
-        <div className="text-lg font-bold">$3.200</div>
+        <div className='text-lg font-bold'>$3.200</div>
       </div>
 
       {/* Producto con múltiples badges */}
-      <div className="border rounded-lg p-4 space-y-3">
-        <div className="flex items-start justify-between">
-          <h3 className="font-semibold">Kit Pintura Completo</h3>
+      <div className='border rounded-lg p-4 space-y-3'>
+        <div className='flex items-start justify-between'>
+          <h3 className='font-semibold'>Kit Pintura Completo</h3>
           <OfferBadge />
         </div>
-        <div className="flex flex-wrap gap-1">
-          <Badge variant="destructive" size="sm">Liquidación</Badge>
+        <div className='flex flex-wrap gap-1'>
+          <Badge variant='destructive' size='sm'>
+            Liquidación
+          </Badge>
           <ShippingBadge free />
-          <Badge variant="warning" size="sm">Últimas unidades</Badge>
+          <Badge variant='warning' size='sm'>
+            Últimas unidades
+          </Badge>
         </div>
-        <div className="text-lg font-bold">$12.500</div>
+        <div className='text-lg font-bold'>$12.500</div>
       </div>
     </div>
   ),
@@ -344,19 +360,19 @@ export const ProductUseCases: Story = {
 // Todas las variantes
 export const AllVariants: Story = {
   render: () => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <Badge variant="default">Default</Badge>
-      <Badge variant="secondary">Secondary</Badge>
-      <Badge variant="destructive">Destructive</Badge>
-      <Badge variant="success">Success</Badge>
-      <Badge variant="warning">Warning</Badge>
-      <Badge variant="info">Info</Badge>
-      <Badge variant="outline">Outline</Badge>
-      <Badge variant="outline-primary">Outline Primary</Badge>
-      <Badge variant="outline-destructive">Outline Destructive</Badge>
-      <Badge variant="outline-success">Outline Success</Badge>
-      <Badge variant="outline-warning">Outline Warning</Badge>
-      <Badge variant="outline-info">Outline Info</Badge>
+    <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+      <Badge variant='default'>Default</Badge>
+      <Badge variant='secondary'>Secondary</Badge>
+      <Badge variant='destructive'>Destructive</Badge>
+      <Badge variant='success'>Success</Badge>
+      <Badge variant='warning'>Warning</Badge>
+      <Badge variant='info'>Info</Badge>
+      <Badge variant='outline'>Outline</Badge>
+      <Badge variant='outline-primary'>Outline Primary</Badge>
+      <Badge variant='outline-destructive'>Outline Destructive</Badge>
+      <Badge variant='outline-success'>Outline Success</Badge>
+      <Badge variant='outline-warning'>Outline Warning</Badge>
+      <Badge variant='outline-info'>Outline Info</Badge>
     </div>
   ),
   parameters: {
@@ -367,12 +383,3 @@ export const AllVariants: Story = {
     },
   },
 }
-
-
-
-
-
-
-
-
-

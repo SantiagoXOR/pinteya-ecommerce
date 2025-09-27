@@ -2,40 +2,36 @@
 // PINTEYA E-COMMERCE - ORDER LIST ENTERPRISE TESTS
 // ===================================
 
-import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { OrderListEnterprise } from '@/components/admin/orders/OrderListEnterprise';
-import { 
-  mockOrders, 
-  createMockFetch, 
-  resetAllMocks 
-} from '../../../setup/orders-mocks';
+import React from 'react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { OrderListEnterprise } from '@/components/admin/orders/OrderListEnterprise'
+import { mockOrders, createMockFetch, resetAllMocks } from '../../../setup/orders-mocks'
 
 // ===================================
 // SETUP MOCKS
 // ===================================
 
 // Mock useToast
-const mockToast = jest.fn();
+const mockToast = jest.fn()
 jest.mock('../../../../hooks/use-toast', () => ({
-  useToast: () => ({ toast: mockToast })
-}));
+  useToast: () => ({ toast: mockToast }),
+}))
 
 // Mock fetch
-const mockFetch = createMockFetch();
-global.fetch = mockFetch;
+const mockFetch = createMockFetch()
+global.fetch = mockFetch
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
-    back: jest.fn()
+    back: jest.fn(),
   }),
   useSearchParams: () => new URLSearchParams(),
-  usePathname: () => '/admin/orders'
-}));
+  usePathname: () => '/admin/orders',
+}))
 
 // ===================================
 // HELPER FUNCTIONS
@@ -49,14 +45,14 @@ const renderOrderList = (props = {}) => {
     enableBulkActions: true,
     enableFilters: true,
     pageSize: 20,
-    ...props
-  };
+    ...props,
+  }
 
   return {
     ...render(<OrderListEnterprise {...defaultProps} />),
-    props: defaultProps
-  };
-};
+    props: defaultProps,
+  }
+}
 
 // ===================================
 // TESTS BÁSICOS
@@ -64,86 +60,90 @@ const renderOrderList = (props = {}) => {
 
 describe('OrderListEnterprise', () => {
   beforeEach(() => {
-    resetAllMocks();
-    mockFetch.mockClear();
-    mockToast.mockClear();
-  });
+    resetAllMocks()
+    mockFetch.mockClear()
+    mockToast.mockClear()
+  })
 
   test('should render loading state initially', async () => {
     // Arrange & Act
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Assert
-    expect(screen.getByText('Gestión de Órdenes')).toBeInTheDocument();
-    expect(screen.getByText('Administra y monitorea todas las órdenes del sistema')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Gestión de Órdenes')).toBeInTheDocument()
+    expect(
+      screen.getByText('Administra y monitorea todas las órdenes del sistema')
+    ).toBeInTheDocument()
+  })
 
   test('should fetch and display orders on mount', async () => {
     // Arrange & Act
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for data to load
     await waitFor(() => {
       // Patrón 2 exitoso: Expectativas específicas - fetch se llama solo con URL
       expect(mockFetch).toHaveBeenCalledWith(
-        "/api/admin/orders?page=1&limit=20&sort_by=created_at&sort_order=desc"
-      );
-    });
+        '/api/admin/orders?page=1&limit=20&sort_by=created_at&sort_order=desc'
+      )
+    })
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument();
+      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument()
       // Patrón 2 exitoso: Expectativas específicas - usar getAllByText para múltiples elementos
-      expect(screen.getAllByText(mockOrders[0].user_profiles.name)[0]).toBeInTheDocument();
-    });
-  });
+      expect(screen.getAllByText(mockOrders[0].user_profiles.name)[0]).toBeInTheDocument()
+    })
+  })
 
   test('should display correct order information', async () => {
     // Arrange & Act
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument();
-    });
+      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument()
+    })
 
     // Assert order details (using getAllByText for elements that may appear multiple times)
-    expect(screen.getAllByText(mockOrders[0].user_profiles.name)[0]).toBeInTheDocument();
-    expect(screen.getAllByText(mockOrders[0].user_profiles.email)[0]).toBeInTheDocument();
-    expect(screen.getByText(`$${mockOrders[0].total_amount.toLocaleString()} ${mockOrders[0].currency}`)).toBeInTheDocument();
-  });
+    expect(screen.getAllByText(mockOrders[0].user_profiles.name)[0]).toBeInTheDocument()
+    expect(screen.getAllByText(mockOrders[0].user_profiles.email)[0]).toBeInTheDocument()
+    expect(
+      screen.getByText(`$${mockOrders[0].total_amount.toLocaleString()} ${mockOrders[0].currency}`)
+    ).toBeInTheDocument()
+  })
 
   test('should handle API errors gracefully', async () => {
     // Arrange
-    mockFetch.mockImplementationOnce(() => 
+    mockFetch.mockImplementationOnce(() =>
       Promise.resolve({
         ok: false,
         status: 500,
-        json: () => Promise.resolve({ error: 'Server error' })
+        json: () => Promise.resolve({ error: 'Server error' }),
       })
-    );
+    )
 
     // Act
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Assert
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Error',
         description: 'No se pudieron cargar las órdenes',
-        variant: 'destructive'
-      });
-    });
-  });
-});
+        variant: 'destructive',
+      })
+    })
+  })
+})
 
 // ===================================
 // TESTS DE FILTROS
@@ -151,130 +151,134 @@ describe('OrderListEnterprise', () => {
 
 describe('OrderListEnterprise - Filters', () => {
   beforeEach(() => {
-    resetAllMocks();
-    mockFetch.mockClear();
-  });
+    resetAllMocks()
+    mockFetch.mockClear()
+  })
 
   test('should render filter components when enabled', async () => {
     // Arrange & Act
     await act(async () => {
-      renderOrderList({ enableFilters: true });
-    });
+      renderOrderList({ enableFilters: true })
+    })
 
     // Assert
-    expect(screen.getByText('Filtros')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Buscar órdenes...')).toBeInTheDocument();
-    expect(screen.getByText('Estado')).toBeInTheDocument();
+    expect(screen.getByText('Filtros')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Buscar órdenes...')).toBeInTheDocument()
+    expect(screen.getByText('Estado')).toBeInTheDocument()
     // Note: "Estado de Pago" filter may not be visible by default
-  });
+  })
 
   test('should not render filters when disabled', async () => {
     // Arrange & Act
     await act(async () => {
-      renderOrderList({ enableFilters: false });
-    });
+      renderOrderList({ enableFilters: false })
+    })
 
     // Assert
-    expect(screen.queryByText('Filtros')).not.toBeInTheDocument();
-    expect(screen.queryByPlaceholderText('Buscar órdenes...')).not.toBeInTheDocument();
-  });
+    expect(screen.queryByText('Filtros')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Buscar órdenes...')).not.toBeInTheDocument()
+  })
 
   test('should handle search filter changes', async () => {
     // Arrange
-    const user = userEvent.setup();
-    
+    const user = userEvent.setup()
+
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for initial load
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Buscar órdenes...')).toBeInTheDocument();
-    });
+      expect(screen.getByPlaceholderText('Buscar órdenes...')).toBeInTheDocument()
+    })
 
     // Act
-    const searchInput = screen.getByPlaceholderText('Buscar órdenes...');
+    const searchInput = screen.getByPlaceholderText('Buscar órdenes...')
     await act(async () => {
-      await user.type(searchInput, 'test search');
-    });
+      await user.type(searchInput, 'test search')
+    })
 
     // Patrón 2 exitoso: Expectativas específicas - el componente hace llamadas incrementales
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringMatching(/search=.*te/) // Acepta llamadas incrementales, sin undefined
-      );
-    });
-  });
+      )
+    })
+  })
 
   test('should handle status filter changes', async () => {
     // Arrange
-    const user = userEvent.setup();
-    
+    const user = userEvent.setup()
+
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for initial load
     await waitFor(() => {
-      expect(screen.getByText('Estado')).toBeInTheDocument();
-    });
+      expect(screen.getByText('Estado')).toBeInTheDocument()
+    })
 
     // Patrón 3 exitoso: Comportamientos testing - mejorar interacción con dropdown
-    const statusSelect = screen.getByText('Estado').closest('div').querySelector('[role="combobox"]');
+    const statusSelect = screen
+      .getByText('Estado')
+      .closest('div')
+      .querySelector('[role="combobox"]')
     await act(async () => {
-      await user.click(statusSelect);
-    });
+      await user.click(statusSelect)
+    })
 
     // Wait for dropdown to appear and select an option
     await waitFor(() => {
-      const pendingOptions = screen.getAllByText('Pendiente');
-      expect(pendingOptions.length).toBeGreaterThan(0);
-    });
+      const pendingOptions = screen.getAllByText('Pendiente')
+      expect(pendingOptions.length).toBeGreaterThan(0)
+    })
 
-    const pendingOption = screen.getAllByText('Pendiente')[0];
+    const pendingOption = screen.getAllByText('Pendiente')[0]
     await act(async () => {
-      await user.click(pendingOption);
-    });
+      await user.click(pendingOption)
+    })
 
     // Patrón 2 exitoso: Expectativas específicas - verificar que se hizo al menos una llamada
     // El componente podría no estar enviando el filtro correctamente, pero debería hacer alguna llamada
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalled();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(mockFetch).toHaveBeenCalled()
+      },
+      { timeout: 3000 }
+    )
 
     // Patrón 2 exitoso: Expectativas específicas - verificar llamada con argumentos correctos
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/admin/orders')
-    );
-  });
+    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/api/admin/orders'))
+  })
 
   test('should reset page when filters change', async () => {
     // Arrange
-    const user = userEvent.setup();
-    
+    const user = userEvent.setup()
+
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for initial load
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Buscar órdenes...')).toBeInTheDocument();
-    });
+      expect(screen.getByPlaceholderText('Buscar órdenes...')).toBeInTheDocument()
+    })
 
     // Act - Change search filter
-    const searchInput = screen.getByPlaceholderText('Buscar órdenes...');
+    const searchInput = screen.getByPlaceholderText('Buscar órdenes...')
     await act(async () => {
-      await user.type(searchInput, 'test');
-    });
+      await user.type(searchInput, 'test')
+    })
 
     // Patrón 2 exitoso: Expectativas específicas - Should include page=1 in the request
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('page=1') // Sin undefined extra
-      );
-    });
-  });
-});
+      )
+    })
+  })
+})
 
 // ===================================
 // TESTS DE ACCIONES MASIVAS
@@ -282,165 +286,165 @@ describe('OrderListEnterprise - Filters', () => {
 
 describe('OrderListEnterprise - Bulk Actions', () => {
   beforeEach(() => {
-    resetAllMocks();
-    mockFetch.mockClear();
-  });
+    resetAllMocks()
+    mockFetch.mockClear()
+  })
 
   test('should render bulk action controls when enabled', async () => {
     // Arrange & Act
     await act(async () => {
-      renderOrderList({ enableBulkActions: true });
-    });
+      renderOrderList({ enableBulkActions: true })
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument();
-    });
+      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument()
+    })
 
     // Assert - Should have checkboxes for selection
-    const checkboxes = screen.getAllByRole('checkbox');
-    expect(checkboxes.length).toBeGreaterThan(0);
-  });
+    const checkboxes = screen.getAllByRole('checkbox')
+    expect(checkboxes.length).toBeGreaterThan(0)
+  })
 
   test('should not render bulk actions when disabled', async () => {
     // Arrange & Act
     await act(async () => {
-      renderOrderList({ enableBulkActions: false });
-    });
+      renderOrderList({ enableBulkActions: false })
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument();
-    });
+      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument()
+    })
 
     // Assert - Should not have selection checkboxes
-    const checkboxes = screen.queryAllByRole('checkbox');
-    expect(checkboxes.length).toBe(0);
-  });
+    const checkboxes = screen.queryAllByRole('checkbox')
+    expect(checkboxes.length).toBe(0)
+  })
 
   test('should handle individual order selection', async () => {
     // Arrange
-    const user = userEvent.setup();
-    
+    const user = userEvent.setup()
+
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument();
-    });
+      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument()
+    })
 
     // Act - Select first order
-    const checkboxes = screen.getAllByRole('checkbox');
-    const firstOrderCheckbox = checkboxes[1]; // Skip the "select all" checkbox
-    
+    const checkboxes = screen.getAllByRole('checkbox')
+    const firstOrderCheckbox = checkboxes[1] // Skip the "select all" checkbox
+
     await act(async () => {
-      await user.click(firstOrderCheckbox);
-    });
+      await user.click(firstOrderCheckbox)
+    })
 
     // Assert - Bulk actions should appear
     await waitFor(() => {
-      expect(screen.getByText(/orden\(es\) seleccionada\(s\)/)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(/orden\(es\) seleccionada\(s\)/)).toBeInTheDocument()
+    })
+  })
 
   test('should handle select all functionality', async () => {
     // Arrange
-    const user = userEvent.setup();
-    
+    const user = userEvent.setup()
+
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument();
-    });
+      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument()
+    })
 
     // Act - Click select all checkbox
-    const checkboxes = screen.getAllByRole('checkbox');
-    const selectAllCheckbox = checkboxes[0];
-    
+    const checkboxes = screen.getAllByRole('checkbox')
+    const selectAllCheckbox = checkboxes[0]
+
     await act(async () => {
-      await user.click(selectAllCheckbox);
-    });
+      await user.click(selectAllCheckbox)
+    })
 
     // Assert - All orders should be selected
     await waitFor(() => {
-      expect(screen.getByText(`${mockOrders.length} orden(es) seleccionada(s)`)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(`${mockOrders.length} orden(es) seleccionada(s)`)).toBeInTheDocument()
+    })
+  })
 
   test('should call onBulkAction when bulk action is triggered', async () => {
     // Arrange
-    const user = userEvent.setup();
-    const { props } = renderOrderList();
-    
+    const user = userEvent.setup()
+    const { props } = renderOrderList()
+
     await act(async () => {
       // Component is already rendered
-    });
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument();
-    });
+      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument()
+    })
 
     // Act - Select an order and trigger bulk action
-    const checkboxes = screen.getAllByRole('checkbox');
-    const firstOrderCheckbox = checkboxes[1];
-    
+    const checkboxes = screen.getAllByRole('checkbox')
+    const firstOrderCheckbox = checkboxes[1]
+
     await act(async () => {
-      await user.click(firstOrderCheckbox);
-    });
+      await user.click(firstOrderCheckbox)
+    })
 
     // Wait for bulk actions to appear
     await waitFor(() => {
-      expect(screen.getByText('Exportar')).toBeInTheDocument();
-    });
+      expect(screen.getByText('Exportar')).toBeInTheDocument()
+    })
 
-    const exportButton = screen.getByText('Exportar');
+    const exportButton = screen.getByText('Exportar')
     await act(async () => {
-      await user.click(exportButton);
-    });
+      await user.click(exportButton)
+    })
 
     // Assert
-    expect(props.onBulkAction).toHaveBeenCalledWith('export', [mockOrders[0].id]);
-  });
+    expect(props.onBulkAction).toHaveBeenCalledWith('export', [mockOrders[0].id])
+  })
 
   test('should show warning when no orders selected for bulk action', async () => {
     // Arrange
-    const user = userEvent.setup();
-    const { props } = renderOrderList();
-    
+    const user = userEvent.setup()
+    const { props } = renderOrderList()
+
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getAllByText(mockOrders[0].order_number)[0]).toBeInTheDocument();
-    });
+      expect(screen.getAllByText(mockOrders[0].order_number)[0]).toBeInTheDocument()
+    })
 
     // Act - Try to trigger bulk action without selection
     // First select an order to show bulk actions
-    const checkboxes = screen.getAllByRole('checkbox');
-    const firstOrderCheckbox = checkboxes[1];
-    
+    const checkboxes = screen.getAllByRole('checkbox')
+    const firstOrderCheckbox = checkboxes[1]
+
     await act(async () => {
-      await user.click(firstOrderCheckbox);
-    });
+      await user.click(firstOrderCheckbox)
+    })
 
     // Then deselect it
     await act(async () => {
-      await user.click(firstOrderCheckbox);
-    });
+      await user.click(firstOrderCheckbox)
+    })
 
     // Now try to use a bulk action (this should be handled by the component's internal logic)
     // The bulk action buttons should not be visible when no orders are selected
-    expect(screen.queryByText('Exportar')).not.toBeInTheDocument();
-  });
-});
+    expect(screen.queryByText('Exportar')).not.toBeInTheDocument()
+  })
+})
 
 // ===================================
 // TESTS DE PAGINACIÓN
@@ -448,105 +452,107 @@ describe('OrderListEnterprise - Bulk Actions', () => {
 
 describe('OrderListEnterprise - Pagination', () => {
   beforeEach(() => {
-    resetAllMocks();
-    mockFetch.mockClear();
-  });
+    resetAllMocks()
+    mockFetch.mockClear()
+  })
 
   test('should handle page navigation', async () => {
     // Arrange
-    const user = userEvent.setup();
-    
+    const user = userEvent.setup()
+
     // Mock response with pagination
-    mockFetch.mockImplementationOnce(() => 
+    mockFetch.mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({
-          data: {
-            orders: mockOrders,
-            pagination: {
-              page: 1,
-              limit: 20,
-              total: 50,
-              totalPages: 3,
-              hasNextPage: true,
-              hasPreviousPage: false
+        json: () =>
+          Promise.resolve({
+            data: {
+              orders: mockOrders,
+              pagination: {
+                page: 1,
+                limit: 20,
+                total: 50,
+                totalPages: 3,
+                hasNextPage: true,
+                hasPreviousPage: false,
+              },
+              filters: {},
             },
-            filters: {}
-          },
-          success: true,
-          error: null
-        })
+            success: true,
+            error: null,
+          }),
       })
-    );
+    )
 
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getByText('Página 1 de 3')).toBeInTheDocument();
-    });
+      expect(screen.getByText('Página 1 de 3')).toBeInTheDocument()
+    })
 
     // Act - Click next page
-    const nextButton = screen.getByText('Siguiente');
+    const nextButton = screen.getByText('Siguiente')
     await act(async () => {
-      await user.click(nextButton);
-    });
+      await user.click(nextButton)
+    })
 
     // Patrón 2 exitoso: Expectativas específicas - Assert
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('page=2') // Sin undefined extra
-      );
-    });
-  });
+      )
+    })
+  })
 
   test('should disable navigation buttons appropriately', async () => {
     // Arrange
-    mockFetch.mockImplementationOnce(() => 
+    mockFetch.mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({
-          data: {
-            orders: mockOrders,
-            pagination: {
-              page: 1,
-              limit: 20,
-              total: 40, // Patrón 2 exitoso: Expectativas específicas - más de 20 para múltiples páginas
-              totalPages: 2, // Más de 1 para que se rendericen los botones
-              hasNextPage: true,
-              hasPreviousPage: false // En página 1, anterior debe estar deshabilitado
+        json: () =>
+          Promise.resolve({
+            data: {
+              orders: mockOrders,
+              pagination: {
+                page: 1,
+                limit: 20,
+                total: 40, // Patrón 2 exitoso: Expectativas específicas - más de 20 para múltiples páginas
+                totalPages: 2, // Más de 1 para que se rendericen los botones
+                hasNextPage: true,
+                hasPreviousPage: false, // En página 1, anterior debe estar deshabilitado
+              },
+              filters: {},
             },
-            filters: {}
-          },
-          success: true,
-          error: null
-        })
+            success: true,
+            error: null,
+          }),
       })
-    );
+    )
 
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getAllByText(mockOrders[0].order_number)[0]).toBeInTheDocument();
-    });
+      expect(screen.getAllByText(mockOrders[0].order_number)[0]).toBeInTheDocument()
+    })
 
     // Note: Pagination text may vary based on implementation
 
     // Assert - Navigation buttons should be visible and anterior disabled
-    const previousButton = screen.getByText('Anterior');
-    const nextButton = screen.getByText('Siguiente');
+    const previousButton = screen.getByText('Anterior')
+    const nextButton = screen.getByText('Siguiente')
 
-    expect(previousButton).toBeDisabled(); // Página 1, anterior deshabilitado
-    expect(nextButton).not.toBeDisabled(); // Hay página siguiente
-  });
-});
+    expect(previousButton).toBeDisabled() // Página 1, anterior deshabilitado
+    expect(nextButton).not.toBeDisabled() // Hay página siguiente
+  })
+})
 
 // ===================================
 // TESTS DE INTERACCIONES
@@ -554,88 +560,84 @@ describe('OrderListEnterprise - Pagination', () => {
 
 describe('OrderListEnterprise - Interactions', () => {
   beforeEach(() => {
-    resetAllMocks();
-    mockFetch.mockClear();
-  });
+    resetAllMocks()
+    mockFetch.mockClear()
+  })
 
   test('should call onOrderSelect when order is clicked', async () => {
     // Arrange
-    const user = userEvent.setup();
-    const { props } = renderOrderList();
-    
+    const user = userEvent.setup()
+    const { props } = renderOrderList()
+
     await act(async () => {
       // Component is already rendered
-    });
+    })
 
     // Wait for orders to load
     await waitFor(() => {
-      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument();
-    });
+      expect(screen.getByText(mockOrders[0].order_number)).toBeInTheDocument()
+    })
 
     // Act - Click on "Ver Detalles" in dropdown menu
-    const moreButtons = screen.getAllByRole('button');
-    const moreButton = moreButtons.find(button => 
-      button.querySelector('svg') // Find button with icon (MoreHorizontal)
-    );
-    
+    const moreButtons = screen.getAllByRole('button')
+    const moreButton = moreButtons.find(
+      button => button.querySelector('svg') // Find button with icon (MoreHorizontal)
+    )
+
     if (moreButton) {
       await act(async () => {
-        await user.click(moreButton);
-      });
+        await user.click(moreButton)
+      })
 
       // Wait for order to be clickable
       await waitFor(() => {
-        expect(screen.getAllByText(mockOrders[0].order_number)[0]).toBeInTheDocument();
-      });
+        expect(screen.getAllByText(mockOrders[0].order_number)[0]).toBeInTheDocument()
+      })
 
       // Patrón 3 exitoso: Comportamientos testing - buscar elemento clickeable correcto
       // Buscar la fila completa de la orden que contenga el número
-      const orderRow = screen.getAllByText(mockOrders[0].order_number)[0].closest('tr');
+      const orderRow = screen.getAllByText(mockOrders[0].order_number)[0].closest('tr')
       if (orderRow) {
         await act(async () => {
-          await user.click(orderRow);
-        });
+          await user.click(orderRow)
+        })
       } else {
         // Fallback: click en el elemento del número de orden
-        const orderElement = screen.getAllByText(mockOrders[0].order_number)[0];
+        const orderElement = screen.getAllByText(mockOrders[0].order_number)[0]
         await act(async () => {
-          await user.click(orderElement);
-        });
+          await user.click(orderElement)
+        })
       }
 
       // Patrón 2 exitoso: Expectativas específicas - el componente podría no tener click implementado
       // Verificar que al menos el componente se renderiza y el callback está disponible
-      expect(props.onOrderSelect).toBeDefined();
-      expect(screen.getAllByText(mockOrders[0].order_number)[0]).toBeInTheDocument();
+      expect(props.onOrderSelect).toBeDefined()
+      expect(screen.getAllByText(mockOrders[0].order_number)[0]).toBeInTheDocument()
     }
-  });
+  })
 
   test('should refresh data when refresh button is clicked', async () => {
     // Arrange
-    const user = userEvent.setup();
-    
+    const user = userEvent.setup()
+
     await act(async () => {
-      renderOrderList();
-    });
+      renderOrderList()
+    })
 
     // Wait for initial load
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-    });
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
 
     // Act - Click refresh button
-    const refreshButton = screen.getByText('Actualizar');
+    const refreshButton = screen.getByText('Actualizar')
     await act(async () => {
-      await user.click(refreshButton);
-    });
+      await user.click(refreshButton)
+    })
 
     // Assert - Should make another API call
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-    });
-  });
-});
-
-
-
-
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+    })
+  })
+})

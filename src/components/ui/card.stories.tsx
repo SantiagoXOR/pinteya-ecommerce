@@ -1,6 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { Star, Heart, Eye, ShoppingCart } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, ProductCard } from './card'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  ProductCard,
+} from './card'
 import { Button } from './button'
 import { Badge } from './badge'
 
@@ -75,7 +83,7 @@ type Story = StoryObj<typeof meta>
 
 // Card básica
 export const Default: Story = {
-  render: (args) => (
+  render: args => (
     <Card {...args}>
       <CardHeader>
         <CardTitle>Pintura Sherwin Williams</CardTitle>
@@ -85,7 +93,7 @@ export const Default: Story = {
         <p>Pintura de alta calidad para interiores con excelente cobertura y durabilidad.</p>
       </CardContent>
       <CardFooter>
-        <Button variant="primary">Ver detalles</Button>
+        <Button variant='primary'>Ver detalles</Button>
       </CardFooter>
     </Card>
   ),
@@ -99,8 +107,8 @@ export const Default: Story = {
 // Variantes
 export const Variants: Story = {
   render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-      <Card variant="default">
+    <div className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl'>
+      <Card variant='default'>
         <CardHeader>
           <CardTitle>Default</CardTitle>
           <CardDescription>Tarjeta estándar con borde y sombra sutil</CardDescription>
@@ -110,7 +118,7 @@ export const Variants: Story = {
         </CardContent>
       </Card>
 
-      <Card variant="elevated">
+      <Card variant='elevated'>
         <CardHeader>
           <CardTitle>Elevated</CardTitle>
           <CardDescription>Tarjeta con sombra elevada</CardDescription>
@@ -120,7 +128,7 @@ export const Variants: Story = {
         </CardContent>
       </Card>
 
-      <Card variant="outlined">
+      <Card variant='outlined'>
         <CardHeader>
           <CardTitle>Outlined</CardTitle>
           <CardDescription>Tarjeta solo con borde</CardDescription>
@@ -130,7 +138,7 @@ export const Variants: Story = {
         </CardContent>
       </Card>
 
-      <Card variant="ghost">
+      <Card variant='ghost'>
         <CardHeader>
           <CardTitle>Ghost</CardTitle>
           <CardDescription>Tarjeta sin borde ni sombra</CardDescription>
@@ -153,8 +161,8 @@ export const Variants: Story = {
 // Efectos hover
 export const HoverEffects: Story = {
   render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-      <Card hover="lift">
+    <div className='grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl'>
+      <Card hover='lift'>
         <CardHeader>
           <CardTitle>Lift Effect</CardTitle>
           <CardDescription>Se eleva al hacer hover</CardDescription>
@@ -164,7 +172,7 @@ export const HoverEffects: Story = {
         </CardContent>
       </Card>
 
-      <Card hover="glow">
+      <Card hover='glow'>
         <CardHeader>
           <CardTitle>Glow Effect</CardTitle>
           <CardDescription>Brillo en el borde al hacer hover</CardDescription>
@@ -174,7 +182,7 @@ export const HoverEffects: Story = {
         </CardContent>
       </Card>
 
-      <Card hover="scale">
+      <Card hover='scale'>
         <CardHeader>
           <CardTitle>Scale Effect</CardTitle>
           <CardDescription>Escala ligeramente al hacer hover</CardDescription>
@@ -197,15 +205,15 @@ export const HoverEffects: Story = {
 // ProductCard básica - Nuevo diseño
 export const ProductCardBasic: Story = {
   render: () => (
-    <div className="w-80">
+    <div className='w-80'>
       <ProductCard
-        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg"
-        title="Pintura Látex Premium Sherwin Williams"
+        image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg'
+        title='Pintura Látex Premium Sherwin Williams'
         price={2500}
         originalPrice={3200}
-        discount="25%"
-        badge="Llega gratis hoy"
-        cta="Agregar al carrito"
+        discount='25%'
+        badge='Llega gratis hoy'
+        cta='Agregar al carrito'
         onAddToCart={() => alert('Agregado al carrito')}
         showCartAnimation={true}
       />
@@ -214,7 +222,8 @@ export const ProductCardBasic: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'ProductCard rediseñada con nuevo layout visual, jerarquía mejorada y diseño mobile-first.',
+        story:
+          'ProductCard rediseñada con nuevo layout visual, jerarquía mejorada y diseño mobile-first.',
       },
     },
   },
@@ -223,15 +232,15 @@ export const ProductCardBasic: Story = {
 // Ejemplo exacto del wireframe
 export const ProductCardWireframe: Story = {
   render: () => (
-    <div className="w-80">
+    <div className='w-80'>
       <ProductCard
-        image="/productos/loxon-20l.png"
-        title="Pintura Látex Premium Sherwin Williams"
+        image='/productos/loxon-20l.png'
+        title='Pintura Látex Premium Sherwin Williams'
         price={2500}
         originalPrice={3200}
-        discount="25%"
-        badge="Llega gratis hoy"
-        cta="Agregar al carrito"
+        discount='25%'
+        badge='Llega gratis hoy'
+        cta='Agregar al carrito'
         onAddToCart={() => alert('🛒 Agregado al carrito')}
       />
     </div>
@@ -239,7 +248,8 @@ export const ProductCardWireframe: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Implementación exacta del wireframe proporcionado con todos los elementos visuales especificados.',
+        story:
+          'Implementación exacta del wireframe proporcionado con todos los elementos visuales especificados.',
       },
     },
   },
@@ -248,12 +258,12 @@ export const ProductCardWireframe: Story = {
 // ProductCard sin imagen
 export const ProductCardNoImage: Story = {
   render: () => (
-    <div className="w-80">
+    <div className='w-80'>
       <ProductCard
-        title="Pincel Profesional N°4"
+        title='Pincel Profesional N°4'
         price={2500}
-        badge="Nuevo producto"
-        cta="Agregar al carrito"
+        badge='Nuevo producto'
+        cta='Agregar al carrito'
         onAddToCart={() => alert('Agregado al carrito')}
       />
     </div>
@@ -270,33 +280,33 @@ export const ProductCardNoImage: Story = {
 // Grid de productos mejorado
 export const ProductGrid: Story = {
   render: () => (
-    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full max-w-6xl">
+    <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full max-w-6xl'>
       <ProductCard
-        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg"
-        title="Pintura Látex Sherwin Williams"
+        image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg'
+        title='Pintura Látex Sherwin Williams'
         price={15500}
         originalPrice={18500}
-        discount="30%"
-        badge="Envío gratis"
-        cta="Agregar al carrito"
+        discount='30%'
+        badge='Envío gratis'
+        cta='Agregar al carrito'
         onAddToCart={() => {}}
       />
 
       <ProductCard
-        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/genericos/rodillo-profesional.jpg"
-        title="Rodillo Profesional 23cm"
+        image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/genericos/rodillo-profesional.jpg'
+        title='Rodillo Profesional 23cm'
         price={3200}
-        badge="Nuevo producto"
-        cta="Comprar ahora"
+        badge='Nuevo producto'
+        cta='Comprar ahora'
         onAddToCart={() => {}}
       />
 
       <ProductCard
-        image="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/genericos/pincel-angular.jpg"
-        title="Pincel Angular Premium"
+        image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/genericos/pincel-angular.jpg'
+        title='Pincel Angular Premium'
         price={1800}
         stock={0}
-        cta="Sin stock"
+        cta='Sin stock'
         onAddToCart={() => {}}
       />
     </div>
@@ -304,7 +314,8 @@ export const ProductGrid: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Grid de productos mostrando diferentes estados: envío gratis, stock bajo, sin stock, productos nuevos.',
+        story:
+          'Grid de productos mostrando diferentes estados: envío gratis, stock bajo, sin stock, productos nuevos.',
       },
     },
   },
@@ -313,55 +324,62 @@ export const ProductGrid: Story = {
 // Card compleja con múltiples elementos
 export const ComplexCard: Story = {
   render: () => (
-    <div className="w-96">
-      <Card variant="elevated" hover="lift">
+    <div className='w-96'>
+      <Card variant='elevated' hover='lift'>
         <CardHeader>
-          <div className="flex items-start justify-between">
+          <div className='flex items-start justify-between'>
             <div>
               <CardTitle>Kit Pintura Completo</CardTitle>
               <CardDescription>Todo lo necesario para pintar una habitación</CardDescription>
             </div>
-            <Badge variant="destructive">-25%</Badge>
+            <Badge variant='destructive'>-25%</Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent>
-          <div className="space-y-4">
-            <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-              <span className="text-gray-500">Imagen del kit</span>
+          <div className='space-y-4'>
+            <div className='aspect-video bg-gray-100 rounded-lg flex items-center justify-center'>
+              <span className='text-gray-500'>Imagen del kit</span>
             </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center gap-1">
+
+            <div className='space-y-2'>
+              <div className='flex items-center gap-1'>
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                  />
                 ))}
-                <span className="text-sm text-gray-600 ml-1">(89 reseñas)</span>
+                <span className='text-sm text-gray-600 ml-1'>(89 reseñas)</span>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-gray-900">$12.500</span>
-                <span className="text-lg text-gray-500 line-through">$16.700</span>
+
+              <div className='flex items-center gap-2'>
+                <span className='text-2xl font-bold text-gray-900'>$12.500</span>
+                <span className='text-lg text-gray-500 line-through'>$16.700</span>
               </div>
-              
-              <div className="flex gap-2">
-                <Badge variant="success" size="sm">Envío gratis</Badge>
-                <Badge variant="info" size="sm">Stock disponible</Badge>
+
+              <div className='flex gap-2'>
+                <Badge variant='success' size='sm'>
+                  Envío gratis
+                </Badge>
+                <Badge variant='info' size='sm'>
+                  Stock disponible
+                </Badge>
               </div>
             </div>
           </div>
         </CardContent>
-        
-        <CardFooter className="flex gap-2">
-          <Button variant="primary" className="flex-1">
-            <ShoppingCart className="w-4 h-4 mr-2" />
+
+        <CardFooter className='flex gap-2'>
+          <Button variant='primary' className='flex-1'>
+            <ShoppingCart className='w-4 h-4 mr-2' />
             Agregar al carrito
           </Button>
-          <Button variant="outline" size="icon">
-            <Heart className="w-4 h-4" />
+          <Button variant='outline' size='icon'>
+            <Heart className='w-4 h-4' />
           </Button>
-          <Button variant="outline" size="icon">
-            <Eye className="w-4 h-4" />
+          <Button variant='outline' size='icon'>
+            <Eye className='w-4 h-4' />
           </Button>
         </CardFooter>
       </Card>
@@ -370,17 +388,9 @@ export const ComplexCard: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Ejemplo de tarjeta compleja con múltiples elementos: badges, rating, precios, acciones.',
+        story:
+          'Ejemplo de tarjeta compleja con múltiples elementos: badges, rating, precios, acciones.',
       },
     },
   },
 }
-
-
-
-
-
-
-
-
-

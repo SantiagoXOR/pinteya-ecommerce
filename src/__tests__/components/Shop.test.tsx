@@ -92,11 +92,7 @@ jest.mock('@/hooks/useProducts', () => ({
 const renderWithStore = (component: React.ReactElement, initialState = {}) => {
   const store = createMockStore(initialState)
   return {
-    ...render(
-      <Provider store={store}>
-        {component}
-      </Provider>
-    ),
+    ...render(<Provider store={store}>{component}</Provider>),
     store,
   }
 }
@@ -247,12 +243,3 @@ describe('Shop Component', () => {
     expect(screen.getByRole('heading', { name: /productos de pinturería/i })).toBeInTheDocument()
   })
 })
-
-
-
-
-
-
-
-
-

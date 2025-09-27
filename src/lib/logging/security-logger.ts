@@ -4,33 +4,33 @@
 // Sistema de logging estructurado para eventos de seguridad
 // con contexto enriquecido y formato consistente
 
-import { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server'
 
 // ===================================
 // TIPOS Y INTERFACES
 // ===================================
 
 export interface SecurityLogContext {
-  userId?: string;
-  sessionId?: string;
-  ip?: string;
-  userAgent?: string;
-  endpoint: string;
-  method: string;
-  timestamp: string;
-  requestId?: string;
+  userId?: string
+  sessionId?: string
+  ip?: string
+  userAgent?: string
+  endpoint: string
+  method: string
+  timestamp: string
+  requestId?: string
 }
 
 export interface SecurityEvent {
-  type: SecurityEventType;
-  severity: SecuritySeverity;
-  message: string;
-  context: SecurityLogContext;
-  metadata?: Record<string, any>;
-  error?: Error;
+  type: SecurityEventType
+  severity: SecuritySeverity
+  message: string
+  context: SecurityLogContext
+  metadata?: Record<string, any>
+  error?: Error
 }
 
-export type SecurityEventType = 
+export type SecurityEventType =
   | 'auth_attempt'
   | 'auth_success'
   | 'auth_failure'
@@ -42,18 +42,26 @@ export type SecurityEventType =
   | 'api_error'
   | 'validation_error'
   | 'security_scan'
-  | 'unauthorized_access';
+  | 'unauthorized_access'
 
-export type SecuritySeverity = 'low' | 'medium' | 'high' | 'critical';
+export type SecuritySeverity = 'low' | 'medium' | 'high' | 'critical'
 
 export interface SecurityLogger {
-  log(event: SecurityEvent): void;
-  logAuthAttempt(context: SecurityLogContext, success: boolean, metadata?: Record<string, any>): void;
-  logRateLimitExceeded(context: SecurityLogContext, metadata?: Record<string, any>): void;
-  logPermissionDenied(context: SecurityLogContext, resource: string, action: string): void;
-  logSuspiciousActivity(context: SecurityLogContext, reason: string, metadata?: Record<string, any>): void;
-  logAdminAction(context: SecurityLogContext, action: string, metadata?: Record<string, any>): void;
-  logApiError(context: SecurityLogContext, error: Error, metadata?: Record<string, any>): void;
+  log(event: SecurityEvent): void
+  logAuthAttempt(
+    context: SecurityLogContext,
+    success: boolean,
+    metadata?: Record<string, any>
+  ): void
+  logRateLimitExceeded(context: SecurityLogContext, metadata?: Record<string, any>): void
+  logPermissionDenied(context: SecurityLogContext, resource: string, action: string): void
+  logSuspiciousActivity(
+    context: SecurityLogContext,
+    reason: string,
+    metadata?: Record<string, any>
+  ): void
+  logAdminAction(context: SecurityLogContext, action: string, metadata?: Record<string, any>): void
+  logApiError(context: SecurityLogContext, error: Error, metadata?: Record<string, any>): void
 }
 
 // ===================================
@@ -64,18 +72,19 @@ export function extractSecurityContext(
   request: NextRequest,
   additionalContext: Partial<SecurityLogContext> = {}
 ): SecurityLogContext {
-  const url = new URL(request.url);
-  
+  const url = new URL(request.url)
+
   // Extraer IP de headers
-  const forwarded = request.headers.get('x-forwarded-for');
-  const ip = forwarded 
-    ? forwarded.split(',')[0].trim() 
-    : request.headers.get('x-real-ip') || 'unknown';
-  
+  const forwarded = request.headers.get('x-forwarded-for')
+  const ip = forwarded
+    ? forwarded.split(',')[0].trim()
+    : request.headers.get('x-real-ip') || 'unknown'
+
   // Generar request ID único
-  const requestId = request.headers.get('x-request-id') || 
-    `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
+  const requestId =
+    request.headers.get('x-request-id') ||
+    `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
   return {
     ip,
     userAgent: request.headers.get('user-agent') || 'unknown',
@@ -84,7 +93,7 @@ export function extractSecurityContext(
     timestamp: new Date().toISOString(),
     requestId,
     ...additionalContext,
-  };
+  }
 }
 
 // ===================================
@@ -102,88 +111,92 @@ class SecurityLoggerImpl implements SecurityLogger {
       message: event.message,
       context: event.context,
       metadata: event.metadata,
-      error: event.error ? {
-        name: event.error.name,
-        message: event.error.message,
-        stack: event.error.stack,
-      } : undefined,
-    };
-    
-    return JSON.stringify(logEntry, null, process.env.NODE_ENV === 'development' ? 2 : 0);
+      error: event.error
+        ? {
+            name: event.error.name,
+            message: event.error.message,
+            stack: event.error.stack,
+          }
+        : undefined,
+    }
+
+    return JSON.stringify(logEntry, null, process.env.NODE_ENV === 'development' ? 2 : 0)
   }
-  
+
   private mapSeverityToLevel(severity: SecuritySeverity): string {
     switch (severity) {
-      case 'low': return 'info';
-      case 'medium': return 'warn';
-      case 'high': return 'error';
-      case 'critical': return 'error';
-      default: return 'info';
+      case 'low':
+        return 'info'
+      case 'medium':
+        return 'warn'
+      case 'high':
+        return 'error'
+      case 'critical':
+        return 'error'
+      default:
+        return 'info'
     }
   }
-  
+
   private shouldLog(severity: SecuritySeverity): boolean {
-    const logLevel = process.env.SECURITY_LOG_LEVEL || 'medium';
-    
-    const levels = { low: 1, medium: 2, high: 3, critical: 4 };
-    const currentLevel = levels[logLevel as SecuritySeverity] || 2;
-    const eventLevel = levels[severity];
-    
-    return eventLevel >= currentLevel;
+    const logLevel = process.env.SECURITY_LOG_LEVEL || 'medium'
+
+    const levels = { low: 1, medium: 2, high: 3, critical: 4 }
+    const currentLevel = levels[logLevel as SecuritySeverity] || 2
+    const eventLevel = levels[severity]
+
+    return eventLevel >= currentLevel
   }
-  
+
   log(event: SecurityEvent): void {
     if (!this.shouldLog(event.severity)) {
-      return;
+      return
     }
-    
-    const logEntry = this.formatLogEntry(event);
-    
+
+    const logEntry = this.formatLogEntry(event)
+
     // En desarrollo, usar console con colores
     if (process.env.NODE_ENV === 'development') {
       const colors = {
-        low: '\x1b[36m',      // cyan
-        medium: '\x1b[33m',   // yellow
-        high: '\x1b[31m',     // red
+        low: '\x1b[36m', // cyan
+        medium: '\x1b[33m', // yellow
+        high: '\x1b[31m', // red
         critical: '\x1b[35m', // magenta
-      };
-      
-      const reset = '\x1b[0m';
-      const color = colors[event.severity];
-      
-      console.log(`${color}[SECURITY:${event.type.toUpperCase()}]${reset}`, logEntry);
+      }
+
+      const reset = '\x1b[0m'
+      const color = colors[event.severity]
+
+      console.log(`${color}[SECURITY:${event.type.toUpperCase()}]${reset}`, logEntry)
     } else {
       // En producción, usar console.log estándar para integración con sistemas de logging
-      console.log(logEntry);
+      console.log(logEntry)
     }
-    
+
     // TODO: Integrar con servicio de logging externo (DataDog, LogRocket, etc.)
     // await this.sendToExternalLogger(logEntry);
   }
-  
+
   logAuthAttempt(
-    context: SecurityLogContext, 
-    success: boolean, 
+    context: SecurityLogContext,
+    success: boolean,
     metadata?: Record<string, any>
   ): void {
     this.log({
       type: success ? 'auth_success' : 'auth_failure',
       severity: success ? 'low' : 'medium',
-      message: success 
-        ? `Authentication successful for ${context.userId || 'unknown user'}` 
+      message: success
+        ? `Authentication successful for ${context.userId || 'unknown user'}`
         : `Authentication failed for ${context.userId || 'unknown user'}`,
       context,
       metadata: {
         success,
         ...metadata,
       },
-    });
+    })
   }
-  
-  logRateLimitExceeded(
-    context: SecurityLogContext, 
-    metadata?: Record<string, any>
-  ): void {
+
+  logRateLimitExceeded(context: SecurityLogContext, metadata?: Record<string, any>): void {
     this.log({
       type: 'rate_limit_exceeded',
       severity: 'medium',
@@ -194,14 +207,10 @@ class SecurityLoggerImpl implements SecurityLogger {
         ip: context.ip,
         ...metadata,
       },
-    });
+    })
   }
-  
-  logPermissionDenied(
-    context: SecurityLogContext, 
-    resource: string, 
-    action: string
-  ): void {
+
+  logPermissionDenied(context: SecurityLogContext, resource: string, action: string): void {
     this.log({
       type: 'permission_denied',
       severity: 'high',
@@ -212,12 +221,12 @@ class SecurityLoggerImpl implements SecurityLogger {
         action,
         userId: context.userId,
       },
-    });
+    })
   }
-  
+
   logSuspiciousActivity(
-    context: SecurityLogContext, 
-    reason: string, 
+    context: SecurityLogContext,
+    reason: string,
     metadata?: Record<string, any>
   ): void {
     this.log({
@@ -229,12 +238,12 @@ class SecurityLoggerImpl implements SecurityLogger {
         reason,
         ...metadata,
       },
-    });
+    })
   }
-  
+
   logAdminAction(
-    context: SecurityLogContext, 
-    action: string, 
+    context: SecurityLogContext,
+    action: string,
     metadata?: Record<string, any>
   ): void {
     this.log({
@@ -247,14 +256,10 @@ class SecurityLoggerImpl implements SecurityLogger {
         adminUserId: context.userId,
         ...metadata,
       },
-    });
+    })
   }
-  
-  logApiError(
-    context: SecurityLogContext, 
-    error: Error, 
-    metadata?: Record<string, any>
-  ): void {
+
+  logApiError(context: SecurityLogContext, error: Error, metadata?: Record<string, any>): void {
     this.log({
       type: 'api_error',
       severity: 'medium',
@@ -262,7 +267,7 @@ class SecurityLoggerImpl implements SecurityLogger {
       context,
       error,
       metadata,
-    });
+    })
   }
 }
 
@@ -270,7 +275,7 @@ class SecurityLoggerImpl implements SecurityLogger {
 // INSTANCIA GLOBAL Y FACTORY
 // ===================================
 
-const globalSecurityLogger = new SecurityLoggerImpl();
+const globalSecurityLogger = new SecurityLoggerImpl()
 
 /**
  * Crea un logger de seguridad con contexto pre-configurado
@@ -279,31 +284,31 @@ export function createSecurityLogger(
   request?: NextRequest,
   additionalContext?: Partial<SecurityLogContext>
 ): SecurityLogger & { context: SecurityLogContext } {
-  const context = request 
+  const context = request
     ? extractSecurityContext(request, additionalContext)
-    : {
+    : ({
         endpoint: 'unknown',
         method: 'unknown',
         timestamp: new Date().toISOString(),
         ...additionalContext,
-      } as SecurityLogContext;
-  
+      } as SecurityLogContext)
+
   return {
     context,
     log: globalSecurityLogger.log.bind(globalSecurityLogger),
-    logAuthAttempt: (ctx, success, metadata) => 
+    logAuthAttempt: (ctx, success, metadata) =>
       globalSecurityLogger.logAuthAttempt({ ...context, ...ctx }, success, metadata),
-    logRateLimitExceeded: (ctx, metadata) => 
+    logRateLimitExceeded: (ctx, metadata) =>
       globalSecurityLogger.logRateLimitExceeded({ ...context, ...ctx }, metadata),
-    logPermissionDenied: (ctx, resource, action) => 
+    logPermissionDenied: (ctx, resource, action) =>
       globalSecurityLogger.logPermissionDenied({ ...context, ...ctx }, resource, action),
-    logSuspiciousActivity: (ctx, reason, metadata) => 
+    logSuspiciousActivity: (ctx, reason, metadata) =>
       globalSecurityLogger.logSuspiciousActivity({ ...context, ...ctx }, reason, metadata),
-    logAdminAction: (ctx, action, metadata) => 
+    logAdminAction: (ctx, action, metadata) =>
       globalSecurityLogger.logAdminAction({ ...context, ...ctx }, action, metadata),
-    logApiError: (ctx, error, metadata) => 
+    logApiError: (ctx, error, metadata) =>
       globalSecurityLogger.logApiError({ ...context, ...ctx }, error, metadata),
-  };
+  }
 }
 
 // ===================================
@@ -325,9 +330,9 @@ export const securityLog = {
         timestamp: new Date().toISOString(),
         ...context,
       },
-    });
+    })
   },
-  
+
   warn: (message: string, context: Partial<SecurityLogContext> = {}) => {
     globalSecurityLogger.log({
       type: 'suspicious_activity',
@@ -339,9 +344,9 @@ export const securityLog = {
         timestamp: new Date().toISOString(),
         ...context,
       },
-    });
+    })
   },
-  
+
   error: (message: string, error?: Error, context: Partial<SecurityLogContext> = {}) => {
     globalSecurityLogger.log({
       type: 'api_error',
@@ -354,17 +359,8 @@ export const securityLog = {
         timestamp: new Date().toISOString(),
         ...context,
       },
-    });
+    })
   },
-};
+}
 
-export default globalSecurityLogger;
-
-
-
-
-
-
-
-
-
+export default globalSecurityLogger

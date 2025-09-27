@@ -4,30 +4,28 @@ import '@testing-library/jest-dom'
 import { CheckoutFlow } from '../checkout-flow'
 
 interface ShippingInfoProps {
-  options: string[];
-  selectedOption: string;
+  options: string[]
+  selectedOption: string
 }
 
 interface CartSummaryProps {
-  cartItems: Array<{ id: number; title: string; price: number; quantity: number }>;
-  variant: string;
+  cartItems: Array<{ id: number; title: string; price: number; quantity: number }>
+  variant: string
 }
 
 // Mock de los componentes del Design System
 jest.mock('../shipping-info', () => ({
   ShippingInfo: ({ options, selectedOption }: ShippingInfoProps) => (
-    <div data-testid="shipping-info">
-      Shipping options for: {selectedOption}
-    </div>
-  )
+    <div data-testid='shipping-info'>Shipping options for: {selectedOption}</div>
+  ),
 }))
 
 jest.mock('../cart-summary', () => ({
   CartSummary: ({ cartItems, variant }: CartSummaryProps) => (
-    <div data-testid="cart-summary">
+    <div data-testid='cart-summary'>
       Cart Summary - {cartItems.length} items - {variant}
     </div>
-  )
+  ),
 }))
 
 const mockCartItems = [
@@ -36,8 +34,8 @@ const mockCartItems = [
     title: 'Pintura Sherwin Williams 4L',
     price: 10000,
     discountedPrice: 8500,
-    quantity: 2
-  }
+    quantity: 2,
+  },
 ]
 
 const mockCheckoutData = {
@@ -45,13 +43,13 @@ const mockCheckoutData = {
   shippingCost: 2500,
   discount: 0,
   finalTotal: 19500,
-  shippingMethod: 'standard' as const
+  shippingMethod: 'standard' as const,
 }
 
 describe('CheckoutFlow', () => {
   const defaultProps = {
     cartItems: mockCartItems,
-    checkoutData: mockCheckoutData
+    checkoutData: mockCheckoutData,
   }
 
   it('renders checkout flow with basic elements', () => {
@@ -86,12 +84,7 @@ describe('CheckoutFlow', () => {
   it('renders with custom className', () => {
     const customClass = 'custom-checkout-class'
 
-    const { container } = render(
-      <CheckoutFlow
-        {...defaultProps}
-        className={customClass}
-      />
-    )
+    const { container } = render(<CheckoutFlow {...defaultProps} className={customClass} />)
 
     // Verificar que la clase se aplica al contenedor principal
     expect(container.firstChild).toHaveClass(customClass)
@@ -139,12 +132,7 @@ describe('CheckoutFlow', () => {
   it('calls onComplete when finish button is clicked', () => {
     const mockOnComplete = jest.fn()
 
-    render(
-      <CheckoutFlow
-        {...defaultProps}
-        onComplete={mockOnComplete}
-      />
-    )
+    render(<CheckoutFlow {...defaultProps} onComplete={mockOnComplete} />)
 
     const finishButton = screen.getByRole('button', { name: /completar pedido/i })
     fireEvent.click(finishButton)
@@ -153,12 +141,7 @@ describe('CheckoutFlow', () => {
   })
 
   it('shows loading state', () => {
-    render(
-      <CheckoutFlow
-        {...defaultProps}
-        isLoading={true}
-      />
-    )
+    render(<CheckoutFlow {...defaultProps} isLoading={true} />)
 
     expect(screen.getByText('Procesando...')).toBeInTheDocument()
   })
@@ -166,7 +149,7 @@ describe('CheckoutFlow', () => {
   it('displays errors when present', () => {
     const errors = {
       email: 'Email es requerido',
-      address: 'Dirección es requerida'
+      address: 'Dirección es requerida',
     }
 
     render(<CheckoutFlow {...defaultProps} errors={errors} />)
@@ -190,7 +173,7 @@ describe('CheckoutFlow', () => {
       totalPrice: 100,
       shippingCost: 10,
       discount: 5,
-      finalTotal: 105
+      finalTotal: 105,
     }
 
     render(<CheckoutFlow {...defaultProps} checkoutData={checkoutData} />)
@@ -213,7 +196,7 @@ describe('CheckoutFlow', () => {
   it('renders children content', () => {
     render(
       <CheckoutFlow {...defaultProps}>
-        <div data-testid="custom-content">Custom step content</div>
+        <div data-testid='custom-content'>Custom step content</div>
       </CheckoutFlow>
     )
 
@@ -221,12 +204,3 @@ describe('CheckoutFlow', () => {
     expect(screen.getByText('Custom step content')).toBeInTheDocument()
   })
 })
-
-
-
-
-
-
-
-
-

@@ -1,14 +1,14 @@
-import React from 'react';
-import Image from 'next/image';
+import React from 'react'
+import Image from 'next/image'
 
 interface SafeImageProps {
-  src?: string | null;
-  alt: string;
-  width: number;
-  height: number;
-  className?: string;
-  fallbackText?: string;
-  fallbackClassName?: string;
+  src?: string | null
+  alt: string
+  width: number
+  height: number
+  className?: string
+  fallbackText?: string
+  fallbackClassName?: string
 }
 
 /**
@@ -22,40 +22,21 @@ const SafeImage: React.FC<SafeImageProps> = ({
   height,
   className = '',
   fallbackText = 'No Image',
-  fallbackClassName = ''
+  fallbackClassName = '',
 }) => {
   // Si no hay src o es una cadena vacía, mostrar fallback
   if (!src || src.trim() === '') {
     return (
-      <div 
+      <div
         className={`bg-gray-200 flex items-center justify-center rounded ${fallbackClassName}`}
         style={{ width: `${width}px`, height: `${height}px` }}
       >
-        <span className="text-gray-400 text-xs text-center px-2">
-          {fallbackText}
-        </span>
+        <span className='text-gray-400 text-xs text-center px-2'>{fallbackText}</span>
       </div>
-    );
+    )
   }
 
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-    />
-  );
-};
+  return <Image src={src} alt={alt} width={width} height={height} className={className} />
+}
 
-export default SafeImage;
-
-
-
-
-
-
-
-
-
+export default SafeImage

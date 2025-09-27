@@ -216,16 +216,16 @@ export const AutoFreeShipping: Story = {
 // Comparación con ProductCard actual
 export const Comparison: Story = {
   render: () => (
-    <div className="flex gap-8 items-start">
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-center">Nuevo Diseño Comercial</h3>
+    <div className='flex gap-8 items-start'>
+      <div className='space-y-2'>
+        <h3 className='text-lg font-semibold text-center'>Nuevo Diseño Comercial</h3>
         <CommercialProductCard
-          image="/images/products/petrilac/barniz-campbell-4l.jpg"
-          title="Barniz Campbell 4L"
-          brand="Petrilac"
+          image='/images/products/petrilac/barniz-campbell-4l.jpg'
+          title='Barniz Campbell 4L'
+          brand='Petrilac'
           price={19350}
           originalPrice={21500}
-          discount="10%"
+          discount='10%'
           isNew={true}
           stock={12}
           installments={{
@@ -251,37 +251,37 @@ export const Comparison: Story = {
 // Variaciones de estado
 export const States: Story = {
   render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="space-y-2">
-        <h3 className="font-medium text-center">Normal</h3>
+    <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+      <div className='space-y-2'>
+        <h3 className='font-medium text-center'>Normal</h3>
         <CommercialProductCard
-          image="/images/products/petrilac/barniz-campbell-4l.jpg"
-          title="Barniz Campbell 4L"
+          image='/images/products/petrilac/barniz-campbell-4l.jpg'
+          title='Barniz Campbell 4L'
           price={19350}
           stock={12}
           onAddToCart={() => console.log('Normal')}
         />
       </div>
-      
-      <div className="space-y-2">
-        <h3 className="font-medium text-center">Con Descuento</h3>
+
+      <div className='space-y-2'>
+        <h3 className='font-medium text-center'>Con Descuento</h3>
         <CommercialProductCard
-          image="/images/products/sinteplast/esmalte-sintetico.jpg"
-          title="Esmalte Sintético"
+          image='/images/products/sinteplast/esmalte-sintetico.jpg'
+          title='Esmalte Sintético'
           price={8500}
           originalPrice={12000}
-          discount="30%"
+          discount='30%'
           isNew={true}
           stock={15}
           onAddToCart={() => console.log('Con descuento')}
         />
       </div>
-      
-      <div className="space-y-2">
-        <h3 className="font-medium text-center">Sin Stock</h3>
+
+      <div className='space-y-2'>
+        <h3 className='font-medium text-center'>Sin Stock</h3>
         <CommercialProductCard
-          image="/images/products/plavicon/impermeabilizante.jpg"
-          title="Impermeabilizante"
+          image='/images/products/plavicon/impermeabilizante.jpg'
+          title='Impermeabilizante'
           price={18500}
           stock={0}
           onAddToCart={() => console.log('Sin stock')}
@@ -297,12 +297,3 @@ export const States: Story = {
     },
   },
 }
-
-
-
-
-
-
-
-
-

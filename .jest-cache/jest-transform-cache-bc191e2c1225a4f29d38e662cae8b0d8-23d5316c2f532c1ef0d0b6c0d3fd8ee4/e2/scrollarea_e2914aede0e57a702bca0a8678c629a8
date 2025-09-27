@@ -1,0 +1,93 @@
+90462ead5b457ea74a011f2b93c3ba13
+// ===================================
+// COMPONENTE: ScrollArea
+// ===================================
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get ScrollArea () {
+        return ScrollArea;
+    },
+    get ScrollBar () {
+        return ScrollBar;
+    }
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _react = /*#__PURE__*/ _interop_require_wildcard(require("react"));
+const _reactscrollarea = /*#__PURE__*/ _interop_require_wildcard(require("@radix-ui/react-scroll-area"));
+const _utils = require("../../lib/utils");
+function _getRequireWildcardCache(nodeInterop) {
+    if (typeof WeakMap !== "function") return null;
+    var cacheBabelInterop = new WeakMap();
+    var cacheNodeInterop = new WeakMap();
+    return (_getRequireWildcardCache = function(nodeInterop) {
+        return nodeInterop ? cacheNodeInterop : cacheBabelInterop;
+    })(nodeInterop);
+}
+function _interop_require_wildcard(obj, nodeInterop) {
+    if (!nodeInterop && obj && obj.__esModule) {
+        return obj;
+    }
+    if (obj === null || typeof obj !== "object" && typeof obj !== "function") {
+        return {
+            default: obj
+        };
+    }
+    var cache = _getRequireWildcardCache(nodeInterop);
+    if (cache && cache.has(obj)) {
+        return cache.get(obj);
+    }
+    var newObj = {
+        __proto__: null
+    };
+    var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
+    for(var key in obj){
+        if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
+            var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
+            if (desc && (desc.get || desc.set)) {
+                Object.defineProperty(newObj, key, desc);
+            } else {
+                newObj[key] = obj[key];
+            }
+        }
+    }
+    newObj.default = obj;
+    if (cache) {
+        cache.set(obj, newObj);
+    }
+    return newObj;
+}
+const ScrollArea = /*#__PURE__*/ _react.forwardRef(({ className, children, ...props }, ref)=>/*#__PURE__*/ (0, _jsxruntime.jsxs)(_reactscrollarea.Root, {
+        ref: ref,
+        className: (0, _utils.cn)('relative overflow-hidden', className),
+        ...props,
+        children: [
+            /*#__PURE__*/ (0, _jsxruntime.jsx)(_reactscrollarea.Viewport, {
+                className: "h-full w-full rounded-[inherit]",
+                children: children
+            }),
+            /*#__PURE__*/ (0, _jsxruntime.jsx)(ScrollBar, {}),
+            /*#__PURE__*/ (0, _jsxruntime.jsx)(_reactscrollarea.Corner, {})
+        ]
+    }));
+ScrollArea.displayName = _reactscrollarea.Root.displayName;
+const ScrollBar = /*#__PURE__*/ _react.forwardRef(({ className, orientation = 'vertical', ...props }, ref)=>/*#__PURE__*/ (0, _jsxruntime.jsx)(_reactscrollarea.ScrollAreaScrollbar, {
+        ref: ref,
+        orientation: orientation,
+        className: (0, _utils.cn)('flex touch-none select-none transition-colors', orientation === 'vertical' && 'h-full w-2.5 border-l border-l-transparent p-[1px]', orientation === 'horizontal' && 'h-2.5 flex-col border-t border-t-transparent p-[1px]', className),
+        ...props,
+        children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_reactscrollarea.ScrollAreaThumb, {
+            className: "relative flex-1 rounded-full bg-border"
+        })
+    }));
+ScrollBar.displayName = _reactscrollarea.ScrollAreaScrollbar.displayName;
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcY29tcG9uZW50c1xcdWlcXHNjcm9sbC1hcmVhLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuLy8gQ09NUE9ORU5URTogU2Nyb2xsQXJlYVxuLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cblxuaW1wb3J0ICogYXMgUmVhY3QgZnJvbSAncmVhY3QnXG5pbXBvcnQgKiBhcyBTY3JvbGxBcmVhUHJpbWl0aXZlIGZyb20gJ0ByYWRpeC11aS9yZWFjdC1zY3JvbGwtYXJlYSdcblxuaW1wb3J0IHsgY24gfSBmcm9tICdAL2xpYi91dGlscydcblxuY29uc3QgU2Nyb2xsQXJlYSA9IFJlYWN0LmZvcndhcmRSZWY8XG4gIFJlYWN0LkVsZW1lbnRSZWY8dHlwZW9mIFNjcm9sbEFyZWFQcmltaXRpdmUuUm9vdD4sXG4gIFJlYWN0LkNvbXBvbmVudFByb3BzV2l0aG91dFJlZjx0eXBlb2YgU2Nyb2xsQXJlYVByaW1pdGl2ZS5Sb290PlxuPigoeyBjbGFzc05hbWUsIGNoaWxkcmVuLCAuLi5wcm9wcyB9LCByZWYpID0+IChcbiAgPFNjcm9sbEFyZWFQcmltaXRpdmUuUm9vdFxuICAgIHJlZj17cmVmfVxuICAgIGNsYXNzTmFtZT17Y24oJ3JlbGF0aXZlIG92ZXJmbG93LWhpZGRlbicsIGNsYXNzTmFtZSl9XG4gICAgey4uLnByb3BzfVxuICA+XG4gICAgPFNjcm9sbEFyZWFQcmltaXRpdmUuVmlld3BvcnQgY2xhc3NOYW1lPSdoLWZ1bGwgdy1mdWxsIHJvdW5kZWQtW2luaGVyaXRdJz5cbiAgICAgIHtjaGlsZHJlbn1cbiAgICA8L1Njcm9sbEFyZWFQcmltaXRpdmUuVmlld3BvcnQ+XG4gICAgPFNjcm9sbEJhciAvPlxuICAgIDxTY3JvbGxBcmVhUHJpbWl0aXZlLkNvcm5lciAvPlxuICA8L1Njcm9sbEFyZWFQcmltaXRpdmUuUm9vdD5cbikpXG5TY3JvbGxBcmVhLmRpc3BsYXlOYW1lID0gU2Nyb2xsQXJlYVByaW1pdGl2ZS5Sb290LmRpc3BsYXlOYW1lXG5cbmNvbnN0IFNjcm9sbEJhciA9IFJlYWN0LmZvcndhcmRSZWY8XG4gIFJlYWN0LkVsZW1lbnRSZWY8dHlwZW9mIFNjcm9sbEFyZWFQcmltaXRpdmUuU2Nyb2xsQXJlYVNjcm9sbGJhcj4sXG4gIFJlYWN0LkNvbXBvbmVudFByb3BzV2l0aG91dFJlZjx0eXBlb2YgU2Nyb2xsQXJlYVByaW1pdGl2ZS5TY3JvbGxBcmVhU2Nyb2xsYmFyPlxuPigoeyBjbGFzc05hbWUsIG9yaWVudGF0aW9uID0gJ3ZlcnRpY2FsJywgLi4ucHJvcHMgfSwgcmVmKSA9PiAoXG4gIDxTY3JvbGxBcmVhUHJpbWl0aXZlLlNjcm9sbEFyZWFTY3JvbGxiYXJcbiAgICByZWY9e3JlZn1cbiAgICBvcmllbnRhdGlvbj17b3JpZW50YXRpb259XG4gICAgY2xhc3NOYW1lPXtjbihcbiAgICAgICdmbGV4IHRvdWNoLW5vbmUgc2VsZWN0LW5vbmUgdHJhbnNpdGlvbi1jb2xvcnMnLFxuICAgICAgb3JpZW50YXRpb24gPT09ICd2ZXJ0aWNhbCcgJiYgJ2gtZnVsbCB3LTIuNSBib3JkZXItbCBib3JkZXItbC10cmFuc3BhcmVudCBwLVsxcHhdJyxcbiAgICAgIG9yaWVudGF0aW9uID09PSAnaG9yaXpvbnRhbCcgJiYgJ2gtMi41IGZsZXgtY29sIGJvcmRlci10IGJvcmRlci10LXRyYW5zcGFyZW50IHAtWzFweF0nLFxuICAgICAgY2xhc3NOYW1lXG4gICAgKX1cbiAgICB7Li4ucHJvcHN9XG4gID5cbiAgICA8U2Nyb2xsQXJlYVByaW1pdGl2ZS5TY3JvbGxBcmVhVGh1bWIgY2xhc3NOYW1lPSdyZWxhdGl2ZSBmbGV4LTEgcm91bmRlZC1mdWxsIGJnLWJvcmRlcicgLz5cbiAgPC9TY3JvbGxBcmVhUHJpbWl0aXZlLlNjcm9sbEFyZWFTY3JvbGxiYXI+XG4pKVxuU2Nyb2xsQmFyLmRpc3BsYXlOYW1lID0gU2Nyb2xsQXJlYVByaW1pdGl2ZS5TY3JvbGxBcmVhU2Nyb2xsYmFyLmRpc3BsYXlOYW1lXG5cbmV4cG9ydCB7IFNjcm9sbEFyZWEsIFNjcm9sbEJhciB9XG4iXSwibmFtZXMiOlsiU2Nyb2xsQXJlYSIsIlNjcm9sbEJhciIsIlJlYWN0IiwiZm9yd2FyZFJlZiIsImNsYXNzTmFtZSIsImNoaWxkcmVuIiwicHJvcHMiLCJyZWYiLCJTY3JvbGxBcmVhUHJpbWl0aXZlIiwiUm9vdCIsImNuIiwiVmlld3BvcnQiLCJDb3JuZXIiLCJkaXNwbGF5TmFtZSIsIm9yaWVudGF0aW9uIiwiU2Nyb2xsQXJlYVNjcm9sbGJhciIsIlNjcm9sbEFyZWFUaHVtYiJdLCJtYXBwaW5ncyI6IkFBQUEsc0NBQXNDO0FBQ3RDLHlCQUF5QjtBQUN6QixzQ0FBc0M7Ozs7Ozs7Ozs7OztRQTZDN0JBO2VBQUFBOztRQUFZQztlQUFBQTs7OzsrREEzQ0U7eUVBQ2M7dUJBRWxCOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFFbkIsTUFBTUQsMkJBQWFFLE9BQU1DLFVBQVUsQ0FHakMsQ0FBQyxFQUFFQyxTQUFTLEVBQUVDLFFBQVEsRUFBRSxHQUFHQyxPQUFPLEVBQUVDLG9CQUNwQyxzQkFBQ0MsaUJBQW9CQyxJQUFJO1FBQ3ZCRixLQUFLQTtRQUNMSCxXQUFXTSxJQUFBQSxTQUFFLEVBQUMsNEJBQTRCTjtRQUN6QyxHQUFHRSxLQUFLOzswQkFFVCxxQkFBQ0UsaUJBQW9CRyxRQUFRO2dCQUFDUCxXQUFVOzBCQUNyQ0M7OzBCQUVILHFCQUFDSjswQkFDRCxxQkFBQ08saUJBQW9CSSxNQUFNOzs7QUFHL0JaLFdBQVdhLFdBQVcsR0FBR0wsaUJBQW9CQyxJQUFJLENBQUNJLFdBQVc7QUFFN0QsTUFBTVosMEJBQVlDLE9BQU1DLFVBQVUsQ0FHaEMsQ0FBQyxFQUFFQyxTQUFTLEVBQUVVLGNBQWMsVUFBVSxFQUFFLEdBQUdSLE9BQU8sRUFBRUMsb0JBQ3BELHFCQUFDQyxpQkFBb0JPLG1CQUFtQjtRQUN0Q1IsS0FBS0E7UUFDTE8sYUFBYUE7UUFDYlYsV0FBV00sSUFBQUEsU0FBRSxFQUNYLGlEQUNBSSxnQkFBZ0IsY0FBYyxzREFDOUJBLGdCQUFnQixnQkFBZ0Isd0RBQ2hDVjtRQUVELEdBQUdFLEtBQUs7a0JBRVQsY0FBQSxxQkFBQ0UsaUJBQW9CUSxlQUFlO1lBQUNaLFdBQVU7OztBQUduREgsVUFBVVksV0FBVyxHQUFHTCxpQkFBb0JPLG1CQUFtQixDQUFDRixXQUFXIn0=

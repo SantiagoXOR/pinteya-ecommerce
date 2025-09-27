@@ -82,7 +82,7 @@ export class ProactiveMonitoringService {
       memoryThreshold: 80, // 80% memoria
       cpuThreshold: 70, // 70% CPU
       enableAutoRecovery: true,
-      notificationChannels: ['email', 'slack']
+      notificationChannels: ['email', 'slack'],
     }
     this.initializeDefaultPatterns()
   }
@@ -97,7 +97,7 @@ export class ProactiveMonitoringService {
         threshold: 3,
         timeWindow: 5,
         description: 'Errores de conexión a la base de datos',
-        isActive: true
+        isActive: true,
       },
       {
         id: 'payment_processing_error',
@@ -107,7 +107,7 @@ export class ProactiveMonitoringService {
         threshold: 5,
         timeWindow: 10,
         description: 'Errores en el procesamiento de pagos',
-        isActive: true
+        isActive: true,
       },
       {
         id: 'authentication_error',
@@ -117,7 +117,7 @@ export class ProactiveMonitoringService {
         threshold: 10,
         timeWindow: 15,
         description: 'Errores de autenticación',
-        isActive: true
+        isActive: true,
       },
       {
         id: 'api_rate_limit',
@@ -127,7 +127,7 @@ export class ProactiveMonitoringService {
         threshold: 20,
         timeWindow: 5,
         description: 'Límite de velocidad de API excedido',
-        isActive: true
+        isActive: true,
       },
       {
         id: 'server_error',
@@ -137,8 +137,8 @@ export class ProactiveMonitoringService {
         threshold: 5,
         timeWindow: 10,
         description: 'Errores internos del servidor',
-        isActive: true
-      }
+        isActive: true,
+      },
     ]
 
     defaultPatterns.forEach(pattern => {
@@ -168,10 +168,15 @@ export class ProactiveMonitoringService {
       this.performHealthCheck()
     }, this.config.checkInterval * 1000)
 
-    logger.info(LogLevel.INFO, 'Proactive monitoring started', {
-      interval: this.config.checkInterval,
-      patterns: this.errorPatterns.size
-    }, LogCategory.SYSTEM)
+    logger.info(
+      LogLevel.INFO,
+      'Proactive monitoring started',
+      {
+        interval: this.config.checkInterval,
+        patterns: this.errorPatterns.size,
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   /**
@@ -196,9 +201,12 @@ export class ProactiveMonitoringService {
     if (typeof window === 'undefined') {
       // Analizar patrones de error
       for (const [patternId, pattern] of this.errorPatterns) {
-        if (!pattern.isActive) {continue}
+        if (!pattern.isActive) {
+          continue
+        }
 
-        const regex = pattern.pattern instanceof RegExp ? pattern.pattern : new RegExp(pattern.pattern, 'i')
+        const regex =
+          pattern.pattern instanceof RegExp ? pattern.pattern : new RegExp(pattern.pattern, 'i')
         if (regex.test(errorMessage)) {
           await this.handlePatternMatch(patternId, pattern, errorMessage, context)
         }
@@ -208,17 +216,22 @@ export class ProactiveMonitoringService {
       if (this.metricsCollector) {
         await this.metricsCollector.recordMetric('errors_total', 1, undefined, undefined, {
           type: 'application_error',
-          ...context
+          ...context,
         })
       }
     }
 
     // Log del error
-    logger.error(LogLevel.ERROR, 'Error reported to monitoring', {
-      error: errorMessage,
-      stack: errorStack,
-      context
-    }, LogCategory.SYSTEM)
+    logger.error(
+      LogLevel.ERROR,
+      'Error reported to monitoring',
+      {
+        error: errorMessage,
+        stack: errorStack,
+        context,
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   private async handlePatternMatch(
@@ -229,7 +242,7 @@ export class ProactiveMonitoringService {
   ): Promise<void> {
     const now = new Date()
     const key = `${patternId}_${Math.floor(now.getTime() / (pattern.timeWindow * 60 * 1000))}`
-    
+
     const existing = this.errorCounts.get(key)
     if (existing) {
       existing.count++
@@ -238,16 +251,16 @@ export class ProactiveMonitoringService {
       this.errorCounts.set(key, {
         count: 1,
         firstSeen: now,
-        lastSeen: now
+        lastSeen: now,
       })
     }
 
     const errorCount = this.errorCounts.get(key)!
-    
+
     // Verificar si se alcanzó el umbral (solo en servidor)
     if (errorCount.count >= pattern.threshold && this.alertSystem) {
       await this.triggerAlert(pattern, errorCount, errorMessage, context)
-      
+
       // Limpiar contador para evitar spam de alertas
       this.errorCounts.delete(key)
     }
@@ -273,8 +286,8 @@ export class ProactiveMonitoringService {
         firstSeen: errorCount.firstSeen.toISOString(),
         lastSeen: errorCount.lastSeen.toISOString(),
         lastError: errorMessage,
-        context
-      }
+        context,
+      },
     }
 
     // Enviar notificaciones
@@ -296,7 +309,7 @@ export class ProactiveMonitoringService {
         subject: `🚨 ${alert.title}`,
         template: 'error-pattern-alert',
         data: alert,
-        priority: alert.severity === 'critical' ? 'high' : 'normal'
+        priority: alert.severity === 'critical' ? 'high' : 'normal',
       })
     } catch (error) {
       logger.error(LogLevel.ERROR, 'Failed to send email alert', { error }, LogCategory.SYSTEM)
@@ -309,7 +322,7 @@ export class ProactiveMonitoringService {
         error: alert.message,
         context: alert.title,
         timestamp: new Date(),
-        severity: alert.severity
+        severity: alert.severity,
       })
     } catch (error) {
       logger.error(LogLevel.ERROR, 'Failed to send Slack alert', { error }, LogCategory.SYSTEM)
@@ -322,7 +335,7 @@ export class ProactiveMonitoringService {
   private async performHealthCheck(): Promise<void> {
     try {
       const health = await this.getSystemHealth()
-      
+
       // Verificar umbrales críticos
       if (health.status === 'critical' || health.status === 'down') {
         await this.handleCriticalHealth(health)
@@ -332,17 +345,24 @@ export class ProactiveMonitoringService {
 
       // Actualizar métricas si está disponible
       if (this.metricsCollector) {
-        await this.metricsCollector.recordMetric('system_health_score', this.calculateHealthScore(health))
+        await this.metricsCollector.recordMetric(
+          'system_health_score',
+          this.calculateHealthScore(health)
+        )
         await this.metricsCollector.recordMetric('system_response_time', health.responseTime)
         await this.metricsCollector.recordMetric('system_error_rate', health.errorRate)
         await this.metricsCollector.recordMetric('system_memory_usage', health.memoryUsage)
         await this.metricsCollector.recordMetric('system_cpu_usage', health.cpuUsage)
       }
-
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Health check failed', {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }, LogCategory.SYSTEM)
+      logger.error(
+        LogLevel.ERROR,
+        'Health check failed',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -367,7 +387,7 @@ export class ProactiveMonitoringService {
         details: { responseTime, threshold: this.config.responseTimeThreshold },
         firstDetected: new Date(),
         lastSeen: new Date(),
-        count: 1
+        count: 1,
       })
       status = 'warning'
     }
@@ -381,7 +401,7 @@ export class ProactiveMonitoringService {
         details: { errorRate, threshold: this.config.errorThreshold },
         firstDetected: new Date(),
         lastSeen: new Date(),
-        count: 1
+        count: 1,
       })
       status = 'critical'
     }
@@ -395,27 +415,30 @@ export class ProactiveMonitoringService {
         details: { memoryUsage, threshold: this.config.memoryThreshold },
         firstDetected: new Date(),
         lastSeen: new Date(),
-        count: 1
+        count: 1,
       })
-      if (status === 'healthy') {status = 'warning'}
+      if (status === 'healthy') {
+        status = 'warning'
+      }
     }
 
     return {
       status,
-      uptime: typeof process !== 'undefined' && process.uptime ? process.uptime() : Date.now() / 1000,
+      uptime:
+        typeof process !== 'undefined' && process.uptime ? process.uptime() : Date.now() / 1000,
       responseTime,
       errorRate,
       memoryUsage,
       cpuUsage,
       activeConnections,
       lastCheck: new Date(),
-      issues
+      issues,
     }
   }
 
   private calculateHealthScore(health: SystemHealth): number {
     let score = 100
-    
+
     health.issues.forEach(issue => {
       switch (issue.severity) {
         case 'critical':
@@ -438,13 +461,13 @@ export class ProactiveMonitoringService {
 
   private async handleCriticalHealth(health: SystemHealth): Promise<void> {
     logger.error(LogLevel.ERROR, 'Critical system health detected', { health }, LogCategory.SYSTEM)
-    
+
     // Enviar alertas críticas
     await this.sendSlackAlert({
       title: '🚨 CRITICAL: System Health Alert',
       message: 'System health is critical - immediate attention required',
       severity: 'critical',
-      details: health
+      details: health,
     })
 
     // Auto-recovery si está habilitado
@@ -459,7 +482,7 @@ export class ProactiveMonitoringService {
 
   private async attemptAutoRecovery(health: SystemHealth): Promise<void> {
     logger.info(LogLevel.INFO, 'Attempting auto-recovery', { health }, LogCategory.SYSTEM)
-    
+
     // Implementar lógica de auto-recuperación
     // Por ejemplo: reiniciar servicios, limpiar cache, etc.
   }
@@ -469,7 +492,7 @@ export class ProactiveMonitoringService {
    */
   updateConfig(newConfig: Partial<MonitoringConfig>): void {
     this.config = { ...this.config, ...newConfig }
-    
+
     if (this.config.enabled && !this.monitoringInterval) {
       this.start()
     } else if (!this.config.enabled && this.monitoringInterval) {
@@ -507,24 +530,26 @@ export class ProactiveMonitoringService {
     recentAlerts: number
     systemHealth: SystemHealth
   }> {
-    const totalErrors = Array.from(this.errorCounts.values())
-      .reduce((sum, count) => sum + count.count, 0)
-    
-    const activePatterns = Array.from(this.errorPatterns.values())
-      .filter(p => p.isActive).length
-    
-    const recentAlerts = this.alertSystem ? 
-      Array.from(this.errorCounts.values())
-        .filter(count => Date.now() - count.lastSeen.getTime() < 24 * 60 * 60 * 1000).length
+    const totalErrors = Array.from(this.errorCounts.values()).reduce(
+      (sum, count) => sum + count.count,
+      0
+    )
+
+    const activePatterns = Array.from(this.errorPatterns.values()).filter(p => p.isActive).length
+
+    const recentAlerts = this.alertSystem
+      ? Array.from(this.errorCounts.values()).filter(
+          count => Date.now() - count.lastSeen.getTime() < 24 * 60 * 60 * 1000
+        ).length
       : 0
-    
+
     const systemHealth = await this.getSystemHealth()
 
     return {
       totalErrors,
       activePatterns,
       recentAlerts,
-      systemHealth
+      systemHealth,
     }
   }
 }
@@ -538,12 +563,3 @@ export const reportError = (error: Error | string, context?: Record<string, any>
 
 export const startMonitoring = () => proactiveMonitoring.start()
 export const stopMonitoring = () => proactiveMonitoring.stop()
-
-
-
-
-
-
-
-
-

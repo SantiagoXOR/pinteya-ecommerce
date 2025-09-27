@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth';
-import { Database } from '@/types/database';
-import { createClient } from '@supabase/supabase-js';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from 'next/server'
+import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth'
+import { Database } from '@/types/database'
+import { createClient } from '@supabase/supabase-js'
+import { z } from 'zod'
 
 // Enterprise middleware imports
-import { withErrorHandler } from '@/lib/api/error-handler';
-import { withApiLogging } from '@/lib/api/api-logger';
-import { withAdminAuth } from '@/lib/auth/api-auth-middleware';
-import { withValidation } from '@/lib/validation/admin-schemas';
-import { composeMiddlewares } from '@/lib/api/middleware-composer';
+import { withErrorHandler } from '@/lib/api/error-handler'
+import { withApiLogging } from '@/lib/api/api-logger'
+import { withAdminAuth } from '@/lib/auth/api-auth-middleware'
+import { withValidation } from '@/lib/validation/admin-schemas'
+import { composeMiddlewares } from '@/lib/api/middleware-composer'
 
 // Validation schemas
 const UpdateProductSchema = z.object({
@@ -22,28 +22,36 @@ const UpdateProductSchema = z.object({
   low_stock_threshold: z.number().min(0).optional(),
   category_id: z.string().uuid('ID de categoría inválido').optional(),
   brand: z.string().optional(),
-  images: z.array(z.object({
-    url: z.string().url(),
-    alt_text: z.string().optional(),
-    is_primary: z.boolean().default(false)
-  })).optional(),
+  images: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        alt_text: z.string().optional(),
+        is_primary: z.boolean().default(false),
+      })
+    )
+    .optional(),
   is_active: z.boolean().optional(),
   is_featured: z.boolean().optional(),
   status: z.enum(['active', 'inactive', 'draft']).optional(),
-});
+})
 
 const ProductParamsSchema = z.object({
-  id: z.string().uuid('ID de producto inválido')
-});
+  id: z.string().uuid('ID de producto inválido'),
+})
 
 // Enterprise imports for error handling
-import { ApiError, NotFoundError, ValidationError } from '@/lib/api/error-handler';
+import { ApiError, NotFoundError, ValidationError } from '@/lib/api/error-handler'
 
 // Helper function to get product by ID with enhanced error handling
-async function getProductById(supabase: ReturnType<typeof createClient<Database>>, productId: string) {
+async function getProductById(
+  supabase: ReturnType<typeof createClient<Database>>,
+  productId: string
+) {
   const { data: product, error } = await supabase
     .from('products')
-    .select(`
+    .select(
+      `
       id,
       name,
       slug,
@@ -65,12 +73,13 @@ async function getProductById(supabase: ReturnType<typeof createClient<Database>
         id,
         name
       )
-    `)
+    `
+    )
     .eq('id', productId)
-    .single();
+    .single()
 
   if (error) {
-    throw new NotFoundError('Producto');
+    throw new NotFoundError('Producto')
   }
 
   // Transform response with enhanced data
@@ -78,9 +87,9 @@ async function getProductById(supabase: ReturnType<typeof createClient<Database>
     ...product,
     category_name: product.categories?.name || null,
     categories: undefined,
-  };
+  }
 
-  return transformedProduct;
+  return transformedProduct
 }
 
 // Helper function to generate unique slug
@@ -90,7 +99,7 @@ function generateSlug(name: string): string {
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim();
+    .trim()
 }
 
 /**
@@ -98,40 +107,40 @@ function generateSlug(name: string): string {
  * Obtener producto específico por ID con middleware enterprise
  */
 const getHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const { supabase } = request as any;
-  const productId = params.id;
+  const { supabase } = request as any
+  const productId = params.id
 
   // Validar parámetros
-  const paramsValidation = ProductParamsSchema.safeParse({ id: productId });
+  const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
-    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors);
+    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
-  const product = await getProductById(supabase, productId);
+  const product = await getProductById(supabase, productId)
 
   return NextResponse.json({
     data: product,
     success: true,
-    message: 'Producto obtenido exitosamente'
-  });
-};
+    message: 'Producto obtenido exitosamente',
+  })
+}
 
 /**
  * PUT /api/admin/products/[id] - Enterprise Handler
  * Actualizar producto específico con middleware enterprise
  */
 const putHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const { supabase, user, validatedData } = request as any;
-  const productId = params.id;
+  const { supabase, user, validatedData } = request as any
+  const productId = params.id
 
   // Validar parámetros
-  const paramsValidation = ProductParamsSchema.safeParse({ id: productId });
+  const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
-    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors);
+    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
   // Verificar que el producto existe
-  const existingProduct = await getProductById(supabase, productId);
+  const existingProduct = await getProductById(supabase, productId)
 
   // Verificar categoría si se está actualizando
   if (validatedData.category_id) {
@@ -139,10 +148,10 @@ const putHandler = async (request: NextRequest, { params }: { params: { id: stri
       .from('categories')
       .select('id')
       .eq('id', validatedData.category_id)
-      .single();
+      .single()
 
     if (categoryError || !category) {
-      throw new ValidationError('Categoría no encontrada');
+      throw new ValidationError('Categoría no encontrada')
     }
   }
 
@@ -150,10 +159,10 @@ const putHandler = async (request: NextRequest, { params }: { params: { id: stri
   const updateData = {
     ...validatedData,
     updated_at: new Date().toISOString(),
-  };
+  }
 
   if (validatedData.name) {
-    updateData.slug = generateSlug(validatedData.name);
+    updateData.slug = generateSlug(validatedData.name)
   }
 
   // Actualizar producto
@@ -161,7 +170,8 @@ const putHandler = async (request: NextRequest, { params }: { params: { id: stri
     .from('products')
     .update(updateData)
     .eq('id', productId)
-    .select(`
+    .select(
+      `
       id,
       name,
       slug,
@@ -183,61 +193,62 @@ const putHandler = async (request: NextRequest, { params }: { params: { id: stri
         id,
         name
       )
-    `)
-    .single();
+    `
+    )
+    .single()
 
   if (error) {
-    throw new ApiError('Error al actualizar producto', 500, 'DATABASE_ERROR', error);
+    throw new ApiError('Error al actualizar producto', 500, 'DATABASE_ERROR', error)
   }
 
   // Log de auditoría
-  await logAdminAction(user.id, 'UPDATE', 'product', productId, existingProduct, updatedProduct);
+  await logAdminAction(user.id, 'UPDATE', 'product', productId, existingProduct, updatedProduct)
 
   // Transform response
   const transformedProduct = {
     ...updatedProduct,
     category_name: updatedProduct.categories?.name || null,
     categories: undefined,
-  };
+  }
 
   return NextResponse.json({
     data: transformedProduct,
     success: true,
-    message: 'Producto actualizado exitosamente'
-  });
-};
+    message: 'Producto actualizado exitosamente',
+  })
+}
 
 /**
  * DELETE /api/admin/products/[id] - Enterprise Handler
  * Eliminar producto específico con middleware enterprise
  */
 const deleteHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const { supabase, user } = request as any;
-  const productId = params.id;
+  const { supabase, user } = request as any
+  const productId = params.id
 
   // Validar parámetros
-  const paramsValidation = ProductParamsSchema.safeParse({ id: productId });
+  const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
-    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors);
+    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
   // Verificar que el producto existe
-  const existingProduct = await getProductById(supabase, productId);
+  const existingProduct = await getProductById(supabase, productId)
 
   // Verificar si el producto está referenciado en órdenes
   const { data: orderItems, error: orderCheckError } = await supabase
     .from('order_items')
     .select('id')
     .eq('product_id', productId)
-    .limit(1);
+    .limit(1)
 
   if (orderCheckError) {
-    console.warn('Error checking order references:', orderCheckError);
+    console.warn('Error checking order references:', orderCheckError)
     // Continuar con eliminación aunque falle la verificación
   }
 
-  let deletionResult;
-  let isHardDelete = false;
+  let deletionResult
+  let isHardDelete = false
 
   if (orderItems && orderItems.length > 0) {
     // Soft delete: marcar como inactivo
@@ -246,34 +257,31 @@ const deleteHandler = async (request: NextRequest, { params }: { params: { id: s
       .update({
         status: 'inactive',
         is_active: false,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', productId);
+      .eq('id', productId)
 
     if (updateError) {
-      throw new ApiError('Error al eliminar producto', 500, 'DATABASE_ERROR', updateError);
+      throw new ApiError('Error al eliminar producto', 500, 'DATABASE_ERROR', updateError)
     }
 
     deletionResult = {
       message: 'Producto marcado como inactivo (tiene órdenes asociadas)',
-      soft_delete: true
-    };
+      soft_delete: true,
+    }
   } else {
     // Hard delete si no hay referencias
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', productId);
+    const { error } = await supabase.from('products').delete().eq('id', productId)
 
     if (error) {
-      throw new ApiError('Error al eliminar producto', 500, 'DATABASE_ERROR', error);
+      throw new ApiError('Error al eliminar producto', 500, 'DATABASE_ERROR', error)
     }
 
-    isHardDelete = true;
+    isHardDelete = true
     deletionResult = {
       message: 'Producto eliminado exitosamente',
-      hard_delete: true
-    };
+      hard_delete: true,
+    }
   }
 
   // Log de auditoría
@@ -284,30 +292,30 @@ const deleteHandler = async (request: NextRequest, { params }: { params: { id: s
     productId,
     existingProduct,
     null
-  );
+  )
 
   return NextResponse.json({
     ...deletionResult,
-    success: true
-  });
-};
+    success: true,
+  })
+}
 
 // Aplicar middlewares enterprise y exportar handlers
 export const GET = composeMiddlewares(
   withErrorHandler,
   withApiLogging,
   withAdminAuth(['products_read'])
-)(getHandler);
+)(getHandler)
 
 export const PUT = composeMiddlewares(
   withErrorHandler,
   withApiLogging,
   withAdminAuth(['products_update']),
   withValidation(UpdateProductSchema)
-)(putHandler);
+)(putHandler)
 
 export const DELETE = composeMiddlewares(
   withErrorHandler,
   withApiLogging,
   withAdminAuth(['products_delete'])
-)(deleteHandler);
+)(deleteHandler)

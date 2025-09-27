@@ -13,8 +13,8 @@ export const mockUser = {
   email: 'test@example.com',
   name: 'Test User',
   phone: '+54911234567',
-  role: 'customer'
-};
+  role: 'customer',
+}
 
 export const mockAdminUser = {
   id: 'admin-user-id',
@@ -22,8 +22,8 @@ export const mockAdminUser = {
   email: 'santiago@xor.com.ar',
   name: 'Admin User',
   phone: '+54911234567',
-  role: 'admin'
-};
+  role: 'admin',
+}
 
 export const mockProducts = [
   {
@@ -33,7 +33,7 @@ export const mockProducts = [
     sku: 'PAINT-001',
     category: 'Pinturas',
     price: 15000,
-    stock: 50
+    stock: 50,
   },
   {
     id: 2,
@@ -42,9 +42,9 @@ export const mockProducts = [
     sku: 'TOOL-001',
     category: 'Herramientas',
     price: 2500,
-    stock: 25
-  }
-];
+    stock: 25,
+  },
+]
 
 export const mockOrderItems = [
   {
@@ -54,7 +54,7 @@ export const mockOrderItems = [
     quantity: 2,
     unit_price: 15000,
     total_price: 30000,
-    products: mockProducts[0]
+    products: mockProducts[0],
   },
   {
     id: 'item-2',
@@ -63,17 +63,17 @@ export const mockOrderItems = [
     quantity: 1,
     unit_price: 2500,
     total_price: 2500,
-    products: mockProducts[1]
-  }
-];
+    products: mockProducts[1],
+  },
+]
 
 export const mockShippingAddress = {
   street_name: 'Av. Corrientes',
   street_number: '1234',
   zip_code: '1000',
   city_name: 'Buenos Aires',
-  state_name: 'CABA'
-};
+  state_name: 'CABA',
+}
 
 export const mockOrders = [
   {
@@ -95,7 +95,7 @@ export const mockOrders = [
     created_at: '2024-01-01T10:00:00Z',
     updated_at: '2024-01-01T10:00:00Z',
     user_profiles: mockUser,
-    order_items: mockOrderItems
+    order_items: mockOrderItems,
   },
   {
     id: 'order-2',
@@ -116,9 +116,9 @@ export const mockOrders = [
     created_at: '2024-01-02T10:00:00Z',
     updated_at: '2024-01-03T15:30:00Z',
     user_profiles: mockUser,
-    order_items: [mockOrderItems[0]]
-  }
-];
+    order_items: [mockOrderItems[0]],
+  },
+]
 
 export const mockStatusHistory = [
   {
@@ -130,7 +130,7 @@ export const mockStatusHistory = [
     reason: 'Orden creada',
     metadata: { trigger: 'automatic' },
     created_at: '2024-01-01T10:00:00Z',
-    user_profiles: null
+    user_profiles: null,
   },
   {
     id: 'history-2',
@@ -141,9 +141,9 @@ export const mockStatusHistory = [
     reason: 'Pago confirmado',
     metadata: { trigger: 'manual' },
     created_at: '2024-01-01T11:00:00Z',
-    user_profiles: mockAdminUser
-  }
-];
+    user_profiles: mockAdminUser,
+  },
+]
 
 export const mockOrderNotes = [
   {
@@ -156,9 +156,9 @@ export const mockOrderNotes = [
     metadata: {},
     created_at: '2024-01-01T12:00:00Z',
     updated_at: '2024-01-01T12:00:00Z',
-    user_profiles: mockAdminUser
-  }
-];
+    user_profiles: mockAdminUser,
+  },
+]
 
 // ===================================
 // MOCK SUPABASE ADMIN PARA ORDERS
@@ -166,7 +166,7 @@ export const mockOrderNotes = [
 
 export const createMockSupabaseAdmin = () => {
   const mockSupabaseAdmin = {
-    from: jest.fn().mockImplementation((table) => {
+    from: jest.fn().mockImplementation(table => {
       const mockQuery = {
         select: jest.fn().mockReturnThis(),
         insert: jest.fn().mockReturnThis(),
@@ -182,55 +182,58 @@ export const createMockSupabaseAdmin = () => {
         range: jest.fn().mockReturnThis(),
         single: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
-      };
+      }
 
       // Configurar respuestas específicas por tabla
       if (table === 'orders') {
-        mockQuery.select.mockImplementation((columns) => {
+        mockQuery.select.mockImplementation(columns => {
           if (columns && columns.includes('count')) {
             return {
               ...mockQuery,
-              single: () => Promise.resolve({ data: null, error: null, count: mockOrders.length })
-            };
+              single: () => Promise.resolve({ data: null, error: null, count: mockOrders.length }),
+            }
           }
           return {
             ...mockQuery,
             single: () => Promise.resolve({ data: mockOrders[0], error: null }),
-            range: () => Promise.resolve({ 
-              data: mockOrders, 
-              error: null, 
-              count: mockOrders.length 
-            })
-          };
-        });
+            range: () =>
+              Promise.resolve({
+                data: mockOrders,
+                error: null,
+                count: mockOrders.length,
+              }),
+          }
+        })
 
         mockQuery.insert.mockImplementation(() => ({
           ...mockQuery,
           select: () => ({
             ...mockQuery,
-            single: () => Promise.resolve({ 
-              data: { ...mockOrders[0], id: 'new-order-id' }, 
-              error: null 
-            })
-          })
-        }));
+            single: () =>
+              Promise.resolve({
+                data: { ...mockOrders[0], id: 'new-order-id' },
+                error: null,
+              }),
+          }),
+        }))
 
         mockQuery.update.mockImplementation(() => ({
           ...mockQuery,
           select: () => ({
             ...mockQuery,
-            single: () => Promise.resolve({ 
-              data: { ...mockOrders[0], status: 'confirmed' }, 
-              error: null 
-            })
-          })
-        }));
+            single: () =>
+              Promise.resolve({
+                data: { ...mockOrders[0], status: 'confirmed' },
+                error: null,
+              }),
+          }),
+        }))
       }
 
       if (table === 'order_items') {
-        mockQuery.insert.mockImplementation(() => 
+        mockQuery.insert.mockImplementation(() =>
           Promise.resolve({ data: mockOrderItems, error: null })
-        );
+        )
       }
 
       if (table === 'order_status_history') {
@@ -238,13 +241,13 @@ export const createMockSupabaseAdmin = () => {
           ...mockQuery,
           eq: () => ({
             ...mockQuery,
-            order: () => Promise.resolve({ data: mockStatusHistory, error: null })
-          })
-        }));
+            order: () => Promise.resolve({ data: mockStatusHistory, error: null }),
+          }),
+        }))
 
-        mockQuery.insert.mockImplementation(() => 
+        mockQuery.insert.mockImplementation(() =>
           Promise.resolve({ data: mockStatusHistory[0], error: null })
-        );
+        )
       }
 
       if (table === 'order_notes') {
@@ -252,13 +255,13 @@ export const createMockSupabaseAdmin = () => {
           ...mockQuery,
           eq: () => ({
             ...mockQuery,
-            order: () => Promise.resolve({ data: mockOrderNotes, error: null })
-          })
-        }));
+            order: () => Promise.resolve({ data: mockOrderNotes, error: null }),
+          }),
+        }))
 
-        mockQuery.insert.mockImplementation(() => 
+        mockQuery.insert.mockImplementation(() =>
           Promise.resolve({ data: mockOrderNotes[0], error: null })
-        );
+        )
       }
 
       if (table === 'user_profiles') {
@@ -266,19 +269,19 @@ export const createMockSupabaseAdmin = () => {
           ...mockQuery,
           eq: () => ({
             ...mockQuery,
-            single: () => Promise.resolve({ data: mockUser, error: null })
-          })
-        }));
+            single: () => Promise.resolve({ data: mockUser, error: null }),
+          }),
+        }))
       }
 
       if (table === 'products') {
         mockQuery.select.mockImplementation(() => ({
           ...mockQuery,
-          in: () => Promise.resolve({ data: mockProducts, error: null })
-        }));
+          in: () => Promise.resolve({ data: mockProducts, error: null }),
+        }))
       }
 
-      return mockQuery;
+      return mockQuery
     }),
 
     // RPC functions
@@ -287,17 +290,17 @@ export const createMockSupabaseAdmin = () => {
         return Promise.resolve({
           data: [
             { date: '2024-01-01', total_orders: 5, total_revenue: 75000, avg_order_value: 15000 },
-            { date: '2024-01-02', total_orders: 3, total_revenue: 45000, avg_order_value: 15000 }
+            { date: '2024-01-02', total_orders: 3, total_revenue: 45000, avg_order_value: 15000 },
           ],
-          error: null
-        });
+          error: null,
+        })
       }
-      return Promise.resolve({ data: null, error: null });
-    })
-  };
+      return Promise.resolve({ data: null, error: null })
+    }),
+  }
 
-  return mockSupabaseAdmin;
-};
+  return mockSupabaseAdmin
+}
 
 // ===================================
 // MOCK CLERK AUTH PARA ORDERS
@@ -305,20 +308,22 @@ export const createMockSupabaseAdmin = () => {
 
 export const createMockClerkAuth = (isAdmin = false) => {
   const mockAuth = jest.fn().mockResolvedValue({
-    userId: isAdmin ? 'admin-clerk-id' : 'test-clerk-id'
-  });
+    userId: isAdmin ? 'admin-clerk-id' : 'test-clerk-id',
+  })
 
   const mockCurrentUser = jest.fn().mockResolvedValue({
     id: isAdmin ? 'admin-clerk-id' : 'test-clerk-id',
-    emailAddresses: [{
-      emailAddress: isAdmin ? 'santiago@xor.com.ar' : 'test@example.com'
-    }],
+    emailAddresses: [
+      {
+        emailAddress: isAdmin ? 'santiago@xor.com.ar' : 'test@example.com',
+      },
+    ],
     firstName: isAdmin ? 'Admin' : 'Test',
-    lastName: 'User'
-  });
+    lastName: 'User',
+  })
 
-  return { mockAuth, mockCurrentUser };
-};
+  return { mockAuth, mockCurrentUser }
+}
 
 // ===================================
 // MOCK RATE LIMITER PARA ORDERS
@@ -328,13 +333,13 @@ export const createMockRateLimiter = () => {
   const mockCheckRateLimit = jest.fn().mockResolvedValue({
     success: true,
     remaining: 100,
-    reset: Date.now() + 3600000
-  });
+    reset: Date.now() + 3600000,
+  })
 
-  const mockAddRateLimitHeaders = jest.fn();
+  const mockAddRateLimitHeaders = jest.fn()
 
-  return { mockCheckRateLimit, mockAddRateLimitHeaders };
-};
+  return { mockCheckRateLimit, mockAddRateLimitHeaders }
+}
 
 // ===================================
 // MOCK LOGGER PARA ORDERS
@@ -346,11 +351,11 @@ export const createMockLogger = () => {
     error: jest.fn(),
     warn: jest.fn(),
     info: jest.fn(),
-    debug: jest.fn()
-  };
+    debug: jest.fn(),
+  }
 
-  return mockLogger;
-};
+  return mockLogger
+}
 
 // ===================================
 // MOCK METRICS COLLECTOR PARA ORDERS
@@ -360,11 +365,11 @@ export const createMockMetricsCollector = () => {
   const mockMetricsCollector = {
     recordApiCall: jest.fn(),
     recordError: jest.fn(),
-    recordPerformance: jest.fn()
-  };
+    recordPerformance: jest.fn(),
+  }
 
-  return mockMetricsCollector;
-};
+  return mockMetricsCollector
+}
 
 // ===================================
 // MOCK FETCH PARA ORDERS
@@ -372,101 +377,100 @@ export const createMockMetricsCollector = () => {
 
 export const createMockFetch = () => {
   const mockFetch = jest.fn().mockImplementation((url, options) => {
-    const method = options?.method || 'GET';
-    
+    const method = options?.method || 'GET'
+
     // Mock responses para diferentes endpoints
     if (url.includes('/api/admin/orders') && method === 'GET') {
       return Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({
-          data: {
-            orders: mockOrders,
-            pagination: {
-              page: 1,
-              limit: 20,
-              total: mockOrders.length,
-              totalPages: 1,
-              hasNextPage: false,
-              hasPreviousPage: false
+        json: () =>
+          Promise.resolve({
+            data: {
+              orders: mockOrders,
+              pagination: {
+                page: 1,
+                limit: 20,
+                total: mockOrders.length,
+                totalPages: 1,
+                hasNextPage: false,
+                hasPreviousPage: false,
+              },
+              filters: {},
             },
-            filters: {}
-          },
-          success: true,
-          error: null
-        })
-      });
+            success: true,
+            error: null,
+          }),
+      })
     }
 
     if (url.includes('/api/admin/orders') && method === 'POST') {
       return Promise.resolve({
         ok: true,
         status: 201,
-        json: () => Promise.resolve({
-          data: { ...mockOrders[0], id: 'new-order-id' },
-          success: true,
-          error: null
-        })
-      });
+        json: () =>
+          Promise.resolve({
+            data: { ...mockOrders[0], id: 'new-order-id' },
+            success: true,
+            error: null,
+          }),
+      })
     }
 
     if (url.includes('/api/admin/orders/') && url.includes('/status') && method === 'POST') {
       return Promise.resolve({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({
-          data: {
-            order: { ...mockOrders[0], status: 'confirmed' },
-            previousStatus: 'pending',
-            newStatus: 'confirmed',
-            statusDescription: 'Confirmada'
-          },
-          success: true,
-          error: null
-        })
-      });
+        json: () =>
+          Promise.resolve({
+            data: {
+              order: { ...mockOrders[0], status: 'confirmed' },
+              previousStatus: 'pending',
+              newStatus: 'confirmed',
+              statusDescription: 'Confirmada',
+            },
+            success: true,
+            error: null,
+          }),
+      })
     }
 
     // Default response
     return Promise.resolve({
       ok: true,
       status: 200,
-      json: () => Promise.resolve({ data: null, success: true, error: null })
-    });
-  });
+      json: () => Promise.resolve({ data: null, success: true, error: null }),
+    })
+  })
 
-  return mockFetch;
-};
+  return mockFetch
+}
 
 // ===================================
 // HELPER FUNCTIONS
 // ===================================
 
 export const resetAllMocks = () => {
-  jest.clearAllMocks();
-};
+  jest.clearAllMocks()
+}
 
 export const createOrderTestData = (overrides = {}) => {
   return {
     ...mockOrders[0],
-    ...overrides
-  };
-};
+    ...overrides,
+  }
+}
 
 export const createOrderItemTestData = (overrides = {}) => {
   return {
     ...mockOrderItems[0],
-    ...overrides
-  };
-};
+    ...overrides,
+  }
+}
 
 export const createStatusHistoryTestData = (overrides = {}) => {
   return {
     ...mockStatusHistory[0],
-    ...overrides
-  };
-};
-
-
-
-
+    ...overrides,
+  }
+}

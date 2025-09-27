@@ -1,33 +1,30 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
-import { Package, AlertTriangle, XCircle, Check } from "lucide-react";
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
+import { Package, AlertTriangle, XCircle, Check } from 'lucide-react'
 
-const stockIndicatorVariants = cva(
-  "flex items-center gap-2 text-sm font-medium",
-  {
-    variants: {
-      variant: {
-        default: "flex-row",
-        compact: "flex-row gap-1",
-        badge: "inline-flex px-2 py-1 rounded-full text-xs",
-        minimal: "flex-row gap-1 text-xs",
-      },
-      status: {
-        inStock: "text-green-600",
-        lowStock: "text-yellow-600",
-        outOfStock: "text-red-600",
-        preOrder: "text-blue-600",
-      },
+const stockIndicatorVariants = cva('flex items-center gap-2 text-sm font-medium', {
+  variants: {
+    variant: {
+      default: 'flex-row',
+      compact: 'flex-row gap-1',
+      badge: 'inline-flex px-2 py-1 rounded-full text-xs',
+      minimal: 'flex-row gap-1 text-xs',
     },
-    defaultVariants: {
-      variant: "default",
-      status: "inStock",
+    status: {
+      inStock: 'text-green-600',
+      lowStock: 'text-yellow-600',
+      outOfStock: 'text-red-600',
+      preOrder: 'text-blue-600',
     },
-  }
-)
+  },
+  defaultVariants: {
+    variant: 'default',
+    status: 'inStock',
+  },
+})
 
 export interface StockIndicatorProps
   extends React.HTMLAttributes<HTMLDivElement>,
@@ -59,17 +56,17 @@ export interface StockIndicatorProps
  * Determina el estado del stock basado en la cantidad
  */
 const getStockStatus = (
-  quantity: number, 
+  quantity: number,
   lowStockThreshold: number = 5,
   allowPreOrder: boolean = false
-): "inStock" | "lowStock" | "outOfStock" | "preOrder" => {
+): 'inStock' | 'lowStock' | 'outOfStock' | 'preOrder' => {
   if (quantity === 0) {
-    return allowPreOrder ? "preOrder" : "outOfStock"
+    return allowPreOrder ? 'preOrder' : 'outOfStock'
   }
   if (quantity <= lowStockThreshold) {
-    return "lowStock"
+    return 'lowStock'
   }
-  return "inStock"
+  return 'inStock'
 }
 
 /**
@@ -77,16 +74,16 @@ const getStockStatus = (
  */
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case "inStock":
-      return <Check className="w-4 h-4" />
-    case "lowStock":
-      return <AlertTriangle className="w-4 h-4" />
-    case "outOfStock":
-      return <XCircle className="w-4 h-4" />
-    case "preOrder":
-      return <Package className="w-4 h-4" />
+    case 'inStock':
+      return <Check className='w-4 h-4' />
+    case 'lowStock':
+      return <AlertTriangle className='w-4 h-4' />
+    case 'outOfStock':
+      return <XCircle className='w-4 h-4' />
+    case 'preOrder':
+      return <Package className='w-4 h-4' />
     default:
-      return <Check className="w-4 h-4" />
+      return <Check className='w-4 h-4' />
   }
 }
 
@@ -97,23 +94,19 @@ const getDefaultText = (
   status: string,
   quantity: number,
   showExactQuantity: boolean,
-  unit: string = "unidades"
+  unit: string = 'unidades'
 ): string => {
   switch (status) {
-    case "inStock":
-      return showExactQuantity 
-        ? `${quantity} ${unit} disponibles`
-        : "En stock"
-    case "lowStock":
-      return showExactQuantity 
-        ? `¡Solo ${quantity} ${unit} disponibles!`
-        : "Pocas unidades"
-    case "outOfStock":
-      return "Sin stock"
-    case "preOrder":
-      return "Disponible por encargo"
+    case 'inStock':
+      return showExactQuantity ? `${quantity} ${unit} disponibles` : 'En stock'
+    case 'lowStock':
+      return showExactQuantity ? `¡Solo ${quantity} ${unit} disponibles!` : 'Pocas unidades'
+    case 'outOfStock':
+      return 'Sin stock'
+    case 'preOrder':
+      return 'Disponible por encargo'
     default:
-      return "En stock"
+      return 'En stock'
   }
 }
 
@@ -124,11 +117,11 @@ const formatRestockDate = (date: Date): string => {
   const now = new Date()
   const diffTime = date.getTime() - now.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays <= 0) {
-    return "Disponible pronto"
+    return 'Disponible pronto'
   } else if (diffDays === 1) {
-    return "Disponible mañana"
+    return 'Disponible mañana'
   } else if (diffDays <= 7) {
     return `Disponible en ${diffDays} días`
   } else {
@@ -137,27 +130,26 @@ const formatRestockDate = (date: Date): string => {
 }
 
 const StockIndicator = React.forwardRef<HTMLDivElement, StockIndicatorProps>(
-  ({ 
-    className, 
-    variant, 
-    quantity,
-    lowStockThreshold = 5,
-    showExactQuantity = false,
-    customTexts = {},
-    showIcon = true,
-    allowPreOrder = false,
-    restockDate,
-    unit = "unidades",
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      variant,
+      quantity,
+      lowStockThreshold = 5,
+      showExactQuantity = false,
+      customTexts = {},
+      showIcon = true,
+      allowPreOrder = false,
+      restockDate,
+      unit = 'unidades',
+      ...props
+    },
+    ref
+  ) => {
     const status = getStockStatus(quantity, lowStockThreshold, allowPreOrder)
-    
-    const statusText = customTexts[status] || getDefaultText(
-      status, 
-      quantity, 
-      showExactQuantity, 
-      unit
-    )
+
+    const statusText =
+      customTexts[status] || getDefaultText(status, quantity, showExactQuantity, unit)
 
     return (
       <div
@@ -167,43 +159,33 @@ const StockIndicator = React.forwardRef<HTMLDivElement, StockIndicatorProps>(
       >
         {/* Ícono de estado */}
         {showIcon && getStatusIcon(status)}
-        
+
         {/* Texto principal */}
         <span>{statusText}</span>
-        
+
         {/* Información de reposición */}
-        {status === "outOfStock" && restockDate && (
-          <span className="text-xs text-muted-foreground ml-1">
+        {status === 'outOfStock' && restockDate && (
+          <span className='text-xs text-muted-foreground ml-1'>
             ({formatRestockDate(restockDate)})
           </span>
         )}
-        
+
         {/* Badge de estado para variante badge */}
-        {variant === "badge" && (
-          <div className={cn(
-            "absolute -top-1 -right-1 w-3 h-3 rounded-full",
-            {
-              "bg-green-500": status === "inStock",
-              "bg-yellow-500": status === "lowStock", 
-              "bg-red-500": status === "outOfStock",
-              "bg-blue-500": status === "preOrder",
-            }
-          )} />
+        {variant === 'badge' && (
+          <div
+            className={cn('absolute -top-1 -right-1 w-3 h-3 rounded-full', {
+              'bg-green-500': status === 'inStock',
+              'bg-yellow-500': status === 'lowStock',
+              'bg-red-500': status === 'outOfStock',
+              'bg-blue-500': status === 'preOrder',
+            })}
+          />
         )}
       </div>
     )
   }
 )
 
-StockIndicator.displayName = "StockIndicator"
+StockIndicator.displayName = 'StockIndicator'
 
 export { StockIndicator, stockIndicatorVariants }
-
-
-
-
-
-
-
-
-

@@ -154,7 +154,7 @@ describe('Ejemplo de Mocks Centralizados', () => {
     it('debe permitir testing de múltiples llamadas API', async () => {
       // Primera llamada: éxito
       mockSuccess(mockApiResponses.products.success)
-      
+
       // Segunda llamada: error
       mockError('Second call failed')
 
@@ -180,7 +180,7 @@ describe('Ejemplo de Mocks Centralizados', () => {
     it('debe reutilizar mocks entre diferentes hooks', () => {
       // Los mismos datos mock pueden usarse para diferentes hooks
       const productsData = mockApiResponses.products.success.data
-      
+
       expect(productsData).toHaveLength(3)
       expect(productsData[0]).toHaveProperty('name')
       expect(productsData[0]).toHaveProperty('price')
@@ -191,7 +191,7 @@ describe('Ejemplo de Mocks Centralizados', () => {
       const responses = [
         mockApiResponses.products.success,
         mockApiResponses.products.empty,
-        mockApiResponses.products.error
+        mockApiResponses.products.error,
       ]
 
       responses.forEach(response => {
@@ -209,38 +209,29 @@ describe('Ejemplo de Mocks Centralizados', () => {
 
 /**
  * MEJORES PRÁCTICAS PARA USAR MOCKS CENTRALIZADOS:
- * 
+ *
  * 1. SETUP CONSISTENTE:
  *    - Usar setupApiMocks() en beforeEach
  *    - Llamar resetMocks() para limpiar estado
- * 
+ *
  * 2. HELPERS ESPECÍFICOS:
  *    - mockSuccess() para respuestas exitosas
  *    - mockError() para errores de red
  *    - mockHttpError() para errores HTTP específicos
- * 
+ *
  * 3. DATOS REALISTAS:
  *    - Usar mockApiResponses.* para datos predefinidos
  *    - Mantener estructura consistente con API real
- * 
+ *
  * 4. CASOS EDGE:
  *    - Usar mockConfigurations.* para casos especiales
  *    - Testing de loading states con delayed responses
- * 
+ *
  * 5. REUTILIZACIÓN:
  *    - Importar mocks desde archivos centralizados
  *    - Evitar duplicar datos mock en cada test
- * 
+ *
  * 6. MANTENIMIENTO:
  *    - Actualizar mocks cuando cambie la API
  *    - Mantener sincronizados con tipos TypeScript
  */
-
-
-
-
-
-
-
-
-

@@ -5,84 +5,90 @@
 
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
-    dataLayer: any[];
+    gtag: (...args: any[]) => void
+    dataLayer: any[]
   }
 }
 
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || '';
+export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID || ''
 
 // Verificar si GA está habilitado y disponible
 export const isGAEnabled = (): boolean => {
-  return !!GA_TRACKING_ID && typeof window !== 'undefined' && typeof window.gtag === 'function';
-};
+  return !!GA_TRACKING_ID && typeof window !== 'undefined' && typeof window.gtag === 'function'
+}
 
 // Verificar si GA está listo para usar
 export const isGAReady = (): boolean => {
-  return typeof window !== 'undefined' &&
-         typeof window.gtag === 'function' &&
-         Array.isArray(window.dataLayer);
-};
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.gtag === 'function' &&
+    Array.isArray(window.dataLayer)
+  )
+}
 
 // Esperar a que GA esté listo
 export const waitForGA = (): Promise<void> => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (isGAReady()) {
-      resolve();
-      return;
+      resolve()
+      return
     }
 
     const checkGA = () => {
       if (isGAReady()) {
-        resolve();
+        resolve()
       } else {
-        setTimeout(checkGA, 100);
+        setTimeout(checkGA, 100)
       }
-    };
+    }
 
-    checkGA();
-  });
-};
+    checkGA()
+  })
+}
 
 // Inicializar Google Analytics
 export const initGA = (): void => {
-  if (!isGAEnabled()) {return;}
+  if (!isGAEnabled()) {
+    return
+  }
 
   // Crear dataLayer si no existe
-  window.dataLayer = window.dataLayer || [];
-  
+  window.dataLayer = window.dataLayer || []
+
   // Función gtag
   window.gtag = function gtag() {
-    window.dataLayer.push(arguments);
-  };
+    window.dataLayer.push(arguments)
+  }
 
   // Configuración inicial
-  window.gtag('js', new Date());
+  window.gtag('js', new Date())
   window.gtag('config', GA_TRACKING_ID, {
     page_title: document.title,
     page_location: window.location.href,
     send_page_view: false, // Manejamos page views manualmente
-  });
-};
+  })
+}
 
 // Trackear page view
 export const trackPageView = (url: string, title?: string): void => {
-  if (!isGAEnabled()) {return;}
+  if (!isGAEnabled()) {
+    return
+  }
 
   try {
     window.gtag('config', GA_TRACKING_ID, {
       page_title: title || document.title,
       page_location: url,
-    });
+    })
 
     window.gtag('event', 'page_view', {
       page_title: title || document.title,
       page_location: url,
-    });
+    })
   } catch (error) {
-    console.warn('Error tracking page view:', error);
+    console.warn('Error tracking page view:', error)
   }
-};
+}
 
 // Trackear evento personalizado
 export const trackEvent = (
@@ -92,7 +98,9 @@ export const trackEvent = (
   value?: number,
   customParameters?: Record<string, any>
 ): void => {
-  if (!isGAEnabled()) {return;}
+  if (!isGAEnabled()) {
+    return
+  }
 
   try {
     window.gtag('event', action, {
@@ -100,25 +108,24 @@ export const trackEvent = (
       event_label: label,
       value: value,
       ...customParameters,
-    });
+    })
   } catch (error) {
-    console.warn('Error tracking event:', error);
+    console.warn('Error tracking event:', error)
   }
-};
+}
 
 // Eventos específicos de e-commerce
-export const trackEcommerceEvent = (
-  eventName: string,
-  parameters: Record<string, any>
-): void => {
-  if (!isGAEnabled()) {return;}
+export const trackEcommerceEvent = (eventName: string, parameters: Record<string, any>): void => {
+  if (!isGAEnabled()) {
+    return
+  }
 
   try {
-    window.gtag('event', eventName, parameters);
+    window.gtag('event', eventName, parameters)
   } catch (error) {
-    console.warn('Error tracking ecommerce event:', error);
+    console.warn('Error tracking ecommerce event:', error)
   }
-};
+}
 
 // Trackear vista de producto
 export const trackProductView = (
@@ -140,8 +147,8 @@ export const trackProductView = (
         quantity: 1,
       },
     ],
-  });
-};
+  })
+}
 
 // Trackear agregar al carrito
 export const trackAddToCart = (
@@ -164,8 +171,8 @@ export const trackAddToCart = (
         quantity: quantity,
       },
     ],
-  });
-};
+  })
+}
 
 // Trackear remover del carrito
 export const trackRemoveFromCart = (
@@ -188,17 +195,17 @@ export const trackRemoveFromCart = (
         quantity: quantity,
       },
     ],
-  });
-};
+  })
+}
 
 // Trackear inicio de checkout
 export const trackBeginCheckout = (
   items: Array<{
-    item_id: string;
-    item_name: string;
-    item_category: string;
-    price: number;
-    quantity: number;
+    item_id: string
+    item_name: string
+    item_category: string
+    price: number
+    quantity: number
   }>,
   value: number,
   currency: string = 'ARS'
@@ -207,18 +214,18 @@ export const trackBeginCheckout = (
     currency,
     value,
     items,
-  });
-};
+  })
+}
 
 // Trackear compra completada
 export const trackPurchase = (
   transactionId: string,
   items: Array<{
-    item_id: string;
-    item_name: string;
-    item_category: string;
-    price: number;
-    quantity: number;
+    item_id: string
+    item_name: string
+    item_category: string
+    price: number
+    quantity: number
   }>,
   value: number,
   currency: string = 'ARS',
@@ -232,19 +239,16 @@ export const trackPurchase = (
     shipping: shipping || 0,
     tax: tax || 0,
     items,
-  });
-};
+  })
+}
 
 // Trackear búsqueda
-export const trackSearch = (
-  searchTerm: string,
-  resultsCount?: number
-): void => {
+export const trackSearch = (searchTerm: string, resultsCount?: number): void => {
   trackEvent('search', 'engagement', searchTerm, resultsCount, {
     search_term: searchTerm,
     results_count: resultsCount,
-  });
-};
+  })
+}
 
 // Trackear interacción con contenido
 export const trackContentInteraction = (
@@ -255,8 +259,8 @@ export const trackContentInteraction = (
   trackEvent(action, 'content', contentId, undefined, {
     content_type: contentType,
     content_id: contentId,
-  });
-};
+  })
+}
 
 // Trackear conversión personalizada
 export const trackConversion = (
@@ -267,88 +271,79 @@ export const trackConversion = (
   trackEvent('conversion', 'ecommerce', conversionName, value, {
     currency,
     conversion_name: conversionName,
-  });
-};
+  })
+}
 
 // Trackear tiempo en página
-export const trackTimeOnPage = (
-  timeInSeconds: number,
-  page: string
-): void => {
+export const trackTimeOnPage = (timeInSeconds: number, page: string): void => {
   trackEvent('time_on_page', 'engagement', page, timeInSeconds, {
     page_path: page,
     time_seconds: timeInSeconds,
-  });
-};
+  })
+}
 
 // Trackear scroll depth
-export const trackScrollDepth = (
-  percentage: number,
-  page: string
-): void => {
+export const trackScrollDepth = (percentage: number, page: string): void => {
   trackEvent('scroll_depth', 'engagement', page, percentage, {
     page_path: page,
     scroll_percentage: percentage,
-  });
-};
+  })
+}
 
 // Trackear error
-export const trackError = (
-  errorMessage: string,
-  errorType: string,
-  page: string
-): void => {
+export const trackError = (errorMessage: string, errorType: string, page: string): void => {
   trackEvent('exception', 'error', errorMessage, undefined, {
     description: errorMessage,
     error_type: errorType,
     page_path: page,
     fatal: false,
-  });
-};
+  })
+}
 
 // Configurar usuario
-export const setUserProperties = (
-  userId: string,
-  properties: Record<string, any>
-): void => {
-  if (!isGAEnabled()) {return;}
+export const setUserProperties = (userId: string, properties: Record<string, any>): void => {
+  if (!isGAEnabled()) {
+    return
+  }
 
   window.gtag('config', GA_TRACKING_ID, {
     user_id: userId,
     custom_map: properties,
-  });
-};
+  })
+}
 
 // Configurar consentimiento
 export const setConsent = (
   adStorage: 'granted' | 'denied',
   analyticsStorage: 'granted' | 'denied'
 ): void => {
-  if (!isGAEnabled()) {return;}
+  if (!isGAEnabled()) {
+    return
+  }
 
   window.gtag('consent', 'update', {
     ad_storage: adStorage,
     analytics_storage: analyticsStorage,
-  });
-};
+  })
+}
 
 // Utilidades para Enhanced Ecommerce
 export const enhancedEcommerce = {
   // Trackear vista de lista de productos
   viewItemList: (
     items: Array<{
-      item_id: string;
-      item_name: string;
-      item_category: string;
-      price: number;
-      index: number;
+      item_id: string
+      item_name: string
+      item_category: string
+      price: number
+      index: number
     }>,
     listName: string
   ) => {
     trackEcommerceEvent('view_item_list', {
       item_list_name: listName,
       items,
-    });
+    })
   },
 
   // Trackear click en producto de lista
@@ -369,7 +364,7 @@ export const enhancedEcommerce = {
           index,
         },
       ],
-    });
+    })
   },
 
   // Trackear promoción vista
@@ -384,7 +379,7 @@ export const enhancedEcommerce = {
       promotion_name: promotionName,
       creative_name: creativeName,
       creative_slot: creativeSlot,
-    });
+    })
   },
 
   // Trackear click en promoción
@@ -399,15 +394,6 @@ export const enhancedEcommerce = {
       promotion_name: promotionName,
       creative_name: creativeName,
       creative_slot: creativeSlot,
-    });
+    })
   },
-};
-
-
-
-
-
-
-
-
-
+}

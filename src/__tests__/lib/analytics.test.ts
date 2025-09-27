@@ -3,188 +3,188 @@
  * Verificación de la corrección del error de runtime en getElementInfo
  */
 
-import { analytics } from '@/lib/integrations/analytics';
+import { analytics } from '@/lib/integrations/analytics'
 
 // Mock del DOM para testing
 const mockElement = (props: {
-  id?: string;
-  className?: string | DOMTokenList;
-  tagName?: string;
-  getAttribute?: (attr: string) => string | null;
+  id?: string
+  className?: string | DOMTokenList
+  tagName?: string
+  getAttribute?: (attr: string) => string | null
 }) => {
   return {
     id: props.id || '',
     className: props.className || '',
     tagName: props.tagName || 'div',
     getAttribute: props.getAttribute || (() => null),
-  } as HTMLElement;
-};
+  } as HTMLElement
+}
 
 // Mock de DOMTokenList para simular el comportamiento real
 class MockDOMTokenList {
-  private classes: string[];
+  private classes: string[]
 
   constructor(classes: string[]) {
-    this.classes = classes;
+    this.classes = classes
   }
 
   toString(): string {
-    return this.classes.join(' ');
+    return this.classes.join(' ')
   }
 
   split(separator: string): string[] {
-    return this.toString().split(separator);
+    return this.toString().split(separator)
   }
 }
 
 describe('Analytics - getElementInfo', () => {
-  let analyticsManager: any;
+  let analyticsManager: any
 
   beforeEach(() => {
     // Acceder al método privado para testing
-    analyticsManager = analytics as any;
-  });
+    analyticsManager = analytics as any
+  })
 
   describe('Manejo de className como string', () => {
     it('debería manejar className como string simple', () => {
       const element = mockElement({
         id: 'test-button',
         className: 'btn btn-primary active',
-        tagName: 'BUTTON'
-      });
+        tagName: 'BUTTON',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('button#test-button.btn.btn-primary.active');
-    });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('button#test-button.btn.btn-primary.active')
+    })
 
     it('debería manejar className vacío', () => {
       const element = mockElement({
         id: 'test-div',
         className: '',
-        tagName: 'DIV'
-      });
+        tagName: 'DIV',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('div#test-div');
-    });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('div#test-div')
+    })
 
     it('debería manejar className con espacios extra', () => {
       const element = mockElement({
         className: '  btn   btn-large  active  ',
-        tagName: 'BUTTON'
-      });
+        tagName: 'BUTTON',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('button.btn.btn-large.active');
-    });
-  });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('button.btn.btn-large.active')
+    })
+  })
 
   describe('Manejo de className como DOMTokenList', () => {
     it('debería manejar DOMTokenList correctamente', () => {
-      const mockTokenList = new MockDOMTokenList(['btn', 'btn-primary', 'active']);
-      
+      const mockTokenList = new MockDOMTokenList(['btn', 'btn-primary', 'active'])
+
       const element = mockElement({
         id: 'test-button',
         className: mockTokenList as any,
-        tagName: 'BUTTON'
-      });
+        tagName: 'BUTTON',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('button#test-button.btn.btn-primary.active');
-    });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('button#test-button.btn.btn-primary.active')
+    })
 
     it('debería manejar DOMTokenList vacío', () => {
-      const mockTokenList = new MockDOMTokenList([]);
-      
+      const mockTokenList = new MockDOMTokenList([])
+
       const element = mockElement({
         id: 'test-div',
         className: mockTokenList as any,
-        tagName: 'DIV'
-      });
+        tagName: 'DIV',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('div#test-div');
-    });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('div#test-div')
+    })
 
     it('debería manejar DOMTokenList con clases vacías', () => {
-      const mockTokenList = new MockDOMTokenList(['btn', '', 'active', '  ']);
-      
+      const mockTokenList = new MockDOMTokenList(['btn', '', 'active', '  '])
+
       const element = mockElement({
         className: mockTokenList as any,
-        tagName: 'SPAN'
-      });
+        tagName: 'SPAN',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('span.btn.active');
-    });
-  });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('span.btn.active')
+    })
+  })
 
   describe('Manejo de data-analytics', () => {
     it('debería incluir data-analytics cuando está presente', () => {
       const element = mockElement({
         className: 'btn',
         tagName: 'BUTTON',
-        getAttribute: (attr: string) => attr === 'data-analytics' ? 'add-to-cart' : null
-      });
+        getAttribute: (attr: string) => (attr === 'data-analytics' ? 'add-to-cart' : null),
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('button.btn[add-to-cart]');
-    });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('button.btn[add-to-cart]')
+    })
 
     it('debería funcionar sin data-analytics', () => {
       const element = mockElement({
         className: 'btn',
         tagName: 'BUTTON',
-        getAttribute: () => null
-      });
+        getAttribute: () => null,
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('button.btn');
-    });
-  });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('button.btn')
+    })
+  })
 
   describe('Casos edge', () => {
     it('debería manejar elemento sin id ni className', () => {
       const element = mockElement({
-        tagName: 'DIV'
-      });
+        tagName: 'DIV',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('div');
-    });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('div')
+    })
 
     it('debería manejar tagName en mayúsculas', () => {
       const element = mockElement({
         className: 'container',
-        tagName: 'DIV'
-      });
+        tagName: 'DIV',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('div.container');
-    });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('div.container')
+    })
 
     it('debería manejar className undefined/null', () => {
       const element = mockElement({
         id: 'test',
         className: undefined as any,
-        tagName: 'SPAN'
-      });
+        tagName: 'SPAN',
+      })
 
-      const result = analyticsManager.getElementInfo(element);
-      
-      expect(result).toBe('span#test');
-    });
-  });
+      const result = analyticsManager.getElementInfo(element)
+
+      expect(result).toBe('span#test')
+    })
+  })
 
   describe('Compatibilidad con elementos reales del DOM', () => {
     it('debería funcionar con elementos button reales', () => {
@@ -193,24 +193,15 @@ describe('Analytics - getElementInfo', () => {
         id: 'real-button',
         className: {
           toString: () => 'btn btn-primary',
-          split: undefined // DOMTokenList no tiene split
+          split: undefined, // DOMTokenList no tiene split
         },
         tagName: 'BUTTON',
-        getAttribute: () => null
-      } as any;
+        getAttribute: () => null,
+      } as any
 
-      const result = analyticsManager.getElementInfo(realButton);
-      
-      expect(result).toBe('button#real-button.btn.btn-primary');
-    });
-  });
-});
+      const result = analyticsManager.getElementInfo(realButton)
 
-
-
-
-
-
-
-
-
+      expect(result).toBe('button#real-button.btn.btn-primary')
+    })
+  })
+})

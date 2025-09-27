@@ -2,17 +2,19 @@
 // PINTEYA E-COMMERCE - ADAPTADOR DE PRODUCTOS
 // ===================================
 
-import { Product } from '@/types/product';
-import { ProductWithCategory } from '@/types/api';
+import { Product } from '@/types/product'
+import { ProductWithCategory } from '@/types/api'
 
 /**
  * Convierte un producto de la API al formato esperado por los componentes
  * @param apiProduct - Producto desde la API
  * @returns Product - Producto en formato de componente
  */
-export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Product & { name?: string } {
+export function adaptApiProductToComponent(
+  apiProduct: ProductWithCategory
+): Product & { name?: string } {
   // Mapear correctamente las imágenes desde la estructura de BD a la estructura de componentes
-  const images = apiProduct.images || {};
+  const images = apiProduct.images || {}
 
   return {
     id: apiProduct.id,
@@ -22,15 +24,20 @@ export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Pro
     reviews: Math.floor(Math.random() * 50) + 1, // Temporal: generar reviews aleatorias
     price: apiProduct.price,
     // FIX CRÍTICO: Solo usar discounted_price si es menor que price, sino undefined
-    discountedPrice: (apiProduct.discounted_price && apiProduct.discounted_price < apiProduct.price) 
-      ? apiProduct.discounted_price 
-      : undefined,
+    discountedPrice:
+      apiProduct.discounted_price && apiProduct.discounted_price < apiProduct.price
+        ? apiProduct.discounted_price
+        : undefined,
     imgs: {
       // Mapear desde la estructura real de la BD: { main, gallery, thumbnail }
       thumbnails: images.thumbnail ? [images.thumbnail] : ['/images/products/placeholder.svg'],
-      previews: images.main ? [images.main] : (images.gallery?.[0] ? [images.gallery[0]] : ['/images/products/placeholder.svg']),
+      previews: images.main
+        ? [images.main]
+        : images.gallery?.[0]
+          ? [images.gallery[0]]
+          : ['/images/products/placeholder.svg'],
     },
-  };
+  }
 }
 
 /**
@@ -38,8 +45,10 @@ export function adaptApiProductToComponent(apiProduct: ProductWithCategory): Pro
  * @param apiProducts - Lista de productos desde la API
  * @returns Product[] - Lista de productos en formato de componente
  */
-export function adaptApiProductsToComponents(apiProducts: ProductWithCategory[]): (Product & { name?: string })[] {
-  return apiProducts.map(adaptApiProductToComponent);
+export function adaptApiProductsToComponents(
+  apiProducts: ProductWithCategory[]
+): (Product & { name?: string })[] {
+  return apiProducts.map(adaptApiProductToComponent)
 }
 
 /**
@@ -47,17 +56,20 @@ export function adaptApiProductsToComponents(apiProducts: ProductWithCategory[])
  * @param componentProduct - Producto en formato de componente
  * @returns Partial<ProductWithCategory> - Producto en formato de API
  */
-export function adaptComponentProductToApi(componentProduct: Product): Partial<ProductWithCategory> {
+export function adaptComponentProductToApi(
+  componentProduct: Product
+): Partial<ProductWithCategory> {
   return {
     id: componentProduct.id,
     name: componentProduct.title,
     price: componentProduct.price,
-    discounted_price: componentProduct.discountedPrice !== componentProduct.price 
-      ? componentProduct.discountedPrice 
-      : null,
+    discounted_price:
+      componentProduct.discountedPrice !== componentProduct.price
+        ? componentProduct.discountedPrice
+        : null,
     images: componentProduct.imgs,
     stock: 50, // Valor por defecto
-  };
+  }
 }
 
 /**
@@ -67,12 +79,12 @@ export function adaptComponentProductToApi(componentProduct: Product): Partial<P
  */
 export function hasDiscount(product: Product | ProductWithCategory): boolean {
   if ('discountedPrice' in product) {
-    return product.discountedPrice !== undefined && product.discountedPrice < product.price;
+    return product.discountedPrice !== undefined && product.discountedPrice < product.price
   }
   if ('discounted_price' in product) {
-    return product.discounted_price !== null && product.discounted_price < product.price;
+    return product.discounted_price !== null && product.discounted_price < product.price
   }
-  return false;
+  return false
 }
 
 /**
@@ -81,22 +93,22 @@ export function hasDiscount(product: Product | ProductWithCategory): boolean {
  * @returns number - Porcentaje de descuento
  */
 export function getDiscountPercentage(product: Product | ProductWithCategory): number {
-  let originalPrice: number;
-  let discountedPrice: number;
+  let originalPrice: number
+  let discountedPrice: number
 
   if ('discountedPrice' in product) {
-    originalPrice = product.price;
-    discountedPrice = product.discountedPrice;
+    originalPrice = product.price
+    discountedPrice = product.discountedPrice
   } else {
-    originalPrice = product.price;
-    discountedPrice = product.discounted_price || product.price;
+    originalPrice = product.price
+    discountedPrice = product.discounted_price || product.price
   }
 
   if (discountedPrice >= originalPrice) {
-    return 0;
+    return 0
   }
 
-  return Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
+  return Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
 }
 
 /**
@@ -106,9 +118,9 @@ export function getDiscountPercentage(product: Product | ProductWithCategory): n
  */
 export function getFinalPrice(product: Product | ProductWithCategory): number {
   if ('discountedPrice' in product) {
-    return product.discountedPrice;
+    return product.discountedPrice
   }
-  return product.discounted_price ?? product.price;
+  return product.discounted_price ?? product.price
 }
 
 /**
@@ -118,12 +130,12 @@ export function getFinalPrice(product: Product | ProductWithCategory): number {
  */
 export function getMainImage(product: Product | ProductWithCategory): string {
   if ('imgs' in product && product.imgs?.previews?.[0]) {
-    return product.imgs.previews[0];
+    return product.imgs.previews[0]
   }
   if ('images' in product && product.images?.previews?.[0]) {
-    return product.images.previews[0];
+    return product.images.previews[0]
   }
-  return '/images/products/placeholder.svg';
+  return '/images/products/placeholder.svg'
 }
 
 /**
@@ -132,12 +144,15 @@ export function getMainImage(product: Product | ProductWithCategory): string {
  * @param fallback - URL de fallback (por defecto: placeholder)
  * @returns string - URL de imagen válida
  */
-export function getValidImageUrl(imageUrl: string | undefined | null, fallback: string = '/images/products/placeholder.svg'): string {
+export function getValidImageUrl(
+  imageUrl: string | undefined | null,
+  fallback: string = '/images/products/placeholder.svg'
+): string {
   // Verificar si la imagen existe y no es una cadena vacía o solo espacios
   if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
-    return imageUrl.trim();
+    return imageUrl.trim()
   }
-  return fallback;
+  return fallback
 }
 
 /**
@@ -146,15 +161,15 @@ export function getValidImageUrl(imageUrl: string | undefined | null, fallback: 
  * @returns string - URL de la imagen thumbnail válida
  */
 export function getThumbnailImage(product: Product | ProductWithCategory): string {
-  let imageUrl: string | undefined;
+  let imageUrl: string | undefined
 
   if ('imgs' in product && product.imgs?.thumbnails?.[0]) {
-    imageUrl = product.imgs.thumbnails[0];
+    imageUrl = product.imgs.thumbnails[0]
   } else if ('images' in product && product.images?.thumbnails?.[0]) {
-    imageUrl = product.images.thumbnails[0];
+    imageUrl = product.images.thumbnails[0]
   }
 
-  return getValidImageUrl(imageUrl);
+  return getValidImageUrl(imageUrl)
 }
 
 /**
@@ -163,15 +178,15 @@ export function getThumbnailImage(product: Product | ProductWithCategory): strin
  * @returns string - URL de la imagen preview válida
  */
 export function getPreviewImage(product: Product | ProductWithCategory): string {
-  let imageUrl: string | undefined;
+  let imageUrl: string | undefined
 
   if ('imgs' in product && product.imgs?.previews?.[0]) {
-    imageUrl = product.imgs.previews[0];
+    imageUrl = product.imgs.previews[0]
   } else if ('images' in product && product.images?.previews?.[0]) {
-    imageUrl = product.images.previews[0];
+    imageUrl = product.images.previews[0]
   }
 
-  return getValidImageUrl(imageUrl);
+  return getValidImageUrl(imageUrl)
 }
 
 /**
@@ -185,7 +200,7 @@ export function formatPrice(price: number): string {
     currency: 'ARS',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(price)
 }
 
 /**
@@ -201,14 +216,5 @@ export function generateSlug(name: string): string {
     .replace(/[^a-z0-9\s-]/g, '') // Remover caracteres especiales
     .replace(/\s+/g, '-') // Reemplazar espacios con guiones
     .replace(/-+/g, '-') // Remover guiones múltiples
-    .replace(/^-|-$/g, ''); // Remover guiones al inicio y final
+    .replace(/^-|-$/g, '') // Remover guiones al inicio y final
 }
-
-
-
-
-
-
-
-
-

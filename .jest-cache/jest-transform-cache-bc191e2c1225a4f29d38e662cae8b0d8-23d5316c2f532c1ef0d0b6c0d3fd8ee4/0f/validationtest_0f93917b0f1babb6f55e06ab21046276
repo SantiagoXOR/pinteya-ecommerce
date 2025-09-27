@@ -1,0 +1,49 @@
+5f4d41556ff1427a8aae070fe84b279b
+// ===================================
+// PINTEYA E-COMMERCE - TESTS PARA VALIDATION UTILS
+// ===================================
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _validation = require("../../lib/utils/validation");
+describe('Validation Utils', ()=>{
+    describe('validateEmail', ()=>{
+        it('should validate correct email formats', ()=>{
+            expect((0, _validation.validateEmail)('test@example.com')).toBe(true);
+            expect((0, _validation.validateEmail)('user.name@domain.co.ar')).toBe(true);
+            expect((0, _validation.validateEmail)('juan.perez@test.com')).toBe(true);
+        });
+        it('should reject invalid email formats', ()=>{
+            expect((0, _validation.validateEmail)('invalid-email')).toBe(false);
+            expect((0, _validation.validateEmail)('test@')).toBe(false);
+            expect((0, _validation.validateEmail)('@domain.com')).toBe(false);
+        });
+    });
+    describe('validatePhoneNumber', ()=>{
+        it('should validate Argentine phone formats', ()=>{
+            // Formato que causó el error en el reporte
+            expect((0, _validation.validatePhoneNumber)('+54 351 123-4567')).toBe(true);
+            // Otros formatos válidos
+            expect((0, _validation.validatePhoneNumber)('+54 9 351 123 4567')).toBe(true);
+            expect((0, _validation.validatePhoneNumber)('+54 351 123 4567')).toBe(true);
+            expect((0, _validation.validatePhoneNumber)('351 123 4567')).toBe(true);
+            expect((0, _validation.validatePhoneNumber)('3511234567')).toBe(true);
+            expect((0, _validation.validatePhoneNumber)('+543511234567')).toBe(true);
+            expect((0, _validation.validatePhoneNumber)('+5493511234567')).toBe(true);
+        });
+        it('should reject invalid phone formats', ()=>{
+            expect((0, _validation.validatePhoneNumber)('123')).toBe(false);
+            expect((0, _validation.validatePhoneNumber)('abc123456789')).toBe(false);
+            expect((0, _validation.validatePhoneNumber)('')).toBe(false);
+            expect((0, _validation.validatePhoneNumber)('12345')).toBe(false);
+        });
+        it('should handle phone numbers with various separators', ()=>{
+            expect((0, _validation.validatePhoneNumber)('+54-351-123-4567')).toBe(true);
+            expect((0, _validation.validatePhoneNumber)('+54 (351) 123-4567')).toBe(true);
+            expect((0, _validation.validatePhoneNumber)('351-123-4567')).toBe(true);
+        });
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcX190ZXN0c19fXFx1dGlsc1xcdmFsaWRhdGlvbi50ZXN0LnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG4vLyBQSU5URVlBIEUtQ09NTUVSQ0UgLSBURVNUUyBQQVJBIFZBTElEQVRJT04gVVRJTFNcbi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09XG5cbmltcG9ydCB7IHZhbGlkYXRlRW1haWwsIHZhbGlkYXRlUGhvbmVOdW1iZXIgfSBmcm9tICdAL2xpYi91dGlscy92YWxpZGF0aW9uJ1xuXG5kZXNjcmliZSgnVmFsaWRhdGlvbiBVdGlscycsICgpID0+IHtcbiAgZGVzY3JpYmUoJ3ZhbGlkYXRlRW1haWwnLCAoKSA9PiB7XG4gICAgaXQoJ3Nob3VsZCB2YWxpZGF0ZSBjb3JyZWN0IGVtYWlsIGZvcm1hdHMnLCAoKSA9PiB7XG4gICAgICBleHBlY3QodmFsaWRhdGVFbWFpbCgndGVzdEBleGFtcGxlLmNvbScpKS50b0JlKHRydWUpXG4gICAgICBleHBlY3QodmFsaWRhdGVFbWFpbCgndXNlci5uYW1lQGRvbWFpbi5jby5hcicpKS50b0JlKHRydWUpXG4gICAgICBleHBlY3QodmFsaWRhdGVFbWFpbCgnanVhbi5wZXJlekB0ZXN0LmNvbScpKS50b0JlKHRydWUpXG4gICAgfSlcblxuICAgIGl0KCdzaG91bGQgcmVqZWN0IGludmFsaWQgZW1haWwgZm9ybWF0cycsICgpID0+IHtcbiAgICAgIGV4cGVjdCh2YWxpZGF0ZUVtYWlsKCdpbnZhbGlkLWVtYWlsJykpLnRvQmUoZmFsc2UpXG4gICAgICBleHBlY3QodmFsaWRhdGVFbWFpbCgndGVzdEAnKSkudG9CZShmYWxzZSlcbiAgICAgIGV4cGVjdCh2YWxpZGF0ZUVtYWlsKCdAZG9tYWluLmNvbScpKS50b0JlKGZhbHNlKVxuICAgIH0pXG4gIH0pXG5cbiAgZGVzY3JpYmUoJ3ZhbGlkYXRlUGhvbmVOdW1iZXInLCAoKSA9PiB7XG4gICAgaXQoJ3Nob3VsZCB2YWxpZGF0ZSBBcmdlbnRpbmUgcGhvbmUgZm9ybWF0cycsICgpID0+IHtcbiAgICAgIC8vIEZvcm1hdG8gcXVlIGNhdXPDsyBlbCBlcnJvciBlbiBlbCByZXBvcnRlXG4gICAgICBleHBlY3QodmFsaWRhdGVQaG9uZU51bWJlcignKzU0IDM1MSAxMjMtNDU2NycpKS50b0JlKHRydWUpXG5cbiAgICAgIC8vIE90cm9zIGZvcm1hdG9zIHbDoWxpZG9zXG4gICAgICBleHBlY3QodmFsaWRhdGVQaG9uZU51bWJlcignKzU0IDkgMzUxIDEyMyA0NTY3JykpLnRvQmUodHJ1ZSlcbiAgICAgIGV4cGVjdCh2YWxpZGF0ZVBob25lTnVtYmVyKCcrNTQgMzUxIDEyMyA0NTY3JykpLnRvQmUodHJ1ZSlcbiAgICAgIGV4cGVjdCh2YWxpZGF0ZVBob25lTnVtYmVyKCczNTEgMTIzIDQ1NjcnKSkudG9CZSh0cnVlKVxuICAgICAgZXhwZWN0KHZhbGlkYXRlUGhvbmVOdW1iZXIoJzM1MTEyMzQ1NjcnKSkudG9CZSh0cnVlKVxuICAgICAgZXhwZWN0KHZhbGlkYXRlUGhvbmVOdW1iZXIoJys1NDM1MTEyMzQ1NjcnKSkudG9CZSh0cnVlKVxuICAgICAgZXhwZWN0KHZhbGlkYXRlUGhvbmVOdW1iZXIoJys1NDkzNTExMjM0NTY3JykpLnRvQmUodHJ1ZSlcbiAgICB9KVxuXG4gICAgaXQoJ3Nob3VsZCByZWplY3QgaW52YWxpZCBwaG9uZSBmb3JtYXRzJywgKCkgPT4ge1xuICAgICAgZXhwZWN0KHZhbGlkYXRlUGhvbmVOdW1iZXIoJzEyMycpKS50b0JlKGZhbHNlKVxuICAgICAgZXhwZWN0KHZhbGlkYXRlUGhvbmVOdW1iZXIoJ2FiYzEyMzQ1Njc4OScpKS50b0JlKGZhbHNlKVxuICAgICAgZXhwZWN0KHZhbGlkYXRlUGhvbmVOdW1iZXIoJycpKS50b0JlKGZhbHNlKVxuICAgICAgZXhwZWN0KHZhbGlkYXRlUGhvbmVOdW1iZXIoJzEyMzQ1JykpLnRvQmUoZmFsc2UpXG4gICAgfSlcblxuICAgIGl0KCdzaG91bGQgaGFuZGxlIHBob25lIG51bWJlcnMgd2l0aCB2YXJpb3VzIHNlcGFyYXRvcnMnLCAoKSA9PiB7XG4gICAgICBleHBlY3QodmFsaWRhdGVQaG9uZU51bWJlcignKzU0LTM1MS0xMjMtNDU2NycpKS50b0JlKHRydWUpXG4gICAgICBleHBlY3QodmFsaWRhdGVQaG9uZU51bWJlcignKzU0ICgzNTEpIDEyMy00NTY3JykpLnRvQmUodHJ1ZSlcbiAgICAgIGV4cGVjdCh2YWxpZGF0ZVBob25lTnVtYmVyKCczNTEtMTIzLTQ1NjcnKSkudG9CZSh0cnVlKVxuICAgIH0pXG4gIH0pXG59KVxuIl0sIm5hbWVzIjpbImRlc2NyaWJlIiwiaXQiLCJleHBlY3QiLCJ2YWxpZGF0ZUVtYWlsIiwidG9CZSIsInZhbGlkYXRlUGhvbmVOdW1iZXIiXSwibWFwcGluZ3MiOiJBQUFBLHNDQUFzQztBQUN0QyxtREFBbUQ7QUFDbkQsc0NBQXNDOzs7Ozs0QkFFYTtBQUVuREEsU0FBUyxvQkFBb0I7SUFDM0JBLFNBQVMsaUJBQWlCO1FBQ3hCQyxHQUFHLHlDQUF5QztZQUMxQ0MsT0FBT0MsSUFBQUEseUJBQWEsRUFBQyxxQkFBcUJDLElBQUksQ0FBQztZQUMvQ0YsT0FBT0MsSUFBQUEseUJBQWEsRUFBQywyQkFBMkJDLElBQUksQ0FBQztZQUNyREYsT0FBT0MsSUFBQUEseUJBQWEsRUFBQyx3QkFBd0JDLElBQUksQ0FBQztRQUNwRDtRQUVBSCxHQUFHLHVDQUF1QztZQUN4Q0MsT0FBT0MsSUFBQUEseUJBQWEsRUFBQyxrQkFBa0JDLElBQUksQ0FBQztZQUM1Q0YsT0FBT0MsSUFBQUEseUJBQWEsRUFBQyxVQUFVQyxJQUFJLENBQUM7WUFDcENGLE9BQU9DLElBQUFBLHlCQUFhLEVBQUMsZ0JBQWdCQyxJQUFJLENBQUM7UUFDNUM7SUFDRjtJQUVBSixTQUFTLHVCQUF1QjtRQUM5QkMsR0FBRywyQ0FBMkM7WUFDNUMsMkNBQTJDO1lBQzNDQyxPQUFPRyxJQUFBQSwrQkFBbUIsRUFBQyxxQkFBcUJELElBQUksQ0FBQztZQUVyRCx5QkFBeUI7WUFDekJGLE9BQU9HLElBQUFBLCtCQUFtQixFQUFDLHVCQUF1QkQsSUFBSSxDQUFDO1lBQ3ZERixPQUFPRyxJQUFBQSwrQkFBbUIsRUFBQyxxQkFBcUJELElBQUksQ0FBQztZQUNyREYsT0FBT0csSUFBQUEsK0JBQW1CLEVBQUMsaUJBQWlCRCxJQUFJLENBQUM7WUFDakRGLE9BQU9HLElBQUFBLCtCQUFtQixFQUFDLGVBQWVELElBQUksQ0FBQztZQUMvQ0YsT0FBT0csSUFBQUEsK0JBQW1CLEVBQUMsa0JBQWtCRCxJQUFJLENBQUM7WUFDbERGLE9BQU9HLElBQUFBLCtCQUFtQixFQUFDLG1CQUFtQkQsSUFBSSxDQUFDO1FBQ3JEO1FBRUFILEdBQUcsdUNBQXVDO1lBQ3hDQyxPQUFPRyxJQUFBQSwrQkFBbUIsRUFBQyxRQUFRRCxJQUFJLENBQUM7WUFDeENGLE9BQU9HLElBQUFBLCtCQUFtQixFQUFDLGlCQUFpQkQsSUFBSSxDQUFDO1lBQ2pERixPQUFPRyxJQUFBQSwrQkFBbUIsRUFBQyxLQUFLRCxJQUFJLENBQUM7WUFDckNGLE9BQU9HLElBQUFBLCtCQUFtQixFQUFDLFVBQVVELElBQUksQ0FBQztRQUM1QztRQUVBSCxHQUFHLHVEQUF1RDtZQUN4REMsT0FBT0csSUFBQUEsK0JBQW1CLEVBQUMscUJBQXFCRCxJQUFJLENBQUM7WUFDckRGLE9BQU9HLElBQUFBLCtCQUFtQixFQUFDLHVCQUF1QkQsSUFBSSxDQUFDO1lBQ3ZERixPQUFPRyxJQUFBQSwrQkFBbUIsRUFBQyxpQkFBaUJELElBQUksQ0FBQztRQUNuRDtJQUNGO0FBQ0YifQ==

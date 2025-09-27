@@ -4,8 +4,8 @@
  * Optimizado para producción con logging mejorado
  */
 
-import { NextResponse } from "next/server"
-import { createErrorSuppressionMiddleware } from "@/lib/middleware/error-suppression"
+import { NextResponse } from 'next/server'
+import { createErrorSuppressionMiddleware } from '@/lib/middleware/error-suppression'
 
 export const config = {
   matcher: [
@@ -22,24 +22,15 @@ export const config = {
 
 export default function middleware(req: any) {
   const { nextUrl } = req
-  
+
   // Aplicar supresión de errores
-  const errorSuppressionMiddleware = createErrorSuppressionMiddleware();
+  const errorSuppressionMiddleware = createErrorSuppressionMiddleware()
 
   // Simplificado para evitar problemas con edge runtime
   console.log(`[Middleware] ${nextUrl.pathname}`)
-  
-  const response = NextResponse.next();
+
+  const response = NextResponse.next()
   // Aplicar headers de supresión de errores
-  response.headers.set('X-Error-Suppression', 'enabled');
-  return response;
+  response.headers.set('X-Error-Suppression', 'enabled')
+  return response
 }
-
-
-
-
-
-
-
-
-

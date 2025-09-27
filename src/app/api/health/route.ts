@@ -1,5 +1,5 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // HEALTH CHECK ENDPOINT
@@ -12,16 +12,6 @@ export async function GET() {
     status: 'ok',
     timestamp: new Date().toISOString(),
     service: 'pinteya-ecommerce',
-    version: '1.0.0'
+    version: '1.0.0',
   })
 }
-
-
-
-
-
-
-
-
-
-

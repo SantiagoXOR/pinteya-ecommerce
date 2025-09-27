@@ -3,29 +3,29 @@
 // ===================================
 // Configuración avanzada de webpack para optimización de bundles
 
-import type { Configuration } from 'webpack';
+import type { Configuration } from 'webpack'
 
 // ===================================
 // INTERFACES Y TIPOS
 // ===================================
 
 export interface WebpackOptimizationOptions {
-  enableAdvancedSplitting: boolean;
-  enableTreeShaking: boolean;
-  enableCompression: boolean;
-  enableCaching: boolean;
-  enablePreloading: boolean;
-  performanceMode: 'development' | 'production' | 'analysis';
-  customChunks?: CustomChunkConfig[];
+  enableAdvancedSplitting: boolean
+  enableTreeShaking: boolean
+  enableCompression: boolean
+  enableCaching: boolean
+  enablePreloading: boolean
+  performanceMode: 'development' | 'production' | 'analysis'
+  customChunks?: CustomChunkConfig[]
 }
 
 export interface CustomChunkConfig {
-  name: string;
-  test: RegExp;
-  priority: number;
-  minSize?: number;
-  maxSize?: number;
-  enforce?: boolean;
+  name: string
+  test: RegExp
+  priority: number
+  minSize?: number
+  maxSize?: number
+  enforce?: boolean
 }
 
 // ===================================
@@ -41,8 +41,8 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
     maxAsyncRequests: 30,
     maxInitialRequests: 30,
     enforceSizeThreshold: 50000,
-    cacheGroups: {}
-  };
+    cacheGroups: {},
+  }
 
   // ===================================
   // CACHE GROUPS OPTIMIZADOS
@@ -56,7 +56,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       priority: 40,
       chunks: 'all',
       enforce: true,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Vendor libraries críticas
@@ -67,7 +67,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       chunks: 'all',
       minSize: 30000,
       maxSize: 200000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // UI Components (Radix UI, Lucide)
@@ -77,7 +77,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       priority: 35,
       chunks: 'all',
       enforce: true,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Charts y visualización
@@ -87,7 +87,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       priority: 30,
       chunks: 'all',
       minSize: 50000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Mapas y geolocalización
@@ -97,7 +97,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       priority: 30,
       chunks: 'all',
       minSize: 100000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Utilidades y helpers
@@ -108,7 +108,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       chunks: 'all',
       minSize: 20000,
       maxSize: 100000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Animaciones
@@ -118,7 +118,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       priority: 25,
       chunks: 'all',
       minSize: 50000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Forms y validación
@@ -128,7 +128,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       priority: 25,
       chunks: 'all',
       minSize: 30000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Auth y seguridad
@@ -138,7 +138,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       priority: 30,
       chunks: 'all',
       minSize: 40000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Componentes de aplicación específicos
@@ -149,7 +149,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       chunks: 'all',
       minSize: 30000,
       maxSize: 150000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Sistema de diseño (UI components)
@@ -160,7 +160,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       chunks: 'all',
       minSize: 20000,
       maxSize: 100000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Hooks y utilidades de aplicación
@@ -171,7 +171,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       chunks: 'all',
       minSize: 20000,
       maxSize: 80000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Admin panel específico
@@ -182,7 +182,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       chunks: 'async',
       minSize: 40000,
       maxSize: 200000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // E-commerce específico
@@ -193,7 +193,7 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       chunks: 'all',
       minSize: 30000,
       maxSize: 150000,
-      reuseExistingChunk: true
+      reuseExistingChunk: true,
     },
 
     // Páginas comunes
@@ -205,9 +205,9 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
       minSize: 30000,
       maxSize: 100000,
       minChunks: 2,
-      reuseExistingChunk: true
-    }
-  };
+      reuseExistingChunk: true,
+    },
+  }
 
   // Agregar chunks personalizados si se proporcionan
   if (options.customChunks) {
@@ -220,28 +220,30 @@ export function getAdvancedSplitChunksConfig(options: WebpackOptimizationOptions
         minSize: chunk.minSize || 20000,
         maxSize: chunk.maxSize || 250000,
         enforce: chunk.enforce || false,
-        reuseExistingChunk: true
-      };
-    });
+        reuseExistingChunk: true,
+      }
+    })
   }
 
   return {
     ...baseConfig,
-    cacheGroups
-  };
+    cacheGroups,
+  }
 }
 
 // ===================================
 // CONFIGURACIÓN DE OPTIMIZACIÓN
 // ===================================
 
-export function getOptimizationConfig(options: WebpackOptimizationOptions): Configuration['optimization'] {
-  const isProduction = options.performanceMode === 'production';
-  const isAnalysis = options.performanceMode === 'analysis';
+export function getOptimizationConfig(
+  options: WebpackOptimizationOptions
+): Configuration['optimization'] {
+  const isProduction = options.performanceMode === 'production'
+  const isAnalysis = options.performanceMode === 'analysis'
 
   return {
     // Split chunks avanzado
-    splitChunks: options.enableAdvancedSplitting 
+    splitChunks: options.enableAdvancedSplitting
       ? getAdvancedSplitChunksConfig(options)
       : undefined,
 
@@ -283,19 +285,21 @@ export function getOptimizationConfig(options: WebpackOptimizationOptions): Conf
       splitChunks: {
         ...getAdvancedSplitChunksConfig(options),
         maxSize: 1000000, // Chunks más grandes para análisis
-        hidePathInfo: false
-      }
-    })
-  };
+        hidePathInfo: false,
+      },
+    }),
+  }
 }
 
 // ===================================
 // CONFIGURACIÓN DE PERFORMANCE
 // ===================================
 
-export function getPerformanceConfig(options: WebpackOptimizationOptions): Configuration['performance'] {
+export function getPerformanceConfig(
+  options: WebpackOptimizationOptions
+): Configuration['performance'] {
   if (options.performanceMode === 'development') {
-    return false;
+    return false
   }
 
   return {
@@ -304,9 +308,9 @@ export function getPerformanceConfig(options: WebpackOptimizationOptions): Confi
     maxAssetSize: 250000, // 250KB
     assetFilter: (assetFilename: string) => {
       // Solo analizar archivos JS y CSS
-      return /\.(js|css)$/.test(assetFilename);
-    }
-  };
+      return /\.(js|css)$/.test(assetFilename)
+    },
+  }
 }
 
 // ===================================
@@ -322,9 +326,9 @@ export function getResolveConfig(options: WebpackOptimizationOptions): Configura
     alias: {
       // Optimizaciones específicas para librerías pesadas
       ...(options.enableTreeShaking && {
-        'lodash': 'lodash-es',
-        'date-fns': 'date-fns/esm'
-      })
+        lodash: 'lodash-es',
+        'date-fns': 'date-fns/esm',
+      }),
     },
 
     // Módulos principales
@@ -340,9 +344,9 @@ export function getResolveConfig(options: WebpackOptimizationOptions): Configura
       path: false,
       crypto: false,
       stream: false,
-      buffer: false
-    }
-  };
+      buffer: false,
+    },
+  }
 }
 
 // ===================================
@@ -350,20 +354,15 @@ export function getResolveConfig(options: WebpackOptimizationOptions): Configura
 // ===================================
 
 export function getModuleRulesOptimization(options: WebpackOptimizationOptions) {
-  const rules = [];
+  const rules = []
 
   // Tree shaking para módulos específicos
   if (options.enableTreeShaking) {
     rules.push({
       test: /\.js$/,
-      include: [
-        /node_modules\/lodash-es/,
-        /node_modules\/date-fns/,
-        /src\/lib/,
-        /src\/utils/
-      ],
-      sideEffects: false
-    });
+      include: [/node_modules\/lodash-es/, /node_modules\/date-fns/, /src\/lib/, /src\/utils/],
+      sideEffects: false,
+    })
   }
 
   // Optimización de imports
@@ -375,22 +374,30 @@ export function getModuleRulesOptimization(options: WebpackOptimizationOptions) 
       options: {
         plugins: [
           // Plugin para optimizar imports de librerías
-          ['import', {
-            libraryName: 'lodash',
-            libraryDirectory: '',
-            camel2DashComponentName: false
-          }, 'lodash'],
-          ['import', {
-            libraryName: 'date-fns',
-            libraryDirectory: '',
-            camel2DashComponentName: false
-          }, 'date-fns']
-        ]
-      }
-    }
-  });
+          [
+            'import',
+            {
+              libraryName: 'lodash',
+              libraryDirectory: '',
+              camel2DashComponentName: false,
+            },
+            'lodash',
+          ],
+          [
+            'import',
+            {
+              libraryName: 'date-fns',
+              libraryDirectory: '',
+              camel2DashComponentName: false,
+            },
+            'date-fns',
+          ],
+        ],
+      },
+    },
+  })
 
-  return rules;
+  return rules
 }
 
 // ===================================
@@ -405,21 +412,18 @@ export function createOptimizedWebpackConfig(
     ...baseConfig,
     optimization: {
       ...baseConfig.optimization,
-      ...getOptimizationConfig(options)
+      ...getOptimizationConfig(options),
     },
     performance: getPerformanceConfig(options),
     resolve: {
       ...baseConfig.resolve,
-      ...getResolveConfig(options)
+      ...getResolveConfig(options),
     },
     module: {
       ...baseConfig.module,
-      rules: [
-        ...(baseConfig.module?.rules || []),
-        ...getModuleRulesOptimization(options)
-      ]
-    }
-  };
+      rules: [...(baseConfig.module?.rules || []), ...getModuleRulesOptimization(options)],
+    },
+  }
 }
 
 // ===================================
@@ -433,7 +437,7 @@ export const OPTIMIZATION_PRESETS = {
     enableCompression: false,
     enableCaching: true,
     enablePreloading: false,
-    performanceMode: 'development' as const
+    performanceMode: 'development' as const,
   },
 
   production: {
@@ -442,7 +446,7 @@ export const OPTIMIZATION_PRESETS = {
     enableCompression: true,
     enableCaching: true,
     enablePreloading: true,
-    performanceMode: 'production' as const
+    performanceMode: 'production' as const,
   },
 
   analysis: {
@@ -451,15 +455,6 @@ export const OPTIMIZATION_PRESETS = {
     enableCompression: false,
     enableCaching: false,
     enablePreloading: false,
-    performanceMode: 'analysis' as const
-  }
-} as const;
-
-
-
-
-
-
-
-
-
+    performanceMode: 'analysis' as const,
+  },
+} as const

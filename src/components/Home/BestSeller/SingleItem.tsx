@@ -1,36 +1,36 @@
-"use client";
-import React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Product } from "@/types/product";
-import { useCartActions } from "@/hooks/useCartActions";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
-import { updateQuickView } from "@/redux/features/quickView-slice";
-import { addItemToCart } from "@/redux/features/cart-slice";
+'use client'
+import React from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Product } from '@/types/product'
+import { useCartActions } from '@/hooks/useCartActions'
+import { useAnalytics } from '@/hooks/useAnalytics'
+import { useDispatch } from 'react-redux'
+import { AppDispatch } from '@/redux/store'
+import { updateQuickView } from '@/redux/features/quickView-slice'
+import { addItemToCart } from '@/redux/features/cart-slice'
 
 interface SingleItemProps {
-  product: Product;
+  product: Product
 }
 
 const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
-  const { addToCart } = useCartActions();
-  const { trackEvent } = useAnalytics();
-  const dispatch = useDispatch<AppDispatch>();
+  const { addToCart } = useCartActions()
+  const { trackEvent } = useAnalytics()
+  const dispatch = useDispatch<AppDispatch>()
 
   // Validar que product existe
   if (!product) {
-    return null;
+    return null
   }
 
   // Usar product directamente
-  const item = product;
+  const item = product
 
   // update the QuickView state
   const handleQuickViewUpdate = () => {
-    dispatch(updateQuickView({ ...item }));
-  };
+    dispatch(updateQuickView({ ...item }))
+  }
 
   // add to cart
   const handleAddToCart = () => {
@@ -39,30 +39,27 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
         ...item,
         quantity: 1,
       })
-    );
-  };
+    )
+  }
 
   const handleItemToWishList = () => {
     dispatch(
       addItemToWishlist({
         ...item,
-        status: "available",
+        status: 'available',
         quantity: 1,
       })
-    );
-  };
+    )
+  }
 
   // Calcular descuento si existe
-  const discount = item.discountedPrice && item.discountedPrice < item.price
-    ? Math.round(((item.price - item.discountedPrice) / item.price) * 100)
-    : undefined;
+  const discount =
+    item.discountedPrice && item.discountedPrice < item.price
+      ? Math.round(((item.price - item.discountedPrice) / item.price) * 100)
+      : undefined
 
   // Badge para best sellers - usar precio base para envío gratis
-  const badge = discount
-    ? "Best Seller"
-    : item.price >= 15000
-    ? "Envío gratis"
-    : "Destacado";
+  const badge = discount ? 'Best Seller' : item.price >= 15000 ? 'Envío gratis' : 'Destacado'
 
   return (
     <CommercialProductCard
@@ -71,32 +68,33 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
       price={item.discountedPrice}
       originalPrice={item.discountedPrice < item.price ? item.price : undefined}
       discount={discount ? `${discount}%` : undefined}
-      isNew={badge === "Destacado"}
+      isNew={badge === 'Destacado'}
       stock={50} // Stock por defecto para productos legacy
       productId={item.id}
-      cta="Agregar al carrito"
+      cta='Agregar al carrito'
       onAddToCart={handleAddToCart}
       showCartAnimation={true}
       // Información de cuotas automática
-      installments={item.discountedPrice >= 5000 ? {
-        quantity: 3,
-        amount: Math.round(item.discountedPrice / 3),
-        interestFree: true
-      } : undefined}
+      installments={
+        item.discountedPrice >= 5000
+          ? {
+              quantity: 3,
+              amount: Math.round(item.discountedPrice / 3),
+              interestFree: true,
+            }
+          : undefined
+      }
       // Envío gratis automático para productos >= $15000
       freeShipping={item.discountedPrice >= 15000}
-      shippingText={badge === "Envío gratis" ? "Envío gratis" : badge === "Best Seller" ? "Best Seller" : undefined}
+      shippingText={
+        badge === 'Envío gratis'
+          ? 'Envío gratis'
+          : badge === 'Best Seller'
+            ? 'Best Seller'
+            : undefined
+      }
     />
-  );
-};
+  )
+}
 
-export default SingleItem;
-
-
-
-
-
-
-
-
-
+export default SingleItem

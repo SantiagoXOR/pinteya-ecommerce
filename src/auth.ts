@@ -1,17 +1,17 @@
-import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
-import { SupabaseAdapter } from "./lib/integrations/supabase/supabase-adapter"
+import NextAuth from 'next-auth'
+import Google from 'next-auth/providers/google'
+import { SupabaseAdapter } from './lib/integrations/supabase/supabase-adapter'
 
 // Validación de variables de entorno requeridas
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl) {
-  throw new Error("NEXT_PUBLIC_SUPABASE_URL is required but not defined")
+  throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not defined')
 }
 
 if (!supabaseServiceRoleKey) {
-  throw new Error("SUPABASE_SERVICE_ROLE_KEY is required but not defined")
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is required but not defined')
 }
 
 const nextAuth = NextAuth({
@@ -25,14 +25,14 @@ const nextAuth = NextAuth({
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       authorization: {
         params: {
-          prompt: "select_account",
+          prompt: 'select_account',
         },
       },
     }),
   ],
   pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
+    signIn: '/auth/signin',
+    error: '/auth/error',
   },
   callbacks: {
     async jwt({ token, user, account }) {
@@ -53,7 +53,7 @@ const nextAuth = NextAuth({
     },
     async signIn({ user, account, profile }) {
       // Permitir el sign-in para todos los usuarios de Google
-      if (account?.provider === "google") {
+      if (account?.provider === 'google') {
         return true
       }
       return false
@@ -61,14 +61,14 @@ const nextAuth = NextAuth({
   },
   events: {
     async signIn({ user, account, profile }) {
-      console.log("Usuario autenticado:", user.email)
+      console.log('Usuario autenticado:', user.email)
     },
     async signOut({ session, token }) {
-      console.log("Usuario desconectado")
+      console.log('Usuario desconectado')
     },
   },
   session: {
-    strategy: "jwt" as const,
+    strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
   jwt: {
@@ -79,7 +79,7 @@ const nextAuth = NextAuth({
 export const { auth, handlers, signIn, signOut } = nextAuth
 
 // Tipos TypeScript para extender la sesión
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session {
     supabaseAccessToken?: string
     user: {
@@ -91,17 +91,8 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   interface JWT {
     sub: string
   }
 }
-
-
-
-
-
-
-
-
-

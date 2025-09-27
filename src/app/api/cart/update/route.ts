@@ -1,14 +1,14 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // PINTEYA E-COMMERCE - API ACTUALIZAR CARRITO
 // ===================================
 // Endpoint para actualizar cantidades en el carrito
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { auth } from '@/lib/auth/config';
+import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { auth } from '@/lib/auth/config'
 
 /**
  * PUT /api/cart/update
@@ -16,64 +16,66 @@ import { auth } from '@/lib/auth/config';
  */
 export async function PUT(request: NextRequest) {
   try {
-    console.log('🛒 Cart Update API: Iniciando actualización de cantidad');
+    console.log('🛒 Cart Update API: Iniciando actualización de cantidad')
 
     // Verificar autenticación
-    const session = await auth();
+    const session = await auth()
     if (!session?.user?.id) {
-      console.log('❌ Cart Update API: Usuario no autenticado');
+      console.log('❌ Cart Update API: Usuario no autenticado')
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Usuario no autenticado',
-          requiresAuth: true
-        }, 
+          requiresAuth: true,
+        },
         { status: 401 }
-      );
+      )
     }
 
-    const userId = session.user.id;
+    const userId = session.user.id
 
     // Obtener datos del request
-    const body = await request.json();
-    const { productId, quantity } = body;
+    const body = await request.json()
+    const { productId, quantity } = body
 
     // Validaciones
     if (!productId) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'ID del producto es requerido',
-          field: 'productId'
-        }, 
+          field: 'productId',
+        },
         { status: 400 }
-      );
+      )
     }
 
     if (!Number.isInteger(quantity) || quantity < 0 || quantity > 99) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'La cantidad debe ser un número entero entre 0 y 99',
-          field: 'quantity'
-        }, 
+          field: 'quantity',
+        },
         { status: 400 }
-      );
+      )
     }
 
-    console.log(`🔍 Cart Update API: Actualizando producto ${productId} a cantidad ${quantity} para usuario ${userId}`);
+    console.log(
+      `🔍 Cart Update API: Actualizando producto ${productId} a cantidad ${quantity} para usuario ${userId}`
+    )
 
     // Obtener cliente de Supabase
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient(true)
     if (!supabase) {
-      console.error('❌ Cart Update API: Cliente de Supabase no disponible');
+      console.error('❌ Cart Update API: Cliente de Supabase no disponible')
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Servicio de base de datos no disponible'
-        }, 
+        {
+          success: false,
+          error: 'Servicio de base de datos no disponible',
+        },
         { status: 503 }
-      );
+      )
     }
 
     // Verificar que el producto existe y obtener stock
@@ -81,33 +83,35 @@ export async function PUT(request: NextRequest) {
       .from('products')
       .select('id, name, stock, price, discounted_price')
       .eq('id', productId)
-      .single();
+      .single()
 
     if (productError || !product) {
-      console.log(`❌ Cart Update API: Producto ${productId} no encontrado`);
+      console.log(`❌ Cart Update API: Producto ${productId} no encontrado`)
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Producto no encontrado',
-          productId
-        }, 
+          productId,
+        },
         { status: 404 }
-      );
+      )
     }
 
     // Verificar stock disponible
     if (quantity > product.stock) {
-      console.log(`❌ Cart Update API: Stock insuficiente para producto ${productId}. Stock: ${product.stock}, Solicitado: ${quantity}`);
+      console.log(
+        `❌ Cart Update API: Stock insuficiente para producto ${productId}. Stock: ${product.stock}, Solicitado: ${quantity}`
+      )
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: `Stock insuficiente. Solo hay ${product.stock} unidades disponibles`,
           availableStock: product.stock,
           requestedQuantity: quantity,
-          productName: product.name
-        }, 
+          productName: product.name,
+        },
         { status: 400 }
-      );
+      )
     }
 
     // Verificar que el item existe en el carrito
@@ -116,46 +120,46 @@ export async function PUT(request: NextRequest) {
       .select('id, quantity')
       .eq('user_id', userId)
       .eq('product_id', productId)
-      .single();
+      .single()
 
     if (existingError || !existingItem) {
-      console.log(`❌ Cart Update API: Producto ${productId} no está en el carrito`);
+      console.log(`❌ Cart Update API: Producto ${productId} no está en el carrito`)
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'El producto no está en tu carrito',
-          productId
-        }, 
+          productId,
+        },
         { status: 404 }
-      );
+      )
     }
 
-    let operation = '';
-    let responseMessage = '';
+    let operation = ''
+    let responseMessage = ''
 
     if (quantity === 0) {
       // Remover completamente del carrito
       const { error: deleteError } = await supabase
         .from('cart_items')
         .delete()
-        .eq('id', existingItem.id);
+        .eq('id', existingItem.id)
 
       if (deleteError) {
-        console.error('❌ Cart Update API: Error removiendo del carrito:', deleteError);
+        console.error('❌ Cart Update API: Error removiendo del carrito:', deleteError)
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: 'Error removiendo producto del carrito',
-            details: deleteError.message
-          }, 
+            details: deleteError.message,
+          },
           { status: 500 }
-        );
+        )
       }
 
-      operation = 'removed';
-      responseMessage = `${product.name} removido del carrito`;
-      
-      console.log(`✅ Cart Update API: Producto removido - ${responseMessage}`);
+      operation = 'removed'
+      responseMessage = `${product.name} removido del carrito`
+
+      console.log(`✅ Cart Update API: Producto removido - ${responseMessage}`)
 
       return NextResponse.json({
         success: true,
@@ -165,46 +169,47 @@ export async function PUT(request: NextRequest) {
           productId: productId,
           productName: product.name,
           previousQuantity: existingItem.quantity,
-          newQuantity: 0
-        }
-      });
-
+          newQuantity: 0,
+        },
+      })
     } else {
       // Actualizar cantidad
       const { data: updatedItem, error: updateError } = await supabase
         .from('cart_items')
         .update({ quantity: quantity })
         .eq('id', existingItem.id)
-        .select(`
+        .select(
+          `
           id,
           user_id,
           product_id,
           quantity,
           updated_at
-        `)
-        .single();
+        `
+        )
+        .single()
 
       if (updateError) {
-        console.error('❌ Cart Update API: Error actualizando cantidad:', updateError);
+        console.error('❌ Cart Update API: Error actualizando cantidad:', updateError)
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: 'Error actualizando cantidad en el carrito',
-            details: updateError.message
-          }, 
+            details: updateError.message,
+          },
           { status: 500 }
-        );
+        )
       }
 
       if (quantity > existingItem.quantity) {
-        operation = 'increased';
-        responseMessage = `Cantidad de ${product.name} aumentada a ${quantity}`;
+        operation = 'increased'
+        responseMessage = `Cantidad de ${product.name} aumentada a ${quantity}`
       } else {
-        operation = 'decreased';
-        responseMessage = `Cantidad de ${product.name} reducida a ${quantity}`;
+        operation = 'decreased'
+        responseMessage = `Cantidad de ${product.name} reducida a ${quantity}`
       }
-      
-      console.log(`✅ Cart Update API: Cantidad actualizada - ${responseMessage}`);
+
+      console.log(`✅ Cart Update API: Cantidad actualizada - ${responseMessage}`)
 
       return NextResponse.json({
         success: true,
@@ -216,21 +221,20 @@ export async function PUT(request: NextRequest) {
           productName: product.name,
           previousQuantity: existingItem.quantity,
           newQuantity: quantity,
-          price: product.discounted_price || product.price
-        }
-      });
+          price: product.discounted_price || product.price,
+        },
+      })
     }
-
   } catch (error: any) {
-    console.error('❌ Cart Update API: Error inesperado:', error);
+    console.error('❌ Cart Update API: Error inesperado:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Error interno del servidor',
-        details: error.message
-      }, 
+        details: error.message,
+      },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -239,7 +243,7 @@ export async function PUT(request: NextRequest) {
  * Alias para PUT (para compatibilidad)
  */
 export async function PATCH(request: NextRequest) {
-  return PUT(request);
+  return PUT(request)
 }
 
 /**
@@ -247,7 +251,7 @@ export async function PATCH(request: NextRequest) {
  * Alias para PUT (para compatibilidad)
  */
 export async function POST(request: NextRequest) {
-  return PUT(request);
+  return PUT(request)
 }
 
 /**
@@ -261,17 +265,17 @@ export async function GET() {
     description: 'Actualizar cantidad de productos en el carrito',
     parameters: {
       productId: 'number - ID del producto a actualizar (requerido)',
-      quantity: 'number - Nueva cantidad (0-99). Si es 0, se remueve del carrito (requerido)'
+      quantity: 'number - Nueva cantidad (0-99). Si es 0, se remueve del carrito (requerido)',
     },
     examples: {
       updateQuantity: {
         productId: 123,
-        quantity: 3
+        quantity: 3,
       },
       removeProduct: {
         productId: 123,
-        quantity: 0
-      }
+        quantity: 0,
+      },
     },
     authentication: 'Requerida - Usuario debe estar autenticado',
     responses: {
@@ -279,17 +283,7 @@ export async function GET() {
       400: 'Datos inválidos o stock insuficiente',
       401: 'Usuario no autenticado',
       404: 'Producto no encontrado o no está en el carrito',
-      500: 'Error interno del servidor'
-    }
-  });
+      500: 'Error interno del servidor',
+    },
+  })
 }
-
-
-
-
-
-
-
-
-
-

@@ -12,19 +12,19 @@
  */
 export interface Category {
   /** Unique identifier for the category */
-  id: string;
+  id: string
   /** Display name of the category */
-  name: string;
+  name: string
   /** Icon path or URL for the category */
-  icon: string;
+  icon: string
   /** URL-friendly slug for the category */
-  slug?: string;
+  slug?: string
   /** Number of products in this category */
-  count?: number;
+  count?: number
   /** Category description for accessibility */
-  description?: string;
+  description?: string
   /** Whether the category is currently available */
-  isAvailable?: boolean;
+  isAvailable?: boolean
 }
 
 /**
@@ -32,13 +32,13 @@ export interface Category {
  */
 export interface CategoryWithMetadata extends Category {
   /** Last updated timestamp */
-  updatedAt?: Date;
+  updatedAt?: Date
   /** Category priority for sorting */
-  priority?: number;
+  priority?: number
   /** Parent category ID for nested categories */
-  parentId?: string;
+  parentId?: string
   /** Child categories */
-  children?: Category[];
+  children?: Category[]
 }
 
 // ===================================
@@ -50,29 +50,29 @@ export interface CategoryWithMetadata extends Category {
  */
 export interface CategoriesProps {
   /** Array of categories to display */
-  categories?: Category[];
+  categories?: Category[]
   /** Currently selected category IDs */
-  selectedCategories?: string[];
+  selectedCategories?: string[]
   /** Callback when category selection changes */
-  onCategoryChange?: (event: CategoryChangeEvent) => void;
+  onCategoryChange?: (event: CategoryChangeEvent) => void
   /** Visual variant of the component */
-  variant?: 'default' | 'compact' | 'minimal';
+  variant?: 'default' | 'compact' | 'minimal'
   /** Size of the category pills */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg'
   /** Maximum number of categories to display */
-  maxCategories?: number;
+  maxCategories?: number
   /** Whether to show category counts */
-  showCounts?: boolean;
+  showCounts?: boolean
   /** Whether the component is disabled */
-  disabled?: boolean;
+  disabled?: boolean
   /** Loading state */
-  loading?: boolean;
+  loading?: boolean
   /** Error state */
-  error?: string | null;
+  error?: string | null
   /** Custom CSS classes */
-  className?: string;
+  className?: string
   /** Test ID for testing */
-  testId?: string;
+  testId?: string
 }
 
 /**
@@ -80,21 +80,21 @@ export interface CategoriesProps {
  */
 export interface CategoryPillProps {
   /** Category data */
-  category: Category;
+  category: Category
   /** Whether this category is selected */
-  isSelected: boolean;
+  isSelected: boolean
   /** Click handler */
-  onClick: (categoryId: string) => void;
+  onClick: (categoryId: string) => void
   /** Key handler for accessibility */
-  onKeyDown?: (event: React.KeyboardEvent, categoryId: string) => void;
+  onKeyDown?: (event: React.KeyboardEvent, categoryId: string) => void
   /** Size variant */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg'
   /** Whether the pill is disabled */
-  disabled?: boolean;
+  disabled?: boolean
   /** Custom CSS classes */
-  className?: string;
+  className?: string
   /** Test ID for testing */
-  testId?: string;
+  testId?: string
 }
 
 // ===================================
@@ -106,17 +106,17 @@ export interface CategoryPillProps {
  */
 export interface UseCategoryFilterReturn {
   /** Currently selected categories */
-  selectedCategories: string[];
+  selectedCategories: string[]
   /** Toggle a category selection */
-  toggleCategory: (categoryId: string) => void;
+  toggleCategory: (categoryId: string) => void
   /** Clear all selections */
-  clearAll: () => void;
+  clearAll: () => void
   /** Select all categories */
-  selectAll: (categoryIds: string[]) => void;
+  selectAll: (categoryIds: string[]) => void
   /** Check if a category is selected */
-  isSelected: (categoryId: string) => boolean;
+  isSelected: (categoryId: string) => boolean
   /** Get count of selected categories */
-  selectedCount: number;
+  selectedCount: number
 }
 
 /**
@@ -124,13 +124,13 @@ export interface UseCategoryFilterReturn {
  */
 export interface UseCategoryNavigationReturn {
   /** Navigate to filtered view */
-  navigateToFiltered: (categories: string[]) => void;
+  navigateToFiltered: (categories: string[]) => void
   /** Navigate to home (clear filters) */
-  navigateToHome: () => void;
+  navigateToHome: () => void
   /** Get current URL with categories */
-  getCurrentUrl: () => string;
+  getCurrentUrl: () => string
   /** Check if navigation is in progress */
-  isNavigating: boolean;
+  isNavigating: boolean
 }
 
 /**
@@ -138,15 +138,15 @@ export interface UseCategoryNavigationReturn {
  */
 export interface UseCategoryDataReturn {
   /** Categories data */
-  categories: Category[];
+  categories: Category[]
   /** Loading state */
-  loading: boolean;
+  loading: boolean
   /** Error state */
-  error: string | null;
+  error: string | null
   /** Refresh categories */
-  refresh: () => Promise<void>;
+  refresh: () => Promise<void>
   /** Get category by ID */
-  getCategoryById: (id: string) => Category | undefined;
+  getCategoryById: (id: string) => Category | undefined
 }
 
 // ===================================
@@ -158,15 +158,15 @@ export interface UseCategoryDataReturn {
  */
 export interface CategoryChangeEvent {
   /** Type of change */
-  type: 'select' | 'deselect' | 'clear' | 'selectAll';
+  type: 'select' | 'deselect' | 'clear' | 'selectAll'
   /** Category ID that changed */
-  categoryId?: string;
+  categoryId?: string
   /** All selected categories after change */
-  selectedCategories: string[];
+  selectedCategories: string[]
   /** Previous selected categories */
-  previousCategories: string[];
+  previousCategories: string[]
   /** Timestamp of the event */
-  timestamp: Date;
+  timestamp: Date
 }
 
 /**
@@ -174,13 +174,13 @@ export interface CategoryChangeEvent {
  */
 export interface CategoryInteractionEvent {
   /** Type of interaction */
-  action: 'click' | 'keydown' | 'focus' | 'blur';
+  action: 'click' | 'keydown' | 'focus' | 'blur'
   /** Category that was interacted with */
-  categoryId: string;
+  categoryId: string
   /** Method of interaction */
-  method: 'mouse' | 'keyboard' | 'touch';
+  method: 'mouse' | 'keyboard' | 'touch'
   /** Additional metadata */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, any>
 }
 
 // ===================================
@@ -192,19 +192,19 @@ export interface CategoryInteractionEvent {
  */
 export interface CategoriesConfig {
   /** Default variant */
-  defaultVariant: CategoriesProps['variant'];
+  defaultVariant: CategoriesProps['variant']
   /** Default size */
-  defaultSize: CategoriesProps['size'];
+  defaultSize: CategoriesProps['size']
   /** Maximum categories to show */
-  maxCategories: number;
+  maxCategories: number
   /** Whether to enable analytics */
-  enableAnalytics: boolean;
+  enableAnalytics: boolean
   /** Whether to enable keyboard navigation */
-  enableKeyboardNavigation: boolean;
+  enableKeyboardNavigation: boolean
   /** Animation duration in ms */
-  animationDuration: number;
+  animationDuration: number
   /** Debounce delay for URL updates */
-  urlUpdateDelay: number;
+  urlUpdateDelay: number
 }
 
 // ===================================
@@ -214,20 +214,20 @@ export interface CategoriesConfig {
 /**
  * Category ID type for type safety
  */
-export type CategoryId = string;
+export type CategoryId = string
 
 /**
  * Category selection state
  */
-export type CategorySelectionState = Record<CategoryId, boolean>;
+export type CategorySelectionState = Record<CategoryId, boolean>
 
 /**
  * Category filter state for URL
  */
 export type CategoryFilterState = {
-  categories: CategoryId[];
-  timestamp: number;
-};
+  categories: CategoryId[]
+  timestamp: number
+}
 
 // ===================================
 // CONSTANTS
@@ -244,7 +244,7 @@ export const DEFAULT_CATEGORIES_CONFIG: CategoriesConfig = {
   enableKeyboardNavigation: true,
   animationDuration: 200,
   urlUpdateDelay: 300,
-};
+}
 
 /**
  * Keyboard navigation keys
@@ -258,7 +258,7 @@ export const KEYBOARD_KEYS = {
   ARROW_DOWN: 'ArrowDown',
   TAB: 'Tab',
   ESCAPE: 'Escape',
-} as const;
+} as const
 
 /**
  * ARIA labels and descriptions
@@ -269,13 +269,4 @@ export const ARIA_LABELS = {
   CATEGORY_NOT_SELECTED: 'Categoría no seleccionada',
   CLEAR_FILTERS: 'Limpiar todos los filtros',
   FILTER_GROUP: 'Grupo de filtros de categorías',
-} as const;
-
-
-
-
-
-
-
-
-
+} as const

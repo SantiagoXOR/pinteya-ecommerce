@@ -4,7 +4,7 @@
 // Basado en: NextAuth.js Adapter interface y documentación oficial
 // =====================================================
 
-import type { Adapter } from "next-auth/adapters"
+import type { Adapter } from 'next-auth/adapters'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 
 export function CustomSupabaseAdapter(): Adapter {
@@ -42,11 +42,7 @@ export function CustomSupabaseAdapter(): Adapter {
     },
 
     async getUser(id) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .single()
+      const { data, error } = await supabase.from('users').select('*').eq('id', id).single()
 
       if (error) return null
       return data
@@ -55,11 +51,7 @@ export function CustomSupabaseAdapter(): Adapter {
     async getUserByEmail(email) {
       try {
         console.log('[ADAPTER] Getting user by email:', email)
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', email)
-          .single()
+        const { data, error } = await supabase.from('users').select('*').eq('email', email).single()
 
         if (error) {
           console.log('[ADAPTER] No user found by email:', error.message)
@@ -128,10 +120,7 @@ export function CustomSupabaseAdapter(): Adapter {
     },
 
     async deleteUser(userId) {
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId)
+      const { error } = await supabase.from('users').delete().eq('id', userId)
 
       if (error) throw error
     },
@@ -202,10 +191,12 @@ export function CustomSupabaseAdapter(): Adapter {
     async getSessionAndUser(sessionToken) {
       const { data, error } = await supabase
         .from('sessions')
-        .select(`
+        .select(
+          `
           *,
           user:userId (*)
-        `)
+        `
+        )
         .eq('sessionToken', sessionToken)
         .single()
 
@@ -235,10 +226,7 @@ export function CustomSupabaseAdapter(): Adapter {
     },
 
     async deleteSession(sessionToken) {
-      const { error } = await supabase
-        .from('sessions')
-        .delete()
-        .eq('sessionToken', sessionToken)
+      const { error } = await supabase.from('sessions').delete().eq('sessionToken', sessionToken)
 
       if (error) throw error
     },
@@ -272,12 +260,3 @@ export function CustomSupabaseAdapter(): Adapter {
     },
   }
 }
-
-
-
-
-
-
-
-
-

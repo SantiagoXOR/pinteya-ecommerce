@@ -1,180 +1,152 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // PINTEYA E-COMMERCE - API DE PERFIL DE USUARIO
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { auth } from '@/lib/auth/config';
-import { ApiResponse } from '@/types/api';
-import { logProfileActivity, getRequestInfo } from '@/lib/activity/activityLogger';
+import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
+import { auth } from '@/lib/auth/config'
+import { ApiResponse } from '@/types/api'
+import { logProfileActivity, getRequestInfo } from '@/lib/activity/activityLogger'
 
 // ===================================
 // MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
 // ===================================
-import {
-  withRateLimit,
-  RATE_LIMIT_CONFIGS
-} from '@/lib/rate-limiting/rate-limiter';
-import {
-  API_TIMEOUTS,
-  withDatabaseTimeout,
-  getEndpointTimeouts
-} from '@/lib/config/api-timeouts';
-import { createSecurityLogger } from '@/lib/logging/security-logger';
+import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
+import { API_TIMEOUTS, withDatabaseTimeout, getEndpointTimeouts } from '@/lib/config/api-timeouts'
+import { createSecurityLogger } from '@/lib/logging/security-logger'
 
 // ===================================
 // GET - Obtener perfil de usuario
 // ===================================
 export async function GET(request: NextRequest) {
   // Crear logger de seguridad con contexto
-  const securityLogger = createSecurityLogger(request);
+  const securityLogger = createSecurityLogger(request)
 
   // Aplicar rate limiting para APIs de usuario
-  const rateLimitResult = await withRateLimit(
-    request,
-    RATE_LIMIT_CONFIGS.auth,
-    async () => {
-      // Log de acceso a la API
-      securityLogger.log({
-        type: 'api_access',
-        endpoint: '/api/user/profile',
-        method: 'GET',
-        userAgent: request.headers.get('user-agent'),
-        timestamp: new Date().toISOString()
-      });
+  const rateLimitResult = await withRateLimit(request, RATE_LIMIT_CONFIGS.auth, async () => {
+    // Log de acceso a la API
+    securityLogger.log({
+      type: 'api_access',
+      endpoint: '/api/user/profile',
+      method: 'GET',
+      userAgent: request.headers.get('user-agent'),
+      timestamp: new Date().toISOString(),
+    })
 
-      try {
-        // Verificar que el cliente administrativo esté disponible
-        if (!supabaseAdmin) {
-          console.error('Cliente administrativo de Supabase no disponible en GET /api/user/profile');
+    try {
+      // Verificar que el cliente administrativo esté disponible
+      if (!supabaseAdmin) {
+        console.error('Cliente administrativo de Supabase no disponible en GET /api/user/profile')
 
-          // Log de error de seguridad
-          securityLogger.log({
-            type: 'service_unavailable',
-            service: 'supabase_admin',
-            endpoint: '/api/user/profile'
-          });
+        // Log de error de seguridad
+        securityLogger.log({
+          type: 'service_unavailable',
+          service: 'supabase_admin',
+          endpoint: '/api/user/profile',
+        })
 
-          return NextResponse.json(
-            { error: 'Servicio de base de datos no disponible' },
-            { status: 503 }
-          );
-        }
-
-        // Autenticación con Clerk
-        const session = await auth();
-        if (!session?.user) {
-          // Log de intento de acceso no autorizado
-          securityLogger.log({
-            type: 'unauthorized_access',
-            endpoint: '/api/user/profile',
-            reason: 'no_session'
-          });
-
-          const errorResponse: ApiResponse<null> = {
-            data: null,
-            success: false,
-            error: 'Usuario no autenticado',
-          };
-          return NextResponse.json(errorResponse, { status: 401 });
-        }
-
-        // Buscar usuario en Supabase
-        const userId = session.user.id;
-        const { data: user, error } = await withDatabaseTimeout(
-          supabaseAdmin
-            .from('users')
-            .select('*')
-            .eq('clerk_id', userId)
-            .single(),
-          API_TIMEOUTS.database
-        );
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error al obtener usuario:', error);
-
-          // Log de error de base de datos
-          securityLogger.logApiError(
-            error.message,
-            '/api/user/profile'
-          );
-
-          return NextResponse.json(
-            { error: 'Error al obtener perfil de usuario' },
-            { status: 500 }
-          );
-        }
-
-        // Si no existe el usuario, crear uno demo
-        if (!user) {
-      const { data: newUser, error: createError } = await supabaseAdmin
-        .from('users')
-        .insert([
-          {
-            clerk_id: userId,
-            email: 'usuario@demo.com',
-            name: 'Usuario Demo',
-          },
-        ])
-        .select()
-        .single();
-
-      if (createError) {
-        console.error('Error al crear usuario demo:', createError);
         return NextResponse.json(
-          { error: 'Error al crear perfil de usuario' },
-          { status: 500 }
-        );
+          { error: 'Servicio de base de datos no disponible' },
+          { status: 503 }
+        )
       }
 
-      return NextResponse.json({
-        success: true,
-        user: newUser,
-      });
-    }
-
-        // Log de operación exitosa
+      // Autenticación con Clerk
+      const session = await auth()
+      if (!session?.user) {
+        // Log de intento de acceso no autorizado
         securityLogger.log({
-          type: 'user_profile_retrieved',
-          userId: userId,
-          hasUser: !!user
-        });
+          type: 'unauthorized_access',
+          endpoint: '/api/user/profile',
+          reason: 'no_session',
+        })
+
+        const errorResponse: ApiResponse<null> = {
+          data: null,
+          success: false,
+          error: 'Usuario no autenticado',
+        }
+        return NextResponse.json(errorResponse, { status: 401 })
+      }
+
+      // Buscar usuario en Supabase
+      const userId = session.user.id
+      const { data: user, error } = await withDatabaseTimeout(
+        supabaseAdmin.from('users').select('*').eq('clerk_id', userId).single(),
+        API_TIMEOUTS.database
+      )
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error al obtener usuario:', error)
+
+        // Log de error de base de datos
+        securityLogger.logApiError(error.message, '/api/user/profile')
+
+        return NextResponse.json({ error: 'Error al obtener perfil de usuario' }, { status: 500 })
+      }
+
+      // Si no existe el usuario, crear uno demo
+      if (!user) {
+        const { data: newUser, error: createError } = await supabaseAdmin
+          .from('users')
+          .insert([
+            {
+              clerk_id: userId,
+              email: 'usuario@demo.com',
+              name: 'Usuario Demo',
+            },
+          ])
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('Error al crear usuario demo:', createError)
+          return NextResponse.json({ error: 'Error al crear perfil de usuario' }, { status: 500 })
+        }
 
         return NextResponse.json({
           success: true,
-          user,
-        });
-
-      } catch (error) {
-        console.error('Error en GET /api/user/profile:', error);
-
-        // Log de error de seguridad
-        securityLogger.logApiError(
-          error instanceof Error ? error.message : 'Unknown error',
-          '/api/user/profile'
-        );
-
-        return NextResponse.json(
-          { error: 'Error interno del servidor' },
-          { status: 500 }
-        );
+          user: newUser,
+        })
       }
+
+      // Log de operación exitosa
+      securityLogger.log({
+        type: 'user_profile_retrieved',
+        userId: userId,
+        hasUser: !!user,
+      })
+
+      return NextResponse.json({
+        success: true,
+        user,
+      })
+    } catch (error) {
+      console.error('Error en GET /api/user/profile:', error)
+
+      // Log de error de seguridad
+      securityLogger.logApiError(
+        error instanceof Error ? error.message : 'Unknown error',
+        '/api/user/profile'
+      )
+
+      return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
     }
-  );
+  })
 
   // Manejar rate limit excedido
   if (rateLimitResult instanceof NextResponse) {
-    securityLogger.logRateLimitExceeded(
-      securityLogger.context,
-      { endpoint: '/api/user/profile', method: 'GET' }
-    );
-    return rateLimitResult;
+    securityLogger.logRateLimitExceeded(securityLogger.context, {
+      endpoint: '/api/user/profile',
+      method: 'GET',
+    })
+    return rateLimitResult
   }
 
-  return rateLimitResult;
+  return rateLimitResult
 }
 
 // ===================================
@@ -184,33 +156,30 @@ export async function PUT(request: NextRequest) {
   try {
     // Verificar que el cliente administrativo esté disponible
     if (!supabaseAdmin) {
-      console.error('Cliente administrativo de Supabase no disponible en PUT /api/user/profile');
+      console.error('Cliente administrativo de Supabase no disponible en PUT /api/user/profile')
       return NextResponse.json(
         { error: 'Servicio de base de datos no disponible' },
         { status: 503 }
-      );
+      )
     }
 
     // Autenticación con Clerk
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
         error: 'Usuario no autenticado',
-      };
-      return NextResponse.json(errorResponse, { status: 401 });
+      }
+      return NextResponse.json(errorResponse, { status: 401 })
     }
-    const userId = session.user.id;
-    const body = await request.json();
+    const userId = session.user.id
+    const body = await request.json()
 
     // Validar datos requeridos
-    const { name, email, phone } = body;
+    const { name, email, phone } = body
     if (!name || !email) {
-      return NextResponse.json(
-        { error: 'Nombre y email son requeridos' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Nombre y email son requeridos' }, { status: 400 })
     }
 
     // Actualizar usuario en Supabase
@@ -224,18 +193,15 @@ export async function PUT(request: NextRequest) {
       })
       .eq('clerk_id', userId)
       .select()
-      .single();
+      .single()
 
     if (error) {
-      console.error('Error al actualizar usuario:', error);
-      return NextResponse.json(
-        { error: 'Error al actualizar perfil de usuario' },
-        { status: 500 }
-      );
+      console.error('Error al actualizar usuario:', error)
+      return NextResponse.json({ error: 'Error al actualizar perfil de usuario' }, { status: 500 })
     }
 
     // Registrar actividad de actualización de perfil
-    const requestInfo = getRequestInfo(request);
+    const requestInfo = getRequestInfo(request)
     await logProfileActivity(
       updatedUser.id,
       'update_profile',
@@ -246,28 +212,15 @@ export async function PUT(request: NextRequest) {
         previous_phone: updatedUser.phone !== phone ? 'changed' : 'unchanged',
       },
       requestInfo
-    );
+    )
 
     return NextResponse.json({
       success: true,
       user: updatedUser,
       message: 'Perfil actualizado correctamente',
-    });
+    })
   } catch (error) {
-    console.error('Error en PUT /api/user/profile:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
+    console.error('Error en PUT /api/user/profile:', error)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,79 @@
+3938784cb0b777cce11ca55d5ae561dd
+// =====================================================
+// SUPABASE SERVER CLIENT
+// Descripción: Cliente de Supabase para uso en servidor
+// Basado en: Supabase SSR + NextAuth.js integration
+// =====================================================
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get createAdminClient () {
+        return createAdminClient;
+    },
+    get createClient () {
+        return createClient;
+    }
+});
+const _ssr = require("@supabase/ssr");
+const _headers = require("next/headers");
+async function createClient() {
+    const cookieStore = await (0, _headers.cookies)();
+    return (0, _ssr.createServerClient)(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+        cookies: {
+            get (name) {
+                return cookieStore.get(name)?.value;
+            },
+            set (name, value, options) {
+                try {
+                    cookieStore.set({
+                        name,
+                        value,
+                        ...options
+                    });
+                } catch (error) {
+                // The `set` method was called from a Server Component.
+                // This can be ignored if you have middleware refreshing
+                // user sessions.
+                }
+            },
+            remove (name, options) {
+                try {
+                    cookieStore.set({
+                        name,
+                        value: '',
+                        ...options
+                    });
+                } catch (error) {
+                // The `delete` method was called from a Server Component.
+                // This can be ignored if you have middleware refreshing
+                // user sessions.
+                }
+            }
+        }
+    });
+}
+function createAdminClient() {
+    return (0, _ssr.createServerClient)(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+        cookies: {
+            get () {
+                return undefined;
+            },
+            set () {
+            // No-op for service role client
+            },
+            remove () {
+            // No-op for service role client
+            }
+        }
+    });
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcbGliXFxpbnRlZ3JhdGlvbnNcXHN1cGFiYXNlXFxzZXJ2ZXIudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbi8vIFNVUEFCQVNFIFNFUlZFUiBDTElFTlRcbi8vIERlc2NyaXBjacOzbjogQ2xpZW50ZSBkZSBTdXBhYmFzZSBwYXJhIHVzbyBlbiBzZXJ2aWRvclxuLy8gQmFzYWRvIGVuOiBTdXBhYmFzZSBTU1IgKyBOZXh0QXV0aC5qcyBpbnRlZ3JhdGlvblxuLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cblxuaW1wb3J0IHsgY3JlYXRlU2VydmVyQ2xpZW50LCB0eXBlIENvb2tpZU9wdGlvbnMgfSBmcm9tICdAc3VwYWJhc2Uvc3NyJ1xuaW1wb3J0IHsgY29va2llcyB9IGZyb20gJ25leHQvaGVhZGVycydcblxuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIGNyZWF0ZUNsaWVudCgpIHtcbiAgY29uc3QgY29va2llU3RvcmUgPSBhd2FpdCBjb29raWVzKClcblxuICByZXR1cm4gY3JlYXRlU2VydmVyQ2xpZW50KFxuICAgIHByb2Nlc3MuZW52Lk5FWFRfUFVCTElDX1NVUEFCQVNFX1VSTCEsXG4gICAgcHJvY2Vzcy5lbnYuTkVYVF9QVUJMSUNfU1VQQUJBU0VfQU5PTl9LRVkhLFxuICAgIHtcbiAgICAgIGNvb2tpZXM6IHtcbiAgICAgICAgZ2V0KG5hbWU6IHN0cmluZykge1xuICAgICAgICAgIHJldHVybiBjb29raWVTdG9yZS5nZXQobmFtZSk/LnZhbHVlXG4gICAgICAgIH0sXG4gICAgICAgIHNldChuYW1lOiBzdHJpbmcsIHZhbHVlOiBzdHJpbmcsIG9wdGlvbnM6IENvb2tpZU9wdGlvbnMpIHtcbiAgICAgICAgICB0cnkge1xuICAgICAgICAgICAgY29va2llU3RvcmUuc2V0KHsgbmFtZSwgdmFsdWUsIC4uLm9wdGlvbnMgfSlcbiAgICAgICAgICB9IGNhdGNoIChlcnJvcikge1xuICAgICAgICAgICAgLy8gVGhlIGBzZXRgIG1ldGhvZCB3YXMgY2FsbGVkIGZyb20gYSBTZXJ2ZXIgQ29tcG9uZW50LlxuICAgICAgICAgICAgLy8gVGhpcyBjYW4gYmUgaWdub3JlZCBpZiB5b3UgaGF2ZSBtaWRkbGV3YXJlIHJlZnJlc2hpbmdcbiAgICAgICAgICAgIC8vIHVzZXIgc2Vzc2lvbnMuXG4gICAgICAgICAgfVxuICAgICAgICB9LFxuICAgICAgICByZW1vdmUobmFtZTogc3RyaW5nLCBvcHRpb25zOiBDb29raWVPcHRpb25zKSB7XG4gICAgICAgICAgdHJ5IHtcbiAgICAgICAgICAgIGNvb2tpZVN0b3JlLnNldCh7IG5hbWUsIHZhbHVlOiAnJywgLi4ub3B0aW9ucyB9KVxuICAgICAgICAgIH0gY2F0Y2ggKGVycm9yKSB7XG4gICAgICAgICAgICAvLyBUaGUgYGRlbGV0ZWAgbWV0aG9kIHdhcyBjYWxsZWQgZnJvbSBhIFNlcnZlciBDb21wb25lbnQuXG4gICAgICAgICAgICAvLyBUaGlzIGNhbiBiZSBpZ25vcmVkIGlmIHlvdSBoYXZlIG1pZGRsZXdhcmUgcmVmcmVzaGluZ1xuICAgICAgICAgICAgLy8gdXNlciBzZXNzaW9ucy5cbiAgICAgICAgICB9XG4gICAgICAgIH0sXG4gICAgICB9LFxuICAgIH1cbiAgKVxufVxuXG4vLyBDbGllbnRlIGNvbiBzZXJ2aWNlIHJvbGUgcGFyYSBvcGVyYWNpb25lcyBhZG1pbmlzdHJhdGl2YXNcbmV4cG9ydCBmdW5jdGlvbiBjcmVhdGVBZG1pbkNsaWVudCgpIHtcbiAgcmV0dXJuIGNyZWF0ZVNlcnZlckNsaWVudChcbiAgICBwcm9jZXNzLmVudi5ORVhUX1BVQkxJQ19TVVBBQkFTRV9VUkwhLFxuICAgIHByb2Nlc3MuZW52LlNVUEFCQVNFX1NFUlZJQ0VfUk9MRV9LRVkhLFxuICAgIHtcbiAgICAgIGNvb2tpZXM6IHtcbiAgICAgICAgZ2V0KCkge1xuICAgICAgICAgIHJldHVybiB1bmRlZmluZWRcbiAgICAgICAgfSxcbiAgICAgICAgc2V0KCkge1xuICAgICAgICAgIC8vIE5vLW9wIGZvciBzZXJ2aWNlIHJvbGUgY2xpZW50XG4gICAgICAgIH0sXG4gICAgICAgIHJlbW92ZSgpIHtcbiAgICAgICAgICAvLyBOby1vcCBmb3Igc2VydmljZSByb2xlIGNsaWVudFxuICAgICAgICB9LFxuICAgICAgfSxcbiAgICB9XG4gIClcbn1cbiJdLCJuYW1lcyI6WyJjcmVhdGVBZG1pbkNsaWVudCIsImNyZWF0ZUNsaWVudCIsImNvb2tpZVN0b3JlIiwiY29va2llcyIsImNyZWF0ZVNlcnZlckNsaWVudCIsInByb2Nlc3MiLCJlbnYiLCJORVhUX1BVQkxJQ19TVVBBQkFTRV9VUkwiLCJORVhUX1BVQkxJQ19TVVBBQkFTRV9BTk9OX0tFWSIsImdldCIsIm5hbWUiLCJ2YWx1ZSIsInNldCIsIm9wdGlvbnMiLCJlcnJvciIsInJlbW92ZSIsIlNVUEFCQVNFX1NFUlZJQ0VfUk9MRV9LRVkiLCJ1bmRlZmluZWQiXSwibWFwcGluZ3MiOiJBQUFBLHdEQUF3RDtBQUN4RCx5QkFBeUI7QUFDekIsd0RBQXdEO0FBQ3hELG9EQUFvRDtBQUNwRCx3REFBd0Q7Ozs7Ozs7Ozs7OztRQXdDeENBO2VBQUFBOztRQW5DTUM7ZUFBQUE7OztxQkFIaUM7eUJBQy9CO0FBRWpCLGVBQWVBO0lBQ3BCLE1BQU1DLGNBQWMsTUFBTUMsSUFBQUEsZ0JBQU87SUFFakMsT0FBT0MsSUFBQUEsdUJBQWtCLEVBQ3ZCQyxRQUFRQyxHQUFHLENBQUNDLHdCQUF3QixFQUNwQ0YsUUFBUUMsR0FBRyxDQUFDRSw2QkFBNkIsRUFDekM7UUFDRUwsU0FBUztZQUNQTSxLQUFJQyxJQUFZO2dCQUNkLE9BQU9SLFlBQVlPLEdBQUcsQ0FBQ0MsT0FBT0M7WUFDaEM7WUFDQUMsS0FBSUYsSUFBWSxFQUFFQyxLQUFhLEVBQUVFLE9BQXNCO2dCQUNyRCxJQUFJO29CQUNGWCxZQUFZVSxHQUFHLENBQUM7d0JBQUVGO3dCQUFNQzt3QkFBTyxHQUFHRSxPQUFPO29CQUFDO2dCQUM1QyxFQUFFLE9BQU9DLE9BQU87Z0JBQ2QsdURBQXVEO2dCQUN2RCx3REFBd0Q7Z0JBQ3hELGlCQUFpQjtnQkFDbkI7WUFDRjtZQUNBQyxRQUFPTCxJQUFZLEVBQUVHLE9BQXNCO2dCQUN6QyxJQUFJO29CQUNGWCxZQUFZVSxHQUFHLENBQUM7d0JBQUVGO3dCQUFNQyxPQUFPO3dCQUFJLEdBQUdFLE9BQU87b0JBQUM7Z0JBQ2hELEVBQUUsT0FBT0MsT0FBTztnQkFDZCwwREFBMEQ7Z0JBQzFELHdEQUF3RDtnQkFDeEQsaUJBQWlCO2dCQUNuQjtZQUNGO1FBQ0Y7SUFDRjtBQUVKO0FBR08sU0FBU2Q7SUFDZCxPQUFPSSxJQUFBQSx1QkFBa0IsRUFDdkJDLFFBQVFDLEdBQUcsQ0FBQ0Msd0JBQXdCLEVBQ3BDRixRQUFRQyxHQUFHLENBQUNVLHlCQUF5QixFQUNyQztRQUNFYixTQUFTO1lBQ1BNO2dCQUNFLE9BQU9RO1lBQ1Q7WUFDQUw7WUFDRSxnQ0FBZ0M7WUFDbEM7WUFDQUc7WUFDRSxnQ0FBZ0M7WUFDbEM7UUFDRjtJQUNGO0FBRUoifQ==

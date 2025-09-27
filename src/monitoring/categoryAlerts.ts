@@ -4,51 +4,51 @@
  * Pinteya E-commerce - Enterprise Monitoring Alerts
  */
 
-import type { CategoryMetrics, PerformanceMetrics, AccessibilityMetrics } from './categoryMetrics';
+import type { CategoryMetrics, PerformanceMetrics, AccessibilityMetrics } from './categoryMetrics'
 
 /**
  * Alert severity levels
  */
-export type AlertSeverity = 'info' | 'warning' | 'error' | 'critical';
+export type AlertSeverity = 'info' | 'warning' | 'error' | 'critical'
 
 /**
  * Alert types
  */
-export type AlertType = 
+export type AlertType =
   | 'performance_degradation'
   | 'accessibility_violation'
   | 'error_rate_spike'
   | 'conversion_drop'
   | 'memory_leak'
   | 'render_timeout'
-  | 'user_satisfaction_drop';
+  | 'user_satisfaction_drop'
 
 /**
  * Alert interface
  */
 export interface CategoryAlert {
   /** Unique alert ID */
-  id: string;
+  id: string
   /** Alert type */
-  type: AlertType;
+  type: AlertType
   /** Severity level */
-  severity: AlertSeverity;
+  severity: AlertSeverity
   /** Alert title */
-  title: string;
+  title: string
   /** Alert description */
-  description: string;
+  description: string
   /** Metric value that triggered the alert */
-  value: number;
+  value: number
   /** Expected/target value */
-  threshold: number;
+  threshold: number
   /** Timestamp when alert was triggered */
-  timestamp: number;
+  timestamp: number
   /** Whether alert is resolved */
-  resolved: boolean;
+  resolved: boolean
   /** Resolution timestamp */
-  resolvedAt?: number;
+  resolvedAt?: number
   /** Additional metadata */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, any>
 }
 
 /**
@@ -56,25 +56,25 @@ export interface CategoryAlert {
  */
 export interface AlertRule {
   /** Rule ID */
-  id: string;
+  id: string
   /** Rule name */
-  name: string;
+  name: string
   /** Alert type this rule generates */
-  type: AlertType;
+  type: AlertType
   /** Severity level */
-  severity: AlertSeverity;
+  severity: AlertSeverity
   /** Metric path to evaluate */
-  metricPath: string;
+  metricPath: string
   /** Threshold value */
-  threshold: number;
+  threshold: number
   /** Comparison operator */
-  operator: 'gt' | 'lt' | 'eq' | 'gte' | 'lte';
+  operator: 'gt' | 'lt' | 'eq' | 'gte' | 'lte'
   /** Whether rule is enabled */
-  enabled: boolean;
+  enabled: boolean
   /** Cooldown period in milliseconds */
-  cooldown: number;
+  cooldown: number
   /** Custom evaluation function */
-  evaluator?: (metrics: CategoryMetrics) => boolean;
+  evaluator?: (metrics: CategoryMetrics) => boolean
 }
 
 /**
@@ -82,20 +82,20 @@ export interface AlertRule {
  */
 interface AlertConfig {
   /** Whether alerting is enabled */
-  enabled: boolean;
+  enabled: boolean
   /** Default cooldown period */
-  defaultCooldown: number;
+  defaultCooldown: number
   /** Maximum alerts per hour */
-  maxAlertsPerHour: number;
+  maxAlertsPerHour: number
   /** Notification channels */
   channels: {
-    email: boolean;
-    slack: boolean;
-    webhook: boolean;
-    console: boolean;
-  };
+    email: boolean
+    slack: boolean
+    webhook: boolean
+    console: boolean
+  }
   /** Debug mode */
-  debug: boolean;
+  debug: boolean
 }
 
 /**
@@ -112,7 +112,7 @@ const defaultConfig: AlertConfig = {
     console: true,
   },
   debug: process.env.NODE_ENV === 'development',
-};
+}
 
 /**
  * Default alert rules
@@ -206,23 +206,23 @@ const defaultRules: AlertRule[] = [
     enabled: true,
     cooldown: 60 * 60 * 1000, // 1 hour
   },
-];
+]
 
 /**
  * Category alerts manager
  */
 class CategoryAlertsManager {
-  private static instance: CategoryAlertsManager | null = null;
-  private config: AlertConfig;
-  private rules: AlertRule[];
-  private activeAlerts: Map<string, CategoryAlert> = new Map();
-  private alertHistory: CategoryAlert[] = [];
-  private lastAlertTimes: Map<string, number> = new Map();
-  private alertCounts: Map<number, number> = new Map(); // hour -> count
+  private static instance: CategoryAlertsManager | null = null
+  private config: AlertConfig
+  private rules: AlertRule[]
+  private activeAlerts: Map<string, CategoryAlert> = new Map()
+  private alertHistory: CategoryAlert[] = []
+  private lastAlertTimes: Map<string, number> = new Map()
+  private alertCounts: Map<number, number> = new Map() // hour -> count
 
   private constructor(config: Partial<AlertConfig> = {}) {
-    this.config = { ...defaultConfig, ...config };
-    this.rules = [...defaultRules];
+    this.config = { ...defaultConfig, ...config }
+    this.rules = [...defaultRules]
   }
 
   /**
@@ -230,80 +230,86 @@ class CategoryAlertsManager {
    */
   static getInstance(config?: Partial<AlertConfig>): CategoryAlertsManager {
     if (!CategoryAlertsManager.instance) {
-      CategoryAlertsManager.instance = new CategoryAlertsManager(config);
+      CategoryAlertsManager.instance = new CategoryAlertsManager(config)
     }
-    return CategoryAlertsManager.instance;
+    return CategoryAlertsManager.instance
   }
 
   /**
    * Evaluate metrics against alert rules
    */
   evaluateMetrics(metrics: CategoryMetrics): CategoryAlert[] {
-    if (!this.config.enabled) {return [];}
+    if (!this.config.enabled) {
+      return []
+    }
 
-    const triggeredAlerts: CategoryAlert[] = [];
-    const now = Date.now();
-    const currentHour = Math.floor(now / (60 * 60 * 1000));
+    const triggeredAlerts: CategoryAlert[] = []
+    const now = Date.now()
+    const currentHour = Math.floor(now / (60 * 60 * 1000))
 
     // Check rate limiting
-    const currentHourAlerts = this.alertCounts.get(currentHour) || 0;
+    const currentHourAlerts = this.alertCounts.get(currentHour) || 0
     if (currentHourAlerts >= this.config.maxAlertsPerHour) {
       if (this.config.debug) {
-        console.warn('Alert rate limit reached for current hour');
+        console.warn('Alert rate limit reached for current hour')
       }
-      return [];
+      return []
     }
 
     for (const rule of this.rules) {
-      if (!rule.enabled) {continue;}
+      if (!rule.enabled) {
+        continue
+      }
 
       // Check cooldown
-      const lastAlertTime = this.lastAlertTimes.get(rule.id) || 0;
-      if (now - lastAlertTime < rule.cooldown) {continue;}
+      const lastAlertTime = this.lastAlertTimes.get(rule.id) || 0
+      if (now - lastAlertTime < rule.cooldown) {
+        continue
+      }
 
-      let shouldAlert = false;
+      let shouldAlert = false
 
       if (rule.evaluator) {
         // Use custom evaluator
-        shouldAlert = rule.evaluator(metrics);
+        shouldAlert = rule.evaluator(metrics)
       } else {
         // Use standard evaluation
-        const value = this.getMetricValue(metrics, rule.metricPath);
-        shouldAlert = this.evaluateCondition(value, rule.threshold, rule.operator);
+        const value = this.getMetricValue(metrics, rule.metricPath)
+        shouldAlert = this.evaluateCondition(value, rule.threshold, rule.operator)
       }
 
       if (shouldAlert) {
-        const alert = this.createAlert(rule, metrics);
-        triggeredAlerts.push(alert);
-        
+        const alert = this.createAlert(rule, metrics)
+        triggeredAlerts.push(alert)
+
         // Update tracking
-        this.lastAlertTimes.set(rule.id, now);
-        this.alertCounts.set(currentHour, currentHourAlerts + 1);
-        this.activeAlerts.set(alert.id, alert);
-        this.alertHistory.push(alert);
+        this.lastAlertTimes.set(rule.id, now)
+        this.alertCounts.set(currentHour, currentHourAlerts + 1)
+        this.activeAlerts.set(alert.id, alert)
+        this.alertHistory.push(alert)
       }
     }
 
     // Send notifications for triggered alerts
     if (triggeredAlerts.length > 0) {
-      this.sendNotifications(triggeredAlerts);
+      this.sendNotifications(triggeredAlerts)
     }
 
-    return triggeredAlerts;
+    return triggeredAlerts
   }
 
   /**
    * Get metric value by path
    */
   private getMetricValue(metrics: CategoryMetrics, path: string): number {
-    const parts = path.split('.');
-    let value: any = metrics;
-    
+    const parts = path.split('.')
+    let value: any = metrics
+
     for (const part of parts) {
-      value = value?.[part];
+      value = value?.[part]
     }
-    
-    return typeof value === 'number' ? value : 0;
+
+    return typeof value === 'number' ? value : 0
   }
 
   /**
@@ -311,12 +317,18 @@ class CategoryAlertsManager {
    */
   private evaluateCondition(value: number, threshold: number, operator: string): boolean {
     switch (operator) {
-      case 'gt': return value > threshold;
-      case 'lt': return value < threshold;
-      case 'eq': return value === threshold;
-      case 'gte': return value >= threshold;
-      case 'lte': return value <= threshold;
-      default: return false;
+      case 'gt':
+        return value > threshold
+      case 'lt':
+        return value < threshold
+      case 'eq':
+        return value === threshold
+      case 'gte':
+        return value >= threshold
+      case 'lte':
+        return value <= threshold
+      default:
+        return false
     }
   }
 
@@ -324,8 +336,8 @@ class CategoryAlertsManager {
    * Create alert from rule and metrics
    */
   private createAlert(rule: AlertRule, metrics: CategoryMetrics): CategoryAlert {
-    const value = this.getMetricValue(metrics, rule.metricPath);
-    
+    const value = this.getMetricValue(metrics, rule.metricPath)
+
     return {
       id: `${rule.id}_${Date.now()}`,
       type: rule.type,
@@ -341,22 +353,23 @@ class CategoryAlertsManager {
         metricPath: rule.metricPath,
         operator: rule.operator,
       },
-    };
+    }
   }
 
   /**
    * Generate alert description
    */
   private generateAlertDescription(rule: AlertRule, value: number): string {
-    const operatorText = {
-      gt: 'mayor que',
-      lt: 'menor que',
-      eq: 'igual a',
-      gte: 'mayor o igual que',
-      lte: 'menor o igual que',
-    }[rule.operator] || 'comparado con';
+    const operatorText =
+      {
+        gt: 'mayor que',
+        lt: 'menor que',
+        eq: 'igual a',
+        gte: 'mayor o igual que',
+        lte: 'menor o igual que',
+      }[rule.operator] || 'comparado con'
 
-    return `El valor actual (${value}) es ${operatorText} el umbral (${rule.threshold})`;
+    return `El valor actual (${value}) es ${operatorText} el umbral (${rule.threshold})`
   }
 
   /**
@@ -367,25 +380,25 @@ class CategoryAlertsManager {
       try {
         // Console notification
         if (this.config.channels.console) {
-          this.logAlert(alert);
+          this.logAlert(alert)
         }
 
         // Webhook notification
         if (this.config.channels.webhook) {
-          await this.sendWebhookNotification(alert);
+          await this.sendWebhookNotification(alert)
         }
 
         // Email notification (placeholder)
         if (this.config.channels.email) {
-          await this.sendEmailNotification(alert);
+          await this.sendEmailNotification(alert)
         }
 
         // Slack notification (placeholder)
         if (this.config.channels.slack) {
-          await this.sendSlackNotification(alert);
+          await this.sendSlackNotification(alert)
         }
       } catch (error) {
-        console.error('Failed to send notification for alert:', alert.id, error);
+        console.error('Failed to send notification for alert:', alert.id, error)
       }
     }
   }
@@ -399,7 +412,7 @@ class CategoryAlertsManager {
       warning: '⚠️',
       error: '❌',
       critical: '🚨',
-    }[alert.severity];
+    }[alert.severity]
 
     console.warn(
       `${emoji} [CATEGORY ALERT] ${alert.title}`,
@@ -408,14 +421,16 @@ class CategoryAlertsManager {
       `\nValue: ${alert.value}`,
       `\nThreshold: ${alert.threshold}`,
       `\nTime: ${new Date(alert.timestamp).toISOString()}`
-    );
+    )
   }
 
   /**
    * Send webhook notification
    */
   private async sendWebhookNotification(alert: CategoryAlert): Promise<void> {
-    if (typeof window === 'undefined' || !window.fetch) {return;}
+    if (typeof window === 'undefined' || !window.fetch) {
+      return
+    }
 
     try {
       await fetch('/api/alerts/webhook', {
@@ -428,9 +443,9 @@ class CategoryAlertsManager {
           source: 'categories_component',
           timestamp: Date.now(),
         }),
-      });
+      })
     } catch (error) {
-      console.error('Failed to send webhook notification:', error);
+      console.error('Failed to send webhook notification:', error)
     }
   }
 
@@ -456,113 +471,119 @@ class CategoryAlertsManager {
    * Resolve alert
    */
   resolveAlert(alertId: string): boolean {
-    const alert = this.activeAlerts.get(alertId);
-    if (!alert) {return false;}
+    const alert = this.activeAlerts.get(alertId)
+    if (!alert) {
+      return false
+    }
 
-    alert.resolved = true;
-    alert.resolvedAt = Date.now();
-    this.activeAlerts.delete(alertId);
+    alert.resolved = true
+    alert.resolvedAt = Date.now()
+    this.activeAlerts.delete(alertId)
 
     if (this.config.debug) {
     }
 
-    return true;
+    return true
   }
 
   /**
    * Get active alerts
    */
   getActiveAlerts(): CategoryAlert[] {
-    return Array.from(this.activeAlerts.values());
+    return Array.from(this.activeAlerts.values())
   }
 
   /**
    * Get alert history
    */
   getAlertHistory(limit = 100): CategoryAlert[] {
-    return this.alertHistory.slice(-limit);
+    return this.alertHistory.slice(-limit)
   }
 
   /**
    * Add custom rule
    */
   addRule(rule: AlertRule): void {
-    this.rules.push(rule);
+    this.rules.push(rule)
   }
 
   /**
    * Remove rule
    */
   removeRule(ruleId: string): boolean {
-    const index = this.rules.findIndex(rule => rule.id === ruleId);
-    if (index === -1) {return false;}
+    const index = this.rules.findIndex(rule => rule.id === ruleId)
+    if (index === -1) {
+      return false
+    }
 
-    this.rules.splice(index, 1);
-    return true;
+    this.rules.splice(index, 1)
+    return true
   }
 
   /**
    * Update rule
    */
   updateRule(ruleId: string, updates: Partial<AlertRule>): boolean {
-    const rule = this.rules.find(r => r.id === ruleId);
-    if (!rule) {return false;}
+    const rule = this.rules.find(r => r.id === ruleId)
+    if (!rule) {
+      return false
+    }
 
-    Object.assign(rule, updates);
-    return true;
+    Object.assign(rule, updates)
+    return true
   }
 
   /**
    * Get configuration
    */
   getConfig(): AlertConfig {
-    return { ...this.config };
+    return { ...this.config }
   }
 
   /**
    * Update configuration
    */
   updateConfig(updates: Partial<AlertConfig>): void {
-    this.config = { ...this.config, ...updates };
+    this.config = { ...this.config, ...updates }
   }
 
   /**
    * Get rules
    */
   getRules(): AlertRule[] {
-    return [...this.rules];
+    return [...this.rules]
   }
 
   /**
    * Clear alert history
    */
   clearHistory(): void {
-    this.alertHistory = [];
+    this.alertHistory = []
   }
 
   /**
    * Get statistics
    */
   getStatistics(): {
-    activeAlerts: number;
-    totalAlerts: number;
-    alertsByType: Record<AlertType, number>;
-    alertsBySeverity: Record<AlertSeverity, number>;
+    activeAlerts: number
+    totalAlerts: number
+    alertsByType: Record<AlertType, number>
+    alertsBySeverity: Record<AlertSeverity, number>
   } {
-    const alertsByType: Record<string, number> = {};
-    const alertsBySeverity: Record<string, number> = {};
+    const alertsByType: Record<string, number> = {}
+    const alertsBySeverity: Record<string, number> = {}
 
     this.alertHistory.forEach(alert => {
-      alertsByType[alert.type] = (alertsByType[alert.type] || 0) + 1;
-      alertsBySeverity[alert.severity] = (alertsBySeverity[alert.severity] || 0) + 1;
-    });
+      alertsByType[alert.type] = (alertsByType[alert.type] || 0) + 1
+      alertsBySeverity[alert.severity] = (alertsBySeverity[alert.severity] || 0) + 1
+    })
 
     return {
       activeAlerts: this.activeAlerts.size,
       totalAlerts: this.alertHistory.length,
       alertsByType: alertsByType as Record<AlertType, number>,
       alertsBySeverity: alertsBySeverity as Record<AlertSeverity, number>,
-    };
+    }
   }
 }
 
@@ -570,7 +591,7 @@ class CategoryAlertsManager {
  * React hook for category alerts
  */
 export const useCategoryAlerts = (config?: Partial<AlertConfig>) => {
-  const manager = CategoryAlertsManager.getInstance(config);
+  const manager = CategoryAlertsManager.getInstance(config)
 
   return {
     evaluateMetrics: manager.evaluateMetrics.bind(manager),
@@ -581,20 +602,11 @@ export const useCategoryAlerts = (config?: Partial<AlertConfig>) => {
     removeRule: manager.removeRule.bind(manager),
     updateRule: manager.updateRule.bind(manager),
     getStatistics: manager.getStatistics.bind(manager),
-  };
-};
+  }
+}
 
 /**
  * Export manager and types
  */
-export { CategoryAlertsManager };
-export type { AlertRule, AlertConfig };
-
-
-
-
-
-
-
-
-
+export { CategoryAlertsManager }
+export type { AlertRule, AlertConfig }

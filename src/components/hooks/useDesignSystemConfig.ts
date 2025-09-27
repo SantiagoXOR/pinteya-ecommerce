@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { ThemeConfig, ComponentSize, ComponentVariant } from '../ui/types'
@@ -161,9 +161,12 @@ export function useDesignSystemConfig() {
   }, [])
 
   // Actualizar colores específicos
-  const updateColors = useCallback((colors: Partial<ThemeConfig['colors']>) => {
-    updateTheme({ colors: { ...state.theme.colors, ...colors } })
-  }, [state.theme.colors, updateTheme])
+  const updateColors = useCallback(
+    (colors: Partial<ThemeConfig['colors']>) => {
+      updateTheme({ colors: { ...state.theme.colors, ...colors } })
+    },
+    [state.theme.colors, updateTheme]
+  )
 
   // Actualizar defaults de componentes
   const updateComponentDefaults = useCallback(
@@ -239,10 +242,10 @@ export function useDesignSystemConfig() {
     currentPreset: state.currentPreset,
     customizations: state.customizations,
     componentDefaults: state.componentDefaults,
-    
+
     // Presets disponibles
     availablePresets: Object.keys(presetConfigs) as PresetName[],
-    
+
     // Acciones
     applyPreset,
     updateTheme,
@@ -252,18 +255,9 @@ export function useDesignSystemConfig() {
     exportConfig,
     importConfig,
     getCSSVariables,
-    
+
     // Utilidades
     isCustomized: Object.keys(state.customizations).length > 0,
     isDarkMode: state.currentPreset === 'dark',
   }
 }
-
-
-
-
-
-
-
-
-

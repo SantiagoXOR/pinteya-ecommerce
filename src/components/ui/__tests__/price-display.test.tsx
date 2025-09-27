@@ -10,36 +10,30 @@ describe('PriceDisplay', () => {
   })
 
   it('shows discount percentage when original price is provided', () => {
-    render(
-      <PriceDisplay 
-        amount={1550} 
-        originalAmount={2000} 
-        showDiscountPercentage 
-      />
-    )
-    
+    render(<PriceDisplay amount={1550} originalAmount={2000} showDiscountPercentage />)
+
     // Verifica precio original tachado
     expect(screen.getByText('$ 20,00')).toBeInTheDocument()
 
     // Verifica precio actual
     expect(screen.getByText('$ 15,50')).toBeInTheDocument()
-    
+
     // Verifica porcentaje de descuento (23% = (2000-1550)/2000 * 100)
     expect(screen.getByText(/-\d+%/)).toBeInTheDocument()
   })
 
   it('displays installments information', () => {
     render(
-      <PriceDisplay 
+      <PriceDisplay
         amount={15000}
         installments={{
           quantity: 12,
           amount: 1250,
-          interestFree: true
+          interestFree: true,
         }}
       />
     )
-    
+
     // Verifica información de cuotas
     expect(screen.getByText(/12x de/)).toBeInTheDocument()
     expect(screen.getByText(/\$ 12,50/)).toBeInTheDocument()
@@ -53,73 +47,59 @@ describe('PriceDisplay', () => {
   })
 
   it('applies correct variant classes', () => {
-    const { container } = render(
-      <PriceDisplay amount={1550} variant="center" />
-    )
-    
+    const { container } = render(<PriceDisplay amount={1550} variant='center' />)
+
     expect(container.firstChild).toHaveClass('text-center', 'items-center')
   })
 
   it('applies correct size classes', () => {
-    const { container } = render(
-      <PriceDisplay amount={1550} size="lg" />
-    )
-    
+    const { container } = render(<PriceDisplay amount={1550} size='lg' />)
+
     // Verifica que se aplique la clase de tamaño
     expect(container.querySelector('.text-2xl')).toBeInTheDocument()
   })
 
   it('handles different currencies', () => {
-    render(<PriceDisplay amount={1550} currency="USD" />)
-    
+    render(<PriceDisplay amount={1550} currency='USD' />)
+
     // Para USD debería mostrar el símbolo de dólar
     expect(screen.getByText(/US\$/)).toBeInTheDocument()
   })
 
   it('uses custom currency symbol when provided', () => {
-    render(<PriceDisplay amount={1550} currencySymbol="$" />)
-    
+    render(<PriceDisplay amount={1550} currencySymbol='$' />)
+
     expect(screen.getByText('$15,50')).toBeInTheDocument()
   })
 
   it('calculates discount percentage correctly', () => {
-    render(
-      <PriceDisplay 
-        amount={7500} 
-        originalAmount={10000} 
-        showDiscountPercentage 
-      />
-    )
-    
+    render(<PriceDisplay amount={7500} originalAmount={10000} showDiscountPercentage />)
+
     // 25% de descuento: (10000-7500)/10000 * 100 = 25%
     expect(screen.getByText('-25%')).toBeInTheDocument()
   })
 
   it('renders compact variant correctly', () => {
     const { container } = render(
-      <PriceDisplay 
-        amount={1550} 
-        originalAmount={2000}
-        variant="compact" 
-      />
+      <PriceDisplay amount={1550} originalAmount={2000} variant='compact' />
     )
-    
+
     expect(container.firstChild).toHaveClass('flex-col', 'gap-0.5')
   })
 
   it('handles installments without interest correctly', () => {
     render(
-      <PriceDisplay 
+      <PriceDisplay
         amount={15000}
         installments={{
           quantity: 6,
           amount: 2500,
-          interestFree: false
+          interestFree: false,
         }}
-        installmentsText="con interés"
+        installmentsText='con interés'
       />
     )
-    
+
     expect(screen.getByText(/6x de/)).toBeInTheDocument()
     expect(screen.getByText(/\$ 25,00/)).toBeInTheDocument()
     // No debería mostrar "sin interés" cuando interestFree es false
@@ -127,9 +107,7 @@ describe('PriceDisplay', () => {
   })
 
   it('applies custom price color', () => {
-    const { container } = render(
-      <PriceDisplay amount={1550} priceColor="#FF0000" />
-    )
+    const { container } = render(<PriceDisplay amount={1550} priceColor='#FF0000' />)
 
     // Verifica que se aplique la clase de color personalizado
     expect(container.querySelector('.text-\\[\\#FF0000\\]')).toBeInTheDocument()
@@ -148,12 +126,3 @@ describe('PriceDisplay', () => {
     expect(screen.getByText('$ 12.345,67')).toBeInTheDocument()
   })
 })
-
-
-
-
-
-
-
-
-

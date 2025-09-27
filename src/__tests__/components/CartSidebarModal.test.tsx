@@ -2,16 +2,16 @@
 // PINTEYA E-COMMERCE - TESTS PARA CARTSIDEBARMODAL COMPONENT
 // ===================================
 
-import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import CartSidebarModal from '@/components/Common/CartSidebarModal';
-import cartReducer from '@/redux/features/cart-slice';
+import React from 'react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
+import { Provider } from 'react-redux'
+import { configureStore } from '@reduxjs/toolkit'
+import CartSidebarModal from '@/components/Common/CartSidebarModal'
+import cartReducer from '@/redux/features/cart-slice'
 
 // Mock del contexto de modal del carrito
-const mockCloseModal = jest.fn();
-const mockIsOpen = true;
+const mockCloseModal = jest.fn()
+const mockIsOpen = true
 
 jest.mock('@/app/context/CartSidebarModalContext', () => ({
   useCartModalContext: () => ({
@@ -19,21 +19,29 @@ jest.mock('@/app/context/CartSidebarModalContext', () => ({
     openCartModal: jest.fn(),
     closeCartModal: mockCloseModal,
   }),
-}));
+}))
 
 // Mock de Next.js Link
 jest.mock('next/link', () => {
   return ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
-  );
-});
+  )
+})
 
 // Mock de Next.js Image
 jest.mock('next/image', () => {
-  return ({ src, alt, width, height }: { src: string; alt: string; width: number; height: number }) => (
-    <img src={src} alt={alt} width={width} height={height} />
-  );
-});
+  return ({
+    src,
+    alt,
+    width,
+    height,
+  }: {
+    src: string
+    alt: string
+    width: number
+    height: number
+  }) => <img src={src} alt={alt} width={width} height={height} />
+})
 
 // Items de carrito de prueba
 const mockCartItems = [
@@ -59,7 +67,7 @@ const mockCartItems = [
       previews: ['/images/products/esmalte-azul.jpg'],
     },
   },
-];
+]
 
 // Función helper para renderizar con Redux store
 const renderWithStore = (component: React.ReactElement, initialState = {}) => {
@@ -68,104 +76,100 @@ const renderWithStore = (component: React.ReactElement, initialState = {}) => {
       cartReducer,
     },
     preloadedState: initialState,
-  });
+  })
 
-  return render(
-    <Provider store={store}>
-      {component}
-    </Provider>
-  );
-};
+  return render(<Provider store={store}>{component}</Provider>)
+}
 
 describe('CartSidebarModal Component', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   it('should render cart modal when open', async () => {
     const initialState = {
       cartReducer: {
         items: mockCartItems,
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
-    expect(screen.getByText('🛒 Tu Selección')).toBeInTheDocument();
-    expect(screen.getByText('Pintura Latex Interior Blanco 4L')).toBeInTheDocument();
-    expect(screen.getByText('Esmalte Sintético Azul 1L')).toBeInTheDocument();
-  });
+    expect(screen.getByText('🛒 Tu Selección')).toBeInTheDocument()
+    expect(screen.getByText('Pintura Latex Interior Blanco 4L')).toBeInTheDocument()
+    expect(screen.getByText('Esmalte Sintético Azul 1L')).toBeInTheDocument()
+  })
 
   it('should display cart items with correct information', async () => {
     const initialState = {
       cartReducer: {
         items: mockCartItems,
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
     // Verificar que se muestran los productos
-    expect(screen.getByText('Pintura Latex Interior Blanco 4L')).toBeInTheDocument();
-    expect(screen.getByText('Esmalte Sintético Azul 1L')).toBeInTheDocument();
+    expect(screen.getByText('Pintura Latex Interior Blanco 4L')).toBeInTheDocument()
+    expect(screen.getByText('Esmalte Sintético Azul 1L')).toBeInTheDocument()
 
     // Verificar precios (usar getAllByText para múltiples elementos)
-    expect(screen.getAllByText(/\$\s*15\.000/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/\$\s*7\.000/).length).toBeGreaterThan(0);
-  });
+    expect(screen.getAllByText(/\$\s*15\.000/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/\$\s*7\.000/).length).toBeGreaterThan(0)
+  })
 
   it('should calculate and display total price correctly', async () => {
     const initialState = {
       cartReducer: {
         items: mockCartItems,
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
     // Total: (15000 * 2) + (7000 * 1) = 37000 (formato flexible)
-    expect(screen.getByText(/\$\s*37\.000/)).toBeInTheDocument();
-  });
+    expect(screen.getByText(/\$\s*37\.000/)).toBeInTheDocument()
+  })
 
   it('should handle close modal action', async () => {
     const initialState = {
       cartReducer: {
         items: mockCartItems,
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
-    const closeButton = screen.getByRole('button', { name: /cerrar carrito/i });
-    
+    const closeButton = screen.getByRole('button', { name: /cerrar carrito/i })
+
     await act(async () => {
-      fireEvent.click(closeButton);
-    });
+      fireEvent.click(closeButton)
+    })
 
-    expect(mockCloseModal).toHaveBeenCalled();
-  });
+    expect(mockCloseModal).toHaveBeenCalled()
+  })
 
   it('should display empty cart message when no items', async () => {
     const initialState = {
       cartReducer: {
         items: [],
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
-    expect(screen.getByText('¡Tu carrito está vacío!')).toBeInTheDocument();
-  });
+    expect(screen.getByText('¡Tu carrito está vacío!')).toBeInTheDocument()
+  })
 
   it('should handle remove item from cart', async () => {
     const store = configureStore({
@@ -177,28 +181,28 @@ describe('CartSidebarModal Component', () => {
           items: mockCartItems,
         },
       },
-    });
+    })
 
     await act(async () => {
       render(
         <Provider store={store}>
           <CartSidebarModal />
         </Provider>
-      );
-    });
+      )
+    })
 
     // Buscar todos los botones de eliminar y hacer clic en el primero
-    const removeButtons = screen.getAllByLabelText('Eliminar producto del carrito');
-    expect(removeButtons.length).toBe(2); // Verificar que hay 2 botones (uno por producto)
+    const removeButtons = screen.getAllByLabelText('Eliminar producto del carrito')
+    expect(removeButtons.length).toBe(2) // Verificar que hay 2 botones (uno por producto)
 
     await act(async () => {
-      fireEvent.click(removeButtons[0]); // Hacer clic en el primer botón
-    });
+      fireEvent.click(removeButtons[0]) // Hacer clic en el primer botón
+    })
 
     // Verificar que se eliminó un item (de 2 items iniciales a 1)
-    const state = store.getState();
-    expect(state.cartReducer.items.length).toBe(1);
-  });
+    const state = store.getState()
+    expect(state.cartReducer.items.length).toBe(1)
+  })
 
   it('should handle quantity updates', async () => {
     const store = configureStore({
@@ -210,102 +214,102 @@ describe('CartSidebarModal Component', () => {
           items: mockCartItems,
         },
       },
-    });
+    })
 
     await act(async () => {
       render(
         <Provider store={store}>
           <CartSidebarModal />
         </Provider>
-      );
-    });
+      )
+    })
 
     // Buscar controles de cantidad (+ y -)
-    const quantityButtons = screen.getAllByRole('button');
-    const increaseButton = quantityButtons.find(button => 
-      button.textContent?.includes('+') || 
-      button.getAttribute('aria-label')?.includes('increase')
-    );
+    const quantityButtons = screen.getAllByRole('button')
+    const increaseButton = quantityButtons.find(
+      button =>
+        button.textContent?.includes('+') || button.getAttribute('aria-label')?.includes('increase')
+    )
 
     if (increaseButton) {
       await act(async () => {
-        fireEvent.click(increaseButton);
-      });
+        fireEvent.click(increaseButton)
+      })
 
       // Verificar que la cantidad cambió
-      const state = store.getState();
-      const updatedItem = state.cartReducer.items.find(item => item.id === 1);
-      expect(updatedItem?.quantity).toBeGreaterThan(2);
+      const state = store.getState()
+      const updatedItem = state.cartReducer.items.find(item => item.id === 1)
+      expect(updatedItem?.quantity).toBeGreaterThan(2)
     }
-  });
+  })
 
   it('should show checkout button when items exist', async () => {
     const initialState = {
       cartReducer: {
         items: mockCartItems,
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
-    const checkoutButton = screen.queryByRole('link', { name: /checkout/i });
-    expect(checkoutButton).toBeNull(); // El componente actual no muestra botón checkout con productos
-  });
+    const checkoutButton = screen.queryByRole('link', { name: /checkout/i })
+    expect(checkoutButton).toBeNull() // El componente actual no muestra botón checkout con productos
+  })
 
   it('should show checkout button even when cart is empty (current behavior)', async () => {
     const initialState = {
       cartReducer: {
         items: [],
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
     // El componente actual no muestra el botón de checkout cuando está vacío
-    const checkoutButton = screen.queryByRole('link', { name: /checkout/i });
-    expect(checkoutButton).toBeNull();
-  });
+    const checkoutButton = screen.queryByRole('link', { name: /checkout/i })
+    expect(checkoutButton).toBeNull()
+  })
 
   it('should display products correctly (quantities not shown in current implementation)', async () => {
     const initialState = {
       cartReducer: {
         items: mockCartItems,
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
     // Verificar que se muestran los productos (el componente actual no muestra cantidades)
-    expect(screen.getByText('Pintura Latex Interior Blanco 4L')).toBeInTheDocument();
-    expect(screen.getByText('Esmalte Sintético Azul 1L')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Pintura Latex Interior Blanco 4L')).toBeInTheDocument()
+    expect(screen.getByText('Esmalte Sintético Azul 1L')).toBeInTheDocument()
+  })
 
   it('should handle modal overlay click to close', async () => {
     const initialState = {
       cartReducer: {
         items: mockCartItems,
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
     // Buscar el botón de cerrar modal
-    const closeButton = screen.getByLabelText('Cerrar carrito');
+    const closeButton = screen.getByLabelText('Cerrar carrito')
 
     await act(async () => {
-      fireEvent.click(closeButton);
-    });
+      fireEvent.click(closeButton)
+    })
 
-    expect(mockCloseModal).toHaveBeenCalled();
-  });
+    expect(mockCloseModal).toHaveBeenCalled()
+  })
 
   it('should show proper loading states', async () => {
     const initialState = {
@@ -313,22 +317,13 @@ describe('CartSidebarModal Component', () => {
         items: mockCartItems,
         isLoading: true,
       },
-    };
+    }
 
     await act(async () => {
-      renderWithStore(<CartSidebarModal />, initialState);
-    });
+      renderWithStore(<CartSidebarModal />, initialState)
+    })
 
     // Verificar que se muestra el título del carrito
-    expect(screen.getByText('🛒 Tu Selección')).toBeInTheDocument();
-  });
-});
-
-
-
-
-
-
-
-
-
+    expect(screen.getByText('🛒 Tu Selección')).toBeInTheDocument()
+  })
+})

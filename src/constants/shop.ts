@@ -7,15 +7,15 @@ export const SHOP_CONSTANTS = {
   PRODUCTS_PER_PAGE_SIDEBAR: 9,
   PRODUCTS_PER_PAGE_GRID: 12,
   PRODUCTS_PER_PAGE_LIST: 8,
-  
+
   // Timeouts
   COUPON_APPLY_DELAY: 1000,
   SEARCH_DEBOUNCE_DELAY: 300,
-  
+
   // Límites
   MAX_CART_ITEMS: 99,
   MIN_ORDER_AMOUNT: 1000, // Pesos argentinos
-  
+
   // Configuración de filtros
   PRICE_RANGES: [
     { min: 0, max: 5000, label: 'Hasta $5.000' },
@@ -24,7 +24,7 @@ export const SHOP_CONSTANTS = {
     { min: 30000, max: 50000, label: '$30.000 - $50.000' },
     { min: 50000, max: undefined, label: 'Más de $50.000' },
   ],
-  
+
   // Ordenamiento
   SORT_OPTIONS: [
     { value: 'created_at', label: 'Más recientes', order: 'desc' },
@@ -33,30 +33,30 @@ export const SHOP_CONSTANTS = {
     { value: 'price', label: 'Precio menor', order: 'asc' },
     { value: 'price', label: 'Precio mayor', order: 'desc' },
   ],
-} as const;
+} as const
 
 export const PRODUCT_CATEGORIES = {
   PINTURAS: {
-    name: "Pinturas",
-    slug: "pinturas",
-    description: "Pinturas para interior y exterior",
+    name: 'Pinturas',
+    slug: 'pinturas',
+    description: 'Pinturas para interior y exterior',
   },
   HERRAMIENTAS: {
-    name: "Herramientas",
-    slug: "herramientas", 
-    description: "Herramientas para pintura y construcción",
+    name: 'Herramientas',
+    slug: 'herramientas',
+    description: 'Herramientas para pintura y construcción',
   },
   ACCESORIOS: {
-    name: "Accesorios",
-    slug: "accesorios",
-    description: "Accesorios y complementos",
+    name: 'Accesorios',
+    slug: 'accesorios',
+    description: 'Accesorios y complementos',
   },
   PREPARACION: {
-    name: "Preparación",
-    slug: "preparacion",
-    description: "Productos para preparación de superficies",
+    name: 'Preparación',
+    slug: 'preparacion',
+    description: 'Productos para preparación de superficies',
   },
-} as const;
+} as const
 
 export const CHECKOUT_CONSTANTS = {
   STEPS: {
@@ -66,16 +66,16 @@ export const CHECKOUT_CONSTANTS = {
     SUCCESS: 'success',
     ERROR: 'error',
   },
-  
+
   PAYMENT_METHODS: {
     MERCADOPAGO: 'mercadopago',
     BANK_TRANSFER: 'bank',
     CASH: 'cash',
   },
-  
+
   SHIPPING_COST: 2500, // Pesos argentinos
   FREE_SHIPPING_THRESHOLD: 25000, // Pesos argentinos
-} as const;
+} as const
 
 export const VALIDATION_CONSTANTS = {
   MIN_SEARCH_LENGTH: 2,
@@ -86,7 +86,7 @@ export const VALIDATION_CONSTANTS = {
   MAX_MESSAGE_LENGTH: 1000,
   PHONE_REGEX: /^[0-9]{10,11}$/,
   DNI_REGEX: /^[0-9]{7,8}$/,
-} as const;
+} as const
 
 export const SEARCH_CONSTANTS = {
   // Búsquedas recientes
@@ -103,13 +103,4 @@ export const SEARCH_CONSTANTS = {
   SEARCH_DEBOUNCE_MS: 300,
   MIN_SEARCH_QUERY_LENGTH: 2,
   MAX_SUGGESTIONS: 8,
-} as const;
-
-
-
-
-
-
-
-
-
+} as const

@@ -2,28 +2,28 @@
 // PINTEYA E-COMMERCE - ENTERPRISE METRICS SYSTEM
 // ===================================
 
-import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { enterpriseAlertSystem, AlertLevel as AlertSystemLevel } from './alert-system';
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { enterpriseAlertSystem, AlertLevel as AlertSystemLevel } from './alert-system'
 
 // ✅ IMPORT CONDICIONAL: Solo cargar CacheUtils en servidor para evitar errores de ioredis en cliente
-let CacheUtils: any = null;
+let CacheUtils: any = null
 if (typeof window === 'undefined') {
   // Solo en servidor
   try {
-    CacheUtils = require('@/lib/cache-manager').CacheUtils;
+    CacheUtils = require('@/lib/cache-manager').CacheUtils
   } catch (error) {
-    console.warn('[EnterpriseMetrics] CacheUtils not available:', error);
+    console.warn('[EnterpriseMetrics] CacheUtils not available:', error)
   }
 }
 
 // Tipos de métricas enterprise
 export enum MetricType {
-  COUNTER = 'counter',           // Contador incremental
-  GAUGE = 'gauge',              // Valor actual
-  HISTOGRAM = 'histogram',       // Distribución de valores
-  TIMER = 'timer',              // Medición de tiempo
-  RATE = 'rate'                 // Tasa por unidad de tiempo
+  COUNTER = 'counter', // Contador incremental
+  GAUGE = 'gauge', // Valor actual
+  HISTOGRAM = 'histogram', // Distribución de valores
+  TIMER = 'timer', // Medición de tiempo
+  RATE = 'rate', // Tasa por unidad de tiempo
 }
 
 // Categorías de métricas de negocio
@@ -32,7 +32,7 @@ export enum BusinessMetricCategory {
   SECURITY = 'security',
   BUSINESS = 'business',
   INFRASTRUCTURE = 'infrastructure',
-  USER_EXPERIENCE = 'user_experience'
+  USER_EXPERIENCE = 'user_experience',
 }
 
 // Niveles de alerta
@@ -40,90 +40,90 @@ export enum AlertLevel {
   INFO = 'info',
   WARNING = 'warning',
   CRITICAL = 'critical',
-  EMERGENCY = 'emergency'
+  EMERGENCY = 'emergency',
 }
 
 // Métrica enterprise
 export interface EnterpriseMetric {
-  id: string;
-  name: string;
-  type: MetricType;
-  category: BusinessMetricCategory;
-  value: number;
-  timestamp: string;
-  tags: Record<string, string>;
-  metadata?: Record<string, any>;
-  aggregationPeriod?: string; // '1m', '5m', '1h', '1d'
+  id: string
+  name: string
+  type: MetricType
+  category: BusinessMetricCategory
+  value: number
+  timestamp: string
+  tags: Record<string, string>
+  metadata?: Record<string, any>
+  aggregationPeriod?: string // '1m', '5m', '1h', '1d'
 }
 
 // Configuración de alerta
 export interface AlertRule {
-  id: string;
-  metricName: string;
-  condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte';
-  threshold: number;
-  level: AlertLevel;
-  enabled: boolean;
-  cooldownMinutes: number;
-  description: string;
-  actions: AlertAction[];
+  id: string
+  metricName: string
+  condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte'
+  threshold: number
+  level: AlertLevel
+  enabled: boolean
+  cooldownMinutes: number
+  description: string
+  actions: AlertAction[]
 }
 
 // Acción de alerta
 export interface AlertAction {
-  type: 'email' | 'webhook' | 'log' | 'slack';
-  config: Record<string, any>;
+  type: 'email' | 'webhook' | 'log' | 'slack'
+  config: Record<string, any>
 }
 
 // Alerta activa
 export interface ActiveAlert {
-  id: string;
-  ruleId: string;
-  metricName: string;
-  level: AlertLevel;
-  message: string;
-  value: number;
-  threshold: number;
-  triggeredAt: string;
-  resolvedAt?: string;
-  metadata?: Record<string, any>;
+  id: string
+  ruleId: string
+  metricName: string
+  level: AlertLevel
+  message: string
+  value: number
+  threshold: number
+  triggeredAt: string
+  resolvedAt?: string
+  metadata?: Record<string, any>
 }
 
 // Agregación temporal
 export interface MetricAggregation {
-  period: string;
-  startTime: string;
-  endTime: string;
-  count: number;
-  sum: number;
-  avg: number;
-  min: number;
-  max: number;
-  p50: number;
-  p95: number;
-  p99: number;
+  period: string
+  startTime: string
+  endTime: string
+  count: number
+  sum: number
+  avg: number
+  min: number
+  max: number
+  p50: number
+  p95: number
+  p99: number
 }
 
 /**
  * Sistema de Métricas Enterprise con agregación temporal y alertas
  */
 export class EnterpriseMetricsCollector {
-  private static instance: EnterpriseMetricsCollector;
-  private alertRules: Map<string, AlertRule> = new Map();
-  private activeAlerts: Map<string, ActiveAlert> = new Map();
-  private metricsBuffer: EnterpriseMetric[] = [];
-  private flushInterval: NodeJS.Timeout | null = null;
+  private static instance: EnterpriseMetricsCollector
+  private alertRules: Map<string, AlertRule> = new Map()
+  private activeAlerts: Map<string, ActiveAlert> = new Map()
+  private metricsBuffer: EnterpriseMetric[] = []
+  private flushInterval: NodeJS.Timeout | null = null
 
   constructor() {
-    this.initializeDefaultAlerts();
-    this.startMetricsFlush();
+    this.initializeDefaultAlerts()
+    this.startMetricsFlush()
   }
 
   static getInstance(): EnterpriseMetricsCollector {
     if (!EnterpriseMetricsCollector.instance) {
-      EnterpriseMetricsCollector.instance = new EnterpriseMetricsCollector();
+      EnterpriseMetricsCollector.instance = new EnterpriseMetricsCollector()
     }
-    return EnterpriseMetricsCollector.instance;
+    return EnterpriseMetricsCollector.instance
   }
 
   /**
@@ -146,29 +146,38 @@ export class EnterpriseMetricsCollector {
         value,
         timestamp: new Date().toISOString(),
         tags,
-        metadata
-      };
+        metadata,
+      }
 
       // Agregar a buffer para flush batch
-      this.metricsBuffer.push(metric);
+      this.metricsBuffer.push(metric)
 
       // Verificar alertas
-      await this.checkAlerts(metric);
+      await this.checkAlerts(metric)
 
       // Log para debugging
-      logger.debug(LogLevel.DEBUG, `Metric recorded: ${name}`, {
-        value,
-        type,
-        category,
-        tags
-      }, LogCategory.SYSTEM);
-
+      logger.debug(
+        LogLevel.DEBUG,
+        `Metric recorded: ${name}`,
+        {
+          value,
+          type,
+          category,
+          tags,
+        },
+        LogCategory.SYSTEM
+      )
     } catch (error) {
-      logger.error(LogLevel.ERROR, `Failed to record metric: ${name}`, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        value,
-        type
-      }, LogCategory.SYSTEM);
+      logger.error(
+        LogLevel.ERROR,
+        `Failed to record metric: ${name}`,
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          value,
+          type,
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -187,7 +196,7 @@ export class EnterpriseMetricsCollector {
       MetricType.TIMER,
       BusinessMetricCategory.PERFORMANCE,
       { ...tags, success: success.toString() }
-    );
+    )
 
     await this.recordMetric(
       `performance.${operation}.count`,
@@ -195,7 +204,7 @@ export class EnterpriseMetricsCollector {
       MetricType.COUNTER,
       BusinessMetricCategory.PERFORMANCE,
       { ...tags, success: success.toString() }
-    );
+    )
   }
 
   /**
@@ -212,7 +221,7 @@ export class EnterpriseMetricsCollector {
       MetricType.COUNTER,
       BusinessMetricCategory.BUSINESS,
       tags
-    );
+    )
   }
 
   /**
@@ -229,7 +238,7 @@ export class EnterpriseMetricsCollector {
       MetricType.COUNTER,
       BusinessMetricCategory.SECURITY,
       { ...tags, severity }
-    );
+    )
   }
 
   /**
@@ -247,19 +256,24 @@ export class EnterpriseMetricsCollector {
       MetricType.GAUGE,
       BusinessMetricCategory.USER_EXPERIENCE,
       { ...tags, userId: userId || 'anonymous' }
-    );
+    )
   }
 
   /**
    * Configura una regla de alerta
    */
   setAlertRule(rule: AlertRule): void {
-    this.alertRules.set(rule.id, rule);
-    logger.info(LogLevel.INFO, `Alert rule configured: ${rule.id}`, {
-      metricName: rule.metricName,
-      threshold: rule.threshold,
-      level: rule.level
-    }, LogCategory.SYSTEM);
+    this.alertRules.set(rule.id, rule)
+    logger.info(
+      LogLevel.INFO,
+      `Alert rule configured: ${rule.id}`,
+      {
+        metricName: rule.metricName,
+        threshold: rule.threshold,
+        level: rule.level,
+      },
+      LogCategory.SYSTEM
+    )
   }
 
   /**
@@ -268,27 +282,28 @@ export class EnterpriseMetricsCollector {
   private async checkAlerts(metric: EnterpriseMetric): Promise<void> {
     for (const rule of this.alertRules.values()) {
       if (!rule.enabled || rule.metricName !== metric.name) {
-        continue;
+        continue
       }
 
       // Verificar si ya hay una alerta activa en cooldown
-      const existingAlert = Array.from(this.activeAlerts.values())
-        .find(alert => alert.ruleId === rule.id && !alert.resolvedAt);
+      const existingAlert = Array.from(this.activeAlerts.values()).find(
+        alert => alert.ruleId === rule.id && !alert.resolvedAt
+      )
 
       if (existingAlert) {
-        const cooldownEnd = new Date(existingAlert.triggeredAt);
-        cooldownEnd.setMinutes(cooldownEnd.getMinutes() + rule.cooldownMinutes);
-        
+        const cooldownEnd = new Date(existingAlert.triggeredAt)
+        cooldownEnd.setMinutes(cooldownEnd.getMinutes() + rule.cooldownMinutes)
+
         if (new Date() < cooldownEnd) {
-          continue; // Aún en cooldown
+          continue // Aún en cooldown
         }
       }
 
       // Evaluar condición
-      const triggered = this.evaluateCondition(metric.value, rule.condition, rule.threshold);
+      const triggered = this.evaluateCondition(metric.value, rule.condition, rule.threshold)
 
       if (triggered) {
-        await this.triggerAlert(rule, metric);
+        await this.triggerAlert(rule, metric)
       }
     }
   }
@@ -298,12 +313,18 @@ export class EnterpriseMetricsCollector {
    */
   private evaluateCondition(value: number, condition: string, threshold: number): boolean {
     switch (condition) {
-      case 'gt': return value > threshold;
-      case 'gte': return value >= threshold;
-      case 'lt': return value < threshold;
-      case 'lte': return value <= threshold;
-      case 'eq': return value === threshold;
-      default: return false;
+      case 'gt':
+        return value > threshold
+      case 'gte':
+        return value >= threshold
+      case 'lt':
+        return value < threshold
+      case 'lte':
+        return value <= threshold
+      case 'eq':
+        return value === threshold
+      default:
+        return false
     }
   }
 
@@ -312,7 +333,7 @@ export class EnterpriseMetricsCollector {
    */
   private async triggerAlert(rule: AlertRule, metric: EnterpriseMetric): Promise<void> {
     // Convertir nivel de alerta al sistema enterprise
-    const alertLevel = this.convertToAlertSystemLevel(rule.level);
+    const alertLevel = this.convertToAlertSystemLevel(rule.level)
 
     // Usar el sistema de alertas enterprise
     const alert = await enterpriseAlertSystem.triggerAlert(
@@ -320,7 +341,7 @@ export class EnterpriseMetricsCollector {
       rule.metricName,
       metric.value,
       `${rule.description} - Value: ${metric.value}, Threshold: ${rule.threshold}`
-    );
+    )
 
     if (alert) {
       // Mantener referencia local para compatibilidad
@@ -335,20 +356,25 @@ export class EnterpriseMetricsCollector {
         triggeredAt: alert.triggeredAt,
         metadata: {
           metric: metric,
-          rule: rule
-        }
-      };
+          rule: rule,
+        },
+      }
 
-      this.activeAlerts.set(alert.id, localAlert);
+      this.activeAlerts.set(alert.id, localAlert)
 
       // Log alerta
-      logger.warn(LogLevel.WARN, `Alert triggered via enterprise system: ${rule.id}`, {
-        alertId: alert.id,
-        level: alert.level,
-        metricName: alert.metricName,
-        value: alert.value,
-        threshold: alert.threshold
-      }, LogCategory.SYSTEM);
+      logger.warn(
+        LogLevel.WARN,
+        `Alert triggered via enterprise system: ${rule.id}`,
+        {
+          alertId: alert.id,
+          level: alert.level,
+          metricName: alert.metricName,
+          value: alert.value,
+          threshold: alert.threshold,
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -359,41 +385,61 @@ export class EnterpriseMetricsCollector {
     try {
       switch (action.type) {
         case 'log':
-          logger.error(LogLevel.ERROR, `ALERT: ${alert.message}`, {
-            alertId: alert.id,
-            level: alert.level
-          }, LogCategory.SYSTEM);
-          break;
+          logger.error(
+            LogLevel.ERROR,
+            `ALERT: ${alert.message}`,
+            {
+              alertId: alert.id,
+              level: alert.level,
+            },
+            LogCategory.SYSTEM
+          )
+          break
 
         case 'webhook':
           if (action.config.url) {
             await fetch(action.config.url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(alert)
-            });
+              body: JSON.stringify(alert),
+            })
           }
-          break;
+          break
 
         case 'email':
           // TODO: Implementar envío de email
-          logger.info(LogLevel.INFO, `Email alert would be sent to: ${action.config.to}`, {
-            alertId: alert.id
-          }, LogCategory.SYSTEM);
-          break;
+          logger.info(
+            LogLevel.INFO,
+            `Email alert would be sent to: ${action.config.to}`,
+            {
+              alertId: alert.id,
+            },
+            LogCategory.SYSTEM
+          )
+          break
 
         case 'slack':
           // TODO: Implementar notificación Slack
-          logger.info(LogLevel.INFO, `Slack alert would be sent to: ${action.config.channel}`, {
-            alertId: alert.id
-          }, LogCategory.SYSTEM);
-          break;
+          logger.info(
+            LogLevel.INFO,
+            `Slack alert would be sent to: ${action.config.channel}`,
+            {
+              alertId: alert.id,
+            },
+            LogCategory.SYSTEM
+          )
+          break
       }
     } catch (error) {
-      logger.error(LogLevel.ERROR, `Failed to execute alert action: ${action.type}`, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        alertId: alert.id
-      }, LogCategory.SYSTEM);
+      logger.error(
+        LogLevel.ERROR,
+        `Failed to execute alert action: ${action.type}`,
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          alertId: alert.id,
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -406,14 +452,14 @@ export class EnterpriseMetricsCollector {
     startTime: string,
     endTime: string
   ): Promise<MetricAggregation[]> {
-    const cacheKey = `metrics:aggregated:${metricName}:${period}:${startTime}:${endTime}`;
-    
+    const cacheKey = `metrics:aggregated:${metricName}:${period}:${startTime}:${endTime}`
+
     // ✅ CACHE CONDICIONAL: Solo usar cache en servidor
     const fetchData = async () => {
-      const supabase = getSupabaseClient(true);
+      const supabase = getSupabaseClient(true)
 
       if (!supabase) {
-        throw new Error('Supabase client not available');
+        throw new Error('Supabase client not available')
       }
 
       // Query con agregación SQL
@@ -421,21 +467,21 @@ export class EnterpriseMetricsCollector {
         metric_name: metricName,
         period_interval: period,
         start_time: startTime,
-        end_time: endTime
-      });
+        end_time: endTime,
+      })
 
       if (error) {
-        throw new Error(`Failed to aggregate metrics: ${error.message}`);
+        throw new Error(`Failed to aggregate metrics: ${error.message}`)
       }
 
-      return data || [];
-    };
+      return data || []
+    }
 
     // Usar cache solo si está disponible (servidor)
     if (CacheUtils && typeof window === 'undefined') {
-      return CacheUtils.cacheMetricsAggregation(cacheKey, fetchData);
+      return CacheUtils.cacheMetricsAggregation(cacheKey, fetchData)
     } else {
-      return fetchData();
+      return fetchData()
     }
   }
 
@@ -444,22 +490,26 @@ export class EnterpriseMetricsCollector {
    */
   private async flushMetrics(): Promise<void> {
     if (this.metricsBuffer.length === 0) {
-      return;
+      return
     }
 
     try {
-      const metrics = [...this.metricsBuffer];
-      this.metricsBuffer = [];
+      const metrics = [...this.metricsBuffer]
+      this.metricsBuffer = []
 
-      const supabase = getSupabaseClient(true);
+      const supabase = getSupabaseClient(true)
       if (!supabase) {
-        logger.error(LogLevel.ERROR, 'Supabase client not available for metrics flush', {}, LogCategory.SYSTEM);
-        return;
+        logger.error(
+          LogLevel.ERROR,
+          'Supabase client not available for metrics flush',
+          {},
+          LogCategory.SYSTEM
+        )
+        return
       }
 
-      const { error } = await supabase
-        .from('enterprise_metrics')
-        .insert(metrics.map(metric => ({
+      const { error } = await supabase.from('enterprise_metrics').insert(
+        metrics.map(metric => ({
           id: metric.id,
           name: metric.name,
           type: metric.type,
@@ -467,22 +517,37 @@ export class EnterpriseMetricsCollector {
           value: metric.value,
           timestamp: metric.timestamp,
           tags: metric.tags,
-          metadata: metric.metadata
-        })));
+          metadata: metric.metadata,
+        }))
+      )
 
       if (error) {
-        logger.error(LogLevel.ERROR, 'Failed to flush metrics to database', {
-          error: error.message,
-          metricsCount: metrics.length
-        }, LogCategory.SYSTEM);
+        logger.error(
+          LogLevel.ERROR,
+          'Failed to flush metrics to database',
+          {
+            error: error.message,
+            metricsCount: metrics.length,
+          },
+          LogCategory.SYSTEM
+        )
       } else {
-        logger.debug(LogLevel.DEBUG, `Flushed ${metrics.length} metrics to database`, {}, LogCategory.SYSTEM);
+        logger.debug(
+          LogLevel.DEBUG,
+          `Flushed ${metrics.length} metrics to database`,
+          {},
+          LogCategory.SYSTEM
+        )
       }
-
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Error during metrics flush', {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }, LogCategory.SYSTEM);
+      logger.error(
+        LogLevel.ERROR,
+        'Error during metrics flush',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -500,8 +565,8 @@ export class EnterpriseMetricsCollector {
       enabled: true,
       cooldownMinutes: 5,
       description: 'API response time is too high',
-      actions: [{ type: 'log', config: {} }]
-    });
+      actions: [{ type: 'log', config: {} }],
+    })
 
     // Alerta de error rate alto
     this.setAlertRule({
@@ -513,8 +578,8 @@ export class EnterpriseMetricsCollector {
       enabled: true,
       cooldownMinutes: 2,
       description: 'API error rate is too high',
-      actions: [{ type: 'log', config: {} }]
-    });
+      actions: [{ type: 'log', config: {} }],
+    })
 
     // Alerta de violaciones de seguridad
     this.setAlertRule({
@@ -526,8 +591,8 @@ export class EnterpriseMetricsCollector {
       enabled: true,
       cooldownMinutes: 1,
       description: 'Security violation detected',
-      actions: [{ type: 'log', config: {} }]
-    });
+      actions: [{ type: 'log', config: {} }],
+    })
   }
 
   /**
@@ -535,8 +600,8 @@ export class EnterpriseMetricsCollector {
    */
   private startMetricsFlush(): void {
     this.flushInterval = setInterval(() => {
-      this.flushMetrics();
-    }, 30000); // Flush cada 30 segundos
+      this.flushMetrics()
+    }, 30000) // Flush cada 30 segundos
   }
 
   /**
@@ -544,8 +609,10 @@ export class EnterpriseMetricsCollector {
    */
   private async storeAlert(alert: ActiveAlert): Promise<void> {
     try {
-      const supabase = getSupabaseClient(true);
-      if (!supabase) {return;}
+      const supabase = getSupabaseClient(true)
+      if (!supabase) {
+        return
+      }
 
       await supabase.from('enterprise_alerts').insert({
         id: alert.id,
@@ -557,13 +624,18 @@ export class EnterpriseMetricsCollector {
         threshold: alert.threshold,
         triggered_at: alert.triggeredAt,
         resolved_at: alert.resolvedAt,
-        metadata: alert.metadata
-      });
+        metadata: alert.metadata,
+      })
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to store alert', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        alertId: alert.id
-      }, LogCategory.SYSTEM);
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to store alert',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          alertId: alert.id,
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -571,7 +643,7 @@ export class EnterpriseMetricsCollector {
    * Genera ID único para métrica
    */
   private generateMetricId(): string {
-    return `metric_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `metric_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   /**
@@ -580,15 +652,15 @@ export class EnterpriseMetricsCollector {
   private convertToAlertSystemLevel(level: AlertLevel): AlertSystemLevel {
     switch (level) {
       case AlertLevel.INFO:
-        return AlertSystemLevel.INFO;
+        return AlertSystemLevel.INFO
       case AlertLevel.WARNING:
-        return AlertSystemLevel.WARNING;
+        return AlertSystemLevel.WARNING
       case AlertLevel.CRITICAL:
-        return AlertSystemLevel.CRITICAL;
+        return AlertSystemLevel.CRITICAL
       case AlertLevel.EMERGENCY:
-        return AlertSystemLevel.EMERGENCY;
+        return AlertSystemLevel.EMERGENCY
       default:
-        return AlertSystemLevel.INFO;
+        return AlertSystemLevel.INFO
     }
   }
 
@@ -596,7 +668,7 @@ export class EnterpriseMetricsCollector {
    * Genera ID único para alerta
    */
   private generateAlertId(): string {
-    return `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   /**
@@ -604,27 +676,20 @@ export class EnterpriseMetricsCollector {
    */
   destroy(): void {
     if (this.flushInterval) {
-      clearInterval(this.flushInterval);
-      this.flushInterval = null;
+      clearInterval(this.flushInterval)
+      this.flushInterval = null
     }
-    this.flushMetrics(); // Flush final
+    this.flushMetrics() // Flush final
   }
 }
 
 // Instancia singleton
-export const enterpriseMetrics = EnterpriseMetricsCollector.getInstance();
+export const enterpriseMetrics = EnterpriseMetricsCollector.getInstance()
 
 // Funciones de conveniencia
-export const recordPerformanceMetric = enterpriseMetrics.recordPerformanceMetric.bind(enterpriseMetrics);
-export const recordBusinessMetric = enterpriseMetrics.recordBusinessMetric.bind(enterpriseMetrics);
-export const recordSecurityMetric = enterpriseMetrics.recordSecurityMetric.bind(enterpriseMetrics);
-export const recordUserExperienceMetric = enterpriseMetrics.recordUserExperienceMetric.bind(enterpriseMetrics);
-
-
-
-
-
-
-
-
-
+export const recordPerformanceMetric =
+  enterpriseMetrics.recordPerformanceMetric.bind(enterpriseMetrics)
+export const recordBusinessMetric = enterpriseMetrics.recordBusinessMetric.bind(enterpriseMetrics)
+export const recordSecurityMetric = enterpriseMetrics.recordSecurityMetric.bind(enterpriseMetrics)
+export const recordUserExperienceMetric =
+  enterpriseMetrics.recordUserExperienceMetric.bind(enterpriseMetrics)

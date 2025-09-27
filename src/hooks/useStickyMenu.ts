@@ -3,10 +3,10 @@
  * Basado en el scroll del usuario con threshold configurable
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 interface UseStickyMenuReturn {
-  isSticky: boolean;
+  isSticky: boolean
 }
 
 /**
@@ -15,36 +15,27 @@ interface UseStickyMenuReturn {
  * @returns objeto con isSticky boolean
  */
 export const useStickyMenu = (threshold: number = 80): UseStickyMenuReturn => {
-  const [isSticky, setIsSticky] = useState(false);
+  const [isSticky, setIsSticky] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
       // Obtener posición de scroll con fallback para compatibilidad
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-      
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0
+
       // Activar sticky si el scroll supera el threshold
-      setIsSticky(scrollY > threshold);
-    };
+      setIsSticky(scrollY > threshold)
+    }
 
     // Agregar event listener para scroll
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll)
 
     // Cleanup: remover event listener al desmontar
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [threshold]);
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [threshold])
 
-  return { isSticky };
-};
+  return { isSticky }
+}
 
-export default useStickyMenu;
-
-
-
-
-
-
-
-
-
+export default useStickyMenu

@@ -1,5 +1,5 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 import { auth } from '@/lib/auth/config'
 import { NextResponse } from 'next/server'
@@ -16,7 +16,7 @@ export async function GET() {
       hasSecretKey: !!clerkSecretKey,
       hasPublishableKey: !!clerkPublishableKey,
       secretKeyLength: clerkSecretKey?.length || 0,
-      publishableKeyLength: clerkPublishableKey?.length || 0
+      publishableKeyLength: clerkPublishableKey?.length || 0,
     })
 
     // Obtener información básica de autenticación
@@ -42,7 +42,7 @@ export async function GET() {
       userError = error instanceof Error ? error.message : 'Error desconocido en currentUser()'
       console.error('❌ [ERROR] Error en currentUser():', userError)
     }
-    
+
     // Verificar roles de forma segura
     let hasAdminRole = false
     let roleFromSessionClaims = null
@@ -52,7 +52,8 @@ export async function GET() {
 
     try {
       if (authData?.sessionClaims) {
-        roleFromSessionClaims = authData.sessionClaims.metadata?.role || authData.sessionClaims.role || null
+        roleFromSessionClaims =
+          authData.sessionClaims.metadata?.role || authData.sessionClaims.role || null
       }
 
       if (user?.publicMetadata) {
@@ -63,78 +64,74 @@ export async function GET() {
         roleFromPrivateMetadata = user.privateMetadata.role || null
       }
 
-      hasAdminRole = roleFromSessionClaims === 'admin' ||
-                    roleFromPublicMetadata === 'admin' ||
-                    roleFromPrivateMetadata === 'admin'
+      hasAdminRole =
+        roleFromSessionClaims === 'admin' ||
+        roleFromPublicMetadata === 'admin' ||
+        roleFromPrivateMetadata === 'admin'
 
       console.log('🔍 [DEBUG] Verificación de roles exitosa:', {
         hasAdminRole,
         roleFromSessionClaims,
         roleFromPublicMetadata,
-        roleFromPrivateMetadata
+        roleFromPrivateMetadata,
       })
     } catch (error) {
-      roleError = error instanceof Error ? error.message : 'Error desconocido en verificación de roles'
+      roleError =
+        error instanceof Error ? error.message : 'Error desconocido en verificación de roles'
       console.error('❌ [ERROR] Error verificando roles:', roleError)
     }
-    
+
     // Construir respuesta de forma segura
     const debugInfo = {
       timestamp: new Date().toISOString(),
       errors: {
         authError,
         userError,
-        roleError
+        roleError,
       },
       authentication: {
         isAuthenticated: !!authData?.userId,
         userId: authData?.userId || null,
         orgRole: authData?.orgRole || null,
-        sessionClaims: authData?.sessionClaims || null
+        sessionClaims: authData?.sessionClaims || null,
       },
-      user: user ? {
-        id: user.id || null,
-        email: session.user.email || null,
-        firstName: user.firstName || null,
-        lastName: user.lastName || null,
-        publicMetadata: user.publicMetadata || null,
-        privateMetadata: user.privateMetadata || null,
-        organizationMemberships: user.organizationMemberships?.length || 0
-      } : null,
+      user: user
+        ? {
+            id: user.id || null,
+            email: session.user.email || null,
+            firstName: user.firstName || null,
+            lastName: user.lastName || null,
+            publicMetadata: user.publicMetadata || null,
+            privateMetadata: user.privateMetadata || null,
+            organizationMemberships: user.organizationMemberships?.length || 0,
+          }
+        : null,
       roleCheck: {
         hasAdminRole,
         roleFromSessionClaims,
         roleFromPublicMetadata,
-        roleFromPrivateMetadata
+        roleFromPrivateMetadata,
       },
       environment: {
         clerkPublishableKey: clerkPublishableKey?.substring(0, 20) + '...',
         clerkSecretKey: clerkSecretKey ? 'SET' : 'NOT_SET',
-        nodeEnv: process.env.NODE_ENV || 'unknown'
-      }
+        nodeEnv: process.env.NODE_ENV || 'unknown',
+      },
     }
-    
+
     console.log('🔍 [DEBUG] Debug info completo:', JSON.stringify(debugInfo, null, 2))
-    
+
     return NextResponse.json(debugInfo, { status: 200 })
-    
   } catch (error) {
     console.error('❌ [ERROR] Error en debug de usuario:', error)
-    
-    return NextResponse.json({
-      error: 'Error al obtener información del usuario',
-      details: error instanceof Error ? error.message : 'Error desconocido',
-      timestamp: new Date().toISOString()
-    }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        error: 'Error al obtener información del usuario',
+        details: error instanceof Error ? error.message : 'Error desconocido',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    )
   }
 }
-
-
-
-
-
-
-
-
-
-

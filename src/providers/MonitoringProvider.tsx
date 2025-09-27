@@ -14,7 +14,7 @@ interface MonitoringContextType {
 const MonitoringContext = createContext<MonitoringContextType>({
   isInitialized: false,
   isMonitoring: false,
-  error: null
+  error: null,
 })
 
 export const useMonitoring = () => {
@@ -34,7 +34,7 @@ interface MonitoringProviderProps {
 export function MonitoringProvider({
   children,
   autoStart = true,
-  enableErrorBoundary = true
+  enableErrorBoundary = true,
 }: MonitoringProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false)
   const [isMonitoring, setIsMonitoring] = useState(false)
@@ -43,8 +43,13 @@ export function MonitoringProvider({
   useEffect(() => {
     const initializeMonitoring = async () => {
       try {
-        logger.info(LogLevel.INFO, 'Initializing proactive monitoring system', {}, LogCategory.SYSTEM)
-        
+        logger.info(
+          LogLevel.INFO,
+          'Initializing proactive monitoring system',
+          {},
+          LogCategory.SYSTEM
+        )
+
         // Configurar el sistema de monitoreo
         proactiveMonitoring.updateConfig({
           enabled: true,
@@ -54,42 +59,56 @@ export function MonitoringProvider({
           memoryThreshold: 80, // 80% de memoria
           cpuThreshold: 80, // 80% de CPU
           enableAutoRecovery: false, // Deshabilitado por seguridad
-          notificationChannels: ['email', 'slack']
+          notificationChannels: ['email', 'slack'],
         })
 
         // Iniciar monitoreo automáticamente si está habilitado
         if (autoStart) {
           startMonitoring()
           setIsMonitoring(true)
-          logger.info(LogLevel.INFO, 'Proactive monitoring started automatically', {}, LogCategory.SYSTEM)
+          logger.info(
+            LogLevel.INFO,
+            'Proactive monitoring started automatically',
+            {},
+            LogCategory.SYSTEM
+          )
         }
 
         // Configurar listeners para errores no capturados
         if (typeof window !== 'undefined') {
           // Errores de JavaScript no capturados
           window.addEventListener('error', handleGlobalError)
-          
+
           // Promesas rechazadas no capturadas
           window.addEventListener('unhandledrejection', handleUnhandledRejection)
-          
+
           // Errores de recursos (imágenes, scripts, etc.)
           window.addEventListener('error', handleResourceError, true)
         }
 
         setIsInitialized(true)
         setError(null)
-        
-        logger.info(LogLevel.INFO, 'Proactive monitoring system initialized successfully', {
-          autoStart,
-          enableErrorBoundary
-        }, LogCategory.SYSTEM)
-        
+
+        logger.info(
+          LogLevel.INFO,
+          'Proactive monitoring system initialized successfully',
+          {
+            autoStart,
+            enableErrorBoundary,
+          },
+          LogCategory.SYSTEM
+        )
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to initialize monitoring'
         setError(errorMessage)
-        logger.error(LogLevel.ERROR, 'Failed to initialize monitoring system', {
-          error: errorMessage
-        }, LogCategory.SYSTEM)
+        logger.error(
+          LogLevel.ERROR,
+          'Failed to initialize monitoring system',
+          {
+            error: errorMessage,
+          },
+          LogCategory.SYSTEM
+        )
       }
     }
 
@@ -114,13 +133,19 @@ export function MonitoringProvider({
         colno: event.colno,
         timestamp: new Date().toISOString(),
         url: window.location.href,
-        userAgent: navigator.userAgent
+        userAgent: navigator.userAgent,
       })
     } catch (reportingError) {
-      logger.error(LogLevel.ERROR, 'Failed to report global error', {
-        originalError: event.message,
-        reportingError: reportingError instanceof Error ? reportingError.message : 'Unknown error'
-      }, LogCategory.SYSTEM)
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to report global error',
+        {
+          originalError: event.message,
+          reportingError:
+            reportingError instanceof Error ? reportingError.message : 'Unknown error',
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -132,13 +157,19 @@ export function MonitoringProvider({
         timestamp: new Date().toISOString(),
         url: window.location.href,
         userAgent: navigator.userAgent,
-        reason: String(event.reason)
+        reason: String(event.reason),
       })
     } catch (reportingError) {
-      logger.error(LogLevel.ERROR, 'Failed to report unhandled promise rejection', {
-        originalReason: String(event.reason),
-        reportingError: reportingError instanceof Error ? reportingError.message : 'Unknown error'
-      }, LogCategory.SYSTEM)
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to report unhandled promise rejection',
+        {
+          originalReason: String(event.reason),
+          reportingError:
+            reportingError instanceof Error ? reportingError.message : 'Unknown error',
+        },
+        LogCategory.SYSTEM
+      )
     }
   }
 
@@ -147,7 +178,7 @@ export function MonitoringProvider({
       const target = event.target as HTMLElement
       const tagName = target.tagName?.toLowerCase()
       const src = (target as any).src || (target as any).href
-      
+
       if (src && ['img', 'script', 'link', 'iframe'].includes(tagName)) {
         try {
           await proactiveMonitoring.reportError(
@@ -157,15 +188,21 @@ export function MonitoringProvider({
               resourceType: tagName,
               resourceUrl: src,
               timestamp: new Date().toISOString(),
-              url: window.location.href
+              url: window.location.href,
             }
           )
         } catch (reportingError) {
-          logger.error(LogLevel.ERROR, 'Failed to report resource error', {
-            resourceUrl: src,
-            resourceType: tagName,
-            reportingError: reportingError instanceof Error ? reportingError.message : 'Unknown error'
-          }, LogCategory.SYSTEM)
+          logger.error(
+            LogLevel.ERROR,
+            'Failed to report resource error',
+            {
+              resourceUrl: src,
+              resourceType: tagName,
+              reportingError:
+                reportingError instanceof Error ? reportingError.message : 'Unknown error',
+            },
+            LogCategory.SYSTEM
+          )
         }
       }
     }
@@ -174,13 +211,11 @@ export function MonitoringProvider({
   const contextValue: MonitoringContextType = {
     isInitialized,
     isMonitoring,
-    error
+    error,
   }
 
   const content = (
-    <MonitoringContext.Provider value={contextValue}>
-      {children}
-    </MonitoringContext.Provider>
+    <MonitoringContext.Provider value={contextValue}>{children}</MonitoringContext.Provider>
   )
 
   // Envolver con Error Boundary si está habilitado
@@ -204,28 +239,42 @@ export function MonitoringProvider({
 export function useErrorReporting() {
   const { isInitialized } = useMonitoring()
 
-  const reportError = React.useCallback(async (error: Error | string, context?: Record<string, any>) => {
-    if (!isInitialized) {
-      logger.warn(LogLevel.WARN, 'Monitoring not initialized, error not reported', {
-        error: error instanceof Error ? error.message : error
-      }, LogCategory.SYSTEM)
-      return
-    }
+  const reportError = React.useCallback(
+    async (error: Error | string, context?: Record<string, any>) => {
+      if (!isInitialized) {
+        logger.warn(
+          LogLevel.WARN,
+          'Monitoring not initialized, error not reported',
+          {
+            error: error instanceof Error ? error.message : error,
+          },
+          LogCategory.SYSTEM
+        )
+        return
+      }
 
-    try {
-      await proactiveMonitoring.reportError(error, {
-        ...context,
-        source: 'manual_report',
-        timestamp: new Date().toISOString(),
-        url: typeof window !== 'undefined' ? window.location.href : 'unknown'
-      })
-    } catch (reportingError) {
-      logger.error(LogLevel.ERROR, 'Failed to report error manually', {
-        originalError: error instanceof Error ? error.message : error,
-        reportingError: reportingError instanceof Error ? reportingError.message : 'Unknown error'
-      }, LogCategory.SYSTEM)
-    }
-  }, [isInitialized])
+      try {
+        await proactiveMonitoring.reportError(error, {
+          ...context,
+          source: 'manual_report',
+          timestamp: new Date().toISOString(),
+          url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+        })
+      } catch (reportingError) {
+        logger.error(
+          LogLevel.ERROR,
+          'Failed to report error manually',
+          {
+            originalError: error instanceof Error ? error.message : error,
+            reportingError:
+              reportingError instanceof Error ? reportingError.message : 'Unknown error',
+          },
+          LogCategory.SYSTEM
+        )
+      }
+    },
+    [isInitialized]
+  )
 
   return { reportError, isInitialized }
 }
@@ -239,16 +288,23 @@ export function useMonitoringStats() {
   const [loading, setLoading] = useState(false)
 
   const refreshStats = React.useCallback(async () => {
-    if (!isInitialized) {return}
+    if (!isInitialized) {
+      return
+    }
 
     try {
       setLoading(true)
       const newStats = await proactiveMonitoring.getMonitoringStats()
       setStats(newStats)
     } catch (error) {
-      logger.error(LogLevel.ERROR, 'Failed to fetch monitoring stats', {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }, LogCategory.SYSTEM)
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to fetch monitoring stats',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        LogCategory.SYSTEM
+      )
     } finally {
       setLoading(false)
     }
@@ -257,7 +313,7 @@ export function useMonitoringStats() {
   React.useEffect(() => {
     if (isInitialized) {
       refreshStats()
-      
+
       // Actualizar estadísticas cada 30 segundos
       const interval = setInterval(refreshStats, 30000)
       return () => clearInterval(interval)
@@ -278,19 +334,14 @@ export function MonitoringStatus() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 bg-black text-white text-xs p-2 rounded shadow-lg">
+    <div className='fixed bottom-4 right-4 z-50 bg-black text-white text-xs p-2 rounded shadow-lg'>
       <div>Monitoring: {isInitialized ? '✅' : '❌'}</div>
       <div>Active: {isMonitoring ? '✅' : '❌'}</div>
-      {error && <div className="text-red-300">Error: {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}</div>}
+      {error && (
+        <div className='text-red-300'>
+          Error: {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+        </div>
+      )}
     </div>
   )
 }
-
-
-
-
-
-
-
-
-

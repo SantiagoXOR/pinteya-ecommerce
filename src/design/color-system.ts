@@ -7,7 +7,7 @@
 // Colores primarios - Azul profesional y confiable
 export const primaryColors = {
   50: '#eff6ff',
-  100: '#dbeafe', 
+  100: '#dbeafe',
   200: '#bfdbfe',
   300: '#93c5fd',
   400: '#60a5fa',
@@ -16,8 +16,8 @@ export const primaryColors = {
   700: '#1d4ed8',
   800: '#1e40af',
   900: '#1e3a8a',
-  950: '#172554'
-};
+  950: '#172554',
+}
 
 // Colores secundarios - Verde para acciones positivas
 export const secondaryColors = {
@@ -31,8 +31,8 @@ export const secondaryColors = {
   700: '#15803d',
   800: '#166534',
   900: '#14532d',
-  950: '#052e16'
-};
+  950: '#052e16',
+}
 
 // Colores de acento - Naranja para llamadas a la acción
 export const accentColors = {
@@ -46,8 +46,8 @@ export const accentColors = {
   700: '#c2410c',
   800: '#9a3412',
   900: '#7c2d12',
-  950: '#431407'
-};
+  950: '#431407',
+}
 
 // Colores neutros - Grises para texto y fondos
 export const neutralColors = {
@@ -61,8 +61,8 @@ export const neutralColors = {
   700: '#334155',
   800: '#1e293b',
   900: '#0f172a',
-  950: '#020617'
-};
+  950: '#020617',
+}
 
 // Colores de estado - Para feedback del usuario
 export const statusColors = {
@@ -70,27 +70,27 @@ export const statusColors = {
     50: '#f0fdf4',
     500: '#22c55e',
     600: '#16a34a',
-    700: '#15803d'
+    700: '#15803d',
   },
   warning: {
     50: '#fffbeb',
     500: '#f59e0b',
     600: '#d97706',
-    700: '#b45309'
+    700: '#b45309',
   },
   error: {
     50: '#fef2f2',
     500: '#ef4444',
     600: '#dc2626',
-    700: '#b91c1c'
+    700: '#b91c1c',
   },
   info: {
     50: '#eff6ff',
     500: '#3b82f6',
     600: '#2563eb',
-    700: '#1d4ed8'
-  }
-};
+    700: '#1d4ed8',
+  },
+}
 
 // Paleta de colores para productos
 export const productColors = {
@@ -105,8 +105,8 @@ export const productColors = {
   indigo: '#6366f1',
   gray: '#6b7280',
   black: '#1f2937',
-  white: '#ffffff'
-};
+  white: '#ffffff',
+}
 
 // Configuración de tema claro
 export const lightTheme = {
@@ -115,26 +115,26 @@ export const lightTheme = {
     secondary: neutralColors[100],
     tertiary: '#ffffff',
     card: '#ffffff',
-    modal: '#ffffff'
+    modal: '#ffffff',
   },
   text: {
     primary: neutralColors[900],
     secondary: neutralColors[700],
     tertiary: neutralColors[500],
     muted: neutralColors[400],
-    inverse: '#ffffff'
+    inverse: '#ffffff',
   },
   border: {
     light: neutralColors[200],
     medium: neutralColors[300],
-    dark: neutralColors[400]
+    dark: neutralColors[400],
   },
   shadow: {
     light: 'rgba(0, 0, 0, 0.05)',
     medium: 'rgba(0, 0, 0, 0.1)',
-    dark: 'rgba(0, 0, 0, 0.15)'
-  }
-};
+    dark: 'rgba(0, 0, 0, 0.15)',
+  },
+}
 
 // Configuración de tema oscuro
 export const darkTheme = {
@@ -143,26 +143,26 @@ export const darkTheme = {
     secondary: neutralColors[800],
     tertiary: neutralColors[700],
     card: neutralColors[800],
-    modal: neutralColors[700]
+    modal: neutralColors[700],
   },
   text: {
     primary: neutralColors[50],
     secondary: neutralColors[200],
     tertiary: neutralColors[400],
     muted: neutralColors[500],
-    inverse: neutralColors[900]
+    inverse: neutralColors[900],
   },
   border: {
     light: neutralColors[700],
     medium: neutralColors[600],
-    dark: neutralColors[500]
+    dark: neutralColors[500],
   },
   shadow: {
     light: 'rgba(0, 0, 0, 0.2)',
     medium: 'rgba(0, 0, 0, 0.3)',
-    dark: 'rgba(0, 0, 0, 0.4)'
-  }
-};
+    dark: 'rgba(0, 0, 0, 0.4)',
+  },
+}
 
 // Gradientes para elementos visuales atractivos
 export const gradients = {
@@ -173,52 +173,52 @@ export const gradients = {
   card: `linear-gradient(145deg, ${neutralColors[50]} 0%, ${neutralColors[100]} 100%)`,
   cardDark: `linear-gradient(145deg, ${neutralColors[800]} 0%, ${neutralColors[700]} 100%)`,
   button: `linear-gradient(135deg, ${primaryColors[500]} 0%, ${primaryColors[600]} 100%)`,
-  buttonHover: `linear-gradient(135deg, ${primaryColors[600]} 0%, ${primaryColors[700]} 100%)`
-};
+  buttonHover: `linear-gradient(135deg, ${primaryColors[600]} 0%, ${primaryColors[700]} 100%)`,
+}
 
 // Configuración de accesibilidad
 export const accessibilityConfig = {
   contrastRatios: {
     normal: 4.5, // WCAG AA
-    large: 3.0,  // WCAG AA para texto grande
-    enhanced: 7.0 // WCAG AAA
+    large: 3.0, // WCAG AA para texto grande
+    enhanced: 7.0, // WCAG AAA
   },
   focusColors: {
     primary: primaryColors[500],
     secondary: accentColors[500],
-    error: statusColors.error[500]
-  }
-};
+    error: statusColors.error[500],
+  },
+}
 
 // Utilidades para trabajar con colores
 export const colorUtils = {
   // Obtener color con opacidad
   withOpacity: (color: string, opacity: number) => {
-    const hex = color.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    const hex = color.replace('#', '')
+    const r = parseInt(hex.substr(0, 2), 16)
+    const g = parseInt(hex.substr(2, 2), 16)
+    const b = parseInt(hex.substr(4, 2), 16)
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`
   },
-  
+
   // Obtener color de contraste
   getContrastColor: (backgroundColor: string) => {
     // Lógica simplificada - en producción usar una librería como chroma.js
-    const lightColors = [neutralColors[50], neutralColors[100], neutralColors[200]];
-    return lightColors.includes(backgroundColor) ? neutralColors[900] : neutralColors[50];
+    const lightColors = [neutralColors[50], neutralColors[100], neutralColors[200]]
+    return lightColors.includes(backgroundColor) ? neutralColors[900] : neutralColors[50]
   },
-  
+
   // Generar variaciones de un color
   generateShades: (baseColor: string, steps: number = 9) => {
     // Implementación básica - en producción usar algoritmos más sofisticados
-    const shades: Record<number, string> = {};
+    const shades: Record<number, string> = {}
     for (let i = 0; i < steps; i++) {
-      const weight = (i + 1) * 100;
-      shades[weight] = baseColor; // Simplificado
+      const weight = (i + 1) * 100
+      shades[weight] = baseColor // Simplificado
     }
-    return shades;
-  }
-};
+    return shades
+  },
+}
 
 // Configuración para Tailwind CSS
 export const tailwindColorConfig = {
@@ -229,8 +229,8 @@ export const tailwindColorConfig = {
   success: statusColors.success,
   warning: statusColors.warning,
   error: statusColors.error,
-  info: statusColors.info
-};
+  info: statusColors.info,
+}
 
 // Exportar configuración completa
 export const colorSystem = {
@@ -245,16 +245,7 @@ export const colorSystem = {
   gradients,
   accessibility: accessibilityConfig,
   utils: colorUtils,
-  tailwind: tailwindColorConfig
-};
+  tailwind: tailwindColorConfig,
+}
 
-export default colorSystem;
-
-
-
-
-
-
-
-
-
+export default colorSystem

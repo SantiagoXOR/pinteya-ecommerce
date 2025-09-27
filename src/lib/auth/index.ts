@@ -7,29 +7,20 @@
 // =====================================================
 // CONFIGURACIÓN PRINCIPAL
 // =====================================================
-export { auth, signIn, signOut, handlers } from '../../auth';
+export { auth, signIn, signOut, handlers } from '../../auth'
 
 // =====================================================
 // ADAPTADORES Y CONFIGURACIÓN
 // =====================================================
-export * from '../auth-adapter';
+export * from '../auth-adapter'
 
 // =====================================================
 // UTILIDADES DE AUTENTICACIÓN
 // =====================================================
-export * from '../user-helpers';
+export * from '../user-helpers'
 
 // =====================================================
 // TIPOS Y INTERFACES
 // =====================================================
-export type { User, Session } from 'next-auth';
-export type { JWT } from 'next-auth/jwt';
-
-
-
-
-
-
-
-
-
+export type { User, Session } from 'next-auth'
+export type { JWT } from 'next-auth/jwt'

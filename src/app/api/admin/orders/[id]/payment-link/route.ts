@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { createAdminClient } from '@/lib/integrations/supabase/server';
-import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger';
-import { createPaymentPreference } from '@/lib/integrations/mercadopago';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { createAdminClient } from '@/lib/integrations/supabase/server'
+import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { createPaymentPreference } from '@/lib/integrations/mercadopago'
 
 /**
  * POST /api/admin/orders/[id]/payment-link
@@ -13,27 +13,25 @@ export async function POST(
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
-    const orderId = params.id;
+    const orderId = params.id
 
     // Verificar autenticación
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
     }
 
-    logger.log(LogLevel.INFO, LogCategory.API, 'Creating payment link for order', { 
+    logger.log(LogLevel.INFO, LogCategory.API, 'Creating payment link for order', {
       orderId,
-      userId: session.user.id 
-    });
+      userId: session.user.id,
+    })
 
     // Obtener datos de la orden
-    const supabase = createAdminClient();
+    const supabase = createAdminClient()
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select(`
+      .select(
+        `
         id,
         user_id,
         total,
@@ -44,16 +42,14 @@ export async function POST(
           name,
           email
         )
-      `)
+      `
+      )
       .eq('id', orderId)
-      .single();
+      .single()
 
     if (orderError || !order) {
-      logger.log(LogLevel.WARN, LogCategory.API, 'Order not found', { orderId, orderError });
-      return NextResponse.json(
-        { success: false, error: 'Orden no encontrada' },
-        { status: 404 }
-      );
+      logger.log(LogLevel.WARN, LogCategory.API, 'Order not found', { orderId, orderError })
+      return NextResponse.json({ success: false, error: 'Orden no encontrada' }, { status: 404 })
     }
 
     // Verificar que la orden esté pendiente de pago
@@ -61,13 +57,14 @@ export async function POST(
       return NextResponse.json(
         { success: false, error: 'La orden ya tiene un estado de pago diferente a pendiente' },
         { status: 400 }
-      );
+      )
     }
 
     // Obtener items de la orden
     const { data: orderItems, error: itemsError } = await supabase
       .from('order_items')
-      .select(`
+      .select(
+        `
         quantity,
         price,
         products!order_items_product_id_fkey (
@@ -75,15 +72,19 @@ export async function POST(
           name,
           description
         )
-      `)
-      .eq('order_id', orderId);
+      `
+      )
+      .eq('order_id', orderId)
 
     if (itemsError || !orderItems) {
-      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error fetching order items', { orderId, itemsError });
+      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error fetching order items', {
+        orderId,
+        itemsError,
+      })
       return NextResponse.json(
         { success: false, error: 'Error al obtener items de la orden' },
         { status: 500 }
-      );
+      )
     }
 
     // Preparar datos para MercadoPago
@@ -94,34 +95,34 @@ export async function POST(
         description: item.products.description || item.products.name,
         quantity: item.quantity,
         unit_price: item.price,
-        currency_id: 'ARS'
+        currency_id: 'ARS',
       })),
       payer: {
         name: order.user_profiles?.name || 'Cliente',
-        email: order.user_profiles?.email || 'cliente@pinteya.com'
+        email: order.user_profiles?.email || 'cliente@pinteya.com',
       },
       external_reference: order.external_reference || orderId.toString(),
       back_urls: {
         success: `${process.env.NEXT_PUBLIC_URL}/orders/success`,
         failure: `${process.env.NEXT_PUBLIC_URL}/orders/failure`,
-        pending: `${process.env.NEXT_PUBLIC_URL}/orders/pending`
+        pending: `${process.env.NEXT_PUBLIC_URL}/orders/pending`,
       },
       auto_return: 'approved',
-      notification_url: `${process.env.NEXT_PUBLIC_URL}/api/payments/webhook`
-    };
+      notification_url: `${process.env.NEXT_PUBLIC_URL}/api/payments/webhook`,
+    }
 
     // Crear preferencia en MercadoPago
-    const preferenceResult = await createPaymentPreference(preferenceData);
+    const preferenceResult = await createPaymentPreference(preferenceData)
 
     if (!preferenceResult.success || !preferenceResult.data) {
-      logger.log(LogLevel.ERROR, LogCategory.PAYMENT, 'Error creating MercadoPago preference', { 
+      logger.log(LogLevel.ERROR, LogCategory.PAYMENT, 'Error creating MercadoPago preference', {
         orderId,
-        error: preferenceResult.error 
-      });
+        error: preferenceResult.error,
+      })
       return NextResponse.json(
         { success: false, error: 'Error al crear preferencia de pago' },
         { status: 500 }
-      );
+      )
     }
 
     // Actualizar orden con preference_id
@@ -129,41 +130,40 @@ export async function POST(
       .from('orders')
       .update({
         payment_preference_id: preferenceResult.data.id,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', orderId);
+      .eq('id', orderId)
 
     if (updateError) {
-      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error updating order with preference_id', { 
+      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error updating order with preference_id', {
         orderId,
-        updateError 
-      });
+        updateError,
+      })
     }
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Payment link created successfully', {
       orderId,
-      preferenceId: preferenceResult.data.id
-    });
+      preferenceId: preferenceResult.data.id,
+    })
 
     return NextResponse.json({
       success: true,
       data: {
         preference_id: preferenceResult.data.id,
         payment_url: preferenceResult.data.init_point,
-        sandbox_payment_url: preferenceResult.data.sandbox_init_point
+        sandbox_payment_url: preferenceResult.data.sandbox_init_point,
       },
-      message: 'Link de pago creado exitosamente'
-    });
-
+      message: 'Link de pago creado exitosamente',
+    })
   } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Unexpected error creating payment link', { 
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Unexpected error creating payment link', {
       orderId: params.id,
-      error 
-    });
-    
+      error,
+    })
+
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
-    );
+    )
   }
 }

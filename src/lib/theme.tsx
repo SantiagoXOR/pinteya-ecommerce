@@ -2,170 +2,170 @@
 // PINTEYA E-COMMERCE - SISTEMA DE PERSISTENCIA DE TEMA
 // ===================================
 
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 
 // Tipos para el tema
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark' | 'system'
 
 // Constantes
-const THEME_STORAGE_KEY = 'pinteya-theme';
-const THEME_ATTRIBUTE = 'data-theme';
+const THEME_STORAGE_KEY = 'pinteya-theme'
+const THEME_ATTRIBUTE = 'data-theme'
 
 // Clase para gestión de tema
 export class ThemeManager {
-  private static instance: ThemeManager;
-  
+  private static instance: ThemeManager
+
   public static getInstance(): ThemeManager {
     if (!ThemeManager.instance) {
-      ThemeManager.instance = new ThemeManager();
+      ThemeManager.instance = new ThemeManager()
     }
-    return ThemeManager.instance;
+    return ThemeManager.instance
   }
 
   // Obtener tema actual del localStorage
   getStoredTheme(): Theme {
-    if (typeof window === 'undefined') return 'system';
-    
+    if (typeof window === 'undefined') return 'system'
+
     try {
-      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      const stored = localStorage.getItem(THEME_STORAGE_KEY)
       if (stored && ['light', 'dark', 'system'].includes(stored)) {
-        return stored as Theme;
+        return stored as Theme
       }
     } catch (error) {
-      console.warn('Error al leer tema del localStorage:', error);
+      console.warn('Error al leer tema del localStorage:', error)
     }
-    
-    return 'system';
+
+    return 'system'
   }
 
   // Guardar tema en localStorage
   setStoredTheme(theme: Theme): void {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === 'undefined') return
+
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      localStorage.setItem(THEME_STORAGE_KEY, theme)
     } catch (error) {
-      console.warn('Error al guardar tema en localStorage:', error);
+      console.warn('Error al guardar tema en localStorage:', error)
     }
   }
 
   // Obtener preferencia del sistema
   getSystemTheme(): 'light' | 'dark' {
-    if (typeof window === 'undefined') return 'light';
-    
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (typeof window === 'undefined') return 'light'
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
 
   // Resolver tema efectivo (convertir 'system' al tema real)
   resolveTheme(theme: Theme): 'light' | 'dark' {
     if (theme === 'system') {
-      return this.getSystemTheme();
+      return this.getSystemTheme()
     }
-    return theme;
+    return theme
   }
 
   // Aplicar tema al DOM
   applyTheme(theme: Theme): void {
-    if (typeof window === 'undefined') return;
-    
-    const resolvedTheme = this.resolveTheme(theme);
-    const root = document.documentElement;
-    
+    if (typeof window === 'undefined') return
+
+    const resolvedTheme = this.resolveTheme(theme)
+    const root = document.documentElement
+
     // Remover clases de tema anteriores
-    root.classList.remove('light', 'dark');
-    
+    root.classList.remove('light', 'dark')
+
     // Aplicar nueva clase de tema
-    root.classList.add(resolvedTheme);
-    
+    root.classList.add(resolvedTheme)
+
     // Establecer atributo data-theme
-    root.setAttribute(THEME_ATTRIBUTE, resolvedTheme);
-    
+    root.setAttribute(THEME_ATTRIBUTE, resolvedTheme)
+
     // Actualizar meta theme-color para móviles
-    this.updateThemeColor(resolvedTheme);
+    this.updateThemeColor(resolvedTheme)
   }
 
   // Actualizar color del tema para móviles
   private updateThemeColor(theme: 'light' | 'dark'): void {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    const color = theme === 'dark' ? '#1f2937' : '#ffffff';
-    
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+    const color = theme === 'dark' ? '#1f2937' : '#ffffff'
+
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', color);
+      themeColorMeta.setAttribute('content', color)
     } else {
-      const meta = document.createElement('meta');
-      meta.name = 'theme-color';
-      meta.content = color;
-      document.head.appendChild(meta);
+      const meta = document.createElement('meta')
+      meta.name = 'theme-color'
+      meta.content = color
+      document.head.appendChild(meta)
     }
   }
 
   // Escuchar cambios en la preferencia del sistema
   watchSystemTheme(callback: (theme: 'light' | 'dark') => void): () => void {
-    if (typeof window === 'undefined') return () => {};
-    
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+    if (typeof window === 'undefined') return () => {}
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
     const handler = (e: MediaQueryListEvent) => {
-      callback(e.matches ? 'dark' : 'light');
-    };
-    
-    mediaQuery.addEventListener('change', handler);
-    
+      callback(e.matches ? 'dark' : 'light')
+    }
+
+    mediaQuery.addEventListener('change', handler)
+
     // Retornar función de limpieza
     return () => {
-      mediaQuery.removeEventListener('change', handler);
-    };
+      mediaQuery.removeEventListener('change', handler)
+    }
   }
 }
 
 // Hook para gestión de tema
 export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
-  const [isLoading, setIsLoading] = useState(true);
+  const [theme, setThemeState] = useState<Theme>('system')
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
+  const [isLoading, setIsLoading] = useState(true)
 
-  const themeManager = ThemeManager.getInstance();
+  const themeManager = ThemeManager.getInstance()
 
   // Inicializar tema
   useEffect(() => {
-    const storedTheme = themeManager.getStoredTheme();
-    const resolved = themeManager.resolveTheme(storedTheme);
-    
-    setThemeState(storedTheme);
-    setResolvedTheme(resolved);
-    themeManager.applyTheme(storedTheme);
-    setIsLoading(false);
-  }, []);
+    const storedTheme = themeManager.getStoredTheme()
+    const resolved = themeManager.resolveTheme(storedTheme)
+
+    setThemeState(storedTheme)
+    setResolvedTheme(resolved)
+    themeManager.applyTheme(storedTheme)
+    setIsLoading(false)
+  }, [])
 
   // Escuchar cambios en la preferencia del sistema
   useEffect(() => {
-    const cleanup = themeManager.watchSystemTheme((systemTheme) => {
+    const cleanup = themeManager.watchSystemTheme(systemTheme => {
       if (theme === 'system') {
-        setResolvedTheme(systemTheme);
-        themeManager.applyTheme('system');
+        setResolvedTheme(systemTheme)
+        themeManager.applyTheme('system')
       }
-    });
+    })
 
-    return cleanup;
-  }, [theme]);
+    return cleanup
+  }, [theme])
 
   // Función para cambiar tema
   const setTheme = (newTheme: Theme) => {
-    const resolved = themeManager.resolveTheme(newTheme);
-    
-    setThemeState(newTheme);
-    setResolvedTheme(resolved);
-    themeManager.setStoredTheme(newTheme);
-    themeManager.applyTheme(newTheme);
-  };
+    const resolved = themeManager.resolveTheme(newTheme)
+
+    setThemeState(newTheme)
+    setResolvedTheme(resolved)
+    themeManager.setStoredTheme(newTheme)
+    themeManager.applyTheme(newTheme)
+  }
 
   // Función para alternar entre light y dark
   const toggleTheme = () => {
-    const newTheme = resolvedTheme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-  };
+    const newTheme = resolvedTheme === 'light' ? 'dark' : 'light'
+    setTheme(newTheme)
+  }
 
   return {
     theme,
@@ -173,31 +173,31 @@ export function useTheme() {
     isLoading,
     setTheme,
     toggleTheme,
-  };
+  }
 }
 
 // Hook para obtener solo el tema resuelto (sin funciones de cambio)
 export function useResolvedTheme(): 'light' | 'dark' {
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
 
   useEffect(() => {
-    const themeManager = ThemeManager.getInstance();
-    const storedTheme = themeManager.getStoredTheme();
-    const resolved = themeManager.resolveTheme(storedTheme);
-    
-    setResolvedTheme(resolved);
+    const themeManager = ThemeManager.getInstance()
+    const storedTheme = themeManager.getStoredTheme()
+    const resolved = themeManager.resolveTheme(storedTheme)
+
+    setResolvedTheme(resolved)
 
     // Escuchar cambios en la preferencia del sistema
-    const cleanup = themeManager.watchSystemTheme((systemTheme) => {
+    const cleanup = themeManager.watchSystemTheme(systemTheme => {
       if (storedTheme === 'system') {
-        setResolvedTheme(systemTheme);
+        setResolvedTheme(systemTheme)
       }
-    });
+    })
 
-    return cleanup;
-  }, []);
+    return cleanup
+  }, [])
 
-  return resolvedTheme;
+  return resolvedTheme
 }
 
 // Función para inicializar tema en el servidor (SSR)
@@ -231,7 +231,7 @@ export function getInitialTheme(): string {
         console.warn('Error al inicializar tema:', e);
       }
     })();
-  `;
+  `
 }
 
 // Componente para inyectar script de inicialización
@@ -242,7 +242,7 @@ export function ThemeScript() {
         __html: getInitialTheme(),
       }}
     />
-  );
+  )
 }
 
 // Utilidades para CSS
@@ -289,15 +289,6 @@ export const themeVariables = {
     '--input': '217.2 32.6% 17.5%',
     '--ring': '212.7 26.8% 83.9%',
   },
-};
+}
 
-export default ThemeManager;
-
-
-
-
-
-
-
-
-
+export default ThemeManager

@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import Hero from '../Hero';
-import NewArrival from '../NewArrivals';
-import PromoBanner from '../PromoBanner';
-import BestSeller from '../BestSeller';
-import PinteyaRaffle from '../PinteyaRaffle';
-import TrustSection from '../TrustSection';
-import Testimonials from '../Testimonials';
-import Newsletter from '@/components/Common/Newsletter';
+import Hero from '../Hero'
+import NewArrival from '../NewArrivals'
+import PromoBanner from '../PromoBanner'
+import BestSeller from '../BestSeller'
+import PinteyaRaffle from '../PinteyaRaffle'
+import TrustSection from '../TrustSection'
+import Testimonials from '../Testimonials'
+import Newsletter from '@/components/Common/Newsletter'
 
 const HomepageNormal = () => {
   return (
@@ -21,7 +21,7 @@ const HomepageNormal = () => {
       <Testimonials />
       <Newsletter />
     </>
-  );
-};
+  )
+}
 
-export default HomepageNormal;
+export default HomepageNormal

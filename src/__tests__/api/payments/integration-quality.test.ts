@@ -1,9 +1,9 @@
-import { NextRequest } from 'next/server';
-import { GET } from '@/app/api/payments/integration-quality/route';
-import { auth } from '@/lib/auth/config';
+import { NextRequest } from 'next/server'
+import { GET } from '@/app/api/payments/integration-quality/route'
+import { auth } from '@/lib/auth/config'
 
 // Mock dependencies
-jest.mock('@/auth', () => ({ auth: jest.fn() }));
+jest.mock('@/auth', () => ({ auth: jest.fn() }))
 
 // Mock NextAuth Google provider (Patrón 1: Imports faltantes)
 jest.mock('next-auth/providers/google', () => {
@@ -12,418 +12,413 @@ jest.mock('next-auth/providers/google', () => {
     name: 'Google',
     type: 'oauth',
     clientId: 'mock-client-id',
-    clientSecret: 'mock-client-secret'
-  }));
-});
-jest.mock('@/lib/supabase');
+    clientSecret: 'mock-client-secret',
+  }))
+})
+jest.mock('@/lib/supabase')
 jest.mock('@/lib/mercadopago', () => ({
-  getPaymentInfo: jest.fn()
-}));
+  getPaymentInfo: jest.fn(),
+}))
 jest.mock('@/lib/enterprise/rate-limiter', () => ({
   checkRateLimit: jest.fn(() => Promise.resolve({ success: true, remaining: 10 })),
   addRateLimitHeaders: jest.fn(),
   RATE_LIMIT_CONFIGS: {
-    ANALYTICS: { requests: 100, window: 3600 }
-  }
-}));
+    ANALYTICS: { requests: 100, window: 3600 },
+  },
+}))
 jest.mock('@/lib/enterprise/metrics', () => ({
   metricsCollector: {
-    recordApiCall: jest.fn(() => Promise.resolve())
-  }
-}));
+    recordApiCall: jest.fn(() => Promise.resolve()),
+  },
+}))
 jest.mock('@/lib/enterprise/logger', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
   },
   LogLevel: {
     INFO: 'info',
     WARN: 'warn',
-    ERROR: 'error'
+    ERROR: 'error',
   },
   LogCategory: {
-    API: 'api'
-  }
-}));
+    API: 'api',
+  },
+}))
 
-const mockAuth = auth as jest.MockedFunction<typeof auth>;
+const mockAuth = auth as jest.MockedFunction<typeof auth>
 
 describe('/api/payments/integration-quality', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.clearAllMocks()
 
     // Mock environment variables
-    process.env.MERCADOPAGO_ACCESS_TOKEN = 'APP_USR_test_token';
-    process.env.NODE_ENV = 'test';
+    process.env.MERCADOPAGO_ACCESS_TOKEN = 'APP_USR_test_token'
+    process.env.NODE_ENV = 'test'
 
     // Reset all mocks to default successful state
-    const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-    checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+    const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+    checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
-    const { metricsCollector } = require('@/lib/enterprise/metrics');
-    metricsCollector.recordApiCall.mockResolvedValue(undefined);
-  });
+    const { metricsCollector } = require('@/lib/enterprise/metrics')
+    metricsCollector.recordApiCall.mockResolvedValue(undefined)
+  })
 
   describe('GET', () => {
     it('should return 401 when user is not authenticated', async () => {
-      mockAuth.mockResolvedValue({ userId: null });
+      mockAuth.mockResolvedValue({ userId: null })
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
-      expect(response.status).toBe(401);
-      expect(data.success).toBe(false);
-      expect(data.error).toBe('No autorizado');
-    });
+      expect(response.status).toBe(401)
+      expect(data.success).toBe(false)
+      expect(data.error).toBe('No autorizado')
+    })
 
     it('should return quality metrics when user is authenticated', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
-        expect(data.success).toBe(true);
-        expect(data.data).toBeDefined();
-        expect(data.data.score).toBeGreaterThanOrEqual(0);
-        expect(data.data.score).toBeLessThanOrEqual(100);
-        expect(data.data.category).toMatch(/^(excellent|good|needs_improvement|poor)$/);
-        expect(data.data.details).toBeDefined();
-        expect(data.data.details.security).toBeDefined();
-        expect(data.data.details.performance).toBeDefined();
+        expect(data.success).toBe(true)
+        expect(data.data).toBeDefined()
+        expect(data.data.score).toBeGreaterThanOrEqual(0)
+        expect(data.data.score).toBeLessThanOrEqual(100)
+        expect(data.data.category).toMatch(/^(excellent|good|needs_improvement|poor)$/)
+        expect(data.data.details).toBeDefined()
+        expect(data.data.details.security).toBeDefined()
+        expect(data.data.details.performance).toBeDefined()
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
+    })
 
     it('should include recommendations when requested', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality?include_recommendations=true');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest(
+        'http://localhost:3000/api/payments/integration-quality?include_recommendations=true'
+      )
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
-        expect(data.success).toBe(true);
-        expect(data.data.recommendations).toBeDefined();
-        expect(Array.isArray(data.data.recommendations)).toBe(true);
+        expect(data.success).toBe(true)
+        expect(data.data.recommendations).toBeDefined()
+        expect(Array.isArray(data.data.recommendations)).toBe(true)
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
+    })
 
     it('should handle rate limiting', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter to return failure
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ 
-        success: false, 
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({
+        success: false,
         remaining: 0,
-        resetTime: Date.now() + 60000 
-      });
+        resetTime: Date.now() + 60000,
+      })
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto rate limit como auth error
-      expect([429, 401, 500]).toContain(response.status);
-      expect(data.success).toBe(false);
-      expect(data.error).toBeDefined();
-    });
+      expect([429, 401, 500]).toContain(response.status)
+      expect(data.success).toBe(false)
+      expect(data.error).toBeDefined()
+    })
 
     it('should validate security checks correctly', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
-        expect(data.data.details.security).toBeDefined();
-        expect(data.data.details.security.score).toBeGreaterThanOrEqual(0);
-        expect(data.data.details.security.status).toMatch(/^(pass|warning|fail)$/);
-        expect(Array.isArray(data.data.details.security.checks)).toBe(true);
+        expect(data.data.details.security).toBeDefined()
+        expect(data.data.details.security.score).toBeGreaterThanOrEqual(0)
+        expect(data.data.details.security.status).toMatch(/^(pass|warning|fail)$/)
+        expect(Array.isArray(data.data.details.security.checks)).toBe(true)
         // Verificar que incluye checks específicos de seguridad
-        const securityChecks = data.data.details.security.checks;
-        const checkNames = securityChecks.map((check: any) => check.name);
-        expect(checkNames).toContain('webhook_signature_validation');
-        expect(checkNames).toContain('https_usage');
-        expect(checkNames).toContain('credentials_security');
-        expect(checkNames).toContain('rate_limiting');
+        const securityChecks = data.data.details.security.checks
+        const checkNames = securityChecks.map((check: any) => check.name)
+        expect(checkNames).toContain('webhook_signature_validation')
+        expect(checkNames).toContain('https_usage')
+        expect(checkNames).toContain('credentials_security')
+        expect(checkNames).toContain('rate_limiting')
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
+    })
 
     it('should validate performance checks correctly', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
-        expect(data.data.details.performance).toBeDefined();
-        expect(data.data.details.performance.score).toBeGreaterThanOrEqual(0);
-        expect(data.data.details.performance.status).toMatch(/^(pass|warning|fail)$/);
+        expect(data.data.details.performance).toBeDefined()
+        expect(data.data.details.performance.score).toBeGreaterThanOrEqual(0)
+        expect(data.data.details.performance.status).toMatch(/^(pass|warning|fail)$/)
         // Verificar que incluye checks específicos de performance
-        const performanceChecks = data.data.details.performance.checks;
-        const checkNames = performanceChecks.map((check: any) => check.name);
-        expect(checkNames).toContain('retry_logic');
-        expect(checkNames).toContain('caching');
-        expect(checkNames).toContain('monitoring');
+        const performanceChecks = data.data.details.performance.checks
+        const checkNames = performanceChecks.map((check: any) => check.name)
+        expect(checkNames).toContain('retry_logic')
+        expect(checkNames).toContain('caching')
+        expect(checkNames).toContain('monitoring')
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
+    })
 
     it('should validate user experience checks correctly', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
-        expect(data.data.details.user_experience).toBeDefined();
-        expect(data.data.details.user_experience.score).toBeGreaterThanOrEqual(0);
-        expect(data.data.details.user_experience.status).toMatch(/^(pass|warning|fail)$/);
+        expect(data.data.details.user_experience).toBeDefined()
+        expect(data.data.details.user_experience.score).toBeGreaterThanOrEqual(0)
+        expect(data.data.details.user_experience.status).toMatch(/^(pass|warning|fail)$/)
         // Verificar que incluye checks específicos de UX
-        const uxChecks = data.data.details.user_experience.checks;
-        const checkNames = uxChecks.map((check: any) => check.name);
-        expect(checkNames).toContain('wallet_brick');
-        expect(checkNames).toContain('auto_return');
-        expect(checkNames).toContain('payment_methods');
+        const uxChecks = data.data.details.user_experience.checks
+        const checkNames = uxChecks.map((check: any) => check.name)
+        expect(checkNames).toContain('wallet_brick')
+        expect(checkNames).toContain('auto_return')
+        expect(checkNames).toContain('payment_methods')
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
+    })
 
     it('should validate integration completeness checks correctly', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
-        expect(data.data.details.integration_completeness).toBeDefined();
-        expect(data.data.details.integration_completeness.score).toBeGreaterThanOrEqual(0);
-        expect(data.data.details.integration_completeness.status).toMatch(/^(pass|warning|fail)$/);
+        expect(data.data.details.integration_completeness).toBeDefined()
+        expect(data.data.details.integration_completeness.score).toBeGreaterThanOrEqual(0)
+        expect(data.data.details.integration_completeness.status).toMatch(/^(pass|warning|fail)$/)
         // Verificar que incluye checks específicos de completitud
-        const integrationChecks = data.data.details.integration_completeness.checks;
-        const checkNames = integrationChecks.map((check: any) => check.name);
-        expect(checkNames).toContain('webhook_implementation');
-        expect(checkNames).toContain('payment_tracking');
-        expect(checkNames).toContain('error_handling');
-        expect(checkNames).toContain('logging_monitoring');
+        const integrationChecks = data.data.details.integration_completeness.checks
+        const checkNames = integrationChecks.map((check: any) => check.name)
+        expect(checkNames).toContain('webhook_implementation')
+        expect(checkNames).toContain('payment_tracking')
+        expect(checkNames).toContain('error_handling')
+        expect(checkNames).toContain('logging_monitoring')
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
+    })
 
     it('should calculate score correctly based on individual checks', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
         // Verificar que el score general es el promedio de los scores individuales
-        const { security, performance, user_experience, integration_completeness } = data.data.details;
-        const expectedScore = Math.round((
-          security.score +
-          performance.score +
-          user_experience.score +
-          integration_completeness.score
-        ) / 4);
+        const { security, performance, user_experience, integration_completeness } =
+          data.data.details
+        const expectedScore = Math.round(
+          (security.score +
+            performance.score +
+            user_experience.score +
+            integration_completeness.score) /
+            4
+        )
 
-        expect(data.data.score).toBe(expectedScore);
+        expect(data.data.score).toBe(expectedScore)
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
+    })
 
     it('should categorize quality correctly based on score', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
-        const score = data.data.score;
-        const category = data.data.category;
+        const score = data.data.score
+        const category = data.data.category
 
         if (score >= 90) {
-          expect(category).toBe('excellent');
+          expect(category).toBe('excellent')
         } else if (score >= 75) {
-          expect(category).toBe('good');
+          expect(category).toBe('good')
         } else if (score >= 60) {
-          expect(category).toBe('needs_improvement');
+          expect(category).toBe('needs_improvement')
         } else {
-          expect(category).toBe('poor');
+          expect(category).toBe('poor')
         }
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
+    })
 
     it('should handle errors gracefully', async () => {
-      mockAuth.mockRejectedValue(new Error('Auth service error'));
+      mockAuth.mockRejectedValue(new Error('Auth service error'))
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto error como success
       try {
-        const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-        const response = await GET(request);
-        const data = await response.json();
+        const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+        const response = await GET(request)
+        const data = await response.json()
 
-        expect([500, 401, 200]).toContain(response.status);
+        expect([500, 401, 200]).toContain(response.status)
         if (response.status === 500) {
-          expect(data.success).toBe(false);
-          expect(data.error).toBe('Error interno del servidor');
+          expect(data.success).toBe(false)
+          expect(data.error).toBe('Error interno del servidor')
         } else if (response.status === 401) {
-          expect(data.success).toBe(false);
-          expect(data.error).toBeDefined();
+          expect(data.success).toBe(false)
+          expect(data.error).toBeDefined()
         } else {
-          expect(data.success).toBe(true);
+          expect(data.success).toBe(true)
         }
       } catch (error) {
         // Acepta errores de logger u otros problemas internos
-        expect(error.message).toBeDefined();
+        expect(error.message).toBeDefined()
       }
-    });
+    })
 
     it('should include processing time in response', async () => {
-      mockAuth.mockResolvedValue({ userId: 'user_123' });
+      mockAuth.mockResolvedValue({ userId: 'user_123' })
 
       // Mock rate limiter
-      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter');
-      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 });
+      const { checkRateLimit } = require('@/lib/enterprise/rate-limiter')
+      checkRateLimit.mockResolvedValue({ success: true, remaining: 10 })
 
       // Mock metrics collector
-      const { metricsCollector } = require('@/lib/enterprise/metrics');
-      metricsCollector.recordApiCall.mockResolvedValue(undefined);
+      const { metricsCollector } = require('@/lib/enterprise/metrics')
+      metricsCollector.recordApiCall.mockResolvedValue(undefined)
 
-      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality');
-      const response = await GET(request);
-      const data = await response.json();
+      const request = new NextRequest('http://localhost:3000/api/payments/integration-quality')
+      const response = await GET(request)
+      const data = await response.json()
 
       // Patrón 2 exitoso: Expectativas específicas - acepta tanto success como error
-      expect([200, 401, 500]).toContain(response.status);
+      expect([200, 401, 500]).toContain(response.status)
       if (response.status === 200) {
-        expect(data.processing_time).toBeDefined();
-        expect(typeof data.processing_time).toBe('number');
-        expect(data.processing_time).toBeGreaterThanOrEqual(0);
-        expect(data.timestamp).toBeDefined();
-        expect(typeof data.timestamp).toBe('number');
+        expect(data.processing_time).toBeDefined()
+        expect(typeof data.processing_time).toBe('number')
+        expect(data.processing_time).toBeGreaterThanOrEqual(0)
+        expect(data.timestamp).toBeDefined()
+        expect(typeof data.timestamp).toBe('number')
       } else {
-        expect(data.success).toBe(false);
-        expect(data.error).toBeDefined();
+        expect(data.success).toBe(false)
+        expect(data.error).toBeDefined()
       }
-    });
-  });
-});
-
-
-
-
-
-
-
-
-
+    })
+  })
+})

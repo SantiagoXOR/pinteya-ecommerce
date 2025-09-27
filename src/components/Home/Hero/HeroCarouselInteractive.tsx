@@ -3,24 +3,24 @@
  * Carousel interactivo para la sección hero
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 
 interface HeroSlide {
-  id: string;
-  title: string;
-  subtitle?: string;
-  image: string;
+  id: string
+  title: string
+  subtitle?: string
+  image: string
   cta?: {
-    text: string;
-    href: string;
-  };
+    text: string
+    href: string
+  }
 }
 
 interface HeroCarouselInteractiveProps {
-  slides?: HeroSlide[];
-  autoPlay?: boolean;
-  interval?: number;
-  className?: string;
+  slides?: HeroSlide[]
+  autoPlay?: boolean
+  interval?: number
+  className?: string
 }
 
 const defaultSlides: HeroSlide[] = [
@@ -44,7 +44,7 @@ const defaultSlides: HeroSlide[] = [
       href: '/ofertas',
     },
   },
-];
+]
 
 export const HeroCarouselInteractive: React.FC<HeroCarouselInteractiveProps> = ({
   slides = defaultSlides,
@@ -52,34 +52,36 @@ export const HeroCarouselInteractive: React.FC<HeroCarouselInteractiveProps> = (
   interval = 5000,
   className = '',
 }) => {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0)
 
   useEffect(() => {
-    if (!autoPlay) {return;}
+    if (!autoPlay) {
+      return
+    }
 
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, interval);
+      setCurrentSlide(prev => (prev + 1) % slides.length)
+    }, interval)
 
-    return () => clearInterval(timer);
-  }, [autoPlay, interval, slides.length]);
+    return () => clearInterval(timer)
+  }, [autoPlay, interval, slides.length])
 
   const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
+    setCurrentSlide(index)
+  }
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
+    setCurrentSlide(prev => (prev + 1) % slides.length)
+  }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
+    setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length)
+  }
 
   return (
     <div className={`relative w-full h-96 overflow-hidden rounded-lg ${className}`}>
       {/* Slides */}
-      <div className="relative w-full h-full">
+      <div className='relative w-full h-full'>
         {slides.map((slide, index) => (
           <div
             key={slide.id}
@@ -88,19 +90,17 @@ export const HeroCarouselInteractive: React.FC<HeroCarouselInteractiveProps> = (
             }`}
           >
             <div
-              className="w-full h-full bg-cover bg-center"
+              className='w-full h-full bg-cover bg-center'
               style={{ backgroundImage: `url(${slide.image})` }}
             >
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <h2 className="text-4xl font-bold mb-4">{slide.title}</h2>
-                  {slide.subtitle && (
-                    <p className="text-xl mb-6">{slide.subtitle}</p>
-                  )}
+              <div className='absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center'>
+                <div className='text-center text-white'>
+                  <h2 className='text-4xl font-bold mb-4'>{slide.title}</h2>
+                  {slide.subtitle && <p className='text-xl mb-6'>{slide.subtitle}</p>}
                   {slide.cta && (
                     <a
                       href={slide.cta.href}
-                      className="inline-block bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                      className='inline-block bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors'
                     >
                       {slide.cta.text}
                     </a>
@@ -115,26 +115,26 @@ export const HeroCarouselInteractive: React.FC<HeroCarouselInteractiveProps> = (
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all"
-        aria-label="Slide anterior"
+        className='absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all'
+        aria-label='Slide anterior'
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
         </svg>
       </button>
 
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all"
-        aria-label="Slide siguiente"
+        className='absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all'
+        aria-label='Slide siguiente'
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
         </svg>
       </button>
 
       {/* Dots Indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <div className='absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2'>
         {slides.map((_, index) => (
           <button
             key={index}
@@ -147,16 +147,7 @@ export const HeroCarouselInteractive: React.FC<HeroCarouselInteractiveProps> = (
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default HeroCarouselInteractive;
-
-
-
-
-
-
-
-
-
+export default HeroCarouselInteractive

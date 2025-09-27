@@ -1,5 +1,5 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 // ===================================
 // API ENDPOINT PARA GENERAR SCREENSHOTS DE TESTING
@@ -40,13 +40,16 @@ interface ScreenshotResponse {
 export async function POST(request: NextRequest) {
   try {
     const body: ScreenshotRequest = await request.json()
-    
+
     // Validar parámetros requeridos
     if (!body.url || !body.stepName) {
-      return NextResponse.json({
-        success: false,
-        error: 'URL y stepName son requeridos'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'URL y stepName son requeridos',
+        },
+        { status: 400 }
+      )
     }
 
     // Configurar directorio de screenshots
@@ -64,8 +67,8 @@ export async function POST(request: NextRequest) {
     const page = await browser.newPage({
       viewport: {
         width: body.width || 1920,
-        height: body.height || 1080
-      }
+        height: body.height || 1080,
+      },
     })
 
     try {
@@ -84,7 +87,7 @@ export async function POST(request: NextRequest) {
       const screenshotOptions: any = {
         path: filepath,
         fullPage: body.fullPage !== false,
-        type: 'png'
+        type: 'png',
       }
 
       await page.screenshot(screenshotOptions)
@@ -100,28 +103,29 @@ export async function POST(request: NextRequest) {
           width: body.width || 1920,
           height: body.height || 1080,
           size: stats.size,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       }
 
       console.log(`📸 Screenshot capturado: ${body.stepName} -> ${filename}`)
 
       return NextResponse.json({
         success: true,
-        screenshot
+        screenshot,
       })
-
     } finally {
       await browser.close()
     }
-
   } catch (error) {
     console.error('Error capturando screenshot:', error)
-    
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido'
-    }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -129,7 +133,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const screenshotsDir = path.join(process.cwd(), 'public', 'test-screenshots')
-    
+
     try {
       const files = await fs.readdir(screenshotsDir)
       const screenshots = []
@@ -138,39 +142,40 @@ export async function GET(request: NextRequest) {
         if (file.endsWith('.png')) {
           const filepath = path.join(screenshotsDir, file)
           const stats = await fs.stat(filepath)
-          
+
           screenshots.push({
             filename: file,
             url: `/test-screenshots/${file}`,
             size: stats.size,
             created: stats.birthtime.toISOString(),
-            modified: stats.mtime.toISOString()
+            modified: stats.mtime.toISOString(),
           })
         }
       }
 
       return NextResponse.json({
         success: true,
-        screenshots: screenshots.sort((a, b) => 
-          new Date(b.created).getTime() - new Date(a.created).getTime()
-        )
+        screenshots: screenshots.sort(
+          (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()
+        ),
       })
-
     } catch (dirError) {
       // Directorio no existe, devolver lista vacía
       return NextResponse.json({
         success: true,
-        screenshots: []
+        screenshots: [],
       })
     }
-
   } catch (error) {
     console.error('Error listando screenshots:', error)
-    
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido'
-    }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -182,25 +187,29 @@ export async function DELETE(request: NextRequest) {
     const pattern = searchParams.get('pattern') // patrón de nombre de archivo
 
     const screenshotsDir = path.join(process.cwd(), 'public', 'test-screenshots')
-    
+
     try {
       const files = await fs.readdir(screenshotsDir)
       let deletedCount = 0
 
       for (const file of files) {
-        if (!file.endsWith('.png')) {continue}
+        if (!file.endsWith('.png')) {
+          continue
+        }
 
         let shouldDelete = false
 
         // Filtrar por patrón si se especifica
-        if (pattern && !file.includes(pattern)) {continue}
+        if (pattern && !file.includes(pattern)) {
+          continue
+        }
 
         // Filtrar por antigüedad si se especifica
         if (olderThan) {
           const filepath = path.join(screenshotsDir, file)
           const stats = await fs.stat(filepath)
           const hoursOld = (Date.now() - stats.mtime.getTime()) / (1000 * 60 * 60)
-          
+
           if (hoursOld > parseInt(olderThan)) {
             shouldDelete = true
           }
@@ -220,33 +229,24 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({
         success: true,
         deletedCount,
-        message: `${deletedCount} screenshots eliminados`
+        message: `${deletedCount} screenshots eliminados`,
       })
-
     } catch (dirError) {
       return NextResponse.json({
         success: true,
         deletedCount: 0,
-        message: 'Directorio de screenshots no existe'
+        message: 'Directorio de screenshots no existe',
       })
     }
-
   } catch (error) {
     console.error('Error eliminando screenshots:', error)
-    
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido'
-    }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      },
+      { status: 500 }
+    )
   }
 }
-
-
-
-
-
-
-
-
-
-

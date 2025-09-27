@@ -4,7 +4,8 @@ import { SearchAutocomplete, type SearchSuggestion } from './search-autocomplete
 
 // Helper functions for stories
 const onSearch = (query: string) => console.log('onSearch:', query)
-const onSuggestionSelect = (suggestion: SearchSuggestion) => console.log('onSuggestionSelect:', suggestion)
+const onSuggestionSelect = (suggestion: SearchSuggestion) =>
+  console.log('onSuggestionSelect:', suggestion)
 
 const meta = {
   title: 'UI/SearchAutocomplete',
@@ -66,13 +67,13 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
-    placeholder: "Busco productos de pinturería...",
+    placeholder: 'Busco productos de pinturería...',
     onSearch,
     onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-96">
+    Story => (
+      <div className='w-96'>
         <Story />
       </div>
     ),
@@ -82,13 +83,13 @@ export const Default: Story = {
 export const Small: Story = {
   args: {
     size: 'sm',
-    placeholder: "Buscar...",
+    placeholder: 'Buscar...',
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-80">
+    Story => (
+      <div className='w-80'>
         <Story />
       </div>
     ),
@@ -98,13 +99,13 @@ export const Small: Story = {
 export const Large: Story = {
   args: {
     size: 'lg',
-    placeholder: "¿Qué estás buscando?",
+    placeholder: '¿Qué estás buscando?',
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-[500px]">
+    Story => (
+      <div className='w-[500px]'>
         <Story />
       </div>
     ),
@@ -113,14 +114,14 @@ export const Large: Story = {
 
 export const WithoutRecentSearches: Story = {
   args: {
-    placeholder: "Busco productos de pinturería...",
+    placeholder: 'Busco productos de pinturería...',
     showRecentSearches: false,
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-96">
+    Story => (
+      <div className='w-96'>
         <Story />
       </div>
     ),
@@ -129,14 +130,14 @@ export const WithoutRecentSearches: Story = {
 
 export const WithoutTrendingSearches: Story = {
   args: {
-    placeholder: "Busco productos de pinturería...",
+    placeholder: 'Busco productos de pinturería...',
     showTrendingSearches: false,
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-96">
+    Story => (
+      <div className='w-96'>
         <Story />
       </div>
     ),
@@ -145,14 +146,14 @@ export const WithoutTrendingSearches: Story = {
 
 export const MinimalSuggestions: Story = {
   args: {
-    placeholder: "Busco productos de pinturería...",
+    placeholder: 'Busco productos de pinturería...',
     maxSuggestions: 3,
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-96">
+    Story => (
+      <div className='w-96'>
         <Story />
       </div>
     ),
@@ -161,14 +162,14 @@ export const MinimalSuggestions: Story = {
 
 export const FastDebounce: Story = {
   args: {
-    placeholder: "Búsqueda rápida...",
+    placeholder: 'Búsqueda rápida...',
     debounceMs: 100,
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-96">
+    Story => (
+      <div className='w-96'>
         <Story />
       </div>
     ),
@@ -184,14 +185,14 @@ export const FastDebounce: Story = {
 
 export const SlowDebounce: Story = {
   args: {
-    placeholder: "Búsqueda con delay...",
+    placeholder: 'Búsqueda con delay...',
     debounceMs: 800,
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-96">
+    Story => (
+      <div className='w-96'>
         <Story />
       </div>
     ),
@@ -207,13 +208,13 @@ export const SlowDebounce: Story = {
 
 export const FullWidth: Story = {
   args: {
-    placeholder: "Busco productos de pinturería...",
+    placeholder: 'Busco productos de pinturería...',
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-full max-w-2xl">
+    Story => (
+      <div className='w-full max-w-2xl'>
         <Story />
       </div>
     ),
@@ -230,15 +231,15 @@ export const FullWidth: Story = {
 export const MobileOptimized: Story = {
   args: {
     size: 'md',
-    placeholder: "Buscar productos...",
+    placeholder: 'Buscar productos...',
     maxSuggestions: 5,
     debounceMs: 400,
     onSearch: onSearch,
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-80 mx-auto">
+    Story => (
+      <div className='w-80 mx-auto'>
         <Story />
       </div>
     ),
@@ -258,7 +259,7 @@ export const MobileOptimized: Story = {
 export const EcommerceHeader: Story = {
   args: {
     size: 'md',
-    placeholder: "Busco productos de pinturería...",
+    placeholder: 'Busco productos de pinturería...',
     showRecentSearches: true,
     showTrendingSearches: true,
     maxSuggestions: 8,
@@ -267,15 +268,15 @@ export const EcommerceHeader: Story = {
     onSuggestionSelect: onSuggestionSelect,
   },
   decorators: [
-    (Story) => (
-      <div className="w-full max-w-md">
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex items-center gap-4">
-            <div className="text-primary font-bold text-xl">Pinteya</div>
-            <div className="flex-1">
+    Story => (
+      <div className='w-full max-w-md'>
+        <div className='bg-white p-4 rounded-lg shadow-sm border'>
+          <div className='flex items-center gap-4'>
+            <div className='text-primary font-bold text-xl'>Pinteya</div>
+            <div className='flex-1'>
               <Story />
             </div>
-            <div className="text-sm text-gray-600">🛒 3</div>
+            <div className='text-sm text-gray-600'>🛒 3</div>
           </div>
         </div>
       </div>
@@ -289,12 +290,3 @@ export const EcommerceHeader: Story = {
     },
   },
 }
-
-
-
-
-
-
-
-
-

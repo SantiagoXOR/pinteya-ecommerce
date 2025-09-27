@@ -3,21 +3,21 @@
  * Servicio de sincronización de usuarios entre NextAuth y Supabase
  */
 
-import { supabaseAdmin } from '@/lib/integrations/supabase';
-import { logger } from '@/lib/enterprise/logger';
+import { supabaseAdmin } from '@/lib/integrations/supabase'
+import { logger } from '@/lib/enterprise/logger'
 
 export interface UserSyncData {
-  id: string;
-  email: string;
-  name?: string;
-  image?: string;
-  provider?: string;
+  id: string
+  email: string
+  name?: string
+  image?: string
+  provider?: string
 }
 
 export interface SyncResult {
-  success: boolean;
-  userId?: string;
-  error?: string;
+  success: boolean
+  userId?: string
+  error?: string
 }
 
 /**
@@ -30,11 +30,11 @@ export async function syncUserToSupabase(userData: UserSyncData): Promise<SyncRe
       .from('users')
       .select('id, email')
       .eq('email', userData.email)
-      .single();
+      .single()
 
     if (checkError && checkError.code !== 'PGRST116') {
-      logger.error('Error verificando usuario existente:', checkError);
-      return { success: false, error: 'Error verificando usuario' };
+      logger.error('Error verificando usuario existente:', checkError)
+      return { success: false, error: 'Error verificando usuario' }
     }
 
     if (existingUser) {
@@ -45,17 +45,17 @@ export async function syncUserToSupabase(userData: UserSyncData): Promise<SyncRe
           name: userData.name,
           image: userData.image,
           last_login: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', existingUser.id);
+        .eq('id', existingUser.id)
 
       if (updateError) {
-        logger.error('Error actualizando usuario:', updateError);
-        return { success: false, error: 'Error actualizando usuario' };
+        logger.error('Error actualizando usuario:', updateError)
+        return { success: false, error: 'Error actualizando usuario' }
       }
 
-      logger.info(`Usuario actualizado: ${userData.email}`);
-      return { success: true, userId: existingUser.id };
+      logger.info(`Usuario actualizado: ${userData.email}`)
+      return { success: true, userId: existingUser.id }
     } else {
       // Usuario nuevo, crear
       const { data: newUser, error: createError } = await supabaseAdmin
@@ -70,22 +70,22 @@ export async function syncUserToSupabase(userData: UserSyncData): Promise<SyncRe
           provider: userData.provider || 'google',
           last_login: new Date().toISOString(),
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .select('id')
-        .single();
+        .single()
 
       if (createError) {
-        logger.error('Error creando usuario:', createError);
-        return { success: false, error: 'Error creando usuario' };
+        logger.error('Error creando usuario:', createError)
+        return { success: false, error: 'Error creando usuario' }
       }
 
-      logger.info(`Usuario creado: ${userData.email}`);
-      return { success: true, userId: newUser.id };
+      logger.info(`Usuario creado: ${userData.email}`)
+      return { success: true, userId: newUser.id }
     }
   } catch (error) {
-    logger.error('Error en syncUserToSupabase:', error);
-    return { success: false, error: 'Error interno del servidor' };
+    logger.error('Error en syncUserToSupabase:', error)
+    return { success: false, error: 'Error interno del servidor' }
   }
 }
 
@@ -99,20 +99,20 @@ export async function deleteUserFromSupabase(userId: string): Promise<SyncResult
       .from('users')
       .update({
         is_active: false,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', userId);
+      .eq('id', userId)
 
     if (error) {
-      logger.error('Error desactivando usuario:', error);
-      return { success: false, error: 'Error desactivando usuario' };
+      logger.error('Error desactivando usuario:', error)
+      return { success: false, error: 'Error desactivando usuario' }
     }
 
-    logger.info(`Usuario desactivado: ${userId}`);
-    return { success: true, userId };
+    logger.info(`Usuario desactivado: ${userId}`)
+    return { success: true, userId }
   } catch (error) {
-    logger.error('Error en deleteUserFromSupabase:', error);
-    return { success: false, error: 'Error interno del servidor' };
+    logger.error('Error en deleteUserFromSupabase:', error)
+    return { success: false, error: 'Error interno del servidor' }
   }
 }
 
@@ -122,7 +122,7 @@ export async function deleteUserFromSupabase(userId: string): Promise<SyncResult
 export async function syncUserFromClerk(userData: UserSyncData): Promise<SyncResult> {
   // Esta función es para compatibilidad con la migración de Clerk
   // Redirige a la función principal de sincronización
-  return syncUserToSupabase(userData);
+  return syncUserToSupabase(userData)
 }
 
 /**
@@ -135,17 +135,17 @@ export async function getUserFromSupabase(userId: string) {
       .select('*')
       .eq('id', userId)
       .eq('is_active', true)
-      .single();
+      .single()
 
     if (error) {
-      logger.error('Error obteniendo usuario:', error);
-      return null;
+      logger.error('Error obteniendo usuario:', error)
+      return null
     }
 
-    return data;
+    return data
   } catch (error) {
-    logger.error('Error en getUserFromSupabase:', error);
-    return null;
+    logger.error('Error en getUserFromSupabase:', error)
+    return null
   }
 }
 
@@ -158,19 +158,19 @@ export async function updateLastLogin(userId: string): Promise<boolean> {
       .from('users')
       .update({
         last_login: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', userId);
+      .eq('id', userId)
 
     if (error) {
-      logger.error('Error actualizando último login:', error);
-      return false;
+      logger.error('Error actualizando último login:', error)
+      return false
     }
 
-    return true;
+    return true
   } catch (error) {
-    logger.error('Error en updateLastLogin:', error);
-    return false;
+    logger.error('Error en updateLastLogin:', error)
+    return false
   }
 }
 
@@ -183,17 +183,17 @@ export async function isUserActive(userId: string): Promise<boolean> {
       .from('users')
       .select('is_active')
       .eq('id', userId)
-      .single();
+      .single()
 
     if (error) {
-      logger.error('Error verificando estado de usuario:', error);
-      return false;
+      logger.error('Error verificando estado de usuario:', error)
+      return false
     }
 
-    return data.is_active;
+    return data.is_active
   } catch (error) {
-    logger.error('Error en isUserActive:', error);
-    return false;
+    logger.error('Error en isUserActive:', error)
+    return false
   }
 }
 
@@ -205,11 +205,11 @@ export async function getSyncStatistics() {
     const { data, error } = await supabaseAdmin
       .from('users')
       .select('provider, is_active, created_at')
-      .not('provider', 'is', null);
+      .not('provider', 'is', null)
 
     if (error) {
-      logger.error('Error obteniendo estadísticas de sync:', error);
-      return null;
+      logger.error('Error obteniendo estadísticas de sync:', error)
+      return null
     }
 
     const stats = {
@@ -222,24 +222,15 @@ export async function getSyncStatistics() {
         other: data.filter(u => u.provider && !['google', 'clerk'].includes(u.provider)).length,
       },
       recentSyncs: data.filter(u => {
-        const createdAt = new Date(u.created_at);
-        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        return createdAt > dayAgo;
-      }).length
-    };
+        const createdAt = new Date(u.created_at)
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+        return createdAt > dayAgo
+      }).length,
+    }
 
-    return stats;
+    return stats
   } catch (error) {
-    logger.error('Error en getSyncStatistics:', error);
-    return null;
+    logger.error('Error en getSyncStatistics:', error)
+    return null
   }
 }
-
-
-
-
-
-
-
-
-

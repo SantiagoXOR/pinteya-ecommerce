@@ -1,65 +1,60 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
-import { SessionProvider } from "next-auth/react";
+import React, { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import { SessionProvider } from 'next-auth/react'
 
 // Providers de la aplicación
-import { CartModalProvider } from "./context/CartSidebarModalContext";
-import { ReduxProvider } from "@/redux/provider";
-import { PreviewSliderProvider } from "./context/PreviewSliderContext";
-import CartPersistenceProvider from "@/components/providers/CartPersistenceProvider";
-import { SimpleAnalyticsProvider as AnalyticsProvider } from '@/components/Analytics/SimpleAnalyticsProvider';
-import { QueryClientProvider } from "@/components/providers/QueryClientProvider";
-import { NetworkErrorProvider } from "@/components/providers/NetworkErrorProvider";
-import { MonitoringProvider } from "@/providers/MonitoringProvider";
-
+import { CartModalProvider } from './context/CartSidebarModalContext'
+import { ReduxProvider } from '@/redux/provider'
+import { PreviewSliderProvider } from './context/PreviewSliderContext'
+import CartPersistenceProvider from '@/components/providers/CartPersistenceProvider'
+import { SimpleAnalyticsProvider as AnalyticsProvider } from '@/components/Analytics/SimpleAnalyticsProvider'
+import { QueryClientProvider } from '@/components/providers/QueryClientProvider'
+import { NetworkErrorProvider } from '@/components/providers/NetworkErrorProvider'
+import { MonitoringProvider } from '@/providers/MonitoringProvider'
 
 // Componentes UI
-import Header from "../components/Header/index";
-import Footer from "../components/layout/Footer";
-import CartSidebarModal from "@/components/Common/CartSidebarModal/index";
-import PreviewSliderModal from "@/components/Common/PreviewSlider";
-import ScrollToTop from "@/components/Common/ScrollToTop";
-import PreLoader from "@/components/Common/PreLoader";
-import CartNotification, { useCartNotification } from "@/components/Common/CartNotification";
+import Header from '../components/Header/index'
+import Footer from '../components/layout/Footer'
+import CartSidebarModal from '@/components/Common/CartSidebarModal/index'
+import PreviewSliderModal from '@/components/Common/PreviewSlider'
+import ScrollToTop from '@/components/Common/ScrollToTop'
+import PreLoader from '@/components/Common/PreLoader'
+import CartNotification, { useCartNotification } from '@/components/Common/CartNotification'
 // import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import FloatingCartButton from "@/components/ui/floating-cart-button";
-import { Toaster } from "@/components/ui/toast";
+import FloatingCartButton from '@/components/ui/floating-cart-button'
+import { Toaster } from '@/components/ui/toast'
 
 // Componente NextAuthWrapper para manejar sesiones
 function NextAuthWrapper({ children }: { children: React.ReactNode }) {
   // DEBUG: Log de configuración NextAuth
-  console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce');
+  console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce')
 
-  return (
-    <SessionProvider>
-      {children}
-    </SessionProvider>
-  );
+  return <SessionProvider>{children}</SessionProvider>
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isClient, setIsClient] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true)
+  const [isClient, setIsClient] = useState<boolean>(false)
 
   useEffect(() => {
     // Verificar que estamos en el cliente para evitar errores de SSG
-    setIsClient(true);
-    setTimeout(() => setLoading(false), 1000);
-  }, []);
+    setIsClient(true)
+    setTimeout(() => setLoading(false), 1000)
+  }, [])
 
   // ✅ NEXTAUTH.JS ACTIVADO - Migración completada 21/08/2025
   // NextAuth.js reemplaza a Clerk para autenticación
-  const nextAuthEnabled = true; // ✅ ACTIVADO - Sistema funcional
+  const nextAuthEnabled = true // ✅ ACTIVADO - Sistema funcional
 
   // Componente interno con todos los providers
   const AppContent = () => {
-    const { notification, hideNotification } = useCartNotification();
-    const pathname = usePathname();
+    const { notification, hideNotification } = useCartNotification()
+    const pathname = usePathname()
 
     // Detectar si estamos en rutas de admin
-    const isAdminRoute = pathname?.startsWith('/admin');
+    const isAdminRoute = pathname?.startsWith('/admin')
 
     // DEBUG: Logs para verificar la detección de rutas admin (DESHABILITADO)
     // console.log('🔧 PROVIDERS DEBUG:', {
@@ -84,43 +79,42 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     <CartPersistenceProvider>
                       <AnalyticsProvider>
                         <CartModalProvider>
-                            <PreviewSliderProvider>
+                          <PreviewSliderProvider>
+                            {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
+                            {!isAdminRoute && <Header />}
 
-                    {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
-                    {!isAdminRoute && <Header />}
+                            {/* CartSidebarModal solo para rutas públicas */}
+                            {!isAdminRoute && <CartSidebarModal />}
+                            <PreviewSliderModal />
+                            <ScrollToTop />
 
-                    {/* CartSidebarModal solo para rutas públicas */}
-                    {!isAdminRoute && <CartSidebarModal />}
-                    <PreviewSliderModal />
-                    <ScrollToTop />
+                            {/* Contenido principal */}
+                            {children}
 
-                    {/* Contenido principal */}
-                    {children}
+                            {/* Footer solo para rutas públicas */}
+                            {!isAdminRoute && <Footer />}
 
-                    {/* Footer solo para rutas públicas */}
-            {!isAdminRoute && <Footer />}
-
-                    {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
-                    {/* <div className="md:hidden">
+                            {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
+                            {/* <div className="md:hidden">
                       <BottomNavigation />
                     </div> */}
 
-                    {/* Botón de carrito flotante - Solo en rutas públicas */}
-                    {!isAdminRoute && <FloatingCartButton />}
+                            {/* Botón de carrito flotante - Solo en rutas públicas */}
+                            {!isAdminRoute && <FloatingCartButton />}
 
-                    {/* Notificación del carrito - Solo en rutas públicas */}
-                    {!isAdminRoute && (
-                      <CartNotification
-                        show={notification.show}
-                        productName={notification.productName}
-                        productImage={notification.productImage}
-                        onClose={hideNotification}
-                      />
-                    )}
+                            {/* Notificación del carrito - Solo en rutas públicas */}
+                            {!isAdminRoute && (
+                              <CartNotification
+                                show={notification.show}
+                                productName={notification.productName}
+                                productImage={notification.productImage}
+                                onClose={hideNotification}
+                              />
+                            )}
 
-                    {/* Toaster para notificaciones */}
-                    <Toaster />
-                            </PreviewSliderProvider>
+                            {/* Toaster para notificaciones */}
+                            <Toaster />
+                          </PreviewSliderProvider>
                         </CartModalProvider>
                       </AnalyticsProvider>
                     </CartPersistenceProvider>
@@ -131,8 +125,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           </>
         )}
       </>
-    );
-  };
+    )
+  }
 
   // Renderizado con NextAuth.js SessionProvider
   if (nextAuthEnabled) {
@@ -140,18 +134,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <NextAuthWrapper>
         <AppContent />
       </NextAuthWrapper>
-    );
+    )
   }
 
   // Fallback sin autenticación
-  return <AppContent />;
+  return <AppContent />
 }
-
-
-
-
-
-
-
-
-

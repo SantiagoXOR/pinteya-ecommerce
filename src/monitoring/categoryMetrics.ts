@@ -4,23 +4,23 @@
  * Pinteya E-commerce - Enterprise Monitoring
  */
 
-import React from 'react';
-import type { CategoryId } from '@/types/categories';
+import React from 'react'
+import type { CategoryId } from '@/types/categories'
 
 /**
  * Performance metrics interface
  */
 export interface PerformanceMetrics {
   /** Component render time in milliseconds */
-  renderTime: number;
+  renderTime: number
   /** Time from user interaction to visual response */
-  interactionTime: number;
+  interactionTime: number
   /** Memory usage in MB */
-  memoryUsage: number;
+  memoryUsage: number
   /** Bundle size impact in KB */
-  bundleSize: number;
+  bundleSize: number
   /** Timestamp of measurement */
-  timestamp: number;
+  timestamp: number
 }
 
 /**
@@ -28,15 +28,15 @@ export interface PerformanceMetrics {
  */
 export interface AccessibilityMetrics {
   /** WCAG 2.1 AA compliance percentage */
-  wcagCompliance: number;
+  wcagCompliance: number
   /** Number of accessibility violations */
-  violations: number;
+  violations: number
   /** Keyboard navigation success rate */
-  keyboardNavSuccess: number;
+  keyboardNavSuccess: number
   /** Screen reader compatibility score */
-  screenReaderScore: number;
+  screenReaderScore: number
   /** Focus management score */
-  focusManagementScore: number;
+  focusManagementScore: number
 }
 
 /**
@@ -44,15 +44,15 @@ export interface AccessibilityMetrics {
  */
 export interface UserExperienceMetrics {
   /** User interaction rate (clicks per session) */
-  interactionRate: number;
+  interactionRate: number
   /** Error rate percentage */
-  errorRate: number;
+  errorRate: number
   /** Task completion rate percentage */
-  taskCompletionRate: number;
+  taskCompletionRate: number
   /** User satisfaction score (1-10) */
-  satisfactionScore: number;
+  satisfactionScore: number
   /** Session duration in seconds */
-  sessionDuration: number;
+  sessionDuration: number
 }
 
 /**
@@ -60,31 +60,31 @@ export interface UserExperienceMetrics {
  */
 export interface BusinessMetrics {
   /** Conversion rate from category to purchase */
-  conversionRate: number;
+  conversionRate: number
   /** Revenue per category interaction */
-  revenuePerInteraction: number;
+  revenuePerInteraction: number
   /** Page load time impact */
-  pageLoadImpact: number;
+  pageLoadImpact: number
   /** SEO ranking impact */
-  seoImpact: number;
+  seoImpact: number
   /** Mobile usage percentage */
-  mobileUsage: number;
+  mobileUsage: number
 }
 
 /**
  * Combined metrics interface
  */
 export interface CategoryMetrics {
-  performance: PerformanceMetrics;
-  accessibility: AccessibilityMetrics;
-  userExperience: UserExperienceMetrics;
-  business: BusinessMetrics;
+  performance: PerformanceMetrics
+  accessibility: AccessibilityMetrics
+  userExperience: UserExperienceMetrics
+  business: BusinessMetrics
   metadata: {
-    sessionId: string;
-    userId?: string;
-    timestamp: number;
-    version: string;
-  };
+    sessionId: string
+    userId?: string
+    timestamp: number
+    version: string
+  }
 }
 
 /**
@@ -92,17 +92,17 @@ export interface CategoryMetrics {
  */
 interface MetricsConfig {
   /** Whether metrics collection is enabled */
-  enabled: boolean;
+  enabled: boolean
   /** Sampling rate for metrics collection */
-  samplingRate: number;
+  samplingRate: number
   /** Batch size for sending metrics */
-  batchSize: number;
+  batchSize: number
   /** Flush interval in milliseconds */
-  flushInterval: number;
+  flushInterval: number
   /** Performance measurement precision */
-  precision: number;
+  precision: number
   /** Debug mode for development */
-  debug: boolean;
+  debug: boolean
 }
 
 /**
@@ -115,38 +115,40 @@ const defaultConfig: MetricsConfig = {
   flushInterval: 30000, // 30 seconds
   precision: 2,
   debug: process.env.NODE_ENV === 'development',
-};
+}
 
 /**
  * Performance measurement utilities
  */
 class PerformanceMeasurer {
-  private startTimes: Map<string, number> = new Map();
-  private observer: PerformanceObserver | null = null;
+  private startTimes: Map<string, number> = new Map()
+  private observer: PerformanceObserver | null = null
 
   constructor() {
-    this.initializeObserver();
+    this.initializeObserver()
   }
 
   /**
    * Initialize performance observer
    */
   private initializeObserver(): void {
-    if (typeof window === 'undefined' || !window.PerformanceObserver) {return;}
+    if (typeof window === 'undefined' || !window.PerformanceObserver) {
+      return
+    }
 
     try {
-      this.observer = new PerformanceObserver((list) => {
-        const entries = list.getEntries();
-        entries.forEach((entry) => {
+      this.observer = new PerformanceObserver(list => {
+        const entries = list.getEntries()
+        entries.forEach(entry => {
           if (entry.name.startsWith('category-')) {
-            this.handlePerformanceEntry(entry);
+            this.handlePerformanceEntry(entry)
           }
-        });
-      });
+        })
+      })
 
-      this.observer.observe({ entryTypes: ['measure', 'navigation', 'paint'] });
+      this.observer.observe({ entryTypes: ['measure', 'navigation', 'paint'] })
     } catch (error) {
-      console.warn('Failed to initialize performance observer:', error);
+      console.warn('Failed to initialize performance observer:', error)
     }
   }
 
@@ -158,18 +160,18 @@ class PerformanceMeasurer {
     }
 
     // Process specific performance metrics
-    CategoryMetricsManager.getInstance().recordPerformanceEntry(entry);
+    CategoryMetricsManager.getInstance().recordPerformanceEntry(entry)
   }
 
   /**
    * Start measuring performance
    */
   startMeasure(name: string): void {
-    const startTime = performance.now();
-    this.startTimes.set(name, startTime);
-    
+    const startTime = performance.now()
+    this.startTimes.set(name, startTime)
+
     if (performance.mark) {
-      performance.mark(`${name}-start`);
+      performance.mark(`${name}-start`)
     }
   }
 
@@ -177,29 +179,33 @@ class PerformanceMeasurer {
    * End measuring performance
    */
   endMeasure(name: string): number {
-    const startTime = this.startTimes.get(name);
-    if (!startTime) {return 0;}
-
-    const endTime = performance.now();
-    const duration = endTime - startTime;
-
-    if (performance.mark && performance.measure) {
-      performance.mark(`${name}-end`);
-      performance.measure(name, `${name}-start`, `${name}-end`);
+    const startTime = this.startTimes.get(name)
+    if (!startTime) {
+      return 0
     }
 
-    this.startTimes.delete(name);
-    return Number(duration.toFixed(defaultConfig.precision));
+    const endTime = performance.now()
+    const duration = endTime - startTime
+
+    if (performance.mark && performance.measure) {
+      performance.mark(`${name}-end`)
+      performance.measure(name, `${name}-start`, `${name}-end`)
+    }
+
+    this.startTimes.delete(name)
+    return Number(duration.toFixed(defaultConfig.precision))
   }
 
   /**
    * Get memory usage
    */
   getMemoryUsage(): number {
-    if (typeof window === 'undefined' || !window.performance.memory) {return 0;}
+    if (typeof window === 'undefined' || !window.performance.memory) {
+      return 0
+    }
 
-    const memory = window.performance.memory;
-    return Number((memory.usedJSHeapSize / 1024 / 1024).toFixed(defaultConfig.precision));
+    const memory = window.performance.memory
+    return Number((memory.usedJSHeapSize / 1024 / 1024).toFixed(defaultConfig.precision))
   }
 
   /**
@@ -207,10 +213,10 @@ class PerformanceMeasurer {
    */
   destroy(): void {
     if (this.observer) {
-      this.observer.disconnect();
-      this.observer = null;
+      this.observer.disconnect()
+      this.observer = null
     }
-    this.startTimes.clear();
+    this.startTimes.clear()
   }
 }
 
@@ -218,18 +224,18 @@ class PerformanceMeasurer {
  * Category metrics manager
  */
 class CategoryMetricsManager {
-  private static instance: CategoryMetricsManager | null = null;
-  private config: MetricsConfig;
-  private performanceMeasurer: PerformanceMeasurer;
-  private metricsQueue: CategoryMetrics[] = [];
-  private flushTimer: NodeJS.Timeout | null = null;
-  private sessionId: string;
+  private static instance: CategoryMetricsManager | null = null
+  private config: MetricsConfig
+  private performanceMeasurer: PerformanceMeasurer
+  private metricsQueue: CategoryMetrics[] = []
+  private flushTimer: NodeJS.Timeout | null = null
+  private sessionId: string
 
   private constructor(config: Partial<MetricsConfig> = {}) {
-    this.config = { ...defaultConfig, ...config };
-    this.performanceMeasurer = new PerformanceMeasurer();
-    this.sessionId = this.generateSessionId();
-    this.initialize();
+    this.config = { ...defaultConfig, ...config }
+    this.performanceMeasurer = new PerformanceMeasurer()
+    this.sessionId = this.generateSessionId()
+    this.initialize()
   }
 
   /**
@@ -237,27 +243,29 @@ class CategoryMetricsManager {
    */
   static getInstance(config?: Partial<MetricsConfig>): CategoryMetricsManager {
     if (!CategoryMetricsManager.instance) {
-      CategoryMetricsManager.instance = new CategoryMetricsManager(config);
+      CategoryMetricsManager.instance = new CategoryMetricsManager(config)
     }
-    return CategoryMetricsManager.instance;
+    return CategoryMetricsManager.instance
   }
 
   /**
    * Initialize metrics manager
    */
   private initialize(): void {
-    if (!this.config.enabled) {return;}
+    if (!this.config.enabled) {
+      return
+    }
 
     // Set up flush timer
     this.flushTimer = setInterval(() => {
-      this.flush();
-    }, this.config.flushInterval);
+      this.flush()
+    }, this.config.flushInterval)
 
     // Set up page unload handler
     if (typeof window !== 'undefined') {
       window.addEventListener('beforeunload', () => {
-        this.flush();
-      });
+        this.flush()
+      })
     }
   }
 
@@ -265,30 +273,34 @@ class CategoryMetricsManager {
    * Generate session ID
    */
   private generateSessionId(): string {
-    return `metrics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `metrics_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   /**
    * Check if should sample
    */
   private shouldSample(): boolean {
-    return Math.random() < this.config.samplingRate;
+    return Math.random() < this.config.samplingRate
   }
 
   /**
    * Start performance measurement
    */
   startPerformanceMeasure(name: string): void {
-    if (!this.config.enabled || !this.shouldSample()) {return;}
-    this.performanceMeasurer.startMeasure(`category-${name}`);
+    if (!this.config.enabled || !this.shouldSample()) {
+      return
+    }
+    this.performanceMeasurer.startMeasure(`category-${name}`)
   }
 
   /**
    * End performance measurement
    */
   endPerformanceMeasure(name: string): number {
-    if (!this.config.enabled) {return 0;}
-    return this.performanceMeasurer.endMeasure(`category-${name}`);
+    if (!this.config.enabled) {
+      return 0
+    }
+    return this.performanceMeasurer.endMeasure(`category-${name}`)
   }
 
   /**
@@ -304,7 +316,9 @@ class CategoryMetricsManager {
    * Record accessibility metrics
    */
   recordAccessibilityMetrics(metrics: Partial<AccessibilityMetrics>): void {
-    if (!this.config.enabled || !this.shouldSample()) {return;}
+    if (!this.config.enabled || !this.shouldSample()) {
+      return
+    }
 
     const fullMetrics: AccessibilityMetrics = {
       wcagCompliance: 100,
@@ -313,18 +327,20 @@ class CategoryMetricsManager {
       screenReaderScore: 100,
       focusManagementScore: 100,
       ...metrics,
-    };
+    }
 
     this.addToQueue({
       accessibility: fullMetrics,
-    } as CategoryMetrics);
+    } as CategoryMetrics)
   }
 
   /**
    * Record user experience metrics
    */
   recordUserExperienceMetrics(metrics: Partial<UserExperienceMetrics>): void {
-    if (!this.config.enabled || !this.shouldSample()) {return;}
+    if (!this.config.enabled || !this.shouldSample()) {
+      return
+    }
 
     const fullMetrics: UserExperienceMetrics = {
       interactionRate: 0,
@@ -333,18 +349,20 @@ class CategoryMetricsManager {
       satisfactionScore: 8,
       sessionDuration: 0,
       ...metrics,
-    };
+    }
 
     this.addToQueue({
       userExperience: fullMetrics,
-    } as CategoryMetrics);
+    } as CategoryMetrics)
   }
 
   /**
    * Record business metrics
    */
   recordBusinessMetrics(metrics: Partial<BusinessMetrics>): void {
-    if (!this.config.enabled || !this.shouldSample()) {return;}
+    if (!this.config.enabled || !this.shouldSample()) {
+      return
+    }
 
     const fullMetrics: BusinessMetrics = {
       conversionRate: 0,
@@ -353,11 +371,11 @@ class CategoryMetricsManager {
       seoImpact: 0,
       mobileUsage: 0,
       ...metrics,
-    };
+    }
 
     this.addToQueue({
       business: fullMetrics,
-    } as CategoryMetrics);
+    } as CategoryMetrics)
   }
 
   /**
@@ -399,16 +417,16 @@ class CategoryMetricsManager {
         version: '1.0.0',
       },
       ...partialMetrics,
-    };
+    }
 
-    this.metricsQueue.push(metrics);
+    this.metricsQueue.push(metrics)
 
     if (this.config.debug) {
     }
 
     // Flush if queue is full
     if (this.metricsQueue.length >= this.config.batchSize) {
-      this.flush();
+      this.flush()
     }
   }
 
@@ -416,10 +434,12 @@ class CategoryMetricsManager {
    * Flush metrics to endpoint
    */
   private async flush(): Promise<void> {
-    if (this.metricsQueue.length === 0) {return;}
+    if (this.metricsQueue.length === 0) {
+      return
+    }
 
-    const metricsToSend = [...this.metricsQueue];
-    this.metricsQueue = [];
+    const metricsToSend = [...this.metricsQueue]
+    this.metricsQueue = []
 
     try {
       if (typeof window !== 'undefined' && window.fetch) {
@@ -429,15 +449,15 @@ class CategoryMetricsManager {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ metrics: metricsToSend }),
-        });
+        })
       }
 
       if (this.config.debug) {
       }
     } catch (error) {
-      console.warn('Failed to flush metrics:', error);
+      console.warn('Failed to flush metrics:', error)
       // Re-add to queue for retry
-      this.metricsQueue.unshift(...metricsToSend);
+      this.metricsQueue.unshift(...metricsToSend)
     }
   }
 
@@ -445,22 +465,22 @@ class CategoryMetricsManager {
    * Get current metrics summary
    */
   getSummary(): {
-    queueSize: number;
-    sessionId: string;
-    config: MetricsConfig;
+    queueSize: number
+    sessionId: string
+    config: MetricsConfig
   } {
     return {
       queueSize: this.metricsQueue.length,
       sessionId: this.sessionId,
       config: this.config,
-    };
+    }
   }
 
   /**
    * Update configuration
    */
   updateConfig(newConfig: Partial<MetricsConfig>): void {
-    this.config = { ...this.config, ...newConfig };
+    this.config = { ...this.config, ...newConfig }
   }
 
   /**
@@ -468,13 +488,13 @@ class CategoryMetricsManager {
    */
   destroy(): void {
     if (this.flushTimer) {
-      clearInterval(this.flushTimer);
-      this.flushTimer = null;
+      clearInterval(this.flushTimer)
+      this.flushTimer = null
     }
 
-    this.flush();
-    this.performanceMeasurer.destroy();
-    CategoryMetricsManager.instance = null;
+    this.flush()
+    this.performanceMeasurer.destroy()
+    CategoryMetricsManager.instance = null
   }
 }
 
@@ -482,13 +502,13 @@ class CategoryMetricsManager {
  * React hook for category metrics
  */
 export const useCategoryMetrics = (config?: Partial<MetricsConfig>) => {
-  const manager = CategoryMetricsManager.getInstance(config);
+  const manager = CategoryMetricsManager.getInstance(config)
 
   React.useEffect(() => {
     return () => {
       // Don't destroy on unmount, let it persist for the session
-    };
-  }, []);
+    }
+  }, [])
 
   return {
     startPerformanceMeasure: manager.startPerformanceMeasure.bind(manager),
@@ -497,36 +517,27 @@ export const useCategoryMetrics = (config?: Partial<MetricsConfig>) => {
     recordUserExperienceMetrics: manager.recordUserExperienceMetrics.bind(manager),
     recordBusinessMetrics: manager.recordBusinessMetrics.bind(manager),
     getSummary: manager.getSummary.bind(manager),
-  };
-};
+  }
+}
 
 /**
  * Convenience functions
  */
 export const startCategoryRender = () => {
-  CategoryMetricsManager.getInstance().startPerformanceMeasure('render');
-};
+  CategoryMetricsManager.getInstance().startPerformanceMeasure('render')
+}
 
 export const endCategoryRender = () => {
-  return CategoryMetricsManager.getInstance().endPerformanceMeasure('render');
-};
+  return CategoryMetricsManager.getInstance().endPerformanceMeasure('render')
+}
 
 export const recordCategoryInteraction = (interactionTime: number) => {
   CategoryMetricsManager.getInstance().recordUserExperienceMetrics({
     interactionRate: 1,
-  });
-};
+  })
+}
 
 /**
  * Export manager class
  */
-export { CategoryMetricsManager };
-
-
-
-
-
-
-
-
-
+export { CategoryMetricsManager }

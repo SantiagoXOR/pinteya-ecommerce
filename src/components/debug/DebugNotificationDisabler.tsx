@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
+import { useEffect } from 'react'
 
 /**
  * Componente para deshabilitar notificaciones de debugging persistentes
@@ -9,19 +9,21 @@ import { useEffect } from 'react';
 export default function DebugNotificationDisabler() {
   useEffect(() => {
     // Solo ejecutar en desarrollo
-    if (process.env.NODE_ENV !== 'development') {return;}
+    if (process.env.NODE_ENV !== 'development') {
+      return
+    }
 
-    console.log('🛡️ [DEBUG_DISABLER] Deshabilitando notificaciones de debugging...');
+    console.log('🛡️ [DEBUG_DISABLER] Deshabilitando notificaciones de debugging...')
 
     // Interceptar y deshabilitar console.log que puedan estar causando notificaciones
-    const originalConsoleLog = console.log;
-    const originalConsoleWarn = console.warn;
-    const originalConsoleError = console.error;
+    const originalConsoleLog = console.log
+    const originalConsoleWarn = console.warn
+    const originalConsoleError = console.error
 
     // Filtrar logs de debugging específicos
     console.log = (...args: any[]) => {
-      const message = args.join(' ');
-      
+      const message = args.join(' ')
+
       // Filtrar mensajes de debugging de hooks
       if (
         message.includes('HOOK CORRECTO') ||
@@ -31,15 +33,15 @@ export default function DebugNotificationDisabler() {
         message.includes('🚨 [HOOK PROBLEMÁTICO]')
       ) {
         // No mostrar estos logs
-        return;
+        return
       }
-      
+
       // Permitir otros logs
-      originalConsoleLog(...args);
-    };
+      originalConsoleLog(...args)
+    }
 
     // Interceptar alertas del navegador
-    const originalAlert = window.alert;
+    const originalAlert = window.alert
     window.alert = (message: string) => {
       // Filtrar alertas de debugging
       if (
@@ -47,16 +49,16 @@ export default function DebugNotificationDisabler() {
         message.includes('useOrdersEnterprise') ||
         message.includes('ejecutándose')
       ) {
-        console.log('🛡️ [DEBUG_DISABLER] Alerta de debugging bloqueada:', message);
-        return;
+        console.log('🛡️ [DEBUG_DISABLER] Alerta de debugging bloqueada:', message)
+        return
       }
-      
+
       // Permitir otras alertas
-      originalAlert(message);
-    };
+      originalAlert(message)
+    }
 
     // Interceptar confirmaciones del navegador
-    const originalConfirm = window.confirm;
+    const originalConfirm = window.confirm
     window.confirm = (message: string) => {
       // Filtrar confirmaciones de debugging
       if (
@@ -64,18 +66,18 @@ export default function DebugNotificationDisabler() {
         message.includes('useOrdersEnterprise') ||
         message.includes('ejecutándose')
       ) {
-        console.log('🛡️ [DEBUG_DISABLER] Confirmación de debugging bloqueada:', message);
-        return false;
+        console.log('🛡️ [DEBUG_DISABLER] Confirmación de debugging bloqueada:', message)
+        return false
       }
-      
+
       // Permitir otras confirmaciones
-      return originalConfirm(message);
-    };
+      return originalConfirm(message)
+    }
 
     // Interceptar notificaciones del navegador
     if ('Notification' in window) {
-      const OriginalNotification = window.Notification;
-      
+      const OriginalNotification = window.Notification
+
       // @ts-ignore
       window.Notification = class extends OriginalNotification {
         constructor(title: string, options?: NotificationOptions) {
@@ -88,39 +90,30 @@ export default function DebugNotificationDisabler() {
             options?.body?.includes('useOrdersEnterprise') ||
             options?.body?.includes('ejecutándose')
           ) {
-            console.log('🛡️ [DEBUG_DISABLER] Notificación de debugging bloqueada:', title, options);
+            console.log('🛡️ [DEBUG_DISABLER] Notificación de debugging bloqueada:', title, options)
             // Crear una notificación vacía que no se muestra
-            super('', { silent: true });
-            return;
+            super('', { silent: true })
+            return
           }
-          
+
           // Permitir otras notificaciones
-          super(title, options);
+          super(title, options)
         }
-      };
+      }
     }
 
-    console.log('✅ [DEBUG_DISABLER] Filtros de debugging activados');
+    console.log('✅ [DEBUG_DISABLER] Filtros de debugging activados')
 
     // Cleanup al desmontar
     return () => {
-      console.log = originalConsoleLog;
-      console.warn = originalConsoleWarn;
-      console.error = originalConsoleError;
-      window.alert = originalAlert;
-      window.confirm = originalConfirm;
-    };
-  }, []);
+      console.log = originalConsoleLog
+      console.warn = originalConsoleWarn
+      console.error = originalConsoleError
+      window.alert = originalAlert
+      window.confirm = originalConfirm
+    }
+  }, [])
 
   // Este componente no renderiza nada
-  return null;
+  return null
 }
-
-
-
-
-
-
-
-
-

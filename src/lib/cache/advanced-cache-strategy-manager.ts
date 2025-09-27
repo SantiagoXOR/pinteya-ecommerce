@@ -2,79 +2,79 @@
 // PINTEYA E-COMMERCE - ADVANCED CACHE STRATEGY MANAGER
 // ===================================
 
-import { logger, LogLevel, LogCategory } from '../enterprise/logger';
-import { cacheManager, CACHE_CONFIGS } from '../cache-manager';
-import { enterpriseCacheSystem } from '../optimization/enterprise-cache-system';
-import { getRedisClient } from '../integrations/redis';
+import { logger, LogLevel, LogCategory } from '../enterprise/logger'
+import { cacheManager, CACHE_CONFIGS } from '../cache-manager'
+import { enterpriseCacheSystem } from '../optimization/enterprise-cache-system'
+import { getRedisClient } from '../integrations/redis'
 
 /**
  * Estrategias de cache disponibles
  */
 export enum CacheStrategy {
-  CACHE_FIRST = 'cache-first',           // Cache primero, fallback a origen
-  NETWORK_FIRST = 'network-first',       // Red primero, fallback a cache
+  CACHE_FIRST = 'cache-first', // Cache primero, fallback a origen
+  NETWORK_FIRST = 'network-first', // Red primero, fallback a cache
   STALE_WHILE_REVALIDATE = 'stale-while-revalidate', // Cache stale + revalidación en background
-  NETWORK_ONLY = 'network-only',         // Solo red, sin cache
-  CACHE_ONLY = 'cache-only',            // Solo cache, sin red
-  FASTEST = 'fastest',                   // El más rápido entre cache y red
-  ADAPTIVE = 'adaptive'                  // Adaptativo basado en condiciones
+  NETWORK_ONLY = 'network-only', // Solo red, sin cache
+  CACHE_ONLY = 'cache-only', // Solo cache, sin red
+  FASTEST = 'fastest', // El más rápido entre cache y red
+  ADAPTIVE = 'adaptive', // Adaptativo basado en condiciones
 }
 
 /**
  * Configuración de estrategia de cache
  */
 export interface CacheStrategyConfig {
-  strategy: CacheStrategy;
-  ttl: number;
-  maxAge?: number;
-  staleWhileRevalidate?: number;
-  priority: 'low' | 'normal' | 'high' | 'critical';
-  tags?: string[];
-  conditions?: CacheCondition[];
-  fallbackStrategy?: CacheStrategy;
-  warmupEnabled?: boolean;
-  compressionEnabled?: boolean;
-  encryptionEnabled?: boolean;
-  analyticsEnabled?: boolean;
+  strategy: CacheStrategy
+  ttl: number
+  maxAge?: number
+  staleWhileRevalidate?: number
+  priority: 'low' | 'normal' | 'high' | 'critical'
+  tags?: string[]
+  conditions?: CacheCondition[]
+  fallbackStrategy?: CacheStrategy
+  warmupEnabled?: boolean
+  compressionEnabled?: boolean
+  encryptionEnabled?: boolean
+  analyticsEnabled?: boolean
 }
 
 /**
  * Condiciones para cache adaptativo
  */
 export interface CacheCondition {
-  type: 'network' | 'device' | 'time' | 'user' | 'location' | 'load';
-  operator: 'eq' | 'gt' | 'lt' | 'gte' | 'lte' | 'in' | 'contains';
-  value: any;
-  action: 'use' | 'skip' | 'modify';
-  modifyTtl?: number;
+  type: 'network' | 'device' | 'time' | 'user' | 'location' | 'load'
+  operator: 'eq' | 'gt' | 'lt' | 'gte' | 'lte' | 'in' | 'contains'
+  value: any
+  action: 'use' | 'skip' | 'modify'
+  modifyTtl?: number
 }
 
 /**
  * Métricas de performance de cache
  */
 export interface CacheMetrics {
-  hits: number;
-  misses: number;
-  hitRate: number;
-  avgResponseTime: number;
-  totalRequests: number;
-  bytesServed: number;
-  lastUpdated: number;
-  strategy: CacheStrategy;
+  hits: number
+  misses: number
+  hitRate: number
+  avgResponseTime: number
+  totalRequests: number
+  bytesServed: number
+  lastUpdated: number
+  strategy: CacheStrategy
 }
 
 /**
  * Contexto de ejecución de cache
  */
 export interface CacheContext {
-  userAgent?: string;
-  connectionType?: string;
-  deviceType?: 'mobile' | 'tablet' | 'desktop';
-  location?: string;
-  userId?: string;
-  sessionId?: string;
-  timestamp: number;
-  priority: 'low' | 'normal' | 'high' | 'critical';
+  userAgent?: string
+  connectionType?: string
+  deviceType?: 'mobile' | 'tablet' | 'desktop'
+  location?: string
+  userId?: string
+  sessionId?: string
+  timestamp: number
+  priority: 'low' | 'normal' | 'high' | 'critical'
 }
 
 /**
@@ -92,7 +92,7 @@ export const ADVANCED_CACHE_STRATEGIES: Record<string, CacheStrategyConfig> = {
     compressionEnabled: true,
     encryptionEnabled: true,
     analyticsEnabled: true,
-    fallbackStrategy: CacheStrategy.NETWORK_FIRST
+    fallbackStrategy: CacheStrategy.NETWORK_FIRST,
   },
 
   // Estrategia para datos de productos
@@ -111,9 +111,9 @@ export const ADVANCED_CACHE_STRATEGIES: Record<string, CacheStrategyConfig> = {
         operator: 'gt',
         value: 0.8,
         action: 'modify',
-        modifyTtl: 1800 // Extender TTL bajo alta carga
-      }
-    ]
+        modifyTtl: 1800, // Extender TTL bajo alta carga
+      },
+    ],
   },
 
   // Estrategia para contenido estático
@@ -124,7 +124,7 @@ export const ADVANCED_CACHE_STRATEGIES: Record<string, CacheStrategyConfig> = {
     priority: 'normal',
     tags: ['static', 'assets'],
     compressionEnabled: true,
-    analyticsEnabled: false
+    analyticsEnabled: false,
   },
 
   // Estrategia para APIs públicas
@@ -140,9 +140,9 @@ export const ADVANCED_CACHE_STRATEGIES: Record<string, CacheStrategyConfig> = {
         operator: 'eq',
         value: 'slow',
         action: 'use',
-        modifyTtl: 600 // Extender TTL en conexiones lentas
-      }
-    ]
+        modifyTtl: 600, // Extender TTL en conexiones lentas
+      },
+    ],
   },
 
   // Estrategia para datos de usuario
@@ -159,9 +159,9 @@ export const ADVANCED_CACHE_STRATEGIES: Record<string, CacheStrategyConfig> = {
         operator: 'eq',
         value: 'premium',
         action: 'modify',
-        modifyTtl: 3600 // TTL extendido para usuarios premium
-      }
-    ]
+        modifyTtl: 3600, // TTL extendido para usuarios premium
+      },
+    ],
   },
 
   // Estrategia para búsquedas
@@ -171,31 +171,31 @@ export const ADVANCED_CACHE_STRATEGIES: Record<string, CacheStrategyConfig> = {
     priority: 'normal',
     tags: ['search', 'results'],
     compressionEnabled: true,
-    analyticsEnabled: true
-  }
-};
+    analyticsEnabled: true,
+  },
+}
 
 /**
  * Manager avanzado de estrategias de cache
  */
 export class AdvancedCacheStrategyManager {
-  private static instance: AdvancedCacheStrategyManager;
-  private metrics: Map<string, CacheMetrics> = new Map();
-  private strategies: Map<string, CacheStrategyConfig> = new Map();
-  private redis = getRedisClient();
+  private static instance: AdvancedCacheStrategyManager
+  private metrics: Map<string, CacheMetrics> = new Map()
+  private strategies: Map<string, CacheStrategyConfig> = new Map()
+  private redis = getRedisClient()
 
   private constructor() {
     // Cargar estrategias predefinidas
     Object.entries(ADVANCED_CACHE_STRATEGIES).forEach(([key, config]) => {
-      this.strategies.set(key, config);
-    });
+      this.strategies.set(key, config)
+    })
   }
 
   static getInstance(): AdvancedCacheStrategyManager {
     if (!AdvancedCacheStrategyManager.instance) {
-      AdvancedCacheStrategyManager.instance = new AdvancedCacheStrategyManager();
+      AdvancedCacheStrategyManager.instance = new AdvancedCacheStrategyManager()
     }
-    return AdvancedCacheStrategyManager.instance;
+    return AdvancedCacheStrategyManager.instance
   }
 
   /**
@@ -207,37 +207,40 @@ export class AdvancedCacheStrategyManager {
     strategyName: string,
     context?: CacheContext
   ): Promise<T> {
-    const startTime = Date.now();
-    const strategy = this.strategies.get(strategyName);
-    
+    const startTime = Date.now()
+    const strategy = this.strategies.get(strategyName)
+
     if (!strategy) {
-      logger.warn(LogCategory.CACHE, `Estrategia de cache no encontrada: ${strategyName}`);
-      return fetcher();
+      logger.warn(LogCategory.CACHE, `Estrategia de cache no encontrada: ${strategyName}`)
+      return fetcher()
     }
 
     try {
       // Evaluar condiciones si existen
-      const effectiveStrategy = await this.evaluateConditions(strategy, context);
-      
+      const effectiveStrategy = await this.evaluateConditions(strategy, context)
+
       // Ejecutar estrategia
-      const result = await this.executeStrategy(key, fetcher, effectiveStrategy, context);
-      
+      const result = await this.executeStrategy(key, fetcher, effectiveStrategy, context)
+
       // Registrar métricas
-      await this.recordMetrics(strategyName, startTime, true);
-      
-      return result;
+      await this.recordMetrics(strategyName, startTime, true)
+
+      return result
     } catch (error) {
       // Registrar métricas de error
-      await this.recordMetrics(strategyName, startTime, false);
-      
+      await this.recordMetrics(strategyName, startTime, false)
+
       // Intentar estrategia de fallback
       if (strategy.fallbackStrategy) {
-        logger.info(LogCategory.CACHE, `Usando estrategia de fallback: ${strategy.fallbackStrategy}`);
-        const fallbackConfig = { ...strategy, strategy: strategy.fallbackStrategy };
-        return this.executeStrategy(key, fetcher, fallbackConfig, context);
+        logger.info(
+          LogCategory.CACHE,
+          `Usando estrategia de fallback: ${strategy.fallbackStrategy}`
+        )
+        const fallbackConfig = { ...strategy, strategy: strategy.fallbackStrategy }
+        return this.executeStrategy(key, fetcher, fallbackConfig, context)
       }
-      
-      throw error;
+
+      throw error
     }
   }
 
@@ -252,28 +255,28 @@ export class AdvancedCacheStrategyManager {
   ): Promise<T> {
     switch (config.strategy) {
       case CacheStrategy.CACHE_FIRST:
-        return this.cacheFirst(key, fetcher, config);
-      
+        return this.cacheFirst(key, fetcher, config)
+
       case CacheStrategy.NETWORK_FIRST:
-        return this.networkFirst(key, fetcher, config);
-      
+        return this.networkFirst(key, fetcher, config)
+
       case CacheStrategy.STALE_WHILE_REVALIDATE:
-        return this.staleWhileRevalidate(key, fetcher, config);
-      
+        return this.staleWhileRevalidate(key, fetcher, config)
+
       case CacheStrategy.FASTEST:
-        return this.fastest(key, fetcher, config);
-      
+        return this.fastest(key, fetcher, config)
+
       case CacheStrategy.ADAPTIVE:
-        return this.adaptive(key, fetcher, config, context);
-      
+        return this.adaptive(key, fetcher, config, context)
+
       case CacheStrategy.CACHE_ONLY:
-        return this.cacheOnly(key, config);
-      
+        return this.cacheOnly(key, config)
+
       case CacheStrategy.NETWORK_ONLY:
-        return fetcher();
-      
+        return fetcher()
+
       default:
-        return this.cacheFirst(key, fetcher, config);
+        return this.cacheFirst(key, fetcher, config)
     }
   }
 
@@ -286,15 +289,15 @@ export class AdvancedCacheStrategyManager {
     config: CacheStrategyConfig
   ): Promise<T> {
     // Intentar obtener del cache
-    const cached = await this.getFromCache<T>(key);
+    const cached = await this.getFromCache<T>(key)
     if (cached !== null) {
-      return cached;
+      return cached
     }
 
     // Si no está en cache, obtener de la fuente
-    const data = await fetcher();
-    await this.setToCache(key, data, config);
-    return data;
+    const data = await fetcher()
+    await this.setToCache(key, data, config)
+    return data
   }
 
   /**
@@ -307,17 +310,17 @@ export class AdvancedCacheStrategyManager {
   ): Promise<T> {
     try {
       // Intentar obtener de la red
-      const data = await fetcher();
-      await this.setToCache(key, data, config);
-      return data;
+      const data = await fetcher()
+      await this.setToCache(key, data, config)
+      return data
     } catch (error) {
       // Si falla la red, intentar cache
-      const cached = await this.getFromCache<T>(key);
+      const cached = await this.getFromCache<T>(key)
       if (cached !== null) {
-        logger.info(LogCategory.CACHE, `Usando cache como fallback para: ${key}`);
-        return cached;
+        logger.info(LogCategory.CACHE, `Usando cache como fallback para: ${key}`)
+        return cached
       }
-      throw error;
+      throw error
     }
   }
 
@@ -329,18 +332,18 @@ export class AdvancedCacheStrategyManager {
     fetcher: () => Promise<T>,
     config: CacheStrategyConfig
   ): Promise<T> {
-    const cached = await this.getFromCache<T>(key);
-    
+    const cached = await this.getFromCache<T>(key)
+
     if (cached !== null) {
       // Revalidar en background
-      this.revalidateInBackground(key, fetcher, config);
-      return cached;
+      this.revalidateInBackground(key, fetcher, config)
+      return cached
     }
 
     // Si no hay cache, obtener de la fuente
-    const data = await fetcher();
-    await this.setToCache(key, data, config);
-    return data;
+    const data = await fetcher()
+    await this.setToCache(key, data, config)
+    return data
   }
 
   /**
@@ -351,36 +354,38 @@ export class AdvancedCacheStrategyManager {
     fetcher: () => Promise<T>,
     config: CacheStrategyConfig
   ): Promise<T> {
-    const cachePromise = this.getFromCache<T>(key);
-    const networkPromise = fetcher();
+    const cachePromise = this.getFromCache<T>(key)
+    const networkPromise = fetcher()
 
     try {
       // Race entre cache y red
       const result = await Promise.race([
         cachePromise.then(cached => ({ source: 'cache', data: cached })),
-        networkPromise.then(data => ({ source: 'network', data }))
-      ]);
+        networkPromise.then(data => ({ source: 'network', data })),
+      ])
 
       if (result.source === 'network') {
         // Si ganó la red, actualizar cache
-        await this.setToCache(key, result.data, config);
+        await this.setToCache(key, result.data, config)
       }
 
-      return result.data;
+      return result.data
     } catch (error) {
       // Si falla el race, intentar el que no falló
       try {
-        const cached = await cachePromise;
-        if (cached !== null) {return cached;}
+        const cached = await cachePromise
+        if (cached !== null) {
+          return cached
+        }
       } catch {}
 
       try {
-        const data = await networkPromise;
-        await this.setToCache(key, data, config);
-        return data;
+        const data = await networkPromise
+        await this.setToCache(key, data, config)
+        return data
       } catch {}
 
-      throw error;
+      throw error
     }
   }
 
@@ -394,31 +399,31 @@ export class AdvancedCacheStrategyManager {
     context?: CacheContext
   ): Promise<T> {
     // Determinar la mejor estrategia basada en el contexto
-    let adaptedStrategy = CacheStrategy.CACHE_FIRST;
+    let adaptedStrategy = CacheStrategy.CACHE_FIRST
 
     if (context) {
       if (context.connectionType === 'slow' || context.deviceType === 'mobile') {
-        adaptedStrategy = CacheStrategy.CACHE_FIRST;
+        adaptedStrategy = CacheStrategy.CACHE_FIRST
       } else if (context.priority === 'critical') {
-        adaptedStrategy = CacheStrategy.FASTEST;
+        adaptedStrategy = CacheStrategy.FASTEST
       } else {
-        adaptedStrategy = CacheStrategy.STALE_WHILE_REVALIDATE;
+        adaptedStrategy = CacheStrategy.STALE_WHILE_REVALIDATE
       }
     }
 
-    const adaptedConfig = { ...config, strategy: adaptedStrategy };
-    return this.executeStrategy(key, fetcher, adaptedConfig, context);
+    const adaptedConfig = { ...config, strategy: adaptedStrategy }
+    return this.executeStrategy(key, fetcher, adaptedConfig, context)
   }
 
   /**
    * Estrategia Cache Only
    */
   private async cacheOnly<T>(key: string, config: CacheStrategyConfig): Promise<T> {
-    const cached = await this.getFromCache<T>(key);
+    const cached = await this.getFromCache<T>(key)
     if (cached === null) {
-      throw new Error(`Cache miss para key: ${key} (cache-only strategy)`);
+      throw new Error(`Cache miss para key: ${key} (cache-only strategy)`)
     }
-    return cached;
+    return cached
   }
 
   /**
@@ -427,14 +432,16 @@ export class AdvancedCacheStrategyManager {
   private async getFromCache<T>(key: string): Promise<T | null> {
     try {
       // Intentar cache enterprise primero
-      const enterpriseResult = await enterpriseCacheSystem.get<T>(key);
-      if (enterpriseResult !== null) {return enterpriseResult;}
+      const enterpriseResult = await enterpriseCacheSystem.get<T>(key)
+      if (enterpriseResult !== null) {
+        return enterpriseResult
+      }
 
       // Fallback a cache manager básico
-      return await cacheManager.get<T>(key);
+      return await cacheManager.get<T>(key)
     } catch (error) {
-      logger.error(LogCategory.CACHE, `Error obteniendo del cache: ${key}`, error as Error);
-      return null;
+      logger.error(LogCategory.CACHE, `Error obteniendo del cache: ${key}`, error as Error)
+      return null
     }
   }
 
@@ -448,10 +455,10 @@ export class AdvancedCacheStrategyManager {
         ttl: config.ttl,
         compress: config.compressionEnabled,
         serialize: true,
-        enableMetrics: config.analyticsEnabled
-      });
+        enableMetrics: config.analyticsEnabled,
+      })
     } catch (error) {
-      logger.error(LogCategory.CACHE, `Error guardando en cache: ${key}`, error as Error);
+      logger.error(LogCategory.CACHE, `Error guardando en cache: ${key}`, error as Error)
     }
   }
 
@@ -464,11 +471,11 @@ export class AdvancedCacheStrategyManager {
     config: CacheStrategyConfig
   ): Promise<void> {
     try {
-      const data = await fetcher();
-      await this.setToCache(key, data, config);
-      logger.info(LogCategory.CACHE, `Revalidación completada para: ${key}`);
+      const data = await fetcher()
+      await this.setToCache(key, data, config)
+      logger.info(LogCategory.CACHE, `Revalidación completada para: ${key}`)
     } catch (error) {
-      logger.error(LogCategory.CACHE, `Error en revalidación: ${key}`, error as Error);
+      logger.error(LogCategory.CACHE, `Error en revalidación: ${key}`, error as Error)
     }
   }
 
@@ -479,65 +486,71 @@ export class AdvancedCacheStrategyManager {
     config: CacheStrategyConfig,
     context?: CacheContext
   ): Promise<CacheStrategyConfig> {
-    if (!config.conditions || !context) {return config;}
+    if (!config.conditions || !context) {
+      return config
+    }
 
-    const modifiedConfig = { ...config };
+    const modifiedConfig = { ...config }
 
     for (const condition of config.conditions) {
       if (this.evaluateCondition(condition, context)) {
         if (condition.action === 'modify' && condition.modifyTtl) {
-          modifiedConfig.ttl = condition.modifyTtl;
+          modifiedConfig.ttl = condition.modifyTtl
         }
       }
     }
 
-    return modifiedConfig;
+    return modifiedConfig
   }
 
   /**
    * Evalúa una condición específica
    */
   private evaluateCondition(condition: CacheCondition, context: CacheContext): boolean {
-    let contextValue: any;
+    let contextValue: any
 
     switch (condition.type) {
       case 'device':
-        contextValue = context.deviceType;
-        break;
+        contextValue = context.deviceType
+        break
       case 'network':
-        contextValue = context.connectionType;
-        break;
+        contextValue = context.connectionType
+        break
       case 'user':
-        contextValue = context.userId;
-        break;
+        contextValue = context.userId
+        break
       case 'location':
-        contextValue = context.location;
-        break;
+        contextValue = context.location
+        break
       default:
-        return false;
+        return false
     }
 
     switch (condition.operator) {
       case 'eq':
-        return contextValue === condition.value;
+        return contextValue === condition.value
       case 'gt':
-        return contextValue > condition.value;
+        return contextValue > condition.value
       case 'lt':
-        return contextValue < condition.value;
+        return contextValue < condition.value
       case 'in':
-        return Array.isArray(condition.value) && condition.value.includes(contextValue);
+        return Array.isArray(condition.value) && condition.value.includes(contextValue)
       case 'contains':
-        return typeof contextValue === 'string' && contextValue.includes(condition.value);
+        return typeof contextValue === 'string' && contextValue.includes(condition.value)
       default:
-        return false;
+        return false
     }
   }
 
   /**
    * Registra métricas de performance
    */
-  private async recordMetrics(strategyName: string, startTime: number, success: boolean): Promise<void> {
-    const responseTime = Date.now() - startTime;
+  private async recordMetrics(
+    strategyName: string,
+    startTime: number,
+    success: boolean
+  ): Promise<void> {
+    const responseTime = Date.now() - startTime
     const existing = this.metrics.get(strategyName) || {
       hits: 0,
       misses: 0,
@@ -546,47 +559,49 @@ export class AdvancedCacheStrategyManager {
       totalRequests: 0,
       bytesServed: 0,
       lastUpdated: Date.now(),
-      strategy: this.strategies.get(strategyName)?.strategy || CacheStrategy.CACHE_FIRST
-    };
-
-    existing.totalRequests++;
-    if (success) {
-      existing.hits++;
-    } else {
-      existing.misses++;
+      strategy: this.strategies.get(strategyName)?.strategy || CacheStrategy.CACHE_FIRST,
     }
-    
-    existing.hitRate = (existing.hits / existing.totalRequests) * 100;
-    existing.avgResponseTime = ((existing.avgResponseTime * (existing.totalRequests - 1)) + responseTime) / existing.totalRequests;
-    existing.lastUpdated = Date.now();
 
-    this.metrics.set(strategyName, existing);
+    existing.totalRequests++
+    if (success) {
+      existing.hits++
+    } else {
+      existing.misses++
+    }
+
+    existing.hitRate = (existing.hits / existing.totalRequests) * 100
+    existing.avgResponseTime =
+      (existing.avgResponseTime * (existing.totalRequests - 1) + responseTime) /
+      existing.totalRequests
+    existing.lastUpdated = Date.now()
+
+    this.metrics.set(strategyName, existing)
   }
 
   /**
    * Obtiene métricas de una estrategia
    */
   getMetrics(strategyName: string): CacheMetrics | null {
-    return this.metrics.get(strategyName) || null;
+    return this.metrics.get(strategyName) || null
   }
 
   /**
    * Obtiene todas las métricas
    */
   getAllMetrics(): Record<string, CacheMetrics> {
-    const result: Record<string, CacheMetrics> = {};
+    const result: Record<string, CacheMetrics> = {}
     this.metrics.forEach((metrics, strategy) => {
-      result[strategy] = metrics;
-    });
-    return result;
+      result[strategy] = metrics
+    })
+    return result
   }
 
   /**
    * Registra una nueva estrategia
    */
   registerStrategy(name: string, config: CacheStrategyConfig): void {
-    this.strategies.set(name, config);
-    logger.info(LogCategory.CACHE, `Estrategia registrada: ${name}`);
+    this.strategies.set(name, config)
+    logger.info(LogCategory.CACHE, `Estrategia registrada: ${name}`)
   }
 
   /**
@@ -594,58 +609,60 @@ export class AdvancedCacheStrategyManager {
    */
   async invalidateByTags(tags: string[]): Promise<void> {
     try {
-      await enterpriseCacheSystem.invalidateByTags(tags);
-      logger.info(LogCategory.CACHE, `Cache invalidado por tags: ${tags.join(', ')}`);
+      await enterpriseCacheSystem.invalidateByTags(tags)
+      logger.info(LogCategory.CACHE, `Cache invalidado por tags: ${tags.join(', ')}`)
     } catch (error) {
-      logger.error(LogCategory.CACHE, 'Error invalidando cache por tags', error as Error);
+      logger.error(LogCategory.CACHE, 'Error invalidando cache por tags', error as Error)
     }
   }
 
   /**
    * Precalienta cache para keys específicos
    */
-  async warmupCache(keys: string[], fetchers: (() => Promise<any>)[], strategyName: string): Promise<void> {
-    const strategy = this.strategies.get(strategyName);
-    if (!strategy || !strategy.warmupEnabled) {return;}
+  async warmupCache(
+    keys: string[],
+    fetchers: (() => Promise<any>)[],
+    strategyName: string
+  ): Promise<void> {
+    const strategy = this.strategies.get(strategyName)
+    if (!strategy || !strategy.warmupEnabled) {
+      return
+    }
 
     const warmupPromises = keys.map(async (key, index) => {
       try {
-        const fetcher = fetchers[index];
+        const fetcher = fetchers[index]
         if (fetcher) {
-          await this.execute(key, fetcher, strategyName);
-          logger.info(LogCategory.CACHE, `Cache precalentado para: ${key}`);
+          await this.execute(key, fetcher, strategyName)
+          logger.info(LogCategory.CACHE, `Cache precalentado para: ${key}`)
         }
       } catch (error) {
-        logger.error(LogCategory.CACHE, `Error precalentando cache: ${key}`, error as Error);
+        logger.error(LogCategory.CACHE, `Error precalentando cache: ${key}`, error as Error)
       }
-    });
+    })
 
-    await Promise.allSettled(warmupPromises);
+    await Promise.allSettled(warmupPromises)
   }
 }
 
 // Instancia singleton
-export const advancedCacheStrategyManager = AdvancedCacheStrategyManager.getInstance();
+export const advancedCacheStrategyManager = AdvancedCacheStrategyManager.getInstance()
 
 /**
  * Decorador para aplicar estrategias de cache automáticamente
  */
 export function withCacheStrategy(strategyName: string, keyGenerator?: (...args: any[]) => string) {
   return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
-    const method = descriptor.value;
+    const method = descriptor.value
 
     descriptor.value = async function (...args: any[]) {
-      const key = keyGenerator ? keyGenerator(...args) : `${propertyName}:${JSON.stringify(args)}`;
-      
-      return advancedCacheStrategyManager.execute(
-        key,
-        () => method.apply(this, args),
-        strategyName
-      );
-    };
+      const key = keyGenerator ? keyGenerator(...args) : `${propertyName}:${JSON.stringify(args)}`
 
-    return descriptor;
-  };
+      return advancedCacheStrategyManager.execute(key, () => method.apply(this, args), strategyName)
+    }
+
+    return descriptor
+  }
 }
 
 /**
@@ -661,8 +678,8 @@ export const CacheStrategyUtils = {
       connectionType: this.detectConnectionType(request),
       deviceType: this.detectDeviceType(request?.headers?.['user-agent']),
       timestamp: Date.now(),
-      priority: 'normal'
-    };
+      priority: 'normal',
+    }
   },
 
   /**
@@ -670,28 +687,21 @@ export const CacheStrategyUtils = {
    */
   detectConnectionType(request?: any): string {
     // Lógica para detectar tipo de conexión
-    return 'fast'; // Placeholder
+    return 'fast' // Placeholder
   },
 
   /**
    * Detecta tipo de dispositivo
    */
   detectDeviceType(userAgent?: string): 'mobile' | 'tablet' | 'desktop' {
-    if (!userAgent) {return 'desktop';}
-    
-    if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
-      return /iPad/.test(userAgent) ? 'tablet' : 'mobile';
+    if (!userAgent) {
+      return 'desktop'
     }
-    
-    return 'desktop';
-  }
-};
 
+    if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
+      return /iPad/.test(userAgent) ? 'tablet' : 'mobile'
+    }
 
-
-
-
-
-
-
-
+    return 'desktop'
+  },
+}

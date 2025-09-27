@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { EnhancedProductCard } from './product-card-enhanced';
+import type { Meta, StoryObj } from '@storybook/react'
+import { EnhancedProductCard } from './product-card-enhanced'
 
 const meta: Meta<typeof EnhancedProductCard> = {
   title: 'Design System/E-commerce/EnhancedProductCard',
@@ -8,7 +8,8 @@ const meta: Meta<typeof EnhancedProductCard> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Componente avanzado de tarjeta de producto con configuración automática basada en contexto y Design System.',
+        component:
+          'Componente avanzado de tarjeta de producto con configuración automática basada en contexto y Design System.',
       },
     },
   },
@@ -29,10 +30,10 @@ const meta: Meta<typeof EnhancedProductCard> = {
     //   description: 'Mostrar badge personalizado',
     // },
   },
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockProduct = {
   id: '1',
@@ -43,7 +44,7 @@ const mockProduct = {
   category: 'Pinturas',
   brand: 'Sherwin Williams',
   stock: 25,
-};
+}
 
 export const ShopContext: Story = {
   args: {
@@ -52,7 +53,7 @@ export const ShopContext: Story = {
     // size: 'md',
     // showBadge: true,
   },
-};
+}
 
 export const SearchContext: Story = {
   args: {
@@ -61,7 +62,7 @@ export const SearchContext: Story = {
     // size: 'sm',
     // showBadge: true,
   },
-};
+}
 
 export const WishlistContext: Story = {
   args: {
@@ -70,7 +71,7 @@ export const WishlistContext: Story = {
     // size: 'md',
     // showBadge: false,
   },
-};
+}
 
 export const CartContext: Story = {
   args: {
@@ -80,7 +81,7 @@ export const CartContext: Story = {
     // quantity: 2,
     // showBadge: true,
   },
-};
+}
 
 export const CheckoutContext: Story = {
   args: {
@@ -90,7 +91,7 @@ export const CheckoutContext: Story = {
     // quantity: 1,
     // showBadge: true,
   },
-};
+}
 
 export const ComparisonContext: Story = {
   args: {
@@ -99,7 +100,7 @@ export const ComparisonContext: Story = {
     // size: 'md',
     // showBadge: false,
   },
-};
+}
 
 export const OutOfStock: Story = {
   args: {
@@ -109,7 +110,7 @@ export const OutOfStock: Story = {
     stock: 0,
     // showBadge: true,
   },
-};
+}
 
 export const LowStock: Story = {
   args: {
@@ -119,7 +120,7 @@ export const LowStock: Story = {
     stock: 3,
     // showBadge: true,
   },
-};
+}
 
 export const WithCustomBadge: Story = {
   args: {
@@ -129,7 +130,7 @@ export const WithCustomBadge: Story = {
     badge: 'Nuevo',
     // showBadge: true,
   },
-};
+}
 
 export const SmallSize: Story = {
   args: {
@@ -138,7 +139,7 @@ export const SmallSize: Story = {
     // size: 'sm',
     // showBadge: true,
   },
-};
+}
 
 export const LargeSize: Story = {
   args: {
@@ -148,13 +149,4 @@ export const LargeSize: Story = {
     // quantity: 3,
     // showBadge: true,
   },
-};
-
-
-
-
-
-
-
-
-
+}

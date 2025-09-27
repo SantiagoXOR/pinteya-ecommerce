@@ -2,9 +2,9 @@
 // COMPONENT: Client Error Suppression
 // ===================================
 
-'use client';
+'use client'
 
-import { useEffect } from 'react';
+import { useEffect } from 'react'
 
 /**
  * Componente que configura la supresión de errores en el cliente
@@ -32,55 +32,55 @@ export function ClientErrorSuppression() {
       'NETWORK_ERROR',
       'fetch aborted',
       'request aborted',
-      'cancelled'
-    ];
+      'cancelled',
+    ]
 
     // Función para verificar si un error debe ser suprimido
     const shouldSuppressError = (message: string): boolean => {
-      return suppressedErrorPatterns.some(pattern => 
+      return suppressedErrorPatterns.some(pattern =>
         message.toLowerCase().includes(pattern.toLowerCase())
-      );
-    };
+      )
+    }
 
     // Interceptar console.error
-    const originalConsoleError = console.error;
-    const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error
+    const originalConsoleWarn = console.warn
 
     console.error = (...args: any[]) => {
-      const message = args.join(' ');
-      
+      const message = args.join(' ')
+
       if (shouldSuppressError(message)) {
         // En desarrollo, mostrar como debug
         if (process.env.NODE_ENV === 'development') {
-          console.debug('🔇 [Client Suppressed Error]:', ...args);
+          console.debug('🔇 [Client Suppressed Error]:', ...args)
         }
-        return;
+        return
       }
-      
+
       // Permitir otros errores
-      originalConsoleError(...args);
-    };
+      originalConsoleError(...args)
+    }
 
     console.warn = (...args: any[]) => {
-      const message = args.join(' ');
-      
+      const message = args.join(' ')
+
       if (shouldSuppressError(message)) {
         // En desarrollo, mostrar como debug
         if (process.env.NODE_ENV === 'development') {
-          console.debug('🔇 [Client Suppressed Warning]:', ...args);
+          console.debug('🔇 [Client Suppressed Warning]:', ...args)
         }
-        return;
+        return
       }
-      
+
       // Permitir otros warnings
-      originalConsoleWarn(...args);
-    };
+      originalConsoleWarn(...args)
+    }
 
     // TEMPORALMENTE DESHABILITADO PARA DEBUG
     // Interceptar unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const reason = event.reason;
-      
+      const reason = event.reason
+
       // COMENTADO TEMPORALMENTE PARA VER ERRORES REALES
       /*
       if (reason?.name === 'AbortError' || 
@@ -95,7 +95,7 @@ export function ClientErrorSuppression() {
         }
       }
       */
-    };
+    }
 
     // TEMPORALMENTE DESHABILITADO PARA DEBUG
     // Interceptar errores globales
@@ -110,11 +110,11 @@ export function ClientErrorSuppression() {
         }
       }
       */
-    };
+    }
 
     // TEMPORALMENTE DESHABILITADO PARA DEBUG
     // Interceptar fetch para suprimir errores ERR_ABORTED
-    const originalFetch = window.fetch;
+    const originalFetch = window.fetch
     /*
     window.fetch = async (...args) => {
       try {
@@ -140,28 +140,28 @@ export function ClientErrorSuppression() {
     */
 
     // Agregar event listeners
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection)
+    window.addEventListener('error', handleError)
 
     // Log de configuración
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔇 Client error suppression configured');
+      console.log('🔇 Client error suppression configured')
     }
 
     // Cleanup function
     return () => {
       // Restaurar funciones originales
-      console.error = originalConsoleError;
-      console.warn = originalConsoleWarn;
-      window.fetch = originalFetch;
-      
-      // Remover event listeners
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      window.removeEventListener('error', handleError);
-    };
-  }, []);
+      console.error = originalConsoleError
+      console.warn = originalConsoleWarn
+      window.fetch = originalFetch
 
-  return null; // Este componente no renderiza nada
+      // Remover event listeners
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+      window.removeEventListener('error', handleError)
+    }
+  }, [])
+
+  return null // Este componente no renderiza nada
 }
 
 /**
@@ -170,21 +170,21 @@ export function ClientErrorSuppression() {
 export function useClientErrorSuppression() {
   useEffect(() => {
     // Configuración básica de supresión de errores
-    const suppressedPatterns = ['ERR_ABORTED', 'AbortError'];
-    
-    const originalError = console.error;
+    const suppressedPatterns = ['ERR_ABORTED', 'AbortError']
+
+    const originalError = console.error
     console.error = (...args) => {
-      const message = args.join(' ');
+      const message = args.join(' ')
       if (suppressedPatterns.some(pattern => message.includes(pattern))) {
-        return; // Suprimir
+        return // Suprimir
       }
-      originalError(...args);
-    };
+      originalError(...args)
+    }
 
     return () => {
-      console.error = originalError;
-    };
-  }, []);
+      console.error = originalError
+    }
+  }, [])
 }
 
 /**
@@ -196,14 +196,5 @@ export function ErrorSuppressionWrapper({ children }: { children: React.ReactNod
       <ClientErrorSuppression />
       {children}
     </>
-  );
+  )
 }
-
-
-
-
-
-
-
-
-

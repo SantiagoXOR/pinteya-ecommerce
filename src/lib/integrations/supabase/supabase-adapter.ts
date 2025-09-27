@@ -1,5 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Adapter, AdapterUser, AdapterAccount, AdapterSession, VerificationToken } from '@auth/core/adapters'
+import type {
+  Adapter,
+  AdapterUser,
+  AdapterAccount,
+  AdapterSession,
+  VerificationToken,
+} from '@auth/core/adapters'
 
 export interface SupabaseAdapterClientOptions {
   url: string
@@ -10,7 +16,7 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
   const { url, secret } = options
   const supabase = createClient(url, secret, {
     db: { schema: 'public' },
-    auth: { persistSession: false }
+    auth: { persistSession: false },
   })
 
   return {
@@ -45,11 +51,7 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
 
     async getUser(id) {
       console.log('[CUSTOM_ADAPTER] getUser:', id)
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .single()
+      const { data, error } = await supabase.from('users').select('*').eq('id', id).single()
 
       if (error) {
         console.error('[CUSTOM_ADAPTER] getUser error:', error)
@@ -68,11 +70,7 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
 
     async getUserByEmail(email) {
       console.log('[CUSTOM_ADAPTER] getUserByEmail:', email)
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .single()
+      const { data, error } = await supabase.from('users').select('*').eq('email', email).single()
 
       if (error) {
         console.error('[CUSTOM_ADAPTER] getUserByEmail error:', error)
@@ -91,10 +89,11 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
 
     async getUserByAccount({ providerAccountId, provider }) {
       console.log('[CUSTOM_ADAPTER] getUserByAccount:', { providerAccountId, provider })
-      
+
       const { data, error } = await supabase
         .from('accounts')
-        .select(`
+        .select(
+          `
           users (
             id,
             name,
@@ -102,7 +101,8 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
             emailVerified,
             image
           )
-        `)
+        `
+        )
         .eq('providerAccountId', providerAccountId)
         .eq('provider', provider)
         .single()
@@ -119,7 +119,7 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
 
       const user = Array.isArray(data.users) ? data.users[0] : data.users
       console.log('[CUSTOM_ADAPTER] getUserByAccount success:', user)
-      
+
       return {
         id: user.id,
         name: user.name,
@@ -160,10 +160,7 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
 
     async deleteUser(userId) {
       console.log('[CUSTOM_ADAPTER] deleteUser:', userId)
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId)
+      const { error } = await supabase.from('users').delete().eq('id', userId)
 
       if (error) {
         console.error('[CUSTOM_ADAPTER] deleteUser error:', error)
@@ -263,7 +260,8 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
       console.log('[CUSTOM_ADAPTER] getSessionAndUser:', sessionToken)
       const { data, error } = await supabase
         .from('sessions')
-        .select(`
+        .select(
+          `
           *,
           users (
             id,
@@ -272,7 +270,8 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
             emailVerified,
             image
           )
-        `)
+        `
+        )
         .eq('sessionToken', sessionToken)
         .single()
 
@@ -288,7 +287,7 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
 
       const user = Array.isArray(data.users) ? data.users[0] : data.users
       console.log('[CUSTOM_ADAPTER] getSessionAndUser success:', { session: data, user })
-      
+
       return {
         session: {
           id: data.id,
@@ -333,10 +332,7 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
 
     async deleteSession(sessionToken) {
       console.log('[CUSTOM_ADAPTER] deleteSession:', sessionToken)
-      const { error } = await supabase
-        .from('sessions')
-        .delete()
-        .eq('sessionToken', sessionToken)
+      const { error } = await supabase.from('sessions').delete().eq('sessionToken', sessionToken)
 
       if (error) {
         console.error('[CUSTOM_ADAPTER] deleteSession error:', error)
@@ -395,12 +391,3 @@ export function SupabaseAdapter(options: SupabaseAdapterClientOptions): Adapter 
     },
   }
 }
-
-
-
-
-
-
-
-
-

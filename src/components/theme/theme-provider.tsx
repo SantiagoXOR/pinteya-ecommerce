@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
@@ -140,7 +140,11 @@ function useSystemTheme(): 'light' | 'dark' {
   return systemTheme
 }
 
-function getTheme(mode: ThemeMode, context: ThemeContextType, systemTheme: 'light' | 'dark'): Theme {
+function getTheme(
+  mode: ThemeMode,
+  context: ThemeContextType,
+  systemTheme: 'light' | 'dark'
+): Theme {
   const resolvedMode = mode === 'auto' ? systemTheme : mode
   return resolvedMode === 'dark' ? darkTheme : lightTheme
 }
@@ -229,14 +233,19 @@ export function ThemeProvider({
   useEffect(() => {
     if (mounted) {
       applyThemeVariables(theme)
-      
+
       // Aplicar clase al body para el modo
       const resolvedMode = mode === 'auto' ? systemTheme : mode
       document.body.classList.remove('light', 'dark')
       document.body.classList.add(resolvedMode)
-      
+
       // Aplicar clase para el contexto
-      document.body.classList.remove('theme-default', 'theme-ecommerce', 'theme-admin', 'theme-mobile')
+      document.body.classList.remove(
+        'theme-default',
+        'theme-ecommerce',
+        'theme-admin',
+        'theme-mobile'
+      )
       document.body.classList.add(`theme-${context}`)
     }
   }, [theme, mode, context, systemTheme, mounted])
@@ -262,11 +271,7 @@ export function ThemeProvider({
 
   // Evitar hidration mismatch
   if (!mounted) {
-    return (
-      <div className="opacity-0">
-        {children}
-      </div>
-    )
+    return <div className='opacity-0'>{children}</div>
   }
 
   return (
@@ -290,20 +295,30 @@ export function ThemeProvider({
  */
 export function ThemeModeToggle() {
   const { mode, toggleMode } = useTheme()
-  
+
   return (
     <button
       onClick={toggleMode}
-      className="p-2 rounded-md border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800 transition-colors"
+      className='p-2 rounded-md border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800 transition-colors'
       aria-label={`Cambiar a modo ${mode === 'light' ? 'oscuro' : 'claro'}`}
     >
       {mode === 'light' ? (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z'
+          />
         </svg>
       ) : (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'
+          />
         </svg>
       )}
     </button>
@@ -315,21 +330,21 @@ export function ThemeModeToggle() {
  */
 export function ThemeContextSelector() {
   const { context, setContext } = useTheme()
-  
+
   const contexts: { value: ThemeContextType; label: string }[] = [
     { value: 'default', label: 'Por defecto' },
     { value: 'ecommerce', label: 'E-commerce' },
     { value: 'admin', label: 'Administración' },
     { value: 'mobile', label: 'Móvil' },
   ]
-  
+
   return (
     <select
       value={context}
-      onChange={(e) => setContext(e.target.value as ThemeContextType)}
-      className="px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-600 text-sm"
+      onChange={e => setContext(e.target.value as ThemeContextType)}
+      className='px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-600 text-sm'
     >
-      {contexts.map((ctx) => (
+      {contexts.map(ctx => (
         <option key={ctx.value} value={ctx.value}>
           {ctx.label}
         </option>
@@ -343,22 +358,22 @@ export function ThemeContextSelector() {
  */
 export function ThemeConfigPanel() {
   const { mode, setMode, context, setContext, theme } = useTheme()
-  
+
   const modes: { value: ThemeMode; label: string }[] = [
     { value: 'light', label: 'Claro' },
     { value: 'dark', label: 'Oscuro' },
     { value: 'auto', label: 'Automático' },
   ]
-  
+
   return (
-    <div className="p-4 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 space-y-4">
-      <h3 className="text-lg font-semibold">Configuración del Tema</h3>
-      
-      <div className="space-y-3">
+    <div className='p-4 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 space-y-4'>
+      <h3 className='text-lg font-semibold'>Configuración del Tema</h3>
+
+      <div className='space-y-3'>
         <div>
-          <label className="block text-sm font-medium mb-2">Modo</label>
-          <div className="flex gap-2">
-            {modes.map((modeOption) => (
+          <label className='block text-sm font-medium mb-2'>Modo</label>
+          <div className='flex gap-2'>
+            {modes.map(modeOption => (
               <button
                 key={modeOption.value}
                 onClick={() => setMode(modeOption.value)}
@@ -373,34 +388,34 @@ export function ThemeConfigPanel() {
             ))}
           </div>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium mb-2">Contexto</label>
+          <label className='block text-sm font-medium mb-2'>Contexto</label>
           <ThemeContextSelector />
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium mb-2">Vista previa</label>
-          <div className="grid grid-cols-4 gap-2">
-            <div 
-              className="w-8 h-8 rounded border"
+          <label className='block text-sm font-medium mb-2'>Vista previa</label>
+          <div className='grid grid-cols-4 gap-2'>
+            <div
+              className='w-8 h-8 rounded border'
               style={{ backgroundColor: theme.colors.primary[500] }}
-              title="Color primario"
+              title='Color primario'
             />
-            <div 
-              className="w-8 h-8 rounded border"
+            <div
+              className='w-8 h-8 rounded border'
               style={{ backgroundColor: theme.colors.background.primary }}
-              title="Fondo primario"
+              title='Fondo primario'
             />
-            <div 
-              className="w-8 h-8 rounded border"
+            <div
+              className='w-8 h-8 rounded border'
               style={{ backgroundColor: theme.colors.ecommerce.price.current }}
-              title="Color de precio"
+              title='Color de precio'
             />
-            <div 
-              className="w-8 h-8 rounded border"
+            <div
+              className='w-8 h-8 rounded border'
               style={{ backgroundColor: theme.colors.ecommerce.stock.available }}
-              title="Color de stock"
+              title='Color de stock'
             />
           </div>
         </div>
@@ -408,12 +423,3 @@ export function ThemeConfigPanel() {
     </div>
   )
 }
-
-
-
-
-
-
-
-
-

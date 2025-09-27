@@ -3,40 +3,40 @@
  * Inicializa todos los sistemas enterprise al arrancar la aplicación
  */
 
-import { enterpriseCacheSystem } from '@/lib/optimization/enterprise-cache-system';
-import { enterpriseAlertSystem } from '@/lib/monitoring/enterprise-alert-system';
-import { enterpriseAutomatedTesting } from '@/lib/testing/enterprise-automated-testing';
-import { enterpriseAuditSystem } from '@/lib/security/enterprise-audit-system';
+import { enterpriseCacheSystem } from '@/lib/optimization/enterprise-cache-system'
+import { enterpriseAlertSystem } from '@/lib/monitoring/enterprise-alert-system'
+import { enterpriseAutomatedTesting } from '@/lib/testing/enterprise-automated-testing'
+import { enterpriseAuditSystem } from '@/lib/security/enterprise-audit-system'
 
 // =====================================================
 // TIPOS E INTERFACES
 // =====================================================
 
 interface StartupConfig {
-  enableCache: boolean;
-  enableAlerts: boolean;
-  enableTesting: boolean;
-  enableAudit: boolean;
-  runInitialTests: boolean;
-  logStartup: boolean;
+  enableCache: boolean
+  enableAlerts: boolean
+  enableTesting: boolean
+  enableAudit: boolean
+  runInitialTests: boolean
+  logStartup: boolean
 }
 
 interface StartupResult {
-  success: boolean;
+  success: boolean
   systems: {
-    cache: { initialized: boolean; error?: string };
-    alerts: { initialized: boolean; error?: string };
-    testing: { initialized: boolean; error?: string };
-    audit: { initialized: boolean; error?: string };
-  };
+    cache: { initialized: boolean; error?: string }
+    alerts: { initialized: boolean; error?: string }
+    testing: { initialized: boolean; error?: string }
+    audit: { initialized: boolean; error?: string }
+  }
   initialTests?: {
-    run: boolean;
-    passed: number;
-    failed: number;
-    errors: string[];
-  };
-  totalTime: number;
-  errors: string[];
+    run: boolean
+    passed: number
+    failed: number
+    errors: string[]
+  }
+  totalTime: number
+  errors: string[]
 }
 
 // =====================================================
@@ -49,25 +49,25 @@ const DEFAULT_STARTUP_CONFIG: StartupConfig = {
   enableTesting: true,
   enableAudit: true,
   runInitialTests: false, // Solo en desarrollo/testing
-  logStartup: true
-};
+  logStartup: true,
+}
 
 // =====================================================
 // SISTEMA DE INICIALIZACIÓN ENTERPRISE
 // =====================================================
 
 export class EnterpriseStartupSystem {
-  private static instance: EnterpriseStartupSystem;
-  private isInitialized = false;
-  private startupResult: StartupResult | null = null;
+  private static instance: EnterpriseStartupSystem
+  private isInitialized = false
+  private startupResult: StartupResult | null = null
 
   private constructor() {}
 
   public static getInstance(): EnterpriseStartupSystem {
     if (!EnterpriseStartupSystem.instance) {
-      EnterpriseStartupSystem.instance = new EnterpriseStartupSystem();
+      EnterpriseStartupSystem.instance = new EnterpriseStartupSystem()
     }
-    return EnterpriseStartupSystem.instance;
+    return EnterpriseStartupSystem.instance
   }
 
   /**
@@ -75,15 +75,15 @@ export class EnterpriseStartupSystem {
    */
   async initialize(config: Partial<StartupConfig> = {}): Promise<StartupResult> {
     if (this.isInitialized && this.startupResult) {
-      return this.startupResult;
+      return this.startupResult
     }
 
-    const finalConfig = { ...DEFAULT_STARTUP_CONFIG, ...config };
-    const startTime = Date.now();
-    const errors: string[] = [];
+    const finalConfig = { ...DEFAULT_STARTUP_CONFIG, ...config }
+    const startTime = Date.now()
+    const errors: string[] = []
 
     if (finalConfig.logStartup) {
-      console.log('[ENTERPRISE_STARTUP] Iniciando sistemas enterprise...');
+      console.log('[ENTERPRISE_STARTUP] Iniciando sistemas enterprise...')
     }
 
     const result: StartupResult = {
@@ -92,33 +92,33 @@ export class EnterpriseStartupSystem {
         cache: { initialized: false },
         alerts: { initialized: false },
         testing: { initialized: false },
-        audit: { initialized: false }
+        audit: { initialized: false },
       },
       totalTime: 0,
-      errors: []
-    };
+      errors: [],
+    }
 
     try {
       // 1. Inicializar sistema de auditoría (ya debería estar inicializado)
       if (finalConfig.enableAudit) {
         try {
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] Verificando sistema de auditoría...');
+            console.log('[ENTERPRISE_STARTUP] Verificando sistema de auditoría...')
           }
-          
+
           // El sistema de auditoría ya está inicializado en fases anteriores
-          result.systems.audit.initialized = true;
-          
+          result.systems.audit.initialized = true
+
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] ✅ Sistema de auditoría verificado');
+            console.log('[ENTERPRISE_STARTUP] ✅ Sistema de auditoría verificado')
           }
         } catch (error) {
-          const errorMsg = `Error verificando sistema de auditoría: ${error.message}`;
-          result.systems.audit.error = errorMsg;
-          errors.push(errorMsg);
-          
+          const errorMsg = `Error verificando sistema de auditoría: ${error.message}`
+          result.systems.audit.error = errorMsg
+          errors.push(errorMsg)
+
           if (finalConfig.logStartup) {
-            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg);
+            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg)
           }
         }
       }
@@ -127,22 +127,22 @@ export class EnterpriseStartupSystem {
       if (finalConfig.enableCache) {
         try {
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] Inicializando sistema de caché...');
+            console.log('[ENTERPRISE_STARTUP] Inicializando sistema de caché...')
           }
-          
-          await enterpriseCacheSystem.initialize();
-          result.systems.cache.initialized = true;
-          
+
+          await enterpriseCacheSystem.initialize()
+          result.systems.cache.initialized = true
+
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] ✅ Sistema de caché inicializado');
+            console.log('[ENTERPRISE_STARTUP] ✅ Sistema de caché inicializado')
           }
         } catch (error) {
-          const errorMsg = `Error inicializando sistema de caché: ${error.message}`;
-          result.systems.cache.error = errorMsg;
-          errors.push(errorMsg);
-          
+          const errorMsg = `Error inicializando sistema de caché: ${error.message}`
+          result.systems.cache.error = errorMsg
+          errors.push(errorMsg)
+
           if (finalConfig.logStartup) {
-            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg);
+            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg)
           }
         }
       }
@@ -151,22 +151,22 @@ export class EnterpriseStartupSystem {
       if (finalConfig.enableAlerts) {
         try {
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] Inicializando sistema de alertas...');
+            console.log('[ENTERPRISE_STARTUP] Inicializando sistema de alertas...')
           }
-          
-          await enterpriseAlertSystem.initialize();
-          result.systems.alerts.initialized = true;
-          
+
+          await enterpriseAlertSystem.initialize()
+          result.systems.alerts.initialized = true
+
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] ✅ Sistema de alertas inicializado');
+            console.log('[ENTERPRISE_STARTUP] ✅ Sistema de alertas inicializado')
           }
         } catch (error) {
-          const errorMsg = `Error inicializando sistema de alertas: ${error.message}`;
-          result.systems.alerts.error = errorMsg;
-          errors.push(errorMsg);
-          
+          const errorMsg = `Error inicializando sistema de alertas: ${error.message}`
+          result.systems.alerts.error = errorMsg
+          errors.push(errorMsg)
+
           if (finalConfig.logStartup) {
-            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg);
+            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg)
           }
         }
       }
@@ -175,22 +175,22 @@ export class EnterpriseStartupSystem {
       if (finalConfig.enableTesting) {
         try {
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] Inicializando sistema de testing...');
+            console.log('[ENTERPRISE_STARTUP] Inicializando sistema de testing...')
           }
-          
-          await enterpriseAutomatedTesting.initialize();
-          result.systems.testing.initialized = true;
-          
+
+          await enterpriseAutomatedTesting.initialize()
+          result.systems.testing.initialized = true
+
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] ✅ Sistema de testing inicializado');
+            console.log('[ENTERPRISE_STARTUP] ✅ Sistema de testing inicializado')
           }
         } catch (error) {
-          const errorMsg = `Error inicializando sistema de testing: ${error.message}`;
-          result.systems.testing.error = errorMsg;
-          errors.push(errorMsg);
-          
+          const errorMsg = `Error inicializando sistema de testing: ${error.message}`
+          result.systems.testing.error = errorMsg
+          errors.push(errorMsg)
+
           if (finalConfig.logStartup) {
-            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg);
+            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg)
           }
         }
       }
@@ -199,79 +199,92 @@ export class EnterpriseStartupSystem {
       if (finalConfig.runInitialTests && result.systems.testing.initialized) {
         try {
           if (finalConfig.logStartup) {
-            console.log('[ENTERPRISE_STARTUP] Ejecutando tests iniciales...');
+            console.log('[ENTERPRISE_STARTUP] Ejecutando tests iniciales...')
           }
-          
-          const testResults = await this.runInitialTests();
-          result.initialTests = testResults;
-          
+
+          const testResults = await this.runInitialTests()
+          result.initialTests = testResults
+
           if (finalConfig.logStartup) {
-            console.log(`[ENTERPRISE_STARTUP] ✅ Tests iniciales completados: ${testResults.passed} pasaron, ${testResults.failed} fallaron`);
+            console.log(
+              `[ENTERPRISE_STARTUP] ✅ Tests iniciales completados: ${testResults.passed} pasaron, ${testResults.failed} fallaron`
+            )
           }
         } catch (error) {
-          const errorMsg = `Error ejecutando tests iniciales: ${error.message}`;
-          errors.push(errorMsg);
-          
+          const errorMsg = `Error ejecutando tests iniciales: ${error.message}`
+          errors.push(errorMsg)
+
           if (finalConfig.logStartup) {
-            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg);
+            console.error('[ENTERPRISE_STARTUP] ❌', errorMsg)
           }
         }
       }
 
       // Calcular resultado final
-      const totalTime = Date.now() - startTime;
-      const initializedSystems = Object.values(result.systems).filter(s => s.initialized).length;
-      const totalSystems = Object.values(result.systems).length;
-      const success = errors.length === 0 && initializedSystems === totalSystems;
+      const totalTime = Date.now() - startTime
+      const initializedSystems = Object.values(result.systems).filter(s => s.initialized).length
+      const totalSystems = Object.values(result.systems).length
+      const success = errors.length === 0 && initializedSystems === totalSystems
 
-      result.success = success;
-      result.totalTime = totalTime;
-      result.errors = errors;
+      result.success = success
+      result.totalTime = totalTime
+      result.errors = errors
 
-      this.startupResult = result;
-      this.isInitialized = true;
+      this.startupResult = result
+      this.isInitialized = true
 
       if (finalConfig.logStartup) {
         if (success) {
-          console.log(`[ENTERPRISE_STARTUP] 🎉 Inicialización completada exitosamente en ${totalTime}ms`);
-          console.log(`[ENTERPRISE_STARTUP] Sistemas inicializados: ${initializedSystems}/${totalSystems}`);
+          console.log(
+            `[ENTERPRISE_STARTUP] 🎉 Inicialización completada exitosamente en ${totalTime}ms`
+          )
+          console.log(
+            `[ENTERPRISE_STARTUP] Sistemas inicializados: ${initializedSystems}/${totalSystems}`
+          )
         } else {
-          console.warn(`[ENTERPRISE_STARTUP] ⚠️ Inicialización completada con errores en ${totalTime}ms`);
-          console.warn(`[ENTERPRISE_STARTUP] Sistemas inicializados: ${initializedSystems}/${totalSystems}`);
-          console.warn(`[ENTERPRISE_STARTUP] Errores: ${errors.length}`);
+          console.warn(
+            `[ENTERPRISE_STARTUP] ⚠️ Inicialización completada con errores en ${totalTime}ms`
+          )
+          console.warn(
+            `[ENTERPRISE_STARTUP] Sistemas inicializados: ${initializedSystems}/${totalSystems}`
+          )
+          console.warn(`[ENTERPRISE_STARTUP] Errores: ${errors.length}`)
         }
       }
 
       // Registrar en auditoría si está disponible
       if (result.systems.audit.initialized) {
         try {
-          await this.logStartupEvent(result);
+          await this.logStartupEvent(result)
         } catch (error) {
           if (finalConfig.logStartup) {
-            console.warn('[ENTERPRISE_STARTUP] No se pudo registrar evento de startup en auditoría:', error.message);
+            console.warn(
+              '[ENTERPRISE_STARTUP] No se pudo registrar evento de startup en auditoría:',
+              error.message
+            )
           }
         }
       }
 
-      return result;
+      return result
     } catch (error) {
-      const totalTime = Date.now() - startTime;
-      const criticalError = `Error crítico durante inicialización: ${error.message}`;
-      
+      const totalTime = Date.now() - startTime
+      const criticalError = `Error crítico durante inicialización: ${error.message}`
+
       const failedResult: StartupResult = {
         success: false,
         systems: result.systems,
         totalTime,
-        errors: [...errors, criticalError]
-      };
-
-      this.startupResult = failedResult;
-      
-      if (finalConfig.logStartup) {
-        console.error('[ENTERPRISE_STARTUP] 💥 Error crítico durante inicialización:', error);
+        errors: [...errors, criticalError],
       }
 
-      return failedResult;
+      this.startupResult = failedResult
+
+      if (finalConfig.logStartup) {
+        console.error('[ENTERPRISE_STARTUP] 💥 Error crítico durante inicialización:', error)
+      }
+
+      return failedResult
     }
   }
 
@@ -279,57 +292,57 @@ export class EnterpriseStartupSystem {
    * Obtiene el resultado de la última inicialización
    */
   getStartupResult(): StartupResult | null {
-    return this.startupResult;
+    return this.startupResult
   }
 
   /**
    * Verifica si el sistema está inicializado
    */
   isSystemInitialized(): boolean {
-    return this.isInitialized && this.startupResult?.success === true;
+    return this.isInitialized && this.startupResult?.success === true
   }
 
   /**
    * Obtiene el estado de salud de los sistemas
    */
   getSystemHealth(): {
-    overall: 'healthy' | 'degraded' | 'critical';
-    systems: Record<string, boolean>;
-    score: number;
+    overall: 'healthy' | 'degraded' | 'critical'
+    systems: Record<string, boolean>
+    score: number
   } {
     if (!this.startupResult) {
       return {
         overall: 'critical',
         systems: {},
-        score: 0
-      };
+        score: 0,
+      }
     }
 
     const systems = {
       cache: this.startupResult.systems.cache.initialized,
       alerts: this.startupResult.systems.alerts.initialized,
       testing: this.startupResult.systems.testing.initialized,
-      audit: this.startupResult.systems.audit.initialized
-    };
+      audit: this.startupResult.systems.audit.initialized,
+    }
 
-    const healthySystems = Object.values(systems).filter(Boolean).length;
-    const totalSystems = Object.values(systems).length;
-    const score = totalSystems > 0 ? healthySystems / totalSystems : 0;
+    const healthySystems = Object.values(systems).filter(Boolean).length
+    const totalSystems = Object.values(systems).length
+    const score = totalSystems > 0 ? healthySystems / totalSystems : 0
 
-    let overall: 'healthy' | 'degraded' | 'critical';
+    let overall: 'healthy' | 'degraded' | 'critical'
     if (score >= 0.9) {
-      overall = 'healthy';
+      overall = 'healthy'
     } else if (score >= 0.5) {
-      overall = 'degraded';
+      overall = 'degraded'
     } else {
-      overall = 'critical';
+      overall = 'critical'
     }
 
     return {
       overall,
       systems,
-      score
-    };
+      score,
+    }
   }
 
   // =====================================================
@@ -337,37 +350,37 @@ export class EnterpriseStartupSystem {
   // =====================================================
 
   private async runInitialTests(): Promise<{
-    run: boolean;
-    passed: number;
-    failed: number;
-    errors: string[];
+    run: boolean
+    passed: number
+    failed: number
+    errors: string[]
   }> {
     try {
       // Ejecutar tests críticos
       const criticalTests = [
         'security_rate_limiting_basic',
         'security_audit_logging',
-        'performance_cache_hit_rate'
-      ];
+        'performance_cache_hit_rate',
+      ]
 
-      let passed = 0;
-      let failed = 0;
-      const errors: string[] = [];
+      let passed = 0
+      let failed = 0
+      const errors: string[] = []
 
       for (const testId of criticalTests) {
         try {
-          const result = await enterpriseAutomatedTesting.runTest(testId);
+          const result = await enterpriseAutomatedTesting.runTest(testId)
           if (result.passed) {
-            passed++;
+            passed++
           } else {
-            failed++;
+            failed++
             if (result.error) {
-              errors.push(`${testId}: ${result.error}`);
+              errors.push(`${testId}: ${result.error}`)
             }
           }
         } catch (error) {
-          failed++;
-          errors.push(`${testId}: ${error.message}`);
+          failed++
+          errors.push(`${testId}: ${error.message}`)
         }
       }
 
@@ -375,15 +388,15 @@ export class EnterpriseStartupSystem {
         run: true,
         passed,
         failed,
-        errors
-      };
+        errors,
+      }
     } catch (error) {
       return {
         run: false,
         passed: 0,
         failed: 1,
-        errors: [error.message]
-      };
+        errors: [error.message],
+      }
     }
   }
 
@@ -404,31 +417,34 @@ export class EnterpriseStartupSystem {
           jwtValid: true,
           csrfValid: true,
           rateLimitPassed: true,
-          originValid: true
-        }
-      };
-
-      await enterpriseAuditSystem.logEnterpriseEvent({
-        user_id: 'system',
-        event_type: 'SYSTEM_STARTUP' as any,
-        event_category: 'system_operation',
-        severity: result.success ? 'medium' : 'high' as any,
-        description: `Enterprise system startup ${result.success ? 'completed successfully' : 'completed with errors'}`,
-        metadata: {
-          success: result.success,
-          total_time_ms: result.totalTime,
-          systems_initialized: Object.values(result.systems).filter(s => s.initialized).length,
-          total_systems: Object.values(result.systems).length,
-          errors_count: result.errors.length,
-          initial_tests: result.initialTests,
-          systems_status: result.systems
+          originValid: true,
         },
-        ip_address: '127.0.0.1',
-        user_agent: 'EnterpriseStartupSystem/1.0'
-      }, systemContext);
+      }
+
+      await enterpriseAuditSystem.logEnterpriseEvent(
+        {
+          user_id: 'system',
+          event_type: 'SYSTEM_STARTUP' as any,
+          event_category: 'system_operation',
+          severity: result.success ? 'medium' : ('high' as any),
+          description: `Enterprise system startup ${result.success ? 'completed successfully' : 'completed with errors'}`,
+          metadata: {
+            success: result.success,
+            total_time_ms: result.totalTime,
+            systems_initialized: Object.values(result.systems).filter(s => s.initialized).length,
+            total_systems: Object.values(result.systems).length,
+            errors_count: result.errors.length,
+            initial_tests: result.initialTests,
+            systems_status: result.systems,
+          },
+          ip_address: '127.0.0.1',
+          user_agent: 'EnterpriseStartupSystem/1.0',
+        },
+        systemContext
+      )
     } catch (error) {
       // No lanzar error aquí para no afectar el startup
-      console.warn('[ENTERPRISE_STARTUP] Error logging startup event:', error.message);
+      console.warn('[ENTERPRISE_STARTUP] Error logging startup event:', error.message)
     }
   }
 }
@@ -437,7 +453,7 @@ export class EnterpriseStartupSystem {
 // INSTANCIA SINGLETON Y UTILIDADES
 // =====================================================
 
-export const enterpriseStartupSystem = EnterpriseStartupSystem.getInstance();
+export const enterpriseStartupSystem = EnterpriseStartupSystem.getInstance()
 
 /**
  * Función de conveniencia para inicializar sistemas enterprise
@@ -445,21 +461,21 @@ export const enterpriseStartupSystem = EnterpriseStartupSystem.getInstance();
 export async function initializeEnterpriseSystemsOnStartup(
   config?: Partial<StartupConfig>
 ): Promise<StartupResult> {
-  return enterpriseStartupSystem.initialize(config);
+  return enterpriseStartupSystem.initialize(config)
 }
 
 /**
  * Función para verificar si los sistemas están listos
  */
 export function areEnterpriseSystemsReady(): boolean {
-  return enterpriseStartupSystem.isSystemInitialized();
+  return enterpriseStartupSystem.isSystemInitialized()
 }
 
 /**
  * Función para obtener el estado de salud de los sistemas
  */
 export function getEnterpriseSystemHealth() {
-  return enterpriseStartupSystem.getSystemHealth();
+  return enterpriseStartupSystem.getSystemHealth()
 }
 
 /**
@@ -469,12 +485,12 @@ export function getEnterpriseSystemHealth() {
 export async function initializeEnterpriseOnAppStart(): Promise<void> {
   try {
     // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN EN APIS DE AUTH
-    console.log('[ENTERPRISE_STARTUP] 🚫 Inicialización automática temporalmente deshabilitada');
-    return;
+    console.log('[ENTERPRISE_STARTUP] 🚫 Inicialización automática temporalmente deshabilitada')
+    return
 
     // Solo inicializar en servidor
     if (typeof window !== 'undefined') {
-      return;
+      return
     }
 
     // Configuración para producción
@@ -484,16 +500,16 @@ export async function initializeEnterpriseOnAppStart(): Promise<void> {
       enableTesting: true,
       enableAudit: false, // 🚫 DESHABILITADO TEMPORALMENTE
       runInitialTests: process.env.NODE_ENV === 'development',
-      logStartup: true
-    };
+      logStartup: true,
+    }
 
-    const result = await initializeEnterpriseSystemsOnStartup(config);
-    
+    const result = await initializeEnterpriseSystemsOnStartup(config)
+
     if (!result.success) {
-      console.warn('[ENTERPRISE_STARTUP] Sistemas inicializados con errores:', result.errors);
+      console.warn('[ENTERPRISE_STARTUP] Sistemas inicializados con errores:', result.errors)
     }
   } catch (error) {
-    console.error('[ENTERPRISE_STARTUP] Error crítico en inicialización automática:', error);
+    console.error('[ENTERPRISE_STARTUP] Error crítico en inicialización automática:', error)
   }
 }
 
@@ -503,7 +519,7 @@ export async function initializeEnterpriseOnAppStart(): Promise<void> {
 
 // 🚫 TEMPORALMENTE DESHABILITADO PARA EVITAR RECURSIÓN
 // El sistema de monitoreo automático está causando llamadas recursivas a APIs de auth
-console.log('[ENTERPRISE_STARTUP] 🚫 Auto-inicialización DESHABILITADA para evitar recursión');
+console.log('[ENTERPRISE_STARTUP] 🚫 Auto-inicialización DESHABILITADA para evitar recursión')
 
 // CÓDIGO COMENTADO TEMPORALMENTE
 // En desarrollo, inicializar automáticamente cuando se importa el módulo
@@ -515,12 +531,3 @@ console.log('[ENTERPRISE_STARTUP] 🚫 Auto-inicialización DESHABILITADA para e
 //     });
 //   }, 1000);
 // }
-
-
-
-
-
-
-
-
-

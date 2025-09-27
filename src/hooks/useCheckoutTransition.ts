@@ -1,35 +1,35 @@
-"use client";
+'use client'
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface UseCheckoutTransitionOptions {
-  onTransitionStart?: () => void;
-  onTransitionComplete?: () => void;
-  onTransitionError?: (error: Error) => void;
-  enableAnimation?: boolean;
-  enablePerformanceTracking?: boolean;
-  customDuration?: number;
-  skipAnimationThreshold?: number;
+  onTransitionStart?: () => void
+  onTransitionComplete?: () => void
+  onTransitionError?: (error: Error) => void
+  enableAnimation?: boolean
+  enablePerformanceTracking?: boolean
+  customDuration?: number
+  skipAnimationThreshold?: number
 }
 
 interface UseCheckoutTransitionReturn {
-  isTransitioning: boolean;
-  startTransition: () => void;
-  skipAnimation: boolean;
-  isButtonDisabled: boolean;
-  transitionProgress: number;
+  isTransitioning: boolean
+  startTransition: () => void
+  skipAnimation: boolean
+  isButtonDisabled: boolean
+  transitionProgress: number
   performanceMetrics: {
-    startTime: number | null;
-    endTime: number | null;
-    duration: number | null;
-  };
+    startTime: number | null
+    endTime: number | null
+    duration: number | null
+  }
 }
 
 interface PerformanceMetrics {
-  startTime: number | null;
-  endTime: number | null;
-  duration: number | null;
+  startTime: number | null
+  endTime: number | null
+  duration: number | null
 }
 
 /**
@@ -47,7 +47,6 @@ interface PerformanceMetrics {
 export function useCheckoutTransition(
   options: UseCheckoutTransitionOptions = {}
 ): UseCheckoutTransitionReturn {
-
   const {
     onTransitionStart,
     onTransitionComplete,
@@ -56,129 +55,135 @@ export function useCheckoutTransition(
     enablePerformanceTracking = true,
     customDuration,
     skipAnimationThreshold = 100,
-  } = options;
+  } = options
 
-  const router = useRouter();
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [skipAnimation, setSkipAnimation] = useState(false);
-  const [transitionProgress, setTransitionProgress] = useState(0);
+  const router = useRouter()
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [skipAnimation, setSkipAnimation] = useState(false)
+  const [transitionProgress, setTransitionProgress] = useState(0)
 
   // Refs para cleanup y performance tracking
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const performanceRef = useRef<PerformanceMetrics>({
     startTime: null,
     endTime: null,
     duration: null,
-  });
+  })
 
   // Memoizar duración para evitar recálculos
   const animationDuration = useMemo(() => {
-    if (customDuration) {return customDuration;}
-    return skipAnimation ? 200 : 2800;
-  }, [skipAnimation, customDuration]);
+    if (customDuration) {
+      return customDuration
+    }
+    return skipAnimation ? 200 : 2800
+  }, [skipAnimation, customDuration])
 
   // Detectar preferencia de movimiento reducido con mejor manejo de errores
   useEffect(() => {
     try {
-      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
 
       const handleChange = (e: MediaQueryListEvent) => {
-        const shouldSkip = e.matches || !enableAnimation;
-        setSkipAnimation(shouldSkip);
+        const shouldSkip = e.matches || !enableAnimation
+        setSkipAnimation(shouldSkip)
 
         // Performance tracking para preferencias de accesibilidad
         if (enablePerformanceTracking && shouldSkip) {
-          console.debug('[useCheckoutTransition] Animation skipped due to accessibility preferences');
+          console.debug(
+            '[useCheckoutTransition] Animation skipped due to accessibility preferences'
+          )
         }
-      };
+      }
 
       // Configuración inicial
-      setSkipAnimation(mediaQuery.matches || !enableAnimation);
+      setSkipAnimation(mediaQuery.matches || !enableAnimation)
 
       // Escuchar cambios con soporte para navegadores antiguos
       if (mediaQuery.addEventListener) {
-        mediaQuery.addEventListener("change", handleChange);
+        mediaQuery.addEventListener('change', handleChange)
       } else {
         // Fallback para navegadores antiguos
-        mediaQuery.addListener(handleChange);
+        mediaQuery.addListener(handleChange)
       }
 
       return () => {
         if (mediaQuery.removeEventListener) {
-          mediaQuery.removeEventListener("change", handleChange);
+          mediaQuery.removeEventListener('change', handleChange)
         } else {
-          mediaQuery.removeListener(handleChange);
+          mediaQuery.removeListener(handleChange)
         }
-      };
+      }
     } catch (error) {
-      console.warn('[useCheckoutTransition] Error setting up media query listener:', error);
-      setSkipAnimation(!enableAnimation);
+      console.warn('[useCheckoutTransition] Error setting up media query listener:', error)
+      setSkipAnimation(!enableAnimation)
     }
-  }, [enableAnimation, enablePerformanceTracking]);
+  }, [enableAnimation, enablePerformanceTracking])
 
   // Cleanup en unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        clearTimeout(timeoutRef.current)
       }
       if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
+        clearInterval(progressIntervalRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   // Función optimizada para iniciar la transición
   const startTransition = useCallback(() => {
     if (isTransitioning) {
-      console.warn('[useCheckoutTransition] Transition already in progress, ignoring duplicate call');
-      return;
+      console.warn(
+        '[useCheckoutTransition] Transition already in progress, ignoring duplicate call'
+      )
+      return
     }
 
     try {
       // Performance tracking
-      const startTime = enablePerformanceTracking ? performance.now() : 0;
-      performanceRef.current.startTime = startTime;
+      const startTime = enablePerformanceTracking ? performance.now() : 0
+      performanceRef.current.startTime = startTime
 
-      setIsTransitioning(true);
-      setTransitionProgress(0);
+      setIsTransitioning(true)
+      setTransitionProgress(0)
 
       // Callback de inicio con error handling
       try {
-        onTransitionStart?.();
+        onTransitionStart?.()
       } catch (error) {
-        console.error('[useCheckoutTransition] Error in onTransitionStart callback:', error);
-        onTransitionError?.(error as Error);
+        console.error('[useCheckoutTransition] Error in onTransitionStart callback:', error)
+        onTransitionError?.(error as Error)
       }
 
       // Progress tracking para animaciones largas
       if (!skipAnimation && animationDuration > skipAnimationThreshold) {
         const progressInterval = setInterval(() => {
           setTransitionProgress(prev => {
-            const elapsed = performance.now() - startTime;
-            const progress = Math.min((elapsed / animationDuration) * 100, 100);
-            return progress;
-          });
-        }, 16); // 60fps updates
+            const elapsed = performance.now() - startTime
+            const progress = Math.min((elapsed / animationDuration) * 100, 100)
+            return progress
+          })
+        }, 16) // 60fps updates
 
-        progressIntervalRef.current = progressInterval;
+        progressIntervalRef.current = progressInterval
       }
 
       // Auto-reset con cleanup mejorado
       const timeout = setTimeout(() => {
         try {
-          const endTime = enablePerformanceTracking ? performance.now() : 0;
-          performanceRef.current.endTime = endTime;
-          performanceRef.current.duration = endTime - startTime;
+          const endTime = enablePerformanceTracking ? performance.now() : 0
+          performanceRef.current.endTime = endTime
+          performanceRef.current.duration = endTime - startTime
 
-          setIsTransitioning(false);
-          setTransitionProgress(100);
+          setIsTransitioning(false)
+          setTransitionProgress(100)
 
           // Cleanup progress interval
           if (progressIntervalRef.current) {
-            clearInterval(progressIntervalRef.current);
-            progressIntervalRef.current = null;
+            clearInterval(progressIntervalRef.current)
+            progressIntervalRef.current = null
           }
 
           // Performance logging
@@ -187,38 +192,36 @@ export function useCheckoutTransition(
               duration: performanceRef.current.duration,
               skipAnimation,
               animationDuration,
-            });
+            })
           }
 
           // Callback de finalización con error handling
           try {
-            onTransitionComplete?.();
+            onTransitionComplete?.()
           } catch (error) {
-            console.error('[useCheckoutTransition] Error in onTransitionComplete callback:', error);
-            onTransitionError?.(error as Error);
+            console.error('[useCheckoutTransition] Error in onTransitionComplete callback:', error)
+            onTransitionError?.(error as Error)
           }
 
           // Navegación con error handling
           try {
-            router.push('/checkout');
+            router.push('/checkout')
           } catch (error) {
-            console.error('[useCheckoutTransition] Error during navigation:', error);
-            onTransitionError?.(error as Error);
+            console.error('[useCheckoutTransition] Error during navigation:', error)
+            onTransitionError?.(error as Error)
           }
-
         } catch (error) {
-          console.error('[useCheckoutTransition] Error during transition completion:', error);
-          onTransitionError?.(error as Error);
-          setIsTransitioning(false);
+          console.error('[useCheckoutTransition] Error during transition completion:', error)
+          onTransitionError?.(error as Error)
+          setIsTransitioning(false)
         }
-      }, animationDuration);
+      }, animationDuration)
 
-      timeoutRef.current = timeout;
-
+      timeoutRef.current = timeout
     } catch (error) {
-      console.error('[useCheckoutTransition] Error starting transition:', error);
-      onTransitionError?.(error as Error);
-      setIsTransitioning(false);
+      console.error('[useCheckoutTransition] Error starting transition:', error)
+      onTransitionError?.(error as Error)
+      setIsTransitioning(false)
     }
   }, [
     isTransitioning,
@@ -229,8 +232,8 @@ export function useCheckoutTransition(
     onTransitionStart,
     onTransitionComplete,
     onTransitionError,
-    router
-  ]);
+    router,
+  ])
 
   return {
     isTransitioning,
@@ -239,16 +242,7 @@ export function useCheckoutTransition(
     isButtonDisabled: isTransitioning,
     transitionProgress,
     performanceMetrics: performanceRef.current,
-  };
+  }
 }
 
-export default useCheckoutTransition;
-
-
-
-
-
-
-
-
-
+export default useCheckoutTransition

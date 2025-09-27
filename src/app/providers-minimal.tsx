@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import React from "react";
-import { SessionProvider } from "next-auth/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from 'react'
+import { SessionProvider } from 'next-auth/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Crear QueryClient
 const queryClient = new QueryClient({
@@ -12,30 +12,21 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 10, // 10 minutos
     },
   },
-});
+})
 
 interface ProvidersProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function ProvidersMinimal({ children }: ProvidersProps) {
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
-        <div className="app-content-wrapper">
+        <div className='app-content-wrapper'>
           <h1>Minimal Test</h1>
           {children}
         </div>
       </QueryClientProvider>
     </SessionProvider>
-  );
+  )
 }
-
-
-
-
-
-
-
-
-

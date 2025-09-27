@@ -1,8 +1,8 @@
-import React, { lazy, Suspense, ComponentType } from 'react';
+import React, { lazy, Suspense, ComponentType } from 'react'
 
 interface LazyComponentProps {
-  fallback?: React.ReactNode;
-  children: React.ReactNode;
+  fallback?: React.ReactNode
+  children: React.ReactNode
 }
 
 /**
@@ -13,18 +13,18 @@ export function useLazyComponent<T extends ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   fallback?: React.ReactNode
 ) {
-  const LazyComponent = lazy(importFn);
+  const LazyComponent = lazy(importFn)
 
   return function LazyWrapper(props: React.ComponentProps<T>) {
     const defaultFallback = React.createElement('div', {
-      className: 'animate-pulse bg-gray-200 h-20 rounded'
-    });
+      className: 'animate-pulse bg-gray-200 h-20 rounded',
+    })
     return React.createElement(
       Suspense,
       { fallback: fallback || defaultFallback },
       React.createElement(LazyComponent, props)
-    );
-  };
+    )
+  }
 }
 
 /**
@@ -32,13 +32,9 @@ export function useLazyComponent<T extends ComponentType<any>>(
  */
 export function LazyComponent({ fallback, children }: LazyComponentProps) {
   const defaultFallback = React.createElement('div', {
-    className: 'animate-pulse bg-gray-200 h-20 rounded'
-  });
-  return React.createElement(
-    Suspense,
-    { fallback: fallback || defaultFallback },
-    children
-  );
+    className: 'animate-pulse bg-gray-200 h-20 rounded',
+  })
+  return React.createElement(Suspense, { fallback: fallback || defaultFallback }, children)
 }
 
 /**
@@ -50,14 +46,14 @@ export function withLazyLoading<T extends ComponentType<any>>(
 ) {
   return function LazyLoadedComponent(props: React.ComponentProps<T>) {
     const defaultFallback = React.createElement('div', {
-      className: 'animate-pulse bg-gray-200 h-20 rounded'
-    });
+      className: 'animate-pulse bg-gray-200 h-20 rounded',
+    })
     return React.createElement(
       Suspense,
       { fallback: fallback || defaultFallback },
       React.createElement(Component, props)
-    );
-  };
+    )
+  }
 }
 
 // Lazy loading para modales comunes
@@ -69,12 +65,3 @@ export function withLazyLoading<T extends ComponentType<any>>(
 // export const LazyProductGrid = lazy(() => import('@/components/Product/ProductGrid')); // Archivo no existe
 // export const LazyTestimonials = lazy(() => import('@/components/Home/Testimonials')); // Archivo no existe
 // export const LazyNewsletter = lazy(() => import('@/components/Common/Newsletter'));
-
-
-
-
-
-
-
-
-

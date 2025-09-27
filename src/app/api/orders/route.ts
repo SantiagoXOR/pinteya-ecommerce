@@ -1,7 +1,7 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
 // Datos simulados básicos para órdenes
 const mockOrders = [
@@ -12,19 +12,19 @@ const mockOrders = [
     customerInfo: {
       firstName: 'Juan',
       lastName: 'Pérez',
-      email: 'juan.perez@email.com'
+      email: 'juan.perez@email.com',
     },
     items: [
       {
         id: 'prod-001',
         name: 'Pintura Látex Interior Blanco 20L',
         price: 15000,
-        quantity: 2
-      }
+        quantity: 2,
+      },
     ],
     totals: {
-      total: 37500
-    }
+      total: 37500,
+    },
   },
   {
     id: 'ORD-1757119002-def456',
@@ -33,21 +33,21 @@ const mockOrders = [
     customerInfo: {
       firstName: 'María',
       lastName: 'González',
-      email: 'maria.gonzalez@email.com'
+      email: 'maria.gonzalez@email.com',
     },
     items: [
       {
         id: 'prod-003',
         name: 'Esmalte Sintético Azul 1L',
         price: 8500,
-        quantity: 3
-      }
+        quantity: 3,
+      },
     ],
     totals: {
-      total: 25450
-    }
-  }
-];
+      total: 25450,
+    },
+  },
+]
 
 export async function GET(request: NextRequest) {
   try {
@@ -55,23 +55,10 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         orders: mockOrders,
-        total: mockOrders.length
-      }
-    });
+        total: mockOrders.length,
+      },
+    })
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-
-
-

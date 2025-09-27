@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { WishlistCard } from './wishlist-card';
+import type { Meta, StoryObj } from '@storybook/react'
+import { WishlistCard } from './wishlist-card'
 
 const meta: Meta<typeof WishlistCard> = {
   title: 'Design System/E-commerce/WishlistCard',
@@ -8,7 +8,8 @@ const meta: Meta<typeof WishlistCard> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Componente para mostrar productos en la lista de deseos con acciones específicas.',
+        component:
+          'Componente para mostrar productos en la lista de deseos con acciones específicas.',
       },
     },
   },
@@ -28,10 +29,10 @@ const meta: Meta<typeof WishlistCard> = {
     //   description: 'Mostrar botón de agregar al carrito',
     // },
   },
-};
+}
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export default meta
+type Story = StoryObj<typeof meta>
 
 const mockProduct = {
   id: '1',
@@ -42,13 +43,13 @@ const mockProduct = {
   brand: 'Sherwin Williams',
   stock: 25,
   addedDate: '2024-01-15',
-};
+}
 
 const mockActions = {
   onRemove: () => console.log('Producto removido de wishlist'),
   onAddToCart: () => console.log('Producto agregado al carrito'),
   onView: () => console.log('Ver detalles del producto'),
-};
+}
 
 export const Default: Story = {
   args: {
@@ -58,7 +59,7 @@ export const Default: Story = {
     // showRemoveButton: true,
     // showAddToCartButton: true,
   },
-};
+}
 
 export const Compact: Story = {
   args: {
@@ -68,7 +69,7 @@ export const Compact: Story = {
     // showRemoveButton: true,
     // showAddToCartButton: false,
   },
-};
+}
 
 export const Detailed: Story = {
   args: {
@@ -78,7 +79,7 @@ export const Detailed: Story = {
     // showRemoveButton: true,
     // showAddToCartButton: true,
   },
-};
+}
 
 export const OutOfStock: Story = {
   args: {
@@ -89,7 +90,7 @@ export const OutOfStock: Story = {
     // showRemoveButton: true,
     // showAddToCartButton: false,
   },
-};
+}
 
 export const WithoutRemoveButton: Story = {
   args: {
@@ -99,7 +100,7 @@ export const WithoutRemoveButton: Story = {
     // showRemoveButton: false,
     // showAddToCartButton: true,
   },
-};
+}
 
 export const WithoutAddToCartButton: Story = {
   args: {
@@ -109,7 +110,7 @@ export const WithoutAddToCartButton: Story = {
     // showRemoveButton: true,
     // showAddToCartButton: false,
   },
-};
+}
 
 export const MinimalActions: Story = {
   args: {
@@ -119,7 +120,7 @@ export const MinimalActions: Story = {
     // showRemoveButton: false,
     // showAddToCartButton: false,
   },
-};
+}
 
 export const OnSale: Story = {
   args: {
@@ -129,7 +130,7 @@ export const OnSale: Story = {
     // showRemoveButton: true,
     // showAddToCartButton: true,
   },
-};
+}
 
 export const RecentlyAdded: Story = {
   args: {
@@ -140,13 +141,4 @@ export const RecentlyAdded: Story = {
     // showRemoveButton: true,
     // showAddToCartButton: true,
   },
-};
-
-
-
-
-
-
-
-
-
+}

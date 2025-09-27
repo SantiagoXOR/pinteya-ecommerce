@@ -1,5 +1,5 @@
 // Configuración para Node.js Runtime
-export const runtime = 'nodejs';
+export const runtime = 'nodejs'
 
 /**
  * API para sincronizar usuarios de NextAuth.js con Supabase
@@ -20,10 +20,7 @@ export async function POST(request: NextRequest) {
     // Verificar autenticación
     const session = await auth()
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
     }
 
     const { id, email, name, image } = await request.json()
@@ -63,7 +60,7 @@ export async function POST(request: NextRequest) {
           metadata: {
             ...existingUser.metadata,
             updated_via: 'sync_api',
-            last_sync: new Date().toISOString()
+            last_sync: new Date().toISOString(),
           },
           updated_at: new Date().toISOString(),
         })
@@ -94,7 +91,7 @@ export async function POST(request: NextRequest) {
           metadata: {
             created_via: 'sync_api',
             source: 'nextauth',
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
           },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -117,7 +114,6 @@ export async function POST(request: NextRequest) {
       success: true,
       user: userData,
     })
-
   } catch (error) {
     console.error('Error en sincronización de usuario:', error)
     return NextResponse.json(
@@ -126,13 +122,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
-
-
-
-
-
-
-
-
-

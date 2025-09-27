@@ -2,20 +2,20 @@
 // PINTEYA E-COMMERCE - HELPERS DE USUARIO
 // ===================================
 
-import { UserProfile } from '@/types/database';
+import { UserProfile } from '@/types/database'
 
 /**
  * Obtiene el nombre completo del usuario
  */
 export function getFullName(user: UserProfile): string {
   if (user.first_name && user.last_name) {
-    return `${user.first_name} ${user.last_name}`;
+    return `${user.first_name} ${user.last_name}`
   }
   if (user.first_name) {
-    return user.first_name;
+    return user.first_name
   }
   // Fallback al email
-  return user.email.split('@')[0];
+  return user.email.split('@')[0]
 }
 
 /**
@@ -23,28 +23,30 @@ export function getFullName(user: UserProfile): string {
  */
 export function getUserInitials(user: UserProfile): string {
   if (user.first_name && user.last_name) {
-    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
   }
   if (user.first_name) {
-    return user.first_name[0].toUpperCase();
+    return user.first_name[0].toUpperCase()
   }
-  return user.email[0].toUpperCase();
+  return user.email[0].toUpperCase()
 }
 
 /**
  * Verifica si el usuario es administrador
  */
 export function isUserAdmin(user: UserProfile): boolean {
-  return user.metadata?.role === 'admin' || 
-         user.role_id === 'admin' ||
-         (user as any).user_roles?.role_name === 'admin';
+  return (
+    user.metadata?.role === 'admin' ||
+    user.role_id === 'admin' ||
+    (user as any).user_roles?.role_name === 'admin'
+  )
 }
 
 /**
  * Verifica si el usuario está activo
  */
 export function isUserActive(user: UserProfile): boolean {
-  return user.is_active === true;
+  return user.is_active === true
 }
 
 /**
@@ -52,12 +54,12 @@ export function isUserActive(user: UserProfile): boolean {
  */
 export function getUserRole(user: UserProfile): string {
   if ((user as any).user_roles?.role_name) {
-    return (user as any).user_roles.role_name;
+    return (user as any).user_roles.role_name
   }
   if (user.metadata?.role) {
-    return user.metadata.role;
+    return user.metadata.role
   }
-  return 'customer';
+  return 'customer'
 }
 
 /**
@@ -67,8 +69,8 @@ export function formatUserCreatedDate(user: UserProfile): string {
   return new Date(user.created_at).toLocaleDateString('es-ES', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
-  });
+    day: 'numeric',
+  })
 }
 
 /**
@@ -85,11 +87,11 @@ export function convertLegacyUser(legacyUser: any): Partial<UserProfile> {
     metadata: {
       migrated_from: 'legacy_user',
       migration_date: new Date().toISOString(),
-      original_data: legacyUser
+      original_data: legacyUser,
     },
     created_at: legacyUser.created_at || new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
+    updated_at: new Date().toISOString(),
+  }
 }
 
 /**
@@ -106,26 +108,26 @@ export function createUserFromNextAuth(authUser: any): Partial<UserProfile> {
     metadata: {
       created_via: 'nextauth',
       provider: authUser.provider || 'unknown',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     },
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
+    updated_at: new Date().toISOString(),
+  }
 }
 
 /**
  * Valida si un email es válido
  */
 export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
 }
 
 /**
  * Sanitiza el nombre del usuario
  */
 export function sanitizeName(name: string): string {
-  return name.trim().replace(/[<>]/g, '');
+  return name.trim().replace(/[<>]/g, '')
 }
 
 /**
@@ -133,42 +135,35 @@ export function sanitizeName(name: string): string {
  */
 export function getUserAvatarUrl(user: UserProfile): string | null {
   if (user.metadata?.avatar_url) {
-    return user.metadata.avatar_url;
+    return user.metadata.avatar_url
   }
   if (user.metadata?.image) {
-    return user.metadata.image;
+    return user.metadata.image
   }
-  return null;
+  return null
 }
 
 /**
  * Verifica si el usuario fue migrado de Clerk
  */
 export function isMigratedFromClerk(user: UserProfile): boolean {
-  return user.metadata?.migrated_from === 'users_table' ||
-         user.metadata?.clerk_migration_completed === true;
+  return (
+    user.metadata?.migrated_from === 'users_table' ||
+    user.metadata?.clerk_migration_completed === true
+  )
 }
 
 /**
  * Obtiene información de migración
  */
 export function getMigrationInfo(user: UserProfile): {
-  isMigrated: boolean;
-  source: string;
-  date: string | null;
+  isMigrated: boolean
+  source: string
+  date: string | null
 } {
   return {
     isMigrated: isMigratedFromClerk(user),
     source: user.metadata?.migrated_from || 'unknown',
-    date: user.metadata?.migration_date || null
-  };
+    date: user.metadata?.migration_date || null,
+  }
 }
-
-
-
-
-
-
-
-
-

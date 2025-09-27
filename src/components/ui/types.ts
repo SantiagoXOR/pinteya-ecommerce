@@ -1,6 +1,6 @@
-import { type VariantProps } from "class-variance-authority"
-import { buttonVariants } from "./button"
-import { badgeVariants } from "./badge"
+import { type VariantProps } from 'class-variance-authority'
+import { buttonVariants } from './button'
+import { badgeVariants } from './badge'
 
 // Button types
 export type ButtonVariant = VariantProps<typeof buttonVariants>
@@ -131,7 +131,7 @@ export interface ThemeConfig {
 }
 
 // Animation types
-export type AnimationType = 
+export type AnimationType =
   | 'fade'
   | 'slide-up'
   | 'slide-down'
@@ -161,7 +161,13 @@ export interface ResponsiveValue<T> {
 
 // Component state types
 export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-export type ComponentVariant = 'default' | 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'
+export type ComponentVariant =
+  | 'default'
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'ghost'
+  | 'destructive'
 export type ComponentState = 'default' | 'hover' | 'active' | 'disabled' | 'loading'
 
 // Event handler types
@@ -190,12 +196,3 @@ export type {
   FC,
   PropsWithChildren,
 } from 'react'
-
-
-
-
-
-
-
-
-

@@ -6,7 +6,7 @@ import {
   reportError,
   SystemHealth,
   ErrorPattern,
-  MonitoringConfig
+  MonitoringConfig,
 } from '../lib/monitoring/proactive-monitoring'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 
@@ -34,7 +34,7 @@ export interface UseProactiveMonitoringReturn {
   addErrorPattern: (pattern: ErrorPattern) => void
   removeErrorPattern: (patternId: string) => void
   refreshStats: () => Promise<void>
-  
+
   // Utilidades
   getHealthStatus: () => 'healthy' | 'warning' | 'critical' | 'down' | 'unknown'
   getHealthColor: () => string
@@ -59,7 +59,9 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
 
   // Actualizar estadísticas periódicamente
   useEffect(() => {
-    if (!isMonitoring) {return}
+    if (!isMonitoring) {
+      return
+    }
 
     const interval = setInterval(() => {
       refreshStats()
@@ -84,11 +86,15 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
 
       // Cargar estadísticas
       await refreshStats()
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error loading monitoring data'
       setError(errorMessage)
-      logger.error(LogLevel.ERROR, 'Failed to load monitoring data', { error: err }, LogCategory.SYSTEM)
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to load monitoring data',
+        { error: err },
+        LogCategory.SYSTEM
+      )
     } finally {
       setLoading(false)
     }
@@ -120,17 +126,20 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
     }
   }, [])
 
-  const handleReportError = useCallback(async (error: Error | string, context?: Record<string, any>) => {
-    try {
-      await reportError(error, context)
-      // Actualizar estadísticas después de reportar error
-      await refreshStats()
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to report error'
-      setError(errorMessage)
-      logger.error(LogLevel.ERROR, 'Failed to report error', { error: err }, LogCategory.SYSTEM)
-    }
-  }, [])
+  const handleReportError = useCallback(
+    async (error: Error | string, context?: Record<string, any>) => {
+      try {
+        await reportError(error, context)
+        // Actualizar estadísticas después de reportar error
+        await refreshStats()
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to report error'
+        setError(errorMessage)
+        logger.error(LogLevel.ERROR, 'Failed to report error', { error: err }, LogCategory.SYSTEM)
+      }
+    },
+    []
+  )
 
   const updateConfig = useCallback((newConfig: Partial<MonitoringConfig>) => {
     try {
@@ -153,11 +162,21 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
       const updatedPatterns = proactiveMonitoring.getErrorPatterns()
       setErrorPatterns(updatedPatterns)
       setError(null)
-      logger.info(LogLevel.INFO, 'Error pattern added', { patternId: pattern.id }, LogCategory.SYSTEM)
+      logger.info(
+        LogLevel.INFO,
+        'Error pattern added',
+        { patternId: pattern.id },
+        LogCategory.SYSTEM
+      )
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to add error pattern'
       setError(errorMessage)
-      logger.error(LogLevel.ERROR, 'Failed to add error pattern', { error: err }, LogCategory.SYSTEM)
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to add error pattern',
+        { error: err },
+        LogCategory.SYSTEM
+      )
     }
   }, [])
 
@@ -171,7 +190,12 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to remove error pattern'
       setError(errorMessage)
-      logger.error(LogLevel.ERROR, 'Failed to remove error pattern', { error: err }, LogCategory.SYSTEM)
+      logger.error(
+        LogLevel.ERROR,
+        'Failed to remove error pattern',
+        { error: err },
+        LogCategory.SYSTEM
+      )
     }
   }, [])
 
@@ -187,8 +211,15 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
     }
   }, [])
 
-  const getHealthStatus = useCallback((): 'healthy' | 'warning' | 'critical' | 'down' | 'unknown' => {
-    if (!stats?.systemHealth) {return 'unknown'}
+  const getHealthStatus = useCallback(():
+    | 'healthy'
+    | 'warning'
+    | 'critical'
+    | 'down'
+    | 'unknown' => {
+    if (!stats?.systemHealth) {
+      return 'unknown'
+    }
     return stats.systemHealth.status
   }, [stats])
 
@@ -245,7 +276,7 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
     // Utilidades
     getHealthStatus,
     getHealthColor,
-    getHealthIcon
+    getHealthIcon,
   }
 }
 
@@ -253,13 +284,16 @@ export function useProactiveMonitoring(): UseProactiveMonitoringReturn {
  * Hook simplificado para solo reportar errores
  */
 export function useErrorReporting() {
-  const reportErrorCallback = useCallback(async (error: Error | string, context?: Record<string, any>) => {
-    try {
-      await reportError(error, context)
-    } catch (err) {
-      logger.error(LogLevel.ERROR, 'Failed to report error', { error: err }, LogCategory.SYSTEM)
-    }
-  }, [])
+  const reportErrorCallback = useCallback(
+    async (error: Error | string, context?: Record<string, any>) => {
+      try {
+        await reportError(error, context)
+      } catch (err) {
+        logger.error(LogLevel.ERROR, 'Failed to report error', { error: err }, LogCategory.SYSTEM)
+      }
+    },
+    []
+  )
 
   return { reportError: reportErrorCallback }
 }
@@ -277,7 +311,12 @@ export function useSystemHealth() {
         const stats = await proactiveMonitoring.getMonitoringStats()
         setHealth(stats.systemHealth)
       } catch (err) {
-        logger.error(LogLevel.ERROR, 'Failed to load system health', { error: err }, LogCategory.SYSTEM)
+        logger.error(
+          LogLevel.ERROR,
+          'Failed to load system health',
+          { error: err },
+          LogCategory.SYSTEM
+        )
       } finally {
         setLoading(false)
       }
@@ -292,12 +331,3 @@ export function useSystemHealth() {
 
   return { health, loading }
 }
-
-
-
-
-
-
-
-
-

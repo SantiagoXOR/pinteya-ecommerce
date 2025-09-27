@@ -1,7 +1,7 @@
 // 🧪 Enterprise Jest Setup Configuration
 
-import '@testing-library/jest-dom';
-import 'jest-axe/extend-expect';
+import '@testing-library/jest-dom'
+import 'jest-axe/extend-expect'
 
 // Mock Next.js router
 jest.mock('next/router', () => ({
@@ -23,9 +23,9 @@ jest.mock('next/router', () => ({
         emit: jest.fn(),
       },
       isFallback: false,
-    };
+    }
   },
-}));
+}))
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -37,24 +37,24 @@ jest.mock('next/navigation', () => ({
       back: jest.fn(),
       forward: jest.fn(),
       refresh: jest.fn(),
-    };
+    }
   },
   useSearchParams() {
-    return new URLSearchParams();
+    return new URLSearchParams()
   },
   usePathname() {
-    return '/';
+    return '/'
   },
-}));
+}))
 
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props) => {
+  default: props => {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img {...props} alt={props.alt} />;
+    return <img {...props} alt={props.alt} />
   },
-}));
+}))
 
 // Mock NextAuth authentication (migrated from Clerk)
 jest.mock('next-auth/react', () => ({
@@ -70,7 +70,7 @@ jest.mock('next-auth/react', () => ({
   }),
   signIn: jest.fn(),
   signOut: jest.fn(),
-}));
+}))
 
 // Mock NextAuth server-side functions
 jest.mock('@/auth', () => ({
@@ -81,7 +81,7 @@ jest.mock('@/auth', () => ({
       name: 'Test User',
     },
   })),
-}));
+}))
 
 // Mock React Query
 jest.mock('@tanstack/react-query', () => ({
@@ -114,7 +114,7 @@ jest.mock('@tanstack/react-query', () => ({
     refetchQueries: jest.fn(),
   })),
   QueryClientProvider: ({ children }) => children,
-}));
+}))
 
 // Mock React Hot Toast
 jest.mock('react-hot-toast', () => ({
@@ -125,7 +125,7 @@ jest.mock('react-hot-toast', () => ({
     dismiss: jest.fn(),
   },
   Toaster: () => null,
-}));
+}))
 
 // Mock Supabase
 jest.mock('@supabase/supabase-js', () => ({
@@ -168,15 +168,15 @@ jest.mock('@supabase/supabase-js', () => ({
       signOut: jest.fn(),
     },
   })),
-}));
+}))
 
 // Mock environment variables
-process.env.NODE_ENV = 'test';
-process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
-process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
-process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = 'test-clerk-key';
-process.env.CLERK_SECRET_KEY = 'test-clerk-secret';
+process.env.NODE_ENV = 'test'
+process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key'
+process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = 'test-clerk-key'
+process.env.CLERK_SECRET_KEY = 'test-clerk-secret'
 
 // Mock Next.js server components and API utilities
 jest.mock('next/server', () => ({
@@ -199,7 +199,7 @@ jest.mock('next/server', () => ({
     rewrite: jest.fn(),
     next: jest.fn(),
   },
-}));
+}))
 
 // Mock fetch globally with better implementation
 global.fetch = jest.fn(() =>
@@ -210,21 +210,21 @@ global.fetch = jest.fn(() =>
     text: () => Promise.resolve(''),
     blob: () => Promise.resolve(new Blob()),
   })
-);
+)
 
 // Mock ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}));
+}))
 
 // Mock IntersectionObserver
 global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}));
+}))
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -239,13 +239,13 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
-});
+})
 
 // Mock window.scrollTo
 Object.defineProperty(window, 'scrollTo', {
   writable: true,
   value: jest.fn(),
-});
+})
 
 // Mock localStorage
 const localStorageMock = {
@@ -253,10 +253,10 @@ const localStorageMock = {
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
-};
+}
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
-});
+})
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -264,88 +264,92 @@ const sessionStorageMock = {
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
-};
+}
 Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
-});
+})
 
 // Mock File and FileReader
 global.File = class File {
   constructor(chunks, filename, options = {}) {
-    this.chunks = chunks;
-    this.name = filename;
-    this.size = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-    this.type = options.type || '';
-    this.lastModified = options.lastModified || Date.now();
+    this.chunks = chunks
+    this.name = filename
+    this.size = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
+    this.type = options.type || ''
+    this.lastModified = options.lastModified || Date.now()
   }
-};
+}
 
 global.FileReader = class FileReader {
   constructor() {
-    this.readyState = 0;
-    this.result = null;
-    this.error = null;
+    this.readyState = 0
+    this.result = null
+    this.error = null
   }
-  
+
   readAsDataURL() {
-    this.readyState = 2;
-    this.result = 'data:image/jpeg;base64,fake-base64-data';
-    if (this.onload) {this.onload();}
+    this.readyState = 2
+    this.result = 'data:image/jpeg;base64,fake-base64-data'
+    if (this.onload) {
+      this.onload()
+    }
   }
-  
+
   readAsText() {
-    this.readyState = 2;
-    this.result = 'fake-text-content';
-    if (this.onload) {this.onload();}
+    this.readyState = 2
+    this.result = 'fake-text-content'
+    if (this.onload) {
+      this.onload()
+    }
   }
-};
+}
 
 // Mock FormData
 global.FormData = class FormData {
   constructor() {
-    this.data = new Map();
+    this.data = new Map()
   }
-  
+
   append(key, value) {
-    this.data.set(key, value);
+    this.data.set(key, value)
   }
-  
+
   get(key) {
-    return this.data.get(key);
+    return this.data.get(key)
   }
-  
+
   set(key, value) {
-    this.data.set(key, value);
+    this.data.set(key, value)
   }
-  
+
   delete(key) {
-    this.data.delete(key);
+    this.data.delete(key)
   }
-  
+
   has(key) {
-    return this.data.has(key);
+    return this.data.has(key)
   }
-};
+}
 
 // Console error suppression for known issues
-const originalError = console.error;
+const originalError = console.error
 beforeAll(() => {
   console.error = (...args) => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning: ReactDOM.render is deprecated') ||
-       args[0].includes('Warning: An invalid form control') ||
-       args[0].includes('Warning: validateDOMNesting'))
+        args[0].includes('Warning: An invalid form control') ||
+        args[0].includes('Warning: validateDOMNesting'))
     ) {
-      return;
+      return
     }
-    originalError.call(console, ...args);
-  };
-});
+    originalError.call(console, ...args)
+  }
+})
 
 afterAll(() => {
-  console.error = originalError;
-});
+  console.error = originalError
+})
 
 // Global test utilities
 global.testUtils = {
@@ -355,23 +359,23 @@ global.testUtils = {
     status,
     json: async () => ({ data, success, message: success ? 'Success' : 'Error' }),
   }),
-  
+
   // Helper to create mock form data
-  createMockFormData: (data) => {
-    const formData = new FormData();
+  createMockFormData: data => {
+    const formData = new FormData()
     Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    return formData;
+      formData.append(key, value)
+    })
+    return formData
   },
-  
+
   // Helper to wait for async operations
-  waitFor: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
-  
+  waitFor: ms => new Promise(resolve => setTimeout(resolve, ms)),
+
   // Helper to create mock file
-  createMockFile: (name = 'test.jpg', type = 'image/jpeg', content = 'test') => 
+  createMockFile: (name = 'test.jpg', type = 'image/jpeg', content = 'test') =>
     new File([content], name, { type }),
-};
+}
 
 // Mock Web APIs for Node.js environment
 global.Request = jest.fn().mockImplementation((url, options) => ({
@@ -383,7 +387,7 @@ global.Request = jest.fn().mockImplementation((url, options) => ({
   text: jest.fn().mockResolvedValue(''),
   blob: jest.fn().mockResolvedValue(new Blob()),
   ...options,
-}));
+}))
 
 global.Response = jest.fn().mockImplementation((body, options) => ({
   ok: (options?.status || 200) >= 200 && (options?.status || 200) < 300,
@@ -393,33 +397,29 @@ global.Response = jest.fn().mockImplementation((body, options) => ({
   json: jest.fn().mockResolvedValue(typeof body === 'string' ? JSON.parse(body) : body),
   text: jest.fn().mockResolvedValue(typeof body === 'string' ? body : JSON.stringify(body)),
   blob: jest.fn().mockResolvedValue(new Blob([body])),
-}));
+}))
 
 // Mock Headers for Web API compatibility
-global.Headers = jest.fn().mockImplementation((init) => {
-  const map = new Map();
+global.Headers = jest.fn().mockImplementation(init => {
+  const map = new Map()
   if (init) {
     if (Array.isArray(init)) {
-      init.forEach(([key, value]) => map.set(key.toLowerCase(), value));
+      init.forEach(([key, value]) => map.set(key.toLowerCase(), value))
     } else if (typeof init === 'object') {
-      Object.entries(init).forEach(([key, value]) => map.set(key.toLowerCase(), value));
+      Object.entries(init).forEach(([key, value]) => map.set(key.toLowerCase(), value))
     }
   }
   return {
-    get: (key) => map.get(key.toLowerCase()),
+    get: key => map.get(key.toLowerCase()),
     set: (key, value) => map.set(key.toLowerCase(), value),
-    has: (key) => map.has(key.toLowerCase()),
-    delete: (key) => map.delete(key.toLowerCase()),
+    has: key => map.has(key.toLowerCase()),
+    delete: key => map.delete(key.toLowerCase()),
     entries: () => map.entries(),
     keys: () => map.keys(),
     values: () => map.values(),
-    forEach: (callback) => map.forEach(callback),
-  };
-});
+    forEach: callback => map.forEach(callback),
+  }
+})
 
 // Increase timeout for integration tests
-jest.setTimeout(30000);
-
-
-
-
+jest.setTimeout(30000)

@@ -31,7 +31,7 @@ export {
   ArrowLeft,
   ArrowRight,
   Home,
-  
+
   // UI y acciones
   Plus,
   Minus,
@@ -42,7 +42,7 @@ export {
   AlertCircle,
   CheckCircle,
   Circle,
-  
+
   // E-commerce específicos
   ShoppingBag,
   Package,
@@ -52,33 +52,33 @@ export {
   Gift,
   Trophy,
   TrendingUp,
-  
+
   // Información y contacto
   MapPin,
   Phone,
   Mail,
   MessageCircle,
-  
+
   // Acciones de producto
   Trash2,
   ZoomIn,
   Filter,
   Calendar,
-  
+
   // Seguridad y confianza
   Shield,
-  
+
   // Herramientas (para productos de pintura)
   Palette,
   Sparkles,
   Brush,
   Wrench,
-  
+
   // Otros iconos utilizados
   Clock,
   Users,
-  Zap
-} from 'lucide-react';
+  Zap,
+} from 'lucide-react'
 
 // ===================================
 // DATE-FNS OPTIMIZED IMPORTS
@@ -125,11 +125,11 @@ export {
   addYears,
   subYears,
   formatISO,
-  toDate
-} from 'date-fns';
+  toDate,
+} from 'date-fns'
 
 // Locale específico para Argentina
-export { es } from 'date-fns/locale';
+export { es } from 'date-fns/locale'
 
 // ===================================
 // FRAMER MOTION OPTIMIZED
@@ -149,8 +149,8 @@ export {
   useAnimationControls,
   LazyMotion,
   domAnimation,
-  m
-} from 'framer-motion';
+  m,
+} from 'framer-motion'
 
 // ===================================
 // RADIX UI OPTIMIZED EXPORTS
@@ -166,8 +166,8 @@ export {
   Content as DialogContent,
   Title as DialogTitle,
   Description as DialogDescription,
-  Close as DialogClose
-} from '@radix-ui/react-dialog';
+  Close as DialogClose,
+} from '@radix-ui/react-dialog'
 
 // Dropdown Menu
 export {
@@ -184,8 +184,8 @@ export {
   Label as DropdownMenuLabel,
   Sub as DropdownMenuSub,
   SubTrigger as DropdownMenuSubTrigger,
-  SubContent as DropdownMenuSubContent
-} from '@radix-ui/react-dropdown-menu';
+  SubContent as DropdownMenuSubContent,
+} from '@radix-ui/react-dropdown-menu'
 
 // Select
 export {
@@ -203,8 +203,8 @@ export {
   ScrollDownButton as SelectScrollDownButton,
   Group as SelectGroup,
   Label as SelectLabel,
-  Separator as SelectSeparator
-} from '@radix-ui/react-select';
+  Separator as SelectSeparator,
+} from '@radix-ui/react-select'
 
 // ===================================
 // UTILITY FUNCTIONS
@@ -217,8 +217,8 @@ export {
 export const lazyImport = <T extends React.ComponentType<any>>(
   importFn: () => Promise<{ default: T }>
 ) => {
-  return React.lazy(importFn);
-};
+  return React.lazy(importFn)
+}
 
 /**
  * Helper para crear imports condicionales
@@ -229,10 +229,10 @@ export const conditionalImport = async <T>(
   importFn: () => Promise<T>
 ): Promise<T | null> => {
   if (condition) {
-    return await importFn();
+    return await importFn()
   }
-  return null;
-};
+  return null
+}
 
 /**
  * Helper para precargar módulos críticos
@@ -244,16 +244,7 @@ export const preloadModule = (importFn: () => Promise<any>) => {
     setTimeout(() => {
       importFn().catch(() => {
         // Silenciar errores de precarga
-      });
-    }, 100);
+      })
+    }, 100)
   }
-};
-
-
-
-
-
-
-
-
-
+}

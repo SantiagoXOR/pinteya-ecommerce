@@ -2,51 +2,52 @@
 // PINTEYA E-COMMERCE - PAYMENT STATUS API
 // ===================================
 
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { getPaymentInfo } from '@/lib/integrations/mercadopago';
-import { getSupabaseClient } from '@/lib/integrations/supabase';
-import { ApiResponse } from '@/types/api';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { getPaymentInfo } from '@/lib/integrations/mercadopago'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { ApiResponse } from '@/types/api'
 
 interface RouteParams {
   params: Promise<{
-    id: string;
-  }>;
+    id: string
+  }>
 }
 
 export async function GET(request: NextRequest, context: RouteParams) {
-  const params = await context.params;
+  const params = await context.params
   try {
     // Autenticación con Clerk
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
         error: 'Usuario no autenticado',
-      };
-      return NextResponse.json(errorResponse, { status: 401 });
+      }
+      return NextResponse.json(errorResponse, { status: 401 })
     }
-    const orderId = params.id;
+    const orderId = params.id
 
     // Inicializar Supabase con cliente administrativo
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient(true)
 
     // Verificar que el cliente esté disponible
     if (!supabase) {
-      console.error('Cliente de Supabase no disponible en GET /api/payments/status/[id]');
+      console.error('Cliente de Supabase no disponible en GET /api/payments/status/[id]')
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
         error: 'Servicio de base de datos no disponible',
-      };
-      return NextResponse.json(errorResponse, { status: 503 });
+      }
+      return NextResponse.json(errorResponse, { status: 503 })
     }
 
     // Obtener la orden y verificar que pertenece al usuario
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select(`
+      .select(
+        `
         *,
         order_items (
           id,
@@ -58,29 +59,30 @@ export async function GET(request: NextRequest, context: RouteParams) {
             images
           )
         )
-      `)
+      `
+      )
       .eq('id', orderId)
       .eq('user_id', userId)
-      .single();
+      .single()
 
     if (orderError || !order) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
         error: 'Orden no encontrada',
-      };
-      return NextResponse.json(errorResponse, { status: 404 });
+      }
+      return NextResponse.json(errorResponse, { status: 404 })
     }
 
-    let paymentInfo = null;
-    let mercadoPagoStatus = null;
+    let paymentInfo = null
+    let mercadoPagoStatus = null
 
     // Si hay un payment_id, obtener información de MercadoPago
     if (order.payment_id) {
-      const paymentResult = await getPaymentInfo(order.payment_id);
+      const paymentResult = await getPaymentInfo(order.payment_id)
 
       if (paymentResult.success && 'data' in paymentResult) {
-        paymentInfo = paymentResult.data;
+        paymentInfo = paymentResult.data
         mercadoPagoStatus = {
           id: paymentInfo.id,
           status: paymentInfo.status,
@@ -94,7 +96,7 @@ export async function GET(request: NextRequest, context: RouteParams) {
             type: paymentInfo.payment_type_id,
           },
           installments: paymentInfo.installments,
-        };
+        }
       }
     }
 
@@ -107,53 +109,55 @@ export async function GET(request: NextRequest, context: RouteParams) {
         created_at: order.created_at,
         updated_at: order.updated_at,
         external_reference: order.external_reference,
-        items: order.order_items?.map((item: {
-          id: string;
-          quantity: number;
-          price: number;
-          product: {
-            id: string;
-            name: string;
-            images: string[] | null;
-          };
-        }) => ({
-          id: item.id,
-          quantity: item.quantity,
-          price: item.price,
-          product: {
-            id: item.product.id,
-            name: item.product.name,
-            image: item.product.images?.previews?.[0] || null,
-          },
-        })) || [],
+        items:
+          order.order_items?.map(
+            (item: {
+              id: string
+              quantity: number
+              price: number
+              product: {
+                id: string
+                name: string
+                images: string[] | null
+              }
+            }) => ({
+              id: item.id,
+              quantity: item.quantity,
+              price: item.price,
+              product: {
+                id: item.product.id,
+                name: item.product.name,
+                image: item.product.images?.previews?.[0] || null,
+              },
+            })
+          ) || [],
       },
       payment: mercadoPagoStatus,
-    };
+    }
 
     const successResponse: ApiResponse<typeof responseData> = {
       data: responseData,
       success: true,
       message: 'Estado de pago obtenido exitosamente',
-    };
+    }
 
-    return NextResponse.json(successResponse, { status: 200 });
-
+    return NextResponse.json(successResponse, { status: 200 })
   } catch (error: unknown) {
-    console.error('Error getting payment status:', error);
-    
+    console.error('Error getting payment status:', error)
+
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
       error: error.message || 'Error interno del servidor',
-    };
-    
-    return NextResponse.json(errorResponse, { status: 500 });
+    }
+
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }
 
 // Endpoint para verificar estado desde el frontend después de redirección
 export async function POST(request: NextRequest, context: RouteParams) {
-  const params = await context.params;
+  const params = await context.params
   try {
     // TODO: Reactivar cuando Clerk funcione
     // const { userId } = auth();
@@ -167,23 +171,23 @@ export async function POST(request: NextRequest, context: RouteParams) {
     // }
 
     // Usar usuario temporal por ahora
-    const userId = '00000000-0000-4000-8000-000000000000';
-    const orderId = params.id;
-    const body = await request.json();
-    const { payment_id, status, merchant_order_id } = body;
+    const userId = '00000000-0000-4000-8000-000000000000'
+    const orderId = params.id
+    const body = await request.json()
+    const { payment_id, status, merchant_order_id } = body
 
     // Inicializar Supabase con cliente administrativo
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient(true)
 
     // Verificar que el cliente esté disponible
     if (!supabase) {
-      console.error('Cliente de Supabase no disponible en POST /api/payments/status/[id]');
+      console.error('Cliente de Supabase no disponible en POST /api/payments/status/[id]')
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
         error: 'Servicio de base de datos no disponible',
-      };
-      return NextResponse.json(errorResponse, { status: 503 });
+      }
+      return NextResponse.json(errorResponse, { status: 503 })
     }
 
     // Verificar que la orden pertenece al usuario
@@ -192,40 +196,40 @@ export async function POST(request: NextRequest, context: RouteParams) {
       .select('*')
       .eq('id', orderId)
       .eq('user_id', userId)
-      .single();
+      .single()
 
     if (orderError || !order) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
         error: 'Orden no encontrada',
-      };
-      return NextResponse.json(errorResponse, { status: 404 });
+      }
+      return NextResponse.json(errorResponse, { status: 404 })
     }
 
     // Si se proporciona payment_id, obtener información actualizada
     if (payment_id) {
-      const paymentResult = await getPaymentInfo(payment_id);
+      const paymentResult = await getPaymentInfo(payment_id)
 
       if (paymentResult.success && 'data' in paymentResult) {
-        const payment = paymentResult.data;
-        
+        const payment = paymentResult.data
+
         // Mapear estado de MercadoPago
-        let newStatus: string;
+        let newStatus: string
         switch (payment.status) {
           case 'approved':
-            newStatus = 'paid';
-            break;
+            newStatus = 'paid'
+            break
           case 'pending':
           case 'in_process':
-            newStatus = 'pending';
-            break;
+            newStatus = 'pending'
+            break
           case 'rejected':
           case 'cancelled':
-            newStatus = 'cancelled';
-            break;
+            newStatus = 'cancelled'
+            break
           default:
-            newStatus = order.status; // Mantener estado actual
+            newStatus = order.status // Mantener estado actual
         }
 
         // Actualizar orden si el estado cambió
@@ -237,7 +241,7 @@ export async function POST(request: NextRequest, context: RouteParams) {
               payment_id: payment_id,
               updated_at: new Date().toISOString(),
             })
-            .eq('id', orderId);
+            .eq('id', orderId)
         }
 
         const successResponse: ApiResponse<any> = {
@@ -249,9 +253,9 @@ export async function POST(request: NextRequest, context: RouteParams) {
           },
           success: true,
           message: 'Estado actualizado exitosamente',
-        };
+        }
 
-        return NextResponse.json(successResponse, { status: 200 });
+        return NextResponse.json(successResponse, { status: 200 })
       }
     }
 
@@ -264,19 +268,18 @@ export async function POST(request: NextRequest, context: RouteParams) {
       },
       success: true,
       message: 'Estado actual de la orden',
-    };
+    }
 
-    return NextResponse.json(successResponse, { status: 200 });
-
+    return NextResponse.json(successResponse, { status: 200 })
   } catch (error: unknown) {
-    console.error('Error updating payment status:', error);
-    
+    console.error('Error updating payment status:', error)
+
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
       error: error.message || 'Error interno del servidor',
-    };
-    
-    return NextResponse.json(errorResponse, { status: 500 });
+    }
+
+    return NextResponse.json(errorResponse, { status: 500 })
   }
 }

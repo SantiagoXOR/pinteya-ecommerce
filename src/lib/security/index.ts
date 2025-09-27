@@ -6,19 +6,19 @@
 // =====================================================
 // ENTERPRISE AUDIT SYSTEM
 // =====================================================
-export * from './enterprise-audit-system';
+export * from './enterprise-audit-system'
 
 // =====================================================
 // AUDIT TRAIL
 // =====================================================
-export * from './audit-trail';
+export * from './audit-trail'
 
 // =====================================================
 // ANOMALY DETECTION
 // =====================================================
-export * from './anomalyDetection';
+export * from './anomalyDetection'
 
 // =====================================================
 // ALERT SYSTEM
 // =====================================================
-export * from './alertSystem';
+export * from './alertSystem'
