@@ -30,6 +30,11 @@ export interface ErrorMetrics {
   resolved: boolean;
   resolutionTime?: number;
   userImpact: 'low' | 'medium' | 'high' | 'critical';
+  vercelRequestId?: string;
+  correlationId?: string;
+  buildId?: string;
+  nextjsVersion?: string;
+  metadataErrors?: string[];
 }
 
 export interface ErrorPattern {
@@ -123,34 +128,92 @@ class ErrorBoundaryManager {
       level: string;
       component: string;
       retryCount: number;
+      vercelRequestId?: string;
+      buildId?: string;
     }
   ) {
+    const errorType = this.classifyError(error);
+    const userImpact = this.assessUserImpact(context.level, error);
+    
+    // Extraer Vercel Request ID de headers si está disponible
+    const vercelRequestId = context.vercelRequestId || this.extractVercelRequestId();
+    
+    // Generar correlation ID para vincular errores relacionados
+    const correlationId = this.generateCorrelationId(error, context.component);
+
     const errorMetrics: ErrorMetrics = {
       errorId: context.errorId,
       timestamp: Date.now(),
-      errorType: this.classifyError(error),
+      errorType,
       component: context.component,
       level: context.level,
       retryCount: context.retryCount,
       resolved: false,
-      userImpact: this.assessUserImpact(context.level, error)
+      userImpact,
+      vercelRequestId,
+      correlationId,
+      buildId: context.buildId || process.env.VERCEL_GIT_COMMIT_SHA,
+      nextjsVersion: this.getNextJSVersion(),
+      metadataErrors: this.extractMetadataErrors(error)
     };
 
-    // Almacenar métricas
     this.errors.set(context.errorId, errorMetrics);
-
-    // Detectar patrones
     this.detectErrorPattern(error, context.component);
-
-    // Notificar listeners
     this.notifyListeners(errorMetrics);
 
     // Reportar a sistemas externos si es necesario
     if (this.shouldReportExternally(errorMetrics)) {
       this.reportToExternalSystems(errorMetrics, error, errorInfo);
     }
+  }
 
-    console.log('📊 Error reported to ErrorBoundaryManager:', errorMetrics);
+  private extractVercelRequestId(): string | undefined {
+    if (typeof window !== 'undefined') {
+      // En el cliente, intentar obtener de headers de respuesta
+      return undefined;
+    }
+    
+    // En el servidor, obtener de headers de request
+    try {
+      const headers = require('next/headers');
+      const headersList = headers.headers();
+      return headersList.get('x-vercel-id') || headersList.get('x-request-id');
+    } catch {
+      return undefined;
+    }
+  }
+
+  private generateCorrelationId(error: Error, component: string): string {
+    const errorSignature = `${error.name}_${component}_${error.message.substring(0, 50)}`;
+    return Buffer.from(errorSignature).toString('base64').substring(0, 16);
+  }
+
+  private getNextJSVersion(): string {
+    try {
+      const packageJson = require('../../../package.json');
+      return packageJson.dependencies?.next || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  private extractMetadataErrors(error: Error): string[] {
+    const metadataErrors: string[] = [];
+    const errorMessage = error.message.toLowerCase();
+    
+    if (errorMessage.includes('metadata') || errorMessage.includes('viewport') || errorMessage.includes('themecolor')) {
+      if (errorMessage.includes('viewport')) {
+        metadataErrors.push('metadata_viewport');
+      }
+      if (errorMessage.includes('themecolor')) {
+        metadataErrors.push('metadata_themeColor');
+      }
+      if (errorMessage.includes('unsupported')) {
+        metadataErrors.push('unsupported_metadata');
+      }
+    }
+    
+    return metadataErrors;
   }
 
   markErrorResolved(errorId: string, resolutionTime?: number) {
@@ -279,39 +342,93 @@ class ErrorBoundaryManager {
     errorInfo: ErrorInfo
   ) {
     try {
-      // Reportar al sistema de monitoreo enterprise
-      if (typeof window !== 'undefined') {
-        const enterpriseMonitoring = (window as any).__enterprise_monitoring;
-        if (enterpriseMonitoring) {
-          enterpriseMonitoring.trackError(error, {
-            context: 'error_boundary',
-            component: errorMetrics.component,
-            level: errorMetrics.level,
-            errorId: errorMetrics.errorId
-          });
-        }
+      // Importar logger de forma dinámica para evitar dependencias circulares
+      const { logger, LogLevel, LogCategory, logVercel, logNextJS } = await import('../enterprise/logger');
+      
+      // Log específico para errores de Next.js/Vercel
+      if (errorMetrics.metadataErrors && errorMetrics.metadataErrors.length > 0) {
+        logNextJS(LogLevel.ERROR, 'Next.js Metadata Error Detected', {
+          errorType: errorMetrics.metadataErrors[0] as any,
+          route: typeof window !== 'undefined' ? window.location.pathname : undefined,
+          requestId: errorMetrics.errorId,
+          vercelRequestId: errorMetrics.vercelRequestId,
+          correlationId: errorMetrics.correlationId,
+          buildId: errorMetrics.buildId,
+          nextjsVersion: errorMetrics.nextjsVersion,
+          buildWarnings: errorMetrics.metadataErrors
+        }, {
+          userId: errorMetrics.errorId.split('_')[0],
+          sessionId: this.getSessionId()
+        });
       }
 
-      // Reportar a API de errores
-      await fetch('/api/monitoring/errors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          errorMetrics,
-          error: {
-            name: error.name,
-            message: error.message,
-            stack: error.stack
-          },
-          errorInfo: {
-            componentStack: errorInfo.componentStack
-          }
-        })
+      // Log para Vercel si tenemos Request ID
+      if (errorMetrics.vercelRequestId) {
+        logVercel(LogLevel.ERROR, 'Vercel Request Error Correlation', {
+          errorType: 'runtime_error',
+          requestId: errorMetrics.errorId,
+          vercelRequestId: errorMetrics.vercelRequestId,
+          correlationId: errorMetrics.correlationId,
+          buildId: errorMetrics.buildId
+        });
+      }
+
+      // Log general del error
+      logger.error(LogCategory.SECURITY, `Error Boundary Triggered: ${error.message}`, error, {
+        requestId: errorMetrics.errorId,
+        userId: errorMetrics.correlationId
       });
+
+      // Reportar a Supabase Analytics si está disponible
+      if (typeof window !== 'undefined' && (window as any).supabase) {
+        await this.reportToSupabaseAnalytics(errorMetrics, error);
+      }
 
     } catch (reportError) {
       console.error('❌ Failed to report to external systems:', reportError);
     }
+  }
+
+  private async reportToSupabaseAnalytics(errorMetrics: ErrorMetrics, error: Error) {
+    try {
+      const { supabase } = await import('../../supabase/client');
+      
+      await supabase.from('analytics_events').insert({
+        event_name: 'error_boundary_triggered',
+        category: 'error',
+        action: 'error_caught',
+        label: errorMetrics.component,
+        value: errorMetrics.retryCount,
+        metadata: {
+          errorId: errorMetrics.errorId,
+          errorType: errorMetrics.errorType,
+          userImpact: errorMetrics.userImpact,
+          vercelRequestId: errorMetrics.vercelRequestId,
+          correlationId: errorMetrics.correlationId,
+          buildId: errorMetrics.buildId,
+          nextjsVersion: errorMetrics.nextjsVersion,
+          metadataErrors: errorMetrics.metadataErrors,
+          errorMessage: error.message,
+          errorStack: error.stack?.substring(0, 1000) // Limitar tamaño del stack
+        },
+        page: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined
+      });
+    } catch (analyticsError) {
+      console.error('Failed to report to Supabase Analytics:', analyticsError);
+    }
+  }
+
+  private getSessionId(): string {
+    if (typeof window !== 'undefined') {
+      let sessionId = sessionStorage.getItem('error_session_id');
+      if (!sessionId) {
+        sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+        sessionStorage.setItem('error_session_id', sessionId);
+      }
+      return sessionId;
+    }
+    return `server_session_${Date.now()}`;
   }
 
   // ===================================

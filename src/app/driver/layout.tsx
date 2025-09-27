@@ -12,8 +12,6 @@ import { DriverNavigation } from '@/components/driver/DriverNavigation';
 export const metadata: Metadata = {
   title: 'Pinteya Driver - Navegación GPS',
   description: 'Sistema de navegación GPS para drivers de Pinteya E-commerce',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
-  themeColor: '#2563eb',
   manifest: '/driver-manifest.json',
 };
 

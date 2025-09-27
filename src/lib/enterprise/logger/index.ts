@@ -18,7 +18,10 @@ export enum LogCategory {
   API = 'api',
   SECURITY = 'security',
   PERFORMANCE = 'performance',
-  USER = 'user'
+  USER = 'user',
+  NEXTJS = 'nextjs',
+  METADATA = 'metadata',
+  VERCEL = 'vercel'
 }
 
 interface BaseLogEntry {
@@ -80,7 +83,22 @@ interface PerformanceLogEntry extends BaseLogEntry {
   };
 }
 
-type LogEntry = PaymentLogEntry | WebhookLogEntry | SecurityLogEntry | PerformanceLogEntry | BaseLogEntry;
+interface NextJSLogEntry extends BaseLogEntry {
+  category: LogCategory.NEXTJS | LogCategory.METADATA | LogCategory.VERCEL;
+  nextjsData: {
+    errorType?: 'metadata_viewport' | 'metadata_themeColor' | 'build_warning' | 'runtime_error';
+    route?: string;
+    buildId?: string;
+    requestId?: string;
+    vercelRequestId?: string;
+    metadataField?: string;
+    nextjsVersion?: string;
+    buildWarnings?: string[];
+    correlationId?: string;
+  };
+}
+
+type LogEntry = PaymentLogEntry | WebhookLogEntry | SecurityLogEntry | PerformanceLogEntry | NextJSLogEntry | BaseLogEntry;
 
 class StructuredLogger {
   private environment: string;
@@ -186,6 +204,45 @@ class StructuredLogger {
       environment: this.environment,
       ...metadata,
     } as PerformanceLogEntry);
+  }
+
+  nextjs(level: LogLevel, message: string, nextjsData: NextJSLogEntry['nextjsData'], metadata?: Partial<BaseLogEntry>): void {
+    const entry: NextJSLogEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      category: LogCategory.NEXTJS,
+      message,
+      nextjsData,
+      environment: this.environment,
+      ...metadata
+    };
+    this.writeLog(entry);
+  }
+
+  metadata(level: LogLevel, message: string, nextjsData: NextJSLogEntry['nextjsData'], metadata?: Partial<BaseLogEntry>): void {
+    const entry: NextJSLogEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      category: LogCategory.METADATA,
+      message,
+      nextjsData,
+      environment: this.environment,
+      ...metadata
+    };
+    this.writeLog(entry);
+  }
+
+  vercel(level: LogLevel, message: string, nextjsData: NextJSLogEntry['nextjsData'], metadata?: Partial<BaseLogEntry>): void {
+    const entry: NextJSLogEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      category: LogCategory.VERCEL,
+      message,
+      nextjsData,
+      environment: this.environment,
+      ...metadata
+    };
+    this.writeLog(entry);
   }
 
   // Método log genérico para compatibilidad
@@ -330,6 +387,18 @@ export const logSecurity = (level: LogLevel, message: string, securityData: Secu
 
 export const logPerformance = (level: LogLevel, message: string, performanceData: PerformanceLogEntry['performanceData'], metadata?: Partial<BaseLogEntry>) => {
   logger.performance(level, message, performanceData, metadata);
+};
+
+export const logNextJS = (level: LogLevel, message: string, nextjsData: NextJSLogEntry['nextjsData'], metadata?: Partial<BaseLogEntry>) => {
+  logger.nextjs(level, message, nextjsData, metadata);
+};
+
+export const logMetadata = (level: LogLevel, message: string, nextjsData: NextJSLogEntry['nextjsData'], metadata?: Partial<BaseLogEntry>) => {
+  logger.metadata(level, message, nextjsData, metadata);
+};
+
+export const logVercel = (level: LogLevel, message: string, nextjsData: NextJSLogEntry['nextjsData'], metadata?: Partial<BaseLogEntry>) => {
+  logger.vercel(level, message, nextjsData, metadata);
 };
 
 export default logger;
