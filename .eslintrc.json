@@ -15,5 +15,21 @@
     "node": true,
     "es6": true,
     "jest": true
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/__tests__/**/*",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "tests/**/*",
+        "scripts/**/*"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
 }

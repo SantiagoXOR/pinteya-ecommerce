@@ -29,8 +29,13 @@ beforeEach(() => {
   jest.clearAllMocks();
   (fetch as jest.Mock).mockClear();
   
-  // Limpiar errores anteriores
+  // Limpiar errores anteriores y forzar limpieza completa
   errorBoundaryManager.clearOldErrors(0);
+  
+  // Forzar limpieza adicional accediendo a la instancia privada
+  const manager = errorBoundaryManager as any;
+  manager.errors.clear();
+  manager.patterns.clear();
 });
 
 afterEach(() => {

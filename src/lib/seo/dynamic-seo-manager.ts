@@ -983,9 +983,9 @@ class DynamicSEOManager {
   }
 
   // Generar metadata para productos
-  generateProductMetadata(product: ProductSEOData): Metadata {
+  async generateProductMetadata(product: ProductSEOData): Promise<Metadata> {
     const title = SEO_TEMPLATES.product.title(product)
-    const description = SEO_TEMPLATES.product.description(product)
+    const description = await SEO_TEMPLATES.product.description(product)
     const keywords = SEO_TEMPLATES.product.keywords(product)
 
     // Validar que product.slug existe antes de generar canonical
@@ -1041,8 +1041,8 @@ class DynamicSEOManager {
       other: {
         'product:price:amount': product.price.toString(),
         'product:price:currency': 'ARS',
-        'product:availability': product.stock > 0 ? 'InStock' : 'OutOfStock',
-        'product:condition': 'NewCondition',
+        'product:availability': product.availability,
+        'product:condition': product.condition,
         'product:brand': product.brand,
         'product:category': product.category,
       },
@@ -1191,13 +1191,17 @@ class DynamicSEOManager {
       return description
     }
 
-    // Truncar en la última oración completa
-    const truncated = description.slice(0, maxLength)
-    const lastPeriod = truncated.lastIndexOf('.')
+    // Truncar en la última palabra completa para evitar cortar palabras
+    const truncated = description.slice(0, maxLength - 3) // Reservar espacio para '...'
     const lastSpace = truncated.lastIndexOf(' ')
 
-    const cutPoint = lastPeriod > 0 ? lastPeriod + 1 : lastSpace
-    return cutPoint > 0 ? truncated.slice(0, cutPoint) + '...' : truncated + '...'
+    // Si encontramos un espacio y no está muy al principio, truncar ahí
+    if (lastSpace > maxLength * 0.7) {
+      return truncated.slice(0, lastSpace) + '...'
+    }
+
+    // Si no, truncar directamente y agregar puntos suspensivos
+    return truncated + '...'
   }
 
   // Generar slug SEO-friendly

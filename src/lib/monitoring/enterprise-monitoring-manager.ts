@@ -717,21 +717,29 @@ class EnterpriseMonitoringManager {
   }
 
   private getLoadTime(): number {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || !performance || !performance.getEntriesByType) {
       return 0
     }
-    const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming
-    return navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0
+    try {
+      const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming
+      return navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0
+    } catch (error) {
+      return 0
+    }
   }
 
   private getRenderTime(): number {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || !performance || !performance.getEntriesByType) {
       return 0
     }
-    const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming
-    return navigation
-      ? navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart
-      : 0
+    try {
+      const navigation = performance.getEntriesByType('navigation')[0] as NavigationTiming
+      return navigation
+        ? navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart
+        : 0
+    } catch (error) {
+      return 0
+    }
   }
 
   private getMemoryUsage(): number {

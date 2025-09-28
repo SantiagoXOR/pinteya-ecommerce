@@ -294,6 +294,16 @@ const ProductCard = React.memo(
                   variant='compact'
                   size='sm'
                 />
+                {/* StockIndicator cuando se usan nuevos componentes */}
+                {showExactStock && (
+                  <StockIndicator
+                    quantity={stock || 0}
+                    unit={stockUnit}
+                    showExactQuantity={true}
+                    lowStockThreshold={lowStockThreshold}
+                    variant='minimal'
+                  />
+                )}
               </div>
             ) : (
               <div

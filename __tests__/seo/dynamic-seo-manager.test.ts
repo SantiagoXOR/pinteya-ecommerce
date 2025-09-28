@@ -37,8 +37,8 @@ describe('DynamicSEOManager', () => {
       slug: 'pintura-sherwin-williams-interior'
     };
 
-    test('genera metadata completa para productos', () => {
-      const metadata = dynamicSEOManager.generateProductMetadata(mockProduct);
+    test('genera metadata completa para productos', async () => {
+      const metadata = await dynamicSEOManager.generateProductMetadata(mockProduct);
 
       expect(metadata.title).toBe('Pintura Sherwin Williams Interior - Sherwin Williams | Pinteya E-commerce');
       expect(metadata.description).toContain('Compra Pintura Sherwin Williams Interior de Sherwin Williams en Pinteya');
@@ -47,8 +47,8 @@ describe('DynamicSEOManager', () => {
       expect(metadata.keywords).toContain('pinturas');
     });
 
-    test('incluye Open Graph tags para productos', () => {
-      const metadata = dynamicSEOManager.generateProductMetadata(mockProduct);
+    test('incluye Open Graph tags para productos', async () => {
+      const metadata = await dynamicSEOManager.generateProductMetadata(mockProduct);
 
       expect(metadata.openGraph).toBeDefined();
       expect(metadata.openGraph?.title).toBe('Pintura Sherwin Williams Interior - Sherwin Williams | Pinteya E-commerce');
@@ -57,22 +57,22 @@ describe('DynamicSEOManager', () => {
       expect(metadata.openGraph?.images?.[0].alt).toBe('Pintura Sherwin Williams Interior');
     });
 
-    test('incluye Twitter Cards para productos', () => {
-      const metadata = dynamicSEOManager.generateProductMetadata(mockProduct);
+    test('incluye Twitter Cards para productos', async () => {
+      const metadata = await dynamicSEOManager.generateProductMetadata(mockProduct);
 
       expect(metadata.twitter).toBeDefined();
       expect(metadata.twitter?.card).toBe('summary_large_image');
       expect(metadata.twitter?.images).toContain('/images/products/pintura1.jpg');
     });
 
-    test('incluye canonical URL para productos', () => {
-      const metadata = dynamicSEOManager.generateProductMetadata(mockProduct);
+    test('incluye canonical URL para productos', async () => {
+      const metadata = await dynamicSEOManager.generateProductMetadata(mockProduct);
 
       expect(metadata.alternates?.canonical).toBe(`${SITE_CONFIG.url}/products/${mockProduct.slug}`);
     });
 
-    test('incluye metadata específica de producto', () => {
-      const metadata = dynamicSEOManager.generateProductMetadata(mockProduct);
+    test('incluye metadata específica de producto', async () => {
+      const metadata = await dynamicSEOManager.generateProductMetadata(mockProduct);
 
       expect(metadata.other).toBeDefined();
       expect(metadata.other?.['product:price:amount']).toBe('15000');
@@ -175,7 +175,7 @@ describe('DynamicSEOManager', () => {
     });
 
     test('optimiza descripciones correctamente', () => {
-      const longDescription = 'Esta es una descripción muy larga que excede los 160 caracteres recomendados para meta descriptions en SEO y necesita ser truncada apropiadamente.';
+      const longDescription = 'Esta es una descripción extremadamente larga que definitivamente excede los 160 caracteres recomendados para meta descriptions en SEO y necesita ser truncada apropiadamente para cumplir con las mejores prácticas de optimización.';
       const optimized = dynamicSEOManager.optimizeDescription(longDescription, 160);
 
       expect(optimized.length).toBeLessThanOrEqual(160);

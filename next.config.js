@@ -2,13 +2,13 @@
 const nextConfig = {
   // ✅ Configuración mínima y estable para Next.js 15
   
-  // ✅ ESLint configuration - Temporalmente deshabilitado para investigar errores
+  // ✅ ESLint configuration - Temporalmente deshabilitado para resolver problemas de build
   eslint: {
     ignoreDuringBuilds: true,
     dirs: ['src'],
   },
 
-  // ✅ TypeScript configuration - Temporalmente deshabilitado para investigar errores
+  // ✅ TypeScript configuration - Temporalmente deshabilitado para resolver problemas de build
   typescript: {
     ignoreBuildErrors: true,
   },

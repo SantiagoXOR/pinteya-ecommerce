@@ -77,7 +77,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const handleCardClick = React.useCallback(
       (e: React.MouseEvent) => {
         // Evitar que se abra el modal si se hace clic en el botón de agregar al carrito
-        if ((e.target as HTMLElement).closest('[data-testid="add-to-cart"]')) {
+        if ((e.target as HTMLElement).closest('[data-testid="add-to-cart-btn"]')) {
           return
         }
         // Evitar propagación de eventos que puedan interferir con el modal
@@ -130,8 +130,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           'transform-gpu will-change-transform',
           className
         )}
-        data-testid='product-card'
-        data-testid-commercial='commercial-product-card'
+        data-testid='commercial-product-card'
         style={{
           transformOrigin: 'center',
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -266,8 +265,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               <button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || stock === 0}
-                data-testid='add-to-cart'
-                data-testid-btn='add-to-cart-btn'
+                data-testid='add-to-cart-btn'
                 className={cn(
                   'w-full py-2 md:py-3 rounded-lg md:rounded-xl text-center shadow-md font-semibold flex items-center justify-center gap-1 md:gap-2 text-sm md:text-base relative overflow-hidden',
                   'transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] transform-gpu will-change-transform',
@@ -293,7 +291,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 ) : (
                   <>
                     <ShoppingCart className='w-4 h-4' />
-                    <span>Agregar al carrito</span>
+                    <span>{cta}</span>
                   </>
                 )}
               </button>

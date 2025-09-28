@@ -1,0 +1,73 @@
+17b4a3df3cbbac4d1504ec204e1cc172
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _react = /*#__PURE__*/ _interop_require_default(require("react"));
+const _react1 = require("@testing-library/react");
+require("@testing-library/jest-dom");
+function _interop_require_default(obj) {
+    return obj && obj.__esModule ? obj : {
+        default: obj
+    };
+}
+// Mock básico del componente CheckoutFlow
+const MockCheckoutFlow = ({ cartItems = [], checkoutData = {} })=>{
+    return /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+        "data-testid": "checkout-flow",
+        children: [
+            /*#__PURE__*/ (0, _jsxruntime.jsx)("h1", {
+                children: "Finalizar Compra"
+            }),
+            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                "data-testid": "cart-summary",
+                children: [
+                    "Cart Summary - ",
+                    cartItems.length,
+                    " items"
+                ]
+            }),
+            /*#__PURE__*/ (0, _jsxruntime.jsx)("button", {
+                children: "Completar Pedido"
+            })
+        ]
+    });
+};
+describe('CheckoutFlow - Test Simplificado', ()=>{
+    it('renders basic elements', ()=>{
+        const mockProps = {
+            cartItems: [
+                {
+                    id: 1,
+                    title: 'Test Product',
+                    price: 1000,
+                    quantity: 1
+                }
+            ],
+            checkoutData: {
+                totalPrice: 1000
+            }
+        };
+        (0, _react1.render)(/*#__PURE__*/ (0, _jsxruntime.jsx)(MockCheckoutFlow, {
+            ...mockProps
+        }));
+        expect(_react1.screen.getByText('Finalizar Compra')).toBeInTheDocument();
+        expect(_react1.screen.getByText('Cart Summary - 1 items')).toBeInTheDocument();
+        expect(_react1.screen.getByText('Completar Pedido')).toBeInTheDocument();
+    });
+    it('renders with empty cart', ()=>{
+        const mockProps = {
+            cartItems: [],
+            checkoutData: {
+                totalPrice: 0
+            }
+        };
+        (0, _react1.render)(/*#__PURE__*/ (0, _jsxruntime.jsx)(MockCheckoutFlow, {
+            ...mockProps
+        }));
+        expect(_react1.screen.getByText('Cart Summary - 0 items')).toBeInTheDocument();
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcbWFydGlcXERlc2t0b3BcXERFU0FSUk9MTE9TV1xcQk9JTEVSUExBVFRFIEUtQ09NTUVSQ0VcXHNyY1xcY29tcG9uZW50c1xcdWlcXF9fdGVzdHNfX1xcY2hlY2tvdXQtZmxvdy1zaW1wbGUudGVzdC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0J1xuaW1wb3J0IHsgcmVuZGVyLCBzY3JlZW4gfSBmcm9tICdAdGVzdGluZy1saWJyYXJ5L3JlYWN0J1xuaW1wb3J0ICdAdGVzdGluZy1saWJyYXJ5L2plc3QtZG9tJ1xuXG4vLyBNb2NrIGLDoXNpY28gZGVsIGNvbXBvbmVudGUgQ2hlY2tvdXRGbG93XG5jb25zdCBNb2NrQ2hlY2tvdXRGbG93ID0gKHsgY2FydEl0ZW1zID0gW10sIGNoZWNrb3V0RGF0YSA9IHt9IH06IGFueSkgPT4ge1xuICByZXR1cm4gKFxuICAgIDxkaXYgZGF0YS10ZXN0aWQ9XCJjaGVja291dC1mbG93XCI+XG4gICAgICA8aDE+RmluYWxpemFyIENvbXByYTwvaDE+XG4gICAgICA8ZGl2IGRhdGEtdGVzdGlkPVwiY2FydC1zdW1tYXJ5XCI+XG4gICAgICAgIENhcnQgU3VtbWFyeSAtIHtjYXJ0SXRlbXMubGVuZ3RofSBpdGVtc1xuICAgICAgPC9kaXY+XG4gICAgICA8YnV0dG9uPkNvbXBsZXRhciBQZWRpZG88L2J1dHRvbj5cbiAgICA8L2Rpdj5cbiAgKVxufVxuXG5kZXNjcmliZSgnQ2hlY2tvdXRGbG93IC0gVGVzdCBTaW1wbGlmaWNhZG8nLCAoKSA9PiB7XG4gIGl0KCdyZW5kZXJzIGJhc2ljIGVsZW1lbnRzJywgKCkgPT4ge1xuICAgIGNvbnN0IG1vY2tQcm9wcyA9IHtcbiAgICAgIGNhcnRJdGVtczogW3sgaWQ6IDEsIHRpdGxlOiAnVGVzdCBQcm9kdWN0JywgcHJpY2U6IDEwMDAsIHF1YW50aXR5OiAxIH1dLFxuICAgICAgY2hlY2tvdXREYXRhOiB7IHRvdGFsUHJpY2U6IDEwMDAgfVxuICAgIH1cblxuICAgIHJlbmRlcig8TW9ja0NoZWNrb3V0RmxvdyB7Li4ubW9ja1Byb3BzfSAvPilcblxuICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KCdGaW5hbGl6YXIgQ29tcHJhJykpLnRvQmVJblRoZURvY3VtZW50KClcbiAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dCgnQ2FydCBTdW1tYXJ5IC0gMSBpdGVtcycpKS50b0JlSW5UaGVEb2N1bWVudCgpXG4gICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoJ0NvbXBsZXRhciBQZWRpZG8nKSkudG9CZUluVGhlRG9jdW1lbnQoKVxuICB9KVxuXG4gIGl0KCdyZW5kZXJzIHdpdGggZW1wdHkgY2FydCcsICgpID0+IHtcbiAgICBjb25zdCBtb2NrUHJvcHMgPSB7XG4gICAgICBjYXJ0SXRlbXM6IFtdLFxuICAgICAgY2hlY2tvdXREYXRhOiB7IHRvdGFsUHJpY2U6IDAgfVxuICAgIH1cblxuICAgIHJlbmRlcig8TW9ja0NoZWNrb3V0RmxvdyB7Li4ubW9ja1Byb3BzfSAvPilcblxuICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KCdDYXJ0IFN1bW1hcnkgLSAwIGl0ZW1zJykpLnRvQmVJblRoZURvY3VtZW50KClcbiAgfSlcbn0pIl0sIm5hbWVzIjpbIk1vY2tDaGVja291dEZsb3ciLCJjYXJ0SXRlbXMiLCJjaGVja291dERhdGEiLCJkaXYiLCJkYXRhLXRlc3RpZCIsImgxIiwibGVuZ3RoIiwiYnV0dG9uIiwiZGVzY3JpYmUiLCJpdCIsIm1vY2tQcm9wcyIsImlkIiwidGl0bGUiLCJwcmljZSIsInF1YW50aXR5IiwidG90YWxQcmljZSIsInJlbmRlciIsImV4cGVjdCIsInNjcmVlbiIsImdldEJ5VGV4dCIsInRvQmVJblRoZURvY3VtZW50Il0sIm1hcHBpbmdzIjoiOzs7Ozs4REFBa0I7d0JBQ2E7UUFDeEI7Ozs7OztBQUVQLDBDQUEwQztBQUMxQyxNQUFNQSxtQkFBbUIsQ0FBQyxFQUFFQyxZQUFZLEVBQUUsRUFBRUMsZUFBZSxDQUFDLENBQUMsRUFBTztJQUNsRSxxQkFDRSxzQkFBQ0M7UUFBSUMsZUFBWTs7MEJBQ2YscUJBQUNDOzBCQUFHOzswQkFDSixzQkFBQ0Y7Z0JBQUlDLGVBQVk7O29CQUFlO29CQUNkSCxVQUFVSyxNQUFNO29CQUFDOzs7MEJBRW5DLHFCQUFDQzswQkFBTzs7OztBQUdkO0FBRUFDLFNBQVMsb0NBQW9DO0lBQzNDQyxHQUFHLDBCQUEwQjtRQUMzQixNQUFNQyxZQUFZO1lBQ2hCVCxXQUFXO2dCQUFDO29CQUFFVSxJQUFJO29CQUFHQyxPQUFPO29CQUFnQkMsT0FBTztvQkFBTUMsVUFBVTtnQkFBRTthQUFFO1lBQ3ZFWixjQUFjO2dCQUFFYSxZQUFZO1lBQUs7UUFDbkM7UUFFQUMsSUFBQUEsY0FBTSxnQkFBQyxxQkFBQ2hCO1lBQWtCLEdBQUdVLFNBQVM7O1FBRXRDTyxPQUFPQyxjQUFNLENBQUNDLFNBQVMsQ0FBQyxxQkFBcUJDLGlCQUFpQjtRQUM5REgsT0FBT0MsY0FBTSxDQUFDQyxTQUFTLENBQUMsMkJBQTJCQyxpQkFBaUI7UUFDcEVILE9BQU9DLGNBQU0sQ0FBQ0MsU0FBUyxDQUFDLHFCQUFxQkMsaUJBQWlCO0lBQ2hFO0lBRUFYLEdBQUcsMkJBQTJCO1FBQzVCLE1BQU1DLFlBQVk7WUFDaEJULFdBQVcsRUFBRTtZQUNiQyxjQUFjO2dCQUFFYSxZQUFZO1lBQUU7UUFDaEM7UUFFQUMsSUFBQUEsY0FBTSxnQkFBQyxxQkFBQ2hCO1lBQWtCLEdBQUdVLFNBQVM7O1FBRXRDTyxPQUFPQyxjQUFNLENBQUNDLFNBQVMsQ0FBQywyQkFBMkJDLGlCQUFpQjtJQUN0RTtBQUNGIn0=
