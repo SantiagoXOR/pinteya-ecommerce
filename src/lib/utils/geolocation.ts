@@ -3,7 +3,7 @@
  * Incluye verificación de permisos, manejo de errores y configuraciones optimizadas
  */
 
-import React from 'react'
+import React, { useCallback } from 'react'
 
 export interface GeolocationPosition {
   lat: number
@@ -498,21 +498,21 @@ export function useGeolocation(
     }
   }, [])
 
-  const startTracking = React.useCallback(() => {
+  const startTracking = useCallback(() => {
     if (trackerRef.current) {
       setIsLoading(true)
       trackerRef.current.start()
     }
   }, [])
 
-  const stopTracking = React.useCallback(() => {
+  const stopTracking = useCallback(() => {
     if (trackerRef.current) {
       trackerRef.current.stop()
       setIsLoading(false)
     }
   }, [])
 
-  const getCurrentLocation = React.useCallback(async () => {
+  const getCurrentLocation = useCallback(async () => {
     setIsLoading(true)
     try {
       const pos = await getCurrentPosition(options)

@@ -97,7 +97,7 @@ export const metadata: Metadata = {
       },
     ],
   },
-  manifest: '/site.webmanifest',
+  manifest: '/manifest.json',
   other: {
     'msapplication-TileColor': '#ea5a17',
     'msapplication-config': '/browserconfig.xml',

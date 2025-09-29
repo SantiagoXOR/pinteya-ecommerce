@@ -215,6 +215,10 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
+          {
+            key: 'Permissions-Policy',
+            value: 'browsing-topics=()',
+          },
         ],
       },
       // ✅ Headers específicos para admin panel

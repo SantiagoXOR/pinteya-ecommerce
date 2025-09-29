@@ -7,7 +7,7 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { UseAuthReturn, AuthUser } from '@/types/hooks'
 
 // ===================================
