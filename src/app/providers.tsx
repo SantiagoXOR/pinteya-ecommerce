@@ -13,6 +13,7 @@ import { SimpleAnalyticsProvider as AnalyticsProvider } from '@/components/Analy
 import { QueryClientProvider } from '@/components/providers/QueryClientProvider'
 import { NetworkErrorProvider } from '@/components/providers/NetworkErrorProvider'
 import { MonitoringProvider } from '@/providers/MonitoringProvider'
+import { AdvancedErrorBoundary } from '@/lib/error-boundary/advanced-error-boundary'
 
 // Componentes UI
 import Header from '../components/Header/index'
@@ -69,10 +70,18 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <PreLoader />
         ) : (
           <>
-            <MonitoringProvider
-              autoStart={process.env.NODE_ENV === 'production'}
-              enableErrorBoundary={true}
+            <AdvancedErrorBoundary
+              level="page"
+              context="RootApplication"
+              enableRetry={true}
+              maxRetries={3}
+              enableAutoRecovery={true}
+              enableReporting={true}
             >
+              <MonitoringProvider
+                autoStart={process.env.NODE_ENV === 'production'}
+                enableErrorBoundary={true}
+              >
               <QueryClientProvider>
                 <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
                   <ReduxProvider>
@@ -122,8 +131,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 </NetworkErrorProvider>
               </QueryClientProvider>
             </MonitoringProvider>
-          </>
-        )}
+          </AdvancedErrorBoundary>
+        </>
+      )}
       </>
     )
   }

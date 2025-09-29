@@ -9,6 +9,7 @@ import {
   buildDevelopmentCSP,
   createNonceHeaders,
 } from '@/lib/security/csp-nonce'
+import { productionOptimizer } from '@/lib/rate-limiting/production-optimizer'
 
 // ===================================
 // CONFIGURACIÓN DE RATE LIMITING
@@ -19,13 +20,52 @@ interface RateLimitConfig {
   maxRequests: number
 }
 
-const RATE_LIMITS: Record<string, RateLimitConfig> = {
-  '/api/payments': { windowMs: 60000, maxRequests: 10 }, // 10 requests per minute
-  '/api/user': { windowMs: 60000, maxRequests: 30 }, // 30 requests per minute
-  '/api/orders': { windowMs: 60000, maxRequests: 20 }, // 20 requests per minute
-  '/api/products': { windowMs: 60000, maxRequests: 100 }, // 100 requests per minute
-  default: { windowMs: 60000, maxRequests: 60 }, // 60 requests per minute
+// Configuración de rate limits por entorno
+const getEnvironmentLimits = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const isProduction = process.env.NODE_ENV === 'production'
+  
+  if (isDevelopment) {
+    // Límites relajados para desarrollo
+    return {
+      '/api/payments': { windowMs: 60000, maxRequests: 10 },
+      '/api/user': { windowMs: 60000, maxRequests: 30 },
+      '/api/orders': { windowMs: 60000, maxRequests: 20 },
+      '/api/products': { windowMs: 60000, maxRequests: 200 }, // Alto para desarrollo
+      '/api/analytics': { windowMs: 60000, maxRequests: 300 },
+      '/api/analytics/events': { windowMs: 60000, maxRequests: 500 },
+      default: { windowMs: 60000, maxRequests: 100 },
+    }
+  }
+  
+  if (isProduction) {
+    // Límites estrictos para producción (optimizados para performance)
+    return {
+      '/api/payments': { windowMs: 60000, maxRequests: 5 }, // Muy restrictivo para pagos
+      '/api/user': { windowMs: 60000, maxRequests: 15 }, // Reducido para proteger DB
+      '/api/orders': { windowMs: 60000, maxRequests: 10 }, // Conservador para órdenes
+      '/api/products': { windowMs: 60000, maxRequests: 60 }, // 60% menos que desarrollo
+      '/api/analytics': { windowMs: 60000, maxRequests: 100 }, // 67% menos
+      '/api/analytics/events': { windowMs: 60000, maxRequests: 150 }, // 70% menos
+      '/api/search': { windowMs: 60000, maxRequests: 40 }, // Búsquedas limitadas
+      '/api/cart': { windowMs: 60000, maxRequests: 30 }, // Carrito moderado
+      default: { windowMs: 60000, maxRequests: 30 }, // Default muy conservador
+    }
+  }
+  
+  // Staging/testing - límites intermedios
+  return {
+    '/api/payments': { windowMs: 60000, maxRequests: 8 },
+    '/api/user': { windowMs: 60000, maxRequests: 20 },
+    '/api/orders': { windowMs: 60000, maxRequests: 15 },
+    '/api/products': { windowMs: 60000, maxRequests: 100 },
+    '/api/analytics': { windowMs: 60000, maxRequests: 150 },
+    '/api/analytics/events': { windowMs: 60000, maxRequests: 250 },
+    default: { windowMs: 60000, maxRequests: 50 },
+  }
 }
+
+const RATE_LIMITS: Record<string, RateLimitConfig> = getEnvironmentLimits()
 
 // Store para rate limiting (en producción usar Redis)
 const requestCounts = new Map<string, { count: number; resetTime: number }>()
@@ -65,6 +105,75 @@ function checkRateLimit(request: NextRequest): boolean {
   // Incrementar contador
   current.count++
   return true
+}
+
+export async function rateLimitMiddleware(request: NextRequest): Promise<NextResponse | null> {
+  const startTime = Date.now()
+  const pathname = request.nextUrl.pathname
+  const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+  
+  // Obtener configuración para el endpoint
+  const config = RATE_LIMITS[pathname] || RATE_LIMITS.default
+  const key = `${clientIP}:${pathname}`
+  
+  const now = Date.now()
+  const windowStart = now - config.windowMs
+  
+  // Obtener o crear contador
+  let requestData = requestCounts.get(key)
+  if (!requestData || requestData.resetTime <= now) {
+    requestData = { count: 0, resetTime: now + config.windowMs }
+    requestCounts.set(key, requestData)
+  }
+  
+  // Incrementar contador
+  requestData.count++
+  
+  // Verificar límite
+  if (requestData.count > config.maxRequests) {
+    console.warn(`SECURITY:RATE_LIMIT_EXCEEDED - IP: ${clientIP}, Path: ${pathname}, Count: ${requestData.count}/${config.maxRequests}`)
+    
+    // Registrar métricas para producción
+    if (process.env.NODE_ENV === 'production') {
+      const responseTime = Date.now() - startTime
+      productionOptimizer.recordMetrics(pathname, responseTime, true)
+    }
+    
+    return NextResponse.json(
+      { 
+        error: 'Rate limit exceeded',
+        retryAfter: Math.ceil((requestData.resetTime - now) / 1000)
+      },
+      { 
+        status: 429,
+        headers: {
+          'Retry-After': Math.ceil((requestData.resetTime - now) / 1000).toString(),
+          'X-RateLimit-Limit': config.maxRequests.toString(),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': requestData.resetTime.toString()
+        }
+      }
+    )
+  }
+  
+  // Registrar métricas exitosas para producción
+  if (process.env.NODE_ENV === 'production') {
+    // Registraremos el tiempo de respuesta después de que se complete la request
+    const originalResponse = NextResponse.next()
+    originalResponse.headers.set('X-RateLimit-Limit', config.maxRequests.toString())
+    originalResponse.headers.set('X-RateLimit-Remaining', (config.maxRequests - requestData.count).toString())
+    originalResponse.headers.set('X-RateLimit-Reset', requestData.resetTime.toString())
+    
+    // Registrar métricas en background
+    setTimeout(() => {
+      const responseTime = Date.now() - startTime
+      productionOptimizer.recordMetrics(pathname, responseTime, false)
+    }, 0)
+    
+    return originalResponse
+  }
+  
+  return null
 }
 
 // ===================================

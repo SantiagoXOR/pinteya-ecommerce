@@ -1,10 +1,10 @@
 import React from 'react'
-import Error from '@/components/Error'
+import Error from '@/components/Error/index'
 
 import { Metadata } from 'next'
 export const metadata: Metadata = {
-  title: 'Error Page | NextCommerce Nextjs E-commerce template',
-  description: 'This is Error Page for NextCommerce Template',
+  title: 'Página de Error | Pinteya E-commerce',
+  description: 'Página de error para Pinteya E-commerce',
   // other metadata
 }
 
