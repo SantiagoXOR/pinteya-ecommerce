@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { productionOptimizer } from '@/lib/rate-limiting/production-optimizer'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/auth'
+import { auth } from '@/auth'
 
 /**
  * API para obtener métricas de rate limiting
@@ -10,7 +9,7 @@ import { authOptions } from '@/auth'
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación de admin
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user?.email || session.user.email !== 'santiago@xor.com.ar') {
       return NextResponse.json(
         { error: 'Acceso no autorizado' },
