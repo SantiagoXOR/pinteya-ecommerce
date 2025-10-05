@@ -11,6 +11,16 @@ const config: Config = {
   	fontFamily: {
   		'euclid-circular-a': [
   			'Euclid Circular A'
+  		],
+  		'sans': [
+  			'Inter',
+  			'system-ui',
+  			'sans-serif'
+  		],
+  		'inter': [
+  			'Inter',
+  			'system-ui',
+  			'sans-serif'
   		]
   	},
   	container: {
