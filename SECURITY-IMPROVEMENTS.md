@@ -6,7 +6,7 @@ Este documento detalla las mejoras de seguridad implementadas en el sistema de e
 
 **Fecha de implementación:** Enero 2025  
 **Estado:** Completado  
-**Nivel de impacto:** Alto  
+**Nivel de impacto:** Alto
 
 ---
 
@@ -17,17 +17,20 @@ Este documento detalla las mejoras de seguridad implementadas en el sistema de e
 **Problema identificado:** Configuración CORS permisiva con `Access-Control-Allow-Origin: *` en múltiples endpoints.
 
 **Solución implementada:**
+
 - ✅ Creación de configuración CORS centralizada (`src/lib/security/cors-config.ts`)
 - ✅ Implementación de validación de orígenes por entorno
 - ✅ Configuraciones específicas para diferentes tipos de endpoints
 - ✅ Script automatizado para actualizar rutas existentes (`scripts/update-cors-security.js`)
 
 **Archivos modificados:**
+
 - `src/lib/security/cors-config.ts` (nuevo)
 - `src/app/api/seo/core-web-vitals/route.ts` (actualizado)
 - `scripts/update-cors-security.js` (nuevo)
 
 **Beneficios:**
+
 - Prevención de ataques CSRF desde dominios no autorizados
 - Control granular de acceso por entorno
 - Configuración centralizada y mantenible
@@ -39,16 +42,19 @@ Este documento detalla las mejoras de seguridad implementadas en el sistema de e
 **Problema identificado:** Content Security Policy con directivas inseguras (`unsafe-inline`, `unsafe-eval`).
 
 **Solución implementada:**
+
 - ✅ Sistema de generación de nonces únicos por request
 - ✅ CSP estricto sin directivas inseguras
 - ✅ Componentes wrapper para scripts y estilos con nonce
 - ✅ Configuración diferenciada para desarrollo y producción
 
 **Archivos modificados:**
+
 - `src/lib/security/csp-nonce.ts` (nuevo)
 - `src/middleware/security.ts` (actualizado)
 
 **Beneficios:**
+
 - Prevención de ataques XSS
 - Eliminación de directivas inseguras
 - Mejor control sobre recursos ejecutables
@@ -60,16 +66,19 @@ Este documento detalla las mejoras de seguridad implementadas en el sistema de e
 **Problema identificado:** Falta de visibilidad sobre eventos de seguridad y actividad sospechosa.
 
 **Solución implementada:**
+
 - ✅ Monitor de eventos de seguridad en tiempo real
 - ✅ Detección automática de patrones sospechosos
 - ✅ API endpoint para dashboard de seguridad
 - ✅ Logging estructurado de eventos de seguridad
 
 **Archivos creados:**
+
 - `src/lib/security/security-monitor.ts` (nuevo)
 - `src/app/api/security/monitor/route.ts` (nuevo)
 
 **Características:**
+
 - Detección de intentos de SQL injection y XSS
 - Análisis de patrones de tráfico anómalos
 - Estadísticas de seguridad en tiempo real
@@ -82,16 +91,19 @@ Este documento detalla las mejoras de seguridad implementadas en el sistema de e
 **Problema identificado:** Falta de herramientas para analizar logs de autenticación y detectar actividad sospechosa.
 
 **Solución implementada:**
+
 - ✅ Analizador automático de logs de autenticación
 - ✅ Detección de intentos de fuerza bruta
 - ✅ Identificación de patrones sospechosos
 - ✅ Auditoría de seguridad completa
 
 **Archivos creados:**
+
 - `scripts/auth-log-analyzer.js` (nuevo)
 - `scripts/run-security-audit.js` (nuevo)
 
 **Capacidades de detección:**
+
 - Intentos de fuerza bruta
 - IPs sospechosas
 - User agents maliciosos
@@ -105,16 +117,20 @@ Este documento detalla las mejoras de seguridad implementadas en el sistema de e
 ### Scripts de Seguridad
 
 1. **Actualizador de CORS** (`scripts/update-cors-security.js`)
+
    ```bash
    node scripts/update-cors-security.js
    ```
+
    - Actualiza automáticamente configuraciones CORS inseguras
    - Aplica configuración centralizada a todas las rutas
 
 2. **Analizador de Logs** (`scripts/auth-log-analyzer.js`)
+
    ```bash
    node scripts/auth-log-analyzer.js
    ```
+
    - Analiza logs de autenticación
    - Detecta patrones sospechosos
    - Genera reportes detallados
@@ -123,6 +139,7 @@ Este documento detalla las mejoras de seguridad implementadas en el sistema de e
    ```bash
    node scripts/run-security-audit.js
    ```
+
    - Ejecuta auditoría completa de seguridad
    - Verifica múltiples aspectos de seguridad
    - Genera reportes consolidados
@@ -138,12 +155,14 @@ Este documento detalla las mejoras de seguridad implementadas en el sistema de e
 ## 📊 Métricas de Seguridad
 
 ### Antes de las Mejoras
+
 - ❌ CORS permisivo en 15+ endpoints
 - ❌ CSP con directivas inseguras
 - ❌ Sin monitoreo de eventos de seguridad
 - ❌ Sin análisis de logs de autenticación
 
 ### Después de las Mejoras
+
 - ✅ CORS restrictivo y centralizado
 - ✅ CSP estricto con nonces
 - ✅ Monitoreo en tiempo real
@@ -169,6 +188,7 @@ CSP_NONCE_ENABLED=true
 ### Configuración de Logs
 
 Los scripts de análisis buscan logs en las siguientes ubicaciones:
+
 - `./logs/auth.log`
 - `./logs/security.log`
 - `./logs/application.log`
@@ -176,18 +196,18 @@ Los scripts de análisis buscan logs en las siguientes ubicaciones:
 ### Uso del Sistema de Monitoreo
 
 ```typescript
-import { SecurityMonitor } from '@/lib/security/security-monitor';
+import { SecurityMonitor } from '@/lib/security/security-monitor'
 
 // Reportar evento sospechoso
 await SecurityMonitor.reportSuspiciousEvent({
   type: 'failed_login',
   ip: request.ip,
   userAgent: request.headers['user-agent'],
-  details: { attempts: 5 }
-});
+  details: { attempts: 5 },
+})
 
 // Obtener estadísticas
-const stats = await SecurityMonitor.getSecurityStats();
+const stats = await SecurityMonitor.getSecurityStats()
 ```
 
 ---
@@ -195,16 +215,19 @@ const stats = await SecurityMonitor.getSecurityStats();
 ## 🚀 Próximos Pasos Recomendados
 
 ### Corto Plazo (1-2 semanas)
+
 1. **Configurar alertas automáticas** para eventos críticos
 2. **Implementar rate limiting** en endpoints sensibles
 3. **Configurar rotación de logs** para optimizar almacenamiento
 
 ### Mediano Plazo (1 mes)
+
 1. **Implementar 2FA** para cuentas administrativas
 2. **Configurar WAF** (Web Application Firewall)
 3. **Auditoría de dependencias** automatizada
 
 ### Largo Plazo (3 meses)
+
 1. **Implementar SIEM** (Security Information and Event Management)
 2. **Pruebas de penetración** regulares
 3. **Certificación de seguridad** (ISO 27001, SOC 2)
@@ -243,15 +266,17 @@ const stats = await SecurityMonitor.getSecurityStats();
 ### Tests de Seguridad Implementados
 
 1. **Validación CORS**
+
    ```bash
    curl -H "Origin: https://malicious-site.com" http://localhost:3000/api/test
    # Debe retornar error CORS
    ```
 
 2. **Validación CSP**
+
    ```javascript
    // Verificar que scripts inline son bloqueados
-   console.log('CSP should block this inline script');
+   console.log('CSP should block this inline script')
    ```
 
 3. **Test de Monitoreo**
@@ -282,6 +307,7 @@ Para preguntas sobre estas mejoras de seguridad:
 ## 📝 Changelog
 
 ### v1.0.0 - Enero 2025
+
 - ✅ Implementación inicial de todas las mejoras de seguridad
 - ✅ Configuración CORS centralizada
 - ✅ CSP con nonces

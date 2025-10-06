@@ -17,31 +17,37 @@ Este documento describe el sistema completo de manejo de errores de red implemen
 ### Componentes Principales
 
 #### 1. **Query Client Optimizado** (`src/lib/query-client.ts`)
+
 - Configuración inteligente de retry para diferentes tipos de errores
 - Backoff exponencial para errores de red
 - Detección automática de errores recuperables
 
 #### 2. **Network Error Handler Hook** (`src/hooks/useNetworkErrorHandler.ts`)
+
 - Hook personalizado para manejo de errores de red
 - Clasificación automática de tipos de error
 - Interceptación global de errores de fetch
 
 #### 3. **Network Error Provider** (`src/components/providers/NetworkErrorProvider.tsx`)
+
 - Context provider para estado global de errores de red
 - Monitoreo de conectividad online/offline
 - Componente de error boundary para errores de red
 
 #### 4. **Client Error Suppression** (`src/components/ErrorSuppression/ClientErrorSuppression.tsx`)
+
 - Supresión de errores en el lado del cliente
 - Interceptación de console.error y console.warn
 - Manejo de unhandled promise rejections
 
 #### 5. **Middleware de Supresión** (`src/lib/middleware/error-suppression.ts`)
+
 - Middleware para el lado del servidor
 - Headers optimizados para conexiones estables
 - Wrapper para APIs con manejo robusto de errores
 
 #### 6. **Diagnóstico de Red** (`src/components/Debug/NetworkErrorDiagnostic.tsx`)
+
 - Panel de diagnóstico para desarrollo
 - Monitoreo en tiempo real de errores suprimidos
 - Herramientas de testing y debugging
@@ -68,34 +74,37 @@ Para usar componentes específicos:
 
 ```typescript
 // Hook básico de manejo de errores
-import { useNetworkErrorHandler } from '@/hooks/useNetworkErrorHandler';
+import { useNetworkErrorHandler } from '@/hooks/useNetworkErrorHandler'
 
 const { handleNetworkError, createFetchWrapper } = useNetworkErrorHandler({
   enableLogging: true,
   enableRetry: true,
-  maxRetries: 3
-});
+  maxRetries: 3,
+})
 
 // Wrapper de fetch con manejo de errores
-const safeFetch = createFetchWrapper('/api');
-const response = await safeFetch('/products');
+const safeFetch = createFetchWrapper('/api')
+const response = await safeFetch('/products')
 ```
 
 ## 🎛️ Tipos de Errores Manejados
 
 ### Errores Suprimidos
+
 - `ERR_ABORTED` - Requests cancelados por el usuario
 - `AbortError` - Errores de abort de fetch API
 - `NetworkError` - Errores de conectividad
 - `TimeoutError` - Timeouts de requests
 
 ### Errores con Retry
+
 - Errores HTTP 5xx (servidor)
 - Errores de timeout (408)
 - Errores de red temporales
 - Pérdida de conectividad
 
 ### Errores No Manejados
+
 - Errores HTTP 4xx (cliente) - excepto 408
 - Errores de validación
 - Errores de autenticación
@@ -103,30 +112,32 @@ const response = await safeFetch('/products');
 ## 📊 Configuración de Retry
 
 ### Query Client
+
 ```typescript
 retry: (failureCount: number, error: any) => {
   // No retry para errores 4xx (cliente) excepto 408
   if (error?.status >= 400 && error?.status < 500 && error?.status !== 408) {
-    return false;
+    return false
   }
-  
+
   // Retry para errores de red
   if (shouldRetryError(error)) {
-    return failureCount < 3;
+    return failureCount < 3
   }
-  
-  return failureCount < 2;
+
+  return failureCount < 2
 }
 ```
 
 ### Delay de Retry
+
 ```typescript
 retryDelay: (attemptIndex: number, error: any) => {
   // Delay más corto para errores de red
   if (shouldRetryError(error)) {
-    return Math.min(500 * 2 ** attemptIndex, 5000);
+    return Math.min(500 * 2 ** attemptIndex, 5000)
   }
-  return Math.min(1000 * 2 ** attemptIndex, 30000);
+  return Math.min(1000 * 2 ** attemptIndex, 30000)
 }
 ```
 
@@ -146,10 +157,10 @@ En modo desarrollo, aparece un botón flotante 🌐 en la esquina inferior izqui
 
 ```typescript
 // Los errores suprimidos aparecen como debug
-console.debug('🔇 [Suppressed Error]:', error);
+console.debug('🔇 [Suppressed Error]:', error)
 
 // Errores importantes siguen apareciendo normalmente
-console.error('❌ Critical Error:', error);
+console.error('❌ Critical Error:', error)
 ```
 
 ## 🧪 Testing
@@ -162,6 +173,7 @@ node scripts/test-error-suppression.js
 ```
 
 ### Tests Incluidos
+
 - ✅ Requests válidos a APIs públicas
 - ✅ Requests a APIs protegidas (deben fallar)
 - ✅ Requests con abort inmediato
@@ -170,11 +182,13 @@ node scripts/test-error-suppression.js
 ## 📈 Métricas y Performance
 
 ### Impacto en Performance
+
 - **Overhead mínimo** - Solo intercepta errores específicos
 - **Retry inteligente** - Evita requests innecesarios
 - **Cache optimizado** - Reduce requests duplicados
 
 ### Métricas Monitoreadas
+
 - Número de errores suprimidos
 - Tiempo de respuesta de APIs
 - Tasa de éxito de retry
@@ -183,12 +197,14 @@ node scripts/test-error-suppression.js
 ## 🚀 Beneficios
 
 ### Para Desarrolladores
+
 - ✅ Consola limpia sin errores irrelevantes
 - ✅ Debugging más eficiente
 - ✅ Logs estructurados y útiles
 - ✅ Herramientas de diagnóstico integradas
 
 ### Para Usuarios
+
 - ✅ Experiencia más estable
 - ✅ Retry automático en errores temporales
 - ✅ Feedback visual del estado de conexión
@@ -204,8 +220,8 @@ const suppressedErrorPatterns = [
   'ERR_ABORTED',
   'AbortError',
   // Agregar nuevos patrones aquí
-  'NEW_ERROR_PATTERN'
-];
+  'NEW_ERROR_PATTERN',
+]
 ```
 
 ### Configurar Retry para Nuevas APIs
@@ -214,8 +230,8 @@ const suppressedErrorPatterns = [
 // En query-client.ts
 const shouldRetryError = (error: any): boolean => {
   // Agregar lógica específica para nuevos tipos de error
-  return networkErrors.includes(error.code);
-};
+  return networkErrors.includes(error.code)
+}
 ```
 
 ## 📝 Notas Importantes
@@ -240,6 +256,3 @@ const shouldRetryError = (error: any): boolean => {
 **Fecha de Implementación**: Enero 2025  
 **Versión**: 1.0.0  
 **Estado**: ✅ Activo y Funcional
-
-
-

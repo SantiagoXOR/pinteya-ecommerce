@@ -232,6 +232,73 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(errorResponse, { status: 500 })
       }
 
+      // Enriquecer productos con información de variantes
+      let enrichedProducts = products || []
+      
+      if (products && products.length > 0) {
+        try {
+          // Obtener variantes para todos los productos
+          const productIds = products.map(p => p.id)
+          
+          const { data: variants } = await supabase
+            .from('product_variants')
+            .select(`
+              id,
+              product_id,
+              aikon_id,
+              variant_slug,
+              color_name,
+              color_hex,
+              measure,
+              finish,
+              price_list,
+              price_sale,
+              stock,
+              is_active,
+              is_default,
+              image_url
+            `)
+            .in('product_id', productIds)
+            .eq('is_active', true)
+            .order('is_default', { ascending: false })
+
+          // Agrupar variantes por producto
+          const variantsByProduct = (variants || []).reduce((acc, variant) => {
+            if (!acc[variant.product_id]) {
+              acc[variant.product_id] = []
+            }
+            acc[variant.product_id].push(variant)
+            return acc
+          }, {} as Record<number, any[]>)
+
+          // Enriquecer productos con variantes
+          enrichedProducts = products.map(product => {
+            const productVariants = variantsByProduct[product.id] || []
+            const defaultVariant = productVariants.find(v => v.is_default) || productVariants[0]
+            
+            return {
+              ...product,
+              // Mantener compatibilidad con campos legacy
+              aikon_id: product.aikon_id || defaultVariant?.aikon_id,
+              color: product.color || defaultVariant?.color_name,
+              medida: product.medida || defaultVariant?.measure,
+              // Agregar información de variantes
+              variants: productVariants,
+              variant_count: productVariants.length,
+              has_variants: productVariants.length > 0,
+              default_variant: defaultVariant || null,
+              // Usar precios de la variante por defecto si están disponibles
+              price: defaultVariant?.price_list || product.price,
+              discounted_price: defaultVariant?.price_sale || product.discounted_price,
+              stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
+            }
+          })
+        } catch (variantError) {
+          // Si hay error obteniendo variantes, continuar con productos originales
+          console.warn('Error obteniendo variantes:', variantError)
+        }
+      }
+
       // Calcular información de paginación
       const page = filters.page || 1
       const limit = filters.limit || 10
@@ -253,7 +320,7 @@ export async function GET(request: NextRequest) {
       })
 
       const response: PaginatedResponse<ProductWithCategory> = {
-        data: products || [],
+        data: enrichedProducts || [],
         pagination: {
           page,
           limit,
@@ -261,7 +328,7 @@ export async function GET(request: NextRequest) {
           totalPages,
         },
         success: true,
-        message: `${products?.length || 0} productos encontrados`,
+        message: `${enrichedProducts?.length || 0} productos encontrados`,
       }
 
       // Agregar headers de cache para mejorar performance

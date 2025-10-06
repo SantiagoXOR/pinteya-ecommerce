@@ -1,4 +1,5 @@
 # 🔍 AUDITORÍA COMPLETA DE BASE DE DATOS SUPABASE
+
 ## Proyecto: Pinteya E-commerce
 
 **Fecha**: 13 de Septiembre, 2025  
@@ -32,6 +33,7 @@
 ## 🗂️ INVENTARIO COMPLETO DE TABLAS
 
 ### **ESQUEMA AUTH (17 tablas)**
+
 ```
 ✅ ACTIVAS Y NECESARIAS:
 - auth.users (1 registro) - Usuarios Supabase Auth
@@ -43,10 +45,11 @@
 ```
 
 ### **ESQUEMA NEXT_AUTH (4 tablas)**
+
 ```
 ❌ SIN USO - ELIMINAR:
 - next_auth.users (0 registros)
-- next_auth.sessions (0 registros) 
+- next_auth.sessions (0 registros)
 - next_auth.accounts (0 registros)
 - next_auth.verification_tokens (0 registros)
 
@@ -54,6 +57,7 @@ RAZÓN: NextAuth configurado con JWT, no usa base de datos
 ```
 
 ### **ESQUEMA PUBLIC - CORE E-COMMERCE**
+
 ```
 ✅ ACTIVAS Y NECESARIAS:
 - products (53 registros) - Catálogo principal
@@ -83,6 +87,7 @@ RAZÓN: NextAuth configurado con JWT, no usa base de datos
 ### **1. CONFLICTO DE TABLAS DE USUARIOS**
 
 #### **Tabla `public.users` (PROBLEMÁTICA)**
+
 ```sql
 Estructura actual:
 - id: uuid (gen_random_uuid())
@@ -99,6 +104,7 @@ Problemas:
 ```
 
 #### **Tabla `public.user_profiles` (MEJOR ESTRUCTURA)**
+
 ```sql
 Estructura actual:
 - id: uuid (gen_random_uuid())
@@ -126,8 +132,8 @@ Ventajas:
 -- Pero NextAuth usuario no existe en public.users
 -- Resultado: Error 404 al obtener/crear direcciones
 
-SELECT ua.*, u.email 
-FROM user_addresses ua 
+SELECT ua.*, u.email
+FROM user_addresses ua
 LEFT JOIN users u ON ua.user_id = u.id;
 
 Resultado:
@@ -142,16 +148,17 @@ Resultado:
 ### **FASE 1: CONSOLIDACIÓN DE USUARIOS (CRÍTICO)**
 
 #### **Opción A: Migrar a user_profiles (RECOMENDADO)**
+
 ```sql
 -- 1. Actualizar user_addresses para usar user_profiles
-ALTER TABLE user_addresses 
+ALTER TABLE user_addresses
 ADD COLUMN profile_id UUID REFERENCES user_profiles(id);
 
 -- 2. Migrar datos existentes
-UPDATE user_addresses 
+UPDATE user_addresses
 SET profile_id = (
-  SELECT up.id FROM user_profiles up 
-  JOIN users u ON u.email = up.email 
+  SELECT up.id FROM user_profiles up
+  JOIN users u ON u.email = up.email
   WHERE u.id = user_addresses.user_id
 );
 
@@ -164,6 +171,7 @@ CREATE OR REPLACE FUNCTION sync_nextauth_user()...
 ```
 
 #### **Opción B: Actualizar public.users (ALTERNATIVO)**
+
 ```sql
 -- 1. Hacer clerk_id opcional
 ALTER TABLE users ALTER COLUMN clerk_id DROP NOT NULL;
@@ -179,6 +187,7 @@ ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'customer';
 ### **FASE 2: LIMPIEZA DE TABLAS**
 
 #### **Eliminar tablas sin uso:**
+
 ```sql
 -- NextAuth (no se usa)
 DROP SCHEMA next_auth CASCADE;
@@ -194,6 +203,7 @@ DROP TABLE user_sessions; -- Duplica auth.sessions
 ### **FASE 3: OPTIMIZACIÓN**
 
 #### **Consolidar analytics:**
+
 ```sql
 -- Mantener solo tablas activas
 -- analytics_events (3,127 registros) ✅
@@ -206,18 +216,21 @@ DROP TABLE user_sessions; -- Duplica auth.sessions
 ## 🚀 RECOMENDACIÓN FINAL
 
 ### **SOLUCIÓN INMEDIATA (1-2 horas)**
+
 1. **Opción B**: Actualizar `public.users` para compatibilidad NextAuth
 2. **Hacer clerk_id opcional** y agregar columna `image`
 3. **Actualizar API** para crear usuarios automáticamente
 4. **Probar flujo completo** de direcciones
 
 ### **SOLUCIÓN A LARGO PLAZO (1-2 días)**
+
 1. **Migrar a user_profiles** como tabla principal
 2. **Eliminar tablas redundantes** (next_auth, fleet, etc.)
 3. **Consolidar estructura** de usuarios
 4. **Implementar sincronización** NextAuth ↔ Supabase
 
 ### **BENEFICIOS ESPERADOS**
+
 - ✅ Resolución inmediata del problema de direcciones
 - ✅ Base de datos 40% más limpia (20 tablas menos)
 - ✅ Estructura consistente y escalable

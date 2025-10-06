@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
 import { Heart, Eye, Star, ShoppingCart, AlertCircle } from 'lucide-react'
 import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
@@ -67,11 +68,53 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [isWishlisted, setIsWishlisted] = React.useState(false)
     const [showQuickActions, setShowQuickActions] = React.useState(false)
     const [showShopDetailModal, setShowShopDetailModal] = React.useState(false)
+    const [imageError, setImageError] = React.useState(false)
+    const [currentImageSrc, setCurrentImageSrc] = React.useState(image || '/images/products/placeholder.svg')
 
     // Función para abrir el modal
     const handleOpenModal = React.useCallback(() => {
       setShowShopDetailModal(true)
     }, [])
+
+    // Función para manejar errores de imagen con fallback automático
+    const handleImageError = React.useCallback(() => {
+      console.group(`🖼️ [CommercialProductCard] Error de imagen - Producto ID: ${productId}`)
+      console.error(`❌ URL fallida: ${currentImageSrc}`)
+      console.log(`📦 Título del producto: ${title}`)
+      console.log(`🏷️ Marca: ${brand}`)
+      console.log(`🔄 Estado anterior imageError: ${imageError}`)
+      
+      if (!imageError) {
+        setImageError(true)
+        setCurrentImageSrc('/images/products/placeholder.svg')
+        console.log(`✅ Fallback aplicado: /images/products/placeholder.svg`)
+      } else {
+        console.warn(`⚠️ Ya se había aplicado fallback anteriormente`)
+      }
+      console.groupEnd()
+    }, [currentImageSrc, imageError, productId, title, brand])
+
+    // Logging detallado para debugging de imágenes
+    React.useEffect(() => {
+      console.group(`🖼️ [CommercialProductCard] Debugging imagen para producto: ${title}`);
+      console.log('📦 Product data completo:', { productId, title, brand, price });
+      console.log('🔗 image prop:', image);
+      console.log('🎯 currentImageSrc actual:', currentImageSrc);
+      console.log('❌ imageError estado:', imageError);
+      console.groupEnd();
+    }, [productId, title, brand, price, image, currentImageSrc, imageError]);
+
+    // Actualizar imagen cuando cambie la prop
+    React.useEffect(() => {
+      if (image && image !== currentImageSrc) {
+        console.log(`🔄 [CommercialProductCard] Actualizando imagen para ${title}:`, {
+          from: currentImageSrc,
+          to: image
+        });
+        setCurrentImageSrc(image);
+        setImageError(false);
+      }
+    }, [image, currentImageSrc, title])
 
     // Función para manejar el clic en el card
     const handleCardClick = React.useCallback(
@@ -130,8 +173,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           'transform-gpu will-change-transform',
           className
         )}
-        data-testid='product-card'
-        data-testid-commercial='commercial-product-card'
+        data-testid='commercial-product-card'
         style={{
           transformOrigin: 'center',
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -151,23 +193,31 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       >
         {/* Contenedor de imagen completa con degradado - Responsive */}
         <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-2 md:mb-3 flex-1'>
-          {image ? (
-            <img
-              src={image}
+          {currentImageSrc && !imageError ? (
+            <Image
+              src={currentImageSrc}
               alt={title || 'Producto'}
-              className='object-contain w-full h-full scale-110 z-0'
-              onError={e => {
-                const target = e.target as HTMLImageElement
-                target.src = '/images/products/placeholder.svg'
+              fill
+              className='object-contain scale-110 z-0'
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              priority={false}
+              onError={handleImageError}
+              onLoad={() => {
+                console.log(`✅ [CommercialProductCard] Imagen cargada exitosamente - Producto ID: ${productId}`)
+                console.log(`📸 URL: ${currentImageSrc}`)
+                // Reset error state si la imagen carga correctamente
+                if (imageError && currentImageSrc !== '/images/products/placeholder.svg') {
+                  console.log(`🔄 Reseteando estado de error para imagen corregida`)
+                  setImageError(false)
+                }
               }}
             />
           ) : (
-            <div className='flex items-center justify-center w-full h-full z-0'>
-              <img
-                src='/images/products/placeholder.svg'
-                alt='Sin imagen'
-                className='w-64 h-64 opacity-60'
-              />
+            <div className='flex items-center justify-center w-full h-full z-0 bg-gray-50'>
+              <div className='text-center p-4'>
+                <AlertCircle className='w-8 h-8 text-gray-400 mx-auto mb-2' />
+                <p className='text-xs text-gray-500'>Imagen no disponible</p>
+              </div>
             </div>
           )}
 

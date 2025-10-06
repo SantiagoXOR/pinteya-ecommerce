@@ -10,22 +10,25 @@ Tu aplicación ya tiene implementado un sistema de webhook robusto con las sigui
 ✅ **Circuit breaker** para manejo de fallos  
 ✅ **Logging estructurado** completo  
 ✅ **Validación de origen** de requests  
-✅ **Procesamiento automático** de estados de pago  
+✅ **Procesamiento automático** de estados de pago
 
 ---
 
 ## 🎯 PASO 1: Configurar Webhook en MercadoPago Dashboard
 
 ### **1.1 Acceder al Dashboard**
+
 1. Ve a: **https://www.mercadopago.com.ar/developers**
 2. Inicia sesión con tu cuenta de MercadoPago
 3. Selecciona tu aplicación (o crea una nueva si no tienes)
 
 ### **1.2 Navegar a Webhooks**
+
 1. En el menú lateral izquierdo, busca **"Webhooks"**
 2. Haz clic en **"Crear webhook"** o **"Nuevo webhook"**
 
 ### **1.3 Configurar el Webhook**
+
 Completa los siguientes campos:
 
 ```
@@ -43,12 +46,14 @@ Webhook para procesar notificaciones de pagos del e-commerce PinteYA
 ```
 
 ### **1.4 Seleccionar Eventos**
+
 Marca las siguientes casillas:
 
 - ✅ **payment** - Notificaciones de pagos
 - ✅ **merchant_order** - Notificaciones de órdenes (opcional pero recomendado)
 
 ### **1.5 Configuración Avanzada**
+
 ```
 🔧 Método HTTP: POST
 ⏱️ Timeout: 30 segundos
@@ -57,6 +62,7 @@ Marca las siguientes casillas:
 ```
 
 ### **1.6 Guardar y Obtener Secret**
+
 1. Haz clic en **"Crear"** o **"Guardar"**
 2. **¡IMPORTANTE!** Copia el **"Secret"** que aparece
 3. Guárdalo en un lugar seguro (lo necesitarás para las variables de entorno)
@@ -66,6 +72,7 @@ Marca las siguientes casillas:
 ## 🔐 PASO 2: Configurar Variables de Entorno
 
 ### **2.1 Variables Requeridas**
+
 Agrega estas variables a tu archivo `.env.local` o `.env`:
 
 ```bash
@@ -95,6 +102,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000  # Tu URL de desarrollo
 ```
 
 ### **2.2 Verificar Configuración**
+
 Ejecuta este comando para verificar que las variables estén cargadas:
 
 ```bash
@@ -194,28 +202,36 @@ Nombre: OTHE
 ## 🚨 PASO 5: Troubleshooting Común
 
 ### **❌ Error: "Missing required headers"**
+
 **Causa**: MercadoPago no está enviando los headers necesarios  
 **Solución**: Verifica que la URL del webhook esté correcta y sea accesible públicamente
 
 ### **❌ Error: "Invalid signature"**
+
 **Causa**: El secret del webhook no coincide  
-**Solución**: 
+**Solución**:
+
 1. Ve al dashboard de MercadoPago
 2. Copia nuevamente el secret del webhook
 3. Actualiza la variable `MERCADOPAGO_WEBHOOK_SECRET`
 
 ### **❌ Error: "Rate limit exceeded"**
+
 **Causa**: Demasiadas requests al webhook  
 **Solución**: Esto es normal, el sistema tiene rate limiting. Espera un minuto y reintenta.
 
 ### **❌ Error: "Payment not found"**
+
 **Causa**: El ID del pago no existe en MercadoPago  
-**Solución**: 
+**Solución**:
+
 1. Verifica que estés usando el entorno correcto (sandbox/production)
 2. Confirma que el access token sea válido
 
 ### **❌ Webhook no se ejecuta**
+
 **Posibles causas y soluciones**:
+
 1. **URL no accesible**: Usa ngrok para desarrollo local
 2. **Firewall bloqueando**: Verifica configuración de red
 3. **SSL inválido**: MercadoPago requiere HTTPS válido en producción
@@ -225,6 +241,7 @@ Nombre: OTHE
 ## 🎯 PASO 6: Ir a Producción
 
 ### **6.1 Actualizar Variables de Entorno**
+
 ```bash
 # Cambiar a credenciales de producción
 MERCADOPAGO_ACCESS_TOKEN=APP_USR-tu-access-token-de-produccion
@@ -235,11 +252,13 @@ NEXT_PUBLIC_APP_URL=https://tu-dominio.com
 ```
 
 ### **6.2 Crear Nuevo Webhook en Producción**
+
 1. En el dashboard de MercadoPago, cambia a **"Credenciales de producción"**
 2. Crea un nuevo webhook con la URL de producción
 3. Actualiza el `MERCADOPAGO_WEBHOOK_SECRET` con el nuevo secret
 
 ### **6.3 Verificar Funcionamiento**
+
 1. Realiza una compra real con tarjeta real (monto pequeño)
 2. Verifica que todo el flujo funcione correctamente
 3. Monitorea los logs durante las primeras horas

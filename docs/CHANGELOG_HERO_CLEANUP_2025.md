@@ -4,7 +4,7 @@
 
 **Fecha**: Enero 2025  
 **Tipo**: Refactorización y Limpieza de Arquitectura  
-**Impacto**: Mejora de UX/UI y separación de responsabilidades  
+**Impacto**: Mejora de UX/UI y separación de responsabilidades
 
 ## 🎯 Objetivo
 
@@ -17,15 +17,18 @@ Limpiar el Hero Section eliminando los iconos de servicios (Envíos, Asesoramien
 **Archivo**: `src/components/Home/Hero/index.tsx`
 
 **Antes** (166 líneas):
+
 ```tsx
-{/* Sección de características con imágenes circulares */}
-<div className="bg-gray-50 py-6 lg:py-12 overflow-hidden">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="grid grid-cols-4 gap-4 lg:gap-8">
+{
+  /* Sección de características con imágenes circulares */
+}
+;<div className='bg-gray-50 py-6 lg:py-12 overflow-hidden'>
+  <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+    <div className='grid grid-cols-4 gap-4 lg:gap-8'>
       {/* Envíos */}
-      <div className="text-center group cursor-pointer">
-        <div className="mx-auto w-16 h-16 lg:w-24 lg:h-24 mb-2 lg:mb-4 rounded-full bg-gradient-to-br from-fun-green-400 to-fun-green-600">
-          <Image src="/images/hero/hero-enviogratis.png" alt="Envíos gratis" />
+      <div className='text-center group cursor-pointer'>
+        <div className='mx-auto w-16 h-16 lg:w-24 lg:h-24 mb-2 lg:mb-4 rounded-full bg-gradient-to-br from-fun-green-400 to-fun-green-600'>
+          <Image src='/images/hero/hero-enviogratis.png' alt='Envíos gratis' />
         </div>
         <h3>Envíos</h3>
       </div>
@@ -36,13 +39,14 @@ Limpiar el Hero Section eliminando los iconos de servicios (Envíos, Asesoramien
 ```
 
 **Después** (105 líneas):
+
 ```tsx
-{/* Componente enfocado solo en banner principal */}
-<section className="relative bg-white overflow-hidden">
+{
+  /* Componente enfocado solo en banner principal */
+}
+;<section className='relative bg-white overflow-hidden'>
   {/* Banner principal con layers de imágenes */}
-  <div className="relative w-full">
-    {/* Solo contenido del banner principal */}
-  </div>
+  <div className='relative w-full'>{/* Solo contenido del banner principal */}</div>
 </section>
 ```
 
@@ -96,12 +100,12 @@ npm test -- --testPathPattern="TrustSection.test.tsx"
 
 ### Antes vs Después
 
-| Métrica | Antes | Después | Mejora |
-|---------|-------|---------|--------|
-| Líneas de código | 166 | 105 | -37% |
-| Elementos DOM | ~20 | ~8 | -60% |
-| Imágenes cargadas | 8 | 4 | -50% |
-| Complejidad visual | Alta | Baja | ✅ |
+| Métrica            | Antes | Después | Mejora |
+| ------------------ | ----- | ------- | ------ |
+| Líneas de código   | 166   | 105     | -37%   |
+| Elementos DOM      | ~20   | ~8      | -60%   |
+| Imágenes cargadas  | 8     | 4       | -50%   |
+| Complejidad visual | Alta  | Baja    | ✅     |
 
 ## 🎨 Impacto en UX/UI
 
@@ -124,11 +128,13 @@ npm test -- --testPathPattern="TrustSection.test.tsx"
 ### Separación de Responsabilidades
 
 **Antes**: Hero Section tenía múltiples responsabilidades
+
 - ❌ Banner principal
 - ❌ Iconos de servicios
 - ❌ Información de confianza
 
 **Después**: Responsabilidades distribuidas correctamente
+
 - ✅ **Hero Section**: Solo banner y mensaje principal
 - ✅ **TrustSection**: Iconos de servicios y elementos de confianza
 - ✅ **Arquitectura limpia**: Cada componente con propósito específico
@@ -256,6 +262,3 @@ Este cambio establece las bases para futuras optimizaciones y mejoras en la expe
 **Fecha**: Enero 2025  
 **Estado**: ✅ Completado  
 **Tests**: 11/11 Hero + 9/9 TrustSection ✅
-
-
-

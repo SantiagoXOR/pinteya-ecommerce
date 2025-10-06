@@ -49,7 +49,7 @@ const SingleItem = ({ item }: { item: any }) => {
         <div className='flex-1 min-w-0'>
           <h3 className='font-semibold text-gray-900 text-sm line-clamp-2 mb-1'>{item.title}</h3>
           <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
-            ${item.discountedPrice.toLocaleString()}
+            ${item.discountedPrice ? item.discountedPrice.toLocaleString() : '0'}
           </p>
           {item.price && item.discountedPrice && item.discountedPrice < item.price && (
             <p className='text-xs text-gray-500 line-through'>${item.price.toLocaleString()}</p>
@@ -101,7 +101,7 @@ const SingleItem = ({ item }: { item: any }) => {
         {/* Subtotal */}
         <div className='text-right'>
           <p className='font-bold text-sm' style={{ color: '#ea5a17' }}>
-            ${(item.discountedPrice * quantity).toLocaleString()}
+            ${item.discountedPrice ? (item.discountedPrice * quantity).toLocaleString() : '0'}
           </p>
           {item.price && item.discountedPrice && item.discountedPrice < item.price && (
             <p className='text-xs text-green-600 font-semibold'>

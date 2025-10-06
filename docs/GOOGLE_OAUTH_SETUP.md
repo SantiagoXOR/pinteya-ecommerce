@@ -1,6 +1,7 @@
 # 🔐 Configuración Google OAuth para Clerk - Pinteya E-commerce
 
 ## 🚨 PROBLEMA ACTUAL
+
 **Error**: "Acceso bloqueado: Error de autorización - Missing required parameter: client_id"
 
 ## ✅ SOLUCIÓN PASO A PASO
@@ -17,6 +18,7 @@
 2. Clic en **+ CREATE CREDENTIALS** → **OAuth 2.0 Client IDs**
 3. Selecciona **Web application**
 4. Configura:
+
    ```
    Name: Pinteya E-commerce
    Authorized JavaScript origins:
@@ -24,7 +26,7 @@
    - https://www.pinteya.com
    - https://pinteya-ecommerce.vercel.app
    - https://clerk.pinteya.com
-   
+
    Authorized redirect URIs:
    - https://clerk.pinteya.com/v1/oauth_callback
    - https://accounts.pinteya.com/v1/oauth_callback
@@ -43,6 +45,7 @@
 ### **4. Actualizar Variables de Entorno**
 
 En Vercel, agrega estas variables:
+
 ```env
 NEXT_PUBLIC_CLERK_GOOGLE_CLIENT_ID=tu_google_client_id_aqui
 CLERK_GOOGLE_CLIENT_SECRET=tu_google_client_secret_aqui
@@ -51,13 +54,15 @@ CLERK_GOOGLE_CLIENT_SECRET=tu_google_client_secret_aqui
 ### **5. Verificar Dominios Autorizados**
 
 En Clerk Dashboard → **Configure** → **Domains**:
+
 - ✅ pinteya.com
-- ✅ www.pinteya.com  
+- ✅ www.pinteya.com
 - ✅ pinteya-ecommerce.vercel.app
 
 ## 🔄 TESTING
 
 Después de la configuración:
+
 1. Ve a tu aplicación
 2. Clic en "Iniciar sesión con Google"
 3. Debería funcionar sin errores
@@ -65,6 +70,7 @@ Después de la configuración:
 ## 📞 SOPORTE
 
 Si persisten los problemas:
+
 - Verifica que todos los dominios estén en ambas plataformas
 - Revisa que las URLs de callback sean exactas
 - Confirma que las APIs estén habilitadas en Google Cloud
@@ -74,6 +80,3 @@ Si persisten los problemas:
 ✅ Autenticación con Google funcionando
 ✅ Sin errores de client_id
 ✅ Usuarios sincronizados con Supabase automáticamente
-
-
-

@@ -5,11 +5,11 @@
  * Crea una página de debug para verificar metadata en tiempo real
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-console.log('🔄 CREANDO HERRAMIENTA DE DEBUG CLERK - PINTEYA E-COMMERCE');
-console.log('Generando página de debug para verificar metadata...\n');
+console.log('🔄 CREANDO HERRAMIENTA DE DEBUG CLERK - PINTEYA E-COMMERCE')
+console.log('Generando página de debug para verificar metadata...\n')
 
 // Crear página de debug
 const debugPageContent = `'use client';
@@ -255,39 +255,39 @@ export default function ClerkDebugPage() {
       </div>
     </div>
   );
-}`;
+}`
 
 // Crear el archivo
-const debugPagePath = path.join(process.cwd(), 'src', 'app', 'debug-clerk', 'page.tsx');
-const debugDir = path.dirname(debugPagePath);
+const debugPagePath = path.join(process.cwd(), 'src', 'app', 'debug-clerk', 'page.tsx')
+const debugDir = path.dirname(debugPagePath)
 
 // Crear directorio si no existe
 if (!fs.existsSync(debugDir)) {
-  fs.mkdirSync(debugDir, { recursive: true });
-  console.log('✅ Directorio creado:', debugDir);
+  fs.mkdirSync(debugDir, { recursive: true })
+  console.log('✅ Directorio creado:', debugDir)
 }
 
 // Escribir archivo
-fs.writeFileSync(debugPagePath, debugPageContent);
-console.log('✅ Página de debug creada:', debugPagePath);
+fs.writeFileSync(debugPagePath, debugPageContent)
+console.log('✅ Página de debug creada:', debugPagePath)
 
-console.log('\n🎯 INSTRUCCIONES:');
-console.log('================');
-console.log('1. Ve a: http://localhost:3000/debug-clerk');
-console.log('2. Inicia sesión si no lo has hecho');
-console.log('3. Verifica el estado del metadata');
-console.log('4. Usa "Forzar Recarga" si es necesario');
-console.log('5. Usa "Probar Acceso Admin" para verificar');
+console.log('\n🎯 INSTRUCCIONES:')
+console.log('================')
+console.log('1. Ve a: http://localhost:3000/debug-clerk')
+console.log('2. Inicia sesión si no lo has hecho')
+console.log('3. Verifica el estado del metadata')
+console.log('4. Usa "Forzar Recarga" si es necesario')
+console.log('5. Usa "Probar Acceso Admin" para verificar')
 
-console.log('\n📋 PRÓXIMOS PASOS:');
-console.log('==================');
-console.log('1. npm run dev (si no está corriendo)');
-console.log('2. Abrir http://localhost:3000/debug-clerk');
-console.log('3. Verificar que public_metadata.role = "admin"');
-console.log('4. Si no está configurado, ir al dashboard de Clerk');
-console.log('5. Configurar metadata según las instrucciones');
+console.log('\n📋 PRÓXIMOS PASOS:')
+console.log('==================')
+console.log('1. npm run dev (si no está corriendo)')
+console.log('2. Abrir http://localhost:3000/debug-clerk')
+console.log('3. Verificar que public_metadata.role = "admin"')
+console.log('4. Si no está configurado, ir al dashboard de Clerk')
+console.log('5. Configurar metadata según las instrucciones')
 
 module.exports = {
   debugPagePath,
-  debugPageContent
-};
+  debugPageContent,
+}

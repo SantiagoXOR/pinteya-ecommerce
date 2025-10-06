@@ -3,22 +3,25 @@
 **Fecha de Creación**: 2 de Septiembre, 2025  
 **Estado**: 📋 **LISTO PARA IMPLEMENTACIÓN**  
 **Prioridad**: 🔥 **CRÍTICA**  
-**Metodología**: Desarrollo iterativo enterprise con patrones probados  
+**Metodología**: Desarrollo iterativo enterprise con patrones probados
 
 ---
 
 ## 📊 **RESUMEN EJECUTIVO**
 
 ### **Objetivo Principal**
+
 Completar el panel administrativo de Pinteya e-commerce siguiendo patrones enterprise probados de Spree Commerce, WooCommerce y Next.js Enterprise.
 
 ### **Métricas Clave**
+
 - **Duración Total**: 12-16 semanas
 - **Completitud Actual**: 60% (necesita 40% adicional)
 - **Funcionalidades Críticas Faltantes**: 3 módulos principales
 - **ROI Esperado**: Reducción 70% tiempo gestión administrativa
 
 ### **Stack Tecnológico Validado**
+
 - **Frontend**: Next.js 15 + TypeScript + Tailwind CSS + Radix UI
 - **Backend**: Next.js API Routes + Supabase PostgreSQL + NextAuth.js
 - **Testing**: Jest + React Testing Library + Playwright
@@ -29,36 +32,41 @@ Completar el panel administrativo de Pinteya e-commerce siguiendo patrones enter
 ## 🎯 **ANÁLISIS DE FUNCIONALIDADES FALTANTES**
 
 ### **Módulos Completamente Faltantes**
-| Módulo | Completitud | Impacto Operativo | Prioridad |
-|--------|-------------|-------------------|-----------|
-| **🚚 Logística** | 0% | 🔴 **CRÍTICO** | 🔥 **ALTA** |
-| **🔒 Roles/Permisos** | 0% | 🔴 **CRÍTICO** | 🟡 **MEDIA** |
-| **📧 Notificaciones** | 0% | 🟡 **MEDIO** | 🟢 **BAJA** |
+
+| Módulo                | Completitud | Impacto Operativo | Prioridad    |
+| --------------------- | ----------- | ----------------- | ------------ |
+| **🚚 Logística**      | 0%          | 🔴 **CRÍTICO**    | 🔥 **ALTA**  |
+| **🔒 Roles/Permisos** | 0%          | 🔴 **CRÍTICO**    | 🟡 **MEDIA** |
+| **📧 Notificaciones** | 0%          | 🟡 **MEDIO**      | 🟢 **BAJA**  |
 
 ### **Módulos Parcialmente Implementados**
-| Módulo | Completitud | Funcionalidades Faltantes | Prioridad |
-|--------|-------------|---------------------------|-----------|
-| **📦 Productos** | 85% | Variantes, Import/Export, Inventario | 🟡 **ALTA** |
-| **📋 Órdenes** | 75% | Estados avanzados, Fulfillment, Bulk | 🔥 **ALTA** |
-| **⚙️ Configuración** | 40% | Settings enterprise, SMTP, Impuestos | 🟡 **MEDIA** |
+
+| Módulo               | Completitud | Funcionalidades Faltantes            | Prioridad    |
+| -------------------- | ----------- | ------------------------------------ | ------------ |
+| **📦 Productos**     | 85%         | Variantes, Import/Export, Inventario | 🟡 **ALTA**  |
+| **📋 Órdenes**       | 75%         | Estados avanzados, Fulfillment, Bulk | 🔥 **ALTA**  |
+| **⚙️ Configuración** | 40%         | Settings enterprise, SMTP, Impuestos | 🟡 **MEDIA** |
 
 ---
 
 ## 🏗️ **ARQUITECTURA ENTERPRISE BASADA EN PATRONES PROBADOS**
 
 ### **Patrones de Spree Commerce Adoptados**
+
 - **Sistema de Permisos**: CanCanCan-style con roles granulares
 - **APIs REST**: Endpoints estandarizados con middleware enterprise
 - **Estados de Máquina**: Transiciones validadas para órdenes/envíos
 - **Audit Trail**: Registro completo de cambios administrativos
 
 ### **Patrones de WooCommerce Adoptados**
+
 - **Activity Panels**: Dashboard centralizado con métricas tiempo real
 - **Fulfillment System**: Gestión completa de envíos y tracking
 - **Bulk Operations**: Operaciones masivas con validación
 - **Stock Management**: Control avanzado de inventario
 
 ### **Patrones de Next.js Enterprise Adoptados**
+
 - **App Router**: Server Components con optimización performance
 - **Type Safety**: TypeScript strict con validación Zod
 - **Testing Strategy**: Jest + RTL + Playwright con >90% cobertura
@@ -68,10 +76,12 @@ Completar el panel administrativo de Pinteya e-commerce siguiendo patrones enter
 
 ## 📋 **FASES DE IMPLEMENTACIÓN PRIORIZADAS**
 
-### **FASE 1: MÓDULO DE LOGÍSTICA ENTERPRISE** 
+### **FASE 1: MÓDULO DE LOGÍSTICA ENTERPRISE**
+
 **⏱️ Duración**: 4 semanas | **🎯 Prioridad**: CRÍTICA | **📊 Completitud**: 0% → 100%
 
 #### **Semana 1: Fundamentos de Base de Datos**
+
 ```sql
 -- Esquema enterprise basado en Spree Commerce
 CREATE TABLE shipments (
@@ -135,27 +145,34 @@ INSERT INTO couriers (name, code, supported_services, coverage_areas) VALUES
 ```
 
 #### **Semana 2: APIs Enterprise**
+
 **Entregables**:
+
 - `/api/admin/logistics/route.ts` - Dashboard principal
 - `/api/admin/logistics/shipments/route.ts` - CRUD envíos
 - `/api/admin/logistics/tracking/[id]/route.ts` - Sistema tracking
 - `/api/admin/logistics/couriers/route.ts` - Gestión couriers
 
 #### **Semana 3: Componentes React Enterprise**
+
 **Entregables**:
+
 - `LogisticsDashboard` - Dashboard principal con métricas
 - `ShipmentForm` - Formulario creación envíos
 - `TrackingTimeline` - Timeline visual de tracking
 - `CourierManager` - Gestión de couriers
 
 #### **Semana 4: Testing e Integración**
+
 **Entregables**:
+
 - Suite testing completa (>90% cobertura)
 - Tests E2E con Playwright
 - Integración con sistema de órdenes
 - Documentación técnica completa
 
 **🎯 Criterios de Aceptación Fase 1**:
+
 - ✅ Dashboard logística con métricas tiempo real
 - ✅ CRUD completo envíos con validaciones enterprise
 - ✅ Sistema tracking con timeline visual
@@ -164,41 +181,53 @@ INSERT INTO couriers (name, code, supported_services, coverage_areas) VALUES
 - ✅ Performance <500ms carga inicial
 
 ### **FASE 2: GESTIÓN AVANZADA DE ÓRDENES**
+
 **⏱️ Duración**: 3 semanas | **🎯 Prioridad**: ALTA | **📊 Completitud**: 75% → 100%
 
 #### **Semana 5: Estados Avanzados y Máquina de Estados**
+
 **Entregables**:
+
 - Sistema estados máquina con 8 estados
 - APIs fulfillment automático
 - Audit trail completo
 - Validaciones de transición
 
 #### **Semana 6: Componentes Gestión Avanzada**
+
 **Entregables**:
+
 - `OrderDetailEnterprise` - Vista completa orden
 - `OrderStatusManager` - Gestión estados
 - `OrderTimeline` - Historial cambios
 - `BulkOrderOperations` - Operaciones masivas
 
 #### **Semana 7: Analytics y Reportes**
+
 **Entregables**:
+
 - Dashboard analytics órdenes
 - Reportes exportables (PDF/Excel)
 - Métricas performance
 - Alertas automáticas
 
 ### **FASE 3: OPERACIONES MASIVAS DE PRODUCTOS**
+
 **⏱️ Duración**: 2 semanas | **🎯 Prioridad**: ALTA | **📊 Completitud**: 85% → 100%
 
 #### **Semana 8: Import/Export Enterprise**
+
 **Entregables**:
+
 - Sistema import CSV con validación
 - Export masivo con filtros
 - Procesamiento por lotes
 - Manejo de errores robusto
 
 #### **Semana 9: Gestión Variantes e Inventario**
+
 **Entregables**:
+
 - `ProductVariantsManager` - Gestión variantes
 - Control stock tiempo real
 - Alertas stock bajo
@@ -209,6 +238,7 @@ INSERT INTO couriers (name, code, supported_services, coverage_areas) VALUES
 ## 📊 **MÉTRICAS DE ÉXITO ENTERPRISE**
 
 ### **Funcionales**
+
 - ✅ 100% funcionalidades CRUD operativas
 - ✅ Estados órdenes sincronizados automáticamente
 - ✅ Tracking tiempo real funcionando
@@ -216,18 +246,21 @@ INSERT INTO couriers (name, code, supported_services, coverage_areas) VALUES
 - ✅ Sistema permisos granular activo
 
 ### **Performance**
+
 - ✅ Dashboard principal < 500ms carga inicial
 - ✅ Listas paginadas < 300ms
 - ✅ Operaciones CRUD < 200ms
 - ✅ Búsquedas < 150ms
 
 ### **Testing**
+
 - ✅ >90% cobertura código
 - ✅ Tests E2E flujos críticos
 - ✅ Tests integración APIs
 - ✅ Tests performance automatizados
 
 ### **Seguridad**
+
 - ✅ Autenticación NextAuth.js robusta
 - ✅ Autorización basada en roles
 - ✅ Validación entrada todas APIs
@@ -238,6 +271,7 @@ INSERT INTO couriers (name, code, supported_services, coverage_areas) VALUES
 ## 🚀 **PRÓXIMOS PASOS INMEDIATOS**
 
 ### **Preparación Entorno (Día 1)**
+
 ```bash
 # Instalar dependencias adicionales
 pnpm add @tanstack/react-query recharts date-fns
@@ -251,6 +285,7 @@ npx supabase migration new logistics_module
 ```
 
 ### **Validaciones Previas**
+
 - ✅ Confirmar acceso APIs couriers argentinos
 - ✅ Validar esquemas base datos con equipo
 - ✅ Revisar compatibilidad stack actual
@@ -263,61 +298,64 @@ npx supabase migration new logistics_module
 ### **APIs Enterprise - Especificaciones Completas**
 
 #### **Logística Dashboard API**
+
 ```typescript
 // GET /api/admin/logistics
 interface LogisticsDashboardResponse {
   data: {
     stats: {
-      total_shipments: number;
-      pending_shipments: number;
-      in_transit_shipments: number;
-      delivered_shipments: number;
-      average_delivery_time: number; // días
-      on_time_delivery_rate: number; // porcentaje
-    };
-    recent_shipments: Shipment[];
-    alerts: LogisticsAlert[];
+      total_shipments: number
+      pending_shipments: number
+      in_transit_shipments: number
+      delivered_shipments: number
+      average_delivery_time: number // días
+      on_time_delivery_rate: number // porcentaje
+    }
+    recent_shipments: Shipment[]
+    alerts: LogisticsAlert[]
     performance_metrics: {
-      daily_shipments: Array<{ date: string; count: number }>;
-      carrier_performance: Array<{ carrier: string; on_time_rate: number }>;
-    };
-  };
+      daily_shipments: Array<{ date: string; count: number }>
+      carrier_performance: Array<{ carrier: string; on_time_rate: number }>
+    }
+  }
 }
 ```
 
 #### **Shipments Management API**
+
 ```typescript
 // POST /api/admin/logistics/shipments
 interface CreateShipmentRequest {
-  order_id: number;
-  carrier_id: number;
-  shipping_method: string;
+  order_id: number
+  carrier_id: number
+  shipping_method: string
   items: Array<{
-    order_item_id: number;
-    quantity: number;
-  }>;
-  pickup_address?: Address;
-  delivery_address: Address;
-  weight_kg?: number;
-  dimensions_cm?: string;
-  notes?: string;
+    order_item_id: number
+    quantity: number
+  }>
+  pickup_address?: Address
+  delivery_address: Address
+  weight_kg?: number
+  dimensions_cm?: string
+  notes?: string
 }
 
 // GET /api/admin/logistics/shipments
 interface GetShipmentsRequest {
-  page?: number;
-  limit?: number;
-  status?: ShipmentStatus;
-  carrier?: string;
-  date_from?: string;
-  date_to?: string;
-  search?: string; // tracking_number, order_id
+  page?: number
+  limit?: number
+  status?: ShipmentStatus
+  carrier?: string
+  date_from?: string
+  date_to?: string
+  search?: string // tracking_number, order_id
 }
 ```
 
 ### **Componentes React Enterprise - Arquitectura**
 
 #### **LogisticsDashboard Component**
+
 ```typescript
 // src/app/admin/logistics/page.tsx
 'use client';
@@ -356,6 +394,7 @@ export default function LogisticsDashboard() {
 ```
 
 #### **TrackingTimeline Component**
+
 ```typescript
 // src/components/admin/logistics/TrackingTimeline.tsx
 interface TrackingTimelineProps {
@@ -415,6 +454,7 @@ export function TrackingTimeline({ shipmentId, realTime = false }: TrackingTimel
 ### **Sistema de Estados - Order State Machine**
 
 #### **Estados y Transiciones**
+
 ```typescript
 // src/lib/order-state-machine.ts
 export enum OrderStatus {
@@ -425,7 +465,7 @@ export enum OrderStatus {
   DELIVERED = 'delivered',
   CANCELLED = 'cancelled',
   REFUNDED = 'refunded',
-  RETURNED = 'returned'
+  RETURNED = 'returned',
 }
 
 export class OrderStateMachine {
@@ -437,15 +477,15 @@ export class OrderStateMachine {
     [OrderStatus.DELIVERED]: [OrderStatus.RETURNED],
     [OrderStatus.CANCELLED]: [OrderStatus.REFUNDED],
     [OrderStatus.REFUNDED]: [],
-    [OrderStatus.RETURNED]: [OrderStatus.REFUNDED]
-  };
+    [OrderStatus.RETURNED]: [OrderStatus.REFUNDED],
+  }
 
   static canTransition(from: OrderStatus, to: OrderStatus): boolean {
-    return this.transitions[from]?.includes(to) ?? false;
+    return this.transitions[from]?.includes(to) ?? false
   }
 
   static getAvailableTransitions(currentStatus: OrderStatus): OrderStatus[] {
-    return this.transitions[currentStatus] ?? [];
+    return this.transitions[currentStatus] ?? []
   }
 }
 ```
@@ -453,6 +493,7 @@ export class OrderStateMachine {
 ### **Testing Strategy Enterprise**
 
 #### **Unit Tests**
+
 ```typescript
 // __tests__/admin/logistics/logistics-dashboard.test.tsx
 describe('LogisticsDashboard', () => {
@@ -484,23 +525,24 @@ describe('LogisticsDashboard', () => {
 ```
 
 #### **API Tests**
+
 ```typescript
 // __tests__/api/admin/logistics.test.ts
 describe('/api/admin/logistics', () => {
   it('should return logistics dashboard data', async () => {
-    const response = await GET(mockRequest());
-    const data = await response.json();
+    const response = await GET(mockRequest())
+    const data = await response.json()
 
-    expect(response.status).toBe(200);
-    expect(data.data.stats).toHaveProperty('total_shipments');
-    expect(data.data.recent_shipments).toBeInstanceOf(Array);
-  });
+    expect(response.status).toBe(200)
+    expect(data.data.stats).toHaveProperty('total_shipments')
+    expect(data.data.recent_shipments).toBeInstanceOf(Array)
+  })
 
   it('should handle authentication', async () => {
-    const response = await GET(mockRequestWithoutAuth());
-    expect(response.status).toBe(401);
-  });
-});
+    const response = await GET(mockRequestWithoutAuth())
+    expect(response.status).toBe(401)
+  })
+})
 ```
 
 ---
@@ -508,12 +550,14 @@ describe('/api/admin/logistics', () => {
 ## 🔗 **ENLACES Y REFERENCIAS**
 
 ### **Documentación Relacionada**
+
 - [Arquitectura Panel Admin v2.0](./ADMIN_PANEL_ARCHITECTURE_V2.md)
 - [Roadmap Implementación](./IMPLEMENTATION_ROADMAP_V2.md)
 - [Especificaciones APIs](./implementation/technical/API_SPECIFICATIONS.md)
 - [Estrategia Testing](./TESTING_STRATEGY.md)
 
 ### **Patrones Enterprise Adoptados**
+
 - **Spree Commerce**: Sistema permisos, APIs REST, estados máquina
 - **WooCommerce**: Activity panels, fulfillment, bulk operations
 - **Next.js Enterprise**: App Router, TypeScript strict, testing strategy
@@ -524,6 +568,3 @@ describe('/api/admin/logistics', () => {
 **Fecha**: 2 de Septiembre, 2025
 **Versión**: 1.0
 **Estado**: ✅ **LISTO PARA IMPLEMENTACIÓN INMEDIATA**
-
-
-

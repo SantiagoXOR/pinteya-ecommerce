@@ -71,8 +71,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         ) : (
           <>
             <AdvancedErrorBoundary
-              level="page"
-              context="RootApplication"
+              level='page'
+              context='RootApplication'
               enableRetry={true}
               maxRetries={3}
               enableAutoRecovery={true}
@@ -82,58 +82,58 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 autoStart={process.env.NODE_ENV === 'production'}
                 enableErrorBoundary={true}
               >
-              <QueryClientProvider>
-                <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
-                  <ReduxProvider>
-                    <CartPersistenceProvider>
-                      <AnalyticsProvider>
-                        <CartModalProvider>
-                          <PreviewSliderProvider>
-                            {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
-                            {!isAdminRoute && <Header />}
+                <QueryClientProvider>
+                  <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
+                    <ReduxProvider>
+                      <CartPersistenceProvider>
+                        <AnalyticsProvider>
+                          <CartModalProvider>
+                            <PreviewSliderProvider>
+                              {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
+                              {!isAdminRoute && <Header />}
 
-                            {/* CartSidebarModal solo para rutas públicas */}
-                            {!isAdminRoute && <CartSidebarModal />}
-                            <PreviewSliderModal />
-                            <ScrollToTop />
+                              {/* CartSidebarModal solo para rutas públicas */}
+                              {!isAdminRoute && <CartSidebarModal />}
+                              <PreviewSliderModal />
+                              <ScrollToTop />
 
-                            {/* Contenido principal */}
-                            {children}
+                              {/* Contenido principal */}
+                              {children}
 
-                            {/* Footer solo para rutas públicas */}
-                            {!isAdminRoute && <Footer />}
+                              {/* Footer solo para rutas públicas */}
+                              {!isAdminRoute && <Footer />}
 
-                            {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
-                            {/* <div className="md:hidden">
+                              {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
+                              {/* <div className="md:hidden">
                       <BottomNavigation />
                     </div> */}
 
-                            {/* Botón de carrito flotante - Solo en rutas públicas */}
-                            {!isAdminRoute && <FloatingCartButton />}
+                              {/* Botón de carrito flotante - Solo en rutas públicas */}
+                              {!isAdminRoute && <FloatingCartButton />}
 
-                            {/* Notificación del carrito - Solo en rutas públicas */}
-                            {!isAdminRoute && (
-                              <CartNotification
-                                show={notification.show}
-                                productName={notification.productName}
-                                productImage={notification.productImage}
-                                onClose={hideNotification}
-                              />
-                            )}
+                              {/* Notificación del carrito - Solo en rutas públicas */}
+                              {!isAdminRoute && (
+                                <CartNotification
+                                  show={notification.show}
+                                  productName={notification.productName}
+                                  productImage={notification.productImage}
+                                  onClose={hideNotification}
+                                />
+                              )}
 
-                            {/* Toaster para notificaciones */}
-                            <Toaster />
-                          </PreviewSliderProvider>
-                        </CartModalProvider>
-                      </AnalyticsProvider>
-                    </CartPersistenceProvider>
-                  </ReduxProvider>
-                </NetworkErrorProvider>
-              </QueryClientProvider>
-            </MonitoringProvider>
-          </AdvancedErrorBoundary>
-        </>
-      )}
+                              {/* Toaster para notificaciones */}
+                              <Toaster />
+                            </PreviewSliderProvider>
+                          </CartModalProvider>
+                        </AnalyticsProvider>
+                      </CartPersistenceProvider>
+                    </ReduxProvider>
+                  </NetworkErrorProvider>
+                </QueryClientProvider>
+              </MonitoringProvider>
+            </AdvancedErrorBoundary>
+          </>
+        )}
       </>
     )
   }

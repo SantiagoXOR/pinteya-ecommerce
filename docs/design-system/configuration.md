@@ -42,21 +42,18 @@ const nextConfig = {
     optimizeCss: true,
     optimizePackageImports: ['@/components/ui'],
   },
-  
+
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  
+
   // Image optimization for design assets
   images: {
-    domains: [
-      'aakzspzfulgftqlgwkpb.supabase.co',
-      'localhost',
-    ],
+    domains: ['aakzspzfulgftqlgwkpb.supabase.co', 'localhost'],
     formats: ['image/webp', 'image/avif'],
   },
-  
+
   // Headers for design assets
   async headers() {
     return [
@@ -69,11 +66,11 @@ const nextConfig = {
           },
         ],
       },
-    ];
+    ]
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
 ```
 
 ---
@@ -88,11 +85,11 @@ export const designTokens = {
   colors: {
     // Brand Colors
     brand: {
-      primary: '#f27a1d',    // blaze-orange-500
-      secondary: '#00f269',  // fun-green-500
-      accent: '#f9a007',     // bright-sun-500
+      primary: '#f27a1d', // blaze-orange-500
+      secondary: '#00f269', // fun-green-500
+      accent: '#f9a007', // bright-sun-500
     },
-    
+
     // Semantic Colors
     semantic: {
       success: '#22ad5c',
@@ -100,7 +97,7 @@ export const designTokens = {
       warning: '#fbbf24',
       info: '#3b82f6',
     },
-    
+
     // Neutral Colors
     neutral: {
       white: '#ffffff',
@@ -116,7 +113,7 @@ export const designTokens = {
       },
     },
   },
-  
+
   // Typography Scale
   typography: {
     fontFamily: {
@@ -125,11 +122,11 @@ export const designTokens = {
     },
     fontSize: {
       '2xs': ['10px', '17px'],
-      'xs': ['12px', '20px'],
-      'sm': ['14px', '22px'],
-      'base': ['16px', '24px'],
-      'lg': ['18px', '24px'],
-      'xl': ['20px', '24px'],
+      xs: ['12px', '20px'],
+      sm: ['14px', '22px'],
+      base: ['16px', '24px'],
+      lg: ['18px', '24px'],
+      xl: ['20px', '24px'],
       '2xl': ['24px', '34px'],
       '3xl': ['30px', '38px'],
       '4xl': ['36px', '48px'],
@@ -144,7 +141,7 @@ export const designTokens = {
       bold: 700,
     },
   },
-  
+
   // Spacing Scale
   spacing: {
     0: '0px',
@@ -161,7 +158,7 @@ export const designTokens = {
     20: '80px',
     24: '96px',
   },
-  
+
   // Border Radius
   borderRadius: {
     none: '0px',
@@ -176,7 +173,7 @@ export const designTokens = {
     card: '10px',
     modal: '12px',
   },
-  
+
   // Shadows
   boxShadow: {
     1: '0px 1px 2px 0px rgba(166, 175, 195, 0.25)',
@@ -184,7 +181,7 @@ export const designTokens = {
     3: '0px 2px 16px 0px rgba(13, 10, 44, 0.12)',
     input: 'inset 0 0 0 2px #fc9d04',
   },
-  
+
   // Animations
   animation: {
     duration: {
@@ -200,7 +197,7 @@ export const designTokens = {
       inOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
     },
   },
-};
+}
 ```
 
 ### Aplicar Tokens a Tailwind
@@ -223,7 +220,7 @@ const config: Config = {
       transitionTimingFunction: designTokens.animation.easing,
     },
   },
-};
+}
 ```
 
 ---
@@ -239,30 +236,30 @@ const config: Config = {
   --ds-color-primary: #fc9d04;
   --ds-color-primary-hover: #ef7d00;
   --ds-color-primary-active: #b95004;
-  
+
   --ds-color-secondary: #2c5f5d;
   --ds-color-accent: #ffd448;
-  
+
   --ds-spacing-unit: 4px;
   --ds-border-radius-base: 5px;
   --ds-animation-duration: 200ms;
   --ds-animation-easing: cubic-bezier(0, 0, 0.2, 1);
-  
+
   /* Component specific variables */
   --button-height-sm: 32px;
   --button-height-md: 36px;
   --button-height-lg: 40px;
   --button-height-xl: 48px;
-  
+
   --card-padding: 24px;
   --card-border-radius: 10px;
-  
+
   --input-height: 36px;
   --input-border-radius: 4px;
 }
 
 /* Dark mode support (future) */
-[data-theme="dark"] {
+[data-theme='dark'] {
   --ds-color-primary: #ffd448;
   --ds-color-background: #1f2937;
   --ds-color-text: #f9fafb;
@@ -280,33 +277,33 @@ export const componentConfig = {
     enableRipple: true,
     enableHapticFeedback: false,
   },
-  
+
   card: {
     defaultVariant: 'default' as const,
     defaultPadding: 'md' as const,
     enableHover: true,
     hoverEffect: 'lift' as const,
   },
-  
+
   input: {
     defaultSize: 'md' as const,
     enableFloatingLabel: false,
     enableValidationIcons: true,
   },
-  
+
   badge: {
     defaultSize: 'md' as const,
     enableAnimations: true,
     defaultAnimation: 'none' as const,
   },
-  
+
   modal: {
     enableBackdropBlur: true,
     enableEscapeKey: true,
     enableClickOutside: true,
     animationDuration: 200,
   },
-};
+}
 ```
 
 ---
@@ -323,12 +320,12 @@ export const developmentConfig = {
   enableHotReload: true,
   enableSourceMaps: true,
   enablePerformanceMonitoring: false,
-  
+
   // Design System specific
   enableDesignTokensInspector: true,
   enableComponentOutlines: false,
   enableAccessibilityHighlights: true,
-};
+}
 ```
 
 ### Staging
@@ -341,12 +338,12 @@ export const stagingConfig = {
   enableHotReload: false,
   enableSourceMaps: true,
   enablePerformanceMonitoring: true,
-  
+
   // Design System specific
   enableDesignTokensInspector: false,
   enableComponentOutlines: false,
   enableAccessibilityHighlights: false,
-};
+}
 ```
 
 ### Producción
@@ -359,18 +356,18 @@ export const productionConfig = {
   enableHotReload: false,
   enableSourceMaps: false,
   enablePerformanceMonitoring: true,
-  
+
   // Design System specific
   enableDesignTokensInspector: false,
   enableComponentOutlines: false,
   enableAccessibilityHighlights: false,
-  
+
   // Optimizations
   enableTreeShaking: true,
   enableCodeSplitting: true,
   enableImageOptimization: true,
   enableCSSMinification: true,
-};
+}
 ```
 
 ---
@@ -383,19 +380,19 @@ export const productionConfig = {
 // lib/breakpoints.ts
 export const breakpoints = {
   // Mobile first approach
-  xs: '320px',   // Móviles muy pequeños
-  sm: '640px',   // Móviles grandes
-  md: '768px',   // Tablets
-  lg: '1024px',  // Desktop pequeño
-  xl: '1280px',  // Desktop grande
+  xs: '320px', // Móviles muy pequeños
+  sm: '640px', // Móviles grandes
+  md: '768px', // Tablets
+  lg: '1024px', // Desktop pequeño
+  xl: '1280px', // Desktop grande
   '2xl': '1536px', // Desktop extra grande
-  
+
   // Custom breakpoints para Pinteya
   mobile: '640px',
   tablet: '768px',
   desktop: '1024px',
   wide: '1280px',
-};
+}
 
 // Responsive utilities
 export const responsive = {
@@ -408,7 +405,7 @@ export const responsive = {
     xl: '1280px',
     '2xl': '1536px',
   },
-  
+
   // Grid columns
   grid: {
     xs: 1,
@@ -418,7 +415,7 @@ export const responsive = {
     xl: 5,
     '2xl': 6,
   },
-  
+
   // Typography scale per breakpoint
   typography: {
     xs: {
@@ -434,7 +431,7 @@ export const responsive = {
       body: ['16px', '24px'],
     },
   },
-};
+}
 ```
 
 ### Media Queries Helper
@@ -445,16 +442,16 @@ export const mediaQueries = {
   mobile: `@media (max-width: ${breakpoints.sm})`,
   tablet: `@media (min-width: ${breakpoints.sm}) and (max-width: ${breakpoints.lg})`,
   desktop: `@media (min-width: ${breakpoints.lg})`,
-  
+
   // Touch devices
   touch: '@media (hover: none) and (pointer: coarse)',
   mouse: '@media (hover: hover) and (pointer: fine)',
-  
+
   // Accessibility
   reducedMotion: '@media (prefers-reduced-motion: reduce)',
   highContrast: '@media (prefers-contrast: high)',
   darkMode: '@media (prefers-color-scheme: dark)',
-};
+}
 ```
 
 ---
@@ -471,13 +468,13 @@ export const themes = {
     colors: {
       background: '#ffffff',
       foreground: '#1f2937',
-      primary: '#f27a1d',    // blaze-orange-500
-      secondary: '#00f269',  // fun-green-500
+      primary: '#f27a1d', // blaze-orange-500
+      secondary: '#00f269', // fun-green-500
       muted: '#f3f4f6',
-      accent: '#f9a007',     // bright-sun-500
+      accent: '#f9a007', // bright-sun-500
       destructive: '#f23030',
-      success: '#00f269',    // fun-green-500
-      warning: '#f9a007',    // bright-sun-500
+      success: '#00f269', // fun-green-500
+      warning: '#f9a007', // bright-sun-500
       info: '#3b82f6',
     },
   },
@@ -487,13 +484,13 @@ export const themes = {
     colors: {
       background: '#1f2937',
       foreground: '#f9fafb',
-      primary: '#f9be78',    // blaze-orange-300
-      secondary: '#69ffb2',  // fun-green-300
+      primary: '#f9be78', // blaze-orange-300
+      secondary: '#69ffb2', // fun-green-300
       muted: '#374151',
-      accent: '#ffd549',     // bright-sun-300
+      accent: '#ffd549', // bright-sun-300
       destructive: '#f87171',
-      success: '#69ffb2',    // fun-green-300
-      warning: '#ffd549',    // bright-sun-300
+      success: '#69ffb2', // fun-green-300
+      warning: '#ffd549', // bright-sun-300
       info: '#60a5fa',
     },
   },
@@ -504,17 +501,17 @@ export const themes = {
     colors: {
       background: '#fef7ee', // blaze-orange-50
       foreground: '#411709', // blaze-orange-950
-      primary: '#f27a1d',    // blaze-orange-500
-      secondary: '#00f269',  // fun-green-500
-      muted: '#feeed6',      // blaze-orange-100
-      accent: '#f9a007',     // bright-sun-500
+      primary: '#f27a1d', // blaze-orange-500
+      secondary: '#00f269', // fun-green-500
+      muted: '#feeed6', // blaze-orange-100
+      accent: '#f9a007', // bright-sun-500
       destructive: '#f23030',
-      success: '#00f269',    // fun-green-500
-      warning: '#f9a007',    // bright-sun-500
+      success: '#00f269', // fun-green-500
+      warning: '#f9a007', // bright-sun-500
       info: '#3b82f6',
     },
   },
-};
+}
 ```
 
 ### Theme Provider
@@ -542,18 +539,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Apply theme to document
     const root = document.documentElement
     const themeColors = themes[theme].colors
-    
+
     Object.entries(themeColors).forEach(([key, value]) => {
       root.style.setProperty(`--color-${key}`, value)
     })
-    
+
     root.setAttribute('data-theme', theme)
   }, [theme])
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, themes }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme, setTheme, themes }}>{children}</ThemeContext.Provider>
   )
 }
 
@@ -588,7 +583,7 @@ module.exports = {
       },
     },
   },
-};
+}
 ```
 
 ### CSS Optimization
@@ -605,12 +600,9 @@ module.exports = {
       },
     }),
   },
-};
+}
 ```
 
 ---
 
-*Última actualización: Junio 2025*
-
-
-
+_Última actualización: Junio 2025_

@@ -34,6 +34,8 @@ import {
   hasDiscount,
 } from '@/lib/api/product-variants'
 
+console.log('🎯 ShopDetailModal - Componente cargado')
+
 // ===================================
 // TIPOS
 // ===================================
@@ -376,6 +378,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   onAddToCart,
   onAddToWishlist,
 }) => {
+  console.log('🎯 ShopDetailModal - Renderizando con props:', {
+    productId: product?.id,
+    open,
+    hasOnOpenChange: !!onOpenChange,
+  })
+
   // Debug: Verificar que onOpenChange se recibe correctamente
   console.log('ShopDetailModal - onOpenChange recibido:', typeof onOpenChange, onOpenChange)
   const { state, actions, selectors } = useShopDetailsReducer()

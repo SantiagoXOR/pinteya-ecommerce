@@ -286,15 +286,18 @@ export function useSearchConsolidated(
 
   const selectSuggestion = useCallback(
     (suggestion: SearchSuggestion) => {
+      // Si hay un callback externo, dejarlo manejar la navegación
+      if (onSuggestionSelect) {
+        onSuggestionSelect(suggestion)
+        return
+      }
+
+      // Solo navegar automáticamente si NO hay callback externo
       if (suggestion.type === 'product' && suggestion.productId) {
         const productUrl = `/products/${suggestion.productId}`
         router.push(productUrl)
       } else {
         executeSearch(suggestion.text)
-      }
-
-      if (onSuggestionSelect) {
-        onSuggestionSelect(suggestion)
       }
     },
     [router, executeSearch, onSuggestionSelect]

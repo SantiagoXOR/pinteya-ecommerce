@@ -5,34 +5,34 @@
 
 const mockUseSession = jest.fn(() => ({
   data: null,
-  status: 'unauthenticated'
-}));
+  status: 'unauthenticated',
+}))
 
-const mockSignIn = jest.fn(() => Promise.resolve());
-const mockSignOut = jest.fn(() => Promise.resolve());
-const mockGetProviders = jest.fn(() => Promise.resolve({}));
+const mockSignIn = jest.fn(() => Promise.resolve())
+const mockSignOut = jest.fn(() => Promise.resolve())
+const mockGetProviders = jest.fn(() => Promise.resolve({}))
 
 module.exports = {
   useSession: mockUseSession,
   signIn: mockSignIn,
   signOut: mockSignOut,
   getProviders: mockGetProviders,
-  
+
   // Helpers para tests
-  __setMockSession: (session) => {
-    mockUseSession.mockReturnValue(session);
+  __setMockSession: session => {
+    mockUseSession.mockReturnValue(session)
   },
-  
+
   __resetMocks: () => {
-    mockUseSession.mockReset();
-    mockSignIn.mockReset();
-    mockSignOut.mockReset();
-    mockGetProviders.mockReset();
-    
+    mockUseSession.mockReset()
+    mockSignIn.mockReset()
+    mockSignOut.mockReset()
+    mockGetProviders.mockReset()
+
     // Restaurar valores por defecto
     mockUseSession.mockReturnValue({
       data: null,
-      status: 'unauthenticated'
-    });
-  }
-};
+      status: 'unauthenticated',
+    })
+  },
+}

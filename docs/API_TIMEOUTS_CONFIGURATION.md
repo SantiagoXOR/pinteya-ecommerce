@@ -52,17 +52,17 @@ API_TIMEOUT_IMAGE=90000        # 1.5 minutos
 
 ```typescript
 const DEFAULT_TIMEOUTS = {
-  default: 30000,        // 30 segundos
-  database: 15000,       // 15 segundos
-  external: 45000,       // 45 segundos
-  upload: 120000,        // 2 minutos
-  payment: 60000,        // 1 minuto
-  auth: 20000,           // 20 segundos
-  admin: 45000,          // 45 segundos
-  webhook: 10000,        // 10 segundos
-  email: 30000,          // 30 segundos
-  image: 90000,          // 1.5 minutos
-} as const;
+  default: 30000, // 30 segundos
+  database: 15000, // 15 segundos
+  external: 45000, // 45 segundos
+  upload: 120000, // 2 minutos
+  payment: 60000, // 1 minuto
+  auth: 20000, // 20 segundos
+  admin: 45000, // 45 segundos
+  webhook: 10000, // 10 segundos
+  email: 30000, // 30 segundos
+  image: 90000, // 1.5 minutos
+} as const
 ```
 
 ## 🚀 Uso
@@ -70,39 +70,33 @@ const DEFAULT_TIMEOUTS = {
 ### Configuración Básica
 
 ```typescript
-import { API_TIMEOUTS, getTimeout } from '@/lib/config/api-timeouts';
+import { API_TIMEOUTS, getTimeout } from '@/lib/config/api-timeouts'
 
 // Usar timeout específico
-const dbTimeout = getTimeout('database');
-const paymentTimeout = getTimeout('payment');
+const dbTimeout = getTimeout('database')
+const paymentTimeout = getTimeout('payment')
 
 // Usar configuración directa
-const uploadTimeout = API_TIMEOUTS.upload;
+const uploadTimeout = API_TIMEOUTS.upload
 ```
 
 ### Operaciones de Base de Datos
 
 ```typescript
-import { withDatabaseTimeout } from '@/lib/config/api-timeouts';
+import { withDatabaseTimeout } from '@/lib/config/api-timeouts'
 
 export async function GET(request: NextRequest) {
   try {
-    const result = await withDatabaseTimeout(async (signal) => {
-      return await supabase
-        .from('products')
-        .select('*')
-        .abortSignal(signal); // Pasar signal para cancelación
-    }, API_TIMEOUTS.database);
+    const result = await withDatabaseTimeout(async signal => {
+      return await supabase.from('products').select('*').abortSignal(signal) // Pasar signal para cancelación
+    }, API_TIMEOUTS.database)
 
-    return NextResponse.json(result);
+    return NextResponse.json(result)
   } catch (error) {
     if (error.name === 'AbortError') {
-      return NextResponse.json(
-        { error: 'Database operation timed out' },
-        { status: 408 }
-      );
+      return NextResponse.json({ error: 'Database operation timed out' }, { status: 408 })
     }
-    throw error;
+    throw error
   }
 }
 ```
@@ -110,47 +104,47 @@ export async function GET(request: NextRequest) {
 ### Operaciones Externas
 
 ```typescript
-import { withExternalTimeout, fetchWithTimeout } from '@/lib/config/api-timeouts';
+import { withExternalTimeout, fetchWithTimeout } from '@/lib/config/api-timeouts'
 
 // Con wrapper de fetch
 const response = await fetchWithTimeout('https://api.mercadopago.com/v1/payments', {
   method: 'POST',
   body: JSON.stringify(paymentData),
-  timeout: API_TIMEOUTS.payment
-});
+  timeout: API_TIMEOUTS.payment,
+})
 
 // Con wrapper genérico
-const result = await withExternalTimeout(async (signal) => {
-  return await mercadoPagoClient.createPayment(paymentData, { signal });
-}, API_TIMEOUTS.payment);
+const result = await withExternalTimeout(async signal => {
+  return await mercadoPagoClient.createPayment(paymentData, { signal })
+}, API_TIMEOUTS.payment)
 ```
 
 ### Configuración por Endpoint
 
 ```typescript
-import { getEndpointTimeouts } from '@/lib/config/api-timeouts';
+import { getEndpointTimeouts } from '@/lib/config/api-timeouts'
 
 export async function POST(request: NextRequest) {
-  const timeouts = getEndpointTimeouts('/api/products');
-  
+  const timeouts = getEndpointTimeouts('/api/products')
+
   // timeouts.connection: 5000ms
   // timeouts.request: 15000ms (database timeout)
   // timeouts.response: 10000ms
   // timeouts.total: 30000ms (default timeout)
-  
+
   // Usar timeouts específicos según la fase
-  const controller = new AbortController();
+  const controller = new AbortController()
   const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, timeouts.total);
-  
+    controller.abort()
+  }, timeouts.total)
+
   try {
-    const result = await processRequest(controller.signal);
-    clearTimeout(timeoutId);
-    return NextResponse.json(result);
+    const result = await processRequest(controller.signal)
+    clearTimeout(timeoutId)
+    return NextResponse.json(result)
   } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
+    clearTimeout(timeoutId)
+    throw error
   }
 }
 ```
@@ -162,30 +156,30 @@ export async function POST(request: NextRequest) {
 ```typescript
 export const ENDPOINT_TIMEOUTS: Record<string, EndpointTimeouts> = {
   '/api/products': {
-    connection: 5000,      // Tiempo para establecer conexión
-    request: 15000,        // Tiempo para procesar request (DB)
-    response: 10000,       // Tiempo para enviar respuesta
-    total: 30000,          // Tiempo total máximo
+    connection: 5000, // Tiempo para establecer conexión
+    request: 15000, // Tiempo para procesar request (DB)
+    response: 10000, // Tiempo para enviar respuesta
+    total: 30000, // Tiempo total máximo
   },
   '/api/orders': {
     connection: 5000,
-    request: 15000,        // Operaciones de DB
-    response: 15000,       // Respuestas más complejas
+    request: 15000, // Operaciones de DB
+    response: 15000, // Respuestas más complejas
     total: 30000,
   },
   '/api/payments': {
-    connection: 10000,     // Conexiones externas más lentas
-    request: 60000,        // Operaciones de pago
-    response: 20000,       // Respuestas de pago
-    total: 45000,          // Timeout externo
+    connection: 10000, // Conexiones externas más lentas
+    request: 60000, // Operaciones de pago
+    response: 20000, // Respuestas de pago
+    total: 45000, // Timeout externo
   },
   '/api/webhooks': {
-    connection: 2000,      // Conexiones rápidas
-    request: 10000,        // Procesamiento rápido
-    response: 3000,        // Respuestas inmediatas
-    total: 10000,          // Timeout de webhook
-  }
-};
+    connection: 2000, // Conexiones rápidas
+    request: 10000, // Procesamiento rápido
+    response: 3000, // Respuestas inmediatas
+    total: 10000, // Timeout de webhook
+  },
+}
 ```
 
 ### Matching de Rutas
@@ -206,20 +200,20 @@ getEndpointTimeouts('/api/unknown') // → configuración por defecto
 ### createTimeoutController
 
 ```typescript
-import { createTimeoutController } from '@/lib/config/api-timeouts';
+import { createTimeoutController } from '@/lib/config/api-timeouts'
 
-const { controller, timeoutId } = createTimeoutController(5000);
+const { controller, timeoutId } = createTimeoutController(5000)
 
 try {
-  const result = await someAsyncOperation(controller.signal);
-  clearTimeout(timeoutId);
-  return result;
+  const result = await someAsyncOperation(controller.signal)
+  clearTimeout(timeoutId)
+  return result
 } catch (error) {
-  clearTimeout(timeoutId);
+  clearTimeout(timeoutId)
   if (error.name === 'AbortError') {
-    throw new Error('Operation timed out');
+    throw new Error('Operation timed out')
   }
-  throw error;
+  throw error
 }
 ```
 
@@ -231,16 +225,16 @@ function withCustomTimeout<T>(
   timeout: number,
   errorMessage?: string
 ): Promise<T> {
-  const { controller, timeoutId } = createTimeoutController(timeout);
-  
+  const { controller, timeoutId } = createTimeoutController(timeout)
+
   return operation(controller.signal)
     .catch(error => {
       if (error.name === 'AbortError') {
-        throw new Error(errorMessage || `Operation timed out after ${timeout}ms`);
+        throw new Error(errorMessage || `Operation timed out after ${timeout}ms`)
       }
-      throw error;
+      throw error
     })
-    .finally(() => clearTimeout(timeoutId));
+    .finally(() => clearTimeout(timeoutId))
 }
 ```
 
@@ -257,24 +251,21 @@ npm test -- __tests__/lib/api-timeouts.test.ts
 ```typescript
 describe('API Timeouts', () => {
   it('should timeout slow operations', async () => {
-    const slowOperation = (signal: AbortSignal) => 
-      new Promise(resolve => setTimeout(resolve, 1000));
-    
-    await expect(
-      withDatabaseTimeout(slowOperation, 100)
-    ).rejects.toThrow('timeout');
-  });
-  
+    const slowOperation = (signal: AbortSignal) => new Promise(resolve => setTimeout(resolve, 1000))
+
+    await expect(withDatabaseTimeout(slowOperation, 100)).rejects.toThrow('timeout')
+  })
+
   it('should use environment variables', () => {
-    process.env.API_TIMEOUT_DATABASE = '25000';
-    
+    process.env.API_TIMEOUT_DATABASE = '25000'
+
     // Re-import para obtener nuevos valores
-    jest.resetModules();
-    const { API_TIMEOUTS } = require('@/lib/config/api-timeouts');
-    
-    expect(API_TIMEOUTS.database).toBe(25000);
-  });
-});
+    jest.resetModules()
+    const { API_TIMEOUTS } = require('@/lib/config/api-timeouts')
+
+    expect(API_TIMEOUTS.database).toBe(25000)
+  })
+})
 ```
 
 ## 📈 Monitoreo y Métricas
@@ -294,8 +285,8 @@ if (timeoutRate > 0.05) {
   sendAlert('High timeout rate', {
     endpoint,
     rate: timeoutRate,
-    timeframe: '5m'
-  });
+    timeframe: '5m',
+  })
 }
 
 // Alerta cuando operaciones críticas hacen timeout
@@ -303,8 +294,8 @@ if (endpoint.includes('/api/payments/') && isTimeout) {
   sendAlert('Payment operation timeout', {
     endpoint,
     timeout: timeoutValue,
-    severity: 'critical'
-  });
+    severity: 'critical',
+  })
 }
 ```
 
@@ -314,15 +305,15 @@ if (endpoint.includes('/api/payments/') && isTimeout) {
 
 ```typescript
 function getDynamicTimeout(operation: string, complexity: number): number {
-  const baseTimeout = API_TIMEOUTS[operation as keyof typeof API_TIMEOUTS];
-  const complexityMultiplier = Math.min(complexity / 10, 3); // Max 3x
-  
-  return Math.floor(baseTimeout * (1 + complexityMultiplier));
+  const baseTimeout = API_TIMEOUTS[operation as keyof typeof API_TIMEOUTS]
+  const complexityMultiplier = Math.min(complexity / 10, 3) // Max 3x
+
+  return Math.floor(baseTimeout * (1 + complexityMultiplier))
 }
 
 // Uso
-const timeout = getDynamicTimeout('database', queryComplexity);
-const result = await withDatabaseTimeout(operation, timeout);
+const timeout = getDynamicTimeout('database', queryComplexity)
+const result = await withDatabaseTimeout(operation, timeout)
 ```
 
 ### Retry con Backoff
@@ -333,24 +324,22 @@ async function withRetryAndTimeout<T>(
   maxRetries: number = 3,
   baseTimeout: number = API_TIMEOUTS.default
 ): Promise<T> {
-  let lastError: Error;
-  
+  let lastError: Error
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const timeout = baseTimeout * Math.pow(2, attempt - 1); // Exponential backoff
-      return await withCustomTimeout(operation, timeout);
+      const timeout = baseTimeout * Math.pow(2, attempt - 1) // Exponential backoff
+      return await withCustomTimeout(operation, timeout)
     } catch (error) {
-      lastError = error as Error;
-      if (attempt === maxRetries) break;
-      
+      lastError = error as Error
+      if (attempt === maxRetries) break
+
       // Esperar antes del siguiente intento
-      await new Promise(resolve => 
-        setTimeout(resolve, 1000 * attempt)
-      );
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
     }
   }
-  
-  throw lastError!;
+
+  throw lastError!
 }
 ```
 
@@ -359,46 +348,48 @@ async function withRetryAndTimeout<T>(
 ### Problemas Comunes
 
 1. **Timeouts muy cortos**
+
    ```bash
    # Aumentar timeout específico
    API_TIMEOUT_DATABASE=25000
    ```
 
 2. **Operaciones lentas**
+
    ```typescript
    // Usar timeout específico para operaciones complejas
-   const complexTimeout = API_TIMEOUTS.upload; // 2 minutos
-   await withDatabaseTimeout(complexQuery, complexTimeout);
+   const complexTimeout = API_TIMEOUTS.upload // 2 minutos
+   await withDatabaseTimeout(complexQuery, complexTimeout)
    ```
 
 3. **Timeouts en cascada**
    ```typescript
    // Configurar timeouts jerárquicos
-   const totalTimeout = API_TIMEOUTS.external;
-   const operationTimeout = totalTimeout * 0.8; // 80% del total
+   const totalTimeout = API_TIMEOUTS.external
+   const operationTimeout = totalTimeout * 0.8 // 80% del total
    ```
 
 ### Debugging
 
 ```typescript
 // Habilitar logs de timeout
-const DEBUG_TIMEOUTS = process.env.DEBUG_TIMEOUTS === 'true';
+const DEBUG_TIMEOUTS = process.env.DEBUG_TIMEOUTS === 'true'
 
 if (DEBUG_TIMEOUTS) {
-  console.log(`Operation timeout: ${timeout}ms`);
-  console.time('operation');
+  console.log(`Operation timeout: ${timeout}ms`)
+  console.time('operation')
 }
 
 try {
-  const result = await operation();
-  if (DEBUG_TIMEOUTS) console.timeEnd('operation');
-  return result;
+  const result = await operation()
+  if (DEBUG_TIMEOUTS) console.timeEnd('operation')
+  return result
 } catch (error) {
   if (DEBUG_TIMEOUTS) {
-    console.timeEnd('operation');
-    console.log('Operation failed:', error.message);
+    console.timeEnd('operation')
+    console.log('Operation failed:', error.message)
   }
-  throw error;
+  throw error
 }
 ```
 
@@ -415,6 +406,3 @@ try {
 **Última actualización**: 2025-01-11  
 **Versión**: 1.0.0  
 **Mantenedor**: Equipo de Desarrollo Pinteya
-
-
-

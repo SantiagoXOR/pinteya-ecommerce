@@ -23,23 +23,24 @@ Se ha actualizado completamente el componente `ProductCard` siguiendo el wirefra
 
 ## 🧩 Props del Componente
 
-| Prop | Tipo | Descripción | Requerido |
-|------|------|-------------|-----------|
-| `image` | `string` | URL o path de la imagen | ❌ |
-| `title` | `string` | Nombre del producto | ❌ |
-| `price` | `number` | Precio actual | ❌ |
-| `originalPrice` | `number` | Precio tachado (opcional) | ❌ |
-| `discount` | `string` | Texto del descuento (ej: "25%") | ❌ |
-| `badge` | `string` | Texto de envío/promo destacada | ❌ |
-| `cta` | `string` | Texto del botón CTA | ❌ |
-| `stock` | `number` | Cantidad en stock | ❌ |
-| `productId` | `number \| string` | ID para enlace al producto | ❌ |
-| `onAddToCart` | `() => void` | Callback al agregar al carrito | ❌ |
-| `showCartAnimation` | `boolean` | Mostrar animación de carga | ❌ |
+| Prop                | Tipo               | Descripción                     | Requerido |
+| ------------------- | ------------------ | ------------------------------- | --------- |
+| `image`             | `string`           | URL o path de la imagen         | ❌        |
+| `title`             | `string`           | Nombre del producto             | ❌        |
+| `price`             | `number`           | Precio actual                   | ❌        |
+| `originalPrice`     | `number`           | Precio tachado (opcional)       | ❌        |
+| `discount`          | `string`           | Texto del descuento (ej: "25%") | ❌        |
+| `badge`             | `string`           | Texto de envío/promo destacada  | ❌        |
+| `cta`               | `string`           | Texto del botón CTA             | ❌        |
+| `stock`             | `number`           | Cantidad en stock               | ❌        |
+| `productId`         | `number \| string` | ID para enlace al producto      | ❌        |
+| `onAddToCart`       | `() => void`       | Callback al agregar al carrito  | ❌        |
+| `showCartAnimation` | `boolean`          | Mostrar animación de carga      | ❌        |
 
 ## 🎨 Características Visuales
 
 ### Colores y Estilos
+
 - **Fondo**: Blanco puro (`bg-white`) para máximo contraste
 - **Badge de descuento**: Naranja Blaze (`blaze-orange-500`) con texto "Descuento especial"
 - **Badge de envío**: Verde Fun (`fun-green-500`)
@@ -47,12 +48,14 @@ Se ha actualizado completamente el componente `ProductCard` siguiendo el wirefra
 - **Hover**: Elevación con sombra y escala de imagen
 
 ### Tipografía
+
 - **Título**: `font-semibold text-base` con `line-clamp-2`
 - **Precio**: `font-bold text-xl` para precio actual
 - **Precio original**: `text-sm line-through` en gris
 - **Botón**: `font-semibold text-sm`
 
 ### Responsive Design
+
 - Adaptable a grillas de 2-3 columnas
 - Optimizado para mobile-first
 - Aspect ratio cuadrado para imágenes
@@ -61,17 +64,20 @@ Se ha actualizado completamente el componente `ProductCard` siguiendo el wirefra
 ## ⚡ Funcionalidades
 
 ### Estados del Componente
+
 - **Normal**: Botón amarillo con ícono de carrito
 - **Cargando**: Spinner y texto "¡Agregado!" en verde
 - **Sin stock**: Botón gris deshabilitado
 - **Sin imagen**: Placeholder SVG automático
 
 ### Animaciones
+
 - **Hover**: Escala de imagen (105%) y elevación de card
 - **Click**: Animación de carga con spinner
 - **Transiciones**: Suaves en colores y transformaciones
 
 ### Accesibilidad
+
 - Labels apropiados para botones
 - Alt text para imágenes
 - Estados de focus visibles
@@ -80,14 +86,17 @@ Se ha actualizado completamente el componente `ProductCard` siguiendo el wirefra
 ## 📁 Archivos Implementados
 
 ### Componente Principal
+
 - `src/components/ui/card.tsx` - Componente ProductCard actualizado
 
 ### Ejemplos y Demos
+
 - `src/components/examples/ProductCardExample.tsx` - Ejemplos de uso
 - `src/app/demo/product-card/page.tsx` - Página de demostración
 - `src/components/ui/card.stories.tsx` - Stories de Storybook actualizadas
 
 ### Testing
+
 - `src/components/ui/__tests__/product-card-new.test.tsx` - 20 tests completos
 - Cobertura: 100% de funcionalidades principales
 - Tests de estados, props, animaciones y accesibilidad
@@ -95,22 +104,24 @@ Se ha actualizado completamente el componente `ProductCard` siguiendo el wirefra
 ## 🚀 Uso del Componente
 
 ### Ejemplo Básico
+
 ```tsx
 <ProductCard
-  image="/productos/loxon-20l.png"
-  title="Pintura Látex Premium Sherwin Williams"
+  image='/productos/loxon-20l.png'
+  title='Pintura Látex Premium Sherwin Williams'
   price={2500}
   originalPrice={3200}
-  discount="25%"
-  badge="Llega gratis hoy"
-  cta="Agregar al carrito"
+  discount='25%'
+  badge='Llega gratis hoy'
+  cta='Agregar al carrito'
   onAddToCart={() => handleAddToCart()}
 />
 ```
 
 ### Grid de Productos
+
 ```tsx
-<div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+<div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
   {productos.map(producto => (
     <ProductCard
       key={producto.id}
@@ -120,7 +131,7 @@ Se ha actualizado completamente el componente `ProductCard` siguiendo el wirefra
       originalPrice={producto.precioOriginal}
       discount={producto.descuento}
       badge={producto.badge}
-      cta="Agregar al carrito"
+      cta='Agregar al carrito'
       onAddToCart={() => agregarAlCarrito(producto.id)}
     />
   ))}
@@ -144,6 +155,7 @@ Se ha actualizado completamente el componente `ProductCard` siguiendo el wirefra
 ## 🔧 Personalización
 
 El componente es altamente personalizable a través de:
+
 - Props específicas para cada elemento visual
 - Clases CSS adicionales via `className`
 - Children para contenido extra
@@ -161,7 +173,4 @@ El componente es altamente personalizable a través de:
 
 ---
 
-*Implementación completada siguiendo exactamente el wireframe y especificaciones proporcionadas.*
-
-
-
+_Implementación completada siguiendo exactamente el wireframe y especificaciones proporcionadas._

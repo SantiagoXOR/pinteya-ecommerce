@@ -16,6 +16,7 @@
 ## 🎯 Filosofía de Diseño
 
 ### Inspiración Airbnb
+
 - **Estilo 3D isométrico**: Perspectiva 30° para profundidad
 - **Colores vibrantes**: Paleta Tahiti Gold + complementarios
 - **Estilo friendly**: Formas redondeadas y accesibles
@@ -36,13 +37,13 @@
 
 ```css
 /* Tamaños base */
---icon-xs: 16px;    /* Badges, texto inline */
---icon-sm: 20px;    /* Botones pequeños */
---icon-md: 24px;    /* Botones estándar */
---icon-lg: 32px;    /* Headers, destacados */
---icon-xl: 48px;    /* Hero sections */
---icon-2xl: 64px;   /* Ilustraciones */
---icon-3xl: 128px;  /* Landing pages */
+--icon-xs: 16px; /* Badges, texto inline */
+--icon-sm: 20px; /* Botones pequeños */
+--icon-md: 24px; /* Botones estándar */
+--icon-lg: 32px; /* Headers, destacados */
+--icon-xl: 48px; /* Hero sections */
+--icon-2xl: 64px; /* Ilustraciones */
+--icon-3xl: 128px; /* Landing pages */
 ```
 
 ### Formato y Optimización
@@ -50,13 +51,13 @@
 ```typescript
 // Especificaciones SVG
 interface IconSpecs {
-  format: 'SVG';
-  viewBox: '0 0 24 24';
-  strokeWidth: 1.5 | 2;
-  fill: 'none' | 'currentColor';
-  stroke: 'currentColor';
-  optimization: 'SVGO optimized';
-  accessibility: 'aria-hidden="true"';
+  format: 'SVG'
+  viewBox: '0 0 24 24'
+  strokeWidth: 1.5 | 2
+  fill: 'none' | 'currentColor'
+  stroke: 'currentColor'
+  optimization: 'SVGO optimized'
+  accessibility: 'aria-hidden="true"'
 }
 ```
 
@@ -73,7 +74,7 @@ interface IconSpecs {
 /* Perspectiva isométrica */
 .icon-3d {
   transform: rotateX(30deg) rotateY(-15deg);
-  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
 }
 ```
 
@@ -188,14 +189,7 @@ npm install lucide-react
 
 ```tsx
 // Importación básica
-import { 
-  ShoppingCart, 
-  Heart, 
-  Search, 
-  Paintbrush,
-  Hammer,
-  Package
-} from 'lucide-react'
+import { ShoppingCart, Heart, Search, Paintbrush, Hammer, Package } from 'lucide-react'
 ```
 
 ### Componente Icon Wrapper
@@ -215,12 +209,12 @@ interface IconProps {
 
 const iconSizes = {
   xs: 'w-4 h-4',
-  sm: 'w-5 h-5', 
+  sm: 'w-5 h-5',
   md: 'w-6 h-6',
   lg: 'w-8 h-8',
   xl: 'w-12 h-12',
   '2xl': 'w-16 h-16',
-  '3xl': 'w-32 h-32'
+  '3xl': 'w-32 h-32',
 }
 
 const iconColors = {
@@ -229,18 +223,18 @@ const iconColors = {
   success: 'text-success',
   error: 'text-error',
   warning: 'text-warning',
-  info: 'text-info'
+  info: 'text-info',
 }
 
-export function Icon({ 
-  icon: IconComponent, 
-  size = 'md', 
+export function Icon({
+  icon: IconComponent,
+  size = 'md',
   variant = '2d',
   color,
-  className 
+  className,
 }: IconProps) {
   return (
-    <IconComponent 
+    <IconComponent
       className={cn(
         iconSizes[size],
         color && iconColors[color],
@@ -271,6 +265,7 @@ export function Icon({
 ## 🎭 Estilos y Variantes
 
 ### Variante 2D - Estándar
+
 Para uso general en la interfaz
 
 ```css
@@ -282,6 +277,7 @@ Para uso general en la interfaz
 ```
 
 ### Variante 3D - Destacada
+
 Para elementos importantes y hero sections
 
 ```css
@@ -322,8 +318,12 @@ Para elementos importantes y hero sections
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 ```
 
@@ -356,14 +356,14 @@ export function PaintDropIcon(props: any) {
 ```tsx
 // ProductCard con íconos especializados
 <ProductCard>
-  <div className="flex items-center gap-2 mb-2">
-    <PaintBrushIcon size="sm" color="primary" />
-    <span className="text-sm text-gray-600">Pintura</span>
+  <div className='flex items-center gap-2 mb-2'>
+    <PaintBrushIcon size='sm' color='primary' />
+    <span className='text-sm text-gray-600'>Pintura</span>
   </div>
-  
-  <div className="flex items-center gap-2">
-    <Icon icon={Truck} size="sm" color="success" />
-    <span className="text-sm text-success">Envío gratis</span>
+
+  <div className='flex items-center gap-2'>
+    <Icon icon={Truck} size='sm' color='success' />
+    <span className='text-sm text-success'>Envío gratis</span>
   </div>
 </ProductCard>
 ```
@@ -374,20 +374,15 @@ export function PaintDropIcon(props: any) {
 // Carrito con animación
 function CartIcon({ itemCount }: { itemCount: number }) {
   return (
-    <div className="relative">
-      <Icon 
-        icon={ShoppingCart} 
-        size="lg" 
-        color="primary"
-        className={cn(
-          "transition-transform duration-200",
-          itemCount > 0 && "animate-bounce-in"
-        )}
+    <div className='relative'>
+      <Icon
+        icon={ShoppingCart}
+        size='lg'
+        color='primary'
+        className={cn('transition-transform duration-200', itemCount > 0 && 'animate-bounce-in')}
       />
       {itemCount > 0 && (
-        <Badge className="absolute -top-2 -right-2 animate-scale-in">
-          {itemCount}
-        </Badge>
+        <Badge className='absolute -top-2 -right-2 animate-scale-in'>{itemCount}</Badge>
       )}
     </div>
   )
@@ -403,30 +398,30 @@ export const PinteyaIcons = {
   paintBrush: Paintbrush,
   paintRoller: CircleDot, // Placeholder
   brush: Brush,
-  
+
   // Materiales
   paintBucket: Bucket,
   paintCan: Package,
   spraycan: Zap,
-  
+
   // E-commerce
   cart: ShoppingCart,
   heart: Heart,
   search: Search,
   truck: Truck,
   tag: Tag,
-  
+
   // Estados
   check: Check,
   x: X,
   alert: AlertTriangle,
   info: Info,
-  
+
   // Navegación
   home: Home,
   user: User,
   menu: Menu,
-  arrow: ArrowRight
+  arrow: ArrowRight,
 }
 ```
 
@@ -435,18 +430,21 @@ export const PinteyaIcons = {
 ## 🎯 Criterios de Aceptación
 
 ### Técnicos
+
 - [ ] SVG optimizados < 2KB cada uno
 - [ ] Compatibles con screen readers
 - [ ] Escalables sin pérdida de calidad
 - [ ] Consistencia en stroke-width
 
 ### Visuales
+
 - [ ] Estilo 3D coherente
 - [ ] Colores de marca aplicados
 - [ ] Animaciones suaves
 - [ ] Hover states definidos
 
 ### Funcionales
+
 - [ ] Carga rápida
 - [ ] Tree-shaking compatible
 - [ ] TypeScript support
@@ -454,7 +452,4 @@ export const PinteyaIcons = {
 
 ---
 
-*Última actualización: Junio 2025*
-
-
-
+_Última actualización: Junio 2025_

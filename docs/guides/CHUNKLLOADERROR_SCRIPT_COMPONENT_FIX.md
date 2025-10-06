@@ -3,11 +3,13 @@
 ## 🚨 Problema Identificado
 
 ### Error Principal: ChunkLoadError
+
 - **Descripción**: Runtime ChunkLoadError - Loading chunk app/layout failed with timeout
-- **URL Afectada**: http://localhost:3000/_next/static/chunks/app/layout.js
+- **URL Afectada**: http://localhost:3000/\_next/static/chunks/app/layout.js
 - **Impacto**: La aplicación no podía cargar el layout principal
 
 ### Error Secundario: Script Component Issue
+
 - **Archivo**: `src/components/SEO/StructuredData.tsx`
 - **Línea**: 13, columna 9
 - **Descripción**: Uso incorrecto del componente `Script` de Next.js para JSON-LD
@@ -20,57 +22,61 @@
 ### 1. Corrección del Componente StructuredData
 
 #### **Antes (Problemático):**
+
 ```tsx
-import Script from 'next/script';
+import Script from 'next/script'
 
 export default function StructuredData({ data }: StructuredDataProps) {
-  const jsonLd = Array.isArray(data) ? data : [data];
-  
+  const jsonLd = Array.isArray(data) ? data : [data]
+
   return (
     <>
       {jsonLd.map((item, index) => (
         <Script
           key={index}
           id={`structured-data-${index}`}
-          type="application/ld+json"
+          type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(item),
           }}
         />
       ))}
     </>
-  );
+  )
 }
 ```
 
 #### **Después (Corregido):**
+
 ```tsx
 export default function StructuredData({ data }: StructuredDataProps) {
-  const jsonLd = Array.isArray(data) ? data : [data];
-  
+  const jsonLd = Array.isArray(data) ? data : [data]
+
   return (
     <>
       {jsonLd.map((item, index) => (
         <script
           key={index}
           id={`structured-data-${index}`}
-          type="application/ld+json"
+          type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(item),
           }}
         />
       ))}
     </>
-  );
+  )
 }
 ```
 
 ### 2. Cambios Realizados
 
 #### **Archivo Modificado:**
+
 - ✅ `src/components/SEO/StructuredData.tsx`
 
 #### **Cambios Específicos:**
+
 1. **Eliminada importación**: `import Script from 'next/script';`
 2. **Reemplazado componente**: `<Script>` → `<script>`
 3. **Mantenidas propiedades**: `key`, `id`, `type`, `dangerouslySetInnerHTML`
@@ -80,19 +86,22 @@ export default function StructuredData({ data }: StructuredDataProps) {
 ## ✅ Verificación de la Corrección
 
 ### 1. Carga de la Aplicación
+
 - ✅ **Layout carga correctamente** en http://localhost:3000
 - ✅ **Sin ChunkLoadError** en la consola
 - ✅ **Página principal renderiza** completamente
 
 ### 2. Structured Data SEO
+
 - ✅ **3 scripts JSON-LD** renderizados correctamente:
   - `structured-data-0`: Organization
-  - `structured-data-1`: WebSite  
+  - `structured-data-1`: WebSite
   - `structured-data-2`: Store
 - ✅ **JSON válido** en todos los scripts
 - ✅ **SEO functionality** mantenida
 
 ### 3. Consola del Navegador
+
 - ✅ **Sin errores críticos** relacionados con Script component
 - ✅ **Fast Refresh funcionando** correctamente
 - ⚠️ **Warnings menores** (Google Analytics, imágenes) - no críticos
@@ -103,7 +112,7 @@ export default function StructuredData({ data }: StructuredDataProps) {
 
 ### ¿Por qué falló el componente Script?
 
-1. **Propósito del Script de Next.js**: 
+1. **Propósito del Script de Next.js**:
    - Diseñado para cargar scripts externos (archivos .js)
    - Optimiza la carga y ejecución de scripts de terceros
    - No está pensado para contenido inline como JSON-LD
@@ -131,11 +140,13 @@ export default function StructuredData({ data }: StructuredDataProps) {
 ### **✅ PROBLEMA RESUELTO AL 100%**
 
 #### **Antes:**
+
 - ❌ ChunkLoadError impidiendo carga de layout
 - ❌ Script component causando errores de renderizado
 - ❌ Aplicación no funcional
 
 #### **Después:**
+
 - ✅ Layout carga sin errores
 - ✅ Structured data SEO funcionando
 - ✅ Aplicación completamente funcional
@@ -143,9 +154,11 @@ export default function StructuredData({ data }: StructuredDataProps) {
 - ✅ Performance y SEO mantenidos
 
 ### **Archivos Afectados:**
+
 - `src/components/SEO/StructuredData.tsx` - Corregido
 
 ### **Testing Verificado:**
+
 - ✅ Navegación a http://localhost:3000 exitosa
 - ✅ Layout renderiza completamente
 - ✅ Structured data presente en HTML

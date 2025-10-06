@@ -51,24 +51,27 @@ src/
 ## 🔐 **SISTEMA DE AUTENTICACIÓN**
 
 ### **Middleware de Autenticación**
+
 - **Archivo**: `src/middleware/driver-auth.ts`
 - **Verificación**: Email del usuario debe existir en tabla `drivers`
 - **Estado**: Solo drivers con `status = 'available'` pueden acceder
 - **Headers**: Información del driver se pasa via headers
 
 ### **Flujo de Login**
+
 1. Driver ingresa email en `/driver/login`
 2. NextAuth.js valida credenciales
 3. Middleware verifica que sea driver válido
 4. Redirección a `/driver/dashboard`
 
 ### **Drivers de Prueba**
+
 ```javascript
 const testDrivers = [
   { email: 'carlos@pinteya.com', name: 'Carlos Rodríguez' },
   { email: 'maria@pinteya.com', name: 'María González' },
-  { email: 'juan@pinteya.com', name: 'Juan Pérez' }
-];
+  { email: 'juan@pinteya.com', name: 'Juan Pérez' },
+]
 ```
 
 ---
@@ -76,12 +79,14 @@ const testDrivers = [
 ## 📱 **INTERFAZ MOBILE-FIRST**
 
 ### **Navegación Inferior**
+
 - **Dashboard**: Inicio con estadísticas y rutas activas
 - **Rutas**: Gestión de rutas asignadas
 - **Entregas**: Historial y estado de entregas
 - **Perfil**: Información personal y configuración
 
 ### **Características Mobile**
+
 - **Responsive**: Optimizado para pantallas 375px-428px
 - **Touch-friendly**: Botones grandes para uso en vehículos
 - **Offline-ready**: Funcionalidad básica sin conexión
@@ -94,6 +99,7 @@ const testDrivers = [
 ### **Componente Principal**: `GPSNavigationMap.tsx`
 
 #### **Funcionalidades**
+
 - **Tracking continuo**: Actualización de ubicación cada 5 segundos
 - **Navegación turn-by-turn**: Instrucciones paso a paso
 - **Optimización de rutas**: Waypoints optimizados automáticamente
@@ -101,19 +107,21 @@ const testDrivers = [
 - **Controles**: Zoom, recentrar, modo satélite
 
 #### **Integración Google Maps**
+
 ```typescript
 const mapOptions: google.maps.MapOptions = {
   zoom: 16,
   mapTypeId: 'roadmap',
   disableDefaultUI: true,
   zoomControl: true,
-  gestureHandling: 'greedy'
-};
+  gestureHandling: 'greedy',
+}
 ```
 
 ### **Instrucciones de Navegación**: `NavigationInstructions.tsx`
 
 #### **Características**
+
 - **Instrucciones claras**: Texto legible y iconos intuitivos
 - **Progreso visual**: Barra de progreso de la ruta
 - **Próximo paso**: Vista previa de la siguiente maniobra
@@ -124,6 +132,7 @@ const mapOptions: google.maps.MapOptions = {
 ## 🚛 **GESTIÓN DE ENTREGAS**
 
 ### **Flujo de Entrega**
+
 1. **Asignación**: Driver recibe ruta optimizada
 2. **Navegación**: GPS guía hasta cada destino
 3. **Llegada**: Detección automática de proximidad
@@ -131,6 +140,7 @@ const mapOptions: google.maps.MapOptions = {
 5. **Confirmación**: Actualización en tiempo real
 
 ### **Estados de Entrega**
+
 - `pending`: Pendiente de confirmación
 - `confirmed`: Confirmado para entrega
 - `in_transit`: En camino al destino
@@ -138,19 +148,20 @@ const mapOptions: google.maps.MapOptions = {
 - `exception`: Problema en la entrega
 
 ### **Información de Entrega**
+
 ```typescript
 interface Delivery {
-  tracking_number: string;
-  customer_name: string;
-  customer_phone?: string;
+  tracking_number: string
+  customer_name: string
+  customer_phone?: string
   destination: {
-    address: string;
-    coordinates: { lat: number; lng: number };
-    notes?: string;
-  };
-  special_instructions?: string;
-  requires_signature?: boolean;
-  cash_on_delivery?: number;
+    address: string
+    coordinates: { lat: number; lng: number }
+    notes?: string
+  }
+  special_instructions?: string
+  requires_signature?: boolean
+  cash_on_delivery?: number
 }
 ```
 
@@ -159,22 +170,27 @@ interface Delivery {
 ## 🔄 **APIS IMPLEMENTADAS**
 
 ### **1. Driver Profile** - `/api/driver/profile`
+
 - **GET**: Obtener perfil y rutas asignadas
 - **PUT**: Actualizar estado y ubicación
 
 ### **2. Route Details** - `/api/driver/routes/[id]`
+
 - **GET**: Detalles específicos de una ruta
 - **PUT**: Actualizar progreso de la ruta
 
 ### **3. Location Tracking** - `/api/driver/location`
+
 - **POST**: Actualizar ubicación en tiempo real
 - **GET**: Obtener ubicación actual
 
 ### **4. Navigation Directions** - `/api/driver/navigation/directions`
+
 - **POST**: Calcular ruta usando Google Directions API
 - **GET**: Obtener direcciones existentes
 
 ### **5. Delivery Management** - `/api/driver/deliveries`
+
 - **GET**: Historial de entregas con filtros
 - **POST**: Actualizar estado de entrega
 
@@ -185,19 +201,21 @@ interface Delivery {
 ### **DriverContext**: `src/contexts/DriverContext.tsx`
 
 #### **Estado Global**
+
 ```typescript
 interface DriverState {
-  driver: Driver | null;
-  currentRoute: RouteAssignment | null;
-  assignedRoutes: RouteAssignment[];
-  currentLocation: { lat: number; lng: number } | null;
-  isTracking: boolean;
-  isOnline: boolean;
-  notifications: any[];
+  driver: Driver | null
+  currentRoute: RouteAssignment | null
+  assignedRoutes: RouteAssignment[]
+  currentLocation: { lat: number; lng: number } | null
+  isTracking: boolean
+  isOnline: boolean
+  notifications: any[]
 }
 ```
 
 #### **Acciones Disponibles**
+
 - `startLocationTracking()`: Iniciar GPS tracking
 - `updateDriverLocation()`: Actualizar ubicación
 - `startRoute()`: Comenzar una ruta
@@ -210,18 +228,21 @@ interface DriverState {
 ## 🔧 **CONFIGURACIÓN REQUERIDA**
 
 ### **Variables de Entorno**
+
 ```env
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_public_google_maps_api_key
 ```
 
 ### **Permisos Google Maps APIs**
+
 - Maps JavaScript API
 - Directions API
 - Geocoding API
 - Places API (opcional)
 
 ### **Base de Datos**
+
 - Tabla `drivers` con campos requeridos
 - Tabla `optimized_routes` con estructura de shipments
 - Tabla `driver_location_history` (opcional)
@@ -231,6 +252,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_public_google_maps_api_key
 ## 🚀 **FUNCIONALIDADES IMPLEMENTADAS**
 
 ### ✅ **Completadas**
+
 - [x] Autenticación específica para drivers
 - [x] Dashboard mobile-first con estadísticas
 - [x] Navegación GPS en tiempo real
@@ -244,6 +266,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_public_google_maps_api_key
 - [x] Responsive design optimizado para mobile
 
 ### 🔄 **Próximas Mejoras**
+
 - [ ] WebSockets para sincronización en tiempo real
 - [ ] Notificaciones push nativas
 - [ ] Modo offline avanzado con cache
@@ -260,6 +283,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_public_google_maps_api_key
 ## 📈 **MÉTRICAS Y MONITOREO**
 
 ### **Estadísticas Tracked**
+
 - Entregas completadas por día
 - Distancia total recorrida
 - Tiempo activo del driver
@@ -267,6 +291,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_public_google_maps_api_key
 - Calificación promedio
 
 ### **Alertas Automáticas**
+
 - Driver cerca de destino (< 100m)
 - Retraso en entrega estimada
 - Driver offline por tiempo prolongado
@@ -277,16 +302,19 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_public_google_maps_api_key
 ## 🔒 **SEGURIDAD**
 
 ### **Autenticación**
+
 - Verificación de email en tabla drivers
 - Middleware específico para rutas de drivers
 - Headers seguros con información del driver
 
 ### **Autorización**
+
 - Solo drivers activos pueden acceder
 - Verificación de asignación de rutas
 - Protección de APIs con NextAuth.js
 
 ### **Privacidad**
+
 - Ubicación encriptada en tránsito
 - Historial de ubicaciones opcional
 - Datos personales protegidos
@@ -296,18 +324,21 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_public_google_maps_api_key
 ## 🎯 **PRÓXIMOS PASOS**
 
 ### **Fase 1: Testing y Validación (Inmediato)**
+
 1. **Testing en Dispositivos Reales**: Probar GPS en móviles Android/iOS
 2. **Validación de APIs**: Verificar todas las integraciones
 3. **Testing de Rendimiento**: Optimizar uso de batería y memoria
 4. **Pruebas de Conectividad**: Validar funcionamiento con conexión intermitente
 
 ### **Fase 2: Mejoras de Producción (Corto Plazo)**
+
 1. **WebSockets**: Implementar sincronización en tiempo real
 2. **PWA**: Convertir en Progressive Web App completa
 3. **Notificaciones Push**: Sistema de alertas nativas
 4. **Modo Offline**: Cache avanzado para funcionamiento sin conexión
 
 ### **Fase 3: Funcionalidades Avanzadas (Mediano Plazo)**
+
 1. **Analytics Avanzados**: Métricas detalladas de rendimiento
 2. **Machine Learning**: Predicción de tiempos y optimización automática
 3. **Integración IoT**: Conexión con sensores vehiculares
@@ -318,6 +349,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_public_google_maps_api_key
 ## 📞 **SOPORTE**
 
 Para soporte técnico o consultas sobre el sistema de navegación GPS:
+
 - **Email**: soporte@pinteya.com
 - **Documentación**: Este archivo
 - **Logs**: Revisar consola del navegador y logs del servidor

@@ -3,13 +3,14 @@
 **Basado en:** Vendure Product Management + WooCommerce Product Editor  
 **Estado:** 🔴 No Implementado  
 **Prioridad:** 🔥 Crítica  
-**Estimación:** 2 semanas  
+**Estimación:** 2 semanas
 
 ---
 
 ## 🎯 **OBJETIVOS DEL MÓDULO**
 
 Crear un sistema completo de gestión de productos que permita a los administradores:
+
 - ✅ Crear, editar y eliminar productos
 - ✅ Gestionar variantes de productos (tamaños, colores, etc.)
 - ✅ Administrar inventario y stock
@@ -23,6 +24,7 @@ Crear un sistema completo de gestión de productos que permita a los administrad
 ## 🏗️ **ARQUITECTURA DEL MÓDULO**
 
 ### **Estructura de Archivos**
+
 ```
 src/app/admin/products/
 ├── page.tsx                     // Lista de productos con filtros
@@ -44,6 +46,7 @@ src/app/admin/products/
 ```
 
 ### **APIs del Módulo**
+
 ```
 src/app/api/admin/products/
 ├── route.ts                     // GET, POST /api/admin/products
@@ -61,7 +64,8 @@ src/app/api/admin/products/
 ## 🧩 **COMPONENTES PRINCIPALES**
 
 ### **1. ProductList Component**
-*Inspirado en Vendure Product List + WooCommerce Product Table*
+
+_Inspirado en Vendure Product List + WooCommerce Product Table_
 
 ```typescript
 interface ProductListProps {
@@ -111,8 +115,8 @@ const productColumns: ColumnDef<Product>[] = [
     id: 'image',
     header: 'Imagen',
     cell: ({ row }) => (
-      <ProductImage 
-        src={row.original.featuredImage} 
+      <ProductImage
+        src={row.original.featuredImage}
         alt={row.original.name}
         size="sm"
       />
@@ -146,7 +150,7 @@ const productColumns: ColumnDef<Product>[] = [
     accessorKey: 'price',
     header: 'Precio',
     cell: ({ row }) => (
-      <PriceDisplay 
+      <PriceDisplay
         price={row.original.price}
         originalPrice={row.original.originalPrice}
         currency="ARS"
@@ -157,7 +161,7 @@ const productColumns: ColumnDef<Product>[] = [
     accessorKey: 'stock',
     header: 'Stock',
     cell: ({ row }) => (
-      <StockIndicator 
+      <StockIndicator
         stock={row.original.stock}
         lowStockThreshold={5}
       />
@@ -182,7 +186,8 @@ const productColumns: ColumnDef<Product>[] = [
 ```
 
 ### **2. ProductForm Component**
-*Basado en Vendure Product Detail Form*
+
+_Basado en Vendure Product Detail Form_
 
 ```typescript
 interface ProductFormProps {
@@ -255,7 +260,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="sku"
@@ -291,14 +296,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
               </AdminCard>
 
               <AdminCard title="Imágenes">
-                <ProductImageManager 
+                <ProductImageManager
                   images={form.watch('images')}
                   onChange={(images) => form.setValue('images', images)}
                 />
               </AdminCard>
 
               <AdminCard title="Variantes">
-                <ProductVariantManager 
+                <ProductVariantManager
                   variants={form.watch('variants')}
                   onChange={(variants) => form.setValue('variants', variants)}
                 />
@@ -333,7 +338,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               </AdminCard>
 
               <AdminCard title="Categoría">
-                <CategorySelector 
+                <CategorySelector
                   value={form.watch('categoryId')}
                   onChange={(categoryId) => form.setValue('categoryId', categoryId)}
                 />
@@ -356,7 +361,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 ```
 
 ### **3. ProductImageManager Component**
-*Inspirado en WooCommerce Product Images*
+
+_Inspirado en WooCommerce Product Images_
 
 ```typescript
 interface ProductImageManagerProps {
@@ -442,7 +448,7 @@ const ProductImageManager: React.FC<ProductImageManagerProps> = ({
                         alt={`Producto ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
-                      
+
                       {index === 0 && (
                         <Badge className="absolute top-2 left-2" variant="secondary">
                           Principal
@@ -486,49 +492,50 @@ const ProductImageManager: React.FC<ProductImageManagerProps> = ({
 ## 🔌 **APIS Y ENDPOINTS**
 
 ### **Endpoints Principales**
+
 ```typescript
 // GET /api/admin/products
 interface GetProductsResponse {
-  data: Product[];
+  data: Product[]
   meta: {
-    count: number;
-    total_count: number;
-    total_pages: number;
-    current_page: number;
-  };
+    count: number
+    total_count: number
+    total_pages: number
+    current_page: number
+  }
   links: {
-    self: string;
-    next?: string;
-    prev?: string;
-    first: string;
-    last: string;
-  };
+    self: string
+    next?: string
+    prev?: string
+    first: string
+    last: string
+  }
 }
 
 // POST /api/admin/products
 interface CreateProductRequest {
-  name: string;
-  description?: string;
-  sku: string;
-  price: number;
-  originalPrice?: number;
-  categoryId: string;
-  status: ProductStatus;
-  images?: string[];
-  variants?: ProductVariant[];
-  inventory: ProductInventory;
-  seo?: ProductSeo;
+  name: string
+  description?: string
+  sku: string
+  price: number
+  originalPrice?: number
+  categoryId: string
+  status: ProductStatus
+  images?: string[]
+  variants?: ProductVariant[]
+  inventory: ProductInventory
+  seo?: ProductSeo
 }
 
 // PUT /api/admin/products/[id]
 interface UpdateProductRequest extends Partial<CreateProductRequest> {
-  id: string;
+  id: string
 }
 
 // DELETE /api/admin/products/[id]
 interface DeleteProductResponse {
-  success: boolean;
-  message: string;
+  success: boolean
+  message: string
 }
 ```
 
@@ -537,51 +544,54 @@ interface DeleteProductResponse {
 ## 🧪 **TESTING STRATEGY**
 
 ### **Unit Tests**
+
 ```typescript
 // src/__tests__/admin/components/ProductList.test.tsx
 describe('ProductList Component', () => {
   it('should render products correctly', () => {
     // Test rendering
-  });
+  })
 
   it('should handle filtering', () => {
     // Test filters
-  });
+  })
 
   it('should handle pagination', () => {
     // Test pagination
-  });
+  })
 
   it('should handle bulk actions', () => {
     // Test bulk operations
-  });
-});
+  })
+})
 ```
 
 ### **Integration Tests**
+
 ```typescript
 // src/__tests__/admin/api/products.test.ts
 describe('Products API', () => {
   it('should create product successfully', async () => {
     // Test product creation
-  });
+  })
 
   it('should update product correctly', async () => {
     // Test product updates
-  });
+  })
 
   it('should handle validation errors', async () => {
     // Test error handling
-  });
-});
+  })
+})
 ```
 
 ### **E2E Tests**
+
 ```typescript
 // e2e/admin/product-management.spec.ts
 test('complete product management flow', async ({ page }) => {
   // Test full workflow
-});
+})
 ```
 
 ---
@@ -595,7 +605,4 @@ test('complete product management flow', async ({ page }) => {
 
 ---
 
-*Próxima actualización: Implementación de ProductList component*
-
-
-
+_Próxima actualización: Implementación de ProductList component_

@@ -1,16 +1,16 @@
-import type { TestRunnerConfig } from '@storybook/test-runner';
-import { injectAxe, checkA11y, configureAxe } from 'axe-playwright';
+import type { TestRunnerConfig } from '@storybook/test-runner'
+import { injectAxe, checkA11y, configureAxe } from 'axe-playwright'
 
 const config: TestRunnerConfig = {
   setup() {
     // Configuración global antes de ejecutar tests
   },
-  
+
   async preVisit(page) {
     // Inyectar axe-core para tests de accesibilidad
-    await injectAxe(page);
+    await injectAxe(page)
   },
-  
+
   async postVisit(page) {
     // Configurar axe para tests de accesibilidad
     await configureAxe(page, {
@@ -21,7 +21,7 @@ const config: TestRunnerConfig = {
         { id: 'keyboard-navigation', enabled: true },
         { id: 'aria-labels', enabled: true },
       ],
-    });
+    })
 
     // Ejecutar tests de accesibilidad
     await checkA11y(page, '#storybook-root', {
@@ -29,8 +29,8 @@ const config: TestRunnerConfig = {
       detailedReportOptions: {
         html: true,
       },
-    });
+    })
   },
-};
+}
 
-export default config;
+export default config

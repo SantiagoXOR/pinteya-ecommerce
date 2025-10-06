@@ -7,7 +7,9 @@ import { useAppSelector } from '@/redux/store'
 import { useSelector } from 'react-redux'
 import { selectTotalPrice } from '@/redux/features/cart-slice'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
-import AuthSectionSimple from './AuthSectionSimple'
+import { UserAvatarDropdown, LoginButton } from './UserAvatarDropdown'
+import { useAuth } from '@/hooks/useAuth'
+import ActionButtons from './ActionButtons'
 import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocompleteIntegrated'
 import { useCartAnimation } from '@/hooks/useCartAnimation'
 import { MapPin, Loader2, ShoppingCart } from '@/lib/optimized-imports'
@@ -23,6 +25,7 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0)
   const { openCartModal } = useCartModalContext()
   const { isAnimating } = useCartAnimation()
+  const { isSignedIn } = useAuth()
 
   // Hook de geolocalización para detectar ubicación
   const {
@@ -126,26 +129,30 @@ const Header = () => {
         <div className='max-w-[1200px] mx-auto px-2 sm:px-4 py-3'>
           <div className='flex items-center justify-center gap-1 sm:gap-4 min-h-[60px]'>
             {/* Logo compacto - Optimizado para mobile */}
-            <HeaderLogo
-              isMobile={false}
-              className={`
-                hidden sm:block w-28 h-auto transition-all duration-300 ease-out
-                hover:scale-110 hover:drop-shadow-lg
-                ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
-              `}
-            />
-            <HeaderLogo
-              isMobile={true}
-              className={`
-                sm:hidden w-20 h-auto transition-all duration-300 ease-out
-                hover:scale-110 hover:drop-shadow-lg
-                ${isSticky ? 'logo-sticky-scale scale-90' : 'scale-100'}
-              `}
-            />
+            <Link href='/' className='group'>
+              <HeaderLogo
+                isMobile={false}
+                className={`
+                  hidden sm:block w-28 h-auto transition-all duration-300 ease-out
+                  hover:scale-110 hover:drop-shadow-lg cursor-pointer
+                  ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
+                `}
+              />
+            </Link>
+            <Link href='/' className='group'>
+              <HeaderLogo
+                isMobile={true}
+                className={`
+                  sm:hidden w-20 h-auto transition-all duration-300 ease-out
+                  hover:scale-110 hover:drop-shadow-lg cursor-pointer
+                  ${isSticky ? 'logo-sticky-scale scale-90' : 'scale-100'}
+                `}
+              />
+            </Link>
 
             {/* Buscador expandido - Máximo espacio en mobile */}
             <div className='flex-1 mx-1 sm:mx-4 max-w-none sm:max-w-2xl flex items-center'>
-              <form onSubmit={handleSearchSubmit} className='relative w-full'>
+              <div className='relative w-full'>
                 <div
                   style={{ backgroundColor: '#fff3c5', borderRadius: '8px', padding: '1px' }}
                   className='flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.02] search-focus-ring'
@@ -165,17 +172,18 @@ const Header = () => {
                     showTrendingSearches={true}
                   />
                 </div>
-              </form>
+              </div>
             </div>
 
-            {/* Sección derecha - Solo autenticación en mobile */}
+            {/* Sección derecha - Carrito y autenticación */}
             <div className='flex items-center gap-1 sm:gap-3'>
-              {/* Autenticación - Responsive */}
+              {/* Autenticación - Desktop */}
               <div className='hidden sm:block'>
-                <AuthSectionSimple variant='desktop' />
+                {isSignedIn ? <UserAvatarDropdown /> : <LoginButton />}
               </div>
+              {/* Autenticación - Mobile */}
               <div className='sm:hidden'>
-                <AuthSectionSimple variant='mobile' />
+                {isSignedIn ? <UserAvatarDropdown /> : <LoginButton />}
               </div>
             </div>
           </div>

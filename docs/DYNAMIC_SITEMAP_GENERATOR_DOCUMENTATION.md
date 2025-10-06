@@ -1,6 +1,7 @@
 # 🗺️ Enhanced Dynamic Sitemap Generator - Documentación Técnica
 
 ## 📋 **Índice**
+
 1. [Descripción General](#descripción-general)
 2. [Arquitectura del Sistema](#arquitectura-del-sistema)
 3. [Configuración](#configuración)
@@ -98,7 +99,7 @@ graph TD
 ### **Configuración Básica**
 
 ```typescript
-import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator';
+import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator'
 
 // Configuración personalizada
 enhancedDynamicSitemapGenerator.configure({
@@ -108,25 +109,25 @@ enhancedDynamicSitemapGenerator.configure({
   enableVideos: false,
   cacheEnabled: true,
   cacheTTL: 3600, // 1 hora
-  
+
   priorities: {
     homepage: 1.0,
     categories: 0.8,
     products: 0.7,
     staticPages: 0.6,
     blogPosts: 0.5,
-    searchPages: 0.4
+    searchPages: 0.4,
   },
-  
+
   changeFrequencies: {
     homepage: 'daily',
     categories: 'weekly',
     products: 'weekly',
     staticPages: 'monthly',
     blogPosts: 'weekly',
-    searchPages: 'monthly'
-  }
-});
+    searchPages: 'monthly',
+  },
+})
 ```
 
 ### **Variables de Entorno**
@@ -153,31 +154,22 @@ const advancedConfig = {
   enableIndexSitemap: true,
   cacheEnabled: true,
   cacheTTL: 3600,
-  
-  excludePatterns: [
-    '/admin',
-    '/api',
-    '/auth',
-    '/checkout',
-    '/cart',
-    '/_next',
-    '/test',
-    '/debug'
-  ],
-  
+
+  excludePatterns: ['/admin', '/api', '/auth', '/checkout', '/cart', '/_next', '/test', '/debug'],
+
   searchEngineNotifications: {
     google: { enabled: true, apiKey: 'optional_api_key' },
     bing: { enabled: true, apiKey: 'optional_api_key' },
-    yandex: { enabled: false }
+    yandex: { enabled: false },
   },
-  
+
   performanceAnalysis: {
     enabled: true,
     trackGenerationTime: true,
     trackCacheHitRate: true,
-    trackUrlDiscovery: true
-  }
-};
+    trackUrlDiscovery: true,
+  },
+}
 ```
 
 ---
@@ -187,16 +179,16 @@ const advancedConfig = {
 ### **Generación Simple**
 
 ```typescript
-import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator';
+import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator'
 
 // Generar sitemap
-const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap();
-console.log('Sitemaps generados:', sitemapUrls);
+const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap()
+console.log('Sitemaps generados:', sitemapUrls)
 
 // Obtener estadísticas
-const stats = enhancedDynamicSitemapGenerator.getStats();
-console.log('Total URLs:', stats.totalUrls);
-console.log('Tiempo de generación:', stats.generationTime, 'ms');
+const stats = enhancedDynamicSitemapGenerator.getStats()
+console.log('Total URLs:', stats.totalUrls)
+console.log('Tiempo de generación:', stats.generationTime, 'ms')
 ```
 
 ### **Uso con Configuración Personalizada**
@@ -206,28 +198,28 @@ console.log('Tiempo de generación:', stats.generationTime, 'ms');
 const customGenerator = EnhancedDynamicSitemapGenerator.getInstance({
   baseUrl: 'https://mi-tienda.com',
   enableImages: true,
-  maxUrlsPerSitemap: 10000
-});
+  maxUrlsPerSitemap: 10000,
+})
 
 // Generar sitemap
-const sitemapUrls = await customGenerator.generateSitemap();
+const sitemapUrls = await customGenerator.generateSitemap()
 
 // Generar reporte completo
-const report = customGenerator.generateReport();
-console.log('Recomendaciones:', report.recommendations);
+const report = customGenerator.generateReport()
+console.log('Recomendaciones:', report.recommendations)
 ```
 
 ### **Validación de Sitemap**
 
 ```typescript
 // Validar XML generado
-const xmlContent = '<?xml version="1.0"?>...'; // Tu XML
-const validation = enhancedDynamicSitemapGenerator.validateSitemap(xmlContent);
+const xmlContent = '<?xml version="1.0"?>...' // Tu XML
+const validation = enhancedDynamicSitemapGenerator.validateSitemap(xmlContent)
 
 if (validation.isValid) {
-  console.log('✅ Sitemap válido');
+  console.log('✅ Sitemap válido')
 } else {
-  console.log('❌ Errores encontrados:', validation.errors);
+  console.log('❌ Errores encontrados:', validation.errors)
 }
 ```
 
@@ -248,13 +240,12 @@ curl "https://tu-sitio.com/api/sitemap"
 ```
 
 **Respuesta JSON:**
+
 ```json
 {
   "success": true,
   "data": {
-    "sitemapUrls": [
-      "https://tu-sitio.com/sitemap.xml"
-    ],
+    "sitemapUrls": ["https://tu-sitio.com/sitemap.xml"],
     "stats": {
       "totalUrls": 1250,
       "totalSitemaps": 1,
@@ -301,38 +292,40 @@ curl "https://tu-sitio.com/sitemap.xml"
 
 ```typescript
 // Limpiar cache manualmente
-await enhancedDynamicSitemapGenerator.clearCache();
+await enhancedDynamicSitemapGenerator.clearCache()
 
 // Verificar estadísticas de cache
-const stats = enhancedDynamicSitemapGenerator.getStats();
-console.log('Cache hit rate:', stats.cacheHitRate);
+const stats = enhancedDynamicSitemapGenerator.getStats()
+console.log('Cache hit rate:', stats.cacheHitRate)
 ```
 
 ### **Notificaciones a Motores de Búsqueda**
 
 El sistema notifica automáticamente a:
+
 - **Google Search Console** via ping
-- **Bing Webmaster Tools** via ping  
+- **Bing Webmaster Tools** via ping
 - **Yandex Webmaster** (opcional)
 
 ### **Análisis de Performance**
 
 ```typescript
 // Generar reporte completo
-const report = enhancedDynamicSitemapGenerator.generateReport();
+const report = enhancedDynamicSitemapGenerator.generateReport()
 
 console.log('Performance:', {
   generationTime: report.performance.generationTime,
   cacheEfficiency: report.performance.cacheEfficiency,
-  urlDiscoveryTime: report.performance.urlDiscoveryTime
-});
+  urlDiscoveryTime: report.performance.urlDiscoveryTime,
+})
 
-console.log('Recomendaciones:', report.recommendations);
+console.log('Recomendaciones:', report.recommendations)
 ```
 
 ### **Soporte para Múltiples Sitemaps**
 
 Cuando el número de URLs excede el límite configurado, el sistema automáticamente:
+
 1. Divide las URLs en múltiples sitemaps
 2. Genera un sitemap índice
 3. Mantiene la estructura según estándares
@@ -366,16 +359,16 @@ npm test -- __tests__/seo/
 
 ```typescript
 // Ejemplo de test personalizado
-import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator';
+import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator'
 
 test('debe generar sitemap con productos reales', async () => {
-  const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap();
-  const stats = enhancedDynamicSitemapGenerator.getStats();
-  
-  expect(sitemapUrls.length).toBeGreaterThan(0);
-  expect(stats.totalUrls).toBeGreaterThan(0);
-  expect(stats.errors.length).toBe(0);
-});
+  const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap()
+  const stats = enhancedDynamicSitemapGenerator.getStats()
+
+  expect(sitemapUrls.length).toBeGreaterThan(0)
+  expect(stats.totalUrls).toBeGreaterThan(0)
+  expect(stats.errors.length).toBe(0)
+})
 ```
 
 ---
@@ -407,11 +400,11 @@ const optimizedConfig = {
   cacheEnabled: true,
   cacheTTL: 7200, // 2 horas para sitios estables
   enableCompression: true,
-  
+
   // Deshabilitar características no necesarias
   enableVideos: false,
-  enableNews: false
-};
+  enableNews: false,
+}
 ```
 
 ---
@@ -421,54 +414,58 @@ const optimizedConfig = {
 ### **Problemas Comunes**
 
 #### **Error: "Supabase client not available"**
+
 ```typescript
 // Verificar configuración de Supabase
-import { getSupabaseClient } from '@/lib/integrations/supabase';
+import { getSupabaseClient } from '@/lib/integrations/supabase'
 
-const supabase = getSupabaseClient();
+const supabase = getSupabaseClient()
 if (!supabase) {
-  console.error('Verificar SUPABASE_URL y SUPABASE_ANON_KEY');
+  console.error('Verificar SUPABASE_URL y SUPABASE_ANON_KEY')
 }
 ```
 
 #### **Error: "Redis connection failed"**
+
 ```typescript
 // El sistema funciona sin Redis, usando cache en memoria
 // Verificar REDIS_URL en variables de entorno
 ```
 
 #### **Sitemap muy grande**
+
 ```typescript
 // Reducir maxUrlsPerSitemap
 enhancedDynamicSitemapGenerator.configure({
-  maxUrlsPerSitemap: 10000
-});
+  maxUrlsPerSitemap: 10000,
+})
 ```
 
 #### **Performance lenta**
+
 ```typescript
 // Habilitar cache y aumentar TTL
 enhancedDynamicSitemapGenerator.configure({
   cacheEnabled: true,
-  cacheTTL: 7200 // 2 horas
-});
+  cacheTTL: 7200, // 2 horas
+})
 ```
 
 ### **Debugging**
 
 ```typescript
 // Habilitar logging detallado
-const stats = enhancedDynamicSitemapGenerator.getStats();
+const stats = enhancedDynamicSitemapGenerator.getStats()
 console.log('Debug info:', {
   totalUrls: stats.totalUrls,
   generationTime: stats.generationTime,
   errors: stats.errors,
-  warnings: stats.warnings
-});
+  warnings: stats.warnings,
+})
 
 // Generar reporte de diagnóstico
-const report = enhancedDynamicSitemapGenerator.generateReport();
-console.log('Recommendations:', report.recommendations);
+const report = enhancedDynamicSitemapGenerator.generateReport()
+console.log('Recommendations:', report.recommendations)
 ```
 
 ---
@@ -479,23 +476,23 @@ console.log('Recommendations:', report.recommendations);
 
 ```typescript
 // pages/api/generate-sitemap.ts
-import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator';
+import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator'
 
 export default async function handler(req, res) {
   try {
-    const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap();
-    const stats = enhancedDynamicSitemapGenerator.getStats();
-    
+    const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap()
+    const stats = enhancedDynamicSitemapGenerator.getStats()
+
     res.status(200).json({
       success: true,
       sitemapUrls,
-      stats
-    });
+      stats,
+    })
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
-    });
+      error: error.message,
+    })
   }
 }
 ```
@@ -504,60 +501,59 @@ export default async function handler(req, res) {
 
 ```typescript
 // scripts/regenerate-sitemap.ts
-import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator';
+import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator'
 
 async function regenerateSitemap() {
   try {
-    console.log('🚀 Iniciando regeneración de sitemap...');
-    
+    console.log('🚀 Iniciando regeneración de sitemap...')
+
     // Limpiar cache para forzar regeneración
-    await enhancedDynamicSitemapGenerator.clearCache();
-    
+    await enhancedDynamicSitemapGenerator.clearCache()
+
     // Generar nuevo sitemap
-    const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap();
-    
-    console.log('✅ Sitemap regenerado:', sitemapUrls);
-    
+    const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap()
+
+    console.log('✅ Sitemap regenerado:', sitemapUrls)
+
     // Obtener estadísticas
-    const stats = enhancedDynamicSitemapGenerator.getStats();
+    const stats = enhancedDynamicSitemapGenerator.getStats()
     console.log('📊 Estadísticas:', {
       totalUrls: stats.totalUrls,
-      generationTime: stats.generationTime
-    });
-    
+      generationTime: stats.generationTime,
+    })
   } catch (error) {
-    console.error('❌ Error regenerando sitemap:', error);
+    console.error('❌ Error regenerando sitemap:', error)
   }
 }
 
 // Ejecutar
-regenerateSitemap();
+regenerateSitemap()
 ```
 
 ### **Integración con SEO Analytics**
 
 ```typescript
-import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator';
-import { enhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager';
+import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator'
+import { enhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager'
 
 // Generar sitemap y registrar métricas
 async function generateSitemapWithAnalytics() {
-  const startTime = Date.now();
-  
-  const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap();
-  const stats = enhancedDynamicSitemapGenerator.getStats();
-  
+  const startTime = Date.now()
+
+  const sitemapUrls = await enhancedDynamicSitemapGenerator.generateSitemap()
+  const stats = enhancedDynamicSitemapGenerator.getStats()
+
   // Registrar métricas en SEO Analytics
   enhancedSEOAnalyticsManager.trackSEOMetrics({
     sitemapGeneration: {
       totalUrls: stats.totalUrls,
       generationTime: stats.generationTime,
       cacheHitRate: stats.cacheHitRate,
-      timestamp: new Date()
-    }
-  });
-  
-  return sitemapUrls;
+      timestamp: new Date(),
+    },
+  })
+
+  return sitemapUrls
 }
 ```
 
@@ -566,6 +562,7 @@ async function generateSitemapWithAnalytics() {
 ## 📈 **Métricas y KPIs**
 
 ### **Métricas de Sistema**
+
 - **Total URLs**: Número total de URLs en el sitemap
 - **Tiempo de generación**: Tiempo en ms para generar sitemap completo
 - **Cache hit rate**: Porcentaje de requests servidos desde cache
@@ -573,6 +570,7 @@ async function generateSitemapWithAnalytics() {
 - **Errores**: Número de errores durante la generación
 
 ### **Métricas de SEO**
+
 - **Cobertura de indexación**: % de URLs indexadas por motores de búsqueda
 - **Frecuencia de crawling**: Qué tan seguido se rastrea el sitemap
 - **Tiempo de descubrimiento**: Tiempo para que nuevas URLs sean descubiertas
@@ -582,6 +580,7 @@ async function generateSitemapWithAnalytics() {
 ## 🔄 **Roadmap y Mejoras Futuras**
 
 ### **Próximas Características**
+
 - [ ] **Sitemap de imágenes** dedicado
 - [ ] **Sitemap de videos** con metadata completa
 - [ ] **Sitemap de noticias** para contenido de blog
@@ -590,6 +589,7 @@ async function generateSitemapWithAnalytics() {
 - [ ] **A/B testing** para diferentes configuraciones de sitemap
 
 ### **Optimizaciones Planificadas**
+
 - [ ] **Incremental updates** para cambios menores
 - [ ] **Smart caching** basado en frecuencia de cambios
 - [ ] **Parallel processing** para sitios muy grandes
@@ -608,7 +608,4 @@ Para soporte técnico o preguntas sobre el Enhanced Dynamic Sitemap Generator:
 
 ---
 
-*El Enhanced Dynamic Sitemap Generator es parte del ecosistema SEO de Pinteya E-commerce, diseñado para maximizar la visibilidad en motores de búsqueda y optimizar la experiencia de crawling.*
-
-
-
+_El Enhanced Dynamic Sitemap Generator es parte del ecosistema SEO de Pinteya E-commerce, diseñado para maximizar la visibilidad en motores de búsqueda y optimizar la experiencia de crawling._

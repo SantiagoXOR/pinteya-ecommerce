@@ -39,7 +39,7 @@ export async function getProductVariants(
       throw new Error(result?.error || 'Error parsing API response')
     }
 
-    return result.data
+    return result
   } catch (error) {
     console.error(`Error obteniendo variantes del producto ${productId}:`, error)
     throw error

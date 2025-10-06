@@ -9,6 +9,7 @@ Pinteya E-commerce está construido con una arquitectura moderna de **JAMstack**
 ## 🎯 Principios de Diseño
 
 ### **1. Separación de Responsabilidades**
+
 - **Frontend**: Next.js con React para UI/UX
 - **Backend**: APIs serverless con Next.js API Routes
 - **Database**: Supabase PostgreSQL con RLS
@@ -16,12 +17,14 @@ Pinteya E-commerce está construido con una arquitectura moderna de **JAMstack**
 - **Payments**: MercadoPago para procesamiento de pagos
 
 ### **2. Escalabilidad**
+
 - **Serverless**: Funciones auto-escalables en Vercel
 - **CDN**: Assets estáticos distribuidos globalmente
 - **Database**: PostgreSQL con conexiones pooling
 - **Caching**: Estrategias de cache en múltiples niveles
 
 ### **3. Seguridad**
+
 - **RLS**: Row Level Security en Supabase
 - **Auth**: JWT tokens con Clerk
 - **HTTPS**: Comunicación encriptada end-to-end
@@ -37,21 +40,21 @@ graph TB
         C[Tailwind CSS + shadcn/ui]
         D[Redux Toolkit]
     end
-    
+
     subgraph "Backend Services"
         E[Next.js API Routes]
         F[Supabase PostgreSQL]
         G[Clerk Auth]
         H[MercadoPago API]
     end
-    
+
     subgraph "External Services"
         I[Vercel CDN]
         J[Supabase Storage]
         K[Clerk Dashboard]
         L[MercadoPago Gateway]
     end
-    
+
     A --> E
     B --> D
     E --> F
@@ -113,21 +116,25 @@ pinteya-ecommerce/
 ## 🔄 Flujo de Datos
 
 ### **1. Autenticación**
+
 ```
 Usuario → Clerk → JWT Token → Middleware → Rutas Protegidas
 ```
 
 ### **2. Productos**
+
 ```
 UI → useProducts Hook → API Route → Supabase → PostgreSQL
 ```
 
 ### **3. Checkout**
+
 ```
 Carrito → Checkout Form → API → MercadoPago → Webhook → Supabase
 ```
 
 ### **4. Estado Global**
+
 ```
 Componentes → Redux Actions → Store → Componentes
 ```
@@ -135,18 +142,21 @@ Componentes → Redux Actions → Store → Componentes
 ## 🔌 Integraciones Principales
 
 ### **Supabase (Database)**
+
 - **PostgreSQL**: Base de datos principal
 - **RLS**: Seguridad a nivel de fila
 - **Storage**: Imágenes de productos
 - **Real-time**: Actualizaciones en tiempo real
 
 ### **Clerk (Authentication)**
+
 - **JWT**: Tokens de autenticación
 - **SSO**: Single Sign-On
 - **User Management**: Gestión de usuarios
 - **Middleware**: Protección de rutas
 
 ### **MercadoPago (Payments)**
+
 - **Preferences**: Creación de pagos
 - **Webhooks**: Notificaciones de estado
 - **SDK**: Integración nativa
@@ -155,12 +165,14 @@ Componentes → Redux Actions → Store → Componentes
 ## 🚀 Performance
 
 ### **Optimizaciones Frontend**
+
 - **SSG**: Páginas estáticas generadas
 - **ISR**: Regeneración incremental
 - **Code Splitting**: División automática de código
 - **Image Optimization**: Optimización de imágenes
 
 ### **Optimizaciones Backend**
+
 - **Connection Pooling**: Pool de conexiones DB
 - **Caching**: Cache de consultas frecuentes
 - **Serverless**: Escalado automático
@@ -169,12 +181,14 @@ Componentes → Redux Actions → Store → Componentes
 ## 🔒 Seguridad
 
 ### **Autenticación & Autorización**
+
 - **JWT Tokens**: Autenticación stateless
 - **RLS Policies**: Autorización a nivel de DB
 - **CORS**: Configuración de dominios permitidos
 - **Rate Limiting**: Limitación de requests
 
 ### **Validación de Datos**
+
 - **Zod Schemas**: Validación de entrada
 - **TypeScript**: Tipado estático
 - **Sanitization**: Limpieza de datos
@@ -183,12 +197,14 @@ Componentes → Redux Actions → Store → Componentes
 ## 📊 Monitoring & Observabilidad
 
 ### **Métricas**
+
 - **Vercel Analytics**: Performance de páginas
 - **Supabase Metrics**: Uso de base de datos
 - **Error Tracking**: Captura de errores
 - **User Analytics**: Comportamiento de usuarios
 
 ### **Logs**
+
 - **API Logs**: Logs de endpoints
 - **Error Logs**: Registro de errores
 - **Performance Logs**: Métricas de rendimiento
@@ -205,7 +221,4 @@ Componentes → Redux Actions → Store → Componentes
 
 ---
 
-*Última actualización: Junio 2025*
-
-
-
+_Última actualización: Junio 2025_

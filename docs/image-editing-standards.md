@@ -14,18 +14,21 @@
 ## 📐 Especificaciones Técnicas
 
 ### **Dimensiones Estándar**
+
 - **Imagen Principal**: 800x800px (1:1 ratio)
 - **Thumbnail**: 400x400px (1:1 ratio)
 - **Galería**: 800x800px (1:1 ratio)
 - **Resolución**: 72 DPI (web optimized)
 
 ### **Formatos de Archivo**
+
 - **Formato Principal**: WebP (mejor compresión)
 - **Formato Fallback**: JPEG (compatibilidad)
 - **Calidad JPEG**: 85-90%
 - **Calidad WebP**: 80-85%
 
 ### **Tamaños de Archivo**
+
 - **Imagen Principal**: Máximo 150KB
 - **Thumbnail**: Máximo 50KB
 - **Galería**: Máximo 150KB
@@ -35,6 +38,7 @@
 ## 🎨 Estándares de Diseño
 
 ### **Fondo y Composición**
+
 ```
 ✅ HACER:
 - Fondo blanco puro (#FFFFFF) o transparente
@@ -52,6 +56,7 @@
 ```
 
 ### **Colores y Saturación**
+
 ```
 ✅ HACER:
 - Colores reales y precisos del producto
@@ -67,6 +72,7 @@
 ```
 
 ### **Branding Pinteya**
+
 ```
 ELEMENTOS OPCIONALES A AGREGAR:
 - Watermark sutil de Pinteya (esquina inferior derecha)
@@ -86,6 +92,7 @@ PALETA DE COLORES PINTEYA:
 ## 🔧 Workflow de Edición en Photoshop
 
 ### **Paso 1: Preparación**
+
 1. Abrir imagen original
 2. Crear nuevo documento 800x800px, 72 DPI
 3. Configurar espacio de color sRGB
@@ -96,18 +103,21 @@ PALETA DE COLORES PINTEYA:
    - Branding (opcional)
 
 ### **Paso 2: Recorte y Composición**
+
 1. Usar herramienta de selección (Pluma/Varita mágica)
 2. Recortar producto con precisión
 3. Centrar en el canvas con márgenes uniformes
 4. Ajustar tamaño manteniendo proporciones
 
 ### **Paso 3: Corrección de Color**
+
 1. **Niveles**: Ajustar puntos negro, gris y blanco
 2. **Curvas**: Refinar contraste y tonos medios
 3. **Saturación**: Ajustar naturalmente (+5 a +15)
 4. **Balance de Color**: Corregir dominantes de color
 
 ### **Paso 4: Mejoras de Calidad**
+
 1. **Nitidez**: Filtro > Enfocar > Máscara de enfoque
    - Cantidad: 80-120%
    - Radio: 1-1.5px
@@ -116,6 +126,7 @@ PALETA DE COLORES PINTEYA:
 3. **Corrección de Imperfecciones**: Herramienta Tampón/Parche
 
 ### **Paso 5: Efectos Opcionales**
+
 1. **Sombra Proyectada**:
    - Opacidad: 15-25%
    - Distancia: 10-15px
@@ -125,6 +136,7 @@ PALETA DE COLORES PINTEYA:
 3. **Viñeta Suave** (muy sutil, 5-10% opacidad)
 
 ### **Paso 6: Branding (Opcional)**
+
 1. **Watermark Pinteya**:
    - Posición: Esquina inferior derecha
    - Opacidad: 30-40%
@@ -139,6 +151,7 @@ PALETA DE COLORES PINTEYA:
 ## 📁 Organización de Archivos
 
 ### **Estructura de Carpetas**
+
 ```
 /edited-images/
 ├── /plavicon/
@@ -153,6 +166,7 @@ PALETA DE COLORES PINTEYA:
 ```
 
 ### **Nomenclatura de Archivos**
+
 ```
 Formato: [slug-producto].[formato]
 
@@ -167,6 +181,7 @@ Ejemplos:
 ## ⚡ Optimización para Web
 
 ### **Exportación WebP**
+
 ```
 Configuración Photoshop:
 - Archivo > Exportar > Exportar como
@@ -177,6 +192,7 @@ Configuración Photoshop:
 ```
 
 ### **Exportación JPEG (Fallback)**
+
 ```
 Configuración Photoshop:
 - Archivo > Exportar > Exportar como
@@ -187,6 +203,7 @@ Configuración Photoshop:
 ```
 
 ### **Verificación de Calidad**
+
 ```
 ✅ CHECKLIST FINAL:
 □ Tamaño exacto: 800x800px
@@ -204,18 +221,21 @@ Configuración Photoshop:
 ## 🎯 Casos Especiales por Categoría
 
 ### **Pinturas (Latas/Baldes)**
+
 - Mostrar etiqueta frontal claramente
 - Incluir tapa si es relevante
 - Ángulo ligeramente frontal (15-30°)
 - Resaltar textura del envase
 
 ### **Herramientas (Pinceles/Rodillos)**
+
 - Posición diagonal elegante
 - Mostrar cerdas/textura claramente
 - Incluir mango completo
 - Destacar detalles de calidad
 
 ### **Adhesivos/Selladores**
+
 - Envase frontal centrado
 - Etiqueta legible
 - Mostrar aplicador si lo tiene
@@ -226,12 +246,14 @@ Configuración Photoshop:
 ## 📊 Control de Calidad
 
 ### **Revisión Pre-Upload**
+
 1. **Técnica**: Dimensiones, peso, formato
 2. **Visual**: Composición, colores, nitidez
 3. **Consistencia**: Estilo uniforme entre productos
 4. **Branding**: Elementos de marca aplicados correctamente
 
 ### **Testing**
+
 1. Visualizar en diferentes dispositivos
 2. Verificar tiempo de carga
 3. Comprobar fallbacks JPEG
@@ -249,8 +271,5 @@ Configuración Photoshop:
 
 ---
 
-*Última actualización: Junio 2025*
-*Versión: 1.0*
-
-
-
+_Última actualización: Junio 2025_
+_Versión: 1.0_

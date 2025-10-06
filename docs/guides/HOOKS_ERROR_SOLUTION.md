@@ -4,7 +4,8 @@
 
 **Error**: "Rendered fewer hooks than expected. This may be caused by an accidental early return statement."
 
-**Ubicación**: 
+**Ubicación**:
+
 - Componente: `CheckoutExpress` en `src/components/Checkout/CheckoutExpress.tsx`
 - Línea de error: `src/app/(site)/(pages)/checkout/page.tsx` línea 12
 
@@ -15,15 +16,13 @@ El error se producía por un **return condicional temprano** en las líneas 158-
 ```tsx
 // ❌ PROBLEMÁTICO: Return temprano que causaba inconsistencia de hooks
 if (step === 'processing') {
-  return (
-    <section>...</section>
-  );
+  return <section>...</section>
 }
 
 // ✅ Hook que se ejecutaba SOLO cuando step !== 'processing'
 useEffect(() => {
   // Este hook no se ejecutaba cuando step === 'processing'
-}, [step, initPoint]);
+}, [step, initPoint])
 ```
 
 ### **¿Por qué causaba el error?**
@@ -38,39 +37,39 @@ Esta **inconsistencia en el orden de ejecución de hooks** entre renders es exac
 ### **1. Eliminación del Return Temprano**
 
 **ANTES** (líneas 158-186):
+
 ```tsx
 // Renderizar estado de procesamiento
 if (step === 'processing') {
   return (
-    <section className="min-h-screen bg-gradient-to-br from-blaze-orange-50 to-yellow-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardContent className="p-8 text-center">
-          <div className="space-y-6">
-            <div className="w-16 h-16 mx-auto bg-blaze-orange-100 rounded-full flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-blaze-orange-600 animate-spin" />
+    <section className='min-h-screen bg-gradient-to-br from-blaze-orange-50 to-yellow-50 flex items-center justify-center p-4'>
+      <Card className='w-full max-w-md shadow-2xl'>
+        <CardContent className='p-8 text-center'>
+          <div className='space-y-6'>
+            <div className='w-16 h-16 mx-auto bg-blaze-orange-100 rounded-full flex items-center justify-center'>
+              <Loader2 className='w-8 h-8 text-blaze-orange-600 animate-spin' />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Procesando tu compra
-              </h2>
-              <p className="text-gray-600">
+              <h2 className='text-2xl font-bold text-gray-900 mb-2'>Procesando tu compra</h2>
+              <p className='text-gray-600'>
                 Estamos preparando tu pedido. No cierres esta ventana.
               </p>
             </div>
-            <Progress value={66} className="h-3" />
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <Loader2 className="w-4 h-4 animate-spin" />
+            <Progress value={66} className='h-3' />
+            <div className='flex items-center justify-center gap-2 text-sm text-gray-500'>
+              <Loader2 className='w-4 h-4 animate-spin' />
               <span>Conectando con MercadoPago...</span>
             </div>
           </div>
         </CardContent>
       </Card>
     </section>
-  );
+  )
 }
 ```
 
 **DESPUÉS** (líneas 158-159):
+
 ```tsx
 // ✅ ELIMINADO: Return temprano que causaba el error de hooks
 // Todo el contenido se movió a renderStepContent() para evitar inconsistencias
@@ -81,31 +80,35 @@ if (step === 'processing') {
 ```tsx
 const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
   // ✅ TODOS LOS HOOKS SE EJECUTAN SIEMPRE EN EL MISMO ORDEN
-  const router = useRouter();
-  const { /* ... */ } = useCheckout();
-  const { /* ... */ } = useMobileCheckoutNavigation();
+  const router = useRouter()
+  const {
+    /* ... */
+  } = useCheckout()
+  const {
+    /* ... */
+  } = useMobileCheckoutNavigation()
   // ... otros hooks
 
   // ✅ TODOS LOS useEffect SE EJECUTAN SIEMPRE
   useEffect(() => {
     // Redirección automática a MercadoPago
-  }, [step, initPoint]);
+  }, [step, initPoint])
 
   // ✅ FUNCIÓN DE RENDERIZADO SIN HOOKS
   const renderStepContent = () => {
     if (step === 'processing') {
-      return <ProcessingView />;
+      return <ProcessingView />
     }
     if (step === 'redirect') {
-      return <RedirectView />;
+      return <RedirectView />
     }
     // Caso por defecto: formulario
-    return <FormView />;
-  };
+    return <FormView />
+  }
 
   // ✅ SINGLE RETURN AL FINAL
-  return renderStepContent();
-};
+  return renderStepContent()
+}
 ```
 
 ## 🎯 **BENEFICIOS DE LA SOLUCIÓN**
@@ -119,13 +122,16 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
 ## 🔧 **REGLAS DE HOOKS APLICADAS**
 
 ### **Regla #1: Solo llama hooks en el nivel superior**
+
 - ✅ Todos los hooks están al inicio del componente
 - ✅ No hay hooks dentro de condicionales, bucles o funciones anidadas
 
 ### **Regla #2: Solo llama hooks desde componentes React**
+
 - ✅ Todos los hooks están dentro del componente funcional CheckoutExpress
 
 ### **Regla #3: Orden consistente de hooks**
+
 - ✅ Los hooks se ejecutan en el mismo orden en cada render
 - ✅ No hay returns tempranos que puedan saltarse hooks
 

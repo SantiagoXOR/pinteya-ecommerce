@@ -5,10 +5,14 @@ import Image from 'next/image'
 import TopBar from './TopBar'
 import EnhancedSearchBar from './EnhancedSearchBar'
 import ActionButtons from './ActionButtons'
+import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 import { cn } from '@/lib/utils'
+import { SearchSuggestion } from '@/types/search'
 
 const NewHeader = () => {
   const [stickyMenu, setStickyMenu] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Sticky menu logic
   const handleStickyMenu = () => {
@@ -26,6 +30,60 @@ const NewHeader = () => {
 
   const handleSearch = (query: string) => {
     // Implementar lógica de búsqueda
+  }
+
+  const handleSuggestionSelect = async (suggestion: SearchSuggestion) => {
+    console.log('🔍 handleSuggestionSelect ejecutado con:', suggestion)
+
+    if (suggestion.type === 'product') {
+      console.log('✅ Es una sugerencia de producto, procesando...')
+      try {
+        console.log(`📡 Haciendo fetch a: /api/products/${suggestion.id}`)
+        // Obtener los detalles completos del producto
+        const response = await fetch(`/api/products/${suggestion.id}`)
+        console.log('📡 Respuesta recibida:', response.status, response.statusText)
+
+        if (response.ok) {
+          const product = await response.json()
+          console.log('📦 Producto obtenido:', product)
+          console.log(
+            '🔄 Estado anterior - selectedProduct:',
+            !!selectedProduct,
+            'isModalOpen:',
+            isModalOpen
+          )
+
+          // Actualizar estados
+          console.log('🎯 Actualizando selectedProduct...')
+          setSelectedProduct(product)
+          console.log('🎯 Actualizando isModalOpen a true...')
+          setIsModalOpen(true)
+          console.log('✅ Estados actualizados')
+        } else {
+          console.error('❌ Error al obtener el producto:', response.statusText)
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar el producto:', error)
+      }
+    } else {
+      console.log('⚠️ No es una sugerencia de producto, tipo:', suggestion.type)
+    }
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  const handleAddToCart = (
+    product: any,
+    quantity: number,
+    selectedColor?: string,
+    selectedCapacity?: string
+  ) => {
+    // Implementar lógica de agregar al carrito
+    console.log('Agregando al carrito:', { product, quantity, selectedColor, selectedCapacity })
+    // Aquí puedes integrar con tu sistema de carrito existente
   }
 
   return (
@@ -60,6 +118,7 @@ const NewHeader = () => {
             <div className='hidden lg:flex flex-1 max-w-2xl mx-8'>
               <EnhancedSearchBar
                 onSearch={handleSearch}
+                onSuggestionSelect={handleSuggestionSelect}
                 size={stickyMenu ? 'sm' : 'md'}
                 data-testid='desktop-search-input'
               />
@@ -83,12 +142,29 @@ const NewHeader = () => {
           <div className='lg:hidden pb-4'>
             <EnhancedSearchBar
               onSearch={handleSearch}
+              onSuggestionSelect={handleSuggestionSelect}
               size='sm'
               data-testid='mobile-search-input'
             />
           </div>
         </div>
       </header>
+
+      {/* Modal de detalles del producto */}
+      {console.log(
+        '🔍 Renderizando modal - isModalOpen:',
+        isModalOpen,
+        'selectedProduct:',
+        !!selectedProduct
+      )}
+      {isModalOpen && selectedProduct && (
+        <ShopDetailModal
+          product={selectedProduct}
+          open={isModalOpen}
+          onOpenChange={handleModalClose}
+          onAddToCart={handleAddToCart}
+        />
+      )}
     </>
   )
 }

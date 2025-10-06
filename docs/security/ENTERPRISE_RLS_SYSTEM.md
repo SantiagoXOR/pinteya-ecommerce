@@ -56,25 +56,30 @@ public.get_current_user_id()
 ### **Políticas RLS por Tabla**
 
 #### **user_profiles**
+
 - ✅ Usuarios pueden ver/editar su propio perfil
 - ✅ Admins/moderadores pueden ver todos los perfiles
 - ✅ Solo admins pueden crear/eliminar perfiles
 
 #### **products**
+
 - ✅ Lectura pública de productos activos
 - ✅ Admins/moderadores pueden ver todos los productos
 - ✅ Solo usuarios con permisos pueden crear/editar/eliminar
 
 #### **categories**
+
 - ✅ Lectura pública de todas las categorías
 - ✅ Solo usuarios con permisos pueden crear/editar/eliminar
 
 #### **orders**
+
 - ✅ Usuarios pueden ver/crear sus propias órdenes
 - ✅ Admins/moderadores pueden ver todas las órdenes
 - ✅ Restricciones de actualización por estado
 
 #### **order_items**
+
 - ✅ Usuarios pueden ver items de sus órdenes
 - ✅ Admins/moderadores pueden ver todos los items
 - ✅ Control granular de creación/edición
@@ -86,11 +91,11 @@ public.get_current_user_id()
 ### **Validación de Contexto RLS**
 
 ```typescript
-import { validateRLSContext } from '@/lib/auth/enterprise-rls-utils';
+import { validateRLSContext } from '@/lib/auth/enterprise-rls-utils'
 
-const rlsValidation = await validateRLSContext(enterpriseContext);
+const rlsValidation = await validateRLSContext(enterpriseContext)
 if (rlsValidation.valid) {
-  const rlsContext = rlsValidation.context;
+  const rlsContext = rlsValidation.context
   // Usar contexto RLS
 }
 ```
@@ -98,50 +103,50 @@ if (rlsValidation.valid) {
 ### **Ejecución de Consultas con RLS**
 
 ```typescript
-import { executeWithRLS } from '@/lib/auth/enterprise-rls-utils';
+import { executeWithRLS } from '@/lib/auth/enterprise-rls-utils'
 
 const result = await executeWithRLS(
   enterpriseContext,
   async (client, rlsContext) => {
     // Consulta con RLS automático
-    return await client.from('products').select('*');
+    return await client.from('products').select('*')
   },
   {
     enforceRLS: true,
-    auditLog: true
+    auditLog: true,
   }
-);
+)
 ```
 
 ### **Middleware RLS**
 
 ```typescript
-import { withRLS } from '@/lib/auth/enterprise-rls-utils';
+import { withRLS } from '@/lib/auth/enterprise-rls-utils'
 
-export const GET = withRLS()(async (request) => {
-  const rlsContext = request.rlsContext;
+export const GET = withRLS()(async request => {
+  const rlsContext = request.rlsContext
   // API con RLS automático
-});
+})
 ```
 
 ### **Verificación de Permisos**
 
 ```typescript
-import { checkRLSPermission } from '@/lib/auth/enterprise-rls-utils';
+import { checkRLSPermission } from '@/lib/auth/enterprise-rls-utils'
 
 const hasPermission = checkRLSPermission(
   rlsContext,
   'products_create',
   resourceOwner // opcional
-);
+)
 ```
 
 ### **Filtros RLS Automáticos**
 
 ```typescript
-import { createRLSFilters } from '@/lib/auth/enterprise-rls-utils';
+import { createRLSFilters } from '@/lib/auth/enterprise-rls-utils'
 
-const filters = createRLSFilters(rlsContext, 'products');
+const filters = createRLSFilters(rlsContext, 'products')
 // Para usuario normal: { is_active: true }
 // Para admin: {} (sin filtros)
 ```
@@ -156,35 +161,35 @@ const filters = createRLSFilters(rlsContext, 'products');
 // /api/admin/products-rls/route.ts
 export async function GET(request: NextRequest) {
   // 1. Autenticación enterprise
-  const authResult = await requireAdminAuth(request, ['products_read']);
-  if (!authResult.success) return errorResponse(authResult);
+  const authResult = await requireAdminAuth(request, ['products_read'])
+  if (!authResult.success) return errorResponse(authResult)
 
-  const context = authResult.context!;
+  const context = authResult.context!
 
   // 2. Ejecución con RLS
   const result = await executeWithRLS(
     context,
     async (client, rlsContext) => {
       // 3. Filtros RLS automáticos
-      const rlsFilters = createRLSFilters(rlsContext, 'products');
-      
-      let query = client.from('products').select('*');
-      
+      const rlsFilters = createRLSFilters(rlsContext, 'products')
+
+      let query = client.from('products').select('*')
+
       // 4. Aplicar filtros RLS
       Object.entries(rlsFilters).forEach(([key, value]) => {
-        query = query.eq(key, value);
-      });
+        query = query.eq(key, value)
+      })
 
-      return await query;
+      return await query
     },
     { enforceRLS: true, auditLog: true }
-  );
+  )
 
   return NextResponse.json({
     success: true,
     data: result.data,
-    rls: { enabled: true, context: { role: context.role } }
-  });
+    rls: { enabled: true, context: { role: context.role } },
+  })
 }
 ```
 
@@ -239,14 +244,14 @@ npm test src/__tests__/enterprise-rls-utils.test.ts
 Todas las operaciones RLS se registran automáticamente en `security_audit_logs`:
 
 ```sql
-SELECT 
+SELECT
   user_id,
   event_type,
   description,
   metadata->>'operation' as operation,
   metadata->>'role' as user_role,
   created_at
-FROM security_audit_logs 
+FROM security_audit_logs
 WHERE event_type = 'RLS_OPERATION'
 ORDER BY created_at DESC;
 ```
@@ -320,6 +325,3 @@ ORDER BY created_at DESC;
 - ✅ **Testing completo**: 18/18 tests pasando
 - ✅ **Documentación**: Guía completa de implementación
 - ✅ **Build exitoso**: Sistema listo para producción
-
-
-

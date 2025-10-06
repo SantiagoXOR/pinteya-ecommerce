@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { OptimizedCartIcon } from '@/components/ui/optimized-cart-icon'
 import { useAppSelector } from '@/redux/store'
 import { useSelector } from 'react-redux'
@@ -16,12 +17,20 @@ import { HeaderLogo } from '@/components/ui/OptimizedLogo'
 import { UserAvatarDropdown, LoginButton } from './UserAvatarDropdown'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
+import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
+import { SearchSuggestion } from '@/components/ui/search-autocomplete'
 
 const HeaderNextAuth = () => {
+  const router = useRouter()
   const [cartShake, setCartShake] = useState(false)
   const [isSticky, setIsSticky] = useState(false)
   const [isScrollingUp, setIsScrollingUp] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+
+  // Estado para el modal de producto
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false)
+
   const { openCartModal } = useCartModalContext()
   const { isAnimating } = useCartAnimation()
   const { isSignedIn } = useAuth()
@@ -41,6 +50,55 @@ const HeaderNextAuth = () => {
   const cartItems = useAppSelector(state => state.cartReducer?.items || [])
   const totalPrice = useSelector(selectTotalPrice)
   const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0)
+
+  // Función para manejar la selección de sugerencias de búsqueda
+  const handleSuggestionSelect = async (suggestion: SearchSuggestion) => {
+    console.log('🔍 HeaderNextAuth - handleSuggestionSelect ejecutado:', suggestion)
+
+    if (suggestion.type === 'product' && suggestion.id) {
+      console.log('🛍️ Procesando sugerencia de producto:', suggestion.id)
+
+      try {
+        // Obtener datos completos del producto desde la API
+        const response = await fetch(`/api/products/${suggestion.id}`)
+        console.log('📡 Respuesta de API:', response.status)
+
+        if (response.ok) {
+          const result = await response.json()
+          console.log('📦 Datos del producto obtenidos:', result)
+
+          if (result.success && result.data) {
+            console.log('✅ Abriendo modal con producto:', result.data.name)
+            setSelectedProduct(result.data)
+            setIsProductModalOpen(true)
+            return
+          } else {
+            console.warn('⚠️ API response no exitosa:', result)
+          }
+        } else {
+          console.warn('⚠️ Error en respuesta de API:', response.status)
+        }
+
+        // Si falla la obtención del producto, mostrar error pero NO navegar
+        console.warn('❌ No se pudo obtener los datos del producto')
+        // NO hacer router.push aquí - solo abrir modal con datos básicos si es posible
+      } catch (error) {
+        console.error('💥 Error obteniendo producto:', error)
+        // En caso de error, NO navegar automáticamente
+        // El usuario puede hacer clic en "Ver producto" en el modal si lo desea
+      }
+    } else {
+      console.log('🔍 Sugerencia no es de producto:', suggestion.type)
+    }
+    // Para categorías o búsquedas, NO navegar automáticamente desde el callback
+    // El componente SearchAutocomplete manejará la navegación si no hay callback personalizado
+  }
+
+  // Función para cerrar el modal de producto
+  const handleCloseProductModal = () => {
+    setIsProductModalOpen(false)
+    setSelectedProduct(null)
+  }
 
   // Efecto para el comportamiento sticky del header
   useEffect(() => {
@@ -160,6 +218,7 @@ const HeaderNextAuth = () => {
                   <SearchAutocompleteIntegrated
                     placeholder='latex interior blanco 20lts'
                     showTrendingSearches={true}
+                    onSuggestionSelected={handleSuggestionSelect}
                   />
                 </div>
               </form>
@@ -207,6 +266,13 @@ const HeaderNextAuth = () => {
           </div>
         </div>
       </header>
+
+      {/* Modal de producto */}
+      <ShopDetailModal
+        product={selectedProduct}
+        open={isProductModalOpen}
+        onOpenChange={handleCloseProductModal}
+      />
     </>
   )
 }

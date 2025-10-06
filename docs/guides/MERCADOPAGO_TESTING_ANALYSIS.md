@@ -40,7 +40,7 @@ const preferenceData = {
   // ... otros datos
   sandbox_init_point: true, // Forzar sandbox
   // O usar directamente sandbox.mercadopago.com.ar
-};
+}
 ```
 
 ### **Solución 2: Verificar Variables de Entorno**
@@ -101,23 +101,26 @@ Crear un modo de testing que simule el pago exitoso:
 // En desarrollo, simular pago exitoso
 if (process.env.NODE_ENV === 'development' && process.env.MOCK_PAYMENTS === 'true') {
   // Simular redirección exitosa
-  window.location.href = '/checkout/success?payment_id=test&status=approved';
+  window.location.href = '/checkout/success?payment_id=test&status=approved'
 }
 ```
 
 ## 📋 **PRÓXIMOS PASOS RECOMENDADOS**
 
 ### **Paso 1: Implementar Solución Inmediata**
+
 1. Agregar variable `MERCADOPAGO_ENVIRONMENT=sandbox`
 2. Modificar la lógica de redirección para usar sandbox
 3. Crear usuarios de prueba específicos
 
 ### **Paso 2: Testing Completo**
+
 1. Probar con usuarios de prueba creados
 2. Verificar webhook functionality
 3. Implementar modo mock para desarrollo
 
 ### **Paso 3: Documentación**
+
 1. Documentar el proceso de testing completo
 2. Crear guía de troubleshooting
 3. Establecer protocolo para testing de pagos

@@ -66,11 +66,11 @@ CREATE TABLE products (
 
 ```sql
 -- Crear bucket para imágenes
-INSERT INTO storage.buckets (id, name, public) 
+INSERT INTO storage.buckets (id, name, public)
 VALUES ('product-images', 'product-images', true);
 
 -- Política de acceso público
-CREATE POLICY "Public Access" ON storage.objects 
+CREATE POLICY "Public Access" ON storage.objects
 FOR SELECT USING (bucket_id = 'product-images');
 ```
 
@@ -147,10 +147,10 @@ module.exports = {
         },
         'bright-sun': {
           400: '#ffd700',
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 }
 ```
 
@@ -207,8 +207,9 @@ vercel
 ### 2. Variables de Entorno en Producción
 
 Configura todas las variables en Vercel Dashboard:
+
 - Supabase credentials
-- Clerk credentials  
+- Clerk credentials
 - MercadoPago credentials
 - `NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app`
 
@@ -239,6 +240,7 @@ npm run check-env
 ### Problemas Comunes
 
 #### Error: "Supabase client not configured"
+
 ```bash
 # Verificar variables
 echo $NEXT_PUBLIC_SUPABASE_URL
@@ -246,12 +248,14 @@ echo $NEXT_PUBLIC_SUPABASE_ANON_KEY
 ```
 
 #### Error: "Clerk not configured"
+
 ```bash
 # Verificar middleware
 cat src/middleware.ts
 ```
 
 #### Error: "MercadoPago credentials invalid"
+
 ```bash
 # Verificar en modo test
 curl -X GET \
@@ -267,6 +271,3 @@ curl -X GET \
 - [🚀 Deploy en Vercel](../deployment/vercel.md)
 - [🧪 Guía de Testing](../testing/README.md)
 - [🔍 Debugging](../development/debugging.md)
-
-
-

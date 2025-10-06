@@ -37,6 +37,7 @@ Para configurar el proyecto de forma segura:
 ## 🗄️ Base de Datos Supabase
 
 ### Proyecto
+
 - **Nombre**: pinteya-ecommerce
 - **ID**: aakzspzfulgftqlgwkpb
 - **Región**: sa-east-1
@@ -49,6 +50,7 @@ Para configurar el proyecto de forma segura:
 > **📊 OPTIMIZACIÓN 2025:** Las tablas principales han sido optimizadas con una reducción del 63% en almacenamiento. Ver [OPTIMIZATION_SUPABASE_2025.md](./OPTIMIZATION_SUPABASE_2025.md) para detalles completos.
 
 #### Tablas Optimizadas (Recomendadas)
+
 - `analytics_events_optimized` - 66% más eficiente
 - `products_optimized` - 52% más eficiente
 - `product_brands` - Lookup table normalizada
@@ -57,6 +59,7 @@ Para configurar el proyecto de forma segura:
 #### Tablas Originales (Legacy)
 
 #### `products`
+
 ```sql
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
@@ -71,6 +74,7 @@ CREATE TABLE products (
 ```
 
 #### `categories`
+
 ```sql
 CREATE TABLE categories (
   id SERIAL PRIMARY KEY,
@@ -82,6 +86,7 @@ CREATE TABLE categories (
 ```
 
 #### `users`
+
 ```sql
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -93,6 +98,7 @@ CREATE TABLE users (
 ```
 
 #### `orders`
+
 ```sql
 CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
@@ -105,6 +111,7 @@ CREATE TABLE orders (
 ```
 
 #### `order_items`
+
 ```sql
 CREATE TABLE order_items (
   id SERIAL PRIMARY KEY,
@@ -117,19 +124,22 @@ CREATE TABLE order_items (
 ```
 
 ### Usuario Temporal
+
 ```sql
-INSERT INTO users (id, clerk_id, email, name) 
+INSERT INTO users (id, clerk_id, email, name)
 VALUES ('00000000-0000-4000-8000-000000000000', 'temp_user', 'temp@pinteya.com', 'Usuario Temporal');
 ```
 
 ## 🔐 Autenticación y Seguridad
 
 ### Configuración Clerk
+
 - **Dominio**: exciting-grouper-57.clerk.accounts.dev
 - **Aplicación**: Pinteya E-commerce
 - **Versión**: 6.19.4
 
 ### Configuración Supabase Auth (Actualizada 2025-01-05)
+
 - **OTP Email**: 600 segundos (10 minutos) ✅ SEGURO
 - **OTP SMS**: 60 segundos (1 minuto)
 - **Contraseñas filtradas**: Habilitado (HaveIBeenPwned)
@@ -137,27 +147,28 @@ VALUES ('00000000-0000-4000-8000-000000000000', 'temp_user', 'temp@pinteya.com',
 - **Longitud mínima contraseña**: 8 caracteres
 
 ### Middleware Configurado
+
 ```typescript
 // src/middleware.ts
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const isPublicRoute = createRouteMatcher([
-  "/",
-  "/shop",
-  "/shop/(.*)",
-  "/product/(.*)",
-  "/category/(.*)",
-  "/about",
-  "/contact",
-  "/api/products",
-  "/api/categories", 
-  "/api/test",
-  "/api/payments/create-preference",
-  "/api/payments/webhook",
-  "/api/payments/status",
-  "/signin(.*)",
-  "/signup(.*)",
-  "/sso-callback(.*)"
+  '/',
+  '/shop',
+  '/shop/(.*)',
+  '/product/(.*)',
+  '/category/(.*)',
+  '/about',
+  '/contact',
+  '/api/products',
+  '/api/categories',
+  '/api/test',
+  '/api/payments/create-preference',
+  '/api/payments/webhook',
+  '/api/payments/status',
+  '/signin(.*)',
+  '/signup(.*)',
+  '/sso-callback(.*)',
 ])
 
 export default clerkMiddleware((auth, req) => {
@@ -165,19 +176,21 @@ export default clerkMiddleware((auth, req) => {
 })
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 }
 ```
 
 ## 💳 MercadoPago
 
 ### Configuración
+
 - **País**: Argentina
 - **Moneda**: ARS (Pesos Argentinos)
 - **Modo**: Sandbox (Desarrollo)
 - **Client ID**: 921414591813674
 
 ### URLs de Retorno
+
 ```javascript
 back_urls: {
   success: "http://localhost:3001/checkout/success?order_id={order_id}",
@@ -187,12 +200,14 @@ back_urls: {
 ```
 
 ### Webhook
+
 - **URL**: `http://localhost:3001/api/payments/webhook`
 - **Eventos**: payment, merchant_order
 
 ## 🎨 Diseño y UI
 
 ### Paleta de Colores - Nueva Identidad Visual
+
 ```css
 :root {
   /* Blaze Orange - Color Primario */
@@ -237,6 +252,7 @@ back_urls: {
 ```
 
 ### Componentes UI
+
 - **Framework**: Tailwind CSS
 - **Componentes**: shadcn/ui + Radix UI
 - **Iconos**: Lucide React
@@ -245,6 +261,7 @@ back_urls: {
 ## 🚀 Desarrollo
 
 ### Comandos
+
 ```bash
 # Instalar dependencias
 npm install
@@ -263,6 +280,7 @@ npm run lint
 ```
 
 ### Puerto
+
 - **Desarrollo**: http://localhost:3001
 - **Producción**: Por configurar
 
@@ -284,16 +302,19 @@ npm run lint
 ## 🔍 APIs Disponibles
 
 ### Productos
+
 - `GET /api/products` - Listar productos
 - `GET /api/products/[id]` - Obtener producto específico
 - `GET /api/categories` - Listar categorías
 
 ### Pagos
+
 - `POST /api/payments/create-preference` - Crear preferencia MercadoPago
 - `POST /api/payments/webhook` - Webhook MercadoPago
 - `GET /api/payments/status` - Estado de pagos
 
 ### Usuario
+
 - `GET /api/user/profile` - Perfil del usuario
 - `GET /api/user/orders` - Órdenes del usuario
 - `GET /api/user/addresses` - Direcciones del usuario
@@ -301,6 +322,7 @@ npm run lint
 ## 🎯 Estado del Proyecto
 
 ### ✅ Completado
+
 - Backend con Supabase
 - Autenticación con Clerk
 - Sistema de pagos MercadoPago
@@ -309,15 +331,14 @@ npm run lint
 - APIs operativas
 
 ### 🔄 En Desarrollo
+
 - Páginas de resultado de pago
 - Webhook completo
 - Panel de administración
 
 ### 📋 Por Hacer
+
 - Deploy a producción
 - Configuración de dominio
 - Optimizaciones de performance
 - Tests automatizados
-
-
-

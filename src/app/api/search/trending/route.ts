@@ -30,6 +30,58 @@ export interface TrendingSearchesResponse {
   lastUpdated: string
 }
 
+// Búsquedas trending por defecto para fallback
+const defaultTrendingSearches: TrendingSearch[] = [
+  {
+    id: 'default-1',
+    query: 'Pintura látex',
+    count: 45,
+    category: 'pinturas',
+    href: '/search?q=pintura+latex',
+    type: 'trending',
+  },
+  {
+    id: 'default-2',
+    query: 'Sherwin Williams',
+    count: 38,
+    category: 'marcas',
+    href: '/search?q=sherwin+williams',
+    type: 'trending',
+  },
+  {
+    id: 'default-3',
+    query: 'Rodillos premium',
+    count: 32,
+    category: 'herramientas',
+    href: '/search?q=rodillos+premium',
+    type: 'trending',
+  },
+  {
+    id: 'default-4',
+    query: 'Pinceles',
+    count: 28,
+    category: 'herramientas',
+    href: '/search?q=pinceles',
+    type: 'trending',
+  },
+  {
+    id: 'default-5',
+    query: 'Esmalte sintético',
+    count: 25,
+    category: 'pinturas',
+    href: '/search?q=esmalte+sintetico',
+    type: 'trending',
+  },
+  {
+    id: 'default-6',
+    query: 'Barniz',
+    count: 22,
+    category: 'pinturas',
+    href: '/search?q=barniz',
+    type: 'trending',
+  },
+]
+
 // Búsquedas trending generadas dinámicamente basadas en productos reales
 async function generateDynamicTrendingSearches(
   supabase: any,

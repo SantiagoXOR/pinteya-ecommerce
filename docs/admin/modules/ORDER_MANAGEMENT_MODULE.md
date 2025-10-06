@@ -3,13 +3,14 @@
 **Basado en:** Vendure Order Management + WooCommerce Orders + Spree Commerce Shipments  
 **Estado:** 🔴 No Implementado  
 **Prioridad:** 🔥 Crítica  
-**Estimación:** 2 semanas  
+**Estimación:** 2 semanas
 
 ---
 
 ## 🎯 **OBJETIVOS DEL MÓDULO**
 
 Crear un sistema completo de gestión de órdenes que permita a los administradores:
+
 - ✅ Visualizar y filtrar órdenes por estado, fecha, cliente
 - ✅ Gestionar el ciclo de vida completo de las órdenes
 - ✅ Procesar pagos y reembolsos
@@ -23,6 +24,7 @@ Crear un sistema completo de gestión de órdenes que permita a los administrado
 ## 🏗️ **ARQUITECTURA DEL MÓDULO**
 
 ### **Estructura de Archivos**
+
 ```
 src/app/admin/orders/
 ├── page.tsx                     // Lista de órdenes con filtros
@@ -46,6 +48,7 @@ src/app/admin/orders/
 ```
 
 ### **APIs del Módulo**
+
 ```
 src/app/api/admin/orders/
 ├── route.ts                     // GET, POST /api/admin/orders
@@ -65,7 +68,8 @@ src/app/api/admin/orders/
 ## 🧩 **COMPONENTES PRINCIPALES**
 
 ### **1. OrderList Component**
-*Inspirado en WooCommerce Orders Table + Spree Commerce Platform API*
+
+_Inspirado en WooCommerce Orders Table + Spree Commerce Platform API_
 
 ```typescript
 interface OrderListProps {
@@ -117,7 +121,7 @@ const orderColumns: ColumnDef<Order>[] = [
     header: 'Número',
     cell: ({ row }) => (
       <div>
-        <Link 
+        <Link
           href={`/admin/orders/${row.original.id}`}
           className="font-medium text-blue-600 hover:text-blue-800"
         >
@@ -185,7 +189,8 @@ const orderColumns: ColumnDef<Order>[] = [
 ```
 
 ### **2. OrderDetail Component**
-*Basado en Vendure Order Detail + WooCommerce Order Edit*
+
+_Basado en Vendure Order Detail + WooCommerce Order Edit_
 
 ```typescript
 interface OrderDetailProps {
@@ -272,7 +277,8 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ orderId }) => {
 ```
 
 ### **3. OrderStatusManager Component**
-*Inspirado en Spree Commerce Shipment State Management*
+
+_Inspirado en Spree Commerce Shipment State Management_
 
 ```typescript
 interface OrderStatusManagerProps {
@@ -421,7 +427,8 @@ const orderStateTransitions: Record<OrderStatus, OrderTransition[]> = {
 ```
 
 ### **4. OrderShipments Component**
-*Basado en Spree Commerce Shipments API*
+
+_Basado en Spree Commerce Shipments API_
 
 ```typescript
 interface OrderShipmentsProps {
@@ -452,7 +459,7 @@ const OrderShipments: React.FC<OrderShipmentsProps> = ({ order }) => {
   };
 
   const handleShipmentAction = async (
-    shipmentId: string, 
+    shipmentId: string,
     action: 'ready' | 'ship' | 'cancel'
   ) => {
     try {
@@ -483,7 +490,7 @@ const OrderShipments: React.FC<OrderShipmentsProps> = ({ order }) => {
                   Estado: <ShipmentStatusBadge status={shipment.state} />
                 </p>
               </div>
-              <ShipmentActions 
+              <ShipmentActions
                 shipment={shipment}
                 onAction={handleShipmentAction}
               />
@@ -505,7 +512,7 @@ const OrderShipments: React.FC<OrderShipmentsProps> = ({ order }) => {
                   <strong>Tracking:</strong> {shipment.trackingNumber}
                 </p>
                 {shipment.trackingUrl && (
-                  <a 
+                  <a
                     href={shipment.trackingUrl}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -545,54 +552,55 @@ const OrderShipments: React.FC<OrderShipmentsProps> = ({ order }) => {
 ## 🔌 **APIS Y ENDPOINTS**
 
 ### **Endpoints Principales**
+
 ```typescript
 // GET /api/admin/orders
 interface GetOrdersResponse {
-  data: Order[];
+  data: Order[]
   meta: {
-    count: number;
-    total_count: number;
-    total_pages: number;
-    current_page: number;
-  };
+    count: number
+    total_count: number
+    total_pages: number
+    current_page: number
+  }
   links: {
-    self: string;
-    next?: string;
-    prev?: string;
-    first: string;
-    last: string;
-  };
+    self: string
+    next?: string
+    prev?: string
+    first: string
+    last: string
+  }
 }
 
 // POST /api/admin/orders/[id]/fulfill
 interface FulfillOrderRequest {
   items: {
-    orderLineId: string;
-    quantity: number;
-  }[];
-  trackingNumber?: string;
-  carrier?: string;
-  notifyCustomer?: boolean;
+    orderLineId: string
+    quantity: number
+  }[]
+  trackingNumber?: string
+  carrier?: string
+  notifyCustomer?: boolean
 }
 
 // POST /api/admin/orders/[id]/refund
 interface RefundOrderRequest {
-  amount: number;
-  reason: string;
+  amount: number
+  reason: string
   items?: {
-    orderLineId: string;
-    quantity: number;
-  }[];
-  refundShipping?: boolean;
-  notifyCustomer?: boolean;
+    orderLineId: string
+    quantity: number
+  }[]
+  refundShipping?: boolean
+  notifyCustomer?: boolean
 }
 
 // PATCH /api/admin/orders/[id]/ship
 interface ShipOrderRequest {
-  shipmentId: string;
-  trackingNumber: string;
-  carrier: string;
-  notifyCustomer?: boolean;
+  shipmentId: string
+  trackingNumber: string
+  carrier: string
+  notifyCustomer?: boolean
 }
 ```
 
@@ -601,30 +609,31 @@ interface ShipOrderRequest {
 ## 📊 **ESTADOS Y FLUJOS DE TRABAJO**
 
 ### **Estados de Orden**
+
 ```typescript
 enum OrderStatus {
-  PENDING = 'pending',           // Orden creada, esperando confirmación
-  CONFIRMED = 'confirmed',       // Orden confirmada, esperando pago
-  PROCESSING = 'processing',     // Orden en preparación
-  SHIPPED = 'shipped',          // Orden enviada
-  DELIVERED = 'delivered',      // Orden entregada
-  CANCELLED = 'cancelled',      // Orden cancelada
-  RETURNED = 'returned'         // Orden devuelta
+  PENDING = 'pending', // Orden creada, esperando confirmación
+  CONFIRMED = 'confirmed', // Orden confirmada, esperando pago
+  PROCESSING = 'processing', // Orden en preparación
+  SHIPPED = 'shipped', // Orden enviada
+  DELIVERED = 'delivered', // Orden entregada
+  CANCELLED = 'cancelled', // Orden cancelada
+  RETURNED = 'returned', // Orden devuelta
 }
 
 enum PaymentStatus {
-  PENDING = 'pending',          // Pago pendiente
-  AUTHORIZED = 'authorized',    // Pago autorizado
-  PAID = 'paid',               // Pago completado
-  FAILED = 'failed',           // Pago fallido
-  REFUNDED = 'refunded',       // Pago reembolsado
-  PARTIALLY_REFUNDED = 'partially_refunded'
+  PENDING = 'pending', // Pago pendiente
+  AUTHORIZED = 'authorized', // Pago autorizado
+  PAID = 'paid', // Pago completado
+  FAILED = 'failed', // Pago fallido
+  REFUNDED = 'refunded', // Pago reembolsado
+  PARTIALLY_REFUNDED = 'partially_refunded',
 }
 
 enum FulfillmentStatus {
-  UNFULFILLED = 'unfulfilled',  // Sin cumplir
-  PARTIAL = 'partial',          // Parcialmente cumplido
-  FULFILLED = 'fulfilled'       // Completamente cumplido
+  UNFULFILLED = 'unfulfilled', // Sin cumplir
+  PARTIAL = 'partial', // Parcialmente cumplido
+  FULFILLED = 'fulfilled', // Completamente cumplido
 }
 ```
 
@@ -633,29 +642,31 @@ enum FulfillmentStatus {
 ## 🧪 **TESTING STRATEGY**
 
 ### **Unit Tests**
+
 ```typescript
 describe('OrderStatusManager', () => {
   it('should show available transitions', () => {
     // Test state transitions
-  });
+  })
 
   it('should handle status changes', () => {
     // Test status updates
-  });
-});
+  })
+})
 ```
 
 ### **Integration Tests**
+
 ```typescript
 describe('Orders API', () => {
   it('should fulfill order correctly', async () => {
     // Test order fulfillment
-  });
+  })
 
   it('should process refunds', async () => {
     // Test refund processing
-  });
-});
+  })
+})
 ```
 
 ---
@@ -669,7 +680,4 @@ describe('Orders API', () => {
 
 ---
 
-*Próxima actualización: Implementación de OrderList component*
-
-
-
+_Próxima actualización: Implementación de OrderList component_

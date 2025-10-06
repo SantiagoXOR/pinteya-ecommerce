@@ -5,6 +5,7 @@
 ## 📊 Análisis de Situación Actual
 
 ### **Problemas Identificados**
+
 - ❌ **Checkout Complejo**: 5-7 pasos con formularios largos
 - ❌ **Abandono Alto**: Demasiada información requerida
 - ❌ **Falta de Urgencia**: No hay incentivos para completar rápido
@@ -12,6 +13,7 @@
 - ❌ **Trust Signals Débiles**: Falta de indicadores de confianza
 
 ### **Oportunidades de Mejora**
+
 - ✅ **Checkout en 1 Página**: Flujo simplificado
 - ✅ **Datos Mínimos**: Solo lo esencial para completar
 - ✅ **Urgencia y Escasez**: Indicadores de stock y tiempo
@@ -23,6 +25,7 @@
 ## 🎯 Objetivos del Checkout Express
 
 ### **Métricas Objetivo**
+
 - **Conversión**: +40% mejora en tasa de conversión
 - **Abandono**: -50% reducción en abandono del carrito
 - **Tiempo**: -60% reducción en tiempo de checkout
@@ -30,6 +33,7 @@
 - **Satisfacción**: +45% mejora en NPS post-compra
 
 ### **KPIs Específicos**
+
 - Conversión actual: ~2.5% → Objetivo: 3.5%
 - Abandono actual: ~70% → Objetivo: 35%
 - Tiempo promedio: ~8 min → Objetivo: 3 min
@@ -66,15 +70,18 @@
 ### **Campos Mínimos Requeridos**
 
 #### **Información Personal (2 campos)**
+
 - **Email**: Para confirmación y seguimiento
 - **Teléfono**: Para coordinación de entrega
 
 #### **Dirección (1 campo con autocompletado)**
+
 - **Dirección Completa**: Con Google Places API
 - Autocompletado inteligente por código postal
 - Cálculo automático de envío en tiempo real
 
 #### **Pago (Integración MercadoPago)**
+
 - **Wallet MercadoPago**: Opción principal destacada
 - **Tarjetas**: Integración con Checkout Pro
 - **Efectivo**: Rapipago, Pago Fácil
@@ -87,13 +94,13 @@
 
 ```tsx
 // Componentes de urgencia
-<UrgencyTimer 
+<UrgencyTimer
   timeLeft="14:32"
   message="Completa tu compra para mantener el precio"
   variant="warning"
 />
 
-<StockIndicator 
+<StockIndicator
   quantity={3}
   message="¡Solo quedan 3 unidades!"
   showViewers={12}
@@ -105,10 +112,10 @@
 ```tsx
 // Indicadores de confianza
 <TrustBadges>
-  <Badge icon="🔒">Pago 100% Seguro</Badge>
-  <Badge icon="🚚">Envío Gratis +$25.000</Badge>
-  <Badge icon="🔄">Devolución Garantizada</Badge>
-  <Badge icon="⭐">4.8/5 - 1,247 reviews</Badge>
+  <Badge icon='🔒'>Pago 100% Seguro</Badge>
+  <Badge icon='🚚'>Envío Gratis +$25.000</Badge>
+  <Badge icon='🔄'>Devolución Garantizada</Badge>
+  <Badge icon='⭐'>4.8/5 - 1,247 reviews</Badge>
 </TrustBadges>
 ```
 
@@ -137,11 +144,11 @@
   /* Pantalla completa en móvil */
   height: 100vh;
   overflow-y: auto;
-  
+
   /* Formulario stack vertical */
   grid-template-columns: 1fr;
   gap: 1rem;
-  
+
   /* Botón fijo inferior */
   .checkout-button {
     position: fixed;
@@ -171,10 +178,10 @@
 ```tsx
 <MercadoPagoExpress
   preferenceId={preferenceId}
-  prominence="high"
+  prominence='high'
   showInstallments={true}
   showDiscounts={true}
-  theme="pinteya"
+  theme='pinteya'
 />
 ```
 
@@ -202,6 +209,7 @@
 ### **Fase 1: Checkout Express Base (Semana 1-2)**
 
 #### **Componentes a Crear:**
+
 1. `ExpressCheckout.tsx` - Componente principal
 2. `UrgencyTimer.tsx` - Timer de ofertas
 3. `StockIndicator.tsx` - Indicador de stock
@@ -209,6 +217,7 @@
 5. `AddressAutocomplete.tsx` - Autocompletado direcciones
 
 #### **APIs a Implementar:**
+
 1. `/api/checkout/express` - Procesamiento rápido
 2. `/api/shipping/calculate` - Cálculo en tiempo real
 3. `/api/stock/check` - Verificación de stock
@@ -217,6 +226,7 @@
 ### **Fase 2: Optimizaciones (Semana 3)**
 
 #### **Funcionalidades Avanzadas:**
+
 1. **Guardado Automático**: LocalStorage cada 30s
 2. **Recuperación Carrito**: Email de abandono
 3. **A/B Testing**: Diferentes versiones
@@ -225,6 +235,7 @@
 ### **Fase 3: Integraciones (Semana 4)**
 
 #### **Servicios Externos:**
+
 1. **WhatsApp Business**: Soporte en tiempo real
 2. **Google Analytics**: Eventos de conversión
 3. **Hotjar**: Heatmaps y grabaciones
@@ -246,11 +257,11 @@
 ```typescript
 // Eventos de analytics
 interface CheckoutEvents {
-  checkout_started: { cart_value: number, items: number }
-  field_completed: { field_name: string, time_spent: number }
+  checkout_started: { cart_value: number; items: number }
+  field_completed: { field_name: string; time_spent: number }
   payment_method_selected: { method: string }
-  checkout_completed: { total: number, time_total: number }
-  checkout_abandoned: { step: string, reason?: string }
+  checkout_completed: { total: number; time_total: number }
+  checkout_abandoned: { step: string; reason?: string }
 }
 ```
 
@@ -259,21 +270,25 @@ interface CheckoutEvents {
 ## 🎯 Cronograma de Implementación
 
 ### **Semana 1: Fundación**
+
 - ✅ Análisis y diseño UX/UI
 - ✅ Creación de componentes base
 - ✅ Integración con APIs existentes
 
 ### **Semana 2: Desarrollo Core**
+
 - 🔄 Implementación checkout express
 - 🔄 Integración MercadoPago optimizada
 - 🔄 Testing inicial y ajustes
 
 ### **Semana 3: Optimizaciones**
+
 - ⏳ Elementos de conversión
 - ⏳ Optimización móvil
 - ⏳ Testing A/B setup
 
 ### **Semana 4: Launch**
+
 - ⏳ Testing final y QA
 - ⏳ Deploy a producción
 - ⏳ Monitoreo y ajustes
@@ -283,12 +298,14 @@ interface CheckoutEvents {
 ## 🚀 Resultados Esperados
 
 ### **Impacto en Conversión**
+
 - **Checkout Express**: +40% conversión vs actual
 - **Mobile**: +35% mejora en experiencia móvil
 - **Tiempo**: -60% reducción en tiempo de checkout
 - **Abandono**: -50% menos abandono del carrito
 
 ### **ROI Estimado**
+
 - **Inversión**: 80 horas desarrollo
 - **Retorno**: +$150.000/mes en ventas adicionales
 - **Payback**: 2 semanas
@@ -305,6 +322,3 @@ interface CheckoutEvents {
 5. **Lanzar Beta**: Testing con usuarios reales
 
 **Objetivo**: Tener el checkout express funcionando en 2 semanas con mejoras medibles en conversión desde el primer día.
-
-
-

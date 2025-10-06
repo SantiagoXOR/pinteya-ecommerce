@@ -7,6 +7,7 @@ El **Pinteya Design System** ha sido creado específicamente para optimizar la e
 ## 🎯 Objetivos del Design System
 
 ### ✅ Beneficios Inmediatos
+
 - **Consistencia Visual**: Unificación de componentes y estilos
 - **Velocidad de Desarrollo**: Componentes reutilizables y documentados
 - **Mantenibilidad**: Tokens centralizados y versionado semántico
@@ -14,6 +15,7 @@ El **Pinteya Design System** ha sido creado específicamente para optimizar la e
 - **Performance**: Optimización específica para e-commerce
 
 ### 🎨 Características Únicas
+
 - **Paleta Optimizada**: Colores específicos para pinturería
 - **Componentes E-commerce**: ProductCard, AddToCartButton, etc.
 - **Mobile-First**: Diseño responsive desde mobile
@@ -54,6 +56,7 @@ design-system/
 ## 🚀 Plan de Implementación
 
 ### Fase 1: Setup Inicial (Semana 1)
+
 ```bash
 # 1. Instalar dependencias del design system
 cd design-system
@@ -69,9 +72,10 @@ npm test
 ### Fase 2: Integración Gradual (Semanas 2-3)
 
 #### 2.1 Importar Tokens
+
 ```typescript
 // En tu proyecto principal
-import { colors, spacing, typography } from '@pinteya/design-system/tokens';
+import { colors, spacing, typography } from '@pinteya/design-system/tokens'
 
 // Usar en Tailwind config
 module.exports = {
@@ -80,50 +84,46 @@ module.exports = {
       colors: colors,
       spacing: spacing,
       fontFamily: typography.fontFamilies,
-    }
-  }
+    },
+  },
 }
 ```
 
 #### 2.2 Adoptar Componentes Básicos
+
 ```jsx
 // Reemplazar botones existentes gradualmente
-import { Button, AddToCartButton } from '@pinteya/design-system';
+import { Button, AddToCartButton } from '@pinteya/design-system'
 
 // En ProductCard existente
-<AddToCartButton 
-  onClick={handleAddToCart}
-  loading={isLoading}
->
+;<AddToCartButton onClick={handleAddToCart} loading={isLoading}>
   Agregar al carrito
 </AddToCartButton>
 ```
 
 #### 2.3 Mantener Compatibilidad
+
 ```jsx
 // Wrapper para transición gradual
 const LegacyButton = ({ children, ...props }) => {
   return (
-    <Button 
-      variant="primary" 
-      className="legacy-button-styles"
-      {...props}
-    >
+    <Button variant='primary' className='legacy-button-styles' {...props}>
       {children}
     </Button>
-  );
-};
+  )
+}
 ```
 
 ### Fase 3: Componentes Avanzados (Semanas 4-5)
 
 #### 3.1 ProductCard Mejorado
-```jsx
-import { ProductCard } from '@pinteya/design-system';
 
-<ProductCard
+```jsx
+import { ProductCard } from '@pinteya/design-system'
+
+;<ProductCard
   product={product}
-  variant="ecommerce"
+  variant='ecommerce'
   showBadges={true}
   onAddToCart={handleAddToCart}
   onWishlist={handleWishlist}
@@ -131,13 +131,14 @@ import { ProductCard } from '@pinteya/design-system';
 ```
 
 #### 3.2 Navigation System
-```jsx
-import { Navigation, Header } from '@pinteya/design-system';
 
-<Header>
-  <Navigation 
+```jsx
+import { Navigation, Header } from '@pinteya/design-system'
+
+;<Header>
+  <Navigation
     items={navigationItems}
-    variant="ecommerce"
+    variant='ecommerce'
     showCart={true}
     cartCount={cartItems.length}
   />
@@ -147,11 +148,13 @@ import { Navigation, Header } from '@pinteya/design-system';
 ### Fase 4: Optimización (Semana 6)
 
 #### 4.1 Performance
+
 - Tree-shaking de componentes no utilizados
 - Lazy loading de componentes pesados
 - Optimización de bundle size
 
 #### 4.2 Testing
+
 ```bash
 # Tests de componentes
 npm run test
@@ -166,6 +169,7 @@ npm run chromatic
 ## 🎨 Uso de Tokens
 
 ### Colores
+
 ```typescript
 import { colors } from '@pinteya/design-system/tokens';
 
@@ -185,32 +189,35 @@ const styles = {
 ```
 
 ### Espaciado
+
 ```typescript
-import { spacing } from '@pinteya/design-system/tokens';
+import { spacing } from '@pinteya/design-system/tokens'
 
 // Espaciado responsive
 const cardStyles = {
-  padding: spacing.cardPadding,     // 16px
-  margin: spacing.componentMargin,  // 16px
-  gap: spacing.gridGap,            // 16px
-};
+  padding: spacing.cardPadding, // 16px
+  margin: spacing.componentMargin, // 16px
+  gap: spacing.gridGap, // 16px
+}
 ```
 
 ### Tipografía
+
 ```typescript
-import { typography } from '@pinteya/design-system/tokens';
+import { typography } from '@pinteya/design-system/tokens'
 
 // Estilos tipográficos
 const textStyles = {
   heading: typography.h3,
   body: typography.body,
   price: typography.ecommerce.priceMain,
-};
+}
 ```
 
 ## 🧪 Testing y Calidad
 
 ### Tests Automatizados
+
 ```bash
 # Tests unitarios
 npm run test
@@ -223,6 +230,7 @@ npm run test:coverage
 ```
 
 ### Validación Visual
+
 ```bash
 # Storybook para desarrollo
 npm run dev
@@ -237,42 +245,46 @@ npm run chromatic
 ## 📚 Documentación
 
 ### Storybook
+
 - **URL Local**: http://localhost:6006
 - **Componentes**: Documentación interactiva
 - **Tokens**: Paletas y escalas visuales
 - **Guidelines**: Guías de uso
 
 ### Ejemplos de Uso
+
 ```jsx
 // Ejemplo completo de ProductCard
-import { ProductCard, Button, Badge } from '@pinteya/design-system';
+import { ProductCard, Button, Badge } from '@pinteya/design-system'
 
 const ExampleProduct = () => (
   <ProductCard
-    image="/product-image.jpg"
-    title="Pintura Latex Interior 4L"
-    brand="Sherwin Williams"
+    image='/product-image.jpg'
+    title='Pintura Latex Interior 4L'
+    brand='Sherwin Williams'
     price={15250}
     originalPrice={18000}
     discount={15}
     badges={[
-      <Badge variant="success">Envío gratis</Badge>,
-      <Badge variant="warning">Últimas unidades</Badge>
+      <Badge variant='success'>Envío gratis</Badge>,
+      <Badge variant='warning'>Últimas unidades</Badge>,
     ]}
     onAddToCart={() => console.log('Added to cart')}
     onWishlist={() => console.log('Added to wishlist')}
   />
-);
+)
 ```
 
 ## 🔄 Versionado y Releases
 
 ### Semantic Versioning
+
 - **Major (1.0.0)**: Breaking changes
 - **Minor (1.1.0)**: Nuevas funcionalidades
 - **Patch (1.0.1)**: Bug fixes
 
 ### Proceso de Release
+
 ```bash
 # 1. Actualizar versión
 npm version patch|minor|major
@@ -291,6 +303,7 @@ git push origin v1.0.0
 ## 🤝 Contribución
 
 ### Workflow de Desarrollo
+
 1. **Fork** del repositorio
 2. **Branch** para nueva funcionalidad
 3. **Desarrollo** con tests
@@ -299,6 +312,7 @@ git push origin v1.0.0
 6. **Merge** después de aprobación
 
 ### Estándares de Código
+
 - **TypeScript**: Tipado estricto
 - **ESLint**: Linting automático
 - **Prettier**: Formateo consistente
@@ -307,12 +321,14 @@ git push origin v1.0.0
 ## 📞 Soporte
 
 ### Recursos
+
 - **Storybook**: Documentación interactiva
 - **GitHub Issues**: Reportar bugs
 - **Slack/Discord**: Comunicación del equipo
 - **Wiki**: Documentación extendida
 
 ### Contacto
+
 - **Email**: dev@pinteya.com
 - **GitHub**: @SantiagoXOR
 - **Proyecto**: https://pinteya-ecommerce.vercel.app

@@ -41,11 +41,13 @@ http://localhost:3000/?categories=Exterior&brands=Sherwin Williams&priceMin=2000
 ## 🎯 Funcionalidades Principales
 
 ### ✅ Renderizado Condicional
+
 - Homepage normal cuando no hay filtros
 - Vista de productos filtrados cuando hay filtros activos
 - Transición suave entre estados
 
 ### ✅ Filtros Disponibles
+
 - **Categorías**: ✅ 100% Funcional - Píldoras interactivas con navegación URL
   - Preparación, Reparación, Terminación, Decorativo, Profesional
   - Interior, Exterior, Humedad, Maderas, Techos, Sintético
@@ -56,6 +58,7 @@ http://localhost:3000/?categories=Exterior&brands=Sherwin Williams&priceMin=2000
 - **Ordenamiento**: Relevancia, precio, fecha, popularidad
 
 ### 🎯 Componente Categories - Características Principales
+
 - **Toggle Functionality**: Selección/deselección individual de categorías
 - **Navegación URL**: Sincronización automática con parámetros de query
 - **Estados Visuales**: Indicadores claros de categorías activas
@@ -63,11 +66,13 @@ http://localhost:3000/?categories=Exterior&brands=Sherwin Williams&priceMin=2000
 - **Performance**: Optimizado con Next.js Image y transiciones CSS
 
 ### ✅ Experiencia Móvil
+
 - Botón flotante para acceder a filtros
 - Panel deslizable con todos los filtros
 - Diseño optimizado para touch
 
 ### ✅ Analytics Integrado
+
 - Tracking automático de eventos de filtros
 - Métricas de uso y conversión
 - Dashboard administrativo
@@ -234,13 +239,23 @@ Los componentes usan Tailwind CSS con clases personalizadas:
 
 ```css
 /* Colores principales */
-.filter-primary { @apply bg-blaze-orange-600 text-white; }
-.filter-secondary { @apply bg-yellow-400 text-gray-900; }
-.filter-success { @apply bg-green-600 text-white; }
+.filter-primary {
+  @apply bg-blaze-orange-600 text-white;
+}
+.filter-secondary {
+  @apply bg-yellow-400 text-gray-900;
+}
+.filter-success {
+  @apply bg-green-600 text-white;
+}
 
 /* Animaciones */
-.filter-slide-up { @apply transform translate-y-full transition-transform duration-300; }
-.filter-slide-up.open { @apply translate-y-0; }
+.filter-slide-up {
+  @apply transform translate-y-full transition-transform duration-300;
+}
+.filter-slide-up.open {
+  @apply translate-y-0;
+}
 ```
 
 ### Configuración de Breakpoints
@@ -248,12 +263,12 @@ Los componentes usan Tailwind CSS con clases personalizadas:
 ```typescript
 // Configuración responsive
 const breakpoints = {
-  sm: '640px',   // Tablet pequeña
-  md: '768px',   // Tablet
-  lg: '1024px',  // Desktop pequeño
-  xl: '1280px',  // Desktop
-  '2xl': '1536px' // Desktop grande
-};
+  sm: '640px', // Tablet pequeña
+  md: '768px', // Tablet
+  lg: '1024px', // Desktop pequeño
+  xl: '1280px', // Desktop
+  '2xl': '1536px', // Desktop grande
+}
 ```
 
 ## 🧪 Testing
@@ -291,6 +306,7 @@ __tests__/
 Accede al dashboard en: `/admin/analytics/filters`
 
 **Métricas disponibles**:
+
 - Total de eventos de filtros
 - Sesiones únicas con filtros
 - Filtros más utilizados
@@ -316,16 +332,19 @@ Accede al dashboard en: `/admin/analytics/filters`
 ### Problemas Comunes
 
 **1. Filtros no se aplican**
+
 - Verificar que la URL contiene los parámetros correctos
 - Revisar que `useProductFilters` está configurado correctamente
 - Comprobar que la API `/api/products` responde correctamente
 
 **2. Analytics no funciona**
+
 - Verificar variables de entorno de GA4
 - Comprobar que Supabase está configurado
 - Habilitar modo debug: `debug: true` en `useFilterAnalytics`
 
 **3. Performance lenta**
+
 - Verificar que el debouncing está activo (300ms)
 - Comprobar que los componentes usan `React.memo`
 - Revisar que las imágenes están optimizadas
@@ -335,11 +354,11 @@ Accede al dashboard en: `/admin/analytics/filters`
 ```typescript
 // Habilitar debug en desarrollo
 const analytics = useFilterAnalytics({
-  debug: process.env.NODE_ENV === 'development'
-});
+  debug: process.env.NODE_ENV === 'development',
+})
 
 // Logs en consola
-localStorage.setItem('debug-filters', 'true');
+localStorage.setItem('debug-filters', 'true')
 ```
 
 ## 🚀 Deploy y Producción
@@ -389,6 +408,3 @@ vercel --prod
 - **Componente Categories**: ✅ Problema de navegación URL resuelto
 - **Production Status**: Completamente operativo
 - **Código**: Limpio y sin logs de debugging
-
-
-

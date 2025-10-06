@@ -165,7 +165,7 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             // Props de configuración
             placeholder={selectedCategory.placeholder}
             onSearch={handleSearch}
-            onSuggestionSelect={handleSuggestionSelect}
+            onSuggestionSelected={handleSuggestionSelect}
             size={size}
             className='w-full [&>div>div>input]:border-0 [&>div>div>input]:rounded-none [&>div>div>input]:bg-white [&>div>div>input]:focus:ring-0 [&>div>div>input]:focus:border-gray-300'
             maxSuggestions={6}

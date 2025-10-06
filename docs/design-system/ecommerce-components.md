@@ -34,14 +34,14 @@ import { PriceDisplay } from '@/components/ui/price-display'
 <PriceDisplay amount={1550} currency="ARS" />
 
 // Con descuento
-<PriceDisplay 
-  amount={1550} 
+<PriceDisplay
+  amount={1550}
   originalAmount={2000}
   showDiscountPercentage
 />
 
 // Con cuotas
-<PriceDisplay 
+<PriceDisplay
   amount={15000}
   installments={{
     quantity: 12,
@@ -51,7 +51,7 @@ import { PriceDisplay } from '@/components/ui/price-display'
 />
 
 // Completo
-<PriceDisplay 
+<PriceDisplay
   amount={15000}
   originalAmount={20000}
   installments={{
@@ -68,16 +68,16 @@ import { PriceDisplay } from '@/components/ui/price-display'
 
 ### Props
 
-| Prop | Tipo | Default | Descripción |
-|------|------|---------|-------------|
-| `amount` | `number` | - | Precio actual en centavos |
-| `originalAmount` | `number` | - | Precio original antes del descuento |
-| `currency` | `string` | `"ARS"` | Código de moneda |
-| `installments` | `object` | - | Información de cuotas |
-| `showDiscountPercentage` | `boolean` | `true` | Mostrar porcentaje de descuento |
-| `showFreeShipping` | `boolean` | `false` | Mostrar badge de envío gratis |
-| `variant` | `"default" \| "center" \| "compact"` | `"default"` | Variante de diseño |
-| `size` | `"sm" \| "md" \| "lg" \| "xl"` | `"md"` | Tamaño del componente |
+| Prop                     | Tipo                                 | Default     | Descripción                         |
+| ------------------------ | ------------------------------------ | ----------- | ----------------------------------- |
+| `amount`                 | `number`                             | -           | Precio actual en centavos           |
+| `originalAmount`         | `number`                             | -           | Precio original antes del descuento |
+| `currency`               | `string`                             | `"ARS"`     | Código de moneda                    |
+| `installments`           | `object`                             | -           | Información de cuotas               |
+| `showDiscountPercentage` | `boolean`                            | `true`      | Mostrar porcentaje de descuento     |
+| `showFreeShipping`       | `boolean`                            | `false`     | Mostrar badge de envío gratis       |
+| `variant`                | `"default" \| "center" \| "compact"` | `"default"` | Variante de diseño                  |
+| `size`                   | `"sm" \| "md" \| "lg" \| "xl"`       | `"md"`      | Tamaño del componente               |
 
 ---
 
@@ -103,26 +103,26 @@ import { StockIndicator } from '@/components/ui/stock-indicator'
 <StockIndicator quantity={15} showExactQuantity />
 
 // Stock bajo
-<StockIndicator 
-  quantity={3} 
+<StockIndicator
+  quantity={3}
   lowStockThreshold={5}
-  showExactQuantity 
+  showExactQuantity
 />
 
 // Sin stock con reposición
-<StockIndicator 
+<StockIndicator
   quantity={0}
   restockDate={new Date('2025-07-05')}
 />
 
 // Pre-orden
-<StockIndicator 
+<StockIndicator
   quantity={0}
   allowPreOrder
 />
 
 // Con unidades personalizadas
-<StockIndicator 
+<StockIndicator
   quantity={5}
   unit="litros"
   showExactQuantity
@@ -131,12 +131,12 @@ import { StockIndicator } from '@/components/ui/stock-indicator'
 
 ### Estados de Stock
 
-| Estado | Color | Descripción |
-|--------|-------|-------------|
-| **En Stock** | 🟢 Verde | Cantidad > umbral bajo |
-| **Stock Bajo** | 🟡 Amarillo | Cantidad ≤ umbral bajo |
-| **Sin Stock** | 🔴 Rojo | Cantidad = 0 |
-| **Pre-orden** | 🔵 Azul | Sin stock pero permite pedidos |
+| Estado         | Color       | Descripción                    |
+| -------------- | ----------- | ------------------------------ |
+| **En Stock**   | 🟢 Verde    | Cantidad > umbral bajo         |
+| **Stock Bajo** | 🟡 Amarillo | Cantidad ≤ umbral bajo         |
+| **Sin Stock**  | 🔴 Rojo     | Cantidad = 0                   |
+| **Pre-orden**  | 🔵 Azul     | Sin stock pero permite pedidos |
 
 ---
 
@@ -165,7 +165,7 @@ import { ShippingInfo } from '@/components/ui/shipping-info'
 <ShippingInfo variant="badge" type="free" />
 
 // Múltiples opciones
-<ShippingInfo 
+<ShippingInfo
   variant="card"
   options={[
     {
@@ -189,7 +189,7 @@ import { ShippingInfo } from '@/components/ui/shipping-info'
 />
 
 // Con calculadora
-<ShippingInfo 
+<ShippingInfo
   showCalculator
   postalCode="1425"
 />
@@ -242,33 +242,28 @@ import { PriceDisplay, StockIndicator, ShippingInfo } from '@/components/ui'
 
 function ProductCard() {
   return (
-    <div className="border rounded-lg p-4 space-y-4">
-      <h3 className="font-medium">Pintura Sherwin Williams 4L</h3>
-      
+    <div className='border rounded-lg p-4 space-y-4'>
+      <h3 className='font-medium'>Pintura Sherwin Williams 4L</h3>
+
       {/* Precio con descuento y cuotas */}
-      <PriceDisplay 
+      <PriceDisplay
         amount={8500}
         originalAmount={10000}
         installments={{
           quantity: 6,
           amount: 1417,
-          interestFree: true
+          interestFree: true,
         }}
         showFreeShipping
-        variant="center"
+        variant='center'
       />
-      
+
       {/* Stock disponible */}
-      <StockIndicator 
-        quantity={12}
-        unit="latas"
-        showExactQuantity
-        lowStockThreshold={5}
-      />
-      
+      <StockIndicator quantity={12} unit='latas' showExactQuantity lowStockThreshold={5} />
+
       {/* Opciones de envío */}
-      <ShippingInfo 
-        variant="card"
+      <ShippingInfo
+        variant='card'
         options={[
           {
             id: 'free',
@@ -276,15 +271,15 @@ function ProductCard() {
             price: 0,
             estimatedDays: { min: 5, max: 7 },
             isFree: true,
-            description: 'Compra mínima $50.000'
+            description: 'Compra mínima $50.000',
           },
           {
             id: 'standard',
             name: 'Envío estándar',
             price: 2500,
             estimatedDays: { min: 3, max: 5 },
-            description: 'Productos pesados'
-          }
+            description: 'Productos pesados',
+          },
         ]}
         showGuarantees
       />
@@ -298,23 +293,20 @@ function ProductCard() {
 ```tsx
 function ProductGrid() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
       {products.map(product => (
-        <div key={product.id} className="border rounded-lg p-3">
+        <div key={product.id} className='border rounded-lg p-3'>
           <img src={product.image} alt={product.name} />
-          <h4 className="font-medium text-sm mt-2">{product.name}</h4>
-          
-          <PriceDisplay 
+          <h4 className='font-medium text-sm mt-2'>{product.name}</h4>
+
+          <PriceDisplay
             amount={product.price}
             originalAmount={product.originalPrice}
-            variant="compact"
-            size="sm"
+            variant='compact'
+            size='sm'
           />
-          
-          <StockIndicator 
-            quantity={product.stock}
-            variant="minimal"
-          />
+
+          <StockIndicator quantity={product.stock} variant='minimal' />
         </div>
       ))}
     </div>
@@ -327,21 +319,25 @@ function ProductGrid() {
 ## 🎯 Mejores Prácticas
 
 ### 1. **Consistencia de Precios**
+
 - Siempre usar centavos para evitar errores de redondeo
 - Mantener formato de moneda consistente (ARS para Argentina)
 - Mostrar descuentos de forma prominente
 
 ### 2. **Información de Stock**
+
 - Ser transparente con la disponibilidad
 - Usar umbrales apropiados para cada tipo de producto
 - Ofrecer alternativas cuando no hay stock
 
 ### 3. **Opciones de Envío**
+
 - Destacar envío gratis cuando aplique
 - Mostrar tiempos de entrega realistas
 - Incluir calculadora para productos pesados
 
 ### 4. **Responsive Design**
+
 - Usar variantes compactas en móviles
 - Priorizar información más importante
 - Mantener legibilidad en pantallas pequeñas
@@ -354,6 +350,3 @@ function ProductGrid() {
 - [🌈 Paleta de Colores](./colors.md)
 - [📱 Responsive Design](./responsive.md)
 - [🧭 Componentes de Navegación](./components/navigation.md)
-
-
-

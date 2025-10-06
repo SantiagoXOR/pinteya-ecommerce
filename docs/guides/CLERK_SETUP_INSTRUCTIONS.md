@@ -29,19 +29,22 @@ NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup
 ### 3. Configurar Dominio en Clerk
 
 En Clerk Dashboard:
-1. Ve a **Domains** 
+
+1. Ve a **Domains**
 2. Agrega `pinteya-ecommerce.vercel.app` como dominio autorizado
 3. O usa claves de desarrollo que funcionan en cualquier dominio
 
 ### 4. Redeploy
 
 Después de configurar las variables:
+
 1. Ve a: https://vercel.com/santiagoxor/pinteya-ecommerce/deployments
 2. Haz click en "Redeploy" en el último deployment
 
 ### 5. Verificar
 
 Una vez redeployado:
+
 1. Ve a: https://pinteya-ecommerce.vercel.app/debug-clerk
 2. Verifica que las variables estén configuradas
 3. Prueba el login
@@ -49,6 +52,7 @@ Una vez redeployado:
 ### 6. Configurar Rol Admin
 
 Una vez que puedas hacer login:
+
 1. Ve a: https://pinteya-ecommerce.vercel.app/api/admin/setup-role
 2. Esto configurará tu rol como admin
 3. Luego podrás acceder a: https://pinteya-ecommerce.vercel.app/admin
@@ -86,6 +90,7 @@ Si sigues teniendo problemas:
 ## Contacto
 
 Si necesitas ayuda adicional, comparte:
+
 - Screenshot de las variables en Vercel
 - Logs de error específicos
 - Resultado de /debug-clerk después de la configuración

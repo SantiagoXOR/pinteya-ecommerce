@@ -5,7 +5,7 @@
 **Problema Identificado**: El sistema actual solo implementa login básico sin gestión completa de sesiones  
 **Estado Actual**: NextAuth.js con JWT básico, sin persistencia ni control avanzado  
 **Solución Propuesta**: Sistema completo de gestión de sesiones enterprise-ready  
-**Impacto**: +80% seguridad, +60% UX, +90% control administrativo  
+**Impacto**: +80% seguridad, +60% UX, +90% control administrativo
 
 ---
 
@@ -46,64 +46,64 @@
 
 ```typescript
 // lib/auth/session-manager.ts
-import { Redis } from 'ioredis';
-import { randomBytes, createHash } from 'crypto';
-import { auth } from '@/auth';
+import { Redis } from 'ioredis'
+import { randomBytes, createHash } from 'crypto'
+import { auth } from '@/auth'
 
 interface SessionData {
-  id: string;
-  userId: string;
-  deviceId: string;
+  id: string
+  userId: string
+  deviceId: string
   deviceInfo: {
-    userAgent: string;
-    ip: string;
-    location?: string;
-    deviceType: 'desktop' | 'mobile' | 'tablet';
-    browser: string;
-    os: string;
-  };
-  createdAt: Date;
-  lastActivity: Date;
-  expiresAt: Date;
-  isActive: boolean;
+    userAgent: string
+    ip: string
+    location?: string
+    deviceType: 'desktop' | 'mobile' | 'tablet'
+    browser: string
+    os: string
+  }
+  createdAt: Date
+  lastActivity: Date
+  expiresAt: Date
+  isActive: boolean
   metadata: {
-    loginMethod: 'oauth' | 'credentials' | 'sso';
-    provider?: string;
-    riskScore: number;
-    flags: string[];
-  };
+    loginMethod: 'oauth' | 'credentials' | 'sso'
+    provider?: string
+    riskScore: number
+    flags: string[]
+  }
 }
 
 interface SessionActivity {
-  sessionId: string;
-  action: string;
-  timestamp: Date;
-  ip: string;
-  userAgent: string;
-  metadata?: Record<string, any>;
+  sessionId: string
+  action: string
+  timestamp: Date
+  ip: string
+  userAgent: string
+  metadata?: Record<string, any>
 }
 
 export class SessionManager {
-  private redis: Redis;
-  private readonly SESSION_PREFIX = 'session:';
-  private readonly USER_SESSIONS_PREFIX = 'user_sessions:';
-  private readonly ACTIVITY_PREFIX = 'activity:';
-  
+  private redis: Redis
+  private readonly SESSION_PREFIX = 'session:'
+  private readonly USER_SESSIONS_PREFIX = 'user_sessions:'
+  private readonly ACTIVITY_PREFIX = 'activity:'
+
   constructor() {
-    this.redis = new Redis(process.env.REDIS_URL!);
+    this.redis = new Redis(process.env.REDIS_URL!)
   }
 
   // Crear nueva sesión
   async createSession(
-    userId: string, 
+    userId: string,
     deviceInfo: SessionData['deviceInfo'],
     loginMethod: string,
     provider?: string
   ): Promise<SessionData> {
-    const sessionId = this.generateSessionId();
-    const deviceId = this.generateDeviceId(deviceInfo);
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 días
+    const sessionId = this.generateSessionId()
+    const deviceId = this.generateDeviceId(deviceInfo)
+    const now = new Date()
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 días
 
     const sessionData: SessionData = {
       id: sessionId,
@@ -118,71 +118,74 @@ export class SessionManager {
         loginMethod: loginMethod as any,
         provider,
         riskScore: await this.calculateRiskScore(deviceInfo, userId),
-        flags: []
-      }
-    };
+        flags: [],
+      },
+    }
 
     // Guardar sesión
     await this.redis.setex(
       `${this.SESSION_PREFIX}${sessionId}`,
       30 * 24 * 60 * 60, // 30 días en segundos
       JSON.stringify(sessionData)
-    );
+    )
 
     // Agregar a lista de sesiones del usuario
-    await this.redis.sadd(`${this.USER_SESSIONS_PREFIX}${userId}`, sessionId);
+    await this.redis.sadd(`${this.USER_SESSIONS_PREFIX}${userId}`, sessionId)
 
     // Registrar actividad
-    await this.logActivity(sessionId, 'session_created', deviceInfo.ip, deviceInfo.userAgent);
+    await this.logActivity(sessionId, 'session_created', deviceInfo.ip, deviceInfo.userAgent)
 
     // Verificar límite de sesiones concurrentes
-    await this.enforceConcurrentSessionLimit(userId);
+    await this.enforceConcurrentSessionLimit(userId)
 
-    return sessionData;
+    return sessionData
   }
 
   // Obtener sesión por ID
   async getSession(sessionId: string): Promise<SessionData | null> {
     try {
-      const data = await this.redis.get(`${this.SESSION_PREFIX}${sessionId}`);
-      if (!data) return null;
-      
-      const session: SessionData = JSON.parse(data);
-      
+      const data = await this.redis.get(`${this.SESSION_PREFIX}${sessionId}`)
+      if (!data) return null
+
+      const session: SessionData = JSON.parse(data)
+
       // Verificar si la sesión ha expirado
       if (new Date() > new Date(session.expiresAt)) {
-        await this.invalidateSession(sessionId);
-        return null;
+        await this.invalidateSession(sessionId)
+        return null
       }
-      
-      return session;
+
+      return session
     } catch (error) {
-      console.error('Error getting session:', error);
-      return null;
+      console.error('Error getting session:', error)
+      return null
     }
   }
 
   // Actualizar actividad de sesión
   async updateSessionActivity(
-    sessionId: string, 
+    sessionId: string,
     action: string = 'page_view',
     ip?: string,
     userAgent?: string
   ): Promise<boolean> {
     try {
-      const session = await this.getSession(sessionId);
-      if (!session) return false;
+      const session = await this.getSession(sessionId)
+      if (!session) return false
 
       // Actualizar última actividad
-      session.lastActivity = new Date();
-      
+      session.lastActivity = new Date()
+
       // Actualizar IP si cambió
       if (ip && ip !== session.deviceInfo.ip) {
-        session.deviceInfo.ip = ip;
-        session.metadata.flags.push('ip_changed');
-        
+        session.deviceInfo.ip = ip
+        session.metadata.flags.push('ip_changed')
+
         // Alertar sobre cambio de IP
-        await this.handleSuspiciousActivity(session, 'ip_change', { oldIp: session.deviceInfo.ip, newIp: ip });
+        await this.handleSuspiciousActivity(session, 'ip_change', {
+          oldIp: session.deviceInfo.ip,
+          newIp: ip,
+        })
       }
 
       // Guardar sesión actualizada
@@ -190,125 +193,143 @@ export class SessionManager {
         `${this.SESSION_PREFIX}${sessionId}`,
         30 * 24 * 60 * 60,
         JSON.stringify(session)
-      );
+      )
 
       // Registrar actividad
-      await this.logActivity(sessionId, action, ip || session.deviceInfo.ip, userAgent || session.deviceInfo.userAgent);
+      await this.logActivity(
+        sessionId,
+        action,
+        ip || session.deviceInfo.ip,
+        userAgent || session.deviceInfo.userAgent
+      )
 
-      return true;
+      return true
     } catch (error) {
-      console.error('Error updating session activity:', error);
-      return false;
+      console.error('Error updating session activity:', error)
+      return false
     }
   }
 
   // Renovar sesión automáticamente
   async renewSession(sessionId: string): Promise<{ success: boolean; newExpiresAt?: Date }> {
     try {
-      const session = await this.getSession(sessionId);
-      if (!session) return { success: false };
+      const session = await this.getSession(sessionId)
+      if (!session) return { success: false }
 
       // Verificar si la sesión necesita renovación (últimas 7 días)
-      const renewThreshold = 7 * 24 * 60 * 60 * 1000; // 7 días
-      const timeUntilExpiry = new Date(session.expiresAt).getTime() - Date.now();
-      
+      const renewThreshold = 7 * 24 * 60 * 60 * 1000 // 7 días
+      const timeUntilExpiry = new Date(session.expiresAt).getTime() - Date.now()
+
       if (timeUntilExpiry > renewThreshold) {
-        return { success: true, newExpiresAt: new Date(session.expiresAt) };
+        return { success: true, newExpiresAt: new Date(session.expiresAt) }
       }
 
       // Renovar sesión
-      const newExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      session.expiresAt = newExpiresAt;
-      session.lastActivity = new Date();
+      const newExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      session.expiresAt = newExpiresAt
+      session.lastActivity = new Date()
 
       await this.redis.setex(
         `${this.SESSION_PREFIX}${sessionId}`,
         30 * 24 * 60 * 60,
         JSON.stringify(session)
-      );
+      )
 
-      await this.logActivity(sessionId, 'session_renewed', session.deviceInfo.ip, session.deviceInfo.userAgent);
+      await this.logActivity(
+        sessionId,
+        'session_renewed',
+        session.deviceInfo.ip,
+        session.deviceInfo.userAgent
+      )
 
-      return { success: true, newExpiresAt };
+      return { success: true, newExpiresAt }
     } catch (error) {
-      console.error('Error renewing session:', error);
-      return { success: false };
+      console.error('Error renewing session:', error)
+      return { success: false }
     }
   }
 
   // Invalidar sesión específica
   async invalidateSession(sessionId: string, reason: string = 'manual'): Promise<boolean> {
     try {
-      const session = await this.getSession(sessionId);
-      if (!session) return false;
+      const session = await this.getSession(sessionId)
+      if (!session) return false
 
       // Marcar como inactiva
-      session.isActive = false;
-      session.metadata.flags.push(`invalidated_${reason}`);
+      session.isActive = false
+      session.metadata.flags.push(`invalidated_${reason}`)
 
       // Eliminar de Redis
-      await this.redis.del(`${this.SESSION_PREFIX}${sessionId}`);
-      
+      await this.redis.del(`${this.SESSION_PREFIX}${sessionId}`)
+
       // Remover de lista de sesiones del usuario
-      await this.redis.srem(`${this.USER_SESSIONS_PREFIX}${session.userId}`, sessionId);
+      await this.redis.srem(`${this.USER_SESSIONS_PREFIX}${session.userId}`, sessionId)
 
       // Registrar actividad
-      await this.logActivity(sessionId, 'session_invalidated', session.deviceInfo.ip, session.deviceInfo.userAgent, { reason });
+      await this.logActivity(
+        sessionId,
+        'session_invalidated',
+        session.deviceInfo.ip,
+        session.deviceInfo.userAgent,
+        { reason }
+      )
 
-      return true;
+      return true
     } catch (error) {
-      console.error('Error invalidating session:', error);
-      return false;
+      console.error('Error invalidating session:', error)
+      return false
     }
   }
 
   // Invalidar todas las sesiones de un usuario
   async invalidateAllUserSessions(userId: string, exceptSessionId?: string): Promise<number> {
     try {
-      const sessionIds = await this.redis.smembers(`${this.USER_SESSIONS_PREFIX}${userId}`);
-      let invalidatedCount = 0;
+      const sessionIds = await this.redis.smembers(`${this.USER_SESSIONS_PREFIX}${userId}`)
+      let invalidatedCount = 0
 
       for (const sessionId of sessionIds) {
         if (sessionId !== exceptSessionId) {
-          const success = await this.invalidateSession(sessionId, 'force_logout_all');
-          if (success) invalidatedCount++;
+          const success = await this.invalidateSession(sessionId, 'force_logout_all')
+          if (success) invalidatedCount++
         }
       }
 
-      return invalidatedCount;
+      return invalidatedCount
     } catch (error) {
-      console.error('Error invalidating all user sessions:', error);
-      return 0;
+      console.error('Error invalidating all user sessions:', error)
+      return 0
     }
   }
 
   // Obtener sesiones activas de un usuario
   async getUserActiveSessions(userId: string): Promise<SessionData[]> {
     try {
-      const sessionIds = await this.redis.smembers(`${this.USER_SESSIONS_PREFIX}${userId}`);
-      const sessions: SessionData[] = [];
+      const sessionIds = await this.redis.smembers(`${this.USER_SESSIONS_PREFIX}${userId}`)
+      const sessions: SessionData[] = []
 
       for (const sessionId of sessionIds) {
-        const session = await this.getSession(sessionId);
+        const session = await this.getSession(sessionId)
         if (session && session.isActive) {
-          sessions.push(session);
+          sessions.push(session)
         }
       }
 
       // Ordenar por última actividad
-      return sessions.sort((a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime());
+      return sessions.sort(
+        (a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime()
+      )
     } catch (error) {
-      console.error('Error getting user active sessions:', error);
-      return [];
+      console.error('Error getting user active sessions:', error)
+      return []
     }
   }
 
   // Registrar actividad de sesión
   private async logActivity(
-    sessionId: string, 
-    action: string, 
-    ip: string, 
-    userAgent: string, 
+    sessionId: string,
+    action: string,
+    ip: string,
+    userAgent: string,
     metadata?: Record<string, any>
   ): Promise<void> {
     try {
@@ -318,148 +339,150 @@ export class SessionManager {
         timestamp: new Date(),
         ip,
         userAgent,
-        metadata
-      };
+        metadata,
+      }
 
       // Guardar actividad (mantener últimas 1000 actividades por sesión)
-      await this.redis.lpush(
-        `${this.ACTIVITY_PREFIX}${sessionId}`,
-        JSON.stringify(activity)
-      );
-      
-      await this.redis.ltrim(`${this.ACTIVITY_PREFIX}${sessionId}`, 0, 999);
-      await this.redis.expire(`${this.ACTIVITY_PREFIX}${sessionId}`, 30 * 24 * 60 * 60);
+      await this.redis.lpush(`${this.ACTIVITY_PREFIX}${sessionId}`, JSON.stringify(activity))
+
+      await this.redis.ltrim(`${this.ACTIVITY_PREFIX}${sessionId}`, 0, 999)
+      await this.redis.expire(`${this.ACTIVITY_PREFIX}${sessionId}`, 30 * 24 * 60 * 60)
     } catch (error) {
-      console.error('Error logging activity:', error);
+      console.error('Error logging activity:', error)
     }
   }
 
   // Generar ID de sesión único
   private generateSessionId(): string {
-    return `sess_${randomBytes(32).toString('hex')}`;
+    return `sess_${randomBytes(32).toString('hex')}`
   }
 
   // Generar ID de dispositivo basado en características
   private generateDeviceId(deviceInfo: SessionData['deviceInfo']): string {
-    const fingerprint = `${deviceInfo.userAgent}|${deviceInfo.browser}|${deviceInfo.os}`;
-    return createHash('sha256').update(fingerprint).digest('hex').substring(0, 16);
+    const fingerprint = `${deviceInfo.userAgent}|${deviceInfo.browser}|${deviceInfo.os}`
+    return createHash('sha256').update(fingerprint).digest('hex').substring(0, 16)
   }
 
   // Calcular score de riesgo
-  private async calculateRiskScore(deviceInfo: SessionData['deviceInfo'], userId: string): Promise<number> {
-    let riskScore = 0;
+  private async calculateRiskScore(
+    deviceInfo: SessionData['deviceInfo'],
+    userId: string
+  ): Promise<number> {
+    let riskScore = 0
 
     // Verificar si es un dispositivo conocido
-    const knownDevices = await this.getUserKnownDevices(userId);
-    const isKnownDevice = knownDevices.some(d => d.deviceId === this.generateDeviceId(deviceInfo));
-    
-    if (!isKnownDevice) riskScore += 30;
+    const knownDevices = await this.getUserKnownDevices(userId)
+    const isKnownDevice = knownDevices.some(d => d.deviceId === this.generateDeviceId(deviceInfo))
+
+    if (!isKnownDevice) riskScore += 30
 
     // Verificar geolocalización (placeholder)
     // if (await this.isUnusualLocation(deviceInfo.ip, userId)) riskScore += 20;
 
     // Verificar horario de acceso
-    const hour = new Date().getHours();
-    if (hour < 6 || hour > 23) riskScore += 10;
+    const hour = new Date().getHours()
+    if (hour < 6 || hour > 23) riskScore += 10
 
-    return Math.min(riskScore, 100);
+    return Math.min(riskScore, 100)
   }
 
   // Obtener dispositivos conocidos del usuario
-  private async getUserKnownDevices(userId: string): Promise<{ deviceId: string; lastSeen: Date }[]> {
+  private async getUserKnownDevices(
+    userId: string
+  ): Promise<{ deviceId: string; lastSeen: Date }[]> {
     // Implementación placeholder
-    return [];
+    return []
   }
 
   // Manejar actividad sospechosa
   private async handleSuspiciousActivity(
-    session: SessionData, 
-    type: string, 
+    session: SessionData,
+    type: string,
     details: Record<string, any>
   ): Promise<void> {
     // Incrementar score de riesgo
-    session.metadata.riskScore += 20;
-    session.metadata.flags.push(`suspicious_${type}`);
+    session.metadata.riskScore += 20
+    session.metadata.flags.push(`suspicious_${type}`)
 
     // Si el score es muy alto, invalidar sesión
     if (session.metadata.riskScore > 70) {
-      await this.invalidateSession(session.id, 'high_risk_score');
-      
+      await this.invalidateSession(session.id, 'high_risk_score')
+
       // Enviar notificación al usuario
       await this.sendSecurityAlert(session.userId, 'session_terminated_suspicious_activity', {
         deviceInfo: session.deviceInfo,
         riskScore: session.metadata.riskScore,
-        details
-      });
+        details,
+      })
     }
   }
 
   // Enviar alerta de seguridad
   private async sendSecurityAlert(userId: string, type: string, data: any): Promise<void> {
     // Implementación de notificaciones
-    console.log(`Security alert for user ${userId}: ${type}`, data);
+    console.log(`Security alert for user ${userId}: ${type}`, data)
   }
 
   // Enforcar límite de sesiones concurrentes
   private async enforceConcurrentSessionLimit(userId: string): Promise<void> {
-    const maxConcurrentSessions = 5; // Límite configurable
-    const sessions = await this.getUserActiveSessions(userId);
-    
+    const maxConcurrentSessions = 5 // Límite configurable
+    const sessions = await this.getUserActiveSessions(userId)
+
     if (sessions.length > maxConcurrentSessions) {
       // Invalidar las sesiones más antiguas
       const sessionsToInvalidate = sessions
         .sort((a, b) => new Date(a.lastActivity).getTime() - new Date(b.lastActivity).getTime())
-        .slice(0, sessions.length - maxConcurrentSessions);
-      
+        .slice(0, sessions.length - maxConcurrentSessions)
+
       for (const session of sessionsToInvalidate) {
-        await this.invalidateSession(session.id, 'concurrent_limit_exceeded');
+        await this.invalidateSession(session.id, 'concurrent_limit_exceeded')
       }
     }
   }
 }
 
-export const sessionManager = new SessionManager();
+export const sessionManager = new SessionManager()
 ```
 
 ### **2. Middleware de Gestión de Sesiones**
 
 ```typescript
 // lib/auth/session-middleware.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { sessionManager } from './session-manager';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { sessionManager } from './session-manager'
 
 export function withSessionManagement() {
   return async (req: NextRequest) => {
     try {
       // Obtener sesión actual de NextAuth
-      const session = await auth();
+      const session = await auth()
       if (!session?.user?.id) {
-        return NextResponse.next();
+        return NextResponse.next()
       }
 
       // Obtener o crear ID de sesión
-      const sessionId = req.cookies.get('session-id')?.value;
-      
+      const sessionId = req.cookies.get('session-id')?.value
+
       if (!sessionId) {
         // Crear nueva sesión
-        const deviceInfo = extractDeviceInfo(req);
+        const deviceInfo = extractDeviceInfo(req)
         const newSession = await sessionManager.createSession(
           session.user.id,
           deviceInfo,
           'oauth', // o el método usado
           'google' // o el provider usado
-        );
-        
-        const response = NextResponse.next();
+        )
+
+        const response = NextResponse.next()
         response.cookies.set('session-id', newSession.id, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
-          maxAge: 30 * 24 * 60 * 60 // 30 días
-        });
-        
-        return response;
+          maxAge: 30 * 24 * 60 * 60, // 30 días
+        })
+
+        return response
       } else {
         // Actualizar actividad de sesión existente
         const updated = await sessionManager.updateSessionActivity(
@@ -467,60 +490,60 @@ export function withSessionManagement() {
           'page_view',
           req.ip || req.headers.get('x-forwarded-for') || undefined,
           req.headers.get('user-agent') || undefined
-        );
-        
+        )
+
         if (!updated) {
           // Sesión inválida, limpiar cookie
-          const response = NextResponse.redirect(new URL('/api/auth/signin', req.url));
-          response.cookies.delete('session-id');
-          return response;
+          const response = NextResponse.redirect(new URL('/api/auth/signin', req.url))
+          response.cookies.delete('session-id')
+          return response
         }
-        
+
         // Intentar renovar sesión si es necesario
-        await sessionManager.renewSession(sessionId);
+        await sessionManager.renewSession(sessionId)
       }
-      
-      return NextResponse.next();
+
+      return NextResponse.next()
     } catch (error) {
-      console.error('Session middleware error:', error);
-      return NextResponse.next();
+      console.error('Session middleware error:', error)
+      return NextResponse.next()
     }
-  };
+  }
 }
 
 function extractDeviceInfo(req: NextRequest) {
-  const userAgent = req.headers.get('user-agent') || '';
-  const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
-  
+  const userAgent = req.headers.get('user-agent') || ''
+  const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown'
+
   // Parsear User-Agent (implementación simplificada)
-  const deviceType = /Mobile|Android|iPhone|iPad/.test(userAgent) ? 'mobile' : 'desktop';
-  const browser = getBrowserFromUserAgent(userAgent);
-  const os = getOSFromUserAgent(userAgent);
-  
+  const deviceType = /Mobile|Android|iPhone|iPad/.test(userAgent) ? 'mobile' : 'desktop'
+  const browser = getBrowserFromUserAgent(userAgent)
+  const os = getOSFromUserAgent(userAgent)
+
   return {
     userAgent,
     ip,
     deviceType: deviceType as 'desktop' | 'mobile' | 'tablet',
     browser,
-    os
-  };
+    os,
+  }
 }
 
 function getBrowserFromUserAgent(userAgent: string): string {
-  if (userAgent.includes('Chrome')) return 'Chrome';
-  if (userAgent.includes('Firefox')) return 'Firefox';
-  if (userAgent.includes('Safari')) return 'Safari';
-  if (userAgent.includes('Edge')) return 'Edge';
-  return 'Unknown';
+  if (userAgent.includes('Chrome')) return 'Chrome'
+  if (userAgent.includes('Firefox')) return 'Firefox'
+  if (userAgent.includes('Safari')) return 'Safari'
+  if (userAgent.includes('Edge')) return 'Edge'
+  return 'Unknown'
 }
 
 function getOSFromUserAgent(userAgent: string): string {
-  if (userAgent.includes('Windows')) return 'Windows';
-  if (userAgent.includes('Mac OS')) return 'macOS';
-  if (userAgent.includes('Linux')) return 'Linux';
-  if (userAgent.includes('Android')) return 'Android';
-  if (userAgent.includes('iOS')) return 'iOS';
-  return 'Unknown';
+  if (userAgent.includes('Windows')) return 'Windows'
+  if (userAgent.includes('Mac OS')) return 'macOS'
+  if (userAgent.includes('Linux')) return 'Linux'
+  if (userAgent.includes('Android')) return 'Android'
+  if (userAgent.includes('iOS')) return 'iOS'
+  return 'Unknown'
 }
 ```
 
@@ -528,20 +551,20 @@ function getOSFromUserAgent(userAgent: string): string {
 
 ```typescript
 // app/api/auth/sessions/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { sessionManager } from '@/lib/auth/session-manager';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { sessionManager } from '@/lib/auth/session-manager'
 
 // GET /api/auth/sessions - Obtener sesiones activas del usuario
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const activeSessions = await sessionManager.getUserActiveSessions(session.user.id);
-    
+    const activeSessions = await sessionManager.getUserActiveSessions(session.user.id)
+
     // Sanitizar datos sensibles
     const sanitizedSessions = activeSessions.map(s => ({
       id: s.id,
@@ -549,80 +572,80 @@ export async function GET(req: NextRequest) {
         deviceType: s.deviceInfo.deviceType,
         browser: s.deviceInfo.browser,
         os: s.deviceInfo.os,
-        location: s.deviceInfo.location
+        location: s.deviceInfo.location,
       },
       createdAt: s.createdAt,
       lastActivity: s.lastActivity,
-      isCurrent: req.cookies.get('session-id')?.value === s.id
-    }));
+      isCurrent: req.cookies.get('session-id')?.value === s.id,
+    }))
 
-    return NextResponse.json({ sessions: sanitizedSessions });
+    return NextResponse.json({ sessions: sanitizedSessions })
   } catch (error) {
-    console.error('Error getting sessions:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error getting sessions:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 // DELETE /api/auth/sessions - Invalidar sesión específica
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { sessionId } = await req.json();
+    const { sessionId } = await req.json()
     if (!sessionId) {
-      return NextResponse.json({ error: 'Session ID required' }, { status: 400 });
+      return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
     }
 
     // Verificar que la sesión pertenece al usuario
-    const targetSession = await sessionManager.getSession(sessionId);
+    const targetSession = await sessionManager.getSession(sessionId)
     if (!targetSession || targetSession.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    const success = await sessionManager.invalidateSession(sessionId, 'user_requested');
-    
+    const success = await sessionManager.invalidateSession(sessionId, 'user_requested')
+
     if (success) {
-      return NextResponse.json({ message: 'Session invalidated successfully' });
+      return NextResponse.json({ message: 'Session invalidated successfully' })
     } else {
-      return NextResponse.json({ error: 'Failed to invalidate session' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to invalidate session' }, { status: 500 })
     }
   } catch (error) {
-    console.error('Error invalidating session:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error invalidating session:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 ```
 
 ```typescript
 // app/api/auth/sessions/invalidate-all/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { sessionManager } from '@/lib/auth/session-manager';
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { sessionManager } from '@/lib/auth/session-manager'
 
 // POST /api/auth/sessions/invalidate-all - Invalidar todas las sesiones excepto la actual
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const currentSessionId = req.cookies.get('session-id')?.value;
+    const currentSessionId = req.cookies.get('session-id')?.value
     const invalidatedCount = await sessionManager.invalidateAllUserSessions(
-      session.user.id, 
+      session.user.id,
       currentSessionId
-    );
+    )
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: `${invalidatedCount} sessions invalidated successfully`,
-      invalidatedCount 
-    });
+      invalidatedCount,
+    })
   } catch (error) {
-    console.error('Error invalidating all sessions:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error invalidating all sessions:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 ```
@@ -773,9 +796,9 @@ export function SessionManager() {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Sesiones Activas ({sessions.length})</CardTitle>
         {sessions.length > 1 && (
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={invalidateAllSessions}
           >
             Cerrar Todas las Otras
@@ -785,8 +808,8 @@ export function SessionManager() {
       <CardContent>
         <div className="space-y-4">
           {sessions.map((session) => (
-            <div 
-              key={session.id} 
+            <div
+              key={session.id}
               className={`p-4 border rounded-lg ${
                 session.isCurrent ? 'border-primary bg-primary/5' : 'border-border'
               }`}
@@ -805,7 +828,7 @@ export function SessionManager() {
                         <Badge variant="secondary">Sesión Actual</Badge>
                       )}
                     </div>
-                    
+
                     <div className="mt-2 space-y-1 text-sm text-muted-foreground">
                       <div className="flex items-center space-x-1">
                         <Clock className="h-3 w-3" />
@@ -824,7 +847,7 @@ export function SessionManager() {
                     </div>
                   </div>
                 </div>
-                
+
                 {!session.isCurrent && (
                   <Button
                     variant="ghost"
@@ -842,7 +865,7 @@ export function SessionManager() {
               </div>
             </div>
           ))}
-          
+
           {sessions.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               No hay sesiones activas
@@ -866,10 +889,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Users, 
-  Monitor, 
-  AlertTriangle, 
+import {
+  Users,
+  Monitor,
+  AlertTriangle,
   Activity,
   Search,
   Shield,
@@ -906,7 +929,7 @@ export function SessionsDashboard() {
       // Implementar API call para obtener datos de sesiones
       // const response = await fetch('/api/admin/sessions');
       // const data = await response.json();
-      
+
       // Mock data para demostración
       const mockData: AdminSessionData[] = [
         {
@@ -928,7 +951,7 @@ export function SessionsDashboard() {
           totalSessions: 3
         }
       ];
-      
+
       setSessions(mockData);
       setStats({
         totalUsers: mockData.length,
@@ -943,7 +966,7 @@ export function SessionsDashboard() {
     }
   };
 
-  const filteredSessions = sessions.filter(session => 
+  const filteredSessions = sessions.filter(session =>
     session.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -968,7 +991,7 @@ export function SessionsDashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
@@ -980,7 +1003,7 @@ export function SessionsDashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
@@ -992,7 +1015,7 @@ export function SessionsDashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
@@ -1021,7 +1044,7 @@ export function SessionsDashboard() {
               className="max-w-sm"
             />
           </div>
-          
+
           <div className="space-y-4">
             {filteredSessions.map((session) => (
               <div key={session.userId} className="p-4 border rounded-lg">
@@ -1037,7 +1060,7 @@ export function SessionsDashboard() {
                         </Badge>
                       )}
                     </div>
-                    
+
                     <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center space-x-1">
                         <Monitor className="h-3 w-3" />
@@ -1052,7 +1075,7 @@ export function SessionsDashboard() {
                         <span>Score de riesgo: {session.riskScore}/100</span>
                       </div>
                     </div>
-                    
+
                     {session.suspiciousFlags.length > 0 && (
                       <div className="mt-2">
                         <p className="text-sm font-medium text-orange-600">Alertas de seguridad:</p>
@@ -1066,7 +1089,7 @@ export function SessionsDashboard() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="flex space-x-2">
                     <Button variant="outline" size="sm">
                       Ver Detalles
@@ -1092,13 +1115,13 @@ export function SessionsDashboard() {
 
 ### **KPIs de Gestión de Sesiones**
 
-| **Métrica** | **Actual** | **Objetivo** | **Impacto** |
-|-------------|------------|--------------|-------------|
-| **Sesiones concurrentes promedio** | No medido | < 3 por usuario | +60% control |
-| **Tiempo de detección de anomalías** | No existe | < 2 minutos | +90% seguridad |
-| **Tasa de renovación automática** | 0% | > 95% | +80% UX |
-| **Sesiones de alto riesgo detectadas** | 0 | 100% detectadas | +100% protección |
-| **Tiempo de invalidación** | Manual | < 30 segundos | +95% velocidad |
+| **Métrica**                            | **Actual** | **Objetivo**    | **Impacto**      |
+| -------------------------------------- | ---------- | --------------- | ---------------- |
+| **Sesiones concurrentes promedio**     | No medido  | < 3 por usuario | +60% control     |
+| **Tiempo de detección de anomalías**   | No existe  | < 2 minutos     | +90% seguridad   |
+| **Tasa de renovación automática**      | 0%         | > 95%           | +80% UX          |
+| **Sesiones de alto riesgo detectadas** | 0          | 100% detectadas | +100% protección |
+| **Tiempo de invalidación**             | Manual     | < 30 segundos   | +95% velocidad   |
 
 ### **Alertas y Notificaciones**
 
@@ -1107,29 +1130,29 @@ export function SessionsDashboard() {
 export class SessionAlerts {
   // Alerta por múltiples IPs
   static async checkMultipleIPs(userId: string): Promise<boolean> {
-    const sessions = await sessionManager.getUserActiveSessions(userId);
-    const uniqueIPs = new Set(sessions.map(s => s.deviceInfo.ip));
-    
+    const sessions = await sessionManager.getUserActiveSessions(userId)
+    const uniqueIPs = new Set(sessions.map(s => s.deviceInfo.ip))
+
     if (uniqueIPs.size > 3) {
       await this.sendAlert(userId, 'multiple_ips_detected', {
         ipCount: uniqueIPs.size,
-        ips: Array.from(uniqueIPs)
-      });
-      return true;
+        ips: Array.from(uniqueIPs),
+      })
+      return true
     }
-    return false;
+    return false
   }
 
   // Alerta por dispositivo nuevo
   static async checkNewDevice(userId: string, deviceId: string): Promise<boolean> {
     // Implementar lógica de detección de dispositivo nuevo
-    return false;
+    return false
   }
 
   // Enviar alerta
   private static async sendAlert(userId: string, type: string, data: any): Promise<void> {
     // Implementar sistema de notificaciones
-    console.log(`Alert for user ${userId}: ${type}`, data);
+    console.log(`Alert for user ${userId}: ${type}`, data)
   }
 }
 ```
@@ -1202,9 +1225,6 @@ echo "REDIS_URL=redis://localhost:6379" >> .env.local
 ✅ **Seguridad Avanzada**: Detección proactiva de actividad sospechosa  
 ✅ **Experiencia Mejorada**: Renovación automática y gestión transparente  
 ✅ **Herramientas Administrativas**: Dashboard completo para administradores  
-✅ **Compliance**: Cumplimiento de estándares de seguridad  
+✅ **Compliance**: Cumplimiento de estándares de seguridad
 
 **Resultado**: Un sistema de autenticación enterprise-ready con gestión completa de sesiones que proporciona seguridad, control y una excelente experiencia de usuario.
-
-
-

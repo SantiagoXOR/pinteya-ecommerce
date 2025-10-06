@@ -41,9 +41,7 @@ Sistema de autenticación enterprise-ready implementado con Clerk para Next.js 1
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
-const isPublicRoute = createRouteMatcher([
-  '/', '/shop(.*)', '/search(.*)', '/product(.*)'
-])
+const isPublicRoute = createRouteMatcher(['/', '/shop(.*)', '/search(.*)', '/product(.*)'])
 
 export default clerkMiddleware((auth, req) => {
   if (isAdminRoute(req)) auth().protect()
@@ -57,17 +55,17 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 
 export async function GET(request: NextRequest) {
   const { userId } = auth()
-  
+
   if (!userId) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
-  
+
   const user = await currentUser()
-  
+
   if (!user?.publicMetadata?.role === 'admin') {
     return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
   }
-  
+
   // Lógica de la API...
 }
 ```
@@ -80,7 +78,7 @@ import { createClerkRateLimit } from '@/lib/security/clerk-rate-limiting'
 const rateLimiter = createClerkRateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
   max: 100, // 100 requests por ventana
-  keyGenerator: (userId) => `admin_api:${userId}`
+  keyGenerator: userId => `admin_api:${userId}`,
 })
 
 export const withRateLimit = rateLimiter.middleware()
@@ -89,6 +87,7 @@ export const withRateLimit = rateLimiter.middleware()
 ## 🎯 Características del Sistema
 
 ### Seguridad
+
 - ✅ Autenticación oficial de Clerk con JWT
 - ✅ Verificación de roles basada en metadata
 - ✅ Rate limiting por usuario para prevenir abuso
@@ -96,18 +95,21 @@ export const withRateLimit = rateLimiter.middleware()
 - ✅ Logging de auditoría para todas las acciones
 
 ### Performance
+
 - ✅ Middleware optimizado con createRouteMatcher
 - ✅ Cache inteligente de verificaciones de usuario
 - ✅ Métricas de tiempo de respuesta en tiempo real
 - ✅ Headers informativos de rate limiting
 
 ### Monitoreo
+
 - ✅ Logging estructurado con contexto completo
 - ✅ Métricas de performance por endpoint
 - ✅ API de monitoreo con múltiples tipos de datos
 - ✅ Alertas automáticas para errores y performance
 
 ### Testing
+
 - ✅ Tests de integración para autenticación
 - ✅ Tests de rate limiting con múltiples escenarios
 - ✅ Mocks completos de Clerk para testing
@@ -116,12 +118,14 @@ export const withRateLimit = rateLimiter.middleware()
 ## 📊 APIs Implementadas
 
 ### `/api/admin/products`
+
 - **Autenticación**: Requerida (admin)
 - **Rate Limit**: 100 req/15min por usuario
 - **Funcionalidad**: CRUD de productos
 - **Validación**: Zod schema completo
 
 ### `/api/admin/monitoring`
+
 - **Autenticación**: Requerida (admin)
 - **Rate Limit**: 50 req/15min por usuario
 - **Funcionalidad**: Métricas del sistema
@@ -152,12 +156,14 @@ node scripts/verify-clerk-auth-system.js
 ## 🔍 Monitoreo en Producción
 
 ### Métricas Clave
+
 - Tiempo de respuesta promedio < 200ms
 - Rate de errores < 1%
 - Requests bloqueados por rate limiting
 - Usuarios activos por hora
 
 ### Alertas Configuradas
+
 - Error rate > 5% en 5 minutos
 - Tiempo de respuesta > 1000ms
 - Memoria > 80% por 10 minutos
@@ -166,6 +172,7 @@ node scripts/verify-clerk-auth-system.js
 ## 🚀 Deployment
 
 El sistema está configurado para funcionar automáticamente en:
+
 - ✅ Vercel (producción)
 - ✅ Desarrollo local
 - ✅ Testing CI/CD
@@ -190,6 +197,3 @@ CLERK_WEBHOOK_SECRET=whsec_...
 **Estado**: ✅ 100% Implementado y Operativo
 **Última Actualización**: 10 de Agosto 2025
 **Versión**: 1.0.0
-
-
-

@@ -7,7 +7,7 @@ import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supab
 import { ApiResponse } from '@/types/api'
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { createSecurityLogger } from '@/lib/logging/security-logger'
-import { verifyAdminAccess } from '@/lib/auth/admin-auth'
+import { requireAdminAuth } from '@/lib/auth/admin-auth'
 
 // Tipo para variante de producto
 interface ProductVariant {
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
   return withRateLimit(request, RATE_LIMIT_CONFIGS.admin, async () => {
     try {
       // Verificar acceso de administrador
-      const adminCheck = await verifyAdminAccess(request)
+      const adminCheck = await requireAdminAuth()
       if (!adminCheck.success) {
         securityLogger.logPermissionDenied(
           securityLogger.context,
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
             error: adminCheck.error,
             data: null,
           },
-          { status: 401 }
+          { status: adminCheck.status || 401 }
         )
       }
 
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
   return withRateLimit(request, RATE_LIMIT_CONFIGS.admin, async () => {
     try {
       // Verificar acceso de administrador
-      const adminCheck = await verifyAdminAccess(request)
+      const adminCheck = await requireAdminAuth()
       if (!adminCheck.success) {
         return NextResponse.json(
           {
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
             error: adminCheck.error,
             data: null,
           },
-          { status: 401 }
+          { status: adminCheck.status || 401 }
         )
       }
 
@@ -347,7 +347,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse<ApiRespons
   return withRateLimit(request, RATE_LIMIT_CONFIGS.admin, async () => {
     try {
       // Verificar acceso de administrador
-      const adminCheck = await verifyAdminAccess(request)
+      const adminCheck = await requireAdminAuth()
       if (!adminCheck.success) {
         return NextResponse.json(
           {
@@ -355,7 +355,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse<ApiRespons
             error: adminCheck.error,
             data: null,
           },
-          { status: 401 }
+          { status: adminCheck.status || 401 }
         )
       }
 

@@ -37,17 +37,19 @@ Error en Wallet Brick: o: [Checkout Bricks error] Could not find the Brick conta
 useEffect(() => {
   // ✅ NUEVO: Verificar que estamos en la página correcta antes de cargar el SDK
   if (typeof window !== 'undefined') {
-    const currentPath = window.location.pathname;
-    if (currentPath.includes('/checkout/success') || 
-        currentPath.includes('/checkout/failure') || 
-        currentPath.includes('/checkout/pending')) {
-      console.log('🚫 SDK de MercadoPago no se carga en páginas de resultado');
-      return;
+    const currentPath = window.location.pathname
+    if (
+      currentPath.includes('/checkout/success') ||
+      currentPath.includes('/checkout/failure') ||
+      currentPath.includes('/checkout/pending')
+    ) {
+      console.log('🚫 SDK de MercadoPago no se carga en páginas de resultado')
+      return
     }
   }
-  
+
   // Continuar con la carga normal del SDK...
-}, [onError]);
+}, [onError])
 ```
 
 ### **2. Protección en Inicialización del Wallet Brick**
@@ -55,28 +57,30 @@ useEffect(() => {
 ```typescript
 // Inicializar el Wallet Brick cuando el SDK esté listo
 useEffect(() => {
-  if (!sdkLoaded || !preferenceId) return;
+  if (!sdkLoaded || !preferenceId) return
 
   // ✅ NUEVO: Verificar que estamos en la página correcta
   if (typeof window !== 'undefined') {
-    const currentPath = window.location.pathname;
-    if (currentPath.includes('/checkout/success') || 
-        currentPath.includes('/checkout/failure') || 
-        currentPath.includes('/checkout/pending')) {
-      console.log('🚫 Wallet Brick no se inicializa en páginas de resultado');
-      return;
+    const currentPath = window.location.pathname
+    if (
+      currentPath.includes('/checkout/success') ||
+      currentPath.includes('/checkout/failure') ||
+      currentPath.includes('/checkout/pending')
+    ) {
+      console.log('🚫 Wallet Brick no se inicializa en páginas de resultado')
+      return
     }
   }
 
   // Verificar que el contenedor existe antes de inicializar
-  const container = document.getElementById('wallet_container');
+  const container = document.getElementById('wallet_container')
   if (!container) {
-    console.warn('⚠️ Contenedor wallet_container no encontrado, cancelando inicialización');
-    return;
+    console.warn('⚠️ Contenedor wallet_container no encontrado, cancelando inicialización')
+    return
   }
-  
+
   // Continuar con la inicialización...
-}, [sdkLoaded, preferenceId, onReady, onError, onSubmit]);
+}, [sdkLoaded, preferenceId, onReady, onError, onSubmit])
 ```
 
 ### **3. Manejo Específico de Errores del Contenedor**
@@ -84,17 +88,21 @@ useEffect(() => {
 ```typescript
 // Crear el Wallet Brick con manejo de errores mejorado
 try {
-  await mp.bricks().create("wallet", "wallet_container", {
+  await mp.bricks().create('wallet', 'wallet_container', {
     // configuración...
-  });
+  })
 } catch (brickError: any) {
   // Manejo específico de errores del Wallet Brick
-  if (brickError.message?.includes('wallet_container') || 
-      brickError.message?.includes('container')) {
-    console.warn('⚠️ Contenedor wallet_container no disponible, esto es normal en páginas de resultado');
-    return; // Salir silenciosamente
+  if (
+    brickError.message?.includes('wallet_container') ||
+    brickError.message?.includes('container')
+  ) {
+    console.warn(
+      '⚠️ Contenedor wallet_container no disponible, esto es normal en páginas de resultado'
+    )
+    return // Salir silenciosamente
   }
-  throw brickError; // Re-lanzar otros errores
+  throw brickError // Re-lanzar otros errores
 }
 ```
 
@@ -104,32 +112,36 @@ try {
 
 ```typescript
 console.error = (...args) => {
-  const message = args.join(' ').toLowerCase();
-  if (message.includes('err_aborted') || 
-      message.includes('aborterror') ||
-      // ... otros filtros ...
-      message.includes('wallet_container') ||
-      message.includes('could not find the brick container') ||
-      message.includes('checkout bricks error')) {
+  const message = args.join(' ').toLowerCase()
+  if (
+    message.includes('err_aborted') ||
+    message.includes('aborterror') ||
+    // ... otros filtros ...
+    message.includes('wallet_container') ||
+    message.includes('could not find the brick container') ||
+    message.includes('checkout bricks error')
+  ) {
     if (enableDebugMode) {
-      console.debug('🔇 Suppressed error:', ...args);
+      console.debug('🔇 Suppressed error:', ...args)
     }
-    return;
+    return
   }
-  
+
   // Permitir otros errores
-  originalConsoleError(...args);
-};
+  originalConsoleError(...args)
+}
 ```
 
 ## ✅ Resultado
 
 ### **Antes de la Solución:**
+
 - ❌ Errores de consola: "Could not find the Brick container ID 'wallet_container'"
 - ❌ Experiencia de usuario confusa con errores visibles
 - ❌ Logs de error innecesarios en producción
 
 ### **Después de la Solución:**
+
 - ✅ **0 errores de consola** relacionados con Wallet Brick
 - ✅ **Páginas de resultado funcionan perfectamente**
 - ✅ **SDK se carga solo cuando es necesario**
@@ -166,6 +178,7 @@ console.error = (...args) => {
 ## 🔍 Verificación
 
 Los errores de Wallet Brick ahora se manejan elegantemente:
+
 ```
 🚫 SDK de MercadoPago no se carga en páginas de resultado
 🚫 Wallet Brick no se inicializa en páginas de resultado

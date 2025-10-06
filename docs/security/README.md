@@ -9,12 +9,14 @@ Este documento describe las medidas de seguridad implementadas en el proyecto Pi
 ### 1. Protección de Credenciales
 
 #### Variables de Entorno Seguras
+
 - ✅ Todas las credenciales en archivos `.env.local`
 - ✅ Archivos sensibles incluidos en `.gitignore`
 - ✅ Validación de variables de entorno en tiempo de ejecución
 - ✅ Documentación sin credenciales reales
 
 #### Archivos Protegidos
+
 ```
 .env.local          # Variables de producción
 .env                # Variables de desarrollo
@@ -25,6 +27,7 @@ Este documento describe las medidas de seguridad implementadas en el proyecto Pi
 ### 2. Seguridad de APIs
 
 #### Rate Limiting
+
 - ✅ Implementado para todas las rutas `/api/`
 - ✅ Límites específicos por endpoint:
   - `/api/payments`: 10 requests/minuto
@@ -33,12 +36,14 @@ Este documento describe las medidas de seguridad implementadas en el proyecto Pi
   - `/api/products`: 100 requests/minuto
 
 #### Validación de Entrada
+
 - ✅ Schemas Zod para todas las APIs
 - ✅ Sanitización de entrada para prevenir XSS
 - ✅ Validación de parámetros de URL
 - ✅ Validación de Content-Type
 
 #### Headers de Seguridad
+
 - ✅ Content Security Policy (CSP)
 - ✅ X-Frame-Options: DENY
 - ✅ X-Content-Type-Options: nosniff
@@ -48,12 +53,14 @@ Este documento describe las medidas de seguridad implementadas en el proyecto Pi
 ### 3. Autenticación y Autorización
 
 #### Clerk Authentication
+
 - ✅ JWT tokens seguros
 - ✅ Middleware de autenticación
 - ✅ Rutas protegidas configuradas
 - ✅ Manejo de sesiones seguro
 
 #### Supabase RLS
+
 - ✅ Row Level Security habilitado
 - ✅ Políticas de acceso por usuario
 - ✅ Separación de clientes público/admin
@@ -62,6 +69,7 @@ Este documento describe las medidas de seguridad implementadas en el proyecto Pi
 ### 4. Seguridad de Pagos
 
 #### MercadoPago
+
 - ✅ Validación robusta de webhooks
 - ✅ Verificación de firmas HMAC
 - ✅ Validación de timestamp
@@ -71,6 +79,7 @@ Este documento describe las medidas de seguridad implementadas en el proyecto Pi
 ### 5. Monitoreo y Logging
 
 #### Eventos de Seguridad
+
 - ✅ Logging de rate limiting
 - ✅ Logging de requests inválidos
 - ✅ Logging de actividad sospechosa
@@ -79,6 +88,7 @@ Este documento describe las medidas de seguridad implementadas en el proyecto Pi
 ## 🔧 Configuración para Codex Agent
 
 ### Dominios Permitidos
+
 ```
 # Esenciales
 github.com
@@ -97,10 +107,12 @@ tailwindcss.com
 ```
 
 ### Métodos HTTP Permitidos
+
 - ✅ GET, HEAD, OPTIONS
 - ❌ POST, PUT, PATCH, DELETE
 
 ### Configuración de Seguridad
+
 ```json
 {
   "internet_access": "on",
@@ -130,6 +142,7 @@ tailwindcss.com
    - Realizar auditoría completa
 
 ### Contactos de Emergencia
+
 - **Administrador del Proyecto**: [Configurar]
 - **Supabase Support**: support@supabase.io
 - **Clerk Support**: support@clerk.com
@@ -138,6 +151,7 @@ tailwindcss.com
 ## 📋 Checklist de Verificación
 
 ### Antes de Usar Codex Agent
+
 - [ ] Ejecutar `npm run security:check`
 - [ ] Verificar que no hay credenciales en código
 - [ ] Confirmar configuración de dominios
@@ -145,12 +159,14 @@ tailwindcss.com
 - [ ] Revisar logs recientes
 
 ### Durante el Uso
+
 - [ ] Monitorear actividad de red
 - [ ] Revisar outputs del agente
 - [ ] Verificar que no se expongan secretos
 - [ ] Validar cambios antes de aplicar
 
 ### Después del Uso
+
 - [ ] Revisar logs de seguridad
 - [ ] Verificar integridad de configuraciones
 - [ ] Documentar cambios realizados
@@ -159,6 +175,7 @@ tailwindcss.com
 ## 🔍 Herramientas de Verificación
 
 ### Scripts Disponibles
+
 ```bash
 # Verificación completa de seguridad
 npm run security:check
@@ -174,6 +191,7 @@ npm run test:security
 ```
 
 ### Archivos de Configuración
+
 - `docs/security/codex-agent-config.md` - Configuración específica para Codex
 - `src/middleware/security.ts` - Middleware de seguridad
 - `scripts/security-check.js` - Script de verificación
@@ -190,16 +208,15 @@ npm run test:security
 ## 📝 Historial de Cambios
 
 ### v1.0.0 - Implementación Inicial
+
 - Configuración básica de seguridad
 - Protección de credenciales
 - Headers de seguridad básicos
 
 ### v2.0.0 - Mejoras para Codex Agent
+
 - Rate limiting implementado
 - Middleware de seguridad avanzado
 - Validación robusta de webhooks
 - Sistema de monitoreo mejorado
 - Documentación completa de seguridad
-
-
-

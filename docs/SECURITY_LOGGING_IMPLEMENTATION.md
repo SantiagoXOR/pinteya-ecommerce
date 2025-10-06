@@ -46,12 +46,12 @@ NODE_ENV=development
 ### Configuración de Niveles
 
 ```typescript
-const levels = { 
-  low: 1,      // Eventos informativos
-  medium: 2,   // Eventos de atención
-  high: 3,     // Eventos críticos
-  critical: 4  // Eventos de emergencia
-};
+const levels = {
+  low: 1, // Eventos informativos
+  medium: 2, // Eventos de atención
+  high: 3, // Eventos críticos
+  critical: 4, // Eventos de emergencia
+}
 ```
 
 ## 🚀 Uso
@@ -59,12 +59,12 @@ const levels = {
 ### Implementación Básica
 
 ```typescript
-import { createSecurityLogger } from '@/lib/logging/security-logger';
+import { createSecurityLogger } from '@/lib/logging/security-logger'
 
 export async function GET(request: NextRequest) {
   // Crear logger con contexto de request
-  const securityLogger = createSecurityLogger(request);
-  
+  const securityLogger = createSecurityLogger(request)
+
   try {
     // Log de acceso a datos
     securityLogger.log({
@@ -74,24 +74,19 @@ export async function GET(request: NextRequest) {
       context: securityLogger.context,
       metadata: {
         filters: queryParams,
-        hasSearch: !!searchTerm
-      }
-    });
-    
+        hasSearch: !!searchTerm,
+      },
+    })
+
     // Tu lógica de API aquí
-    const result = await processRequest();
-    
-    return NextResponse.json(result);
-    
+    const result = await processRequest()
+
+    return NextResponse.json(result)
   } catch (error) {
     // Log de error con contexto
-    securityLogger.logApiError(
-      securityLogger.context,
-      error,
-      { operation: 'products_get' }
-    );
-    
-    throw error;
+    securityLogger.logApiError(securityLogger.context, error, { operation: 'products_get' })
+
+    throw error
   }
 }
 ```
@@ -100,25 +95,25 @@ export async function GET(request: NextRequest) {
 
 ```typescript
 // Intentos de autenticación
-securityLogger.logAuthAttempt(context, success, { provider: 'google' });
+securityLogger.logAuthAttempt(context, success, { provider: 'google' })
 
 // Rate limiting excedido
-securityLogger.logRateLimitExceeded(context, { limit: 100, window: '5m' });
+securityLogger.logRateLimitExceeded(context, { limit: 100, window: '5m' })
 
 // Permisos denegados
-securityLogger.logPermissionDenied(context, 'products', 'create');
+securityLogger.logPermissionDenied(context, 'products', 'create')
 
 // Actividad sospechosa
 securityLogger.logSuspiciousActivity(context, 'Multiple failed attempts', {
   attempts: 5,
-  timeframe: '1m'
-});
+  timeframe: '1m',
+})
 
 // Acciones administrativas
-securityLogger.logAdminAction(context, 'delete_user', { targetUserId: 'user-123' });
+securityLogger.logAdminAction(context, 'delete_user', { targetUserId: 'user-123' })
 
 // Errores de API
-securityLogger.logApiError(context, error, { database: 'postgres' });
+securityLogger.logApiError(context, error, { database: 'postgres' })
 ```
 
 ## 📊 Formato de Logs
@@ -159,14 +154,14 @@ securityLogger.logApiError(context, error, { database: 'postgres' });
 
 ```typescript
 interface SecurityLogContext {
-  userId?: string;        // ID del usuario autenticado
-  sessionId?: string;     // ID de sesión
-  ip?: string;           // IP del cliente
-  userAgent?: string;    // User agent del navegador
-  endpoint: string;      // Endpoint de la API
-  method: string;        // Método HTTP
-  timestamp: string;     // Timestamp ISO
-  requestId?: string;    // ID único de request
+  userId?: string // ID del usuario autenticado
+  sessionId?: string // ID de sesión
+  ip?: string // IP del cliente
+  userAgent?: string // User agent del navegador
+  endpoint: string // Endpoint de la API
+  method: string // Método HTTP
+  timestamp: string // Timestamp ISO
+  requestId?: string // ID único de request
 }
 ```
 
@@ -179,18 +174,19 @@ export function extractSecurityContext(
   request: NextRequest,
   additionalContext: Partial<SecurityLogContext> = {}
 ): SecurityLogContext {
-  const url = new URL(request.url);
-  
+  const url = new URL(request.url)
+
   // Extraer IP con fallbacks
-  const forwarded = request.headers.get('x-forwarded-for');
-  const ip = forwarded 
-    ? forwarded.split(',')[0].trim() 
-    : request.headers.get('x-real-ip') || 'unknown';
-  
+  const forwarded = request.headers.get('x-forwarded-for')
+  const ip = forwarded
+    ? forwarded.split(',')[0].trim()
+    : request.headers.get('x-real-ip') || 'unknown'
+
   // Generar request ID único
-  const requestId = request.headers.get('x-request-id') || 
-    `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
+  const requestId =
+    request.headers.get('x-request-id') ||
+    `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
   return {
     ip,
     userAgent: request.headers.get('user-agent') || 'unknown',
@@ -199,7 +195,7 @@ export function extractSecurityContext(
     timestamp: new Date().toISOString(),
     requestId,
     ...additionalContext,
-  };
+  }
 }
 ```
 
@@ -242,16 +238,16 @@ npm test -- __tests__/lib/security-logger.test.ts
 ```typescript
 describe('Security Logger', () => {
   it('should log authentication attempts', () => {
-    const logger = createSecurityLogger(mockRequest);
-    
-    logger.logAuthAttempt(logger.context, false, { reason: 'invalid_password' });
-    
+    const logger = createSecurityLogger(mockRequest)
+
+    logger.logAuthAttempt(logger.context, false, { reason: 'invalid_password' })
+
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining('[SECURITY:AUTH_FAILURE]'),
       expect.stringContaining('Authentication failed')
-    );
-  });
-});
+    )
+  })
+})
 ```
 
 ## 📈 Monitoreo y Alertas
@@ -272,8 +268,8 @@ if (authFailures > 5 && timeframe < '5m') {
   sendAlert('Multiple auth failures', {
     ip: context.ip,
     attempts: authFailures,
-    timeframe: '5m'
-  });
+    timeframe: '5m',
+  })
 }
 
 // Acceso administrativo fuera de horario
@@ -281,8 +277,8 @@ if (isAdminAction && isOutsideBusinessHours()) {
   sendAlert('Admin action outside business hours', {
     userId: context.userId,
     action: metadata.action,
-    timestamp: context.timestamp
-  });
+    timestamp: context.timestamp,
+  })
 }
 ```
 
@@ -296,8 +292,8 @@ async function sendToDataDog(logEntry: string) {
   await fetch('https://http-intake.logs.datadoghq.com/v1/input/API_KEY', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: logEntry
-  });
+    body: logEntry,
+  })
 }
 ```
 
@@ -305,20 +301,20 @@ async function sendToDataDog(logEntry: string) {
 
 ```typescript
 // TODO: Implementar integración con Sentry
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/nextjs'
 
 function sendToSentry(event: SecurityEvent) {
   if (event.severity === 'high' || event.severity === 'critical') {
     Sentry.captureException(event.error || new Error(event.message), {
       tags: {
         security_event: event.type,
-        severity: event.severity
+        severity: event.severity,
       },
       extra: {
         context: event.context,
-        metadata: event.metadata
-      }
-    });
+        metadata: event.metadata,
+      },
+    })
   }
 }
 ```
@@ -333,13 +329,13 @@ if (uniqueIPs.length > 3 && sessionId === context.sessionId) {
   securityLogger.logSuspiciousActivity(context, 'Session hijacking attempt', {
     sessionId: context.sessionId,
     ips: uniqueIPs,
-    timeframe: '10m'
-  });
+    timeframe: '10m',
+  })
 }
 
 // Acceso a recursos sensibles
 if (endpoint.includes('/admin/') && !isAuthorized) {
-  securityLogger.logPermissionDenied(context, 'admin_panel', 'access');
+  securityLogger.logPermissionDenied(context, 'admin_panel', 'access')
 }
 ```
 
@@ -356,9 +352,9 @@ securityLogger.log({
     dataType: 'personal_information',
     userId: targetUserId,
     purpose: 'customer_support',
-    legalBasis: 'legitimate_interest'
-  }
-});
+    legalBasis: 'legitimate_interest',
+  },
+})
 ```
 
 ## 🔄 Helpers Rápidos
@@ -366,12 +362,12 @@ securityLogger.log({
 ### securityLog Helper
 
 ```typescript
-import { securityLog } from '@/lib/logging/security-logger';
+import { securityLog } from '@/lib/logging/security-logger'
 
 // Logging rápido sin contexto de request
-securityLog.info('System startup completed');
-securityLog.warn('High memory usage detected');
-securityLog.error('Database connection failed', error);
+securityLog.info('System startup completed')
+securityLog.warn('High memory usage detected')
+securityLog.error('Database connection failed', error)
 ```
 
 ## 📚 Referencias
@@ -386,6 +382,3 @@ securityLog.error('Database connection failed', error);
 **Última actualización**: 2025-01-11  
 **Versión**: 1.0.0  
 **Mantenedor**: Equipo de Desarrollo Pinteya
-
-
-

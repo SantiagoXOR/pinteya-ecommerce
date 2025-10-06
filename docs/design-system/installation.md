@@ -128,34 +128,32 @@ El archivo `tailwind.config.ts` ya está configurado con todos los tokens del De
 
 ```typescript
 // tailwind.config.ts
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  content: [
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
     extend: {
       colors: {
         'blaze-orange': {
           50: '#fef7ee',
-          500: '#f27a1d',  // Principal
-          600: '#eb6313',  // Hover
-          700: '#bd4811',  // Active
+          500: '#f27a1d', // Principal
+          600: '#eb6313', // Hover
+          700: '#bd4811', // Active
           // ... más colores
         },
         'fun-green': {
           50: '#ecfff5',
-          500: '#00f269',  // Principal
-          600: '#00ca53',  // Hover
-          700: '#009e44',  // Active
+          500: '#00f269', // Principal
+          600: '#00ca53', // Hover
+          700: '#009e44', // Active
           // ... más colores
         },
         'bright-sun': {
           50: '#fffbeb',
-          500: '#f9a007',  // Principal
-          600: '#dd7802',  // Hover
-          700: '#b75406',  // Active
+          500: '#f9a007', // Principal
+          600: '#dd7802', // Hover
+          700: '#b75406', // Active
           // ... más colores
         },
         primary: {
@@ -176,9 +174,9 @@ const config: Config = {
         // ... más configuraciones
       },
       borderRadius: {
-        'button': '5px',
-        'card': '10px',
-        'modal': '12px',
+        button: '5px',
+        card: '10px',
+        modal: '12px',
       },
       animation: {
         'fade-in': 'fade-in 0.2s ease-out',
@@ -189,9 +187,9 @@ const config: Config = {
     },
   },
   plugins: [],
-};
+}
 
-export default config;
+export default config
 ```
 
 ### 2. CSS Global
@@ -223,7 +221,7 @@ El archivo `src/app/css/style.css` incluye las configuraciones base:
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -236,8 +234,8 @@ El archivo `src/app/css/style.css` incluye las configuraciones base:
 Crear `src/lib/utils.ts`:
 
 ```typescript
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -307,10 +305,8 @@ export function ProductCard() {
   return (
     <Card>
       <h3>Pintura Sherwin Williams</h3>
-      <Badge variant="success">Envío gratis</Badge>
-      <Button variant="primary">
-        Agregar al carrito
-      </Button>
+      <Badge variant='success'>Envío gratis</Badge>
+      <Button variant='primary'>Agregar al carrito</Button>
     </Card>
   )
 }
@@ -329,25 +325,23 @@ import { Button, Card, Badge } from '@/components/ui'
 
 export default function TestPage() {
   return (
-    <div className="p-8 space-y-4">
-      <h1 className="text-heading-2 text-primary">
-        Design System Test
-      </h1>
-      
-      <Card className="p-6">
-        <h2 className="text-heading-4 mb-4">Componentes Base</h2>
-        
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <Button variant="primary">Primary</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="outline">Outline</Button>
+    <div className='p-8 space-y-4'>
+      <h1 className='text-heading-2 text-primary'>Design System Test</h1>
+
+      <Card className='p-6'>
+        <h2 className='text-heading-4 mb-4'>Componentes Base</h2>
+
+        <div className='space-y-4'>
+          <div className='flex gap-2'>
+            <Button variant='primary'>Primary</Button>
+            <Button variant='secondary'>Secondary</Button>
+            <Button variant='outline'>Outline</Button>
           </div>
-          
-          <div className="flex gap-2">
-            <Badge variant="default">Default</Badge>
-            <Badge variant="success">Success</Badge>
-            <Badge variant="destructive">Error</Badge>
+
+          <div className='flex gap-2'>
+            <Badge variant='default'>Default</Badge>
+            <Badge variant='success'>Success</Badge>
+            <Badge variant='destructive'>Error</Badge>
           </div>
         </div>
       </Card>
@@ -373,10 +367,10 @@ npx tsc --noEmit
 
 ```tsx
 // Verificar breakpoints
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  <Card className="p-4">Mobile First</Card>
-  <Card className="p-4">Tablet</Card>
-  <Card className="p-4">Desktop</Card>
+<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+  <Card className='p-4'>Mobile First</Card>
+  <Card className='p-4'>Tablet</Card>
+  <Card className='p-4'>Desktop</Card>
 </div>
 ```
 
@@ -440,7 +434,7 @@ npm list react react-dom typescript
 // Agregar logs para debug
 console.log('Design System loaded:', {
   tailwindConfig: require('../tailwind.config.ts'),
-  components: require('./src/components/ui')
+  components: require('./src/components/ui'),
 })
 ```
 
@@ -476,7 +470,4 @@ npm run analyze
 
 ---
 
-*Última actualización: Junio 2025*
-
-
-
+_Última actualización: Junio 2025_

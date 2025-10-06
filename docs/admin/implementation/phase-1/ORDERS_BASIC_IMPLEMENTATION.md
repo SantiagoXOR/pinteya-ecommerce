@@ -3,7 +3,7 @@
 **Duración:** 2 semanas  
 **Prioridad:** 🔥 Crítica  
 **Dependencias:** Panel de Productos completado  
-**Estado:** 🔄 Pendiente  
+**Estado:** 🔄 Pendiente
 
 ---
 
@@ -12,6 +12,7 @@
 Implementar sistema completo de gestión de órdenes con datos reales de Supabase, estados básicos y funcionalidades core de administración.
 
 ### **Entregables Principales**
+
 - ✅ Conexión con datos reales de Supabase
 - ✅ OrderList component con filtros avanzados
 - ✅ OrderDetail component completo
@@ -26,6 +27,7 @@ Implementar sistema completo de gestión de órdenes con datos reales de Supabas
 ### **Esquema de Base de Datos**
 
 #### **Tabla Orders (Actualizada)**
+
 ```sql
 -- Actualizar tabla orders existente
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_number VARCHAR(20) UNIQUE;
@@ -46,6 +48,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 ```
 
 #### **Tabla Order Items (Nueva)**
+
 ```sql
 CREATE TABLE IF NOT EXISTS order_items (
   id SERIAL PRIMARY KEY,
@@ -66,120 +69,124 @@ CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id)
 ### **APIs a Implementar**
 
 #### **1. API de Órdenes Mejorada**
+
 ```typescript
 // src/app/api/admin/orders/route.ts (Reemplazar mock)
 
 // GET /api/admin/orders - Lista con filtros reales
 interface GetOrdersRequest {
-  page?: number;
-  limit?: number;
-  status?: OrderStatus;
-  payment_status?: PaymentStatus;
-  fulfillment_status?: FulfillmentStatus;
-  search?: string; // Por customer, order_number, email
-  date_from?: string;
-  date_to?: string;
-  sort_by?: 'created_at' | 'total' | 'status';
-  sort_order?: 'asc' | 'desc';
+  page?: number
+  limit?: number
+  status?: OrderStatus
+  payment_status?: PaymentStatus
+  fulfillment_status?: FulfillmentStatus
+  search?: string // Por customer, order_number, email
+  date_from?: string
+  date_to?: string
+  sort_by?: 'created_at' | 'total' | 'status'
+  sort_order?: 'asc' | 'desc'
 }
 
 interface GetOrdersResponse {
-  data: Order[];
+  data: Order[]
   meta: {
-    total: number;
-    page: number;
-    limit: number;
-    total_pages: number;
-  };
+    total: number
+    page: number
+    limit: number
+    total_pages: number
+  }
   stats: {
-    total_orders: number;
-    pending_orders: number;
-    completed_orders: number;
-    total_revenue: number;
-  };
+    total_orders: number
+    pending_orders: number
+    completed_orders: number
+    total_revenue: number
+  }
 }
 
 // POST /api/admin/orders - Crear orden manual
 interface CreateOrderRequest {
-  customer_id?: string;
-  customer_email: string;
-  customer_name: string;
-  items: OrderItem[];
-  shipping_address: Address;
-  billing_address?: Address;
-  notes?: string;
-  admin_notes?: string;
+  customer_id?: string
+  customer_email: string
+  customer_name: string
+  items: OrderItem[]
+  shipping_address: Address
+  billing_address?: Address
+  notes?: string
+  admin_notes?: string
 }
 ```
 
 #### **2. API de Orden Individual**
+
 ```typescript
 // src/app/api/admin/orders/[id]/route.ts
 
 // GET /api/admin/orders/[id] - Detalle completo
 interface GetOrderResponse {
   data: {
-    id: string;
-    order_number: string;
-    status: OrderStatus;
-    payment_status: PaymentStatus;
-    fulfillment_status: FulfillmentStatus;
-    total: number;
-    subtotal: number;
-    tax: number;
-    shipping_cost: number;
+    id: string
+    order_number: string
+    status: OrderStatus
+    payment_status: PaymentStatus
+    fulfillment_status: FulfillmentStatus
+    total: number
+    subtotal: number
+    tax: number
+    shipping_cost: number
     customer: {
-      id: string;
-      name: string;
-      email: string;
-      phone?: string;
-    };
-    items: OrderItem[];
-    shipping_address: Address;
-    billing_address: Address;
-    payment_info: PaymentInfo;
-    tracking_number?: string;
-    carrier?: string;
-    notes?: string;
-    admin_notes?: string;
-    timeline: OrderEvent[];
-    created_at: string;
-    updated_at: string;
-  };
+      id: string
+      name: string
+      email: string
+      phone?: string
+    }
+    items: OrderItem[]
+    shipping_address: Address
+    billing_address: Address
+    payment_info: PaymentInfo
+    tracking_number?: string
+    carrier?: string
+    notes?: string
+    admin_notes?: string
+    timeline: OrderEvent[]
+    created_at: string
+    updated_at: string
+  }
 }
 
 // PUT /api/admin/orders/[id] - Actualizar orden
 interface UpdateOrderRequest {
-  status?: OrderStatus;
-  payment_status?: PaymentStatus;
-  fulfillment_status?: FulfillmentStatus;
-  tracking_number?: string;
-  carrier?: string;
-  admin_notes?: string;
+  status?: OrderStatus
+  payment_status?: PaymentStatus
+  fulfillment_status?: FulfillmentStatus
+  tracking_number?: string
+  carrier?: string
+  admin_notes?: string
 }
 ```
 
 #### **3. API de Estados de Orden**
+
 ```typescript
 // src/app/api/admin/orders/[id]/status/route.ts
 
 // PATCH /api/admin/orders/[id]/status - Cambiar estado
 interface ChangeStatusRequest {
-  status: OrderStatus;
-  reason?: string;
-  notify_customer?: boolean;
-  admin_notes?: string;
+  status: OrderStatus
+  reason?: string
+  notify_customer?: boolean
+  admin_notes?: string
 }
 ```
 
 ### **Componentes a Desarrollar**
 
 #### **1. OrderList Component**
+
 ```typescript
 // src/components/admin/orders/OrderList.tsx
 
 interface OrderListProps {
-  className?: string;
+  className?: string
 }
 
 // Características:
@@ -193,12 +200,13 @@ interface OrderListProps {
 ```
 
 #### **2. OrderDetail Component**
+
 ```typescript
 // src/components/admin/orders/OrderDetail.tsx
 
 interface OrderDetailProps {
-  orderId: string;
-  onOrderUpdate?: (order: Order) => void;
+  orderId: string
+  onOrderUpdate?: (order: Order) => void
 }
 
 // Características:
@@ -213,12 +221,13 @@ interface OrderDetailProps {
 ```
 
 #### **3. OrderStatusManager Component**
+
 ```typescript
 // src/components/admin/orders/OrderStatusManager.tsx
 
 interface OrderStatusManagerProps {
-  order: Order;
-  onStatusChange: (status: OrderStatus, reason?: string) => Promise<void>;
+  order: Order
+  onStatusChange: (status: OrderStatus, reason?: string) => Promise<void>
 }
 
 // Características:
@@ -230,13 +239,14 @@ interface OrderStatusManagerProps {
 ```
 
 #### **4. OrderFilters Component**
+
 ```typescript
 // src/components/admin/orders/OrderFilters.tsx
 
 interface OrderFiltersProps {
-  filters: OrderFilters;
-  onFiltersChange: (filters: OrderFilters) => void;
-  onClearFilters: () => void;
+  filters: OrderFilters
+  onFiltersChange: (filters: OrderFilters) => void
+  onClearFilters: () => void
 }
 
 // Características:
@@ -254,6 +264,7 @@ interface OrderFiltersProps {
 ### **Semana 1: Backend y Base de Datos**
 
 #### **Día 1-2: Esquema de Base de Datos**
+
 ```bash
 # Tareas específicas:
 1. Actualizar tabla orders
@@ -275,6 +286,7 @@ interface OrderFiltersProps {
 ```
 
 #### **Día 3-4: APIs de Órdenes**
+
 ```bash
 # Tareas específicas:
 1. Reemplazar API mock con datos reales
@@ -297,6 +309,7 @@ interface OrderFiltersProps {
 ```
 
 #### **Día 5: Testing de APIs**
+
 ```bash
 # Tareas específicas:
 1. Tests unitarios de APIs
@@ -308,6 +321,7 @@ interface OrderFiltersProps {
 ### **Semana 2: Frontend y Componentes**
 
 #### **Día 6-7: OrderList Component**
+
 ```bash
 # Tareas específicas:
 1. Estructura base de tabla
@@ -330,6 +344,7 @@ interface OrderFiltersProps {
 ```
 
 #### **Día 8-9: OrderDetail Component**
+
 ```bash
 # Tareas específicas:
 1. Layout de detalle completo
@@ -351,6 +366,7 @@ interface OrderFiltersProps {
 ```
 
 #### **Día 10: Integración y Testing**
+
 ```bash
 # Tareas específicas:
 1. Integración completa
@@ -365,34 +381,37 @@ interface OrderFiltersProps {
 ## 🧪 **ESTRATEGIA DE TESTING**
 
 ### **Unit Tests**
+
 ```typescript
 describe('OrderList', () => {
-  it('should load orders with filters', () => {});
-  it('should handle pagination correctly', () => {});
-  it('should update order status', () => {});
-});
+  it('should load orders with filters', () => {})
+  it('should handle pagination correctly', () => {})
+  it('should update order status', () => {})
+})
 
 describe('OrderDetail', () => {
-  it('should display complete order info', () => {});
-  it('should handle status changes', () => {});
-  it('should save admin notes', () => {});
-});
+  it('should display complete order info', () => {})
+  it('should handle status changes', () => {})
+  it('should save admin notes', () => {})
+})
 ```
 
 ### **Integration Tests**
+
 ```typescript
 describe('Orders API', () => {
-  it('should fetch orders with real data', () => {});
-  it('should update order status correctly', () => {});
-  it('should maintain data integrity', () => {});
-});
+  it('should fetch orders with real data', () => {})
+  it('should update order status correctly', () => {})
+  it('should maintain data integrity', () => {})
+})
 ```
 
 ### **E2E Tests**
+
 ```typescript
 test('Admin can manage orders end-to-end', async ({ page }) => {
   // Test flujo completo de gestión de órdenes
-});
+})
 ```
 
 ---
@@ -400,18 +419,21 @@ test('Admin can manage orders end-to-end', async ({ page }) => {
 ## 📊 **MÉTRICAS DE ÉXITO**
 
 ### **Funcionales**
+
 - ✅ 100% órdenes reales cargando desde Supabase
 - ✅ Filtros funcionando en < 500ms
 - ✅ Estados de órdenes sincronizados
 - ✅ Timeline de eventos completo
 
 ### **Performance**
+
 - ✅ Lista de órdenes < 300ms carga inicial
 - ✅ Detalle de orden < 200ms
 - ✅ Cambio de estado < 100ms
 - ✅ Filtros en tiempo real < 300ms
 
 ### **UX**
+
 - ✅ Responsive en todos los dispositivos
 - ✅ Estados visuales claros
 - ✅ Error handling amigable
@@ -422,32 +444,34 @@ test('Admin can manage orders end-to-end', async ({ page }) => {
 ## 🔧 **CONFIGURACIÓN TÉCNICA**
 
 ### **Hooks Personalizados**
+
 ```typescript
 // src/hooks/admin/useOrders.ts
 export const useOrders = (filters: OrderFilters) => {
   // React Query para gestión de órdenes
-};
+}
 
 // src/hooks/admin/useOrderDetail.ts
 export const useOrderDetail = (orderId: string) => {
   // Detalle de orden con cache
-};
+}
 
 // src/hooks/admin/useOrderStatus.ts
 export const useOrderStatus = () => {
   // Gestión de cambios de estado
-};
+}
 ```
 
 ### **Tipos TypeScript**
+
 ```typescript
 // src/types/admin/orders.ts
 export interface Order {
-  id: string;
-  order_number: string;
-  status: OrderStatus;
-  payment_status: PaymentStatus;
-  fulfillment_status: FulfillmentStatus;
+  id: string
+  order_number: string
+  status: OrderStatus
+  payment_status: PaymentStatus
+  fulfillment_status: FulfillmentStatus
   // ... resto de campos
 }
 
@@ -458,7 +482,7 @@ export enum OrderStatus {
   SHIPPED = 'shipped',
   DELIVERED = 'delivered',
   CANCELLED = 'cancelled',
-  RETURNED = 'returned'
+  RETURNED = 'returned',
 }
 ```
 
@@ -467,12 +491,10 @@ export enum OrderStatus {
 ## 🚀 **SIGUIENTE FASE**
 
 Una vez completada esta fase, proceder con:
+
 - [Fase 2: Sistema de Logística Core](../phase-2/LOGISTICS_CORE_IMPLEMENTATION.md)
 
 ---
 
 **Estado:** 🔄 Listo para implementación  
 **Dependencia:** Completar Panel de Productos primero
-
-
-

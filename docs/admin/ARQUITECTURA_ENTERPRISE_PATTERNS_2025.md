@@ -3,20 +3,22 @@
 **Fecha de Documentación**: 2 de Septiembre, 2025  
 **Basado en**: Spree Commerce + WooCommerce + Next.js Enterprise  
 **Estado**: 📋 **PATRONES VALIDADOS Y LISTOS**  
-**Aplicación**: Panel Administrativo Pinteya E-commerce  
+**Aplicación**: Panel Administrativo Pinteya E-commerce
 
 ---
 
 ## 📊 **RESUMEN DE PATRONES ENTERPRISE ADOPTADOS**
 
 ### **Fuentes de Patrones Validados**
-| Framework | Patrones Adoptados | Aplicación en Pinteya |
-|-----------|-------------------|----------------------|
-| **Spree Commerce** | Permisos granulares, APIs REST, Estados máquina | Sistema roles, APIs admin, Order states |
-| **WooCommerce** | Activity Panels, Fulfillment, Bulk Operations | Dashboard, Envíos, Operaciones masivas |
-| **Next.js Enterprise** | App Router, TypeScript strict, Testing | Arquitectura, Type safety, QA |
+
+| Framework              | Patrones Adoptados                              | Aplicación en Pinteya                   |
+| ---------------------- | ----------------------------------------------- | --------------------------------------- |
+| **Spree Commerce**     | Permisos granulares, APIs REST, Estados máquina | Sistema roles, APIs admin, Order states |
+| **WooCommerce**        | Activity Panels, Fulfillment, Bulk Operations   | Dashboard, Envíos, Operaciones masivas  |
+| **Next.js Enterprise** | App Router, TypeScript strict, Testing          | Arquitectura, Type safety, QA           |
 
 ### **Beneficios Esperados**
+
 - ✅ **Escalabilidad**: Patrones probados en millones de tiendas
 - ✅ **Mantenibilidad**: Código estructurado y documentado
 - ✅ **Performance**: Optimizaciones enterprise validadas
@@ -28,6 +30,7 @@
 ## 🔐 **PATRÓN 1: SISTEMA DE PERMISOS GRANULARES (Spree Commerce)**
 
 ### **Arquitectura de Permisos**
+
 ```typescript
 // src/lib/permissions/ability.ts
 export enum Permission {
@@ -36,36 +39,33 @@ export enum Permission {
   PRODUCTS_CREATE = 'products:create',
   PRODUCTS_UPDATE = 'products:update',
   PRODUCTS_DELETE = 'products:delete',
-  
+
   // Orders
   ORDERS_READ = 'orders:read',
   ORDERS_UPDATE = 'orders:update',
   ORDERS_FULFILL = 'orders:fulfill',
   ORDERS_CANCEL = 'orders:cancel',
-  
+
   // Logistics
   LOGISTICS_READ = 'logistics:read',
   LOGISTICS_MANAGE = 'logistics:manage',
-  
+
   // Admin
   ADMIN_USERS = 'admin:users',
-  ADMIN_SETTINGS = 'admin:settings'
+  ADMIN_SETTINGS = 'admin:settings',
 }
 
 export class AdminAbility {
-  private permissions: Set<Permission>;
-  
+  private permissions: Set<Permission>
+
   constructor(userRole: string, customPermissions: Permission[] = []) {
-    this.permissions = new Set([
-      ...this.getRolePermissions(userRole),
-      ...customPermissions
-    ]);
+    this.permissions = new Set([...this.getRolePermissions(userRole), ...customPermissions])
   }
-  
+
   can(permission: Permission): boolean {
-    return this.permissions.has(permission);
+    return this.permissions.has(permission)
   }
-  
+
   private getRolePermissions(role: string): Permission[] {
     const rolePermissions = {
       admin: Object.values(Permission),
@@ -76,65 +76,55 @@ export class AdminAbility {
         Permission.ORDERS_UPDATE,
         Permission.ORDERS_FULFILL,
         Permission.LOGISTICS_READ,
-        Permission.LOGISTICS_MANAGE
+        Permission.LOGISTICS_MANAGE,
       ],
       operator: [
         Permission.PRODUCTS_READ,
         Permission.ORDERS_READ,
         Permission.ORDERS_UPDATE,
-        Permission.LOGISTICS_READ
+        Permission.LOGISTICS_READ,
       ],
-      viewer: [
-        Permission.PRODUCTS_READ,
-        Permission.ORDERS_READ,
-        Permission.LOGISTICS_READ
-      ]
-    };
-    
-    return rolePermissions[role] || [];
+      viewer: [Permission.PRODUCTS_READ, Permission.ORDERS_READ, Permission.LOGISTICS_READ],
+    }
+
+    return rolePermissions[role] || []
   }
 }
 ```
 
 ### **Middleware de Autorización**
+
 ```typescript
 // src/lib/api/middleware/auth.ts
 export function withAdminAuth(requiredPermissions: Permission[]) {
   return function (handler: Function) {
     return async function (request: NextRequest, context: any) {
-      const session = await getServerSession(authOptions);
-      
+      const session = await getServerSession(authOptions)
+
       if (!session?.user) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
-      
-      const ability = new AdminAbility(session.user.role);
-      
-      const hasPermission = requiredPermissions.every(permission => 
-        ability.can(permission)
-      );
-      
+
+      const ability = new AdminAbility(session.user.role)
+
+      const hasPermission = requiredPermissions.every(permission => ability.can(permission))
+
       if (!hasPermission) {
-        return NextResponse.json(
-          { error: 'Insufficient permissions' },
-          { status: 403 }
-        );
+        return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
       }
-      
+
       // Attach user and ability to request
-      (request as any).user = session.user;
-      (request as any).ability = ability;
-      
-      return handler(request, context);
-    };
-  };
+      ;(request as any).user = session.user
+      ;(request as any).ability = ability
+
+      return handler(request, context)
+    }
+  }
 }
 ```
 
 ### **Uso en APIs**
+
 ```typescript
 // src/app/api/admin/products/route.ts
 export const GET = composeMiddlewares(
@@ -143,13 +133,13 @@ export const GET = composeMiddlewares(
   withAdminAuth([Permission.PRODUCTS_READ]),
   withValidation(ProductFiltersSchema)
 )(async (request: NextRequest) => {
-  const { user, ability } = request as any;
-  
+  const { user, ability } = request as any
+
   // Lógica de la API con permisos validados
-  const products = await getProducts();
-  
-  return NextResponse.json({ data: products });
-});
+  const products = await getProducts()
+
+  return NextResponse.json({ data: products })
+})
 ```
 
 ---
@@ -157,6 +147,7 @@ export const GET = composeMiddlewares(
 ## 📊 **PATRÓN 2: ACTIVITY PANELS DASHBOARD (WooCommerce)**
 
 ### **Arquitectura de Dashboard**
+
 ```typescript
 // src/components/admin/dashboard/ActivityPanels.tsx
 interface ActivityPanel {
@@ -170,7 +161,7 @@ interface ActivityPanel {
 export function ActivityPanels() {
   const { user } = useSession();
   const ability = new AdminAbility(user?.role);
-  
+
   const panels: ActivityPanel[] = [
     {
       id: 'orders',
@@ -194,11 +185,11 @@ export function ActivityPanels() {
       permissions: [Permission.LOGISTICS_READ]
     }
   ];
-  
+
   const visiblePanels = panels.filter(panel =>
     panel.permissions.every(permission => ability.can(permission))
   );
-  
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {visiblePanels.map(panel => (
@@ -214,6 +205,7 @@ export function ActivityPanels() {
 ```
 
 ### **Panel de Órdenes (Patrón WooCommerce)**
+
 ```typescript
 // src/components/admin/dashboard/OrdersPanel.tsx
 export function OrdersPanel() {
@@ -222,11 +214,11 @@ export function OrdersPanel() {
     queryFn: () => getActionableOrders(),
     refetchInterval: 30000
   });
-  
-  const actionableOrders = orders?.filter(order => 
+
+  const actionableOrders = orders?.filter(order =>
     ['pending', 'confirmed', 'processing'].includes(order.status)
   );
-  
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -235,9 +227,9 @@ export function OrdersPanel() {
           {actionableOrders?.length || 0}
         </Badge>
       </div>
-      
+
       {actionableOrders?.length === 0 ? (
-        <EmptyState 
+        <EmptyState
           icon={CheckCircle}
           title="¡Todo al día!"
           description="No hay órdenes que requieran atención"
@@ -253,9 +245,9 @@ export function OrdersPanel() {
           ))}
         </div>
       )}
-      
-      <Button 
-        variant="outline" 
+
+      <Button
+        variant="outline"
         className="w-full"
         onClick={() => router.push('/admin/orders')}
       >
@@ -271,6 +263,7 @@ export function OrdersPanel() {
 ## 🔄 **PATRÓN 3: ESTADOS MÁQUINA (Spree Commerce)**
 
 ### **Order State Machine**
+
 ```typescript
 // src/lib/state-machines/order-state-machine.ts
 export enum OrderStatus {
@@ -281,15 +274,15 @@ export enum OrderStatus {
   DELIVERED = 'delivered',
   CANCELLED = 'cancelled',
   REFUNDED = 'refunded',
-  RETURNED = 'returned'
+  RETURNED = 'returned',
 }
 
 export interface StateTransition {
-  from: OrderStatus;
-  to: OrderStatus;
-  action: string;
-  conditions?: (order: Order) => boolean;
-  sideEffects?: (order: Order) => Promise<void>;
+  from: OrderStatus
+  to: OrderStatus
+  action: string
+  conditions?: (order: Order) => boolean
+  sideEffects?: (order: Order) => Promise<void>
 }
 
 export class OrderStateMachine {
@@ -298,58 +291,52 @@ export class OrderStateMachine {
       from: OrderStatus.PENDING,
       to: OrderStatus.CONFIRMED,
       action: 'confirm',
-      conditions: (order) => order.payment_status === 'paid',
-      sideEffects: async (order) => {
-        await sendConfirmationEmail(order);
-        await updateInventory(order);
-      }
+      conditions: order => order.payment_status === 'paid',
+      sideEffects: async order => {
+        await sendConfirmationEmail(order)
+        await updateInventory(order)
+      },
     },
     {
       from: OrderStatus.CONFIRMED,
       to: OrderStatus.PROCESSING,
       action: 'process',
-      sideEffects: async (order) => {
-        await createShipment(order);
-        await notifyWarehouse(order);
-      }
+      sideEffects: async order => {
+        await createShipment(order)
+        await notifyWarehouse(order)
+      },
     },
     {
       from: OrderStatus.PROCESSING,
       to: OrderStatus.SHIPPED,
       action: 'ship',
-      conditions: (order) => order.shipment?.tracking_number != null,
-      sideEffects: async (order) => {
-        await sendShippingNotification(order);
-        await updateTrackingInfo(order);
-      }
-    }
-  ];
-  
-  static async transition(
-    order: Order, 
-    targetStatus: OrderStatus, 
-    userId: string
-  ): Promise<Order> {
-    const transition = this.transitions.find(t => 
-      t.from === order.status && t.to === targetStatus
-    );
-    
+      conditions: order => order.shipment?.tracking_number != null,
+      sideEffects: async order => {
+        await sendShippingNotification(order)
+        await updateTrackingInfo(order)
+      },
+    },
+  ]
+
+  static async transition(order: Order, targetStatus: OrderStatus, userId: string): Promise<Order> {
+    const transition = this.transitions.find(t => t.from === order.status && t.to === targetStatus)
+
     if (!transition) {
-      throw new Error(`Invalid transition from ${order.status} to ${targetStatus}`);
+      throw new Error(`Invalid transition from ${order.status} to ${targetStatus}`)
     }
-    
+
     if (transition.conditions && !transition.conditions(order)) {
-      throw new Error(`Conditions not met for transition to ${targetStatus}`);
+      throw new Error(`Conditions not met for transition to ${targetStatus}`)
     }
-    
+
     // Execute side effects
     if (transition.sideEffects) {
-      await transition.sideEffects(order);
+      await transition.sideEffects(order)
     }
-    
+
     // Update order status
-    const updatedOrder = await updateOrderStatus(order.id, targetStatus);
-    
+    const updatedOrder = await updateOrderStatus(order.id, targetStatus)
+
     // Create audit trail
     await createOrderStatusHistory({
       order_id: order.id,
@@ -357,16 +344,14 @@ export class OrderStateMachine {
       to_status: targetStatus,
       action: transition.action,
       changed_by: userId,
-      timestamp: new Date()
-    });
-    
-    return updatedOrder;
+      timestamp: new Date(),
+    })
+
+    return updatedOrder
   }
-  
+
   static getAvailableTransitions(currentStatus: OrderStatus): OrderStatus[] {
-    return this.transitions
-      .filter(t => t.from === currentStatus)
-      .map(t => t.to);
+    return this.transitions.filter(t => t.from === currentStatus).map(t => t.to)
   }
 }
 ```
@@ -376,59 +361,61 @@ export class OrderStateMachine {
 ## 🚀 **PATRÓN 4: FULFILLMENT SYSTEM (WooCommerce)**
 
 ### **Fulfillment API**
+
 ```typescript
 // src/app/api/admin/orders/[id]/fulfill/route.ts
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const orderId = parseInt(params.id);
-  const body = await request.json();
-  
-  const order = await getOrder(orderId);
-  
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  const orderId = parseInt(params.id)
+  const body = await request.json()
+
+  const order = await getOrder(orderId)
+
   // Validate transition using state machine
-  const availableTransitions = OrderStateMachine.getAvailableTransitions(order.status);
+  const availableTransitions = OrderStateMachine.getAvailableTransitions(order.status)
   if (!availableTransitions.includes(OrderStatus.PROCESSING)) {
     return NextResponse.json(
       { error: 'Order cannot be fulfilled in current status' },
       { status: 400 }
-    );
+    )
   }
-  
+
   // Create fulfillment record
   const fulfillment = await createFulfillment({
     order_id: orderId,
     items: body.items,
     tracking_number: body.tracking_number,
     shipping_provider: body.shipping_provider,
-    notify_customer: body.notify_customer ?? true
-  });
-  
+    notify_customer: body.notify_customer ?? true,
+  })
+
   // Transition order state
   const updatedOrder = await OrderStateMachine.transition(
     order,
     OrderStatus.PROCESSING,
     request.user.id
-  );
-  
-  return NextResponse.json({
-    data: {
-      fulfillment,
-      order: updatedOrder
-    }
-  }, { status: 201 });
+  )
+
+  return NextResponse.json(
+    {
+      data: {
+        fulfillment,
+        order: updatedOrder,
+      },
+    },
+    { status: 201 }
+  )
 }
 ```
 
 ### **Fulfillment Component**
+
 ```typescript
 // src/components/admin/orders/FulfillmentForm.tsx
 export function FulfillmentForm({ order }: { order: Order }) {
   const form = useForm<FulfillmentRequest>({
     resolver: zodResolver(FulfillmentSchema)
   });
-  
+
   const { mutate: fulfillOrder, isLoading } = useMutation({
     mutationFn: fulfillOrderAPI,
     onSuccess: () => {
@@ -436,10 +423,10 @@ export function FulfillmentForm({ order }: { order: Order }) {
       router.push(`/admin/orders/${order.id}`);
     }
   });
-  
+
   const availableTransitions = OrderStateMachine.getAvailableTransitions(order.status);
   const canFulfill = availableTransitions.includes(OrderStatus.PROCESSING);
-  
+
   if (!canFulfill) {
     return (
       <Alert>
@@ -451,28 +438,28 @@ export function FulfillmentForm({ order }: { order: Order }) {
       </Alert>
     );
   }
-  
+
   return (
     <Form {...form}>
       <div className="space-y-6">
-        <ItemsSelector 
+        <ItemsSelector
           items={order.items}
           value={form.watch('items')}
           onChange={(items) => form.setValue('items', items)}
         />
-        
-        <ShippingProviderSelector 
+
+        <ShippingProviderSelector
           value={form.watch('shipping_provider')}
           onChange={(provider) => form.setValue('shipping_provider', provider)}
         />
-        
-        <TrackingNumberInput 
+
+        <TrackingNumberInput
           value={form.watch('tracking_number')}
           onChange={(tracking) => form.setValue('tracking_number', tracking)}
         />
-        
+
         <div className="flex items-center space-x-2">
-          <Checkbox 
+          <Checkbox
             id="notify_customer"
             checked={form.watch('notify_customer')}
             onCheckedChange={(checked) => form.setValue('notify_customer', checked)}
@@ -481,9 +468,9 @@ export function FulfillmentForm({ order }: { order: Order }) {
             Notificar al cliente por email
           </Label>
         </div>
-        
-        <Button 
-          type="submit" 
+
+        <Button
+          type="submit"
           loading={isLoading}
           className="w-full"
         >
@@ -500,12 +487,14 @@ export function FulfillmentForm({ order }: { order: Order }) {
 ## 📚 **DOCUMENTACIÓN DE IMPLEMENTACIÓN**
 
 ### **Guías de Uso**
+
 1. **[Plan de Implementación Detallado](./PLAN_IMPLEMENTACION_DETALLADO_2025.md)**
 2. **[Cronograma de Implementación](./CRONOGRAMA_IMPLEMENTACION_2025.md)**
 3. **[Especificaciones de APIs](./implementation/technical/API_SPECIFICATIONS.md)**
 4. **[Estrategia de Testing](./TESTING_STRATEGY.md)**
 
 ### **Referencias Enterprise**
+
 - **Spree Commerce**: [Documentación oficial](https://spreecommerce.org/docs/)
 - **WooCommerce**: [Developer Documentation](https://woocommerce.com/developers/)
 - **Next.js Enterprise**: [Best Practices](https://nextjs.org/docs/app/building-your-application)
@@ -516,6 +505,3 @@ export function FulfillmentForm({ order }: { order: Order }) {
 **Fecha**: 2 de Septiembre, 2025  
 **Versión**: 1.0  
 **Estado**: ✅ **PATRONES VALIDADOS Y LISTOS PARA IMPLEMENTACIÓN**
-
-
-

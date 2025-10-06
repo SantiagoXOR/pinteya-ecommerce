@@ -17,7 +17,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { Badge, DiscountBadge, ShippingBadge, StockBadge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { SearchAutocomplete } from '@/components/ui/search-autocomplete'
+import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocompleteIntegrated'
 import { Modal, ConfirmModal, AddToCartModal, useModal } from '@/components/ui/modal'
 import { Checkbox, CheckboxGroup } from '@/components/ui/checkbox'
 import {
@@ -427,7 +427,7 @@ export const SearchAndFilters: Story = {
             <div className='lg:col-span-3'>
               <div className='space-y-4'>
                 {/* Buscador */}
-                <SearchAutocomplete
+                <SearchAutocompleteIntegrated
                   placeholder='Buscar productos de pinturería...'
                   onSearch={query => setSearchQuery(query)}
                   size='lg'
@@ -1033,7 +1033,7 @@ export const MobileExperience: Story = {
           {activeBottomTab === 'search' && (
             <div className='p-4'>
               <div className='space-y-4'>
-                <SearchAutocomplete placeholder='Buscar productos...' size='md' />
+                <SearchAutocompleteIntegrated placeholder='Buscar productos...' size='md' />
 
                 <div>
                   <h3 className='font-semibold mb-3'>Búsquedas Populares</h3>
@@ -1131,7 +1131,11 @@ export const MobileExperience: Story = {
         <Modal open={showMobileSearch} onOpenChange={setShowMobileSearch} variant='fullscreen'>
           <div className='p-4'>
             <div className='flex items-center gap-3 mb-4'>
-              <SearchAutocomplete placeholder='Buscar productos...' className='flex-1' autoFocus />
+              <SearchAutocompleteIntegrated
+                placeholder='Buscar productos...'
+                className='flex-1'
+                autoFocus
+              />
               <Button variant='ghost' onClick={() => setShowMobileSearch(false)}>
                 Cancelar
               </Button>

@@ -37,27 +37,29 @@ src/components/Header/__tests__/
 ### Nuevas Funcionalidades
 
 #### 1. Header Sticky Mejorado
+
 ```typescript
 // Estados para sticky header
-const [isSticky, setIsSticky] = useState(false);
-const [isScrollingUp, setIsScrollingUp] = useState(true);
-const [lastScrollY, setLastScrollY] = useState(0);
+const [isSticky, setIsSticky] = useState(false)
+const [isScrollingUp, setIsScrollingUp] = useState(true)
+const [lastScrollY, setLastScrollY] = useState(0)
 
 // Lógica de scroll con detección de dirección
 useEffect(() => {
   const handleScroll = () => {
-    const currentScrollY = window.scrollY;
-    setIsSticky(currentScrollY > 100);
-    setIsScrollingUp(currentScrollY < lastScrollY || currentScrollY < 10);
-    setLastScrollY(currentScrollY);
-  };
-  
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  return () => window.removeEventListener('scroll', handleScroll);
-}, [lastScrollY]);
+    const currentScrollY = window.scrollY
+    setIsSticky(currentScrollY > 100)
+    setIsScrollingUp(currentScrollY < lastScrollY || currentScrollY < 10)
+    setLastScrollY(currentScrollY)
+  }
+
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  return () => window.removeEventListener('scroll', handleScroll)
+}, [lastScrollY])
 ```
 
 #### 2. Animaciones de Botones
+
 ```css
 /* Botón de carrito con efectos avanzados */
 .floating-button {
@@ -80,6 +82,7 @@ useEffect(() => {
 ```
 
 #### 3. Campo de Búsqueda Interactivo
+
 ```css
 .search-focus-ring:focus-within {
   box-shadow: 0 0 0 3px rgba(242, 122, 29, 0.1);
@@ -94,6 +97,7 @@ useEffect(() => {
 ```
 
 #### 4. Estados de Carga Animados
+
 ```css
 /* Loading shimmer effect */
 .loading-shimmer {
@@ -114,6 +118,7 @@ useEffect(() => {
 ```
 
 #### 5. Dropdowns Animados
+
 ```css
 .dropdown-enhanced {
   animation: dropdownSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -125,13 +130,18 @@ useEffect(() => {
   animation-fill-mode: both;
 }
 
-.dropdown-item-stagger:nth-child(1) { animation-delay: 0.05s; }
-.dropdown-item-stagger:nth-child(2) { animation-delay: 0.1s; }
+.dropdown-item-stagger:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.dropdown-item-stagger:nth-child(2) {
+  animation-delay: 0.1s;
+}
 ```
 
 ## 🎨 Clases CSS Implementadas
 
 ### Animaciones Principales
+
 - `header-sticky-transition` - Transición suave del header sticky
 - `search-focus-ring` - Anillo de enfoque para búsqueda
 - `floating-button` - Efecto flotante para botones
@@ -142,6 +152,7 @@ useEffect(() => {
 - `error-state` - Animación de estado de error
 
 ### Microinteracciones
+
 - `micro-bounce` - Rebote sutil en hover
 - `icon-rotate-hover` - Rotación de iconos
 - `icon-bounce-hover` - Rebote de iconos
@@ -152,6 +163,7 @@ useEffect(() => {
 ## 📱 Responsive Design
 
 ### Breakpoints Optimizados
+
 ```css
 /* Tablet (max-width: 1024px) */
 @media (max-width: 1024px) {
@@ -184,6 +196,7 @@ useEffect(() => {
 ## ♿ Accesibilidad (WCAG 2.1 AA)
 
 ### Características Implementadas
+
 - **Focus Ring**: Anillos de enfoque visibles para navegación por teclado
 - **Reduced Motion**: Soporte para `prefers-reduced-motion`
 - **High Contrast**: Soporte para `prefers-contrast: high`
@@ -191,6 +204,7 @@ useEffect(() => {
 - **Semantic HTML**: Mantenimiento de estructura semántica
 
 ### Clases de Accesibilidad
+
 ```css
 .focus-ring:focus {
   outline: 2px solid #f27a1d;
@@ -203,7 +217,7 @@ useEffect(() => {
   .floating-button {
     transition: none;
   }
-  
+
   .loading-shimmer,
   .success-state,
   .error-state {
@@ -215,6 +229,7 @@ useEffect(() => {
 ## 🚀 Performance
 
 ### Optimizaciones Implementadas
+
 - **CSS Transitions**: Uso de CSS en lugar de JavaScript para animaciones
 - **Hardware Acceleration**: Transform y opacity para GPU acceleration
 - **Passive Listeners**: Event listeners pasivos para scroll
@@ -222,6 +237,7 @@ useEffect(() => {
 - **Cubic Bezier**: Curvas de animación optimizadas
 
 ### Métricas de Performance
+
 - **Tiempo de animación**: 200-300ms promedio
 - **FPS**: 60fps mantenido en animaciones
 - **Memory**: Sin memory leaks en event listeners
@@ -230,18 +246,20 @@ useEffect(() => {
 ## 🧪 Testing
 
 ### Tests Implementados
+
 ```typescript
 // src/components/Header/__tests__/microinteractions.test.tsx
 describe('Header Microinteractions', () => {
-  it('should apply sticky classes when scrolling');
-  it('should apply hover classes to cart button');
-  it('should apply search focus ring classes');
-  it('should have focus-ring classes for accessibility');
-  it('should use CSS transitions for performance');
-});
+  it('should apply sticky classes when scrolling')
+  it('should apply hover classes to cart button')
+  it('should apply search focus ring classes')
+  it('should have focus-ring classes for accessibility')
+  it('should use CSS transitions for performance')
+})
 ```
 
 ### Comandos de Testing
+
 ```bash
 # Ejecutar tests de microinteracciones
 npm test -- --testPathPattern="microinteractions"
@@ -256,6 +274,7 @@ npm test -- --coverage --testPathPattern="microinteractions"
 ## 📊 Métricas de Implementación
 
 ### Cobertura Completada
+
 - ✅ **Sticky Header**: 100% implementado
 - ✅ **Animaciones de Botones**: 100% implementado
 - ✅ **Campo de Búsqueda**: 100% implementado
@@ -265,6 +284,7 @@ npm test -- --coverage --testPathPattern="microinteractions"
 - ✅ **Accesibilidad**: 100% implementado
 
 ### Líneas de Código
+
 - **CSS Animations**: +200 líneas
 - **TypeScript Logic**: +50 líneas
 - **Tests**: +200 líneas
@@ -273,6 +293,7 @@ npm test -- --coverage --testPathPattern="microinteractions"
 ## 🔄 Próximos Pasos
 
 ### Posibles Mejoras Futuras
+
 1. **Animaciones de página**: Transiciones entre rutas
 2. **Gestos táctiles**: Swipe gestures para mobile
 3. **Animaciones de carga**: Skeleton screens
@@ -280,6 +301,7 @@ npm test -- --coverage --testPathPattern="microinteractions"
 5. **Sound feedback**: Feedback auditivo opcional
 
 ### Mantenimiento
+
 - Revisar performance cada 3 meses
 - Actualizar tests con nuevas funcionalidades
 - Monitorear métricas de UX
@@ -291,6 +313,3 @@ npm test -- --coverage --testPathPattern="microinteractions"
 **Fecha**: Enero 2025  
 **Versión**: 1.0.0  
 **Estado**: ✅ Completado
-
-
-

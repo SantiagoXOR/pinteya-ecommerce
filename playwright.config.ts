@@ -7,9 +7,9 @@ import dotenv from 'dotenv'
 
 // Cargar variables de entorno específicas para testing
 if (process.env.NODE_ENV === 'test' || process.env.PLAYWRIGHT_TEST === 'true') {
-  dotenv.config({ path: '.env.test' });
+  dotenv.config({ path: '.env.test' })
 } else {
-  dotenv.config();
+  dotenv.config()
 }
 
 /**
@@ -32,15 +32,15 @@ export default defineConfig({
 
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : 1, // Un worker para pruebas secuenciales
-  
+
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { outputFolder: 'tests/playwright-report' }],
     ['json', { outputFile: 'tests/results.json' }],
     ['junit', { outputFile: 'tests/results.xml' }],
-    ['list']
+    ['list'],
   ],
-  
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -58,10 +58,10 @@ export default defineConfig({
     /* Timeout settings for lazy loading */
     actionTimeout: 10000,
     navigationTimeout: 30000,
-    
+
     /* Record video on failure */
     video: 'retain-on-failure',
-    
+
     /* Global timeout for each action */
     actionTimeout: 15000, // Aumentado para aplicaciones enterprise
 
@@ -72,7 +72,7 @@ export default defineConfig({
     extraHTTPHeaders: {
       'x-playwright-test': 'true',
       'x-test-auth': 'bypass',
-      'User-Agent': 'Playwright-Test-Agent'
+      'User-Agent': 'Playwright-Test-Agent',
     },
   },
 
@@ -96,14 +96,14 @@ export default defineConfig({
     {
       name: 'api-admin',
       use: { ...devices['Desktop Chrome'] },
-      testMatch: ['**/api-admin.spec.ts']
+      testMatch: ['**/api-admin.spec.ts'],
     },
 
     // API Public tests - direct API testing
     {
       name: 'api-public',
       use: { ...devices['Desktop Chrome'] },
-      testMatch: ['**/api-public.spec.ts']
+      testMatch: ['**/api-public.spec.ts'],
     },
 
     // UI Admin tests - require authentication (legacy)
@@ -117,8 +117,8 @@ export default defineConfig({
       testMatch: [
         '**/admin/**/*.spec.ts',
         '**/auth/**/*.spec.ts',
-        '!**/api-*.spec.ts' // Excluir tests API
-      ]
+        '!**/api-*.spec.ts', // Excluir tests API
+      ],
     },
 
     // UI Public tests - no authentication required
@@ -129,8 +129,8 @@ export default defineConfig({
         '**/*.spec.ts',
         '!**/admin/**/*.spec.ts',
         '!**/auth/**/*.spec.ts',
-        '!**/api-*.spec.ts' // Excluir tests API
-      ]
+        '!**/api-*.spec.ts', // Excluir tests API
+      ],
     },
 
     {
@@ -138,8 +138,8 @@ export default defineConfig({
       use: { ...devices['Desktop Firefox'] },
       testMatch: [
         '**/*.spec.ts',
-        '!**/admin/**/*.spec.ts' // Excluir tests admin en Firefox por ahora
-      ]
+        '!**/admin/**/*.spec.ts', // Excluir tests admin en Firefox por ahora
+      ],
     },
 
     {
@@ -147,8 +147,8 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
       testMatch: [
         '**/*.spec.ts',
-        '!**/admin/**/*.spec.ts' // Excluir tests admin en Safari por ahora
-      ]
+        '!**/admin/**/*.spec.ts', // Excluir tests admin en Safari por ahora
+      ],
     },
 
     /* Test against mobile viewports. */
@@ -157,16 +157,16 @@ export default defineConfig({
       use: { ...devices['Pixel 5'] },
       testMatch: [
         '**/*.spec.ts',
-        '!**/admin/**/*.spec.ts' // Excluir tests admin en móvil
-      ]
+        '!**/admin/**/*.spec.ts', // Excluir tests admin en móvil
+      ],
     },
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
       testMatch: [
         '**/*.spec.ts',
-        '!**/admin/**/*.spec.ts' // Excluir tests admin en móvil
-      ]
+        '!**/admin/**/*.spec.ts', // Excluir tests admin en móvil
+      ],
     },
 
     /* Test against branded browsers. */
@@ -204,9 +204,5 @@ export default defineConfig({
   outputDir: 'test-results/',
 
   /* Ignore certain files */
-  testIgnore: [
-    '**/node_modules/**',
-    '**/.next/**',
-    '**/coverage/**',
-  ],
+  testIgnore: ['**/node_modules/**', '**/.next/**', '**/coverage/**'],
 })

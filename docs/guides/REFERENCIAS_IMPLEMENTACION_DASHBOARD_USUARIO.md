@@ -2,7 +2,7 @@
 
 **Fecha**: 13 de Septiembre, 2025  
 **Proyecto**: Pinteya E-commerce  
-**Objetivo**: Referencias técnicas para implementar el panel de gestión de sesión del usuario  
+**Objetivo**: Referencias técnicas para implementar el panel de gestión de sesión del usuario
 
 ---
 
@@ -11,9 +11,10 @@
 He encontrado **excelentes referencias** de implementación que son **100% compatibles** con el stack tecnológico de Pinteya E-commerce. Estas referencias proporcionan componentes, patrones y arquitecturas que pueden ser adaptados directamente para implementar el panel de gestión de sesión del usuario.
 
 ### **Stack Tecnológico Objetivo** ✅
+
 - ✅ **Next.js 15** con App Router
 - ✅ **NextAuth.js v5** para autenticación
-- ✅ **React/TypeScript** 
+- ✅ **React/TypeScript**
 - ✅ **Tailwind CSS** para estilos
 - ✅ **shadcn/ui** para componentes UI
 
@@ -22,11 +23,13 @@ He encontrado **excelentes referencias** de implementación que son **100% compa
 ## 🏆 **REFERENCIAS PRINCIPALES RECOMENDADAS**
 
 ### **1. Vercel Next.js Admin Dashboard Template** ⭐⭐⭐⭐⭐
+
 **ID**: `/vercel/nextjs-postgres-nextauth-tailwindcss-template`  
 **Trust Score**: 10/10 (Máximo)  
 **Compatibilidad**: 100%
 
 #### **Por qué es perfecto**:
+
 - ✅ **Next.js 15** con App Router
 - ✅ **NextAuth.js (Auth.js)** integrado
 - ✅ **Tailwind CSS** para estilos
@@ -35,17 +38,20 @@ He encontrado **excelentes referencias** de implementación que son **100% compa
 - ✅ **Vercel Analytics** integrado
 
 #### **Componentes disponibles**:
+
 - Dashboard principal con métricas
 - Gestión de productos (adaptable a gestión de usuario)
 - Autenticación completa
 - Layout responsivo
 
 ### **2. Next.js SaaS Starter** ⭐⭐⭐⭐⭐
+
 **ID**: `/nextjs/saas-starter`  
 **Trust Score**: 8.4/10  
 **Compatibilidad**: 95%
 
 #### **Funcionalidades clave**:
+
 - ✅ **Dashboard de usuario** completo
 - ✅ **Role-Based Access Control (RBAC)**
 - ✅ **Gestión de suscripciones** (adaptable a preferencias)
@@ -54,6 +60,7 @@ He encontrado **excelentes referencias** de implementación que son **100% compa
 - ✅ **Middleware global** para protección de rutas
 
 #### **Características específicas**:
+
 ```typescript
 // Autenticación con JWT en cookies
 Authentication: email/password with JWTs stored in cookies
@@ -63,11 +70,13 @@ Activity logging: comprehensive user activity tracking
 ```
 
 ### **3. Shadcn Admin Kit** ⭐⭐⭐⭐⭐
+
 **ID**: `/marmelab/shadcn-admin-kit`  
 **Trust Score**: 9.5/10  
 **Compatibilidad**: 90%
 
 #### **Componentes de gestión de usuario**:
+
 - ✅ **UserList** con DataTable
 - ✅ **UserShow** para detalles de usuario
 - ✅ **Dashboard** personalizable
@@ -75,6 +84,7 @@ Activity logging: comprehensive user activity tracking
 - ✅ **Theme Management** con persistencia
 
 #### **Ejemplos de código disponibles**:
+
 ```typescript
 // Lista de usuarios con DataTable
 export const UserList = () => (
@@ -108,6 +118,7 @@ export function Dashboard() {
 ### **1. Gestión de Perfil de Usuario**
 
 #### **A. Formulario de Edición de Perfil** (shadcn/ui)
+
 ```typescript
 // Dialog para editar perfil
 <Dialog>
@@ -139,6 +150,7 @@ export function Dashboard() {
 ```
 
 #### **B. Skeleton para Carga de Perfil**
+
 ```typescript
 // Placeholder mientras carga el perfil
 export function ProfileSkeleton() {
@@ -157,6 +169,7 @@ export function ProfileSkeleton() {
 ### **2. Configuración de Preferencias**
 
 #### **A. Formulario de Notificaciones** (shadcn/ui)
+
 ```typescript
 // Configuración de notificaciones con switches
 const FormSchema = z.object({
@@ -202,17 +215,18 @@ export function NotificationSettings() {
 ### **3. Navegación Lateral (Sidebar)**
 
 #### **A. Sidebar con Persistencia** (shadcn/ui)
+
 ```typescript
 // Sidebar que mantiene estado en cookies
 const setOpen = React.useCallback(
   (value: boolean | ((value: boolean) => boolean)) => {
-    const openState = typeof value === "function" ? value(open) : value
+    const openState = typeof value === 'function' ? value(open) : value
     if (setOpenProp) {
       setOpenProp(openState)
     } else {
       _setOpen(openState)
     }
- 
+
     // Persiste el estado en cookie
     document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
   },
@@ -221,11 +235,12 @@ const setOpen = React.useCallback(
 ```
 
 #### **B. Navegación con Datos Dinámicos**
+
 ```typescript
 // Sidebar con datos del servidor
 async function NavProjects() {
   const projects = await fetchProjects()
- 
+
   return (
     <SidebarMenu>
       {projects.map((project) => (
@@ -246,6 +261,7 @@ async function NavProjects() {
 ### **4. Gestión de Sesiones con NextAuth.js**
 
 #### **A. Protección de Páginas**
+
 ```typescript
 // Hook para páginas protegidas
 export default function UserDashboard() {
@@ -269,28 +285,30 @@ export default function UserDashboard() {
 ```
 
 #### **B. API Routes Protegidas**
+
 ```typescript
 // Protección de APIs
-import { getSession } from "next-auth/react"
+import { getSession } from 'next-auth/react'
 
 export default async (req, res) => {
   const session = await getSession({ req })
-  
+
   if (session) {
     // Usuario autenticado
     res.send({
-      content: "Protected user data",
-      user: session.user
+      content: 'Protected user data',
+      user: session.user,
     })
   } else {
     res.status(401).send({
-      error: "You must be signed in to access this content."
+      error: 'You must be signed in to access this content.',
     })
   }
 }
 ```
 
 #### **C. Configuración de Sesiones Seguras**
+
 ```typescript
 // Configuración NextAuth.js optimizada
 session: {
@@ -306,6 +324,7 @@ session: {
 ## 🎨 **PATRONES DE DISEÑO IDENTIFICADOS**
 
 ### **1. Layout de Dashboard**
+
 ```typescript
 // Estructura típica de dashboard de usuario
 const UserDashboardLayout = () => (
@@ -322,6 +341,7 @@ const UserDashboardLayout = () => (
 ```
 
 ### **2. Navegación de Usuario**
+
 ```typescript
 const userSidebarItems = [
   { icon: Home, label: 'Dashboard', href: '/dashboard' },
@@ -330,10 +350,11 @@ const userSidebarItems = [
   { icon: Monitor, label: 'Sesiones', href: '/dashboard/sessions' },
   { icon: Settings, label: 'Preferencias', href: '/dashboard/preferences' },
   { icon: Activity, label: 'Actividad', href: '/dashboard/activity' },
-];
+]
 ```
 
 ### **3. Tarjetas de Estadísticas**
+
 ```typescript
 // Componente de métricas de usuario
 interface UserStats {
@@ -363,18 +384,21 @@ const UserStatsCards = ({ stats }: { stats: UserStats }) => (
 ## 🚀 **PLAN DE IMPLEMENTACIÓN RECOMENDADO**
 
 ### **Fase 1: Estructura Base** (1 semana)
+
 1. **Clonar template de Vercel** como referencia
 2. **Adaptar layout** de dashboard para usuarios
 3. **Implementar navegación lateral** con shadcn/ui Sidebar
 4. **Crear rutas básicas**: `/dashboard`, `/dashboard/profile`
 
 ### **Fase 2: Componentes Core** (1-2 semanas)
+
 1. **Adaptar UserList** de Shadcn Admin Kit para perfil
 2. **Implementar formularios** de configuración con react-hook-form
 3. **Crear componentes** de gestión de sesiones
 4. **Integrar skeleton loaders** para mejor UX
 
 ### **Fase 3: Funcionalidades Avanzadas** (2-3 semanas)
+
 1. **Sistema de actividad** basado en SaaS Starter
 2. **Gestión de preferencias** con persistencia
 3. **Alertas de seguridad** automáticas
@@ -385,11 +409,13 @@ const UserStatsCards = ({ stats }: { stats: UserStats }) => (
 ## 📚 **RECURSOS PARA IMPLEMENTACIÓN**
 
 ### **Repositorios para Clonar/Estudiar**:
+
 1. **Vercel Template**: `git clone https://github.com/vercel/nextjs-postgres-nextauth-tailwindcss-template`
 2. **SaaS Starter**: `git clone https://github.com/nextjs/saas-starter`
 3. **Shadcn Admin**: `git clone https://github.com/marmelab/shadcn-admin-kit`
 
 ### **Comandos de Instalación**:
+
 ```bash
 # Instalar shadcn/ui sidebar
 pnpm dlx shadcn@latest add sidebar
@@ -399,6 +425,7 @@ pnpm dlx shadcn@latest add dialog input label button form switch calendar
 ```
 
 ### **Dependencias Adicionales**:
+
 ```json
 {
   "@hookform/resolvers": "^3.3.2",
@@ -413,68 +440,70 @@ pnpm dlx shadcn@latest add dialog input label button form switch calendar
 ## 🔧 **EJEMPLOS DE CÓDIGO ESPECÍFICOS**
 
 ### **1. Hook de Gestión de Sesiones**
+
 ```typescript
 // hooks/useUserSessions.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 interface UserSession {
-  id: string;
+  id: string
   deviceInfo: {
-    browser: string;
-    os: string;
-    device: string;
-  };
+    browser: string
+    os: string
+    device: string
+  }
   location: {
-    ip: string;
-    city: string;
-    country: string;
-  };
-  createdAt: string;
-  lastActivity: string;
-  isCurrent: boolean;
+    ip: string
+    city: string
+    country: string
+  }
+  createdAt: string
+  lastActivity: string
+  isCurrent: boolean
 }
 
 export function useUserSessions() {
-  const [sessions, setSessions] = useState<UserSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sessions, setSessions] = useState<UserSession[]>([])
+  const [loading, setLoading] = useState(true)
 
   const fetchSessions = async () => {
     try {
-      const response = await fetch('/api/user/sessions');
-      const data = await response.json();
-      setSessions(data);
+      const response = await fetch('/api/user/sessions')
+      const data = await response.json()
+      setSessions(data)
     } catch (error) {
-      console.error('Error fetching sessions:', error);
+      console.error('Error fetching sessions:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const revokeSession = async (sessionId: string) => {
     try {
       await fetch(`/api/user/sessions/${sessionId}`, {
         method: 'DELETE',
-      });
-      await fetchSessions(); // Refresh list
+      })
+      await fetchSessions() // Refresh list
     } catch (error) {
-      console.error('Error revoking session:', error);
+      console.error('Error revoking session:', error)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchSessions();
-  }, []);
+    fetchSessions()
+  }, [])
 
   return {
     sessions,
     loading,
     fetchSessions,
     revokeSession,
-  };
+  }
 }
 ```
 
 ### **2. Componente de Gestión de Sesiones**
+
 ```typescript
 // components/User/Sessions/SessionManager.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -543,48 +572,50 @@ export function SessionManager() {
 ```
 
 ### **3. API Route para Gestión de Sesiones**
+
 ```typescript
 // app/api/user/sessions/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/auth';
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/auth'
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions)
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // Aquí implementarías la lógica para obtener sesiones activas
   // Esto requeriría almacenar información de sesión en la base de datos
-  const userSessions = await getUserActiveSessions(session.user.id);
+  const userSessions = await getUserActiveSessions(session.user.id)
 
-  return NextResponse.json(userSessions);
+  return NextResponse.json(userSessions)
 }
 
 export async function DELETE(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions)
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { searchParams } = new URL(request.url);
-  const sessionId = searchParams.get('sessionId');
+  const { searchParams } = new URL(request.url)
+  const sessionId = searchParams.get('sessionId')
 
   if (!sessionId) {
-    return NextResponse.json({ error: 'Session ID required' }, { status: 400 });
+    return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
   }
 
   // Implementar lógica para revocar sesión específica
-  await revokeUserSession(session.user.id, sessionId);
+  await revokeUserSession(session.user.id, sessionId)
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true })
 }
 ```
 
 ### **4. Layout de Dashboard de Usuario**
+
 ```typescript
 // app/(site)/(pages)/dashboard/layout.tsx
 import { Sidebar } from "@/components/User/Sidebar";
@@ -616,18 +647,21 @@ export default function DashboardLayout({
 ## 🎯 **CONCLUSIONES**
 
 ### **Referencias Encontradas**: ✅ **EXCELENTES**
+
 - **3 templates principales** 100% compatibles
 - **Múltiples componentes** reutilizables
 - **Patrones probados** en producción
 - **Documentación completa** disponible
 
 ### **Ventajas de Implementación**:
+
 1. **Aceleración del desarrollo**: 60-70% más rápido
 2. **Componentes probados**: Menos bugs y mejor UX
 3. **Mejores prácticas**: Seguridad y performance optimizadas
 4. **Mantenibilidad**: Código estándar y documentado
 
 ### **Próximo Paso Recomendado**:
+
 **Comenzar con el template de Vercel** como base y adaptar componentes específicos de Shadcn Admin Kit para la gestión de usuario.
 
 ---

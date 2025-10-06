@@ -4,13 +4,13 @@
 
 ### ✅ **Tests Funcionando Perfectamente (68/96 - 71% éxito)**
 
-| Categoría | Tests | Estado | Cobertura |
-|-----------|-------|--------|-----------|
-| **Header Component** | 10/10 | ✅ 100% | Completa |
-| **Shop Component** | 11/11 | ✅ 100% | Completa |
-| **useProducts Hook** | 11/11 | ✅ 100% | Completa |
-| **useCheckout Hook** | 5/5 | ✅ 100% | Completa |
-| **Utility Helpers** | 31/31 | ✅ 100% | Completa |
+| Categoría            | Tests | Estado  | Cobertura |
+| -------------------- | ----- | ------- | --------- |
+| **Header Component** | 10/10 | ✅ 100% | Completa  |
+| **Shop Component**   | 11/11 | ✅ 100% | Completa  |
+| **useProducts Hook** | 11/11 | ✅ 100% | Completa  |
+| **useCheckout Hook** | 5/5   | ✅ 100% | Completa  |
+| **Utility Helpers**  | 31/31 | ✅ 100% | Completa  |
 
 ### ❌ **Tests Pendientes (28/96)**
 
@@ -21,16 +21,19 @@
 ## 🛠️ Tecnologías de Testing
 
 ### **Tests Unitarios**
+
 - **Jest** - Framework de testing principal
 - **React Testing Library** - Testing de componentes React
 - **@testing-library/jest-dom** - Matchers adicionales
 
 ### **Tests E2E**
+
 - **Playwright** - Tests end-to-end
 - **Configuración multi-browser** (Chrome, Firefox, Safari)
 - **Tests móviles** (Pixel 5, iPhone 12)
 
 ### **CI/CD**
+
 - **GitHub Actions** - Pipeline automatizado
 - **Prettier** - Formato de código
 - **ESLint** - Análisis estático
@@ -41,6 +44,7 @@
 ## 🚀 Comandos de Testing
 
 ### **Tests Unitarios**
+
 ```bash
 # Ejecutar todos los tests
 npm test
@@ -58,6 +62,7 @@ npm run test:api          # Solo APIs
 ```
 
 ### **Tests E2E**
+
 ```bash
 # Ejecutar tests E2E
 npm run test:e2e
@@ -71,6 +76,7 @@ npx playwright test --grep="checkout"
 ```
 
 ### **Formato y Lint**
+
 ```bash
 # Formatear código
 npm run format
@@ -111,18 +117,21 @@ e2e/                        # Tests E2E
 ## 🎯 Cobertura de Testing
 
 ### **Componentes Principales**
+
 - ✅ Header - Navegación, carrito, búsqueda
 - ✅ Shop - Productos, filtros, ordenamiento
 - ✅ ProductCard - Visualización de productos
 - ✅ CartModal - Gestión del carrito
 
 ### **Hooks Personalizados**
+
 - ✅ useProducts - Carga y filtrado de productos
 - ✅ useCheckout - Proceso de compra
 - ✅ useCart - Gestión del carrito
 - ✅ useWishlist - Lista de deseos
 
 ### **Utilidades**
+
 - ✅ Formateo de precios
 - ✅ Validaciones de formularios
 - ✅ Helpers de fecha
@@ -133,33 +142,32 @@ e2e/                        # Tests E2E
 ## 🔧 Configuración
 
 ### **Jest (jest.config.js)**
+
 ```javascript
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
-  collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.d.ts'
-  ]
+  collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!src/**/*.d.ts'],
 }
 ```
 
 ### **Playwright (playwright.config.ts)**
+
 ```typescript
 export default defineConfig({
   testDir: './e2e',
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure'
+    screenshot: 'only-on-failure',
   },
   projects: [
     { name: 'chromium', use: devices['Desktop Chrome'] },
-    { name: 'Mobile Chrome', use: devices['Pixel 5'] }
-  ]
+    { name: 'Mobile Chrome', use: devices['Pixel 5'] },
+  ],
 })
 ```
 
@@ -177,6 +185,7 @@ export default defineConfig({
 6. **Deploy** - Despliegue a producción (solo main)
 
 ### **Variables de Entorno Requeridas**
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY

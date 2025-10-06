@@ -5,6 +5,7 @@
 El header sticky tenía un z-index excesivamente alto (9999) que causaba conflictos de superposición con elementos interactivos como modales, dropdowns, notificaciones y tooltips, haciendo que estos componentes aparecieran por debajo del header.
 
 ### Problemas Específicos:
+
 - **Header sticky:** z-index 9999 (demasiado alto)
 - **Modales y dialogs:** z-index 50 (muy bajo)
 - **Dropdowns:** z-index 50 (muy bajo)
@@ -65,17 +66,20 @@ z-maximum: 10200
 ### 2. **Archivos Modificados**
 
 #### `src/styles/z-index-hierarchy.css` (NUEVO)
+
 - Definición completa de la jerarquía
 - Clases utilitarias para todos los niveles
 - Documentación de uso y mejores prácticas
 
 #### `src/app/css/style.css`
+
 ```css
 /* Import z-index hierarchy */
 @import '../../styles/z-index-hierarchy.css';
 ```
 
 #### `src/components/Header/index.tsx`
+
 ```tsx
 // ANTES
 className="fixed left-0 w-full z-[9999] bg-white"
@@ -87,57 +91,63 @@ style={{ backdropFilter: stickyMenu ? 'blur(8px)' : 'none' }}
 ```
 
 #### `src/components/Header/TopBar.tsx`
+
 ```tsx
 // ANTES
-className="... z-[9998]"
+className = '... z-[9998]'
 
 // DESPUÉS
-className="... z-topbar"
+className = '... z-topbar'
 ```
 
 #### `src/components/ui/dropdown-menu.tsx`
+
 ```tsx
 // ANTES
-className="z-50 min-w-[8rem] ..."
+className = 'z-50 min-w-[8rem] ...'
 
 // DESPUÉS
-className="z-dropdown min-w-[8rem] ..."
+className = 'z-dropdown min-w-[8rem] ...'
 ```
 
 #### `src/components/ui/dialog.tsx`
+
 ```tsx
 // ANTES - Overlay
-className="fixed inset-0 z-50 bg-dark/70 ..."
+className = 'fixed inset-0 z-50 bg-dark/70 ...'
 
 // DESPUÉS - Overlay
-className="fixed inset-0 z-modal-backdrop bg-dark/70 ..."
+className = 'fixed inset-0 z-modal-backdrop bg-dark/70 ...'
 
 // ANTES - Content
-"fixed left-[50%] top-[50%] z-50 grid ..."
+;('fixed left-[50%] top-[50%] z-50 grid ...')
 
 // DESPUÉS - Content
-"fixed left-[50%] top-[50%] z-modal grid ..."
+;('fixed left-[50%] top-[50%] z-modal grid ...')
 ```
 
 #### `src/components/Common/CartNotification.tsx`
+
 ```tsx
 // ANTES
-className="fixed top-4 right-4 z-50 ..."
+className = 'fixed top-4 right-4 z-50 ...'
 
 // DESPUÉS
-className="fixed top-4 right-4 z-notification ..."
+className = 'fixed top-4 right-4 z-notification ...'
 ```
 
 #### `src/components/ui/bottom-navigation.tsx`
+
 ```tsx
 // ANTES
-"fixed bottom-0 left-0 right-0 z-50 ..."
+'fixed bottom-0 left-0 right-0 z-50 ...'
 
 // DESPUÉS
-"fixed bottom-0 left-0 right-0 z-bottom-nav ..."
+'fixed bottom-0 left-0 right-0 z-bottom-nav ...'
 ```
 
 #### `src/app/css/async-gallery.css`
+
 ```css
 /* ANTES */
 z-index: 100000;
@@ -147,6 +157,7 @@ z-index: 10000; /* z-gallery */
 ```
 
 #### `tailwind.config.ts`
+
 ```typescript
 zIndex: {
   // Nueva jerarquía estandarizada
@@ -184,11 +195,13 @@ zIndex: {
 ## 🧪 **Testing y Validación**
 
 ### Página de Prueba: `/test-z-index`
+
 - Pruebas interactivas de todos los niveles de z-index
 - Verificación visual de la jerarquía
 - Instrucciones paso a paso para testing
 
 ### Casos de Prueba Verificados:
+
 1. ✅ **Header sticky:** Visible pero no interfiere con elementos interactivos
 2. ✅ **Dropdowns:** Aparecen completamente por encima del header
 3. ✅ **Modales:** Cubren todo el contenido incluyendo header
@@ -200,11 +213,13 @@ zIndex: {
 ## 📊 **Beneficios Logrados**
 
 ### Para el Usuario:
+
 - **UX mejorada:** Elementos interactivos siempre visibles y accesibles
 - **Navegación fluida:** Sin elementos cortados o parcialmente ocultos
 - **Consistencia visual:** Comportamiento predecible en toda la aplicación
 
 ### Para el Desarrollo:
+
 - **Mantenibilidad:** Jerarquía clara y documentada
 - **Escalabilidad:** Fácil agregar nuevos componentes con z-index apropiado
 - **Debugging:** Clases semánticas facilitan identificación de problemas
@@ -213,12 +228,14 @@ zIndex: {
 ## 🔧 **Reglas de Uso**
 
 ### ✅ **Hacer:**
+
 1. Usar siempre las clases definidas en la jerarquía
 2. Documentar cualquier excepción o caso especial
 3. Probar en todos los breakpoints responsive
 4. Verificar interacciones entre diferentes niveles
 
 ### ❌ **No Hacer:**
+
 1. Usar z-index arbitrarios como 9999, 99999
 2. Crear valores fuera de la jerarquía establecida
 3. Usar !important para forzar z-index
@@ -236,6 +253,3 @@ zIndex: {
 **Fecha:** 2025-01-07  
 **Estado:** ✅ Completado  
 **Verificado:** Jerarquía de z-index funcionando correctamente en todos los componentes
-
-
-

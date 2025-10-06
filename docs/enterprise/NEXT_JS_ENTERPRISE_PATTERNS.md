@@ -22,12 +22,14 @@
 ## 🎯 Objetivos Enterprise
 
 ### **Principios Fundamentales**
+
 - **Escalabilidad**: Manejo de alto volumen de transacciones
 - **Confiabilidad**: 99.9% uptime con recuperación automática
 - **Performance**: First Load < 500KB, Build time < 30s
 - **Observabilidad**: Métricas en tiempo real y alertas automáticas
 
 ### **Estándares de Calidad**
+
 - **Caching Strategy**: 4 capas de caché optimizadas
 - **Error Handling**: Manejo robusto con retry logic
 - **Security**: HMAC verification y rate limiting
@@ -38,6 +40,7 @@
 ## 🏗️ Arquitectura de Caching
 
 ### **1. Request Memoization**
+
 ```typescript
 // Memoización automática de fetch requests
 async function getProducts() {
@@ -53,17 +56,18 @@ const products2 = await getProducts()
 ```
 
 ### **2. Data Cache**
+
 ```typescript
 // Estrategias de caching por caso de uso
 export default async function ProductsPage() {
   // Static data (similar a getStaticProps)
-  const staticData = await fetch('https://api.pinteya.com/categories', { 
-    cache: 'force-cache' 
+  const staticData = await fetch('https://api.pinteya.com/categories', {
+    cache: 'force-cache'
   })
 
   // Dynamic data (similar a getServerSideProps)
-  const dynamicData = await fetch('https://api.pinteya.com/inventory', { 
-    cache: 'no-store' 
+  const dynamicData = await fetch('https://api.pinteya.com/inventory', {
+    cache: 'no-store'
   })
 
   // Time-based revalidation
@@ -76,6 +80,7 @@ export default async function ProductsPage() {
 ```
 
 ### **3. Full Route Cache**
+
 ```typescript
 // Configuración de revalidación por ruta
 export const revalidate = 3600 // 1 hora
@@ -88,21 +93,22 @@ export default async function Page() {
   const data = await fetch('https://api.pinteya.com/products', {
     next: { tags: ['products'] }
   })
-  
+
   return <ProductList products={data} />
 }
 ```
 
 ### **4. Router Cache**
+
 ```typescript
 // Configuración de staleTimes en next.config.js
 const nextConfig = {
   experimental: {
     staleTimes: {
-      dynamic: 30,    // 30 segundos para contenido dinámico
-      static: 180     // 3 minutos para contenido estático
-    }
-  }
+      dynamic: 30, // 30 segundos para contenido dinámico
+      static: 180, // 3 minutos para contenido estático
+    },
+  },
 }
 ```
 
@@ -111,6 +117,7 @@ const nextConfig = {
 ## ⚡ Performance Optimization
 
 ### **1. Server Components Optimization**
+
 ```typescript
 // Componente Server optimizado
 export default async function ProductCard({ productId }: { productId: string }) {
@@ -133,6 +140,7 @@ export default async function ProductCard({ productId }: { productId: string }) 
 ```
 
 ### **2. Streaming y Suspense**
+
 ```typescript
 import { Suspense } from 'react'
 
@@ -152,6 +160,7 @@ export default function ProductsPage() {
 ```
 
 ### **3. Image Optimization**
+
 ```typescript
 import Image from 'next/image'
 
@@ -173,22 +182,23 @@ export default function ProductImage({ src, alt }: { src: string, alt: string })
 ```
 
 ### **4. Bundle Optimization**
+
 ```javascript
 // next.config.js - Optimización de bundles
 const nextConfig = {
   // Auto-bundle dependencies en Pages Router
   bundlePagesRouterDependencies: true,
-  
+
   // Optimización de Tailwind
   experimental: {
-    optimizeCss: true
+    optimizeCss: true,
   },
-  
+
   // Compresión
   compress: true,
-  
+
   // Tree shaking mejorado
-  swcMinify: true
+  swcMinify: true,
 }
 ```
 
@@ -197,6 +207,7 @@ const nextConfig = {
 ## 🔒 Security Patterns
 
 ### **1. Middleware de Seguridad**
+
 ```typescript
 // middleware.ts - Seguridad enterprise
 import { NextResponse } from 'next/server'
@@ -205,27 +216,26 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   // Rate limiting por IP
   const ip = request.ip || 'unknown'
-  
+
   // CSRF protection
   const csrfToken = request.headers.get('x-csrf-token')
-  
+
   // Security headers
   const response = NextResponse.next()
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  
+
   return response
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
 ```
 
 ### **2. API Routes Seguras**
+
 ```typescript
 // app/api/admin/route.ts - API enterprise
 import { auth } from '@clerk/nextjs'
@@ -242,30 +252,24 @@ export async function GET(request: NextRequest) {
     // Rate limiting
     const rateLimitResult = await checkRateLimit(userId)
     if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded' }, 
-        { status: 429 }
-      )
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
     }
 
     // Validación de entrada
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
-    
+
     if (page < 1 || page > 1000) {
       return NextResponse.json({ error: 'Invalid page' }, { status: 400 })
     }
 
     // Lógica de negocio
     const data = await getAdminData(userId, page)
-    
+
     return NextResponse.json(data)
   } catch (error) {
     console.error('Admin API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 ```
@@ -275,6 +279,7 @@ export async function GET(request: NextRequest) {
 ## 📊 Monitoring & Observability
 
 ### **1. Web Vitals Tracking**
+
 ```typescript
 // app/layout.tsx - Monitoreo de performance
 import { WebVitals } from '@/components/WebVitals'
@@ -298,12 +303,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 import { useReportWebVitals } from 'next/web-vitals'
 
 export function WebVitals() {
-  useReportWebVitals((metric) => {
+  useReportWebVitals(metric => {
     // Enviar métricas a sistema de monitoreo
     fetch('/api/analytics/web-vitals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(metric)
+      body: JSON.stringify(metric),
     })
   })
 
@@ -312,6 +317,7 @@ export function WebVitals() {
 ```
 
 ### **2. Error Boundary Enterprise**
+
 ```typescript
 // components/ErrorBoundary.tsx
 'use client'
@@ -328,7 +334,7 @@ export default function Error({
   useEffect(() => {
     // Log error a sistema de monitoreo
     console.error('Application error:', error)
-    
+
     // Enviar a servicio de tracking
     fetch('/api/errors', {
       method: 'POST',
@@ -356,6 +362,7 @@ export default function Error({
 ## 🧪 Testing Enterprise
 
 ### **1. Configuración Jest Optimizada**
+
 ```javascript
 // jest.config.js - Enterprise testing
 const nextJest = require('next/jest')
@@ -389,10 +396,11 @@ module.exports = createJestConfig(customJestConfig)
 ```
 
 ### **2. Mocks Centralizados**
+
 ```typescript
 // __mocks__/next-auth.ts
 export const auth = jest.fn(() => ({
-  user: { id: 'test-user', email: 'test@pinteya.com' }
+  user: { id: 'test-user', email: 'test@pinteya.com' },
 }))
 
 // __mocks__/supabase.ts
@@ -400,7 +408,7 @@ export const createClient = jest.fn(() => ({
   from: jest.fn(() => ({
     select: jest.fn(() => Promise.resolve({ data: [], error: null })),
     insert: jest.fn(() => Promise.resolve({ data: {}, error: null })),
-  }))
+  })),
 }))
 ```
 
@@ -410,6 +418,3 @@ export const createClient = jest.fn(() => ({
 **Fecha**: Enero 2025  
 **Versión**: Enterprise v3.0  
 **Basado en**: Next.js 15 + Context7 Documentation
-
-
-

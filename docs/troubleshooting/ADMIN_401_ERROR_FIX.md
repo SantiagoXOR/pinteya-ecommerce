@@ -14,7 +14,7 @@ La función `getAuthenticatedUser` en `src/lib/auth/admin-auth.ts` tenía una ve
 
 ```typescript
 // ❌ INCORRECTO (línea 123)
-const isAdmin = sessionClaims?.metadata?.role === 'admin';
+const isAdmin = sessionClaims?.metadata?.role === 'admin'
 ```
 
 ### Causa Raíz
@@ -31,9 +31,9 @@ const isAdmin = sessionClaims?.metadata?.role === 'admin';
 
 ```typescript
 // ✅ CORREGIDO
-const publicRole = sessionClaims?.publicMetadata?.role as string;
-const privateRole = sessionClaims?.privateMetadata?.role as string;
-let isAdmin = publicRole === 'admin' || privateRole === 'admin';
+const publicRole = sessionClaims?.publicMetadata?.role as string
+const privateRole = sessionClaims?.privateMetadata?.role as string
+let isAdmin = publicRole === 'admin' || privateRole === 'admin'
 ```
 
 ### 2. Implementación de Fallback Robusto
@@ -42,14 +42,14 @@ let isAdmin = publicRole === 'admin' || privateRole === 'admin';
 // Si no encontramos el rol en sessionClaims, verificar directamente con Clerk
 if (!isAdmin && userId) {
   try {
-    const user = await currentUser();
+    const user = await currentUser()
     if (user) {
-      const userPublicRole = user.publicMetadata?.role as string;
-      const userPrivateRole = user.privateMetadata?.role as string;
-      isAdmin = userPublicRole === 'admin' || userPrivateRole === 'admin';
+      const userPublicRole = user.publicMetadata?.role as string
+      const userPrivateRole = user.privateMetadata?.role as string
+      isAdmin = userPublicRole === 'admin' || userPrivateRole === 'admin'
     }
   } catch (fallbackError) {
-    console.warn('[AUTH] Error en fallback de verificación de admin:', fallbackError);
+    console.warn('[AUTH] Error en fallback de verificación de admin:', fallbackError)
   }
 }
 ```
@@ -57,7 +57,9 @@ if (!isAdmin && userId) {
 ### 3. Logging Mejorado para Debugging
 
 ```typescript
-console.log(`[AUTH] Verificación de roles - publicRole: ${publicRole}, privateRole: ${privateRole}, isAdmin: ${isAdmin}`);
+console.log(
+  `[AUTH] Verificación de roles - publicRole: ${publicRole}, privateRole: ${privateRole}, isAdmin: ${isAdmin}`
+)
 ```
 
 ## 🛠️ Verificación y Testing
@@ -140,12 +142,14 @@ curl -X GET "https://pinteya.com/api/admin/monitoring/metrics" \
 ## 📊 Impacto de la Solución
 
 ### Antes (❌)
+
 - Error 401 en `/admin/monitoring`
 - Verificación incorrecta de roles
 - Sin fallback robusto
 - Logging limitado
 
 ### Después (✅)
+
 - Acceso correcto a `/admin/monitoring`
 - Verificación robusta de roles en `publicMetadata` y `privateMetadata`
 - Fallback automático a `currentUser()` de Clerk
@@ -154,12 +158,14 @@ curl -X GET "https://pinteya.com/api/admin/monitoring/metrics" \
 ## 🔄 Compatibilidad
 
 ### Rutas Afectadas Positivamente
+
 - ✅ `/admin/monitoring` - Ahora funciona correctamente
 - ✅ `/admin/products` - Verificación mejorada
 - ✅ `/admin/orders` - Verificación mejorada
 - ✅ Todas las APIs `/api/admin/*` - Verificación mejorada
 
 ### Sin Impacto Negativo
+
 - ✅ Rutas públicas siguen funcionando
 - ✅ Autenticación de usuarios normales sin cambios
 - ✅ Middleware existente compatible
@@ -197,6 +203,3 @@ curl -X GET "https://pinteya.com/api/admin/monitoring/metrics" \
 **Fecha de resolución**: 18 de Agosto, 2025
 **Responsable**: Augment Agent
 **Estado**: ✅ Resuelto y desplegado
-
-
-

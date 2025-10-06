@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Configuración específica de Playwright para flujos de usuario
@@ -6,11 +6,11 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests/e2e',
-  
+
   /* Configuración de timeouts */
   timeout: 60000, // 1 minuto por test
   expect: {
-    timeout: 10000 // 10 segundos para assertions
+    timeout: 10000, // 10 segundos para assertions
   },
 
   /* Configuración de ejecución */
@@ -23,7 +23,7 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'playwright-report-user-flow' }],
     ['json', { outputFile: 'test-results/user-flow-results.json' }],
-    ['list']
+    ['list'],
   ],
 
   /* Configuración global */
@@ -34,7 +34,7 @@ export default defineConfig({
     /* Configuración de browser */
     headless: true,
     viewport: { width: 1280, height: 720 },
-    
+
     /* Screenshots y videos */
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -42,42 +42,42 @@ export default defineConfig({
 
     /* Configuración de red */
     ignoreHTTPSErrors: true,
-    
+
     /* Headers adicionales */
     extraHTTPHeaders: {
-      'Accept': 'application/json, text/html, */*',
-      'User-Agent': 'Playwright-UserFlow-Test'
-    }
+      Accept: 'application/json, text/html, */*',
+      'User-Agent': 'Playwright-UserFlow-Test',
+    },
   },
 
   /* Configuración de proyectos/browsers */
   projects: [
     {
       name: 'chromium-desktop',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        viewport: { width: 1280, height: 720 }
+        viewport: { width: 1280, height: 720 },
       },
     },
 
     {
       name: 'firefox-desktop',
-      use: { 
+      use: {
         ...devices['Desktop Firefox'],
-        viewport: { width: 1280, height: 720 }
+        viewport: { width: 1280, height: 720 },
       },
     },
 
     {
       name: 'mobile-chrome',
-      use: { 
+      use: {
         ...devices['Pixel 5'],
       },
     },
 
     {
       name: 'mobile-safari',
-      use: { 
+      use: {
         ...devices['iPhone 12'],
       },
     },
@@ -85,4 +85,4 @@ export default defineConfig({
 
   /* Configuración de servidor local (si es necesario) */
   webServer: undefined, // Usamos producción directamente
-});
+})

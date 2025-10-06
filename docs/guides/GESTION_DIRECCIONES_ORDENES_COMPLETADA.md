@@ -12,17 +12,19 @@
 ## 🏗️ COMPONENTES IMPLEMENTADOS
 
 ### 1. **AddressFormAdvanced.tsx** (483 líneas)
+
 ```typescript
 // Formulario avanzado de direcciones con validación completa
-export function AddressFormAdvanced({ 
-  initialData, 
-  onSubmit, 
-  onCancel, 
-  mode = 'create' 
+export function AddressFormAdvanced({
+  initialData,
+  onSubmit,
+  onCancel,
+  mode = 'create',
 }: AddressFormAdvancedProps)
 ```
 
 **Características**:
+
 - ✅ Validación completa con Zod
 - ✅ Campos avanzados: apartamento, teléfono, tipo, provincia
 - ✅ Selector de provincias argentinas (24 provincias)
@@ -32,6 +34,7 @@ export function AddressFormAdvanced({
 - ✅ Interfaz moderna con shadcn/ui
 
 ### 2. **AddressSelector.tsx** (297 líneas)
+
 ```typescript
 // Selector de direcciones para checkout
 export function AddressSelector({
@@ -40,11 +43,12 @@ export function AddressSelector({
   onAddressSelect,
   onAddressAdd,
   onAddressEdit,
-  filterType = 'shipping'
+  filterType = 'shipping',
 }: AddressSelectorProps)
 ```
 
 **Características**:
+
 - ✅ Radio buttons para selección
 - ✅ Filtrado por tipo (shipping, billing, both)
 - ✅ Edición inline de direcciones
@@ -53,16 +57,14 @@ export function AddressSelector({
 - ✅ Resumen de dirección seleccionada
 
 ### 3. **OrderTracker.tsx** (282 líneas)
+
 ```typescript
 // Componente de tracking visual de órdenes
-export function OrderTracker({ 
-  order, 
-  className = '', 
-  showDetails = true 
-}: OrderTrackerProps)
+export function OrderTracker({ order, className = '', showDetails = true }: OrderTrackerProps)
 ```
 
 **Características**:
+
 - ✅ Timeline visual de estados de orden
 - ✅ Barra de progreso animada
 - ✅ Badges de estado de pago y orden
@@ -77,6 +79,7 @@ export function OrderTracker({
 ### 4. **API de Validación de Direcciones** (`/api/user/addresses/validate/route.ts`)
 
 **POST /api/user/addresses/validate**:
+
 ```typescript
 // Validación completa de direcciones
 {
@@ -89,14 +92,15 @@ export function OrderTracker({
 ```
 
 **GET /api/user/addresses/validate?q=query**:
+
 ```typescript
 // Autocompletado de direcciones
 {
   suggestions: Array<{
-    id: string,
-    description: string,
+    id: string
+    description: string
     structured_formatting: {
-      main_text: string,
+      main_text: string
       secondary_text: string
     }
   }>
@@ -104,6 +108,7 @@ export function OrderTracker({
 ```
 
 **Características**:
+
 - ✅ Validación de códigos postales argentinos
 - ✅ Generación de coordenadas geográficas
 - ✅ Sugerencias de corrección
@@ -116,6 +121,7 @@ export function OrderTracker({
 ### 5. **Página de Órdenes Mejorada** (`/orders/page.tsx`)
 
 **Características**:
+
 - ✅ Estadísticas de órdenes en tiempo real
 - ✅ Filtros avanzados (búsqueda por número, tracking, producto)
 - ✅ Filtrado por estado (pendiente, confirmado, enviado, etc.)
@@ -127,6 +133,7 @@ export function OrderTracker({
 ### 6. **Nueva Página de Direcciones** (`/addresses/page.tsx`)
 
 **Características**:
+
 - ✅ Gestión completa CRUD de direcciones
 - ✅ Confirmaciones de eliminación
 - ✅ Establecer dirección predeterminada
@@ -140,6 +147,7 @@ export function OrderTracker({
 ## 🗄️ BASE DE DATOS MEJORADA
 
 ### 7. **Campos Agregados a `user_addresses`**:
+
 ```sql
 ALTER TABLE user_addresses ADD COLUMN state VARCHAR(100);
 ALTER TABLE user_addresses ADD COLUMN apartment VARCHAR(50);
@@ -151,6 +159,7 @@ ALTER TABLE user_addresses ADD COLUMN validation_status VARCHAR(20) DEFAULT 'pen
 ```
 
 ### 8. **Campos Agregados a `orders`**:
+
 ```sql
 ALTER TABLE orders ADD COLUMN order_number VARCHAR(50);
 ALTER TABLE orders ADD COLUMN tracking_number VARCHAR(100);
@@ -168,6 +177,7 @@ ALTER TABLE orders ADD COLUMN fulfillment_status VARCHAR(20) DEFAULT 'unfulfille
 ### 9. **UserAvatarDropdown.tsx Actualizado**
 
 **Nueva opción agregada**:
+
 ```typescript
 {/* Mis Direcciones */}
 <DropdownMenuItem asChild>
@@ -198,6 +208,7 @@ ALTER TABLE orders ADD COLUMN fulfillment_status VARCHAR(20) DEFAULT 'unfulfille
 ### 11. **Sistema de Notificaciones**
 
 **Agregado**: Toaster para notificaciones toast
+
 ```typescript
 // En providers.tsx
 import { Toaster } from "@/components/ui/toast";

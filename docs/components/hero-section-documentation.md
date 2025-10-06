@@ -60,7 +60,7 @@ const Hero = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pt-8 lg:py-8 lg:pt-16 overflow-hidden">
           {/* Banner principal */}
           <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-blaze-orange-500 via-blaze-orange-400 to-blaze-orange-600 min-h-[400px] lg:min-h-[500px]">
-            
+
             {/* Imagen hero mobile */}
             <div className="absolute inset-0 z-[1] lg:hidden">
               <Image src="/images/hero/hero-01.png" alt="Pintá rápido, fácil y cotiza al instante" />
@@ -152,18 +152,18 @@ El Hero component cuenta con **11 tests** que verifican:
 ```typescript
 // src/__tests__/components/Hero.test.tsx
 describe('Hero Component', () => {
-  it('should render without crashing');
-  it('should render the main heading');
-  it('should render the hero image');
-  it('should render without service badges (moved to TrustSection)');
-  it('should render action buttons');
-  it('should render hero content without service badges');
-  it('should render location information');
-  it('should render images without errors');
-  it('should not render service icons (moved to TrustSection)');
-  it('should not have undefined elements in JSX');
-  it('should not render service badges (moved to TrustSection)');
-});
+  it('should render without crashing')
+  it('should render the main heading')
+  it('should render the hero image')
+  it('should render without service badges (moved to TrustSection)')
+  it('should render action buttons')
+  it('should render hero content without service badges')
+  it('should render location information')
+  it('should render images without errors')
+  it('should not render service icons (moved to TrustSection)')
+  it('should not have undefined elements in JSX')
+  it('should not render service badges (moved to TrustSection)')
+})
 ```
 
 ### Comandos de Testing
@@ -236,7 +236,7 @@ No requiere variables de entorno específicas.
 ### Implementación Básica
 
 ```tsx
-import Hero from '@/components/Home/Hero';
+import Hero from '@/components/Home/Hero'
 
 function HomePage() {
   return (
@@ -244,7 +244,7 @@ function HomePage() {
       <Hero />
       {/* Otros componentes */}
     </main>
-  );
+  )
 }
 ```
 
@@ -252,10 +252,10 @@ function HomePage() {
 
 ```tsx
 // src/app/(site)/page.tsx
-import Home from '@/components/Home';
+import Home from '@/components/Home'
 
 export default function HomePage() {
-  return <Home />; // Incluye Hero automáticamente
+  return <Home /> // Incluye Hero automáticamente
 }
 ```
 
@@ -281,6 +281,3 @@ export default function HomePage() {
 **Estado**: ✅ Completado y optimizado  
 **Tests**: 11/11 pasando  
 **Performance**: Optimizado
-
-
-

@@ -13,10 +13,11 @@
 ### **COMPONENTE OBJETIVO**: UserAvatarDropdown
 
 #### **Funcionalidad Visual**:
+
 ```
 Header Principal
 ├── Logo
-├── Buscador  
+├── Buscador
 ├── [Avatar del Usuario] ← NUEVO
 │   └── Dropdown al hacer clic:
 │       ├── 👤 Información del usuario
@@ -41,7 +42,7 @@ Header Principal
 
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -51,12 +52,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { 
-  User, 
-  Package, 
-  Settings, 
+import {
+  User,
+  Package,
+  Settings,
   LogOut,
-  ChevronDown 
+  ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -82,20 +83,20 @@ export function UserAvatarDropdown() {
         >
           {/* Avatar del usuario */}
           <Avatar className="h-8 w-8 ring-2 ring-transparent hover:ring-white/50 transition-all duration-200">
-            <AvatarImage 
-              src={user.image || undefined} 
-              alt={user.name || 'Usuario'} 
+            <AvatarImage
+              src={user.image || undefined}
+              alt={user.name || 'Usuario'}
             />
             <AvatarFallback className="bg-white text-blaze-orange-700 text-sm font-medium">
               {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
-          
+
           {/* Nombre del usuario (solo desktop) */}
           <span className="hidden sm:block text-sm font-medium">
             {user.name || user.email?.split('@')[0] || 'Usuario'}
           </span>
-          
+
           {/* Icono de dropdown */}
           <ChevronDown className="h-4 w-4 opacity-70" />
         </Button>
@@ -106,9 +107,9 @@ export function UserAvatarDropdown() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage 
-                src={user.image || undefined} 
-                alt={user.name || 'Usuario'} 
+              <AvatarImage
+                src={user.image || undefined}
+                alt={user.name || 'Usuario'}
               />
               <AvatarFallback className="bg-gray-100 text-gray-700">
                 {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
@@ -146,7 +147,7 @@ export function UserAvatarDropdown() {
         <DropdownMenuSeparator />
 
         {/* Cerrar Sesión */}
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleLogout}
           className="text-red-600 focus:text-red-600 focus:bg-red-50"
         >
@@ -190,6 +191,7 @@ import { UserAvatarDropdown } from './UserAvatarDropdown';
 ### **ESTADOS DE AUTENTICACIÓN**:
 
 #### **Usuario NO autenticado**:
+
 ```typescript
 // Mostrar botón de login (mantener existente)
 <Link href="/api/auth/signin">
@@ -198,6 +200,7 @@ import { UserAvatarDropdown } from './UserAvatarDropdown';
 ```
 
 #### **Usuario autenticado**:
+
 ```typescript
 // Mostrar avatar + dropdown
 <UserAvatarDropdown />
@@ -206,11 +209,13 @@ import { UserAvatarDropdown } from './UserAvatarDropdown';
 ### **INFORMACIÓN EN DROPDOWN**:
 
 #### **Header del dropdown**:
+
 - ✅ **Avatar** con imagen del usuario
 - ✅ **Nombre** del usuario (user.name)
 - ✅ **Email** del usuario (user.email)
 
 #### **Opciones del menú**:
+
 - ✅ **Mis Órdenes** → `/orders` (página existente)
 - ✅ **Mi Perfil** → `/profile` (página simple nueva)
 - ✅ **Cerrar Sesión** → `signOut()` con NextAuth.js
@@ -218,10 +223,12 @@ import { UserAvatarDropdown } from './UserAvatarDropdown';
 ### **RESPONSIVE DESIGN**:
 
 #### **Desktop**:
+
 - ✅ Avatar + nombre + icono dropdown
 - ✅ Dropdown completo con información
 
 #### **Mobile**:
+
 - ✅ Solo avatar + icono dropdown
 - ✅ Dropdown completo con información
 
@@ -230,6 +237,7 @@ import { UserAvatarDropdown } from './UserAvatarDropdown';
 ## 🔧 IMPLEMENTACIÓN TÉCNICA
 
 ### **DEPENDENCIAS REQUERIDAS**:
+
 ```typescript
 // Ya instaladas
 import { useAuth } from '@/hooks/useAuth';           // Hook existente
@@ -239,12 +247,13 @@ import { Button } from '@/components/ui/button';
 ```
 
 ### **HOOK useAuth EXISTENTE**:
+
 ```typescript
 // Ya implementado y funcional
-const { user, signOut, isSignedIn } = useAuth();
+const { user, signOut, isSignedIn } = useAuth()
 
 // user.name    - Nombre del usuario
-// user.email   - Email del usuario  
+// user.email   - Email del usuario
 // user.image   - URL de la imagen del usuario
 // signOut()    - Función para cerrar sesión
 // isSignedIn   - Boolean de estado de autenticación
@@ -253,9 +262,11 @@ const { user, signOut, isSignedIn } = useAuth();
 ### **PÁGINAS REQUERIDAS**:
 
 #### **Existentes** (mantener):
+
 - ✅ `/orders` - Página de órdenes (ya implementada)
 
 #### **Nuevas** (crear simple):
+
 - ✅ `/profile` - Página básica de perfil (solo lectura)
 
 ---
@@ -263,6 +274,7 @@ const { user, signOut, isSignedIn } = useAuth();
 ## 🎨 ESTILOS Y UX
 
 ### **COLORES Y TEMA**:
+
 ```css
 /* Avatar */
 .avatar-ring: ring-2 ring-transparent hover:ring-white/50
@@ -278,6 +290,7 @@ const { user, signOut, isSignedIn } = useAuth();
 ```
 
 ### **ANIMACIONES**:
+
 - ✅ **Hover effects** en avatar
 - ✅ **Smooth transitions** en colores
 - ✅ **Dropdown animations** (shadcn/ui default)
@@ -287,6 +300,7 @@ const { user, signOut, isSignedIn } = useAuth();
 ## 📱 CASOS DE USO
 
 ### **FLUJO PRINCIPAL**:
+
 1. **Usuario autenticado** ve su avatar en el header
 2. **Hace clic** en el avatar
 3. **Se abre dropdown** con información y opciones
@@ -294,6 +308,7 @@ const { user, signOut, isSignedIn } = useAuth();
 5. **Navega** a la página correspondiente
 
 ### **FLUJO DE LOGOUT**:
+
 1. **Usuario hace clic** en "Cerrar Sesión"
 2. **Se ejecuta** `signOut()` de NextAuth.js
 3. **Usuario es redirigido** a la página principal
@@ -304,18 +319,21 @@ const { user, signOut, isSignedIn } = useAuth();
 ## 🚀 VENTAJAS DE ESTA IMPLEMENTACIÓN
 
 ### **SIMPLICIDAD**:
+
 - ✅ **1 componente** vs 50+ componentes actuales
 - ✅ **~100 líneas** vs ~7,500 líneas actuales
 - ✅ **0 APIs nuevas** (usa NextAuth.js session)
 - ✅ **Funcionalidad esencial** únicamente
 
 ### **MANTENIBILIDAD**:
+
 - ✅ **Código simple** y fácil de entender
 - ✅ **Menos bugs** potenciales
 - ✅ **Fácil de modificar** y extender
 - ✅ **Basado en estándares** de NextAuth.js
 
 ### **UX MEJORADA**:
+
 - ✅ **Acceso rápido** a funcionalidades esenciales
 - ✅ **No overwhelm** al usuario con opciones
 - ✅ **Familiar** para usuarios de e-commerce

@@ -3,34 +3,34 @@
 // Suite de tests comprehensiva para el generador dinámico de sitemaps
 // ===================================
 
-import { 
+import {
   EnhancedDynamicSitemapGenerator,
   SitemapEntry,
   SitemapConfig,
   ProductData,
-  CategoryData
-} from '@/lib/seo/dynamic-sitemap-generator';
+  CategoryData,
+} from '@/lib/seo/dynamic-sitemap-generator'
 
 // Mock dependencies
 jest.mock('@/lib/logger', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
   },
   LogLevel: {
     INFO: 'info',
     WARN: 'warn',
-    ERROR: 'error'
+    ERROR: 'error',
   },
   LogCategory: {
-    SEO: 'seo'
-  }
-}));
+    SEO: 'seo',
+  },
+}))
 
 jest.mock('@/lib/redis', () => ({
-  getRedisClient: jest.fn().mockResolvedValue(null)
-}));
+  getRedisClient: jest.fn().mockResolvedValue(null),
+}))
 
 jest.mock('@/lib/supabase', () => ({
   getSupabaseClient: jest.fn().mockReturnValue({
@@ -40,33 +40,33 @@ jest.mock('@/lib/supabase', () => ({
     order: jest.fn().mockReturnThis(),
     limit: jest.fn().mockResolvedValue({
       data: [],
-      error: null
-    })
-  })
-}));
+      error: null,
+    }),
+  }),
+}))
 
 describe('Enhanced Dynamic Sitemap Generator', () => {
-  let generator: EnhancedDynamicSitemapGenerator;
-  let mockConfig: Partial<SitemapConfig>;
+  let generator: EnhancedDynamicSitemapGenerator
+  let mockConfig: Partial<SitemapConfig>
 
   beforeEach(() => {
     // Reset singleton instance
-    (EnhancedDynamicSitemapGenerator as any).instance = undefined;
-    
+    ;(EnhancedDynamicSitemapGenerator as any).instance = undefined
+
     mockConfig = {
       baseUrl: 'https://test-site.com',
       maxUrlsPerSitemap: 100,
       enableImages: true,
       cacheEnabled: false, // Disable cache for testing
-      cacheTTL: 300
-    };
+      cacheTTL: 300,
+    }
 
-    generator = EnhancedDynamicSitemapGenerator.getInstance(mockConfig);
-  });
+    generator = EnhancedDynamicSitemapGenerator.getInstance(mockConfig)
+  })
 
   afterEach(async () => {
-    await generator.destroy();
-  });
+    await generator.destroy()
+  })
 
   // ===================================
   // TESTS DE INICIALIZACIÓN
@@ -74,38 +74,38 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
 
   describe('Inicialización', () => {
     test('debe crear instancia singleton correctamente', () => {
-      const instance1 = EnhancedDynamicSitemapGenerator.getInstance();
-      const instance2 = EnhancedDynamicSitemapGenerator.getInstance();
-      
-      expect(instance1).toBe(instance2);
-      expect(instance1).toBeInstanceOf(EnhancedDynamicSitemapGenerator);
-    });
+      const instance1 = EnhancedDynamicSitemapGenerator.getInstance()
+      const instance2 = EnhancedDynamicSitemapGenerator.getInstance()
+
+      expect(instance1).toBe(instance2)
+      expect(instance1).toBeInstanceOf(EnhancedDynamicSitemapGenerator)
+    })
 
     test('debe aplicar configuración personalizada', () => {
       const customConfig = {
         baseUrl: 'https://custom-site.com',
-        maxUrlsPerSitemap: 200
-      };
+        maxUrlsPerSitemap: 200,
+      }
 
-      const customGenerator = EnhancedDynamicSitemapGenerator.getInstance(customConfig);
-      const stats = customGenerator.getStats();
-      
-      expect(stats).toBeDefined();
-    });
+      const customGenerator = EnhancedDynamicSitemapGenerator.getInstance(customConfig)
+      const stats = customGenerator.getStats()
+
+      expect(stats).toBeDefined()
+    })
 
     test('debe inicializar estadísticas por defecto', () => {
-      const stats = generator.getStats();
-      
-      expect(stats.totalUrls).toBe(0);
-      expect(stats.totalSitemaps).toBe(0);
-      expect(stats.staticPages).toBe(0);
-      expect(stats.productPages).toBe(0);
-      expect(stats.categoryPages).toBe(0);
-      expect(stats.blogPages).toBe(0);
-      expect(stats.errors).toEqual([]);
-      expect(stats.warnings).toEqual([]);
-    });
-  });
+      const stats = generator.getStats()
+
+      expect(stats.totalUrls).toBe(0)
+      expect(stats.totalSitemaps).toBe(0)
+      expect(stats.staticPages).toBe(0)
+      expect(stats.productPages).toBe(0)
+      expect(stats.categoryPages).toBe(0)
+      expect(stats.blogPages).toBe(0)
+      expect(stats.errors).toEqual([])
+      expect(stats.warnings).toEqual([])
+    })
+  })
 
   // ===================================
   // TESTS DE GENERACIÓN DE SITEMAP
@@ -113,26 +113,26 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
 
   describe('Generación de Sitemap', () => {
     test('debe generar sitemap básico sin errores', async () => {
-      const sitemapUrls = await generator.generateSitemap();
-      
-      expect(Array.isArray(sitemapUrls)).toBe(true);
-      expect(sitemapUrls.length).toBeGreaterThan(0);
-      
-      const stats = generator.getStats();
-      expect(stats.totalUrls).toBeGreaterThan(0);
-      expect(stats.errors.length).toBe(0);
-    });
+      const sitemapUrls = await generator.generateSitemap()
+
+      expect(Array.isArray(sitemapUrls)).toBe(true)
+      expect(sitemapUrls.length).toBeGreaterThan(0)
+
+      const stats = generator.getStats()
+      expect(stats.totalUrls).toBeGreaterThan(0)
+      expect(stats.errors.length).toBe(0)
+    })
 
     test('debe incluir páginas estáticas principales', async () => {
-      await generator.generateSitemap();
-      const stats = generator.getStats();
-      
-      expect(stats.staticPages).toBeGreaterThan(0);
-    });
+      await generator.generateSitemap()
+      const stats = generator.getStats()
+
+      expect(stats.staticPages).toBeGreaterThan(0)
+    })
 
     test('debe manejar errores de base de datos gracefully', async () => {
       // Mock error in Supabase
-      const { getSupabaseClient } = require('@/lib/supabase');
+      const { getSupabaseClient } = require('@/lib/supabase')
       getSupabaseClient.mockReturnValue({
         from: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
@@ -140,18 +140,18 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
         order: jest.fn().mockReturnThis(),
         limit: jest.fn().mockResolvedValue({
           data: null,
-          error: { message: 'Database error' }
-        })
-      });
+          error: { message: 'Database error' },
+        }),
+      })
 
-      const sitemapUrls = await generator.generateSitemap();
-      const stats = generator.getStats();
+      const sitemapUrls = await generator.generateSitemap()
+      const stats = generator.getStats()
 
-      expect(Array.isArray(sitemapUrls)).toBe(true);
+      expect(Array.isArray(sitemapUrls)).toBe(true)
       // Los errores pueden no incrementarse si el sistema maneja gracefully los errores
-      expect(stats.errors.length).toBeGreaterThanOrEqual(0);
-    });
-  });
+      expect(stats.errors.length).toBeGreaterThanOrEqual(0)
+    })
+  })
 
   // ===================================
   // TESTS DE VALIDACIÓN XML
@@ -167,26 +167,26 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-</urlset>`;
+</urlset>`
 
-      const result = generator.validateSitemap(validXML);
-      
-      expect(result.isValid).toBe(true);
-      expect(result.errors.length).toBe(0);
-    });
+      const result = generator.validateSitemap(validXML)
+
+      expect(result.isValid).toBe(true)
+      expect(result.errors.length).toBe(0)
+    })
 
     test('debe detectar XML inválido', () => {
       const invalidXML = `<urlset>
   <url>
     <loc>invalid-url</loc>
   </url>
-</urlset>`;
+</urlset>`
 
-      const result = generator.validateSitemap(invalidXML);
-      
-      expect(result.isValid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
-    });
+      const result = generator.validateSitemap(invalidXML)
+
+      expect(result.isValid).toBe(false)
+      expect(result.errors.length).toBeGreaterThan(0)
+    })
 
     test('debe detectar URLs inválidas', () => {
       const xmlWithInvalidURL = `<?xml version="1.0" encoding="UTF-8"?>
@@ -195,14 +195,14 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
     <loc>not-a-valid-url</loc>
     <lastmod>2024-01-01</lastmod>
   </url>
-</urlset>`;
+</urlset>`
 
-      const result = generator.validateSitemap(xmlWithInvalidURL);
-      
-      expect(result.isValid).toBe(false);
-      expect(result.errors.some(error => error.includes('Invalid URL'))).toBe(true);
-    });
-  });
+      const result = generator.validateSitemap(xmlWithInvalidURL)
+
+      expect(result.isValid).toBe(false)
+      expect(result.errors.some(error => error.includes('Invalid URL'))).toBe(true)
+    })
+  })
 
   // ===================================
   // TESTS DE CONFIGURACIÓN
@@ -212,26 +212,26 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
     test('debe permitir reconfiguración dinámica', () => {
       const newConfig = {
         maxUrlsPerSitemap: 500,
-        enableImages: false
-      };
+        enableImages: false,
+      }
 
-      generator.configure(newConfig);
-      
+      generator.configure(newConfig)
+
       // La configuración se aplica internamente
-      expect(() => generator.configure(newConfig)).not.toThrow();
-    });
+      expect(() => generator.configure(newConfig)).not.toThrow()
+    })
 
     test('debe mantener configuración existente al reconfigurar parcialmente', () => {
-      const originalBaseUrl = 'https://test-site.com';
-      
+      const originalBaseUrl = 'https://test-site.com'
+
       generator.configure({
-        maxUrlsPerSitemap: 300
-      });
-      
+        maxUrlsPerSitemap: 300,
+      })
+
       // La configuración base debe mantenerse
-      expect(() => generator.configure({ maxUrlsPerSitemap: 300 })).not.toThrow();
-    });
-  });
+      expect(() => generator.configure({ maxUrlsPerSitemap: 300 })).not.toThrow()
+    })
+  })
 
   // ===================================
   // TESTS DE CACHE
@@ -239,16 +239,16 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
 
   describe('Gestión de Cache', () => {
     test('debe limpiar cache sin errores', async () => {
-      await expect(generator.clearCache()).resolves.not.toThrow();
-    });
+      await expect(generator.clearCache()).resolves.not.toThrow()
+    })
 
     test('debe manejar cache deshabilitado', async () => {
       // Cache ya está deshabilitado en la configuración de test
-      const sitemapUrls = await generator.generateSitemap();
-      
-      expect(Array.isArray(sitemapUrls)).toBe(true);
-    });
-  });
+      const sitemapUrls = await generator.generateSitemap()
+
+      expect(Array.isArray(sitemapUrls)).toBe(true)
+    })
+  })
 
   // ===================================
   // TESTS DE ESTADÍSTICAS Y REPORTES
@@ -256,35 +256,35 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
 
   describe('Estadísticas y Reportes', () => {
     test('debe generar estadísticas válidas', () => {
-      const stats = generator.getStats();
-      
-      expect(typeof stats.totalUrls).toBe('number');
-      expect(typeof stats.totalSitemaps).toBe('number');
-      expect(typeof stats.generationTime).toBe('number');
-      expect(typeof stats.cacheHitRate).toBe('number');
-      expect(Array.isArray(stats.errors)).toBe(true);
-      expect(Array.isArray(stats.warnings)).toBe(true);
-      expect(stats.lastGenerated).toBeInstanceOf(Date);
-    });
+      const stats = generator.getStats()
+
+      expect(typeof stats.totalUrls).toBe('number')
+      expect(typeof stats.totalSitemaps).toBe('number')
+      expect(typeof stats.generationTime).toBe('number')
+      expect(typeof stats.cacheHitRate).toBe('number')
+      expect(Array.isArray(stats.errors)).toBe(true)
+      expect(Array.isArray(stats.warnings)).toBe(true)
+      expect(stats.lastGenerated).toBeInstanceOf(Date)
+    })
 
     test('debe generar reporte completo', () => {
-      const report = generator.generateReport();
-      
-      expect(report.summary).toBeDefined();
-      expect(Array.isArray(report.recommendations)).toBe(true);
-      expect(report.performance).toBeDefined();
-      expect(typeof report.performance.generationTime).toBe('number');
-      expect(typeof report.performance.cacheEfficiency).toBe('number');
-      expect(typeof report.performance.urlDiscoveryTime).toBe('number');
-    });
+      const report = generator.generateReport()
+
+      expect(report.summary).toBeDefined()
+      expect(Array.isArray(report.recommendations)).toBe(true)
+      expect(report.performance).toBeDefined()
+      expect(typeof report.performance.generationTime).toBe('number')
+      expect(typeof report.performance.cacheEfficiency).toBe('number')
+      expect(typeof report.performance.urlDiscoveryTime).toBe('number')
+    })
 
     test('debe incluir recomendaciones basadas en performance', () => {
-      const report = generator.generateReport();
-      
-      expect(Array.isArray(report.recommendations)).toBe(true);
+      const report = generator.generateReport()
+
+      expect(Array.isArray(report.recommendations)).toBe(true)
       // Las recomendaciones pueden estar vacías inicialmente
-    });
-  });
+    })
+  })
 
   // ===================================
   // TESTS DE LIMPIEZA Y DESTRUCCIÓN
@@ -292,17 +292,17 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
 
   describe('Limpieza y Destrucción', () => {
     test('debe destruir instancia sin errores', async () => {
-      await expect(generator.destroy()).resolves.not.toThrow();
-    });
+      await expect(generator.destroy()).resolves.not.toThrow()
+    })
 
     test('debe limpiar recursos al destruir', async () => {
-      await generator.destroy();
-      
+      await generator.destroy()
+
       // Verificar que se puede crear nueva instancia después de destruir
-      const newGenerator = EnhancedDynamicSitemapGenerator.getInstance();
-      expect(newGenerator).toBeInstanceOf(EnhancedDynamicSitemapGenerator);
-    });
-  });
+      const newGenerator = EnhancedDynamicSitemapGenerator.getInstance()
+      expect(newGenerator).toBeInstanceOf(EnhancedDynamicSitemapGenerator)
+    })
+  })
 
   // ===================================
   // TESTS DE INTEGRACIÓN
@@ -311,7 +311,7 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
   describe('Integración', () => {
     test('debe funcionar con datos de productos simulados', async () => {
       // Mock successful product data
-      const { getSupabaseClient } = require('@/lib/supabase');
+      const { getSupabaseClient } = require('@/lib/supabase')
       getSupabaseClient.mockReturnValue({
         from: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
@@ -324,30 +324,30 @@ describe('Enhanced Dynamic Sitemap Generator', () => {
               slug: 'test-product',
               name: 'Test Product',
               updated_at: '2024-01-01T00:00:00Z',
-              images: ['/image1.jpg']
-            }
+              images: ['/image1.jpg'],
+            },
           ],
-          error: null
-        })
-      });
+          error: null,
+        }),
+      })
 
-      const sitemapUrls = await generator.generateSitemap();
-      const stats = generator.getStats();
+      const sitemapUrls = await generator.generateSitemap()
+      const stats = generator.getStats()
 
       // Verificar que se generó el sitemap y que incluye páginas estáticas al menos
-      expect(Array.isArray(sitemapUrls)).toBe(true);
-      expect(stats.totalUrls).toBeGreaterThan(0);
-      expect(stats.staticPages).toBeGreaterThan(0);
-    });
+      expect(Array.isArray(sitemapUrls)).toBe(true)
+      expect(stats.totalUrls).toBeGreaterThan(0)
+      expect(stats.staticPages).toBeGreaterThan(0)
+    })
 
     test('debe generar reporte después de generación completa', async () => {
-      await generator.generateSitemap();
-      const report = generator.generateReport();
+      await generator.generateSitemap()
+      const report = generator.generateReport()
 
-      expect(report.summary.totalUrls).toBeGreaterThan(0);
-      expect(report.summary.generationTime).toBeGreaterThanOrEqual(0);
-      expect(Array.isArray(report.recommendations)).toBe(true);
-      expect(report.performance).toBeDefined();
-    });
-  });
-});
+      expect(report.summary.totalUrls).toBeGreaterThan(0)
+      expect(report.summary.generationTime).toBeGreaterThanOrEqual(0)
+      expect(Array.isArray(report.recommendations)).toBe(true)
+      expect(report.performance).toBeDefined()
+    })
+  })
+})

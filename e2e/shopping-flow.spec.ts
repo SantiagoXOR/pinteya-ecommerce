@@ -86,7 +86,7 @@ test.describe('Shopping Flow', () => {
     // Verify all products belong to selected category
     const categoryLabels = page.locator('[data-testid="product-category"]')
     const count = await categoryLabels.count()
-    
+
     for (let i = 0; i < count; i++) {
       const categoryText = await categoryLabels.nth(i).textContent()
       expect(categoryText).toContain('Látex')
@@ -102,7 +102,7 @@ test.describe('Shopping Flow', () => {
 
     // Add first product to cart
     await page.click('[data-testid="product-card"]:nth-child(1) [data-testid="add-to-cart-btn"]')
-    
+
     // Wait a bit for the action to complete
     await page.waitForTimeout(500)
 
@@ -190,7 +190,9 @@ test.describe('Shopping Flow', () => {
     await page.waitForSelector('[data-testid="product-card"]')
 
     // Get product name from card
-    const productName = await page.locator('[data-testid="product-card"]:first-child [data-testid="product-name"]').textContent()
+    const productName = await page
+      .locator('[data-testid="product-card"]:first-child [data-testid="product-name"]')
+      .textContent()
 
     // Click on product to view details
     await page.click('[data-testid="product-card"]:first-child')

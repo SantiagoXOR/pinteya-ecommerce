@@ -122,6 +122,7 @@ for ($i = 1; $i -le 20; $i++) {
 ### 1. Usando Postman
 
 **Configuración:**
+
 - Method: POST
 - URL: `http://localhost:3000/api/payments/webhook`
 - Headers:
@@ -186,11 +187,11 @@ npm run dev
 
 ```javascript
 // test-webhook-integration.js
-const axios = require('axios');
+const axios = require('axios')
 
 async function testWebhook() {
-  const baseURL = 'http://localhost:3000';
-  
+  const baseURL = 'http://localhost:3000'
+
   const testCases = [
     {
       name: 'Valid Payment Webhook',
@@ -202,73 +203,68 @@ async function testWebhook() {
         id: 12345,
         live_mode: false,
         user_id: '123456',
-        api_version: 'v1'
+        api_version: 'v1',
       },
       headers: {
         'x-signature': 'ts=1234567890,v1=test_signature',
         'x-request-id': 'test-request-123',
-        'x-timestamp': Math.floor(Date.now() / 1000).toString()
+        'x-timestamp': Math.floor(Date.now() / 1000).toString(),
       },
-      expectedStatus: 200
+      expectedStatus: 200,
     },
     {
       name: 'Missing Headers',
       data: {
         type: 'payment',
         action: 'payment.updated',
-        data: { id: '123456789' }
+        data: { id: '123456789' },
       },
       headers: {},
-      expectedStatus: 400
+      expectedStatus: 400,
     },
     {
       name: 'Non-Payment Webhook',
       data: {
         type: 'subscription',
         action: 'subscription.updated',
-        data: { id: '123456789' }
+        data: { id: '123456789' },
       },
       headers: {
         'x-signature': 'ts=1234567890,v1=test_signature',
         'x-request-id': 'test-request-123',
-        'x-timestamp': Math.floor(Date.now() / 1000).toString()
+        'x-timestamp': Math.floor(Date.now() / 1000).toString(),
       },
-      expectedStatus: 200
-    }
-  ];
+      expectedStatus: 200,
+    },
+  ]
 
   for (const testCase of testCases) {
     try {
-      console.log(`\n🧪 Testing: ${testCase.name}`);
-      
-      const response = await axios.post(
-        `${baseURL}/api/payments/webhook`,
-        testCase.data,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...testCase.headers
-          },
-          validateStatus: () => true // No throw on error status
-        }
-      );
+      console.log(`\n🧪 Testing: ${testCase.name}`)
+
+      const response = await axios.post(`${baseURL}/api/payments/webhook`, testCase.data, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...testCase.headers,
+        },
+        validateStatus: () => true, // No throw on error status
+      })
 
       if (response.status === testCase.expectedStatus) {
-        console.log(`✅ PASS: Status ${response.status}`);
+        console.log(`✅ PASS: Status ${response.status}`)
       } else {
-        console.log(`❌ FAIL: Expected ${testCase.expectedStatus}, got ${response.status}`);
+        console.log(`❌ FAIL: Expected ${testCase.expectedStatus}, got ${response.status}`)
       }
-      
-      console.log(`Response:`, response.data);
-      
+
+      console.log(`Response:`, response.data)
     } catch (error) {
-      console.log(`❌ ERROR: ${error.message}`);
+      console.log(`❌ ERROR: ${error.message}`)
     }
   }
 }
 
 // Ejecutar pruebas
-testWebhook().catch(console.error);
+testWebhook().catch(console.error)
 ```
 
 ### Ejecutar el Script de Prueba

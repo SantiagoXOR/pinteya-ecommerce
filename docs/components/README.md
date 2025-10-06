@@ -7,9 +7,11 @@ Este directorio contiene la documentación técnica completa de todos los compon
 ## 📁 Documentos Disponibles
 
 ### 🎯 Header Component (COMPLETADO)
+
 - **[Documentación Técnica Completa](./header-implementation-documentation.md)** - Implementación detallada del Header
 
 ### 📊 Estado Actual de Componentes
+
 - ✅ **Header**: 100% documentado y testeado
 - 🔄 **ProductCard**: Pendiente documentación
 - 🔄 **Footer**: Pendiente documentación
@@ -18,6 +20,7 @@ Este directorio contiene la documentación técnica completa de todos los compon
 ## 🎯 Estándares de Documentación Establecidos
 
 ### Estructura de Documentación Requerida
+
 1. **Resumen Ejecutivo**
    - Estado del componente
    - Ubicación en el proyecto
@@ -56,6 +59,7 @@ Este directorio contiene la documentación técnica completa de todos los compon
 ## 🏗️ Arquitectura de Componentes
 
 ### Jerarquía Establecida
+
 ```
 src/components/
 ├── Header/                      # ✅ Completado
@@ -70,6 +74,7 @@ src/components/
 ```
 
 ### Patrones de Diseño Estándar
+
 1. **Compound Component Pattern**: Componentes con subcomponentes especializados
 2. **Custom Hooks Pattern**: Lógica reutilizable extraída
 3. **Provider Pattern**: Context API para estado compartido
@@ -79,18 +84,21 @@ src/components/
 ## 🛠️ Stack Tecnológico Estándar
 
 ### Framework y Lenguajes
+
 - **Framework**: Next.js 15 con App Router
 - **Lenguaje**: TypeScript 5.7.3
 - **Estilos**: Tailwind CSS 3.4
 - **Testing**: Jest + RTL + Playwright + jest-axe
 
 ### Servicios Integrados
+
 - **Autenticación**: Clerk 6.21.0
 - **Base de datos**: Supabase PostgreSQL
 - **Estado**: Redux Toolkit + Context API
 - **Analytics**: Google Analytics 4
 
 ### Herramientas de Desarrollo
+
 - **Linting**: ESLint + Prettier
 - **Type checking**: TypeScript strict mode
 - **Testing**: 95%+ cobertura requerida
@@ -99,23 +107,27 @@ src/components/
 ## 📊 Métricas de Calidad Objetivo
 
 ### Cobertura de Testing
+
 - **Líneas**: 95%+
 - **Funciones**: 95%+
 - **Ramas**: 90%+
 - **Statements**: 95%+
 
 ### Performance
+
 - **Renderizado inicial**: < 100ms
 - **Interacciones**: < 300ms
 - **Carga de datos**: < 2s
 
 ### Accesibilidad
+
 - **WCAG 2.1 AA**: 100% compliant
 - **Navegación por teclado**: ✅
 - **Screen readers**: ✅
 - **Contraste**: ✅
 
 ### Compatibilidad
+
 - **Navegadores**: Chrome, Firefox, Safari, Edge
 - **Dispositivos**: Mobile, Tablet, Desktop
 - **Responsive**: 6 breakpoints estándar
@@ -123,6 +135,7 @@ src/components/
 ## 🎨 Estándares de Diseño
 
 ### Paleta de Colores Pinteya
+
 - **Primario**: `blaze-orange-600` (#ea5a17)
 - **Secundario**: `blaze-orange-700` (más oscuro)
 - **Acento**: `yellow-400` (#facc15)
@@ -130,6 +143,7 @@ src/components/
 - **Estados**: Success, warning, error
 
 ### Breakpoints Responsive
+
 ```css
 /* Mobile First Approach */
 sm: 640px   /* Tablet pequeña */
@@ -140,6 +154,7 @@ xl: 1280px  /* Desktop */
 ```
 
 ### Componentes UI Base
+
 - **shadcn/ui**: Biblioteca de componentes base
 - **Radix UI**: Primitivos accesibles
 - **Lucide React**: Iconografía consistente
@@ -148,6 +163,7 @@ xl: 1280px  /* Desktop */
 ## 🧪 Estándares de Testing
 
 ### Tipos de Tests Requeridos
+
 1. **Tests Unitarios** (Jest + RTL)
    - Componentes individuales
    - Funciones puras
@@ -174,6 +190,7 @@ xl: 1280px  /* Desktop */
    - Orientación de dispositivo
 
 ### Estructura de Tests Estándar
+
 ```
 src/components/[Component]/__tests__/
 ├── unit/
@@ -189,6 +206,7 @@ src/components/[Component]/__tests__/
 ## 📋 Checklist para Nuevos Componentes
 
 ### ✅ Desarrollo
+
 - [ ] Implementar componente principal
 - [ ] Crear subcomponentes necesarios
 - [ ] Implementar hooks personalizados
@@ -196,6 +214,7 @@ src/components/[Component]/__tests__/
 - [ ] Aplicar estilos responsive
 
 ### ✅ Testing
+
 - [ ] Tests unitarios (95%+ cobertura)
 - [ ] Tests de integración (90%+ flujos)
 - [ ] Tests E2E (100% casos críticos)
@@ -203,6 +222,7 @@ src/components/[Component]/__tests__/
 - [ ] Tests responsive (6 breakpoints)
 
 ### ✅ Documentación
+
 - [ ] Documentación técnica completa
 - [ ] Ejemplos de uso
 - [ ] Props e interfaces documentadas
@@ -210,6 +230,7 @@ src/components/[Component]/__tests__/
 - [ ] Variables de entorno
 
 ### ✅ Calidad
+
 - [ ] Linting sin errores
 - [ ] Type checking completo
 - [ ] Performance optimizada
@@ -219,7 +240,9 @@ src/components/[Component]/__tests__/
 ## 🎯 Próximos Componentes Prioritarios
 
 ### 1. ProductCard
+
 **Funcionalidades críticas**:
+
 - Renderizado de producto
 - Botón "Agregar al carrito"
 - Estados de stock
@@ -227,7 +250,9 @@ src/components/[Component]/__tests__/
 - Imágenes responsive
 
 ### 2. Footer
+
 **Funcionalidades críticas**:
+
 - Enlaces de navegación
 - Información de contacto
 - Logos de pago
@@ -235,7 +260,9 @@ src/components/[Component]/__tests__/
 - Responsive layout
 
 ### 3. SearchBar
+
 **Funcionalidades críticas**:
+
 - Autocompletado avanzado
 - Filtros de búsqueda
 - Sugerencias inteligentes
@@ -245,18 +272,21 @@ src/components/[Component]/__tests__/
 ## 🎉 Beneficios del Modelo Establecido
 
 ### ✅ Calidad Asegurada
+
 - **Estándares uniformes** en todos los componentes
 - **Testing exhaustivo** con alta cobertura
 - **Documentación completa** para mantenimiento
 - **Performance optimizada** en producción
 
 ### ✅ Desarrollo Eficiente
+
 - **Patrones reutilizables** establecidos
 - **Herramientas configuradas** y listas
 - **Procesos automatizados** en CI/CD
 - **Onboarding rápido** para nuevos desarrolladores
 
 ### ✅ Mantenimiento Simplificado
+
 - **Código autodocumentado** con TypeScript
 - **Tests como documentación viva**
 - **Refactoring seguro** con cobertura alta
@@ -265,17 +295,20 @@ src/components/[Component]/__tests__/
 ## 📞 Recursos y Referencias
 
 ### Documentación Relacionada
+
 - **[Testing Documentation](../testing/README.md)** - Estrategia de testing
 - **[API Documentation](../api/README.md)** - APIs y servicios
 - **[Development Guide](../development/README.md)** - Guías de desarrollo
 
 ### Herramientas y Librerías
+
 - **[Next.js Documentation](https://nextjs.org/docs)**
 - **[Tailwind CSS](https://tailwindcss.com/docs)**
 - **[shadcn/ui](https://ui.shadcn.com/)**
 - **[Clerk Authentication](https://clerk.com/docs)**
 
 ### Estándares de la Industria
+
 - **[WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)**
 - **[React Best Practices](https://react.dev/learn)**
 - **[TypeScript Handbook](https://www.typescriptlang.org/docs/)**
@@ -286,6 +319,3 @@ src/components/[Component]/__tests__/
 **🔧 Mantenimiento**: Automatizado en CI/CD  
 **📈 Estado**: Header completado, modelo establecido  
 **🎯 Próximo**: ProductCard, Footer, SearchBar
-
-
-

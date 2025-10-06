@@ -1,4 +1,5 @@
 # 🛒 ANÁLISIS COMPLETO DEL FLUJO DE COMPRA - PINTEYA E-COMMERCE
+
 ## Pruebas con Playwright - Simulación de Usuario Real
 
 ---
@@ -60,6 +61,7 @@
 ## 📸 **EVIDENCIA VISUAL CAPTURADA**
 
 ### Screenshots del Flujo Completo:
+
 1. `user-01-arrival.png` - ✅ Homepage inicial
 2. `user-02-product-search.png` - ✅ Página de búsqueda
 3. `user-03-product-selected.png` - ❌ Página 404 (producto no encontrado)
@@ -67,6 +69,7 @@
 5. `user-05-cart-review.png` - ✅ Carrito vacío pero funcional
 
 ### Videos y Traces:
+
 - `video.webm` - Grabación completa de la sesión
 - `trace.zip` - Trace detallado para debugging
 - `test-failed-1.png` - Screenshot del error final
@@ -78,6 +81,7 @@
 ### **Selectores Probados (Sin Éxito)**
 
 #### Productos:
+
 ```css
 [data-testid="product-card"]
 .product-card
@@ -87,6 +91,7 @@ article[class*="product"]
 ```
 
 #### Botones de Carrito:
+
 ```css
 [data-testid="add-to-cart"]
 button:has-text("Agregar al carrito")
@@ -99,6 +104,7 @@ button[class*="add-to-cart"]
 ### **Elementos Que SÍ Funcionan**
 
 #### Navegación:
+
 ```css
 [data-testid="cart-icon"] ✅
 button:has-text("Finalizar compra") ✅ (pero disabled)
@@ -107,6 +113,7 @@ nav a ✅
 ```
 
 #### Formularios:
+
 ```css
 input[name="email"] ✅
 input[name="phone"] ✅
@@ -120,6 +127,7 @@ form elements ✅
 ### 🔥 **ALTA PRIORIDAD (Crítico para Funcionalidad)**
 
 1. **Arreglar Carga de Productos**
+
    ```javascript
    // Verificar que los productos se rendericen correctamente
    // Revisar componentes ProductCard y ProductList
@@ -127,6 +135,7 @@ form elements ✅
    ```
 
 2. **Habilitar Botones "Agregar al Carrito"**
+
    ```javascript
    // Verificar lógica de estado del carrito
    // Asegurar que onClick handlers estén conectados
@@ -164,18 +173,21 @@ form elements ✅
 ## 📋 **PLAN DE ACCIÓN INMEDIATO**
 
 ### **Semana 1: Arreglar Funcionalidad Core**
+
 - [ ] Investigar por qué productos no se muestran
 - [ ] Verificar rutas de productos (`/products/1`, `/products/2`, etc.)
 - [ ] Revisar componentes ProductCard y ProductList
 - [ ] Asegurar que useProducts hook funcione correctamente
 
 ### **Semana 2: Habilitar Carrito**
+
 - [ ] Verificar botones "Agregar al carrito"
 - [ ] Probar useCart hook manualmente
 - [ ] Implementar feedback visual al agregar productos
 - [ ] Habilitar botón "Finalizar compra" cuando hay productos
 
 ### **Semana 3: Integración de Pagos**
+
 - [ ] Configurar API MercadoPago
 - [ ] Probar flujo completo de pago
 - [ ] Implementar manejo de errores de pago
@@ -203,15 +215,15 @@ npx playwright show-trace test-results/[trace-file].zip
 
 ## 📈 **MÉTRICAS DE TESTING**
 
-| Aspecto | Estado | Porcentaje |
-|---------|--------|------------|
-| **Navegación** | ✅ Funcional | 100% |
-| **UI Rendering** | ✅ Funcional | 95% |
-| **Productos** | ❌ No funcional | 0% |
-| **Carrito** | ⚠️ Parcial | 30% |
-| **Checkout** | ⚠️ Parcial | 60% |
-| **Pagos** | ❌ No configurado | 0% |
-| **APIs** | ⚠️ Parcial | 70% |
+| Aspecto          | Estado            | Porcentaje |
+| ---------------- | ----------------- | ---------- |
+| **Navegación**   | ✅ Funcional      | 100%       |
+| **UI Rendering** | ✅ Funcional      | 95%        |
+| **Productos**    | ❌ No funcional   | 0%         |
+| **Carrito**      | ⚠️ Parcial        | 30%        |
+| **Checkout**     | ⚠️ Parcial        | 60%        |
+| **Pagos**        | ❌ No configurado | 0%         |
+| **APIs**         | ⚠️ Parcial        | 70%        |
 
 **Funcionalidad General:** **51% Completa**
 
@@ -222,7 +234,7 @@ npx playwright show-trace test-results/[trace-file].zip
 El e-commerce Pinteya tiene una **base sólida** con navegación y UI funcionando correctamente. Los problemas principales están en:
 
 1. **Carga/visualización de productos** (crítico)
-2. **Funcionalidad del carrito** (crítico)  
+2. **Funcionalidad del carrito** (crítico)
 3. **Integración de pagos** (importante)
 
 Una vez resueltos estos 3 puntos, el flujo de compra debería funcionar completamente. La arquitectura y el diseño están bien implementados.
@@ -231,5 +243,5 @@ Una vez resueltos estos 3 puntos, el flujo de compra debería funcionar completa
 
 ---
 
-*Reporte generado automáticamente por Playwright E2E Testing*  
-*Pinteya E-commerce - Análisis de Flujo de Compra*
+_Reporte generado automáticamente por Playwright E2E Testing_  
+_Pinteya E-commerce - Análisis de Flujo de Compra_

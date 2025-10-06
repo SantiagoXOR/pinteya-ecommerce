@@ -2,13 +2,14 @@
 
 **Versión:** 1.0  
 **Fecha:** Enero 2025  
-**Patrón:** Atomic Design + Enterprise Patterns  
+**Patrón:** Atomic Design + Enterprise Patterns
 
 ---
 
 ## 📋 **PRINCIPIOS DE DISEÑO**
 
 ### **1. Atomic Design**
+
 ```
 Atoms (Átomos)
 ├── Button, Input, Badge, Icon
@@ -37,6 +38,7 @@ Pages (Páginas)
 ```
 
 ### **2. Patrones Enterprise**
+
 - **Composition over Inheritance**
 - **Single Responsibility Principle**
 - **Dependency Injection**
@@ -49,6 +51,7 @@ Pages (Páginas)
 ## 🏗️ **ESTRUCTURA DE COMPONENTES**
 
 ### **Layout Base**
+
 ```typescript
 // src/components/admin/layout/AdminLayout.tsx
 
@@ -60,31 +63,31 @@ interface AdminLayoutProps {
   className?: string;
 }
 
-export function AdminLayout({ 
-  title, 
-  breadcrumbs, 
-  actions, 
-  children, 
-  className 
+export function AdminLayout({
+  title,
+  breadcrumbs,
+  actions,
+  children,
+  className
 }: AdminLayoutProps) {
   return (
     <div className={cn("min-h-screen bg-gray-50", className)}>
       {/* Header */}
       <AdminHeader />
-      
+
       <div className="flex">
         {/* Sidebar */}
         <AdminSidebar />
-        
+
         {/* Main Content */}
         <main className="flex-1 p-6">
           {/* Page Header */}
-          <AdminPageHeader 
+          <AdminPageHeader
             title={title}
             breadcrumbs={breadcrumbs}
             actions={actions}
           />
-          
+
           {/* Content */}
           <div className="mt-6">
             {children}
@@ -113,6 +116,7 @@ export function AdminLayout({
 ```
 
 ### **Data Table Pattern**
+
 ```typescript
 // src/components/admin/common/AdminDataTable.tsx
 
@@ -225,6 +229,7 @@ export function AdminDataTable<T>({
 ```
 
 ### **Form Pattern**
+
 ```typescript
 // src/components/admin/common/AdminForm.tsx
 
@@ -264,12 +269,12 @@ export function AdminForm<T>({
 
   return (
     <Form {...form}>
-      <form 
+      <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className={cn("space-y-6", className)}
       >
         {children(form)}
-        
+
         <AdminFormActions
           onCancel={onCancel}
           loading={loading}
@@ -297,7 +302,7 @@ export function AdminForm<T>({
         placeholder="Ingrese el nombre"
         required
       />
-      
+
       <AdminFormField
         form={form}
         name="description"
@@ -305,7 +310,7 @@ export function AdminForm<T>({
         type="textarea"
         rows={4}
       />
-      
+
       <AdminFormField
         form={form}
         name="price"
@@ -320,6 +325,7 @@ export function AdminForm<T>({
 ```
 
 ### **Modal Pattern**
+
 ```typescript
 // src/components/admin/common/AdminModal.tsx
 
@@ -363,11 +369,11 @@ export function AdminModal({
             <DialogDescription>{description}</DialogDescription>
           )}
         </DialogHeader>
-        
+
         <div className="py-4">
           {children}
         </div>
-        
+
         {footer && (
           <DialogFooter>
             {footer}
@@ -405,6 +411,7 @@ export function AdminModal({
 ## 🎨 **COMPONENTES ESPECÍFICOS**
 
 ### **Dashboard Components**
+
 ```typescript
 // src/components/admin/dashboard/AdminStatsCard.tsx
 
@@ -436,7 +443,7 @@ export function AdminStatsCard({
   }
 
   return (
-    <AdminCard 
+    <AdminCard
       className={cn(
         "p-6 cursor-pointer hover:shadow-md transition-shadow",
         onClick && "hover:bg-gray-50"
@@ -495,47 +502,53 @@ export function AdminStatsCard({
 ## 🔄 **HOOKS PERSONALIZADOS**
 
 ### **Data Fetching Hook**
+
 ```typescript
 // src/hooks/admin/useAdminData.ts
 
 interface UseAdminDataOptions<T> {
-  endpoint: string;
-  params?: Record<string, any>;
-  enabled?: boolean;
-  refetchInterval?: number;
-  onSuccess?: (data: T) => void;
-  onError?: (error: Error) => void;
+  endpoint: string
+  params?: Record<string, any>
+  enabled?: boolean
+  refetchInterval?: number
+  onSuccess?: (data: T) => void
+  onError?: (error: Error) => void
 }
 
 export function useAdminData<T>(options: UseAdminDataOptions<T>) {
-  const { endpoint, params, enabled = true, refetchInterval, onSuccess, onError } = options;
+  const { endpoint, params, enabled = true, refetchInterval, onSuccess, onError } = options
 
   return useQuery({
     queryKey: [endpoint, params],
     queryFn: async () => {
-      const searchParams = new URLSearchParams(params);
-      const response = await fetch(`${endpoint}?${searchParams}`);
-      
+      const searchParams = new URLSearchParams(params)
+      const response = await fetch(`${endpoint}?${searchParams}`)
+
       if (!response.ok) {
-        throw new Error('Error al cargar datos');
+        throw new Error('Error al cargar datos')
       }
-      
-      const result = await response.json();
-      return result.data;
+
+      const result = await response.json()
+      return result.data
     },
     enabled,
     refetchInterval,
     onSuccess,
-    onError
-  });
+    onError,
+  })
 }
 
 // Uso
-const { data: products, isLoading, error, refetch } = useAdminData<Product[]>({
+const {
+  data: products,
+  isLoading,
+  error,
+  refetch,
+} = useAdminData<Product[]>({
   endpoint: '/api/admin/products',
   params: { page: 1, limit: 10, search: searchTerm },
-  refetchInterval: 30000 // 30 segundos
-});
+  refetchInterval: 30000, // 30 segundos
+})
 ```
 
 ---
@@ -543,6 +556,7 @@ const { data: products, isLoading, error, refetch } = useAdminData<Product[]>({
 ## 📊 **TESTING PATTERNS**
 
 ### **Component Testing**
+
 ```typescript
 // src/components/admin/__tests__/AdminDataTable.test.tsx
 
@@ -574,7 +588,7 @@ describe('AdminDataTable', () => {
 
   it('should handle row selection', async () => {
     const onSelectionChange = jest.fn();
-    
+
     render(
       <AdminDataTable
         data={mockData}
@@ -630,6 +644,3 @@ describe('AdminDataTable', () => {
 
 **Estado:** ✅ Completado  
 **Próxima actualización:** Al agregar nuevos patrones de componentes
-
-
-

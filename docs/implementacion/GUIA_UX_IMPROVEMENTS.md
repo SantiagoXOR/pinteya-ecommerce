@@ -1,4 +1,5 @@
 # 🎨 Guía de Implementación: User Experience Improvements
+
 ## Sistema E-commerce Pinteya - Prioridad Alta
 
 ---
@@ -17,18 +18,18 @@
 
 ### Estado Actual vs Target
 
-| Métrica UX | Actual | Target | Mejora |
-|------------|--------|--------|---------|
-| Conversion Rate | 2.3% | 4.5%+ | +96% |
-| Cart Abandonment | 68% | <45% | -34% |
-| Page Load Time | 3.2s | <1.5s | -53% |
-| Mobile Usability | 75% | 95%+ | +27% |
-| User Satisfaction | 3.8/5 | 4.7/5+ | +24% |
-| Task Completion | 78% | 92%+ | +18% |
-| Error Rate | 12% | <5% | -58% |
-| Time to Purchase | 8.5min | <4min | -53% |
-| Return User Rate | 35% | 55%+ | +57% |
-| Support Tickets | 150/week | <75/week | -50% |
+| Métrica UX        | Actual   | Target   | Mejora |
+| ----------------- | -------- | -------- | ------ |
+| Conversion Rate   | 2.3%     | 4.5%+    | +96%   |
+| Cart Abandonment  | 68%      | <45%     | -34%   |
+| Page Load Time    | 3.2s     | <1.5s    | -53%   |
+| Mobile Usability  | 75%      | 95%+     | +27%   |
+| User Satisfaction | 3.8/5    | 4.7/5+   | +24%   |
+| Task Completion   | 78%      | 92%+     | +18%   |
+| Error Rate        | 12%      | <5%      | -58%   |
+| Time to Purchase  | 8.5min   | <4min    | -53%   |
+| Return User Rate  | 35%      | 55%+     | +57%   |
+| Support Tickets   | 150/week | <75/week | -50%   |
 
 ---
 
@@ -37,6 +38,7 @@
 ### 1. **Navigation & Information Architecture** 🧭
 
 #### **Smart Navigation System**
+
 ```typescript
 // src/components/navigation/SmartNavigation.tsx
 import { useState, useEffect, useMemo } from 'react';
@@ -71,7 +73,7 @@ export const SmartNavigation = () => {
   const [userBehavior, setUserBehavior] = useState<UserBehavior | null>(null);
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
-  
+
   // Smart navigation items based on user behavior
   const navigationItems = useMemo(() => {
     const baseItems: NavigationItem[] = [
@@ -107,7 +109,7 @@ export const SmartNavigation = () => {
         priority: 4
       }
     ];
-    
+
     // Personalize based on user behavior
     if (userBehavior) {
       // Promote frequently visited categories
@@ -123,17 +125,17 @@ export const SmartNavigation = () => {
         }
       });
     }
-    
+
     return baseItems;
   }, [userBehavior]);
-  
+
   // Smart search with suggestions
   const searchSuggestions = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) return [];
-    
+
     const suggestions = [
       // Recent searches
-      ...(userBehavior?.recentSearches || []).filter(search => 
+      ...(userBehavior?.recentSearches || []).filter(search =>
         search.toLowerCase().includes(searchQuery.toLowerCase())
       ),
       // Popular products
@@ -142,13 +144,13 @@ export const SmartNavigation = () => {
       'MacBook Air M3',
       'Nike Air Max',
       'Adidas Ultraboost'
-    ].filter(suggestion => 
+    ].filter(suggestion =>
       suggestion.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, 5);
-    
+
     return suggestions;
   }, [searchQuery, userBehavior]);
-  
+
   useEffect(() => {
     // Load user behavior data
     fetchUserBehavior();
@@ -156,7 +158,7 @@ export const SmartNavigation = () => {
     fetchCartCount();
     fetchWishlistCount();
   }, []);
-  
+
   const fetchUserBehavior = async () => {
     try {
       const response = await fetch('/api/user/behavior');
@@ -166,7 +168,7 @@ export const SmartNavigation = () => {
       console.error('Failed to fetch user behavior:', error);
     }
   };
-  
+
   const fetchCartCount = async () => {
     try {
       const response = await fetch('/api/cart/count');
@@ -176,7 +178,7 @@ export const SmartNavigation = () => {
       console.error('Failed to fetch cart count:', error);
     }
   };
-  
+
   const fetchWishlistCount = async () => {
     try {
       const response = await fetch('/api/wishlist/count');
@@ -186,7 +188,7 @@ export const SmartNavigation = () => {
       console.error('Failed to fetch wishlist count:', error);
     }
   };
-  
+
   const handleSearch = (query: string) => {
     if (query.trim()) {
       // Track search
@@ -194,7 +196,7 @@ export const SmartNavigation = () => {
       router.push(`/search?q=${encodeURIComponent(query)}`);
     }
   };
-  
+
   const trackUserAction = async (action: string, data: any) => {
     try {
       await fetch('/api/analytics/track', {
@@ -206,7 +208,7 @@ export const SmartNavigation = () => {
       console.error('Failed to track user action:', error);
     }
   };
-  
+
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -217,7 +219,7 @@ export const SmartNavigation = () => {
               <img className="h-8 w-auto" src="/logo.svg" alt="Pinteya" />
             </a>
           </div>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
@@ -235,7 +237,7 @@ export const SmartNavigation = () => {
                       </Badge>
                     )}
                   </a>
-                  
+
                   {/* Dropdown Menu */}
                   {item.children && (
                     <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
@@ -257,7 +259,7 @@ export const SmartNavigation = () => {
               ))}
             </div>
           </div>
-          
+
           {/* Search Bar */}
           <div className="flex-1 max-w-lg mx-8 relative">
             <div className="relative">
@@ -271,7 +273,7 @@ export const SmartNavigation = () => {
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             </div>
-            
+
             {/* Search Suggestions */}
             {searchSuggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50">
@@ -290,7 +292,7 @@ export const SmartNavigation = () => {
               </div>
             )}
           </div>
-          
+
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {/* Wishlist */}
@@ -302,7 +304,7 @@ export const SmartNavigation = () => {
                 </Badge>
               )}
             </Button>
-            
+
             {/* Cart */}
             <Button variant="ghost" size="sm" className="relative">
               <ShoppingCart className="h-5 w-5" />
@@ -312,12 +314,12 @@ export const SmartNavigation = () => {
                 </Badge>
               )}
             </Button>
-            
+
             {/* User Menu */}
             <Button variant="ghost" size="sm">
               <User className="h-5 w-5" />
             </Button>
-            
+
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
@@ -330,7 +332,7 @@ export const SmartNavigation = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="md:hidden">
@@ -352,7 +354,7 @@ export const SmartNavigation = () => {
                     </Badge>
                   )}
                 </a>
-                
+
                 {/* Mobile Submenu */}
                 {item.children && (
                   <div className="pl-4">
@@ -382,6 +384,7 @@ export const SmartNavigation = () => {
 ```
 
 #### **Breadcrumb Navigation**
+
 ```typescript
 // src/components/navigation/BreadcrumbNavigation.tsx
 import { ChevronRight, Home } from 'lucide-react';
@@ -398,16 +401,16 @@ interface BreadcrumbNavigationProps {
   showHome?: boolean;
 }
 
-export const BreadcrumbNavigation = ({ 
-  items, 
-  showHome = true 
+export const BreadcrumbNavigation = ({
+  items,
+  showHome = true
 }: BreadcrumbNavigationProps) => {
   const router = useRouter();
-  
-  const allItems = showHome 
+
+  const allItems = showHome
     ? [{ label: 'Inicio', href: '/' }, ...items]
     : items;
-  
+
   return (
     <nav className="flex items-center space-x-2 text-sm text-gray-600 py-3">
       {allItems.map((item, index) => (
@@ -415,11 +418,11 @@ export const BreadcrumbNavigation = ({
           {index > 0 && (
             <ChevronRight className="h-4 w-4 text-gray-400 mx-2" />
           )}
-          
+
           {index === 0 && showHome && (
             <Home className="h-4 w-4 mr-1" />
           )}
-          
+
           {index === allItems.length - 1 || item.isActive ? (
             <span className="text-gray-900 font-medium">
               {item.label}
@@ -442,6 +445,7 @@ export const BreadcrumbNavigation = ({
 ### 2. **Product Discovery & Search** 🔍
 
 #### **Advanced Search with Filters**
+
 ```typescript
 // src/components/search/AdvancedSearch.tsx
 import { useState, useEffect, useMemo } from 'react';
@@ -498,7 +502,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [totalResults, setTotalResults] = useState(0);
-  
+
   // Available filter options
   const filterOptions = {
     categories: [
@@ -523,14 +527,14 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
       { value: 'newest', label: 'Más recientes' }
     ]
   };
-  
+
   // Perform search when query or filters change
   useEffect(() => {
     if (query.trim() || hasActiveFilters()) {
       performSearch();
     }
   }, [query, filters]);
-  
+
   const hasActiveFilters = () => {
     return (
       filters.categories.length > 0 ||
@@ -542,10 +546,10 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
       filters.freeShipping
     );
   };
-  
+
   const performSearch = async () => {
     setIsSearching(true);
-    
+
     try {
       const searchParams = new URLSearchParams({
         q: query,
@@ -558,10 +562,10 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
         freeShipping: filters.freeShipping.toString(),
         sortBy: filters.sortBy
       });
-      
+
       const response = await fetch(`/api/search?${searchParams}`);
       const data = await response.json();
-      
+
       setSearchResults(data.results);
       setTotalResults(data.total);
       onResults(data.results);
@@ -571,11 +575,11 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
       setIsSearching(false);
     }
   };
-  
+
   const updateFilter = (key: keyof SearchFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
-  
+
   const toggleArrayFilter = (key: 'categories' | 'brands', value: string) => {
     setFilters(prev => ({
       ...prev,
@@ -584,7 +588,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
         : [...prev[key], value]
     }));
   };
-  
+
   const clearFilters = () => {
     setFilters({
       categories: [],
@@ -596,7 +600,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
       sortBy: 'relevance'
     });
   };
-  
+
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.categories.length > 0) count++;
@@ -607,7 +611,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
     if (filters.freeShipping) count++;
     return count;
   }, [filters]);
-  
+
   return (
     <div className="space-y-4">
       {/* Search Bar */}
@@ -622,7 +626,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         </div>
-        
+
         <Button
           variant="outline"
           onClick={() => setShowFilters(!showFilters)}
@@ -637,13 +641,13 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
           )}
         </Button>
       </div>
-      
+
       {/* Results Summary */}
       <div className="flex justify-between items-center">
         <p className="text-sm text-gray-600">
           {isSearching ? 'Buscando...' : `${totalResults} resultados encontrados`}
         </p>
-        
+
         <Select value={filters.sortBy} onValueChange={(value) => updateFilter('sortBy', value)}>
           <SelectTrigger className="w-48">
             <SelectValue />
@@ -657,7 +661,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
           </SelectContent>
         </Select>
       </div>
-      
+
       {/* Filters Panel */}
       {showFilters && (
         <div className="bg-gray-50 p-4 rounded-lg space-y-6">
@@ -670,7 +674,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
               </Button>
             )}
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Categories */}
             <div>
@@ -688,7 +692,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
                 ))}
               </div>
             </div>
-            
+
             {/* Brands */}
             <div>
               <h4 className="font-medium mb-3">Marcas</h4>
@@ -705,7 +709,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
                 ))}
               </div>
             </div>
-            
+
             {/* Price Range */}
             <div>
               <h4 className="font-medium mb-3">Rango de precio</h4>
@@ -725,7 +729,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
               </div>
             </div>
           </div>
-          
+
           {/* Additional Filters */}
           <div className="flex flex-wrap gap-4">
             <label className="flex items-center space-x-2 cursor-pointer">
@@ -735,7 +739,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
               />
               <span className="text-sm">Solo productos en stock</span>
             </label>
-            
+
             <label className="flex items-center space-x-2 cursor-pointer">
               <Checkbox
                 checked={filters.freeShipping}
@@ -743,11 +747,11 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
               />
               <span className="text-sm">Envío gratis</span>
             </label>
-            
+
             <div className="flex items-center space-x-2">
               <span className="text-sm">Calificación mínima:</span>
-              <Select 
-                value={filters.rating.toString()} 
+              <Select
+                value={filters.rating.toString()}
                 onValueChange={(value) => updateFilter('rating', parseInt(value))}
               >
                 <SelectTrigger className="w-20">
@@ -773,6 +777,7 @@ export const AdvancedSearch = ({ initialQuery = '', onResults }: AdvancedSearchP
 ### 3. **Mobile-First Responsive Design** 📱
 
 #### **Responsive Product Grid**
+
 ```typescript
 // src/components/products/ResponsiveProductGrid.tsx
 import { useState, useEffect } from 'react';
@@ -816,32 +821,32 @@ export const ResponsiveProductGrid = ({
 }: ResponsiveProductGridProps) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set());
-  
+
   // Detect screen size for responsive behavior
   const [isMobile, setIsMobile] = useState(false);
-  
+
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    
+
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
-  
+
   const handleImageError = (productId: string) => {
     setImageLoadErrors(prev => new Set([...prev, productId]));
   };
-  
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'EUR'
     }).format(price);
   };
-  
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -854,7 +859,7 @@ export const ResponsiveProductGrid = ({
       />
     ));
   };
-  
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -873,7 +878,7 @@ export const ResponsiveProductGrid = ({
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-4">
       {/* View Mode Toggle (Desktop only) */}
@@ -899,7 +904,7 @@ export const ResponsiveProductGrid = ({
           </div>
         </div>
       )}
-      
+
       {/* Product Grid */}
       <div className={`
         ${viewMode === 'grid' || isMobile
@@ -923,14 +928,14 @@ export const ResponsiveProductGrid = ({
               {/* Product Image */}
               <div className={`
                 relative overflow-hidden
-                ${viewMode === 'list' && !isMobile 
-                  ? 'w-48 h-48 flex-shrink-0' 
+                ${viewMode === 'list' && !isMobile
+                  ? 'w-48 h-48 flex-shrink-0'
                   : 'aspect-square'
                 }
               `}>
                 <img
-                  src={imageLoadErrors.has(product.id) 
-                    ? '/placeholder-product.jpg' 
+                  src={imageLoadErrors.has(product.id)
+                    ? '/placeholder-product.jpg'
                     : product.image
                   }
                   alt={product.name}
@@ -938,7 +943,7 @@ export const ResponsiveProductGrid = ({
                   onError={() => handleImageError(product.id)}
                   loading="lazy"
                 />
-                
+
                 {/* Badges */}
                 <div className="absolute top-2 left-2 space-y-1">
                   {product.isNew && (
@@ -957,7 +962,7 @@ export const ResponsiveProductGrid = ({
                     </Badge>
                   )}
                 </div>
-                
+
                 {/* Quick Actions */}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 space-y-1">
                   <Button
@@ -973,7 +978,7 @@ export const ResponsiveProductGrid = ({
                       product.isWishlisted ? 'text-red-500 fill-current' : 'text-gray-600'
                     }`} />
                   </Button>
-                  
+
                   <Button
                     size="sm"
                     variant="secondary"
@@ -986,7 +991,7 @@ export const ResponsiveProductGrid = ({
                     <Eye className="h-4 w-4 text-gray-600" />
                   </Button>
                 </div>
-                
+
                 {/* Stock Status */}
                 {!product.inStock && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -996,7 +1001,7 @@ export const ResponsiveProductGrid = ({
                   </div>
                 )}
               </div>
-              
+
               {/* Product Info */}
               <div className={`
                 p-4 flex-1
@@ -1007,7 +1012,7 @@ export const ResponsiveProductGrid = ({
                   <p className="text-xs text-gray-500 uppercase tracking-wide">
                     {product.brand}
                   </p>
-                  
+
                   {/* Product Name */}
                   <h3 className={`
                     font-medium text-gray-900 line-clamp-2
@@ -1015,7 +1020,7 @@ export const ResponsiveProductGrid = ({
                   `}>
                     {product.name}
                   </h3>
-                  
+
                   {/* Rating */}
                   <div className="flex items-center space-x-1">
                     <div className="flex">
@@ -1025,7 +1030,7 @@ export const ResponsiveProductGrid = ({
                       ({product.reviewCount})
                     </span>
                   </div>
-                  
+
                   {/* Price */}
                   <div className="flex items-center space-x-2">
                     <span className={`
@@ -1041,7 +1046,7 @@ export const ResponsiveProductGrid = ({
                     )}
                   </div>
                 </div>
-                
+
                 {/* Add to Cart Button */}
                 <Button
                   className={`
@@ -1064,7 +1069,7 @@ export const ResponsiveProductGrid = ({
           </Card>
         ))}
       </div>
-      
+
       {/* Empty State */}
       {products.length === 0 && !loading && (
         <div className="text-center py-12">
@@ -1087,6 +1092,7 @@ export const ResponsiveProductGrid = ({
 ### 4. **Checkout Flow Optimization** 🛒
 
 #### **Streamlined Checkout Process**
+
 ```typescript
 // src/components/checkout/StreamlinedCheckout.tsx
 import { useState, useEffect } from 'react';
@@ -1148,23 +1154,23 @@ export const StreamlinedCheckout = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>({ type: 'card' });
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const steps: CheckoutStep[] = [
     { id: 'cart', title: 'Carrito', completed: false, active: currentStep === 0 },
     { id: 'shipping', title: 'Envío', completed: false, active: currentStep === 1 },
     { id: 'payment', title: 'Pago', completed: false, active: currentStep === 2 },
     { id: 'confirmation', title: 'Confirmación', completed: false, active: currentStep === 3 }
   ];
-  
+
   // Update step completion status
   steps.forEach((step, index) => {
     step.completed = index < currentStep;
   });
-  
+
   useEffect(() => {
     fetchCartItems();
   }, []);
-  
+
   const fetchCartItems = async () => {
     try {
       const response = await fetch('/api/cart');
@@ -1174,27 +1180,27 @@ export const StreamlinedCheckout = () => {
       console.error('Failed to fetch cart items:', error);
     }
   };
-  
+
   const calculateSubtotal = () => {
     return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   };
-  
+
   const calculateShipping = () => {
     const subtotal = calculateSubtotal();
     return subtotal > 50 ? 0 : 5.99; // Free shipping over €50
   };
-  
+
   const calculateTax = () => {
     return calculateSubtotal() * 0.21; // 21% VAT
   };
-  
+
   const calculateTotal = () => {
     return calculateSubtotal() + calculateShipping() + calculateTax();
   };
-  
+
   const validateShippingAddress = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!shippingAddress.firstName.trim()) {
       newErrors.firstName = 'El nombre es requerido';
     }
@@ -1215,14 +1221,14 @@ export const StreamlinedCheckout = () => {
     if (!shippingAddress.postalCode.trim()) {
       newErrors.postalCode = 'El código postal es requerido';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const validatePaymentMethod = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (paymentMethod.type === 'card') {
       if (!paymentMethod.cardNumber?.trim()) {
         newErrors.cardNumber = 'Número de tarjeta requerido';
@@ -1237,11 +1243,11 @@ export const StreamlinedCheckout = () => {
         newErrors.cardholderName = 'Nombre del titular requerido';
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleNextStep = () => {
     if (currentStep === 1 && !validateShippingAddress()) {
       return;
@@ -1249,21 +1255,21 @@ export const StreamlinedCheckout = () => {
     if (currentStep === 2 && !validatePaymentMethod()) {
       return;
     }
-    
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
-  
+
   const handlePreviousStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
-  
+
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
-    
+
     try {
       const orderData = {
         items: cartItems,
@@ -1276,13 +1282,13 @@ export const StreamlinedCheckout = () => {
           total: calculateTotal()
         }
       };
-      
+
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
       });
-      
+
       if (response.ok) {
         setCurrentStep(3); // Go to confirmation
       } else {
@@ -1295,14 +1301,14 @@ export const StreamlinedCheckout = () => {
       setIsProcessing(false);
     }
   };
-  
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'EUR'
     }).format(price);
   };
-  
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       {/* Progress Steps */}
@@ -1312,9 +1318,9 @@ export const StreamlinedCheckout = () => {
             <div key={step.id} className="flex items-center">
               <div className={`
                 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors
-                ${step.completed 
+                ${step.completed
                   ? 'bg-green-500 border-green-500 text-white'
-                  : step.active 
+                  : step.active
                     ? 'bg-blue-500 border-blue-500 text-white'
                     : 'bg-white border-gray-300 text-gray-500'
                 }
@@ -1325,14 +1331,14 @@ export const StreamlinedCheckout = () => {
                   <span className="text-sm font-medium">{index + 1}</span>
                 )}
               </div>
-              
+
               <span className={`
                 ml-2 text-sm font-medium
                 ${step.active ? 'text-blue-600' : 'text-gray-500'}
               `}>
                 {step.title}
               </span>
-              
+
               {index < steps.length - 1 && (
                 <div className={`
                   w-12 h-0.5 mx-4
@@ -1343,7 +1349,7 @@ export const StreamlinedCheckout = () => {
           ))}
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2">
@@ -1377,7 +1383,7 @@ export const StreamlinedCheckout = () => {
               </CardContent>
             </Card>
           )}
-          
+
           {/* Step 1: Shipping Address */}
           {currentStep === 1 && (
             <Card>
@@ -1400,7 +1406,7 @@ export const StreamlinedCheckout = () => {
                       <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">Apellidos *</label>
                     <Input
@@ -1412,7 +1418,7 @@ export const StreamlinedCheckout = () => {
                       <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">Email *</label>
                     <Input
@@ -1425,7 +1431,7 @@ export const StreamlinedCheckout = () => {
                       <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">Teléfono</label>
                     <Input
@@ -1433,7 +1439,7 @@ export const StreamlinedCheckout = () => {
                       onChange={(e) => setShippingAddress(prev => ({ ...prev, phone: e.target.value }))}
                     />
                   </div>
-                  
+
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium mb-1">Dirección *</label>
                     <Input
@@ -1445,7 +1451,7 @@ export const StreamlinedCheckout = () => {
                       <p className="text-red-500 text-sm mt-1">{errors.address}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">Ciudad *</label>
                     <Input
@@ -1457,7 +1463,7 @@ export const StreamlinedCheckout = () => {
                       <p className="text-red-500 text-sm mt-1">{errors.city}</p>
                     )}
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-1">Código Postal *</label>
                     <Input
@@ -1473,7 +1479,7 @@ export const StreamlinedCheckout = () => {
               </CardContent>
             </Card>
           )}
-          
+
           {/* Step 2: Payment Method */}
           {currentStep === 2 && (
             <Card>
@@ -1503,7 +1509,7 @@ export const StreamlinedCheckout = () => {
                     </Button>
                   ))}
                 </div>
-                
+
                 {/* Card Details */}
                 {paymentMethod.type === 'card' && (
                   <div className="space-y-4 p-4 border rounded">
@@ -1519,7 +1525,7 @@ export const StreamlinedCheckout = () => {
                         <p className="text-red-500 text-sm mt-1">{errors.cardNumber}</p>
                       )}
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">Fecha vencimiento *</label>
@@ -1533,7 +1539,7 @@ export const StreamlinedCheckout = () => {
                           <p className="text-red-500 text-sm mt-1">{errors.expiryDate}</p>
                         )}
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium mb-1">CVV *</label>
                         <Input
@@ -1547,7 +1553,7 @@ export const StreamlinedCheckout = () => {
                         )}
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium mb-1">Nombre del titular *</label>
                       <Input
@@ -1562,7 +1568,7 @@ export const StreamlinedCheckout = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Security Badge */}
                 <div className="flex items-center justify-center p-4 bg-gray-50 rounded">
                   <Shield className="h-5 w-5 text-green-500 mr-2" />
@@ -1573,7 +1579,7 @@ export const StreamlinedCheckout = () => {
               </CardContent>
             </Card>
           )}
-          
+
           {/* Step 3: Order Confirmation */}
           {currentStep === 3 && (
             <Card>
@@ -1598,7 +1604,7 @@ export const StreamlinedCheckout = () => {
             </Card>
           )}
         </div>
-        
+
         {/* Order Summary Sidebar */}
         <div className="lg:col-span-1">
           <Card className="sticky top-4">
@@ -1618,9 +1624,9 @@ export const StreamlinedCheckout = () => {
                   <p className="text-sm text-gray-500">+{cartItems.length - 3} productos más</p>
                 )}
               </div>
-              
+
               <Separator />
-              
+
               {/* Totals */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -1647,7 +1653,7 @@ export const StreamlinedCheckout = () => {
                   <span>{formatPrice(calculateTotal())}</span>
                 </div>
               </div>
-              
+
               {/* Free Shipping Notice */}
               {calculateShipping() > 0 && (
                 <div className="bg-blue-50 p-3 rounded text-sm">
@@ -1660,7 +1666,7 @@ export const StreamlinedCheckout = () => {
           </Card>
         </div>
       </div>
-      
+
       {/* Navigation Buttons */}
       {currentStep < 3 && (
         <div className="flex justify-between mt-8">
@@ -1672,7 +1678,7 @@ export const StreamlinedCheckout = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Anterior
           </Button>
-          
+
           {currentStep === 2 ? (
             <Button
               onClick={handlePlaceOrder}
@@ -1689,7 +1695,7 @@ export const StreamlinedCheckout = () => {
           )}
         </div>
       )}
-      
+
       {/* Error Message */}
       {errors.general && (
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
@@ -1708,6 +1714,7 @@ export const StreamlinedCheckout = () => {
 ### **Fase 1: Fundamentos UX (Semanas 1-2)**
 
 #### **Sprint 1.1: Navigation & Information Architecture**
+
 - **Duración**: 1 semana
 - **Responsables**: UX Designer + Frontend Lead
 - **Entregables**:
@@ -1717,6 +1724,7 @@ export const StreamlinedCheckout = () => {
   - User Behavior Tracking
 
 #### **Sprint 1.2: Search & Discovery**
+
 - **Duración**: 1 semana
 - **Responsables**: Frontend Lead + Backend Developer
 - **Entregables**:
@@ -1728,6 +1736,7 @@ export const StreamlinedCheckout = () => {
 ### **Fase 2: Mobile & Responsive (Semanas 3-4)**
 
 #### **Sprint 2.1: Mobile-First Design**
+
 - **Duración**: 1 semana
 - **Responsables**: UX Designer + Frontend Lead
 - **Entregables**:
@@ -1737,6 +1746,7 @@ export const StreamlinedCheckout = () => {
   - Performance Optimization
 
 #### **Sprint 2.2: Cross-Device Testing**
+
 - **Duración**: 1 semana
 - **Responsables**: QA Lead + Frontend Lead
 - **Entregables**:
@@ -1748,6 +1758,7 @@ export const StreamlinedCheckout = () => {
 ### **Fase 3: Checkout Optimization (Semanas 5-6)**
 
 #### **Sprint 3.1: Streamlined Checkout**
+
 - **Duración**: 1 semana
 - **Responsables**: Frontend Lead + UX Designer
 - **Entregables**:
@@ -1757,6 +1768,7 @@ export const StreamlinedCheckout = () => {
   - Error Handling
 
 #### **Sprint 3.2: Conversion Optimization**
+
 - **Duración**: 1 semana
 - **Responsables**: Product Manager + Analytics Team
 - **Entregables**:
@@ -1768,6 +1780,7 @@ export const StreamlinedCheckout = () => {
 ### **Fase 4: Testing & Refinement (Semanas 7-8)**
 
 #### **Sprint 4.1: User Testing**
+
 - **Duración**: 1 semana
 - **Responsables**: UX Designer + QA Lead
 - **Entregables**:
@@ -1777,6 +1790,7 @@ export const StreamlinedCheckout = () => {
   - Improvement Recommendations
 
 #### **Sprint 4.2: Final Optimization**
+
 - **Duración**: 1 semana
 - **Responsables**: Full Team
 - **Entregables**:
@@ -1791,18 +1805,18 @@ export const StreamlinedCheckout = () => {
 
 ### **KPIs Principales**
 
-| Métrica | Baseline | Target | Método de Medición |
-|---------|----------|--------|-----------------|
-| **Conversion Rate** | 2.3% | 4.5%+ | Google Analytics |
-| **Cart Abandonment** | 68% | <45% | E-commerce Tracking |
-| **Page Load Time** | 3.2s | <1.5s | Lighthouse/GTMetrix |
-| **Mobile Usability** | 75% | 95%+ | Google PageSpeed |
-| **User Satisfaction** | 3.8/5 | 4.7/5+ | User Surveys |
-| **Task Completion** | 78% | 92%+ | User Testing |
-| **Error Rate** | 12% | <5% | Error Tracking |
-| **Time to Purchase** | 8.5min | <4min | Analytics Funnel |
-| **Return User Rate** | 35% | 55%+ | User Analytics |
-| **Support Tickets** | 150/week | <75/week | Help Desk System |
+| Métrica               | Baseline | Target   | Método de Medición  |
+| --------------------- | -------- | -------- | ------------------- |
+| **Conversion Rate**   | 2.3%     | 4.5%+    | Google Analytics    |
+| **Cart Abandonment**  | 68%      | <45%     | E-commerce Tracking |
+| **Page Load Time**    | 3.2s     | <1.5s    | Lighthouse/GTMetrix |
+| **Mobile Usability**  | 75%      | 95%+     | Google PageSpeed    |
+| **User Satisfaction** | 3.8/5    | 4.7/5+   | User Surveys        |
+| **Task Completion**   | 78%      | 92%+     | User Testing        |
+| **Error Rate**        | 12%      | <5%      | Error Tracking      |
+| **Time to Purchase**  | 8.5min   | <4min    | Analytics Funnel    |
+| **Return User Rate**  | 35%      | 55%+     | User Analytics      |
+| **Support Tickets**   | 150/week | <75/week | Help Desk System    |
 
 ### **Métricas Secundarias**
 
@@ -1818,17 +1832,20 @@ export const StreamlinedCheckout = () => {
 ## 🔧 Herramientas y Recursos
 
 ### **Desarrollo**
+
 - **Frontend**: React, Next.js, TypeScript, Tailwind CSS
 - **Testing**: Jest, React Testing Library, Playwright
 - **Performance**: Lighthouse, WebPageTest, GTMetrix
 - **Analytics**: Google Analytics 4, Hotjar, Mixpanel
 
 ### **Design**
+
 - **Prototipado**: Figma, Adobe XD
 - **Testing**: Maze, UserTesting, Optimal Workshop
 - **Accessibility**: axe-core, WAVE, Lighthouse
 
 ### **Monitoreo**
+
 - **Performance**: New Relic, DataDog
 - **Errors**: Sentry, LogRocket
 - **User Behavior**: Hotjar, FullStory
@@ -1840,27 +1857,28 @@ export const StreamlinedCheckout = () => {
 
 ### **Riesgos Técnicos**
 
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| **Performance Degradation** | Media | Alto | Continuous monitoring, lazy loading |
-| **Cross-browser Issues** | Alta | Medio | Extensive testing, progressive enhancement |
-| **Mobile Compatibility** | Media | Alto | Mobile-first approach, device testing |
-| **Third-party Integration** | Media | Medio | Fallback systems, error handling |
+| Riesgo                      | Probabilidad | Impacto | Mitigación                                 |
+| --------------------------- | ------------ | ------- | ------------------------------------------ |
+| **Performance Degradation** | Media        | Alto    | Continuous monitoring, lazy loading        |
+| **Cross-browser Issues**    | Alta         | Medio   | Extensive testing, progressive enhancement |
+| **Mobile Compatibility**    | Media        | Alto    | Mobile-first approach, device testing      |
+| **Third-party Integration** | Media        | Medio   | Fallback systems, error handling           |
 
 ### **Riesgos de Negocio**
 
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| **User Resistance** | Baja | Alto | Gradual rollout, user education |
-| **Conversion Drop** | Media | Alto | A/B testing, rollback plan |
-| **Timeline Delays** | Alta | Medio | Agile methodology, buffer time |
-| **Resource Constraints** | Media | Medio | Priority matrix, scope adjustment |
+| Riesgo                   | Probabilidad | Impacto | Mitigación                        |
+| ------------------------ | ------------ | ------- | --------------------------------- |
+| **User Resistance**      | Baja         | Alto    | Gradual rollout, user education   |
+| **Conversion Drop**      | Media        | Alto    | A/B testing, rollback plan        |
+| **Timeline Delays**      | Alta         | Medio   | Agile methodology, buffer time    |
+| **Resource Constraints** | Media        | Medio   | Priority matrix, scope adjustment |
 
 ---
 
 ## 📋 Checklist de Implementación
 
 ### **Pre-Implementation**
+
 - [ ] Stakeholder alignment
 - [ ] Resource allocation
 - [ ] Timeline confirmation
@@ -1869,6 +1887,7 @@ export const StreamlinedCheckout = () => {
 - [ ] Backup plan creation
 
 ### **Development Phase**
+
 - [ ] Component development
 - [ ] Unit testing
 - [ ] Integration testing
@@ -1877,6 +1896,7 @@ export const StreamlinedCheckout = () => {
 - [ ] Cross-browser testing
 
 ### **Testing Phase**
+
 - [ ] User acceptance testing
 - [ ] A/B testing setup
 - [ ] Performance benchmarking
@@ -1885,6 +1905,7 @@ export const StreamlinedCheckout = () => {
 - [ ] Mobile testing
 
 ### **Launch Phase**
+
 - [ ] Staging deployment
 - [ ] Production deployment
 - [ ] Monitoring setup
@@ -1893,6 +1914,7 @@ export const StreamlinedCheckout = () => {
 - [ ] Documentation update
 
 ### **Post-Launch**
+
 - [ ] Performance monitoring
 - [ ] User feedback collection
 - [ ] Metric tracking
@@ -1914,11 +1936,9 @@ La implementación de mejoras en User Experience es **crítica** para el éxito 
 El **ROI estimado** es de **300-400%** en los primeros 6 meses post-implementación, basado en el aumento de conversiones y reducción de costos de soporte.
 
 **Próximos pasos**:
+
 1. Aprobación del plan por stakeholders
 2. Asignación de recursos y timeline
 3. Inicio de Fase 1: Fundamentos UX
 4. Setup de métricas y monitoreo
 5. Comunicación del plan al equipo
-
-
-

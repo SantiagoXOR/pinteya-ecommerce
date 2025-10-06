@@ -7,11 +7,13 @@ Configurar un sistema completo de emails personalizados usando el dominio `@pint
 ## 📧 Características Implementadas
 
 ### ✅ Plantillas de Email
+
 - **Email de Bienvenida**: Para nuevos usuarios registrados
 - **Confirmación de Pedido**: Para pedidos completados
 - **Recuperación de Contraseña**: Para reset de contraseñas
 
 ### ✅ Funcionalidades
+
 - Diseño responsive con colores de marca Pinteya
 - Plantillas HTML y texto plano
 - Configuración centralizada
@@ -85,12 +87,15 @@ RESEND_SUPPORT_EMAIL=soporte@pinteya.com
 ## 🧪 Testing
 
 ### Página de Testing
+
 Visita `/admin/email-test` para:
+
 - Verificar configuración del servicio
 - Enviar emails de prueba
 - Probar diferentes plantillas
 
 ### API de Testing
+
 ```bash
 # Verificar configuración
 GET /api/email/test
@@ -105,6 +110,7 @@ POST /api/email/test
 ```
 
 ### Tipos de Email Disponibles
+
 - `welcome`: Email de bienvenida
 - `order`: Confirmación de pedido
 - `reset`: Recuperación de contraseña
@@ -112,6 +118,7 @@ POST /api/email/test
 ## 🔧 Integración en Componentes
 
 ### Hook useEmail
+
 ```typescript
 import { useEmail } from '@/hooks/useEmail';
 
@@ -136,14 +143,15 @@ function MyComponent() {
 ```
 
 ### Funciones Directas
+
 ```typescript
-import { sendWelcomeEmail, sendOrderConfirmationEmail } from '@/lib/email';
+import { sendWelcomeEmail, sendOrderConfirmationEmail } from '@/lib/email'
 
 // Email de bienvenida
 await sendWelcomeEmail({
   userName: 'Juan Pérez',
-  userEmail: 'juan@example.com'
-});
+  userEmail: 'juan@example.com',
+})
 
 // Email de confirmación de pedido
 await sendOrderConfirmationEmail({
@@ -153,9 +161,9 @@ await sendOrderConfirmationEmail({
   orderTotal: '$25.990',
   orderItems: [
     { name: 'Pintura Blanca', quantity: 2, price: '$15.990' },
-    { name: 'Rodillo', quantity: 1, price: '$9.990' }
-  ]
-});
+    { name: 'Rodillo', quantity: 1, price: '$9.990' },
+  ],
+})
 ```
 
 ## 📁 Estructura de Archivos
@@ -188,12 +196,14 @@ docs/
 ## 🎨 Diseño de Emails
 
 ### Colores de Marca
+
 - **Primario**: `#ea5a17` (Blaze Orange)
 - **Secundario**: `#fc9d04` (Tahiti Gold)
 - **Fondo**: `#f9f9f9`
 - **Texto**: `#333333`
 
 ### Elementos Incluidos
+
 - Header con logo y colores de marca
 - Contenido responsive
 - Botones de acción estilizados
@@ -203,6 +213,7 @@ docs/
 ## 🔒 Seguridad
 
 ### Buenas Prácticas Implementadas
+
 - API Key almacenada en variables de entorno
 - Validación de parámetros en APIs
 - Manejo de errores robusto
@@ -210,6 +221,7 @@ docs/
 - Logs de auditoría
 
 ### Configuración de Producción
+
 ```bash
 # Variables de entorno en Vercel
 RESEND_API_KEY=re_production-key
@@ -220,13 +232,16 @@ RESEND_SUPPORT_EMAIL=soporte@pinteya.com
 ## 📊 Monitoreo
 
 ### Métricas Disponibles
+
 - Emails enviados exitosamente
 - Errores de envío
 - Tipos de email más utilizados
 - Tiempo de respuesta del servicio
 
 ### Logs
+
 Los logs incluyen:
+
 - Timestamp del envío
 - Tipo de email
 - Destinatario (parcialmente oculto)
@@ -236,6 +251,7 @@ Los logs incluyen:
 ## 🚀 Próximos Pasos
 
 ### Funcionalidades Futuras
+
 - [ ] Templates dinámicos desde base de datos
 - [ ] Programación de emails
 - [ ] Segmentación de usuarios
@@ -244,6 +260,7 @@ Los logs incluyen:
 - [ ] Integración con marketing automation
 
 ### Optimizaciones
+
 - [ ] Cache de templates
 - [ ] Queue de emails para alto volumen
 - [ ] Retry logic para fallos
@@ -254,25 +271,30 @@ Los logs incluyen:
 ### Problemas Comunes
 
 **Error: "RESEND_API_KEY no está configurado"**
+
 - Verifica que la variable esté en `.env.local`
 - Reinicia el servidor de desarrollo
 
 **Email no llega**
+
 - Revisa la carpeta de spam
 - Verifica que el dominio esté verificado en Resend
 - Comprueba los registros DNS
 
 **Error de DNS**
+
 - Espera hasta 24 horas para propagación DNS
 - Verifica registros con herramientas como `dig` o `nslookup`
 
 **API Key inválida**
+
 - Regenera la API Key en Resend
 - Verifica que tenga permisos de "Send emails"
 
 ## 📞 Soporte
 
 Para problemas con la configuración de emails:
+
 1. Revisa los logs en `/api/email/test`
 2. Verifica la configuración en `/admin/email-test`
 3. Consulta la documentación de Resend
@@ -283,6 +305,3 @@ Para problemas con la configuración de emails:
 **Última actualización**: Enero 2025  
 **Versión**: 1.0.0  
 **Estado**: ✅ Implementado y funcionando
-
-
-

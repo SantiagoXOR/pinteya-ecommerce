@@ -18,6 +18,7 @@
 ### Hover - Interacción Principal
 
 **Especificaciones:**
+
 - **Duración**: 200ms
 - **Easing**: ease-out
 - **Transformación**: scale(1.02) + shadow-lg
@@ -31,7 +32,7 @@
 
 .interactive-element:hover {
   transform: scale(1.02);
-  box-shadow: 0px 6px 24px rgba(235, 238, 251, 0.40);
+  box-shadow: 0px 6px 24px rgba(235, 238, 251, 0.4);
 }
 
 /* Hover específico para botones */
@@ -44,6 +45,7 @@
 ### Active/Pressed - Feedback Táctil
 
 **Especificaciones:**
+
 - **Duración**: 150ms
 - **Transformación**: scale(0.98)
 - **Color**: Versión más oscura del color base
@@ -63,6 +65,7 @@
 ### Focus - Accesibilidad
 
 **Especificaciones:**
+
 - **Ring**: 2px solid primary color
 - **Offset**: 2px
 - **Visible**: Siempre visible en navegación por teclado
@@ -84,6 +87,7 @@
 ### Disabled - No Disponible
 
 **Especificaciones:**
+
 - **Opacidad**: 50%
 - **Cursor**: not-allowed
 - **Interacciones**: Deshabilitadas
@@ -99,6 +103,7 @@
 ### Loading - Procesando
 
 **Especificaciones:**
+
 - **Spinner**: Rotación continua
 - **Texto**: Cambio contextual
 - **Interacciones**: Deshabilitadas temporalmente
@@ -109,8 +114,12 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 ```
 
@@ -122,8 +131,12 @@
 
 ```css
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-fade-in {
@@ -135,13 +148,13 @@
 
 ```css
 @keyframes slide-up {
-  from { 
-    transform: translateY(10px); 
-    opacity: 0; 
+  from {
+    transform: translateY(10px);
+    opacity: 0;
   }
-  to { 
-    transform: translateY(0); 
-    opacity: 1; 
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -154,13 +167,13 @@
 
 ```css
 @keyframes scale-in {
-  from { 
-    transform: scale(0.95); 
-    opacity: 0; 
+  from {
+    transform: scale(0.95);
+    opacity: 0;
   }
-  to { 
-    transform: scale(1); 
-    opacity: 1; 
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -173,19 +186,19 @@
 
 ```css
 @keyframes bounce-in {
-  0% { 
-    transform: scale(0.3); 
-    opacity: 0; 
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
   }
-  50% { 
-    transform: scale(1.05); 
+  50% {
+    transform: scale(1.05);
   }
-  70% { 
-    transform: scale(0.9); 
+  70% {
+    transform: scale(0.9);
   }
-  100% { 
-    transform: scale(1); 
-    opacity: 1; 
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -198,9 +211,23 @@
 
 ```css
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-  20%, 40%, 60%, 80% { transform: translateX(2px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 .animate-shake {
@@ -215,6 +242,7 @@
 ### Touch States
 
 **Especificaciones móviles específicas:**
+
 - **Touch target**: Mínimo 44px
 - **Feedback**: Inmediato al touch
 - **Ripple effect**: Opcional para Material Design feel
@@ -244,7 +272,9 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.5);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition:
+    width 0.6s,
+    height 0.6s;
 }
 
 .ripple:active::before {
@@ -288,17 +318,17 @@
 }
 
 @keyframes added-to-cart {
-  0% { 
-    transform: scale(1); 
-    border-color: transparent; 
+  0% {
+    transform: scale(1);
+    border-color: transparent;
   }
-  50% { 
-    transform: scale(1.05); 
-    border-color: #22ad5c; 
+  50% {
+    transform: scale(1.05);
+    border-color: #22ad5c;
   }
-  100% { 
-    transform: scale(1); 
-    border-color: #22ad5c; 
+  100% {
+    transform: scale(1);
+    border-color: #22ad5c;
   }
 }
 ```
@@ -311,11 +341,12 @@
 }
 
 @keyframes pulse-warning {
-  0%, 100% { 
-    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); 
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
   }
-  50% { 
-    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0); 
+  50% {
+    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0);
   }
 }
 ```
@@ -328,13 +359,14 @@
 }
 
 @keyframes discount-pulse {
-  0%, 100% { 
-    transform: scale(1); 
-    background-color: #f23030; 
+  0%,
+  100% {
+    transform: scale(1);
+    background-color: #f23030;
   }
-  50% { 
-    transform: scale(1.1); 
-    background-color: #e10e0e; 
+  50% {
+    transform: scale(1.1);
+    background-color: #e10e0e;
   }
 }
 ```
@@ -354,18 +386,17 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg, 
-    transparent, 
-    rgba(34, 173, 92, 0.2), 
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(34, 173, 92, 0.2), transparent);
   animation: shine 2s infinite;
 }
 
 @keyframes shine {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 ```
 
@@ -394,7 +425,7 @@
   .btn-primary {
     border: 2px solid currentColor;
   }
-  
+
   .focus-ring:focus-visible {
     ring-width: 3px;
     ring-color: currentColor;
@@ -418,12 +449,12 @@
 }
 
 /* Announce state changes */
-.loading[aria-live="polite"]::after {
-  content: "Cargando...";
+.loading[aria-live='polite']::after {
+  content: 'Cargando...';
 }
 
-.success[aria-live="polite"]::after {
-  content: "Completado exitosamente";
+.success[aria-live='polite']::after {
+  content: 'Completado exitosamente';
 }
 ```
 
@@ -449,26 +480,22 @@ export function useInteractionState() {
     isHovered: false,
     isPressed: false,
     isFocused: false,
-    isLoading: false
+    isLoading: false,
   })
 
   const handlers = {
-    onMouseEnter: useCallback(() => 
-      setState(prev => ({ ...prev, isHovered: true })), []),
-    onMouseLeave: useCallback(() => 
-      setState(prev => ({ ...prev, isHovered: false })), []),
-    onMouseDown: useCallback(() => 
-      setState(prev => ({ ...prev, isPressed: true })), []),
-    onMouseUp: useCallback(() => 
-      setState(prev => ({ ...prev, isPressed: false })), []),
-    onFocus: useCallback(() => 
-      setState(prev => ({ ...prev, isFocused: true })), []),
-    onBlur: useCallback(() => 
-      setState(prev => ({ ...prev, isFocused: false })), []),
+    onMouseEnter: useCallback(() => setState(prev => ({ ...prev, isHovered: true })), []),
+    onMouseLeave: useCallback(() => setState(prev => ({ ...prev, isHovered: false })), []),
+    onMouseDown: useCallback(() => setState(prev => ({ ...prev, isPressed: true })), []),
+    onMouseUp: useCallback(() => setState(prev => ({ ...prev, isPressed: false })), []),
+    onFocus: useCallback(() => setState(prev => ({ ...prev, isFocused: true })), []),
+    onBlur: useCallback(() => setState(prev => ({ ...prev, isFocused: false })), []),
   }
 
-  const setLoading = useCallback((loading: boolean) => 
-    setState(prev => ({ ...prev, isLoading: loading })), [])
+  const setLoading = useCallback(
+    (loading: boolean) => setState(prev => ({ ...prev, isLoading: loading })),
+    []
+  )
 
   return { state, handlers, setLoading }
 }
@@ -487,23 +514,19 @@ interface InteractiveCardProps {
   className?: string
 }
 
-export function InteractiveCard({ 
-  children, 
-  onClick, 
-  className 
-}: InteractiveCardProps) {
+export function InteractiveCard({ children, onClick, className }: InteractiveCardProps) {
   const { state, handlers } = useInteractionState()
 
   return (
     <div
       className={cn(
-        "transition-all duration-200 cursor-pointer",
-        "hover:scale-102 hover:shadow-2",
-        "active:scale-98",
-        "focus-visible:ring-2 focus-visible:ring-primary",
-        state.isHovered && "shadow-2 scale-102",
-        state.isPressed && "scale-98",
-        state.isFocused && "ring-2 ring-primary",
+        'transition-all duration-200 cursor-pointer',
+        'hover:scale-102 hover:shadow-2',
+        'active:scale-98',
+        'focus-visible:ring-2 focus-visible:ring-primary',
+        state.isHovered && 'shadow-2 scale-102',
+        state.isPressed && 'scale-98',
+        state.isFocused && 'ring-2 ring-primary',
         className
       )}
       onClick={onClick}
@@ -551,18 +574,21 @@ export function InteractiveCard({
 ## 🎯 Criterios de Aceptación
 
 ### Performance
+
 - [ ] Animaciones 60fps
 - [ ] Transiciones < 300ms
 - [ ] Sin layout shifts
 - [ ] GPU acceleration cuando sea necesario
 
 ### Accesibilidad
+
 - [ ] Respeta prefers-reduced-motion
 - [ ] Focus visible en navegación por teclado
 - [ ] Estados anunciados a screen readers
 - [ ] Contraste suficiente en todos los estados
 
 ### UX
+
 - [ ] Feedback inmediato en interacciones
 - [ ] Estados claros y diferenciables
 - [ ] Transiciones suaves y naturales
@@ -570,7 +596,4 @@ export function InteractiveCard({
 
 ---
 
-*Última actualización: Junio 2025*
-
-
-
+_Última actualización: Junio 2025_

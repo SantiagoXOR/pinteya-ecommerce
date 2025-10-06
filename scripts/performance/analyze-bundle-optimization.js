@@ -5,8 +5,8 @@
 // ===================================
 // Script para ejecutar análisis de optimización de bundles desde CLI
 
-const fs = require('fs').promises;
-const path = require('path');
+const fs = require('fs').promises
+const path = require('path')
 
 // ===================================
 // CONFIGURACIÓN
@@ -18,87 +18,86 @@ const CONFIG = {
   enableDetailedAnalysis: true,
   generateReport: true,
   checkBudgets: true,
-  verbose: false
-};
+  verbose: false,
+}
 
 // ===================================
 // FUNCIONES PRINCIPALES
 // ===================================
 
 async function main() {
-  console.log('🔍 Bundle Optimization Analysis');
-  console.log('================================\n');
+  console.log('🔍 Bundle Optimization Analysis')
+  console.log('================================\n')
 
   try {
     // Parsear argumentos de línea de comandos
-    parseArguments();
+    parseArguments()
 
     // Verificar que existe el build
-    await verifyBuildExists();
+    await verifyBuildExists()
 
     // Ejecutar análisis
-    const analysis = await runBundleAnalysis();
+    const analysis = await runBundleAnalysis()
 
     // Ejecutar análisis de presupuestos
-    const budgetReport = await runBudgetAnalysis();
+    const budgetReport = await runBudgetAnalysis()
 
     // Generar reportes
     if (CONFIG.generateReport) {
-      await generateReports(analysis, budgetReport);
+      await generateReports(analysis, budgetReport)
     }
 
     // Mostrar resumen
-    displaySummary(analysis, budgetReport);
+    displaySummary(analysis, budgetReport)
 
     // Verificar si hay violaciones críticas
-    const hasErrors = checkForCriticalIssues(analysis, budgetReport);
-    
-    if (hasErrors) {
-      console.log('\n❌ Se encontraron problemas críticos de performance.');
-      process.exit(1);
-    } else {
-      console.log('\n✅ Análisis completado exitosamente.');
-      process.exit(0);
-    }
+    const hasErrors = checkForCriticalIssues(analysis, budgetReport)
 
-  } catch (error) {
-    console.error('❌ Error durante el análisis:', error.message);
-    if (CONFIG.verbose) {
-      console.error(error.stack);
+    if (hasErrors) {
+      console.log('\n❌ Se encontraron problemas críticos de performance.')
+      process.exit(1)
+    } else {
+      console.log('\n✅ Análisis completado exitosamente.')
+      process.exit(0)
     }
-    process.exit(1);
+  } catch (error) {
+    console.error('❌ Error durante el análisis:', error.message)
+    if (CONFIG.verbose) {
+      console.error(error.stack)
+    }
+    process.exit(1)
   }
 }
 
 function parseArguments() {
-  const args = process.argv.slice(2);
-  
+  const args = process.argv.slice(2)
+
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    
+    const arg = args[i]
+
     switch (arg) {
       case '--build-path':
-        CONFIG.buildPath = args[++i];
-        break;
+        CONFIG.buildPath = args[++i]
+        break
       case '--output':
-        CONFIG.outputPath = args[++i];
-        break;
+        CONFIG.outputPath = args[++i]
+        break
       case '--no-report':
-        CONFIG.generateReport = false;
-        break;
+        CONFIG.generateReport = false
+        break
       case '--no-budgets':
-        CONFIG.checkBudgets = false;
-        break;
+        CONFIG.checkBudgets = false
+        break
       case '--verbose':
-        CONFIG.verbose = true;
-        break;
+        CONFIG.verbose = true
+        break
       case '--help':
-        showHelp();
-        process.exit(0);
-        break;
+        showHelp()
+        process.exit(0)
+        break
       default:
         if (arg.startsWith('--')) {
-          console.warn(`⚠️  Argumento desconocido: ${arg}`);
+          console.warn(`⚠️  Argumento desconocido: ${arg}`)
         }
     }
   }
@@ -123,23 +122,23 @@ Ejemplos:
   npm run analyze-bundle
   node scripts/analyze-bundle-optimization.js --verbose
   node scripts/analyze-bundle-optimization.js --build-path dist --output reports
-`);
+`)
 }
 
 async function verifyBuildExists() {
   try {
-    await fs.access(CONFIG.buildPath);
+    await fs.access(CONFIG.buildPath)
     if (CONFIG.verbose) {
-      console.log(`✓ Build encontrado en: ${CONFIG.buildPath}`);
+      console.log(`✓ Build encontrado en: ${CONFIG.buildPath}`)
     }
   } catch (error) {
-    throw new Error(`Build no encontrado en ${CONFIG.buildPath}. Ejecuta 'npm run build' primero.`);
+    throw new Error(`Build no encontrado en ${CONFIG.buildPath}. Ejecuta 'npm run build' primero.`)
   }
 }
 
 async function runBundleAnalysis() {
-  console.log('📊 Analizando bundles...');
-  
+  console.log('📊 Analizando bundles...')
+
   // Simular análisis de bundles (en implementación real usaríamos webpack-bundle-analyzer)
   const analysis = {
     timestamp: new Date().toISOString(),
@@ -152,12 +151,12 @@ async function runBundleAnalysis() {
       { name: 'main', size: 45 * 1024, type: 'app', priority: 'critical' },
       { name: 'admin', size: 75 * 1024, type: 'dynamic', priority: 'medium' },
       { name: 'ui-components', size: 35 * 1024, type: 'shared', priority: 'high' },
-      { name: 'charts', size: 55 * 1024, type: 'dynamic', priority: 'low' }
+      { name: 'charts', size: 55 * 1024, type: 'dynamic', priority: 'low' },
     ],
     dependencies: [
       { name: 'react', size: 45 * 1024, usage: 'critical', optimizationPotential: 5 },
       { name: 'next', size: 200 * 1024, usage: 'critical', optimizationPotential: 10 },
-      { name: 'framer-motion', size: 180 * 1024, usage: 'important', optimizationPotential: 40 }
+      { name: 'framer-motion', size: 180 * 1024, usage: 'important', optimizationPotential: 40 },
     ],
     recommendations: [
       {
@@ -165,33 +164,33 @@ async function runBundleAnalysis() {
         priority: 'high',
         description: 'Implementar lazy loading para componentes admin',
         estimatedSavings: 30 * 1024,
-        effort: 'low'
-      }
+        effort: 'low',
+      },
     ],
     performance: {
       firstLoadJS: 88 * 1024,
       totalJS: 350 * 1024,
       score: 87,
-      grade: 'B'
-    }
-  };
-
-  if (CONFIG.verbose) {
-    console.log(`  - Total size: ${formatBytes(analysis.totalSize)}`);
-    console.log(`  - Gzipped: ${formatBytes(analysis.gzippedSize)}`);
-    console.log(`  - Chunks: ${analysis.chunks.length}`);
-    console.log(`  - Score: ${analysis.performance.score}/100 (${analysis.performance.grade})`);
+      grade: 'B',
+    },
   }
 
-  return analysis;
+  if (CONFIG.verbose) {
+    console.log(`  - Total size: ${formatBytes(analysis.totalSize)}`)
+    console.log(`  - Gzipped: ${formatBytes(analysis.gzippedSize)}`)
+    console.log(`  - Chunks: ${analysis.chunks.length}`)
+    console.log(`  - Score: ${analysis.performance.score}/100 (${analysis.performance.grade})`)
+  }
+
+  return analysis
 }
 
 async function runBudgetAnalysis() {
   if (!CONFIG.checkBudgets) {
-    return null;
+    return null
   }
 
-  console.log('💰 Verificando presupuestos de performance...');
+  console.log('💰 Verificando presupuestos de performance...')
 
   const budgetReport = {
     timestamp: new Date().toISOString(),
@@ -201,70 +200,63 @@ async function runBudgetAnalysis() {
         severity: 'warning',
         actual: 75 * 1024,
         expected: 60 * 1024,
-        impact: 'medium'
-      }
+        impact: 'medium',
+      },
     ],
     metrics: {
       bundleSize: 420 * 1024,
       firstLoadJS: 88 * 1024,
-      chunkCount: 6
+      chunkCount: 6,
     },
     score: 85,
-    grade: 'B'
-  };
-
-  if (CONFIG.verbose) {
-    console.log(`  - Violations: ${budgetReport.violations.length}`);
-    console.log(`  - Budget score: ${budgetReport.score}/100`);
+    grade: 'B',
   }
 
-  return budgetReport;
+  if (CONFIG.verbose) {
+    console.log(`  - Violations: ${budgetReport.violations.length}`)
+    console.log(`  - Budget score: ${budgetReport.score}/100`)
+  }
+
+  return budgetReport
 }
 
 async function generateReports(analysis, budgetReport) {
-  console.log('📝 Generando reportes...');
+  console.log('📝 Generando reportes...')
 
   try {
     // Crear directorio de salida
-    await fs.mkdir(CONFIG.outputPath, { recursive: true });
+    await fs.mkdir(CONFIG.outputPath, { recursive: true })
 
     // Generar reporte JSON
     const jsonReport = {
       analysis,
       budgetReport,
       generatedAt: new Date().toISOString(),
-      config: CONFIG
-    };
+      config: CONFIG,
+    }
 
     await fs.writeFile(
       path.join(CONFIG.outputPath, 'bundle-analysis.json'),
       JSON.stringify(jsonReport, null, 2)
-    );
+    )
 
     // Generar reporte Markdown
-    const markdownReport = generateMarkdownReport(analysis, budgetReport);
-    await fs.writeFile(
-      path.join(CONFIG.outputPath, 'bundle-analysis.md'),
-      markdownReport
-    );
+    const markdownReport = generateMarkdownReport(analysis, budgetReport)
+    await fs.writeFile(path.join(CONFIG.outputPath, 'bundle-analysis.md'), markdownReport)
 
     // Generar reporte CSV para métricas
-    const csvReport = generateCSVReport(analysis);
-    await fs.writeFile(
-      path.join(CONFIG.outputPath, 'bundle-metrics.csv'),
-      csvReport
-    );
+    const csvReport = generateCSVReport(analysis)
+    await fs.writeFile(path.join(CONFIG.outputPath, 'bundle-metrics.csv'), csvReport)
 
-    console.log(`✓ Reportes generados en: ${CONFIG.outputPath}`);
-
+    console.log(`✓ Reportes generados en: ${CONFIG.outputPath}`)
   } catch (error) {
-    console.warn('⚠️  Error generando reportes:', error.message);
+    console.warn('⚠️  Error generando reportes:', error.message)
   }
 }
 
 function generateMarkdownReport(analysis, budgetReport) {
-  const { performance } = analysis;
-  
+  const { performance } = analysis
+
   let report = `# Bundle Optimization Report
 
 **Generated**: ${new Date().toLocaleString()}
@@ -282,98 +274,98 @@ function generateMarkdownReport(analysis, budgetReport) {
 
 | Chunk | Size | Type | Priority |
 |-------|------|------|----------|
-`;
+`
 
   analysis.chunks.forEach(chunk => {
-    report += `| ${chunk.name} | ${formatBytes(chunk.size)} | ${chunk.type} | ${chunk.priority} |\n`;
-  });
+    report += `| ${chunk.name} | ${formatBytes(chunk.size)} | ${chunk.type} | ${chunk.priority} |\n`
+  })
 
   if (budgetReport && budgetReport.violations.length > 0) {
-    report += `\n## Budget Violations\n\n`;
+    report += `\n## Budget Violations\n\n`
     budgetReport.violations.forEach((violation, i) => {
-      report += `${i + 1}. **${violation.name}** (${violation.severity})\n`;
-      report += `   - Actual: ${formatBytes(violation.actual)}\n`;
-      report += `   - Expected: ${formatBytes(violation.expected)}\n`;
-      report += `   - Impact: ${violation.impact}\n\n`;
-    });
+      report += `${i + 1}. **${violation.name}** (${violation.severity})\n`
+      report += `   - Actual: ${formatBytes(violation.actual)}\n`
+      report += `   - Expected: ${formatBytes(violation.expected)}\n`
+      report += `   - Impact: ${violation.impact}\n\n`
+    })
   }
 
   if (analysis.recommendations.length > 0) {
-    report += `## Recommendations\n\n`;
+    report += `## Recommendations\n\n`
     analysis.recommendations.forEach((rec, i) => {
-      report += `${i + 1}. **${rec.type}** (${rec.priority} priority)\n`;
-      report += `   - ${rec.description}\n`;
-      report += `   - Estimated savings: ${formatBytes(rec.estimatedSavings)}\n`;
-      report += `   - Effort: ${rec.effort}\n\n`;
-    });
+      report += `${i + 1}. **${rec.type}** (${rec.priority} priority)\n`
+      report += `   - ${rec.description}\n`
+      report += `   - Estimated savings: ${formatBytes(rec.estimatedSavings)}\n`
+      report += `   - Effort: ${rec.effort}\n\n`
+    })
   }
 
-  return report;
+  return report
 }
 
 function generateCSVReport(analysis) {
-  let csv = 'Chunk,Size (bytes),Size (KB),Type,Priority\n';
-  
-  analysis.chunks.forEach(chunk => {
-    csv += `${chunk.name},${chunk.size},${Math.round(chunk.size / 1024)},${chunk.type},${chunk.priority}\n`;
-  });
+  let csv = 'Chunk,Size (bytes),Size (KB),Type,Priority\n'
 
-  return csv;
+  analysis.chunks.forEach(chunk => {
+    csv += `${chunk.name},${chunk.size},${Math.round(chunk.size / 1024)},${chunk.type},${chunk.priority}\n`
+  })
+
+  return csv
 }
 
 function displaySummary(analysis, budgetReport) {
-  console.log('\n📋 Resumen del Análisis');
-  console.log('=======================');
-  
-  const { performance } = analysis;
-  
-  console.log(`Bundle Size:     ${formatBytes(analysis.totalSize)}`);
-  console.log(`Gzipped:         ${formatBytes(analysis.gzippedSize)}`);
-  console.log(`First Load JS:   ${formatBytes(performance.firstLoadJS)}`);
-  console.log(`Performance:     ${performance.score}/100 (${performance.grade})`);
-  console.log(`Chunks:          ${analysis.chunks.length}`);
-  
+  console.log('\n📋 Resumen del Análisis')
+  console.log('=======================')
+
+  const { performance } = analysis
+
+  console.log(`Bundle Size:     ${formatBytes(analysis.totalSize)}`)
+  console.log(`Gzipped:         ${formatBytes(analysis.gzippedSize)}`)
+  console.log(`First Load JS:   ${formatBytes(performance.firstLoadJS)}`)
+  console.log(`Performance:     ${performance.score}/100 (${performance.grade})`)
+  console.log(`Chunks:          ${analysis.chunks.length}`)
+
   if (budgetReport) {
-    console.log(`Budget Score:    ${budgetReport.score}/100`);
-    console.log(`Violations:      ${budgetReport.violations.length}`);
+    console.log(`Budget Score:    ${budgetReport.score}/100`)
+    console.log(`Violations:      ${budgetReport.violations.length}`)
   }
-  
-  console.log(`Recommendations: ${analysis.recommendations.length}`);
+
+  console.log(`Recommendations: ${analysis.recommendations.length}`)
 }
 
 function checkForCriticalIssues(analysis, budgetReport) {
-  let hasErrors = false;
+  let hasErrors = false
 
   // Verificar score crítico
   if (analysis.performance.score < 60) {
-    console.log('🚨 Performance score crítico (< 60)');
-    hasErrors = true;
+    console.log('🚨 Performance score crítico (< 60)')
+    hasErrors = true
   }
 
   // Verificar violaciones de error
   if (budgetReport) {
-    const errorViolations = budgetReport.violations.filter(v => v.severity === 'error');
+    const errorViolations = budgetReport.violations.filter(v => v.severity === 'error')
     if (errorViolations.length > 0) {
-      console.log(`🚨 ${errorViolations.length} violación(es) crítica(s) de presupuesto`);
-      hasErrors = true;
+      console.log(`🚨 ${errorViolations.length} violación(es) crítica(s) de presupuesto`)
+      hasErrors = true
     }
   }
 
   // Verificar tamaño excesivo de First Load JS
   if (analysis.performance.firstLoadJS > 128 * 1024) {
-    console.log('🚨 First Load JS excede 128KB');
-    hasErrors = true;
+    console.log('🚨 First Load JS excede 128KB')
+    hasErrors = true
   }
 
-  return hasErrors;
+  return hasErrors
 }
 
 function formatBytes(bytes) {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
 // ===================================
@@ -381,12 +373,12 @@ function formatBytes(bytes) {
 // ===================================
 
 if (require.main === module) {
-  main();
+  main()
 }
 
 module.exports = {
   main,
   runBundleAnalysis,
   runBudgetAnalysis,
-  generateMarkdownReport
-};
+  generateMarkdownReport,
+}

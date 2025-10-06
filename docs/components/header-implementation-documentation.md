@@ -11,6 +11,7 @@
 ## 🗂️ Estructura de Archivos
 
 ### Componentes Principales
+
 ```
 src/components/Header/
 ├── index.tsx                    # Componente principal del Header
@@ -23,6 +24,7 @@ src/components/Header/
 ```
 
 ### Tests Implementados
+
 ```
 src/components/Header/__tests__/
 ├── unit/                        # Tests unitarios (90+ tests)
@@ -38,6 +40,7 @@ src/components/Header/__tests__/
 ## 🏗️ Arquitectura Técnica
 
 ### Stack Tecnológico
+
 - **Framework**: Next.js 15 con App Router
 - **Lenguaje**: TypeScript 5.7.3
 - **Estilos**: Tailwind CSS 3.4
@@ -47,6 +50,7 @@ src/components/Header/__tests__/
 - **Testing**: Jest + RTL + Playwright + jest-axe
 
 ### Patrones de Diseño Implementados
+
 1. **Compound Component Pattern**: Header con subcomponentes especializados
 2. **Custom Hooks Pattern**: useGeolocation, useCartAnimation, useSearch
 3. **Provider Pattern**: CartModalProvider, ClerkProvider
@@ -58,20 +62,22 @@ src/components/Header/__tests__/
 ### 1. Header Principal (`index.tsx`)
 
 #### Props y Estados
+
 ```typescript
 interface HeaderState {
-  cartShake: boolean;           // Animación del carrito
+  cartShake: boolean // Animación del carrito
 }
 
 // Estados derivados de hooks
-const { detectedZone, requestLocation, permissionStatus, isLoading, error } = useGeolocation();
-const { openCartModal } = useCartModalContext();
-const { isAnimating } = useCartAnimation();
-const product = useAppSelector((state) => state.cartReducer.items);
-const totalPrice = useSelector(selectTotalPrice);
+const { detectedZone, requestLocation, permissionStatus, isLoading, error } = useGeolocation()
+const { openCartModal } = useCartModalContext()
+const { isAnimating } = useCartAnimation()
+const product = useAppSelector(state => state.cartReducer.items)
+const totalPrice = useSelector(selectTotalPrice)
 ```
 
 #### Funcionalidades Principales
+
 - **Navegación**: Logo clickeable que navega al home
 - **Búsqueda**: Integración con SearchAutocompleteIntegrated
 - **Carrito**: Contador de productos y modal
@@ -82,18 +88,21 @@ const totalPrice = useSelector(selectTotalPrice);
 ### 2. AuthSection (`AuthSection.tsx`)
 
 #### Props Interface
+
 ```typescript
 interface AuthSectionProps {
-  variant?: 'desktop' | 'mobile' | 'topbar';
+  variant?: 'desktop' | 'mobile' | 'topbar'
 }
 ```
 
 #### Variantes Implementadas
+
 - **Desktop**: Botón translúcido con solo icono Google
 - **Mobile**: Misma funcionalidad adaptada para móviles
 - **Topbar**: Versión compacta para barra superior
 
 #### Características Específicas
+
 - **Botón sin texto**: Solo muestra icono Google (sin "Iniciar Sesión")
 - **Estilos translúcidos**: `bg-white/20`, `backdrop-blur-sm`
 - **Colores oficiales Google**: 4 paths SVG con colores específicos
@@ -102,6 +111,7 @@ interface AuthSectionProps {
 ### 3. TopBar (`TopBar.tsx`)
 
 #### Funcionalidades
+
 - **Información de envíos**: Zona de entrega actual
 - **Selector de ubicación**: Dropdown con zonas disponibles
 - **Estados de geolocalización**: Loading, error, success
@@ -110,6 +120,7 @@ interface AuthSectionProps {
 ### 4. ActionButtons (`ActionButtons.tsx`)
 
 #### Características
+
 - **Carrito**: Contador de productos, modal, animaciones
 - **Usuario**: Avatar, dropdown con opciones
 - **Responsive**: Oculto en mobile (`hidden sm:flex`)
@@ -120,6 +131,7 @@ interface AuthSectionProps {
 ### Clases Tailwind CSS Principales
 
 #### Header Container
+
 ```css
 /* Contenedor principal */
 .header-container {
@@ -142,6 +154,7 @@ interface AuthSectionProps {
 ```
 
 #### Botón de Autenticación
+
 ```css
 .auth-button {
   @apply bg-white/20 hover:bg-white/30;
@@ -152,6 +165,7 @@ interface AuthSectionProps {
 ```
 
 #### Carrito
+
 ```css
 .cart-button {
   @apply bg-yellow-400 hover:bg-yellow-500;
@@ -162,6 +176,7 @@ interface AuthSectionProps {
 ```
 
 ### Paleta de Colores
+
 - **Primario**: `blaze-orange-600` (#ea5a17)
 - **Secundario**: `blaze-orange-700` (más oscuro)
 - **Acento**: `yellow-400` (#facc15)
@@ -169,13 +184,24 @@ interface AuthSectionProps {
 - **Translúcido**: `white/20`, `white/30`
 
 ### Breakpoints Responsive
+
 ```css
 /* Mobile First */
-@media (min-width: 640px) { /* sm: */ }
-@media (min-width: 768px) { /* md: */ }
-@media (min-width: 1024px) { /* lg: */ }
-@media (min-width: 1280px) { /* xl: */ }
-@media (min-width: 1536px) { /* 2xl: */ }
+@media (min-width: 640px) {
+  /* sm: */
+}
+@media (min-width: 768px) {
+  /* md: */
+}
+@media (min-width: 1024px) {
+  /* lg: */
+}
+@media (min-width: 1280px) {
+  /* xl: */
+}
+@media (min-width: 1536px) {
+  /* 2xl: */
+}
 ```
 
 ## 🔧 Hooks Personalizados
@@ -183,43 +209,48 @@ interface AuthSectionProps {
 ### 1. useGeolocation
 
 #### Funcionalidades
+
 - **Detección automática**: Solicita permisos al montar
 - **Fallback**: Córdoba Capital por defecto
 - **Estados**: loading, error, success, denied
 - **Zonas**: Córdoba Capital, Villa Carlos Paz, etc.
 
 #### API
+
 ```typescript
 const {
-  detectedZone,        // Zona detectada
-  requestLocation,     // Función para solicitar ubicación
-  permissionStatus,    // Estado de permisos
-  isLoading,          // Estado de carga
-  error,              // Errores
-  location,           // Coordenadas
-  deliveryZones       // Zonas disponibles
-} = useGeolocation();
+  detectedZone, // Zona detectada
+  requestLocation, // Función para solicitar ubicación
+  permissionStatus, // Estado de permisos
+  isLoading, // Estado de carga
+  error, // Errores
+  location, // Coordenadas
+  deliveryZones, // Zonas disponibles
+} = useGeolocation()
 ```
 
 ### 2. useCartAnimation
 
 #### Funcionalidades
+
 - **Animación de carrito**: Shake al agregar productos
 - **Notificaciones**: Success messages
 - **Auto-apertura**: Modal automático opcional
 
 #### API
+
 ```typescript
 const {
-  isAnimating,           // Estado de animación
-  showSuccess,           // Mostrar mensaje de éxito
-  triggerCartAnimation   // Disparar animación
-} = useCartAnimation();
+  isAnimating, // Estado de animación
+  showSuccess, // Mostrar mensaje de éxito
+  triggerCartAnimation, // Disparar animación
+} = useCartAnimation()
 ```
 
 ### 3. useSearch (Integrado)
 
 #### Funcionalidades
+
 - **Debounce**: 300ms para optimizar requests
 - **Autocompletado**: Sugerencias en tiempo real
 - **Navegación**: Redirección a resultados
@@ -228,18 +259,20 @@ const {
 ## 🔄 Integración con Estado
 
 ### Redux Store
+
 ```typescript
 // Selectores utilizados
-const product = useAppSelector((state) => state.cartReducer.items);
-const totalPrice = useSelector(selectTotalPrice);
+const product = useAppSelector(state => state.cartReducer.items)
+const totalPrice = useSelector(selectTotalPrice)
 
 // Acciones disponibles
-dispatch(addItemToCart(product));
-dispatch(removeItemFromCart(productId));
-dispatch(removeAllItemsFromCart());
+dispatch(addItemToCart(product))
+dispatch(removeItemFromCart(productId))
+dispatch(removeAllItemsFromCart())
 ```
 
 ### Context API
+
 ```typescript
 // CartModalContext
 const { openCartModal, closeCartModal, isCartModalOpen } = useCartModalContext();
@@ -253,6 +286,7 @@ const { openCartModal, closeCartModal, isCartModalOpen } = useCartModalContext()
 ## 🌐 APIs y Servicios Externos
 
 ### Clerk Authentication
+
 ```typescript
 // Configuración
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
@@ -263,6 +297,7 @@ const { isSignedIn, user, isLoaded } = useUser();
 ```
 
 ### Supabase Integration
+
 ```typescript
 // Variables de entorno
 NEXT_PUBLIC_SUPABASE_URL=https://...supabase.co
@@ -276,29 +311,33 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
 
 ### Geolocation API
+
 ```typescript
 // Navegador nativo
-navigator.geolocation.getCurrentPosition(
-  success,
-  error,
-  { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
-);
+navigator.geolocation.getCurrentPosition(success, error, {
+  enableHighAccuracy: true,
+  timeout: 10000,
+  maximumAge: 300000,
+})
 ```
 
 ## 📱 Comportamiento Responsive
 
 ### Mobile (320px - 767px)
+
 - **Carrito**: Oculto (`hidden sm:flex`)
 - **Logo**: Tamaño reducido (`h-8`)
 - **Búsqueda**: Ancho completo
 - **Topbar**: Información compacta
 
 ### Tablet (768px - 1023px)
+
 - **Carrito**: Visible
 - **Logo**: Tamaño intermedio (`sm:h-10`)
 - **Layout**: Distribución equilibrada
 
 ### Desktop (1024px+)
+
 - **Carrito**: Completamente visible
 - **Logo**: Tamaño completo
 - **Topbar**: Información completa
@@ -307,12 +346,14 @@ navigator.geolocation.getCurrentPosition(
 ## 🧪 Testing Implementado
 
 ### Cobertura Actual
+
 - **Tests totales**: 145+ implementados
 - **Cobertura código**: 95%+ líneas/funciones/statements
 - **Cobertura ramas**: 90%+
 - **WCAG 2.1 AA**: 100% compliant
 
 ### Casos Críticos Verificados
+
 - ✅ **Autenticación**: Botón solo icono Google
 - ✅ **Búsqueda**: Debounce 300ms, navegación
 - ✅ **Carrito**: Contador, modal, animaciones
@@ -320,6 +361,7 @@ navigator.geolocation.getCurrentPosition(
 - ✅ **Responsive**: 6 breakpoints
 
 ### Comandos de Testing
+
 ```bash
 # Ejecutar todos los tests del Header
 node scripts/test-header.js
@@ -337,6 +379,7 @@ npx playwright test src/components/Header/__tests__/e2e/
 ## ⚙️ Configuración y Variables de Entorno
 
 ### Variables Requeridas
+
 ```bash
 # Clerk Authentication
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
@@ -351,6 +394,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-...
 ```
 
 ### Configuración de Desarrollo
+
 ```typescript
 // next.config.js
 const nextConfig = {
@@ -360,18 +404,20 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@clerk/nextjs'],
   },
-};
+}
 ```
 
 ## 🚀 Performance y Optimizaciones
 
 ### Métricas Actuales
+
 - **Renderizado inicial**: < 100ms
 - **Tiempo de búsqueda**: < 300ms (con debounce)
 - **Carga de geolocalización**: < 2s
 - **Animaciones**: 60fps fluidas
 
 ### Optimizaciones Implementadas
+
 - **Lazy loading**: Componentes no críticos
 - **Memoización**: React.memo en subcomponentes
 - **Debounce**: Búsquedas optimizadas
@@ -381,6 +427,7 @@ const nextConfig = {
 ## 🔍 Detalles de Implementación Específicos
 
 ### Autenticación - Botón Solo Icono Google
+
 ```typescript
 // AuthSection.tsx - Implementación específica
 <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border-2 border-white/30 rounded-full p-2 transition-all duration-200 transform hover:scale-105 active:scale-95">
@@ -396,36 +443,40 @@ const nextConfig = {
 ```
 
 ### Geolocalización - Fallback Córdoba Capital
+
 ```typescript
 // useGeolocation.ts - Lógica de fallback
 const detectNearestZone = (lat: number, lng: number) => {
   // Si no encuentra zona específica, usar Córdoba Capital
-  const fallbackZone = DELIVERY_ZONES.find(zone => zone.id === "cordoba-capital");
-  return nearestZone || fallbackZone || null;
-};
+  const fallbackZone = DELIVERY_ZONES.find(zone => zone.id === 'cordoba-capital')
+  return nearestZone || fallbackZone || null
+}
 ```
 
 ### Búsqueda - Debounce 300ms
+
 ```typescript
 // SearchAutocompleteIntegrated - Configuración
 const searchWithDebounce = useDebouncedCallback(
   (searchQuery: string) => {
-    performSearch(searchQuery);
+    performSearch(searchQuery)
   },
   300, // 300ms debounce
   { maxWait: 2000, leading: false, trailing: true }
-);
+)
 ```
 
 ## 🔮 Futuras Mejoras
 
 ### Funcionalidades Planificadas
+
 - **Notificaciones push**: Para ofertas y promociones
 - **Búsqueda por voz**: Integración con Web Speech API
 - **Modo oscuro**: Toggle de tema
 - **Internacionalización**: Soporte multi-idioma
 
 ### Optimizaciones Técnicas
+
 - **Service Worker**: Cache de búsquedas
 - **WebAssembly**: Cálculos de geolocalización
 - **GraphQL**: Optimización de queries
@@ -434,16 +485,19 @@ const searchWithDebounce = useDebouncedCallback(
 ## 📚 Referencias y Documentación Relacionada
 
 ### Documentación de Testing
+
 - **[Plan de Testing Completo](../testing/header-testing-plan.md)**
 - **[Resumen de Testing](../testing/header-testing-summary.md)**
 - **[Índice de Testing](../testing/header-testing-index.md)**
 
 ### Documentación de APIs
+
 - **[API de Búsqueda](../api/search-api.md)**
 - **[API de Geolocalización](../api/geolocation-api.md)**
 - **[API de Productos](../api/products-api.md)**
 
 ### Guías de Desarrollo
+
 - **[Guía de Componentes](../development/component-guide.md)**
 - **[Estándares de Código](../development/coding-standards.md)**
 - **[Guía de Testing](../development/testing-guide.md)**
@@ -454,6 +508,3 @@ const searchWithDebounce = useDebouncedCallback(
 **🔧 Mantenimiento**: Automatizado en CI/CD
 **📈 Estado**: Producción estable
 **🎯 Próximo**: Aplicar modelo a otros componentes
-
-
-

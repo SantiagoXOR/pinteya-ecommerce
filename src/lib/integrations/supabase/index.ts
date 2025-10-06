@@ -1,10 +1,11 @@
 // ===================================
-// PINTEYA E-COMMERCE - CONFIGURACIÓN SUPABASE
+// PINTEYA E-COMMERCE - CONFIGURACIÓN SUPABASE OPTIMIZADA
 // ===================================
 
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
 import { supabaseConfig, isSupabaseConfigured } from '../../../../lib/env-config'
+import { API_TIMEOUTS } from '@/lib/config/api-timeouts'
 
 // Verificar configuración de Supabase
 if (!isSupabaseConfigured()) {
@@ -26,15 +27,57 @@ if (!isSupabaseConfigured()) {
 }
 
 // ===================================
+// CONFIGURACIÓN OPTIMIZADA DE PERFORMANCE
+// ===================================
+
+const OPTIMIZED_CLIENT_CONFIG = {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce' as const,
+  },
+  db: {
+    schema: 'public',
+  },
+  global: {
+    headers: {
+      'x-client-info': 'pinteya-ecommerce@1.0.0',
+      'x-connection-pool': 'optimized',
+    },
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
+}
+
+const OPTIMIZED_ADMIN_CONFIG = {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false,
+  },
+  db: {
+    schema: 'public',
+  },
+  global: {
+    headers: {
+      'x-client-info': 'pinteya-admin@1.0.0',
+      'x-connection-pool': 'admin-optimized',
+    },
+  },
+  realtime: {
+    disabled: true,
+  },
+}
+
+// ===================================
 // CLIENTE PÚBLICO (PARA FRONTEND)
 // ===================================
 export const supabase = isSupabaseConfigured()
-  ? createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-      },
-    })
+  ? createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, OPTIMIZED_CLIENT_CONFIG)
   : null
 
 // ===================================
@@ -42,12 +85,11 @@ export const supabase = isSupabaseConfigured()
 // ===================================
 export const supabaseAdmin =
   supabaseConfig.url && supabaseConfig.serviceRoleKey
-    ? createClient<Database>(supabaseConfig.url, supabaseConfig.serviceRoleKey, {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      })
+    ? createClient<Database>(
+        supabaseConfig.url,
+        supabaseConfig.serviceRoleKey,
+        OPTIMIZED_ADMIN_CONFIG
+      )
     : null
 
 // ===================================

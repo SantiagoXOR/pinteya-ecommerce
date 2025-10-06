@@ -7,11 +7,13 @@ This guide explains how to migrate from the separate admin user creation routes 
 ## Previous Routes (Deprecated)
 
 ### Basic Route
+
 - **Path**: `/api/admin/create-admin-user`
 - **Features**: Simple security key, basic validation, direct Supabase client
 - **Use Case**: Basic admin user creation
 
 ### Enterprise Route
+
 - **Path**: `/api/admin/create-admin-user-enterprise`
 - **Features**: Enterprise auth, RLS checks, advanced validation, audit logging
 - **Use Case**: Enterprise-grade admin user creation with security features
@@ -19,10 +21,12 @@ This guide explains how to migrate from the separate admin user creation routes 
 ## New Unified Route
 
 ### Endpoint
+
 - **Path**: `/api/admin/create-admin-user/unified`
 - **Methods**: `POST`, `GET`
 
 ### Features
+
 - ✅ Unified authentication (supports both security keys)
 - ✅ Comprehensive validation (email, password complexity)
 - ✅ Optional enterprise features (RLS, audit logging)
@@ -36,6 +40,7 @@ This guide explains how to migrate from the separate admin user creation routes 
 ### Phase 1: Update Client Code
 
 #### Before (Basic)
+
 ```javascript
 const response = await fetch('/api/admin/create-admin-user', {
   method: 'POST',
@@ -43,12 +48,13 @@ const response = await fetch('/api/admin/create-admin-user', {
   body: JSON.stringify({
     email: 'admin@example.com',
     password: 'password123',
-    securityKey: 'your-security-key'
-  })
-});
+    securityKey: 'your-security-key',
+  }),
+})
 ```
 
 #### Before (Enterprise)
+
 ```javascript
 const response = await fetch('/api/admin/create-admin-user-enterprise', {
   method: 'POST',
@@ -57,12 +63,13 @@ const response = await fetch('/api/admin/create-admin-user-enterprise', {
     email: 'admin@example.com',
     password: 'ComplexPass123!',
     enterpriseKey: 'your-enterprise-key',
-    securityLevel: 'high'
-  })
-});
+    securityLevel: 'high',
+  }),
+})
 ```
 
 #### After (Unified)
+
 ```javascript
 // Basic usage
 const response = await fetch('/api/admin/create-admin-user/unified', {
@@ -71,9 +78,9 @@ const response = await fetch('/api/admin/create-admin-user/unified', {
   body: JSON.stringify({
     email: 'admin@example.com',
     password: 'password123',
-    securityKey: 'your-security-key'
-  })
-});
+    securityKey: 'your-security-key',
+  }),
+})
 
 // Enterprise usage
 const response = await fetch('/api/admin/create-admin-user/unified', {
@@ -85,19 +92,21 @@ const response = await fetch('/api/admin/create-admin-user/unified', {
     enterpriseKey: 'your-enterprise-key',
     securityLevel: 'high',
     enableRLS: true,
-    enableAuditLogging: true
-  })
-});
+    enableAuditLogging: true,
+  }),
+})
 ```
 
 ### Phase 2: Request Schema
 
 #### Required Fields
+
 - `email`: Valid email address
 - `password`: Minimum 8 characters (enterprise: complexity requirements)
 - `securityKey` OR `enterpriseKey`: Authentication key
 
 #### Optional Fields
+
 - `securityLevel`: 'standard' | 'high' | 'critical' (default: 'standard')
 - `enableRLS`: boolean (default: false)
 - `enableAuditLogging`: boolean (default: false)
@@ -106,6 +115,7 @@ const response = await fetch('/api/admin/create-admin-user/unified', {
 ### Phase 3: Response Format
 
 #### Success Response
+
 ```json
 {
   "success": true,
@@ -133,6 +143,7 @@ const response = await fetch('/api/admin/create-admin-user/unified', {
 ```
 
 #### Error Response
+
 ```json
 {
   "success": false,
@@ -148,6 +159,7 @@ const response = await fetch('/api/admin/create-admin-user/unified', {
 ## Testing Migration
 
 ### 1. Test Basic Functionality
+
 ```bash
 # Test basic admin creation
 curl -X POST http://localhost:3000/api/admin/create-admin-user/unified \
@@ -160,6 +172,7 @@ curl -X POST http://localhost:3000/api/admin/create-admin-user/unified \
 ```
 
 ### 2. Test Enterprise Features
+
 ```bash
 # Test enterprise admin creation
 curl -X POST http://localhost:3000/api/admin/create-admin-user/unified \
@@ -175,6 +188,7 @@ curl -X POST http://localhost:3000/api/admin/create-admin-user/unified \
 ```
 
 ### 3. Test API Documentation
+
 ```bash
 # Get API documentation
 curl -X GET http://localhost:3000/api/admin/create-admin-user/unified
@@ -231,6 +245,7 @@ If issues arise during migration:
 ## Support
 
 For migration assistance:
+
 - Check the unified route's GET endpoint for API documentation
 - Review error responses for detailed validation information
 - Test in development environment before production deployment
@@ -239,5 +254,3 @@ For migration assistance:
 ---
 
 **Note**: The old routes (`/api/admin/create-admin-user` and `/api/admin/create-admin-user-enterprise`) should be deprecated after successful migration to the unified endpoint.
-
-

@@ -29,6 +29,7 @@ Esta documentación enterprise proporciona patrones, mejores prácticas y arquit
 - **Security First**: HMAC verification, rate limiting, audit trails
 
 ### **Beneficios Enterprise**
+
 - ⚡ **Performance**: First Load < 500KB, Response time < 300ms
 - 🛡️ **Security**: HMAC verification + Rate limiting + Audit trails
 - 📈 **Scalability**: Auto-scaling con Redis + Vercel Edge
@@ -39,43 +40,52 @@ Esta documentación enterprise proporciona patrones, mejores prácticas y arquit
 ## 📚 Documentos Disponibles
 
 ### **1. Arquitectura Enterprise Integrada**
+
 **Archivo**: [`ENTERPRISE_ARCHITECTURE_INTEGRATION.md`](./ENTERPRISE_ARCHITECTURE_INTEGRATION.md)
 
 **Contenido**:
+
 - Arquitectura de capas enterprise
 - Integración Next.js + MercadoPago + Supabase
 - Flujos de datos y procesos
 - Estrategias de deployment
 
 **Casos de Uso**:
+
 - Arquitectos de software
 - DevOps engineers
 - Technical leads
 
 ### **2. Patrones Next.js Enterprise**
+
 **Archivo**: [`NEXT_JS_ENTERPRISE_PATTERNS.md`](./NEXT_JS_ENTERPRISE_PATTERNS.md)
 
 **Contenido**:
+
 - Estrategias de caching multicapa (4 niveles)
 - Optimización de performance
 - Security patterns y middleware
 - Testing enterprise
 
 **Casos de Uso**:
+
 - Desarrolladores frontend
 - Performance engineers
 - Security engineers
 
 ### **3. Patrones MercadoPago Enterprise**
+
 **Archivo**: [`MERCADOPAGO_ENTERPRISE_PATTERNS.md`](./MERCADOPAGO_ENTERPRISE_PATTERNS.md)
 
 **Contenido**:
+
 - Verificación HMAC y seguridad
 - Manejo de webhooks enterprise
 - Error handling y retry logic
 - Compliance y auditoría
 
 **Casos de Uso**:
+
 - Desarrolladores backend
 - Payment engineers
 - Compliance officers
@@ -85,6 +95,7 @@ Esta documentación enterprise proporciona patrones, mejores prácticas y arquit
 ## 🏗️ Arquitectura Enterprise
 
 ### **Stack Tecnológico**
+
 ```mermaid
 graph TB
     subgraph "Frontend Layer"
@@ -92,25 +103,25 @@ graph TB
         B[React 18 Server Components]
         C[Tailwind CSS + shadcn/ui]
     end
-    
+
     subgraph "API Layer"
         D[Route Handlers]
         E[Middleware Security]
         F[Rate Limiting]
     end
-    
+
     subgraph "Business Logic"
         G[MercadoPago Integration]
         H[Supabase Database]
         I[Clerk Authentication]
     end
-    
+
     subgraph "Infrastructure"
         J[Vercel Edge Network]
         K[Redis Cache]
         L[Monitoring Stack]
     end
-    
+
     A --> D
     D --> G
     D --> H
@@ -121,6 +132,7 @@ graph TB
 ```
 
 ### **Principios de Diseño**
+
 1. **Separation of Concerns**: Capas bien definidas
 2. **Scalability**: Horizontal scaling con Redis
 3. **Resilience**: Circuit breakers + Retry logic
@@ -132,6 +144,7 @@ graph TB
 ## 🔧 Implementación
 
 ### **Requisitos Previos**
+
 - Node.js 18+ con Next.js 15.3.3
 - Redis para caching distribuido
 - Supabase PostgreSQL
@@ -139,6 +152,7 @@ graph TB
 - Clerk authentication setup
 
 ### **Variables de Entorno**
+
 ```env
 # Next.js
 NEXT_PUBLIC_URL=https://pinteya.com
@@ -164,6 +178,7 @@ CLERK_SECRET_KEY=sk_xxx
 ```
 
 ### **Configuración Next.js Enterprise**
+
 ```javascript
 // next.config.js
 const nextConfig = {
@@ -171,16 +186,16 @@ const nextConfig = {
   experimental: {
     staleTimes: {
       dynamic: 30,
-      static: 180
+      static: 180,
     },
-    serverComponentsHmrCache: true
+    serverComponentsHmrCache: true,
   },
-  
+
   // Bundle optimizations
   bundlePagesRouterDependencies: true,
   compress: true,
   swcMinify: true,
-  
+
   // Security headers
   async headers() {
     return [
@@ -189,24 +204,25 @@ const nextConfig = {
         headers: [
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'DENY',
           },
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            value: 'nosniff',
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=31536000'
-          }
-        ]
-      }
+            value: 'max-age=31536000',
+          },
+        ],
+      },
     ]
-  }
+  },
 }
 ```
 
 ### **Estructura de Archivos Enterprise**
+
 ```
 src/
 ├── lib/
@@ -242,45 +258,51 @@ src/
 ## 📊 Métricas y KPIs
 
 ### **Performance Metrics**
-| Métrica | Target | Actual | Status |
-|---------|--------|--------|--------|
-| First Load JS | < 500KB | 499KB | ✅ |
-| Response Time | < 300ms | 285ms | ✅ |
-| Build Time | < 30s | 20s | ✅ |
-| Cache Hit Rate | > 80% | 87% | ✅ |
+
+| Métrica        | Target  | Actual | Status |
+| -------------- | ------- | ------ | ------ |
+| First Load JS  | < 500KB | 499KB  | ✅     |
+| Response Time  | < 300ms | 285ms  | ✅     |
+| Build Time     | < 30s   | 20s    | ✅     |
+| Cache Hit Rate | > 80%   | 87%    | ✅     |
 
 ### **Security Metrics**
-| Métrica | Target | Actual | Status |
-|---------|--------|--------|--------|
-| HMAC Verification | 100% | 100% | ✅ |
-| Rate Limit Violations | < 1% | 0.3% | ✅ |
-| Security Alerts | < 5/day | 2/day | ✅ |
-| Audit Coverage | 100% | 100% | ✅ |
+
+| Métrica               | Target  | Actual | Status |
+| --------------------- | ------- | ------ | ------ |
+| HMAC Verification     | 100%    | 100%   | ✅     |
+| Rate Limit Violations | < 1%    | 0.3%   | ✅     |
+| Security Alerts       | < 5/day | 2/day  | ✅     |
+| Audit Coverage        | 100%    | 100%   | ✅     |
 
 ### **Business Metrics**
-| Métrica | Target | Actual | Status |
-|---------|--------|--------|--------|
-| Payment Success Rate | > 95% | 97.8% | ✅ |
-| Webhook Processing | < 5s | 2.1s | ✅ |
-| Error Rate | < 1% | 0.4% | ✅ |
-| Uptime | > 99.9% | 99.97% | ✅ |
+
+| Métrica              | Target  | Actual | Status |
+| -------------------- | ------- | ------ | ------ |
+| Payment Success Rate | > 95%   | 97.8%  | ✅     |
+| Webhook Processing   | < 5s    | 2.1s   | ✅     |
+| Error Rate           | < 1%    | 0.4%   | ✅     |
+| Uptime               | > 99.9% | 99.97% | ✅     |
 
 ---
 
 ## 🚀 Próximos Pasos
 
 ### **Fase 4: UX/UI Enhancement**
+
 - Topbar sticky con geolocalización
 - Hero 3D interactivo
 - Checkout en 1 paso
 - Calculadora de pintura
 
 ### **Fase 5: Sistema de Autenticación Completo**
+
 - Roles y permisos avanzados
 - SSO integration
 - Audit logs detallados
 
 ### **Fase 6: E-commerce Advanced Features**
+
 - Wishlist persistente
 - Comparador de productos
 - Recomendaciones IA
@@ -291,11 +313,13 @@ src/
 ## 📞 Soporte
 
 ### **Contacto Técnico**
+
 - **Arquitecto**: Augment Agent
 - **Documentación**: Context7 + Official Docs
 - **Repositorio**: [GitHub](https://github.com/SantiagoXOR/pinteya-ecommerce)
 
 ### **Recursos Adicionales**
+
 - [Next.js 15 Documentation](https://nextjs.org/docs)
 - [MercadoPago Developer Docs](https://www.mercadopago.com.ar/developers)
 - [Supabase Documentation](https://supabase.com/docs)
@@ -307,6 +331,3 @@ src/
 **Fecha**: Enero 2025  
 **Versión**: Enterprise v3.0  
 **Estado**: ✅ **COMPLETADO**
-
-
-

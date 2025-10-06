@@ -14,12 +14,14 @@ El error "Algo salió mal... No pudimos procesar tu pago" en MercadoPago indica 
 ### **1. VERIFICAR CREDENCIALES DE SANDBOX**
 
 Tus credenciales actuales:
+
 ```bash
 MERCADOPAGO_ACCESS_TOKEN=[TU_MERCADOPAGO_ACCESS_TOKEN]
 NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=[TU_MERCADOPAGO_PUBLIC_KEY]
 ```
 
 **Verificación necesaria:**
+
 1. Ir a [MercadoPago Developers](https://www.mercadopago.com.ar/developers/panel/app)
 2. Verificar que las credenciales sean de **SANDBOX/TEST**
 3. Regenerar credenciales si es necesario
@@ -28,20 +30,21 @@ NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=[TU_MERCADOPAGO_PUBLIC_KEY]
 
 **Para Argentina (ARS):**
 
-| Tarjeta | Número | CVV | Vencimiento | Resultado |
-|---------|--------|-----|-------------|-----------|
-| **Visa** | `4509 9535 6623 3704` | `123` | `11/25` | ✅ Aprobado |
-| **Mastercard** | `5031 7557 3453 0604` | `123` | `11/25` | ✅ Aprobado |
-| **American Express** | `3711 803032 57522` | `1234` | `11/25` | ✅ Aprobado |
+| Tarjeta              | Número                | CVV    | Vencimiento | Resultado   |
+| -------------------- | --------------------- | ------ | ----------- | ----------- |
+| **Visa**             | `4509 9535 6623 3704` | `123`  | `11/25`     | ✅ Aprobado |
+| **Mastercard**       | `5031 7557 3453 0604` | `123`  | `11/25`     | ✅ Aprobado |
+| **American Express** | `3711 803032 57522`   | `1234` | `11/25`     | ✅ Aprobado |
 
 **Tarjetas para probar rechazos:**
 
-| Número | CVV | Vencimiento | Resultado |
-|--------|-----|-------------|-----------|
-| `4013 5406 8274 6260` | `123` | `11/25` | ❌ Fondos insuficientes |
-| `5031 7557 3453 0604` | `123` | `11/25` | ❌ Rechazado por el banco |
+| Número                | CVV   | Vencimiento | Resultado                 |
+| --------------------- | ----- | ----------- | ------------------------- |
+| `4013 5406 8274 6260` | `123` | `11/25`     | ❌ Fondos insuficientes   |
+| `5031 7557 3453 0604` | `123` | `11/25`     | ❌ Rechazado por el banco |
 
 **Datos del titular para pruebas:**
+
 - **Nombre**: APRO (para aprobado) o OTHE (para rechazado)
 - **Apellido**: APRO o OTHE
 - **DNI**: 12345678 (Argentina)
@@ -50,6 +53,7 @@ NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=[TU_MERCADOPAGO_PUBLIC_KEY]
 ### **3. CREAR USUARIOS DE PRUEBA**
 
 **Paso 1: Crear usuario vendedor**
+
 ```bash
 curl -X POST \
 -H "Content-Type: application/json" \
@@ -62,6 +66,7 @@ curl -X POST \
 ```
 
 **Paso 2: Crear usuario comprador**
+
 ```bash
 curl -X POST \
 -H "Content-Type: application/json" \
@@ -76,15 +81,17 @@ curl -X POST \
 ### **4. CONFIGURAR WEBHOOKS CORRECTAMENTE**
 
 **URLs de retorno necesarias:**
+
 ```javascript
 back_urls: {
   success: "http://localhost:3000/checkout/success",
-  failure: "http://localhost:3000/checkout/failure", 
+  failure: "http://localhost:3000/checkout/failure",
   pending: "http://localhost:3000/checkout/pending"
 }
 ```
 
 **URL de webhook:**
+
 ```
 http://localhost:3000/api/payments/webhook
 ```
@@ -92,6 +99,7 @@ http://localhost:3000/api/payments/webhook
 ### **5. VERIFICAR CONFIGURACIÓN DE ENTORNO**
 
 **Variables de entorno correctas:**
+
 ```bash
 # MercadoPago Sandbox
 MERCADOPAGO_ACCESS_TOKEN=APP_USR-[TU_ACCESS_TOKEN_TEST]
@@ -107,6 +115,7 @@ NODE_ENV=development
 ## 🧪 **PROCESO DE TESTING COMPLETO**
 
 ### **Paso 1: Verificar Credenciales**
+
 ```bash
 # Test de credenciales
 curl -X GET \
@@ -115,6 +124,7 @@ curl -X GET \
 ```
 
 ### **Paso 2: Probar Creación de Preferencia**
+
 ```bash
 curl -X POST \
 -H "Content-Type: application/json" \
@@ -142,7 +152,7 @@ curl -X POST \
 1. **Ir a checkout**: `http://localhost:3000/checkout`
 2. **Llenar formulario** con datos de prueba
 3. **Usar tarjeta de prueba**: `4509 9535 6623 3704`
-4. **Datos del titular**: 
+4. **Datos del titular**:
    - Nombre: APRO
    - Apellido: APRO
    - DNI: 12345678

@@ -18,6 +18,7 @@
 ## 🎯 RESUMEN EJECUTIVO
 
 ### Descripción del Proyecto
+
 **PINTEYA E-COMMERCE** es una plataforma de comercio electrónico moderna desarrollada con Next.js 14, que incluye funcionalidades avanzadas como:
 
 - Sistema de gestión de productos y categorías
@@ -30,6 +31,7 @@
 - Arquitectura enterprise con RLS (Row Level Security)
 
 ### Estado Actual
+
 - **Fase**: Desarrollo activo con migración de autenticación completada
 - **Versión**: Next.js 14 con App Router
 - **Base de Datos**: Supabase PostgreSQL
@@ -85,6 +87,7 @@ BOILERPLATTE E-COMMERCE/
 ### Stack Tecnológico
 
 #### Frontend
+
 - **Framework**: Next.js 14.2.5 (App Router)
 - **UI Library**: React 18 + TypeScript
 - **Styling**: Tailwind CSS + Shadcn/ui
@@ -92,6 +95,7 @@ BOILERPLATTE E-COMMERCE/
 - **Forms**: React Hook Form + Zod validation
 
 #### Backend
+
 - **Runtime**: Node.js con Next.js API Routes
 - **Base de Datos**: Supabase (PostgreSQL)
 - **Autenticación**: NextAuth.js v5 (Google OAuth)
@@ -99,6 +103,7 @@ BOILERPLATTE E-COMMERCE/
 - **File Storage**: Supabase Storage
 
 #### DevOps y Herramientas
+
 - **Deployment**: Vercel + Docker
 - **Testing**: Jest + Playwright + Testing Library
 - **Linting**: ESLint + Prettier
@@ -152,6 +157,7 @@ NODE_ENV=development|production
 #### Tablas Core
 
 1. **users** - Perfiles de usuario
+
 ```sql
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -165,6 +171,7 @@ CREATE TABLE users (
 ```
 
 2. **products** - Catálogo de productos
+
 ```sql
 CREATE TABLE products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -179,6 +186,7 @@ CREATE TABLE products (
 ```
 
 3. **orders** - Sistema de órdenes
+
 ```sql
 CREATE TABLE orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -269,6 +277,7 @@ src/app/api/
 ### Endpoints Principales
 
 #### Productos
+
 ```typescript
 GET    /api/products           # Listar productos
 GET    /api/products/[id]      # Obtener producto específico
@@ -278,6 +287,7 @@ DELETE /api/products/[id]      # Eliminar producto (admin)
 ```
 
 #### Órdenes
+
 ```typescript
 GET    /api/orders             # Listar órdenes del usuario
 POST   /api/orders             # Crear nueva orden
@@ -286,6 +296,7 @@ PUT    /api/orders/[id]/status # Actualizar estado (admin)
 ```
 
 #### Carrito
+
 ```typescript
 GET    /api/cart               # Obtener carrito actual
 POST   /api/cart/add           # Agregar producto
@@ -294,6 +305,7 @@ DELETE /api/cart/remove        # Remover producto
 ```
 
 #### Pagos
+
 ```typescript
 POST   /api/payments/create    # Crear preferencia de pago
 POST   /api/payments/webhook   # Webhook de MercadoPago
@@ -306,21 +318,22 @@ Cada endpoint está protegido por middleware específico:
 
 ```typescript
 // Ejemplo: /api/products/route.ts
-import { withEnhancedSecurity } from '@/lib/auth/enhanced-security-middleware';
+import { withEnhancedSecurity } from '@/lib/auth/enhanced-security-middleware'
 
 export const GET = withEnhancedSecurity({
   enableRateLimit: true,
-  rateLimitType: 'products'
-})(async (request) => {
+  rateLimitType: 'products',
+})(async request => {
   // Lógica del endpoint
-});
+})
 ```
 
 ### Rate Limiting
 
 Configuración por endpoint:
+
 - `/api/payments`: 10 requests/minuto
-- `/api/user`: 30 requests/minuto  
+- `/api/user`: 30 requests/minuto
 - `/api/orders`: 20 requests/minuto
 - `/api/products`: 100 requests/minuto
 - Default: 60 requests/minuto
@@ -343,30 +356,30 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
-    })
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
+    }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
   callbacks: {
     async session({ session, token }) {
       if (token.sub) {
-        session.user.id = token.sub;
+        session.user.id = token.sub
       }
       // Rol de admin para usuarios específicos
       if (session.user.email === 'santiago@xor.com.ar') {
-        (session.user as any).role = 'admin';
+        ;(session.user as any).role = 'admin'
       }
-      return session;
-    }
-  }
-};
+      return session
+    },
+  },
+}
 ```
 
 #### Funciones de Autenticación
@@ -399,7 +412,7 @@ auth: {
   strictMode: true
 }
 
-// Para APIs admin - alta seguridad  
+// Para APIs admin - alta seguridad
 admin: {
   enableJWTValidation: true,
   enableCSRFProtection: true,
@@ -446,19 +459,13 @@ export async function validateJWTPermissions(
 
 ```typescript
 // Rutas públicas
-export const publicRoutes = [
-  '/', '/shop', '/products/(.*)', '/signin', '/signup'
-];
+export const publicRoutes = ['/', '/shop', '/products/(.*)', '/signin', '/signup']
 
 // Rutas protegidas
-export const protectedRoutes = [
-  '/checkout', '/profile', '/orders', '/wishlist'
-];
+export const protectedRoutes = ['/checkout', '/profile', '/orders', '/wishlist']
 
 // APIs protegidas
-export const protectedApiRoutes = [
-  '/api/orders', '/api/user/(.*)', '/api/payments/(.*)'
-];
+export const protectedApiRoutes = ['/api/orders', '/api/user/(.*)', '/api/payments/(.*)']
 ```
 
 ---
@@ -487,47 +494,52 @@ src/components/
 #### Componentes Principales
 
 **1. Micro-interactions** (`ui/micro-interactions.tsx`)
+
 ```typescript
 interface MicroInteractionProps {
-  type: 'hover' | 'click' | 'focus' | 'loading';
-  intensity?: 'subtle' | 'medium' | 'strong';
-  duration?: number;
-  children: React.ReactNode;
+  type: 'hover' | 'click' | 'focus' | 'loading'
+  intensity?: 'subtle' | 'medium' | 'strong'
+  duration?: number
+  children: React.ReactNode
 }
 ```
 
 **2. Enhanced Search Bar** (`EnhancedSearchBar.tsx`)
+
 ```typescript
 interface EnhancedSearchBarProps {
-  onSearch: (query: string) => void;
-  placeholder?: string;
-  suggestions?: string[];
-  isLoading?: boolean;
-  className?: string;
+  onSearch: (query: string) => void
+  placeholder?: string
+  suggestions?: string[]
+  isLoading?: boolean
+  className?: string
 }
 ```
 
 **3. Real Time Dashboard** (`RealTimeDashboard.tsx`)
+
 ```typescript
 interface RealTimeDashboardProps {
-  metrics: DashboardMetrics;
-  refreshInterval?: number;
-  onMetricClick?: (metric: string) => void;
+  metrics: DashboardMetrics
+  refreshInterval?: number
+  onMetricClick?: (metric: string) => void
 }
 ```
 
 **4. Turn by Turn Navigation** (`TurnByTurnNavigation.tsx`)
+
 ```typescript
 interface TurnByTurnNavigationProps {
-  route: NavigationRoute;
-  currentPosition: Position;
-  onNavigationUpdate: (update: NavigationUpdate) => void;
+  route: NavigationRoute
+  currentPosition: Position
+  onNavigationUpdate: (update: NavigationUpdate) => void
 }
 ```
 
 ### Patrones de Diseño
 
 #### 1. Compound Components
+
 ```typescript
 // Ejemplo: Modal compound component
 <Modal>
@@ -541,29 +553,31 @@ interface TurnByTurnNavigationProps {
 ```
 
 #### 2. Render Props
+
 ```typescript
 // Ejemplo: Data fetching component
 <DataFetcher url="/api/products">
   {({ data, loading, error }) => (
-    loading ? <Skeleton /> : 
-    error ? <ErrorBoundary /> : 
+    loading ? <Skeleton /> :
+    error ? <ErrorBoundary /> :
     <ProductList products={data} />
   )}
 </DataFetcher>
 ```
 
 #### 3. Custom Hooks
+
 ```typescript
 // Hook para manejo de errores de búsqueda
 export function useSearchErrorHandler() {
-  const [error, setError] = useState<string | null>(null);
-  
+  const [error, setError] = useState<string | null>(null)
+
   const handleError = useCallback((error: Error) => {
-    setError(error.message);
+    setError(error.message)
     // Logging y analytics
-  }, []);
-  
-  return { error, handleError, clearError: () => setError(null) };
+  }, [])
+
+  return { error, handleError, clearError: () => setError(null) }
 }
 ```
 
@@ -572,21 +586,21 @@ export function useSearchErrorHandler() {
 ```typescript
 // Tipos comunes para componentes
 export interface BaseComponentProps {
-  className?: string;
-  children?: React.ReactNode;
-  'data-testid'?: string;
+  className?: string
+  children?: React.ReactNode
+  'data-testid'?: string
 }
 
 export interface ProductCardProps extends BaseComponentProps {
-  product: Product;
-  onAddToCart?: (productId: string) => void;
-  showQuickView?: boolean;
+  product: Product
+  onAddToCart?: (productId: string) => void
+  showQuickView?: boolean
 }
 
 export interface FormFieldProps extends BaseComponentProps {
-  label: string;
-  error?: string;
-  required?: boolean;
+  label: string
+  error?: string
+  required?: boolean
 }
 ```
 
@@ -597,6 +611,7 @@ export interface FormFieldProps extends BaseComponentProps {
 ### Configuración de Vercel
 
 **vercel.json**:
+
 ```json
 {
   "buildCommand": "npm run build",
@@ -623,6 +638,7 @@ export interface FormFieldProps extends BaseComponentProps {
 #### Módulo de Logística
 
 **Dockerfile** (`docker/logistics/Dockerfile`):
+
 ```dockerfile
 # Multi-stage build para optimización
 FROM node:18-alpine AS dependencies
@@ -645,13 +661,14 @@ CMD ["npm", "start"]
 ```
 
 **Docker Compose** (`docker/logistics/docker-compose.yml`):
+
 ```yaml
 version: '3.8'
 services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
     depends_on:
@@ -670,49 +687,54 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
 
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
+      - '80:80'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
 
   prometheus:
     image: prom/prometheus
     ports:
-      - "9090:9090"
+      - '9090:9090'
 
   grafana:
     image: grafana/grafana
     ports:
-      - "3001:3000"
+      - '3001:3000'
 ```
 
 ### Monitoreo y Observabilidad
 
 #### Health Checks
+
 ```typescript
 // Health check endpoint
 export async function GET() {
   const checks = {
     database: await checkDatabase(),
     redis: await checkRedis(),
-    external_apis: await checkExternalAPIs()
-  };
-  
-  const healthy = Object.values(checks).every(check => check.status === 'ok');
-  
-  return Response.json({
-    status: healthy ? 'healthy' : 'unhealthy',
-    timestamp: new Date().toISOString(),
-    checks
-  }, { status: healthy ? 200 : 503 });
+    external_apis: await checkExternalAPIs(),
+  }
+
+  const healthy = Object.values(checks).every(check => check.status === 'ok')
+
+  return Response.json(
+    {
+      status: healthy ? 'healthy' : 'unhealthy',
+      timestamp: new Date().toISOString(),
+      checks,
+    },
+    { status: healthy ? 200 : 503 }
+  )
 }
 ```
 
 #### Métricas con Prometheus
+
 ```yaml
 # prometheus.yml
 global:
@@ -734,34 +756,33 @@ scrape_configs:
 #### 1. Unit Tests (Jest + Testing Library)
 
 **Configuración** (`jest.config.js`):
+
 ```javascript
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
-  collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.d.ts'
-  ]
-};
+  collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!src/**/*.d.ts'],
+}
 ```
 
 **Ejemplo de Test**:
+
 ```typescript
 // __tests__/hooks/useSearchErrorHandler.test.tsx
 describe('useSearchErrorHandler', () => {
   it('should handle search errors correctly', () => {
-    const { result } = renderHook(() => useSearchErrorHandler());
-    
+    const { result } = renderHook(() => useSearchErrorHandler())
+
     act(() => {
-      result.current.handleError(new Error('Search failed'));
-    });
-    
-    expect(result.current.error).toBe('Search failed');
-  });
-});
+      result.current.handleError(new Error('Search failed'))
+    })
+
+    expect(result.current.error).toBe('Search failed')
+  })
+})
 ```
 
 #### 2. Integration Tests
@@ -770,19 +791,20 @@ describe('useSearchErrorHandler', () => {
 // __tests__/api/products.test.ts
 describe('/api/products', () => {
   it('should return products list', async () => {
-    const response = await fetch('/api/products');
-    const data = await response.json();
-    
-    expect(response.status).toBe(200);
-    expect(data).toHaveProperty('products');
-    expect(Array.isArray(data.products)).toBe(true);
-  });
-});
+    const response = await fetch('/api/products')
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data).toHaveProperty('products')
+    expect(Array.isArray(data.products)).toBe(true)
+  })
+})
 ```
 
 #### 3. E2E Tests (Playwright)
 
 **Configuración Admin** (`e2e/admin.config.ts`):
+
 ```typescript
 export default defineConfig({
   testDir: './e2e/admin',
@@ -799,23 +821,24 @@ export default defineConfig({
     {
       name: 'admin-chrome',
       use: { ...devices['Desktop Chrome'] },
-    }
-  ]
-});
+    },
+  ],
+})
 ```
 
 **Test de Panel Admin**:
+
 ```typescript
 // e2e/admin/admin-panel.spec.ts
 test('admin can access dashboard', async ({ page }) => {
-  await page.goto('/admin/login');
-  await page.fill('[data-testid=email]', 'admin@test.com');
-  await page.fill('[data-testid=password]', 'password');
-  await page.click('[data-testid=login-button]');
-  
-  await expect(page).toHaveURL('/admin/dashboard');
-  await expect(page.locator('h1')).toContainText('Dashboard');
-});
+  await page.goto('/admin/login')
+  await page.fill('[data-testid=email]', 'admin@test.com')
+  await page.fill('[data-testid=password]', 'password')
+  await page.click('[data-testid=login-button]')
+
+  await expect(page).toHaveURL('/admin/dashboard')
+  await expect(page.locator('h1')).toContainText('Dashboard')
+})
 ```
 
 #### 4. Performance Tests
@@ -824,13 +847,13 @@ test('admin can access dashboard', async ({ page }) => {
 // __tests__/performance/seo-performance.test.ts
 describe('SEO Performance', () => {
   it('should have good Core Web Vitals', async () => {
-    const metrics = await measurePagePerformance('/');
-    
-    expect(metrics.LCP).toBeLessThan(2500); // Largest Contentful Paint
-    expect(metrics.FID).toBeLessThan(100);  // First Input Delay
-    expect(metrics.CLS).toBeLessThan(0.1);  // Cumulative Layout Shift
-  });
-});
+    const metrics = await measurePagePerformance('/')
+
+    expect(metrics.LCP).toBeLessThan(2500) // Largest Contentful Paint
+    expect(metrics.FID).toBeLessThan(100) // First Input Delay
+    expect(metrics.CLS).toBeLessThan(0.1) // Cumulative Layout Shift
+  })
+})
 ```
 
 #### 5. Accessibility Tests
@@ -851,6 +874,7 @@ test('should not have accessibility violations', async () => {
 ### Cobertura de Código
 
 **Objetivos de Cobertura**:
+
 - Statements: > 80%
 - Branches: > 75%
 - Functions: > 85%
@@ -871,16 +895,16 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run unit tests
         run: npm run test:coverage
-      
+
       - name: Run E2E tests
         run: npm run test:e2e
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
 ```
@@ -892,26 +916,31 @@ jobs:
 ### Documentos Existentes
 
 #### 1. Documentación de Componentes
+
 - **Ubicación**: `docs/components/README.md`
 - **Contenido**: Estándares de componentes, estado actual, próximos pasos
 - **Estado**: Certificación Fase 4 - Optimización
 
 #### 2. Documentación de Arquitectura
+
 - **Ubicación**: `docs/enterprise/README.md`
 - **Contenido**: Patrones enterprise, arquitectura escalable
 - **Incluye**: Diagramas de arquitectura, patrones de diseño
 
 #### 3. Sistema de Diseño
+
 - **Ubicación**: `docs/design-system/README.md`
 - **Contenido**: Métricas de progreso, componentes UI
 - **Estado**: En desarrollo activo
 
 #### 4. Documentación de Admin
+
 - **Ubicación**: `docs/admin/implementation/README.md`
 - **Contenido**: Esquemas de base de datos, estrategia de testing
 - **Incluye**: Diagramas ER, casos de uso
 
 #### 5. Índice de Documentación
+
 - **Ubicación**: `docs/DOCUMENTATION_INDEX.md`
 - **Contenido**: Certificación de documentación completa
 - **Estado**: Fase 4 de optimización
@@ -919,6 +948,7 @@ jobs:
 ### Manuales de Usuario
 
 #### Panel Administrativo
+
 1. **Gestión de Productos**
    - Crear, editar y eliminar productos
    - Gestión de inventario
@@ -935,6 +965,7 @@ jobs:
    - Reportes financieros
 
 #### Sistema de Logística
+
 1. **Seguimiento de Envíos**
    - Rastreo en tiempo real
    - Notificaciones automáticas
@@ -948,6 +979,7 @@ jobs:
 ### Diagramas Técnicos
 
 #### Diagrama de Arquitectura
+
 ```mermaid
 graph TB
     A[Cliente Web] --> B[Next.js App]
@@ -962,13 +994,14 @@ graph TB
 ```
 
 #### Flujo de Autenticación
+
 ```mermaid
 sequenceDiagram
     participant U as Usuario
     participant A as NextAuth.js
     participant G as Google OAuth
     participant S as Supabase
-    
+
     U->>A: Iniciar sesión
     A->>G: Redirect OAuth
     G->>A: Código de autorización
@@ -980,6 +1013,7 @@ sequenceDiagram
 ### Procedimientos Operativos
 
 #### Despliegue en Producción
+
 1. **Pre-despliegue**
    - Ejecutar tests completos
    - Verificar variables de entorno
@@ -996,6 +1030,7 @@ sequenceDiagram
    - Rollback si es necesario
 
 #### Mantenimiento de Base de Datos
+
 1. **Migraciones**
    - Usar Supabase CLI
    - Backup antes de migrar
@@ -1013,6 +1048,7 @@ sequenceDiagram
 ### Fase Actual: Optimización y Estabilización
 
 #### Tareas Pendientes
+
 1. **Completar migración de Clerk a NextAuth.js**
    - Actualizar todos los componentes
    - Migrar middleware de autenticación
@@ -1029,6 +1065,7 @@ sequenceDiagram
    - Fortalecer validaciones
 
 #### Roadmap Futuro
+
 1. **Q1 2025**: Lanzamiento MVP
 2. **Q2 2025**: Módulo de analytics avanzado
 3. **Q3 2025**: Integración con más pasarelas de pago
@@ -1039,19 +1076,18 @@ sequenceDiagram
 ## 📞 CONTACTO Y SOPORTE
 
 ### Equipo de Desarrollo
+
 - **Arquitecto Principal**: Santiago (santiago@xor.com.ar)
 - **Repositorio**: GitHub (privado)
 - **Documentación**: `/docs` directory
 
 ### Recursos Adicionales
+
 - **Supabase Dashboard**: Panel de administración de BD
 - **Vercel Dashboard**: Monitoreo de despliegues
 - **Google Cloud Console**: Gestión de OAuth
 
 ---
 
-*Documentación generada automáticamente el {{ fecha_actual }}*
-*Versión del proyecto: Next.js 14.2.5 con NextAuth.js v5*
-
-
-
+_Documentación generada automáticamente el {{ fecha_actual }}_
+_Versión del proyecto: Next.js 14.2.5 con NextAuth.js v5_

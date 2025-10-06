@@ -37,12 +37,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json(errorResponse, { status: 503 })
     }
 
-    // Obtener producto con categoría
+    // Obtener producto con categoría y variantes
     const { data: product, error } = await supabase
       .from('products')
       .select(
         `
-        id, name, slug, description, price, discounted_price, brand, stock, images, created_at, updated_at,
+        id, name, slug, description, price, discounted_price, brand, stock, images, created_at, updated_at, aikon_id, color, medida,
         category:categories(id, name, slug)
       `
       )
@@ -61,8 +61,60 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       handleSupabaseError(error, `GET /api/products/${id}`)
     }
 
+    // Obtener variantes del producto
+    let enrichedProduct = product
+    
+    if (product) {
+      try {
+        const { data: variants } = await supabase
+          .from('product_variants')
+          .select(`
+            id,
+            product_id,
+            aikon_id,
+            variant_slug,
+            color_name,
+            color_hex,
+            measure,
+            finish,
+            price_list,
+            price_sale,
+            stock,
+            is_active,
+            is_default,
+            image_url,
+            metadata
+          `)
+          .eq('product_id', id)
+          .eq('is_active', true)
+          .order('is_default', { ascending: false })
+
+        const defaultVariant = variants?.find(v => v.is_default) || variants?.[0]
+
+        enrichedProduct = {
+          ...product,
+          // Mantener compatibilidad con campos legacy
+          aikon_id: product.aikon_id || defaultVariant?.aikon_id,
+          color: product.color || defaultVariant?.color_name,
+          medida: product.medida || defaultVariant?.measure,
+          // Agregar información de variantes
+          variants: variants || [],
+          variant_count: variants?.length || 0,
+          has_variants: (variants?.length || 0) > 0,
+          default_variant: defaultVariant || null,
+          // Usar precios de la variante por defecto si están disponibles
+          price: defaultVariant?.price_list || product.price,
+          discounted_price: defaultVariant?.price_sale || product.discounted_price,
+          stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
+        }
+      } catch (variantError) {
+        // Si hay error obteniendo variantes, continuar con producto original
+        console.warn('Error obteniendo variantes para producto:', id, variantError)
+      }
+    }
+
     const response: ApiResponse<ProductWithCategory> = {
-      data: product,
+      data: enrichedProduct,
       success: true,
       message: 'Producto obtenido exitosamente',
     }

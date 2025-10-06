@@ -12,6 +12,7 @@ Especificación completa de testing para el panel administrativo de Pinteya E-co
 ## 🎯 Objetivos de Testing
 
 ### Funcionalidad Core:
+
 - ✅ **Navegación:** Flujos de navegación entre módulos administrativos
 - ✅ **CRUD Productos:** Crear, leer, actualizar, eliminar productos
 - ✅ **Formularios:** Validación y funcionalidad de formularios complejos
@@ -20,6 +21,7 @@ Especificación completa de testing para el panel administrativo de Pinteya E-co
 - ✅ **Performance:** Tiempos de carga y responsividad
 
 ### Casos de Uso Críticos:
+
 1. **Administrador accede al panel** → Dashboard funcional
 2. **Administrador gestiona productos** → CRUD completo
 3. **Administrador crea producto** → Formulario multi-tab
@@ -29,78 +31,84 @@ Especificación completa de testing para el panel administrativo de Pinteya E-co
 ## 📊 Matriz de Cobertura de Testing
 
 ### 1. **Navegación Administrativa**
-| Test Case | Descripción | Prioridad | Estado |
-|-----------|-------------|-----------|--------|
-| NAV-001 | Carga dashboard administrativo | Alta | ✅ |
-| NAV-002 | Módulos administrativos visibles | Alta | ✅ |
-| NAV-003 | Navegación a productos | Alta | ✅ |
-| NAV-004 | Sidebar responsive | Media | ✅ |
-| NAV-005 | Breadcrumbs dinámicos | Media | ✅ |
-| NAV-006 | Estado del sistema | Baja | ✅ |
-| NAV-007 | Manejo errores navegación | Media | ✅ |
-| NAV-008 | Navegación móvil | Alta | ✅ |
+
+| Test Case | Descripción                      | Prioridad | Estado |
+| --------- | -------------------------------- | --------- | ------ |
+| NAV-001   | Carga dashboard administrativo   | Alta      | ✅     |
+| NAV-002   | Módulos administrativos visibles | Alta      | ✅     |
+| NAV-003   | Navegación a productos           | Alta      | ✅     |
+| NAV-004   | Sidebar responsive               | Media     | ✅     |
+| NAV-005   | Breadcrumbs dinámicos            | Media     | ✅     |
+| NAV-006   | Estado del sistema               | Baja      | ✅     |
+| NAV-007   | Manejo errores navegación        | Media     | ✅     |
+| NAV-008   | Navegación móvil                 | Alta      | ✅     |
 
 ### 2. **Gestión de Productos**
-| Test Case | Descripción | Prioridad | Estado |
-|-----------|-------------|-----------|--------|
-| PROD-001 | Lista productos con stats | Alta | ✅ |
-| PROD-002 | Filtros funcionales | Alta | ✅ |
-| PROD-003 | Navegación crear producto | Alta | ✅ |
-| PROD-004 | Tabla con columnas | Media | ✅ |
-| PROD-005 | Ordenamiento columnas | Media | ✅ |
-| PROD-006 | Acciones por fila | Alta | ✅ |
-| PROD-007 | Paginación | Media | ✅ |
-| PROD-008 | Estados con badges | Media | ✅ |
-| PROD-009 | Información stock | Alta | ✅ |
-| PROD-010 | Selección múltiple | Baja | ✅ |
+
+| Test Case | Descripción               | Prioridad | Estado |
+| --------- | ------------------------- | --------- | ------ |
+| PROD-001  | Lista productos con stats | Alta      | ✅     |
+| PROD-002  | Filtros funcionales       | Alta      | ✅     |
+| PROD-003  | Navegación crear producto | Alta      | ✅     |
+| PROD-004  | Tabla con columnas        | Media     | ✅     |
+| PROD-005  | Ordenamiento columnas     | Media     | ✅     |
+| PROD-006  | Acciones por fila         | Alta      | ✅     |
+| PROD-007  | Paginación                | Media     | ✅     |
+| PROD-008  | Estados con badges        | Media     | ✅     |
+| PROD-009  | Información stock         | Alta      | ✅     |
+| PROD-010  | Selección múltiple        | Baja      | ✅     |
 
 ### 3. **Formulario de Productos**
-| Test Case | Descripción | Prioridad | Estado |
-|-----------|-------------|-----------|--------|
-| FORM-001 | Carga formulario tabs | Alta | ✅ |
-| FORM-002 | Validación campos requeridos | Alta | ✅ |
-| FORM-003 | Tab General completo | Alta | ✅ |
-| FORM-004 | Configuración precios | Alta | ✅ |
-| FORM-005 | Configuración inventario | Alta | ✅ |
-| FORM-006 | Gestión imágenes | Media | ✅ |
-| FORM-007 | Configuración variantes | Media | ✅ |
-| FORM-008 | Optimización SEO | Media | ✅ |
-| FORM-009 | Indicadores error tabs | Media | ✅ |
-| FORM-010 | Cancelar creación | Baja | ✅ |
+
+| Test Case | Descripción                  | Prioridad | Estado |
+| --------- | ---------------------------- | --------- | ------ |
+| FORM-001  | Carga formulario tabs        | Alta      | ✅     |
+| FORM-002  | Validación campos requeridos | Alta      | ✅     |
+| FORM-003  | Tab General completo         | Alta      | ✅     |
+| FORM-004  | Configuración precios        | Alta      | ✅     |
+| FORM-005  | Configuración inventario     | Alta      | ✅     |
+| FORM-006  | Gestión imágenes             | Media     | ✅     |
+| FORM-007  | Configuración variantes      | Media     | ✅     |
+| FORM-008  | Optimización SEO             | Media     | ✅     |
+| FORM-009  | Indicadores error tabs       | Media     | ✅     |
+| FORM-010  | Cancelar creación            | Baja      | ✅     |
 
 ### 4. **Componentes Específicos**
-| Test Case | Descripción | Prioridad | Estado |
-|-----------|-------------|-----------|--------|
-| COMP-001 | CategorySelector dropdown | Alta | ✅ |
-| COMP-002 | CategorySelector búsqueda | Alta | ✅ |
-| COMP-003 | CategorySelector árbol | Media | ✅ |
-| COMP-004 | CategorySelector teclado | Baja | ✅ |
-| COMP-005 | ImageManager upload | Alta | ✅ |
-| COMP-006 | ImageManager reordenar | Media | ✅ |
-| COMP-007 | ImageManager editar alt | Media | ✅ |
-| COMP-008 | ImageManager principal | Media | ✅ |
-| COMP-009 | ImageManager eliminar | Media | ✅ |
-| COMP-010 | ImageManager límites | Baja | ✅ |
+
+| Test Case | Descripción               | Prioridad | Estado |
+| --------- | ------------------------- | --------- | ------ |
+| COMP-001  | CategorySelector dropdown | Alta      | ✅     |
+| COMP-002  | CategorySelector búsqueda | Alta      | ✅     |
+| COMP-003  | CategorySelector árbol    | Media     | ✅     |
+| COMP-004  | CategorySelector teclado  | Baja      | ✅     |
+| COMP-005  | ImageManager upload       | Alta      | ✅     |
+| COMP-006  | ImageManager reordenar    | Media     | ✅     |
+| COMP-007  | ImageManager editar alt   | Media     | ✅     |
+| COMP-008  | ImageManager principal    | Media     | ✅     |
+| COMP-009  | ImageManager eliminar     | Media     | ✅     |
+| COMP-010  | ImageManager límites      | Baja      | ✅     |
 
 ### 5. **Flujos End-to-End**
-| Test Case | Descripción | Prioridad | Estado |
-|-----------|-------------|-----------|--------|
-| E2E-001 | Flujo completo gestión | Alta | ✅ |
-| E2E-002 | Manejo errores red | Media | ✅ |
-| E2E-003 | Responsive múltiple | Alta | ✅ |
-| E2E-004 | Estado navegación | Media | ✅ |
-| E2E-005 | Performance carga | Alta | ✅ |
+
+| Test Case | Descripción            | Prioridad | Estado |
+| --------- | ---------------------- | --------- | ------ |
+| E2E-001   | Flujo completo gestión | Alta      | ✅     |
+| E2E-002   | Manejo errores red     | Media     | ✅     |
+| E2E-003   | Responsive múltiple    | Alta      | ✅     |
+| E2E-004   | Estado navegación      | Media     | ✅     |
+| E2E-005   | Performance carga      | Alta      | ✅     |
 
 ## 🔧 Configuración de Testing
 
 ### Entornos de Testing:
+
 ```typescript
 // Desarrollo Local
 baseURL: 'http://localhost:3000'
 timeout: 30000ms
 retries: 1
 
-// CI/CD Pipeline  
+// CI/CD Pipeline
 baseURL: 'https://staging.pinteya.com'
 timeout: 60000ms
 retries: 2
@@ -112,10 +120,11 @@ retries: 0
 ```
 
 ### Browsers y Dispositivos:
+
 ```typescript
 // Desktop Browsers
 ✅ Chromium 119+ (1280x720)
-✅ Firefox 118+ (1280x720)  
+✅ Firefox 118+ (1280x720)
 ✅ WebKit/Safari 17+ (1280x720)
 
 // Mobile Devices
@@ -130,6 +139,7 @@ retries: 0
 ## 📋 Casos de Prueba Detallados
 
 ### **Caso de Prueba: FORM-001**
+
 ```typescript
 Título: Carga formulario con tabs
 Prioridad: Alta
@@ -153,6 +163,7 @@ Criterios de Aceptación:
 ```
 
 ### **Caso de Prueba: PROD-002**
+
 ```typescript
 Título: Filtros funcionales
 Prioridad: Alta
@@ -176,6 +187,7 @@ Criterios de Aceptación:
 ```
 
 ### **Caso de Prueba: E2E-001**
+
 ```typescript
 Título: Flujo completo gestión productos
 Prioridad: Alta
@@ -203,6 +215,7 @@ Criterios de Aceptación:
 ## 📊 Métricas y KPIs
 
 ### Métricas de Calidad:
+
 ```typescript
 // Cobertura de Testing
 ✅ Componentes cubiertos: 13/13 (100%)
@@ -223,6 +236,7 @@ Criterios de Aceptación:
 ```
 
 ### Métricas de Ejecución:
+
 ```typescript
 // Tiempos de Ejecución
 ⏱️ Suite completa: ~8 minutos
@@ -241,6 +255,7 @@ Criterios de Aceptación:
 ## 🚨 Manejo de Errores y Edge Cases
 
 ### Escenarios de Error:
+
 ```typescript
 // Errores de Red
 ❌ API no disponible → Mensaje error graceful
@@ -259,6 +274,7 @@ Criterios de Aceptación:
 ```
 
 ### Estrategias de Recovery:
+
 ```typescript
 // Auto-retry
 retries: process.env.CI ? 2 : 1
@@ -275,12 +291,14 @@ await page.locator('text=Productos').or(page.locator('[data-testid="products"]')
 ## 🔄 Mantenimiento y Evolución
 
 ### Ciclo de Actualización:
+
 1. **Semanal:** Revisión de tests fallidos
 2. **Mensual:** Actualización de selectores
 3. **Trimestral:** Revisión de cobertura
 4. **Semestral:** Optimización de performance
 
 ### Criterios de Actualización:
+
 - Nuevos componentes → Nuevos tests
 - Cambios UI → Actualizar selectores
 - Nuevas funcionalidades → Casos de prueba
@@ -289,6 +307,7 @@ await page.locator('text=Productos').or(page.locator('[data-testid="products"]')
 ## 📈 Roadmap de Testing
 
 ### Próximas Implementaciones:
+
 - [ ] **Q3 2025:** Tests de APIs con MSW
 - [ ] **Q4 2025:** Visual regression testing
 - [ ] **Q1 2026:** Performance testing avanzado
@@ -296,6 +315,7 @@ await page.locator('text=Productos').or(page.locator('[data-testid="products"]')
 - [ ] **Q3 2026:** Security testing básico
 
 ### Mejoras Continuas:
+
 - [ ] Reducir tiempo ejecución 50%
 - [ ] Aumentar cobertura APIs 100%
 - [ ] Implementar parallel execution
@@ -309,6 +329,3 @@ await page.locator('text=Productos').or(page.locator('[data-testid="products"]')
 - **Bug Tracking:** GitHub Issues
 - **Performance Monitoring:** Lighthouse CI
 - **Accessibility:** axe-core integration
-
-
-

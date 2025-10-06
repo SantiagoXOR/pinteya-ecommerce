@@ -22,8 +22,8 @@
 
 ## Baseline Comparison
 
-| Metric | Current | Baseline | Change |
-|--------|---------|----------|--------|
-| bundleSize | 420 KB | 440 KB | 📉 -4.5% |
-| firstLoadJS | 88 KB | 90 KB | 📉 -2.2% |
-| score | 100/100 | 85/100 | 📈 +17.6% |
+| Metric      | Current | Baseline | Change    |
+| ----------- | ------- | -------- | --------- |
+| bundleSize  | 420 KB  | 440 KB   | 📉 -4.5%  |
+| firstLoadJS | 88 KB   | 90 KB    | 📉 -2.2%  |
+| score       | 100/100 | 85/100   | 📈 +17.6% |

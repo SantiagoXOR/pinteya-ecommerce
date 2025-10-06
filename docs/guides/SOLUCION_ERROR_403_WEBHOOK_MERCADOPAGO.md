@@ -5,6 +5,7 @@
 **Error**: 403 Forbidden durante simulaciones de webhook desde el dashboard de MercadoPago
 
 **Causa Principal**: La función `validateWebhookOrigin` era demasiado restrictiva y rechazaba las simulaciones del dashboard de MercadoPago porque:
+
 1. Los headers `User-Agent` de las simulaciones no siempre contienen "mercadopago"
 2. Los headers `origin` pueden estar ausentes o ser diferentes durante simulaciones
 3. La validación no distinguía entre webhooks reales y simulaciones del dashboard
@@ -23,6 +24,7 @@ Se modificó `src/lib/mercadopago.ts` para:
 - ✅ **Permitir desarrollo local** con validaciones flexibles
 
 **Criterios de detección de simulaciones**:
+
 - Referer contiene `mercadopago.com`
 - Origin contiene `mercadopago.com`
 - User-Agent contiene: `mercadopago`, `MercadoPago`, `curl`, `PostmanRuntime`, `insomnia`
@@ -107,6 +109,7 @@ MERCADOPAGO_WEBHOOK_DEBUG=true
 ### **Si Aún Tienes Problemas**
 
 1. **Habilita debug completo**:
+
 ```bash
 MERCADOPAGO_WEBHOOK_DEBUG=true
 NODE_ENV=development
@@ -155,18 +158,21 @@ La solución mantiene la seguridad porque:
 ## 🧪 SCRIPTS DE PRUEBA INCLUIDOS
 
 ### **1. Script Simple (Recomendado)**
+
 ```bash
 chmod +x test-webhook-simple.sh
 ./test-webhook-simple.sh
 ```
 
 ### **2. Script Avanzado con Node.js**
+
 ```bash
 npm install axios  # Solo si no está instalado
 node test-webhook-mercadopago.js
 ```
 
 ### **3. Prueba Manual con curl**
+
 ```bash
 curl -X POST http://localhost:3000/api/payments/webhook \
   -H "Content-Type: application/json" \

@@ -52,7 +52,11 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
 
   return (
     <CommercialProductCard
-      image={productData.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
+      image={
+        (Array.isArray(productData.images) && productData.images[0]) ||
+        productData.imgs?.previews?.[0] ||
+        '/images/products/placeholder.svg'
+      }
       title={productData.title}
       brand={productData.brand}
       price={finalPrice}

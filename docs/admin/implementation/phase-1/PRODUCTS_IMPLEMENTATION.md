@@ -3,7 +3,7 @@
 **Duración:** 2 semanas  
 **Prioridad:** 🔥 Crítica  
 **Dependencias:** Ninguna  
-**Estado:** 🔄 Pendiente  
+**Estado:** 🔄 Pendiente
 
 ---
 
@@ -12,6 +12,7 @@
 Completar el sistema CRUD de productos con todas las funcionalidades enterprise necesarias para gestión completa del catálogo.
 
 ### **Entregables Principales**
+
 - ✅ APIs CRUD completas para productos individuales
 - ✅ ProductForm component para edición avanzada
 - ✅ Sistema de gestión de imágenes robusto
@@ -25,64 +26,66 @@ Completar el sistema CRUD de productos con todas las funcionalidades enterprise 
 ### **APIs a Implementar**
 
 #### **1. API Individual de Producto**
+
 ```typescript
 // src/app/api/admin/products/[id]/route.ts
 
 // GET /api/admin/products/[id] - Obtener producto específico
 interface GetProductResponse {
   data: {
-    id: string;
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    discounted_price?: number;
-    stock: number;
-    low_stock_threshold: number;
-    category_id: number;
-    category_name: string;
-    brand: string;
-    images: ProductImage[];
-    variants?: ProductVariant[];
-    is_active: boolean;
-    is_featured: boolean;
-    created_at: string;
-    updated_at: string;
-  };
-  success: boolean;
+    id: string
+    name: string
+    slug: string
+    description: string
+    price: number
+    discounted_price?: number
+    stock: number
+    low_stock_threshold: number
+    category_id: number
+    category_name: string
+    brand: string
+    images: ProductImage[]
+    variants?: ProductVariant[]
+    is_active: boolean
+    is_featured: boolean
+    created_at: string
+    updated_at: string
+  }
+  success: boolean
 }
 
 // PUT /api/admin/products/[id] - Actualizar producto
 interface UpdateProductRequest {
-  name?: string;
-  description?: string;
-  price?: number;
-  discounted_price?: number;
-  stock?: number;
-  low_stock_threshold?: number;
-  category_id?: number;
-  brand?: string;
-  images?: ProductImage[];
-  is_active?: boolean;
-  is_featured?: boolean;
+  name?: string
+  description?: string
+  price?: number
+  discounted_price?: number
+  stock?: number
+  low_stock_threshold?: number
+  category_id?: number
+  brand?: string
+  images?: ProductImage[]
+  is_active?: boolean
+  is_featured?: boolean
 }
 
 // DELETE /api/admin/products/[id] - Eliminar producto
 interface DeleteProductResponse {
-  success: boolean;
-  message: string;
+  success: boolean
+  message: string
 }
 ```
 
 #### **2. API de Gestión de Imágenes**
+
 ```typescript
 // src/app/api/admin/products/[id]/images/route.ts
 
 // POST /api/admin/products/[id]/images - Subir imagen
 interface UploadImageRequest {
-  file: File;
-  alt_text?: string;
-  is_primary?: boolean;
+  file: File
+  alt_text?: string
+  is_primary?: boolean
 }
 
 // DELETE /api/admin/products/[id]/images/[imageId] - Eliminar imagen
@@ -92,15 +95,16 @@ interface UploadImageRequest {
 ### **Componentes a Desarrollar**
 
 #### **1. ProductForm Component**
+
 ```typescript
 // src/components/admin/products/ProductForm.tsx
 
 interface ProductFormProps {
-  product?: Product;
-  mode: 'create' | 'edit';
-  onSubmit: (data: ProductFormData) => Promise<void>;
-  onCancel: () => void;
-  isLoading?: boolean;
+  product?: Product
+  mode: 'create' | 'edit'
+  onSubmit: (data: ProductFormData) => Promise<void>
+  onCancel: () => void
+  isLoading?: boolean
 }
 
 // Características:
@@ -113,15 +117,16 @@ interface ProductFormProps {
 ```
 
 #### **2. ProductImageManager Component**
+
 ```typescript
 // src/components/admin/products/ProductImageManager.tsx
 
 interface ProductImageManagerProps {
-  productId: string;
-  images: ProductImage[];
-  onImagesChange: (images: ProductImage[]) => void;
-  maxImages?: number;
-  allowedFormats?: string[];
+  productId: string
+  images: ProductImage[]
+  onImagesChange: (images: ProductImage[]) => void
+  maxImages?: number
+  allowedFormats?: string[]
 }
 
 // Características:
@@ -134,6 +139,7 @@ interface ProductImageManagerProps {
 ```
 
 #### **3. ProductEditPage**
+
 ```typescript
 // src/app/admin/products/[id]/edit/page.tsx
 
@@ -152,6 +158,7 @@ interface ProductImageManagerProps {
 ### **Semana 1: APIs y Backend**
 
 #### **Día 1-2: API Individual de Producto**
+
 ```bash
 # Tareas específicas:
 1. Implementar GET /api/admin/products/[id]
@@ -174,6 +181,7 @@ interface ProductImageManagerProps {
 ```
 
 #### **Día 3-4: API de Gestión de Imágenes**
+
 ```bash
 # Tareas específicas:
 1. Configurar upload de archivos
@@ -190,6 +198,7 @@ interface ProductImageManagerProps {
 ```
 
 #### **Día 5: Testing de APIs**
+
 ```bash
 # Tareas específicas:
 1. Tests unitarios de APIs
@@ -201,6 +210,7 @@ interface ProductImageManagerProps {
 ### **Semana 2: Frontend y Componentes**
 
 #### **Día 6-7: ProductForm Component**
+
 ```bash
 # Tareas específicas:
 1. Estructura base del formulario
@@ -217,6 +227,7 @@ interface ProductImageManagerProps {
 ```
 
 #### **Día 8-9: ProductImageManager**
+
 ```bash
 # Tareas específicas:
 1. Upload component
@@ -233,6 +244,7 @@ interface ProductImageManagerProps {
 ```
 
 #### **Día 10: Integración y Testing**
+
 ```bash
 # Tareas específicas:
 1. ProductEditPage completa
@@ -246,37 +258,40 @@ interface ProductImageManagerProps {
 ## 🧪 **ESTRATEGIA DE TESTING**
 
 ### **Unit Tests (Jest + RTL)**
+
 ```typescript
 // Ejemplos de tests críticos:
 
 describe('ProductForm', () => {
-  it('should validate required fields', () => {});
-  it('should handle image upload', () => {});
-  it('should auto-save changes', () => {});
-  it('should handle API errors gracefully', () => {});
-});
+  it('should validate required fields', () => {})
+  it('should handle image upload', () => {})
+  it('should auto-save changes', () => {})
+  it('should handle API errors gracefully', () => {})
+})
 
 describe('ProductImageManager', () => {
-  it('should upload multiple images', () => {});
-  it('should reorder images by drag & drop', () => {});
-  it('should delete images safely', () => {});
-});
+  it('should upload multiple images', () => {})
+  it('should reorder images by drag & drop', () => {})
+  it('should delete images safely', () => {})
+})
 ```
 
 ### **Integration Tests**
+
 ```typescript
 describe('Product CRUD APIs', () => {
-  it('should create product with images', () => {});
-  it('should update product partially', () => {});
-  it('should delete product and cleanup', () => {});
-});
+  it('should create product with images', () => {})
+  it('should update product partially', () => {})
+  it('should delete product and cleanup', () => {})
+})
 ```
 
 ### **E2E Tests (Playwright)**
+
 ```typescript
 test('Admin can edit product completely', async ({ page }) => {
   // Test flujo completo de edición
-});
+})
 ```
 
 ---
@@ -284,18 +299,21 @@ test('Admin can edit product completely', async ({ page }) => {
 ## 📊 **MÉTRICAS DE ÉXITO**
 
 ### **Funcionales**
+
 - ✅ 100% CRUD operations funcionando
 - ✅ Upload de imágenes < 5 segundos
 - ✅ Formulario responsive en todos los breakpoints
 - ✅ Auto-save funcionando sin pérdida de datos
 
 ### **Performance**
+
 - ✅ APIs < 300ms response time
 - ✅ Componentes < 100ms render time
 - ✅ Imágenes optimizadas < 500KB
 - ✅ Bundle size impact < 50KB
 
 ### **Testing**
+
 - ✅ 90%+ code coverage
 - ✅ 0 errores críticos
 - ✅ 100% casos de uso cubiertos
@@ -306,6 +324,7 @@ test('Admin can edit product completely', async ({ page }) => {
 ## 🔧 **CONFIGURACIÓN TÉCNICA**
 
 ### **Dependencias Nuevas**
+
 ```json
 {
   "dependencies": {
@@ -322,6 +341,7 @@ test('Admin can edit product completely', async ({ page }) => {
 ```
 
 ### **Variables de Entorno**
+
 ```env
 # Supabase Storage
 NEXT_PUBLIC_SUPABASE_STORAGE_URL=
@@ -338,12 +358,10 @@ ALLOWED_IMAGE_FORMATS=jpg,jpeg,png,webp
 ## 🚀 **SIGUIENTE FASE**
 
 Una vez completada esta fase, proceder con:
+
 - [Fase 1: Panel de Órdenes Básico](./ORDERS_BASIC_IMPLEMENTATION.md)
 
 ---
 
 **Estado:** 🔄 Listo para implementación  
 **Próxima revisión:** Al completar Semana 1
-
-
-

@@ -3,7 +3,7 @@
 **Duración:** 3 semanas  
 **Prioridad:** 🔥 Alta  
 **Dependencias:** Panel de Órdenes Básico completado  
-**Estado:** 🔄 Pendiente  
+**Estado:** 🔄 Pendiente
 
 ---
 
@@ -12,6 +12,7 @@
 Desarrollar un sistema completo de logística que permita gestionar envíos, tracking y estados de despacho integrado con el sistema de órdenes existente.
 
 ### **Entregables Principales**
+
 - ✅ Panel `/admin/logistics` completo
 - ✅ Sistema de gestión de envíos
 - ✅ Tracking básico de paquetes
@@ -27,6 +28,7 @@ Desarrollar un sistema completo de logística que permita gestionar envíos, tra
 ### **Esquema de Base de Datos**
 
 #### **Tabla Shipments (Nueva)**
+
 ```sql
 CREATE TABLE shipments (
   id SERIAL PRIMARY KEY,
@@ -60,6 +62,7 @@ CREATE INDEX idx_shipments_created_at ON shipments(created_at);
 ```
 
 #### **Tabla Shipment Items (Nueva)**
+
 ```sql
 CREATE TABLE shipment_items (
   id SERIAL PRIMARY KEY,
@@ -77,6 +80,7 @@ CREATE INDEX idx_shipment_items_order_item_id ON shipment_items(order_item_id);
 ```
 
 #### **Tabla Tracking Events (Nueva)**
+
 ```sql
 CREATE TABLE tracking_events (
   id SERIAL PRIMARY KEY,
@@ -95,6 +99,7 @@ CREATE INDEX idx_tracking_events_event_date ON tracking_events(event_date);
 ```
 
 #### **Tabla Couriers (Nueva)**
+
 ```sql
 CREATE TABLE couriers (
   id SERIAL PRIMARY KEY,
@@ -125,6 +130,7 @@ INSERT INTO couriers (name, code, supported_services, coverage_areas) VALUES
 ### **APIs a Implementar**
 
 #### **1. API de Logística Dashboard**
+
 ```typescript
 // src/app/api/admin/logistics/route.ts
 
@@ -132,79 +138,82 @@ INSERT INTO couriers (name, code, supported_services, coverage_areas) VALUES
 interface LogisticsDashboardResponse {
   data: {
     stats: {
-      total_shipments: number;
-      pending_shipments: number;
-      in_transit_shipments: number;
-      delivered_shipments: number;
-      average_delivery_time: number; // días
-      on_time_delivery_rate: number; // porcentaje
-    };
-    recent_shipments: Shipment[];
-    alerts: LogisticsAlert[];
+      total_shipments: number
+      pending_shipments: number
+      in_transit_shipments: number
+      delivered_shipments: number
+      average_delivery_time: number // días
+      on_time_delivery_rate: number // porcentaje
+    }
+    recent_shipments: Shipment[]
+    alerts: LogisticsAlert[]
     performance_metrics: {
-      daily_shipments: Array<{ date: string; count: number }>;
-      carrier_performance: Array<{ carrier: string; on_time_rate: number }>;
-    };
-  };
+      daily_shipments: Array<{ date: string; count: number }>
+      carrier_performance: Array<{ carrier: string; on_time_rate: number }>
+    }
+  }
 }
 ```
 
 #### **2. API de Envíos**
+
 ```typescript
 // src/app/api/admin/logistics/shipments/route.ts
 
 // GET /api/admin/logistics/shipments - Lista de envíos
 interface GetShipmentsRequest {
-  page?: number;
-  limit?: number;
-  status?: ShipmentStatus;
-  carrier?: string;
-  date_from?: string;
-  date_to?: string;
-  search?: string; // tracking_number, order_id
+  page?: number
+  limit?: number
+  status?: ShipmentStatus
+  carrier?: string
+  date_from?: string
+  date_to?: string
+  search?: string // tracking_number, order_id
 }
 
 // POST /api/admin/logistics/shipments - Crear envío
 interface CreateShipmentRequest {
-  order_id: number;
-  carrier: string;
-  shipping_method: string;
+  order_id: number
+  carrier: string
+  shipping_method: string
   items: Array<{
-    order_item_id: number;
-    quantity: number;
-  }>;
-  pickup_address?: Address;
-  delivery_address: Address;
-  weight_kg?: number;
-  dimensions_cm?: string;
-  notes?: string;
+    order_item_id: number
+    quantity: number
+  }>
+  pickup_address?: Address
+  delivery_address: Address
+  weight_kg?: number
+  dimensions_cm?: string
+  notes?: string
 }
 ```
 
 #### **3. API de Tracking**
+
 ```typescript
 // src/app/api/admin/logistics/tracking/[trackingNumber]/route.ts
 
 // GET /api/admin/logistics/tracking/[trackingNumber] - Info de tracking
 interface TrackingResponse {
   data: {
-    shipment: Shipment;
-    events: TrackingEvent[];
-    current_status: string;
-    estimated_delivery: string;
-    last_update: string;
-  };
+    shipment: Shipment
+    events: TrackingEvent[]
+    current_status: string
+    estimated_delivery: string
+    last_update: string
+  }
 }
 
 // POST /api/admin/logistics/tracking/sync - Sincronizar con courier
 interface SyncTrackingRequest {
-  shipment_ids?: number[];
-  carrier?: string;
-  force_update?: boolean;
+  shipment_ids?: number[]
+  carrier?: string
+  force_update?: boolean
 }
 ```
 
 #### **4. API de Couriers**
+
 ```typescript
 // src/app/api/admin/logistics/couriers/route.ts
 
@@ -214,18 +223,19 @@ interface SyncTrackingRequest {
 
 // GET /api/admin/logistics/couriers/[id]/quote - Cotizar envío
 interface ShippingQuoteRequest {
-  origin_postal_code: string;
-  destination_postal_code: string;
-  weight_kg: number;
-  dimensions_cm: string;
-  declared_value: number;
-  service_type: string;
+  origin_postal_code: string
+  destination_postal_code: string
+  weight_kg: number
+  dimensions_cm: string
+  declared_value: number
+  service_type: string
 }
 ```
 
 ### **Componentes a Desarrollar**
 
 #### **1. LogisticsDashboard Component**
+
 ```typescript
 // src/app/admin/logistics/page.tsx
 
@@ -239,12 +249,13 @@ interface ShippingQuoteRequest {
 ```
 
 #### **2. ShipmentList Component**
+
 ```typescript
 // src/components/admin/logistics/ShipmentList.tsx
 
 interface ShipmentListProps {
-  filters?: ShipmentFilters;
-  onShipmentSelect?: (shipment: Shipment) => void;
+  filters?: ShipmentFilters
+  onShipmentSelect?: (shipment: Shipment) => void
 }
 
 // Características:
@@ -257,12 +268,13 @@ interface ShipmentListProps {
 ```
 
 #### **3. ShipmentDetail Component**
+
 ```typescript
 // src/components/admin/logistics/ShipmentDetail.tsx
 
 interface ShipmentDetailProps {
-  shipmentId: number;
-  onUpdate?: (shipment: Shipment) => void;
+  shipmentId: number
+  onUpdate?: (shipment: Shipment) => void
 }
 
 // Características:
@@ -276,12 +288,13 @@ interface ShipmentDetailProps {
 ```
 
 #### **4. CreateShipment Component**
+
 ```typescript
 // src/components/admin/logistics/CreateShipment.tsx
 
 interface CreateShipmentProps {
-  orderId?: number;
-  onShipmentCreated?: (shipment: Shipment) => void;
+  orderId?: number
+  onShipmentCreated?: (shipment: Shipment) => void
 }
 
 // Características:
@@ -294,13 +307,14 @@ interface CreateShipmentProps {
 ```
 
 #### **5. TrackingTimeline Component**
+
 ```typescript
 // src/components/admin/logistics/TrackingTimeline.tsx
 
 interface TrackingTimelineProps {
-  shipmentId: number;
-  events: TrackingEvent[];
-  realTime?: boolean;
+  shipmentId: number
+  events: TrackingEvent[]
+  realTime?: boolean
 }
 
 // Características:
@@ -319,6 +333,7 @@ interface TrackingTimelineProps {
 ### **Semana 1: Base de Datos y APIs Core**
 
 #### **Día 1-2: Esquema de Base de Datos**
+
 ```bash
 # Tareas específicas:
 1. Crear tablas de logística
@@ -340,6 +355,7 @@ interface TrackingTimelineProps {
 ```
 
 #### **Día 3-4: APIs de Logística**
+
 ```bash
 # Tareas específicas:
 1. API Dashboard de logística
@@ -359,6 +375,7 @@ interface TrackingTimelineProps {
 ```
 
 #### **Día 5: Testing de APIs**
+
 ```bash
 # Tareas específicas:
 1. Tests unitarios de APIs
@@ -370,6 +387,7 @@ interface TrackingTimelineProps {
 ### **Semana 2: Frontend Core**
 
 #### **Día 6-7: Dashboard de Logística**
+
 ```bash
 # Tareas específicas:
 1. Layout principal del dashboard
@@ -389,6 +407,7 @@ interface TrackingTimelineProps {
 ```
 
 #### **Día 8-9: Gestión de Envíos**
+
 ```bash
 # Tareas específicas:
 1. ShipmentList component
@@ -410,6 +429,7 @@ interface TrackingTimelineProps {
 ```
 
 #### **Día 10: Tracking y Timeline**
+
 ```bash
 # Tareas específicas:
 1. TrackingTimeline component
@@ -426,6 +446,7 @@ interface TrackingTimelineProps {
 ### **Semana 3: Funcionalidades Avanzadas**
 
 #### **Día 11-12: Sistema de Couriers**
+
 ```bash
 # Tareas específicas:
 1. Gestión de couriers
@@ -440,6 +461,7 @@ interface TrackingTimelineProps {
 ```
 
 #### **Día 13-14: Reportes y Analytics**
+
 ```bash
 # Tareas específicas:
 1. Reportes de logística
@@ -454,6 +476,7 @@ interface TrackingTimelineProps {
 ```
 
 #### **Día 15: Testing e Integración**
+
 ```bash
 # Tareas específicas:
 1. Testing completo del módulo
@@ -468,30 +491,32 @@ interface TrackingTimelineProps {
 ## 🧪 **ESTRATEGIA DE TESTING**
 
 ### **Unit Tests**
+
 ```typescript
 describe('LogisticsDashboard', () => {
-  it('should display logistics metrics', () => {});
-  it('should handle real-time updates', () => {});
-});
+  it('should display logistics metrics', () => {})
+  it('should handle real-time updates', () => {})
+})
 
 describe('ShipmentList', () => {
-  it('should filter shipments correctly', () => {});
-  it('should handle status changes', () => {});
-});
+  it('should filter shipments correctly', () => {})
+  it('should handle status changes', () => {})
+})
 
 describe('TrackingTimeline', () => {
-  it('should display tracking events', () => {});
-  it('should update in real-time', () => {});
-});
+  it('should display tracking events', () => {})
+  it('should update in real-time', () => {})
+})
 ```
 
 ### **Integration Tests**
+
 ```typescript
 describe('Logistics APIs', () => {
-  it('should create shipment from order', () => {});
-  it('should sync tracking events', () => {});
-  it('should calculate metrics correctly', () => {});
-});
+  it('should create shipment from order', () => {})
+  it('should sync tracking events', () => {})
+  it('should calculate metrics correctly', () => {})
+})
 ```
 
 ---
@@ -499,12 +524,14 @@ describe('Logistics APIs', () => {
 ## 📊 **MÉTRICAS DE ÉXITO**
 
 ### **Funcionales**
+
 - ✅ 100% envíos creados desde órdenes
 - ✅ Tracking funcionando en tiempo real
 - ✅ Estados sincronizados automáticamente
 - ✅ Reportes generándose correctamente
 
 ### **Performance**
+
 - ✅ Dashboard < 500ms carga inicial
 - ✅ Lista de envíos < 300ms
 - ✅ Tracking updates < 200ms
@@ -515,12 +542,10 @@ describe('Logistics APIs', () => {
 ## 🚀 **SIGUIENTE FASE**
 
 Una vez completada esta fase, proceder con:
+
 - [Fase 3: Funcionalidades Avanzadas](../phase-3/)
 
 ---
 
 **Estado:** 🔄 Listo para implementación  
 **Dependencia:** Completar Panel de Órdenes Básico primero
-
-
-

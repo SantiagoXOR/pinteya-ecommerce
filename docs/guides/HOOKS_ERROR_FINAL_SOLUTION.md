@@ -5,7 +5,7 @@
 El error "Rendered fewer hooks than expected" persiste porque hay un problema fundamental en la arquitectura del componente CheckoutExpress. El error ocurre cuando:
 
 1. ✅ Usuario llena formulario
-2. ✅ Se procesa checkout 
+2. ✅ Se procesa checkout
 3. ✅ Se cambia estado a 'payment'
 4. ❌ **ERROR**: Los hooks se ejecutan de manera inconsistente
 
@@ -26,27 +26,27 @@ Movimos todos los returns condicionales a una función `renderStepContent()` que
 ```tsx
 const CheckoutExpress = () => {
   // ✅ TODOS LOS HOOKS SE EJECUTAN SIEMPRE
-  const hookData = useCheckout();
-  const router = useRouter();
+  const hookData = useCheckout()
+  const router = useRouter()
   // ... otros hooks
 
   // ✅ FUNCIÓN DE RENDERIZADO SIN HOOKS
   const renderStepContent = () => {
     if (step === 'processing') {
-      return <ProcessingView />;
+      return <ProcessingView />
     }
     if (step === 'redirect') {
-      return <RedirectView />;
+      return <RedirectView />
     }
     if (step === 'payment' && preferenceId) {
-      return <PaymentView />;
+      return <PaymentView />
     }
-    return <FormView />;
-  };
+    return <FormView />
+  }
 
   // ✅ SINGLE RETURN
-  return renderStepContent();
-};
+  return renderStepContent()
+}
 ```
 
 ### **Problema Persistente**
@@ -67,8 +67,8 @@ En lugar de usar el Wallet Brick embebido, usar redirección directa:
 // En lugar de renderizar MercadoPagoWallet
 if (step === 'payment' && initPoint) {
   // Redirigir inmediatamente a MercadoPago
-  window.location.href = initPoint;
-  return <LoadingView />;
+  window.location.href = initPoint
+  return <LoadingView />
 }
 ```
 
@@ -90,15 +90,24 @@ const MercadoPagoWallet = lazy(() => import('./MercadoPagoWallet'));
 Crear componentes separados para cada step:
 
 ```tsx
-const CheckoutForm = () => { /* Solo formulario */ };
-const CheckoutPayment = () => { /* Solo pago */ };
-const CheckoutProcessing = () => { /* Solo procesamiento */ };
+const CheckoutForm = () => {
+  /* Solo formulario */
+}
+const CheckoutPayment = () => {
+  /* Solo pago */
+}
+const CheckoutProcessing = () => {
+  /* Solo procesamiento */
+}
 
 // En CheckoutExpress
 switch (step) {
-  case 'form': return <CheckoutForm />;
-  case 'payment': return <CheckoutPayment />;
-  case 'processing': return <CheckoutProcessing />;
+  case 'form':
+    return <CheckoutForm />
+  case 'payment':
+    return <CheckoutPayment />
+  case 'processing':
+    return <CheckoutProcessing />
 }
 ```
 
@@ -116,26 +125,29 @@ Para resolver el problema inmediatamente, recomiendo implementar la **Opción 1*
 
 ```tsx
 // En useCheckout.ts - modificar handleWalletSubmit
-const handleWalletSubmit = useCallback((data: any) => {
-  console.log('💳 Redirigiendo directamente a MercadoPago');
-  
-  // Redirigir inmediatamente en lugar de cambiar a step 'redirect'
-  if (initPoint) {
-    window.location.href = initPoint;
-  }
-}, [initPoint]);
+const handleWalletSubmit = useCallback(
+  (data: any) => {
+    console.log('💳 Redirigiendo directamente a MercadoPago')
+
+    // Redirigir inmediatamente en lugar de cambiar a step 'redirect'
+    if (initPoint) {
+      window.location.href = initPoint
+    }
+  },
+  [initPoint]
+)
 
 // En CheckoutExpress.tsx - simplificar el flujo
 if (step === 'payment' && initPoint) {
   // Mostrar mensaje y redirigir automáticamente
   useEffect(() => {
     const timer = setTimeout(() => {
-      window.location.href = initPoint;
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [initPoint]);
+      window.location.href = initPoint
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [initPoint])
 
-  return <RedirectingToMercadoPagoView />;
+  return <RedirectingToMercadoPagoView />
 }
 ```
 

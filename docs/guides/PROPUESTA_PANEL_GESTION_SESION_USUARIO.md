@@ -2,7 +2,7 @@
 
 **Fecha**: 13 de Septiembre, 2025  
 **Proyecto**: Pinteya E-commerce  
-**Objetivo**: Implementar dashboard personal completo para usuarios finales  
+**Objetivo**: Implementar dashboard personal completo para usuarios finales
 
 ---
 
@@ -17,33 +17,37 @@ Crear un **panel de administración de sesión personal** completo que permita a
 ### **1. Dashboard Principal** (`/dashboard`)
 
 #### **Información Mostrada**:
+
 - **Resumen de cuenta**: Nombre, email, fecha de registro
 - **Estadísticas personales**: Órdenes, gasto total, productos favoritos
 - **Actividad reciente**: Últimos logins, órdenes, cambios de perfil
 - **Accesos rápidos**: Editar perfil, ver órdenes, configuración
 
 #### **Métricas Clave**:
+
 ```typescript
 interface DashboardMetrics {
-  totalOrders: number;
-  totalSpent: number;
-  pendingOrders: number;
-  favoriteProducts: number;
-  lastLoginDate: string;
-  accountAge: string;
-  sessionsActive: number;
+  totalOrders: number
+  totalSpent: number
+  pendingOrders: number
+  favoriteProducts: number
+  lastLoginDate: string
+  accountAge: string
+  sessionsActive: number
 }
 ```
 
 ### **2. Gestión de Perfil** (`/dashboard/profile`)
 
 #### **Información Editable**:
+
 - **Datos personales**: Nombre, apellido, teléfono
 - **Avatar**: Subida y gestión de imagen de perfil
 - **Direcciones**: Gestión completa de direcciones de envío
 - **Preferencias básicas**: Idioma, zona horaria, moneda
 
 #### **Funcionalidades**:
+
 - ✅ Validación en tiempo real
 - ✅ Previsualización de cambios
 - ✅ Confirmación por email para cambios críticos
@@ -52,26 +56,28 @@ interface DashboardMetrics {
 ### **3. Gestión de Sesiones** (`/dashboard/sessions`)
 
 #### **Información de Sesiones**:
+
 ```typescript
 interface UserSession {
-  id: string;
+  id: string
   deviceInfo: {
-    browser: string;
-    os: string;
-    device: string;
-  };
+    browser: string
+    os: string
+    device: string
+  }
   location: {
-    ip: string;
-    city: string;
-    country: string;
-  };
-  createdAt: string;
-  lastActivity: string;
-  isCurrent: boolean;
+    ip: string
+    city: string
+    country: string
+  }
+  createdAt: string
+  lastActivity: string
+  isCurrent: boolean
 }
 ```
 
 #### **Funcionalidades**:
+
 - ✅ **Ver sesiones activas**: Lista de todos los dispositivos conectados
 - ✅ **Cerrar sesiones**: Capacidad de cerrar sesiones específicas o todas
 - ✅ **Detectar actividad sospechosa**: Alertas de logins desde ubicaciones nuevas
@@ -80,6 +86,7 @@ interface UserSession {
 ### **4. Configuración de Seguridad** (`/dashboard/security`)
 
 #### **Opciones de Seguridad**:
+
 - **Cambio de contraseña**: (Futuro - cuando se implemente auth por email)
 - **Autenticación de dos factores**: Configuración de 2FA
 - **Códigos de respaldo**: Generación y gestión
@@ -87,6 +94,7 @@ interface UserSession {
 - **Dispositivos de confianza**: Gestión de dispositivos conocidos
 
 #### **Logs de Seguridad**:
+
 - Historial de cambios de contraseña
 - Intentos de login fallidos
 - Cambios en configuración de seguridad
@@ -95,31 +103,33 @@ interface UserSession {
 ### **5. Preferencias de Usuario** (`/dashboard/preferences`)
 
 #### **Configuraciones Disponibles**:
+
 ```typescript
 interface UserPreferences {
   notifications: {
-    email: boolean;
-    orderUpdates: boolean;
-    promotions: boolean;
-    securityAlerts: boolean;
-  };
+    email: boolean
+    orderUpdates: boolean
+    promotions: boolean
+    securityAlerts: boolean
+  }
   display: {
-    language: 'es' | 'en';
-    timezone: string;
-    currency: 'ARS' | 'USD';
-    theme: 'light' | 'dark' | 'auto';
-  };
+    language: 'es' | 'en'
+    timezone: string
+    currency: 'ARS' | 'USD'
+    theme: 'light' | 'dark' | 'auto'
+  }
   privacy: {
-    profileVisibility: 'public' | 'private';
-    activityTracking: boolean;
-    marketingEmails: boolean;
-  };
+    profileVisibility: 'public' | 'private'
+    activityTracking: boolean
+    marketingEmails: boolean
+  }
 }
 ```
 
 ### **6. Historial de Actividad** (`/dashboard/activity`)
 
 #### **Eventos Registrados**:
+
 - Logins y logouts
 - Cambios de perfil
 - Órdenes realizadas
@@ -127,6 +137,7 @@ interface UserPreferences {
 - Accesos a secciones sensibles
 
 #### **Filtros Disponibles**:
+
 - Por tipo de evento
 - Por rango de fechas
 - Por dispositivo/ubicación
@@ -137,6 +148,7 @@ interface UserPreferences {
 ## 🏗️ **ARQUITECTURA TÉCNICA**
 
 ### **1. Estructura de Rutas**
+
 ```typescript
 src/app/(site)/(pages)/dashboard/
 ├── page.tsx                     // Dashboard principal
@@ -161,6 +173,7 @@ src/app/(site)/(pages)/dashboard/
 ```
 
 ### **2. APIs Necesarias**
+
 ```typescript
 // Gestión de sesiones
 GET    /api/user/sessions              // Listar sesiones activas
@@ -190,6 +203,7 @@ DELETE /api/user/avatar                // Eliminar avatar
 ```
 
 ### **3. Componentes Principales**
+
 ```typescript
 // Dashboard
 src/components/User/Dashboard/
@@ -230,6 +244,7 @@ src/components/User/Activity/
 ```
 
 ### **4. Hooks Personalizados**
+
 ```typescript
 // Hooks de gestión
 src/hooks/user/
@@ -246,6 +261,7 @@ src/hooks/user/
 ## 🎨 **DISEÑO DE INTERFAZ**
 
 ### **1. Layout del Dashboard**
+
 ```typescript
 // Layout común para todas las páginas del dashboard
 const DashboardLayout = () => (
@@ -262,6 +278,7 @@ const DashboardLayout = () => (
 ```
 
 ### **2. Navegación Lateral**
+
 ```typescript
 const sidebarItems = [
   { icon: Home, label: 'Dashboard', href: '/dashboard' },
@@ -271,10 +288,11 @@ const sidebarItems = [
   { icon: Settings, label: 'Preferencias', href: '/dashboard/preferences' },
   { icon: Activity, label: 'Actividad', href: '/dashboard/activity' },
   { icon: Package, label: 'Mis Órdenes', href: '/orders' },
-];
+]
 ```
 
 ### **3. Componentes de UI Reutilizables**
+
 - **DashboardCard**: Tarjetas con estadísticas
 - **SettingsSection**: Secciones de configuración
 - **ActivityTimeline**: Timeline de actividad
@@ -286,18 +304,21 @@ const sidebarItems = [
 ## 🔒 **CONSIDERACIONES DE SEGURIDAD**
 
 ### **1. Autenticación y Autorización**
+
 - ✅ Verificar sesión válida en todas las rutas
 - ✅ Validar que el usuario solo acceda a sus propios datos
 - ✅ Rate limiting en APIs sensibles
 - ✅ Logs de auditoría para cambios importantes
 
 ### **2. Protección de Datos**
+
 - ✅ Encriptar información sensible
 - ✅ No exponer tokens o IDs internos
 - ✅ Validación estricta en el backend
 - ✅ Sanitización de inputs del usuario
 
 ### **3. Gestión de Sesiones**
+
 - ✅ Invalidar sesiones al cerrar remotamente
 - ✅ Detectar patrones de uso sospechosos
 - ✅ Limitar número de sesiones concurrentes
@@ -308,18 +329,21 @@ const sidebarItems = [
 ## 📊 **MÉTRICAS Y MONITOREO**
 
 ### **1. Métricas de Uso**
+
 - Páginas más visitadas del dashboard
 - Tiempo promedio en cada sección
 - Funcionalidades más utilizadas
 - Tasa de abandono por página
 
 ### **2. Métricas de Seguridad**
+
 - Número de sesiones cerradas remotamente
 - Intentos de acceso sospechosos
 - Cambios de configuración de seguridad
 - Activación de 2FA
 
 ### **3. Métricas de Satisfacción**
+
 - Feedback de usuarios sobre el dashboard
 - Tiempo para completar tareas comunes
 - Errores reportados por usuarios
@@ -330,30 +354,35 @@ const sidebarItems = [
 ## 🚀 **PLAN DE IMPLEMENTACIÓN**
 
 ### **Fase 1: Dashboard Básico** (1-2 semanas)
+
 - [ ] Crear estructura de rutas
 - [ ] Implementar layout y navegación
 - [ ] Dashboard principal con estadísticas básicas
 - [ ] Integración con APIs existentes
 
 ### **Fase 2: Gestión de Perfil** (1 semana)
+
 - [ ] Editor de perfil completo
 - [ ] Subida de avatar
 - [ ] Gestión de direcciones mejorada
 - [ ] Validaciones y confirmaciones
 
 ### **Fase 3: Sesiones y Seguridad** (2-3 semanas)
+
 - [ ] API de gestión de sesiones
 - [ ] Componente de sesiones activas
 - [ ] Configuración de seguridad básica
 - [ ] Historial de actividad
 
 ### **Fase 4: Preferencias Avanzadas** (1-2 semanas)
+
 - [ ] Sistema completo de preferencias
 - [ ] Configuración de notificaciones
 - [ ] Configuración de privacidad
 - [ ] Integración con sistema de emails
 
 ### **Fase 5: Funcionalidades Avanzadas** (2-3 semanas)
+
 - [ ] Autenticación de dos factores
 - [ ] Alertas de seguridad automáticas
 - [ ] Análisis de actividad avanzado
@@ -364,18 +393,21 @@ const sidebarItems = [
 ## 🎯 **CRITERIOS DE ÉXITO**
 
 ### **Funcionales**
+
 - ✅ Usuarios pueden gestionar completamente su perfil
 - ✅ Visualización clara de sesiones activas
 - ✅ Configuración de preferencias funcional
 - ✅ Historial de actividad completo y útil
 
 ### **Técnicos**
+
 - ✅ Tiempo de carga < 2 segundos
 - ✅ Responsive en todos los dispositivos
 - ✅ APIs con tiempo de respuesta < 500ms
 - ✅ Cobertura de tests > 80%
 
 ### **Seguridad**
+
 - ✅ Todas las acciones auditadas
 - ✅ Validación completa en backend
 - ✅ Protección contra ataques comunes

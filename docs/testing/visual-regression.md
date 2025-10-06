@@ -5,6 +5,7 @@ Guía completa para configurar y ejecutar tests de regresión visual en el Desig
 ## 🎯 Objetivo
 
 Los tests de regresión visual nos permiten:
+
 - 📸 Detectar cambios visuales no intencionados
 - 🔍 Revisar cambios antes de merge
 - 📚 Mantener documentación visual actualizada
@@ -13,16 +14,19 @@ Los tests de regresión visual nos permiten:
 ## 🛠️ Herramientas
 
 ### Chromatic
+
 - **Propósito**: Visual regression testing y deploy de Storybook
 - **URL**: https://chromatic.com
 - **Integración**: GitHub Actions automático
 
 ### Lighthouse
+
 - **Propósito**: Performance testing y Core Web Vitals
 - **Métricas**: FCP, LCP, CLS, Accessibility Score
 - **Reportes**: HTML y JSON detallados
 
 ### Storybook Test Runner
+
 - **Propósito**: Accessibility testing automatizado
 - **Herramienta**: axe-core + Playwright
 - **Cobertura**: WCAG 2.1 AA compliance
@@ -129,12 +133,14 @@ npm run test:quality
 ### Chromatic
 
 #### Estados de Tests
+
 - ✅ **Passed**: Sin cambios visuales
 - 🔍 **Changes**: Cambios detectados, requiere revisión
 - ❌ **Failed**: Error en build o configuración
 - ⏭️ **Skipped**: Branch o commit ignorado
 
 #### Tipos de Cambios
+
 - **UI Changes**: Cambios en componentes
 - **Story Changes**: Nuevas stories o modificaciones
 - **Dependency Changes**: Actualizaciones de dependencias
@@ -142,12 +148,14 @@ npm run test:quality
 ### Lighthouse Performance
 
 #### Métricas Clave
+
 - **Performance Score**: > 90 (Excelente), 50-90 (Bueno), < 50 (Pobre)
 - **FCP**: < 1.8s (Excelente), 1.8-3s (Bueno), > 3s (Pobre)
 - **LCP**: < 2.5s (Excelente), 2.5-4s (Bueno), > 4s (Pobre)
 - **CLS**: < 0.1 (Excelente), 0.1-0.25 (Bueno), > 0.25 (Pobre)
 
 #### Accessibility Score
+
 - **95-100**: Excelente compliance
 - **80-94**: Bueno, mejoras menores
 - **< 80**: Requiere atención inmediata
@@ -155,6 +163,7 @@ npm run test:quality
 ### Test Runner Accessibility
 
 #### Reglas Verificadas
+
 - **color-contrast**: Contraste de colores WCAG AA
 - **focus-order-semantics**: Orden de foco lógico
 - **keyboard-navigation**: Navegación por teclado
@@ -165,6 +174,7 @@ npm run test:quality
 ### Chromatic
 
 #### Error: "Build failed"
+
 ```bash
 # Verificar build local
 npm run build-storybook
@@ -176,6 +186,7 @@ npm ci
 ```
 
 #### Error: "Token invalid"
+
 ```bash
 # Verificar token en .env.local
 cat .env.local | grep CHROMATIC
@@ -187,6 +198,7 @@ cat .env.local | grep CHROMATIC
 ### Lighthouse
 
 #### Error: "Storybook not running"
+
 ```bash
 # Verificar que Storybook está en puerto 6006
 npm run storybook
@@ -196,6 +208,7 @@ open http://localhost:6006
 ```
 
 #### Performance Score Bajo
+
 ```bash
 # Verificar bundle size
 npm run build-storybook --analyze
@@ -210,6 +223,7 @@ npm run test:performance
 ### Accessibility Tests
 
 #### Error: "axe-core violations"
+
 ```bash
 # Ejecutar tests específicos
 npm run test:a11y
@@ -231,11 +245,11 @@ npm run test:a11y
 // ✅ Buena práctica
 export const AllVariants: Story = {
   render: () => (
-    <div className="grid grid-cols-2 gap-4">
-      <Button variant="primary">Primary</Button>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="outline">Outline</Button>
-      <Button variant="ghost">Ghost</Button>
+    <div className='grid grid-cols-2 gap-4'>
+      <Button variant='primary'>Primary</Button>
+      <Button variant='secondary'>Secondary</Button>
+      <Button variant='outline'>Outline</Button>
+      <Button variant='ghost'>Ghost</Button>
     </div>
   ),
   parameters: {
@@ -245,19 +259,19 @@ export const AllVariants: Story = {
       delay: 300, // Esperar animaciones
     },
   },
-};
+}
 ```
 
 ### Performance Optimization
 
 ```tsx
 // ✅ Lazy loading de componentes pesados
-const HeavyComponent = lazy(() => import('./HeavyComponent'));
+const HeavyComponent = lazy(() => import('./HeavyComponent'))
 
 // ✅ Memoización de componentes
 const OptimizedComponent = memo(({ data }) => {
-  return <ExpensiveRender data={data} />;
-});
+  return <ExpensiveRender data={data} />
+})
 
 // ✅ Preload de recursos críticos
 export const WithPreload: Story = {
@@ -266,7 +280,7 @@ export const WithPreload: Story = {
       preload: ['/images/hero-image.jpg'],
     },
   },
-};
+}
 ```
 
 ### Accessibility Testing
@@ -290,7 +304,7 @@ export const AccessibilityTest: Story = {
       },
     },
   },
-};
+}
 ```
 
 ## 📚 Recursos Adicionales
@@ -303,6 +317,7 @@ export const AccessibilityTest: Story = {
 ## 🎯 Métricas de Éxito
 
 ### Objetivos del Proyecto
+
 - **Visual Regression**: 0 regresiones no intencionadas
 - **Performance Score**: > 90 promedio
 - **Accessibility Score**: > 95 promedio
@@ -310,10 +325,8 @@ export const AccessibilityTest: Story = {
 - **Review Time**: < 24h para cambios visuales
 
 ### KPIs de Calidad
+
 - **Coverage Visual**: 100% de componentes con stories
 - **Test Automation**: 100% de tests automatizados
 - **Documentation**: 100% de componentes documentados
 - **Performance Budget**: < 50KB bundle size por componente
-
-
-

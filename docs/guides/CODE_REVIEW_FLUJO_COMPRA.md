@@ -11,12 +11,14 @@
 ## 🎯 **HALLAZGOS PRINCIPALES DE PLAYWRIGHT TESTS**
 
 ### ✅ **LO QUE FUNCIONA CORRECTAMENTE**
+
 - **Frontend UI:** Navegación, formularios, componentes renderizados ✅
 - **APIs Backend Básicas:** `/api/products` (200), `/api/categories` (200), `/api/orders` (200) ✅
 - **Carrito Frontend:** Redux store, hooks optimizados, persistencia localStorage ✅
 - **MercadoPago Backend:** APIs implementadas en `/api/payments/*` ✅
 
 ### ❌ **PROBLEMAS CRÍTICOS IDENTIFICADOS**
+
 1. **APIs de Carrito Faltantes:** `/api/cart/*` → 404 Not Found
 2. **Desconexión de Rutas:** Frontend llama `/api/mercadopago/*` pero backend tiene `/api/payments/*`
 3. **Productos Vacíos:** API devuelve 200 pero sin datos reales
@@ -30,6 +32,7 @@
 ### **1. CARRITO DE COMPRAS - ANÁLISIS CRÍTICO**
 
 #### **Estado Actual:**
+
 ```typescript
 // ✅ BIEN IMPLEMENTADO - Frontend
 // src/store/cart-slice.ts
@@ -37,10 +40,16 @@ const cartSlice = createSlice({
   name: 'cart',
   initialState: { items: [], total: 0 },
   reducers: {
-    addItem: (state, action) => { /* ✅ Funciona */ },
-    removeItem: (state, action) => { /* ✅ Funciona */ },
-    updateQuantity: (state, action) => { /* ✅ Funciona */ }
-  }
+    addItem: (state, action) => {
+      /* ✅ Funciona */
+    },
+    removeItem: (state, action) => {
+      /* ✅ Funciona */
+    },
+    updateQuantity: (state, action) => {
+      /* ✅ Funciona */
+    },
+  },
 })
 
 // ✅ BIEN IMPLEMENTADO - Hooks Optimizados
@@ -51,6 +60,7 @@ export const useCartOptimized = () => {
 ```
 
 #### **❌ PROBLEMA CRÍTICO - Backend Faltante:**
+
 ```typescript
 // ❌ NO EXISTE - APIs de Carrito
 // FALTA: src/app/api/cart/route.ts
@@ -59,17 +69,19 @@ export const useCartOptimized = () => {
 ```
 
 #### **🎯 SOLUCIÓN REQUERIDA:**
+
 Basado en mejores prácticas de **react-use-cart** y **Supabase**:
 
 ```typescript
 // IMPLEMENTAR: src/app/api/cart/route.ts
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
-  
+  const { searchParams } = new URL(request.url)
+  const userId = searchParams.get('userId')
+
   const { data, error } = await supabase
     .from('cart_items')
-    .select(`
+    .select(
+      `
       id,
       quantity,
       products (
@@ -78,52 +90,55 @@ export async function GET(request: Request) {
         price,
         image_url
       )
-    `)
-    .eq('user_id', userId);
-    
-  return Response.json({ items: data || [] });
+    `
+    )
+    .eq('user_id', userId)
+
+  return Response.json({ items: data || [] })
 }
 
 export async function POST(request: Request) {
-  const { productId, quantity, userId } = await request.json();
-  
+  const { productId, quantity, userId } = await request.json()
+
   // Upsert: actualizar si existe, crear si no existe
-  const { data, error } = await supabase
-    .from('cart_items')
-    .upsert({
+  const { data, error } = await supabase.from('cart_items').upsert(
+    {
       user_id: userId,
       product_id: productId,
-      quantity: quantity
-    }, {
-      onConflict: 'user_id,product_id'
-    });
-    
-  return Response.json({ success: true, data });
+      quantity: quantity,
+    },
+    {
+      onConflict: 'user_id,product_id',
+    }
+  )
+
+  return Response.json({ success: true, data })
 }
 ```
 
 ### **2. PRODUCTOS - ANÁLISIS DE DATOS VACÍOS**
 
 #### **Estado Actual:**
+
 ```typescript
 // ✅ API IMPLEMENTADA pero datos vacíos
 // src/app/api/products/route.ts
 export async function GET() {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*');
-    
+  const { data, error } = await supabase.from('products').select('*')
+
   // ⚠️ PROBLEMA: data está vacío o null
-  return Response.json(data || []);
+  return Response.json(data || [])
 }
 ```
 
 #### **🔍 DIAGNÓSTICO:**
+
 1. **Tabla vacía:** No hay productos en la base de datos
 2. **RLS mal configurado:** Row Level Security bloquea acceso
 3. **Schema incorrecto:** Tabla en schema privado
 
 #### **🎯 SOLUCIÓN:**
+
 ```sql
 -- 1. Verificar datos en la tabla
 SELECT COUNT(*) FROM products;
@@ -132,8 +147,8 @@ SELECT COUNT(*) FROM products;
 SELECT * FROM pg_policies WHERE tablename = 'products';
 
 -- 3. Crear policy para acceso público a productos
-CREATE POLICY "Products are viewable by everyone" 
-ON products FOR SELECT 
+CREATE POLICY "Products are viewable by everyone"
+ON products FOR SELECT
 USING (true);
 
 -- 4. Insertar productos de prueba
@@ -146,6 +161,7 @@ INSERT INTO products (name, price, description, category_id) VALUES
 ### **3. MERCADOPAGO - DESCONEXIÓN DE RUTAS**
 
 #### **❌ PROBLEMA IDENTIFICADO:**
+
 ```typescript
 // ❌ FRONTEND llama ruta incorrecta
 // Frontend: /api/mercadopago/preferences
@@ -155,32 +171,35 @@ INSERT INTO products (name, price, description, category_id) VALUES
 ```
 
 #### **🎯 SOLUCIÓN INMEDIATA:**
+
 ```typescript
 // OPCIÓN A: Crear alias en /api/mercadopago/
 // src/app/api/mercadopago/preferences/route.ts
-export { POST } from '../../payments/preferences/route';
+export { POST } from '../../payments/preferences/route'
 
 // OPCIÓN B: Actualizar frontend para usar ruta correcta
 // src/lib/mercadopago.ts
-const createPreference = async (items) => {
+const createPreference = async items => {
   const response = await fetch('/api/payments/preferences', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items })
-  });
-  return response.json();
-};
+    body: JSON.stringify({ items }),
+  })
+  return response.json()
+}
 ```
 
 ### **4. CONFIGURACIÓN SUPABASE - CLIENTE MOCK**
 
 #### **❌ PROBLEMA DETECTADO:**
+
 ```typescript
 // ⚠️ WARNING en consola: "Supabase no configurado correctamente, retornando cliente mock"
 // src/lib/supabase.ts
 ```
 
 #### **🔍 DIAGNÓSTICO:**
+
 Variables de entorno faltantes o incorrectas:
 
 ```bash
@@ -190,6 +209,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
 #### **🎯 SOLUCIÓN:**
+
 ```bash
 # .env.local
 NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
@@ -256,20 +276,20 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para productos (acceso público)
-CREATE POLICY "Products viewable by everyone" 
+CREATE POLICY "Products viewable by everyone"
 ON products FOR SELECT USING (true);
 
 -- Políticas para carrito (solo propietario)
-CREATE POLICY "Users can view own cart" 
+CREATE POLICY "Users can view own cart"
 ON cart_items FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own cart items" 
+CREATE POLICY "Users can insert own cart items"
 ON cart_items FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own cart items" 
+CREATE POLICY "Users can update own cart items"
 ON cart_items FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete own cart items" 
+CREATE POLICY "Users can delete own cart items"
 ON cart_items FOR DELETE USING (auth.uid() = user_id);
 ```
 
@@ -280,6 +300,7 @@ ON cart_items FOR DELETE USING (auth.uid() = user_id);
 ### **🔥 FASE 1: CRÍTICO (Semana 1)**
 
 #### **Día 1-2: Arreglar Configuración Supabase**
+
 ```bash
 # 1. Configurar variables de entorno
 # 2. Verificar conexión a base de datos
@@ -287,6 +308,7 @@ ON cart_items FOR DELETE USING (auth.uid() = user_id);
 ```
 
 #### **Día 3-4: Implementar APIs de Carrito**
+
 ```typescript
 // 1. Crear tabla cart_items
 // 2. Implementar /api/cart/route.ts
@@ -295,6 +317,7 @@ ON cart_items FOR DELETE USING (auth.uid() = user_id);
 ```
 
 #### **Día 5: Arreglar Rutas MercadoPago**
+
 ```typescript
 // 1. Crear alias /api/mercadopago/preferences
 // 2. Verificar integración completa
@@ -304,6 +327,7 @@ ON cart_items FOR DELETE USING (auth.uid() = user_id);
 ### **🟡 FASE 2: IMPORTANTE (Semana 2)**
 
 #### **Conectar Frontend con Backend**
+
 ```typescript
 // 1. Actualizar useCart para usar APIs reales
 // 2. Implementar sincronización carrito localStorage ↔ DB
@@ -312,6 +336,7 @@ ON cart_items FOR DELETE USING (auth.uid() = user_id);
 ```
 
 #### **Mejorar UX y Manejo de Errores**
+
 ```typescript
 // 1. Loading states
 // 2. Error boundaries
@@ -322,6 +347,7 @@ ON cart_items FOR DELETE USING (auth.uid() = user_id);
 ### **🟢 FASE 3: OPTIMIZACIÓN (Semana 3)**
 
 #### **Testing y Calidad**
+
 ```typescript
 // 1. Actualizar tests E2E
 // 2. Tests de integración API
@@ -333,13 +359,13 @@ ON cart_items FOR DELETE USING (auth.uid() = user_id);
 
 ## 📊 **MÉTRICAS DE ÉXITO**
 
-| Funcionalidad | Estado Actual | Estado Objetivo |
-|---------------|---------------|-----------------|
-| **Ver Productos** | ❌ 0% | ✅ 100% |
-| **Agregar al Carrito** | ❌ 0% | ✅ 100% |
-| **Checkout** | ⚠️ 30% | ✅ 100% |
-| **Pago MercadoPago** | ⚠️ 70% | ✅ 100% |
-| **Tests E2E** | ⚠️ 60% | ✅ 100% |
+| Funcionalidad          | Estado Actual | Estado Objetivo |
+| ---------------------- | ------------- | --------------- |
+| **Ver Productos**      | ❌ 0%         | ✅ 100%         |
+| **Agregar al Carrito** | ❌ 0%         | ✅ 100%         |
+| **Checkout**           | ⚠️ 30%        | ✅ 100%         |
+| **Pago MercadoPago**   | ⚠️ 70%        | ✅ 100%         |
+| **Tests E2E**          | ⚠️ 60%        | ✅ 100%         |
 
 **Objetivo:** Flujo de compra 100% funcional en 3 semanas
 
@@ -351,21 +377,22 @@ ON cart_items FOR DELETE USING (auth.uid() = user_id);
 
 ```typescript
 // src/app/api/cart/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
-import { auth } from '@/auth';
+import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseClient } from '@/lib/supabase'
+import { auth } from '@/auth'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient(true)
     const { data: cartItems, error } = await supabase
       .from('cart_items')
-      .select(`
+      .select(
+        `
         id,
         quantity,
         created_at,
@@ -377,23 +404,24 @@ export async function GET(request: NextRequest) {
           image_url,
           stock_quantity
         )
-      `)
-      .eq('user_id', session.user.id);
+      `
+      )
+      .eq('user_id', session.user.id)
 
-    if (error) throw error;
+    if (error) throw error
 
     return NextResponse.json({
       success: true,
       items: cartItems || [],
-      total: cartItems?.reduce((sum, item) =>
-        sum + (item.products.discounted_price || item.products.price) * item.quantity, 0
-      ) || 0
-    });
+      total:
+        cartItems?.reduce(
+          (sum, item) =>
+            sum + (item.products.discounted_price || item.products.price) * item.quantity,
+          0
+        ) || 0,
+    })
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch cart' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch cart' }, { status: 500 })
   }
 }
 ```
@@ -402,53 +430,53 @@ export async function GET(request: NextRequest) {
 // src/app/api/cart/add/route.ts
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await auth()
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { productId, quantity = 1 } = await request.json();
+    const { productId, quantity = 1 } = await request.json()
 
     // Validar producto existe y tiene stock
-    const supabase = getSupabaseClient(true);
+    const supabase = getSupabaseClient(true)
     const { data: product, error: productError } = await supabase
       .from('products')
       .select('id, stock_quantity, name')
       .eq('id', productId)
-      .single();
+      .single()
 
     if (productError || !product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
     if (product.stock_quantity < quantity) {
-      return NextResponse.json({ error: 'Insufficient stock' }, { status: 400 });
+      return NextResponse.json({ error: 'Insufficient stock' }, { status: 400 })
     }
 
     // Upsert cart item
     const { data, error } = await supabase
       .from('cart_items')
-      .upsert({
-        user_id: session.user.id,
-        product_id: productId,
-        quantity: quantity
-      }, {
-        onConflict: 'user_id,product_id'
-      })
-      .select();
+      .upsert(
+        {
+          user_id: session.user.id,
+          product_id: productId,
+          quantity: quantity,
+        },
+        {
+          onConflict: 'user_id,product_id',
+        }
+      )
+      .select()
 
-    if (error) throw error;
+    if (error) throw error
 
     return NextResponse.json({
       success: true,
       message: `${product.name} agregado al carrito`,
-      item: data[0]
-    });
+      item: data[0],
+    })
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to add to cart' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to add to cart' }, { status: 500 })
   }
 }
 ```
@@ -457,70 +485,73 @@ export async function POST(request: NextRequest) {
 
 ```typescript
 // src/hooks/useCartWithBackend.ts
-import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from './useAuth';
+import { useCallback, useEffect, useState } from 'react'
+import { useAuth } from './useAuth'
 
 export const useCartWithBackend = () => {
-  const { user } = useAuth();
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { user } = useAuth()
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   // Cargar carrito desde backend
   const loadCart = useCallback(async () => {
-    if (!user) return;
+    if (!user) return
 
-    setLoading(true);
+    setLoading(true)
     try {
-      const response = await fetch('/api/cart');
-      const data = await response.json();
+      const response = await fetch('/api/cart')
+      const data = await response.json()
 
       if (data.success) {
-        setItems(data.items);
+        setItems(data.items)
       } else {
-        setError(data.error);
+        setError(data.error)
       }
     } catch (err) {
-      setError('Failed to load cart');
+      setError('Failed to load cart')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [user]);
+  }, [user])
 
   // Agregar item al carrito
-  const addItem = useCallback(async (productId: string, quantity: number = 1) => {
-    if (!user) {
-      // Para usuarios no autenticados, usar localStorage
-      // TODO: Implementar lógica de localStorage
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch('/api/cart/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        await loadCart(); // Recargar carrito
-      } else {
-        setError(data.error);
+  const addItem = useCallback(
+    async (productId: string, quantity: number = 1) => {
+      if (!user) {
+        // Para usuarios no autenticados, usar localStorage
+        // TODO: Implementar lógica de localStorage
+        return
       }
-    } catch (err) {
-      setError('Failed to add item');
-    } finally {
-      setLoading(false);
-    }
-  }, [user, loadCart]);
+
+      setLoading(true)
+      try {
+        const response = await fetch('/api/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, quantity }),
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          await loadCart() // Recargar carrito
+        } else {
+          setError(data.error)
+        }
+      } catch (err) {
+        setError('Failed to add item')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [user, loadCart]
+  )
 
   // Cargar carrito al montar componente
   useEffect(() => {
-    loadCart();
-  }, [loadCart]);
+    loadCart()
+  }, [loadCart])
 
   return {
     items,
@@ -529,11 +560,12 @@ export const useCartWithBackend = () => {
     addItem,
     loadCart,
     totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
-    totalPrice: items.reduce((sum, item) =>
-      sum + (item.products.discounted_price || item.products.price) * item.quantity, 0
-    )
-  };
-};
+    totalPrice: items.reduce(
+      (sum, item) => sum + (item.products.discounted_price || item.products.price) * item.quantity,
+      0
+    ),
+  }
+}
 ```
 
 ### **3. Componente ProductCard con Carrito Funcional**
@@ -573,13 +605,13 @@ export const ProductCard = ({ product }) => {
 ```typescript
 // src/app/api/mercadopago/preferences/route.ts
 // Alias para mantener compatibilidad con frontend
-export { POST } from '../../payments/preferences/route';
-export { GET } from '../../payments/preferences/route';
+export { POST } from '../../payments/preferences/route'
+export { GET } from '../../payments/preferences/route'
 ```
 
 ```typescript
 // src/app/api/mercadopago/webhook/route.ts
-export { POST } from '../../payments/webhook/route';
+export { POST } from '../../payments/webhook/route'
 ```
 
 ---
@@ -588,51 +620,50 @@ export { POST } from '../../payments/webhook/route';
 
 ```typescript
 // src/__tests__/e2e/complete-purchase-flow.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
 test.describe('Complete Purchase Flow - Fixed', () => {
-
   test('Full purchase flow with real backend integration', async ({ page }) => {
     // 1. Navegar a homepage
-    await page.goto('http://localhost:3000');
-    await page.waitForLoadState('networkidle');
+    await page.goto('http://localhost:3000')
+    await page.waitForLoadState('networkidle')
 
     // 2. Verificar productos se cargan
-    await expect(page.locator('[data-testid="product-card"]')).toBeVisible();
+    await expect(page.locator('[data-testid="product-card"]')).toBeVisible()
 
     // 3. Agregar producto al carrito
-    const addToCartBtn = page.locator('[data-testid="add-to-cart"]').first();
-    await addToCartBtn.click();
+    const addToCartBtn = page.locator('[data-testid="add-to-cart"]').first()
+    await addToCartBtn.click()
 
     // 4. Verificar feedback visual
-    await expect(page.locator('.toast, .notification')).toContainText('agregado');
+    await expect(page.locator('.toast, .notification')).toContainText('agregado')
 
     // 5. Ir al carrito
-    await page.locator('[data-testid="cart-icon"]').click();
-    await page.waitForLoadState('networkidle');
+    await page.locator('[data-testid="cart-icon"]').click()
+    await page.waitForLoadState('networkidle')
 
     // 6. Verificar item en carrito
-    await expect(page.locator('.cart-item')).toBeVisible();
+    await expect(page.locator('.cart-item')).toBeVisible()
 
     // 7. Proceder al checkout
-    const checkoutBtn = page.locator('[data-testid="checkout-btn"]');
-    await expect(checkoutBtn).toBeEnabled(); // ✅ Ahora debería estar habilitado
-    await checkoutBtn.click();
+    const checkoutBtn = page.locator('[data-testid="checkout-btn"]')
+    await expect(checkoutBtn).toBeEnabled() // ✅ Ahora debería estar habilitado
+    await checkoutBtn.click()
 
     // 8. Completar formulario
-    await page.fill('input[name="email"]', 'test@example.com');
-    await page.fill('input[name="phone"]', '+54 11 1234-5678');
+    await page.fill('input[name="email"]', 'test@example.com')
+    await page.fill('input[name="phone"]', '+54 11 1234-5678')
 
     // 9. Procesar pago
-    const payBtn = page.locator('[data-testid="pay-button"]');
-    await payBtn.click();
+    const payBtn = page.locator('[data-testid="pay-button"]')
+    await payBtn.click()
 
     // 10. Verificar redirección a MercadoPago
-    await page.waitForURL('**/mercadopago.com/**');
+    await page.waitForURL('**/mercadopago.com/**')
 
-    console.log('✅ Flujo de compra completado exitosamente');
-  });
-});
+    console.log('✅ Flujo de compra completado exitosamente')
+  })
+})
 ```
 
 ---
@@ -641,40 +672,43 @@ test.describe('Complete Purchase Flow - Fixed', () => {
 
 ### **React-Use-Cart vs Implementación Actual**
 
-| Aspecto | React-Use-Cart | Pinteya Actual | Pinteya Mejorado |
-|---------|----------------|----------------|------------------|
-| **Provider** | ✅ CartProvider | ✅ Redux Store | ✅ Redux + Backend |
-| **Add Item** | ✅ addItem() | ✅ addItemToCart() | ✅ + API call |
-| **Persistence** | ✅ localStorage | ✅ localStorage | ✅ + Database |
-| **User Sync** | ❌ No | ⚠️ Parcial | ✅ Completo |
-| **Real-time** | ❌ No | ❌ No | ✅ Supabase Realtime |
+| Aspecto         | React-Use-Cart  | Pinteya Actual     | Pinteya Mejorado     |
+| --------------- | --------------- | ------------------ | -------------------- |
+| **Provider**    | ✅ CartProvider | ✅ Redux Store     | ✅ Redux + Backend   |
+| **Add Item**    | ✅ addItem()    | ✅ addItemToCart() | ✅ + API call        |
+| **Persistence** | ✅ localStorage | ✅ localStorage    | ✅ + Database        |
+| **User Sync**   | ❌ No           | ⚠️ Parcial         | ✅ Completo          |
+| **Real-time**   | ❌ No           | ❌ No              | ✅ Supabase Realtime |
 
 ### **Supabase E-commerce vs Implementación Actual**
 
-| Aspecto | Supabase Best Practice | Pinteya Actual | Requerido |
-|---------|------------------------|----------------|-----------|
-| **Auto APIs** | ✅ Automático | ❌ Manual | ✅ Implementar |
-| **RLS** | ✅ Row Level Security | ⚠️ Parcial | ✅ Configurar |
-| **Relations** | ✅ Foreign Keys | ✅ Implementado | ✅ Optimizar |
-| **Real-time** | ✅ Subscriptions | ❌ No usado | 🟡 Opcional |
+| Aspecto       | Supabase Best Practice | Pinteya Actual  | Requerido      |
+| ------------- | ---------------------- | --------------- | -------------- |
+| **Auto APIs** | ✅ Automático          | ❌ Manual       | ✅ Implementar |
+| **RLS**       | ✅ Row Level Security  | ⚠️ Parcial      | ✅ Configurar  |
+| **Relations** | ✅ Foreign Keys        | ✅ Implementado | ✅ Optimizar   |
+| **Real-time** | ✅ Subscriptions       | ❌ No usado     | 🟡 Opcional    |
 
 ---
 
 ## 🎯 **CONCLUSIONES Y PRÓXIMOS PASOS**
 
 ### **Fortalezas de la Implementación Actual:**
+
 1. ✅ **Arquitectura sólida** con Redux y hooks optimizados
 2. ✅ **MercadoPago bien implementado** con circuit breakers y enterprise patterns
 3. ✅ **UI/UX profesional** con componentes reutilizables
 4. ✅ **Testing infrastructure** con Playwright configurado
 
 ### **Gaps Críticos a Resolver:**
+
 1. 🔥 **APIs de carrito faltantes** - Implementar en 2-3 días
 2. 🔥 **Datos de productos vacíos** - Poblar DB y configurar RLS
 3. 🔥 **Rutas MercadoPago desconectadas** - Crear aliases
 4. 🔥 **Configuración Supabase** - Variables de entorno
 
 ### **Impacto Esperado Post-Implementación:**
+
 - **Funcionalidad:** 0% → 100% flujo de compra completo
 - **Tests E2E:** 60% → 100% passing
 - **User Experience:** Carrito funcional con persistencia
@@ -685,4 +719,4 @@ test.describe('Complete Purchase Flow - Fixed', () => {
 
 ---
 
-*Code Review exhaustivo basado en Playwright tests y documentación oficial de React-Use-Cart, Supabase y Next.js*
+_Code Review exhaustivo basado en Playwright tests y documentación oficial de React-Use-Cart, Supabase y Next.js_

@@ -22,12 +22,14 @@
 ## 🎯 Visión Arquitectónica
 
 ### **Principios Enterprise**
+
 - **Escalabilidad Horizontal**: Auto-scaling con Redis + Vercel Edge
 - **Resilencia**: Circuit breakers + Retry logic + Fallbacks
 - **Observabilidad**: Métricas en tiempo real + Alertas automáticas
 - **Seguridad**: HMAC verification + Rate limiting + Audit trails
 
 ### **Stack Tecnológico Integrado**
+
 ```mermaid
 graph TB
     subgraph "Frontend Layer"
@@ -35,25 +37,25 @@ graph TB
         B[React 18 Server Components]
         C[Tailwind CSS + shadcn/ui]
     end
-    
+
     subgraph "API Layer"
         D[Route Handlers]
         E[Middleware Security]
         F[Rate Limiting]
     end
-    
+
     subgraph "Business Logic"
         G[MercadoPago Integration]
         H[Supabase Database]
         I[Clerk Authentication]
     end
-    
+
     subgraph "Infrastructure"
         J[Vercel Edge Network]
         K[Redis Cache]
         L[Monitoring Stack]
     end
-    
+
     A --> D
     D --> G
     D --> H
@@ -68,6 +70,7 @@ graph TB
 ## 🏗️ Diagrama de Arquitectura
 
 ### **Arquitectura de Capas Enterprise**
+
 ```typescript
 // Estructura de capas enterprise
 interface EnterpriseArchitecture {
@@ -77,21 +80,21 @@ interface EnterpriseArchitecture {
     styling: 'Tailwind CSS + shadcn/ui'
     state: 'React Server State + Client State'
   }
-  
+
   api: {
     routing: 'App Router Route Handlers'
     middleware: 'Security + Rate Limiting + CORS'
     validation: 'Zod + TypeScript'
     caching: '4-Layer Cache Strategy'
   }
-  
+
   business: {
     payments: 'MercadoPago Enterprise'
     database: 'Supabase PostgreSQL + RLS'
     auth: 'Clerk + Custom Roles'
     search: 'Full-text + Filters'
   }
-  
+
   infrastructure: {
     hosting: 'Vercel Edge Network'
     cache: 'Redis + Next.js Cache'
@@ -102,6 +105,7 @@ interface EnterpriseArchitecture {
 ```
 
 ### **Flujo de Datos Enterprise**
+
 ```mermaid
 sequenceDiagram
     participant U as Usuario
@@ -111,12 +115,12 @@ sequenceDiagram
     participant MP as MercadoPago
     participant S as Supabase
     participant R as Redis
-    
+
     U->>N: Request
     N->>M: Security Check
     M->>A: Rate Limited Request
     A->>R: Cache Check
-    
+
     alt Cache Hit
         R->>A: Cached Data
     else Cache Miss
@@ -126,7 +130,7 @@ sequenceDiagram
         S->>A: Data
         A->>R: Cache Store
     end
-    
+
     A->>N: Response
     N->>U: Rendered Page
 ```
@@ -136,6 +140,7 @@ sequenceDiagram
 ## 🔄 Flujos de Integración
 
 ### **1. Payment Flow Enterprise**
+
 ```typescript
 // lib/flows/payment-flow.ts
 export class EnterprisePaymentFlow {
@@ -149,51 +154,50 @@ export class EnterprisePaymentFlow {
   async processPayment(paymentData: PaymentRequest): Promise<PaymentResult> {
     const flowId = generateFlowId()
     const startTime = Date.now()
-    
+
     try {
       // 1. Validación y rate limiting
       await this.validateRequest(paymentData)
       await this.checkRateLimit(paymentData.userId)
-      
+
       // 2. Crear preferencia en MercadoPago
       const preference = await this.mercadoPago.createPreference({
         ...paymentData,
-        notification_url: `${process.env.NEXT_PUBLIC_URL}/api/webhooks/mercadopago`
+        notification_url: `${process.env.NEXT_PUBLIC_URL}/api/webhooks/mercadopago`,
       })
-      
+
       // 3. Guardar en base de datos
       const order = await this.database.createOrder({
         userId: paymentData.userId,
         preferenceId: preference.id,
         amount: paymentData.amount,
-        status: 'pending'
+        status: 'pending',
       })
-      
+
       // 4. Cache de la transacción
       await this.cache.setOrderCache(order.id, order, 3600)
-      
+
       // 5. Métricas
       await this.monitor.recordPaymentFlow({
         flowId,
         duration: Date.now() - startTime,
-        status: 'success'
+        status: 'success',
       })
-      
+
       return {
         success: true,
         preferenceId: preference.id,
         orderId: order.id,
-        checkoutUrl: preference.init_point
+        checkoutUrl: preference.init_point,
       }
-      
     } catch (error) {
       await this.monitor.recordPaymentFlow({
         flowId,
         duration: Date.now() - startTime,
         status: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
-      
+
       throw error
     }
   }
@@ -201,24 +205,25 @@ export class EnterprisePaymentFlow {
 ```
 
 ### **2. Webhook Processing Flow**
+
 ```typescript
 // lib/flows/webhook-flow.ts
 export class EnterpriseWebhookFlow {
   async processWebhook(notification: WebhookNotification): Promise<void> {
     const processor = new WebhookProcessor()
-    
+
     // 1. Verificación HMAC
     const isValid = await processor.verifySignature(notification)
     if (!isValid) {
       throw new SecurityError('Invalid HMAC signature')
     }
-    
+
     // 2. Idempotencia check
     const isProcessed = await this.cache.isWebhookProcessed(notification.id)
     if (isProcessed) {
       return // Ya procesado
     }
-    
+
     // 3. Procesar según tipo
     switch (notification.type) {
       case 'payment':
@@ -228,7 +233,7 @@ export class EnterpriseWebhookFlow {
         await this.handleSubscriptionUpdate(notification)
         break
     }
-    
+
     // 4. Marcar como procesado
     await this.cache.markWebhookProcessed(notification.id)
   }
@@ -240,6 +245,7 @@ export class EnterpriseWebhookFlow {
 ## ⚡ Performance Patterns
 
 ### **1. Multi-Layer Caching Strategy**
+
 ```typescript
 // lib/cache/enterprise-cache.ts
 export class EnterpriseCacheManager {
@@ -247,39 +253,35 @@ export class EnterpriseCacheManager {
     private redis: RedisClient,
     private nextCache: NextCacheManager
   ) {}
-  
+
   async get<T>(key: string, options?: CacheOptions): Promise<T | null> {
     // Layer 1: Next.js Request Memoization
     const memoized = this.nextCache.getMemoized(key)
     if (memoized) return memoized
-    
+
     // Layer 2: Redis Cache
     const cached = await this.redis.get(key)
     if (cached) {
       this.nextCache.setMemoized(key, cached)
       return cached
     }
-    
+
     return null
   }
-  
-  async set<T>(
-    key: string, 
-    value: T, 
-    ttl: number = 3600
-  ): Promise<void> {
+
+  async set<T>(key: string, value: T, ttl: number = 3600): Promise<void> {
     // Almacenar en ambas capas
     await this.redis.setex(key, ttl, JSON.stringify(value))
     this.nextCache.setMemoized(key, value)
   }
-  
+
   async invalidate(pattern: string): Promise<void> {
     // Invalidar en Redis
     const keys = await this.redis.keys(pattern)
     if (keys.length > 0) {
       await this.redis.del(...keys)
     }
-    
+
     // Invalidar en Next.js
     this.nextCache.invalidatePattern(pattern)
   }
@@ -287,20 +289,19 @@ export class EnterpriseCacheManager {
 ```
 
 ### **2. Database Query Optimization**
+
 ```typescript
 // lib/database/optimized-queries.ts
 export class OptimizedQueries {
   constructor(private supabase: SupabaseClient) {}
-  
+
   async getProductsWithCache(filters: ProductFilters): Promise<Product[]> {
     const cacheKey = `products:${JSON.stringify(filters)}`
-    
+
     // Usar unstable_cache para queries de base de datos
     return unstable_cache(
       async () => {
-        const query = this.supabase
-          .from('products')
-          .select(`
+        const query = this.supabase.from('products').select(`
             id,
             name,
             price,
@@ -308,25 +309,25 @@ export class OptimizedQueries {
             category:categories(name),
             inventory:inventory(stock)
           `)
-        
+
         if (filters.category) {
           query.eq('category_id', filters.category)
         }
-        
+
         if (filters.priceRange) {
           query.gte('price', filters.priceRange.min)
           query.lte('price', filters.priceRange.max)
         }
-        
+
         const { data, error } = await query
         if (error) throw error
-        
+
         return data
       },
       [cacheKey],
       {
         revalidate: 300, // 5 minutos
-        tags: ['products']
+        tags: ['products'],
       }
     )()
   }
@@ -338,6 +339,7 @@ export class OptimizedQueries {
 ## 🛡️ Security Layers
 
 ### **1. Defense in Depth**
+
 ```typescript
 // lib/security/defense-layers.ts
 export class SecurityLayers {
@@ -346,20 +348,20 @@ export class SecurityLayers {
     // Rate limiting por IP
     const ip = request.ip || 'unknown'
     const rateLimitResult = checkRateLimit(ip)
-    
+
     if (!rateLimitResult.success) {
       return new Response('Rate limit exceeded', { status: 429 })
     }
-    
+
     // Security headers
     const response = NextResponse.next()
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
     response.headers.set('Strict-Transport-Security', 'max-age=31536000')
-    
+
     return response
   }
-  
+
   // Layer 2: API Security
   static async apiSecurity(request: NextRequest) {
     // CSRF protection
@@ -367,14 +369,14 @@ export class SecurityLayers {
     if (!csrfToken || !validateCSRFToken(csrfToken)) {
       throw new SecurityError('Invalid CSRF token')
     }
-    
+
     // Input validation
     const body = await request.json()
     const validatedData = await validateInput(body)
-    
+
     return validatedData
   }
-  
+
   // Layer 3: Business Logic Security
   static async businessSecurity(userId: string, action: string) {
     // Authorization check
@@ -382,19 +384,20 @@ export class SecurityLayers {
     if (!permissions.includes(action)) {
       throw new AuthorizationError('Insufficient permissions')
     }
-    
+
     // Audit logging
     await logSecurityEvent({
       userId,
       action,
       timestamp: new Date().toISOString(),
-      result: 'authorized'
+      result: 'authorized',
     })
   }
 }
 ```
 
 ### **2. Audit Trail System**
+
 ```typescript
 // lib/security/audit-trail.ts
 export interface AuditEvent {
@@ -414,28 +417,22 @@ export class AuditTrailManager {
     const auditEvent: AuditEvent = {
       ...event,
       id: generateEventId(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
-    
+
     // Almacenar en base de datos segura
     await this.storeAuditEvent(auditEvent)
-    
+
     // Alertar eventos críticos
     if (this.isCriticalEvent(auditEvent)) {
       await this.sendSecurityAlert(auditEvent)
     }
   }
-  
+
   private isCriticalEvent(event: AuditEvent): boolean {
-    const criticalActions = [
-      'admin_access',
-      'payment_failure',
-      'security_violation',
-      'data_export'
-    ]
-    
-    return criticalActions.includes(event.action) || 
-           event.result === 'blocked'
+    const criticalActions = ['admin_access', 'payment_failure', 'security_violation', 'data_export']
+
+    return criticalActions.includes(event.action) || event.result === 'blocked'
   }
 }
 ```
@@ -445,75 +442,74 @@ export class AuditTrailManager {
 ## 📊 Observability Stack
 
 ### **1. Metrics Collection**
+
 ```typescript
 // lib/monitoring/metrics-collector.ts
 export class MetricsCollector {
   private metrics: Map<string, Metric[]> = new Map()
-  
+
   async recordMetric(name: string, value: number, tags?: Record<string, string>) {
     const metric: Metric = {
       name,
       value,
       timestamp: Date.now(),
-      tags: tags || {}
+      tags: tags || {},
     }
-    
+
     // Almacenar localmente
     const existing = this.metrics.get(name) || []
     existing.push(metric)
     this.metrics.set(name, existing.slice(-1000)) // Mantener últimas 1000
-    
+
     // Enviar a sistema de monitoreo
     await this.sendToMonitoringSystem(metric)
-    
+
     // Verificar alertas
     await this.checkAlerts(name, value, tags)
   }
-  
+
   async getMetrics(name: string, timeRange: TimeRange): Promise<Metric[]> {
     const metrics = this.metrics.get(name) || []
-    return metrics.filter(m => 
-      m.timestamp >= timeRange.start && 
-      m.timestamp <= timeRange.end
-    )
+    return metrics.filter(m => m.timestamp >= timeRange.start && m.timestamp <= timeRange.end)
   }
 }
 ```
 
 ### **2. Real-time Dashboard**
+
 ```typescript
 // components/monitoring/RealTimeDashboard.tsx
 'use client'
 
 export function RealTimeDashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics>()
-  
+
   useEffect(() => {
     const interval = setInterval(async () => {
       const data = await fetch('/api/monitoring/metrics').then(r => r.json())
       setMetrics(data)
     }, 5000) // Actualizar cada 5 segundos
-    
+
     return () => clearInterval(interval)
   }, [])
-  
+
   return (
     <div className="dashboard-grid">
-      <MetricCard 
-        title="Response Time" 
-        value={metrics?.responseTime} 
+      <MetricCard
+        title="Response Time"
+        value={metrics?.responseTime}
         unit="ms"
         threshold={1000}
       />
-      <MetricCard 
-        title="Error Rate" 
-        value={metrics?.errorRate} 
+      <MetricCard
+        title="Error Rate"
+        value={metrics?.errorRate}
         unit="%"
         threshold={5}
       />
-      <MetricCard 
-        title="Throughput" 
-        value={metrics?.throughput} 
+      <MetricCard
+        title="Throughput"
+        value={metrics?.throughput}
         unit="req/min"
       />
       <AlertsPanel alerts={metrics?.alerts} />
@@ -527,6 +523,7 @@ export function RealTimeDashboard() {
 ## 🚀 Deployment Strategy
 
 ### **1. Environment Configuration**
+
 ```typescript
 // lib/config/environment.ts
 export const ENVIRONMENT_CONFIG = {
@@ -534,31 +531,31 @@ export const ENVIRONMENT_CONFIG = {
     mercadoPago: {
       publicKey: process.env.MERCADOPAGO_PUBLIC_KEY_TEST!,
       accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN_TEST!,
-      webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET_TEST!
+      webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET_TEST!,
     },
     database: {
       url: process.env.SUPABASE_URL_DEV!,
-      anonKey: process.env.SUPABASE_ANON_KEY_DEV!
+      anonKey: process.env.SUPABASE_ANON_KEY_DEV!,
     },
     redis: {
-      url: process.env.REDIS_URL_DEV!
-    }
+      url: process.env.REDIS_URL_DEV!,
+    },
   },
-  
+
   production: {
     mercadoPago: {
       publicKey: process.env.MERCADOPAGO_PUBLIC_KEY_PROD!,
       accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN_PROD!,
-      webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET_PROD!
+      webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET_PROD!,
     },
     database: {
       url: process.env.SUPABASE_URL_PROD!,
-      anonKey: process.env.SUPABASE_ANON_KEY_PROD!
+      anonKey: process.env.SUPABASE_ANON_KEY_PROD!,
     },
     redis: {
-      url: process.env.REDIS_URL_PROD!
-    }
-  }
+      url: process.env.REDIS_URL_PROD!,
+    },
+  },
 } as const
 ```
 
@@ -568,6 +565,3 @@ export const ENVIRONMENT_CONFIG = {
 **Fecha**: Enero 2025  
 **Versión**: Enterprise v3.0  
 **Integración**: Next.js 15 + MercadoPago + Supabase + Context7
-
-
-

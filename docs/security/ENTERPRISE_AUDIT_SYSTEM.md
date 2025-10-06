@@ -24,15 +24,15 @@ graph TB
     B --> C[Event Logger]
     B --> D[Anomaly Detector]
     B --> E[Incident Manager]
-    
+
     C --> F[Supabase Storage]
     D --> G[7 Detection Algorithms]
     E --> H[Response Actions]
-    
+
     I[Rate Limiting] --> B
     J[Auth System] --> B
     K[APIs] --> B
-    
+
     B --> L[Dashboard API]
     B --> M[Reports API]
     B --> N[Metrics API]
@@ -54,65 +54,78 @@ graph TB
 ## 🔍 Detectores de Anomalías Implementados
 
 ### **1. Detector de Patrones de Login Inusuales**
+
 ```typescript
 detectUnusualLoginPattern()
 ```
 
 **Detecta:**
+
 - Múltiples fallos seguidos de éxito (brute force exitoso)
 - Logins desde múltiples IPs en corto tiempo
 - Logins fuera de horario habitual (6am-10pm)
 
 **Indicadores:**
+
 - `brute_force_success` - Peso: 0.8
 - `multiple_ips` - Peso: 0.6
 - `unusual_hours` - Peso: 0.4
 
 ### **2. Detector de Uso Sospechoso de APIs**
+
 ```typescript
 detectSuspiciousAPIUsage()
 ```
 
 **Detecta:**
+
 - Volumen inusual de requests (>100 en 24h)
 - Acceso excesivo a recursos sensibles
 - Patrón de scraping (requests muy rápidos)
 
 **Indicadores:**
+
 - `high_volume_requests` - Peso: 0.6
 - `sensitive_resource_access` - Peso: 0.7
 - `rapid_requests` - Peso: 0.8
 
 ### **3. Detector de Escalación de Privilegios**
+
 ```typescript
 detectPrivilegeEscalation()
 ```
 
 **Detecta:**
+
 - Múltiples denegaciones de permisos (≥5)
 - Intentos de acceso a recursos admin
 - Cambios de rol sospechosos
 
 **Indicadores:**
+
 - `multiple_permission_denials` - Peso: 0.7
 - `admin_access_attempts` - Peso: 0.8
 - `role_changes` - Peso: 0.9
 
 ### **4. Detector de Abuso de Rate Limiting**
+
 ```typescript
 detectRateLimitAbuse()
 ```
 
 **Detecta:**
+
 - IPs con múltiples violaciones (≥10)
 - Múltiples usuarios desde la misma IP
 - Patrones de ataque distribuido
 
 **Indicadores:**
+
 - `rate_limit_violations` - Peso: 0.8
 - `multiple_users_same_ip` - Peso: 0.6
 
 ### **5-7. Detectores Adicionales**
+
 - **Geographic Anomaly** - Logins desde ubicaciones inusuales
 - **Time-based Anomaly** - Actividad fuera de patrones temporales
 - **Behavioral Deviation** - Desviación de comportamiento histórico
@@ -122,12 +135,14 @@ detectRateLimitAbuse()
 ## 📊 Sistema de Gestión de Incidentes
 
 ### **Estados de Incidentes:**
+
 - **open** - Incidente recién creado
 - **investigating** - En proceso de investigación
 - **resolved** - Resuelto pero no cerrado
 - **closed** - Cerrado completamente
 
 ### **Severidades:**
+
 - **critical** - Requiere acción inmediata
 - **high** - Requiere atención prioritaria
 - **medium** - Requiere revisión
@@ -136,26 +151,30 @@ detectRateLimitAbuse()
 ### **Acciones Automáticas por Severidad:**
 
 #### **Critical:**
+
 - Notificar equipo de seguridad inmediatamente
 - Escalar a management
 - Crear timeline automático
 
 #### **High:**
+
 - Notificar equipo de seguridad
 - Asignar para investigación
 
 #### **Medium:**
+
 - Registrar para revisión
 - Añadir a cola de trabajo
 
 ### **Timeline de Incidentes:**
+
 ```typescript
 interface IncidentTimelineEntry {
-  timestamp: string;
-  action: string;
-  actor: string;
-  description: string;
-  metadata?: Record<string, any>;
+  timestamp: string
+  action: string
+  actor: string
+  description: string
+  metadata?: Record<string, any>
 }
 ```
 
@@ -164,11 +183,13 @@ interface IncidentTimelineEntry {
 ## 🚀 APIs del Sistema
 
 ### **1. Dashboard de Seguridad**
+
 ```bash
 GET /api/admin/security/dashboard
 ```
 
 **Parámetros:**
+
 - `timeRange`: 1h, 6h, 24h, 7d, 30d
 - `anomalies`: true/false
 - `incidents`: true/false
@@ -176,6 +197,7 @@ GET /api/admin/security/dashboard
 - `refresh`: true/false
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -209,6 +231,7 @@ GET /api/admin/security/dashboard
 ```
 
 ### **2. Gestión de Incidentes**
+
 ```bash
 # Listar incidentes
 GET /api/admin/security/incidents
@@ -235,6 +258,7 @@ PATCH /api/admin/security/incidents
 ```
 
 ### **3. Análisis Bajo Demanda**
+
 ```bash
 POST /api/admin/security/dashboard
 {
@@ -250,6 +274,7 @@ POST /api/admin/security/dashboard
 ## 🔧 Configuración Enterprise
 
 ### **Retención de Datos:**
+
 ```typescript
 DATA_RETENTION: {
   security_events: 365,    // días
@@ -260,6 +285,7 @@ DATA_RETENTION: {
 ```
 
 ### **Umbrales de Detección:**
+
 ```typescript
 DETECTION_THRESHOLDS: {
   anomaly_confidence: 0.7,      // 70% confianza mínima
@@ -271,6 +297,7 @@ DETECTION_THRESHOLDS: {
 ```
 
 ### **Configuración de Alertas:**
+
 ```typescript
 ALERT_CONFIG: {
   immediate_notification: ['critical'],
@@ -281,6 +308,7 @@ ALERT_CONFIG: {
 ```
 
 ### **Análisis Automático:**
+
 ```typescript
 AUTOMATED_ANALYSIS: {
   pattern_analysis_interval: 300,    // 5 minutos
@@ -295,9 +323,11 @@ AUTOMATED_ANALYSIS: {
 ## 🔄 Integración con Rate Limiting
 
 ### **Auditoría Automática:**
+
 Cuando se excede un límite de rate limiting, el sistema automáticamente:
 
 1. **Registra evento de seguridad:**
+
 ```typescript
 {
   event_type: 'SECURITY_VIOLATION',
@@ -320,12 +350,13 @@ Cuando se excede un límite de rate limiting, el sistema automáticamente:
 4. **Actualiza métricas** de seguridad en tiempo real
 
 ### **Métricas Integradas:**
+
 ```typescript
 rate_limiting: {
-  total_requests: number;
-  blocked_requests: number;
-  block_rate: number;
-  top_blocked_ips: Array<{ip: string; count: number}>;
+  total_requests: number
+  blocked_requests: number
+  block_rate: number
+  top_blocked_ips: Array<{ ip: string; count: number }>
 }
 ```
 
@@ -334,6 +365,7 @@ rate_limiting: {
 ## 📈 Métricas y Monitoreo
 
 ### **Métricas Enterprise:**
+
 - **Eventos de seguridad** - Total, por severidad, por categoría
 - **Rate limiting** - Requests, bloqueos, IPs problemáticas
 - **Detección de anomalías** - Total, alta confianza, precisión
@@ -341,12 +373,15 @@ rate_limiting: {
 - **Compliance** - Cobertura auditoría, violaciones políticas
 
 ### **Tendencias en Tiempo Real:**
+
 - **Eventos** - Evolución por día/severidad
 - **Anomalías** - Evolución por día/tipo
 - **Incidentes** - Evolución por día/severidad
 
 ### **Recomendaciones Automáticas:**
+
 El sistema genera recomendaciones basadas en:
+
 - Alto porcentaje de requests bloqueadas
 - Múltiples anomalías de alta confianza
 - Incidentes recurrentes
@@ -357,6 +392,7 @@ El sistema genera recomendaciones basadas en:
 ## 🧪 Testing y Validación
 
 ### **Tests Implementados:**
+
 - **✅ 19 tests** de funcionalidad completa
 - **✅ 19/19 tests** pasando (100%)
 - **✅ Configuraciones enterprise** validadas
@@ -365,6 +401,7 @@ El sistema genera recomendaciones basadas en:
 - **✅ Integración rate limiting** validada
 
 ### **Casos de Prueba Cubiertos:**
+
 - **Configuración enterprise** - Retención, umbrales, alertas
 - **Registro de eventos** - Con y sin contexto enterprise
 - **Cálculo de risk score** - Por severidad y tipo
@@ -374,6 +411,7 @@ El sistema genera recomendaciones basadas en:
 - **Manejo de errores** - Graceful degradation
 
 ### **Comandos de Testing:**
+
 ```bash
 # Tests específicos de auditoría
 npm test src/__tests__/security/enterprise-audit-system.test.ts
@@ -390,12 +428,14 @@ npm run build
 ## 🚀 Próximos Pasos
 
 ### **Mejoras Planificadas:**
+
 1. **Dashboard visual** - Interfaz web para métricas
 2. **Alertas en tiempo real** - Webhooks y notificaciones
 3. **Machine learning** - Detección más sofisticada
 4. **Geolocalización** - Análisis por ubicación
 
 ### **Integraciones Futuras:**
+
 1. **SIEM integration** - Splunk, ELK Stack
 2. **Threat intelligence** - Feeds externos
 3. **Compliance reporting** - SOC2, ISO27001
@@ -413,6 +453,3 @@ npm run build
 - ✅ **19/19 tests** pasando
 - ✅ **Build exitoso** sin errores
 - ✅ **Documentación completa** entregada
-
-
-

@@ -33,6 +33,7 @@ Se ha implementado un sistema completo de Google Maps para logística con las si
 ## 🏗️ **Arquitectura Implementada**
 
 ### **Frontend Components**
+
 ```
 src/components/admin/logistics/
 ├── GoogleMapsLogistics.tsx          # Componente principal de mapas
@@ -41,6 +42,7 @@ src/components/admin/logistics/
 ```
 
 ### **Backend APIs**
+
 ```
 src/app/api/admin/logistics/
 ├── routes/route.ts                  # CRUD rutas optimizadas
@@ -49,12 +51,14 @@ src/app/api/admin/logistics/
 ```
 
 ### **Hooks Especializados**
+
 ```
 src/hooks/admin/
 └── useRouteOptimization.ts          # Hook para gestión de rutas
 ```
 
 ### **Base de Datos**
+
 ```sql
 -- Nuevas tablas creadas:
 logistics_drivers                    # Conductores de flota propia
@@ -75,6 +79,7 @@ shipments.route_id                   # Vinculación envíos-rutas
    - Nombre sugerido: "Pinteya-Ecommerce-Maps"
 
 3. **Habilitar APIs Necesarias**
+
    ```
    ✅ Maps JavaScript API
    ✅ Geocoding API
@@ -120,6 +125,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=tu_api_key_aqui
 ## 📊 **Funcionalidades del Sistema**
 
 ### **1. Mapa Principal**
+
 - **Ubicación**: `/admin/logistics` → Tab "Mapas"
 - **Funciones**:
   - Visualización de todos los envíos
@@ -128,6 +134,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=tu_api_key_aqui
   - InfoWindows con detalles
 
 ### **2. Optimización de Rutas**
+
 - **Ubicación**: `/admin/logistics` → Tab "Rutas"
 - **Funciones**:
   - Generación automática de rutas
@@ -136,6 +143,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=tu_api_key_aqui
   - Métricas de optimización
 
 ### **3. Gestión de Conductores**
+
 - **Funciones**:
   - Registro de conductores propios
   - Gestión de vehículos y capacidades
@@ -145,6 +153,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=tu_api_key_aqui
 ## 🎯 **Algoritmos Implementados**
 
 ### **Clustering Geográfico (K-means)**
+
 ```typescript
 // Agrupa envíos por proximidad geográfica
 function clusterShipments(shipments, maxClusters) {
@@ -154,6 +163,7 @@ function clusterShipments(shipments, maxClusters) {
 ```
 
 ### **Optimización de Rutas (TSP)**
+
 ```typescript
 // Optimiza el orden de visitas en cada ruta
 function optimizeRouteOrder(shipments, startLocation) {
@@ -163,6 +173,7 @@ function optimizeRouteOrder(shipments, startLocation) {
 ```
 
 ### **Cálculo de Distancias (Haversine)**
+
 ```typescript
 // Calcula distancias precisas entre coordenadas
 function calculateDistance(point1, point2) {
@@ -173,12 +184,14 @@ function calculateDistance(point1, point2) {
 ## 📈 **Métricas y KPIs**
 
 ### **Métricas de Rutas**
+
 - **Score de Optimización**: 0-100% basado en:
   - Prioridad de envíos (30%)
   - Eficiencia de distancia (40%)
   - Optimización de tiempo (30%)
 
 ### **Métricas de Conductores**
+
 - **Utilización de Capacidad**: % de capacidad utilizada
 - **Compatibilidad**: Score de idoneidad para ruta específica
 - **Estado en Tiempo Real**: Disponible/Ocupado/Offline
@@ -186,6 +199,7 @@ function calculateDistance(point1, point2) {
 ## 🚀 **Próximos Pasos**
 
 ### **Funcionalidades Avanzadas Planificadas**
+
 1. **Tracking en Tiempo Real**
    - WebSocket integration
    - GPS tracking de conductores
@@ -204,11 +218,13 @@ function calculateDistance(point1, point2) {
 ## 🔍 **Testing y Validación**
 
 ### **Datos de Prueba**
+
 - **5 Conductores** creados automáticamente
 - **65+ Envíos** existentes para testing
 - **Rutas de ejemplo** generables automáticamente
 
 ### **Casos de Uso Validados**
+
 ✅ Visualización de envíos en mapa
 ✅ Filtrado y búsqueda de envíos
 ✅ Generación de rutas optimizadas
@@ -218,11 +234,13 @@ function calculateDistance(point1, point2) {
 ## 💡 **Consejos de Uso**
 
 ### **Para Optimizar Costos de API**
+
 1. **Usar clustering**: Reduce llamadas a APIs de distancia
 2. **Cache de coordenadas**: Evitar geocoding repetitivo
 3. **Límites de rate**: Implementar throttling en desarrollo
 
 ### **Para Mejorar Performance**
+
 1. **Lazy loading**: Cargar mapas solo cuando sea necesario
 2. **Virtualización**: Para listas grandes de envíos
 3. **Debouncing**: En filtros y búsquedas
@@ -230,6 +248,7 @@ function calculateDistance(point1, point2) {
 ## 🎉 **Estado Actual**
 
 ### ✅ **Completado al 100%**
+
 - Integración completa de Google Maps
 - Sistema de rutas optimizadas
 - Gestión de conductores
@@ -238,6 +257,7 @@ function calculateDistance(point1, point2) {
 - Interfaz de usuario completa
 
 ### 🔄 **Listo para Producción**
+
 - Solo requiere configurar Google Maps API Key
 - Todas las funcionalidades están implementadas
 - Sistema escalable y optimizado

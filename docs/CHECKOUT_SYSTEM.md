@@ -17,6 +17,7 @@ El sistema de checkout de Pinteya está completamente funcional y operativo.
 ### 🔧 Configuración Técnica
 
 #### Variables de Entorno
+
 ```bash
 # MercadoPago
 MERCADOPAGO_ACCESS_TOKEN=APP_USR-921414591813674-121116-...
@@ -32,37 +33,40 @@ CLERK_SECRET_KEY=[STRIPE_SECRET_KEY_REMOVED]your-secret-key
 ```
 
 #### Middleware Configurado
+
 ```typescript
 // src/middleware.ts
 publicRoutes: [
-  "/",
-  "/shop",
-  "/shop/(.*)",
-  "/product/(.*)",
-  "/category/(.*)",
-  "/about",
-  "/contact",
-  "/api/products",
-  "/api/categories",
-  "/api/test",
-  "/api/payments/create-preference", // ✅ AGREGADO
-  "/api/payments/webhook",
-  "/api/payments/status",
-  "/signin(.*)",
-  "/signup(.*)",
-  "/sso-callback(.*)"
+  '/',
+  '/shop',
+  '/shop/(.*)',
+  '/product/(.*)',
+  '/category/(.*)',
+  '/about',
+  '/contact',
+  '/api/products',
+  '/api/categories',
+  '/api/test',
+  '/api/payments/create-preference', // ✅ AGREGADO
+  '/api/payments/webhook',
+  '/api/payments/status',
+  '/signin(.*)',
+  '/signup(.*)',
+  '/sso-callback(.*)',
 ]
 ```
 
 ### 🗄️ Base de Datos
 
 #### Usuario Temporal Creado
+
 ```sql
-INSERT INTO users (id, clerk_id, email, name) 
+INSERT INTO users (id, clerk_id, email, name)
 VALUES ('00000000-0000-4000-8000-000000000000', 'temp_user', 'temp@pinteya.com', 'Usuario Temporal');
 ```
 
 #### Estructura de Órdenes
+
 - **Tabla `orders`**: Órdenes principales con user_id, total, status, external_reference
 - **Tabla `order_items`**: Items de cada orden con product_id, quantity, price
 - **Relaciones**: Foreign keys configuradas correctamente
@@ -92,6 +96,7 @@ VALUES ('00000000-0000-4000-8000-000000000000', 'temp_user', 'temp@pinteya.com',
 ### 📊 Resultado de Pruebas
 
 #### Prueba Exitosa
+
 ```json
 {
   "data": {
@@ -107,6 +112,7 @@ VALUES ('00000000-0000-4000-8000-000000000000', 'temp_user', 'temp@pinteya.com',
 ```
 
 #### Datos Enviados a MercadoPago
+
 ```json
 {
   "items": [
@@ -144,17 +150,20 @@ VALUES ('00000000-0000-4000-8000-000000000000', 'temp_user', 'temp@pinteya.com',
 ### 🚀 APIs Funcionando
 
 #### `/api/payments/create-preference`
+
 - **Método**: POST
 - **Estado**: ✅ FUNCIONANDO
 - **Función**: Crear preferencias de pago en MercadoPago
 - **Validaciones**: Stock, productos, datos del comprador
 
 #### `/api/payments/webhook`
-- **Método**: POST  
+
+- **Método**: POST
 - **Estado**: ✅ CONFIGURADO
 - **Función**: Recibir notificaciones de MercadoPago
 
 #### `/api/payments/status`
+
 - **Método**: GET
 - **Estado**: ✅ CONFIGURADO
 - **Función**: Consultar estado de pagos
@@ -179,6 +188,7 @@ VALUES ('00000000-0000-4000-8000-000000000000', 'temp_user', 'temp@pinteya.com',
 ### 🔍 Diagnóstico Completo
 
 El script `debug-checkout.js` confirma que:
+
 - ✅ Servidor funcionando en localhost:3001
 - ✅ API de productos operativa
 - ✅ API de pagos creando preferencias exitosamente
@@ -189,6 +199,3 @@ El script `debug-checkout.js` confirma que:
 ## 🎊 Conclusión
 
 El sistema de checkout de Pinteya está **100% funcional** y listo para procesar pagos reales. Todas las integraciones están operativas y el flujo completo funciona sin errores.
-
-
-

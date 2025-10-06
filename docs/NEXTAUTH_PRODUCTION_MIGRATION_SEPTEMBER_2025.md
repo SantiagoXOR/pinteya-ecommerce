@@ -12,6 +12,7 @@
 ## 🔍 PROBLEMA IDENTIFICADO
 
 ### **Vulnerabilidades en Producción (pinteya.com):**
+
 - **Security Score:** 40% (crítico)
 - **Rutas desprotegidas:** 6/7 rutas admin vulnerables
 - **Endpoints NextAuth.js:** 3/4 devolviendo error 500
@@ -30,27 +31,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
     }),
   ],
-  
+
   // Configuración de cookies para producción
   cookies: {
     sessionToken: {
-      name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
       },
     },
   },
-  
+
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
 })
@@ -60,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
 ```typescript
 // src/middleware.ts - Protección robusta de rutas
-export default auth((req) => {
+export default auth(req => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
   const isAdminRoute = nextUrl.pathname.startsWith('/admin')
@@ -70,10 +71,10 @@ export default auth((req) => {
   if ((isAdminRoute || isApiAdminRoute) && !isLoggedIn) {
     if (isApiAdminRoute) {
       // APIs: devolver 401
-      return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      )
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      })
     } else {
       // UI: redirigir a login
       const signInUrl = new URL('/api/auth/signin', nextUrl.origin)
@@ -99,6 +100,7 @@ AUTH_GOOGLE_SECRET=[GOOGLE_OAUTH_CLIENT_SECRET]
 ```
 
 **⚠️ IMPORTANTE:** Las credenciales reales deben obtenerse de:
+
 - **Google OAuth:** Google Cloud Console > APIs & Services > Credentials
 - **NextAuth Secret:** Generar con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
 
@@ -123,6 +125,7 @@ NODE_ENV=production
 ```
 
 **⚠️ IMPORTANTE:** Las credenciales reales deben obtenerse de:
+
 - **Supabase:** Supabase Dashboard > Settings > API
 - **MercadoPago:** MercadoPago Dashboard > Developers > Credentials
 
@@ -163,12 +166,14 @@ node scripts/test-production-security.js
 ## 🎯 RESULTADOS ESPERADOS
 
 ### **Endpoints NextAuth.js (deben responder 200):**
+
 - ✅ `https://pinteya.com/api/auth/providers`
 - ✅ `https://pinteya.com/api/auth/session`
 - ✅ `https://pinteya.com/api/auth/csrf`
 - ✅ `https://pinteya.com/api/auth/signin`
 
 ### **Rutas Protegidas (deben redirigir o devolver 401):**
+
 - 🔒 `https://pinteya.com/admin` → Redirect a login
 - 🔒 `https://pinteya.com/admin/products` → Redirect a login
 - 🔒 `https://pinteya.com/admin/orders` → Redirect a login
@@ -176,6 +181,7 @@ node scripts/test-production-security.js
 - 🔒 `https://pinteya.com/api/admin/orders` → 401 Unauthorized
 
 ### **Rutas Públicas (deben permanecer accesibles):**
+
 - 🌐 `https://pinteya.com/api/products` → 200 OK
 - 🌐 `https://pinteya.com/api/categories` → 200 OK
 - 🌐 `https://pinteya.com/api/brands` → 200 OK
@@ -183,12 +189,14 @@ node scripts/test-production-security.js
 ## 📊 MÉTRICAS DE ÉXITO
 
 ### **Antes de la Migración:**
+
 - Security Score: **40%**
 - Rutas Protegidas: **1/7** (14%)
 - Vulnerabilidades: **6 críticas**
 - Endpoints NextAuth.js: **1/4** funcionando
 
 ### **Después de la Migración (esperado):**
+
 - Security Score: **100%**
 - Rutas Protegidas: **7/7** (100%)
 - Vulnerabilidades: **0**
@@ -228,6 +236,7 @@ node scripts/test-production-security.js
    - Restaurar configuración anterior
 
 2. **Revertir código:**
+
    ```bash
    git revert HEAD
    git push origin main
@@ -248,6 +257,7 @@ node scripts/test-production-security.js
 ## 📝 CHANGELOG
 
 ### **2 Septiembre 2025:**
+
 - ✅ Configuración NextAuth.js optimizada para producción
 - ✅ Middleware mejorado con protección robusta
 - ✅ Variables de entorno definidas para Vercel
@@ -258,6 +268,3 @@ node scripts/test-production-security.js
 ---
 
 **🎯 PRÓXIMO PASO:** Configurar variables de entorno en Vercel Dashboard y ejecutar deployment.
-
-
-

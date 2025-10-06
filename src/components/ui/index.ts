@@ -116,10 +116,11 @@ export { PriceDisplay } from './price-display'
 export { StockIndicator } from './stock-indicator'
 export { ShippingInfo } from './shipping-info'
 
-// ProductCard - Interfaz consolidada
+// ProductCard - Interfaz// Componentes especializados de e-commerce
 export { EnhancedProductCard } from './product-card-enhanced'
-export { EnhancedProductCard as ProductCard } from './product-card-enhanced' // Alias principal
-export type { EnhancedProductCardProps as ProductCardProps } from './product-card-enhanced'
+export { CommercialProductCard } from './product-card-commercial'
+export { CommercialProductCard as ProductCard } from './product-card-commercial' // Alias principal - versión final
+export type { CommercialProductCardProps as ProductCardProps } from './product-card-commercial'
 
 // Componentes Avanzados E-commerce (Fase 3)
 export { CartSummary, type CartItem } from './cart-summary'

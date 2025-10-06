@@ -3,6 +3,7 @@
 ## 📋 Checklist Pre-Producción
 
 ### ✅ Configuración Completada
+
 - [x] Sistema de mock funcional para desarrollo
 - [x] Credenciales de sandbox configuradas y probadas
 - [x] Webhooks implementados y validados
@@ -10,6 +11,7 @@
 - [x] Documentación completa de testing
 
 ### 🔄 Pendiente para Producción
+
 - [ ] Obtener credenciales de producción de MercadoPago
 - [ ] Configurar variables de entorno de producción
 - [ ] Configurar webhook URL de producción
@@ -27,6 +29,7 @@
    - Iniciar sesión con tu cuenta de MercadoPago
 
 2. **Crear Aplicación de Producción**:
+
    ```
    Developers > Mis aplicaciones > Crear aplicación
    - Nombre: "Pinteya E-commerce"
@@ -52,6 +55,7 @@
 ### 2. Validaciones Requeridas
 
 MercadoPago requiere validar:
+
 - ✅ **Identidad de la empresa**
 - ✅ **Información fiscal (CUIT/CUIL)**
 - ✅ **Cuenta bancaria para recibir pagos**
@@ -184,29 +188,29 @@ openssl s_client -connect pinteya.com:443 -servername pinteya.com
 const securityHeaders = [
   {
     key: 'X-DNS-Prefetch-Control',
-    value: 'on'
+    value: 'on',
   },
   {
     key: 'Strict-Transport-Security',
-    value: 'max-age=63072000; includeSubDomains; preload'
+    value: 'max-age=63072000; includeSubDomains; preload',
   },
   {
     key: 'X-XSS-Protection',
-    value: '1; mode=block'
+    value: '1; mode=block',
   },
   {
     key: 'X-Frame-Options',
-    value: 'DENY'
+    value: 'DENY',
   },
   {
     key: 'X-Content-Type-Options',
-    value: 'nosniff'
+    value: 'nosniff',
   },
   {
     key: 'Referrer-Policy',
-    value: 'origin-when-cross-origin'
-  }
-];
+    value: 'origin-when-cross-origin',
+  },
+]
 ```
 
 ### 3. Validación de Entorno
@@ -214,21 +218,21 @@ const securityHeaders = [
 ```javascript
 // lib/env-config.ts - Validaciones de producción
 export function validateProductionEnvironment() {
-  const errors = [];
-  
+  const errors = []
+
   if (!process.env.MERCADOPAGO_ACCESS_TOKEN?.startsWith('APP_USR')) {
-    errors.push('Invalid MercadoPago access token for production');
+    errors.push('Invalid MercadoPago access token for production')
   }
-  
+
   if (!process.env.NEXT_PUBLIC_APP_URL?.startsWith('https://')) {
-    errors.push('HTTPS required in production');
+    errors.push('HTTPS required in production')
   }
-  
+
   if (process.env.NEXT_PUBLIC_MOCK_PAYMENTS === 'true') {
-    errors.push('Mock payments must be disabled in production');
+    errors.push('Mock payments must be disabled in production')
   }
-  
-  return { isValid: errors.length === 0, errors };
+
+  return { isValid: errors.length === 0, errors }
 }
 ```
 
@@ -244,19 +248,19 @@ const productionMetrics = {
   payments: {
     successRate: '>95%',
     averageResponseTime: '<2s',
-    errorRate: '<5%'
+    errorRate: '<5%',
   },
   webhooks: {
     processingTime: '<1s',
     successRate: '>99%',
-    retryRate: '<10%'
+    retryRate: '<10%',
   },
   api: {
     availability: '>99.9%',
     responseTime: '<500ms',
-    errorRate: '<1%'
-  }
-};
+    errorRate: '<1%',
+  },
+}
 ```
 
 ### 2. Configurar Alertas
@@ -394,6 +398,3 @@ Equipo Interno:
 **🎯 ¡Tu sistema de pagos está listo para producción!**
 
 Una vez completados todos los pasos de este checklist, tendrás un sistema de pagos robusto, seguro y completamente funcional en producción.
-
-
-

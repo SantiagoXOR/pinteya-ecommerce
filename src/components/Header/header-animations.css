@@ -8,9 +8,10 @@
 
 /* Enhanced sticky header with scroll direction */
 .header-sticky-enhanced {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s ease-in-out,
-              backdrop-filter 0.3s ease-in-out;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s ease-in-out,
+    backdrop-filter 0.3s ease-in-out;
 }
 
 .header-sticky-enhanced.scrolling-up {
@@ -124,7 +125,11 @@
 }
 
 @keyframes iconBounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -137,10 +142,15 @@
 
 /* Cart badge bounce animation */
 @keyframes cart-badge-bounce {
-  0%, 20%, 53%, 80%, 100% {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
     transform: translate3d(0, 0, 0);
   }
-  40%, 43% {
+  40%,
+  43% {
     transform: translate3d(0, -8px, 0);
   }
   70% {
@@ -209,11 +219,21 @@
   animation-fill-mode: both;
 }
 
-.dropdown-item-stagger:nth-child(1) { animation-delay: 0.05s; }
-.dropdown-item-stagger:nth-child(2) { animation-delay: 0.1s; }
-.dropdown-item-stagger:nth-child(3) { animation-delay: 0.15s; }
-.dropdown-item-stagger:nth-child(4) { animation-delay: 0.2s; }
-.dropdown-item-stagger:nth-child(5) { animation-delay: 0.25s; }
+.dropdown-item-stagger:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.dropdown-item-stagger:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.dropdown-item-stagger:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.dropdown-item-stagger:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.dropdown-item-stagger:nth-child(5) {
+  animation-delay: 0.25s;
+}
 
 @keyframes dropdownItemStagger {
   from {
@@ -387,7 +407,8 @@
 }
 
 @keyframes pulseEnhanced {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -423,13 +444,21 @@
 }
 
 @keyframes errorShake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  10%, 30%, 50%, 70%, 90% {
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     transform: translateX(-3px);
   }
-  20%, 40%, 60%, 80% {
+  20%,
+  40%,
+  60%,
+  80% {
     transform: translateX(3px);
   }
 }
@@ -445,7 +474,7 @@
   .nav-link-underline::before {
     height: 3px;
   }
-  
+
   .floating-button {
     border: 2px solid currentColor;
   }
@@ -475,7 +504,9 @@
 
 /* Smooth color transitions */
 .color-transition {
-  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  transition:
+    color 0.3s ease-in-out,
+    background-color 0.3s ease-in-out;
 }
 
 /* Elastic scale animation */

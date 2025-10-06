@@ -30,58 +30,55 @@ El sistema de logs de actividad permite registrar y monitorear todas las accione
 
 ### **Categorías Disponibles**
 
-| Categoría | Descripción | Ejemplos de Acciones |
-|-----------|-------------|---------------------|
-| `auth` | Autenticación | login, logout, register, password_reset |
-| `profile` | Perfil de usuario | update_profile, upload_avatar, add_address |
-| `order` | Órdenes | create_order, payment_completed, order_shipped |
-| `security` | Seguridad | enable_2fa, suspicious_activity, password_change |
-| `session` | Sesiones | session_start, session_end, trust_device |
-| `preference` | Preferencias | update_notifications, update_theme |
+| Categoría    | Descripción       | Ejemplos de Acciones                             |
+| ------------ | ----------------- | ------------------------------------------------ |
+| `auth`       | Autenticación     | login, logout, register, password_reset          |
+| `profile`    | Perfil de usuario | update_profile, upload_avatar, add_address       |
+| `order`      | Órdenes           | create_order, payment_completed, order_shipped   |
+| `security`   | Seguridad         | enable_2fa, suspicious_activity, password_change |
+| `session`    | Sesiones          | session_start, session_end, trust_device         |
+| `preference` | Preferencias      | update_notifications, update_theme               |
 
 ## 🔧 Uso del Sistema
 
 ### **1. Logging desde APIs del Servidor**
 
 ```typescript
-import { logProfileActivity, getRequestInfo } from '@/lib/activity/activityLogger';
+import { logProfileActivity, getRequestInfo } from '@/lib/activity/activityLogger'
 
 // En una API route
 export async function PUT(request: NextRequest) {
   // ... lógica de la API ...
-  
+
   // Registrar actividad
-  const requestInfo = getRequestInfo(request);
+  const requestInfo = getRequestInfo(request)
   await logProfileActivity(
     userId,
     'update_profile',
     { fields_updated: ['name', 'email'] },
     requestInfo
-  );
-  
-  return NextResponse.json({ success: true });
+  )
+
+  return NextResponse.json({ success: true })
 }
 ```
 
 ### **2. Logging desde el Cliente**
 
 ```typescript
-import { useUserActivity } from '@/hooks/useUserActivity';
+import { useUserActivity } from '@/hooks/useUserActivity'
 
 function ProfileComponent() {
-  const { logActivity } = useUserActivity();
-  
+  const { logActivity } = useUserActivity()
+
   const handleProfileUpdate = async () => {
     // ... lógica de actualización ...
-    
+
     // Registrar actividad
-    await logActivity(
-      'update_profile',
-      'profile',
-      'Usuario actualizó su perfil',
-      { fields: ['name', 'email'] }
-    );
-  };
+    await logActivity('update_profile', 'profile', 'Usuario actualizó su perfil', {
+      fields: ['name', 'email'],
+    })
+  }
 }
 ```
 
@@ -89,22 +86,22 @@ function ProfileComponent() {
 
 ```typescript
 // Autenticación
-await logAuthActivity(userId, 'login', { method: 'email' }, requestInfo);
+await logAuthActivity(userId, 'login', { method: 'email' }, requestInfo)
 
 // Perfil
-await logProfileActivity(userId, 'upload_avatar', { file_size: '2MB' }, requestInfo);
+await logProfileActivity(userId, 'upload_avatar', { file_size: '2MB' }, requestInfo)
 
 // Seguridad
-await logSecurityActivity(userId, 'enable_2fa', { method: 'totp' }, requestInfo);
+await logSecurityActivity(userId, 'enable_2fa', { method: 'totp' }, requestInfo)
 
 // Sesiones
-await logSessionActivity(userId, 'session_start', { device: 'mobile' }, requestInfo);
+await logSessionActivity(userId, 'session_start', { device: 'mobile' }, requestInfo)
 
 // Órdenes
-await logOrderActivity(userId, 'create_order', orderId, { total: 150.00 }, requestInfo);
+await logOrderActivity(userId, 'create_order', orderId, { total: 150.0 }, requestInfo)
 
 // Preferencias
-await logPreferenceActivity(userId, 'update_theme', { theme: 'dark' }, requestInfo);
+await logPreferenceActivity(userId, 'update_theme', { theme: 'dark' }, requestInfo)
 ```
 
 ## 📊 Estructura de Datos
@@ -113,15 +110,15 @@ await logPreferenceActivity(userId, 'update_theme', { theme: 'dark' }, requestIn
 
 ```typescript
 interface UserActivity {
-  id: string;
-  user_id: string;
-  action: string;
-  category: 'auth' | 'profile' | 'order' | 'security' | 'session' | 'preference';
-  description?: string;
-  metadata?: Record<string, any>;
-  ip_address?: string;
-  user_agent?: string;
-  created_at: string;
+  id: string
+  user_id: string
+  action: string
+  category: 'auth' | 'profile' | 'order' | 'security' | 'session' | 'preference'
+  description?: string
+  metadata?: Record<string, any>
+  ip_address?: string
+  user_agent?: string
+  created_at: string
 }
 ```
 
@@ -134,31 +131,31 @@ const metadata = {
   auth: {
     method: 'email' | 'google' | 'github',
     device_type: 'desktop' | 'mobile' | 'tablet',
-    location: 'Buenos Aires, Argentina'
+    location: 'Buenos Aires, Argentina',
   },
-  
+
   // Profile
   profile: {
     fields_updated: ['name', 'email', 'phone'],
     file_size: '2.5MB',
-    previous_value: 'old_value'
+    previous_value: 'old_value',
   },
-  
+
   // Security
   security: {
     severity: 'low' | 'medium' | 'high' | 'critical',
     method: 'totp' | 'sms',
-    risk_score: 0.8
+    risk_score: 0.8,
   },
-  
+
   // Order
   order: {
     order_id: 'ORD-123',
-    total_amount: 150.00,
+    total_amount: 150.0,
     payment_method: 'mercadopago',
-    items_count: 3
-  }
-};
+    items_count: 3,
+  },
+}
 ```
 
 ## 🔍 Filtros y Búsqueda
@@ -167,26 +164,26 @@ const metadata = {
 
 ```typescript
 interface ActivityFilters {
-  category?: string;           // Filtrar por categoría
-  action?: string;            // Filtrar por acción específica
-  startDate?: string;         // Fecha de inicio (ISO string)
-  endDate?: string;           // Fecha de fin (ISO string)
-  limit?: number;             // Límite de resultados (default: 50)
-  offset?: number;            // Offset para paginación
+  category?: string // Filtrar por categoría
+  action?: string // Filtrar por acción específica
+  startDate?: string // Fecha de inicio (ISO string)
+  endDate?: string // Fecha de fin (ISO string)
+  limit?: number // Límite de resultados (default: 50)
+  offset?: number // Offset para paginación
 }
 ```
 
 ### **Ejemplo de Uso con Filtros**
 
 ```typescript
-const { fetchActivities } = useUserActivity();
+const { fetchActivities } = useUserActivity()
 
 // Obtener actividad de seguridad de los últimos 7 días
 await fetchActivities({
   category: 'security',
   startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-  limit: 20
-});
+  limit: 20,
+})
 ```
 
 ## 📈 Estadísticas y Analytics
@@ -195,22 +192,22 @@ await fetchActivities({
 
 ```typescript
 interface ActivityStats {
-  byCategory: Record<string, number>;    // Conteo por categoría
-  byDay: Record<string, number>;         // Actividad por día (últimos 7 días)
-  totalActivities: number;               // Total de actividades
+  byCategory: Record<string, number> // Conteo por categoría
+  byDay: Record<string, number> // Actividad por día (últimos 7 días)
+  totalActivities: number // Total de actividades
 }
 ```
 
 ### **Uso de Estadísticas**
 
 ```typescript
-const { stats } = useUserActivity();
+const { stats } = useUserActivity()
 
 // Mostrar gráfico de actividad por categoría
 const chartData = Object.entries(stats.byCategory).map(([category, count]) => ({
   category,
-  count
-}));
+  count,
+}))
 ```
 
 ## 🔒 Seguridad y Privacidad
@@ -239,24 +236,29 @@ const chartData = Object.entries(stats.byCategory).map(([category, count]) => ({
 
 ```typescript
 // ✅ Bueno: Usar funciones específicas
-await logAuthActivity(userId, 'login', metadata, requestInfo);
+await logAuthActivity(userId, 'login', metadata, requestInfo)
 
 // ❌ Evitar: Logging manual inconsistente
-await logUserActivity(userId, { action: 'user_logged_in', category: 'auth' });
+await logUserActivity(userId, { action: 'user_logged_in', category: 'auth' })
 ```
 
 ### **2. Metadatos Útiles**
 
 ```typescript
 // ✅ Bueno: Metadatos descriptivos
-await logProfileActivity(userId, 'update_profile', {
-  fields_updated: ['name', 'email'],
-  previous_name: oldName,
-  validation_passed: true
-}, requestInfo);
+await logProfileActivity(
+  userId,
+  'update_profile',
+  {
+    fields_updated: ['name', 'email'],
+    previous_name: oldName,
+    validation_passed: true,
+  },
+  requestInfo
+)
 
 // ❌ Evitar: Metadatos vacíos o inútiles
-await logProfileActivity(userId, 'update_profile', {}, requestInfo);
+await logProfileActivity(userId, 'update_profile', {}, requestInfo)
 ```
 
 ### **3. Manejo de Errores**
@@ -290,11 +292,11 @@ ACTIVITY_BATCH_SIZE=100
 CREATE OR REPLACE FUNCTION cleanup_old_activity()
 RETURNS void AS $$
 BEGIN
-  DELETE FROM user_activity 
+  DELETE FROM user_activity
   WHERE created_at < NOW() - INTERVAL '1 year'
   AND category != 'security';
-  
-  DELETE FROM user_activity 
+
+  DELETE FROM user_activity
   WHERE created_at < NOW() - INTERVAL '2 years'
   AND category = 'security';
 END;
@@ -345,6 +347,3 @@ $$ LANGUAGE plpgsql;
 - [Hook Documentation](/hooks/useUserActivity)
 - [Database Schema](/docs/database/user_activity)
 - [Security Guidelines](/docs/security/activity-logging)
-
-
-

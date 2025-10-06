@@ -24,7 +24,7 @@ interface RateLimitConfig {
 const getEnvironmentLimits = () => {
   const isDevelopment = process.env.NODE_ENV === 'development'
   const isProduction = process.env.NODE_ENV === 'production'
-  
+
   if (isDevelopment) {
     // Límites relajados para desarrollo
     return {
@@ -37,7 +37,7 @@ const getEnvironmentLimits = () => {
       default: { windowMs: 60000, maxRequests: 100 },
     }
   }
-  
+
   if (isProduction) {
     // Límites estrictos para producción (optimizados para performance)
     return {
@@ -52,7 +52,7 @@ const getEnvironmentLimits = () => {
       default: { windowMs: 60000, maxRequests: 30 }, // Default muy conservador
     }
   }
-  
+
   // Staging/testing - límites intermedios
   return {
     '/api/payments': { windowMs: 60000, maxRequests: 8 },
@@ -111,68 +111,73 @@ export async function rateLimitMiddleware(request: NextRequest): Promise<NextRes
   const startTime = Date.now()
   const pathname = request.nextUrl.pathname
   const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
-  
+
   // Obtener configuración para el endpoint
   const config = RATE_LIMITS[pathname] || RATE_LIMITS.default
   const key = `${clientIP}:${pathname}`
-  
+
   const now = Date.now()
   const windowStart = now - config.windowMs
-  
+
   // Obtener o crear contador
   let requestData = requestCounts.get(key)
   if (!requestData || requestData.resetTime <= now) {
     requestData = { count: 0, resetTime: now + config.windowMs }
     requestCounts.set(key, requestData)
   }
-  
+
   // Incrementar contador
   requestData.count++
-  
+
   // Verificar límite
   if (requestData.count > config.maxRequests) {
-    console.warn(`SECURITY:RATE_LIMIT_EXCEEDED - IP: ${clientIP}, Path: ${pathname}, Count: ${requestData.count}/${config.maxRequests}`)
-    
+    console.warn(
+      `SECURITY:RATE_LIMIT_EXCEEDED - IP: ${clientIP}, Path: ${pathname}, Count: ${requestData.count}/${config.maxRequests}`
+    )
+
     // Registrar métricas para producción
     if (process.env.NODE_ENV === 'production') {
       const responseTime = Date.now() - startTime
       productionOptimizer.recordMetrics(pathname, responseTime, true)
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Rate limit exceeded',
-        retryAfter: Math.ceil((requestData.resetTime - now) / 1000)
+        retryAfter: Math.ceil((requestData.resetTime - now) / 1000),
       },
-      { 
+      {
         status: 429,
         headers: {
           'Retry-After': Math.ceil((requestData.resetTime - now) / 1000).toString(),
           'X-RateLimit-Limit': config.maxRequests.toString(),
           'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': requestData.resetTime.toString()
-        }
+          'X-RateLimit-Reset': requestData.resetTime.toString(),
+        },
       }
     )
   }
-  
+
   // Registrar métricas exitosas para producción
   if (process.env.NODE_ENV === 'production') {
     // Registraremos el tiempo de respuesta después de que se complete la request
     const originalResponse = NextResponse.next()
     originalResponse.headers.set('X-RateLimit-Limit', config.maxRequests.toString())
-    originalResponse.headers.set('X-RateLimit-Remaining', (config.maxRequests - requestData.count).toString())
+    originalResponse.headers.set(
+      'X-RateLimit-Remaining',
+      (config.maxRequests - requestData.count).toString()
+    )
     originalResponse.headers.set('X-RateLimit-Reset', requestData.resetTime.toString())
-    
+
     // Registrar métricas en background
     setTimeout(() => {
       const responseTime = Date.now() - startTime
       productionOptimizer.recordMetrics(pathname, responseTime, false)
     }, 0)
-    
+
     return originalResponse
   }
-  
+
   return null
 }
 

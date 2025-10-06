@@ -1,27 +1,33 @@
-import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
-import { SupabaseAdapter } from "./src/lib/integrations/supabase/supabase-adapter"
+import NextAuth from 'next-auth'
+import Google from 'next-auth/providers/google'
+import { SupabaseAdapter } from './src/lib/integrations/supabase/supabase-adapter'
 
 // Debugging de variables de entorno
-console.log("🔍 Debugging NextAuth configuration:")
-console.log("NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "✅ Defined" : "❌ Undefined")
-console.log("SUPABASE_SERVICE_ROLE_KEY:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "✅ Defined" : "❌ Undefined")
+console.log('🔍 Debugging NextAuth configuration:')
+console.log(
+  'NEXT_PUBLIC_SUPABASE_URL:',
+  process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Defined' : '❌ Undefined'
+)
+console.log(
+  'SUPABASE_SERVICE_ROLE_KEY:',
+  process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Defined' : '❌ Undefined'
+)
 
 // Validación de variables de entorno requeridas
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl) {
-  console.error("❌ NEXT_PUBLIC_SUPABASE_URL is missing")
-  throw new Error("NEXT_PUBLIC_SUPABASE_URL is required but not defined")
+  console.error('❌ NEXT_PUBLIC_SUPABASE_URL is missing')
+  throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not defined')
 }
 
 if (!supabaseServiceRoleKey) {
-  console.error("❌ SUPABASE_SERVICE_ROLE_KEY is missing")
-  throw new Error("SUPABASE_SERVICE_ROLE_KEY is required but not defined")
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY is missing')
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is required but not defined')
 }
 
-console.log("✅ All environment variables are present")
+console.log('✅ All environment variables are present')
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: SupabaseAdapter({
@@ -35,8 +41,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
   ],
   pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
+    signIn: '/auth/signin',
+    error: '/auth/error',
   },
   callbacks: {
     async jwt({ token, user, account }) {
@@ -57,7 +63,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
     async signIn({ user, account, profile }) {
       // Permitir el sign-in para todos los usuarios de Google
-      if (account?.provider === "google") {
+      if (account?.provider === 'google') {
         return true
       }
       return false
@@ -65,24 +71,24 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   events: {
     async signIn({ user, account, profile }) {
-      console.log("Usuario autenticado:", user.email)
+      console.log('Usuario autenticado:', user.email)
     },
     async signOut({ session, token }) {
-      console.log("Usuario desconectado")
+      console.log('Usuario desconectado')
     },
   },
   session: {
-    strategy: "jwt" as const,
+    strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === 'development',
 })
 
 // Tipos TypeScript para extender la sesión
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session {
     supabaseAccessToken?: string
     user: {
@@ -94,7 +100,7 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   interface JWT {
     sub: string
   }

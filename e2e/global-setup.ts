@@ -14,10 +14,10 @@ async function globalSetup(config: FullConfig) {
   try {
     // Wait for the development server to be ready
     console.log('⏳ Waiting for development server...')
-    
+
     let retries = 0
     const maxRetries = 30
-    
+
     while (retries < maxRetries) {
       try {
         const response = await page.goto('http://localhost:3000/api/test')
@@ -36,7 +36,7 @@ async function globalSetup(config: FullConfig) {
 
     // Verify essential APIs are working
     console.log('🔍 Verifying APIs...')
-    
+
     const apiChecks = [
       { endpoint: '/api/products', name: 'Products API' },
       { endpoint: '/api/categories', name: 'Categories API' },
@@ -62,10 +62,10 @@ async function globalSetup(config: FullConfig) {
 
     // Setup test data if needed
     console.log('📝 Setting up test data...')
-    
+
     // You can add test data setup here if needed
     // For example, creating test users, products, etc.
-    
+
     // Verify database connection
     try {
       const dbResponse = await page.goto('http://localhost:3000/api/test')
@@ -83,7 +83,7 @@ async function globalSetup(config: FullConfig) {
 
     // Clear any existing test data
     console.log('🧹 Cleaning up previous test data...')
-    
+
     // Clear localStorage and sessionStorage
     await page.evaluate(() => {
       localStorage.clear()
@@ -91,7 +91,6 @@ async function globalSetup(config: FullConfig) {
     })
 
     console.log('✅ Global setup completed successfully')
-
   } catch (error) {
     console.error('❌ Global setup failed:', error)
     throw error

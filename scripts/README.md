@@ -7,6 +7,7 @@ Este directorio contiene todos los scripts de automatización, testing, desarrol
 ## 🗂️ Estructura Organizada
 
 ### 📊 database/
+
 Scripts relacionados con la base de datos y migraciones.
 
 ```
@@ -16,9 +17,11 @@ database/
 ```
 
 **Comandos disponibles:**
+
 - `npm run seed:test` - Ejecutar seed de datos de prueba
 
 ### 🛠️ development/
+
 Scripts para desarrollo, configuración y herramientas de desarrollo.
 
 ```
@@ -42,6 +45,7 @@ development/
 ```
 
 **Comandos disponibles:**
+
 - `npm run assign-admin-role` - Asignar rol admin
 - `npm run sync-admin-role` - Sincronizar rol admin
 - `npm run check-admin-status` - Verificar estado admin
@@ -58,6 +62,7 @@ development/
 - `npm run vscode:optimize` - Optimizar VSCode
 
 ### 🚀 deployment/
+
 Scripts relacionados con despliegue y producción.
 
 ```
@@ -66,9 +71,11 @@ deployment/
 ```
 
 **Comandos disponibles:**
+
 - `npm run force-redeploy` - Forzar redespliegue
 
 ### 📊 monitoring/
+
 Scripts de monitoreo y supervisión del sistema.
 
 ```
@@ -77,6 +84,7 @@ monitoring/
 ```
 
 ### ⚡ performance/
+
 Scripts de optimización y análisis de rendimiento.
 
 ```
@@ -92,6 +100,7 @@ performance/
 ```
 
 **Comandos disponibles:**
+
 - `npm run performance:lighthouse` - Análisis Lighthouse
 - `npm run performance:quality` - Tests de calidad
 - `npm run performance:bundle` - Analizar bundle
@@ -115,6 +124,7 @@ performance/
 - `npm run performance-monitor` - Monitor performance
 
 ### 🔒 security/
+
 Scripts de seguridad y auditoría.
 
 ```
@@ -124,10 +134,12 @@ security/
 ```
 
 **Comandos disponibles:**
+
 - `npm run security:monitor` - Monitor seguridad
 - `npm run security:check` - Verificación seguridad
 
 ### 🧪 testing/
+
 Scripts de testing y pruebas automatizadas.
 
 ```
@@ -145,6 +157,7 @@ testing/
 ```
 
 **Comandos disponibles:**
+
 - `npm run test:payment-flow` - Tests flujo pago
 - `npm run test:manual-mp` - Test manual MercadoPago
 - `npm run test:react-events` - Tests eventos React
@@ -172,6 +185,7 @@ testing/
 - `npm run test:animations:coverage` - Coverage animaciones
 
 ### 🔧 utilities/
+
 Scripts de utilidades generales y herramientas auxiliares.
 
 ```
@@ -185,6 +199,7 @@ utilities/
 ```
 
 **Comandos disponibles:**
+
 - `npm run screenshots:real` - Capturas reales
 - `npm run screenshots:real-extended` - Capturas reales extendidas
 - `npm run clean:cache` - Limpiar caché
@@ -194,6 +209,7 @@ utilities/
 - `npm run fix-server-action` - Corregir server action
 
 ### ✅ validation/
+
 Scripts de validación y verificación del sistema.
 
 ```
@@ -206,6 +222,7 @@ validation/
 ```
 
 **Comandos disponibles:**
+
 - `npm run check-env` - Verificar variables entorno
 - `npm run check:db-schema` - Verificar esquema BD
 - `npm run test:admin` - Tests admin
@@ -254,11 +271,13 @@ node scripts/utilities/clean-cache.js
 ## 📋 Convenciones
 
 ### Nomenclatura
+
 - **Verbos de acción**: `check-`, `test-`, `run-`, `setup-`, `verify-`
 - **Sustantivos descriptivos**: `-admin`, `-enterprise`, `-performance`
 - **Separación con guiones**: `kebab-case`
 
 ### Estructura de Archivos
+
 - **Comentarios de cabecera**: Descripción del propósito
 - **Configuración**: Variables de entorno y configuración
 - **Funciones principales**: Lógica del script
@@ -266,6 +285,7 @@ node scripts/utilities/clean-cache.js
 - **Salida limpia**: Process.exit con códigos apropiados
 
 ### Logging
+
 - **Colores**: Usar chalk para output colorido
 - **Niveles**: INFO, WARN, ERROR, SUCCESS
 - **Timestamps**: Incluir marcas de tiempo
@@ -293,28 +313,28 @@ node scripts/utilities/clean-cache.js
  * Fecha: [Fecha]
  */
 
-const chalk = require('chalk');
+const chalk = require('chalk')
 
 async function main() {
   try {
-    console.log(chalk.blue('🚀 Iniciando script...'));
-    
+    console.log(chalk.blue('🚀 Iniciando script...'))
+
     // Lógica principal aquí
-    
-    console.log(chalk.green('✅ Script completado exitosamente'));
-    process.exit(0);
+
+    console.log(chalk.green('✅ Script completado exitosamente'))
+    process.exit(0)
   } catch (error) {
-    console.error(chalk.red('❌ Error:'), error.message);
-    process.exit(1);
+    console.error(chalk.red('❌ Error:'), error.message)
+    process.exit(1)
   }
 }
 
 // Ejecutar solo si es llamado directamente
 if (require.main === module) {
-  main();
+  main()
 }
 
-module.exports = { main };
+module.exports = { main }
 ```
 
 ## 📊 Estadísticas

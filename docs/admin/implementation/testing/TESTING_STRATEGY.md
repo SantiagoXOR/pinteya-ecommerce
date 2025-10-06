@@ -3,13 +3,14 @@
 **Versión:** 1.0  
 **Fecha:** Enero 2025  
 **Cobertura Objetivo:** 90%+  
-**Frameworks:** Jest + RTL + Playwright + MSW  
+**Frameworks:** Jest + RTL + Playwright + MSW
 
 ---
 
 ## 🎯 **OBJETIVOS DE TESTING**
 
 ### **Métricas de Calidad**
+
 - ✅ **Cobertura de Código:** 90%+ líneas, 85%+ ramas
 - ✅ **Performance:** APIs < 300ms, UI < 100ms
 - ✅ **Accesibilidad:** WCAG 2.1 AA compliant
@@ -17,6 +18,7 @@
 - ✅ **Responsive:** 320px - 1920px breakpoints
 
 ### **Tipos de Testing**
+
 1. **Unit Tests** - Componentes y funciones aisladas
 2. **Integration Tests** - APIs y flujos de datos
 3. **E2E Tests** - Flujos completos de usuario
@@ -29,6 +31,7 @@
 ## 🏗️ **ARQUITECTURA DE TESTING**
 
 ### **Estructura de Archivos**
+
 ```
 src/
 ├── components/
@@ -62,6 +65,7 @@ tests/
 ```
 
 ### **Configuración Base**
+
 ```typescript
 // tests/utils/test-utils.tsx
 
@@ -95,8 +99,8 @@ function createWrapper({
 
     // Redux Provider
     if (withRedux) {
-      const testStore = initialState ? 
-        configureStore({ reducer: store.getState(), preloadedState: initialState }) : 
+      const testStore = initialState ?
+        configureStore({ reducer: store.getState(), preloadedState: initialState }) :
         store;
       component = <Provider store={testStore}>{component}</Provider>;
     }
@@ -130,7 +134,7 @@ export function customRender(
   options: CustomRenderOptions = {}
 ) {
   const { withAuth, withQuery, withRedux, initialState, ...renderOptions } = options;
-  
+
   return render(ui, {
     wrapper: createWrapper({ withAuth, withQuery, withRedux, initialState }),
     ...renderOptions
@@ -147,6 +151,7 @@ export { customRender as render };
 ## 🧪 **UNIT TESTING**
 
 ### **Componentes Administrativos**
+
 ```typescript
 // src/components/admin/__tests__/ProductList.test.tsx
 
@@ -205,7 +210,7 @@ describe('ProductList', () => {
 
   it('should handle product selection', async () => {
     const onSelectionChange = jest.fn();
-    
+
     render(<ProductList onSelectionChange={onSelectionChange} />);
 
     await waitFor(() => {
@@ -262,14 +267,15 @@ describe('ProductList', () => {
 ```
 
 ### **Hooks Personalizados**
+
 ```typescript
 // src/hooks/admin/__tests__/useAdminData.test.ts
 
-import { renderHook, waitFor } from '@testing-library/react';
-import { useAdminData } from '../useAdminData';
-import { createWrapper } from '@/tests/utils/test-utils';
-import { server } from '@/tests/utils/test-server';
-import { rest } from 'msw';
+import { renderHook, waitFor } from '@testing-library/react'
+import { useAdminData } from '../useAdminData'
+import { createWrapper } from '@/tests/utils/test-utils'
+import { server } from '@/tests/utils/test-server'
+import { rest } from 'msw'
 
 describe('useAdminData', () => {
   it('should fetch data successfully', async () => {
@@ -278,76 +284,76 @@ describe('useAdminData', () => {
         return res(
           ctx.json({
             data: { id: 1, name: 'Test' },
-            success: true
+            success: true,
           })
-        );
+        )
       })
-    );
+    )
 
     const { result } = renderHook(
-      () => useAdminData({
-        endpoint: '/api/admin/test'
-      }),
+      () =>
+        useAdminData({
+          endpoint: '/api/admin/test',
+        }),
       { wrapper: createWrapper({ withQuery: true }) }
-    );
+    )
 
-    expect(result.current.isLoading).toBe(true);
+    expect(result.current.isLoading).toBe(true)
 
     await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-      expect(result.current.data).toEqual({ id: 1, name: 'Test' });
-    });
-  });
+      expect(result.current.isLoading).toBe(false)
+      expect(result.current.data).toEqual({ id: 1, name: 'Test' })
+    })
+  })
 
   it('should handle errors correctly', async () => {
     server.use(
       rest.get('/api/admin/test', (req, res, ctx) => {
-        return res(
-          ctx.status(500),
-          ctx.json({ success: false, error: 'Server error' })
-        );
+        return res(ctx.status(500), ctx.json({ success: false, error: 'Server error' }))
       })
-    );
+    )
 
     const { result } = renderHook(
-      () => useAdminData({
-        endpoint: '/api/admin/test'
-      }),
+      () =>
+        useAdminData({
+          endpoint: '/api/admin/test',
+        }),
       { wrapper: createWrapper({ withQuery: true }) }
-    );
+    )
 
     await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-      expect(result.current.error).toBeDefined();
-    });
-  });
+      expect(result.current.isError).toBe(true)
+      expect(result.current.error).toBeDefined()
+    })
+  })
 
   it('should refetch data when params change', async () => {
     const { result, rerender } = renderHook(
-      ({ params }) => useAdminData({
-        endpoint: '/api/admin/test',
-        params
-      }),
+      ({ params }) =>
+        useAdminData({
+          endpoint: '/api/admin/test',
+          params,
+        }),
       {
         wrapper: createWrapper({ withQuery: true }),
-        initialProps: { params: { page: 1 } }
+        initialProps: { params: { page: 1 } },
       }
-    );
+    )
 
     await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-    });
+      expect(result.current.isSuccess).toBe(true)
+    })
 
     // Change params
-    rerender({ params: { page: 2 } });
+    rerender({ params: { page: 2 } })
 
-    expect(result.current.isLoading).toBe(true);
+    expect(result.current.isLoading).toBe(true)
 
     await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-    });
-  });
-});
+      expect(result.current.isSuccess).toBe(true)
+    })
+  })
+})
 ```
 
 ---
@@ -355,36 +361,37 @@ describe('useAdminData', () => {
 ## 🔗 **INTEGRATION TESTING**
 
 ### **API Testing**
+
 ```typescript
 // src/app/api/admin/__tests__/products.test.ts
 
-import { createMocks } from 'node-mocks-http';
-import { GET, POST } from '../products/route';
-import { mockUser, mockSupabaseClient } from '@/tests/utils/mock-data';
+import { createMocks } from 'node-mocks-http'
+import { GET, POST } from '../products/route'
+import { mockUser, mockSupabaseClient } from '@/tests/utils/mock-data'
 
 // Mock dependencies
-jest.mock('@/lib/auth/enterprise-auth-utils');
-jest.mock('@/lib/supabase/client');
+jest.mock('@/lib/auth/enterprise-auth-utils')
+jest.mock('@/lib/supabase/client')
 
 describe('/api/admin/products', () => {
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
-    
+    jest.clearAllMocks()
+
     // Mock successful auth
-    (requireAdminAuth as jest.Mock).mockResolvedValue({
+    ;(requireAdminAuth as jest.Mock).mockResolvedValue({
       success: true,
       user: mockUser,
-      supabase: mockSupabaseClient
-    });
-  });
+      supabase: mockSupabaseClient,
+    })
+  })
 
   describe('GET /api/admin/products', () => {
     it('should return products list', async () => {
       const { req } = createMocks({
         method: 'GET',
-        url: '/api/admin/products?page=1&limit=10'
-      });
+        url: '/api/admin/products?page=1&limit=10',
+      })
 
       mockSupabaseClient.from.mockReturnValue({
         select: jest.fn().mockReturnValue({
@@ -393,30 +400,30 @@ describe('/api/admin/products', () => {
               range: jest.fn().mockResolvedValue({
                 data: [
                   { id: 1, name: 'Producto 1', price: 100 },
-                  { id: 2, name: 'Producto 2', price: 200 }
+                  { id: 2, name: 'Producto 2', price: 200 },
                 ],
                 error: null,
-                count: 2
-              })
-            })
-          })
-        })
-      });
+                count: 2,
+              }),
+            }),
+          }),
+        }),
+      })
 
-      const response = await GET(req);
-      const data = await response.json();
+      const response = await GET(req)
+      const data = await response.json()
 
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(data.data).toHaveLength(2);
-      expect(data.meta.total).toBe(2);
-    });
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.data).toHaveLength(2)
+      expect(data.meta.total).toBe(2)
+    })
 
     it('should handle database errors', async () => {
       const { req } = createMocks({
         method: 'GET',
-        url: '/api/admin/products'
-      });
+        url: '/api/admin/products',
+      })
 
       mockSupabaseClient.from.mockReturnValue({
         select: jest.fn().mockReturnValue({
@@ -425,21 +432,21 @@ describe('/api/admin/products', () => {
               range: jest.fn().mockResolvedValue({
                 data: null,
                 error: { message: 'Database error' },
-                count: null
-              })
-            })
-          })
-        })
-      });
+                count: null,
+              }),
+            }),
+          }),
+        }),
+      })
 
-      const response = await GET(req);
-      const data = await response.json();
+      const response = await GET(req)
+      const data = await response.json()
 
-      expect(response.status).toBe(500);
-      expect(data.success).toBe(false);
-      expect(data.error).toContain('Error al obtener productos');
-    });
-  });
+      expect(response.status).toBe(500)
+      expect(data.success).toBe(false)
+      expect(data.error).toContain('Error al obtener productos')
+    })
+  })
 
   describe('POST /api/admin/products', () => {
     it('should create product successfully', async () => {
@@ -448,13 +455,13 @@ describe('/api/admin/products', () => {
         description: 'Descripción del producto',
         price: 150,
         stock: 10,
-        category_id: 1
-      };
+        category_id: 1,
+      }
 
       const { req } = createMocks({
         method: 'POST',
-        body: productData
-      });
+        body: productData,
+      })
 
       // Mock category check
       mockSupabaseClient.from.mockReturnValueOnce({
@@ -462,11 +469,11 @@ describe('/api/admin/products', () => {
           eq: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
               data: { id: 1, name: 'Categoría Test' },
-              error: null
-            })
-          })
-        })
-      });
+              error: null,
+            }),
+          }),
+        }),
+      })
 
       // Mock product creation
       mockSupabaseClient.from.mockReturnValueOnce({
@@ -474,35 +481,35 @@ describe('/api/admin/products', () => {
           select: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
               data: { id: 3, ...productData },
-              error: null
-            })
-          })
-        })
-      });
+              error: null,
+            }),
+          }),
+        }),
+      })
 
-      const response = await POST(req);
-      const data = await response.json();
+      const response = await POST(req)
+      const data = await response.json()
 
-      expect(response.status).toBe(201);
-      expect(data.success).toBe(true);
-      expect(data.data.name).toBe(productData.name);
-    });
+      expect(response.status).toBe(201)
+      expect(data.success).toBe(true)
+      expect(data.data.name).toBe(productData.name)
+    })
 
     it('should validate required fields', async () => {
       const { req } = createMocks({
         method: 'POST',
-        body: { name: '' } // Invalid data
-      });
+        body: { name: '' }, // Invalid data
+      })
 
-      const response = await POST(req);
-      const data = await response.json();
+      const response = await POST(req)
+      const data = await response.json()
 
-      expect(response.status).toBe(422);
-      expect(data.success).toBe(false);
-      expect(data.code).toBe('VALIDATION_ERROR');
-    });
-  });
-});
+      expect(response.status).toBe(422)
+      expect(data.success).toBe(false)
+      expect(data.code).toBe('VALIDATION_ERROR')
+    })
+  })
+})
 ```
 
 ---
@@ -510,10 +517,11 @@ describe('/api/admin/products', () => {
 ## 🎭 **E2E TESTING**
 
 ### **Playwright Configuration**
+
 ```typescript
 // tests/e2e/playwright.config.ts
 
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -524,150 +532,159 @@ export default defineConfig({
   reporter: [
     ['html'],
     ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/results.xml' }]
+    ['junit', { outputFile: 'test-results/results.xml' }],
   ],
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
+      use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
+      use: { ...devices['Desktop Safari'] },
     },
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] }
-    }
+      use: { ...devices['Pixel 5'] },
+    },
   ],
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI
-  }
-});
+    reuseExistingServer: !process.env.CI,
+  },
+})
 ```
 
 ### **E2E Test Example**
+
 ```typescript
 // tests/e2e/admin/products.spec.ts
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
 test.describe('Admin Products Management', () => {
   test.beforeEach(async ({ page }) => {
     // Login as admin
-    await page.goto('/admin/login');
-    await page.fill('[data-testid="email-input"]', 'admin@pinteya.com');
-    await page.fill('[data-testid="password-input"]', 'password123');
-    await page.click('[data-testid="login-button"]');
-    
+    await page.goto('/admin/login')
+    await page.fill('[data-testid="email-input"]', 'admin@pinteya.com')
+    await page.fill('[data-testid="password-input"]', 'password123')
+    await page.click('[data-testid="login-button"]')
+
     // Wait for redirect to admin dashboard
-    await page.waitForURL('/admin');
-    
+    await page.waitForURL('/admin')
+
     // Navigate to products
-    await page.click('[data-testid="products-nav-link"]');
-    await page.waitForURL('/admin/products');
-  });
+    await page.click('[data-testid="products-nav-link"]')
+    await page.waitForURL('/admin/products')
+  })
 
   test('should display products list', async ({ page }) => {
     // Check page title
-    await expect(page.locator('h1')).toContainText('Gestión de Productos');
-    
+    await expect(page.locator('h1')).toContainText('Gestión de Productos')
+
     // Check products table
-    await expect(page.locator('[data-testid="products-table"]')).toBeVisible();
-    
+    await expect(page.locator('[data-testid="products-table"]')).toBeVisible()
+
     // Check at least one product row
-    await expect(page.locator('[data-testid="product-row"]').first()).toBeVisible();
-  });
+    await expect(page.locator('[data-testid="product-row"]').first()).toBeVisible()
+  })
 
   test('should create new product', async ({ page }) => {
     // Click create button
-    await page.click('[data-testid="create-product-button"]');
-    
+    await page.click('[data-testid="create-product-button"]')
+
     // Fill form
-    await page.fill('[data-testid="product-name-input"]', 'Producto E2E Test');
-    await page.fill('[data-testid="product-description-input"]', 'Descripción de prueba');
-    await page.fill('[data-testid="product-price-input"]', '299.99');
-    await page.fill('[data-testid="product-stock-input"]', '50');
-    await page.selectOption('[data-testid="product-category-select"]', '1');
-    
+    await page.fill('[data-testid="product-name-input"]', 'Producto E2E Test')
+    await page.fill('[data-testid="product-description-input"]', 'Descripción de prueba')
+    await page.fill('[data-testid="product-price-input"]', '299.99')
+    await page.fill('[data-testid="product-stock-input"]', '50')
+    await page.selectOption('[data-testid="product-category-select"]', '1')
+
     // Submit form
-    await page.click('[data-testid="save-product-button"]');
-    
+    await page.click('[data-testid="save-product-button"]')
+
     // Check success message
-    await expect(page.locator('[data-testid="success-toast"]')).toContainText('Producto creado exitosamente');
-    
+    await expect(page.locator('[data-testid="success-toast"]')).toContainText(
+      'Producto creado exitosamente'
+    )
+
     // Verify product appears in list
-    await expect(page.locator('[data-testid="products-table"]')).toContainText('Producto E2E Test');
-  });
+    await expect(page.locator('[data-testid="products-table"]')).toContainText('Producto E2E Test')
+  })
 
   test('should edit existing product', async ({ page }) => {
     // Click edit button on first product
-    await page.click('[data-testid="product-row"]:first-child [data-testid="edit-button"]');
-    
+    await page.click('[data-testid="product-row"]:first-child [data-testid="edit-button"]')
+
     // Update name
-    await page.fill('[data-testid="product-name-input"]', 'Producto Editado E2E');
-    
+    await page.fill('[data-testid="product-name-input"]', 'Producto Editado E2E')
+
     // Save changes
-    await page.click('[data-testid="save-product-button"]');
-    
+    await page.click('[data-testid="save-product-button"]')
+
     // Check success message
-    await expect(page.locator('[data-testid="success-toast"]')).toContainText('Producto actualizado exitosamente');
-    
+    await expect(page.locator('[data-testid="success-toast"]')).toContainText(
+      'Producto actualizado exitosamente'
+    )
+
     // Verify changes in list
-    await expect(page.locator('[data-testid="products-table"]')).toContainText('Producto Editado E2E');
-  });
+    await expect(page.locator('[data-testid="products-table"]')).toContainText(
+      'Producto Editado E2E'
+    )
+  })
 
   test('should filter products by search', async ({ page }) => {
     // Get initial product count
-    const initialCount = await page.locator('[data-testid="product-row"]').count();
-    
+    const initialCount = await page.locator('[data-testid="product-row"]').count()
+
     // Search for specific product
-    await page.fill('[data-testid="search-input"]', 'Pintura');
-    
+    await page.fill('[data-testid="search-input"]', 'Pintura')
+
     // Wait for search results
-    await page.waitForTimeout(500); // Debounce
-    
+    await page.waitForTimeout(500) // Debounce
+
     // Check filtered results
-    const filteredCount = await page.locator('[data-testid="product-row"]').count();
-    expect(filteredCount).toBeLessThanOrEqual(initialCount);
-    
+    const filteredCount = await page.locator('[data-testid="product-row"]').count()
+    expect(filteredCount).toBeLessThanOrEqual(initialCount)
+
     // All visible products should contain search term
-    const productNames = await page.locator('[data-testid="product-name"]').allTextContents();
+    const productNames = await page.locator('[data-testid="product-name"]').allTextContents()
     productNames.forEach(name => {
-      expect(name.toLowerCase()).toContain('pintura');
-    });
-  });
+      expect(name.toLowerCase()).toContain('pintura')
+    })
+  })
 
   test('should handle bulk actions', async ({ page }) => {
     // Select multiple products
-    await page.check('[data-testid="product-row"]:nth-child(1) [data-testid="select-checkbox"]');
-    await page.check('[data-testid="product-row"]:nth-child(2) [data-testid="select-checkbox"]');
-    
+    await page.check('[data-testid="product-row"]:nth-child(1) [data-testid="select-checkbox"]')
+    await page.check('[data-testid="product-row"]:nth-child(2) [data-testid="select-checkbox"]')
+
     // Check bulk actions appear
-    await expect(page.locator('[data-testid="bulk-actions"]')).toBeVisible();
-    
+    await expect(page.locator('[data-testid="bulk-actions"]')).toBeVisible()
+
     // Test bulk delete
-    await page.click('[data-testid="bulk-delete-button"]');
-    
+    await page.click('[data-testid="bulk-delete-button"]')
+
     // Confirm deletion
-    await page.click('[data-testid="confirm-delete-button"]');
-    
+    await page.click('[data-testid="confirm-delete-button"]')
+
     // Check success message
-    await expect(page.locator('[data-testid="success-toast"]')).toContainText('Productos eliminados exitosamente');
-  });
-});
+    await expect(page.locator('[data-testid="success-toast"]')).toContainText(
+      'Productos eliminados exitosamente'
+    )
+  })
+})
 ```
 
 ---
@@ -675,6 +692,7 @@ test.describe('Admin Products Management', () => {
 ## 📊 **SCRIPTS DE TESTING**
 
 ### **Package.json Scripts**
+
 ```json
 {
   "scripts": {
@@ -696,6 +714,7 @@ test.describe('Admin Products Management', () => {
 ## 🎯 **MÉTRICAS Y REPORTES**
 
 ### **Coverage Thresholds**
+
 ```javascript
 // jest.config.js
 module.exports = {
@@ -704,16 +723,16 @@ module.exports = {
       branches: 85,
       functions: 90,
       lines: 90,
-      statements: 90
+      statements: 90,
     },
     './src/components/admin/': {
       branches: 90,
       functions: 95,
       lines: 95,
-      statements: 95
-    }
-  }
-};
+      statements: 95,
+    },
+  },
+}
 ```
 
 ---
@@ -727,6 +746,3 @@ module.exports = {
 
 **Estado:** ✅ Completado  
 **Próxima actualización:** Al implementar nuevos tipos de testing
-
-
-

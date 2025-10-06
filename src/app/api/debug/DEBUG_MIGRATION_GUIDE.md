@@ -7,6 +7,7 @@ Esta guía explica cómo migrar de las múltiples rutas de debug dispersas a la 
 ## 🔄 Rutas Consolidadas
 
 ### Antes (Rutas Dispersas)
+
 ```
 /api/debug/auth                    → Diagnóstico de autenticación
 /api/debug/clerk-session           → Debug específico de Clerk
@@ -25,6 +26,7 @@ Esta guía explica cómo migrar de las múltiples rutas de debug dispersas a la 
 ```
 
 ### Después (Ruta Unificada)
+
 ```
 /api/debug/unified                 → Todos los diagnósticos en uno
 ```
@@ -36,22 +38,23 @@ Esta guía explica cómo migrar de las múltiples rutas de debug dispersas a la 
 La nueva API acepta un parámetro `module` que determina el tipo de diagnóstico:
 
 ```typescript
-type DebugModule = 
-  | 'auth'           // Autenticación general
-  | 'clerk'          // Clerk específico
-  | 'admin'          // Panel administrativo
-  | 'products'       // Productos y permisos
-  | 'user-profile'   // Perfiles de usuario
-  | 'user-status'    // Estado de usuario
-  | 'permissions'    // Sistema de permisos
-  | 'supabase'       // Conexión Supabase
-  | 'environment'    // Variables de entorno
-  | 'all';           // Diagnóstico completo
+type DebugModule =
+  | 'auth' // Autenticación general
+  | 'clerk' // Clerk específico
+  | 'admin' // Panel administrativo
+  | 'products' // Productos y permisos
+  | 'user-profile' // Perfiles de usuario
+  | 'user-status' // Estado de usuario
+  | 'permissions' // Sistema de permisos
+  | 'supabase' // Conexión Supabase
+  | 'environment' // Variables de entorno
+  | 'all' // Diagnóstico completo
 ```
 
 ### 2. Ejemplos de Migración
 
 #### Antes: debug/auth
+
 ```javascript
 // ❌ Ruta antigua
 fetch('/api/debug/auth')
@@ -63,6 +66,7 @@ fetch('/api/debug/unified?module=auth')
 ```
 
 #### Antes: debug-clerk-session
+
 ```javascript
 // ❌ Ruta antigua
 fetch('/api/debug-clerk-session')
@@ -74,6 +78,7 @@ fetch('/api/debug/unified?module=clerk&detailed=true')
 ```
 
 #### Antes: admin/debug
+
 ```javascript
 // ❌ Ruta antigua
 fetch('/api/admin/debug')
@@ -85,6 +90,7 @@ fetch('/api/debug/unified?module=admin&detailed=true')
 ```
 
 #### Antes: debug/admin-products
+
 ```javascript
 // ❌ Ruta antigua
 fetch('/api/debug/admin-products?user_id=123')
@@ -98,70 +104,80 @@ fetch('/api/debug/unified?module=products&user_id=123&detailed=true')
 ### 3. Parámetros Soportados
 
 #### GET (Diagnóstico)
+
 ```typescript
 interface UnifiedDebugParams {
   // Módulo a diagnosticar
-  module?: DebugModule;        // Default: 'all'
-  
+  module?: DebugModule // Default: 'all'
+
   // Usuario específico (opcional)
-  user_id?: string;
-  
+  user_id?: string
+
   // Nivel de detalle
-  detailed?: boolean;          // Default: false
-  
+  detailed?: boolean // Default: false
+
   // Incluir información sensible
-  include_sensitive?: boolean; // Default: false
+  include_sensitive?: boolean // Default: false
 }
 ```
 
 #### POST (Diagnóstico con datos)
+
 ```typescript
 interface UnifiedDebugPostData {
-  module: DebugModule;
-  user_id?: string;
-  test_data?: any;             // Datos específicos para testing
-  detailed?: boolean;
+  module: DebugModule
+  user_id?: string
+  test_data?: any // Datos específicos para testing
+  detailed?: boolean
 }
 ```
 
 ## 🔍 Módulos de Diagnóstico
 
 ### `auth` - Autenticación General
+
 - **Funcionalidad**: Prueba múltiples métodos de auth
 - **Incluye**: getAuthenticatedUser, auth(), headers, cookies
 - **Migra de**: `/api/debug/auth`, `/api/debug/simple-auth-check`
 
 ### `clerk` - Clerk Específico
+
 - **Funcionalidad**: Diagnóstico completo de Clerk
 - **Incluye**: userId, sessionClaims, roles, metadata
 - **Migra de**: `/api/debug-clerk-session`
 
 ### `admin` - Panel Administrativo
+
 - **Funcionalidad**: Diagnóstico del sistema admin
 - **Incluye**: Variables de entorno, conexiones, tablas
 - **Migra de**: `/api/admin/debug`
 
 ### `products` - Productos y Permisos
+
 - **Funcionalidad**: Prueba permisos de productos
 - **Incluye**: CRUD permissions, enterprise auth, queries
 - **Migra de**: `/api/debug/admin-products`, `/api/debug/simple-products`
 
 ### `user-profile` - Perfiles de Usuario
+
 - **Funcionalidad**: Debug de perfiles y estados
 - **Incluye**: Búsqueda de usuarios, perfiles activos
 - **Migra de**: `/api/debug/user-profile`, `/api/debug/get-user-profile`
 
 ### `user-status` - Estado de Usuario
+
 - **Funcionalidad**: Verificación completa de usuario
 - **Incluye**: Auth, roles, permisos, metadata
 - **Migra de**: `/api/debug/user-status`, `/api/debug/get-authenticated-user`
 
 ### `permissions` - Sistema de Permisos
+
 - **Funcionalidad**: Diagnóstico de permisos
 - **Incluye**: Admin access, CRUD permissions
 - **Migra de**: `/api/debug/check-admin-access`, `/api/debug/check-admin-permissions`
 
 ### `all` - Diagnóstico Completo
+
 - **Funcionalidad**: Ejecuta todos los módulos
 - **Incluye**: Resumen general del sistema
 - **Recomendado**: Para diagnósticos iniciales
@@ -169,56 +185,61 @@ interface UnifiedDebugPostData {
 ## 📊 Respuesta Unificada
 
 ### Estructura General
+
 ```typescript
 interface UnifiedDebugResponse {
-  timestamp: string;
-  module: DebugModule;
-  status: 'success' | 'partial' | 'failed' | 'unknown';
-  data: any;                   // Datos específicos del módulo
-  error?: string;              // Error si falló
+  timestamp: string
+  module: DebugModule
+  status: 'success' | 'partial' | 'failed' | 'unknown'
+  data: any // Datos específicos del módulo
+  error?: string // Error si falló
   meta: {
-    api_version: string;
-    unified: boolean;
+    api_version: string
+    unified: boolean
     parameters: {
-      module: DebugModule;
-      detailed: boolean;
-      include_sensitive: boolean;
-    };
-  };
+      module: DebugModule
+      detailed: boolean
+      include_sensitive: boolean
+    }
+  }
 }
 ```
 
 ### Respuesta de Diagnóstico Completo (`all`)
+
 ```typescript
 interface CompleteDebugResponse extends UnifiedDebugResponse {
   summary: {
-    total_modules: number;
-    success_count: number;
-    partial_count: number;
-    failed_count: number;
-  };
+    total_modules: number
+    success_count: number
+    partial_count: number
+    failed_count: number
+  }
   data: {
-    auth: DebugResult;
-    clerk: DebugResult;
-    admin: DebugResult;
-    products: DebugResult;
-  };
+    auth: DebugResult
+    clerk: DebugResult
+    admin: DebugResult
+    products: DebugResult
+  }
 }
 ```
 
 ## 🛠️ Plan de Migración
 
 ### Fase 1: Implementación Paralela ✅
+
 - ✅ Nueva API unificada creada
 - ✅ Todos los módulos implementados
 - ⏳ Mantener rutas antiguas temporalmente
 
 ### Fase 2: Migración Gradual
+
 - [ ] Actualizar herramientas de desarrollo
 - [ ] Migrar scripts de diagnóstico
 - [ ] Actualizar documentación interna
 
 ### Fase 3: Limpieza
+
 - [ ] Deprecar rutas antiguas
 - [ ] Eliminar código duplicado
 - [ ] Consolidar logs y métricas
@@ -226,6 +247,7 @@ interface CompleteDebugResponse extends UnifiedDebugResponse {
 ## 🧪 Testing
 
 ### Verificar Funcionalidad
+
 ```bash
 # Diagnóstico completo
 curl "http://localhost:3000/api/debug/unified?module=all&detailed=true"
@@ -249,6 +271,7 @@ curl -X POST "http://localhost:3000/api/debug/unified" \
 ```
 
 ### Comparar con Rutas Antiguas
+
 ```bash
 # Comparar auth
 curl "/api/debug/auth" > old_auth.json
@@ -283,5 +306,3 @@ diff old_clerk.json new_clerk.json
 - [API Unificada de Productos Admin](./products/MIGRATION_GUIDE.md)
 - [Documentación de Autenticación](../../../docs/auth/README.md)
 - [Guía de Troubleshooting](../../../docs/troubleshooting/README.md)
-
-

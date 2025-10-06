@@ -1,9 +1,11 @@
 # 🌐 Configurar Dominio Personalizado para Pinteya E-commerce
 
 ## Objetivo
+
 Usar un subdominio de `pinteya.com` (como `app.pinteya.com` o `admin.pinteya.com`) para la aplicación de e-commerce, manteniendo las claves de producción de Clerk.
 
 ## Ventajas
+
 - ✅ Mantener claves de producción de Clerk
 - ✅ Usar dominio autorizado (pinteya.com)
 - ✅ URL profesional y consistente con la marca
@@ -13,6 +15,7 @@ Usar un subdominio de `pinteya.com` (como `app.pinteya.com` o `admin.pinteya.com
 ## Paso 1: Elegir subdominio
 
 Opciones recomendadas:
+
 - `app.pinteya.com` (para la aplicación completa)
 - `admin.pinteya.com` (si es principalmente para admin)
 - `tienda.pinteya.com` (para e-commerce)
@@ -32,6 +35,7 @@ Opciones recomendadas:
    - **TTL**: `300` (5 minutos) o automático
 
 ### Ejemplo de configuración:
+
 ```
 Tipo    Nombre    Valor                           TTL
 CNAME   app       pinteya-ecommerce.vercel.app    300
@@ -109,16 +113,19 @@ nslookup app.pinteya.com
 ## 🆘 Troubleshooting
 
 ### Si el DNS no propaga:
+
 1. Verifica la configuración en tu proveedor de DNS
 2. Espera más tiempo (hasta 24h en casos extremos)
 3. Usa herramientas como https://dnschecker.org/
 
 ### Si Vercel no verifica:
+
 1. Verifica que el CNAME esté correcto
 2. Espera a que propague el DNS
 3. Intenta eliminar y volver a agregar el dominio
 
 ### Si Clerk no funciona:
+
 1. Verifica que pinteya.com esté autorizado en Clerk
 2. Los subdominios heredan la autorización del dominio principal
 3. Si no funciona, agrega app.pinteya.com específicamente en Clerk

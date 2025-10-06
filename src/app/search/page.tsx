@@ -259,7 +259,7 @@ export default function SearchPage() {
                 productId={product.id}
                 title={product.name}
                 price={product.price}
-                image={product.images?.previews?.[0] || '/images/products/placeholder.svg'}
+                image={product.images?.[0] || '/images/products/placeholder.svg'}
                 stock={product.stock}
                 brand={product.category?.name}
                 onAddToCart={() => {
@@ -268,7 +268,7 @@ export default function SearchPage() {
                       id: product.id,
                       name: product.name,
                       price: product.price,
-                      image: product.images?.previews?.[0] || '/images/products/placeholder.svg',
+                      image: product.images?.[0] || '/images/products/placeholder.svg',
                       quantity: 1,
                     })
                     toast({

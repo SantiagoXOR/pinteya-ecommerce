@@ -17,17 +17,20 @@
 ## 🔍 Auditoría 2025
 
 ### Hallazgos Clave
+
 **Fecha**: Junio 2025
 **Metodología**: Análisis comparativo con Context7
 **Design Systems Analizados**: MercadoPago, Carbon (IBM), Salesforce Lightning, Backpack (Skyscanner)
 
 #### ✅ Fortalezas Identificadas
+
 - Paleta de colores coherente y específica para pinturería
 - ProductCard unificado implementado y funcionando
 - Stack tecnológico moderno (Next.js 15 + TypeScript + Tailwind)
 - Documentación estructurada y Storybook configurado
 
 #### 🔍 Gaps Críticos vs. Mejores Prácticas
+
 - **Tokens limitados**: Escalas de color incompletas (50-950)
 - **Componentes e-commerce faltantes**: PriceDisplay, StockIndicator, ShippingInfo
 - **Sistema de temas ausente**: Sin soporte light/dark/high-contrast
@@ -35,13 +38,14 @@
 - **Documentación estática**: Sin ejemplos interactivos
 
 #### 📊 Benchmarking Results
-| Aspecto | Pinteya Actual | Mejores Prácticas | Gap |
-|---------|----------------|-------------------|-----|
-| Tokens de Color | 3 escalas básicas | 10+ escalas completas | 🔴 Alto |
-| Componentes E-commerce | 5 básicos | 15+ especializados | 🔴 Alto |
-| Testing | Unit tests | Visual + A11y + Performance | 🟡 Medio |
-| Documentación | Markdown estático | Interactiva + Playground | 🟡 Medio |
-| Temas | Sin soporte | Multi-tema robusto | 🔴 Alto |
+
+| Aspecto                | Pinteya Actual    | Mejores Prácticas           | Gap      |
+| ---------------------- | ----------------- | --------------------------- | -------- |
+| Tokens de Color        | 3 escalas básicas | 10+ escalas completas       | 🔴 Alto  |
+| Componentes E-commerce | 5 básicos         | 15+ especializados          | 🔴 Alto  |
+| Testing                | Unit tests        | Visual + A11y + Performance | 🟡 Medio |
+| Documentación          | Markdown estático | Interactiva + Playground    | 🟡 Medio |
+| Temas                  | Sin soporte       | Multi-tema robusto          | 🔴 Alto  |
 
 ---
 
@@ -70,67 +74,73 @@
 
 ### Cronograma Revisado
 
-| Fase | Duración | Inicio | Fin | Entregables | Prioridad |
-|------|----------|--------|-----|-------------|-----------|
-| **Fase 1** | 2-3 semanas | Semana 1 | Semana 3 | Tokens Avanzados + Componentes E-commerce | 🔴 Crítica |
-| **Fase 2** | 3-4 semanas | Semana 4 | Semana 7 | Sistema Temas + Componentes Avanzados | 🟡 Alta |
-| **Fase 3** | 2-3 semanas | Semana 8 | Semana 10 | Testing + Documentación Interactiva | 🟢 Media |
-| **Fase 4** | 2 semanas | Semana 11 | Semana 12 | Optimización + Deploy | 🟢 Media |
+| Fase       | Duración    | Inicio    | Fin       | Entregables                               | Prioridad  |
+| ---------- | ----------- | --------- | --------- | ----------------------------------------- | ---------- |
+| **Fase 1** | 2-3 semanas | Semana 1  | Semana 3  | Tokens Avanzados + Componentes E-commerce | 🔴 Crítica |
+| **Fase 2** | 3-4 semanas | Semana 4  | Semana 7  | Sistema Temas + Componentes Avanzados     | 🟡 Alta    |
+| **Fase 3** | 2-3 semanas | Semana 8  | Semana 10 | Testing + Documentación Interactiva       | 🟢 Media   |
+| **Fase 4** | 2 semanas   | Semana 11 | Semana 12 | Optimización + Deploy                     | 🟢 Media   |
 
 **Total: 9-12 semanas (2.25-3 meses)**
 
 ### Comparación con Plan Original
 
-| Aspecto | Plan Original | Plan Actualizado | Cambio |
-|---------|---------------|------------------|--------|
-| **Duración** | 9 semanas | 9-12 semanas | +0-3 semanas |
-| **Enfoque** | Migración gradual | Mejores prácticas + E-commerce | Más específico |
-| **Prioridades** | Documentación temprana | Componentes críticos primero | Reordenado |
-| **Testing** | Fase final | Integrado en todas las fases | Mejorado |
+| Aspecto         | Plan Original          | Plan Actualizado               | Cambio         |
+| --------------- | ---------------------- | ------------------------------ | -------------- |
+| **Duración**    | 9 semanas              | 9-12 semanas                   | +0-3 semanas   |
+| **Enfoque**     | Migración gradual      | Mejores prácticas + E-commerce | Más específico |
+| **Prioridades** | Documentación temprana | Componentes críticos primero   | Reordenado     |
+| **Testing**     | Fase final             | Integrado en todas las fases   | Mejorado       |
 
 ---
 
 ## 🔄 Fases de Implementación
 
 ### 🔥 Fase 1: Fundamentos Críticos (Basado en Auditoría 2025)
+
 **Duración: 2-3 semanas** | **Prioridad: 🔴 Crítica**
 
 #### Objetivos Actualizados
+
 - Expandir sistema de tokens basado en mejores prácticas (Carbon/Salesforce)
 - Implementar componentes e-commerce críticos (inspirado en MercadoPago)
 - Configurar testing avanzado desde el inicio
 
 #### 1.1 Expansión de Tokens de Diseño (Semana 1)
+
 **Inspirado en**: Carbon Design System + Salesforce Lightning
 
 ```typescript
 // Escalas de color completas (50-950)
 export const colors = {
   primary: {
-    50: '#fef7ee', 100: '#feeed6', 200: '#fddbb3',
+    50: '#fef7ee',
+    100: '#feeed6',
+    200: '#fddbb3',
     // ... hasta 950: '#411709'
   },
 
   // Tokens semánticos
   semantic: {
-    success: '#00A651',    // Fun Green
-    warning: '#FFD700',    // Bright Sun
-    error: '#F44336',      // Error red
-    info: '#2196F3'        // Info blue
+    success: '#00A651', // Fun Green
+    warning: '#FFD700', // Bright Sun
+    error: '#F44336', // Error red
+    info: '#2196F3', // Info blue
   },
 
   // Tokens contextuales e-commerce
   ecommerce: {
-    price: '#EF7D00',         // Blaze Orange
-    discount: '#F44336',      // Error red
-    freeShipping: '#00A651',  // Fun Green
-    outOfStock: '#9E9E9E',    // Gray
-    premium: '#FFD700'        // Bright Sun
-  }
-};
+    price: '#EF7D00', // Blaze Orange
+    discount: '#F44336', // Error red
+    freeShipping: '#00A651', // Fun Green
+    outOfStock: '#9E9E9E', // Gray
+    premium: '#FFD700', // Bright Sun
+  },
+}
 ```
 
 #### 1.2 Componentes E-commerce Críticos (Semana 2-3)
+
 **Inspirado en**: MercadoPago + Backpack
 
 ```jsx
@@ -168,6 +178,7 @@ export const colors = {
 ```
 
 #### Criterios de Aceptación Actualizados
+
 - [x] ✅ Escalas de color completas (50-950) implementadas
 - [x] ✅ Tokens semánticos y contextuales funcionando
 - [x] ✅ 4 componentes e-commerce críticos implementados (PriceDisplay, StockIndicator, ShippingInfo, EnhancedProductCard)
@@ -179,21 +190,25 @@ export const colors = {
 ---
 
 ### 🚀 Fase 2: Componentes Avanzados E-commerce
+
 **Duración: 2-3 semanas** | **Estado**: ✅ **COMPLETADA** (Enero 2025)
 
 #### Objetivos Completados
+
 - ✅ Desarrollar componentes avanzados de e-commerce
 - ✅ Integración 100% con componentes base del Design System
 - ✅ Testing completo y documentación enterprise-ready
 - ✅ Exports centralizados y tipos TypeScript
 
 #### Componentes Desarrollados
+
 - ✅ **CartSummary**: Resumen de carrito con 3 variantes (13 tests)
 - ✅ **CheckoutFlow**: Flujo de checkout paso a paso (18 tests)
 - ✅ **ProductComparison**: Comparación de productos (hasta 4)
 - ✅ **WishlistCard**: Card de wishlist con seguimiento de precios
 
 #### Criterios de Aceptación Fase 2
+
 - [x] ✅ 4/4 componentes avanzados implementados
 - [x] ✅ 31/31 tests pasando (100%)
 - [x] ✅ Integración completa con PriceDisplay, StockIndicator, ShippingInfo
@@ -205,9 +220,11 @@ export const colors = {
 ---
 
 ### 🧩 Fase 3: Testing Visual & Performance (EN PROGRESO)
+
 **Duración: 2-3 semanas** | **Estado**: 🔄 **EN PROGRESO**
 
 #### Objetivos
+
 - Configurar testing visual regression con Chromatic
 - Implementar tests de accesibilidad automatizados
 - Optimización de performance y bundle size
@@ -257,6 +274,7 @@ export function CompatButton(props: any) {
 ```
 
 #### Criterios de Aceptación
+
 - [ ] Todos los componentes base implementados
 - [ ] Tests unitarios pasando
 - [ ] Storybook stories creadas
@@ -265,9 +283,11 @@ export function CompatButton(props: any) {
 ---
 
 ### 📚 Fase 3: Documentación y Storybook
+
 **Duración: 2 semanas**
 
 #### Objetivos
+
 - Implementar Storybook para documentación visual
 - Crear stories para todos los componentes
 - Documentación completa de uso
@@ -311,6 +331,7 @@ export default {
 ```
 
 #### Criterios de Aceptación
+
 - [ ] Storybook funcionando localmente
 - [ ] Stories para todos los componentes
 - [ ] Documentación interactiva
@@ -319,9 +340,11 @@ export default {
 ---
 
 ### 🔄 Fase 4: Migración de Páginas
+
 **Duración: 3 semanas**
 
 #### Objetivos
+
 - Migrar páginas existentes a nuevos componentes
 - Mantener funcionalidad 100%
 - Mejorar UX gradualmente
@@ -376,6 +399,7 @@ git checkout -b migrate/homepage
 ```
 
 #### Criterios de Aceptación
+
 - [ ] Todas las páginas migradas
 - [ ] Funcionalidad 100% preservada
 - [ ] Performance igual o mejor
@@ -384,9 +408,11 @@ git checkout -b migrate/homepage
 ---
 
 ### 🧪 Fase 5: Testing y Optimización
+
 **Duración: 1 semana**
 
 #### Objetivos
+
 - Testing exhaustivo de toda la aplicación
 - Optimización de performance
 - Auditoría de accesibilidad
@@ -424,30 +450,31 @@ import { test, expect } from '@playwright/test'
 test.describe('Design System Components', () => {
   test('Button variants work correctly', async ({ page }) => {
     await page.goto('/storybook')
-    
+
     // Test primary button
     await page.click('[data-testid="button-primary"]')
     await expect(page.locator('.btn-primary')).toBeVisible()
-    
+
     // Test hover state
     await page.hover('[data-testid="button-primary"]')
     await expect(page.locator('.btn-primary')).toHaveClass(/hover:/)
   })
-  
+
   test('Accessibility compliance', async ({ page }) => {
     await page.goto('/')
-    
+
     // Run axe accessibility tests
     const accessibilityScanResults = await page.evaluate(() => {
       return window.axe.run()
     })
-    
+
     expect(accessibilityScanResults.violations).toHaveLength(0)
   })
 })
 ```
 
 #### Criterios de Aceptación
+
 - [ ] Todos los tests pasando
 - [ ] Performance score > 90
 - [ ] Accessibility score 100%
@@ -459,12 +486,12 @@ test.describe('Design System Components', () => {
 
 ### Riesgos Identificados
 
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| **Breaking changes** | Media | Alto | Testing exhaustivo + rollback plan |
-| **Performance degradation** | Baja | Alto | Benchmarking continuo |
-| **User confusion** | Media | Medio | Cambios graduales + comunicación |
-| **Timeline delays** | Alta | Medio | Buffer time + priorización |
+| Riesgo                      | Probabilidad | Impacto | Mitigación                         |
+| --------------------------- | ------------ | ------- | ---------------------------------- |
+| **Breaking changes**        | Media        | Alto    | Testing exhaustivo + rollback plan |
+| **Performance degradation** | Baja         | Alto    | Benchmarking continuo              |
+| **User confusion**          | Media        | Medio   | Cambios graduales + comunicación   |
+| **Timeline delays**         | Alta         | Medio   | Buffer time + priorización         |
 
 ### Plan de Rollback
 
@@ -494,11 +521,11 @@ interface PerformanceMetrics {
   LCP: number // < 2.5s
   FID: number // < 100ms
   CLS: number // < 0.1
-  
+
   // Bundle Size
   totalSize: number // Target: < 500KB
   componentSize: number // Target: < 50KB
-  
+
   // Development
   buildTime: number // Target: < 2min
   testCoverage: number // Target: > 80%
@@ -564,18 +591,21 @@ interface PerformanceMetrics {
 ## 🎯 Criterios de Éxito
 
 ### Técnicos
+
 - [ ] 100% de páginas migradas
 - [ ] 0 breaking changes
 - [ ] Performance mantenida o mejorada
 - [ ] 80%+ test coverage
 
 ### UX/UI
+
 - [ ] Consistencia visual 100%
 - [ ] Accesibilidad WCAG 2.1 AA
 - [ ] Mobile-first responsive
 - [ ] Animaciones fluidas
 
 ### Business
+
 - [ ] Conversion rate mantenida
 - [ ] User satisfaction score
 - [ ] Developer productivity
@@ -583,7 +613,4 @@ interface PerformanceMetrics {
 
 ---
 
-*Última actualización: Junio 2025*
-
-
-
+_Última actualización: Junio 2025_

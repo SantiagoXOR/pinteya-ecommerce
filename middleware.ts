@@ -1,64 +1,45 @@
 /**
  * Middleware de NextAuth.js para Pinteya E-commerce
  * Protege rutas administrativas y maneja autenticación
- * Optimizado para producción con logging mejorado
+ * Optimizado para rendimiento y producción
  */
 
-import { auth } from "@/auth"
-import { NextResponse } from "next/server"
-import { createErrorSuppressionMiddleware } from "@/lib/middleware/error-suppression"
-import { performanceMonitoringMiddleware } from "@/middleware/performance-monitoring"
+import { auth } from '@/auth'
+import { NextResponse } from 'next/server'
 
-export default auth((req) => {
+export default auth(req => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
   const isProduction = process.env.NODE_ENV === 'production'
-  const startTime = Date.now();
+  const startTime = Date.now()
 
-  // Aplicar supresión de errores
-  const errorSuppressionMiddleware = createErrorSuppressionMiddleware();
-  
-  // Aplicar monitoring de performance (excepto para rutas de auth)
-  if (!nextUrl.pathname.startsWith('/api/auth')) {
-    try {
-      performanceMonitoringMiddleware(req);
-    } catch (error) {
-      console.error('[Performance Monitoring] Error:', error);
-    }
-  }
-
-  // BYPASS TEMPORAL PARA DESARROLLO
+  // BYPASS TEMPORAL PARA DESARROLLO - Solo en desarrollo
   if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
     console.log(`[NextAuth Middleware] BYPASS AUTH ENABLED - ${nextUrl.pathname}`)
-    const response = NextResponse.next();
-    // Aplicar headers de supresión de errores
-    response.headers.set('X-Error-Suppression', 'enabled');
-    return response;
+    return NextResponse.next()
   }
 
-  // Logging condicional (solo en desarrollo o para rutas críticas)
-  if (!isProduction || nextUrl.pathname.startsWith('/admin') || nextUrl.pathname.startsWith('/api/admin')) {
-    console.log(`[NextAuth Middleware] ${nextUrl.pathname} - Authenticated: ${isLoggedIn} - Env: ${process.env.NODE_ENV}`)
+  // Logging optimizado - Solo para rutas críticas o desarrollo
+  if (
+    !isProduction ||
+    nextUrl.pathname.startsWith('/admin') ||
+    nextUrl.pathname.startsWith('/api/admin')
+  ) {
+    console.log(`[NextAuth Middleware] ${nextUrl.pathname} - Auth: ${isLoggedIn}`)
   }
-
-  // Rutas que requieren autenticación
-  const isAdminRoute = nextUrl.pathname.startsWith('/admin')
-  const isApiAdminRoute = nextUrl.pathname.startsWith('/api/admin')
-  const isDashboardRoute = nextUrl.pathname.startsWith('/dashboard')
-  const isApiUserRoute = nextUrl.pathname.startsWith('/api/user')
 
   // Permitir rutas de autenticación NextAuth.js
   if (nextUrl.pathname.startsWith('/api/auth')) {
     return NextResponse.next()
   }
 
-  // Permitir rutas públicas específicas
+  // Rutas públicas optimizadas
   const publicRoutes = [
     '/api/products',
     '/api/categories',
     '/api/brands',
     '/api/search',
-    '/api/payments/webhook'
+    '/api/payments/webhook',
   ]
 
   if (publicRoutes.some(route => nextUrl.pathname.startsWith(route))) {
@@ -66,67 +47,57 @@ export default auth((req) => {
   }
 
   // Proteger rutas administrativas y de usuario
-  if ((isAdminRoute || isApiAdminRoute || isDashboardRoute || isApiUserRoute) && !isLoggedIn) {
-    console.log(`[NextAuth Middleware] Blocking unauthorized access: ${nextUrl.pathname}`)
+  const isAdminRoute = nextUrl.pathname.startsWith('/admin')
+  const isApiAdminRoute = nextUrl.pathname.startsWith('/api/admin')
+  const isDashboardRoute = nextUrl.pathname.startsWith('/dashboard')
+  const isApiUserRoute = nextUrl.pathname.startsWith('/api/user')
 
+  if ((isAdminRoute || isApiAdminRoute || isDashboardRoute || isApiUserRoute) && !isLoggedIn) {
     if (isApiAdminRoute || isApiUserRoute) {
-      // Para APIs, devolver 401
       return new NextResponse(
         JSON.stringify({ error: 'Unauthorized', message: 'Authentication required' }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' }
-        }
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
       )
     } else {
-      // Para rutas UI, redirigir a login
       const signInUrl = new URL('/api/auth/signin', nextUrl.origin)
       signInUrl.searchParams.set('callbackUrl', nextUrl.href)
       return NextResponse.redirect(signInUrl)
     }
   }
 
-  // Verificar autorización para rutas admin (solo para usuarios autenticados)
+  // Verificar autorización admin
   if ((isAdminRoute || isApiAdminRoute) && isLoggedIn) {
     const userEmail = req.auth?.user?.email
     const isAdmin = userEmail === 'santiago@xor.com.ar'
 
     if (!isAdmin) {
-      console.log(`[NextAuth Middleware] Blocking admin access for non-admin user: ${userEmail} -> ${nextUrl.pathname}`)
-
       if (isApiAdminRoute) {
-        // Para APIs admin, devolver 403
         return new NextResponse(
           JSON.stringify({ error: 'Forbidden', message: 'Admin access required' }),
-          {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' }
-          }
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
         )
       } else {
-        // Para rutas UI admin, redirigir a página de acceso denegado
         return NextResponse.redirect(new URL('/access-denied', nextUrl.origin))
       }
     }
   }
 
-  // Aplicar headers de supresión de errores y performance a todas las respuestas
-  const response = NextResponse.next();
-  response.headers.set('X-Error-Suppression', 'enabled');
-  response.headers.set('X-Network-Error-Handling', 'active');
-  
-  // Headers de performance monitoring
-  const responseTime = Date.now() - startTime;
-  response.headers.set('X-Response-Time', `${responseTime}ms`);
-  response.headers.set('X-Timestamp', new Date().toISOString());
-  response.headers.set('X-Auth-Status', isLoggedIn ? 'authenticated' : 'anonymous');
-  
-  // Headers de seguridad adicionales
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
-  
-  return response;
+  // Headers optimizados de respuesta
+  const response = NextResponse.next()
+  const responseTime = Date.now() - startTime
+
+  // Headers esenciales de seguridad
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'origin-when-cross-origin')
+
+  // Headers de monitoreo (solo en desarrollo)
+  if (!isProduction) {
+    response.headers.set('X-Response-Time', `${responseTime}ms`)
+    response.headers.set('X-Auth-Status', isLoggedIn ? 'authenticated' : 'anonymous')
+  }
+
+  return response
 })
 
 export const config = {
@@ -139,9 +110,9 @@ export const config = {
      * - /api/user/* (user API routes)
      * Exclude NextAuth.js routes and static files
      */
-    "/admin/:path*",
-    "/api/admin/:path*",
-    "/dashboard/:path*",
-    "/api/user/:path*",
+    '/admin/:path*',
+    '/api/admin/:path*',
+    '/dashboard/:path*',
+    '/api/user/:path*',
   ],
 }

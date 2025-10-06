@@ -16,6 +16,7 @@ El problema estaba en el **conflicto entre el estado controlado del input y el h
 ## ✅ Solución Implementada
 
 ### 1. **Estado Local Separado**
+
 ```typescript
 // ANTES (problemático)
 const { query, ... } = useSearch();
@@ -27,32 +28,36 @@ const [localQuery, setLocalQuery] = useState('');
 ```
 
 ### 2. **Actualización Inmediata del Input**
+
 ```typescript
 const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setLocalQuery(value); // ✅ Actualización inmediata del estado local
-  searchWithDebounce(value); // Búsqueda con debounce
-};
+  const value = e.target.value
+  setLocalQuery(value) // ✅ Actualización inmediata del estado local
+  searchWithDebounce(value) // Búsqueda con debounce
+}
 ```
 
 ### 3. **Hook useSearch Optimizado**
+
 ```typescript
 // ANTES: Actualizaba query inmediatamente
 setState(prev => ({
   ...prev,
   query: searchQuery, // ❌ Causaba conflictos
   isLoading: !!searchQuery.trim(),
-}));
+}))
 
 // DESPUÉS: Solo actualiza query cuando hay resultados
 setState(prev => ({
   ...prev,
   isLoading: !!searchQuery.trim(), // ✅ Solo loading state
-}));
+}))
 ```
 
 ### 4. **Sincronización Controlada**
+
 El `query` del hook solo se actualiza cuando:
+
 - Hay sugerencias exitosas
 - Se completa una búsqueda
 - Hay un error (para mantener el contexto)
@@ -60,12 +65,14 @@ El `query` del hook solo se actualiza cuando:
 ## 📁 Archivos Modificados
 
 ### `src/components/ui/search-autocomplete.tsx`
+
 - ✅ Agregado estado local `localQuery` para el input
 - ✅ Separado el valor del input del estado del hook
 - ✅ Actualización inmediata del input sin conflictos
 - ✅ Sincronización correcta con el hook de búsqueda
 
 ### `src/hooks/useSearch.ts`
+
 - ✅ Eliminada actualización inmediata del `query` en `searchWithDebounce`
 - ✅ Query se actualiza solo cuando hay resultados válidos
 - ✅ Prevención de ciclos de re-renderizado
@@ -73,6 +80,7 @@ El `query` del hook solo se actualiza cuando:
 ## 🧪 Validación
 
 ### Comportamiento Esperado ✅
+
 1. **Escritura Fluida**: El usuario puede escribir sin interrupciones
 2. **Debouncing Funcional**: Búsquedas se ejecutan después de 150ms
 3. **Sugerencias Correctas**: Aparecen sugerencias basadas en la búsqueda
@@ -80,6 +88,7 @@ El `query` del hook solo se actualiza cuando:
 5. **Navegación Correcta**: Enter navega a `/search?search=query`
 
 ### Casos de Prueba ✅
+
 - ✅ Escribir "pintura" carácter por carácter
 - ✅ Borrar y escribir nuevo término
 - ✅ Usar botón de limpiar (X)
@@ -90,19 +99,18 @@ El `query` del hook solo se actualiza cuando:
 ## 🎯 Resultado
 
 El input de búsqueda ahora funciona perfectamente:
+
 - **Responsive**: Responde inmediatamente a la escritura
-- **Estable**: No se bloquea ni causa re-renderizados problemáticos  
+- **Estable**: No se bloquea ni causa re-renderizados problemáticos
 - **Funcional**: Todas las características (debounce, sugerencias, navegación) operan correctamente
 - **UX Optimizada**: Experiencia de usuario fluida y natural
 
 ## 🔧 Patrón de Diseño Aplicado
 
 **Separación de Responsabilidades**:
+
 - **Estado Local**: Maneja la interacción inmediata del usuario
 - **Hook Centralizado**: Maneja la lógica de búsqueda y estado global
 - **Sincronización Controlada**: Actualiza el estado global solo cuando es necesario
 
 Este patrón previene conflictos entre el estado controlado del input y la lógica de búsqueda, asegurando una experiencia de usuario fluida.
-
-
-

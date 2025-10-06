@@ -1,6 +1,6 @@
 /**
  * 🎨 Pinteya Design System - Color Tokens
- * 
+ *
  * Paleta de colores optimizada para e-commerce de pinturería
  * Basada en psicología del color para el sector construcción
  */
@@ -50,7 +50,7 @@ export const colors = {
 
   // 🤎 Colores Neutros Cálidos
   neutral: {
-    50: '#FFF7EB',  // Warm Beige - Fondos suaves
+    50: '#FFF7EB', // Warm Beige - Fondos suaves
     100: '#F5E6D3',
     200: '#EBD5BB',
     300: '#E1C4A3',
@@ -133,77 +133,75 @@ export const colors = {
   ecommerce: {
     // Precios
     price: {
-      current: '#712F00',      // Precio actual - neutral.900
-      original: '#757575',     // Precio original tachado - gray.600
-      discount: '#F44336',     // Color de descuento - error.500
+      current: '#712F00', // Precio actual - neutral.900
+      original: '#757575', // Precio original tachado - gray.600
+      discount: '#F44336', // Color de descuento - error.500
       installments: '#00A651', // Color de cuotas - success.500
     },
 
     // Stock
     stock: {
-      available: '#00A651',    // En stock - success.500
-      low: '#FF9800',          // Stock bajo - warning.500
-      outOfStock: '#F44336',   // Sin stock - error.500
-      preOrder: '#2196F3',     // Pre-orden - info.500
+      available: '#00A651', // En stock - success.500
+      low: '#FF9800', // Stock bajo - warning.500
+      outOfStock: '#F44336', // Sin stock - error.500
+      preOrder: '#2196F3', // Pre-orden - info.500
     },
 
     // Envío
     shipping: {
-      free: '#00A651',         // Envío gratis - success.500
-      fast: '#2196F3',         // Envío rápido - info.500
-      standard: '#757575',     // Envío estándar - gray.600
-      express: '#9C27B0',      // Envío express - purple.500
+      free: '#00A651', // Envío gratis - success.500
+      fast: '#2196F3', // Envío rápido - info.500
+      standard: '#757575', // Envío estándar - gray.600
+      express: '#9C27B0', // Envío express - purple.500
     },
 
     // Estados de compra
     purchase: {
-      addToCart: '#EF7D00',    // Agregar al carrito - primary.500
-      buyNow: '#00A651',       // Comprar ahora - success.500
-      wishlist: '#F44336',     // Lista de deseos - error.500
-      compare: '#757575',      // Comparar - gray.600
+      addToCart: '#EF7D00', // Agregar al carrito - primary.500
+      buyNow: '#00A651', // Comprar ahora - success.500
+      wishlist: '#F44336', // Lista de deseos - error.500
+      compare: '#757575', // Comparar - gray.600
     },
 
     // Badges y etiquetas
     badges: {
-      new: '#2196F3',          // Nuevo - info.500
-      sale: '#F44336',         // Oferta - error.500
-      featured: '#FF9800',     // Destacado - warning.500
-      bestseller: '#9C27B0',   // Más vendido - purple.500
+      new: '#2196F3', // Nuevo - info.500
+      sale: '#F44336', // Oferta - error.500
+      featured: '#FF9800', // Destacado - warning.500
+      bestseller: '#9C27B0', // Más vendido - purple.500
     },
   },
 
   // 🌐 Colores de Fondo
   background: {
     primary: '#FFFFFF',
-    secondary: '#FFF7EB',    // neutral.50
-    tertiary: '#F5F5F5',    // gray.100
-    card: '#FFF7EB',        // neutral.50
+    secondary: '#FFF7EB', // neutral.50
+    tertiary: '#F5F5F5', // gray.100
+    card: '#FFF7EB', // neutral.50
     overlay: 'rgba(0, 0, 0, 0.5)',
-    disabled: '#F5F5F5',    // gray.100
+    disabled: '#F5F5F5', // gray.100
   },
 
   // 📝 Colores de Texto
   text: {
-    primary: '#712F00',     // neutral.900
-    secondary: '#333333',   // gray.900
-    tertiary: '#757575',    // gray.600
-    disabled: '#BDBDBD',    // gray.400
+    primary: '#712F00', // neutral.900
+    secondary: '#333333', // gray.900
+    tertiary: '#757575', // gray.600
+    disabled: '#BDBDBD', // gray.400
     inverse: '#FFFFFF',
-    link: '#EF7D00',        // primary.500
-    linkHover: '#D16A00',   // primary.600
+    link: '#EF7D00', // primary.500
+    linkHover: '#D16A00', // primary.600
   },
 
   // 🔲 Colores de Borde
   border: {
-    primary: '#E0E0E0',     // gray.300
-    secondary: '#EEEEEE',   // gray.200
-    focus: '#EF7D00',       // primary.500
-    error: '#F44336',       // error.500
-    success: '#4CAF50',     // success.500
+    primary: '#E0E0E0', // gray.300
+    secondary: '#EEEEEE', // gray.200
+    focus: '#EF7D00', // primary.500
+    error: '#F44336', // error.500
+    success: '#4CAF50', // success.500
   },
-
-
-} as const;
+} as const
 
 // 🎨 Aliases para facilidad de uso
 export const colorAliases = {
@@ -213,23 +211,23 @@ export const colorAliases = {
   yellow: colors.accent[500],
   brown: colors.neutral[900],
   beige: colors.neutral[50],
-  
+
   // Estados
   success: colors.success[500],
   warning: colors.warning[500],
   error: colors.error[500],
   info: colors.info[500],
-  
+
   // Fondos comunes
   cardBg: colors.background.card,
   pageBg: colors.background.primary,
   sectionBg: colors.background.secondary,
-  
+
   // Textos comunes
   textPrimary: colors.text.primary,
   textSecondary: colors.text.secondary,
   textMuted: colors.text.tertiary,
-} as const;
+} as const
 
-export type ColorToken = keyof typeof colors;
-export type ColorAlias = keyof typeof colorAliases;
+export type ColorToken = keyof typeof colors
+export type ColorAlias = keyof typeof colorAliases

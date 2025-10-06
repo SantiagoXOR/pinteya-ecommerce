@@ -3,60 +3,68 @@
 // Descripción: Convierte el reporte JSON en un HTML visual
 // =====================================================
 
-const fs = require('fs').promises;
-const path = require('path');
+const fs = require('fs').promises
+const path = require('path')
 
 async function generateHTMLReport() {
   try {
     // Buscar el reporte más reciente
-    const reportsDir = 'tests/reports';
-    const files = await fs.readdir(reportsDir);
-    const reportFiles = files.filter(f => f.startsWith('diagnostic-report-') && f.endsWith('.json'));
-    
+    const reportsDir = 'tests/reports'
+    const files = await fs.readdir(reportsDir)
+    const reportFiles = files.filter(f => f.startsWith('diagnostic-report-') && f.endsWith('.json'))
+
     if (reportFiles.length === 0) {
-      console.log('❌ No se encontraron reportes de diagnóstico');
-      return;
+      console.log('❌ No se encontraron reportes de diagnóstico')
+      return
     }
 
     // Obtener el más reciente
-    const latestReport = reportFiles.sort().reverse()[0];
-    const reportPath = path.join(reportsDir, latestReport);
-    const reportData = JSON.parse(await fs.readFile(reportPath, 'utf8'));
+    const latestReport = reportFiles.sort().reverse()[0]
+    const reportPath = path.join(reportsDir, latestReport)
+    const reportData = JSON.parse(await fs.readFile(reportPath, 'utf8'))
 
     // Generar HTML
-    const html = generateHTML(reportData);
-    
-    // Guardar HTML
-    const htmlPath = path.join(reportsDir, `diagnostic-report-${Date.now()}.html`);
-    await fs.writeFile(htmlPath, html);
-    
-    console.log(`✅ Reporte HTML generado: ${htmlPath}`);
-    
-    // Mostrar resumen en consola
-    console.log('\n📊 RESUMEN EJECUTIVO');
-    console.log('===================');
-    console.log(`📅 Fecha: ${new Date(reportData.timestamp).toLocaleString()}`);
-    console.log(`📋 Total Funcionalidades: ${reportData.totalTests}`);
-    console.log(`✅ Implementadas: ${reportData.implemented} (${((reportData.implemented / reportData.totalTests) * 100).toFixed(1)}%)`);
-    console.log(`🚧 Placeholders: ${reportData.placeholders} (${((reportData.placeholders / reportData.totalTests) * 100).toFixed(1)}%)`);
-    console.log(`❌ Errores: ${reportData.errors} (${((reportData.errors / reportData.totalTests) * 100).toFixed(1)}%)`);
-    
-    console.log('\n📊 ESTADO POR MÓDULO:');
-    Object.entries(reportData.summary).forEach(([module, stats]) => {
-      const percentage = stats.total > 0 ? ((stats.implemented / stats.total) * 100).toFixed(1) : '0';
-      const status = percentage >= 90 ? '🟢' : percentage >= 70 ? '🟡' : '🔴';
-      console.log(`  ${status} ${module.toUpperCase()}: ${stats.implemented}/${stats.total} (${percentage}%)`);
-    });
+    const html = generateHTML(reportData)
 
+    // Guardar HTML
+    const htmlPath = path.join(reportsDir, `diagnostic-report-${Date.now()}.html`)
+    await fs.writeFile(htmlPath, html)
+
+    console.log(`✅ Reporte HTML generado: ${htmlPath}`)
+
+    // Mostrar resumen en consola
+    console.log('\n📊 RESUMEN EJECUTIVO')
+    console.log('===================')
+    console.log(`📅 Fecha: ${new Date(reportData.timestamp).toLocaleString()}`)
+    console.log(`📋 Total Funcionalidades: ${reportData.totalTests}`)
+    console.log(
+      `✅ Implementadas: ${reportData.implemented} (${((reportData.implemented / reportData.totalTests) * 100).toFixed(1)}%)`
+    )
+    console.log(
+      `🚧 Placeholders: ${reportData.placeholders} (${((reportData.placeholders / reportData.totalTests) * 100).toFixed(1)}%)`
+    )
+    console.log(
+      `❌ Errores: ${reportData.errors} (${((reportData.errors / reportData.totalTests) * 100).toFixed(1)}%)`
+    )
+
+    console.log('\n📊 ESTADO POR MÓDULO:')
+    Object.entries(reportData.summary).forEach(([module, stats]) => {
+      const percentage =
+        stats.total > 0 ? ((stats.implemented / stats.total) * 100).toFixed(1) : '0'
+      const status = percentage >= 90 ? '🟢' : percentage >= 70 ? '🟡' : '🔴'
+      console.log(
+        `  ${status} ${module.toUpperCase()}: ${stats.implemented}/${stats.total} (${percentage}%)`
+      )
+    })
   } catch (error) {
-    console.error('❌ Error generando reporte:', error);
+    console.error('❌ Error generando reporte:', error)
   }
 }
 
 function generateHTML(reportData) {
-  const timestamp = new Date(reportData.timestamp).toLocaleString();
-  const implementedPercentage = ((reportData.implemented / reportData.totalTests) * 100).toFixed(1);
-  
+  const timestamp = new Date(reportData.timestamp).toLocaleString()
+  const implementedPercentage = ((reportData.implemented / reportData.totalTests) * 100).toFixed(1)
+
   return `
 <!DOCTYPE html>
 <html lang="es">
@@ -206,16 +214,18 @@ function generateHTML(reportData) {
         </div>
 
         <div class="modules-grid">
-            ${Object.entries(reportData.summary).map(([module, stats]) => {
-              const percentage = stats.total > 0 ? ((stats.implemented / stats.total) * 100) : 0;
-              const moduleIcon = {
-                orders: '📋',
-                products: '📦', 
-                logistics: '🚚',
-                integration: '🔗'
-              }[module] || '📊';
-              
-              return `
+            ${Object.entries(reportData.summary)
+              .map(([module, stats]) => {
+                const percentage = stats.total > 0 ? (stats.implemented / stats.total) * 100 : 0
+                const moduleIcon =
+                  {
+                    orders: '📋',
+                    products: '📦',
+                    logistics: '🚚',
+                    integration: '🔗',
+                  }[module] || '📊'
+
+                return `
                 <div class="module-card">
                     <div class="module-header">
                         <h3>${moduleIcon} ${module.charAt(0).toUpperCase() + module.slice(1)}</h3>
@@ -225,8 +235,9 @@ function generateHTML(reportData) {
                         </div>
                     </div>
                 </div>
-              `;
-            }).join('')}
+              `
+              })
+              .join('')}
         </div>
 
         <div class="results-table">
@@ -241,24 +252,27 @@ function generateHTML(reportData) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${reportData.results.map(result => {
-                      const statusClass = `status-${result.status.toLowerCase().replace('_', '-')}`;
-                      const statusIcon = {
-                        'IMPLEMENTED': '✅',
-                        'PLACEHOLDER': '🚧',
-                        'ERROR': '❌',
-                        'NOT_FOUND': '🔍'
-                      }[result.status] || '❓';
-                      
-                      return `
+                    ${reportData.results
+                      .map(result => {
+                        const statusClass = `status-${result.status.toLowerCase().replace('_', '-')}`
+                        const statusIcon =
+                          {
+                            IMPLEMENTED: '✅',
+                            PLACEHOLDER: '🚧',
+                            ERROR: '❌',
+                            NOT_FOUND: '🔍',
+                          }[result.status] || '❓'
+
+                        return `
                         <tr>
                             <td><strong>${result.module.toUpperCase()}</strong></td>
                             <td>${result.functionality}</td>
                             <td><span class="status-badge ${statusClass}">${statusIcon} ${result.status}</span></td>
                             <td>${result.details}</td>
                         </tr>
-                      `;
-                    }).join('')}
+                      `
+                      })
+                      .join('')}
                 </tbody>
             </table>
         </div>
@@ -270,12 +284,12 @@ function generateHTML(reportData) {
     </div>
 </body>
 </html>
-  `;
+  `
 }
 
 // Ejecutar si se llama directamente
 if (require.main === module) {
-  generateHTMLReport();
+  generateHTMLReport()
 }
 
-module.exports = { generateHTMLReport };
+module.exports = { generateHTMLReport }

@@ -3,6 +3,7 @@
 ## 📋 Variables de Entorno para Vercel Dashboard
 
 ### **🔧 Configuración de Aplicación**
+
 ```bash
 # Entorno de Producción
 NODE_ENV=production
@@ -16,6 +17,7 @@ NEXTAUTH_URL=https://pinteya.com
 ```
 
 ### **🗄️ Base de Datos - Supabase**
+
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=[TU_SUPABASE_PROJECT_URL]
 NEXT_PUBLIC_SUPABASE_ANON_KEY=[TU_SUPABASE_ANON_KEY]
@@ -23,6 +25,7 @@ SUPABASE_SERVICE_ROLE_KEY=[TU_SUPABASE_SERVICE_ROLE_KEY]
 ```
 
 ### **💳 MercadoPago - Producción**
+
 ```bash
 # Credenciales de Producción
 MERCADOPAGO_ACCESS_TOKEN=[TU_MERCADOPAGO_ACCESS_TOKEN]
@@ -39,6 +42,7 @@ NEXT_PUBLIC_MOCK_PAYMENTS=false
 ```
 
 ### **📧 Email - Resend**
+
 ```bash
 RESEND_API_KEY=PRODUCTION_RESEND_API_KEY_REQUIRED
 RESEND_FROM_EMAIL=noreply@pinteya.com
@@ -46,12 +50,14 @@ RESEND_SUPPORT_EMAIL=soporte@pinteya.com
 ```
 
 ### **🔐 Autenticación - Google OAuth**
+
 ```bash
 GOOGLE_CLIENT_ID=PRODUCTION_GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET=PRODUCTION_GOOGLE_CLIENT_SECRET
 ```
 
 ### **📊 Analytics y Monitoreo**
+
 ```bash
 # Google Analytics
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
@@ -66,6 +72,7 @@ NEXT_PUBLIC_DEBUG_MODE=false
 ```
 
 ### **⚡ Redis y Cache**
+
 ```bash
 # Redis Habilitado
 REDIS_HOST=localhost
@@ -76,6 +83,7 @@ DISABLE_REDIS=false
 ```
 
 ### **🔒 Clerk (Deshabilitado)**
+
 ```bash
 # Clerk está deshabilitado - Migrado a NextAuth.js
 # NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
@@ -88,17 +96,20 @@ DISABLE_REDIS=false
 ## 🛠️ Pasos para Configurar en Vercel
 
 ### **1. Acceder a Vercel Dashboard**
+
 1. Ir a: https://vercel.com/dashboard
 2. Seleccionar el proyecto `pinteya-ecommerce`
 3. Ir a **Settings** → **Environment Variables**
 
 ### **2. Configurar Variables de Entorno**
+
 1. Hacer clic en **"Add New"**
 2. Copiar cada variable del listado anterior
 3. Seleccionar **Environment**: `Production`
 4. Hacer clic en **"Save"**
 
 ### **3. Configurar Dominio Personalizado**
+
 1. Ir a **Settings** → **Domains**
 2. Agregar dominio: `pinteya.com`
 3. Configurar DNS según instrucciones de Vercel
@@ -109,6 +120,7 @@ DISABLE_REDIS=false
 ## 🚀 Proceso de Despliegue
 
 ### **Opción 1: Despliegue Automático (Recomendado)**
+
 ```bash
 # Hacer commit de todos los cambios
 git add .
@@ -119,6 +131,7 @@ git push origin main
 ```
 
 ### **Opción 2: Despliegue Manual**
+
 ```bash
 # Instalar Vercel CLI
 npm i -g vercel
@@ -132,6 +145,7 @@ vercel --prod
 ## ✅ Checklist Pre-Despliegue
 
 ### **Configuración:**
+
 - [ ] Todas las variables de entorno configuradas en Vercel
 - [ ] Dominio `pinteya.com` configurado
 - [ ] SSL certificado activo
@@ -139,6 +153,7 @@ vercel --prod
 - [ ] Secret del webhook actualizado
 
 ### **Validaciones:**
+
 - [ ] Build local exitoso con `npm run build`
 - [ ] Tests críticos pasando
 - [ ] Credenciales de producción validadas
@@ -149,6 +164,7 @@ vercel --prod
 ## 🧪 Validación Post-Despliegue
 
 ### **1. Verificar Aplicación**
+
 ```bash
 # Verificar que la aplicación carga
 curl -I https://pinteya.com
@@ -158,6 +174,7 @@ curl https://pinteya.com/api/health
 ```
 
 ### **2. Test de Funcionalidades Críticas**
+
 ```bash
 # Test de autenticación
 curl https://pinteya.com/api/auth/session
@@ -173,6 +190,7 @@ curl -X POST https://pinteya.com/api/payments/webhook \
 ```
 
 ### **3. Monitoreo Inicial**
+
 - Dashboard: https://pinteya.com/admin/monitoring
 - Métricas: https://pinteya.com/api/admin/monitoring/metrics
 - Logs: Vercel Dashboard → Functions → Logs
@@ -182,12 +200,14 @@ curl -X POST https://pinteya.com/api/payments/webhook \
 ## 📊 Métricas de Producción
 
 ### **Objetivos de Performance:**
+
 - **First Load JS**: < 600 kB ✅ (589 kB actual)
 - **Build Time**: < 45 segundos ✅ (16.8s actual)
 - **API Response**: < 2 segundos
 - **Uptime**: > 99.9%
 
 ### **Monitoreo Continuo:**
+
 - Core Web Vitals
 - Error Rate < 1%
 - Response Time < 2s
@@ -198,6 +218,7 @@ curl -X POST https://pinteya.com/api/payments/webhook \
 ## 🚨 Plan de Rollback
 
 ### **En caso de problemas críticos:**
+
 ```bash
 # Rollback inmediato en Vercel
 vercel rollback [deployment-url]
@@ -207,6 +228,7 @@ vercel rollback [deployment-url]
 ```
 
 ### **Variables de Entorno de Emergencia:**
+
 ```bash
 # Habilitar modo de mantenimiento
 MAINTENANCE_MODE=true
@@ -221,11 +243,13 @@ DEBUG=true
 ## 📞 Contactos de Emergencia
 
 ### **Soporte Técnico:**
+
 - **Email**: santiago@xor.com.ar
 - **Dashboard**: https://pinteya.com/admin/monitoring
 - **Vercel Support**: https://vercel.com/support
 
 ### **Servicios Externos:**
+
 - **MercadoPago**: https://www.mercadopago.com.ar/developers/support
 - **Supabase**: https://supabase.com/support
 - **Resend**: https://resend.com/support
@@ -235,6 +259,7 @@ DEBUG=true
 ## 🎯 Estado Final
 
 ### **✅ Listo para Producción:**
+
 - Configuración completa de variables de entorno
 - Build exitoso con optimizaciones de producción
 - Webhook configurado y documentado
@@ -242,6 +267,7 @@ DEBUG=true
 - Plan de rollback definido
 
 ### **📅 Próximos Pasos:**
+
 1. Configurar variables en Vercel Dashboard
 2. Configurar webhook en MercadoPago Dashboard
 3. Ejecutar despliegue
@@ -253,6 +279,3 @@ DEBUG=true
 **🚀 Estado:** Listo para despliegue inmediato
 **📅 Fecha:** 2024-01-09
 **👤 Responsable:** Santiago XOR (santiago@xor.com.ar)
-
-
-

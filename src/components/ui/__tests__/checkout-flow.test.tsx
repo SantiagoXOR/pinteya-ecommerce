@@ -5,14 +5,12 @@ import { CheckoutFlow } from '../checkout-flow'
 
 // Mock simplificado de componentes
 jest.mock('../shipping-info', () => ({
-  ShippingInfo: () => <div data-testid="shipping-info">Shipping Info Mock</div>,
+  ShippingInfo: () => <div data-testid='shipping-info'>Shipping Info Mock</div>,
 }))
 
 jest.mock('../cart-summary', () => ({
   CartSummary: ({ cartItems }: { cartItems: any[] }) => (
-    <div data-testid="cart-summary">
-      Cart Summary - {cartItems?.length || 0} items - compact
-    </div>
+    <div data-testid='cart-summary'>Cart Summary - {cartItems?.length || 0} items - compact</div>
   ),
 }))
 
@@ -38,7 +36,7 @@ jest.mock('../badge', () => ({
 
 jest.mock('../progress', () => ({
   Progress: ({ value, ...props }: any) => (
-    <div data-testid="progress" data-value={value} {...props}>
+    <div data-testid='progress' data-value={value} {...props}>
       Progress: {value}%
     </div>
   ),

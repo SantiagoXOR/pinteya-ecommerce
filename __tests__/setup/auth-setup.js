@@ -5,20 +5,20 @@
 
 // Mock NextAuth antes de cualquier importación
 jest.mock('next-auth', () => {
-  const mockAuth = jest.fn(() => Promise.resolve(null));
-  const mockSignIn = jest.fn();
-  const mockSignOut = jest.fn();
+  const mockAuth = jest.fn(() => Promise.resolve(null))
+  const mockSignIn = jest.fn()
+  const mockSignOut = jest.fn()
   const mockHandlers = {
     GET: jest.fn(),
     POST: jest.fn(),
-  };
+  }
 
   const mockNextAuth = jest.fn(() => ({
     handlers: mockHandlers,
     auth: mockAuth,
     signIn: mockSignIn,
     signOut: mockSignOut,
-  }));
+  }))
 
   return {
     __esModule: true,
@@ -27,12 +27,12 @@ jest.mock('next-auth', () => {
     signIn: mockSignIn,
     signOut: mockSignOut,
     handlers: mockHandlers,
-  };
-});
+  }
+})
 
 // Mock Google Provider antes de cualquier importación
 jest.mock('next-auth/providers/google', () => {
-  const mockGoogleProvider = jest.fn((config) => ({
+  const mockGoogleProvider = jest.fn(config => ({
     id: 'google',
     name: 'Google',
     type: 'oauth',
@@ -47,29 +47,29 @@ jest.mock('next-auth/providers/google', () => {
     },
     token: 'https://oauth2.googleapis.com/token',
     userinfo: 'https://www.googleapis.com/oauth2/v2/userinfo',
-    profile: jest.fn((profile) => ({
+    profile: jest.fn(profile => ({
       id: profile.id,
       name: profile.name,
       email: profile.email,
       image: profile.picture,
     })),
-  }));
+  }))
 
   return {
     __esModule: true,
     default: mockGoogleProvider,
-  };
-});
+  }
+})
 
 // Mock del archivo auth.ts completo
 jest.mock('@/auth', () => {
-  const mockAuth = jest.fn(() => Promise.resolve(null));
-  const mockSignIn = jest.fn();
-  const mockSignOut = jest.fn();
+  const mockAuth = jest.fn(() => Promise.resolve(null))
+  const mockSignIn = jest.fn()
+  const mockSignOut = jest.fn()
   const mockHandlers = {
     GET: jest.fn(),
     POST: jest.fn(),
-  };
+  }
 
   return {
     __esModule: true,
@@ -83,5 +83,5 @@ jest.mock('@/auth', () => {
       signOut: mockSignOut,
       handlers: mockHandlers,
     },
-  };
-});
+  }
+})

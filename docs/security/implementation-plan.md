@@ -42,48 +42,60 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 ## 🔄 Pendiente de Implementación (Prioridad Media)
 
 ### 1. Mejoras en Rate Limiting
+
 **Tiempo estimado**: 2-3 horas
 **Archivos a modificar**:
+
 - `src/middleware/security.ts`
 - `src/app/api/*/route.ts`
 
 **Tareas**:
+
 - [ ] Implementar Redis para rate limiting en producción
 - [ ] Configurar límites específicos por usuario autenticado
 - [ ] Agregar whitelist para IPs de confianza
 - [ ] Implementar rate limiting exponencial
 
 ### 2. Content Security Policy Avanzado
+
 **Tiempo estimado**: 1-2 horas
 **Archivos a modificar**:
+
 - `src/middleware/security.ts`
 - `next.config.js`
 
 **Tareas**:
+
 - [ ] CSP específico por ruta
 - [ ] Nonces para scripts inline
 - [ ] Reporting de violaciones CSP
 - [ ] Configuración para modo desarrollo vs producción
 
 ### 3. Logging y Monitoreo Avanzado
+
 **Tiempo estimado**: 3-4 horas
 **Archivos a crear/modificar**:
+
 - `src/lib/security-logger.ts`
 - `src/middleware/security.ts`
 
 **Tareas**:
+
 - [ ] Sistema de logging estructurado
 - [ ] Integración con servicios de monitoreo
 - [ ] Alertas automáticas para eventos críticos
 - [ ] Dashboard de métricas de seguridad
 
 ### 4. Validaciones Adicionales
+
 **Tiempo estimado**: 2-3 horas
 **Archivos a modificar**:
+
 - `src/lib/validations.ts`
 - `src/app/api/*/route.ts`
 
 **Tareas**:
+
 - [ ] Validación de archivos subidos
 - [ ] Sanitización avanzada de HTML
 - [ ] Validación de URLs y dominios
@@ -92,25 +104,30 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 ## 🔄 Pendiente de Implementación (Prioridad Baja)
 
 ### 1. Autenticación de Dos Factores
+
 **Tiempo estimado**: 4-6 horas
 **Descripción**: Implementar 2FA opcional para usuarios administradores
 
 ### 2. Auditoría de Acceso
+
 **Tiempo estimado**: 3-4 horas
 **Descripción**: Log detallado de todas las acciones de usuarios
 
 ### 3. Encriptación de Datos Sensibles
+
 **Tiempo estimado**: 2-3 horas
 **Descripción**: Encriptar datos sensibles en base de datos
 
 ## 🚀 Cronograma de Implementación
 
 ### Fase 1: Crítica (Completada) ✅
+
 - **Duración**: Completada
 - **Estado**: ✅ Implementado
 - **Objetivo**: Seguridad básica para Codex Agent
 
 ### Fase 2: Mejoras Inmediatas (Próximos 7 días)
+
 - **Duración**: 1 semana
 - **Prioridad**: Media
 - **Tareas**:
@@ -119,6 +136,7 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
   3. Logging estructurado
 
 ### Fase 3: Optimizaciones (Próximos 14 días)
+
 - **Duración**: 2 semanas
 - **Prioridad**: Baja
 - **Tareas**:
@@ -127,6 +145,7 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
   3. Documentación extendida
 
 ### Fase 4: Características Avanzadas (Futuro)
+
 - **Duración**: A definir
 - **Prioridad**: Opcional
 - **Tareas**:
@@ -139,28 +158,31 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 ### Para Desarrolladores
 
 1. **Verificar Estado Actual**
+
    ```bash
    npm run security:check
    ```
 
 2. **Implementar Mejoras Pendientes**
+
    ```bash
    # Crear rama para mejoras de seguridad
    git checkout -b security/improvements
-   
+
    # Implementar cambios según prioridad
    # Ejecutar tests
    npm test
-   
+
    # Verificar seguridad
    npm run security:check
    ```
 
 3. **Testing de Seguridad**
+
    ```bash
    # Tests específicos de seguridad
    npm run test:security
-   
+
    # Auditoría de dependencias
    npm run security:audit
    ```
@@ -185,6 +207,7 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 ## 📊 Métricas de Éxito
 
 ### Indicadores de Seguridad
+
 - ✅ 0 credenciales expuestas en código
 - ✅ 100% de endpoints con rate limiting
 - ✅ Headers de seguridad en todas las respuestas
@@ -192,6 +215,7 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 - ✅ Logs de seguridad estructurados
 
 ### Indicadores de Funcionalidad
+
 - ✅ 206 tests pasando (100% success rate)
 - ✅ Aplicación funcionando en producción
 - ✅ Pagos MercadoPago operativos
@@ -201,6 +225,7 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 ## 🔍 Verificación Final
 
 ### Checklist Pre-Codex Agent
+
 - [ ] Ejecutar `npm run security:check` sin errores
 - [ ] Verificar configuración de dominios permitidos
 - [ ] Confirmar restricción de métodos HTTP
@@ -209,6 +234,7 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 - [ ] Confirmar que aplicación funciona correctamente
 
 ### Checklist Post-Implementación
+
 - [ ] Todas las funcionalidades del e-commerce operativas
 - [ ] Tests de seguridad pasando
 - [ ] Documentación actualizada
@@ -218,11 +244,13 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 ## 📞 Soporte y Escalación
 
 ### Contactos Técnicos
+
 - **Desarrollador Principal**: [Configurar]
 - **DevOps/Seguridad**: [Configurar]
 - **Product Owner**: [Configurar]
 
 ### Escalación de Incidentes
+
 1. **Nivel 1**: Desarrollador del equipo
 2. **Nivel 2**: Lead técnico
 3. **Nivel 3**: Arquitecto de seguridad
@@ -233,6 +261,3 @@ Implementar medidas de seguridad robustas para preparar el proyecto Pinteya E-co
 **Última actualización**: Junio 2025
 **Versión del documento**: 2.0
 **Estado**: En implementación activa
-
-
-

@@ -10,35 +10,48 @@ import { ProductWithCategory } from '@/types/api'
  * @param apiProduct - Producto desde la API
  * @returns Product - Producto en formato de componente
  */
-export function adaptApiProductToComponent(
-  apiProduct: ProductWithCategory
-): Product & { name?: string } {
-  // Mapear correctamente las imágenes desde la estructura de BD a la estructura de componentes
-  const images = apiProduct.images || {}
+export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Product => {
+  console.group(`🔄 [ProductAdapter] Adaptando producto: ${apiProduct.name}`);
+  console.log('📦 API Product original:', apiProduct);
+  console.log('🖼️ Imágenes originales:', apiProduct.images);
+  
+  // Obtener la primera imagen válida o usar placeholder
+  const firstImage = apiProduct.images && apiProduct.images.length > 0 
+    ? apiProduct.images[0] 
+    : '/images/products/placeholder.svg';
+    
+  console.log('🎯 Primera imagen seleccionada:', firstImage);
 
-  return {
+  const adaptedProduct: Product = {
     id: apiProduct.id,
-    title: apiProduct.name,
-    name: apiProduct.name, // Agregar el campo name para compatibilidad
-    brand: apiProduct.brand, // Agregar el campo brand que faltaba
-    reviews: Math.floor(Math.random() * 50) + 1, // Temporal: generar reviews aleatorias
+    title: apiProduct.name, // ✅ Mapear name a title para compatibilidad con tipo Product
+    brand: apiProduct.brand || '',
+    reviews: 0, // Valor por defecto
     price: apiProduct.price,
-    // FIX CRÍTICO: Solo usar discounted_price si es menor que price, sino undefined
-    discountedPrice:
-      apiProduct.discounted_price && apiProduct.discounted_price < apiProduct.price
-        ? apiProduct.discounted_price
-        : undefined,
+    discountedPrice: apiProduct.discounted_price || apiProduct.price,
+    // Campos adicionales para compatibilidad extendida
+    name: apiProduct.name,
+    description: apiProduct.description || '',
+    originalPrice: apiProduct.original_price || apiProduct.price,
+    discount: apiProduct.discount || null,
+    category: apiProduct.category?.name || 'Sin categoría',
+    categoryId: apiProduct.category_id,
+    stock: apiProduct.stock || 0,
+    isNew: apiProduct.is_new || false,
+    images: apiProduct.images || ['/images/products/placeholder.svg'],
+    image: firstImage,
+    // Campos de compatibilidad con versiones anteriores
     imgs: {
-      // Mapear desde la estructura real de la BD: { main, gallery, thumbnail }
-      thumbnails: images.thumbnail ? [images.thumbnail] : ['/images/products/placeholder.svg'],
-      previews: images.main
-        ? [images.main]
-        : images.gallery?.[0]
-          ? [images.gallery[0]]
-          : ['/images/products/placeholder.svg'],
-    },
-  }
-}
+      previews: apiProduct.images || ['/images/products/placeholder.svg']
+    }
+  };
+
+  console.log('✅ Producto adaptado:', adaptedProduct);
+  console.log('🖼️ URL final de imagen:', adaptedProduct.image);
+  console.groupEnd();
+
+  return adaptedProduct;
+};
 
 /**
  * Convierte una lista de productos de la API al formato de componentes
@@ -47,7 +60,7 @@ export function adaptApiProductToComponent(
  */
 export function adaptApiProductsToComponents(
   apiProducts: ProductWithCategory[]
-): (Product & { name?: string })[] {
+): Product[] {
   return apiProducts.map(adaptApiProductToComponent)
 }
 
@@ -129,6 +142,10 @@ export function getFinalPrice(product: Product | ProductWithCategory): number {
  * @returns string - URL de la imagen
  */
 export function getMainImage(product: Product | ProductWithCategory): string {
+  // Priorizar el nuevo formato de array simple
+  if ('images' in product && Array.isArray(product.images) && product.images[0]) {
+    return product.images[0]
+  }
   if ('imgs' in product && product.imgs?.previews?.[0]) {
     return product.imgs.previews[0]
   }
@@ -163,7 +180,10 @@ export function getValidImageUrl(
 export function getThumbnailImage(product: Product | ProductWithCategory): string {
   let imageUrl: string | undefined
 
-  if ('imgs' in product && product.imgs?.thumbnails?.[0]) {
+  // Priorizar el nuevo formato de array simple
+  if ('images' in product && Array.isArray(product.images) && product.images[0]) {
+    imageUrl = product.images[0]
+  } else if ('imgs' in product && product.imgs?.thumbnails?.[0]) {
     imageUrl = product.imgs.thumbnails[0]
   } else if ('images' in product && product.images?.thumbnails?.[0]) {
     imageUrl = product.images.thumbnails[0]
@@ -180,7 +200,10 @@ export function getThumbnailImage(product: Product | ProductWithCategory): strin
 export function getPreviewImage(product: Product | ProductWithCategory): string {
   let imageUrl: string | undefined
 
-  if ('imgs' in product && product.imgs?.previews?.[0]) {
+  // Priorizar el nuevo formato de array simple
+  if ('images' in product && Array.isArray(product.images) && product.images[0]) {
+    imageUrl = product.images[0]
+  } else if ('imgs' in product && product.imgs?.previews?.[0]) {
     imageUrl = product.imgs.previews[0]
   } else if ('images' in product && product.images?.previews?.[0]) {
     imageUrl = product.images.previews[0]

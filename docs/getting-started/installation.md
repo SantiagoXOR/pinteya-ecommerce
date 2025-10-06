@@ -5,12 +5,14 @@
 ## 📋 Prerrequisitos
 
 ### **Software Requerido**
+
 - **Node.js**: v18.17.0 o superior
 - **npm**: v9.0.0 o superior (incluido con Node.js)
 - **Git**: Para clonar el repositorio
 - **Editor**: VS Code recomendado
 
 ### **Verificar Instalación**
+
 ```bash
 node --version    # v18.17.0+
 npm --version     # v9.0.0+
@@ -20,6 +22,7 @@ git --version     # v2.30.0+
 ## 🚀 Instalación Rápida
 
 ### **1. Clonar Repositorio**
+
 ```bash
 # Clonar desde GitHub
 git clone https://github.com/SantiagoXOR/pinteya-ecommerce.git
@@ -29,6 +32,7 @@ cd pinteya-ecommerce
 ```
 
 ### **2. Instalar Dependencias**
+
 ```bash
 # Instalar todas las dependencias
 npm install
@@ -38,6 +42,7 @@ npm list --depth=0
 ```
 
 ### **3. Configurar Variables de Entorno**
+
 ```bash
 # Copiar archivo de ejemplo
 cp .env.example .env.local
@@ -47,6 +52,7 @@ nano .env.local
 ```
 
 ### **4. Iniciar Desarrollo**
+
 ```bash
 # Iniciar servidor de desarrollo
 npm run dev
@@ -58,6 +64,7 @@ npm run dev
 ## ⚙️ Variables de Entorno
 
 ### **Archivo `.env.local`**
+
 ```bash
 # Supabase Configuration (REQUERIDO)
 NEXT_PUBLIC_SUPABASE_URL=https://aakzspzfulgftqlgwkpb.supabase.co
@@ -80,6 +87,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ### **Obtener Credenciales**
 
 #### **Supabase** (Requerido)
+
 1. Ve a [supabase.com](https://supabase.com)
 2. Crea una cuenta o inicia sesión
 3. Crea un nuevo proyecto
@@ -87,12 +95,14 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 5. Copia las keys necesarias
 
 #### **Clerk** (Opcional)
+
 1. Ve a [clerk.com](https://clerk.com)
 2. Crea una cuenta
 3. Crea una nueva aplicación
 4. Copia las keys desde el dashboard
 
 #### **MercadoPago** (Opcional)
+
 1. Ve a [mercadopago.com.ar/developers](https://mercadopago.com.ar/developers)
 2. Crea una cuenta de desarrollador
 3. Crea una aplicación
@@ -101,6 +111,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ## 📦 Dependencias Principales
 
 ### **Producción**
+
 ```json
 {
   "next": "^15.3.3",
@@ -117,6 +128,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ```
 
 ### **Desarrollo**
+
 ```json
 {
   "@testing-library/react": "^16.3.0",
@@ -131,6 +143,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ## 🔧 Scripts Disponibles
 
 ### **Desarrollo**
+
 ```bash
 npm run dev          # Iniciar servidor de desarrollo
 npm run build        # Construir para producción
@@ -139,6 +152,7 @@ npm run lint         # Ejecutar ESLint
 ```
 
 ### **Testing**
+
 ```bash
 npm test             # Ejecutar tests unitarios
 npm run test:watch   # Tests en modo watch
@@ -147,6 +161,7 @@ npm run test:e2e     # Tests End-to-End
 ```
 
 ### **Formato**
+
 ```bash
 npm run format       # Formatear código con Prettier
 npm run format:check # Verificar formato
@@ -155,13 +170,16 @@ npm run format:check # Verificar formato
 ## 🗄️ Base de Datos
 
 ### **Configuración Automática**
+
 El proyecto incluye datos de ejemplo que se cargan automáticamente:
+
 - **22 productos** de marcas argentinas
 - **6 categorías** de pinturería
 - **Usuarios de prueba**
 - **Órdenes de ejemplo**
 
 ### **Migraciones**
+
 ```bash
 # Las migraciones están en /supabase/migrations/
 # Se aplican automáticamente en Supabase
@@ -170,24 +188,28 @@ El proyecto incluye datos de ejemplo que se cargan automáticamente:
 ## 🧪 Verificar Instalación
 
 ### **1. Servidor de Desarrollo**
+
 ```bash
 npm run dev
 # Debería mostrar: Ready - started server on 0.0.0.0:3001
 ```
 
 ### **2. Build de Producción**
+
 ```bash
 npm run build
 # Debería completarse sin errores
 ```
 
 ### **3. Tests**
+
 ```bash
 npm test
 # Debería pasar todos los tests (206/206)
 ```
 
 ### **4. Linting**
+
 ```bash
 npm run lint
 # No debería mostrar errores
@@ -196,6 +218,7 @@ npm run lint
 ## 🚨 Solución de Problemas
 
 ### **Error: Puerto 3001 en uso**
+
 ```bash
 # Cambiar puerto en package.json
 "dev": "next dev -p 3002"
@@ -205,6 +228,7 @@ lsof -ti:3001 | xargs kill -9
 ```
 
 ### **Error: Dependencias**
+
 ```bash
 # Limpiar cache y reinstalar
 rm -rf node_modules package-lock.json
@@ -212,6 +236,7 @@ npm install
 ```
 
 ### **Error: Variables de entorno**
+
 ```bash
 # Verificar archivo .env.local existe
 ls -la .env.local
@@ -221,6 +246,7 @@ cat .env.local
 ```
 
 ### **Error: Base de datos**
+
 ```bash
 # Verificar conexión a Supabase
 npm run test:api
@@ -229,6 +255,7 @@ npm run test:api
 ## 📱 Configuración de Editor
 
 ### **VS Code Extensions Recomendadas**
+
 ```json
 {
   "recommendations": [
@@ -242,6 +269,7 @@ npm run test:api
 ```
 
 ### **Configuración VS Code**
+
 ```json
 {
   "editor.formatOnSave": true,
@@ -271,7 +299,4 @@ Una vez completada la instalación:
 
 ---
 
-*¿Problemas con la instalación? Consulta la [🔧 Guía de Troubleshooting](../deployment/troubleshooting.md)*
-
-
-
+_¿Problemas con la instalación? Consulta la [🔧 Guía de Troubleshooting](../deployment/troubleshooting.md)_

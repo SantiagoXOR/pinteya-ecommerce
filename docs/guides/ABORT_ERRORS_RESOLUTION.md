@@ -26,24 +26,24 @@ src\hooks\useNetworkErrorHandler.ts (65:15) @ useNetworkErrorHandler.useCallback
 ```typescript
 // ANTES: Los errores de abort pasaban por todo el pipeline de logging
 const handleNetworkError = useCallback((error: any, context?: any) => {
-  const networkError = classifyError(error);
-  
+  const networkError = classifyError(error)
+
   if (enableLogging) {
-    console.group('🌐 Network Error Handler');
-    console.error('Error Type:', networkError.type); // ❌ Esto causaba el bucle
+    console.group('🌐 Network Error Handler')
+    console.error('Error Type:', networkError.type) // ❌ Esto causaba el bucle
     // ...
   }
-  
+
   switch (networkError.type) {
     case 'abort':
       // Manejo tardío
-      break;
+      break
   }
-});
+})
 
 // DESPUÉS: Salida temprana para errores de abort
 const handleNetworkError = useCallback((error: any, context?: any) => {
-  const networkError = classifyError(error);
+  const networkError = classifyError(error)
 
   // ✅ Salida temprana para errores de abort
   if (networkError.type === 'abort') {
@@ -53,20 +53,20 @@ const handleNetworkError = useCallback((error: any, context?: any) => {
         url: networkError.url,
         method: networkError.method,
         originalError: networkError.originalError,
-        context
-      });
-      console.warn('🚫 Request was aborted - this is usually intentional');
+        context,
+      })
+      console.warn('🚫 Request was aborted - this is usually intentional')
     }
-    return; // ✅ Evita el procesamiento adicional
+    return // ✅ Evita el procesamiento adicional
   }
 
   // Continúa con el manejo normal para otros tipos de errores
   if (enableLogging) {
-    console.group('🌐 Network Error Handler');
-    console.error('Error Type:', networkError.type);
+    console.group('🌐 Network Error Handler')
+    console.error('Error Type:', networkError.type)
     // ...
   }
-});
+})
 ```
 
 ### 2. Mejora en `NetworkErrorProvider.tsx`
@@ -76,48 +76,54 @@ const handleNetworkError = useCallback((error: any, context?: any) => {
 ```typescript
 // ANTES: Filtrado básico
 console.error = (...args) => {
-  const message = args.join(' ');
-  if (message.includes('ERR_ABORTED') || 
-      message.includes('AbortError') ||
-      message.includes('The user aborted a request')) {
+  const message = args.join(' ')
+  if (
+    message.includes('ERR_ABORTED') ||
+    message.includes('AbortError') ||
+    message.includes('The user aborted a request')
+  ) {
     // Suprimir
-    return;
+    return
   }
-  originalConsoleError(...args);
-};
+  originalConsoleError(...args)
+}
 
 // DESPUÉS: Filtrado exhaustivo
 console.error = (...args) => {
-  const message = args.join(' ').toLowerCase();
-  if (message.includes('err_aborted') || 
-      message.includes('aborterror') ||
-      message.includes('signal is aborted') ||
-      message.includes('abort') ||
-      message.includes('the user aborted a request') ||
-      message.includes('error type: abort') ||
-      message.includes('🌐 network error handler') ||
-      message.includes('url: undefined') ||
-      message.includes('method: undefined') ||
-      message.includes('original error: aborterror') ||
-      message.includes('context: {type: fetch')) {
+  const message = args.join(' ').toLowerCase()
+  if (
+    message.includes('err_aborted') ||
+    message.includes('aborterror') ||
+    message.includes('signal is aborted') ||
+    message.includes('abort') ||
+    message.includes('the user aborted a request') ||
+    message.includes('error type: abort') ||
+    message.includes('🌐 network error handler') ||
+    message.includes('url: undefined') ||
+    message.includes('method: undefined') ||
+    message.includes('original error: aborterror') ||
+    message.includes('context: {type: fetch')
+  ) {
     if (enableDebugMode) {
-      console.debug('🔇 Suppressed abort error:', ...args);
+      console.debug('🔇 Suppressed abort error:', ...args)
     }
-    return;
+    return
   }
-  originalConsoleError(...args);
-};
+  originalConsoleError(...args)
+}
 ```
 
 ## ✅ Resultado
 
 ### Antes de la Solución:
+
 - ❌ Bucle infinito de errores de abort
 - ❌ Console.error spam con errores no críticos
 - ❌ Performance degradada por el bucle de errores
 - ❌ Experiencia de desarrollo confusa
 
 ### Después de la Solución:
+
 - ✅ Errores de abort suprimidos correctamente
 - ✅ Solo se muestran como `console.debug` en modo debug
 - ✅ No hay bucles infinitos
@@ -151,6 +157,7 @@ console.error = (...args) => {
 ## 🔍 Verificación
 
 Los errores de abort ahora aparecen como:
+
 ```
 🔇 Suppressed abort error: {type: abort, url: undefined, ...}
 🚫 Request was aborted - this is usually intentional

@@ -8,17 +8,17 @@ Esta guía explica cómo migrar de las múltiples rutas de testing dispersas a l
 
 ### Rutas Antiguas → Nueva Ruta Unificada
 
-| Ruta Antigua | Funcionalidad | Nueva Implementación |
-|--------------|---------------|----------------------|
-| `/api/test/route.ts` | Test de conexión Supabase | `GET /api/test/unified?module=connection` |
-| `/api/test-simple-user/route.ts` | Test de perfil de usuario | `GET /api/test/unified?module=user-profile` |
-| `/api/admin/test-screenshots/route.ts` | Gestión de screenshots | `POST /api/test/unified` con `module=screenshots` |
-| `/api/admin/test-execution/route.ts` | Ejecución de test suites | `POST /api/test/unified` con `module=execution` |
-| `/api/admin/test-flows/route.ts` | Flujos de testing | `GET /api/test/unified?module=flows` |
-| `/api/test-screenshots/route.ts` | Generación de screenshots | `POST /api/test/unified` con `module=screenshots` |
-| `/api/test-reports/route.ts` | Gestión de reportes | `GET /api/test/unified?module=reports` |
-| `/api/email/test/route.ts` | Testing de emails | `POST /api/test/unified` con `module=email` |
-| `/api/test-admin-middleware/route.ts` | Test de middleware | `GET /api/test/unified?module=middleware` |
+| Ruta Antigua                           | Funcionalidad             | Nueva Implementación                              |
+| -------------------------------------- | ------------------------- | ------------------------------------------------- |
+| `/api/test/route.ts`                   | Test de conexión Supabase | `GET /api/test/unified?module=connection`         |
+| `/api/test-simple-user/route.ts`       | Test de perfil de usuario | `GET /api/test/unified?module=user-profile`       |
+| `/api/admin/test-screenshots/route.ts` | Gestión de screenshots    | `POST /api/test/unified` con `module=screenshots` |
+| `/api/admin/test-execution/route.ts`   | Ejecución de test suites  | `POST /api/test/unified` con `module=execution`   |
+| `/api/admin/test-flows/route.ts`       | Flujos de testing         | `GET /api/test/unified?module=flows`              |
+| `/api/test-screenshots/route.ts`       | Generación de screenshots | `POST /api/test/unified` con `module=screenshots` |
+| `/api/test-reports/route.ts`           | Gestión de reportes       | `GET /api/test/unified?module=reports`            |
+| `/api/email/test/route.ts`             | Testing de emails         | `POST /api/test/unified` con `module=email`       |
+| `/api/test-admin-middleware/route.ts`  | Test de middleware        | `GET /api/test/unified?module=middleware`         |
 
 ## 🚀 Uso de la Nueva API
 
@@ -27,12 +27,14 @@ Esta guía explica cómo migrar de las múltiples rutas de testing dispersas a l
 #### GET `/api/test/unified`
 
 **Parámetros de consulta:**
+
 - `module`: Módulo a testear (requerido)
 - `detailed`: Información detallada (opcional, default: false)
 - `user_id`: ID de usuario específico (opcional)
 - `include_sensitive`: Incluir información sensible (opcional, default: false)
 
 **Módulos disponibles:**
+
 - `connection` - Test de conexiones básicas
 - `auth` - Test de autenticación
 - `middleware` - Test de middleware
@@ -44,6 +46,7 @@ Esta guía explica cómo migrar de las múltiples rutas de testing dispersas a l
 #### POST `/api/test/unified`
 
 **Body JSON:**
+
 ```json
 {
   "module": "screenshots|execution|flows|email|auth|connection",
@@ -58,20 +61,23 @@ Esta guía explica cómo migrar de las múltiples rutas de testing dispersas a l
 #### 1. Test de Conexión Básica
 
 **Antes:**
+
 ```javascript
 // GET /api/test
-const response = await fetch('/api/test');
+const response = await fetch('/api/test')
 ```
 
 **Después:**
+
 ```javascript
 // GET /api/test/unified?module=connection
-const response = await fetch('/api/test/unified?module=connection');
+const response = await fetch('/api/test/unified?module=connection')
 ```
 
 #### 2. Test de Screenshots
 
 **Antes:**
+
 ```javascript
 // POST /api/test-screenshots
 const response = await fetch('/api/test-screenshots', {
@@ -79,12 +85,13 @@ const response = await fetch('/api/test-screenshots', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     url: 'https://example.com',
-    stepName: 'homepage'
-  })
-});
+    stepName: 'homepage',
+  }),
+})
 ```
 
 **Después:**
+
 ```javascript
 // POST /api/test/unified
 const response = await fetch('/api/test/unified', {
@@ -97,27 +104,29 @@ const response = await fetch('/api/test/unified', {
       stepName: 'homepage',
       fullPage: false,
       width: 1280,
-      height: 720
-    }
-  })
-});
+      height: 720,
+    },
+  }),
+})
 ```
 
 #### 3. Ejecución de Test Suites
 
 **Antes:**
+
 ```javascript
 // POST /api/admin/test-execution
 const response = await fetch('/api/admin/test-execution', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    suites: ['unit', 'components']
-  })
-});
+    suites: ['unit', 'components'],
+  }),
+})
 ```
 
 **Después:**
+
 ```javascript
 // POST /api/test/unified
 const response = await fetch('/api/test/unified', {
@@ -128,15 +137,16 @@ const response = await fetch('/api/test/unified', {
     config: {
       suites: ['unit', 'components'],
       timeout: 90000,
-      generateReport: true
-    }
-  })
-});
+      generateReport: true,
+    },
+  }),
+})
 ```
 
 #### 4. Test de Emails
 
 **Antes:**
+
 ```javascript
 // POST /api/email/test
 const response = await fetch('/api/email/test', {
@@ -145,12 +155,13 @@ const response = await fetch('/api/email/test', {
   body: JSON.stringify({
     email: 'test@example.com',
     userName: 'Test User',
-    type: 'welcome'
-  })
-});
+    type: 'welcome',
+  }),
+})
 ```
 
 **Después:**
+
 ```javascript
 // POST /api/test/unified
 const response = await fetch('/api/test/unified', {
@@ -161,23 +172,24 @@ const response = await fetch('/api/test/unified', {
     config: {
       email: 'test@example.com',
       userName: 'Test User',
-      emailType: 'welcome'
-    }
-  })
-});
+      emailType: 'welcome',
+    },
+  }),
+})
 ```
 
 #### 5. Test Completo (Todos los Módulos)
 
 **Nuevo:**
+
 ```javascript
 // GET /api/test/unified?module=all&detailed=true
-const response = await fetch('/api/test/unified?module=all&detailed=true');
-const result = await response.json();
+const response = await fetch('/api/test/unified?module=all&detailed=true')
+const result = await response.json()
 
 // Resultado incluye todos los módulos:
 // - connection
-// - auth  
+// - auth
 // - middleware
 // - reports
 ```
@@ -185,6 +197,7 @@ const result = await response.json();
 ## 📊 Formato de Respuesta Unificado
 
 ### Respuesta Exitosa
+
 ```json
 {
   "timestamp": "2024-01-15T10:30:00.000Z",
@@ -206,6 +219,7 @@ const result = await response.json();
 ```
 
 ### Respuesta con Error
+
 ```json
 {
   "timestamp": "2024-01-15T10:30:00.000Z",
@@ -223,6 +237,7 @@ const result = await response.json();
 ## 🔧 Configuraciones Específicas por Módulo
 
 ### Screenshots
+
 ```json
 {
   "module": "screenshots",
@@ -238,6 +253,7 @@ const result = await response.json();
 ```
 
 ### Test Execution
+
 ```json
 {
   "module": "execution",
@@ -250,6 +266,7 @@ const result = await response.json();
 ```
 
 ### Email Testing
+
 ```json
 {
   "module": "email",
@@ -262,6 +279,7 @@ const result = await response.json();
 ```
 
 ### Test Flows
+
 ```json
 {
   "module": "flows",
@@ -293,24 +311,28 @@ const result = await response.json();
 ## 🚦 Plan de Migración
 
 ### Fase 1: Implementación (✅ Completada)
+
 - [x] Crear API unificada
 - [x] Implementar todos los módulos
 - [x] Validación y schemas
 - [x] Documentación
 
 ### Fase 2: Testing y Validación
+
 - [ ] Probar todos los módulos
 - [ ] Validar compatibilidad
 - [ ] Performance testing
 - [ ] Documentar diferencias
 
 ### Fase 3: Migración Gradual
+
 - [ ] Actualizar frontend para usar nueva API
 - [ ] Migrar tests automatizados
 - [ ] Actualizar documentación de desarrollo
 - [ ] Entrenar al equipo
 
 ### Fase 4: Deprecación (Futuro)
+
 - [ ] Marcar rutas antiguas como deprecated
 - [ ] Período de gracia (3-6 meses)
 - [ ] Remover rutas antiguas
@@ -319,6 +341,7 @@ const result = await response.json();
 ## 🧪 Testing de la Nueva API
 
 ### Test Básico
+
 ```bash
 # Test de conexión
 curl "http://localhost:3000/api/test/unified?module=connection"
@@ -331,6 +354,7 @@ curl "http://localhost:3000/api/test/unified?module=all"
 ```
 
 ### Test POST
+
 ```bash
 # Test de screenshots
 curl -X POST "http://localhost:3000/api/test/unified" \
@@ -347,16 +371,19 @@ curl -X POST "http://localhost:3000/api/test/unified" \
 ## ⚠️ Consideraciones Importantes
 
 ### Seguridad
+
 - La API mantiene los mismos controles de autenticación
 - Información sensible solo se muestra con `include_sensitive=true`
 - Logs de seguridad para todas las operaciones
 
 ### Performance
+
 - Módulos optimizados para ejecución rápida
 - Timeouts configurables por módulo
 - Ejecución paralela cuando es posible
 
 ### Monitoreo
+
 - Logs estructurados para mejor debugging
 - Métricas de performance por módulo
 - Alertas automáticas en caso de fallos
@@ -364,6 +391,7 @@ curl -X POST "http://localhost:3000/api/test/unified" \
 ## 📞 Soporte
 
 Para preguntas sobre la migración:
+
 1. Revisar esta documentación
 2. Probar en entorno de desarrollo
 3. Consultar logs de la aplicación
@@ -372,5 +400,3 @@ Para preguntas sobre la migración:
 ---
 
 **Nota**: Esta migración mejora significativamente la arquitectura de testing. Se recomienda migrar gradualmente y probar exhaustivamente antes de deprecar las rutas antiguas.
-
-

@@ -3,6 +3,7 @@
 ## Estado Actual del Testing
 
 ### ✅ Implementado
+
 - **Configuración Jest**: Configuración completa con cobertura y reportes
 - **Configuración Playwright**: Setup para E2E con múltiples navegadores
 - **Tests E2E**: Flujos principales de usuario implementados
@@ -15,23 +16,27 @@
 ### ❌ Faltante o Incompleto
 
 #### 1. Tests Unitarios Críticos
+
 - [ ] Tests para utilidades de validación
 - [ ] Tests para helpers de formateo
 - [ ] Tests para funciones de cálculo (precios, descuentos)
 - [ ] Tests para transformadores de datos
 
 #### 2. Tests de Integración
+
 - [ ] Integración completa Supabase + Frontend
 - [ ] Integración MercadoPago + Checkout
 - [ ] Integración Clerk Auth + Permisos
 - [ ] Tests de flujos completos de datos
 
 #### 3. Tests de Regresión
+
 - [ ] Suite de tests de regresión visual
 - [ ] Tests de compatibilidad entre navegadores
 - [ ] Tests de responsive design
 
 #### 4. Tests de Carga y Stress
+
 - [ ] Tests de carga para APIs críticas
 - [ ] Tests de stress para el carrito de compras
 - [ ] Tests de concurrencia para checkout
@@ -41,6 +46,7 @@
 ### Fase 1: Tests Unitarios Críticos (Semana 1)
 
 #### Prioridad Alta
+
 1. **Tests de Validación**
    - Validación de formularios
    - Validación de datos de productos
@@ -59,6 +65,7 @@
 ### Fase 2: Tests de Integración (Semana 2)
 
 #### Prioridad Alta
+
 1. **Integración Base de Datos**
    - CRUD completo de productos
    - Gestión de usuarios y perfiles
@@ -77,6 +84,7 @@
 ### Fase 3: Tests de Regresión y Performance (Semana 3)
 
 #### Prioridad Media
+
 1. **Tests Visuales**
    - Screenshots de componentes clave
    - Comparación visual automática
@@ -95,6 +103,7 @@
 ### Fase 4: Automatización y CI/CD (Semana 4)
 
 #### Prioridad Alta
+
 1. **Pipeline de CI/CD**
    - Integración con GitHub Actions
    - Tests automáticos en PR
@@ -113,6 +122,7 @@
 ## Archivos a Crear
 
 ### Tests Unitarios
+
 ```
 src/__tests__/utils/
 ├── formatters.test.ts
@@ -123,6 +133,7 @@ src/__tests__/utils/
 ```
 
 ### Tests de Integración
+
 ```
 src/__tests__/integration/
 ├── supabase-integration.test.ts
@@ -133,6 +144,7 @@ src/__tests__/integration/
 ```
 
 ### Tests de Performance
+
 ```
 src/__tests__/performance/
 ├── core-web-vitals.test.ts
@@ -142,6 +154,7 @@ src/__tests__/performance/
 ```
 
 ### Configuración CI/CD
+
 ```
 .github/workflows/
 ├── test-unit.yml
@@ -153,17 +166,20 @@ src/__tests__/performance/
 ## Métricas de Éxito
 
 ### Cobertura de Código
+
 - **Objetivo**: 85% cobertura general
 - **Crítico**: 95% en funciones de negocio
 - **Componentes**: 80% cobertura mínima
 
 ### Performance de Tests
+
 - **Tests Unitarios**: < 30 segundos
 - **Tests de Integración**: < 2 minutos
 - **Tests E2E**: < 10 minutos
 - **Suite Completa**: < 15 minutos
 
 ### Calidad
+
 - **0 tests flakey** (tests inconsistentes)
 - **100% tests pasando** en main branch
 - **< 5% falsos positivos** en alertas
@@ -171,12 +187,14 @@ src/__tests__/performance/
 ## Herramientas Adicionales Recomendadas
 
 ### Testing
+
 - **MSW**: Mock Service Worker para APIs
 - **Testing Library**: Mejores prácticas de testing
 - **Storybook**: Testing visual de componentes
 - **Lighthouse CI**: Performance testing automatizado
 
 ### Monitoreo
+
 - **Sentry**: Error tracking en producción
 - **DataDog**: Monitoreo de performance
 - **GitHub Actions**: CI/CD pipeline

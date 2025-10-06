@@ -7,22 +7,26 @@ Este design system ha sido diseñado específicamente para crear una experiencia
 ## Principios de Diseño
 
 ### 1. **Claridad y Simplicidad**
+
 - Interfaces limpias que no distraigan del objetivo principal: la compra
 - Jerarquía visual clara que guíe al usuario naturalmente
 - Eliminación de elementos innecesarios que puedan generar fricción
 
 ### 2. **Accesibilidad Universal**
+
 - Contraste mínimo WCAG AA (4.5:1) en todos los elementos
 - Navegación por teclado completa
 - Textos alternativos y etiquetas semánticas
 - Soporte para lectores de pantalla
 
 ### 3. **Responsive First**
+
 - Diseño mobile-first que escala elegantemente
 - Breakpoints estratégicos para diferentes dispositivos
 - Componentes flexibles que se adaptan al contenido
 
 ### 4. **Performance y Velocidad**
+
 - Carga rápida de componentes críticos
 - Lazy loading para elementos no esenciales
 - Optimización de imágenes y recursos
@@ -171,16 +175,19 @@ breakpoints: {
 ### Botones
 
 #### Primario
+
 - **Uso**: Acciones principales (Añadir al carrito, Comprar ahora)
 - **Estilo**: Gradiente azul con sombra sutil
 - **Estados**: Hover (elevación), Active (compresión), Disabled (opacidad)
 
 #### Secundario
+
 - **Uso**: Acciones secundarias (Ver detalles, Comparar)
 - **Estilo**: Borde azul con fondo transparente
 - **Estados**: Hover (fondo azul claro)
 
 #### Ghost
+
 - **Uso**: Acciones terciarias (Wishlist, Compartir)
 - **Estilo**: Sin borde, fondo transparente
 - **Estados**: Hover (fondo gris claro)
@@ -188,12 +195,14 @@ breakpoints: {
 ### Cards de Producto
 
 #### Estructura
+
 1. **Imagen**: Aspect ratio 1:1, overlay para acciones rápidas
 2. **Badge**: Descuentos o etiquetas especiales
 3. **Contenido**: Categoría, título, precio, rating
 4. **Acciones**: Botón principal + wishlist
 
 #### Estados
+
 - **Default**: Sombra sutil, bordes suaves
 - **Hover**: Elevación, borde azul claro
 - **Loading**: Skeleton con animación pulse
@@ -201,12 +210,14 @@ breakpoints: {
 ### Formularios
 
 #### Campos de Entrada
+
 - **Padding**: 12px horizontal, 16px vertical
 - **Border**: 1px sólido, radius 8px
 - **Focus**: Borde azul + sombra azul translúcida
 - **Error**: Borde rojo + mensaje de error
 
 #### Selectores de Variante
+
 - **Tallas**: Botones cuadrados con bordes
 - **Colores**: Círculos con el color real + borde de selección
 - **Cantidad**: Input numérico con botones +/-
@@ -214,11 +225,13 @@ breakpoints: {
 ### Navegación
 
 #### Breadcrumb
+
 - **Separador**: Chevron derecho
 - **Estados**: Link (azul) + Current (negro)
 - **Responsive**: Colapsa en mobile
 
 #### Filtros
+
 - **Sidebar**: Sticky en desktop, drawer en mobile
 - **Grupos**: Títulos claros + opciones organizadas
 - **Precio**: Slider dual + inputs numéricos
@@ -226,18 +239,21 @@ breakpoints: {
 ## Iconografía
 
 ### Librería
+
 - **Primaria**: Heroicons (outline y solid)
 - **Complementaria**: Lucide React
 - **Tamaños**: 16px, 20px, 24px, 32px, 48px
 
 ### Categorías
-- **Navegación**: home, menu, search, filter, arrow-*
+
+- **Navegación**: home, menu, search, filter, arrow-\*
 - **Comercio**: shopping-cart, heart, star, credit-card
 - **Usuario**: user, login, settings, bell
 - **Producto**: eye, share, bookmark, tag
 - **Estado**: check, x, alert-triangle, info
 
 ### Estados
+
 - **Default**: Gris neutro
 - **Hover**: Azul primario + escala 1.05
 - **Active**: Azul oscuro + escala 0.95
@@ -246,12 +262,14 @@ breakpoints: {
 ## Sistema de Imágenes
 
 ### Aspect Ratios
+
 - **Productos**: 1:1 (cuadrado)
 - **Categorías**: 4:3 (landscape)
 - **Banners**: 16:9 (wide)
 - **Hero**: 21:9 (ultrawide)
 
 ### Optimización
+
 - **Formatos**: WebP con fallback a JPG
 - **Lazy Loading**: Intersection Observer
 - **Responsive**: Múltiples tamaños según viewport
@@ -260,12 +278,14 @@ breakpoints: {
 ## Animaciones y Transiciones
 
 ### Duraciones
+
 - **Rápida**: 150ms - Micro-interacciones
 - **Normal**: 200ms - Hover states
 - **Lenta**: 300ms - Transiciones de página
 - **Bounce**: 300ms cubic-bezier - Elementos especiales
 
 ### Efectos
+
 - **Fade In**: Opacidad 0 → 1
 - **Slide Up**: Transform translateY(20px) → 0
 - **Scale In**: Transform scale(0.9) → 1
@@ -274,16 +294,19 @@ breakpoints: {
 ## Patrones de E-commerce
 
 ### Precios
+
 - **Actual**: Texto grande, negro, bold
 - **Original**: Texto pequeño, gris, tachado
 - **Descuento**: Badge naranja con porcentaje
 
 ### Stock
+
 - **Disponible**: Verde + ícono check
 - **Poco stock**: Naranja + ícono warning
 - **Agotado**: Rojo + ícono x
 
 ### Ratings
+
 - **Estrellas**: Amarillo/naranja para llenas, gris para vacías
 - **Número**: Texto pequeño gris al lado
 - **Tamaño**: 16px para cards, 20px para detalles
@@ -306,23 +329,23 @@ src/design/
 ### Uso en Componentes
 
 ```typescript
-import { colorSystem } from '@/design/color-system';
-import { typographySystem } from '@/design/typography-system';
-import { uiComponentsSystem } from '@/design/ui-components-system';
+import { colorSystem } from '@/design/color-system'
+import { typographySystem } from '@/design/typography-system'
+import { uiComponentsSystem } from '@/design/ui-components-system'
 
 // Ejemplo de uso
 const ProductCard = styled.div`
   ${uiComponentsSystem.product.productCard.container}
-  
+
   .title {
     ${uiComponentsSystem.product.productCard.content.title}
   }
-  
+
   .price {
     color: ${colorSystem.primary[600]};
     ${typographySystem.typography.bodyLarge}
   }
-`;
+`
 ```
 
 ### Configuración Tailwind
@@ -339,26 +362,29 @@ module.exports = {
       fontSize: typographySystem.tailwind.fontSize,
       spacing: spacingGridSystem.tailwind.spacing,
       // ... más configuraciones
-    }
-  }
+    },
+  },
 }
 ```
 
 ## Mejores Prácticas
 
 ### Desarrollo
+
 1. **Consistencia**: Usar siempre los tokens del design system
 2. **Accesibilidad**: Verificar contraste y navegación por teclado
 3. **Performance**: Lazy loading y optimización de imágenes
 4. **Testing**: Probar en diferentes dispositivos y navegadores
 
 ### Diseño
+
 1. **Jerarquía**: Establecer clara jerarquía visual
 2. **Espaciado**: Usar la escala de espaciado consistentemente
 3. **Colores**: Respetar la paleta y sus usos semánticos
 4. **Tipografía**: Mantener la escala y jerarquía tipográfica
 
 ### UX
+
 1. **Flujo**: Minimizar pasos para completar compras
 2. **Feedback**: Proporcionar feedback claro en todas las acciones
 3. **Estados**: Manejar todos los estados (loading, error, vacío)
@@ -367,18 +393,21 @@ module.exports = {
 ## Casos de Uso Específicos
 
 ### Página Shop with Sidebar
+
 - **Layout**: Grid con sidebar sticky
 - **Filtros**: Grupos colapsables con clear all
 - **Productos**: Grid responsivo con hover effects
 - **Paginación**: Números + prev/next
 
 ### Página Product Details
+
 - **Galería**: Thumbnails + imagen principal
 - **Información**: Jerarquía clara de contenido
 - **Variantes**: Selectores visuales intuitivos
 - **Acciones**: CTAs prominentes y claros
 
 ### Carrito de Compras
+
 - **Items**: Layout horizontal con imagen + detalles
 - **Cantidad**: Selector numérico con validación
 - **Resumen**: Sticky sidebar con totales
@@ -387,17 +416,20 @@ module.exports = {
 ## Mantenimiento
 
 ### Versionado
+
 - **Major**: Cambios que rompen compatibilidad
 - **Minor**: Nuevos componentes o funcionalidades
 - **Patch**: Correcciones y mejoras menores
 
 ### Documentación
+
 - Mantener esta guía actualizada
 - Documentar nuevos componentes
 - Incluir ejemplos de uso
 - Registrar decisiones de diseño
 
 ### Testing
+
 - Tests de accesibilidad automáticos
 - Tests visuales de regresión
 - Tests de performance
@@ -410,5 +442,3 @@ module.exports = {
 **Mantenido por**: Equipo de Design System
 
 Este design system es un documento vivo que evoluciona con las necesidades del producto y los usuarios. Para sugerencias o mejoras, por favor contacta al equipo de design system.
-
-

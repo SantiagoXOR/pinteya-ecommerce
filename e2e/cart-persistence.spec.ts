@@ -5,7 +5,6 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Cart Persistence E2E Tests', () => {
-  
   test.beforeEach(async ({ page }) => {
     // Limpiar localStorage antes de cada test
     await page.goto('/')
@@ -31,9 +30,9 @@ test.describe('Cart Persistence E2E Tests', () => {
     const localStorageData = await page.evaluate(() => {
       return localStorage.getItem('pinteya-cart')
     })
-    
+
     expect(localStorageData).toBeTruthy()
-    
+
     const parsedData = JSON.parse(localStorageData!)
     expect(parsedData.items).toHaveLength(1)
     expect(parsedData.timestamp).toBeTruthy()
@@ -44,7 +43,7 @@ test.describe('Cart Persistence E2E Tests', () => {
     // Navegar a la tienda y agregar producto
     await page.goto('/shop')
     await page.waitForSelector('[data-testid="product-card"]')
-    
+
     const firstProduct = page.locator('[data-testid="product-card"]').first()
     const productName = await firstProduct.locator('[data-testid="product-name"]').textContent()
     await firstProduct.locator('[data-testid="add-to-cart-btn"]').click()
@@ -62,21 +61,21 @@ test.describe('Cart Persistence E2E Tests', () => {
     // Abrir carrito y verificar contenido
     await page.click('[data-testid="cart-icon"]')
     await page.waitForSelector('[data-testid="cart-item"]')
-    
+
     const cartItem = page.locator('[data-testid="cart-item"]').first()
     const cartItemName = await cartItem.locator('h3').textContent()
-    
+
     expect(cartItemName).toContain(productName?.trim())
   })
 
   test('should maintain cart when navigating between pages', async ({ page }) => {
     // Agregar producto desde la página principal
     await page.goto('/')
-    
+
     // Buscar productos en la página principal (si los hay)
     const homeProducts = page.locator('[data-testid="product-card"]')
     const homeProductCount = await homeProducts.count()
-    
+
     if (homeProductCount > 0) {
       await homeProducts.first().locator('[data-testid="add-to-cart-btn"]').click()
       await expect(page.locator('[data-testid="cart-counter"]')).toHaveText('1')
@@ -84,7 +83,11 @@ test.describe('Cart Persistence E2E Tests', () => {
       // Si no hay productos en home, ir a shop
       await page.goto('/shop')
       await page.waitForSelector('[data-testid="product-card"]')
-      await page.locator('[data-testid="product-card"]').first().locator('[data-testid="add-to-cart-btn"]').click()
+      await page
+        .locator('[data-testid="product-card"]')
+        .first()
+        .locator('[data-testid="add-to-cart-btn"]')
+        .click()
       await expect(page.locator('[data-testid="cart-counter"]')).toHaveText('1')
     }
 
@@ -101,7 +104,7 @@ test.describe('Cart Persistence E2E Tests', () => {
     // Verificar que el carrito mantiene el contenido
     await page.click('[data-testid="cart-icon"]')
     await page.waitForSelector('[data-testid="cart-item"]')
-    
+
     const cartItems = page.locator('[data-testid="cart-item"]')
     await expect(cartItems).toHaveCount(1)
   })
@@ -132,7 +135,7 @@ test.describe('Cart Persistence E2E Tests', () => {
     // Verificar contenido del carrito
     await page.click('[data-testid="cart-icon"]')
     await page.waitForSelector('[data-testid="cart-item"]')
-    
+
     const cartItems = page.locator('[data-testid="cart-item"]')
     await expect(cartItems).toHaveCount(productCount)
   })
@@ -142,7 +145,11 @@ test.describe('Cart Persistence E2E Tests', () => {
     await page.waitForSelector('[data-testid="product-card"]')
 
     // Agregar producto al carrito
-    await page.locator('[data-testid="product-card"]').first().locator('[data-testid="add-to-cart-btn"]').click()
+    await page
+      .locator('[data-testid="product-card"]')
+      .first()
+      .locator('[data-testid="add-to-cart-btn"]')
+      .click()
     await expect(page.locator('[data-testid="cart-counter"]')).toHaveText('1')
 
     // Abrir carrito
@@ -151,7 +158,7 @@ test.describe('Cart Persistence E2E Tests', () => {
 
     // Verificar si hay controles de cantidad en el carrito sidebar
     const quantityControls = page.locator('[data-testid="quantity-increase"]')
-    const hasQuantityControls = await quantityControls.count() > 0
+    const hasQuantityControls = (await quantityControls.count()) > 0
 
     if (hasQuantityControls) {
       // Aumentar cantidad
@@ -170,7 +177,7 @@ test.describe('Cart Persistence E2E Tests', () => {
       // Verificar que la cantidad se mantuvo
       await page.click('[data-testid="cart-icon"]')
       await page.waitForSelector('[data-testid="cart-item"]')
-      
+
       const persistedQuantity = page.locator('[data-testid="quantity-input"]')
       await expect(persistedQuantity).toHaveText('2')
     } else {
@@ -183,13 +190,17 @@ test.describe('Cart Persistence E2E Tests', () => {
     await page.waitForSelector('[data-testid="product-card"]')
 
     // Agregar producto al carrito
-    await page.locator('[data-testid="product-card"]').first().locator('[data-testid="add-to-cart-btn"]').click()
+    await page
+      .locator('[data-testid="product-card"]')
+      .first()
+      .locator('[data-testid="add-to-cart-btn"]')
+      .click()
     await expect(page.locator('[data-testid="cart-counter"]')).toHaveText('1')
 
     // Abrir carrito y remover producto
     await page.click('[data-testid="cart-icon"]')
     await page.waitForSelector('[data-testid="cart-item"]')
-    
+
     await page.click('[data-testid="remove-from-cart"]')
     await page.waitForTimeout(500)
 
@@ -200,7 +211,7 @@ test.describe('Cart Persistence E2E Tests', () => {
     // Verificar contador del carrito
     const cartCounter = page.locator('[data-testid="cart-counter"]')
     const isCounterVisible = await cartCounter.isVisible()
-    
+
     if (isCounterVisible) {
       await expect(cartCounter).toHaveText('0')
     }
@@ -225,8 +236,12 @@ test.describe('Cart Persistence E2E Tests', () => {
     // Navegar a shop y agregar producto
     await page.goto('/shop')
     await page.waitForSelector('[data-testid="product-card"]')
-    
-    await page.locator('[data-testid="product-card"]').first().locator('[data-testid="add-to-cart-btn"]').click()
+
+    await page
+      .locator('[data-testid="product-card"]')
+      .first()
+      .locator('[data-testid="add-to-cart-btn"]')
+      .click()
 
     // Verificar que el carrito funciona normalmente a pesar de la corrupción
     await expect(page.locator('[data-testid="cart-counter"]')).toHaveText('1')
@@ -235,9 +250,9 @@ test.describe('Cart Persistence E2E Tests', () => {
     const newLocalStorageData = await page.evaluate(() => {
       return localStorage.getItem('pinteya-cart')
     })
-    
+
     expect(newLocalStorageData).toBeTruthy()
-    
+
     const parsedData = JSON.parse(newLocalStorageData!)
     expect(parsedData.items).toHaveLength(1)
   })
@@ -246,14 +261,14 @@ test.describe('Cart Persistence E2E Tests', () => {
     await page.goto('/')
 
     // Crear datos de carrito antiguos (más de 7 días)
-    const oldTimestamp = Date.now() - (8 * 24 * 60 * 60 * 1000) // 8 días atrás
+    const oldTimestamp = Date.now() - 8 * 24 * 60 * 60 * 1000 // 8 días atrás
     const oldCartData = {
       items: [{ id: 1, title: 'Old Product', quantity: 1 }],
       timestamp: oldTimestamp,
-      version: '1.0.0'
+      version: '1.0.0',
     }
 
-    await page.evaluate((data) => {
+    await page.evaluate(data => {
       localStorage.setItem('pinteya-cart', JSON.stringify(data))
     }, oldCartData)
 
@@ -277,7 +292,9 @@ test.describe('Cart Persistence E2E Tests', () => {
     expect(clearedData).toBeNull()
   })
 
-  test('should clear cart when using "Vaciar Carrito" button with elegant modal', async ({ page }) => {
+  test('should clear cart when using "Vaciar Carrito" button with elegant modal', async ({
+    page,
+  }) => {
     // Agregar productos al carrito
     await page.goto('/shop')
     await page.waitForSelector('[data-testid="product-card"]')
@@ -308,7 +325,9 @@ test.describe('Cart Persistence E2E Tests', () => {
 
     // Verificar que el mensaje dinámico aparece correctamente
     const expectedMessage = productCount === 1 ? 'el producto' : `los ${productCount} productos`
-    const modalDescription = page.locator(`text=¿Estás seguro de que quieres eliminar ${expectedMessage} del carrito?`)
+    const modalDescription = page.locator(
+      `text=¿Estás seguro de que quieres eliminar ${expectedMessage} del carrito?`
+    )
     await expect(modalDescription).toBeVisible()
 
     // Verificar que los botones del modal están presentes
@@ -434,7 +453,9 @@ test.describe('Cart Persistence E2E Tests', () => {
 
     // Verificar que el contador se actualizó
     if (remainingItems > 0) {
-      await expect(page.locator('[data-testid="cart-counter"]')).toHaveText(remainingItems.toString())
+      await expect(page.locator('[data-testid="cart-counter"]')).toHaveText(
+        remainingItems.toString()
+      )
     } else {
       // Si no quedan items, el contador no debería ser visible
       const cartCounter = page.locator('[data-testid="cart-counter"]')
@@ -460,7 +481,9 @@ test.describe('Cart Persistence E2E Tests', () => {
     await page.waitForLoadState('networkidle')
 
     if (remainingItems > 0) {
-      await expect(page.locator('[data-testid="cart-counter"]')).toHaveText(remainingItems.toString())
+      await expect(page.locator('[data-testid="cart-counter"]')).toHaveText(
+        remainingItems.toString()
+      )
     } else {
       const cartCounter = page.locator('[data-testid="cart-counter"]')
       const isCounterVisible = await cartCounter.isVisible()

@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Configuración específica para tests del panel administrativo
@@ -28,16 +28,16 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. */
     trace: 'on-first-retry',
-    
+
     /* Take screenshot on failure */
     screenshot: 'only-on-failure',
-    
+
     /* Record video on failure */
     video: 'retain-on-failure',
-    
+
     /* Global timeout for each action */
     actionTimeout: 10000,
-    
+
     /* Global timeout for navigation */
     navigationTimeout: 30000,
   },
@@ -46,7 +46,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium-admin',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 720 },
       },
@@ -54,7 +54,7 @@ export default defineConfig({
 
     {
       name: 'firefox-admin',
-      use: { 
+      use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 1280, height: 720 },
       },
@@ -63,7 +63,7 @@ export default defineConfig({
     /* Test against mobile viewports for responsive admin */
     {
       name: 'mobile-admin',
-      use: { 
+      use: {
         ...devices['Pixel 5'],
       },
     },
@@ -77,7 +77,7 @@ export default defineConfig({
 
   /* Output directories */
   outputDir: 'test-results/admin/',
-  
+
   /* Global setup for admin tests */
   globalSetup: require.resolve('./admin-setup.ts'),
-});
+})

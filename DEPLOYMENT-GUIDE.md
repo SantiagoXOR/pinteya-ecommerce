@@ -3,6 +3,7 @@
 ## 📋 Pre-deployment Checklist
 
 ### 🔒 Security Verification
+
 ```bash
 # Run complete security audit
 npm run security:audit
@@ -18,6 +19,7 @@ npm run security:monitor
 ```
 
 ### 🧪 Testing
+
 ```bash
 # Run all tests
 npm test
@@ -35,6 +37,7 @@ npm run test:security
 ## 🌐 Environment Configuration
 
 ### Production Environment Variables
+
 ```env
 # Application
 NODE_ENV=production
@@ -62,6 +65,7 @@ LOG_LEVEL=info
 ```
 
 ### Development Environment Variables
+
 ```env
 # Application
 NODE_ENV=development
@@ -89,10 +93,11 @@ NEXTAUTH_URL=http://localhost:3000
 ### Vercel Deployment
 
 1. **Connect Repository**
+
    ```bash
    # Install Vercel CLI
    npm i -g vercel
-   
+
    # Login and deploy
    vercel login
    vercel --prod
@@ -140,15 +145,16 @@ NEXTAUTH_URL=http://localhost:3000
 ### Netlify Deployment
 
 1. **Build Settings**
+
    ```toml
    # netlify.toml
    [build]
      command = "npm run build"
      publish = ".next"
-   
+
    [build.environment]
      NODE_VERSION = "18"
-   
+
    [[headers]]
      for = "/*"
      [headers.values]
@@ -160,47 +166,48 @@ NEXTAUTH_URL=http://localhost:3000
 ### Docker Deployment
 
 1. **Dockerfile**
+
    ```dockerfile
    FROM node:18-alpine AS base
-   
+
    # Install dependencies only when needed
    FROM base AS deps
    RUN apk add --no-cache libc6-compat
    WORKDIR /app
-   
+
    COPY package.json package-lock.json* ./
    RUN npm ci --only=production
-   
+
    # Rebuild the source code only when needed
    FROM base AS builder
    WORKDIR /app
    COPY --from=deps /app/node_modules ./node_modules
    COPY . .
-   
+
    # Run security audit before build
    RUN npm run security:audit
    RUN npm run build
-   
+
    # Production image
    FROM base AS runner
    WORKDIR /app
-   
+
    ENV NODE_ENV production
-   
+
    RUN addgroup --system --gid 1001 nodejs
    RUN adduser --system --uid 1001 nextjs
-   
+
    COPY --from=builder /app/public ./public
    COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
    COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-   
+
    USER nextjs
-   
+
    EXPOSE 3000
-   
+
    ENV PORT 3000
    ENV HOSTNAME "0.0.0.0"
-   
+
    CMD ["node", "server.js"]
    ```
 
@@ -211,14 +218,14 @@ NEXTAUTH_URL=http://localhost:3000
      app:
        build: .
        ports:
-         - "3000:3000"
+         - '3000:3000'
        environment:
          - NODE_ENV=production
          - CORS_ALLOWED_ORIGINS=https://yourdomain.com
          - CSP_REPORT_URI=/api/security/csp-report
        restart: unless-stopped
        healthcheck:
-         test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+         test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
          interval: 30s
          timeout: 10s
          retries: 3
@@ -227,6 +234,7 @@ NEXTAUTH_URL=http://localhost:3000
 ## 🔧 Post-Deployment Configuration
 
 ### 1. Security Headers Verification
+
 ```bash
 # Test security headers
 curl -I https://yourdomain.com
@@ -239,6 +247,7 @@ curl -I https://yourdomain.com
 ```
 
 ### 2. CORS Testing
+
 ```bash
 # Test CORS from allowed origin
 curl -H "Origin: https://yourdomain.com" https://yourdomain.com/api/test
@@ -248,12 +257,14 @@ curl -H "Origin: https://malicious-site.com" https://yourdomain.com/api/test
 ```
 
 ### 3. CSP Validation
+
 ```bash
 # Check CSP nonce generation
 curl -s https://yourdomain.com | grep -o "nonce-[a-zA-Z0-9+/=]*"
 ```
 
 ### 4. Security Monitoring Setup
+
 ```bash
 # Test security monitoring endpoint
 curl https://yourdomain.com/api/security/monitor
@@ -264,6 +275,7 @@ curl https://yourdomain.com/api/security/monitor
 ## 📊 Monitoring & Maintenance
 
 ### Health Checks
+
 ```bash
 # Application health
 curl https://yourdomain.com/api/health
@@ -276,6 +288,7 @@ curl https://yourdomain.com/api/metrics
 ```
 
 ### Log Monitoring
+
 ```bash
 # Check application logs
 tail -f /var/log/app.log
@@ -290,16 +303,19 @@ tail -f /var/log/auth.log
 ### Regular Maintenance Tasks
 
 #### Daily
+
 - Monitor security dashboard
 - Check error logs
 - Verify application health
 
 #### Weekly
+
 - Run security audit: `npm run security:audit`
 - Analyze authentication logs: `npm run security:auth-logs`
 - Review performance metrics
 
 #### Monthly
+
 - Update dependencies
 - Review and update security policies
 - Backup security configurations
@@ -308,6 +324,7 @@ tail -f /var/log/auth.log
 ## 🚨 Incident Response
 
 ### Security Incident Checklist
+
 1. **Immediate Response**
    - Check security monitoring dashboard
    - Analyze recent logs with `npm run security:auth-logs`
@@ -329,6 +346,7 @@ tail -f /var/log/auth.log
    - Document lessons learned
 
 ### Emergency Contacts
+
 - Security Team: security@yourdomain.com
 - DevOps Team: devops@yourdomain.com
 - Management: management@yourdomain.com
@@ -336,6 +354,7 @@ tail -f /var/log/auth.log
 ## 📈 Performance Optimization
 
 ### Build Optimization
+
 ```bash
 # Analyze bundle size
 npm run analyze-bundle
@@ -348,6 +367,7 @@ npm run remove-console
 ```
 
 ### Runtime Optimization
+
 - Enable gzip compression
 - Configure CDN for static assets
 - Implement proper caching headers
@@ -356,6 +376,7 @@ npm run remove-console
 ## 🔄 CI/CD Pipeline
 
 ### GitHub Actions Example
+
 ```yaml
 name: Deploy with Security Checks
 

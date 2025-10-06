@@ -6,56 +6,59 @@
 
 ### Paleta Anterior vs Nueva
 
-| Anterior (Tahiti Gold) | Nueva (Blaze Orange) | Uso |
-|------------------------|---------------------|-----|
-| `tahiti-gold-500` (#fc9d04) | `blaze-orange-500` (#f27a1d) | Color primario |
-| `tahiti-gold-600` (#ef7d00) | `blaze-orange-600` (#eb6313) | Hover primario |
-| `tahiti-gold-700` (#b95004) | `blaze-orange-700` (#bd4811) | Active primario |
-| N/A | `fun-green-500` (#00f269) | Color secundario |
-| N/A | `bright-sun-500` (#f9a007) | Color de acento |
+| Anterior (Tahiti Gold)      | Nueva (Blaze Orange)         | Uso              |
+| --------------------------- | ---------------------------- | ---------------- |
+| `tahiti-gold-500` (#fc9d04) | `blaze-orange-500` (#f27a1d) | Color primario   |
+| `tahiti-gold-600` (#ef7d00) | `blaze-orange-600` (#eb6313) | Hover primario   |
+| `tahiti-gold-700` (#b95004) | `blaze-orange-700` (#bd4811) | Active primario  |
+| N/A                         | `fun-green-500` (#00f269)    | Color secundario |
+| N/A                         | `bright-sun-500` (#f9a007)   | Color de acento  |
 
 ## 🎨 Nuevos Colores Disponibles
 
 ### Blaze Orange (Primario)
+
 ```css
 --blaze-orange-50: #fef7ee;
 --blaze-orange-100: #feeed6;
 --blaze-orange-200: #fcd9ac;
 --blaze-orange-300: #f9be78;
 --blaze-orange-400: #f59842;
---blaze-orange-500: #f27a1d;  /* Principal */
---blaze-orange-600: #eb6313;  /* Hover */
---blaze-orange-700: #bd4811;  /* Active */
+--blaze-orange-500: #f27a1d; /* Principal */
+--blaze-orange-600: #eb6313; /* Hover */
+--blaze-orange-700: #bd4811; /* Active */
 --blaze-orange-800: #963a16;
 --blaze-orange-900: #793115;
 --blaze-orange-950: #411709;
 ```
 
 ### Fun Green (Secundario)
+
 ```css
 --fun-green-50: #ecfff5;
 --fun-green-100: #d3ffe8;
 --fun-green-200: #aaffd3;
 --fun-green-300: #69ffb2;
 --fun-green-400: #21ff8a;
---fun-green-500: #00f269;     /* Principal */
---fun-green-600: #00ca53;     /* Hover */
---fun-green-700: #009e44;     /* Active */
+--fun-green-500: #00f269; /* Principal */
+--fun-green-600: #00ca53; /* Hover */
+--fun-green-700: #009e44; /* Active */
 --fun-green-800: #007638;
 --fun-green-900: #026532;
 --fun-green-950: #003919;
 ```
 
 ### Bright Sun (Acento)
+
 ```css
 --bright-sun-50: #fffbeb;
 --bright-sun-100: #fff4c6;
 --bright-sun-200: #ffe788;
 --bright-sun-300: #ffd549;
 --bright-sun-400: #ffc220;
---bright-sun-500: #f9a007;    /* Principal */
---bright-sun-600: #dd7802;    /* Hover */
---bright-sun-700: #b75406;    /* Active */
+--bright-sun-500: #f9a007; /* Principal */
+--bright-sun-600: #dd7802; /* Hover */
+--bright-sun-700: #b75406; /* Active */
 --bright-sun-800: #943f0c;
 --bright-sun-900: #7a350d;
 --bright-sun-950: #461a02;
@@ -174,10 +177,16 @@ module.exports = {
     extend: {
       colors: {
         // Nueva paleta principal
-        'blaze-orange': { /* ... */ },
-        'fun-green': { /* ... */ },
-        'bright-sun': { /* ... */ },
-        
+        'blaze-orange': {
+          /* ... */
+        },
+        'fun-green': {
+          /* ... */
+        },
+        'bright-sun': {
+          /* ... */
+        },
+
         // Alias semánticos
         primary: {
           DEFAULT: '#f27a1d',
@@ -194,9 +203,9 @@ module.exports = {
           hover: '#dd7802',
           active: '#b75406',
         },
-      }
-    }
-  }
+      },
+    },
+  },
 }
 ```
 
@@ -258,6 +267,3 @@ appearance: {
 **📅 Migración completada**: Junio 2025  
 **🎨 Nueva identidad**: Blaze Orange + Fun Green + Bright Sun  
 **✅ Estado**: Lista para producción
-
-
-

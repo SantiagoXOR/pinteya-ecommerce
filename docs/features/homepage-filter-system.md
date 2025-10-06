@@ -78,7 +78,7 @@ El componente Categories ha sido completamente implementado y está 100% funcion
 // Detecta filtros activos en URL
 const hasActiveFilters = useMemo(() => {
   if (!searchParams) return false;
-  
+
   const filterParams = ['categories', 'brands', 'priceMin', 'priceMax', 'search', 'sortBy', 'page'];
   return filterParams.some(param => {
     const value = searchParams.get(param);
@@ -91,6 +91,7 @@ return hasActiveFilters ? <FilteredProductsSection /> : <HomepageNormal />;
 ```
 
 **Características**:
+
 - Detección automática de filtros activos en URL
 - Cambio dinámico entre homepage normal y productos filtrados
 - Preservación del estado de navegación
@@ -101,18 +102,19 @@ return hasActiveFilters ? <FilteredProductsSection /> : <HomepageNormal />;
 
 ```typescript
 interface ProductFilterState {
-  categories: string[];
-  brands: string[];
-  priceMin?: number;
-  priceMax?: number;
-  search: string;
-  sortBy: string;
-  page: number;
-  limit: number;
+  categories: string[]
+  brands: string[]
+  priceMin?: number
+  priceMax?: number
+  search: string
+  sortBy: string
+  page: number
+  limit: number
 }
 ```
 
 **Funcionalidades**:
+
 - Sincronización bidireccional con URL
 - Debouncing para optimización de performance
 - Callbacks para cambios de filtros
@@ -133,22 +135,26 @@ interface ProductFilterState {
 ```
 
 **Destinos de Analytics**:
+
 - Google Analytics 4 (GA4)
 - Supabase Analytics (base de datos propia)
 
 ### 4. Componentes Móviles
 
 #### FloatingFilterActions
+
 - Botón flotante para acceder a filtros en móvil
 - Indicador de filtros activos
 - Animaciones suaves de entrada/salida
 
 #### DetailedFilterSheet
+
 - Panel deslizable desde abajo
 - Filtros completos por categoría, marca y precio
 - Aplicación inmediata de filtros
 
 #### SortSheet
+
 - Panel de ordenamiento rápido
 - Opciones: Relevancia, Precio (asc/desc), Más nuevos, Más vendidos
 
@@ -168,17 +174,20 @@ xl: 1280px  /* Desktop */
 ### Adaptaciones por Dispositivo
 
 **Móvil (< 640px)**:
+
 - FloatingFilterActions visible
 - Grid de productos: 1 columna
 - Filtros en panel deslizable
 - Paginación simplificada
 
 **Tablet (640px - 1024px)**:
+
 - Grid de productos: 2-3 columnas
 - Filtros en sidebar colapsable
 - Navegación táctil optimizada
 
 **Desktop (> 1024px)**:
+
 - Grid de productos: 3-4 columnas
 - Filtros siempre visibles
 - Hover states completos
@@ -189,10 +198,9 @@ xl: 1280px  /* Desktop */
 ### Colores Principales
 
 ```css
---blaze-orange-600: #ea5a17  /* Color principal de marca */
---yellow-400: #facc15        /* Color de botones */
---green-600: #16a34a         /* Color de éxito */
---red-600: #dc2626           /* Color de error */
+--blaze-orange-600: #ea5a17 /* Color principal de marca */ --yellow-400: #facc15
+  /* Color de botones */ --green-600: #16a34a /* Color de éxito */ --red-600: #dc2626
+  /* Color de error */;
 ```
 
 ### Componentes UI
@@ -238,6 +246,7 @@ xl: 1280px  /* Desktop */
 **Archivo**: `src/components/Admin/FilterAnalyticsDashboard/index.tsx`
 
 **Métricas Trackadas**:
+
 - Total de eventos de filtros
 - Sesiones únicas con filtros
 - Filtros más utilizados
@@ -249,17 +258,17 @@ xl: 1280px  /* Desktop */
 ```typescript
 // Estructura de evento
 interface FilterAnalyticsEvent {
-  event: string;
-  category: 'filter';
-  action: string;
-  label?: string;
-  value?: number;
-  custom_parameters?: Record<string, any>;
-  timestamp: number;
-  session_id: string;
-  user_id?: string;
-  page_url: string;
-  page_title: string;
+  event: string
+  category: 'filter'
+  action: string
+  label?: string
+  value?: number
+  custom_parameters?: Record<string, any>
+  timestamp: number
+  session_id: string
+  user_id?: string
+  page_url: string
+  page_title: string
 }
 ```
 
@@ -322,7 +331,7 @@ npm test -- --watch --testPathPattern="Filter"
 
 ```typescript
 // Ejemplo de accesibilidad
-<nav 
+<nav
   role="navigation"
   aria-label="Navegación de páginas de productos"
 >
@@ -525,35 +534,38 @@ export function CustomFilter({ activeFilters, onRemoveFilter, onClearAll }: Cust
 ### Problemas Comunes
 
 **1. Filtros no se aplican**
+
 ```typescript
 // Verificar que la URL se actualiza correctamente
-console.log('URL actual:', window.location.search);
-console.log('Filtros activos:', filters);
+console.log('URL actual:', window.location.search)
+console.log('Filtros activos:', filters)
 ```
 
 **2. Analytics no funciona**
+
 ```typescript
 // Verificar configuración
-const analytics = useFilterAnalytics({ debug: true });
+const analytics = useFilterAnalytics({ debug: true })
 // Revisar consola para logs de debug
 ```
 
 **3. Performance lenta**
+
 ```typescript
 // Verificar debouncing
-const debouncedSearch = useDebounce(searchTerm, 300);
+const debouncedSearch = useDebounce(searchTerm, 300)
 ```
 
 ### Logs de Debug
 
 ```typescript
 // Habilitar logs detallados
-localStorage.setItem('debug-filters', 'true');
+localStorage.setItem('debug-filters', 'true')
 
 // En el componente
 if (localStorage.getItem('debug-filters')) {
-  console.log('Estado de filtros:', filters);
-  console.log('Productos cargados:', products.length);
+  console.log('Estado de filtros:', filters)
+  console.log('Productos cargados:', products.length)
 }
 ```
 
@@ -564,6 +576,3 @@ if (localStorage.getItem('debug-filters')) {
 **Autor**: Equipo de Desarrollo Pinteya
 **Estado**: ✅ Completado y en Producción
 **Componente Categories**: ✅ 100% Funcional - Problema de navegación URL resuelto
-
-
-

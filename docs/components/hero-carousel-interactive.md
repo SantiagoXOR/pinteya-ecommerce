@@ -50,21 +50,21 @@ src/styles/
 
 ```typescript
 interface UseHeroCarouselProps {
-  images: string[];
-  autoPlayInterval?: number;
-  pauseOnHover?: boolean;
+  images: string[]
+  autoPlayInterval?: number
+  pauseOnHover?: boolean
 }
 
 interface UseHeroCarouselReturn {
-  currentIndex: number;
-  isPlaying: boolean;
-  isPaused: boolean;
-  goToSlide: (index: number) => void;
-  goToNext: () => void;
-  goToPrevious: () => void;
-  pause: () => void;
-  resume: () => void;
-  setHover: (isHovering: boolean) => void;
+  currentIndex: number
+  isPlaying: boolean
+  isPaused: boolean
+  goToSlide: (index: number) => void
+  goToNext: () => void
+  goToPrevious: () => void
+  pause: () => void
+  resume: () => void
+  setHover: (isHovering: boolean) => void
 }
 ```
 
@@ -73,14 +73,14 @@ interface UseHeroCarouselReturn {
 ### Implementación Básica
 
 ```tsx
-import HeroCarouselInteractive from '@/components/Home/Hero/HeroCarouselInteractive';
+import HeroCarouselInteractive from '@/components/Home/Hero/HeroCarouselInteractive'
 
 function MyComponent() {
   return (
-    <div className="relative w-full h-[400px]">
-      <HeroCarouselInteractive className="w-full h-full" />
+    <div className='relative w-full h-[400px]'>
+      <HeroCarouselInteractive className='w-full h-full' />
     </div>
-  );
+  )
 }
 ```
 
@@ -105,22 +105,25 @@ const HERO_IMAGES = [
     alt: 'Productos de calidad para tu hogar',
     priority: false,
   },
-];
+]
 ```
 
 ## 🎛️ Controles y Interactividad
 
 ### Navegación Automática
+
 - **Intervalo**: 5 segundos por defecto
 - **Pausa automática** al hacer hover
 - **Reanudación** al quitar el hover
 
 ### Controles Manuales
+
 - **Flechas de navegación**: Aparecen solo en hover
 - **Indicadores (dots)**: Siempre visibles en la parte inferior
 - **Navegación por teclado**: Soporte completo para accesibilidad
 
 ### Estados Visuales
+
 - **Imagen activa**: Opacidad 100%, escala normal
 - **Imágenes inactivas**: Opacidad 0%, escala 105%
 - **Transiciones**: 700ms con easing cubic-bezier
@@ -154,6 +157,7 @@ const HERO_IMAGES = [
 ```
 
 ### Optimizaciones Mobile
+
 - **Controles táctiles** optimizados para dedos
 - **Gestos de swipe** (futuro enhancement)
 - **Carga lazy** de imágenes no prioritarias
@@ -233,12 +237,14 @@ npm test -- --testPathPattern="Carousel"
 ## 🚀 Roadmap Futuro
 
 ### Fase 2 - Enhancements
+
 - [ ] Gestos de swipe para móviles
 - [ ] Lazy loading avanzado con Intersection Observer
 - [ ] Preload de imagen siguiente
 - [ ] Animaciones de entrada personalizadas
 
 ### Fase 3 - Funcionalidades Avanzadas
+
 - [ ] Carrusel infinito sin saltos
 - [ ] Thumbnails de navegación
 - [ ] Autoplay con pausa en focus
@@ -247,12 +253,14 @@ npm test -- --testPathPattern="Carousel"
 ## 📊 Métricas de Rendimiento
 
 ### Objetivos
+
 - **First Contentful Paint**: < 1.5s
 - **Largest Contentful Paint**: < 2.5s
 - **Cumulative Layout Shift**: < 0.1
 - **Time to Interactive**: < 3s
 
 ### Optimizaciones Implementadas
+
 - **Priority loading** para primera imagen
 - **Lazy loading** para imágenes secundarias
 - **CSS transforms** para animaciones GPU
@@ -263,6 +271,3 @@ npm test -- --testPathPattern="Carousel"
 ## 📝 Notas de Implementación
 
 Este carrusel reemplaza la implementación anterior estática del hero section, proporcionando una experiencia más dinámica y atractiva para los usuarios de Pinteya e-commerce. La implementación sigue los estándares enterprise-ready del proyecto con testing completo, documentación detallada y optimizaciones de rendimiento.
-
-
-

@@ -26,6 +26,7 @@ El **Enhanced SEO Analytics Manager** es un sistema avanzado de análisis y moni
 ## 🚀 Características Principales
 
 ### ✅ Métricas Avanzadas
+
 - **Core Web Vitals** con métricas extendidas (LCP, FID, CLS, FCP, TTFB, INP)
 - **Tráfico orgánico** con desglose por dispositivo y geografía
 - **Análisis de conversiones** y revenue tracking
@@ -33,6 +34,7 @@ El **Enhanced SEO Analytics Manager** es un sistema avanzado de análisis y moni
 - **Performance técnico** con scores detallados
 
 ### ✅ Análisis de Keywords
+
 - **Tracking de posiciones** con histórico de cambios
 - **Análisis de intención** (informational, navigational, transactional, commercial)
 - **Competidor rankings** para cada keyword
@@ -40,6 +42,7 @@ El **Enhanced SEO Analytics Manager** es un sistema avanzado de análisis y moni
 - **Métricas de conversión** y revenue por keyword
 
 ### ✅ Análisis de Competidores
+
 - **Métricas de dominio** (DA, PA, Trust Flow, Citation Flow)
 - **Análisis de keywords** comunes y gaps de oportunidad
 - **Content gaps** y backlink opportunities
@@ -47,6 +50,7 @@ El **Enhanced SEO Analytics Manager** es un sistema avanzado de análisis y moni
 - **Top pages** y análisis de contenido
 
 ### ✅ Sistema de Alertas Inteligente
+
 - **Alertas automáticas** basadas en thresholds configurables
 - **Categorización avanzada** (technical, content, performance, mobile, schema)
 - **Priorización inteligente** con impacto y esfuerzo estimado
@@ -54,6 +58,7 @@ El **Enhanced SEO Analytics Manager** es un sistema avanzado de análisis y moni
 - **Auto-resolución** para ciertos tipos de alertas
 
 ### ✅ Reportes Comprehensivos
+
 - **Resumen ejecutivo** con KPIs principales
 - **Análisis de performance** detallado
 - **Análisis de keywords** con oportunidades
@@ -65,10 +70,10 @@ El **Enhanced SEO Analytics Manager** es un sistema avanzado de análisis y moni
 ### Configuración Básica
 
 ```typescript
-import { EnhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager';
+import { EnhancedSEOAnalyticsManager } from '@/lib/seo/seo-analytics-manager'
 
 // Usar configuración por defecto
-const manager = EnhancedSEOAnalyticsManager.getInstance();
+const manager = EnhancedSEOAnalyticsManager.getInstance()
 
 // Configuración personalizada
 const customManager = EnhancedSEOAnalyticsManager.getInstance({
@@ -77,21 +82,21 @@ const customManager = EnhancedSEOAnalyticsManager.getInstance({
   enableCompetitorAnalysis: true,
   enableAutomatedReports: true,
   enableAlerts: true,
-  
+
   metricsUpdateInterval: 15, // minutos
   keywordUpdateInterval: 24, // horas
   competitorUpdateInterval: 7, // días
   alertCheckInterval: 5, // minutos
-  
+
   alertThresholds: {
     seoScoreDrop: 10,
     rankingDrop: 5,
     trafficDrop: 20,
     performanceDrop: 15,
     criticalIssuesIncrease: 3,
-    conversionRateDrop: 25
-  }
-});
+    conversionRateDrop: 25,
+  },
+})
 ```
 
 ### Variables de Entorno
@@ -114,109 +119,109 @@ AHREFS_API_KEY=your_ahrefs_key
 
 ```typescript
 // Recopilar Core Web Vitals
-const coreWebVitals = await manager.collectCoreWebVitals();
-console.log('LCP:', coreWebVitals.lcp);
-console.log('Score:', coreWebVitals.score);
+const coreWebVitals = await manager.collectCoreWebVitals()
+console.log('LCP:', coreWebVitals.lcp)
+console.log('Score:', coreWebVitals.score)
 
 // Analizar estado de indexación
-const indexation = await manager.analyzeIndexationStatus();
-console.log('Indexation Rate:', indexation.indexationRate);
+const indexation = await manager.analyzeIndexationStatus()
+console.log('Indexation Rate:', indexation.indexationRate)
 
 // Evaluar métricas técnicas
-const technical = await manager.evaluateTechnicalSEO();
-console.log('Mobile Usability:', technical.mobileUsability);
+const technical = await manager.evaluateTechnicalSEO()
+console.log('Mobile Usability:', technical.mobileUsability)
 ```
 
 ### Análisis de Keywords
 
 ```typescript
 // Analizar keywords
-const keywords = await manager.analyzeKeywords();
-console.log('Total keywords:', keywords.length);
+const keywords = await manager.analyzeKeywords()
+console.log('Total keywords:', keywords.length)
 
 // Obtener estadísticas
-const stats = manager.getKeywordStats();
-console.log('Average position:', stats.averagePosition);
-console.log('Top 10 positions:', stats.topPositions);
+const stats = manager.getKeywordStats()
+console.log('Average position:', stats.averagePosition)
+console.log('Top 10 positions:', stats.topPositions)
 
 // Filtrar por tendencia
-const improving = manager.getKeywordsByTrend('up');
-const declining = manager.getKeywordsByTrend('down');
+const improving = manager.getKeywordsByTrend('up')
+const declining = manager.getKeywordsByTrend('down')
 ```
 
 ### Sistema de Alertas
 
 ```typescript
 // Detectar problemas SEO
-const alerts = await manager.detectSEOIssues();
-console.log('Total alerts:', alerts.length);
+const alerts = await manager.detectSEOIssues()
+console.log('Total alerts:', alerts.length)
 
 // Filtrar alertas críticas
-const criticalAlerts = manager.getAlertsByType('critical');
+const criticalAlerts = manager.getAlertsByType('critical')
 
 // Resolver alerta
-const resolved = await manager.resolveAlert(alertId, 'Fixed image optimization');
+const resolved = await manager.resolveAlert(alertId, 'Fixed image optimization')
 
 // Obtener alertas no resueltas
-const unresolved = manager.getUnresolvedAlerts();
+const unresolved = manager.getUnresolvedAlerts()
 ```
 
 ### Generación de Reportes
 
 ```typescript
 // Generar reporte semanal
-const weeklyReport = await manager.generateSEOReport('weekly');
+const weeklyReport = await manager.generateSEOReport('weekly')
 
 // Generar reporte con rango personalizado
 const customReport = await manager.generateSEOReport('custom', {
   start: new Date('2024-01-01'),
-  end: new Date('2024-01-31')
-});
+  end: new Date('2024-01-31'),
+})
 
 // Acceder a secciones específicas
-console.log('Overall Score:', customReport.executiveSummary.overallScore);
-console.log('Quick Wins:', customReport.actionPlan.quickWins);
+console.log('Overall Score:', customReport.executiveSummary.overallScore)
+console.log('Quick Wins:', customReport.actionPlan.quickWins)
 ```
 
 ### Exportación para Dashboard
 
 ```typescript
 // Exportar datos para dashboard
-const dashboardData = manager.exportDashboardData();
+const dashboardData = manager.exportDashboardData()
 
 // Estructura de datos exportados
 const {
-  overview,      // Métricas generales
-  keywords,      // Top 20 keywords
-  alerts,        // Top 10 alertas
-  performance,   // Métricas de performance
-  competitors,   // Resumen de competidores
-  reports        // Últimos 5 reportes
-} = dashboardData;
+  overview, // Métricas generales
+  keywords, // Top 20 keywords
+  alerts, // Top 10 alertas
+  performance, // Métricas de performance
+  competitors, // Resumen de competidores
+  reports, // Últimos 5 reportes
+} = dashboardData
 ```
 
 ## 📊 Métricas y KPIs
 
 ### Métricas Principales
 
-| Métrica | Descripción | Rango Óptimo |
-|---------|-------------|--------------|
-| Overall SEO Score | Score general calculado | 80-100 |
-| Core Web Vitals Score | Performance de CWV | "good" |
-| Indexation Rate | % de páginas indexadas | >95% |
-| Average Position | Posición promedio keywords | <10 |
-| Organic Traffic | Tráfico orgánico mensual | Crecimiento >5% |
-| Conversion Rate | Tasa de conversión orgánica | >2% |
+| Métrica               | Descripción                 | Rango Óptimo    |
+| --------------------- | --------------------------- | --------------- |
+| Overall SEO Score     | Score general calculado     | 80-100          |
+| Core Web Vitals Score | Performance de CWV          | "good"          |
+| Indexation Rate       | % de páginas indexadas      | >95%            |
+| Average Position      | Posición promedio keywords  | <10             |
+| Organic Traffic       | Tráfico orgánico mensual    | Crecimiento >5% |
+| Conversion Rate       | Tasa de conversión orgánica | >2%             |
 
 ### Alertas y Thresholds
 
-| Tipo de Alerta | Threshold | Severidad |
-|----------------|-----------|-----------|
-| SEO Score Drop | >10 puntos | Warning |
-| Ranking Drop | >5 posiciones | Warning |
-| Traffic Drop | >20% | Critical |
-| Performance Drop | >15% CWV | Critical |
-| Critical Issues | >3 nuevos | Critical |
+| Tipo de Alerta   | Threshold     | Severidad |
+| ---------------- | ------------- | --------- |
+| SEO Score Drop   | >10 puntos    | Warning   |
+| Ranking Drop     | >5 posiciones | Warning   |
+| Traffic Drop     | >20%          | Critical  |
+| Performance Drop | >15% CWV      | Critical  |
+| Critical Issues  | >3 nuevos     | Critical  |
 
 ## 🔄 Eventos y Suscripciones
 
@@ -224,25 +229,25 @@ const {
 
 ```typescript
 // Suscribirse a actualizaciones
-manager.subscribe((event) => {
+manager.subscribe(event => {
   switch (event.type) {
     case 'metrics_updated':
-      console.log('New metrics:', event.data);
-      break;
+      console.log('New metrics:', event.data)
+      break
     case 'keywords_updated':
-      console.log('Keywords updated:', event.data.length);
-      break;
+      console.log('Keywords updated:', event.data.length)
+      break
     case 'alert_created':
-      console.log('New alert:', event.data.title);
-      break;
+      console.log('New alert:', event.data.title)
+      break
     case 'alert_resolved':
-      console.log('Alert resolved:', event.data.id);
-      break;
+      console.log('Alert resolved:', event.data.id)
+      break
   }
-});
+})
 
 // Desuscribirse
-manager.unsubscribe(callback);
+manager.unsubscribe(callback)
 ```
 
 ## 🧹 Mantenimiento y Limpieza
@@ -251,23 +256,23 @@ manager.unsubscribe(callback);
 
 ```typescript
 // Limpiar datos antiguos según configuración
-await manager.cleanupOldData();
+await manager.cleanupOldData()
 
 // Configuración de retención
 const config = {
   dataRetention: {
     metricsRetentionDays: 90,
     alertsRetentionDays: 30,
-    reportsRetentionDays: 365
-  }
-};
+    reportsRetentionDays: 365,
+  },
+}
 ```
 
 ### Destrucción de Recursos
 
 ```typescript
 // Limpiar intervalos y recursos al cerrar aplicación
-manager.destroy();
+manager.destroy()
 ```
 
 ## 🔍 Troubleshooting
@@ -295,7 +300,7 @@ manager.destroy();
 
 ```typescript
 // Habilitar logging detallado
-import { logger, LogLevel } from '@/lib/enterprise/logger';
+import { logger, LogLevel } from '@/lib/enterprise/logger'
 
 // Los logs se generan automáticamente para:
 // - Inicialización del sistema
@@ -337,8 +342,5 @@ Para soporte técnico o consultas sobre el sistema SEO Analytics:
 
 ---
 
-*Última actualización: Enero 2025*
-*Versión del sistema: 2.0.0*
-
-
-
+_Última actualización: Enero 2025_
+_Versión del sistema: 2.0.0_

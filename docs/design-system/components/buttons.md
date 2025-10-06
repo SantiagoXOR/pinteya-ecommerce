@@ -16,82 +16,78 @@
 ## 🎯 Variantes
 
 ### Primary - Acción Principal
+
 Botón principal para acciones críticas como "Agregar al carrito", "Comprar ahora"
 
 ```tsx
-<Button variant="primary">
-  Agregar al carrito
-</Button>
+<Button variant='primary'>Agregar al carrito</Button>
 ```
 
 **Especificaciones:**
+
 - Color: Tahiti Gold (#fc9d04)
 - Hover: #ef7d00
 - Active: #b95004 + scale(0.98)
 - Sombra: shadow-1 → shadow-2 en hover
 
 ### Secondary - Acción Secundaria
+
 Para acciones secundarias como "Ver detalles", "Comparar"
 
 ```tsx
-<Button variant="secondary">
-  Ver detalles
-</Button>
+<Button variant='secondary'>Ver detalles</Button>
 ```
 
 **Especificaciones:**
+
 - Fondo: Blanco con borde gris
 - Hover: Fondo gris claro
 - Texto: Gris oscuro
 
 ### Outline - Acción Terciaria
+
 Para acciones menos importantes o alternativas
 
 ```tsx
-<Button variant="outline">
-  Agregar a favoritos
-</Button>
+<Button variant='outline'>Agregar a favoritos</Button>
 ```
 
 **Especificaciones:**
+
 - Borde: Primary color
 - Hover: Fondo primary + texto blanco
 - Transición suave
 
 ### Ghost - Acción Sutil
+
 Para acciones discretas en la interfaz
 
 ```tsx
-<Button variant="ghost">
-  Cancelar
-</Button>
+<Button variant='ghost'>Cancelar</Button>
 ```
 
 ### Destructive - Acciones Peligrosas
+
 Para eliminar, cancelar pedidos, etc.
 
 ```tsx
-<Button variant="destructive">
-  Eliminar producto
-</Button>
+<Button variant='destructive'>Eliminar producto</Button>
 ```
 
 ### Success - Confirmaciones
+
 Para acciones exitosas
 
 ```tsx
-<Button variant="success">
-  Pedido confirmado
-</Button>
+<Button variant='success'>Pedido confirmado</Button>
 ```
 
 ### Warning - Advertencias
+
 Para acciones que requieren atención
 
 ```tsx
-<Button variant="warning">
-  Stock limitado
-</Button>
+<Button variant='warning'>Stock limitado</Button>
 ```
 
 ---
@@ -99,46 +95,55 @@ Para acciones que requieren atención
 ## 📏 Tamaños
 
 ### Small (sm)
+
 Para espacios reducidos, badges, etc.
 
 ```tsx
-<Button size="sm">Pequeño</Button>
+<Button size='sm'>Pequeño</Button>
 ```
+
 - Altura: 32px (h-8)
 - Padding: 12px horizontal
 - Texto: 12px
 
 ### Medium (md) - Default
+
 Tamaño estándar para la mayoría de casos
 
 ```tsx
-<Button size="md">Mediano</Button>
+<Button size='md'>Mediano</Button>
 ```
+
 - Altura: 36px (h-9)
 - Padding: 16px horizontal
 - Texto: 14px
 
 ### Large (lg)
+
 Para CTAs importantes, hero sections
 
 ```tsx
-<Button size="lg">Grande</Button>
+<Button size='lg'>Grande</Button>
 ```
+
 - Altura: 40px (h-10)
 - Padding: 24px horizontal
 - Texto: 16px
 
 ### Extra Large (xl)
+
 Para acciones muy prominentes
 
 ```tsx
-<Button size="xl">Extra Grande</Button>
+<Button size='xl'>Extra Grande</Button>
 ```
+
 - Altura: 48px (h-12)
 - Padding: 32px horizontal
 - Texto: 18px
 
 ### Icon Variants
+
 Para botones solo con íconos
 
 ```tsx
@@ -160,35 +165,34 @@ Para botones solo con íconos
 ## ⚡ Estados
 
 ### Loading State
+
 Con spinner integrado
 
 ```tsx
-<Button loading={true}>
-  Procesando...
-</Button>
+<Button loading={true}>Procesando...</Button>
 ```
 
 ### Disabled State
+
 Para acciones no disponibles
 
 ```tsx
-<Button disabled>
-  Sin stock
-</Button>
+<Button disabled>Sin stock</Button>
 ```
 
 ### With Icons
+
 Íconos izquierda y derecha
 
 ```tsx
-<Button 
+<Button
   leftIcon={<ShoppingCartIcon />}
   variant="primary"
 >
   Agregar al carrito
 </Button>
 
-<Button 
+<Button
   rightIcon={<ArrowRightIcon />}
   variant="outline"
 >
@@ -197,10 +201,11 @@ Para acciones no disponibles
 ```
 
 ### Full Width
+
 Para formularios y móviles
 
 ```tsx
-<Button fullWidth variant="primary">
+<Button fullWidth variant='primary'>
   Finalizar compra
 </Button>
 ```
@@ -213,7 +218,7 @@ Para formularios y móviles
 
 ```tsx
 // Botón de carrito con contador
-<Button 
+<Button
   variant="primary"
   leftIcon={<ShoppingCartIcon />}
   className="relative"
@@ -223,7 +228,7 @@ Para formularios y móviles
 </Button>
 
 // Botón de compra rápida
-<Button 
+<Button
   variant="primary"
   size="lg"
   fullWidth
@@ -233,7 +238,7 @@ Para formularios y móviles
 </Button>
 
 // Botón de favoritos
-<Button 
+<Button
   variant="ghost"
   size="icon"
   className="text-red-500 hover:text-red-600"
@@ -242,7 +247,7 @@ Para formularios y móviles
 </Button>
 
 // Botón con descuento
-<Button 
+<Button
   variant="destructive"
   leftIcon={<TagIcon />}
 >
@@ -285,7 +290,15 @@ Para formularios y móviles
 
 ```typescript
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'success' | 'warning' | 'link'
+  variant?:
+    | 'primary'
+    | 'secondary'
+    | 'outline'
+    | 'ghost'
+    | 'destructive'
+    | 'success'
+    | 'warning'
+    | 'link'
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'icon' | 'icon-sm' | 'icon-lg'
   fullWidth?: boolean
   loading?: boolean
@@ -359,31 +372,32 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 ## 🎯 Criterios de Aceptación
 
 ### Funcionales
+
 - [ ] Todas las variantes renderizan correctamente
 - [ ] Estados loading/disabled funcionan
 - [ ] Íconos se posicionan correctamente
 - [ ] FullWidth responsive funciona
 
 ### Visuales
+
 - [ ] Colores coinciden con design tokens
 - [ ] Animaciones suaves (200ms)
 - [ ] Hover/active states visibles
 - [ ] Sombras apropiadas
 
 ### Accesibilidad
+
 - [ ] Contraste WCAG AA
 - [ ] Focus ring visible
 - [ ] Screen readers compatibles
 - [ ] Touch targets 44px+
 
 ### Performance
+
 - [ ] Sin re-renders innecesarios
 - [ ] Animaciones optimizadas
 - [ ] Bundle size mínimo
 
 ---
 
-*Última actualización: Junio 2025*
-
-
-
+_Última actualización: Junio 2025_

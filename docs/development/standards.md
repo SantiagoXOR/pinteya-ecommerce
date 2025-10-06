@@ -5,21 +5,25 @@
 ## 🎯 Principios Generales
 
 ### **1. Consistencia**
+
 - Seguir convenciones establecidas en el proyecto
 - Usar herramientas de formateo automático (Prettier, ESLint)
 - Mantener estructura de archivos coherente
 
 ### **2. Legibilidad**
+
 - Código auto-documentado con nombres descriptivos
 - Comentarios para lógica compleja
 - Funciones pequeñas y enfocadas
 
 ### **3. Mantenibilidad**
+
 - Separación de responsabilidades
 - Evitar duplicación de código
 - Refactoring continuo
 
 ### **4. Performance**
+
 - Optimizaciones conscientes
 - Lazy loading cuando corresponda
 - Memoización estratégica
@@ -27,6 +31,7 @@
 ## 📁 Estructura de Archivos
 
 ### **Convenciones de Nombres**
+
 ```
 src/
 ├── components/
@@ -58,25 +63,27 @@ src/
 ```
 
 ### **Reglas de Importación**
+
 ```typescript
 // 1. Imports de librerías externas
-import React, { useState, useEffect } from 'react';
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import React, { useState, useEffect } from 'react'
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 // 2. Imports internos (absolutos)
-import { supabase } from '@/lib/integrations/supabase';
-import { ProductCard } from '@/components/Shop/ProductCard';
-import { useProducts } from '@/hooks/useProducts';
+import { supabase } from '@/lib/integrations/supabase'
+import { ProductCard } from '@/components/Shop/ProductCard'
+import { useProducts } from '@/hooks/useProducts'
 
 // 3. Imports relativos
-import './styles.css';
-import { ProductType } from './types';
+import './styles.css'
+import { ProductType } from './types'
 ```
 
 ## 🔧 TypeScript Standards
 
 ### **Configuración Estricta**
+
 ```json
 // tsconfig.json
 {
@@ -92,81 +99,78 @@ import { ProductType } from './types';
 ```
 
 ### **Definición de Tipos**
+
 ```typescript
 // ✅ Buenas prácticas
 interface Product {
-  id: number;
-  name: string;
-  price: number;
-  category_id: number;
-  stock: number;
-  image_url: string | null;
-  created_at: string;
+  id: number
+  name: string
+  price: number
+  category_id: number
+  stock: number
+  image_url: string | null
+  created_at: string
 }
 
 // Tipos de respuesta API
 interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  error?: string;
+  success: boolean
+  data: T
+  message?: string
+  error?: string
 }
 
 // Props de componentes
 interface ProductCardProps {
-  product: Product;
-  onAddToCart: (productId: number) => void;
-  className?: string;
+  product: Product
+  onAddToCart: (productId: number) => void
+  className?: string
 }
 
 // ❌ Evitar
-const product: any = {}; // No usar 'any'
-function getData() { return data; } // Especificar tipo de retorno
+const product: any = {} // No usar 'any'
+function getData() {
+  return data
+} // Especificar tipo de retorno
 ```
 
 ### **Funciones y Hooks**
+
 ```typescript
 // ✅ Funciones con tipos explícitos
-async function fetchProducts(
-  filters: ProductFilters = {}
-): Promise<ApiResponse<Product[]>> {
+async function fetchProducts(filters: ProductFilters = {}): Promise<ApiResponse<Product[]>> {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .match(filters);
-    
-    if (error) throw error;
-    
+    const { data, error } = await supabase.from('products').select('*').match(filters)
+
+    if (error) throw error
+
     return {
       success: true,
-      data: data || []
-    };
+      data: data || [],
+    }
   } catch (error) {
     return {
       success: false,
       data: [],
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
   }
 }
 
 // ✅ Custom hooks tipados
 interface UseProductsOptions {
-  initialFilters?: ProductFilters;
-  autoFetch?: boolean;
+  initialFilters?: ProductFilters
+  autoFetch?: boolean
 }
 
 interface UseProductsReturn {
-  products: Product[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
+  products: Product[]
+  loading: boolean
+  error: string | null
+  refetch: () => Promise<void>
 }
 
-export function useProducts(
-  options: UseProductsOptions = {}
-): UseProductsReturn {
+export function useProducts(options: UseProductsOptions = {}): UseProductsReturn {
   // implementación
 }
 ```
@@ -174,6 +178,7 @@ export function useProducts(
 ## ⚛️ React Standards
 
 ### **Componentes Funcionales**
+
 ```typescript
 // ✅ Componente bien estructurado
 import React, { memo, useCallback } from 'react';
@@ -185,10 +190,10 @@ interface ProductCardProps {
   className?: string;
 }
 
-export const ProductCard = memo<ProductCardProps>(({ 
-  product, 
-  onAddToCart, 
-  className = '' 
+export const ProductCard = memo<ProductCardProps>(({
+  product,
+  onAddToCart,
+  className = ''
 }) => {
   const handleAddToCart = useCallback(() => {
     onAddToCart(product.id);
@@ -209,77 +214,79 @@ ProductCard.displayName = 'ProductCard';
 ```
 
 ### **Custom Hooks**
+
 ```typescript
 // ✅ Hook reutilizable y testeable
-export function useLocalStorage<T>(
-  key: string,
-  initialValue: T
-): [T, (value: T) => void] {
+export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      const item = window.localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
     } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
-      return initialValue;
+      console.error(`Error reading localStorage key "${key}":`, error)
+      return initialValue
     }
-  });
+  })
 
-  const setValue = useCallback((value: T) => {
-    try {
-      setStoredValue(value);
-      window.localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error);
-    }
-  }, [key]);
+  const setValue = useCallback(
+    (value: T) => {
+      try {
+        setStoredValue(value)
+        window.localStorage.setItem(key, JSON.stringify(value))
+      } catch (error) {
+        console.error(`Error setting localStorage key "${key}":`, error)
+      }
+    },
+    [key]
+  )
 
-  return [storedValue, setValue];
+  return [storedValue, setValue]
 }
 ```
 
 ### **Estado y Efectos**
+
 ```typescript
 // ✅ Manejo correcto de estado
 function ProductList() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true
 
     async function loadProducts() {
       try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetchProducts();
-        
+        setLoading(true)
+        setError(null)
+
+        const response = await fetchProducts()
+
         if (isMounted) {
           if (response.success) {
-            setProducts(response.data);
+            setProducts(response.data)
           } else {
-            setError(response.error || 'Error loading products');
+            setError(response.error || 'Error loading products')
           }
         }
       } catch (err) {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Unknown error');
+          setError(err instanceof Error ? err.message : 'Unknown error')
         }
       } finally {
         if (isMounted) {
-          setLoading(false);
+          setLoading(false)
         }
       }
     }
 
-    loadProducts();
+    loadProducts()
 
     return () => {
-      isMounted = false;
-    };
-  }, []);
+      isMounted = false
+    }
+  }, [])
 
   // render logic
 }
@@ -288,6 +295,7 @@ function ProductList() {
 ## 🎨 CSS/Tailwind Standards
 
 ### **Clases Organizadas**
+
 ```typescript
 // ✅ Clases ordenadas por categoría
 const buttonClasses = cn(
@@ -309,10 +317,11 @@ const buttonClasses = cn(
   // Conditional
   disabled && 'opacity-50 cursor-not-allowed',
   className
-);
+)
 ```
 
 ### **Componentes Reutilizables**
+
 ```typescript
 // ✅ Sistema de variantes
 const buttonVariants = cva(
@@ -340,17 +349,18 @@ const buttonVariants = cva(
       size: 'default',
     },
   }
-);
+)
 ```
 
 ## 🔌 API Standards
 
 ### **Estructura de Endpoints**
+
 ```typescript
 // ✅ API Route bien estructurada
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { supabase } from '@/lib/integrations/supabase';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { supabase } from '@/lib/integrations/supabase'
 
 // Esquema de validación
 const createProductSchema = z.object({
@@ -359,51 +369,56 @@ const createProductSchema = z.object({
   category_id: z.number().int().positive(),
   stock: z.number().int().min(0),
   description: z.string().optional(),
-});
+})
 
 export async function POST(request: NextRequest) {
   try {
     // Validar entrada
-    const body = await request.json();
-    const validatedData = createProductSchema.parse(body);
+    const body = await request.json()
+    const validatedData = createProductSchema.parse(body)
 
     // Lógica de negocio
-    const { data, error } = await supabase
-      .from('products')
-      .insert(validatedData)
-      .select()
-      .single();
+    const { data, error } = await supabase.from('products').insert(validatedData).select().single()
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
     // Respuesta exitosa
-    return NextResponse.json({
-      success: true,
-      data,
-      message: 'Product created successfully'
-    }, { status: 201 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+        message: 'Product created successfully',
+      },
+      { status: 201 }
+    )
   } catch (error) {
     // Manejo de errores
     if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        error: 'Validation error',
-        details: error.errors
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Validation error',
+          details: error.errors,
+        },
+        { status: 400 }
+      )
     }
 
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error'
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      { status: 500 }
+    )
   }
 }
 ```
 
 ### **Validación con Zod**
+
 ```typescript
 // ✅ Esquemas reutilizables
 export const productSchema = z.object({
@@ -414,24 +429,25 @@ export const productSchema = z.object({
   stock: z.number().int().min(0),
   image_url: z.string().url().nullable(),
   created_at: z.string().datetime(),
-});
+})
 
 export const createProductSchema = productSchema.omit({
   id: true,
   created_at: true,
-});
+})
 
-export const updateProductSchema = createProductSchema.partial();
+export const updateProductSchema = createProductSchema.partial()
 
 // Tipos derivados
-export type Product = z.infer<typeof productSchema>;
-export type CreateProduct = z.infer<typeof createProductSchema>;
-export type UpdateProduct = z.infer<typeof updateProductSchema>;
+export type Product = z.infer<typeof productSchema>
+export type CreateProduct = z.infer<typeof createProductSchema>
+export type UpdateProduct = z.infer<typeof updateProductSchema>
 ```
 
 ## 🧪 Testing Standards
 
 ### **Estructura de Tests**
+
 ```typescript
 // ✅ Test bien estructurado
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -450,17 +466,17 @@ describe('ProductCard', () => {
 
   it('should render product information', () => {
     render(<ProductCard {...defaultProps} />);
-    
+
     expect(screen.getByText(mockProduct.name)).toBeInTheDocument();
     expect(screen.getByText(`$${mockProduct.price}`)).toBeInTheDocument();
   });
 
   it('should call onAddToCart when button is clicked', async () => {
     render(<ProductCard {...defaultProps} />);
-    
+
     const addButton = screen.getByRole('button', { name: /agregar al carrito/i });
     fireEvent.click(addButton);
-    
+
     await waitFor(() => {
       expect(defaultProps.onAddToCart).toHaveBeenCalledWith(mockProduct.id);
     });
@@ -468,7 +484,7 @@ describe('ProductCard', () => {
 
   it('should handle loading state', () => {
     render(<ProductCard {...defaultProps} loading />);
-    
+
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
 });
@@ -477,6 +493,7 @@ describe('ProductCard', () => {
 ## 📋 Checklist de Calidad
 
 ### **Antes de Commit**
+
 - [ ] ✅ TypeScript sin errores (`npm run build`)
 - [ ] ✅ ESLint sin warnings (`npm run lint`)
 - [ ] ✅ Prettier aplicado (`npm run format`)
@@ -485,6 +502,7 @@ describe('ProductCard', () => {
 - [ ] ✅ Funcionalidad testeada manualmente
 
 ### **Antes de PR**
+
 - [ ] ✅ Documentación actualizada
 - [ ] ✅ Changelog actualizado (si aplica)
 - [ ] ✅ Performance verificada
@@ -501,7 +519,4 @@ describe('ProductCard', () => {
 
 ---
 
-*Última actualización: Junio 2025*
-
-
-
+_Última actualización: Junio 2025_

@@ -2,25 +2,22 @@
 // PINTEYA E-COMMERCE - CONFIGURACIÓN JEST PARA TESTS DE ANIMACIONES
 // ===================================
 
-const nextJest = require('next/jest');
+const nextJest = require('next/jest')
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files
   dir: './',
-});
+})
 
 // Configuración personalizada para tests de animaciones
 const customJestConfig = {
   // Configuración base
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jsdom',
-  
+
   // Configuración específica para tests de animaciones
-  testMatch: [
-    '**/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)',
-    '**/*.(test|spec).(js|jsx|ts|tsx)',
-  ],
-  
+  testMatch: ['**/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)', '**/*.(test|spec).(js|jsx|ts|tsx)'],
+
   // Configuración de módulos
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -32,7 +29,7 @@ const customJestConfig = {
 
   // Transformaciones para archivos estáticos
   moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json'],
-  
+
   // Configuración de coverage específica para animaciones
   collectCoverageFrom: [
     'src/hooks/useCheckoutTransition.ts',
@@ -43,7 +40,7 @@ const customJestConfig = {
     '!src/**/*.test.tsx',
     '!src/**/*.spec.tsx',
   ],
-  
+
   // Umbrales de coverage para animaciones
   coverageThreshold: {
     global: {
@@ -77,9 +74,7 @@ const customJestConfig = {
   reporters: ['default'],
 
   // Configuración de mocks globales para animaciones
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.animation.setup.js',
-  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.animation.setup.js'],
 
   // Configuración de transformaciones
   transform: {
@@ -95,9 +90,7 @@ const customJestConfig = {
   ],
 
   // Configuración de módulos a transformar
-  transformIgnorePatterns: [
-    'node_modules/(?!(framer-motion|@framer|@testing-library)/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(framer-motion|@framer|@testing-library)/)'],
 
   // Configuración de cache
   cacheDirectory: '<rootDir>/.jest-cache',
@@ -124,7 +117,7 @@ const customJestConfig = {
 
   // Configuración de verbose para debugging
   verbose: true,
-  
+
   // Configuración de bail para fallos rápidos
   bail: false,
 
@@ -132,11 +125,8 @@ const customJestConfig = {
   maxWorkers: '50%',
 
   // Configuración de watch mode
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname',
-  ],
-};
+  watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
+}
 
 // Configuración específica para diferentes tipos de tests
 const testConfigs = {
@@ -146,14 +136,14 @@ const testConfigs = {
     testMatch: ['**/__tests__/hooks/**/*.test.(ts|tsx)'],
     displayName: 'Unit Tests - Hooks',
   },
-  
+
   // Tests de integración de componentes
   integration: {
     ...customJestConfig,
     testMatch: ['**/__tests__/components/**/*.test.(ts|tsx)'],
     displayName: 'Integration Tests - Components',
   },
-  
+
   // Tests E2E
   e2e: {
     ...customJestConfig,
@@ -161,16 +151,16 @@ const testConfigs = {
     displayName: 'E2E Tests - Full Flow',
     testTimeout: 15000, // Más tiempo para tests E2E
   },
-};
+}
 
 // Exportar configuración basada en el tipo de test
-const testType = process.env.TEST_TYPE || 'all';
+const testType = process.env.TEST_TYPE || 'all'
 
 if (testType === 'all') {
-  module.exports = createJestConfig(customJestConfig);
+  module.exports = createJestConfig(customJestConfig)
 } else if (testConfigs[testType]) {
-  module.exports = createJestConfig(testConfigs[testType]);
+  module.exports = createJestConfig(testConfigs[testType])
 } else {
-  console.warn(`Unknown test type: ${testType}. Using default configuration.`);
-  module.exports = createJestConfig(customJestConfig);
+  console.warn(`Unknown test type: ${testType}. Using default configuration.`)
+  module.exports = createJestConfig(customJestConfig)
 }

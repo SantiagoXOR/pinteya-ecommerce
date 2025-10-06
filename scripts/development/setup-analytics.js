@@ -3,10 +3,10 @@
  * Instala dependencias y configura el entorno
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-console.log('🎯 Configurando Sistema de Analytics para Pinteya E-commerce...\n');
+console.log('🎯 Configurando Sistema de Analytics para Pinteya E-commerce...\n')
 
 // Verificar archivos creados
 const filesToCheck = [
@@ -22,55 +22,50 @@ const filesToCheck = [
   'src/app/admin/analytics/page.tsx',
   'src/app/demo/analytics/page.tsx',
   'supabase/migrations/20250105_create_analytics_tables.sql',
-];
+]
 
-console.log('✅ Verificando archivos del sistema de analytics...');
-let allFilesExist = true;
+console.log('✅ Verificando archivos del sistema de analytics...')
+let allFilesExist = true
 
 filesToCheck.forEach(file => {
   if (fs.existsSync(file)) {
-    console.log(`   ✓ ${file}`);
+    console.log(`   ✓ ${file}`)
   } else {
-    console.log(`   ✗ ${file} - FALTANTE`);
-    allFilesExist = false;
+    console.log(`   ✗ ${file} - FALTANTE`)
+    allFilesExist = false
   }
-});
+})
 
 if (!allFilesExist) {
-  console.log('\n❌ Algunos archivos están faltantes. Verifica la implementación.');
-  process.exit(1);
+  console.log('\n❌ Algunos archivos están faltantes. Verifica la implementación.')
+  process.exit(1)
 }
 
 // Verificar variables de entorno
-console.log('\n🔧 Verificando configuración de entorno...');
+console.log('\n🔧 Verificando configuración de entorno...')
 
-const requiredEnvVars = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
-];
+const requiredEnvVars = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']
 
-const optionalEnvVars = [
-  'NEXT_PUBLIC_GA_ID',
-];
+const optionalEnvVars = ['NEXT_PUBLIC_GA_ID']
 
-let envConfigured = true;
+let envConfigured = true
 
 requiredEnvVars.forEach(envVar => {
   if (process.env[envVar]) {
-    console.log(`   ✓ ${envVar} configurada`);
+    console.log(`   ✓ ${envVar} configurada`)
   } else {
-    console.log(`   ✗ ${envVar} - REQUERIDA`);
-    envConfigured = false;
+    console.log(`   ✗ ${envVar} - REQUERIDA`)
+    envConfigured = false
   }
-});
+})
 
 optionalEnvVars.forEach(envVar => {
   if (process.env[envVar]) {
-    console.log(`   ✓ ${envVar} configurada (opcional)`);
+    console.log(`   ✓ ${envVar} configurada (opcional)`)
   } else {
-    console.log(`   ⚠ ${envVar} - OPCIONAL (para Google Analytics)`);
+    console.log(`   ⚠ ${envVar} - OPCIONAL (para Google Analytics)`)
   }
-});
+})
 
 // Crear archivo de configuración de ejemplo
 const envExample = `# Variables de entorno para Analytics
@@ -86,18 +81,20 @@ NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 # Configuración de Analytics
 ANALYTICS_ENABLED=true
 ANALYTICS_DEBUG=false
-`;
+`
 
 if (!fs.existsSync('.env.example.analytics')) {
-  fs.writeFileSync('.env.example.analytics', envExample);
-  console.log('\n📝 Creado archivo .env.example.analytics con configuración de ejemplo');
+  fs.writeFileSync('.env.example.analytics', envExample)
+  console.log('\n📝 Creado archivo .env.example.analytics con configuración de ejemplo')
 }
 
 // Verificar migración de Supabase
-console.log('\n🗄️ Información sobre migración de base de datos:');
-console.log('   Para aplicar las tablas de analytics en Supabase:');
-console.log('   1. Ejecuta: supabase migration up');
-console.log('   2. O aplica manualmente el archivo: supabase/migrations/20250105_create_analytics_tables.sql');
+console.log('\n🗄️ Información sobre migración de base de datos:')
+console.log('   Para aplicar las tablas de analytics en Supabase:')
+console.log('   1. Ejecuta: supabase migration up')
+console.log(
+  '   2. O aplica manualmente el archivo: supabase/migrations/20250105_create_analytics_tables.sql'
+)
 
 // Crear documentación
 const documentation = `# Sistema de Analytics - Pinteya E-commerce
@@ -264,29 +261,29 @@ Visita \`/demo/analytics\` para ver el sistema en acción.
 - Segmentación de usuarios
 - A/B testing integrado
 - Exportación de datos avanzada
-`;
+`
 
-fs.writeFileSync('ANALYTICS_SYSTEM_DOCUMENTATION.md', documentation);
-console.log('\n📚 Creada documentación completa: ANALYTICS_SYSTEM_DOCUMENTATION.md');
+fs.writeFileSync('ANALYTICS_SYSTEM_DOCUMENTATION.md', documentation)
+console.log('\n📚 Creada documentación completa: ANALYTICS_SYSTEM_DOCUMENTATION.md')
 
 // Resumen final
-console.log('\n🎉 ¡Sistema de Analytics configurado exitosamente!');
-console.log('\n📋 Resumen de implementación:');
-console.log('   ✅ Sistema de tracking de eventos');
-console.log('   ✅ Dashboard de analytics');
-console.log('   ✅ Embudo de conversión');
-console.log('   ✅ Heatmaps de interacciones');
-console.log('   ✅ Integración Google Analytics 4');
-console.log('   ✅ APIs de métricas');
-console.log('   ✅ Provider de analytics');
-console.log('   ✅ Migración de base de datos');
-console.log('   ✅ Documentación completa');
+console.log('\n🎉 ¡Sistema de Analytics configurado exitosamente!')
+console.log('\n📋 Resumen de implementación:')
+console.log('   ✅ Sistema de tracking de eventos')
+console.log('   ✅ Dashboard de analytics')
+console.log('   ✅ Embudo de conversión')
+console.log('   ✅ Heatmaps de interacciones')
+console.log('   ✅ Integración Google Analytics 4')
+console.log('   ✅ APIs de métricas')
+console.log('   ✅ Provider de analytics')
+console.log('   ✅ Migración de base de datos')
+console.log('   ✅ Documentación completa')
 
-console.log('\n🚀 Próximos pasos:');
-console.log('   1. Configurar variables de entorno');
-console.log('   2. Aplicar migración de Supabase');
-console.log('   3. Configurar Google Analytics (opcional)');
-console.log('   4. Probar en /demo/analytics');
-console.log('   5. Acceder al dashboard en /admin/analytics');
+console.log('\n🚀 Próximos pasos:')
+console.log('   1. Configurar variables de entorno')
+console.log('   2. Aplicar migración de Supabase')
+console.log('   3. Configurar Google Analytics (opcional)')
+console.log('   4. Probar en /demo/analytics')
+console.log('   5. Acceder al dashboard en /admin/analytics')
 
-console.log('\n✨ ¡El sistema está listo para usar!');
+console.log('\n✨ ¡El sistema está listo para usar!')

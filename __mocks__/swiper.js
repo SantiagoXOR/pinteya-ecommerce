@@ -19,21 +19,21 @@ const Swiper = jest.fn().mockImplementation(() => ({
   params: {},
   el: null,
   wrapperEl: null,
-}));
+}))
 
 // Mock de Navigation
 Swiper.Navigation = {
   init: jest.fn(),
   destroy: jest.fn(),
   update: jest.fn(),
-};
+}
 
 // Mock de Pagination
 Swiper.Pagination = {
   init: jest.fn(),
   destroy: jest.fn(),
   update: jest.fn(),
-};
+}
 
 // Mock de Autoplay
 Swiper.Autoplay = {
@@ -41,7 +41,7 @@ Swiper.Autoplay = {
   stop: jest.fn(),
   pause: jest.fn(),
   resume: jest.fn(),
-};
+}
 
-module.exports = Swiper;
-module.exports.default = Swiper;
+module.exports = Swiper
+module.exports.default = Swiper

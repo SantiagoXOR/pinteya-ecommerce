@@ -50,18 +50,21 @@ npx playwright --version
 ## 🎯 Tipos de Testing Implementados
 
 ### 1. **Testing Manual con Mock Local**
+
 - ✅ **Propósito**: Desarrollo y debugging rápido
 - ✅ **Configuración**: `NEXT_PUBLIC_MOCK_PAYMENTS=true`
 - ✅ **Ubicación**: `/mock/mercadopago/checkout`
 - ✅ **Tarjetas de prueba**: Incluidas en el mock
 
 ### 2. **Testing con MercadoPago Sandbox**
+
 - ✅ **Propósito**: Validación con API real de MercadoPago
 - ✅ **Configuración**: `NEXT_PUBLIC_MOCK_PAYMENTS=false`
 - ✅ **Entorno**: Sandbox de MercadoPago
 - ✅ **Webhooks**: Funcionales con ngrok/túneles
 
 ### 3. **Tests Automatizados E2E**
+
 - ✅ **Framework**: Playwright
 - ✅ **Cobertura**: Flujo completo de checkout
 - ✅ **Browsers**: Chrome, Firefox, Safari, Mobile
@@ -77,20 +80,21 @@ Tu proyecto ya está configurado con credenciales de **sandbox** válidas:
 
 ```javascript
 // Configuración automática en src/lib/mercadopago.ts
-const isSandbox = accessToken.includes('TEST') || accessToken.includes('APP_USR');
+const isSandbox = accessToken.includes('TEST') || accessToken.includes('APP_USR')
 ```
 
 ### Tarjetas de Prueba para Sandbox
 
-| Resultado | Número de Tarjeta | CVV | Vencimiento | Nombre |
-|-----------|-------------------|-----|-------------|---------|
-| ✅ **Aprobado** | 4509 9535 6623 3704 | 123 | 11/25 | APRO APRO |
-| ❌ **Rechazado** | 4013 5406 8274 6260 | 123 | 11/25 | OTHE OTHE |
-| ⏳ **Pendiente** | 4009 1753 3280 7176 | 123 | 11/25 | PEND PEND |
+| Resultado        | Número de Tarjeta   | CVV | Vencimiento | Nombre    |
+| ---------------- | ------------------- | --- | ----------- | --------- |
+| ✅ **Aprobado**  | 4509 9535 6623 3704 | 123 | 11/25       | APRO APRO |
+| ❌ **Rechazado** | 4013 5406 8274 6260 | 123 | 11/25       | OTHE OTHE |
+| ⏳ **Pendiente** | 4009 1753 3280 7176 | 123 | 11/25       | PEND PEND |
 
 ### Flujo de Testing Manual
 
 1. **Configurar entorno sandbox**:
+
    ```bash
    # En .env.local
    NEXT_PUBLIC_MOCK_PAYMENTS=false
@@ -98,6 +102,7 @@ const isSandbox = accessToken.includes('TEST') || accessToken.includes('APP_USR'
    ```
 
 2. **Iniciar aplicación**:
+
    ```bash
    npm run dev
    ```
@@ -150,7 +155,7 @@ npx playwright test payment-flow.spec.ts
 # Solo tests de pago exitoso
 npx playwright test payment-flow.spec.ts --grep="exitoso"
 
-# Solo tests de pago rechazado  
+# Solo tests de pago rechazado
 npx playwright test payment-flow.spec.ts --grep="rechazado"
 
 # Tests de performance
@@ -160,6 +165,7 @@ npx playwright test payment-flow.spec.ts --grep="Performance"
 ### Cobertura de Tests E2E
 
 #### ✅ Test 1: Flujo Completo de Pago Exitoso
+
 - Agregar producto al carrito
 - Completar información de envío
 - Procesar pago con tarjeta aprobada
@@ -167,18 +173,21 @@ npx playwright test payment-flow.spec.ts --grep="Performance"
 - Validar actualización de estado en BD
 
 #### ✅ Test 2: Flujo de Pago Rechazado
+
 - Mismo flujo pero con tarjeta rechazada
 - Verificar manejo de errores
 - Validar página de fallo
 - Verificar opción de reintentar
 
 #### ✅ Test 3: Validación de Webhooks
+
 - Simular webhook de MercadoPago
 - Verificar procesamiento correcto
 - Validar actualización de estados
 - Verificar logs de seguridad
 
 #### ✅ Test 4: Performance del Checkout
+
 - Medir tiempos de carga
 - Verificar respuesta de APIs
 - Validar métricas de rendimiento
@@ -213,7 +222,7 @@ curl -X POST http://localhost:3000/api/payments/webhook \
   -H "x-request-id: test-request-123" \
   -d '{
     "action": "payment.updated",
-    "api_version": "v1", 
+    "api_version": "v1",
     "data": {"id": "test-payment-123"},
     "date_created": "2024-01-01T00:00:00Z",
     "id": 123456,
@@ -237,12 +246,12 @@ curl -X POST http://localhost:3000/api/payments/webhook \
 
 ### Métricas Monitoreadas
 
-| Métrica | Objetivo | Actual |
-|---------|----------|---------|
-| **Tiempo de carga del checkout** | < 3s | ✅ Medido en tests |
-| **Respuesta API preferencias** | < 2s | ✅ Medido en tests |
-| **Procesamiento webhook** | < 1s | ✅ Medido en tests |
-| **First Load JS** | < 500kB | ✅ 531kB |
+| Métrica                          | Objetivo | Actual             |
+| -------------------------------- | -------- | ------------------ |
+| **Tiempo de carga del checkout** | < 3s     | ✅ Medido en tests |
+| **Respuesta API preferencias**   | < 2s     | ✅ Medido en tests |
+| **Procesamiento webhook**        | < 1s     | ✅ Medido en tests |
+| **First Load JS**                | < 500kB  | ✅ 531kB           |
 
 ### Ejecutar Tests de Performance
 
@@ -261,6 +270,7 @@ npx playwright test payment-flow.spec.ts --grep="Performance" --reporter=json
 ### Problemas Comunes
 
 #### 1. **Tests fallan por timeout**
+
 ```bash
 # Aumentar timeout en playwright.config.ts
 timeout: 60000,
@@ -268,6 +278,7 @@ actionTimeout: 30000,
 ```
 
 #### 2. **Servidor no inicia automáticamente**
+
 ```bash
 # Iniciar manualmente antes de tests
 npm run dev &
@@ -275,6 +286,7 @@ npx playwright test
 ```
 
 #### 3. **Mock no funciona**
+
 ```bash
 # Verificar variable de entorno
 echo $NEXT_PUBLIC_MOCK_PAYMENTS
@@ -282,6 +294,7 @@ echo $NEXT_PUBLIC_MOCK_PAYMENTS
 ```
 
 #### 4. **Webhooks no se procesan**
+
 ```bash
 # Verificar logs del servidor
 tail -f logs/webhook.log
@@ -347,6 +360,3 @@ npx playwright test payment-flow.spec.ts --headed
 ---
 
 **✨ ¡El sistema de testing está completamente configurado y listo para usar!**
-
-
-

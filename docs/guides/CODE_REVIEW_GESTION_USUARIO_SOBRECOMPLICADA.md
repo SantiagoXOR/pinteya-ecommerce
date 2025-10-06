@@ -4,9 +4,10 @@
 
 **PROBLEMA IDENTIFICADO**: La gestión de usuario actual está extremadamente sobrecomplicada para las necesidades básicas de un e-commerce. Se implementó un sistema enterprise completo cuando solo se necesita funcionalidad básica.
 
-**COMPLEJIDAD ACTUAL**: 
+**COMPLEJIDAD ACTUAL**:
+
 - ❌ 6 páginas de dashboard completas
-- ❌ 10+ APIs especializadas  
+- ❌ 10+ APIs especializadas
 - ❌ 15+ hooks personalizados
 - ❌ 50+ componentes UI complejos
 - ❌ Múltiples variantes de header
@@ -20,6 +21,7 @@
 ### **1. DASHBOARD COMPLEJO (/dashboard)**
 
 #### **Páginas Implementadas** (EXCESIVAS):
+
 ```
 /dashboard/                 # Dashboard principal con estadísticas
 /dashboard/profile          # Editor de perfil completo con tabs
@@ -30,6 +32,7 @@
 ```
 
 #### **Componentes Sobrecomplicados**:
+
 - `DashboardHeader.tsx` - Header complejo con dropdown avanzado
 - `Sidebar.tsx` - Navegación lateral con 6 secciones
 - `UserDashboard.tsx` - Dashboard con estadísticas complejas
@@ -42,6 +45,7 @@
 ### **2. APIS EXCESIVAS**
 
 #### **APIs Implementadas** (INNECESARIAS):
+
 ```typescript
 /api/user/dashboard         # Estadísticas complejas
 /api/user/profile          # CRUD perfil completo
@@ -54,6 +58,7 @@
 ```
 
 #### **Funcionalidades Complejas**:
+
 - Estadísticas de órdenes por mes
 - Top productos comprados
 - Gestión de sesiones múltiples
@@ -65,6 +70,7 @@
 ### **3. HOOKS ESPECIALIZADOS EXCESIVOS**
 
 #### **Hooks Implementados** (SOBREINGENIERÍA):
+
 ```typescript
 useUserDashboard.ts         # Dashboard con estadísticas
 useUserProfile.ts           # Gestión de perfil completo
@@ -79,6 +85,7 @@ useAvatarUpload.ts          # Subida de avatar
 ### **4. HEADER CON MÚLTIPLES VARIANTES**
 
 #### **Componentes de Header** (REDUNDANTES):
+
 - `HeaderNextAuth.tsx` - Header principal con autenticación básica
 - `ActionButtons.tsx` - Botones con dropdown complejo (Clerk legacy)
 - `AuthSection.tsx` - Sección de autenticación simple
@@ -92,6 +99,7 @@ useAvatarUpload.ts          # Subida de avatar
 ### **PROBLEMAS IDENTIFICADOS**:
 
 #### **1. Dashboard Enterprise Innecesario**
+
 - ❌ **6 páginas completas** cuando solo se necesita información básica
 - ❌ **Estadísticas complejas** (gasto mensual, top productos, etc.)
 - ❌ **Gestión de sesiones** enterprise para un e-commerce básico
@@ -99,18 +107,21 @@ useAvatarUpload.ts          # Subida de avatar
 - ❌ **Log de actividad** detallado excesivo
 
 #### **2. APIs Sobreingeniería**
+
 - ❌ **10+ endpoints** cuando se necesitan 2-3 básicos
 - ❌ **Estadísticas complejas** en `/api/user/dashboard`
 - ❌ **Sub-APIs especializadas** como `/preferences/notifications`
 - ❌ **Gestión de sesiones** múltiples innecesaria
 
 #### **3. Componentes UI Complejos**
+
 - ❌ **Tabs múltiples** en cada página
 - ❌ **Formularios avanzados** con validación compleja
 - ❌ **Gestión de estado** sofisticada
 - ❌ **Navegación lateral** completa
 
 #### **4. Header Fragmentado**
+
 - ❌ **Múltiples variantes** de componentes de header
 - ❌ **Lógica duplicada** entre componentes
 - ❌ **Integración compleja** con diferentes sistemas de auth
@@ -120,13 +131,15 @@ useAvatarUpload.ts          # Subida de avatar
 ## 📊 MÉTRICAS DE COMPLEJIDAD
 
 ### **ARCHIVOS INVOLUCRADOS**:
+
 - **Componentes**: 50+ archivos
-- **Hooks**: 15+ archivos  
+- **Hooks**: 15+ archivos
 - **APIs**: 10+ endpoints
 - **Páginas**: 6 páginas completas
 - **Tipos**: 20+ interfaces complejas
 
 ### **LÍNEAS DE CÓDIGO**:
+
 - **Dashboard**: ~2,000 líneas
 - **APIs**: ~1,500 líneas
 - **Hooks**: ~1,000 líneas
@@ -138,6 +151,7 @@ useAvatarUpload.ts          # Subida de avatar
 ## 🎯 REQUERIMIENTOS REALES DEL USUARIO
 
 ### **LO QUE REALMENTE SE NECESITA**:
+
 1. ✅ **Avatar en header** con foto del usuario
 2. ✅ **Dropdown básico** al hacer clic
 3. ✅ **Información básica** (nombre, email)
@@ -146,6 +160,7 @@ useAvatarUpload.ts          # Subida de avatar
 6. ✅ **Configuración básica** (opcional)
 
 ### **LO QUE SE PUEDE ELIMINAR**:
+
 - ❌ Dashboard completo con estadísticas
 - ❌ Gestión de sesiones múltiples
 - ❌ Configuración de seguridad avanzada
@@ -159,9 +174,13 @@ useAvatarUpload.ts          # Subida de avatar
 ## 🚀 PLAN DE SIMPLIFICACIÓN
 
 ### **FASE 1**: Eliminar Dashboard Complejo
-### **FASE 2**: Crear Avatar + Dropdown Básico  
+
+### **FASE 2**: Crear Avatar + Dropdown Básico
+
 ### **FASE 3**: Simplificar Header Principal
+
 ### **FASE 4**: Optimizar Arquitectura de Rutas
+
 ### **FASE 5**: Documentar Cambios
 
 ---

@@ -11,10 +11,11 @@ Documentación completa de todos los scripts de testing implementados para el pa
 ## 🎯 Scripts NPM Disponibles
 
 ### Scripts Principales:
+
 ```json
 {
   "test:e2e": "playwright test",
-  "test:e2e:ui": "playwright test --ui", 
+  "test:e2e:ui": "playwright test --ui",
   "test:e2e:debug": "playwright test --debug",
   "test:admin": "node scripts/run-admin-tests.js",
   "test:admin:headed": "playwright test tests/e2e/admin/ --headed",
@@ -26,6 +27,7 @@ Documentación completa de todos los scripts de testing implementados para el pa
 ## 🔧 Descripción Detallada de Scripts
 
 ### 1. **npm run test:e2e**
+
 ```bash
 # Comando: playwright test
 # Propósito: Ejecutar todos los tests E2E
@@ -33,6 +35,7 @@ Documentación completa de todos los scripts de testing implementados para el pa
 ```
 
 **Características:**
+
 - ✅ Ejecuta todos los tests en `tests/e2e/`
 - ✅ Modo headless por defecto
 - ✅ Reportes HTML, JSON y JUnit
@@ -40,13 +43,14 @@ Documentación completa de todos los scripts de testing implementados para el pa
 - ✅ Screenshots en fallos
 
 **Uso:**
+
 ```bash
 npm run test:e2e
 
 # Con filtros
 npm run test:e2e -- --grep "productos"
 
-# Browser específico  
+# Browser específico
 npm run test:e2e -- --project=chromium
 
 # Con timeout personalizado
@@ -54,6 +58,7 @@ npm run test:e2e -- --timeout=60000
 ```
 
 ### 2. **npm run test:e2e:ui**
+
 ```bash
 # Comando: playwright test --ui
 # Propósito: Interfaz visual interactiva para tests
@@ -61,6 +66,7 @@ npm run test:e2e -- --timeout=60000
 ```
 
 **Características:**
+
 - ✅ Interfaz gráfica de Playwright
 - ✅ Ejecución paso a paso
 - ✅ Inspector de elementos
@@ -68,6 +74,7 @@ npm run test:e2e -- --timeout=60000
 - ✅ Debug interactivo
 
 **Uso:**
+
 ```bash
 npm run test:e2e:ui
 
@@ -77,6 +84,7 @@ npm run test:e2e:ui
 ```
 
 ### 3. **npm run test:e2e:debug**
+
 ```bash
 # Comando: playwright test --debug
 # Propósito: Debug paso a paso con DevTools
@@ -84,6 +92,7 @@ npm run test:e2e:ui
 ```
 
 **Características:**
+
 - ✅ Pausa automática en cada acción
 - ✅ DevTools abierto
 - ✅ Inspector de Playwright
@@ -91,6 +100,7 @@ npm run test:e2e:ui
 - ✅ Breakpoints manuales
 
 **Uso:**
+
 ```bash
 npm run test:e2e:debug
 
@@ -102,6 +112,7 @@ npm run test:e2e:debug -- --grep "validación"
 ```
 
 ### 4. **npm run test:admin** ⭐
+
 ```bash
 # Comando: node scripts/run-admin-tests.js
 # Propósito: Script ejecutor completo para tests administrativos
@@ -109,6 +120,7 @@ npm run test:e2e:debug -- --grep "validación"
 ```
 
 **Características:**
+
 - ✅ Verificación de prerrequisitos
 - ✅ Ejecución secuencial organizada
 - ✅ Reportes detallados con métricas
@@ -116,6 +128,7 @@ npm run test:e2e:debug -- --grep "validación"
 - ✅ Códigos de salida apropiados
 
 **Flujo de Ejecución:**
+
 ```typescript
 1. Verificar Playwright instalado
 2. Preparar directorios de resultados
@@ -130,6 +143,7 @@ npm run test:e2e:debug -- --grep "validación"
 ```
 
 **Output Ejemplo:**
+
 ```bash
 🧪 SUITE DE TESTING PLAYWRIGHT - PANEL ADMINISTRATIVO
 ════════════════════════════════════════════════════════════
@@ -159,6 +173,7 @@ Total de tests: 64
 ```
 
 ### 5. **npm run test:admin:headed**
+
 ```bash
 # Comando: playwright test tests/e2e/admin/ --headed
 # Propósito: Ejecutar tests admin con browser visible
@@ -166,6 +181,7 @@ Total de tests: 64
 ```
 
 **Características:**
+
 - ✅ Browser visible durante ejecución
 - ✅ Solo tests administrativos
 - ✅ Útil para demos
@@ -173,6 +189,7 @@ Total de tests: 64
 - ✅ Verificación manual
 
 ### 6. **npm run test:admin:report**
+
 ```bash
 # Comando: playwright show-report
 # Propósito: Mostrar reportes HTML generados
@@ -180,6 +197,7 @@ Total de tests: 64
 ```
 
 **Características:**
+
 - ✅ Abre reporte HTML en browser
 - ✅ Navegación interactiva
 - ✅ Screenshots de fallos
@@ -187,6 +205,7 @@ Total de tests: 64
 - ✅ Traces detallados
 
 ### 7. **npm run test:all**
+
 ```bash
 # Comando: npm run test && npm run test:admin
 # Propósito: Ejecutar todos los tests (unit + E2E)
@@ -194,6 +213,7 @@ Total de tests: 64
 ```
 
 **Características:**
+
 - ✅ Tests unitarios con Jest
 - ✅ Tests E2E con Playwright
 - ✅ Cobertura completa
@@ -205,68 +225,77 @@ Total de tests: 64
 ### Funcionalidades Principales:
 
 #### 1. **Verificación de Prerrequisitos**
+
 ```javascript
 // Verificar Playwright instalado
-const playwrightCheck = await runCommand('npx playwright --version');
+const playwrightCheck = await runCommand('npx playwright --version')
 
 // Verificar servidor corriendo
-const response = await fetch('http://localhost:3000');
+const response = await fetch('http://localhost:3000')
 
 // Verificar APIs administrativas
-const apiResponse = await page.request.get('/api/admin/products');
+const apiResponse = await page.request.get('/api/admin/products')
 ```
 
 #### 2. **Ejecución Organizada**
+
 ```javascript
 // Tests por categoría
-const navigationTests = await runCommand('npx playwright test admin-navigation.spec.ts');
-const productTests = await runCommand('npx playwright test product-management.spec.ts');
-const formTests = await runCommand('npx playwright test product-form.spec.ts');
-const componentTests = await runCommand('npx playwright test components/');
+const navigationTests = await runCommand('npx playwright test admin-navigation.spec.ts')
+const productTests = await runCommand('npx playwright test product-management.spec.ts')
+const formTests = await runCommand('npx playwright test product-form.spec.ts')
+const componentTests = await runCommand('npx playwright test components/')
 ```
 
 #### 3. **Generación de Reportes**
+
 ```javascript
 function generateTestSummary() {
-  const results = JSON.parse(fs.readFileSync('test-results/results.json'));
-  
+  const results = JSON.parse(fs.readFileSync('test-results/results.json'))
+
   // Estadísticas generales
-  const stats = results.stats;
-  console.log(`Total: ${stats.total}`);
-  console.log(`✅ Pasaron: ${stats.passed}`);
-  console.log(`❌ Fallaron: ${stats.failed}`);
-  
+  const stats = results.stats
+  console.log(`Total: ${stats.total}`)
+  console.log(`✅ Pasaron: ${stats.passed}`)
+  console.log(`❌ Fallaron: ${stats.failed}`)
+
   // Cobertura estimada
-  const coverage = ((stats.passed / stats.total) * 100).toFixed(1);
-  console.log(`📈 Cobertura: ${coverage}%`);
+  const coverage = ((stats.passed / stats.total) * 100).toFixed(1)
+  console.log(`📈 Cobertura: ${coverage}%`)
 }
 ```
 
 #### 4. **Métricas de Cobertura**
+
 ```javascript
 function generateCoverageReport() {
   const components = [
-    'AdminLayout', 'AdminSidebar', 'AdminHeader',
-    'ProductList', 'ProductForm', 'ProductPricing',
+    'AdminLayout',
+    'AdminSidebar',
+    'AdminHeader',
+    'ProductList',
+    'ProductForm',
+    'ProductPricing',
     // ... más componentes
-  ];
-  
+  ]
+
   components.forEach(component => {
-    console.log(`✅ ${component}`);
-  });
-  
-  const coveragePercentage = (testFiles.length / totalFiles.length) * 100;
-  console.log(`📊 Cobertura: ${coveragePercentage.toFixed(1)}%`);
+    console.log(`✅ ${component}`)
+  })
+
+  const coveragePercentage = (testFiles.length / totalFiles.length) * 100
+  console.log(`📊 Cobertura: ${coveragePercentage.toFixed(1)}%`)
 }
 ```
 
 ## 🔧 Configuraciones Específicas
 
 ### Configuración Admin (admin.config.ts):
+
 ```typescript
 export default defineConfig({
   testDir: './admin',
-  fullyParallel: false,        // Secuencial para admin
+  fullyParallel: false, // Secuencial para admin
   retries: process.env.CI ? 2 : 1,
   workers: process.env.CI ? 1 : 2,
   reporter: [
@@ -274,28 +303,29 @@ export default defineConfig({
     ['json', { outputFile: 'test-results/admin-results.json' }],
     ['junit', { outputFile: 'test-results/admin-junit.xml' }],
   ],
-  timeout: 60 * 1000,          // 60s para tests admin
+  timeout: 60 * 1000, // 60s para tests admin
   expect: { timeout: 15 * 1000 }, // 15s para assertions
-});
+})
 ```
 
 ### Setup Específico (admin-setup.ts):
+
 ```typescript
 async function adminGlobalSetup(config: FullConfig) {
-  console.log('🔧 Configurando entorno para tests administrativos...');
-  
+  console.log('🔧 Configurando entorno para tests administrativos...')
+
   // Verificar aplicación disponible
-  await page.goto(baseURL);
-  await page.waitForSelector('body', { timeout: 10000 });
-  
+  await page.goto(baseURL)
+  await page.waitForSelector('body', { timeout: 10000 })
+
   // Verificar panel administrativo accesible
-  await page.goto(`${baseURL}/admin`);
-  await page.waitForSelector('h1', { timeout: 10000 });
-  
+  await page.goto(`${baseURL}/admin`)
+  await page.waitForSelector('h1', { timeout: 10000 })
+
   // Verificar APIs administrativas
-  const response = await page.request.get(`${baseURL}/api/admin/products`);
+  const response = await page.request.get(`${baseURL}/api/admin/products`)
   if (!response.ok() && response.status() !== 401) {
-    console.warn('⚠️  API de productos no responde correctamente');
+    console.warn('⚠️  API de productos no responde correctamente')
   }
 }
 ```
@@ -303,6 +333,7 @@ async function adminGlobalSetup(config: FullConfig) {
 ## 📊 Outputs y Reportes
 
 ### Estructura de Outputs:
+
 ```
 test-results/
 ├── results.json              # Resultados JSON principales
@@ -322,6 +353,7 @@ playwright-report/
 ```
 
 ### Formato de Resultados JSON:
+
 ```json
 {
   "stats": {
@@ -356,6 +388,7 @@ playwright-report/
 ### Problemas Comunes:
 
 #### 1. **Error: Servidor no disponible**
+
 ```bash
 # Problema: El servidor de desarrollo no está corriendo
 # Solución:
@@ -364,6 +397,7 @@ npm run dev
 ```
 
 #### 2. **Error: Playwright no instalado**
+
 ```bash
 # Problema: Playwright no está instalado
 # Solución:
@@ -372,6 +406,7 @@ npx playwright install
 ```
 
 #### 3. **Error: Tests timeout**
+
 ```bash
 # Problema: Tests tardan mucho en ejecutar
 # Solución: Aumentar timeout
@@ -379,6 +414,7 @@ npm run test:admin -- --timeout=120000
 ```
 
 #### 4. **Error: Browser no encontrado**
+
 ```bash
 # Problema: Browser específico no disponible
 # Solución: Instalar browsers
@@ -388,6 +424,7 @@ npx playwright install chromium firefox webkit
 ## 📈 Métricas de Performance
 
 ### Tiempos de Ejecución:
+
 ```typescript
 // Suite completa
 ⏱️ Tiempo total: ~8 minutos
@@ -405,6 +442,7 @@ npx playwright install chromium firefox webkit
 ```
 
 ### Optimizaciones Implementadas:
+
 - ✅ Paralelización inteligente
 - ✅ Reutilización de contextos
 - ✅ Cache de setup
@@ -414,6 +452,7 @@ npx playwright install chromium firefox webkit
 ## 🔄 Integración CI/CD
 
 ### GitHub Actions (Futuro):
+
 ```yaml
 name: Admin Panel E2E Tests
 on: [push, pull_request]
@@ -433,10 +472,8 @@ jobs:
 ```
 
 ### Métricas para CI:
+
 - ✅ Exit codes apropiados
 - ✅ Reportes JUnit
 - ✅ Artifacts de fallos
 - ✅ Notificaciones automáticas
-
-
-

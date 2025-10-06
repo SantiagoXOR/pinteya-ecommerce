@@ -4,7 +4,7 @@
 
 El usuario reportó que después de completar el formulario de checkout y hacer clic en "Continuar con MercadoPago", el sistema:
 
-1. ❌ Mostraba "Procesando pago..." 
+1. ❌ Mostraba "Procesando pago..."
 2. ❌ Luego mostraba "¡Pago Exitoso!" (INCORRECTO)
 3. ❌ Redirigía al home en lugar de MercadoPago
 4. ❌ Limpiaba el carrito antes de completar el pago
@@ -12,12 +12,15 @@ El usuario reportó que después de completar el formulario de checkout y hacer 
 ## 🔍 **CAUSA RAÍZ IDENTIFICADA**
 
 ### **Problema 1: Estado 'redirect' mal interpretado**
+
 El componente `CheckoutExpress.tsx` mostraba un mensaje de "¡Pago Exitoso!" cuando el step era 'redirect', pero este step debería ser para redirigir a MercadoPago, no para mostrar éxito.
 
 ### **Problema 2: Redirecciones prematuras**
+
 La página de carrito redirigía al home cuando detectaba carrito vacío, incluso durante un proceso de checkout activo.
 
 ### **Problema 3: Falta de persistencia de estado**
+
 No había manera de mantener el estado de "checkout en progreso" entre navegaciones.
 
 ---
@@ -29,6 +32,7 @@ No había manera de mantener el estado de "checkout en progreso" entre navegacio
 **Archivo**: `src/components/Checkout/CheckoutExpress.tsx`
 
 **Antes:**
+
 ```tsx
 if (step === 'redirect') {
   return (
@@ -36,36 +40,35 @@ if (step === 'redirect') {
       <h2>¡Pago Exitoso!</h2> {/* ❌ INCORRECTO */}
       <p>Tu pedido ha sido procesado correctamente...</p>
     </div>
-  );
+  )
 }
 ```
 
 **Después:**
+
 ```tsx
 // useEffect para manejar redirección automática
 useEffect(() => {
   if (step === 'redirect' && initPoint) {
-    console.log('🔄 Preparando redirección a MercadoPago:', initPoint);
-    
-    const redirectTimer = setTimeout(() => {
-      console.log('🔄 Redirigiendo a MercadoPago');
-      window.location.href = initPoint;
-    }, 3000);
+    console.log('🔄 Preparando redirección a MercadoPago:', initPoint)
 
-    return () => clearTimeout(redirectTimer);
+    const redirectTimer = setTimeout(() => {
+      console.log('🔄 Redirigiendo a MercadoPago')
+      window.location.href = initPoint
+    }, 3000)
+
+    return () => clearTimeout(redirectTimer)
   }
-}, [step, initPoint]);
+}, [step, initPoint])
 
 if (step === 'redirect') {
   return (
     <div>
       <h2>Redirigiendo a MercadoPago</h2> {/* ✅ CORRECTO */}
       <p>Te estamos redirigiendo a la plataforma segura...</p>
-      <Button onClick={() => window.location.href = initPoint}>
-        Continuar a MercadoPago
-      </Button>
+      <Button onClick={() => (window.location.href = initPoint)}>Continuar a MercadoPago</Button>
     </div>
-  );
+  )
 }
 ```
 
@@ -74,38 +77,40 @@ if (step === 'redirect') {
 **Archivos**: `src/hooks/useCheckout.ts`, `src/app/(site)/(pages)/cart/page.tsx`
 
 **Implementación:**
+
 ```tsx
 // Al iniciar checkout
-sessionStorage.setItem('checkout-in-progress', 'true');
+sessionStorage.setItem('checkout-in-progress', 'true')
 
 // En página de carrito - verificar antes de redirigir
-const hasCheckoutSession = sessionStorage.getItem('checkout-in-progress') === 'true';
+const hasCheckoutSession = sessionStorage.getItem('checkout-in-progress') === 'true'
 
 if (cartItems.length === 0 && !isFromCheckout && !hasCheckoutSession) {
-  router.push("/"); // Solo redirigir si NO hay checkout en progreso
+  router.push('/') // Solo redirigir si NO hay checkout en progreso
 }
 
 // Al completar pago exitoso
-sessionStorage.removeItem('checkout-in-progress');
+sessionStorage.removeItem('checkout-in-progress')
 ```
 
 ### **3. Logging Mejorado para Debugging**
 
 **Implementación:**
+
 ```tsx
 // En CheckoutExpress
 console.log('🔍 CheckoutExpress - Cart check:', {
   cartItemsLength: cartItems.length,
   step,
-  shouldRedirect: cartItems.length === 0 && step === 'form'
-});
+  shouldRedirect: cartItems.length === 0 && step === 'form',
+})
 
 // En useCheckout
-console.log('💳 Wallet Submit - Pago enviado desde Wallet Brick:', data);
-console.log('💳 Wallet Submit - Cambiando a step redirect');
+console.log('💳 Wallet Submit - Pago enviado desde Wallet Brick:', data)
+console.log('💳 Wallet Submit - Cambiando a step redirect')
 
 // En PaymentSuccess
-console.log('✅ PaymentSuccess - Limpiando carrito después de pago exitoso');
+console.log('✅ PaymentSuccess - Limpiando carrito después de pago exitoso')
 ```
 
 ### **4. Mejora del Callback handleWalletSubmit**
@@ -113,27 +118,29 @@ console.log('✅ PaymentSuccess - Limpiando carrito después de pago exitoso');
 **Archivo**: `src/hooks/useCheckout.ts`
 
 **Antes:**
+
 ```tsx
 const handleWalletSubmit = useCallback((data: any) => {
-  console.log('Pago enviado desde Wallet Brick:', data);
-  setCheckoutState(prev => ({ ...prev, step: 'redirect' }));
-}, []);
+  console.log('Pago enviado desde Wallet Brick:', data)
+  setCheckoutState(prev => ({ ...prev, step: 'redirect' }))
+}, [])
 ```
 
 **Después:**
+
 ```tsx
 const handleWalletSubmit = useCallback((data: any) => {
-  console.log('💳 Wallet Submit - Pago enviado desde Wallet Brick:', data);
-  console.log('💳 Wallet Submit - Cambiando a step redirect');
-  
+  console.log('💳 Wallet Submit - Pago enviado desde Wallet Brick:', data)
+  console.log('💳 Wallet Submit - Cambiando a step redirect')
+
   // IMPORTANTE: NO limpiar el carrito aquí
   // El carrito se limpiará solo cuando el pago sea confirmado como exitoso
-  setCheckoutState(prev => ({ 
-    ...prev, 
+  setCheckoutState(prev => ({
+    ...prev,
     step: 'redirect',
-    isLoading: false 
-  }));
-}, []);
+    isLoading: false,
+  }))
+}, [])
 ```
 
 ---
@@ -141,6 +148,7 @@ const handleWalletSubmit = useCallback((data: any) => {
 ## 🔄 **FLUJO CORREGIDO**
 
 ### **Flujo Anterior (Problemático):**
+
 1. Usuario completa formulario ✅
 2. Se procesa checkout ✅
 3. Se cambia a step 'redirect' ✅
@@ -149,6 +157,7 @@ const handleWalletSubmit = useCallback((data: any) => {
 6. **❌ Carrito se limpia prematuramente**
 
 ### **Flujo Nuevo (Corregido):**
+
 1. Usuario completa formulario ✅
 2. Se procesa checkout ✅
 3. Se marca `checkout-in-progress` en sessionStorage ✅
@@ -230,6 +239,7 @@ Después de estas correcciones, el flujo de checkout debería funcionar correcta
 **🎉 PROBLEMA RESUELTO**
 
 El checkout express ahora funciona correctamente:
+
 - ✅ Redirige apropiadamente a MercadoPago
 - ✅ Mantiene el carrito hasta confirmación de pago
 - ✅ Maneja correctamente los estados de navegación

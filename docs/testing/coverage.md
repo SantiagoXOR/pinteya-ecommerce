@@ -6,12 +6,12 @@
 
 ### 📈 **Métricas Actuales**
 
-| Tipo | Tests | Pasando | Fallando | Cobertura |
-|------|-------|---------|----------|-----------|
-| **Unit Tests** | 149 | 142 | 7 | 75% |
-| **Integration Tests** | 45 | 43 | 2 | 68% |
-| **E2E Tests** | 12 | 11 | 1 | 85% |
-| **Total** | **206** | **196** | **10** | **72%** |
+| Tipo                  | Tests   | Pasando | Fallando | Cobertura |
+| --------------------- | ------- | ------- | -------- | --------- |
+| **Unit Tests**        | 149     | 142     | 7        | 75%       |
+| **Integration Tests** | 45      | 43      | 2        | 68%       |
+| **E2E Tests**         | 12      | 11      | 1        | 85%       |
+| **Total**             | **206** | **196** | **10**   | **72%**   |
 
 ### 🎯 **Objetivos de Cobertura**
 
@@ -119,28 +119,34 @@ src/lib/
 ### 🐛 **Errores Críticos**
 
 #### 1. **API Brands Test**
+
 ```bash
 ❌ src/app/api/brands/route.test.ts
 Error: supabase.from(...).select(...).not(...).gt is not a function
 ```
+
 **Causa**: Mock de Supabase incorrecto
 **Impacto**: 7 tests fallando
 **Prioridad**: 🔥 Alta
 
 #### 2. **BrandFilter Component**
+
 ```bash
 ❌ src/components/BrandFilter/BrandFilter.test.tsx
 Error: Found multiple elements with role "button"
 ```
+
 **Causa**: Elementos duplicados en DOM
 **Impacto**: 2 tests fallando
 **Prioridad**: 🔥 Alta
 
 #### 3. **Modal Accessibility**
+
 ```bash
 ⚠️ src/components/Modal/Modal.test.tsx
 Warning: Missing aria-describedby attribute
 ```
+
 **Causa**: Atributos de accesibilidad faltantes
 **Impacto**: 1 test con warning
 **Prioridad**: 🟡 Media
@@ -166,12 +172,12 @@ Lines        : 71.89% ( 1756/2443 )
 
 ### 📈 **Tendencia de Cobertura**
 
-| Fecha | Cobertura | Cambio | Tests |
-|-------|-----------|--------|-------|
-| 2025-01-01 | 65% | - | 180 |
-| 2025-01-15 | 68% | +3% | 195 |
-| 2025-02-01 | 72% | +4% | 206 |
-| **Objetivo** | **80%** | **+8%** | **250** |
+| Fecha        | Cobertura | Cambio  | Tests   |
+| ------------ | --------- | ------- | ------- |
+| 2025-01-01   | 65%       | -       | 180     |
+| 2025-01-15   | 68%       | +3%     | 195     |
+| 2025-02-01   | 72%       | +4%     | 206     |
+| **Objetivo** | **80%**   | **+8%** | **250** |
 
 ---
 
@@ -208,7 +214,7 @@ module.exports = {
       statements: 85,
     },
   },
-};
+}
 ```
 
 ### 🎭 **Playwright Configuration**
@@ -231,7 +237,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
-});
+})
 ```
 
 ---
@@ -323,13 +329,13 @@ npm run coverage:files
 ### 📈 **Metas Trimestrales**
 
 | Q1 2025 | Q2 2025 | Q3 2025 | Q4 2025 |
-|---------|---------|---------|---------|
-| 75% | 80% | 85% | 90% |
+| ------- | ------- | ------- | ------- |
+| 75%     | 80%     | 85%     | 90%     |
 
 ### 🏆 **Objetivos Específicos**
 
 - **🎨 Components**: 85% cobertura
-- **🔌 APIs**: 95% cobertura  
+- **🔌 APIs**: 95% cobertura
 - **🎣 Hooks**: 90% cobertura
 - **🛠️ Utils**: 98% cobertura
 - **♿ Accessibility**: 100% WCAG AA
@@ -352,6 +358,3 @@ npm run coverage:files
 - [🎭 E2E Testing](./e2e-testing.md)
 - [🔧 Test Utils](./test-utils.md)
 - [🐛 Debugging Tests](./debugging-tests.md)
-
-
-

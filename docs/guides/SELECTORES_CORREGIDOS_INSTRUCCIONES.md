@@ -1,11 +1,13 @@
 # 🔧 SELECTORES CORREGIDOS - INSTRUCCIONES DE PRUEBA
 
 ## 📋 PROBLEMA REPORTADO
+
 Los selectores de tipo de dirección y provincia no funcionaban en el formulario de direcciones.
 
 ## ✅ CORRECCIONES REALIZADAS
 
 ### 1. **Configuración de Select con React Hook Form**
+
 ```typescript
 // ANTES (No funcionaba)
 <Select onValueChange={field.onChange} value={field.value}>
@@ -15,7 +17,9 @@ Los selectores de tipo de dirección y provincia no funcionaban en el formulario
 ```
 
 ### 2. **Estructura del FormControl**
+
 Mantuve la estructura correcta de shadcn/ui:
+
 ```typescript
 <FormField
   control={form.control}
@@ -40,6 +44,7 @@ Mantuve la estructura correcta de shadcn/ui:
 ```
 
 ### 3. **Valores por Defecto Mejorados**
+
 ```typescript
 // En el useForm
 defaultValues: {
@@ -57,18 +62,21 @@ const resetData = {
 ```
 
 ### 4. **Debug Agregado**
+
 ```typescript
-console.log('Resetting form with data:', resetData); // Para debug
+console.log('Resetting form with data:', resetData) // Para debug
 ```
 
 ## 🧪 COMPONENTES DE PRUEBA CREADOS
 
 ### 1. **SimpleAddressForm.tsx**
+
 - Formulario simplificado para probar selectores
 - Solo campos esenciales: nombre, tipo, provincia, ciudad
 - Configuración mínima para verificar funcionamiento
 
 ### 2. **Página de Prueba: `/test-address`**
+
 - Compara formulario simple vs avanzado
 - Muestra datos enviados en tiempo real
 - Permite verificar que los selectores funcionen
@@ -76,22 +84,26 @@ console.log('Resetting form with data:', resetData); // Para debug
 ## 🚀 INSTRUCCIONES PARA PROBAR
 
 ### Opción 1: Servidor de Desarrollo
+
 ```bash
 npm run dev
 ```
+
 Luego navegar a: `http://localhost:3001/test-address`
 
 ### Opción 2: Páginas Existentes
+
 1. **Página de Direcciones**: `http://localhost:3001/addresses`
    - Hacer clic en "Agregar Nueva Dirección"
    - Probar los selectores de tipo y provincia
 
-2. **Dropdown del Avatar**: 
+2. **Dropdown del Avatar**:
    - Hacer clic en el avatar del usuario
    - Seleccionar "Mis Direcciones"
    - Probar el formulario
 
 ### Opción 3: Si hay problemas con el servidor
+
 1. Revisar la consola del navegador para errores
 2. Verificar que los componentes se rendericen correctamente
 3. Probar los selectores manualmente
@@ -99,6 +111,7 @@ Luego navegar a: `http://localhost:3001/test-address`
 ## 🔍 QUÉ VERIFICAR
 
 ### ✅ Selector de Tipo de Dirección
+
 - [ ] Se abre el dropdown al hacer clic
 - [ ] Muestra las opciones: "Solo envíos", "Solo facturación", "Envíos y facturación"
 - [ ] Se puede seleccionar una opción
@@ -106,6 +119,7 @@ Luego navegar a: `http://localhost:3001/test-address`
 - [ ] El formulario captura el valor correctamente
 
 ### ✅ Selector de Provincia
+
 - [ ] Se abre el dropdown al hacer clic
 - [ ] Muestra las 24 provincias argentinas
 - [ ] Se puede seleccionar una provincia
@@ -113,6 +127,7 @@ Luego navegar a: `http://localhost:3001/test-address`
 - [ ] El formulario captura el valor correctamente
 
 ### ✅ Integración con React Hook Form
+
 - [ ] Los valores se validan correctamente
 - [ ] Los errores se muestran si no se selecciona nada
 - [ ] Los datos se envían correctamente al submit
@@ -123,6 +138,7 @@ Luego navegar a: `http://localhost:3001/test-address`
 ### Si los selectores siguen sin funcionar:
 
 1. **Verificar imports**:
+
    ```typescript
    import {
      Select,
@@ -130,7 +146,7 @@ Luego navegar a: `http://localhost:3001/test-address`
      SelectItem,
      SelectTrigger,
      SelectValue,
-   } from '@/components/ui/select';
+   } from '@/components/ui/select'
    ```
 
 2. **Verificar que Toaster esté configurado**:

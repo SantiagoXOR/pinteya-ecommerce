@@ -1,6 +1,7 @@
 # 🔧 Cómo agregar dominio en Clerk Dashboard
 
 ## Problema actual
+
 - ✅ Clerk está funcionando correctamente
 - ✅ Tienes claves de producción válidas
 - ❌ Solo `pinteya.com` está autorizado
@@ -9,26 +10,32 @@
 ## Solución: Agregar dominio autorizado
 
 ### Paso 1: Acceder a Clerk Dashboard
+
 1. Ve a: https://dashboard.clerk.com/
 2. Inicia sesión con tu cuenta
-3. Selecciona tu aplicación de producción (la que tiene las claves pk_live_)
+3. Selecciona tu aplicación de producción (la que tiene las claves pk*live*)
 
 ### Paso 2: Navegar a Domains
+
 1. En el sidebar izquierdo, busca **"Domains"**
 2. Haz clic en la sección **"Domains"**
 
 ### Paso 3: Agregar nuevo dominio
+
 1. Busca el botón **"Add domain"** o **"+ Add domain"**
 2. Haz clic en él
 3. En el campo de texto, ingresa: `pinteya-ecommerce.vercel.app`
 4. Haz clic en **"Add"** o **"Save"**
 
 ### Paso 4: Verificar configuración
+
 Después de agregar el dominio, deberías ver:
+
 - `pinteya.com` ✅ (existente)
 - `pinteya-ecommerce.vercel.app` ✅ (nuevo)
 
 ### Paso 5: Probar la aplicación
+
 1. Ve a: https://pinteya-ecommerce.vercel.app/clerk-status
 2. Verifica que las variables estén cargadas
 3. Prueba el login: https://pinteya-ecommerce.vercel.app/signin
@@ -38,6 +45,7 @@ Después de agregar el dominio, deberías ver:
 ## ⚡ Resultado esperado
 
 Una vez agregado el dominio:
+
 - ✅ Login funcionará correctamente
 - ✅ No más redirecciones a accounts.pinteya.com
 - ✅ Middleware moderno funcionará perfectamente
@@ -65,6 +73,7 @@ Si no encuentras la sección "Domains" o tienes problemas:
 ## 📞 Contacto
 
 Si necesitas ayuda con algún paso específico, comparte:
+
 - Screenshot del dashboard de Clerk
 - Mensaje de error específico (si hay alguno)
 - Resultado de /clerk-status después del cambio

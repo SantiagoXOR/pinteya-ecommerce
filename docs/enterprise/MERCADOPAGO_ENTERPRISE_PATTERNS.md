@@ -22,6 +22,7 @@
 ## 🛡️ Security Patterns
 
 ### **1. HMAC Signature Verification**
+
 ```typescript
 // lib/mercadopago/security.ts - Verificación HMAC enterprise
 import crypto from 'crypto'
@@ -78,19 +79,20 @@ export function verifyHMACSignature(
       metadata: {
         timestamp: ts,
         requestId: xRequestId,
-        dataId
-      }
+        dataId,
+      },
     }
   } catch (error) {
-    return { 
-      isValid: false, 
-      error: `HMAC verification failed: ${error}` 
+    return {
+      isValid: false,
+      error: `HMAC verification failed: ${error}`,
     }
   }
 }
 ```
 
 ### **2. Secure Webhook Endpoint**
+
 ```typescript
 // app/api/webhooks/mercadopago/route.ts - Webhook enterprise
 import { NextRequest, NextResponse } from 'next/server'
@@ -100,23 +102,20 @@ import { logWebhookEvent } from '@/lib/monitoring/webhook-logger'
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
-  
+
   try {
     // Extraer headers de seguridad
     const xSignature = request.headers.get('x-signature')
     const xRequestId = request.headers.get('x-request-id')
-    
+
     if (!xSignature || !xRequestId) {
       await logWebhookEvent({
         status: 'rejected',
         reason: 'Missing security headers',
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       })
-      
-      return NextResponse.json(
-        { error: 'Missing required headers' }, 
-        { status: 400 }
-      )
+
+      return NextResponse.json({ error: 'Missing required headers' }, { status: 400 })
     }
 
     // Obtener parámetros de query
@@ -125,20 +124,12 @@ export async function POST(request: NextRequest) {
     const type = searchParams.get('type')
 
     if (!dataId || !type) {
-      return NextResponse.json(
-        { error: 'Missing required parameters' }, 
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 })
     }
 
     // Verificar HMAC
     const secretKey = process.env.MERCADOPAGO_WEBHOOK_SECRET!
-    const verification = verifyHMACSignature(
-      xSignature, 
-      xRequestId, 
-      dataId, 
-      secretKey
-    )
+    const verification = verifyHMACSignature(xSignature, xRequestId, dataId, secretKey)
 
     if (!verification.isValid) {
       await logWebhookEvent({
@@ -146,13 +137,10 @@ export async function POST(request: NextRequest) {
         reason: verification.error,
         dataId,
         requestId: xRequestId,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       })
-      
-      return NextResponse.json(
-        { error: 'Invalid signature' }, 
-        { status: 401 }
-      )
+
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
     // Procesar notificación
@@ -160,7 +148,7 @@ export async function POST(request: NextRequest) {
       type,
       dataId,
       requestId: xRequestId,
-      metadata: verification.metadata
+      metadata: verification.metadata,
     })
 
     await logWebhookEvent({
@@ -169,23 +157,19 @@ export async function POST(request: NextRequest) {
       dataId,
       requestId: xRequestId,
       duration: Date.now() - startTime,
-      result
+      result,
     })
 
     // Responder con HTTP 200 dentro de 22 segundos
     return NextResponse.json({ status: 'ok' }, { status: 200 })
-
   } catch (error) {
     await logWebhookEvent({
       status: 'error',
       error: error instanceof Error ? error.message : 'Unknown error',
-      duration: Date.now() - startTime
+      duration: Date.now() - startTime,
     })
 
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 ```
@@ -195,6 +179,7 @@ export async function POST(request: NextRequest) {
 ## 🔄 Webhook Handling
 
 ### **1. Notification Processor**
+
 ```typescript
 // lib/mercadopago/webhook-processor.ts
 import { Payment, Subscription, Invoice } from '@/types/mercadopago'
@@ -206,25 +191,23 @@ export interface WebhookNotification {
   metadata?: any
 }
 
-export async function processWebhookNotification(
-  notification: WebhookNotification
-) {
+export async function processWebhookNotification(notification: WebhookNotification) {
   const { type, dataId } = notification
 
   try {
     switch (type) {
       case 'payment':
         return await handlePaymentNotification(dataId)
-      
+
       case 'subscription':
         return await handleSubscriptionNotification(dataId)
-      
+
       case 'invoice':
         return await handleInvoiceNotification(dataId)
-      
+
       case 'point_integration_wh':
         return await handlePointIntegrationNotification(notification)
-      
+
       default:
         throw new Error(`Unknown notification type: ${type}`)
     }
@@ -236,27 +219,28 @@ export async function processWebhookNotification(
 async function handlePaymentNotification(paymentId: string) {
   // Obtener payment desde MercadoPago API
   const payment = await fetchPaymentFromAPI(paymentId)
-  
+
   // Actualizar estado en base de datos
   await updatePaymentStatus(payment)
-  
+
   // Enviar notificaciones al usuario
   if (payment.status === 'approved') {
     await sendPaymentConfirmationEmail(payment)
   }
-  
+
   return { action: 'payment_processed', paymentId, status: payment.status }
 }
 
 async function handleSubscriptionNotification(subscriptionId: string) {
   const subscription = await fetchSubscriptionFromAPI(subscriptionId)
   await updateSubscriptionStatus(subscription)
-  
+
   return { action: 'subscription_processed', subscriptionId }
 }
 ```
 
 ### **2. Retry Logic con Backoff Exponencial**
+
 ```typescript
 // lib/mercadopago/retry-logic.ts
 export interface RetryConfig {
@@ -273,15 +257,15 @@ export const RETRY_CONFIGS = {
     baseDelay: 1000,
     maxDelay: 30000,
     backoffMultiplier: 2,
-    jitterMax: 1000
+    jitterMax: 1000,
   },
   standard: {
     maxAttempts: 3,
     baseDelay: 2000,
     maxDelay: 15000,
     backoffMultiplier: 1.5,
-    jitterMax: 500
-  }
+    jitterMax: 500,
+  },
 } as const
 
 export async function retryMercadoPagoOperation<T>(
@@ -289,36 +273,36 @@ export async function retryMercadoPagoOperation<T>(
   config: RetryConfig = RETRY_CONFIGS.standard
 ): Promise<T> {
   let lastError: Error
-  
+
   for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
     try {
       return await operation()
     } catch (error) {
       lastError = error as Error
-      
+
       // No reintentar errores no recuperables
       if (isNonRetryableError(error)) {
         throw error
       }
-      
+
       if (attempt === config.maxAttempts) {
         break
       }
-      
+
       // Calcular delay con backoff exponencial y jitter
       const exponentialDelay = Math.min(
         config.baseDelay * Math.pow(config.backoffMultiplier, attempt - 1),
         config.maxDelay
       )
-      
+
       const jitter = Math.random() * config.jitterMax
       const totalDelay = exponentialDelay + jitter
-      
+
       console.log(`Retry attempt ${attempt}/${config.maxAttempts} after ${totalDelay}ms`)
       await new Promise(resolve => setTimeout(resolve, totalDelay))
     }
   }
-  
+
   throw lastError
 }
 
@@ -327,12 +311,12 @@ function isNonRetryableError(error: any): boolean {
   if (error.status >= 400 && error.status < 500 && error.status !== 429) {
     return true
   }
-  
+
   // Errores de validación
   if (error.message?.includes('invalid_parameter')) {
     return true
   }
-  
+
   return false
 }
 ```
@@ -342,6 +326,7 @@ function isNonRetryableError(error: any): boolean {
 ## ⚡ Error Handling
 
 ### **1. Error Classification**
+
 ```typescript
 // lib/mercadopago/error-handler.ts
 export enum MercadoPagoErrorType {
@@ -350,7 +335,7 @@ export enum MercadoPagoErrorType {
   VALIDATION_ERROR = 'validation_error',
   RATE_LIMIT_ERROR = 'rate_limit_error',
   SERVER_ERROR = 'server_error',
-  UNKNOWN_ERROR = 'unknown_error'
+  UNKNOWN_ERROR = 'unknown_error',
 }
 
 export interface MercadoPagoError {
@@ -367,28 +352,28 @@ export function classifyMercadoPagoError(error: any): MercadoPagoError {
     return {
       type: MercadoPagoErrorType.NETWORK_ERROR,
       message: 'Network connection failed',
-      retryable: true
+      retryable: true,
     }
   }
-  
+
   // Error de autenticación
   if (error.status === 401) {
     return {
       type: MercadoPagoErrorType.AUTHENTICATION_ERROR,
       message: 'Invalid credentials',
-      retryable: false
+      retryable: false,
     }
   }
-  
+
   // Error de rate limiting
   if (error.status === 429) {
     return {
       type: MercadoPagoErrorType.RATE_LIMIT_ERROR,
       message: 'Rate limit exceeded',
-      retryable: true
+      retryable: true,
     }
   }
-  
+
   // Error de validación
   if (error.status >= 400 && error.status < 500) {
     return {
@@ -396,41 +381,42 @@ export function classifyMercadoPagoError(error: any): MercadoPagoError {
       message: error.message || 'Validation failed',
       code: error.code,
       details: error.details,
-      retryable: false
+      retryable: false,
     }
   }
-  
+
   // Error del servidor
   if (error.status >= 500) {
     return {
       type: MercadoPagoErrorType.SERVER_ERROR,
       message: 'Server error',
-      retryable: true
+      retryable: true,
     }
   }
-  
+
   return {
     type: MercadoPagoErrorType.UNKNOWN_ERROR,
     message: error.message || 'Unknown error',
-    retryable: false
+    retryable: false,
   }
 }
 ```
 
 ### **2. Circuit Breaker Pattern**
+
 ```typescript
 // lib/mercadopago/circuit-breaker.ts
 export class CircuitBreaker {
   private failures = 0
   private lastFailureTime = 0
   private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
-  
+
   constructor(
     private threshold: number = 5,
     private timeout: number = 60000,
     private monitoringWindow: number = 120000
   ) {}
-  
+
   async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (this.state === 'OPEN') {
       if (Date.now() - this.lastFailureTime > this.timeout) {
@@ -439,7 +425,7 @@ export class CircuitBreaker {
         throw new Error('Circuit breaker is OPEN')
       }
     }
-    
+
     try {
       const result = await operation()
       this.onSuccess()
@@ -449,16 +435,16 @@ export class CircuitBreaker {
       throw error
     }
   }
-  
+
   private onSuccess() {
     this.failures = 0
     this.state = 'CLOSED'
   }
-  
+
   private onFailure() {
     this.failures++
     this.lastFailureTime = Date.now()
-    
+
     if (this.failures >= this.threshold) {
       this.state = 'OPEN'
     }
@@ -471,6 +457,7 @@ export class CircuitBreaker {
 ## 📊 Monitoring & Compliance
 
 ### **1. Compliance Standards**
+
 ```typescript
 // lib/mercadopago/compliance.ts
 /**
@@ -495,9 +482,9 @@ export async function logComplianceEvent(event: ComplianceAuditLog) {
   await storeAuditLog({
     ...event,
     timestamp: new Date().toISOString(),
-    hash: generateEventHash(event)
+    hash: generateEventHash(event),
   })
-  
+
   // Alertar si es evento crítico
   if (event.result === 'failure' && isCriticalAction(event.action)) {
     await sendSecurityAlert(event)
@@ -511,6 +498,7 @@ function generateEventHash(event: ComplianceAuditLog): string {
 ```
 
 ### **2. Real-time Monitoring**
+
 ```typescript
 // lib/mercadopago/monitoring.ts
 export interface MercadoPagoMetrics {
@@ -525,33 +513,33 @@ export interface MercadoPagoMetrics {
 
 export class MercadoPagoMonitor {
   private metrics: MercadoPagoMetrics[] = []
-  
+
   async recordMetric(metric: MercadoPagoMetrics) {
     this.metrics.push(metric)
-    
+
     // Enviar a sistema de monitoreo
     await this.sendToMonitoringSystem(metric)
-    
+
     // Verificar alertas
     await this.checkAlerts(metric)
   }
-  
+
   private async checkAlerts(metric: MercadoPagoMetrics) {
     // Alert si response time > 5 segundos
     if (metric.responseTime > 5000) {
       await this.sendAlert({
         type: 'high_response_time',
         metric,
-        threshold: 5000
+        threshold: 5000,
       })
     }
-    
+
     // Alert si error rate > 5%
     if (metric.errorRate > 0.05) {
       await this.sendAlert({
         type: 'high_error_rate',
         metric,
-        threshold: 0.05
+        threshold: 0.05,
       })
     }
   }
@@ -563,6 +551,7 @@ export class MercadoPagoMonitor {
 ## 🚀 Production Deployment
 
 ### **1. Environment Configuration**
+
 ```typescript
 // lib/mercadopago/config.ts
 export interface MercadoPagoConfig {
@@ -579,54 +568,60 @@ export interface MercadoPagoConfig {
 
 export function getMercadoPagoConfig(): MercadoPagoConfig {
   const environment = process.env.NODE_ENV === 'production' ? 'production' : 'sandbox'
-  
+
   return {
-    publicKey: environment === 'production' 
-      ? process.env.MERCADOPAGO_PUBLIC_KEY_PROD!
-      : process.env.MERCADOPAGO_PUBLIC_KEY_TEST!,
-    accessToken: environment === 'production'
-      ? process.env.MERCADOPAGO_ACCESS_TOKEN_PROD!
-      : process.env.MERCADOPAGO_ACCESS_TOKEN_TEST!,
+    publicKey:
+      environment === 'production'
+        ? process.env.MERCADOPAGO_PUBLIC_KEY_PROD!
+        : process.env.MERCADOPAGO_PUBLIC_KEY_TEST!,
+    accessToken:
+      environment === 'production'
+        ? process.env.MERCADOPAGO_ACCESS_TOKEN_PROD!
+        : process.env.MERCADOPAGO_ACCESS_TOKEN_TEST!,
     webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET!,
     environment,
     rateLimits: {
       createPreference: environment === 'production' ? 100 : 50,
       webhook: environment === 'production' ? 1000 : 100,
-      query: environment === 'production' ? 200 : 100
-    }
+      query: environment === 'production' ? 200 : 100,
+    },
   }
 }
 ```
 
 ### **2. Health Checks**
+
 ```typescript
 // app/api/health/mercadopago/route.ts
 export async function GET() {
   try {
     const config = getMercadoPagoConfig()
-    
+
     // Verificar conectividad con MercadoPago
     const healthCheck = await fetch('https://api.mercadopago.com/v1/payment_methods', {
       headers: {
-        'Authorization': `Bearer ${config.accessToken}`
-      }
+        Authorization: `Bearer ${config.accessToken}`,
+      },
     })
-    
+
     if (!healthCheck.ok) {
       throw new Error(`MercadoPago API unhealthy: ${healthCheck.status}`)
     }
-    
+
     return NextResponse.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      environment: config.environment
+      environment: config.environment,
     })
   } catch (error) {
-    return NextResponse.json({
-      status: 'unhealthy',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, { status: 503 })
+    return NextResponse.json(
+      {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 503 }
+    )
   }
 }
 ```
@@ -637,6 +632,3 @@ export async function GET() {
 **Fecha**: Enero 2025  
 **Versión**: Enterprise v3.0  
 **Basado en**: MercadoPago Official Documentation + Context7
-
-
-

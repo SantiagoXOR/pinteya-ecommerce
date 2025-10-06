@@ -3,28 +3,25 @@
 // Descripción: Configuración para análisis de estructura sin servidor web
 // =====================================================
 
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
-  
+
   /* Configuración específica para diagnóstico estructural */
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0, // No reintentar para diagnóstico estructural
   workers: 1,
-  
+
   /* Reportes */
-  reporter: [
-    ['list'],
-    ['json', { outputFile: 'test-results/structural-diagnostic-results.json' }]
-  ],
-  
+  reporter: [['list'], ['json', { outputFile: 'test-results/structural-diagnostic-results.json' }]],
+
   /* Configuración global */
   use: {
     /* Sin navegador para análisis estructural */
     headless: true,
-    
+
     /* Timeouts mínimos */
     actionTimeout: 5000,
     navigationTimeout: 5000,
@@ -50,4 +47,4 @@ export default defineConfig({
 
   /* Directorio de salida */
   outputDir: 'test-results/structural-output/',
-});
+})

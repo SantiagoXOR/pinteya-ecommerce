@@ -374,17 +374,22 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
 
   const selectSuggestion = useCallback(
     (suggestion: SearchSuggestion) => {
-      // Navegar según el tipo de sugerencia
+      // Si hay un callback externo, dejarlo manejar la navegación
+      if (onSuggestionSelect) {
+        onSuggestionSelect(suggestion)
+        toastHandler.showInfoToast(
+          `${suggestion.type === 'product' ? 'Producto' : 'Búsqueda'} seleccionado`,
+          suggestion.title
+        )
+        return
+      }
+
+      // Solo navegar automáticamente si NO hay callback externo
       if (suggestion.type === 'product') {
         navigation.navigateToProduct(suggestion.id)
       } else {
         // Para búsquedas recientes o trending, navegar a búsqueda
         navigation.navigateToSearch(suggestion.title)
-      }
-
-      // Callback externo
-      if (onSuggestionSelect) {
-        onSuggestionSelect(suggestion)
       }
 
       toastHandler.showInfoToast(

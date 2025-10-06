@@ -45,6 +45,7 @@ src/lib/database/
 **Archivo:** `TurnByTurnNavigation.tsx`
 
 **Características:**
+
 - ✅ Panel lateral con instrucciones paso a paso
 - ✅ Síntesis de voz en español usando Web Speech API
 - ✅ Iconos visuales para cada tipo de maniobra
@@ -54,6 +55,7 @@ src/lib/database/
 - ✅ Controles manuales (anterior/siguiente)
 
 **Iconos de Maniobras:**
+
 - 🔄 Giros (izquierda, derecha, ligeros, pronunciados)
 - ⬆️ Continuar recto
 - 🔄 U-turns
@@ -61,12 +63,13 @@ src/lib/database/
 - 🧭 Navegación general
 
 **Síntesis de Voz:**
+
 ```typescript
-const utterance = new SpeechSynthesisUtterance(instruction);
-utterance.lang = 'es-ES';
-utterance.rate = 0.9;
-utterance.pitch = 1;
-utterance.volume = 0.8;
+const utterance = new SpeechSynthesisUtterance(instruction)
+utterance.lang = 'es-ES'
+utterance.rate = 0.9
+utterance.pitch = 1
+utterance.volume = 0.8
 ```
 
 ### **2. 🔄 Tracking en Tiempo Real**
@@ -74,6 +77,7 @@ utterance.volume = 0.8;
 **Archivo:** `RealTimeTracker.tsx`
 
 **Características:**
+
 - ✅ Geolocalización continua cada 5-10 segundos
 - ✅ Recálculo automático cuando desviación > 100m
 - ✅ Actualizaciones de progreso a base de datos
@@ -83,13 +87,15 @@ utterance.volume = 0.8;
 - ✅ Métricas de precisión GPS
 
 **Configuración de Tracking:**
+
 ```typescript
-const TRACKING_INTERVAL = 5000; // 5 segundos
-const DEVIATION_THRESHOLD = 100; // 100 metros
-const MAX_ACCURACY_THRESHOLD = 50; // 50 metros
+const TRACKING_INTERVAL = 5000 // 5 segundos
+const DEVIATION_THRESHOLD = 100 // 100 metros
+const MAX_ACCURACY_THRESHOLD = 50 // 50 metros
 ```
 
 **API de Tracking:**
+
 - `POST /api/driver/tracking/update` - Actualizar ubicación
 - `GET /api/driver/tracking/update` - Obtener ubicación actual
 
@@ -98,6 +104,7 @@ const MAX_ACCURACY_THRESHOLD = 50; // 50 metros
 **Archivo:** `RouteInfoDashboard.tsx`
 
 **Métricas Mostradas:**
+
 - ✅ Velocidad actual con código de colores
 - ✅ Distancia restante
 - ✅ Tiempo restante
@@ -110,6 +117,7 @@ const MAX_ACCURACY_THRESHOLD = 50; // 50 metros
 - ✅ Control de Traffic Layer
 
 **Integración con Google Maps:**
+
 - ✅ Traffic Layer para información de tráfico
 - ✅ Cálculo de demoras por tráfico
 - ✅ Estimaciones en tiempo real
@@ -119,6 +127,7 @@ const MAX_ACCURACY_THRESHOLD = 50; // 50 metros
 **Archivo:** `AdvancedNavigationControls.tsx`
 
 **Opciones de Ruta:**
+
 - ✅ Evitar peajes (`avoidTolls`)
 - ✅ Evitar autopistas (`avoidHighways`)
 - ✅ Evitar ferries (`avoidFerries`)
@@ -126,12 +135,14 @@ const MAX_ACCURACY_THRESHOLD = 50; // 50 metros
 - ✅ Rutas alternativas (`provideRouteAlternatives`)
 
 **Modos de Transporte:**
+
 - 🚗 Conducir (DRIVING)
 - 🚶 Caminar (WALKING)
 - 🚴 Bicicleta (BICYCLING)
 - 🚌 Transporte público (TRANSIT)
 
 **Controles de Emergencia:**
+
 - ✅ Recálculo manual
 - ✅ Recálculo de emergencia (resetea opciones)
 - ✅ Selección de rutas alternativas
@@ -149,6 +160,7 @@ const MAX_ACCURACY_THRESHOLD = 50; // 50 metros
 5. **`delivery_metrics`** - Métricas de rendimiento
 
 ### **Características de Seguridad:**
+
 - ✅ Row Level Security (RLS) habilitado
 - ✅ Políticas de acceso por usuario
 - ✅ Índices optimizados para consultas
@@ -167,17 +179,20 @@ GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
 ```
 
 ### **2. APIs de Google Maps Requeridas:**
+
 - ✅ Maps JavaScript API
 - ✅ Directions API
 - ✅ Geocoding API
 - ✅ Places API
 
 ### **3. Configuración de API Key:**
+
 - ✅ Restricciones HTTP configuradas
 - ✅ APIs específicas habilitadas
 - ✅ Dominios autorizados
 
 ### **4. Base de Datos:**
+
 ```sql
 -- Ejecutar el schema
 psql -d pinteya_db -f src/lib/database/tracking-schema.sql
@@ -222,6 +237,7 @@ psql -d pinteya_db -f src/lib/database/tracking-schema.sql
 ## 🔍 Testing y Validación
 
 ### **Funcionalidades Probadas:**
+
 - ✅ Cálculo de rutas con Directions API
 - ✅ Visualización de rutas en el mapa
 - ✅ Tracking de ubicación en tiempo real
@@ -232,6 +248,7 @@ psql -d pinteya_db -f src/lib/database/tracking-schema.sql
 - ✅ Integración con Traffic Layer
 
 ### **Casos de Uso Validados:**
+
 - ✅ Navegación básica punto a punto
 - ✅ Navegación con múltiples paradas
 - ✅ Recálculo por desviación
@@ -244,12 +261,14 @@ psql -d pinteya_db -f src/lib/database/tracking-schema.sql
 ## 🚀 Rendimiento y Optimización
 
 ### **Métricas de Rendimiento:**
+
 - ⚡ Cálculo de rutas: < 2 segundos
 - 📍 Actualización de ubicación: cada 5 segundos
 - 🗣️ Síntesis de voz: < 1 segundo
 - 📊 Actualización de métricas: tiempo real
 
 ### **Optimizaciones Implementadas:**
+
 - ✅ Debounce en actualizaciones de ubicación
 - ✅ Cache de rutas calculadas
 - ✅ Lazy loading de componentes
@@ -261,6 +280,7 @@ psql -d pinteya_db -f src/lib/database/tracking-schema.sql
 ## 🔮 Funcionalidades Futuras
 
 ### **Mejoras Planificadas:**
+
 - 🔄 Integración con sensores del vehículo
 - 📱 Notificaciones push en tiempo real
 - 🤖 IA para predicción de tráfico
@@ -274,11 +294,13 @@ psql -d pinteya_db -f src/lib/database/tracking-schema.sql
 ## 📞 Soporte y Mantenimiento
 
 ### **Contacto Técnico:**
+
 - **Desarrollador:** Augment Agent
 - **Documentación:** Este archivo
 - **Repositorio:** Pinteya E-commerce
 
 ### **Logs y Debugging:**
+
 - Logs de navegación en consola del navegador
 - Métricas de tracking en base de datos
 - Errores de API en logs del servidor

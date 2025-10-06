@@ -4,59 +4,68 @@
 // Optimizada para: Captura completa, reportes detallados, múltiples formatos
 // =====================================================
 
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
   testDir: './tests/e2e',
-  
+
   /* Configuración específica para diagnóstico */
   fullyParallel: false, // Ejecutar secuencialmente para mejor diagnóstico
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
   workers: 1, // Un solo worker para diagnóstico detallado
-  
+
   /* Reportes múltiples para diagnóstico completo */
   reporter: [
-    ['html', { 
-      outputFolder: 'test-results/diagnostic-reports/playwright-html',
-      open: 'never' // No abrir automáticamente
-    }],
-    ['json', { 
-      outputFile: 'test-results/diagnostic-reports/playwright-results.json' 
-    }],
-    ['junit', { 
-      outputFile: 'test-results/diagnostic-reports/playwright-results.xml' 
-    }],
+    [
+      'html',
+      {
+        outputFolder: 'test-results/diagnostic-reports/playwright-html',
+        open: 'never', // No abrir automáticamente
+      },
+    ],
+    [
+      'json',
+      {
+        outputFile: 'test-results/diagnostic-reports/playwright-results.json',
+      },
+    ],
+    [
+      'junit',
+      {
+        outputFile: 'test-results/diagnostic-reports/playwright-results.xml',
+      },
+    ],
     ['list'], // Para output en consola
-    ['github'] // Para CI/CD si está disponible
+    ['github'], // Para CI/CD si está disponible
   ],
-  
+
   /* Configuración global optimizada para diagnóstico */
   use: {
     /* URL base */
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
-    
+
     /* Captura completa para diagnóstico */
     trace: 'on', // Siempre capturar trace para diagnóstico
     screenshot: 'on', // Capturar screenshots en todos los casos
     video: 'on', // Capturar video para análisis detallado
-    
+
     /* Timeouts extendidos para diagnóstico completo */
     actionTimeout: 30000, // 30 segundos para acciones
     navigationTimeout: 60000, // 1 minuto para navegación
-    
+
     /* Headers para identificar tests de diagnóstico */
     extraHTTPHeaders: {
       'X-Test-Type': 'Admin-Panel-Diagnostic',
-      'X-Test-Suite': 'Enterprise-Validation'
+      'X-Test-Suite': 'Enterprise-Validation',
     },
-    
+
     /* Configuración de viewport por defecto */
     viewport: { width: 1280, height: 720 },
-    
+
     /* Ignorar errores HTTPS en desarrollo */
     ignoreHTTPSErrors: true,
   },
@@ -79,9 +88,9 @@ export default defineConfig({
     // Diagnóstico principal en Chrome Desktop
     {
       name: 'diagnostic-chrome-desktop',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       dependencies: ['setup'],
       testMatch: '**/admin-panel-enterprise-complete.spec.ts',
@@ -90,9 +99,9 @@ export default defineConfig({
     // Diagnóstico en Firefox para validación cruzada
     {
       name: 'diagnostic-firefox-desktop',
-      use: { 
+      use: {
         ...devices['Desktop Firefox'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       dependencies: ['setup'],
       testMatch: '**/admin-panel-enterprise-complete.spec.ts',
@@ -101,8 +110,8 @@ export default defineConfig({
     // Diagnóstico móvil para responsividad
     {
       name: 'diagnostic-mobile',
-      use: { 
-        ...devices['Pixel 5']
+      use: {
+        ...devices['Pixel 5'],
       },
       dependencies: ['setup'],
       testMatch: '**/admin-panel-enterprise-complete.spec.ts',
@@ -111,8 +120,8 @@ export default defineConfig({
     // Diagnóstico tablet
     {
       name: 'diagnostic-tablet',
-      use: { 
-        ...devices['iPad Pro']
+      use: {
+        ...devices['iPad Pro'],
       },
       dependencies: ['setup'],
       testMatch: '**/admin-panel-enterprise-complete.spec.ts',
@@ -121,8 +130,8 @@ export default defineConfig({
     // Tests individuales de APIs (sin UI)
     {
       name: 'api-diagnostic',
-      use: { 
-        ...devices['Desktop Chrome']
+      use: {
+        ...devices['Desktop Chrome'],
       },
       dependencies: ['setup'],
       testMatch: '**/api-admin.spec.ts',
@@ -159,6 +168,6 @@ export default defineConfig({
     environment: process.env.NODE_ENV || 'development',
     baseUrl: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     timestamp: new Date().toISOString(),
-    purpose: 'Validación completa del estado de implementación del panel administrativo enterprise'
+    purpose: 'Validación completa del estado de implementación del panel administrativo enterprise',
   },
-});
+})

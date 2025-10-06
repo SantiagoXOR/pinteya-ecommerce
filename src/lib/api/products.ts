@@ -321,6 +321,11 @@ export function isProductInStock(product: ProductWithCategory): boolean {
  * @returns string
  */
 export function getProductMainImage(product: ProductWithCategory): string {
+  // Priorizar el nuevo formato de array simple
+  if (Array.isArray(product.images) && product.images[0]) {
+    return product.images[0]
+  }
+
   if (product.images?.previews?.[0]) {
     return product.images.previews[0]
   }

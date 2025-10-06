@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug Trending Searches UI</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .debug-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+      }
+      .error {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+      }
+      .info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+      }
+      .trending-item {
+        padding: 10px;
+        margin: 5px 0;
+        background: #fff3c5;
+        border-left: 3px solid #ea5a17;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔍 Debug Trending Searches UI</h1>
+
+      <div class="debug-section info">
+        <h3>Estado del Debug</h3>
+        <p id="status">Iniciando debug...</p>
+      </div>
+
+      <div class="debug-section">
+        <h3>Acciones de Debug</h3>
+        <button onclick="testAPI()">🔥 Test API Endpoint</button>
+        <button onclick="testDataFormat()">📊 Test Data Format</button>
+        <button onclick="simulateHook()">⚛️ Simulate React Hook</button>
+        <button onclick="clearLogs()">🧹 Clear Logs</button>
+      </div>
+
+      <div class="debug-section">
+        <h3>📋 Logs de Debug</h3>
+        <pre id="logs"></pre>
+      </div>
+
+      <div class="debug-section">
+        <h3>📊 Datos de la API</h3>
+        <div id="api-data"></div>
+      </div>
+
+      <div class="debug-section">
+        <h3>🎨 Simulación de UI</h3>
+        <div id="ui-simulation"></div>
+      </div>
+    </div>
+
+    <script>
+      let logs = []
+
+      function log(message, type = 'info') {
+        const timestamp = new Date().toLocaleTimeString()
+        const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`
+        logs.push(logEntry)
+        updateLogsDisplay()
+        console.log(logEntry)
+      }
+
+      function updateLogsDisplay() {
+        document.getElementById('logs').textContent = logs.join('\n')
+      }
+
+      function clearLogs() {
+        logs = []
+        updateLogsDisplay()
+        document.getElementById('api-data').innerHTML = ''
+        document.getElementById('ui-simulation').innerHTML = ''
+        document.getElementById('status').textContent = 'Logs limpiados'
+      }
+
+      async function testAPI() {
+        document.getElementById('status').textContent = 'Probando API endpoint...'
+        log('Iniciando test de API endpoint')
+
+        try {
+          const response = await fetch('http://localhost:3000/api/search/trending?limit=6')
+          log(`Response status: ${response.status}`)
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+
+          const data = await response.json()
+          log('API Response recibida exitosamente')
+          log(`Trending count: ${data.data?.trending?.length || 0}`)
+
+          // Mostrar datos de la API
+          document.getElementById('api-data').innerHTML = `
+                    <div class="debug-section success">
+                        <h4>✅ API Response Success</h4>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Trending Count:</strong> ${data.data?.trending?.length || 0}</p>
+                        <p><strong>Last Updated:</strong> ${data.data?.lastUpdated || 'N/A'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `
+
+          document.getElementById('status').textContent = 'API test completado exitosamente'
+          return data
+        } catch (error) {
+          log(`Error en API: ${error.message}`, 'error')
+          document.getElementById('api-data').innerHTML = `
+                    <div class="debug-section error">
+                        <h4>❌ API Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `
+          document.getElementById('status').textContent = 'Error en API test'
+          return null
+        }
+      }
+
+      function testDataFormat() {
+        log('Probando formato de datos esperado por el componente')
+
+        const expectedFormat = {
+          id: 'string',
+          query: 'string',
+          count: 'number',
+          category: 'string (optional)',
+          href: 'string',
+          type: 'trending',
+        }
+
+        log('Formato esperado por TrendingSearch interface:')
+        log(JSON.stringify(expectedFormat, null, 2))
+
+        document.getElementById('status').textContent = 'Formato de datos verificado'
+      }
+
+      async function simulateHook() {
+        document.getElementById('status').textContent = 'Simulando comportamiento del hook...'
+        log('Simulando useTrendingSearches hook')
+
+        const apiData = await testAPI()
+        if (!apiData) return
+
+        // Simular el procesamiento del hook
+        const trendingSearches = apiData.data?.trending || []
+        log(`Hook procesaría ${trendingSearches.length} trending searches`)
+
+        // Simular la conversión a SearchSuggestion
+        const suggestions = trendingSearches.map(trending => ({
+          id: trending.id,
+          type: 'trending',
+          title: trending.query,
+          href: trending.href,
+          badge: trending.count ? `${trending.count}` : undefined,
+        }))
+
+        log('Sugerencias generadas por el hook:')
+        log(JSON.stringify(suggestions, null, 2))
+
+        // Simular UI
+        const uiHtml = suggestions
+          .map(
+            suggestion => `
+                <div class="trending-item">
+                    <strong>🔥 ${suggestion.title}</strong>
+                    ${suggestion.badge ? `<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px; margin-left: 10px;">${suggestion.badge}</span>` : ''}
+                    <br>
+                    <small style="color: #666;">Tipo: ${suggestion.type} | ID: ${suggestion.id}</small>
+                    <br>
+                    <small style="color: #007bff;">Href: ${suggestion.href}</small>
+                </div>
+            `
+          )
+          .join('')
+
+        document.getElementById('ui-simulation').innerHTML = `
+                <div class="debug-section success">
+                    <h4>🎨 Simulación de UI - Trending Searches</h4>
+                    <p><strong>Total de sugerencias:</strong> ${suggestions.length}</p>
+                    ${uiHtml}
+                </div>
+            `
+
+        document.getElementById('status').textContent = 'Simulación de hook completada'
+      }
+
+      // Auto-ejecutar test inicial
+      window.onload = function () {
+        log('Debug UI iniciado')
+        testAPI()
+      }
+    </script>
+  </body>
+</html>

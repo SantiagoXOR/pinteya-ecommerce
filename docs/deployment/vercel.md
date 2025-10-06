@@ -14,6 +14,7 @@
 ## 📋 Checklist Pre-Deploy
 
 ### ✅ **Requisitos Completados**
+
 - [x] **Repositorio GitHub**: https://github.com/SantiagoXOR/pinteya-ecommerce
 - [x] **Build exitoso**: `npm run build` sin errores
 - [x] **Tests pasando**: 206/206 tests (100%)
@@ -24,6 +25,7 @@
 ## 🔧 Configuración de Vercel
 
 ### **1. Configuración del Proyecto**
+
 ```json
 // vercel.json
 {
@@ -43,6 +45,7 @@
 ### **2. Variables de Entorno en Vercel**
 
 #### **Supabase (CRÍTICO)**
+
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
@@ -50,6 +53,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 #### **MercadoPago (CRÍTICO)**
+
 ```bash
 MERCADOPAGO_ACCESS_TOKEN=APP_USR-your-access-token
 NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=APP_USR-your-public-key
@@ -57,12 +61,14 @@ MERCADOPAGO_CLIENT_ID=your-client-id
 ```
 
 #### **Clerk (OPCIONAL)**
+
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=[STRIPE_PUBLIC_KEY_REMOVED]your-publishable-key
 CLERK_SECRET_KEY=[STRIPE_SECRET_KEY_REMOVED]your-secret-key
 ```
 
 #### **URLs de Producción**
+
 ```bash
 NEXT_PUBLIC_APP_URL=https://pinteya.com
 ```
@@ -70,6 +76,7 @@ NEXT_PUBLIC_APP_URL=https://pinteya.com
 ## 🚀 Proceso de Deploy
 
 ### **Método 1: Deploy Automático (Recomendado)**
+
 ```bash
 # 1. Push a main branch
 git add .
@@ -81,6 +88,7 @@ git push origin main
 ```
 
 ### **Método 2: Deploy Manual**
+
 ```bash
 # 1. Instalar Vercel CLI
 npm i -g vercel
@@ -93,6 +101,7 @@ vercel --prod
 ```
 
 ### **Método 3: Desde Dashboard Vercel**
+
 1. Ve a [vercel.com/dashboard](https://vercel.com/dashboard)
 2. Click "New Project"
 3. Conecta repositorio GitHub
@@ -102,15 +111,13 @@ vercel --prod
 ## 📊 Configuración de Build
 
 ### **Next.js Configuration**
+
 ```javascript
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      'aakzspzfulgftqlgwkpb.supabase.co',
-      'localhost',
-    ],
+    domains: ['aakzspzfulgftqlgwkpb.supabase.co', 'localhost'],
   },
   serverExternalPackages: ['@clerk/nextjs'],
   env: {
@@ -118,12 +125,13 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     // ... otras variables
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
 ```
 
 ### **Build Commands**
+
 ```json
 // package.json
 {
@@ -138,6 +146,7 @@ module.exports = nextConfig;
 ## 🔍 Verificación Post-Deploy
 
 ### **1. URLs Principales**
+
 ```bash
 # Página principal
 curl -I https://pinteya.com/
@@ -150,6 +159,7 @@ curl -I https://pinteya.com/shop
 ```
 
 ### **2. Funcionalidades Críticas**
+
 - ✅ **Carga de productos**: /shop
 - ✅ **Búsqueda**: Buscador funcional
 - ✅ **Carrito**: Agregar/quitar productos
@@ -157,6 +167,7 @@ curl -I https://pinteya.com/shop
 - ✅ **APIs**: 22 endpoints funcionando
 
 ### **3. Performance**
+
 ```bash
 # Lighthouse CI (opcional)
 npm install -g @lhci/cli
@@ -166,18 +177,21 @@ lhci autorun --upload.target=temporary-public-storage
 ## 📈 Optimizaciones de Producción
 
 ### **1. Performance**
+
 - ✅ **Static Generation**: Páginas estáticas
 - ✅ **Image Optimization**: Next.js Image component
 - ✅ **Code Splitting**: Automático con Next.js
 - ✅ **CDN**: Vercel Edge Network
 
 ### **2. SEO**
+
 - ✅ **Metadata**: Configurado en layout.tsx
 - ✅ **Sitemap**: Generado automáticamente
 - ✅ **Robots.txt**: Configurado
 - ✅ **Open Graph**: Meta tags implementados
 
 ### **3. Security**
+
 - ✅ **HTTPS**: Automático en Vercel
 - ✅ **Headers**: Security headers configurados
 - ✅ **CORS**: Configuración restrictiva
@@ -186,6 +200,7 @@ lhci autorun --upload.target=temporary-public-storage
 ## 🔧 Configuración de Dominios
 
 ### **Dominio Personalizado (Opcional)**
+
 ```bash
 # 1. En Vercel Dashboard > Settings > Domains
 # 2. Agregar dominio: pinteya.com
@@ -195,6 +210,7 @@ lhci autorun --upload.target=temporary-public-storage
 ```
 
 ### **SSL Certificate**
+
 - ✅ **Automático**: Vercel maneja SSL automáticamente
 - ✅ **Let's Encrypt**: Certificados gratuitos
 - ✅ **Auto-renewal**: Renovación automática
@@ -202,9 +218,10 @@ lhci autorun --upload.target=temporary-public-storage
 ## 📊 Monitoring y Analytics
 
 ### **Vercel Analytics**
+
 ```javascript
 // app/layout.tsx
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from '@vercel/analytics/react'
 
 export default function RootLayout({ children }) {
   return (
@@ -214,11 +231,12 @@ export default function RootLayout({ children }) {
         <Analytics />
       </body>
     </html>
-  );
+  )
 }
 ```
 
 ### **Error Tracking**
+
 - ✅ **Vercel Functions**: Logs automáticos
 - ✅ **Error Boundaries**: Captura de errores React
 - ✅ **API Monitoring**: Logs de endpoints
@@ -226,6 +244,7 @@ export default function RootLayout({ children }) {
 ## 🚨 Troubleshooting
 
 ### **Build Errors**
+
 ```bash
 # Error: React compatibility
 # Solución: Usar React 18.2.0
@@ -237,6 +256,7 @@ npm run build
 ```
 
 ### **Runtime Errors**
+
 ```bash
 # Error: Variables de entorno
 # Verificar en Vercel Dashboard > Settings > Environment Variables
@@ -246,6 +266,7 @@ npm run build
 ```
 
 ### **Performance Issues**
+
 ```bash
 # Verificar bundle size
 npm run build
@@ -258,6 +279,7 @@ npm run build
 ## 🔄 CI/CD Pipeline
 
 ### **GitHub Actions**
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy to Vercel
@@ -306,6 +328,3 @@ Después del deploy exitoso:
 
 **🎉 ¡Felicitaciones! Tu aplicación está en producción:**
 **[pinteya.com](https://pinteya.com)**
-
-
-

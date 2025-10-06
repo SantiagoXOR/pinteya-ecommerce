@@ -12,6 +12,7 @@ npm run storybook:setup-deploy
 ```
 
 Este script:
+
 - ✅ Verifica que Storybook funcione correctamente
 - ✅ Crea configuración de Vercel
 - ✅ Configura .gitignore
@@ -33,6 +34,7 @@ ls storybook-static/
 ### 2. Configurar Vercel
 
 #### Opción A: Vercel Dashboard
+
 1. Ve a [vercel.com/new](https://vercel.com/new)
 2. Importa tu repositorio
 3. Configura:
@@ -41,6 +43,7 @@ ls storybook-static/
    - **Install Command**: `npm install`
 
 #### Opción B: Vercel CLI
+
 ```bash
 # Instalar Vercel CLI
 npm i -g vercel
@@ -55,6 +58,7 @@ npm run storybook:deploy
 ### 3. GitHub Actions (Automático)
 
 El workflow `.github/workflows/storybook-deploy.yml` se ejecuta automáticamente cuando:
+
 - 📝 Hay cambios en `src/components/**`
 - 📝 Hay cambios en `src/stories/**`
 - 📝 Hay cambios en `.storybook/**`
@@ -83,6 +87,7 @@ cat .vercel/project.json
 ## 🎨 Chromatic (Opcional)
 
 Chromatic proporciona:
+
 - 📸 Visual regression testing
 - 🔍 Review de cambios visuales
 - 📚 Documentación visual
@@ -270,6 +275,3 @@ git push origin main
 ---
 
 ✨ **¡Tu Design System está listo para el mundo!** 🌍
-
-
-
