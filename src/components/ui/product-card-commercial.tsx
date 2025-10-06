@@ -398,19 +398,42 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         {intelligentBadges.length > 0 && (
           <div className='absolute top-2 right-2 md:top-3 md:right-3 z-20 max-w-[120px] md:max-w-[140px]'>
             <div className='flex flex-col gap-1 md:gap-1.5 items-end'>
-              {intelligentBadges.map((badge, index) => (
-                <div
-                  key={`badge-${badge.type}-${index}`}
-                  className='text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-md flex-shrink-0 backdrop-blur-sm'
-                  style={{ 
-                    backgroundColor: badge.bgColor, 
-                    color: badge.color,
-                    border: '1px solid rgba(255,255,255,0.2)'
-                  }}
-                >
-                  {badge.displayText}
-                </div>
-              ))}
+              {intelligentBadges.map((badge, index) => {
+                // Badge circular de color
+                if (badge.isCircular && badge.circleColor && badge.type === 'color-circle') {
+                  return (
+                    <div
+                      key={`badge-${badge.type}-${index}`}
+                      className='relative group'
+                      title={badge.displayText}
+                    >
+                      <div
+                        className='w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-white shadow-lg cursor-pointer transition-transform hover:scale-110'
+                        style={{ backgroundColor: badge.circleColor }}
+                      />
+                      {/* Tooltip opcional */}
+                      <div className='absolute bottom-full right-0 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-30'>
+                        {badge.displayText}
+                      </div>
+                    </div>
+                  )
+                }
+                
+                // Badge tradicional
+                return (
+                  <div
+                    key={`badge-${badge.type}-${index}`}
+                    className='text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-md flex-shrink-0 backdrop-blur-sm'
+                    style={{ 
+                      backgroundColor: badge.bgColor, 
+                      color: badge.color,
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}
+                  >
+                    {badge.displayText}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

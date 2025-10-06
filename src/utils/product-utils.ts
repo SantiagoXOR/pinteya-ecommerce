@@ -252,13 +252,98 @@ export const getDefaultColor = (productType: ProductType): string => {
 // SISTEMA DE BADGES INTELIGENTE
 // ============================================================================
 
+// Mapeo de colores a códigos hexadecimales
+const COLOR_HEX_MAP: Record<string, string> = {
+  // Colores básicos
+  'blanco': '#FFFFFF',
+  'negro': '#000000',
+  'gris': '#808080',
+  'rojo': '#FF0000',
+  'azul': '#0000FF',
+  'verde': '#008000',
+  'amarillo': '#FFFF00',
+  'naranja': '#FFA500',
+  'rosa': '#FFC0CB',
+  'violeta': '#8A2BE2',
+  'marrón': '#A52A2A',
+  'beige': '#F5F5DC',
+  
+  // Colores de madera
+  'roble': '#DEB887',
+  'caoba': '#C04000',
+  'cerezo': '#DE3163',
+  'nogal': '#8B4513',
+  'pino': '#F4A460',
+  'cedro': '#D2691E',
+  'teca': '#CD853F',
+  'eucalipto': '#B8860B',
+  'castaño': '#954535',
+  'ebano': '#2C1810',
+  'haya': '#F5DEB3',
+  'fresno': '#E6D3A3',
+  'maple': '#D2B48C',
+  'bambú': '#DAA520',
+  
+  // Colores sintéticos
+  'aluminio': '#C0C0C0',
+  'cobre': '#B87333',
+  'bronce': '#CD7F32',
+  'oro': '#FFD700',
+  'plata': '#C0C0C0',
+  'acero': '#71797E',
+  'hierro': '#464451',
+  
+  // Colores neutros
+  'crema': '#FFFDD0',
+  'marfil': '#FFFFF0',
+  'hueso': '#F9F6EE',
+  
+  // Colores cálidos
+  'terracota': '#E2725B',
+  'ocre': '#CC7722',
+  'siena': '#A0522D',
+  
+  // Colores fríos
+  'turquesa': '#40E0D0',
+  'aguamarina': '#7FFFD4',
+  'celeste': '#87CEEB',
+  
+  // Colores tierra
+  'tierra': '#8B4513',
+  'arcilla': '#CD853F',
+  'arena': '#F4A460',
+  
+  // Materiales de construcción
+  'cemento': '#A8A8A8',
+  'concreto': '#A8A8A8',
+  'ladrillo': '#B22222',
+  'piedra': '#696969',
+  'mármol': '#F8F8FF',
+  'granito': '#2F4F4F',
+  
+  // Colores especiales
+  'natural': '#DEB887',
+  'transparente': 'rgba(255,255,255,0.3)',
+  'incoloro': 'rgba(255,255,255,0.3)'
+}
+
+/**
+ * Obtiene el código hexadecimal de un color
+ */
+const getColorHex = (colorName: string): string | undefined => {
+  const normalizedColor = colorName.toLowerCase().trim()
+  return COLOR_HEX_MAP[normalizedColor]
+}
+
 // Interfaces para badges
 export interface ProductBadgeInfo {
-  type: 'capacity' | 'color' | 'finish' | 'new' | 'discount' | 'shipping' | 'material' | 'grit' | 'dimension'
+  type: 'capacity' | 'color' | 'finish' | 'new' | 'discount' | 'shipping' | 'material' | 'grit' | 'dimension' | 'color-circle'
   value: string
   displayText: string
   color: string
   bgColor: string
+  isCircular?: boolean
+  circleColor?: string
 }
 
 export interface ExtractedProductInfo {
@@ -579,26 +664,39 @@ export const extractCapacityFromName = (productName: string): string | undefined
 }
 
 /**
- * Extrae color del nombre del producto
+ * Extrae colores del nombre del producto (puede devolver múltiples colores)
  */
-export const extractColorFromName = (productName: string): string | undefined => {
-  if (!productName) return undefined
+export const extractColorsFromName = (productName: string): string[] => {
+  if (!productName) return []
 
   const name = productName.toLowerCase()
+  const foundColors: string[] = []
   
   const colors = [
     'blanco', 'negro', 'rojo', 'azul', 'verde', 'amarillo', 'naranja', 'violeta',
     'gris', 'marron', 'beige', 'crema', 'marfil', 'rosa', 'celeste', 'turquesa',
-    'dorado', 'plateado', 'bronce', 'cobre', 'natural', 'transparente', 'incoloro'
+    'dorado', 'plateado', 'bronce', 'cobre', 'natural', 'transparente', 'incoloro',
+    'cemento', 'concreto', 'ladrillo', 'piedra', 'mármol', 'granito', 'acero', 'hierro',
+    'roble', 'caoba', 'cerezo', 'nogal', 'pino', 'cedro', 'teca', 'eucalipto',
+    'castaño', 'ebano', 'haya', 'fresno', 'maple', 'bambú', 'terracota', 'ocre', 'siena',
+    'tierra', 'arcilla', 'arena', 'aguamarina', 'aluminio'
   ]
 
   for (const color of colors) {
     if (name.includes(color)) {
-      return color.charAt(0).toUpperCase() + color.slice(1)
+      foundColors.push(color.charAt(0).toUpperCase() + color.slice(1))
     }
   }
 
-  return undefined
+  return foundColors
+}
+
+/**
+ * Extrae color del nombre del producto (mantiene compatibilidad)
+ */
+export const extractColorFromName = (productName: string): string | undefined => {
+  const colors = extractColorsFromName(productName)
+  return colors.length > 0 ? colors[0] : undefined
 }
 
 /**
@@ -759,15 +857,38 @@ export const formatProductBadges = (
     })
   }
 
-  // Badge de color
+  // Badge de color - Versión circular (soporte para múltiples colores)
   if (showColor && extractedInfo.color) {
-    badges.push({
-      type: 'color',
-      value: extractedInfo.color,
-      displayText: extractedInfo.color,
-      color: 'text-red-700',
-      bgColor: 'bg-red-100'
-    })
+    // Detectar múltiples colores separados por comas
+    const colorNames = extractedInfo.color.split(',').map(c => c.trim())
+    
+    for (const colorName of colorNames) {
+      if (badges.length >= maxBadges) break // Respetar límite de badges
+      
+      const colorHex = getColorHex(colorName)
+      
+      if (colorHex) {
+        // Badge circular con color real
+        badges.push({
+          type: 'color-circle',
+          value: colorName,
+          displayText: colorName,
+          color: 'text-gray-700',
+          bgColor: 'bg-transparent',
+          isCircular: true,
+          circleColor: colorHex
+        })
+      } else {
+        // Badge tradicional si no se encuentra el color
+        badges.push({
+          type: 'color',
+          value: colorName,
+          displayText: colorName,
+          color: 'text-red-700',
+          bgColor: 'bg-red-100'
+        })
+      }
+    }
   }
 
   // Badge de marca
