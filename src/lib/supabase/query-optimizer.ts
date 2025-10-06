@@ -447,6 +447,20 @@ export class SupabaseQueryOptimizer {
   // CONSULTAS DE ANALYTICS OPTIMIZADAS
   // ===================================
 
+  /**
+   * 🎯 BADGES INTELIGENTES FIX - Octubre 2025
+   * Obtiene los productos más vendidos con información completa para badges inteligentes
+   * 
+   * CAMPOS CRÍTICOS AGREGADOS:
+   * - color: Para badges de color de producto
+   * - medida: Para badges de capacidad/tamaño
+   * - brand: Para identificación de marca
+   * - description: Para extracción de características
+   * - discounted_price: Para cálculos de descuento
+   * 
+   * @param limit Número máximo de productos a retornar
+   * @returns Promise con productos más vendidos con información completa
+   */
   async getBestSellingProducts(limit: number = 10, options: QueryOptions = {}) {
     const cacheKey = `best-selling-${limit}`
 
@@ -468,7 +482,17 @@ export class SupabaseQueryOptimizer {
             id,
             name,
             image_url,
-            price
+            price,
+            discounted_price,
+            brand,
+            color,              -- ✅ CRÍTICO: Para badges de color
+            medida,             -- ✅ CRÍTICO: Para badges de capacidad
+            description,        -- ✅ CRÍTICO: Para extracción de info
+            stock,
+            category_id,
+            images,
+            is_active,
+            categories(name)    -- ✅ CRÍTICO: Para contexto de categoría
           ),
           quantity
         `

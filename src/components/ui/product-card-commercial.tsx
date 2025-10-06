@@ -5,6 +5,12 @@ import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
 import { Heart, Eye, Star, ShoppingCart, AlertCircle } from 'lucide-react'
 import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
+import { 
+  extractProductCapacity, 
+  formatProductBadges, 
+  type ProductBadgeInfo, 
+  type ExtractedProductInfo 
+} from '@/utils/product-utils'
 
 // Verificar que Framer Motion esté disponible
 const isFramerMotionAvailable = false // Deshabilitado para usar fallbacks CSS
@@ -12,6 +18,34 @@ const isFramerMotionAvailable = false // Deshabilitado para usar fallbacks CSS
 // Componentes fallback para cuando Framer Motion no esté disponible
 const MotionDiv = 'div'
 const MotionButton = 'button'
+
+// Interfaces para variantes de productos
+export interface ProductVariant {
+  id?: string | number
+  measure?: string
+  color_name?: string
+  color_hex?: string
+  finish?: string
+  price_list?: number
+  price_sale?: number
+  stock?: number
+  is_active?: boolean
+  is_default?: boolean
+  image_url?: string
+}
+
+// Configuración de badges inteligentes
+export interface BadgeConfig {
+  showCapacity?: boolean
+  showColor?: boolean
+  showFinish?: boolean
+  showMaterial?: boolean
+  showGrit?: boolean
+  showDimensions?: boolean
+  showWeight?: boolean
+  showBrand?: boolean
+  maxBadges?: number
+}
 
 export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
   image?: string
@@ -26,16 +60,32 @@ export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDiv
   productId?: number | string
   onAddToCart?: () => void
   showCartAnimation?: boolean
+  
   // Información de cuotas
   installments?: {
     quantity: number
     amount: number
     interestFree?: boolean
   }
+  
   // Información de envío
   freeShipping?: boolean
   shippingText?: string
   deliveryLocation?: string
+  
+  // Nuevas props para sistema de badges inteligente
+  variants?: ProductVariant[]
+  description?: string
+  badgeConfig?: BadgeConfig
+  
+  // Nuevas props para datos estructurados de la base de datos
+  features?: Record<string, any>
+  specifications?: Record<string, any>
+  dimensions?: Record<string, any>
+  weight?: number
+  // Campos directos de la base de datos
+  color?: string
+  medida?: string
 }
 
 const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProductCardProps>(
@@ -58,7 +108,26 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       freeShipping = false,
       shippingText,
       deliveryLocation,
+      variants,
+      description,
+      badgeConfig = {
+        showCapacity: true,
+        showColor: true,
+        showFinish: true,
+        showMaterial: true,
+        showGrit: true,
+        showDimensions: true,
+        showWeight: true,
+        showBrand: false,
+        maxBadges: 4
+      },
+      features,
+      specifications,
+      dimensions,
+      weight,
       children,
+      color,
+      medida,
       ...props
     },
     ref
@@ -70,6 +139,76 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [showShopDetailModal, setShowShopDetailModal] = React.useState(false)
     const [imageError, setImageError] = React.useState(false)
     const [currentImageSrc, setCurrentImageSrc] = React.useState(image || '/images/products/placeholder.svg')
+
+    // ============================================================================
+    // SISTEMA DE BADGES INTELIGENTE
+    // ============================================================================
+    
+    // Extraer información del producto para badges inteligentes
+    const extractedInfo = React.useMemo(() => {
+      if (!title) return {}
+      
+      // Debug: Verificar datos disponibles
+      console.group(`🔍 [ProductCardCommercial] Debug badges - Producto: ${title}`)
+      console.log('📋 Datos disponibles:')
+      console.log('  - title:', title)
+      console.log('  - variants:', variants)
+      console.log('  - description:', description)
+      console.log('  - features:', features)
+      console.log('  - specifications:', specifications)
+      console.log('  - dimensions:', dimensions)
+      console.log('  - weight:', weight)
+      console.log('  - brand:', brand)
+      console.log('  - color (BD):', color)
+      console.log('  - medida (BD):', medida)
+      console.log('  - badgeConfig:', badgeConfig)
+      
+      // Crear objeto con datos estructurados de la base de datos
+      const databaseData = {
+        features,
+        specifications,
+        dimensions,
+        weight,
+        brand,
+        // Campos directos de la BD - IMPORTANTE: usar los nombres correctos
+        color: color, // Campo color de la BD
+        medida: medida // Campo medida de la BD
+      }
+      
+      console.log('🔧 databaseData creado:', databaseData)
+      
+      const result = extractProductCapacity(title, variants, description, databaseData)
+      console.log('🎯 Información extraída:', result)
+      console.groupEnd()
+      
+      return result
+    }, [title, variants, description, features, specifications, dimensions, weight, brand, color, medida])
+
+    // Generar badges inteligentes basados en la configuración
+    const intelligentBadges = React.useMemo(() => {
+      console.group(`🎨 [ProductCardCommercial] Generando badges para "${title}"`)
+      console.log('📋 extractedInfo:', extractedInfo)
+      console.log('⚙️ badgeConfig:', badgeConfig)
+      
+      const badges = formatProductBadges(extractedInfo, badgeConfig)
+      console.log('🎯 Badges generados:', badges)
+      console.log(`📊 Total badges: ${badges.length}`)
+      
+      if (badges.length === 0) {
+        console.warn('⚠️ NO SE GENERARON BADGES - Verificar:')
+        console.log('  - extractedInfo tiene datos?', Object.keys(extractedInfo).length > 0)
+        console.log('  - badgeConfig permite mostrar badges?', badgeConfig)
+        console.log('  - Datos específicos:', { 
+          capacity: extractedInfo.capacity, 
+          color: extractedInfo.color,
+          showCapacity: badgeConfig?.showCapacity,
+          showColor: badgeConfig?.showColor
+        })
+      }
+      
+      console.groupEnd()
+      return badges
+    }, [extractedInfo, badgeConfig, title])
 
     // Función para abrir el modal
     const handleOpenModal = React.useCallback(() => {
@@ -227,31 +366,51 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           {/* Quick Actions eliminados - Ya no se muestran los botones de wishlist y quick view */}
         </div>
 
-        {/* Badge "Nuevo" en esquina superior derecha - Responsive */}
+        {/* Badge de descuento compacto en esquina superior izquierda - Responsive */}
+        {discount && (
+          <div className='absolute top-2 left-2 md:top-3 md:left-3 z-30'>
+            <div
+              className='text-white text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-sm'
+              style={{ backgroundColor: '#EA5A17' }}
+            >
+              {discount}
+            </div>
+          </div>
+        )}
+
+        {/* Badge "Nuevo" en esquina superior izquierda (debajo del descuento si existe) - Responsive */}
         {isNew && (
           <span
-            className='absolute top-2 right-2 md:top-3 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-30 shadow'
+            className={cn(
+              'absolute left-2 md:left-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-30 shadow',
+              discount ? 'top-10 md:top-12' : 'top-2 md:top-3'
+            )}
             style={{ backgroundColor: '#FFD600', color: '#EA5A17' }}
           >
             Nuevo
           </span>
         )}
 
-        {/* Badge de descuento compacto en esquina superior izquierda - Responsive */}
-        {discount && (
-          <div className='absolute top-2 left-2 md:top-3 md:left-3 z-30'>
-            <div
-              className='text-white text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-t'
-              style={{ backgroundColor: '#EA5A17' }}
-            >
-              {discount}
-            </div>
-            <div
-              className='bg-white text-xs font-semibold px-1.5 py-0.5 md:px-2 md:py-1 rounded-b shadow-sm text-left leading-none'
-              style={{ color: '#EA5A17' }}
-            >
-              <div>Descuento</div>
-              <div>especial</div>
+        {/* ============================================================================ */}
+        {/* ZONA EXCLUSIVA PARA BADGES INTELIGENTES */}
+        {/* Posicionados en el margen superior derecho */}
+        {/* ============================================================================ */}
+        {intelligentBadges.length > 0 && (
+          <div className='absolute top-2 right-2 md:top-3 md:right-3 z-20 max-w-[120px] md:max-w-[140px]'>
+            <div className='flex flex-col gap-1 md:gap-1.5 items-end'>
+              {intelligentBadges.map((badge, index) => (
+                <div
+                  key={`badge-${badge.type}-${index}`}
+                  className='text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-md flex-shrink-0 backdrop-blur-sm'
+                  style={{ 
+                    backgroundColor: badge.bgColor, 
+                    color: badge.color,
+                    border: '1px solid rgba(255,255,255,0.2)'
+                  }}
+                >
+                  {badge.displayText}
+                </div>
+              ))}
             </div>
           </div>
         )}

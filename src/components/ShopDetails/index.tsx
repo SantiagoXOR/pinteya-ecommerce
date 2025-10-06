@@ -353,6 +353,16 @@ const ShopDetails = () => {
                               }
                             : undefined
                         }
+                        // Nuevas props para sistema de badges inteligentes
+                        variants={product.variants || []}
+                        description={product.description || ''}
+                        badgeConfig={{
+                          showCapacityBadge: true,
+                          showColorBadge: true,
+                          showFinishBadge: true,
+                          showMaterialBadge: false,
+                          showGritBadge: true
+                        }}
                       />
                     </div>
                   </div>

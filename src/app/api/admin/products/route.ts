@@ -83,6 +83,8 @@ const getHandler = async (request: ValidatedRequest) => {
         stock,
         category_id,
         images,
+        color,
+        medida,
         created_at,
         updated_at,
         categories (

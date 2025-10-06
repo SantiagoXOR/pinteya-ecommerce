@@ -79,6 +79,7 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
       }
       title={cleanTitle}
       brand={item.brand}
+      description={item.description}
       price={
         features.discount
           ? Math.round(item.price * (1 - features.discount / 100))
@@ -107,6 +108,14 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
       shippingText={
         features.freeShipping ? 'Envío gratis' : features.fastShipping ? 'Envío rápido' : undefined
       }
+      // Configuración de badges inteligentes
+      badgeConfig={{
+        showCapacity: true,
+        showColor: true,
+        showFinish: true,
+        showMaterial: true,
+        showGrit: true
+      }}
     />
   )
 }

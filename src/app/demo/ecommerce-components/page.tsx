@@ -135,7 +135,7 @@ export default function EcommerceComponentsDemo() {
               <h3 className='text-xl font-semibold mb-4'>📱 Versión Actual (Legacy)</h3>
               <div className='flex justify-center'>
                 <CommercialProductCard
-                  image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg'
+                  image='/images/products/latex-interior-4l-plavicon.jpg'
                   title='Pintura Sherwin Williams ProClassic 4L'
                   brand='Sherwin Williams'
                   price={8500}
@@ -146,6 +146,16 @@ export default function EcommerceComponentsDemo() {
                   onAddToCart={() => handleAddToCart('Pintura Sherwin Williams Legacy')}
                   freeShipping={true}
                   shippingText='Envío gratis'
+                  // Props básicas para sistema de badges inteligentes
+                  variants={[]}
+                  description='Pintura de alta calidad para interiores y exteriores'
+                  badgeConfig={{
+                    showCapacityBadge: true,
+                    showColorBadge: false,
+                    showFinishBadge: false,
+                    showMaterialBadge: false,
+                    showGritBadge: false
+                  }}
                 />
               </div>
             </div>
@@ -155,7 +165,7 @@ export default function EcommerceComponentsDemo() {
               <h3 className='text-xl font-semibold mb-4'>✨ Nueva Versión (E-commerce)</h3>
               <div className='flex justify-center'>
                 <CommercialProductCard
-                  image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg'
+                  image='/images/products/latex-interior-4l-plavicon.jpg'
                   title='Pintura Sherwin Williams ProClassic 4L'
                   brand='Sherwin Williams'
                   price={8500}
@@ -171,6 +181,29 @@ export default function EcommerceComponentsDemo() {
                   shippingText='Envío gratis'
                   cta='Agregar al carrito'
                   onAddToCart={() => handleAddToCart('Pintura Sherwin Williams Nueva')}
+                  // Nuevas props para sistema de badges inteligentes con más opciones
+                  variants={[
+                    {
+                      id: 1,
+                      measure: '4L',
+                      color_name: 'Blanco',
+                      color_hex: '#FFFFFF',
+                      finish: 'Satinado',
+                      price_list: 10000,
+                      price_sale: 8500,
+                      stock: 12,
+                      is_active: true,
+                      is_default: true
+                    }
+                  ]}
+                  description='Pintura de alta calidad para interiores y exteriores con acabado satinado'
+                  badgeConfig={{
+                    showCapacityBadge: true,
+                    showColorBadge: true,
+                    showFinishBadge: true,
+                    showMaterialBadge: false,
+                    showGritBadge: false
+                  }}
                 />
               </div>
             </div>
@@ -186,7 +219,7 @@ export default function EcommerceComponentsDemo() {
           <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'>
             {/* Pintura Sherwin Williams */}
             <CommercialProductCard
-              image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/sherwin-williams/pintura-sherwin-williams.jpg'
+              image='/images/products/latex-interior-4l-plavicon.jpg'
               title='Pintura Sherwin Williams ProClassic 4L'
               brand='Sherwin Williams'
               price={8500}
@@ -205,7 +238,7 @@ export default function EcommerceComponentsDemo() {
 
             {/* Esmalte Petrilac */}
             <CommercialProductCard
-              image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/petrilac/esmalte-petrilac.jpg'
+              image='/images/products/sintetico-converlux-1l-petrilac.jpg'
               title='Esmalte Sintético Petrilac Brillante 1L'
               brand='Petrilac'
               price={1850}
@@ -223,7 +256,7 @@ export default function EcommerceComponentsDemo() {
 
             {/* Poximix - Stock bajo */}
             <CommercialProductCard
-              image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/poximix/adhesivo-poximix.jpg'
+              image='/images/products/poximix-interior-05kg-poxipol.jpg'
               title='Adhesivo Estructural Poximix 250ml'
               brand='Akapol'
               price={2300}
@@ -240,7 +273,7 @@ export default function EcommerceComponentsDemo() {
 
             {/* Lija El Galgo - Sin stock */}
             <CommercialProductCard
-              image='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/products/galgo/lija-galgo.jpg'
+              image='/images/products/pincel-persianero-n10-galgo.jpg'
               title='Lija El Galgo Grano 120'
               brand='El Galgo'
               price={450}

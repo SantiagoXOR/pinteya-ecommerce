@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
       const result = await withDatabaseTimeout(async signal => {
         let query = supabase.from('products').select(
           `
-              id, name, slug, price, discounted_price, brand, stock, images,
+              id, name, slug, price, discounted_price, brand, stock, images, color, medida,
               category:categories(id, name, slug)
             `,
           { count: 'exact' }

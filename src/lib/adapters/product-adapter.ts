@@ -40,6 +40,13 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
     isNew: apiProduct.is_new || false,
     images: apiProduct.images || ['/images/products/placeholder.svg'],
     image: firstImage,
+    // ✅ CAMPOS CRÍTICOS PARA BADGES INTELIGENTES
+    // 🎯 BADGES INTELIGENTES FIX - Octubre 2025
+    // Campos críticos para generación de badges inteligentes
+    color: apiProduct.color || undefined,        // ✅ CRÍTICO: Para badges de color
+    medida: apiProduct.medida || undefined,      // ✅ CRÍTICO: Para badges de capacidad/tamaño
+    variants: apiProduct.variants || [],
+    specifications: apiProduct.specifications || {},
     // Campos de compatibilidad con versiones anteriores
     imgs: {
       previews: apiProduct.images || ['/images/products/placeholder.svg']

@@ -163,6 +163,7 @@ export type ExtendedProduct = LegacyProduct & {
   }
   name?: string
   brand?: string | null
+  description?: string
   discounted_price?: number | null
   images?: any
 }

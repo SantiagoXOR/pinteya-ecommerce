@@ -81,6 +81,28 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
       // Envío gratis automático para productos >= $15000
       freeShipping={finalPrice >= 15000}
       shippingText={badge === 'Envío gratis' ? 'Envío gratis' : undefined}
+      // Nuevas props para sistema de badges inteligentes
+      variants={productData.variants || []}
+      description={productData.description || ''}
+      badgeConfig={{
+        showCapacity: true,
+        showColor: true, // Activar para mostrar color de la BD
+        showFinish: false,
+        showMaterial: true,
+        showGrit: true,
+        showDimensions: true,
+        showWeight: false,
+        showBrand: false,
+        maxBadges: 3
+      }}
+      // Pasar datos estructurados si están disponibles
+      features={productData.features}
+      specifications={productData.specifications}
+      dimensions={productData.dimensions}
+      weight={productData.weight}
+      // Pasar datos directos de la BD
+      color={productData.color}
+      medida={productData.medida}
     />
   )
 }
