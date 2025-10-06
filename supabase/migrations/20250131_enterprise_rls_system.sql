@@ -1,6 +1,7 @@
 -- ===================================
 -- PINTEYA E-COMMERCE - ENTERPRISE RLS SYSTEM
--- Row Level Security Enterprise para integración con Clerk + Supabase
+-- Row Level Security Enterprise para integración con NextAuth.js + Supabase
+-- VERSIÓN CORREGIDA: Soluciona errores OLD en políticas RLS y funciones recordset
 -- ===================================
 
 -- =====================================================
@@ -19,6 +20,7 @@ RETURNS TABLE(
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
     RETURN QUERY
@@ -36,30 +38,21 @@ BEGIN
 END;
 $$;
 
--- Función para verificar si el usuario actual es admin
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-DECLARE
-    user_role VARCHAR(50);
-BEGIN
-    SELECT role INTO user_role FROM public.get_current_user_profile();
-    RETURN COALESCE(user_role = 'admin', false);
-END;
-$$;
+-- NOTA: Función is_admin() ya existe en migración anterior (20250201_security_functions_fix.sql)
+-- No redefinimos para evitar conflictos "function is not unique"
 
 -- Función para verificar si el usuario actual es moderador o admin
 CREATE OR REPLACE FUNCTION public.is_moderator_or_admin()
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     user_role VARCHAR(50);
 BEGIN
-    SELECT role INTO user_role FROM public.get_current_user_profile();
+    -- CORREGIDO: Manejo correcto del recordset con LIMIT 1
+    SELECT role INTO user_role FROM public.get_current_user_profile() LIMIT 1;
     RETURN COALESCE(user_role IN ('admin', 'moderator'), false);
 END;
 $$;
@@ -69,11 +62,13 @@ CREATE OR REPLACE FUNCTION public.has_permission(required_permission TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     user_permissions TEXT[];
 BEGIN
-    SELECT permissions INTO user_permissions FROM public.get_current_user_profile();
+    -- CORREGIDO: Manejo correcto del recordset con LIMIT 1
+    SELECT permissions INTO user_permissions FROM public.get_current_user_profile() LIMIT 1;
     RETURN COALESCE(required_permission = ANY(user_permissions), false);
 END;
 $$;
@@ -83,12 +78,14 @@ CREATE OR REPLACE FUNCTION public.has_any_permission(required_permissions TEXT[]
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     user_permissions TEXT[];
     perm TEXT;
 BEGIN
-    SELECT permissions INTO user_permissions FROM public.get_current_user_profile();
+    -- CORREGIDO: Manejo correcto del recordset con LIMIT 1
+    SELECT permissions INTO user_permissions FROM public.get_current_user_profile() LIMIT 1;
     
     FOREACH perm IN ARRAY required_permissions
     LOOP
@@ -106,11 +103,13 @@ CREATE OR REPLACE FUNCTION public.get_current_user_id()
 RETURNS UUID
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     user_id UUID;
 BEGIN
-    SELECT id INTO user_id FROM public.get_current_user_profile();
+    -- CORREGIDO: Manejo correcto del recordset con LIMIT 1
+    SELECT id INTO user_id FROM public.get_current_user_profile() LIMIT 1;
     RETURN user_id;
 END;
 $$;
@@ -128,14 +127,14 @@ CREATE POLICY "Users can view own profile" ON public.user_profiles
         supabase_user_id = auth.uid()
     );
 
--- Política: Los usuarios pueden actualizar su propio perfil (campos limitados)
+-- CORREGIDO: Política sin referencias OLD, usando subqueries
 CREATE POLICY "Users can update own profile" ON public.user_profiles
     FOR UPDATE USING (
         supabase_user_id = auth.uid()
     ) WITH CHECK (
         supabase_user_id = auth.uid()
-        AND role_id = OLD.role_id  -- No pueden cambiar su rol
-        AND is_active = OLD.is_active  -- No pueden cambiar su estado
+        AND role_id = (SELECT role_id FROM public.user_profiles WHERE id = user_profiles.id)
+        AND is_active = (SELECT is_active FROM public.user_profiles WHERE id = user_profiles.id)
     );
 
 -- Política: Admins y moderadores pueden ver todos los perfiles
@@ -379,7 +378,7 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_role_active ON public.user_profiles
 -- Índices para products
 CREATE INDEX IF NOT EXISTS idx_products_active ON public.products(is_active);
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category_id);
-CREATE INDEX IF NOT EXISTS idx_products_featured ON public.products(is_featured);
+-- NOTA: Columna is_featured no existe en la tabla products actual
 
 -- Índices para orders
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
@@ -395,7 +394,7 @@ CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON public.order_items(prod
 -- =====================================================
 
 COMMENT ON FUNCTION public.get_current_user_profile() IS 'Obtiene el perfil completo del usuario autenticado actual';
-COMMENT ON FUNCTION public.is_admin() IS 'Verifica si el usuario actual tiene rol de administrador';
+-- NOTA: is_admin() ya documentada en migración anterior
 COMMENT ON FUNCTION public.is_moderator_or_admin() IS 'Verifica si el usuario actual es moderador o administrador';
 COMMENT ON FUNCTION public.has_permission(TEXT) IS 'Verifica si el usuario actual tiene un permiso específico';
 COMMENT ON FUNCTION public.has_any_permission(TEXT[]) IS 'Verifica si el usuario actual tiene alguno de los permisos especificados';
@@ -407,7 +406,7 @@ COMMENT ON FUNCTION public.get_current_user_id() IS 'Obtiene el ID del perfil de
 
 -- Otorgar permisos de ejecución a las funciones
 GRANT EXECUTE ON FUNCTION public.get_current_user_profile() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+-- NOTA: is_admin() ya tiene permisos otorgados en migración anterior
 GRANT EXECUTE ON FUNCTION public.is_moderator_or_admin() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.has_permission(TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.has_any_permission(TEXT[]) TO authenticated;
