@@ -1,485 +1,1764 @@
-<testsuites id="" name="" tests="5" failures="5" skipped="0" errors="0" time="163.68613399999998">
-<testsuite name="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" timestamp="2025-10-06T15:54:34.073Z" hostname="ui-public" tests="1" failures="1" skipped="0" time="26.127" errors="0">
-<testcase name="BadgesVerification - Verificar badges inteligentes en product cards" classname="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" time="26.127">
-<failure message="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 BadgesVerification - Verificar badges inteligentes en product cards" type="FAILURE">
-<![CDATA[  [ui-public] › badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 › BadgesVerification - Verificar badges inteligentes en product cards 
+<testsuites id="" name="" tests="5" failures="5" skipped="0" errors="0" time="317.453614">
+<testsuite name="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" timestamp="2025-10-08T19:32:33.450Z" hostname="ui-public" tests="1" failures="1" skipped="0" time="61.922" errors="0">
+<testcase name="CheckoutCashOnDelivery_2025-10-08" classname="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" time="61.922">
+<failure message="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 CheckoutCashOnDelivery_2025-10-08" type="FAILURE">
+<![CDATA[  [ui-public] › checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 › CheckoutCashOnDelivery_2025-10-08 
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded.
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
-
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
     Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
+      - waiting for locator('[data-testid="commercial-product-card"]') to be visible
 
 
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
+      83 |
+      84 |     // Click on a product from search results
+    > 85 |     await page.waitForSelector('[data-testid="commercial-product-card"]', { timeout: 5000 });
+         |                ^
+      86 |     await page.click('[data-testid="commercial-product-card"]');
+      87 |
+      88 |     // Take screenshot after product selection
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:85:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public\test-failed-1.png
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public\video.webm
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public\error-context.md
+    Error Context: ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded.
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
-
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
     Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
+      - waiting for locator('[data-testid="commercial-product-card"]') to be visible
 
 
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
+      83 |
+      84 |     // Click on a product from search results
+    > 85 |     await page.waitForSelector('[data-testid="commercial-product-card"]', { timeout: 5000 });
+         |                ^
+      86 |     await page.click('[data-testid="commercial-product-card"]');
+      87 |
+      88 |     // Take screenshot after product selection
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:85:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\test-failed-1.png
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\video.webm
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\error-context.md
+    Error Context: ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\trace.zip
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public\test-failed-1.png]]
+<![CDATA[Waiting for products to load...
+Clicking add to cart button...
+Add to cart button clicked successfully
+Looking for cart button...
+Cart button not found: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public\video.webm]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m41[39m,
+      column: [33m26[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+    apiName: [32m'locator.waitFor'[39m,
+    params: {
+      selector: [32m'[data-testid="cart-icon"]'[39m,
+      strict: [33mtrue[39m,
+      omitReturnValue: [33mtrue[39m,
+      timeout: [33m5000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@42'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@42'[39m,
+      _title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759951965667[39m,
+    error: {
+      message: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m,
+      stack: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Looking for checkout button...
+Checkout button found, clicking...
+Checkout button not found: locator.click: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')[22m
+[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    29 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - element is outside of the viewport[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public\error-context.md]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m60[39m,
+      column: [33m34[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+    apiName: [32m'locator.click'[39m,
+    params: {
+      selector: [32m'button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")'[39m,
+      strict: [33mtrue[39m,
+      timeout: [33m15000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@46'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@46'[39m,
+      _title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759951980870[39m,
+    error: {
+      message: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    29 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m     - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - waiting 500ms\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    29 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m     - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public\video.webm]]
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\error-context.md]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public\error-context.md]]
+Waiting for products to load...
+Clicking add to cart button...
+Add to cart button clicked successfully
+Looking for cart button...
+Cart button not found: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-ui-public-retry1\trace.zip]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m41[39m,
+      column: [33m26[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+    apiName: [32m'locator.waitFor'[39m,
+    params: {
+      selector: [32m'[data-testid="cart-icon"]'[39m,
+      strict: [33mtrue[39m,
+      omitReturnValue: [33mtrue[39m,
+      timeout: [33m5000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@42'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@42'[39m,
+      _title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759951997182[39m,
+    error: {
+      message: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m,
+      stack: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Looking for checkout button...
+Checkout button found, clicking...
+Checkout button not found: locator.click: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')[22m
+[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - element is outside of the viewport[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m60[39m,
+      column: [33m34[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+    apiName: [32m'locator.click'[39m,
+    params: {
+      selector: [32m'button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")'[39m,
+      strict: [33mtrue[39m,
+      timeout: [33m15000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@46'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@46'[39m,
+      _title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952012476[39m,
+    error: {
+      message: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    28 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m     - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - scrolling into view if needed\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    28 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m     - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-ui-public-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" timestamp="2025-10-06T15:54:34.073Z" hostname="firefox" tests="1" failures="1" skipped="0" time="33.381" errors="0">
-<testcase name="BadgesVerification - Verificar badges inteligentes en product cards" classname="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" time="33.381">
-<failure message="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 BadgesVerification - Verificar badges inteligentes en product cards" type="FAILURE">
-<![CDATA[  [firefox] › badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 › BadgesVerification - Verificar badges inteligentes en product cards 
+<testsuite name="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" timestamp="2025-10-08T19:32:33.450Z" hostname="firefox" tests="1" failures="1" skipped="0" time="60.086" errors="0">
+<testcase name="CheckoutCashOnDelivery_2025-10-08" classname="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" time="60.086">
+<failure message="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 CheckoutCashOnDelivery_2025-10-08" type="FAILURE">
+<![CDATA[  [firefox] › checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 › CheckoutCashOnDelivery_2025-10-08 
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded while setting up "page".
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
-
-    Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-
-
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox\error-context.md
+    Error: browserContext.newPage: Test timeout of 30000ms exceeded.
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded while setting up "page".
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
+    Error: browserContext.newPage: Test timeout of 30000ms exceeded.
 
-    Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-
-
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\trace.zip
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-firefox-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-firefox-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox\video.webm]]
-
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox\error-context.md]]
-
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-firefox-retry1\trace.zip]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-firefox-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" timestamp="2025-10-06T15:54:34.073Z" hostname="webkit" tests="1" failures="1" skipped="0" time="33.173" errors="0">
-<testcase name="BadgesVerification - Verificar badges inteligentes en product cards" classname="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" time="33.173">
-<failure message="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 BadgesVerification - Verificar badges inteligentes en product cards" type="FAILURE">
-<![CDATA[  [webkit] › badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 › BadgesVerification - Verificar badges inteligentes en product cards 
+<testsuite name="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" timestamp="2025-10-08T19:32:33.450Z" hostname="webkit" tests="1" failures="1" skipped="0" time="61.92" errors="0">
+<testcase name="CheckoutCashOnDelivery_2025-10-08" classname="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" time="61.92">
+<failure message="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 CheckoutCashOnDelivery_2025-10-08" type="FAILURE">
+<![CDATA[  [webkit] › checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 › CheckoutCashOnDelivery_2025-10-08 
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded.
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
-
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
     Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
+      - waiting for locator('[data-testid="commercial-product-card"]') to be visible
 
 
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
+      83 |
+      84 |     // Click on a product from search results
+    > 85 |     await page.waitForSelector('[data-testid="commercial-product-card"]', { timeout: 5000 });
+         |                ^
+      86 |     await page.click('[data-testid="commercial-product-card"]');
+      87 |
+      88 |     // Take screenshot after product selection
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:85:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit\test-failed-1.png
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit\video.webm
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit\error-context.md
+    Error Context: ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded.
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
-
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
     Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
+      - waiting for locator('[data-testid="commercial-product-card"]') to be visible
 
 
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
+      83 |
+      84 |     // Click on a product from search results
+    > 85 |     await page.waitForSelector('[data-testid="commercial-product-card"]', { timeout: 5000 });
+         |                ^
+      86 |     await page.click('[data-testid="commercial-product-card"]');
+      87 |
+      88 |     // Take screenshot after product selection
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:85:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\test-failed-1.png
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\video.webm
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\error-context.md
+    Error Context: ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\trace.zip
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit\test-failed-1.png]]
+<![CDATA[Waiting for products to load...
+Clicking add to cart button...
+Add to cart button clicked successfully
+Looking for cart button...
+Cart button not found: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit\video.webm]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m41[39m,
+      column: [33m26[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+    apiName: [32m'locator.waitFor'[39m,
+    params: {
+      selector: [32m'[data-testid="cart-icon"]'[39m,
+      strict: [33mtrue[39m,
+      omitReturnValue: [33mtrue[39m,
+      timeout: [33m5000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@42'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@42'[39m,
+      _title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952095692[39m,
+    error: {
+      message: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m,
+      stack: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Looking for checkout button...
+Checkout button found, clicking...
+Checkout button not found: locator.click: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')[22m
+[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    8 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 500ms[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit\error-context.md]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m60[39m,
+      column: [33m34[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+    apiName: [32m'locator.click'[39m,
+    params: {
+      selector: [32m'button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")'[39m,
+      strict: [33mtrue[39m,
+      timeout: [33m15000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@46'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@46'[39m,
+      _title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952111252[39m,
+    error: {
+      message: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    8 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 500ms\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    8 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit\video.webm]]
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\error-context.md]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit\error-context.md]]
+Waiting for products to load...
+Clicking add to cart button...
+Add to cart button clicked successfully
+Looking for cart button...
+Cart button not found: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-webkit-retry1\trace.zip]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m41[39m,
+      column: [33m26[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+    apiName: [32m'locator.waitFor'[39m,
+    params: {
+      selector: [32m'[data-testid="cart-icon"]'[39m,
+      strict: [33mtrue[39m,
+      omitReturnValue: [33mtrue[39m,
+      timeout: [33m5000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@42'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@42'[39m,
+      _title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952127709[39m,
+    error: {
+      message: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m,
+      stack: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Looking for checkout button...
+Checkout button found, clicking...
+Checkout button not found: locator.click: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')[22m
+[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    7 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 500ms[22m
+
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m60[39m,
+      column: [33m34[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+    apiName: [32m'locator.click'[39m,
+    params: {
+      selector: [32m'button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")'[39m,
+      strict: [33mtrue[39m,
+      timeout: [33m15000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@46'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@46'[39m,
+      _title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952143521[39m,
+    error: {
+      message: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    7 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 500ms\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    7 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-webkit-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" timestamp="2025-10-06T15:54:34.073Z" hostname="Mobile Chrome" tests="1" failures="1" skipped="0" time="25.435" errors="0">
-<testcase name="BadgesVerification - Verificar badges inteligentes en product cards" classname="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" time="25.435">
-<failure message="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 BadgesVerification - Verificar badges inteligentes en product cards" type="FAILURE">
-<![CDATA[  [Mobile Chrome] › badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 › BadgesVerification - Verificar badges inteligentes en product cards 
+<testsuite name="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" timestamp="2025-10-08T19:32:33.450Z" hostname="Mobile Chrome" tests="1" failures="1" skipped="0" time="61.802" errors="0">
+<testcase name="CheckoutCashOnDelivery_2025-10-08" classname="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" time="61.802">
+<failure message="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 CheckoutCashOnDelivery_2025-10-08" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 › CheckoutCashOnDelivery_2025-10-08 
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded.
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
-
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
     Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
+      - waiting for locator('[data-testid="commercial-product-card"]') to be visible
 
 
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
+      83 |
+      84 |     // Click on a product from search results
+    > 85 |     await page.waitForSelector('[data-testid="commercial-product-card"]', { timeout: 5000 });
+         |                ^
+      86 |     await page.click('[data-testid="commercial-product-card"]');
+      87 |
+      88 |     // Take screenshot after product selection
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:85:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome\test-failed-1.png
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome\video.webm
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome\error-context.md
+    Error Context: ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded.
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
-
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
     Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
+      - waiting for locator('[data-testid="commercial-product-card"]') to be visible
 
 
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
+      83 |
+      84 |     // Click on a product from search results
+    > 85 |     await page.waitForSelector('[data-testid="commercial-product-card"]', { timeout: 5000 });
+         |                ^
+      86 |     await page.click('[data-testid="commercial-product-card"]');
+      87 |
+      88 |     // Take screenshot after product selection
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:85:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\test-failed-1.png
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\video.webm
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\error-context.md
+    Error Context: ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\trace.zip
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome\test-failed-1.png]]
+<![CDATA[Waiting for products to load...
+Clicking add to cart button...
+Add to cart button clicked successfully
+Looking for cart button...
+Cart button not found: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome\video.webm]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m41[39m,
+      column: [33m26[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+    apiName: [32m'locator.waitFor'[39m,
+    params: {
+      selector: [32m'[data-testid="cart-icon"]'[39m,
+      strict: [33mtrue[39m,
+      omitReturnValue: [33mtrue[39m,
+      timeout: [33m5000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@42'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@42'[39m,
+      _title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952160047[39m,
+    error: {
+      message: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m,
+      stack: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Looking for checkout button...
+Checkout button found, clicking...
+Checkout button not found: locator.click: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')[22m
+[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    29 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - element is outside of the viewport[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome\error-context.md]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m60[39m,
+      column: [33m34[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+    apiName: [32m'locator.click'[39m,
+    params: {
+      selector: [32m'button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")'[39m,
+      strict: [33mtrue[39m,
+      timeout: [33m15000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@46'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@46'[39m,
+      _title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952175361[39m,
+    error: {
+      message: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    29 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m     - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - waiting 500ms\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    29 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m     - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome\video.webm]]
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\error-context.md]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome\error-context.md]]
+Waiting for products to load...
+Clicking add to cart button...
+Add to cart button clicked successfully
+Looking for cart button...
+Cart button not found: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Chrome-retry1\trace.zip]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m41[39m,
+      column: [33m26[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+    apiName: [32m'locator.waitFor'[39m,
+    params: {
+      selector: [32m'[data-testid="cart-icon"]'[39m,
+      strict: [33mtrue[39m,
+      omitReturnValue: [33mtrue[39m,
+      timeout: [33m5000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@42'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@42'[39m,
+      _title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952192496[39m,
+    error: {
+      message: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m,
+      stack: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Looking for checkout button...
+Checkout button found, clicking...
+Checkout button not found: locator.click: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')[22m
+[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    29 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - element is outside of the viewport[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m60[39m,
+      column: [33m34[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+    apiName: [32m'locator.click'[39m,
+    params: {
+      selector: [32m'button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")'[39m,
+      strict: [33mtrue[39m,
+      timeout: [33m15000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@46'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@46'[39m,
+      _title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952207873[39m,
+    error: {
+      message: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    29 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m     - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - waiting 500ms\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    29 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m     - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m       - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Chrome-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" timestamp="2025-10-06T15:54:34.073Z" hostname="Mobile Safari" tests="1" failures="1" skipped="0" time="25.122" errors="0">
-<testcase name="BadgesVerification - Verificar badges inteligentes en product cards" classname="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts" time="25.122">
-<failure message="badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 BadgesVerification - Verificar badges inteligentes en product cards" type="FAILURE">
-<![CDATA[  [Mobile Safari] › badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:5:5 › BadgesVerification - Verificar badges inteligentes en product cards 
+<testsuite name="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" timestamp="2025-10-08T19:32:33.450Z" hostname="Mobile Safari" tests="1" failures="1" skipped="0" time="52.648" errors="0">
+<testcase name="CheckoutCashOnDelivery_2025-10-08" classname="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts" time="52.648">
+<failure message="checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 CheckoutCashOnDelivery_2025-10-08" type="FAILURE">
+<![CDATA[  [Mobile Safari] › checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:5:5 › CheckoutCashOnDelivery_2025-10-08 
 
-    Error: expect(locator).toBeVisible() failed
+    Test timeout of 30000ms exceeded.
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
-
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
     Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
+      - waiting for locator('[data-testid="commercial-product-card"]') to be visible
 
 
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
+      83 |
+      84 |     // Click on a product from search results
+    > 85 |     await page.waitForSelector('[data-testid="commercial-product-card"]', { timeout: 5000 });
+         |                ^
+      86 |     await page.click('[data-testid="commercial-product-card"]');
+      87 |
+      88 |     // Take screenshot after product selection
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:85:16
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari\test-failed-1.png
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari\video.webm
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari\error-context.md
+    Error Context: ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(locator).toBeVisible() failed
+    Error: page.screenshot: Target page, context or browser has been closed
 
-    Locator:  locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-    Expected: visible
-    Received: <element(s) not found>
-    Timeout:  10000ms
+      65 |
+      66 |     // Take screenshot
+    > 67 |     await page.screenshot({ path: 'after_button_click.png' });
+         |                ^
+      68 |
+      69 |     // Navigate to search page to find more products
+      70 |     await page.goto('http://localhost:3000/search');
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:67:16
 
-    Call log:
-      - Expect "toBeVisible" with timeout 10000ms
-      - waiting for locator('[data-testid="product-card"], .product-card, [class*="product-card"]').first()
-
-
-      15 |     
-      16 |     // Verificar que hay product cards en la página
-    > 17 |     await expect(productCards.first()).toBeVisible({ timeout: 10000 });
-         |                                        ^
-      18 |     
-      19 |     // Contar cuántas product cards hay
-      20 |     const cardCount = await productCards.count();
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\badgesverification_5edb42f2-d9a0-4250-aec6-f69dbd6d15f5.spec.ts:17:40
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\test-failed-1.png
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\trace.zip
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari\test-failed-1.png]]
+<![CDATA[Waiting for products to load...
+Clicking add to cart button...
+Add to cart button clicked successfully
+Looking for cart button...
+Cart button not found: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari\video.webm]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m41[39m,
+      column: [33m26[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+    apiName: [32m'locator.waitFor'[39m,
+    params: {
+      selector: [32m'[data-testid="cart-icon"]'[39m,
+      strict: [33mtrue[39m,
+      omitReturnValue: [33mtrue[39m,
+      timeout: [33m5000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@42'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@42'[39m,
+      _title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952225977[39m,
+    error: {
+      message: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m,
+      stack: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Looking for checkout button...
+Checkout button found, clicking...
+Checkout button not found: locator.click: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')[22m
+[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    9 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 500ms[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari\error-context.md]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m60[39m,
+      column: [33m34[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+    apiName: [32m'locator.click'[39m,
+    params: {
+      selector: [32m'button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")'[39m,
+      strict: [33mtrue[39m,
+      timeout: [33m15000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@46'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@46'[39m,
+      _title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952241337[39m,
+    error: {
+      message: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    9 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 500ms\x1B[22m\n'[39m,
+      stack: [32m'TimeoutError: locator.click: Timeout 15000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    9 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari\video.webm]]
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\error-context.md]]
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari\error-context.md]]
+Waiting for products to load...
+Clicking add to cart button...
+Add to cart button clicked successfully
+Looking for cart button...
+Cart button not found: locator.waitFor: Timeout 5000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible[22m
 
-[[ATTACHMENT|..\test-results\badgesverification_5edb42f-13b60-teligentes-en-product-cards-Mobile-Safari-retry1\trace.zip]]
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26 {
+  name: [32m'TimeoutError'[39m,
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m41[39m,
+      column: [33m26[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+    apiName: [32m'locator.waitFor'[39m,
+    params: {
+      selector: [32m'[data-testid="cart-icon"]'[39m,
+      strict: [33mtrue[39m,
+      omitReturnValue: [33mtrue[39m,
+      timeout: [33m5000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@42'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@42'[39m,
+      _title: [32m`Wait for selector locator('[data-testid="cart-icon"]')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952256993[39m,
+    error: {
+      message: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m,
+      stack: [32m'TimeoutError: locator.waitFor: Timeout 5000ms exceeded.\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('[data-testid="cart-icon"]') to be visible\x1B[22m\n`[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:41:26'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Looking for checkout button...
+Checkout button found, clicking...
+Checkout button not found: locator.click: Target page, context or browser has been closed
+Call log:
+[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')[22m
+[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    6 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - element is outside of the viewport[22m
+[2m    - retrying click action[22m
+[2m      - waiting 500ms[22m
+
+    at [90mC:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\[39mtests\e2e\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34 {
+  [[32mSymbol(step)[39m]: {
+    location: {
+      file: [32m'C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts'[39m,
+      line: [33m60[39m,
+      column: [33m34[39m
+    },
+    category: [32m'pw:api'[39m,
+    title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+    apiName: [32m'locator.click'[39m,
+    params: {
+      selector: [32m'button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")'[39m,
+      strict: [33mtrue[39m,
+      timeout: [33m15000[39m
+    },
+    group: [90mundefined[39m,
+    stepId: [32m'pw:api@46'[39m,
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    attachmentIndices: [],
+    info: TestStepInfoImpl {
+      annotations: [],
+      _testInfo: [36m[TestInfoImpl][39m,
+      _stepId: [32m'pw:api@46'[39m,
+      _title: [32m`Click locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')`[39m,
+      _parentStep: [90mundefined[39m,
+      skip: [36m[Function (anonymous)][39m
+    },
+    recoverFromStepError: [36m[AsyncFunction: recoverFromStepError][39m,
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1759952267051[39m,
+    error: {
+      message: [32m'Error: locator.click: Target page, context or browser has been closed\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    6 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 500ms\x1B[22m\n'[39m,
+      stack: [32m'Error: locator.click: Target page, context or browser has been closed\n'[39m +
+        [32m'Call log:\n'[39m +
+        [32m`\x1B[2m  - waiting for locator('button:has-text("Finalizar Compra"), [data-testid="submit-checkout-btn"], button:has-text("Checkout"), button:has-text("Finalizar")')\x1B[22m\n`[39m +
+        [32m'\x1B[2m    - locator resolved to <button data-testid="checkout-btn" class="w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">Finalizar Compra</button>\x1B[22m\n'[39m +
+        [32m'\x1B[2m  - attempting click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - waiting 20ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    2 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 100ms\x1B[22m\n'[39m +
+        [32m'\x1B[2m    6 × waiting for element to be visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is visible, enabled and stable\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - scrolling into view if needed\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - done scrolling\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - element is outside of the viewport\x1B[22m\n'[39m +
+        [32m'\x1B[2m    - retrying click action\x1B[22m\n'[39m +
+        [32m'\x1B[2m      - waiting 500ms\x1B[22m\n'[39m +
+        [32m'\n'[39m +
+        [32m'    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\checkoutcashondelivery_2eea13f9-54ff-4930-9c10-cfc953abf678.spec.ts:60:34'[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\checkoutcashondelivery_2ee-5f9eb-utCashOnDelivery-2025-10-08-Mobile-Safari-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>

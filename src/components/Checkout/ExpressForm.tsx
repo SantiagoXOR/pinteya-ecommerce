@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/core/utils'
 import { useMobileCheckoutNavigation } from '@/hooks/useMobileCheckoutNavigation'
+
 import {
   Mail,
   Phone,
@@ -90,6 +91,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
             <Input
               id='email'
               type='email'
+              data-testid='email-input'
               value={formData.email}
               onChange={e => onFieldChange('email', e.target.value)}
               onFocus={handleFieldFocus}
@@ -134,6 +136,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
               <Input
                 id='firstName'
                 type='text'
+                data-testid='first-name-input'
                 value={formData.firstName}
                 onChange={e => onFieldChange('firstName', e.target.value)}
                 onFocus={handleFieldFocus}
@@ -176,6 +179,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
               <Input
                 id='lastName'
                 type='text'
+                data-testid='last-name-input'
                 value={formData.lastName}
                 onChange={e => onFieldChange('lastName', e.target.value)}
                 onFocus={handleFieldFocus}
@@ -219,6 +223,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
             <Input
               id='dni'
               type='text'
+              data-testid='dni-input'
               value={formData.dni}
               onChange={e => onFieldChange('dni', e.target.value)}
               onFocus={handleFieldFocus}
@@ -264,6 +269,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
             <Input
               id='phone'
               type='tel'
+              data-testid='phone-input'
               value={formData.phone}
               onChange={e => onFieldChange('phone', e.target.value)}
               onFocus={handleFieldFocus}
@@ -306,6 +312,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
             <Input
               id='streetAddress'
               type='text'
+              data-testid='address-input'
               value={formData.streetAddress}
               onChange={e => onFieldChange('streetAddress', e.target.value)}
               onFocus={handleFieldFocus}
@@ -365,76 +372,6 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
           <p className='text-xs text-gray-500'>
             Incluye detalles como barrio, características de la casa, horarios disponibles, etc.
           </p>
-        </div>
-
-        {/* Método de Pago Simplificado */}
-        <div className='space-y-3'>
-          <Label className='text-sm font-medium text-gray-700 flex items-center gap-2'>
-            <CreditCard className='w-4 h-4' />
-            Método de Pago
-          </Label>
-
-          <div className='space-y-2'>
-            <button
-              type='button'
-              onClick={() => onPaymentMethodChange?.('mercadopago')}
-              className={`w-full p-3 rounded-lg border-2 transition-all ${
-                paymentMethod === 'mercadopago'
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 bg-white'
-              }`}
-            >
-              <div className='flex items-center gap-3'>
-                <div className='w-6 h-6 bg-blue-500 rounded flex items-center justify-center'>
-                  <span className='text-white font-bold text-xs'>MP</span>
-                </div>
-                <span className='font-medium'>MercadoPago</span>
-                {paymentMethod === 'mercadopago' && (
-                  <CheckCircle className='w-5 h-5 text-blue-500 ml-auto' />
-                )}
-              </div>
-            </button>
-
-            <button
-              type='button'
-              onClick={() => onPaymentMethodChange?.('bank')}
-              className={`w-full p-3 rounded-lg border-2 transition-all ${
-                paymentMethod === 'bank'
-                  ? 'border-green-500 bg-green-50'
-                  : 'border-gray-200 bg-white'
-              }`}
-            >
-              <div className='flex items-center gap-3'>
-                <div className='w-6 h-6 bg-green-500 rounded flex items-center justify-center'>
-                  <span className='text-white font-bold text-xs'>$</span>
-                </div>
-                <span className='font-medium'>Transferencia (10% desc.)</span>
-                {paymentMethod === 'bank' && (
-                  <CheckCircle className='w-5 h-5 text-green-500 ml-auto' />
-                )}
-              </div>
-            </button>
-
-            <button
-              type='button'
-              onClick={() => onPaymentMethodChange?.('cash')}
-              className={`w-full p-3 rounded-lg border-2 transition-all ${
-                paymentMethod === 'cash'
-                  ? 'border-orange-500 bg-orange-50'
-                  : 'border-gray-200 bg-white'
-              }`}
-            >
-              <div className='flex items-center gap-3'>
-                <div className='w-6 h-6 bg-orange-500 rounded flex items-center justify-center'>
-                  <span className='text-white font-bold text-xs'>💵</span>
-                </div>
-                <span className='font-medium'>Pago al recibir el producto</span>
-                {paymentMethod === 'cash' && (
-                  <CheckCircle className='w-5 h-5 text-orange-500 ml-auto' />
-                )}
-              </div>
-            </button>
-          </div>
         </div>
       </div>
     </form>

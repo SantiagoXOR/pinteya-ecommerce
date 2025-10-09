@@ -31,7 +31,7 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
   // En mobile siempre mostrar el botón (incluso sin items para consistencia UX)
 
   return (
-    <div className='fixed bottom-8 left-1/2 transform -translate-x-1/2 z-bottom-nav sm:bottom-8 sm:right-8 sm:left-auto sm:transform-none'>
+    <div className='fixed bottom-8 left-1/2 transform -translate-x-1/2 z-maximum sm:bottom-8 sm:right-8 sm:left-auto sm:transform-none'>
       {/* Liquid Glass Background Effect */}
       <div className='absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/80 via-yellow-300/60 to-yellow-500/80 backdrop-blur-xl border border-white/20 shadow-2xl'></div>
       <div className='absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent'></div>

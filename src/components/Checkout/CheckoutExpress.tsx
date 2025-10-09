@@ -21,8 +21,9 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import ExpressForm from './ExpressForm'
+import PaymentMethodSelector from './PaymentMethodSelector'
 import MercadoPagoWallet, { MercadoPagoWalletFallback } from './MercadoPagoWallet'
-import { CartSummary } from '@/components/ui/cart-summary'
+import { SimplifiedOrderSummary } from '@/components/ui/simplified-order-summary'
 
 interface CheckoutExpressProps {
   onBackToCart?: () => void
@@ -50,6 +51,8 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
     updateBillingData,
     validateExpressForm,
     processExpressCheckout,
+    processCashOnDelivery,
+    cashOrderData,
     handleWalletReady,
     handleWalletError,
     handleWalletSubmit,
@@ -137,14 +140,20 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isFormValid) {
-      return
-    }
+    
+    if (!isFormValid || isLoading) return
 
     try {
-      await processExpressCheckout()
+      if (formData.paymentMethod === 'cash') {
+        // Procesar pago contra entrega
+        await processCashOnDelivery()
+      } else {
+        // Procesar pago con MercadoPago (flujo existente)
+        await processExpressCheckout()
+      }
     } catch (error) {
-      console.error('Error en checkout:', error)
+      console.error('Error en handleSubmit:', error)
+      // Los errores ya son manejados por los hooks individuales
     }
   }
 
@@ -261,6 +270,51 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
       )
     }
 
+    // Pantalla de éxito para pago contra entrega
+    if (step === 'cash_success') {
+      const { cashOrderData } = useCheckout()
+      
+      if (cashOrderData) {
+        // Redirigir a la página de éxito con los datos del pedido
+        const params = new URLSearchParams({
+          orderId: cashOrderData.orderId,
+          total: cashOrderData.total.toString(),
+          whatsappUrl: cashOrderData.whatsappUrl,
+          customerName: cashOrderData.customerName,
+          phone: cashOrderData.phone
+        })
+        
+        router.push(`/checkout/cash-success?${params.toString()}`)
+        return null
+      }
+      
+      return (
+        <section className='min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4'>
+          <Card className='w-full max-w-md shadow-2xl'>
+            <CardContent className='p-8 text-center'>
+              <div className='space-y-6'>
+                <div className='w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center'>
+                  <CheckCircle className='w-8 h-8 text-green-600' />
+                </div>
+                <div>
+                  <h2 className='text-2xl font-bold text-gray-900 mb-2'>¡Pedido confirmado!</h2>
+                  <p className='text-gray-600'>
+                    Tu pedido ha sido registrado exitosamente. Te contactaremos por WhatsApp para coordinar la entrega.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => router.push('/')}
+                  className='w-full bg-green-600 hover:bg-green-700 text-white'
+                >
+                  Continuar comprando
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      )
+    }
+
     // ✅ STEP 'PAYMENT' ELIMINADO COMPLETAMENTE
     // Ahora el hook va directamente de 'processing' a 'redirect'
     // Esto evita completamente el problema de hooks con MercadoPagoWallet
@@ -271,107 +325,10 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
         <div
           ref={containerRef}
           className={cn(
-            'max-w-md mx-auto px-4 py-6 transition-all duration-200',
+            'max-w-md mx-auto px-4 py-4 transition-all duration-200',
             isInteracting && isMobile && 'scale-[0.99] opacity-95'
           )}
         >
-          {/* Header simplificado para mobile - Mejorado */}
-          <div className='mb-8'>
-            <div className='flex items-center justify-between mb-6'>
-              <Button
-                type='button'
-                variant='ghost'
-                size='sm'
-                onClick={() => {
-                  triggerHapticFeedback('light')
-                  goBack()
-                }}
-                className={cn(
-                  'flex items-center gap-2 p-3 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all',
-                  isMobile && 'active:scale-95 hover:bg-white/90'
-                )}
-              >
-                <ArrowLeft className='w-5 h-5' />
-              </Button>
-              <div className='text-center'>
-                <h1 className='text-xl font-bold text-gray-900'>Finalizar Compra</h1>
-                <p className='text-sm text-gray-600 mt-1'>Paso final para completar tu pedido</p>
-              </div>
-              <div className='w-11' /> {/* Spacer */}
-            </div>
-            <div className='bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm'>
-              <div className='flex items-center justify-between mb-2'>
-                <span className='text-sm font-medium text-gray-700'>Progreso</span>
-                <span className='text-sm text-gray-600'>{getProgressValue()}%</span>
-              </div>
-              <Progress value={getProgressValue()} className='h-3' />
-            </div>
-          </div>
-
-          {/* Resumen del carrito colapsible - Mejorado */}
-          <Card className='mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-0'>
-            <CardContent className='p-0'>
-              <button
-                type='button'
-                onClick={() => {
-                  triggerHapticFeedback('medium')
-                  setShowCartSummary(!showCartSummary)
-                }}
-                className={cn(
-                  'w-full p-6 flex items-center justify-between text-left transition-all rounded-lg',
-                  isMobile && 'active:scale-[0.98] touch-manipulation hover:bg-gray-50/50'
-                )}
-              >
-                <div className='flex items-center gap-4'>
-                  <div className='w-12 h-12 rounded-full bg-green-100 flex items-center justify-center'>
-                    <ShoppingCart className='w-6 h-6 text-green-600' />
-                  </div>
-                  <div>
-                    <span className='font-semibold text-gray-900 block text-lg'>
-                      Resumen del Pedido
-                    </span>
-                    <span className='text-sm text-gray-600'>
-                      {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
-                    </span>
-                  </div>
-                </div>
-                <div className='flex items-center gap-4'>
-                  <div className='text-right'>
-                    <span className='font-bold text-2xl text-green-600'>
-                      ${finalTotal ? finalTotal.toLocaleString() : '0'}
-                    </span>
-                    <div className='text-xs text-gray-500 uppercase tracking-wide'>Total</div>
-                  </div>
-                  <div className='w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center'>
-                    {showCartSummary ? (
-                      <ChevronUp className='w-5 h-5 text-gray-600' />
-                    ) : (
-                      <ChevronDown className='w-5 h-5 text-gray-600' />
-                    )}
-                  </div>
-                </div>
-              </button>
-              {showCartSummary && (
-                <div className='px-6 pb-6'>
-                  <div className='border-t pt-6'>
-                    <CartSummary
-                      cartItems={cartItems}
-                      totalPrice={totalPrice}
-                      shippingCost={shippingCost}
-                      discount={discount}
-                      finalTotal={finalTotal}
-                      shippingMethod='free'
-                      appliedCoupon={appliedCoupon}
-                      variant='mobile'
-                      showProductCards={false}
-                      productCardContext='checkout'
-                      initiallyCollapsed={isMobile}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           {/* Errores generales */}
           {errors.general && (
@@ -399,8 +356,42 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
             </Card>
           )}
 
+          {/* Selector de Método de Pago */}
+          <div className='mb-6'>
+            <div className='flex items-center justify-between mb-4 px-4'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => {
+                  if (onBackToCart) {
+                    onBackToCart()
+                  } else {
+                    router.push('/cart')
+                  }
+                }}
+                className={cn(
+                  'flex items-center gap-2 p-3 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all',
+                  isMobile && 'active:scale-95 hover:bg-white/90'
+                )}
+              >
+                <ArrowLeft className='w-5 h-5' />
+              </Button>
+              <div className="flex-1 text-center">
+                <h3 className="text-xl font-bold text-gray-900">Método de Pago</h3>
+                <p className="text-base text-gray-600">Elegí cómo querés pagar</p>
+              </div>
+              <div className='w-11' /> {/* Spacer */}
+            </div>
+            <PaymentMethodSelector
+              selectedMethod={formData.paymentMethod}
+              onMethodChange={method =>
+                updateFormData({ paymentMethod: method as 'mercadopago' | 'cash' })
+              }
+            />
+          </div>
+
           {/* Formulario simplificado */}
-          <Card className='mb-6'>
+          <Card className='mb-6' data-testid='checkout-form'>
             <CardContent className='p-4'>
               <ExpressForm
                 formData={{
@@ -418,14 +409,82 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
                 isProcessing={isLoading}
                 paymentMethod={formData.paymentMethod}
                 onPaymentMethodChange={method =>
-                  updateFormData({ paymentMethod: method as 'mercadopago' | 'bank' | 'cash' })
+                  updateFormData({ paymentMethod: method as 'mercadopago' | 'cash' })
                 }
                 isFormValid={isFormValid}
               />
             </CardContent>
           </Card>
 
-          {/* Botón de finalizar compra - Optimizado para móviles */}
+          {/* Resumen del carrito colapsible - Movido antes del botón de pagar */}
+          <Card className='mb-6 bg-white/90 backdrop-blur-sm shadow-lg border-0'>
+            <CardContent className='p-0'>
+              <button
+                type='button'
+                data-testid='cart-summary-toggle'
+                onClick={() => {
+                  triggerHapticFeedback('medium')
+                  setShowCartSummary(!showCartSummary)
+                }}
+                className={cn(
+                  'w-full p-6 flex items-center justify-between text-left transition-all rounded-lg',
+                  isMobile && 'active:scale-[0.98] touch-manipulation hover:bg-gray-50/50'
+                )}
+              >
+                <div className='flex items-center gap-4'>
+                  <div className='w-12 h-12 rounded-full bg-green-100 flex items-center justify-center'>
+                    <ShoppingCart className='w-6 h-6 text-green-600' />
+                  </div>
+                  <div>
+                    <span className='font-semibold text-gray-900 block text-lg'>
+                      Resumen del Pedido
+                    </span>
+                    <span className='text-sm text-gray-600' data-testid='cart-items-count'>
+                      {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
+                    </span>
+                  </div>
+                </div>
+                <div className='flex items-center gap-4'>
+                  <div className='text-right'>
+                    <span className='font-bold text-2xl text-green-600' data-testid='final-total'>
+                      ${finalTotal ? finalTotal.toLocaleString() : '0'}
+                    </span>
+                    <div className='text-xs text-gray-500 uppercase tracking-wide'>Total</div>
+                  </div>
+                  <div className='w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center'>
+                    {showCartSummary ? (
+                      <ChevronUp className='w-5 h-5 text-gray-600' />
+                    ) : (
+                      <ChevronDown className='w-5 h-5 text-gray-600' />
+                    )}
+                  </div>
+                </div>
+              </button>
+              {showCartSummary && (
+                <div className='px-6 pb-6' data-testid='cart-summary-details'>
+                  <div className='border-t pt-6'>
+                    <SimplifiedOrderSummary
+                      items={cartItems.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        price: item.price,
+                        discountedPrice: item.discountedPrice,
+                        quantity: item.quantity,
+                        image: item.image,
+                        imgs: item.imgs
+                      }))}
+                      subtotal={totalPrice}
+                      shipping={shippingCost}
+                      total={finalTotal}
+                      freeShippingThreshold={50000}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Botón de finalizar compra - Optimizado para móviles y sin leyendas de seguridad */}
           <div className='sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-4 -mx-4 px-4'>
             <Button
               type='button'
@@ -457,35 +516,10 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
                     <div className='text-lg font-bold'>
                       Pagar ${finalTotal ? finalTotal.toLocaleString() : '0'}
                     </div>
-                    <div className='text-xs opacity-90'>Pago seguro con MercadoPago</div>
                   </div>
                 </div>
               )}
             </Button>
-
-            {/* Indicadores de seguridad */}
-            <div className='flex items-center justify-center gap-4 mt-3 text-xs text-gray-500'>
-              <div className='flex items-center gap-1'>
-                <Shield className='w-3 h-3' />
-                <span>Pago Seguro</span>
-              </div>
-              <div className='flex items-center gap-1'>
-                <CheckCircle className='w-3 h-3' />
-                <span>SSL Verificado</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Indicadores de seguridad */}
-          <div className='flex items-center justify-center gap-4 text-sm text-gray-600 mb-4'>
-            <div className='flex items-center gap-1'>
-              <Shield className='w-4 h-4' />
-              <span>Compra Segura</span>
-            </div>
-            <div className='flex items-center gap-1'>
-              <Truck className='w-4 h-4' />
-              <span>Envío Gratis</span>
-            </div>
           </div>
         </div>
       </section>

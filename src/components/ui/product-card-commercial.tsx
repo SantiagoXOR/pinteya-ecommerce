@@ -139,6 +139,33 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [showShopDetailModal, setShowShopDetailModal] = React.useState(false)
     const [imageError, setImageError] = React.useState(false)
     const [currentImageSrc, setCurrentImageSrc] = React.useState(image || '/images/products/placeholder.svg')
+    // Ref para ignorar clics justo después de cerrar el modal (evita re-apertura por burbujeo)
+    const ignoreClicksUntilRef = React.useRef<number>(0)
+
+    // Handler para el modal - DEBE estar en el nivel superior del componente
+    const handleModalOpenChange = React.useCallback((open: boolean) => {
+      console.log('🔄 [CommercialProductCard] onOpenChange llamado:', { 
+        open, 
+        currentState: showShopDetailModal,
+        productTitle: title 
+      })
+      
+      console.log('📝 [CommercialProductCard] Estado va a cambiar de', showShopDetailModal, 'a', open)
+      
+      // Forzar actualización del estado usando función callback
+      setShowShopDetailModal(prevState => {
+        console.log('🔧 [CommercialProductCard] Estado anterior:', prevState, ', nuevo:', open)
+        return open
+      })
+      
+      // Si el modal se está cerrando, ignorar clics en el card por un breve período
+      if (!open) {
+        ignoreClicksUntilRef.current = Date.now() + 300 // 300ms de ventana anti-click fantasma
+        console.log('🛡️ [CommercialProductCard] Activando guardia anti-click fantasma hasta:', ignoreClicksUntilRef.current)
+      }
+
+      console.log('✅ [CommercialProductCard] setShowShopDetailModal llamado con:', open)
+    }, [showShopDetailModal, title])
 
     // ============================================================================
     // SISTEMA DE BADGES INTELIGENTE
@@ -258,6 +285,13 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     // Función para manejar el clic en el card
     const handleCardClick = React.useCallback(
       (e: React.MouseEvent) => {
+        // Ignorar clics si estamos dentro de la ventana anti-click post-cierre
+        if (Date.now() < ignoreClicksUntilRef.current) {
+          e.preventDefault()
+          e.stopPropagation()
+          console.log('🛑 [CommercialProductCard] Click ignorado por guardia anti-click fantasma')
+          return
+        }
         // Evitar que se abra el modal si se hace clic en el botón de agregar al carrito
         if ((e.target as HTMLElement).closest('[data-testid="add-to-cart"]')) {
           return
@@ -285,13 +319,13 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
         try {
           await onAddToCart()
-          // También abrir el modal después de agregar al carrito
-          handleOpenModal()
+          // NO abrir el modal después de agregar al carrito
+          // El modal debe cerrarse después de agregar al carrito
         } catch (error) {
           console.error('Error al agregar al carrito:', error)
         }
       },
-      [onAddToCart, isAddingToCart, stock, showCartAnimation, handleOpenModal]
+      [onAddToCart, isAddingToCart, stock, showCartAnimation]
     )
 
     // Calcular si mostrar envío gratis automáticamente
@@ -535,36 +569,34 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
         {children}
 
-        {/* Shop Detail Modal */}
-        {showShopDetailModal && (
-          <ShopDetailModal
-            open={showShopDetailModal}
-            onOpenChange={setShowShopDetailModal}
-            product={{
-              id: String(productId || ''),
-              name: title || '',
-              price: price || 0,
-              originalPrice,
-              discount,
-              brand: brand || '',
-              category: '',
-              description: '',
-              images: image ? [image] : [],
-              stock: stock || 0,
-              isNew: isNew,
-              rating: 0,
-              reviews: 0,
-              colors: undefined, // Usará los colores por defecto del sistema
-              capacities: [],
-            }}
-            onAddToCart={(productData, variants) => {
-              console.log('Agregando al carrito:', productData, variants)
-              if (onAddToCart) {
-                onAddToCart()
-              }
-            }}
-          />
-        )}
+        {/* Shop Detail Modal: siempre montado, controlado por la prop open */}
+        <ShopDetailModal
+          open={showShopDetailModal}
+          onOpenChange={handleModalOpenChange}
+          product={{
+            id: String(productId || ''),
+            name: title || '',
+            price: price || 0,
+            originalPrice,
+            discount,
+            brand: brand || '',
+            category: '',
+            description: '',
+            images: image ? [image] : [],
+            stock: stock || 0,
+            isNew: isNew,
+            rating: 0,
+            reviews: 0,
+            colors: undefined, // Usará los colores por defecto del sistema
+            capacities: [],
+          }}
+          onAddToCart={(productData, variants) => {
+            console.log('Agregando al carrito:', productData, variants)
+            if (onAddToCart) {
+              onAddToCart()
+            }
+          }}
+        />
       </div>
     )
   }

@@ -24,7 +24,7 @@ const initialFormData: CheckoutFormData = {
   shipping: {
     differentAddress: false,
   },
-  paymentMethod: 'mercadopago',
+  paymentMethod: 'cash',
   shippingMethod: 'free',
   couponCode: '',
 }

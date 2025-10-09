@@ -11,7 +11,7 @@ import { CreatePreferencePayload } from '@/types/checkout'
 import { ApiResponse } from '@/types/api'
 import { createPaymentPreference } from '@/lib/integrations/mercadopago'
 import type { MercadoPagoItem } from '@/lib/integrations/mercadopago'
-import { auth } from '@/lib/auth/config'
+import { auth } from '@/auth'
 import { CHECKOUT_CONSTANTS, VALIDATION_CONSTANTS } from '@/constants/shop'
 import { z } from 'zod'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
@@ -185,43 +185,47 @@ export async function POST(request: NextRequest) {
     const shippingCost = orderData.shipping?.cost || 0
 
     // ===================================
-    // OBTENER USUARIO AUTENTICADO CON CLERK
+    // OBTENER USUARIO AUTENTICADO CON NEXTAUTH
     // ===================================
     let userId: string | null = null
     let userEmail: string | null = null
 
     try {
-      // Intentar obtener usuario autenticado de Clerk
-      const clerkUser = await currentUser()
-      if (clerkUser) {
-        userId = clerkUser.id
-        userEmail = clerkUser.emailAddresses?.[0]?.emailAddress || null
+      // Intentar obtener usuario autenticado de NextAuth
+      const session = await auth()
+      if (session?.user) {
+        userEmail = session.user.email || null
 
-        // Verificar si el usuario existe en nuestra base de datos
+        // Verificar si el usuario existe en user_profiles
         const { data: existingUser, error: userError } = await supabaseAdmin
-          .from('users')
-          .select('id, clerk_id')
-          .eq('clerk_id', clerkUser.id)
+          .from('user_profiles')
+          .select('id, email')
+          .eq('email', userEmail)
           .single()
 
         if (userError && userError.code !== 'PGRST116') {
-          console.error('Error checking user in database:', userError)
+          console.error('Error checking user in user_profiles:', userError)
         }
 
-        // Si el usuario no existe en nuestra DB, crearlo
+        // Si el usuario no existe en user_profiles, crearlo
         if (!existingUser) {
           const { data: newUser, error: createUserError } = await supabaseAdmin
-            .from('users')
+            .from('user_profiles')
             .insert({
-              clerk_id: clerkUser.id,
+              supabase_user_id: session.user.id,
               email: userEmail,
-              name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Usuario',
+              first_name: session.user.name?.split(' ')[0] || 'Usuario',
+              last_name: session.user.name?.split(' ').slice(1).join(' ') || '',
+              metadata: {
+                created_from: 'checkout',
+                created_at: new Date().toISOString()
+              }
             })
             .select('id')
             .single()
 
           if (createUserError) {
-            console.error('Error creating user in database:', createUserError)
+            console.error('Error creating user in user_profiles:', createUserError)
             // Continuar con usuario temporal si falla la creación
             userId = null
           } else if (newUser) {
@@ -234,8 +238,8 @@ export async function POST(request: NextRequest) {
           userId = existingUser.id
         }
       }
-    } catch (clerkError) {
-      console.error('Error getting Clerk user:', clerkError)
+    } catch (authError) {
+      console.error('Error getting NextAuth session:', authError)
       // Continuar sin usuario autenticado
     }
 
@@ -244,20 +248,25 @@ export async function POST(request: NextRequest) {
       userId = '00000000-0000-4000-8000-000000000000'
       userEmail = orderData.payer.email
 
-      // Verificar que el usuario temporal existe
+      // Verificar que el usuario temporal existe en user_profiles
       const { data: tempUser, error: tempUserError } = await supabaseAdmin
-        .from('users')
+        .from('user_profiles')
         .select('id')
         .eq('id', userId)
         .single()
 
       if (tempUserError) {
         // Crear usuario temporal si no existe
-        const { error: createTempError } = await supabaseAdmin.from('users').insert({
+        const { error: createTempError } = await supabaseAdmin.from('user_profiles').insert({
           id: userId,
-          clerk_id: 'temp-user',
           email: userEmail,
-          name: `${orderData.payer.name} ${orderData.payer.surname}`.trim(),
+          first_name: orderData.payer.name,
+          last_name: orderData.payer.surname,
+          metadata: {
+            type: 'temporary',
+            created_for: 'checkout',
+            created_at: new Date().toISOString()
+          }
         })
 
         if (createTempError) {

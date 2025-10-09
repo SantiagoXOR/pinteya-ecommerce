@@ -29,6 +29,7 @@ import {
   recordSecurityMetric,
 } from '@/lib/monitoring/enterprise-metrics'
 import { sendOrderConfirmationEmail } from '../../../../../lib/email'
+import { whatsappLinkService, OrderDetails } from '@/lib/integrations/whatsapp/whatsapp-link-service'
 
 // ✅ ELIMINADO: Rate limiting básico reemplazado por sistema avanzado con Redis
 
@@ -607,6 +608,57 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
             email: order.payer_info.email,
             orderReference,
           })
+
+          // ✅ NUEVO: Generar enlace de WhatsApp para notificación a Pinteya
+          try {
+            const orderDetails: OrderDetails = {
+              id: order.id,
+              orderNumber: orderReference,
+              total: `$${parseFloat(order.total).toLocaleString('es-AR')}`,
+              status: newOrderStatus,
+              paymentId: payment.id?.toString(),
+              payerInfo: {
+                name: order.payer_info.name || 'Cliente',
+                email: order.payer_info.email,
+                phone: order.payer_info.phone || undefined,
+              },
+              shippingInfo: order.shipping_info ? {
+                address: order.shipping_info.address,
+                city: order.shipping_info.city,
+                postalCode: order.shipping_info.postal_code,
+              } : undefined,
+              items: emailItems,
+              createdAt: order.created_at,
+            }
+
+            const whatsappLink = whatsappLinkService.generateOrderWhatsAppLink(orderDetails)
+
+            // Guardar el enlace en la base de datos
+            const { error: whatsappUpdateError } = await supabase
+              .from('orders')
+              .update({
+                whatsapp_notification_link: whatsappLink,
+                whatsapp_generated_at: new Date().toISOString(),
+              })
+              .eq('id', order.id)
+
+            if (whatsappUpdateError) {
+              console.error('Error saving WhatsApp link:', whatsappUpdateError)
+            } else {
+              logger.info(LogLevel.INFO, 'WhatsApp notification link generated and saved', {
+                orderId: order.id,
+                orderReference,
+                linkLength: whatsappLink.length,
+              })
+            }
+          } catch (whatsappError) {
+            // No fallar el webhook por errores de WhatsApp
+            console.error('Error generating WhatsApp link:', whatsappError)
+            logger.warn(LogLevel.WARN, 'Failed to generate WhatsApp link', {
+              orderId: order.id,
+              error: whatsappError instanceof Error ? whatsappError.message : 'Unknown error',
+            })
+          }
         }
       } catch (emailError) {
         // No fallar el webhook por errores de email

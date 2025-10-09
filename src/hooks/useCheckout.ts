@@ -37,7 +37,7 @@ const initialFormData: CheckoutFormData = {
   shipping: {
     differentAddress: false,
   },
-  paymentMethod: 'mercadopago',
+  paymentMethod: 'cash',
   shippingMethod: 'free',
   couponCode: '',
 }
@@ -592,6 +592,9 @@ export const useCheckout = () => {
     }))
   }, [])
 
+  // ===================================
+  // VALORES MEMOIZADOS
+  // ===================================
   // Memorizar valores calculados para evitar recursión infinita
   const memoizedShippingCost = useMemo(() => {
     try {
@@ -623,6 +626,144 @@ export const useCheckout = () => {
     }
   }, [calculateTotal])
 
+  // ===================================
+  // FUNCIÓN PARA PAGO CONTRA ENTREGA
+  // ===================================
+  const processCashOnDelivery = useCallback(async () => {
+    console.log('💰 Iniciando proceso de pago contra entrega')
+    
+    // Validar formulario
+    const validationErrors = validateForm()
+    if (Object.keys(validationErrors).length > 0) {
+      setCheckoutState(prev => ({
+        ...prev,
+        errors: validationErrors,
+      }))
+      return
+    }
+
+    setCheckoutState(prev => ({
+      ...prev,
+      isLoading: true,
+      errors: {},
+    }))
+
+    try {
+      const { billing, shipping } = checkoutState.formData
+
+      // Sanitizar teléfono para separar código de área y número
+      let sanitizedPhone = billing.phone?.replace(/\D/g, '') || ''
+      let areaCode = ''
+      let phoneNumber = ''
+
+      if (sanitizedPhone.length >= 10) {
+        // Para Argentina: primeros 2-4 dígitos son código de área
+        if (sanitizedPhone.startsWith('54')) {
+          sanitizedPhone = sanitizedPhone.substring(2) // Remover código de país
+        }
+        
+        if (sanitizedPhone.length === 10) {
+          // Teléfono fijo: XXXX-XXXXXX
+          areaCode = sanitizedPhone.substring(0, 4)
+          phoneNumber = sanitizedPhone.substring(4)
+        } else if (sanitizedPhone.length === 11) {
+          // Celular: XXX-XXXXXXXX
+          areaCode = sanitizedPhone.substring(0, 3)
+          phoneNumber = sanitizedPhone.substring(3)
+        } else {
+          // Fallback
+          areaCode = sanitizedPhone.substring(0, 3)
+          phoneNumber = sanitizedPhone.substring(3)
+        }
+      } else {
+        // Fallback para números cortos
+        areaCode = '351' // Código de Córdoba por defecto
+        phoneNumber = sanitizedPhone
+      }
+
+      // Determinar dirección de envío
+      const shippingAddress = shipping.differentAddress ? {
+        street_name: shipping.streetAddress!,
+        street_number: '123', // Número por defecto
+        city_name: shipping.city!,
+        state_name: shipping.state!,
+        zip_code: shipping.zipCode!,
+      } : {
+        street_name: billing.streetAddress,
+        street_number: '123', // Número por defecto
+        city_name: billing.city,
+        state_name: billing.state,
+        zip_code: billing.zipCode,
+      }
+
+      // Preparar payload según el esquema CreateCashOrderSchema
+      const payload = {
+        items: cartItems.map(item => ({
+          id: item.id.toString(), // Convertir a string como espera el esquema
+          quantity: item.quantity,
+          unit_price: item.discountedPrice || item.price, // Usar precio con descuento si existe
+        })),
+        payer: {
+          name: billing.firstName,
+          surname: billing.lastName,
+          email: billing.email,
+          phone: {
+            area_code: areaCode,
+            number: phoneNumber,
+          },
+          identification: billing.dni ? {
+            type: 'DNI',
+            number: billing.dni,
+          } : undefined,
+        },
+        shipments: {
+          receiver_address: shippingAddress,
+        },
+        external_reference: `cash_order_${Date.now()}`,
+      }
+
+      console.log('📦 Enviando orden de pago contra entrega:', payload)
+
+      // Llamar a la API de cash order
+      const response = await fetch('/api/orders/create-cash-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Error creando la orden')
+      }
+
+      console.log('✅ Orden de pago contra entrega creada exitosamente:', result.data)
+
+      // Limpiar carrito
+      dispatch(removeAllItemsFromCart())
+
+      // Actualizar estado a cash_success
+      setCheckoutState(prev => ({
+        ...prev,
+        step: 'cash_success',
+        cashOrderData: result.data,
+        isLoading: false,
+      }))
+
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error procesando la orden'
+      console.error('❌ Error en pago contra entrega:', error)
+      setCheckoutState(prev => ({
+        ...prev,
+        isLoading: false,
+        step: 'form',
+        errors: { general: errorMessage },
+      }))
+    }
+  }, [checkoutState.formData, cartItems, validateForm, memoizedShippingCost, memoizedDiscount, memoizedFinalTotal, dispatch])
+
   return {
     // Estado
     formData: checkoutState.formData,
@@ -633,6 +774,9 @@ export const useCheckout = () => {
     // Datos para Wallet Brick
     preferenceId: checkoutState.preferenceId,
     initPoint: checkoutState.initPoint,
+
+    // Datos para Cash Order
+    cashOrderData: checkoutState.cashOrderData,
 
     // Datos calculados
     cartItems,
@@ -653,6 +797,7 @@ export const useCheckout = () => {
     validateExpressForm,
     processCheckout,
     processExpressCheckout,
+    processCashOnDelivery,
 
     // Callbacks para Wallet Brick
     handleWalletReady,

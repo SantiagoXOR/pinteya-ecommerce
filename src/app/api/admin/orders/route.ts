@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
 
     const filters = filtersResult.data
 
-    // Construir query base con joins optimizados
+    // Construir query base con joins optimizados (usando user_profiles después de migración NextAuth)
     let query = supabaseAdmin.from('orders').select(
       `
         id,
@@ -162,9 +162,10 @@ export async function GET(request: NextRequest) {
         external_reference,
         payment_preference_id,
         payer_info,
-        users (
+        user_profiles (
           id,
-          name,
+          first_name,
+          last_name,
           email
         ),
         order_items (

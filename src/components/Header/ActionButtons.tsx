@@ -77,7 +77,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
           variant='ghost'
           size='sm'
           onClick={handleCartClick}
-          className='relative p-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200'
+          className='relative p-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200 z-maximum'
           data-testid='cart-icon'
         >
           <Image
@@ -89,7 +89,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
           />
           {cartItemCount > 0 && (
             <Badge
-              className='absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md'
+              className='absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md z-maximum'
               style={{ backgroundColor: '#007639' }}
             >
               {cartItemCount}
@@ -163,7 +163,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
         variant='ghost'
         size='sm'
         onClick={handleCartClick}
-        className='relative text-white hover:text-black hover:bg-bright-sun px-3 py-2 transition-all duration-200'
+        className='relative text-white hover:text-black hover:bg-bright-sun px-3 py-2 transition-all duration-200 z-maximum'
         data-testid='cart-icon'
         aria-label={`Carrito con ${cartItemCount} productos`}
       >
@@ -178,7 +178,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
             />
             {cartItemCount > 0 && (
               <Badge
-                className='absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md'
+                className='absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md z-maximum'
                 style={{ backgroundColor: '#007639' }}
               >
                 {cartItemCount}

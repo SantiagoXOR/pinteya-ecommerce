@@ -146,10 +146,11 @@ test.describe('APIs Administrativas - Enfoque API-First', () => {
 
     if (response.status() === 200) {
       const data = await response.json()
-      console.log(`✅ Categorías encontradas: ${data.categories?.length || 0}`)
+      console.log(`✅ Categorías encontradas: ${data.data?.categories?.length || 0}`)
 
-      expect(data).toHaveProperty('categories')
-      expect(Array.isArray(data.categories)).toBeTruthy()
+      expect(data).toHaveProperty('data')
+      expect(data.data).toHaveProperty('categories')
+      expect(Array.isArray(data.data.categories)).toBeTruthy()
     } else {
       console.log(`⚠️ API no disponible: ${response.status()}`)
     }

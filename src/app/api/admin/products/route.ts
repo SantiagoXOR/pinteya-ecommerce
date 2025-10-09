@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth'
 import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils'
 import { withCriticalValidation } from '@/lib/validation/enterprise-validation-middleware'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
 import {
   EnterpriseProductSchema,
   EnterpriseProductFiltersSchema,
@@ -139,6 +140,7 @@ const getHandler = async (request: ValidatedRequest) => {
     const totalPages = Math.ceil(total / filters.limit)
 
     return NextResponse.json({
+      products: transformedProducts,
       data: transformedProducts,
       total,
       page: filters.page,
@@ -309,7 +311,8 @@ const postHandlerSimple = async (request: NextRequest) => {
     }
 
     console.log('✅ Auth successful')
-    const { supabase, user } = authResult
+    // Usar supabaseAdmin directamente ya que checkCRUDPermissions no retorna supabase
+    const supabase = supabaseAdmin
 
     const body = await request.json()
     console.log('📝 Request body:', JSON.stringify(body, null, 2))
@@ -332,17 +335,14 @@ const postHandlerSimple = async (request: NextRequest) => {
     const productData = {
       name: body.name,
       description: body.description || '',
-      short_description: body.short_description || '',
       price: parseFloat(body.price),
       discounted_price: body.compare_price ? parseFloat(body.compare_price) : null,
-      cost_price: body.cost_price ? parseFloat(body.cost_price) : null,
       stock: parseInt(body.stock) || 0,
-      low_stock_threshold: parseInt(body.low_stock_threshold) || 5,
       category_id: body.category_id ? parseInt(body.category_id) : null,
-      status: body.status || 'draft',
-      is_active: body.status === 'active',
-      track_inventory: body.track_inventory !== false,
-      allow_backorders: body.allow_backorders === true,
+      is_active: body.status === 'active' || true,
+      brand: body.brand || '',
+      color: body.color || '',
+      medida: body.medida || '',
       // Generar slug automático
       slug:
         body.name
@@ -391,7 +391,8 @@ const postHandlerSimple = async (request: NextRequest) => {
         price,
         stock,
         category_id,
-        status,
+        is_active,
+        brand,
         created_at,
         updated_at
       `
@@ -488,6 +489,7 @@ export const GET = async (request: NextRequest) => {
       })) || []
 
     return NextResponse.json({
+      products: transformedProducts,
       data: transformedProducts,
       total: count || 0,
       page: 1,

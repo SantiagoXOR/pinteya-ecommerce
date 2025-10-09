@@ -7,9 +7,18 @@ import { getQueryOptimizer } from './query-optimizer'
 import { getCacheManager } from './cache-manager'
 import { getConnectionPool } from './connection-pool'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+// Validación de variables de entorno
+if (!supabaseUrl) {
+  throw new Error('NEXT_PUBLIC_SUPABASE_URL is required')
+}
+
+if (!supabaseAnonKey) {
+  throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required')
+}
 
 // Configuración optimizada para el cliente público
 const OPTIMIZED_CLIENT_CONFIG = {
@@ -48,8 +57,12 @@ const OPTIMIZED_ADMIN_CONFIG = {
 }
 
 // Crear clientes Supabase optimizados
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, OPTIMIZED_CLIENT_CONFIG)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, OPTIMIZED_ADMIN_CONFIG)
+export const supabase = createClient(supabaseUrl!, supabaseAnonKey!, OPTIMIZED_CLIENT_CONFIG)
+
+// Solo crear el cliente admin si tenemos la service key (server-side)
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient(supabaseUrl!, supabaseServiceKey, OPTIMIZED_ADMIN_CONFIG)
+  : null
 
 // ===================================
 // SISTEMA DE OPTIMIZACIÓN INTEGRADO
@@ -190,14 +203,6 @@ export interface PaginationOptions {
 // ===================================
 // VALIDACIONES DE CONFIGURACIÓN
 // ===================================
-
-if (!supabaseUrl) {
-  throw new Error('NEXT_PUBLIC_SUPABASE_URL is required')
-}
-
-if (!supabaseAnonKey) {
-  throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required')
-}
 
 if (!supabaseServiceKey) {
   console.warn('SUPABASE_SERVICE_ROLE_KEY not found - Admin functions will be limited')

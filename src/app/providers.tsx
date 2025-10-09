@@ -14,6 +14,7 @@ import { QueryClientProvider } from '@/components/providers/QueryClientProvider'
 import { NetworkErrorProvider } from '@/components/providers/NetworkErrorProvider'
 import { MonitoringProvider } from '@/providers/MonitoringProvider'
 import { AdvancedErrorBoundary } from '@/lib/error-boundary/advanced-error-boundary'
+import { ModalProvider } from '@/contexts/ModalContext'
 
 // Componentes UI
 import Header from '../components/Header/index'
@@ -87,12 +88,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     <ReduxProvider>
                       <CartPersistenceProvider>
                         <AnalyticsProvider>
-                          <CartModalProvider>
-                            <PreviewSliderProvider>
+                          <ModalProvider>
+                            <CartModalProvider>
+                              <PreviewSliderProvider>
                               {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
                               {!isAdminRoute && <Header />}
 
-                              {/* CartSidebarModal solo para rutas públicas */}
                               {!isAdminRoute && <CartSidebarModal />}
                               <PreviewSliderModal />
                               <ScrollToTop />
@@ -123,8 +124,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
                               {/* Toaster para notificaciones */}
                               <Toaster />
-                            </PreviewSliderProvider>
-                          </CartModalProvider>
+                              </PreviewSliderProvider>
+                            </CartModalProvider>
+                          </ModalProvider>
                         </AnalyticsProvider>
                       </CartPersistenceProvider>
                     </ReduxProvider>

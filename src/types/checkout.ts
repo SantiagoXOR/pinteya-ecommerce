@@ -35,7 +35,7 @@ export interface ShippingData {
 export interface CheckoutFormData {
   billing: BillingData
   shipping: ShippingData
-  paymentMethod: 'mercadopago' | 'bank' | 'cash'
+  paymentMethod: 'mercadopago' | 'cash'
   shippingMethod: 'free' | 'express' | 'pickup'
   couponCode?: string
 }
@@ -44,9 +44,58 @@ export interface CheckoutState {
   formData: CheckoutFormData
   isLoading: boolean
   errors: Record<string, string>
-  step: 'form' | 'processing' | 'payment' | 'redirect'
+  step: 'form' | 'processing' | 'payment' | 'redirect' | 'cash_success'
   preferenceId?: string
   initPoint?: string
+  cashOrderData?: CashOrderData
+}
+
+// Tipos para pago contra entrega
+export interface CashOrderData {
+  orderId: string
+  total: number
+  whatsappUrl: string
+  customerName: string
+  phone: string
+}
+
+// Tipos para la API de cash order
+export interface CreateCashOrderPayload {
+  cart: Array<{
+    id: string
+    title: string
+    price: number
+    discountedPrice?: number
+    quantity: number
+    image: string
+  }>
+  customer: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    dni?: string
+  }
+  billing: {
+    streetAddress: string
+    observations?: string
+  }
+  shipping: {
+    streetAddress: string
+    observations?: string
+  }
+  totals: {
+    subtotal: number
+    shipping: number
+    total: number
+  }
+}
+
+export interface CreateCashOrderResponse {
+  success: boolean
+  orderId: string
+  whatsappUrl: string
+  error?: string
 }
 
 export interface ShippingOption {

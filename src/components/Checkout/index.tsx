@@ -6,6 +6,7 @@ import Breadcrumb from '../Common/Breadcrumb'
 import Shipping from './Shipping'
 
 import PaymentMethod from './PaymentMethod'
+import PaymentMethodSelector from './PaymentMethodSelector'
 import Billing from './Billing'
 import Coupon from './Coupon'
 import UserInfo from './UserInfo'
@@ -154,7 +155,7 @@ const Checkout = () => {
   }
 
   const handlePaymentMethodChange = (method: string) => {
-    updateFormData({ paymentMethod: method as 'mercadopago' | 'bank' | 'cash' })
+    updateFormData({ paymentMethod: method as 'mercadopago' | 'cash' })
   }
 
   // ✅ NUEVO: Toggle entre modo normal y express
@@ -468,11 +469,7 @@ const Checkout = () => {
 
                       {/* Payment Method Express */}
                       <div className='space-y-3'>
-                        <h3 className='font-semibold flex items-center gap-2'>
-                          <CreditCard className='w-5 h-5 text-blaze-orange-600' />
-                          Método de Pago
-                        </h3>
-                        <PaymentMethod
+                        <PaymentMethodSelector
                           selectedMethod={formData.paymentMethod}
                           onMethodChange={handlePaymentMethodChange}
                         />
@@ -526,7 +523,7 @@ const Checkout = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className='p-6'>
-                        <PaymentMethod
+                        <PaymentMethodSelector
                           selectedMethod={formData.paymentMethod}
                           onMethodChange={handlePaymentMethodChange}
                         />

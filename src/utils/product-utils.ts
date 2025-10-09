@@ -96,10 +96,10 @@ export const PRODUCT_TYPES: ProductType[] = [
     name: 'Cintas de Papel',
     hasColorSelector: false,
     capacityUnit: 'metros',
-    defaultCapacities: ['25m', '50m'],
+    defaultCapacities: ['40m'],
     category: 'accesorios',
     hasWidthSelector: true,
-    widthOptions: ['12mm', '18mm', '24mm', '36mm', '48mm', '72mm'],
+    widthOptions: ['18mm', '24mm', '36mm', '48mm'],
   },
 ]
 

@@ -336,8 +336,9 @@ describe('Flujo de Checkout - Integración', () => {
 
       await waitFor(() => {
         expect(screen.getByText('MercadoPago')).toBeInTheDocument()
-        expect(screen.getByText('Transferencia Bancaria')).toBeInTheDocument()
-        expect(screen.getByText('Efectivo')).toBeInTheDocument()
+        expect(screen.getByText('Pago al recibir el producto')).toBeInTheDocument()
+        // Verificar que la transferencia bancaria ya no esté disponible
+        expect(screen.queryByText('Transferencia Bancaria')).not.toBeInTheDocument()
       })
     })
 

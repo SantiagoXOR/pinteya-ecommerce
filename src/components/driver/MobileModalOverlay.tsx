@@ -117,7 +117,7 @@ export function MobileModalOverlay({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-50 flex items-end justify-center',
+        'fixed inset-0 z-dialog flex items-end justify-center',
         'bg-black/50 backdrop-blur-sm',
         'transition-opacity duration-300',
         isTransitioning ? 'opacity-0' : 'opacity-100',

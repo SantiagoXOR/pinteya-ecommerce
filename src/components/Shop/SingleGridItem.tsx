@@ -80,11 +80,7 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
       title={cleanTitle}
       brand={item.brand}
       description={item.description}
-      price={
-        features.discount
-          ? Math.round(item.price * (1 - features.discount / 100))
-          : features.currentPrice
-      }
+      price={features.currentPrice}
       originalPrice={features.discount ? item.price : undefined}
       discount={features.discount ? `${features.discount}%` : undefined}
       isNew={features.isNew}

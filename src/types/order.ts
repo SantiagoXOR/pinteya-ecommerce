@@ -56,7 +56,7 @@ export type PaymentStatus =
   | 'awaiting_transfer' // Esperando transferencia
   | 'cash_on_delivery' // Pago contra entrega
 
-export type PaymentMethod = 'mercadopago' | 'bank' | 'cash' | 'credit_card' | 'debit_card'
+export type PaymentMethod = 'mercadopago' | 'cash' | 'credit_card' | 'debit_card'
 
 export type ShippingMethod =
   | 'free' // Envío gratis (estándar)
@@ -251,7 +251,6 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   mercadopago: 'MercadoPago',
-  bank: 'Transferencia bancaria',
   cash: 'Efectivo',
   credit_card: 'Tarjeta de crédito',
   debit_card: 'Tarjeta de débito',

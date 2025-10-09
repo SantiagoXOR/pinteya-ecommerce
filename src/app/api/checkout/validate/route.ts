@@ -39,7 +39,7 @@ const checkoutValidationSchema = z.object({
       })
     )
     .min(1, 'Debe haber al menos un producto'),
-  paymentMethod: z.enum(['mercadopago', 'bank', 'cash']),
+  paymentMethod: z.enum(['mercadopago', 'cash']),
   shippingMethod: z.enum(['free', 'express', 'pickup']),
   totals: z.object({
     subtotal: z.number().nonnegative(),

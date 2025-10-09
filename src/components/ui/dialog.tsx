@@ -24,6 +24,16 @@ const DialogOverlay = React.forwardRef<
       'fixed inset-0 z-modal-backdrop bg-dark/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className
     )}
+    // Evitar que el clic/press en el overlay burbujee al elemento debajo y dispare onClick del card
+    onClick={(e) => {
+      e.stopPropagation()
+    }}
+    onPointerDown={(e) => {
+      e.stopPropagation()
+    }}
+    onMouseDown={(e) => {
+      e.stopPropagation()
+    }}
     {...props}
   />
 ))
@@ -73,22 +83,33 @@ const DialogContent = React.forwardRef<
       className={cn(dialogContentVariants({ size, variant }), className)}
       {...props}
     >
-      <div className='relative'>
+      {showCloseButton && (
+        <DialogPrimitive.Close
+          className={cn(
+            'absolute right-4 top-4 inline-flex items-center justify-center w-8 h-8 rounded-full',
+            'z-50 bg-white shadow-lg border border-gray-200',
+            'text-gray-500 hover:text-gray-700 hover:bg-gray-100',
+            'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blaze-orange-500',
+            'transition-all duration-200 opacity-70 hover:opacity-100',
+            'disabled:pointer-events-none'
+          )}
+          // Evitar que el evento burbujee al elemento debajo (e.g., tarjeta) y reabra el modal
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
+          onPointerDown={(e) => {
+            e.stopPropagation()
+          }}
+          aria-label="Cerrar modal"
+        >
+          <X className='h-4 w-4' />
+          <span className='sr-only'>Cerrar</span>
+        </DialogPrimitive.Close>
+      )}
+      {/* Usamos 'contents' para que las clases de layout aplicadas en DialogContent
+          (por ejemplo grid con filas auto/1fr/auto) afecten directamente a los hijos */}
+      <div className='contents'>
         {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            className={cn(
-              'absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-[99999] isolate pointer-events-auto'
-            )}
-            onClick={() => {
-              console.log('Close button clicked')
-              console.log('Attempting to close modal')
-            }}
-          >
-            <X className='h-4 w-4' />
-            <span className='sr-only'>Close</span>
-          </DialogPrimitive.Close>
-        )}
       </div>
     </DialogPrimitive.Content>
   </DialogPortal>
