@@ -3,6 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { useDesignSystemConfig } from '@/lib/design-system-config'
 
 interface ShippingProgressBarProps {
   currentAmount: number
@@ -14,14 +15,16 @@ interface ShippingProgressBarProps {
 
 const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
   currentAmount,
-  targetAmount = 15000,
+  targetAmount,
   className,
   showIcon = true,
   variant = 'default',
 }) => {
-  const progress = Math.min((currentAmount / targetAmount) * 100, 100)
-  const remainingAmount = Math.max(targetAmount - currentAmount, 0)
-  const hasReachedTarget = currentAmount >= targetAmount
+  const config = useDesignSystemConfig()
+  const resolvedTarget = targetAmount ?? config.ecommerce.shippingInfo.freeShippingThreshold
+  const progress = Math.min((currentAmount / resolvedTarget) * 100, 100)
+  const remainingAmount = Math.max(resolvedTarget - currentAmount, 0)
+  const hasReachedTarget = currentAmount >= resolvedTarget
 
   const isCompact = variant === 'compact'
   const isDetailed = variant === 'detailed'
@@ -84,7 +87,7 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
         )}
       >
         <span>$0</span>
-        <span className='font-semibold'>${targetAmount.toLocaleString()}</span>
+        <span className='font-semibold'>${resolvedTarget.toLocaleString()}</span>
       </div>
 
       {/* Información detallada (solo en variant detailed) */}

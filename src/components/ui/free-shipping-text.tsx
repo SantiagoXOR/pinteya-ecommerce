@@ -10,7 +10,7 @@ interface FreeShippingTextProps {
 }
 
 const FreeShippingText = React.forwardRef<HTMLDivElement, FreeShippingTextProps>(
-  ({ className, threshold = 15000, variant = 'default', showIcon = true, ...props }, ref) => {
+  ({ className, threshold = 50000, variant = 'default', showIcon = true, ...props }, ref) => {
     const baseClasses = {
       default: 'flex items-center gap-2 text-green-600 font-medium',
       compact: 'flex items-center gap-1 text-sm text-green-600',

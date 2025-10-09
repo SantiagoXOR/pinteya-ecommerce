@@ -243,6 +243,17 @@ describe('ProductReview Component', () => {
 - [ ] ✅ Tests E2E para flujos críticos
 - [ ] ✅ Manual testing completado
 
+## 🧩 Estabilidad de Hooks
+
+Antes de abrir un PR, revisa el siguiente checklist para evitar errores de orden de hooks (especialmente en checkout/pagos):
+
+- [✅ Ver Checklist de Estabilidad de Hooks](./hooks-stability-checklist.md)
+
+Incluye verificación de:
+- Orden incondicional de hooks (`useEffect`, `useRef`, `useState`, `useCallback`)
+- Guardas internas dentro de efectos/callbacks
+- Inicialización segura de SDKs y listeners DOM
+
 ## 🔍 Review Process
 
 ### **Criterios de Aprobación**

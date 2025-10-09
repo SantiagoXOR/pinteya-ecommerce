@@ -78,8 +78,8 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
             }
           : undefined
       }
-      // Envío gratis automático para productos >= $15000
-      freeShipping={finalPrice >= 15000}
+      // Envío gratis automático para productos >= $50000
+      freeShipping={finalPrice >= 50000}
       shippingText={badge === 'Envío gratis' ? 'Envío gratis' : undefined}
       // Nuevas props para sistema de badges inteligentes
       variants={productData.variants || []}

@@ -5,10 +5,52 @@
 
 import { logger, LogLevel } from '@/lib/enterprise/logger'
 
+// Helper: normaliza el número para el formato requerido por wa.me (solo dígitos)
+export function normalizeWhatsAppPhoneNumber(raw: string): string {
+  try {
+    let digits = (raw || '').replace(/\D/g, '')
+
+    // Eliminar prefijo internacional con '00'
+    if (digits.startsWith('00')) {
+      digits = digits.slice(2)
+    }
+
+    // Si empieza con 0 (formato nacional), removerlo
+    if (digits.startsWith('0')) {
+      digits = digits.slice(1)
+    }
+
+    // Manejo Argentina: asegurar '549' y remover '15' tras código de área
+    if (digits.startsWith('54')) {
+      // Quitar posible '15' luego del código de área
+      const after54 = digits.slice(2)
+      const m = after54.match(/^(\d{2,4})15(\d+)$/)
+      if (m) {
+        digits = '54' + m[1] + m[2]
+      }
+      // Insertar '9' si falta (móvil)
+      if (!digits.startsWith('549')) {
+        digits = '549' + digits.slice(2)
+      }
+    } else {
+      // Sin código país: asumir AR y agregar '549'
+      const m = digits.match(/^(\d{2,4})15(\d+)$/)
+      if (m) {
+        digits = m[1] + m[2]
+      }
+      digits = '549' + digits
+    }
+
+    return digits
+  } catch {
+    return (raw || '').replace(/\D/g, '')
+  }
+}
+
 // Configuración de WhatsApp
 const WHATSAPP_CONFIG = {
-  // Número de Pinteya (basado en la configuración existente)
-  PINTEYA_PHONE: '+5411123456789', // Número de WhatsApp de Pinteya
+  // Número de Pinteya en formato internacional para wa.me (sin '+')
+  PINTEYA_PHONE: normalizeWhatsAppPhoneNumber(process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'),
   BASE_URL: 'https://wa.me',
 }
 
@@ -140,6 +182,37 @@ export class WhatsAppLinkService {
   }
 
   /**
+   * Nuevo: Genera enlace y retorna también el mensaje crudo para persistir
+   */
+  public generateOrderWhatsApp(orderDetails: OrderDetails): { link: string; message: string } {
+    try {
+      const message = this.formatOrderMessage(orderDetails)
+      const encodedMessage = encodeURIComponent(message)
+
+      const whatsappLink = `${WHATSAPP_CONFIG.BASE_URL}/${WHATSAPP_CONFIG.PINTEYA_PHONE}?text=${encodedMessage}`
+
+      logger.info(LogLevel.INFO, 'WhatsApp link+message generated successfully', {
+        orderNumber: orderDetails.orderNumber,
+        linkLength: whatsappLink.length,
+        messageLength: message.length
+      })
+
+      return { link: whatsappLink, message }
+
+    } catch (error) {
+      logger.error(LogLevel.ERROR, 'Error generating WhatsApp link+message', {
+        orderNumber: orderDetails.orderNumber,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+
+      const fallbackMessage = `Nueva orden confirmada: #${orderDetails.orderNumber} - Total: ${orderDetails.total}`
+      const encodedFallback = encodeURIComponent(fallbackMessage)
+      const fallbackLink = `${WHATSAPP_CONFIG.BASE_URL}/${WHATSAPP_CONFIG.PINTEYA_PHONE}?text=${encodedFallback}`
+      return { link: fallbackLink, message: fallbackMessage }
+    }
+  }
+
+  /**
    * Genera un enlace de WhatsApp simple para notificaciones rápidas
    */
   public generateSimpleNotificationLink(orderNumber: string, total: string): string {
@@ -171,4 +244,9 @@ export function createOrderWhatsAppLink(orderDetails: OrderDetails): string {
 
 export function createSimpleWhatsAppNotification(orderNumber: string, total: string): string {
   return whatsappLinkService.generateSimpleNotificationLink(orderNumber, total)
+}
+
+// Helper nuevo: obtener enlace y mensaje
+export function createOrderWhatsApp(orderDetails: OrderDetails): { link: string; message: string } {
+  return whatsappLinkService.generateOrderWhatsApp(orderDetails)
 }

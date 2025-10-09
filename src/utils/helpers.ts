@@ -129,8 +129,11 @@ export function calculateShipping(
   orderTotal: number = 0,
   express: boolean = false
 ): number {
-  // Free shipping threshold
-  const freeShippingThreshold = 15000
+  // Free shipping threshold (global, from design system config)
+  // Import lazily to avoid circular dependencies in some environments
+  const { useDesignSystemConfig } = require('@/lib/design-system-config')
+  const config = useDesignSystemConfig()
+  const freeShippingThreshold = config.ecommerce.shippingInfo.freeShippingThreshold
 
   if (orderTotal >= freeShippingThreshold) {
     return 0

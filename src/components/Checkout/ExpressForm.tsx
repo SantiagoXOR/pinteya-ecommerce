@@ -70,6 +70,8 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
 
   return (
     <form
+      id='express-checkout-form'
+      noValidate
       ref={containerRef}
       onSubmit={handleSubmit}
       className={cn(

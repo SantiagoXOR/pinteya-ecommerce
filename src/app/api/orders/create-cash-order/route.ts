@@ -1,12 +1,14 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/integrations/supabase/server';
+import { createAdminClient } from '@/lib/integrations/supabase/server';
 import { auth } from '@/auth';
 import { z } from 'zod';
 import { logger } from '@/lib/enterprise/logger';
 import { createRateLimiter } from '@/lib/rate-limiting/rate-limiter';
 import { metricsCollector } from '@/lib/enterprise/metrics';
+import crypto from 'crypto';
+import { normalizeWhatsAppPhoneNumber } from '@/lib/integrations/whatsapp/whatsapp-link-service';
 
 // Schema de validación para la orden de pago contra entrega
 const CreateCashOrderSchema = z.object({
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
         remaining: rateLimitResult.remaining
       });
       return NextResponse.json(
-        { error: 'Demasiadas solicitudes. Intenta nuevamente en unos minutos.' },
+        { success: false, data: null, error: 'Demasiadas solicitudes. Intenta nuevamente en unos minutos.' },
         { status: 429 }
       );
     }
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest) {
 
     // Obtener usuario autenticado o crear usuario temporal
     const session = await auth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     
     let userId: string;
     
@@ -120,21 +122,30 @@ export async function POST(request: NextRequest) {
       const tempUserName = `${validatedData.payer.name} ${validatedData.payer.surname}`;
       
       const { data: existingUser } = await supabase
-        .from('users')
+        .from('user_profiles')
         .select('id')
         .eq('email', tempUserEmail)
+        .eq('is_active', true)
         .single();
 
       if (existingUser) {
         userId = existingUser.id;
         logger.info('Using existing temp user', { userId, email: tempUserEmail });
       } else {
+        const tempUserId = crypto.randomUUID();
         const { data: newUser, error: userError } = await supabase
-          .from('users')
+          .from('user_profiles')
           .insert({
+            id: tempUserId,
             email: tempUserEmail,
-            name: tempUserName,
-            is_temporary: true
+            first_name: validatedData.payer.name,
+            last_name: validatedData.payer.surname,
+            is_active: true,
+            metadata: {
+              temporary: true,
+              source: 'cash_order',
+              created_via: 'api/orders/create-cash-order'
+            }
           })
           .select('id')
           .single();
@@ -182,36 +193,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calcular total
+    // Calcular total e inicializar items para order_items usando la columna efectiva 'price'
     let totalAmount = 0;
     const orderItems = validatedData.items.map(item => {
       const product = products.find(p => p.id.toString() === item.id.toString())!;
       const finalPrice = calculateFinalPrice(product);
       const itemTotal = finalPrice * item.quantity;
       totalAmount += itemTotal;
-      
+
       return {
-        product_id: parseInt(item.id), // Convertir string a número para la base de datos
-        product_name: product.name,
+        product_id: parseInt(item.id),
         quantity: item.quantity,
-        price: finalPrice // Usar 'price' en lugar de 'unit_price' según el esquema de la tabla
+        price: finalPrice
       };
     });
 
     // Preparar datos para insertar en orders
+    const orderNumber = `ORD-${Math.floor(Date.now() / 1000)}-${crypto.randomBytes(4).toString('hex')}`;
     const orderData = {
-      user_id: userId, // Ya es UUID válido desde la creación del usuario temporal
-      total: totalAmount.toString(), // Convertir a string para compatibilidad con numeric de PostgreSQL
+      user_id: userId,
+      order_number: orderNumber,
+      total: totalAmount,
       status: 'pending',
-      payment_status: 'cash_on_delivery',
-      payer_info: {
-        name: validatedData.payer.name,
-        surname: validatedData.payer.surname,
-        email: validatedData.payer.email,
-        phone: `${validatedData.payer.phone.area_code}${validatedData.payer.phone.number}`,
-        identification_type: validatedData.payer.identification?.type,
-        identification_number: validatedData.payer.identification?.number
-      },
+      payment_status: 'pending',
       shipping_address: {
         zip_code: validatedData.shipments.receiver_address.zip_code,
         state_name: validatedData.shipments.receiver_address.state_name,
@@ -252,7 +256,7 @@ export async function POST(request: NextRequest) {
           payment_status: 'cash_on_delivery'
         }
       });
-      throw new Error('Error al crear la orden');
+      throw new Error(orderError?.message || orderError?.details || orderError?.hint || 'Error al crear la orden');
     }
 
     // Crear items de la orden
@@ -273,11 +277,11 @@ export async function POST(request: NextRequest) {
     // Generar mensaje de WhatsApp
     let message = `🛒 *Nueva Orden - Pago Contra Entrega*\n\n`;
     message += `📋 *Orden:* ${order.order_number || order.id}\n`;
-    message += `💰 *Total:* $${order.total}\n\n`;
+    message += `💰 *Total:* $${order.total || totalAmount}\n\n`;
     
-    message += `👤 *Cliente:* ${order.payer_info?.name} ${order.payer_info?.surname}\n`;
-    message += `📧 *Email:* ${order.payer_info?.email}\n`;
-    message += `📱 *Teléfono:* ${order.payer_info?.phone}\n\n`;
+    message += `👤 *Cliente:* ${validatedData.payer.name} ${validatedData.payer.surname}\n`;
+    message += `📧 *Email:* ${validatedData.payer.email}\n`;
+    message += `📱 *Teléfono:* ${validatedData.payer.phone.area_code}${validatedData.payer.phone.number}\n\n`;
     
     message += `🛍️ *Productos:*\n`;
     for (const item of validatedData.items) {
@@ -293,8 +297,27 @@ export async function POST(request: NextRequest) {
     message += `CP: ${order.shipping_address?.zip_code}\n\n`;
     
     const whatsappMessage = encodeURIComponent(message);
-    const whatsappNumber = process.env.WHATSAPP_BUSINESS_NUMBER || '5491234567890';
+    // Número de WhatsApp de Pinteya en formato internacional (solo dígitos)
+    const rawPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
+    const whatsappNumber = normalizeWhatsAppPhoneNumber(rawPhone);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+
+    // Guardar enlace y mensaje crudo en la orden (no bloquear por error)
+    try {
+      const { error: whatsappUpdateError } = await supabase
+        .from('orders')
+        .update({
+          whatsapp_notification_link: whatsappUrl,
+          whatsapp_message: message,
+          whatsapp_generated_at: new Date().toISOString(),
+        })
+        .eq('id', order.id);
+      if (whatsappUpdateError) {
+        console.error('[CASH_ORDER] Error saving WhatsApp data:', whatsappUpdateError);
+      }
+    } catch (e) {
+      console.error('[CASH_ORDER] Exception saving WhatsApp data:', e);
+    }
 
     // Métricas de performance
     const duration = Date.now() - startTime;
@@ -309,16 +332,20 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      order: {
-        id: order.id,
-        total_amount: totalAmount,
-        status: order.status,
-        payment_status: order.payment_status,
-        created_at: order.created_at,
-        whatsapp_url: whatsappUrl
-      },
-      items: orderItemsWithOrderId,
-      whatsapp_url: whatsappUrl
+      data: {
+        order: {
+          id: order.id,
+          order_number: order.order_number,
+          total: order.total || totalAmount,
+          status: order.status,
+          payment_status: order.payment_status,
+          created_at: order.created_at,
+          whatsapp_url: whatsappUrl
+        },
+        items: orderItemsWithOrderId,
+        whatsapp_url: whatsappUrl,
+        whatsapp_message: message
+      }
     });
 
   } catch (error) {
@@ -333,13 +360,13 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Datos de entrada inválidos', details: error.errors },
+        { success: false, data: null, error: 'Datos de entrada inválidos' },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Error interno del servidor' },
+      { success: false, data: null, error: error instanceof Error ? error.message : 'Error interno del servidor' },
       { status: 500 }
     );
   }

@@ -59,7 +59,7 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
       : undefined
 
   // Badge para best sellers - usar precio base para envío gratis
-  const badge = discount ? 'Best Seller' : item.price >= 15000 ? 'Envío gratis' : 'Destacado'
+  const badge = discount ? 'Best Seller' : item.price >= 50000 ? 'Envío gratis' : 'Destacado'
 
   return (
     <CommercialProductCard
@@ -84,8 +84,8 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
             }
           : undefined
       }
-      // Envío gratis automático para productos >= $15000
-      freeShipping={item.discountedPrice >= 15000}
+      // Envío gratis automático para productos >= $50000
+      freeShipping={item.discountedPrice >= 50000}
       shippingText={
         badge === 'Envío gratis'
           ? 'Envío gratis'

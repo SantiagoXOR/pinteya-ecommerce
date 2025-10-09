@@ -631,13 +631,14 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
               createdAt: order.created_at,
             }
 
-            const whatsappLink = whatsappLinkService.generateOrderWhatsAppLink(orderDetails)
+            const { link: whatsappLink, message: whatsappMessage } = whatsappLinkService.generateOrderWhatsApp(orderDetails)
 
             // Guardar el enlace en la base de datos
             const { error: whatsappUpdateError } = await supabase
               .from('orders')
               .update({
                 whatsapp_notification_link: whatsappLink,
+                whatsapp_message: whatsappMessage,
                 whatsapp_generated_at: new Date().toISOString(),
               })
               .eq('id', order.id)

@@ -382,7 +382,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                       {
                         id: 'express',
                         name: 'Envío express',
-                        price: 4500,
+                        price: 10000,
                         estimatedDays: { min: 1, max: 2 },
                         isExpress: true,
                         description: 'Entrega prioritaria',

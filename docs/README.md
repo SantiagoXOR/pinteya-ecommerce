@@ -25,6 +25,7 @@
 - [🎨 Frontend](./architecture/frontend.md)
 - [🔐 Autenticación](./architecture/authentication.md)
 
+ - [💳 Flujo de Checkout](./architecture/checkout-flow.md)
 ### 📊 **Análisis y Estado Actual (2025)**
 
 - [📊 Análisis Estado Actual](./ANALISIS_ESTADO_ACTUAL_JULIO_2025.md) - Análisis completo del proyecto (Julio 2025)
@@ -48,6 +49,7 @@
 - [🛠️ Patrones de Error Handling](./development/error-handling-patterns.md) - Estándares implementados
 - [🧪 Testing Tools](../public/test-api.html) - Herramienta de testing de APIs
 - [🗑️ Storage Cleaner](../public/clear-storage.html) - Limpieza de localStorage corrupto
+- [🔧 Estabilidad de Hooks en Checkout Express](./fixes/CHECKOUT_EXPRESS_HOOKS_STABILIZATION.md) - Eliminación de hooks condicionales e implementación segura
 
 ### 💻 **Desarrollo**
 
@@ -56,6 +58,8 @@
 - [🧪 Testing](./development/testing.md)
 - [🔍 Debugging](./development/debugging.md)
 - [📦 Dependencias](./development/dependencies.md)
+ - [🧩 Hooks seguros en MercadoPagoWallet](./guides/MercadoPagoWallet_Hooks_Safe.md)
+ - [📝 Changelog de Guías](./guides/CHANGELOG.md)
 
 ### 🔌 **APIs**
 
@@ -99,6 +103,7 @@
 - [🔗 Tests de Integración](./testing/integration.md)
 - [🎭 Tests E2E](./testing/e2e.md)
 - [📊 Cobertura](./testing/coverage.md)
+ - [🧪 Guía de Testing Checkout Express](./testing/checkout.md)
 
 ### 🔒 **Seguridad**
 

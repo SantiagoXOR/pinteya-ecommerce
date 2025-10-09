@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCheckout } from '@/hooks/useCheckout'
-import { useMobileCheckoutNavigation } from '@/hooks/useMobileCheckoutNavigation'
+// Eliminado useMobileCheckoutNavigation para evitar cambios en el orden de hooks
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -75,14 +75,34 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
   const [isFormValid, setIsFormValid] = useState(false)
   const [showCartSummary, setShowCartSummary] = useState(false)
 
-  // Hook para navegación móvil mejorada
-  const { containerRef, isMobile, goBack, triggerHapticFeedback, isInteracting } =
-    useMobileCheckoutNavigation({
-      enableSwipeGestures: true,
-      enableHapticFeedback: true,
-      onSwipeBack: () => router.back(),
-      enableKeyboardNavigation: true,
-    })
+  // Navegación móvil simplificada para mantener orden estable de hooks
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isInteracting, setIsInteracting] = useState(false)
+  const goBack = () => router.back()
+  const triggerHapticFeedback = () => {
+    try {
+      if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
+        navigator.vibrate?.(10)
+      }
+    } catch {}
+  }
+
+  useEffect(() => {
+    const updateIsMobile = () => {
+      try {
+        const userAgent = navigator.userAgent.toLowerCase()
+        const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(
+          userAgent
+        )
+        const isSmallScreen = window.innerWidth < 768
+        setIsMobile(isMobileDevice || isSmallScreen)
+      } catch {}
+    }
+    updateIsMobile()
+    window.addEventListener('resize', updateIsMobile)
+    return () => window.removeEventListener('resize', updateIsMobile)
+  }, [])
 
   // Validación usando la función del hook
   useEffect(() => {
@@ -140,8 +160,9 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!isFormValid || isLoading) return
+    // Validar en el momento del submit para evitar desfase de estado
+    const currentValid = validateExpressForm()
+    if (!currentValid || isLoading) return
 
     try {
       if (formData.paymentMethod === 'cash') {
@@ -192,6 +213,34 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
       return () => clearTimeout(redirectTimer)
     }
   }, [step, initPoint])
+
+  // Redirección segura para flujo de contra entrega (cash_success)
+  useEffect(() => {
+    if (step === 'cash_success' && cashOrderData) {
+      try {
+        const safeTotal = String(cashOrderData.order?.total ?? finalTotal ?? 0)
+        const params = new URLSearchParams({
+          // Mostrar número de orden amigable si existe
+          orderId: String(
+            cashOrderData.order?.order_number ?? cashOrderData.orderId ?? ''
+          ),
+          total: safeTotal,
+          // El servicio de cash order devuelve whatsapp_url (snake_case)
+          whatsappUrl: String(
+            cashOrderData.whatsapp_url ?? cashOrderData.order?.whatsapp_url ?? ''
+          ),
+          // Usar datos del formulario para mayor confiabilidad
+          customerName: String(
+            `${formData?.billing?.firstName ?? ''} ${formData?.billing?.lastName ?? ''}`.trim()
+          ),
+          phone: String(formData?.billing?.phone ?? ''),
+        })
+        router.push(`/checkout/cash-success?${params.toString()}`)
+      } catch (error) {
+        console.error('⚠️ Error construyendo URL de cash_success:', error, cashOrderData)
+      }
+    }
+  }, [step, cashOrderData, finalTotal, router])
 
   // ✅ FUNCIÓN PARA RENDERIZAR CONTENIDO BASADO EN STEP
   // Esto evita returns tempranos y asegura que todos los hooks se ejecuten
@@ -272,22 +321,7 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
 
     // Pantalla de éxito para pago contra entrega
     if (step === 'cash_success') {
-      const { cashOrderData } = useCheckout()
-      
-      if (cashOrderData) {
-        // Redirigir a la página de éxito con los datos del pedido
-        const params = new URLSearchParams({
-          orderId: cashOrderData.orderId,
-          total: cashOrderData.total.toString(),
-          whatsappUrl: cashOrderData.whatsappUrl,
-          customerName: cashOrderData.customerName,
-          phone: cashOrderData.phone
-        })
-        
-        router.push(`/checkout/cash-success?${params.toString()}`)
-        return null
-      }
-      
+      // Render de transición mientras se realiza la redirección por efecto
       return (
         <section className='min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4'>
           <Card className='w-full max-w-md shadow-2xl'>
@@ -301,6 +335,10 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
                   <p className='text-gray-600'>
                     Tu pedido ha sido registrado exitosamente. Te contactaremos por WhatsApp para coordinar la entrega.
                   </p>
+                </div>
+                <div className='flex items-center justify-center gap-2 text-sm text-gray-500'>
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                  <span>Redirigiendo a confirmación...</span>
                 </div>
                 <Button
                   onClick={() => router.push('/')}
@@ -487,16 +525,11 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
           {/* Botón de finalizar compra - Optimizado para móviles y sin leyendas de seguridad */}
           <div className='sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-4 -mx-4 px-4'>
             <Button
-              type='button'
+              type='submit'
+              form='express-checkout-form'
               size='lg'
               data-testid='submit-order'
-              disabled={!isFormValid || isLoading}
-              onClick={e => {
-                if (isFormValid && !isLoading) {
-                  triggerHapticFeedback('heavy')
-                  handleSubmit(e as any)
-                }
-              }}
+              disabled={isLoading}
               className={cn(
                 'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200',
                 isMobile && 'active:scale-[0.98] touch-manipulation min-h-[64px] rounded-xl',

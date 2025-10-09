@@ -80,23 +80,42 @@ export interface PriceDisplayProps
 }
 
 /**
- * Formatea un número como precio en pesos argentinos
+ * Formatea y renderiza un precio con decimales en superíndice
  */
-const formatPrice = (amount: number, currency: string = 'ARS', currencySymbol?: string): string => {
+const renderPrice = (
+  amount: number,
+  currency: string = 'ARS',
+  currencySymbol?: string
+): React.ReactNode => {
   const price = amount / 100
 
-  if (currencySymbol) {
-    return `${currencySymbol}${price.toLocaleString('es-AR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`
-  }
+  // Construir string formateado base
+  const formatted = currencySymbol
+    ? `${currencySymbol}${price.toLocaleString('es-AR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`
+    : price.toLocaleString('es-AR', {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
 
-  return price.toLocaleString('es-AR', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 2,
-  })
+  // Separar parte entera y decimales (formato es-AR usa coma para decimales)
+  const commaIndex = formatted.lastIndexOf(',')
+  if (commaIndex === -1) {
+    return formatted
+  }
+  const integerWithSeparator = formatted.slice(0, commaIndex + 1) // incluye la coma
+  const decimals = formatted.slice(commaIndex + 1)
+
+  return (
+    <span>
+      {integerWithSeparator}
+      <span className='align-super text-xs'>{decimals}</span>
+    </span>
+  )
 }
 
 /**
@@ -134,7 +153,7 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
         {hasDiscount && (
           <div className='flex items-center gap-2'>
             <span className={cn(originalPriceVariants({ size }))}>
-              {formatPrice(originalAmount, currency, currencySymbol)}
+              {renderPrice(originalAmount, currency, currencySymbol)}
             </span>
             {showDiscountPercentage && (
               <span className='bg-red-500 text-white text-xs font-bold px-2 py-1 rounded'>
@@ -151,7 +170,7 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
             priceColor ? `text-[${priceColor}]` : 'text-[#712F00]'
           )}
         >
-          {formatPrice(amount, currency, currencySymbol)}
+          {renderPrice(amount, currency, currencySymbol)}
         </div>
 
         {/* Información de Cuotas */}
@@ -160,14 +179,14 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
             {variant === 'compact' ? (
               <span className='text-fun-green-500 font-medium truncate block text-xs leading-tight'>
                 {installments.quantity}x de{' '}
-                {formatPrice(installments.amount, currency, currencySymbol)}
+                {renderPrice(installments.amount, currency, currencySymbol)}
                 {installments.interestFree && ` ${installmentsText}`}
               </span>
             ) : (
               <>
                 <span className='text-fun-green-500 font-medium truncate block text-xs leading-tight'>
                   {installments.quantity}x de{' '}
-                  {formatPrice(installments.amount, currency, currencySymbol)}
+                  {renderPrice(installments.amount, currency, currencySymbol)}
                 </span>
                 {installments.interestFree && (
                   <span className='ml-1 text-green-600 truncate block'>{installmentsText}</span>

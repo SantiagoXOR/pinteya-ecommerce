@@ -10,6 +10,14 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7.3-blue)](https://www.typescriptlang.org/)
 [![Security](https://img.shields.io/badge/Security-Enterprise%20Grade-red)](./SECURITY-IMPROVEMENTS.md)
 
+## 🧩 Documentos recientes
+
+- **Fix estabilidad de hooks en Checkout Express**: [docs/fixes/CHECKOUT_EXPRESS_HOOKS_STABILIZATION.md](./docs/fixes/CHECKOUT_EXPRESS_HOOKS_STABILIZATION.md)
+- **Guía de Testing de Checkout**: [docs/testing/checkout.md](./docs/testing/checkout.md)
+- **Arquitectura del Flujo de Checkout**: [docs/architecture/checkout-flow.md](./docs/architecture/checkout-flow.md)
+- **Hooks seguros en MercadoPagoWallet**: [docs/guides/MercadoPagoWallet_Hooks_Safe.md](./docs/guides/MercadoPagoWallet_Hooks_Safe.md)
+- **Changelog de Guías**: [docs/guides/CHANGELOG.md](./docs/guides/CHANGELOG.md)
+
 ## 🔒 Security Features
 
 **✅ ENTERPRISE-GRADE SECURITY IMPLEMENTED**
@@ -250,6 +258,23 @@ MERCADOPAGO_ACCESS_TOKEN=APP_USR-921414591813674-121116-...
 MERCADOPAGO_PUBLIC_KEY=APP_USR-b989b49d-2678-43ce-a048-...
 NEXT_PUBLIC_SUPABASE_URL=https://aakzspzfulgftqlgwkpb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+# Opciones de cuotas y métodos (Checkout Pro)
+# Máximo de cuotas a ofrecer
+NEXT_PUBLIC_MP_MAX_INSTALLMENTS=12
+# (opcional) equivalente en backend si no se expone públicamente
+MP_MAX_INSTALLMENTS=12
+# Cuota por defecto seleccionada
+MP_DEFAULT_INSTALLMENTS=1
+# Método de pago preferido por defecto (por ejemplo 'visa', 'master')
+MP_DEFAULT_PAYMENT_METHOD_ID=
+# Excluir métodos específicos (IDs de Mercado Pago, separados por coma)
+MP_EXCLUDED_PAYMENT_METHODS=amex
+# Excluir tipos de pago (por ejemplo 'ticket','atm','debit_card')
+MP_EXCLUDED_PAYMENT_TYPES=ticket,atm
+# Promociones de cuotas sin interés (ID configurado en tu cuenta)
+MP_DIFFERENTIAL_PRICING_ID=
+# Sponsor del comercio para habilitar promociones
+MP_SPONSOR_ID=
 ```
 
 ### 🎯 Flujo de Checkout

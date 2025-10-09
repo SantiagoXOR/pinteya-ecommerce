@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock } from 'lucide-react'
+import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock, Phone, Mail, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,20 +15,95 @@ export default function CashSuccessPage() {
 
   // Extraer datos de la URL
   const orderId = searchParams.get('orderId')
-  const total = searchParams.get('total')
-  const whatsappUrl = searchParams.get('whatsappUrl')
+  const totalParam = searchParams.get('total')
+  const whatsappUrlParam = searchParams.get('whatsappUrl')
   const customerName = searchParams.get('customerName')
   const phone = searchParams.get('phone')
 
+  // Fallbacks desde localStorage si los params no llegan
+  const [effectiveTotal, setEffectiveTotal] = useState<number>(0)
+  const [effectiveWhatsappUrl, setEffectiveWhatsappUrl] = useState<string | null>(null)
+  const [whatsappMessage, setWhatsappMessage] = useState<string>('')
+  const [phoneNumber, setPhoneNumber] = useState<string>('')
+
+  useEffect(() => {
+    try {
+      const totalFromParam = totalParam ? Number(totalParam) : 0
+      let nextTotal = !isNaN(totalFromParam) && totalFromParam > 0 ? totalFromParam : 0
+
+      let nextWhatsapp = whatsappUrlParam || null
+
+      if ((!nextWhatsapp || nextTotal === 0) && typeof window !== 'undefined') {
+        const savedRaw = window.localStorage.getItem('cashSuccessParams')
+        if (savedRaw) {
+          const saved = JSON.parse(savedRaw)
+          const savedTotal = Number(saved?.total)
+          if (!isNaN(savedTotal) && savedTotal > 0) {
+            nextTotal = savedTotal
+          }
+          if (!nextWhatsapp && saved?.whatsappUrl) {
+            nextWhatsapp = saved.whatsappUrl
+          }
+          if (saved?.whatsappMessage) {
+            setWhatsappMessage(String(saved.whatsappMessage))
+          }
+        }
+      }
+
+      setEffectiveTotal(nextTotal)
+      setEffectiveWhatsappUrl(nextWhatsapp)
+
+      // Extraer número del wa.me si está disponible, si no usar fallback
+      let extractedPhone = ''
+      try {
+        if (nextWhatsapp) {
+          const u = new URL(nextWhatsapp)
+          const match = u.pathname.match(/\/(\d+)/)
+          if (match && match[1]) extractedPhone = match[1]
+        }
+      } catch {}
+
+      // Fallback a número de negocio conocido
+      const fallbackPhone = '5493513411796'
+      setPhoneNumber(extractedPhone || fallbackPhone)
+
+      // Intentar obtener el mensaje y link desde la DB vía API
+      if (orderId) {
+        ;(async () => {
+          try {
+            const res = await fetch(`/api/orders/${orderId}`)
+            const json = await res.json()
+            if (res.ok && json?.success && json.data) {
+              const o = json.data
+              if (o.whatsapp_notification_link) {
+                setEffectiveWhatsappUrl(o.whatsapp_notification_link)
+              }
+              if (o.whatsapp_message) {
+                setWhatsappMessage(String(o.whatsapp_message))
+              }
+            }
+          } catch (err) {
+            console.warn('No se pudo obtener la orden desde la API:', err)
+          }
+        })()
+      }
+    } catch (e) {
+      // Si hay algún error de parseo, mantenemos valores por defecto
+      setEffectiveTotal(totalParam ? Number(totalParam) || 0 : 0)
+      setEffectiveWhatsappUrl(whatsappUrlParam || null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Countdown para redirección automática
   useEffect(() => {
-    if (!whatsappUrl) return
+    if (!effectiveWhatsappUrl) return
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          window.open(whatsappUrl, '_blank')
+          window.open(effectiveWhatsappUrl, '_blank')
           return 0
         }
         return prev - 1
@@ -36,12 +111,38 @@ export default function CashSuccessPage() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [whatsappUrl])
+  }, [effectiveWhatsappUrl])
 
   const handleWhatsAppRedirect = () => {
-    if (whatsappUrl) {
-      window.open(whatsappUrl, '_blank')
+    if (effectiveWhatsappUrl) {
+      window.open(effectiveWhatsappUrl, '_blank')
     }
+  }
+
+  const defaultMessage = `Hola${customerName ? ` ${customerName}` : ''}, confirmo mi pedido${orderId ? ` #${orderId}` : ''} por un total de $${effectiveTotal.toLocaleString('es-AR')}.` 
+
+  const handleCopyMessage = async () => {
+    const msg = whatsappMessage || defaultMessage
+    try {
+      await navigator.clipboard.writeText(msg)
+      // Feedback simple sin dependencias
+      alert('Mensaje copiado al portapapeles')
+    } catch (err) {
+      console.error('No se pudo copiar el mensaje', err)
+    }
+  }
+
+  const handleCall = () => {
+    if (phoneNumber) {
+      window.location.href = `tel:${phoneNumber}`
+    }
+  }
+
+  const handleEmail = () => {
+    const subject = encodeURIComponent(`Confirmación de Pedido${orderId ? ` #${orderId}` : ''}`)
+    const body = encodeURIComponent((whatsappMessage || defaultMessage) + '\n\nGracias.')
+    const email = 'ventas@pinteya.com'
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
   }
 
   const handleContinueShopping = () => {
@@ -102,13 +203,13 @@ export default function CashSuccessPage() {
               </div>
             )}
 
-            {total && (
+            {effectiveTotal > 0 && (
               <>
                 <Separator />
                 <div className="flex justify-between items-center text-lg font-semibold">
                   <span>Total a Pagar:</span>
                   <span className="text-green-600">
-                    ${parseFloat(total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    ${effectiveTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </>
@@ -132,7 +233,7 @@ export default function CashSuccessPage() {
         </Card>
 
         {/* Redirección a WhatsApp */}
-        {whatsappUrl && (
+        {effectiveWhatsappUrl && (
           <Card className="mb-6 border-green-200 bg-green-50">
             <CardContent className="pt-6">
               <div className="text-center">
@@ -188,6 +289,36 @@ export default function CashSuccessPage() {
             </Button>
           )}
         </div>
+
+        {/* Fallbacks si WhatsApp no funciona */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">Si WhatsApp no funciona</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Button
+              variant="secondary"
+              onClick={handleCopyMessage}
+              className="flex items-center justify-center gap-2"
+            >
+              <Copy className="w-4 h-4" /> Copiar Mensaje
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleCall}
+              className="flex items-center justify-center gap-2"
+            >
+              <Phone className="w-4 h-4" /> Llamar al negocio
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleEmail}
+              className="flex items-center justify-center gap-2"
+            >
+              <Mail className="w-4 h-4" /> Enviar Email
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Información adicional */}
         <div className="mt-8 text-center text-sm text-gray-500">

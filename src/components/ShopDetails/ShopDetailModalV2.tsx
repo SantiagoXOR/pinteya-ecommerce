@@ -108,16 +108,50 @@ export default function ShopDetailModalV2({
               <div className="space-y-2">
                 <div className="flex items-baseline gap-3">
                   <span className="text-3xl font-bold text-gray-900">
-                    ${product.price.toLocaleString()}
+                    {(() => {
+                      const formatted = product.price.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                      const commaIndex = formatted.lastIndexOf(',')
+                      if (commaIndex === -1) return `$${formatted}`
+                      const integerWithSep = formatted.slice(0, commaIndex + 1)
+                      const decimals = formatted.slice(commaIndex + 1)
+                      return (
+                        <span>
+                          {`$${integerWithSep}`}<span className="align-super text-xs">{decimals}</span>
+                        </span>
+                      )
+                    })()}
                   </span>
                   {product.original_price && product.original_price > product.price && (
                     <span className="text-lg text-gray-500 line-through">
-                      ${product.original_price.toLocaleString()}
+                      {(() => {
+                        const formatted = product.original_price!.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        const commaIndex = formatted.lastIndexOf(',')
+                        if (commaIndex === -1) return `$${formatted}`
+                        const integerWithSep = formatted.slice(0, commaIndex + 1)
+                        const decimals = formatted.slice(commaIndex + 1)
+                        return (
+                          <span>
+                            {`$${integerWithSep}`}<span className="align-super text-xs">{decimals}</span>
+                          </span>
+                        )
+                      })()}
                     </span>
                   )}
                 </div>
                 <p className="text-sm text-green-600 font-medium">
-                  Hasta 12 cuotas sin interés de ${(product.price / 12).toFixed(0)}
+                  Hasta 12 cuotas sin interés de {(() => {
+                    const base = (product.price / 12)
+                    const formatted = base.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    const commaIndex = formatted.lastIndexOf(',')
+                    if (commaIndex === -1) return `$${formatted}`
+                    const integerWithSep = formatted.slice(0, commaIndex + 1)
+                    const decimals = formatted.slice(commaIndex + 1)
+                    return (
+                      <span>
+                        {`$${integerWithSep}`}<span className="align-super text-xs">{decimals}</span>
+                      </span>
+                    )
+                  })()}
                 </p>
               </div>
 

@@ -927,10 +927,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               {hasVariantDiscount ? (
                 <>
                   <span className='text-3xl font-bold text-blaze-orange-600'>
-                    ${currentPrice.toLocaleString()}
+                    {renderPriceSup(currentPrice)}
                   </span>
                   <span className='text-xl text-gray-500 line-through'>
-                    ${originalPrice.toLocaleString()}
+                    {renderPriceSup(originalPrice)}
                   </span>
                   <Badge variant='destructive' className='text-sm'>
                     {Math.round(((originalPrice - currentPrice) / originalPrice) * 100)}% OFF
@@ -938,7 +938,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                 </>
               ) : (
                 <span className='text-3xl font-bold text-blaze-orange-600'>
-                  ${currentPrice.toLocaleString()}
+                  {renderPriceSup(currentPrice)}
                 </span>
               )}
             </div>
@@ -1187,7 +1187,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             <div className='flex justify-between items-center'>
               <span className='text-lg font-medium text-gray-900'>Total:</span>
               <span className='text-2xl font-bold text-blaze-orange-600'>
-                ${(currentPrice * quantity).toLocaleString()}
+                {renderPriceSup(currentPrice * quantity)}
               </span>
             </div>
             {quantity > 1 && (
@@ -1311,3 +1311,22 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 }
 
 export default ShopDetailModal
+  // Helper: renderizar precio con decimales en superíndice (formato ARS)
+  const renderPriceSup = (value: number) => {
+    const formatted = value.toLocaleString('es-AR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    const commaIndex = formatted.lastIndexOf(',')
+    if (commaIndex === -1) {
+      return `$${formatted}`
+    }
+    const integerWithSep = formatted.slice(0, commaIndex + 1)
+    const decimals = formatted.slice(commaIndex + 1)
+    return (
+      <span>
+        {`$${integerWithSep}`}
+        <span className='align-super text-xs'>{decimals}</span>
+      </span>
+    )
+  }

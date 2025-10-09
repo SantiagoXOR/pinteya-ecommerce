@@ -3,6 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { Heart, Eye, Star, ShoppingCart, AlertCircle } from 'lucide-react'
 import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 import { 
@@ -328,8 +329,10 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       [onAddToCart, isAddingToCart, stock, showCartAnimation]
     )
 
-    // Calcular si mostrar envío gratis automáticamente
-    const shouldShowFreeShipping = freeShipping || (price && price >= 15000)
+    // Calcular si mostrar envío gratis automáticamente con umbral global
+    const config = useDesignSystemConfig()
+    const autoFreeShipping = price ? dsShouldShowFreeShipping(price, config) : false
+    const shouldShowFreeShipping = Boolean(freeShipping || autoFreeShipping)
 
     return (
       <div
@@ -490,29 +493,33 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           <div className='flex flex-col items-start space-y-1'>
             {/* Precios en línea horizontal - Responsive */}
             <div className='flex items-center gap-1 md:gap-2'>
-              {/* Precio actual - Grande y destacado, responsive */}
+              {/* Precio actual - Grande y destacado, responsive (sin decimales) */}
               <div
                 className='text-lg md:text-2xl font-bold drop-shadow-sm'
                 style={{ color: '#EA5A17' }}
               >
-                ${price?.toLocaleString('es-AR') || '0'}
+                {
+                  `$${(price ?? 0).toLocaleString('es-AR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}`
+                }
               </div>
 
-              {/* Precio anterior tachado - Responsive */}
+              {/* Precio anterior tachado - Responsive (sin decimales) */}
               {originalPrice && originalPrice > (price || 0) && (
                 <div className='text-gray-500 line-through text-xs md:text-sm drop-shadow-sm'>
-                  ${originalPrice.toLocaleString('es-AR')}
+                  {
+                    `$${originalPrice.toLocaleString('es-AR', {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}`
+                  }
                 </div>
               )}
             </div>
 
-            {/* Cuotas en verde más oscuro - Responsive */}
-            {installments && (
-              <div className='text-green-800 text-xs md:text-sm font-medium drop-shadow-sm'>
-                {installments.quantity}x de ${installments.amount.toLocaleString('es-AR')}
-                {installments.interestFree ? ' sin interés' : ''}
-              </div>
-            )}
+            {/* Cuotas ocultas temporalmente por solicitud del usuario */}
           </div>
 
           {/* Badge de envío gratis - Compacto y responsive */}

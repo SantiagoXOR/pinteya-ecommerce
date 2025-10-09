@@ -117,6 +117,30 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 - **Producción**: Listo para deploy inmediato
 - **Mantenibilidad**: Código organizado y escalable
 
+## [3.1.1] - 2025-08-10 - 🔧 Fix: Estabilidad de Hooks en Checkout Express
+
+### Corregido
+
+- Eliminado `useMobileCheckoutNavigation` de `CheckoutExpress` para asegurar orden estable de hooks.
+- Reemplazado por hooks locales (`useRef`, `useState`, `useEffect`) sin condicionales.
+- Documentación agregada:
+  - `docs/fixes/CHECKOUT_EXPRESS_HOOKS_STABILIZATION.md`
+  - `docs/testing/checkout.md`
+  - `docs/architecture/checkout-flow.md`
+  - `docs/guides/MercadoPagoWallet_Hooks_Safe.md`
+
+### Verificación
+
+- Build de producción exitoso tras limpiar `.next`.
+- Sin errores de orden de hooks reportados en `CheckoutExpress`.
+
+### Archivos Modificados
+
+- `src/components/Checkout/CheckoutExpress.tsx` (hooks estabilizados)
+- Documentación agregada (ver arriba)
+
+---
+
 ## [3.0.0] - 2025-07-26 - 🎯 AUDITORÍA COMPLETA FINALIZADA ✅
 
 ### 🚀 Major - Auditoría Integral Completada (16/16 tareas)

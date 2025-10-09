@@ -57,6 +57,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     // Detectar si estamos en rutas de admin
     const isAdminRoute = pathname?.startsWith('/admin')
+    // Detectar si estamos en checkout express para ocultar el botón flotante
+    const isCheckoutRoute = pathname?.startsWith('/checkout')
 
     // DEBUG: Logs para verificar la detección de rutas admin (DESHABILITADO)
     // console.log('🔧 PROVIDERS DEBUG:', {
@@ -109,8 +111,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                       <BottomNavigation />
                     </div> */}
 
-                              {/* Botón de carrito flotante - Solo en rutas públicas */}
-                              {!isAdminRoute && <FloatingCartButton />}
+                              {/* Botón de carrito flotante - Oculto en checkout para no tapar el botón de finalizar */}
+                              {!isAdminRoute && !isCheckoutRoute && <FloatingCartButton />}
 
                               {/* Notificación del carrito - Solo en rutas públicas */}
                               {!isAdminRoute && (

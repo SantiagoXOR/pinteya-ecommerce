@@ -32,6 +32,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         shipping_address,
         created_at,
         updated_at,
+        whatsapp_notification_link,
+        whatsapp_message,
+        whatsapp_generated_at,
         order_items (
           id,
           quantity,

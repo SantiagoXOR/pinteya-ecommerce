@@ -133,8 +133,8 @@ describe('Utility Helpers', () => {
     })
 
     it('applies free shipping threshold', () => {
-      expect(calculateShipping(1, 'CABA', 15000)).toBe(0) // Free shipping over threshold
-      expect(calculateShipping(1, 'CABA', 10000)).toBe(500) // Below threshold
+      expect(calculateShipping(1, 'CABA', 50000)).toBe(0) // Free shipping over threshold
+      expect(calculateShipping(1, 'CABA', 40000)).toBe(500) // Below threshold
     })
 
     it('handles express shipping', () => {

@@ -38,7 +38,7 @@ const initialFormData: CheckoutFormData = {
     differentAddress: false,
   },
   paymentMethod: 'cash',
-  shippingMethod: 'free',
+  shippingMethod: 'express',
   couponCode: '',
 }
 
@@ -115,7 +115,7 @@ export const useCheckout = () => {
       case 'standard':
         return totalPrice > 50000 ? 0 : 5000 // Envío gratis por compras mayores a $50,000
       case 'express':
-        return 8000
+        return 10000
       default:
         return 0
     }
@@ -258,8 +258,13 @@ export const useCheckout = () => {
       errors.email = 'Email inválido'
     }
 
-    if (billing.phone && !validatePhoneNumber(billing.phone)) {
-      errors.phone = 'Teléfono inválido. Formato: +54 351 XXX XXXX'
+    // Validación más permisiva para teléfono en checkout express
+    if (billing.phone) {
+      const digitsOnly = billing.phone.replace(/\D/g, '')
+      // Aceptar 8 a 11 dígitos (fijo/celular argentino, sin prefijo +54)
+      if (digitsOnly.length < 8 || digitsOnly.length > 11) {
+        errors.phone = 'Teléfono inválido. Ingresá 8–11 dígitos'
+      }
     }
 
     if (billing.streetAddress && billing.streetAddress.length < 10) {
@@ -298,7 +303,7 @@ export const useCheckout = () => {
 
     setCheckoutState(prev => ({ ...prev, errors }))
     return Object.keys(errors).length === 0
-  }, [cartItems.length])
+  }, [checkoutState.formData, cartItems.length])
 
   // Validar formulario express (solo campos esenciales)
   const validateExpressForm = useCallback(() => {
@@ -342,8 +347,13 @@ export const useCheckout = () => {
       errors.email = 'Email inválido'
     }
 
-    if (billing.phone && !validatePhoneNumber(billing.phone)) {
-      errors.phone = 'Teléfono inválido. Formato: +54 351 XXX XXXX'
+    // Validación más permisiva de teléfono para checkout express
+    if (billing.phone) {
+      const digitsOnly = billing.phone.replace(/\D/g, '')
+      // Aceptar 8–13 dígitos (local y E.164 con +54 9)
+      if (digitsOnly.length < 8 || digitsOnly.length > 13) {
+        errors.phone = 'Teléfono inválido. Ingresá 8–13 dígitos'
+      }
     }
 
     // Validación de DNI/CUIT argentino
@@ -632,13 +642,10 @@ export const useCheckout = () => {
   const processCashOnDelivery = useCallback(async () => {
     console.log('💰 Iniciando proceso de pago contra entrega')
     
-    // Validar formulario
-    const validationErrors = validateForm()
-    if (Object.keys(validationErrors).length > 0) {
-      setCheckoutState(prev => ({
-        ...prev,
-        errors: validationErrors,
-      }))
+    // Validar formulario EXPRESS (campos esenciales)
+    const isValid = validateExpressForm()
+    if (!isValid) {
+      // Los errores ya se establecen dentro de validateForm()
       return
     }
 
@@ -685,15 +692,15 @@ export const useCheckout = () => {
       const shippingAddress = shipping.differentAddress ? {
         street_name: shipping.streetAddress!,
         street_number: '123', // Número por defecto
-        city_name: shipping.city!,
-        state_name: shipping.state!,
-        zip_code: shipping.zipCode!,
+        city_name: shipping.city || 'Córdoba',
+        state_name: shipping.state || 'Córdoba',
+        zip_code: shipping.zipCode || '5000',
       } : {
         street_name: billing.streetAddress,
         street_number: '123', // Número por defecto
-        city_name: billing.city,
-        state_name: billing.state,
-        zip_code: billing.zipCode,
+        city_name: billing.city || 'Córdoba',
+        state_name: billing.state || 'Córdoba',
+        zip_code: billing.zipCode || '5000',
       }
 
       // Preparar payload según el esquema CreateCashOrderSchema
@@ -701,7 +708,8 @@ export const useCheckout = () => {
         items: cartItems.map(item => ({
           id: item.id.toString(), // Convertir a string como espera el esquema
           quantity: item.quantity,
-          unit_price: item.discountedPrice || item.price, // Usar precio con descuento si existe
+          // Usar 'unit_price' para cumplir con CreateCashOrderSchema
+          unit_price: item.discountedPrice || item.price,
         })),
         payer: {
           name: billing.firstName,
@@ -740,6 +748,25 @@ export const useCheckout = () => {
       }
 
       console.log('✅ Orden de pago contra entrega creada exitosamente:', result.data)
+
+      // Persistir datos clave para la página de éxito
+      try {
+        const order = result?.data?.order
+        const whatsappUrl = result?.data?.whatsapp_url || order?.whatsapp_url
+        const whatsappMessage = result?.data?.whatsapp_message
+        if (order) {
+          const successParams = {
+            orderId: order.order_number || String(order.id),
+            total: Number(order.total ?? 0),
+            whatsappUrl,
+            whatsappMessage,
+          }
+          localStorage.setItem('cashSuccessParams', JSON.stringify(successParams))
+          localStorage.setItem('cashOrderData', JSON.stringify(result.data))
+        }
+      } catch (e) {
+        console.error('❌ No se pudo guardar cashSuccessParams en localStorage', e)
+      }
 
       // Limpiar carrito
       dispatch(removeAllItemsFromCart())

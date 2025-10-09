@@ -90,14 +90,15 @@ export async function GET(
       createdAt: order.created_at,
     }
 
-    // Generar el enlace de WhatsApp
-    const whatsappLink = whatsappLinkService.generateOrderWhatsAppLink(orderDetails)
+    // Generar el enlace y obtener el mensaje crudo
+    const { link: whatsappLink, message: whatsappMessage } = whatsappLinkService.generateOrderWhatsApp(orderDetails)
 
     // Actualizar la orden con el nuevo enlace
     const { error: updateError } = await supabase
       .from('orders')
       .update({
         whatsapp_notification_link: whatsappLink,
+        whatsapp_message: whatsappMessage,
         whatsapp_generated_at: new Date().toISOString(),
       })
       .eq('id', orderId)
