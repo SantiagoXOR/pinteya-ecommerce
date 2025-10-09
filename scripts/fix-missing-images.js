@@ -1,8 +1,14 @@
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config({ path: '.env.local' });
 
-// Configuración de Supabase
-const supabaseUrl = 'https://aakzspzfulgftqlgwkpb.supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFha3pzcHpmVWxnZnRxbGd3a3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg4MzI4NzMsImV4cCI6MjAzNDQwODg3M30.Ej_2Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8Ej8';
+// Configuración de Supabase (solo desde variables de entorno)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Error de configuración: NEXT_PUBLIC_SUPABASE_URL y SUPABASE_ANON_KEY son requeridas');
+  process.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
