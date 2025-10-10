@@ -32,8 +32,10 @@ const PreviewSliderModal = () => {
   return (
     <div
       className={`preview-slider w-full h-screen  z-999999 inset-0 flex justify-center items-center bg-[#000000F2] bg-opacity-70 ${
-        isModalPreviewOpen ? 'fixed' : 'hidden'
+        isModalPreviewOpen ? 'fixed pointer-events-auto' : 'hidden pointer-events-none'
       }`}
+      aria-hidden={!isModalPreviewOpen}
+      role="dialog"
     >
       <button
         onClick={() => closePreviewModal()}

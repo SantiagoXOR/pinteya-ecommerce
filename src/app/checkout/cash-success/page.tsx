@@ -26,6 +26,42 @@ export default function CashSuccessPage() {
   const [whatsappMessage, setWhatsappMessage] = useState<string>('')
   const [phoneNumber, setPhoneNumber] = useState<string>('')
 
+  // Helper: resuelve el mejor endpoint de WhatsApp según dispositivo
+  const resolveWhatsAppLink = (
+    baseWaMeUrl: string | null,
+    rawMessage: string,
+    fallbackPhone: string
+  ): string => {
+    let phone = (fallbackPhone || '').replace(/\D/g, '')
+    // Convertir \n a \r\n antes de codificar para asegurar saltos de línea en todos los clientes
+    let encodedText = rawMessage ? encodeURIComponent(rawMessage.replace(/\n/g, '\r\n')) : ''
+
+    try {
+      if (baseWaMeUrl) {
+        const u = new URL(baseWaMeUrl)
+        const m = u.pathname.match(/\/(\d+)/)
+        if (m && m[1]) phone = m[1]
+        const t = u.searchParams.get('text')
+        if (t) encodedText = t
+        // Normalizar cualquier wa.me a api.whatsapp.com/send para consistencia y mejor renderizado
+        if (u.hostname === 'wa.me') {
+          // Si faltara el text, usar el que construimos arriba
+          return `https://api.whatsapp.com/send?phone=${phone}&text=${encodedText}`
+        }
+      }
+    } catch {}
+
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Mobile/i.test(ua)
+
+    if (isMobile) {
+      // En móviles, intentar deep link de la app
+      return `whatsapp://send?phone=${phone}&text=${encodedText}`
+    }
+    // En desktop, preferir el endpoint oficial api.whatsapp.com para respetar saltos de línea
+    return `https://api.whatsapp.com/send?phone=${phone}&text=${encodedText}`
+  }
+
   useEffect(() => {
     try {
       const totalFromParam = totalParam ? Number(totalParam) : 0
@@ -103,7 +139,12 @@ export default function CashSuccessPage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          window.open(effectiveWhatsappUrl, '_blank')
+          const finalLink = resolveWhatsAppLink(
+            effectiveWhatsappUrl,
+            whatsappMessage || defaultMessage,
+            phoneNumber
+          )
+          window.open(finalLink, '_blank')
           return 0
         }
         return prev - 1
@@ -115,7 +156,12 @@ export default function CashSuccessPage() {
 
   const handleWhatsAppRedirect = () => {
     if (effectiveWhatsappUrl) {
-      window.open(effectiveWhatsappUrl, '_blank')
+      const finalLink = resolveWhatsAppLink(
+        effectiveWhatsappUrl,
+        whatsappMessage || defaultMessage,
+        phoneNumber
+      )
+      window.open(finalLink, '_blank')
     }
   }
 

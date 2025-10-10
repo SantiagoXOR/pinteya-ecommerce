@@ -33,6 +33,9 @@ const CartSidebarModal = () => {
   const effectiveTotalPrice = backendCartItems.length > 0 ? backendTotalAmount : totalPrice
   const hasItems = effectiveCartItems.length > 0
 
+  // Estimación de envío: gratis desde $50.000; caso contrario $10.000 (express)
+  const estimatedShippingCost = effectiveTotalPrice >= 50000 ? 0 : 10000
+
   // Hook para manejar la animación de transición al checkout
   const { isTransitioning, startTransition, skipAnimation, isButtonDisabled } =
     useCheckoutTransition({
@@ -65,8 +68,12 @@ const CartSidebarModal = () => {
   return (
     <div
       className={`fixed top-0 left-0 z-99999 overflow-y-auto no-scrollbar w-full h-screen bg-dark/70 transition-all duration-500 ease-out ${
-        isCartModalOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+        isCartModalOpen
+          ? 'translate-x-0 opacity-100 pointer-events-auto'
+          : 'translate-x-full opacity-0 pointer-events-none'
       }`}
+      aria-hidden={!isCartModalOpen}
+      role="dialog"
     >
       <div className='flex items-center justify-end'>
         <div
@@ -137,6 +144,30 @@ const CartSidebarModal = () => {
                 ${totalPrice.toLocaleString()}
               </p>
             </div>
+
+            {/* Envío */}
+            {hasItems && (
+              <div className='flex items-center justify-between gap-3 mb-2'>
+                <p className='text-gray-700'>Envío</p>
+                <p className='font-semibold'>
+                  {estimatedShippingCost === 0 ? (
+                    <span className='text-green-600'>Gratis</span>
+                  ) : (
+                    `$${estimatedShippingCost.toLocaleString()}`
+                  )}
+                </p>
+              </div>
+            )}
+
+            {/* Total */}
+            {hasItems && (
+              <div className='flex items-center justify-between gap-3 mb-3'>
+                <p className='font-bold text-lg text-gray-900'>Total:</p>
+                <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
+                  ${(effectiveTotalPrice + estimatedShippingCost).toLocaleString()}
+                </p>
+              </div>
+            )}
 
             {/* Información de pago */}
             <div className='space-y-2'>

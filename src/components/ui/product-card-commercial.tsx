@@ -407,10 +407,11 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         {discount && (
           <div className='absolute top-2 left-2 md:top-3 md:left-3 z-30'>
             <div
-              className='text-white text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-sm'
+              className='text-white px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-sm leading-none flex flex-col items-center justify-center'
               style={{ backgroundColor: '#EA5A17' }}
             >
-              {discount}
+              <span className='font-extrabold text-[11px] md:text-[12px] tracking-tight'>{discount}</span>
+              <span className='uppercase text-[8px] md:text-[9px] font-semibold -mt-[2px]'>OFF</span>
             </div>
           </div>
         )}

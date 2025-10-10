@@ -9,6 +9,7 @@ import { createRateLimiter } from '@/lib/rate-limiting/rate-limiter';
 import { metricsCollector } from '@/lib/enterprise/metrics';
 import crypto from 'crypto';
 import { normalizeWhatsAppPhoneNumber } from '@/lib/integrations/whatsapp/whatsapp-link-service';
+import { sanitizeForWhatsApp, EMOJIS } from '@/lib/integrations/whatsapp/whatsapp-utils';
 
 // Schema de validación para la orden de pago contra entrega
 const CreateCashOrderSchema = z.object({
@@ -31,6 +32,8 @@ const CreateCashOrderSchema = z.object({
     }).optional()
   }),
   shipments: z.object({
+    // ✅ Nuevo: costo de envío enviado desde el frontend
+    cost: z.number().optional(),
     receiver_address: z.object({
       zip_code: z.string(),
       state_name: z.string(),
@@ -54,29 +57,34 @@ function calculateFinalPrice(product: any): number {
 // Función para generar mensaje de WhatsApp
 function generateWhatsAppMessage(orderData: any): string {
   const { order, items } = orderData;
-  
-  let message = `¡Hola! He realizado un pedido con pago contra entrega:\n\n`;
-  message += `📋 *Orden #${order.id}*\n`;
-  message += `👤 *Cliente:* ${order.payer_name} ${order.payer_surname}\n`;
-  message += `📧 *Email:* ${order.payer_email}\n`;
-  message += `📱 *Teléfono:* ${order.payer_phone}\n\n`;
-  
-  message += `🛍️ *Productos:*\n`;
+
+  const lines: string[] = [
+    `¡Hola! He realizado un pedido con pago contra entrega`,
+    '',
+    `${EMOJIS.receipt} *Orden #${order.id}*`,
+    `${EMOJIS.bullet} Cliente: ${order.payer_name} ${order.payer_surname}`,
+    `${EMOJIS.bullet} Email: ${EMOJIS.email} ${order.payer_email}`,
+    `${EMOJIS.bullet} Teléfono: ${EMOJIS.phone} ${order.payer_phone}`,
+    '',
+    `🛍️ *Productos:*`,
+  ];
+
   items.forEach((item: any, index: number) => {
-    message += `${index + 1}. ${item.product_name} x${item.quantity} - $${item.unit_price.toFixed(2)}\n`;
+    lines.push(`${index + 1}. ${item.product_name} x${item.quantity} - $${item.unit_price.toFixed(2)}`);
   });
-  
-  message += `\n💰 *Total: $${order.total_amount.toFixed(2)}*\n\n`;
-  
-  message += `🏠 *Dirección de entrega:*\n`;
-  message += `${order.shipping_street_name} ${order.shipping_street_number}\n`;
-  message += `${order.shipping_city_name}, ${order.shipping_state_name}\n`;
-  message += `CP: ${order.shipping_zip_code}\n\n`;
-  
-  message += `💳 *Método de pago:* Pago contra entrega\n`;
-  message += `📅 *Fecha del pedido:* ${new Date(order.created_at).toLocaleDateString('es-AR')}\n\n`;
-  message += `¡Gracias por tu compra! 🙏`;
-  
+
+  lines.push('', `${EMOJIS.money} *Total: $${order.total_amount.toFixed(2)}*`, '');
+  lines.push(`🏠 *Dirección de entrega:*`);
+  lines.push(`${order.shipping_street_name} ${order.shipping_street_number}`);
+  lines.push(`${order.shipping_city_name}, ${order.shipping_state_name}`);
+  lines.push(`CP: ${order.shipping_zip_code}`);
+  lines.push('');
+  lines.push(`💳 *Método de pago:* Pago contra entrega`);
+  lines.push(`${EMOJIS.calendar} *Fecha del pedido:* ${new Date(order.created_at).toLocaleDateString('es-AR')}`);
+  lines.push('');
+  lines.push(`${EMOJIS.check} Gracias por tu compra. Nuestro equipo te contactará en las próximas horas.`);
+
+  const message = sanitizeForWhatsApp(lines.join('\n'));
   return encodeURIComponent(message);
 }
 
@@ -194,12 +202,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Calcular total e inicializar items para order_items usando la columna efectiva 'price'
-    let totalAmount = 0;
+    let itemsSubtotal = 0;
     const orderItems = validatedData.items.map(item => {
       const product = products.find(p => p.id.toString() === item.id.toString())!;
       const finalPrice = calculateFinalPrice(product);
       const itemTotal = finalPrice * item.quantity;
-      totalAmount += itemTotal;
+      itemsSubtotal += itemTotal;
 
       return {
         product_id: parseInt(item.id),
@@ -207,6 +215,10 @@ export async function POST(request: NextRequest) {
         price: finalPrice
       };
     });
+
+    // ✅ Sumar costo de envío (si viene) al total
+    const shippingCost = typeof validatedData.shipments.cost === 'number' ? validatedData.shipments.cost : 0;
+    const totalAmount = itemsSubtotal + shippingCost;
 
     // Preparar datos para insertar en orders
     const orderNumber = `ORD-${Math.floor(Date.now() / 1000)}-${crypto.randomBytes(4).toString('hex')}`;
@@ -274,33 +286,61 @@ export async function POST(request: NextRequest) {
       throw new Error('Error al crear los items de la orden');
     }
 
-    // Generar mensaje de WhatsApp
-    let message = `🛒 *Nueva Orden - Pago Contra Entrega*\n\n`;
-    message += `📋 *Orden:* ${order.order_number || order.id}\n`;
-    message += `💰 *Total:* $${order.total || totalAmount}\n\n`;
-    
-    message += `👤 *Cliente:* ${validatedData.payer.name} ${validatedData.payer.surname}\n`;
-    message += `📧 *Email:* ${validatedData.payer.email}\n`;
-    message += `📱 *Teléfono:* ${validatedData.payer.phone.area_code}${validatedData.payer.phone.number}\n\n`;
-    
-    message += `🛍️ *Productos:*\n`;
+    // Generar mensaje de WhatsApp con el formato solicitado
+    const formatARS = (v: number) => Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const bullet = EMOJIS.bullet;
+    const lines: string[] = [
+      `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+      `🤝 Te compartimos el detalle para coordinar la entrega:`,
+      '',
+      `*Detalle de Orden:*`,
+      `${bullet} Orden: ${order.order_number || order.id}`,
+      `${bullet} Subtotal: $${formatARS(itemsSubtotal)}`,
+      `${bullet} Envío: $${formatARS(shippingCost)}`,
+      `${bullet} Total: $${formatARS(Number(order.total || totalAmount))}`,
+      '',
+      `*Datos Personales:*`,
+      `${bullet} Nombre: ${validatedData.payer.name} ${validatedData.payer.surname}`,
+      `${bullet} Teléfono: ${EMOJIS.phone} ${validatedData.payer.phone.area_code}${validatedData.payer.phone.number}`,
+      `${bullet} Email: ${EMOJIS.email} ${validatedData.payer.email}`,
+      '',
+      `*Productos:*`,
+    ];
+
     for (const item of validatedData.items) {
       const product = products.find(p => p.id.toString() === item.id.toString());
       if (product) {
-        message += `• ${product.name} x${item.quantity} - $${(product.discounted_price || product.price) * item.quantity}\n`;
+        const lineTotal = calculateFinalPrice(product) * item.quantity;
+        lines.push(`${bullet} ${product.name} x${item.quantity} - $${formatARS(lineTotal)}`);
       }
     }
-    
-    message += `\n📍 *Dirección de Entrega:*\n`;
-    message += `${order.shipping_address?.street_name} ${order.shipping_address?.street_number}\n`;
-    message += `${order.shipping_address?.city_name}, ${order.shipping_address?.state_name}\n`;
-    message += `CP: ${order.shipping_address?.zip_code}\n\n`;
-    
+
+    // Datos de envío y enlace a Google Maps
+    const addressParts = [
+      order.shipping_address?.street_name,
+      order.shipping_address?.street_number,
+      order.shipping_address?.city_name,
+      order.shipping_address?.state_name,
+      order.shipping_address?.zip_code,
+      'Argentina'
+    ].filter(Boolean).join(', ');
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressParts)}`;
+
+    lines.push('', `*Datos de Envío:*`);
+    lines.push(`${bullet} Dirección: 📍 ${order.shipping_address?.street_name} ${order.shipping_address?.street_number}`);
+    lines.push(`${bullet} Ciudad: ${order.shipping_address?.city_name}, ${order.shipping_address?.state_name}`);
+    lines.push(`${bullet} CP: ${order.shipping_address?.zip_code}`);
+    lines.push(`${bullet} Mapa: \`${mapsUrl}\``);
+    lines.push('', `${EMOJIS.check} ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`);
+
+    // Usar CRLF para máxima compatibilidad con clientes que no respetan solo \n
+    const message = sanitizeForWhatsApp(lines.join('\r\n'));
     const whatsappMessage = encodeURIComponent(message);
     // Número de WhatsApp de Pinteya en formato internacional (solo dígitos)
     const rawPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
     const whatsappNumber = normalizeWhatsAppPhoneNumber(rawPhone);
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+    // Usamos api.whatsapp.com para preservar saltos de línea y formato
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappMessage}`;
 
     // Guardar enlace y mensaje crudo en la orden (no bloquear por error)
     try {

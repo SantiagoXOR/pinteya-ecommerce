@@ -432,13 +432,19 @@ export const useCheckout = () => {
           shippingCost > 0
             ? {
                 cost: shippingCost,
-                address: {
-                  street_name: billing.streetAddress,
-                  street_number: '123', // Número por defecto
-                  zip_code: billing.zipCode || '5000', // Código postal por defecto para Córdoba
-                  city_name: billing.city || 'Córdoba',
-                  state_name: billing.state || 'Córdoba',
-                },
+                address: (() => {
+                  const full = (billing.streetAddress || '').trim()
+                  const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
+                  const street_name = match ? match[1].trim() : full
+                  const street_number = match ? match[2].trim() : ''
+                  return {
+                    street_name,
+                    street_number,
+                    zip_code: billing.zipCode || '5000',
+                    city_name: billing.city || 'Córdoba',
+                    state_name: billing.state || 'Córdoba',
+                  }
+                })(),
               }
             : undefined,
         external_reference: `express_checkout_${Date.now()}`,
@@ -519,15 +525,19 @@ export const useCheckout = () => {
           shippingCost > 0
             ? {
                 cost: shippingCost,
-                address: {
-                  street_name: shipping.differentAddress
-                    ? shipping.streetAddress!
-                    : billing.streetAddress,
-                  street_number: '123', // Número por defecto como string
-                  zip_code: shipping.differentAddress ? shipping.zipCode! : billing.zipCode,
-                  city_name: shipping.differentAddress ? shipping.city! : billing.city,
-                  state_name: shipping.differentAddress ? shipping.state! : billing.state,
-                },
+                address: (() => {
+                  const full = (shipping.differentAddress ? shipping.streetAddress : billing.streetAddress) || ''
+                  const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
+                  const street_name = match ? match[1].trim() : full.trim()
+                  const street_number = match ? match[2].trim() : ''
+                  return {
+                    street_name,
+                    street_number,
+                    zip_code: (shipping.differentAddress ? shipping.zipCode : billing.zipCode)!,
+                    city_name: (shipping.differentAddress ? shipping.city : billing.city)!,
+                    state_name: (shipping.differentAddress ? shipping.state : billing.state)!,
+                  }
+                })(),
               }
             : undefined,
         external_reference: `checkout_${Date.now()}`,
@@ -688,20 +698,26 @@ export const useCheckout = () => {
         phoneNumber = sanitizedPhone
       }
 
-      // Determinar dirección de envío
-      const shippingAddress = shipping.differentAddress ? {
-        street_name: shipping.streetAddress!,
-        street_number: '123', // Número por defecto
-        city_name: shipping.city || 'Córdoba',
-        state_name: shipping.state || 'Córdoba',
-        zip_code: shipping.zipCode || '5000',
-      } : {
-        street_name: billing.streetAddress,
-        street_number: '123', // Número por defecto
-        city_name: billing.city || 'Córdoba',
-        state_name: billing.state || 'Córdoba',
-        zip_code: billing.zipCode || '5000',
+      // Determinar dirección de envío (separar calle y número si vienen juntos)
+      const getStreetComponents = (addr?: string) => {
+        const full = (addr || '').trim()
+        const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
+        return {
+          street_name: match ? match[1].trim() : full,
+          street_number: match ? match[2].trim() : '',
+        }
       }
+
+      const shippingAddress = (() => {
+        const base = shipping.differentAddress ? getStreetComponents(shipping.streetAddress) : getStreetComponents(billing.streetAddress)
+        return {
+          street_name: base.street_name,
+          street_number: base.street_number,
+          city_name: (shipping.differentAddress ? shipping.city : billing.city) || 'Córdoba',
+          state_name: (shipping.differentAddress ? shipping.state : billing.state) || 'Córdoba',
+          zip_code: (shipping.differentAddress ? shipping.zipCode : billing.zipCode) || '5000',
+        }
+      })()
 
       // Preparar payload según el esquema CreateCashOrderSchema
       const payload = {
@@ -725,6 +741,8 @@ export const useCheckout = () => {
           } : undefined,
         },
         shipments: {
+          // ✅ Enviar costo de envío para que el backend lo incluya en el total
+          cost: memoizedShippingCost,
           receiver_address: shippingAddress,
         },
         external_reference: `cash_order_${Date.now()}`,

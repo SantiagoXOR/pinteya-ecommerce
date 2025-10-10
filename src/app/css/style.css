@@ -20,6 +20,10 @@
     @apply bg-background text-foreground;
     /* Header height: TopBar (~32px) + Main (~84px) = ~116px, using 120px for optimal spacing */
     padding-top: 110px; /* Ajustado para mobile */
+    /* Emoji font fallbacks to ensure color emoji rendering across platforms */
+    font-family: 'Euclid Circular A', system-ui, -apple-system, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
+      var(--emoji-fonts);
   }
 
   /* Ajuste específico para desktop */
@@ -37,6 +41,8 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Cross-platform emoji fonts */
+    --emoji-fonts: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'EmojiOne Color';
   }
   .dark {
     --sidebar-background: 240 5.9% 10%;
@@ -202,5 +208,17 @@
       0 4px 12px rgba(242, 122, 29, 0.15);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     /* Removed transform: scale(1.01) to prevent dropdown clipping */
+  }
+
+  /* ==========================================
+     Emoji rendering fixes (utility classes)
+     ========================================== */
+  .emoji,
+  .emoji-fix,
+  .whatsapp-message,
+  .whatsapp-preview {
+    font-family: var(--emoji-fonts) !important;
+    line-height: 1.2;
+    text-rendering: optimizeLegibility;
   }
 }

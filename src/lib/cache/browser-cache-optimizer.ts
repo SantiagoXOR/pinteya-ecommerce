@@ -334,6 +334,17 @@ export class BrowserCacheOptimizer {
       return
     }
 
+    // Gate de inicialización por entorno/flag para evitar interferencias en desarrollo
+    const enableSW = process.env.NEXT_PUBLIC_ENABLE_SW === 'true'
+    const isProd = process.env.NODE_ENV === 'production'
+    if (!enableSW || !isProd) {
+      logger.warn(
+        LogCategory.CACHE,
+        'Service Worker deshabilitado por configuración (NEXT_PUBLIC_ENABLE_SW) o entorno no productivo'
+      )
+      return
+    }
+
     try {
       await this.registerServiceWorker()
       await this.setupCacheHeaders()
@@ -663,5 +674,26 @@ export const BrowserCacheUtils = {
    */
   isActive(): boolean {
     return browserCacheOptimizer.isServiceWorkerActive()
+  },
+
+  /**
+   * Desregistra todos los Service Workers y limpia caches
+   */
+  async unregisterAndClearCaches(): Promise<void> {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return
+    }
+
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(registrations.map(reg => reg.unregister()))
+
+      const cacheNames = await caches.keys()
+      await Promise.all(cacheNames.map(name => caches.delete(name)))
+
+      logger.info(LogCategory.CACHE, 'Service Workers desregistrados y caches limpiados')
+    } catch (error) {
+      logger.error(LogCategory.CACHE, 'Error al desregistrar SW y limpiar caches', error as Error)
+    }
   },
 }

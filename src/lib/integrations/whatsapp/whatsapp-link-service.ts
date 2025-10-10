@@ -4,6 +4,7 @@
 // ===================================
 
 import { logger, LogLevel } from '@/lib/enterprise/logger'
+import { sanitizeForWhatsApp, EMOJIS } from '@/lib/integrations/whatsapp/whatsapp-utils'
 
 // Helper: normaliza el número para el formato requerido por wa.me (solo dígitos)
 export function normalizeWhatsAppPhoneNumber(raw: string): string {
@@ -49,9 +50,10 @@ export function normalizeWhatsAppPhoneNumber(raw: string): string {
 
 // Configuración de WhatsApp
 const WHATSAPP_CONFIG = {
-  // Número de Pinteya en formato internacional para wa.me (sin '+')
+  // Número de Pinteya en formato internacional (solo dígitos)
   PINTEYA_PHONE: normalizeWhatsAppPhoneNumber(process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'),
-  BASE_URL: 'https://wa.me',
+  API_BASE: 'https://api.whatsapp.com/send',
+  WAME_BASE: 'https://wa.me',
 }
 
 // Interfaces para los datos de la orden
@@ -104,49 +106,41 @@ export class WhatsAppLinkService {
       createdAt
     } = orderDetails
 
-    let message = `🎉 *NUEVA ORDEN CONFIRMADA - PINTEYA*\n\n`
-    
-    // Información básica de la orden
-    message += `📋 *Datos de la Orden:*\n`
-    message += `• Número: #${orderNumber}\n`
-    message += `• Total: ${total}\n`
-    message += `• Estado: ${status}\n`
-    message += `• Fecha: ${new Date(createdAt).toLocaleString('es-AR')}\n`
-    
+    const lines: string[] = [
+      `*Nueva Orden Confirmada - Pinteya*`,
+      '',
+      `*Detalle de Orden:*`,
+      `${EMOJIS.bullet} Número: #${orderNumber}`,
+      `${EMOJIS.bullet} Total: ${total}`,
+      `${EMOJIS.bullet} Estado: ${status}`,
+      `${EMOJIS.bullet} Fecha: ${new Date(createdAt).toLocaleString('es-AR')}`,
+    ]
+
     if (paymentId) {
-      message += `• ID Pago: ${paymentId}\n`
+      lines.push(`• ID Pago: ${paymentId}`)
     }
-    
-    message += `\n👤 *Datos del Cliente:*\n`
-    message += `• Nombre: ${payerInfo.name}\n`
-    message += `• Email: ${payerInfo.email}\n`
-    
-    if (payerInfo.phone) {
-      message += `• Teléfono: ${payerInfo.phone}\n`
-    }
-    
-    // Información de envío si está disponible
+
+    lines.push('', `*${EMOJIS.nota} Datos Personales:*`)
+    lines.push(`${EMOJIS.bullet} Nombre: ${payerInfo.name}`)
+    lines.push(`${EMOJIS.bullet} Teléfono: ${payerInfo.phone ? `${EMOJIS.phone} ${payerInfo.phone}` : '—'}`)
+    lines.push(`${EMOJIS.bullet} Email: ${EMOJIS.email} ${payerInfo.email}`)
+
     if (shippingInfo) {
-      message += `\n🚚 *Datos de Envío:*\n`
-      message += `• Dirección: ${shippingInfo.address}\n`
-      message += `• Ciudad: ${shippingInfo.city}\n`
-      message += `• Código Postal: ${shippingInfo.postalCode}\n`
+      lines.push('', `*${EMOJIS.truck} Datos de Envío:*`)
+      lines.push(`${EMOJIS.bullet} Dirección: ${shippingInfo.address}`)
+      lines.push(`${EMOJIS.bullet} Ciudad: ${shippingInfo.city}`)
+      lines.push(`${EMOJIS.bullet} Código Postal: ${shippingInfo.postalCode}`)
     }
-    
-    // Productos de la orden
-    message += `\n🛒 *Productos Ordenados:*\n`
-    items.forEach((item, index) => {
-      message += `${index + 1}. ${item.name}\n`
-      message += `   • Cantidad: ${item.quantity}\n`
-      message += `   • Precio: ${item.price}\n\n`
+
+    lines.push('', `*${EMOJIS.receipt} Productos:*`)
+    items.forEach((item) => {
+      lines.push(`${EMOJIS.bullet} ${item.name} x${item.quantity} - ${item.price}`)
     })
-    
-    message += `💰 *TOTAL: ${total}*\n\n`
-    message += `✅ Pago confirmado exitosamente\n`
-    message += `📦 Proceder con la preparación del pedido\n\n`
-    message += `_Mensaje automático del sistema Pinteya E-commerce_`
-    
-    return message
+
+    lines.push('', `${EMOJIS.check} Pago confirmado exitosamente`)
+    lines.push(`${EMOJIS.truck} Proceder con la preparación del pedido`)
+
+    return sanitizeForWhatsApp(lines.join('\n'))
   }
 
   /**
@@ -156,9 +150,7 @@ export class WhatsAppLinkService {
     try {
       const message = this.formatOrderMessage(orderDetails)
       const encodedMessage = encodeURIComponent(message)
-      
-      // Generar enlace de WhatsApp
-      const whatsappLink = `${WHATSAPP_CONFIG.BASE_URL}/${WHATSAPP_CONFIG.PINTEYA_PHONE}?text=${encodedMessage}`
+      const whatsappLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedMessage}`
       
       logger.info(LogLevel.INFO, 'WhatsApp link generated successfully', {
         orderNumber: orderDetails.orderNumber,
@@ -177,7 +169,7 @@ export class WhatsAppLinkService {
       // Enlace de fallback simple
       const fallbackMessage = `Nueva orden confirmada: #${orderDetails.orderNumber} - Total: ${orderDetails.total}`
       const encodedFallback = encodeURIComponent(fallbackMessage)
-      return `${WHATSAPP_CONFIG.BASE_URL}/${WHATSAPP_CONFIG.PINTEYA_PHONE}?text=${encodedFallback}`
+      return `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedFallback}`
     }
   }
 
@@ -188,8 +180,7 @@ export class WhatsAppLinkService {
     try {
       const message = this.formatOrderMessage(orderDetails)
       const encodedMessage = encodeURIComponent(message)
-
-      const whatsappLink = `${WHATSAPP_CONFIG.BASE_URL}/${WHATSAPP_CONFIG.PINTEYA_PHONE}?text=${encodedMessage}`
+      const whatsappLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedMessage}`
 
       logger.info(LogLevel.INFO, 'WhatsApp link+message generated successfully', {
         orderNumber: orderDetails.orderNumber,
@@ -207,7 +198,7 @@ export class WhatsAppLinkService {
 
       const fallbackMessage = `Nueva orden confirmada: #${orderDetails.orderNumber} - Total: ${orderDetails.total}`
       const encodedFallback = encodeURIComponent(fallbackMessage)
-      const fallbackLink = `${WHATSAPP_CONFIG.BASE_URL}/${WHATSAPP_CONFIG.PINTEYA_PHONE}?text=${encodedFallback}`
+      const fallbackLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedFallback}`
       return { link: fallbackLink, message: fallbackMessage }
     }
   }
@@ -216,9 +207,9 @@ export class WhatsAppLinkService {
    * Genera un enlace de WhatsApp simple para notificaciones rápidas
    */
   public generateSimpleNotificationLink(orderNumber: string, total: string): string {
-    const message = `🔔 Nueva orden: #${orderNumber} - Total: ${total} - Revisar sistema Pinteya`
+    const message = sanitizeForWhatsApp(`${EMOJIS.info} Nueva orden: #${orderNumber} - Total: ${total} - Revisar sistema Pinteya`)
     const encodedMessage = encodeURIComponent(message)
-    return `${WHATSAPP_CONFIG.BASE_URL}/${WHATSAPP_CONFIG.PINTEYA_PHONE}?text=${encodedMessage}`
+    return `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedMessage}`
   }
 
   /**
@@ -227,7 +218,9 @@ export class WhatsAppLinkService {
   public validateWhatsAppLink(link: string): boolean {
     try {
       const url = new URL(link)
-      return url.hostname === 'wa.me' && url.pathname.includes(WHATSAPP_CONFIG.PINTEYA_PHONE.replace('+', ''))
+      const isWaMe = url.hostname === 'wa.me' && url.pathname.includes(WHATSAPP_CONFIG.PINTEYA_PHONE)
+      const isApi = url.hostname === 'api.whatsapp.com' && url.pathname.includes('send') && url.searchParams.get('phone') === WHATSAPP_CONFIG.PINTEYA_PHONE
+      return isWaMe || isApi
     } catch {
       return false
     }

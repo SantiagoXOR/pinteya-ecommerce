@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { BrowserCacheUtils } from '@/lib/cache/browser-cache-optimizer'
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
 
@@ -44,6 +45,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     // Verificar que estamos en el cliente para evitar errores de SSG
     setIsClient(true)
     setTimeout(() => setLoading(false), 1000)
+  }, [])
+
+  useEffect(() => {
+    // Desregistrar SW y limpiar caches si el flag está deshabilitado
+    if (process.env.NEXT_PUBLIC_ENABLE_SW !== 'true') {
+      BrowserCacheUtils.unregisterAndClearCaches()
+    }
   }, [])
 
   // ✅ NEXTAUTH.JS ACTIVADO - Migración completada 21/08/2025
@@ -96,7 +104,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                               {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
                               {!isAdminRoute && <Header />}
 
-                              {!isAdminRoute && <CartSidebarModal />}
+                              {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
+                              {!isAdminRoute && !isCheckoutRoute && <CartSidebarModal />}
                               <PreviewSliderModal />
                               <ScrollToTop />
 
