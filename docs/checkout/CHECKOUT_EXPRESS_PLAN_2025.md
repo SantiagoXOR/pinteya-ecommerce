@@ -113,7 +113,7 @@
 // Indicadores de confianza
 <TrustBadges>
   <Badge icon='🔒'>Pago 100% Seguro</Badge>
-  <Badge icon='🚚'>Envío Gratis +$25.000</Badge>
+  <Badge icon='🚚'>Envío Gratis +$50.000 (configurable)</Badge>
   <Badge icon='🔄'>Devolución Garantizada</Badge>
   <Badge icon='⭐'>4.8/5 - 1,247 reviews</Badge>
 </TrustBadges>
@@ -121,7 +121,7 @@
 
 ### **3. Incentivos de Compra**
 
-- **Envío Gratis**: Destacado en compras +$25.000
+- **Envío Gratis**: Destacado en compras +$50.000 (configurable por Design System)
 - **Cuotas Sin Interés**: 12 cuotas con MercadoPago
 - **Descuento Contado**: 5% off en transferencia
 - **Garantía Color**: "Color exacto o devolución"

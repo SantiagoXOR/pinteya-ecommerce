@@ -175,7 +175,7 @@ const BestSeller: React.FC = () => {
                         No se encontraron productos en este momento.
                       </p>
                       <Button variant='outline' asChild>
-                        <Link href='/shop-with-sidebar'>Ver Catálogo Completo</Link>
+                        <Link href='/products'>Ver Catálogo Completo</Link>
                       </Button>
                     </div>
                   </div>

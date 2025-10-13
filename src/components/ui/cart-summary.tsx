@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { PriceDisplay } from '@/components/ui/price-display'
 import { ShippingInfo } from '@/components/ui/shipping-info'
 import { EnhancedProductCard } from '@/components/ui/product-card-enhanced'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import {
   ShoppingCart,
   CreditCard,
@@ -106,6 +107,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
     },
     ref
   ) => {
+    const config = useDesignSystemConfig()
     const calculatedFinalTotal = finalTotal ?? totalPrice + (shippingCost || 0) - (discount || 0)
     const isCompact = variant === 'compact'
     const isDetailed = variant === 'detailed'
@@ -214,7 +216,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                       stock={item.quantity}
                       stockUnit='en carrito'
                       productId={item.id}
-                      badge={item.discountedPrice >= 15000 ? 'Envío gratis' : undefined}
+                      badge={dsShouldShowFreeShipping(item.discountedPrice, config) ? 'Envío gratis' : undefined}
                       cta={`Total: $${(item.discountedPrice * item.quantity).toLocaleString()}`}
                       onAddToCart={() => {}}
                       showCartAnimation={false}

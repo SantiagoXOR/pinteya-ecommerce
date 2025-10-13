@@ -192,6 +192,22 @@ import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 - `stock`, `onAddToCart`, `showCartAnimation`
 - `installments` (misma estructura)
 
+## 🚚 Cálculo Automático de Envío Gratis
+
+El badge de "Envío gratis" debe basarse en el umbral configurado por el Design System. Para mantener consistencia en toda la UI:
+
+```tsx
+import { useDesignSystemConfig, shouldShowFreeShipping } from '@/lib/design-system-config'
+
+function CardWrapper({ price, features }: { price: number; features?: { freeShipping?: boolean } }) {
+  const config = useDesignSystemConfig()
+  const freeShipping = features?.freeShipping || shouldShowFreeShipping(price, config)
+  return <CommercialProductCard price={price} freeShipping={freeShipping} />
+}
+```
+
+Esto reemplaza cualquier lógica hardcodeada (por ejemplo `price >= 15000`).
+
 ## 🧪 Testing
 
 El componente incluye 20 tests que cubren:

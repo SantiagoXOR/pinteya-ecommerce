@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { BrandFilter, BrandFilterCompact } from '@/components/ui/brand-filter'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { useBrandFilter } from '@/hooks/useBrandFilter'
 import { getProducts } from '@/lib/api/products'
 import { getBrandColor, formatBrandName } from '@/lib/api/brands'
@@ -222,7 +223,12 @@ export default function BrandFeaturesDemo() {
                     cta='Ver detalles'
                     onAddToCart={() => console.log(`Agregado: ${product.name}`)}
                     shippingText={product.discounted_price ? 'Oferta' : 'Disponible'}
-                    freeShipping={(product.discounted_price || product.price) >= 15000}
+                    {...(() => {
+                      const config = useDesignSystemConfig()
+                      const price = product.discounted_price || product.price
+                      const autoFree = dsShouldShowFreeShipping(price, config)
+                      return { freeShipping: autoFree }
+                    })()}
                   />
                 ))}
               </div>

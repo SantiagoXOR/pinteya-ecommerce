@@ -330,7 +330,7 @@ const COLOR_HEX_MAP: Record<string, string> = {
 /**
  * Obtiene el código hexadecimal de un color
  */
-const getColorHex = (colorName: string): string | undefined => {
+export const getColorHex = (colorName: string): string | undefined => {
   const normalizedColor = colorName.toLowerCase().trim()
   return COLOR_HEX_MAP[normalizedColor]
 }
@@ -560,6 +560,30 @@ export const extractProductCapacity = (
     result.grit = extractGritFromName(productName)
   }
 
+  // 4. FALLBACK INTELIGENTE POR TIPO DE PRODUCTO
+  // Si no logramos extraer capacidad/medida del nombre, variantes o BD,
+  // usar capacidades por defecto definidas en PRODUCT_TYPES para asegurar un badge útil.
+  if (!result.capacity) {
+    const productType = detectProductType(productName)
+    const isSandpaper = productType?.id === 'lijas' || /\blija\b/i.test(productName)
+
+    // Para lijas, si tenemos grano, NO mostrar la capacidad por defecto "1 unidad"
+    if (!(isSandpaper && result.grit)) {
+      if (productType?.defaultCapacities && productType.defaultCapacities.length > 0) {
+        result.capacity = productType.defaultCapacities[0]
+      }
+    }
+  }
+
+  // Color por defecto basado en el tipo de producto (solo si aplica y no se extrajo antes)
+  if (!result.color) {
+    const productType = detectProductType(productName)
+    if (productType?.hasColorSelector) {
+      const defaultColor = getDefaultColor(productType)
+      if (defaultColor) result.color = defaultColor
+    }
+  }
+
   return result
 }
 
@@ -669,7 +693,24 @@ export const extractCapacityFromName = (productName: string): string | undefined
 export const extractColorsFromName = (productName: string): string[] => {
   if (!productName) return []
 
-  const name = productName.toLowerCase()
+  // Normalizar variaciones gramaticales comunes (femenino/plural) para mejorar coincidencias
+  let name = productName.toLowerCase()
+  const grammaticalVariants: Array<[RegExp, string]> = [
+    [/\bblancas?\b/g, 'blanco'],
+    [/\bnegra?s?\b/g, 'negro'],
+    [/\broja?s?\b/g, 'rojo'],
+    [/\bamarilla?s?\b/g, 'amarillo'],
+    [/\bnaranja?s?\b/g, 'naranja'],
+    [/\brosa?s?\b/g, 'rosa'],
+    [/\bvioleta?s?\b/g, 'violeta'],
+    [/\bazules?\b/g, 'azul'],
+    [/\bverdes?\b/g, 'verde'],
+    [/\bmarrones?\b/g, 'marrón'],
+    [/\bbeiges?\b/g, 'beige']
+  ]
+  for (const [regex, replacement] of grammaticalVariants) {
+    name = name.replace(regex, replacement)
+  }
   const foundColors: string[] = []
   
   const colors = [

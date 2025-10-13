@@ -469,18 +469,8 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Agregar costo de envío si existe
-    if (shippingCost > 0) {
-      mercadoPagoItems.push({
-        id: 'shipping',
-        title: 'Costo de envío',
-        description: 'Envío a domicilio',
-        category_id: 'shipping',
-        quantity: 1,
-        currency_id: 'ARS',
-        unit_price: shippingCost,
-      })
-    }
+    // No agregar el costo de envío como ítem separado.
+    // Mercado Pago mostrará y cobrará el envío usando `shipments.cost`.
 
     // ✅ MEJORADO: Usar nueva función con configuración avanzada
     const preferenceResult = await createPaymentPreference({

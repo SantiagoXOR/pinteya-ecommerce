@@ -12,6 +12,8 @@ import { addItemToWishlist } from '@/redux/features/wishlist-slice'
 import { useCartWithBackend } from '@/hooks/useCartWithBackend'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { ExtendedProduct, calculateProductFeatures } from '@/lib/adapters/productAdapter'
+import { getMainImage } from '@/lib/adapters/product-adapter'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 
 interface SingleListItemProps {
   product: ExtendedProduct
@@ -71,11 +73,15 @@ const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
   return (
     <CommercialProductCard
       className='bg-white' // Forzar fondo blanco
-      image={
-        item.images?.previews?.[0] || item.imgs?.previews?.[0] || '/images/products/placeholder.svg'
-      }
+      image={getMainImage(item)}
       title={item.name || item.title}
       brand={item.brand}
+      description={item.description}
+      variants={item?.variants || []}
+      specifications={item?.specifications}
+      dimensions={item?.dimensions}
+      color={item?.color}
+      medida={item?.medida}
       price={
         features.discount
           ? Math.round(item.price * (1 - features.discount / 100))
@@ -99,11 +105,32 @@ const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
             }
           : undefined
       }
-      // Envío gratis automático para productos >= $15000
-      freeShipping={features.freeShipping || features.currentPrice >= 15000}
-      shippingText={
-        features.freeShipping ? 'Envío gratis' : features.fastShipping ? 'Envío rápido' : undefined
-      }
+      // Envío gratis según Design System (umbral global)
+      {...(() => {
+        const config = useDesignSystemConfig()
+        const autoFree = dsShouldShowFreeShipping(features.currentPrice, config)
+        const free = Boolean(features.freeShipping) || autoFree
+        return {
+          freeShipping: free,
+          shippingText: free
+            ? 'Envío gratis'
+            : features.fastShipping
+            ? 'Envío rápido'
+            : undefined,
+        }
+      })()}
+      badgeConfig={{
+        showCapacity: true,
+        showColor: true,
+        showFinish: true,
+        showMaterial: true,
+        showGrit: true,
+        showDimensions: true,
+        // Alinear con Home/ProductItem
+        showWeight: false,
+        showBrand: false,
+        maxBadges: 3,
+      }}
     />
   )
 }

@@ -15,10 +15,26 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
   console.log('📦 API Product original:', apiProduct);
   console.log('🖼️ Imágenes originales:', apiProduct.images);
   
+  // Normalizar imágenes: aceptar arrays de strings u objetos { url | image_url }
+  const normalizedImages: string[] = Array.isArray(apiProduct.images)
+    ? (
+        apiProduct.images
+          .map((img: any) => {
+            if (typeof img === 'string') return img
+            if (img && typeof img?.url === 'string') return img.url
+            if (img && typeof img?.image_url === 'string') return img.image_url
+            return null
+          })
+          .filter(Boolean) as string[]
+      )
+    : apiProduct.images?.previews?.[0]
+      ? [apiProduct.images.previews[0]]
+      : apiProduct.images?.thumbnails?.[0]
+        ? [apiProduct.images.thumbnails[0]]
+        : ['/images/products/placeholder.svg']
+
   // Obtener la primera imagen válida o usar placeholder
-  const firstImage = apiProduct.images && apiProduct.images.length > 0 
-    ? apiProduct.images[0] 
-    : '/images/products/placeholder.svg';
+  const firstImage = normalizedImages[0] || '/images/products/placeholder.svg'
     
   console.log('🎯 Primera imagen seleccionada:', firstImage);
 
@@ -38,7 +54,7 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
     categoryId: apiProduct.category_id,
     stock: apiProduct.stock || 0,
     isNew: apiProduct.is_new || false,
-    images: apiProduct.images || ['/images/products/placeholder.svg'],
+    images: normalizedImages,
     image: firstImage,
     // ✅ CAMPOS CRÍTICOS PARA BADGES INTELIGENTES
     // 🎯 BADGES INTELIGENTES FIX - Octubre 2025
@@ -49,7 +65,7 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
     specifications: apiProduct.specifications || {},
     // Campos de compatibilidad con versiones anteriores
     imgs: {
-      previews: apiProduct.images || ['/images/products/placeholder.svg']
+      previews: normalizedImages
     }
   };
 
@@ -149,15 +165,20 @@ export function getFinalPrice(product: Product | ProductWithCategory): number {
  * @returns string - URL de la imagen
  */
 export function getMainImage(product: Product | ProductWithCategory): string {
-  // Priorizar el nuevo formato de array simple
-  if ('images' in product && Array.isArray(product.images) && product.images[0]) {
-    return product.images[0]
+  // Priorizar el formato de array. Puede ser string[] u objetos con url
+  if ('images' in product && Array.isArray((product as any).images) && (product as any).images[0]) {
+    const first = (product as any).images[0]
+    const url = typeof first === 'string' ? first : first?.url ?? first?.image_url
+    if (url && typeof url === 'string' && url.trim() !== '') {
+      return url.trim()
+    }
   }
-  if ('imgs' in product && product.imgs?.previews?.[0]) {
-    return product.imgs.previews[0]
+  // Compatibilidad con estructuras antiguas
+  if ('imgs' in product && (product as any).imgs?.previews?.[0]) {
+    return (product as any).imgs.previews[0]
   }
-  if ('images' in product && product.images?.previews?.[0]) {
-    return product.images.previews[0]
+  if ('images' in product && (product as any).images?.previews?.[0]) {
+    return (product as any).images.previews[0]
   }
   return '/images/products/placeholder.svg'
 }

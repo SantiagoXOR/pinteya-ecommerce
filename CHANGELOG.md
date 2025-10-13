@@ -8,6 +8,21 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 ## [Unreleased]
 
 ### 🎯 Fixed - Octubre 2025
+- **Unificación del umbral de Envío Gratis (Design System)**
+  - ✅ Eliminados umbrales hardcodeados (`15000`, `50000`) en componentes y adapters
+  - ✅ Toda la lógica de badges usa `shouldShowFreeShipping(price, config)` del Design System
+  - 📁 Archivos modificados:
+    - `src/lib/adapters/productAdapter.ts`
+    - `src/components/Shop/SingleListItem.tsx`
+    - `src/app/demo/brand-features/page.tsx`
+    - `src/components/ui/card.tsx`
+    - `src/components/ui/cart-summary.tsx`
+  - 📚 Documentación actualizada:
+    - `docs/design-system/ecommerce-components.md` (sección de umbral configurable)
+    - `docs/components/commercial-product-card.md` (uso recomendado)
+    - `docs/checkout/CHECKOUT_EXPRESS_PLAN_2025.md` (trust badges e incentivos)
+  - 📊 Impacto: Consistencia visual y de negocio en toda la UI; evita badges por debajo del umbral
+  - 🔎 QA: Validado en `/products` y demos; NextAuth warning no impacta badges
 - **[CRÍTICO] Fix Badges Inteligentes - Campos Undefined**
   - ✅ Solucionado problema de campos `undefined` en `extractedInfo`
   - ✅ Actualizada query SQL en `getBestSellingProducts` para incluir campos críticos
@@ -19,6 +34,17 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
     - `src/lib/adapters/product-adapter.ts`
   - 📊 Impacto: +250% campos disponibles, 100% badges generados
   - 🔗 Documentación: `docs/fixes/BADGES_INTELIGENTES_FIX_OCTUBRE_2025.md`
+
+- **Fix MercadoPago: costo de envío duplicado en preferencia**
+  - ✅ El costo de envío se pasa únicamente por `shipments.cost` (no se agrega un ítem "Envío" en `items`).
+  - ✅ Evita el doble cobro y mantiene coherencia entre UI, API y base de datos.
+  - 📁 Archivos modificados/creados:
+    - `src/app/api/payments/create-preference/route.ts`
+    - `docs/fixes/mercadopago-shipping-cost.md`
+    - `docs/testing/mercadopago-preference-testing.md`
+  - 📊 Impacto: Preferencias correctas en Mercado Pago; E2E y unit tests sin cambios estructurales.
+  - 🔎 Validación: Pantalla de Mercado Pago muestra líneas "Productos" y "Envío" con total correcto.
+  - 🔄 Rollback (no recomendado): reintroducir ítem de envío en `items` y remover `shipments.cost`.
 
 ## [1.0.0] - Septiembre 2025
 

@@ -13,6 +13,7 @@ interface CategoryTogglePillsProps {
   selectedCategories: string[]
   searchTerm?: string
   otherFilters?: any
+  variant?: 'default' | 'bare'
 }
 
 const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
@@ -20,6 +21,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   selectedCategories,
   searchTerm,
   otherFilters = {},
+  variant = 'default',
 }) => {
   const { categories, loading, error, stats } = useCategoriesWithDynamicCounts({
     baseFilters: {
@@ -130,6 +132,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   }
 
   if (loading) {
+    if (variant === 'bare') return null
     return (
       <section className='bg-white border-b border-gray-200 py-2'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -149,6 +152,66 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return null // No mostrar nada si hay error o no hay categorías
   }
 
+  // Variante bare: solo las pills sin sección ni degradados
+  if (variant === 'bare') {
+    return (
+      <div
+        ref={carouselRef}
+        className='flex items-center gap-1 sm:gap-2 overflow-x-auto flex-nowrap py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+      >
+        {categories.map(category => {
+          const isSelected = selectedCategories.includes(category.slug)
+          return (
+            <Button
+              key={category.id}
+              data-testid={`category-pill-${category.slug}`}
+              variant={isSelected ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => handleCategoryToggle(category.slug)}
+              className={`
+                group flex-shrink-0 transition-all duration-200 border-2 rounded-full
+                h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm
+                ${
+                  isSelected
+                    ? 'bg-[#009e44] text-white border-[#eb6313]'
+                    : 'bg-[#007639] hover:bg-[#009e44] text-white border-[#007639]'
+                }
+              `}
+            >
+              <div className='flex items-center gap-1 sm:gap-2'>
+                {category.image_url && (
+                  <div
+                    className={`
+                      rounded-full overflow-hidden bg-white/30 transition-all duration-200
+                      ${
+                        isSelected
+                          ? 'w-3 h-3 sm:w-5 sm:h-5'
+                          : 'w-3 h-3 group-hover:w-4 group-hover:h-4 sm:w-4 sm:h-4 sm:group-hover:w-5 sm:group-hover:h-5'
+                      }
+                    `}
+                  >
+                    <Image
+                      src={category.image_url}
+                      alt=''
+                      width={20}
+                      height={20}
+                      className='w-full h-full object-cover'
+                    />
+                  </div>
+                )}
+                <span className='text-xs font-medium sm:text-sm'>{category.name}</span>
+              </div>
+            </Button>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <section className='bg-white border-b border-gray-200 py-1 sticky top-[110px] lg:top-[120px] z-40'>
       <div
@@ -166,7 +229,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
           {/* Pills de categorías */}
           <div
             ref={carouselRef}
-            className='flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide py-1 cursor-grab select-none'
+            className='flex items-center gap-1 sm:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
             onMouseDown={handleMouseDown}
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}

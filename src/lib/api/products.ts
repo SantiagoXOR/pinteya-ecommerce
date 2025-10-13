@@ -24,10 +24,28 @@ export async function getProducts(
 
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, value.toString())
+        if (value === undefined || value === null) return
+
+        // Manejo especial para arrays (p.ej. categories: string[])
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            // Enviar como lista separada por comas
+            searchParams.append(key, value.join(','))
+          }
+          return
         }
+
+        searchParams.append(key, value.toString())
       })
+
+      // Si existen categories[], preferirlo sobre category para evitar conflicto
+      if (filters.categories && filters.categories.length > 0) {
+        searchParams.delete('category')
+      }
+      // Si existen brands[], preferirlo sobre brand para evitar conflicto
+      if (filters.brands && filters.brands.length > 0) {
+        searchParams.delete('brand')
+      }
     }
 
     const url = `/api/products?${searchParams.toString()}`

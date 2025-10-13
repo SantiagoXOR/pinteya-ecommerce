@@ -1,19 +1,11 @@
-import React from 'react'
-import ShopWithSidebar from '@/components/ShopWithSidebar'
-
+import { redirect } from 'next/navigation'
 import { Metadata } from 'next'
+
 export const metadata: Metadata = {
-  title: 'Shop Page | NextCommerce Nextjs E-commerce template',
-  description: 'This is Shop Page for NextCommerce Template',
-  // other metadata
+  title: 'Productos | Pinteya E-commerce',
+  description: 'Redirección a la nueva página de productos',
 }
 
-const ShopWithSidebarPage = () => {
-  return (
-    <main>
-      <ShopWithSidebar />
-    </main>
-  )
+export default function ShopWithSidebarRedirectPage() {
+  redirect('/products')
 }
-
-export default ShopWithSidebarPage

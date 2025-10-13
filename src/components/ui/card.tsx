@@ -4,6 +4,7 @@ import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import { PriceDisplay } from './price-display'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { StockIndicator } from './stock-indicator'
 import { ShippingInfo } from './shipping-info'
 
@@ -152,6 +153,9 @@ const ProductCard = React.memo(
       },
       ref
     ) => {
+      // Config del design system para condiciones legacy
+      const config = useDesignSystemConfig()
+      const legacyAutoFree = price ? dsShouldShowFreeShipping(price, config) : false
       const [isAddingToCart, setIsAddingToCart] = React.useState(false)
 
       const handleAddToCart = async () => {
@@ -331,7 +335,7 @@ const ProductCard = React.memo(
           </div>
 
           {/* Badge de envío gratis con ícono SVG personalizado - Solo cuando no se usan nuevos componentes - Responsive */}
-          {!useNewComponents && (badge === 'Envío gratis' || (price && price >= 15000)) && (
+          {!useNewComponents && (badge === 'Envío gratis' || legacyAutoFree) && (
             <div className='flex justify-start mb-1 md:mb-2 flex-shrink-0 px-2 md:px-0'>
               <img
                 src='/images/icons/icon-envio.svg'

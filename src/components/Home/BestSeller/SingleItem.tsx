@@ -68,7 +68,7 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
       price={item.discountedPrice}
       originalPrice={item.discountedPrice < item.price ? item.price : undefined}
       discount={discount ? `${discount}%` : undefined}
-      isNew={badge === 'Destacado'}
+isNew={Boolean(product?.isNew)}
       stock={50} // Stock por defecto para productos legacy
       productId={item.id}
       cta='Agregar al carrito'

@@ -4,6 +4,7 @@ import { Product } from '@/types/product'
 import { useCartActions } from '@/hooks/useCartActions'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 
 interface ProductItemProps {
   product?: Product
@@ -38,8 +39,9 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
     })
   }
 
-  // Calcular descuento si existe
-  const hasDiscount = productData.discountedPrice && productData.discountedPrice < productData.price
+  // Calcular descuento si existe (misma fórmula que en Products)
+  const hasDiscount =
+    productData.discountedPrice !== undefined && productData.discountedPrice < productData.price
   const discount = hasDiscount
     ? Math.round(((productData.price - productData.discountedPrice) / productData.price) * 100)
     : undefined
@@ -47,8 +49,11 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
   // Precio final a mostrar
   const finalPrice = hasDiscount ? productData.discountedPrice : productData.price
 
-  // Determinar badge basado en precio y características
-  const badge = finalPrice >= 15000 ? 'Envío gratis' : discount ? 'Oferta especial' : 'Nuevo'
+  // Unificar lógica de "Nuevo" y envío gratis con Products
+  const isNew = Boolean(productData.isNew)
+  const config = useDesignSystemConfig()
+  const autoFree = dsShouldShowFreeShipping(finalPrice, config)
+  const freeShipping = Boolean((productData as any)?.freeShipping) || autoFree
 
   return (
     <CommercialProductCard
@@ -62,7 +67,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
       price={finalPrice}
       originalPrice={hasDiscount ? productData.price : undefined}
       discount={discount ? `${discount}%` : undefined}
-      isNew={badge === 'Nuevo'}
+      isNew={isNew}
       stock={50} // Stock por defecto para productos legacy
       productId={productData.id}
       cta='Agregar al carrito'
@@ -78,16 +83,16 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
             }
           : undefined
       }
-      // Envío gratis automático para productos >= $50000
-      freeShipping={finalPrice >= 50000}
-      shippingText={badge === 'Envío gratis' ? 'Envío gratis' : undefined}
+      // Envío gratis según Design System
+      freeShipping={freeShipping}
+      shippingText={freeShipping ? 'Envío gratis' : undefined}
       // Nuevas props para sistema de badges inteligentes
       variants={productData.variants || []}
       description={productData.description || ''}
       badgeConfig={{
         showCapacity: true,
-        showColor: true, // Activar para mostrar color de la BD
-        showFinish: false,
+        showColor: true,
+        showFinish: true, // Alinear con Products
         showMaterial: true,
         showGrit: true,
         showDimensions: true,

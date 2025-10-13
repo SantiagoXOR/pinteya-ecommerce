@@ -1,26 +1,30 @@
-'use client'
-import React, { useState, useEffect } from 'react'
-import Breadcrumb from '../Common/Breadcrumb'
-import CustomSelect from './CustomSelect'
-import CategoryDropdown from './CategoryDropdown'
-import GenderDropdown from './GenderDropdown'
-import SizeDropdown from './SizeDropdown'
-import ColorsDropdwon from './ColorsDropdwon'
-import PriceDropdown from './PriceDropdown'
-import SearchBox from './SearchBox'
+"use client"
+import React, { useState, useEffect, useMemo } from 'react'
+// Importaciones de componentes legacy de filtros eliminadas en favor de UnifiedFilters
+// import CategoryTogglePills from '@/components/Home/CategoryTogglePills'
+// import { SizeTogglePills } from './SizeTogglePills'
+// import { ColorTogglePills } from './ColorTogglePills'
+// import { BrandTogglePills } from './BrandTogglePills'
+import UnifiedFilters from '@/components/filters/UnifiedFilters'
 import { useProducts } from '@/hooks/useProducts'
 import { useCategoriesForFilters } from '@/hooks/useCategories'
-import { SHOP_CONSTANTS, PRODUCT_CATEGORIES } from '@/constants/shop'
+import { SHOP_CONSTANTS } from '@/constants/shop'
 import SingleGridItem from '../Shop/SingleGridItem'
 import SingleListItem from '../Shop/SingleListItem'
+import { extractCapacityFromName } from '@/utils/product-utils'
+import { buildFilterBadgesFromProducts } from '@/utils/filter-utils'
 
 const ShopWithSidebar = () => {
   const [productStyle, setProductStyle] = useState('grid')
-  const [productSidebar, setProductSidebar] = useState(false)
-  const [stickyMenu, setStickyMenu] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const [selectedPriceRange, setSelectedPriceRange] = useState<{ min?: number; max?: number }>({})
-  const [currentSearch, setCurrentSearch] = useState<string>('')
+  const [selectedCategoriesPills, setSelectedCategoriesPills] = useState<string[]>([])
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([])
+  const [selectedColors, setSelectedColors] = useState<string[]>([])
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([])
+  const [volumeMin, setVolumeMin] = useState<number | undefined>(undefined)
+  const [volumeMax, setVolumeMax] = useState<number | undefined>(undefined)
+  const [colorsExpanded, setColorsExpanded] = useState<boolean>(false)
+  const VOLUME_PRESETS = ['1 Litro', '4 L', '10 L', '20 L']
 
   // Hook para obtener productos dinámicos
   const {
@@ -28,15 +32,15 @@ const ShopWithSidebar = () => {
     loading,
     error,
     pagination,
-    changeSorting,
     changePage,
-    filterByCategory,
-    filterByPriceRange,
-    searchProducts,
+    updateFilters,
+    filterByCategories,
+    filterByBrands,
   } = useProducts({
     initialFilters: {
       limit: SHOP_CONSTANTS.PRODUCTS_PER_PAGE_SIDEBAR,
-      sortBy: 'created_at',
+      // Orden por defecto: productos más caros primero
+      sortBy: 'price',
       sortOrder: 'desc',
     },
   })
@@ -48,36 +52,9 @@ const ShopWithSidebar = () => {
     error: categoriesError,
   } = useCategoriesForFilters()
 
-  const handleStickyMenu = () => {
-    if (window.scrollY >= 80) {
-      setStickyMenu(true)
-    } else {
-      setStickyMenu(false)
-    }
-  }
+  // Sticky menu eliminado en la UI simplificada
 
-  const options = [
-    { label: 'Productos Más Recientes', value: '0' },
-    { label: 'Más Vendidos', value: '1' },
-    { label: 'Productos Antiguos', value: '2' },
-  ]
-
-  // Manejar cambio de ordenamiento
-  const handleSortChange = (value: string) => {
-    switch (value) {
-      case '0':
-        changeSorting('created_at', 'desc')
-        break
-      case '1':
-        changeSorting('name', 'asc')
-        break
-      case '2':
-        changeSorting('created_at', 'asc')
-        break
-      default:
-        changeSorting('created_at', 'desc')
-    }
-  }
+  // Se elimina el ordenamiento por secciones (recientes/más vendidos) para simplificar la UI
 
   // Usar categorías dinámicas o fallback a categorías vacías mientras cargan
   const categories = categoriesLoading ? [] : dynamicCategories
@@ -87,174 +64,191 @@ const ShopWithSidebar = () => {
     if (selectedCategory === categorySlug) {
       // Si ya está seleccionada, deseleccionar
       setSelectedCategory('')
-      filterByCategory('') // Limpiar filtro
+      setSelectedCategoriesPills([])
+      // Usamos selección múltiple (vacía) para limpiar y evitar conflicto con category
+      filterByCategories([])
     } else {
-      // Seleccionar nueva categoría
+      // Seleccionar nueva categoría (sincronizamos con pills)
       setSelectedCategory(categorySlug)
-      filterByCategory(categorySlug)
+      setSelectedCategoriesPills([categorySlug])
+      // Aplicamos filtro múltiple para mantener una sola fuente de verdad
+      filterByCategories([categorySlug])
     }
   }
 
-  // Manejar selección de rango de precios
-  const handlePriceRangeSelect = (priceMin?: number, priceMax?: number) => {
-    setSelectedPriceRange({ min: priceMin, max: priceMax })
-    filterByPriceRange(priceMin, priceMax)
+  // Manejar cambio desde CategoryTogglePills (selección múltiple -> aplicamos última seleccionada)
+  const handleCategoryPillsChange = (categories: string[]) => {
+    setSelectedCategoriesPills(categories)
+    if (categories.length === 0) {
+      setSelectedCategory('')
+      filterByCategories([])
+    } else {
+      // Mantener la UI mostrando la última seleccionada, pero aplicar todas
+      const lastSelected = categories[categories.length - 1]
+      setSelectedCategory(lastSelected)
+      filterByCategories(categories)
+    }
   }
 
-  // Manejar búsqueda
-  const handleSearch = (searchTerm: string) => {
-    setCurrentSearch(searchTerm)
-    searchProducts(searchTerm)
+  // Se elimina búsqueda y rango de precios (presentes en el header)
+
+  // Tipos de productos eliminados; no usados en la UI actual
+
+  // Listener de scroll eliminado
+
+  // Manejo de sidebar eliminado; el sidebar es estático en desktop
+
+  const clearAll = () => {
+    setSelectedCategory('')
+    setSelectedCategoriesPills([])
+    setSelectedSizes([])
+    setSelectedColors([])
+    setSelectedBrands([])
+    setVolumeMin(undefined)
+    setVolumeMax(undefined)
+    setColorsExpanded(false)
+    filterByCategories([])
+    // Reiniciar filtros y asegurar orden por precio descendente
+    updateFilters({ sizes: [], colors: [], brands: [], sortBy: 'price', sortOrder: 'desc', page: 1 })
   }
 
-  // Tipos de productos relevantes para pinturería (datos dinámicos)
-  const productTypes = Object.values(PRODUCT_CATEGORIES).map(category => ({
-    name: category.name,
-    slug: category.slug,
-    description: category.description,
-    // TODO: Obtener conteo real desde la API
-    products: 0,
-  }))
+  // Derivar medidas (capacidad/medida) desde productos y variantes usando lógica de badges
+  const derivedSizes = useMemo(() => {
+    const { measures } = buildFilterBadgesFromProducts(products)
+    return measures
+  }, [products])
 
+  // Opciones de medidas para UI: solo derivadas (sin fallback estático)
+  const sizeOptions = useMemo(() => {
+    // Fallback de desarrollo: si no hay datos derivados, usar presets
+    return derivedSizes && derivedSizes.length ? derivedSizes : VOLUME_PRESETS
+  }, [derivedSizes])
+
+  // Parse helpers: medidas -> litros
+  const parseVolumeToLiters = (input: string): number | null => {
+    if (!input) return null
+    const s = input.trim().toLowerCase()
+    // Ejemplos soportados: "20 l", "20l", "20 litros", "750 ml", "0.75 l", "1 lt", "1 lts"
+    const mlMatch = s.match(/([0-9]*\.?[0-9]+)\s*ml\b/)
+    if (mlMatch) {
+      const val = Number(mlMatch[1])
+      return isNaN(val) ? null : val / 1000
+    }
+    const lMatch = s.match(/([0-9]*\.?[0-9]+)\s*(l|lt|lts|litro|litros)\b/)
+    if (lMatch) {
+      const val = Number(lMatch[1])
+      return isNaN(val) ? null : val
+    }
+    // Formatos compactos sin espacio: "20l"
+    const compactL = s.match(/([0-9]*\.?[0-9]+)l\b/)
+    if (compactL) {
+      const val = Number(compactL[1])
+      return isNaN(val) ? null : val
+    }
+    return null
+  }
+
+  // Conectar inputs Min/Max a filtros "sizes" mediante mapeo por rango
   useEffect(() => {
-    window.addEventListener('scroll', handleStickyMenu)
+    const hasAny = typeof volumeMin === 'number' || typeof volumeMax === 'number'
+    if (!hasAny) return
 
-    return () => {
-      window.removeEventListener('scroll', handleStickyMenu)
-    }
-  }, [])
+    const withinRange = derivedSizes.filter(measure => {
+      const liters = parseVolumeToLiters(measure)
+      if (liters === null) return false
+      if (typeof volumeMin === 'number' && liters < volumeMin) return false
+      if (typeof volumeMax === 'number' && liters > volumeMax) return false
+      return true
+    })
 
-  useEffect(() => {
-    // closing sidebar while clicking outside
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as Element
-      if (!target.closest('.sidebar-content')) {
-        setProductSidebar(false)
-      }
-    }
+    setSelectedSizes(withinRange)
+    updateFilters({ sizes: withinRange, page: 1 })
+  }, [volumeMin, volumeMax, derivedSizes])
 
-    if (productSidebar) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
-    }
-    return undefined
-  }, [productSidebar])
+  const derivedColorObjects = useMemo(() => {
+    const { colors } = buildFilterBadgesFromProducts(products)
+    return colors
+  }, [products])
+
+  
+
+  // Se eliminan rangos dinámicos de precio
+
+  // UI de filtros unificada (reutilizable en sidebar y barra móvil)
 
   return (
     <>
-      <Breadcrumb title={'Tienda de Pinturería'} pages={['tienda', '/', 'productos con filtros']} />
       <section className='overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#FFFEF0]'>
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
           <div className='flex gap-7.5'>
-            {/* <!-- Sidebar Start --> */}
-            <div
-              className={`sidebar-content fixed xl:z-1 z-9999 left-0 top-0 xl:translate-x-0 xl:static max-w-[310px] xl:max-w-[270px] w-full ease-out duration-200 ${
-                productSidebar
-                  ? 'translate-x-0 bg-white p-5 h-screen overflow-y-auto'
-                  : '-translate-x-full'
-              }`}
-            >
-              <button
-                onClick={() => setProductSidebar(!productSidebar)}
-                aria-label='button for product sidebar toggle'
-                className={`xl:hidden absolute -right-12.5 sm:-right-8 flex items-center justify-center w-8 h-8 rounded-md bg-white shadow-1 ${
-                  stickyMenu ? 'lg:top-20 sm:top-34.5 top-35' : 'lg:top-24 sm:top-39 top-37'
-                }`}
-              >
-                <svg
-                  className='fill-current'
-                  width='24'
-                  height='24'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  xmlns='http://www.w3.org/2000/svg'
-                >
-                  <path
-                    fillRule='evenodd'
-                    clipRule='evenodd'
-                    d='M10.0068 3.44714C10.3121 3.72703 10.3328 4.20146 10.0529 4.5068L5.70494 9.25H20C20.4142 9.25 20.75 9.58579 20.75 10C20.75 10.4142 20.4142 10.75 20 10.75H4.00002C3.70259 10.75 3.43327 10.5742 3.3135 10.302C3.19374 10.0298 3.24617 9.71246 3.44715 9.49321L8.94715 3.49321C9.22704 3.18787 9.70147 3.16724 10.0068 3.44714Z'
-                    fill=''
-                  />
-                  <path
-                    fillRule='evenodd'
-                    clipRule='evenodd'
-                    d='M20.6865 13.698C20.5668 13.4258 20.2974 13.25 20 13.25L4.00001 13.25C3.5858 13.25 3.25001 13.5858 3.25001 14C3.25001 14.4142 3.5858 14.75 4.00001 14.75L18.2951 14.75L13.9472 19.4932C13.6673 19.7985 13.6879 20.273 13.9932 20.5529C14.2986 20.8328 14.773 20.8121 15.0529 20.5068L20.5529 14.5068C20.7539 14.2876 20.8063 13.9703 20.6865 13.698Z'
-                    fill=''
-                  />
-                </svg>
-              </button>
-
-              <div className='flex flex-col gap-6'>
-                {/* <!-- filter box --> */}
-                <div className='bg-white shadow-1 rounded-lg py-4 px-5'>
-                  <div className='flex items-center justify-between'>
-                    <p>Filtros:</p>
-                    <button
-                      className='text-blue hover:text-blue-dark transition-colors'
-                      onClick={() => {
-                        setSelectedCategory('')
-                        setSelectedPriceRange({})
-                        setCurrentSearch('')
-                        filterByCategory('')
-                        filterByPriceRange(undefined, undefined)
-                        searchProducts('')
-                      }}
-                    >
-                      Limpiar Todo
-                    </button>
-                  </div>
-                </div>
-
-                {/* <!-- search box --> */}
-                <SearchBox onSearch={handleSearch} currentSearch={currentSearch} />
-
-                {/* <!-- category box --> */}
-                <CategoryDropdown
-                  categories={categories}
-                  onCategorySelect={handleCategorySelect}
-                  selectedCategory={selectedCategory}
-                  loading={categoriesLoading}
-                />
-
-                {/* <!-- product type box --> */}
-                <GenderDropdown genders={productTypes} />
-
-                {/* // <!-- size box --> */}
-                <SizeDropdown />
-
-                {/* // <!-- color box --> */}
-                <ColorsDropdwon />
-
-                {/* // <!-- price range box --> */}
-                <PriceDropdown
-                  onPriceRangeSelect={handlePriceRangeSelect}
-                  selectedPriceRange={selectedPriceRange}
-                />
-              </div>
+            {/* <!-- Sidebar oculto: mostramos filtros arriba como en mobile --> */}
+            <div className='hidden'>
+              <UnifiedFilters
+                variant='sidebar'
+                selectedCategories={selectedCategoriesPills}
+                onCategoryChange={handleCategoryPillsChange}
+                sizeOptions={sizeOptions}
+                selectedSizes={selectedSizes}
+                onSizesChange={(sizes) => {
+                  setSelectedSizes(sizes)
+                  updateFilters({ sizes })
+                }}
+                colorOptions={derivedColorObjects.length ? derivedColorObjects.slice(0, 20) : undefined}
+                selectedColors={selectedColors}
+                onColorsChange={(colors) => {
+                  setSelectedColors(colors)
+                  updateFilters({ colors })
+                }}
+                selectedBrands={selectedBrands}
+                onBrandsChange={(brands) => {
+                  setSelectedBrands(brands)
+                  updateFilters({ brands })
+                }}
+                onClearAll={clearAll}
+              />
             </div>
             {/* // <!-- Sidebar End --> */}
 
             {/* // <!-- Content Start --> */}
-            <div className='xl:max-w-[870px] w-full'>
-              <div className='rounded-lg bg-white shadow-1 pl-3 pr-2.5 py-2.5 mb-6'>
+            <div className='w-full'>
+              {/* Filtros barra horizontal en todas las resoluciones */}
+              <div className='mb-4'>
+                <UnifiedFilters
+                  variant='horizontal'
+                  selectedCategories={selectedCategoriesPills}
+                  onCategoryChange={handleCategoryPillsChange}
+                  sizeOptions={sizeOptions}
+                  selectedSizes={selectedSizes}
+                  onSizesChange={(sizes) => {
+                    setSelectedSizes(sizes)
+                    updateFilters({ sizes })
+                  }}
+                  colorOptions={derivedColorObjects.length ? derivedColorObjects.slice(0, 20) : undefined}
+                  selectedColors={selectedColors}
+                  onColorsChange={(colors) => {
+                    setSelectedColors(colors)
+                    updateFilters({ colors })
+                  }}
+                  selectedBrands={selectedBrands}
+                  onBrandsChange={(brands) => {
+                    setSelectedBrands(brands)
+                    updateFilters({ brands })
+                  }}
+                />
+              </div>
+              <div className='hidden'>
                 <div className='flex items-center justify-between'>
                   {/* <!-- top bar left --> */}
                   <div className='flex flex-wrap items-center gap-4'>
-                    <CustomSelect options={options} onChange={handleSortChange} />
+                    {/* Ordenamiento por Tabs removido para simplificar la UI */}
 
-                    <p>
-                      Mostrando{' '}
-                      <span className='text-dark'>
-                        {loading ? '...' : `${products.length} de ${pagination.total}`}
-                      </span>{' '}
-                      Productos
-                    </p>
+                    {/* Conteo movido al pie junto con la paginación */}
+
+                  {/* Pills de medidas/colores duplicadas en desktop eliminadas (unificadas en UnifiedFilters) */}
                   </div>
 
-                  {/* <!-- top bar right --> */}
-                  <div className='flex items-center gap-2.5'>
+                  {/* <!-- top bar right: oculto --> */}
+                  <div className='hidden items-center gap-2.5'>
                     <button
                       onClick={() => setProductStyle('grid')}
                       aria-label='button for product grid tab'
@@ -334,6 +328,8 @@ const ShopWithSidebar = () => {
                 </div>
               </div>
 
+              {/* Bloque de CategoryTogglePills duplicado en desktop eliminado (contenido unificado en UnifiedFilters) */}
+
               {/* <!-- Products Grid Tab Content Start --> */}
               {loading ? (
                 <div className='flex items-center justify-center py-20'>
@@ -362,28 +358,26 @@ const ShopWithSidebar = () => {
                   <p className='text-gray-600'>No se encontraron productos.</p>
                 </div>
               ) : (
-                <div
-                  className={`${
-                    productStyle === 'grid'
-                      ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9'
-                      : 'flex flex-col gap-7.5'
-                  }`}
-                >
-                  {products.map((item, key) =>
-                    productStyle === 'grid' ? (
-                      <SingleGridItem item={item} key={key} />
-                    ) : (
-                      <SingleListItem item={item} key={key} />
-                    )
-                  )}
+                <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9'>
+                  {products.map((item, key) => (
+                    <SingleGridItem item={item} key={key} />
+                  ))}
                 </div>
               )}
               {/* <!-- Products Grid Tab Content End --> */}
 
               {/* <!-- Products Pagination Start --> */}
-              <div className='flex justify-center mt-15'>
-                <div className='bg-white shadow-1 rounded-md p-2'>
-                  <ul className='flex items-center'>
+              {pagination.totalPages > 1 && (
+                <div className='flex flex-col items-center gap-3 mt-15'>
+                  <p className='text-sm'>
+                    Mostrando{' '}
+                    <span className='text-dark'>
+                      {loading ? '...' : `${products.length} de ${pagination.total}`}
+                    </span>{' '}
+                    Productos
+                  </p>
+                  <div className='bg-white shadow-1 rounded-md p-2'>
+                    <ul className='flex items-center'>
                     <li>
                       <button
                         id='paginationLeft'
@@ -493,9 +487,10 @@ const ShopWithSidebar = () => {
                         </svg>
                       </button>
                     </li>
-                  </ul>
+                    </ul>
+                  </div>
                 </div>
-              </div>
+              )}
               {/* <!-- Products Pagination End --> */}
             </div>
             {/* // <!-- Content End --> */}

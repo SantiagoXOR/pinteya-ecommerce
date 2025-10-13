@@ -9,7 +9,9 @@ import { AppDispatch } from '@/redux/store'
 import Link from 'next/link'
 import Image from 'next/image'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { ExtendedProduct, calculateProductFeatures } from '@/lib/adapters/productAdapter'
+import { getMainImage } from '@/lib/adapters/product-adapter'
 import { useCartWithBackend } from '@/hooks/useCartWithBackend'
 import { useCartActions } from '@/hooks/useCartActions'
 import { useAnalytics } from '@/hooks/useAnalytics'
@@ -74,12 +76,15 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
   return (
     <CommercialProductCard
       className='bg-white' // Forzar fondo blanco
-      image={
-        item.images?.previews?.[0] || item.imgs?.previews?.[0] || '/images/products/placeholder.svg'
-      }
+      image={getMainImage(item)}
       title={cleanTitle}
       brand={item.brand}
       description={item.description}
+      variants={item?.variants || []}
+      specifications={item?.specifications}
+      dimensions={item?.dimensions}
+      color={item?.color}
+      medida={item?.medida}
       price={features.currentPrice}
       originalPrice={features.discount ? item.price : undefined}
       discount={features.discount ? `${features.discount}%` : undefined}
@@ -99,18 +104,32 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
             }
           : undefined
       }
-      // Envío gratis automático para productos >= $15000
-      freeShipping={features.freeShipping || features.currentPrice >= 15000}
-      shippingText={
-        features.freeShipping ? 'Envío gratis' : features.fastShipping ? 'Envío rápido' : undefined
-      }
+      // Envío gratis según Design System (umbral global)
+      {...(() => {
+        const config = useDesignSystemConfig()
+        const autoFree = dsShouldShowFreeShipping(features.currentPrice, config)
+        const free = Boolean(features.freeShipping) || autoFree
+        return {
+          freeShipping: free,
+          shippingText: free
+            ? 'Envío gratis'
+            : features.fastShipping
+            ? 'Envío rápido'
+            : undefined,
+        }
+      })()}
       // Configuración de badges inteligentes
       badgeConfig={{
         showCapacity: true,
         showColor: true,
         showFinish: true,
         showMaterial: true,
-        showGrit: true
+        showGrit: true,
+        showDimensions: true,
+        // Alinear con Home/ProductItem
+        showWeight: false,
+        showBrand: false,
+        maxBadges: 3
       }}
     />
   )

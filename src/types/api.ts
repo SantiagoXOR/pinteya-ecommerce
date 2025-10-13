@@ -32,8 +32,18 @@ export interface PaginatedResponse<T> {
 // FILTROS Y PARÁMETROS
 // ===================================
 export interface ProductFilters {
+  // Filtro de una sola categoría (compatibilidad hacia atrás)
   category?: string
+  // Filtros avanzados: múltiples categorías
+  categories?: string[]
+  // Filtro de una sola marca (compatibilidad hacia atrás)
   brand?: string
+  // Filtros avanzados: múltiples marcas
+  brands?: string[]
+  // Filtros por medidas (ej: L, XL, 20L)
+  sizes?: string[]
+  // Filtros por colores
+  colors?: string[]
   priceMin?: number
   priceMax?: number
   search?: string

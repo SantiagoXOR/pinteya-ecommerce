@@ -174,7 +174,7 @@ import { ShippingInfo } from '@/components/ui/shipping-info'
       price: 0,
       estimatedDays: { min: 5, max: 7 },
       isFree: true,
-      description: 'En compras mayores a $50.000'
+      description: 'En compras mayores a $50.000 (configurable por Design System)'
     },
     {
       id: 'express',
@@ -271,7 +271,7 @@ function ProductCard() {
             price: 0,
             estimatedDays: { min: 5, max: 7 },
             isFree: true,
-            description: 'Compra mínima $50.000',
+            description: 'Compra mínima $50.000 (configurable por Design System)',
           },
           {
             id: 'standard',
@@ -343,6 +343,36 @@ function ProductGrid() {
 - Mantener legibilidad en pantallas pequeñas
 
 ---
+
+### Umbral de Envío Gratis (Configurable)
+
+El umbral para mostrar "Envío gratis" se controla desde el Design System y se aplica de forma centralizada.
+
+```ts
+// src/design-system/design-system-config.ts
+export const defaultDesignSystemConfig = {
+  ecommerce: {
+    shippingInfo: {
+      freeShippingThreshold: 50000,
+    },
+  },
+}
+
+export const shouldShowFreeShipping = (price: number, config = defaultDesignSystemConfig) =>
+  price >= config.ecommerce.shippingInfo.freeShippingThreshold
+```
+
+Uso recomendado en componentes de producto:
+
+```tsx
+import { useDesignSystemConfig, shouldShowFreeShipping } from '@/lib/design-system-config'
+
+function Product({ price }: { price: number }) {
+  const config = useDesignSystemConfig()
+  const freeShipping = shouldShowFreeShipping(price, config)
+  return <CommercialProductCard price={price} freeShipping={freeShipping} />
+}
+```
 
 ## 🔗 Enlaces Relacionados
 
