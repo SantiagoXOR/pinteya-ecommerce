@@ -3,7 +3,7 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Product } from '@/types/product'
-import { useCartActions } from '@/hooks/useCartActions'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/redux/store'
@@ -15,7 +15,7 @@ interface SingleItemProps {
 }
 
 const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
-  const { addToCart } = useCartActions()
+  const { addProduct } = useCartUnified()
   const { trackEvent } = useAnalytics()
   const dispatch = useDispatch<AppDispatch>()
 
@@ -34,11 +34,16 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
 
   // add to cart
   const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...item,
-        quantity: 1,
-      })
+    // Servicio unificado: normaliza y agrega con atributos coherentes
+    addProduct(
+      {
+        id: item.id,
+        title: item.name || item.title,
+        price: item.price,
+        discounted_price: item.discountedPrice ?? item.price,
+        images: item.imgs?.previews ?? [],
+      },
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida } }
     )
   }
 

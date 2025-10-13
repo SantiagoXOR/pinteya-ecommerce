@@ -6,7 +6,8 @@ import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { searchProducts } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
-import { ProductCard } from '@/components/ui'
+import { CommercialProductCard } from '@/components/ui/product-card-commercial'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { Search, AlertCircle, Package, Filter, SortAsc } from 'lucide-react'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,7 @@ export default function SearchPage() {
   const { addItem } = useCart()
   const query = searchParams.get('search') || ''
   const category = searchParams.get('category')
+  const config = useDesignSystemConfig()
 
   const [products, setProducts] = useState<ProductWithCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -253,41 +255,84 @@ export default function SearchPage() {
                 : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
             }`}
           >
-            {products.map(product => (
-              <ProductCard
-                key={product.id}
-                productId={product.id}
-                title={product.name}
-                price={product.price}
-                image={product.images?.[0] || '/images/products/placeholder.svg'}
-                stock={product.stock}
-                brand={product.category?.name}
-                onAddToCart={() => {
-                  try {
-                    addItem({
-                      id: product.id,
-                      name: product.name,
-                      price: product.price,
-                      image: product.images?.[0] || '/images/products/placeholder.svg',
-                      quantity: 1,
-                    })
-                    toast({
-                      title: 'Producto agregado',
-                      description: `${product.name} se agregó al carrito`,
-                    })
-                  } catch (error) {
-                    toast({
-                      title: 'Error',
-                      description: 'No se pudo agregar el producto al carrito',
-                      variant: 'destructive',
-                    })
+            {products.map(product => {
+              const hasDiscount =
+                typeof product.discounted_price === 'number' &&
+                product.discounted_price > 0 &&
+                product.discounted_price < product.price
+              const currentPrice = hasDiscount ? (product.discounted_price as number) : product.price
+              const originalPrice = hasDiscount ? product.price : undefined
+              const discount = hasDiscount
+                ? `${Math.round((1 - (product.discounted_price as number) / product.price) * 100)}%`
+                : undefined
+              const image = product.images?.[0] || '/images/products/placeholder.svg'
+
+              return (
+                <CommercialProductCard
+                  key={product.id}
+                  productId={String(product.id)}
+                  title={product.name}
+                  brand={product.brand || product.category?.name}
+                  image={image}
+                  price={currentPrice}
+                  originalPrice={originalPrice}
+                  discount={discount}
+                  stock={product.stock}
+                  shippingText={product.stock > 0 ? 'En stock' : 'Sin stock'}
+                  {...(() => {
+                    const autoFree = dsShouldShowFreeShipping(currentPrice, config)
+                    return { freeShipping: autoFree }
+                  })()}
+                  installments={
+                    currentPrice > 0
+                      ? {
+                          quantity: 3,
+                          amount: Math.round(currentPrice / 3),
+                          interestFree: true,
+                        }
+                      : undefined
                   }
-                }}
-                className={`bg-white shadow-sm hover:shadow-md transition-shadow ${
-                  viewMode === 'list' ? 'flex flex-row items-center p-4' : ''
-                }`}
-              />
-            ))}
+                  onAddToCart={() => {
+                    try {
+                      addItem({
+                        id: String(product.id),
+                        name: product.name,
+                        price: currentPrice,
+                        image,
+                        quantity: 1,
+                      })
+                      toast({
+                        title: 'Producto agregado',
+                        description: `${product.name} se agregó al carrito`,
+                      })
+                    } catch (error) {
+                      toast({
+                        title: 'Error',
+                        description: 'No se pudo agregar el producto al carrito',
+                        variant: 'destructive',
+                      })
+                    }
+                  }}
+                  // Variantes y badges inteligentes
+                  variants={(product as any).variants || []}
+                  description={(product as any).description || ''}
+                  badgeConfig={{
+                    showCapacity: true,
+                    showColor: true,
+                    showFinish: true,
+                    showMaterial: true,
+                    showGrit: true,
+                    showDimensions: true,
+                    showWeight: false,
+                    showBrand: false,
+                    maxBadges: 3,
+                  }}
+                  className={`bg-white shadow-sm hover:shadow-md transition-shadow ${
+                    viewMode === 'list' ? 'flex flex-row items-center p-4' : ''
+                  }`}
+                />
+              )
+            })}
           </div>
         )}
 

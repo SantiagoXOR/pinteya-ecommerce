@@ -16,6 +16,11 @@ type CartItem = {
     thumbnails: string[]
     previews: string[]
   }
+  // Atributos opcionales para mostrar descriptores (color, medida, etc.)
+  attributes?: {
+    color?: string
+    medida?: string
+  }
 }
 
 // Función para obtener el estado inicial con persistencia
@@ -42,7 +47,7 @@ export const cart = createSlice({
   initialState,
   reducers: {
     addItemToCart: (state, action: PayloadAction<CartItem>) => {
-      const { id, title, price, quantity, discountedPrice, imgs } = action.payload
+      const { id, title, price, quantity, discountedPrice, imgs, attributes } = action.payload
       const existingItem = state.items.find(item => item.id === id)
 
       if (existingItem) {
@@ -55,6 +60,7 @@ export const cart = createSlice({
           quantity,
           discountedPrice,
           imgs,
+          attributes,
         })
       }
     },

@@ -27,7 +27,7 @@ import {
   PAINT_COLORS,
   ColorOption,
 } from '@/components/ui/advanced-color-picker'
-import { detectProductType, formatCapacity, getDefaultColor } from '@/utils/product-utils'
+import { detectProductType, formatCapacity, getDefaultColor, extractColorFromName } from '@/utils/product-utils'
 import {
   ProductVariant,
   getProductVariants,
@@ -47,6 +47,7 @@ import { getProductById } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
 import { supabase } from '@/lib/supabase'
 import { logError } from '@/lib/error-handling/centralized-error-handler'
+import { useRouter } from 'next/navigation'
 
 
 
@@ -410,6 +411,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   onAddToCart,
   onAddToWishlist,
 }) => {
+  const router = useRouter()
   const { state, actions, selectors } = useShopDetailsReducer()
 
   // Estados del modal
@@ -448,22 +450,30 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   useEffect(() => {
     console.log('🔄 ShopDetailModal useEffect[1]: open =', open, 'product?.id =', product?.id)
     if (open && product?.id) {
-      const productId = parseInt(product.id)
-      if (!isNaN(productId)) {
-        console.log('🔄 ShopDetailModal useEffect[1]: Cargando datos del producto', productId)
-        setLoadingProductData(true)
-        getProductById(productId)
-          .then(productData => {
-            setFullProductData(productData)
-          })
-          .catch(error => {
-            logError('Error cargando datos completos del producto:', error)
-            setFullProductData(null)
-          })
-          .finally(() => {
-            setLoadingProductData(false)
-          })
+      const rawId = product.id as unknown as string | number
+      const productId = typeof rawId === 'number' ? rawId : parseInt(String(rawId), 10)
+      if (!Number.isFinite(productId) || productId <= 0) {
+        console.warn('⚠️ ID de producto inválido al cargar datos completos:', rawId)
+        return
       }
+      console.log('🔄 ShopDetailModal useEffect[1]: Cargando datos del producto', productId)
+      setLoadingProductData(true)
+      getProductById(productId)
+        .then(productData => {
+          const realProduct =
+            productData && typeof productData === 'object' && 'data' in (productData as any)
+              ? (productData as any).data
+              : productData
+          setFullProductData(realProduct || null)
+          console.debug('🧩 ShopDetailModal: Datos completos del producto cargados:', realProduct)
+        })
+        .catch(error => {
+          logError('Error cargando datos completos del producto:', error)
+          setFullProductData(null)
+        })
+        .finally(() => {
+          setLoadingProductData(false)
+        })
     }
   }, [open, product?.id])
 
@@ -472,6 +482,26 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     fullProductData?.name || product?.name || '', 
     fullProductData?.category?.name || ''
   )
+
+  // Unidad de capacidad efectiva (litros, kg, metros, unidades) detectada dinámicamente
+  const capacityUnit = useMemo(() => {
+    const medidaRaw = ((fullProductData as any)?.medida || (fullProductData as any)?.measure || '')
+      .toString()
+      .trim()
+    if (medidaRaw && /kg/i.test(medidaRaw)) {
+      return 'kg' as const
+    }
+    // Detectar por nombre del producto
+    const nameText = (fullProductData?.name || product?.name || '').toString()
+    if (nameText && /\b\d+\s?(kg|kilos?)\b/i.test(nameText)) {
+      return 'kg' as const
+    }
+    // Si la capacidad seleccionada contiene KG, ajustar dinámicamente
+    if (selectedCapacity && /kg/i.test(selectedCapacity)) {
+      return 'kg' as const
+    }
+    return productType.capacityUnit
+  }, [fullProductData, selectedCapacity, productType.capacityUnit])
 
   // Cargar variantes cuando se abre el modal
   useEffect(() => {
@@ -489,8 +519,46 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     
     setLoadingVariants(true)
     try {
-      const productVariants = await getProductVariants(product.id)
-      setVariants(productVariants)
+      // Validar ID numérico antes de consultar API
+      const productIdNum = typeof product.id === 'number' ? product.id : Number(product.id)
+      if (!Number.isFinite(productIdNum) || productIdNum <= 0) {
+        console.warn('⚠️ ID de producto inválido al cargar variantes:', product?.id)
+        setVariants([])
+        return
+      }
+
+      const productVariantsRes = await getProductVariants(productIdNum)
+      const variantsData = (productVariantsRes && (productVariantsRes as any).data)
+        ? (productVariantsRes as any).data
+        : []
+      setVariants(variantsData)
+      // Log detallado de medidas y stock por variante para depurar
+      try {
+        console.debug('📦 ShopDetailModal: Variants overview (measure, stock, price)', variantsData.map(v => ({
+          id: v.id,
+          measure: v.measure,
+          stock: v.stock,
+          price_list: v.price_list,
+          price_sale: v.price_sale,
+        })))
+      } catch {}
+      // Si ya hay una capacidad seleccionada, enlazar inmediatamente la variante correcta
+      if (selectedCapacity && variantsData.length > 0) {
+        const v = findVariantByCapacity(variantsData, selectedCapacity)
+        setSelectedVariant(v || null)
+        if (v) {
+          console.debug('🧩 Variante enlazada tras carga:', {
+            id: v.id,
+            measure: v.measure,
+            stock: v.stock,
+          })
+        }
+      }
+      console.debug('🧪 ShopDetailModal: Variantes cargadas', {
+        productId: productIdNum,
+        count: variantsData.length,
+        sample: variantsData[0],
+      })
     } catch (error) {
       logError('❌ Error cargando variantes:', error)
       setVariants([])
@@ -537,9 +605,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       }
     }
 
-    if (!selectedCapacity && productType.defaultCapacities.length > 0) {
-      setSelectedCapacity(productType.defaultCapacities[0])
-    }
+    // No establecer capacidad por defecto aquí; se definirá cuando
+    // estén disponibles las capacidades reales (variantes/medida/relacionados)
 
     // Configurar valores por defecto para los nuevos selectores
     if (!selectedGrain && productType.hasGrainSelector && productType.grainOptions.length > 0) {
@@ -555,9 +622,86 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
   }, [productType, selectedColor, selectedCapacity, selectedGrain, selectedSize, selectedWidth])
 
-  // Calcular capacidades disponibles basándose en las variantes
-  const availableCapacities =
-    variants && variants.length > 0 ? getAvailableCapacities(variants) : productType.defaultCapacities
+  // Helper para extraer capacidades en KG desde distintos textos
+  const extractKgCapacities = (text: string): string[] => {
+    const caps = new Set<string>()
+    const regex = /(\d{1,3})\s?(kg|kilos?)/gi
+    let m: RegExpExecArray | null
+    while ((m = regex.exec(text)) !== null) {
+      caps.add(`${m[1]}KG`)
+    }
+    return Array.from(caps)
+      .sort((a, b) => parseInt(a) - parseInt(b))
+  }
+
+  // Calcular capacidades disponibles basándose en variantes, productos relacionados o medida/nombre
+  const availableCapacities = useMemo(() => {
+    // Acumular capacidades desde todas las fuentes y luego unificar
+    const collected: string[] = []
+
+    // Variantes explícitas
+    if (variants && variants.length > 0) {
+      const vCaps = getAvailableCapacities(variants)
+      collected.push(
+        ...vCaps.filter(c => (capacityUnit === 'kg' ? /kg/i.test(c) : true))
+      )
+    }
+
+    // Medida en BD (simple o lista separada por comas, barras, punto y coma)
+    const medidaFromDb = ((fullProductData as any)?.medida || (fullProductData as any)?.measure || '')
+      .toString()
+      .trim()
+    if (medidaFromDb) {
+      const parts = medidaFromDb
+        .split(/[,\/;\|]+/)
+        .map(s => s.trim())
+        .filter(Boolean)
+
+      if (capacityUnit === 'kg') {
+        const kgList = parts.flatMap(s => extractKgCapacities(s))
+        collected.push(...kgList)
+      } else {
+        collected.push(...parts)
+      }
+    }
+
+    // Productos relacionados (ej. mismas líneas con 5KG/12KG/24KG)
+    if (capacityUnit === 'kg' && relatedProducts?.products && relatedProducts.products.length > 0) {
+      const fromRelated = relatedProducts.products
+        .flatMap(p => {
+          const txt = `${p.name || ''} ${p.measure || ''}`
+          return extractKgCapacities(txt)
+        })
+      collected.push(...fromRelated)
+    }
+
+    // Nombre del producto actual
+    const nameText = (fullProductData?.name || product?.name || '').toString()
+    if (capacityUnit === 'kg' && nameText) {
+      const caps = extractKgCapacities(nameText)
+      collected.push(...caps)
+    }
+
+    // Unificar: normalizar a mayúsculas, quitar duplicados y ordenar
+    const normalized = collected
+      .map(c => c.toUpperCase())
+      .filter((c, idx, self) => self.indexOf(c) === idx)
+
+    if (normalized.length > 0) {
+      const sorted = normalized.sort((a, b) => parseInt(a) - parseInt(b))
+      return sorted
+    }
+
+    // Fallback: capacidades por defecto del tipo de producto
+    return productType.defaultCapacities
+  }, [
+    variants,
+    fullProductData,
+    product,
+    productType.defaultCapacities,
+    capacityUnit,
+    relatedProducts?.products,
+  ])
 
   // Obtener anchos disponibles para productos como cinta papel
   const availableWidths = useMemo(() => {
@@ -604,18 +748,142 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       setSelectedWidth(availableWidths[0])
     }
     
-    if (productType.hasCapacitySelector && availableCapacities.length > 0 && !selectedCapacity) {
-      setSelectedCapacity(availableCapacities[0])
+    // Establecer capacidad por defecto basada en las capacidades disponibles
+    if (availableCapacities.length > 0) {
+      // Si no hay capacidad seleccionada o la seleccionada no existe en la lista disponible,
+      // seleccionar la primera opción disponible
+      if (!selectedCapacity || !availableCapacities.includes(selectedCapacity)) {
+        setSelectedCapacity(availableCapacities[0])
+      }
+      // Si la unidad efectiva es KG y la selección actual no es KG, ajustar
+      else if (capacityUnit === 'kg' && !/kg/i.test(selectedCapacity)) {
+        const kgOption = availableCapacities.find(c => /kg/i.test(c))
+        if (kgOption) setSelectedCapacity(kgOption)
+      }
     }
   }, [availableWidths, availableCapacities, selectedWidth, selectedCapacity])
+
+  // Logs de diagnóstico para verificar unidad y selección
+  useEffect(() => {
+    console.log(
+      '🧪 ShopDetailModal capacidades:', {
+        capacityUnit,
+        availableCapacities,
+        selectedCapacity,
+      }
+    )
+    // Logear capacidades crudas para depurar duplicados
+    if (availableCapacities && availableCapacities.length > 0) {
+      console.log('🧪 Capacidades (raw):', availableCapacities)
+      console.log('🧪 Capacidades (formateadas):', availableCapacities.map(c => formatCapacity(c, capacityUnit)))
+      // Comparar contra variantes disponibles por medida
+      try {
+        console.log('🧪 Variants measures for matching:', (variants || []).map(v => v.measure))
+      } catch {}
+    }
+  }, [capacityUnit, availableCapacities, selectedCapacity])
+
+  // Colores inteligentes basados en datos del producto (p.ej., color "BLANCO")
+  const smartColors: ColorOption[] = useMemo(() => {
+    if (!productType.hasColorSelector) return []
+    const declaredColor = (((fullProductData as any)?.color || '') as string).toString().trim()
+    const extracted = extractColorFromName(fullProductData?.name || product?.name || '') || ''
+    const colorText = declaredColor || extracted
+    if (colorText) {
+      const normalized = colorText.toLowerCase()
+      const match =
+        PAINT_COLORS.find(
+          c =>
+            c.displayName.toLowerCase() === normalized ||
+            c.name.toLowerCase() === normalized ||
+            (normalized.includes('blanco') && c.name === 'blanco-puro')
+        ) || null
+      if (match) {
+        return [match]
+      }
+    }
+    return []
+  }, [productType.hasColorSelector, fullProductData, product])
+
+  // Establecer valores por defecto usando colores y capacidades inteligentes
+  useEffect(() => {
+    if (!selectedColor && productType.hasColorSelector && smartColors.length > 0) {
+      setSelectedColor(smartColors[0].id)
+    }
+    if (!selectedCapacity && availableCapacities.length > 0) {
+      setSelectedCapacity(availableCapacities[0])
+    }
+  }, [smartColors, availableCapacities, selectedColor, selectedCapacity, productType.hasColorSelector])
 
   // Actualizar variante seleccionada cuando cambia la capacidad
   useEffect(() => {
     if (selectedCapacity && variants && variants.length > 0) {
       const variant = findVariantByCapacity(variants, selectedCapacity)
       setSelectedVariant(variant)
+      // Al encontrar variante, limpiar producto relacionado para evitar confusión
+      if (variant) {
+        setSelectedRelatedProduct(null)
+      }
+      console.log('🧪 Cambio de capacidad:', {
+        selectedCapacity,
+        variantFound: variant ? {
+          id: variant.id,
+          measure: variant.measure,
+          price_list: variant.price_list,
+          price_sale: variant.price_sale,
+          stock: variant.stock,
+        } : null,
+        effectivePrice: variant ? getEffectivePrice(variant) : null,
+      })
     }
   }, [selectedCapacity, variants])
+
+  // Seleccionar producto relacionado por capacidad cuando no hay variante
+  useEffect(() => {
+    if (
+      selectedCapacity &&
+      !selectedVariant &&
+      relatedProducts?.products &&
+      relatedProducts.products.length > 0
+    ) {
+      const normalize = (v?: string | null): string => {
+        if (!v) return ''
+        const up = v.trim().toUpperCase()
+        const noSpaces = up.replace(/\s+/g, '')
+        const kg = noSpaces.replace(/(KGS|KILO|KILOS)$/i, 'KG')
+        const l = kg.replace(/(LT|LTS|LITRO|LITROS)$/i, 'L')
+        return l
+      }
+      const target = normalize(selectedCapacity)
+
+      // 1) Intento por medida declarada
+      let prod = findProductByMeasure(relatedProducts.products, selectedCapacity)
+
+      // 2) Fallback más estricto: solo comparar campos de medida declarados
+      // Evita falsos positivos cuando el nombre del producto contiene otra capacidad
+      if (!prod) {
+        prod =
+          relatedProducts.products.find(p => {
+            const m1 = normalize((p as any).measure)
+            const m2 = normalize((p as any).medida)
+            return m1 === target || m2 === target
+          }) || null
+      }
+
+      setSelectedRelatedProduct(prod || null)
+      if (prod) {
+        console.log('🔗 Producto relacionado por capacidad:', {
+          selectedCapacity,
+          productId: prod.id,
+          measure: (prod as any).measure,
+          stock: (prod as any).stock,
+          price: (prod as any).discounted_price ?? (prod as any).price,
+        })
+      } else {
+        console.log('🔎 Sin producto relacionado para capacidad:', selectedCapacity)
+      }
+    }
+  }, [selectedCapacity, selectedVariant, relatedProducts?.products])
 
   // Actualizar selectedVariant cuando cambia selectedWidth
   useEffect(() => {
@@ -641,6 +909,27 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     return map
   }, [])
 
+  // Imagen principal saneada (elimino comillas/backticks y valido URL)
+  const mainImageUrl = useMemo(() => {
+    const sanitize = (u?: string) => (typeof u === 'string' ? u.replace(/[`"]/g, '').trim() : '')
+    const getUrlFromCandidate = (c: any) => {
+      if (!c) return ''
+      if (typeof c === 'string') return sanitize(c)
+      return sanitize(c?.url || c?.image_url)
+    }
+    const candidates: any[] = [
+      (fullProductData as any)?.images?.[0],
+      fullProductData?.images?.main,
+      fullProductData?.images?.gallery?.[0],
+      (product as any)?.images?.[0],
+      product?.image,
+    ]
+    for (const c of candidates) {
+      const url = getUrlFromCandidate(c)
+      if (url && /^https?:\/\//.test(url)) return url
+    }
+    return '/images/placeholder-product.jpg'
+  }, [fullProductData, product])
   // Calcular precio dinámico basado en selecciones
   const calculateDynamicPrice = useCallback(() => {
     // Si hay una variante seleccionada, usar su precio efectivo directamente
@@ -661,8 +950,13 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       }
     }
 
-    // Para otros productos, usar precio base con multiplicadores
-    let basePrice = parseFloat(product.discounted_price || product.price)
+    // Para otros productos, usar precio base con multiplicadores (sanear a número)
+    const baseCandidate = (fullProductData as any)?.discounted_price ?? (fullProductData as any)?.price ?? product.price
+    let basePrice = typeof baseCandidate === 'number' ? baseCandidate : parseFloat(String(baseCandidate))
+    if (!Number.isFinite(basePrice)) {
+      basePrice = typeof product.price === 'number' ? product.price : parseFloat(String(product.price))
+      if (!Number.isFinite(basePrice)) basePrice = 0
+    }
 
     // Aplicar modificadores de precio por tamaño (solo para pinceles)
     if (selectedSize && productType.hasSizeSelector) {
@@ -684,30 +978,79 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Obtener precio actual basado en la variante seleccionada y modificadores
   const currentPrice = useMemo(() => {
+    let path: string = 'fallback'
+    let priceComputed: number = 0
+
     // Prioridad 1: Si hay una variante seleccionada, usar su precio
     if (selectedVariant) {
-      return getEffectivePrice(selectedVariant)
+      path = 'variant'
+      priceComputed = getEffectivePrice(selectedVariant)
     }
-    
-    // Prioridad 2: Para productos con selector de ancho, usar producto relacionado seleccionado o mapeo de precios
-    if (selectedWidth && productType.hasWidthSelector) {
-      if (selectedRelatedProduct) {
-        return parseFloat(selectedRelatedProduct.discounted_price || selectedRelatedProduct.price)
-      } else if (widthToPriceMap[selectedWidth]) {
-        // Fallback: usar mapeo de precios cuando no hay productos relacionados
-        const priceData = widthToPriceMap[selectedWidth]
-        return parseFloat(priceData.discounted_price || priceData.price)
-      }
+    // Prioridad 2: Producto relacionado seleccionado (ya sea por ancho o por capacidad)
+    else if (selectedRelatedProduct) {
+      path = 'relatedProduct'
+      priceComputed = parseFloat(selectedRelatedProduct.discounted_price || selectedRelatedProduct.price)
     }
-    
-    // Prioridad 3: Usar calculateDynamicPrice para otros casos
-    if (selectedSize && productType.hasSizeSelector) {
-      return calculateDynamicPrice()
+    // Prioridad 3: Para productos con selector de ancho, usar mapeo de precios cuando no hay relacionados
+    else if (selectedWidth && productType.hasWidthSelector && widthToPriceMap[selectedWidth]) {
+      path = 'widthMap'
+      const priceData = widthToPriceMap[selectedWidth]
+      priceComputed = parseFloat(priceData.discounted_price || priceData.price)
     }
-    
-    // Fallback: precio base del producto
-    return parseFloat(product.discounted_price || product.price)
-  }, [selectedVariant, selectedWidth, selectedSize, selectedRelatedProduct, productType.hasWidthSelector, productType.hasSizeSelector, widthToPriceMap, calculateDynamicPrice, product.discounted_price, product.price])
+    // Prioridad 4: Usar calculateDynamicPrice para otros casos (p. ej. tamaño en pinceles)
+    else if (selectedSize && productType.hasSizeSelector) {
+      path = 'dynamic'
+      priceComputed = calculateDynamicPrice()
+    } else {
+      // Fallback: precio base del producto (sanear)
+      const candidate = (fullProductData as any)?.discounted_price ?? (fullProductData as any)?.price ?? product.price
+      const n = typeof candidate === 'number' ? candidate : parseFloat(String(candidate))
+      priceComputed = Number.isFinite(n) ? n : 0
+    }
+
+    // Log detallado para depurar por qué no cambia el precio con otras medidas
+    try {
+      console.log('💰 currentPrice debug', {
+        path,
+        selectedCapacity,
+        selectedWidth,
+        selectedSize,
+        hasWidthSelector: productType.hasWidthSelector,
+        hasSizeSelector: productType.hasSizeSelector,
+        variant: selectedVariant
+          ? { id: selectedVariant.id, measure: selectedVariant.measure, price: getEffectivePrice(selectedVariant) }
+          : null,
+        relatedProduct: selectedRelatedProduct
+          ? {
+              id: selectedRelatedProduct.id,
+              measure: selectedRelatedProduct.measure,
+              price: parseFloat(selectedRelatedProduct.discounted_price || selectedRelatedProduct.price),
+            }
+          : null,
+        availableCapacities,
+        relatedProductsCount: relatedProducts?.products?.length || 0,
+        priceComputed,
+      })
+    } catch (e) {
+      // Evitar romper por logs
+    }
+
+    return priceComputed
+  }, [
+    selectedVariant,
+    selectedWidth,
+    selectedSize,
+    selectedRelatedProduct,
+    productType.hasWidthSelector,
+    productType.hasSizeSelector,
+    widthToPriceMap,
+    calculateDynamicPrice,
+    product.discounted_price,
+    product.price,
+    selectedCapacity,
+    availableCapacities,
+    relatedProducts?.products,
+  ])
   
   // Calcular precio original para mostrar descuentos
   const originalPrice = useMemo(() => {
@@ -715,7 +1058,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       return getEffectivePrice(selectedVariant)
     }
     
-    if (selectedWidth && productType.hasWidthSelector && selectedRelatedProduct) {
+    if (selectedRelatedProduct) {
       return parseFloat(selectedRelatedProduct.price)
     }
     
@@ -732,7 +1075,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       return hasDiscount(selectedVariant)
     }
     
-    if (selectedWidth && productType.hasWidthSelector && selectedRelatedProduct) {
+    if (selectedRelatedProduct) {
       return selectedRelatedProduct.discounted_price && 
         parseFloat(selectedRelatedProduct.discounted_price) < parseFloat(selectedRelatedProduct.price)
     }
@@ -750,12 +1093,32 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   const defaultCapacities = product.capacities || ['1L', '4L', '10L', '20L']
 
   const handleAddToCart = useCallback(async () => {
-    if (!product || !onAddToCart) return
+    // Debug inicial del click
+    console.debug('🛒 ShopDetailModal: Click en Agregar al Carrito', {
+      hasProduct: !!product,
+      hasOnAddToCart: !!onAddToCart,
+      quantity,
+      selectedVariantId: selectedVariant?.id,
+      selectedRelatedProductId: selectedRelatedProduct?.id,
+      selectedColor,
+      selectedCapacity,
+      selectedWidth,
+    })
+
+    if (!product) {
+      console.warn('⚠️ ShopDetailModal: No hay producto disponible, ignorando click')
+      return
+    }
+
+    if (!onAddToCart) {
+      console.warn('⚠️ ShopDetailModal: Prop onAddToCart no provista, ignorando click')
+      return
+    }
 
     let productToAdd = product
 
-    // Prioridad 1: Producto relacionado seleccionado (para productos con selector de ancho como cintas)
-    if (selectedWidth && productType.hasWidthSelector && selectedRelatedProduct) {
+    // Prioridad 1: Producto relacionado seleccionado (por ancho o capacidad)
+    if (selectedRelatedProduct) {
       productToAdd = {
         ...selectedRelatedProduct,
         id: selectedRelatedProduct.id,
@@ -795,15 +1158,21 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         grain: selectedGrain,
         size: selectedSize,
         width: selectedWidth,
+        // Pasar cantidad al callback para que el carrito la respete
+        quantity,
       }
     }
 
     try {
-      console.log('🛒 ShopDetailModal: Agregando al carrito...')
+      console.log('🛒 ShopDetailModal: Agregando al carrito...', {
+        productToAdd,
+        variants: cartData.variants,
+      })
       await onAddToCart(productToAdd, cartData.variants)
       console.log('🛒 ShopDetailModal: Producto agregado, cerrando modal...')
       onOpenChange(false) // Cerrar modal después de agregar al carrito
       console.log('🛒 ShopDetailModal: onOpenChange(false) llamado')
+      router.push('/products')
     } catch (error) {
       console.error('Error al agregar al carrito:', error)
     }
@@ -819,7 +1188,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     selectedCapacity,
     selectedGrain,
     selectedSize,
-    onOpenChange
+    onOpenChange,
+    router
   ])
 
   const handleAddToWishlist = useCallback(() => {
@@ -834,6 +1204,40 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Calcular si hay descuento (renombrado para evitar conflicto)
   const hasProductDiscount = product.originalPrice && product.originalPrice > product.price
+
+  // Stock efectivo basado en selección actual (prioriza variante sobre producto relacionado)
+  const effectiveStock = useMemo(() => {
+    // Normalizar posibles valores string/number provenientes de la API/BD
+    const toNumber = (v: any): number | undefined => {
+      const n = typeof v === 'number' ? v : parseFloat(String(v))
+      return Number.isFinite(n) ? n : undefined
+    }
+
+    const variantStock = toNumber(selectedVariant?.stock)
+    const relatedStock = toNumber(selectedRelatedProduct?.stock)
+    const baseStock = toNumber((fullProductData as any)?.stock ?? (product as any)?.stock ?? 0) ?? 0
+    const computed = (variantStock ?? relatedStock ?? baseStock) || 0
+    console.log('🧮 ShopDetailModal: effectiveStock', { selectedCapacity, variantStock, relatedStock, baseStock, computed })
+    return computed
+  }, [selectedVariant, selectedRelatedProduct, fullProductData?.stock, product?.stock])
+
+  // Log explícito de stock cuando cambian selección/capacidad
+  useEffect(() => {
+    const toNumber = (v: any): number | undefined => {
+      const n = typeof v === 'number' ? v : parseFloat(String(v))
+      return Number.isFinite(n) ? n : undefined
+    }
+    const variantStock = toNumber(selectedVariant?.stock)
+    const relatedStock = toNumber(selectedRelatedProduct?.stock)
+    const baseStock = toNumber((fullProductData as any)?.stock ?? (product as any)?.stock ?? 0) ?? 0
+    console.log('🔢 Stock debug', {
+      selectedCapacity,
+      variant: selectedVariant ? { id: selectedVariant.id, measure: selectedVariant.measure, stock: variantStock } : null,
+      relatedProduct: selectedRelatedProduct ? { id: selectedRelatedProduct.id, measure: selectedRelatedProduct.measure, stock: relatedStock } : null,
+      baseStock,
+      effectiveStock,
+    })
+  }, [selectedCapacity, selectedVariant, selectedRelatedProduct, fullProductData?.stock, product?.stock, effectiveStock])
 
   // Función wrapper para onOpenChange con debug
   const handleOpenChange = useCallback((newOpen: boolean) => {
@@ -872,14 +1276,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         {/* Imagen del producto */}
         <div className='space-y-4'>
           <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden'>
-            <img
-              src={
-                fullProductData?.images?.main || 
-                fullProductData?.images?.gallery?.[0] ||
-                product?.images?.[0] || 
-                product?.image || 
-                '/images/placeholder-product.jpg'
-              }
+              <img
+              src={mainImageUrl}
               alt={fullProductData?.name || product?.name || 'Producto'}
               className='w-full h-full object-cover'
             />
@@ -954,7 +1352,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             <div className='flex items-center gap-2'>
               <Package className='w-4 h-4 text-gray-500' />
               <span className='text-sm text-gray-600'>
-                Stock: <span className='font-medium'>{fullProductData?.stock || product?.stock || 0}</span> unidades
+                Stock: <span className='font-medium'>{effectiveStock}</span> unidades
               </span>
             </div>
           </div>
@@ -1039,12 +1437,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             {/* Selector de colores condicional */}
             {productType.hasColorSelector && (
               <AdvancedColorPicker
-                colors={PAINT_COLORS}
+                colors={smartColors.length > 0 ? smartColors : availableColors}
                 selectedColor={selectedColor}
                 onColorChange={setSelectedColor}
-                showSearch={PAINT_COLORS.length > 12}
-                showCategories={PAINT_COLORS.length > 20}
-                maxDisplayColors={16}
+                showSearch={false}
+                showCategories={false}
+                maxDisplayColors={smartColors.length > 0 ? smartColors.length : 12}
                 className='bg-white'
                 productType={productType}
               />
@@ -1059,11 +1457,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                   <div className='flex items-center gap-2'>
                     <Box className='w-5 h-5 text-blaze-orange-600' />
                     <span className='text-base font-semibold text-gray-900'>
-                      {productType.capacityUnit === 'litros'
+                      {capacityUnit === 'litros'
                         ? 'Capacidad'
-                        : productType.capacityUnit === 'kg'
+                        : capacityUnit === 'kg'
                           ? 'Peso'
-                          : productType.capacityUnit === 'metros'
+                          : capacityUnit === 'metros'
                             ? 'Longitud'
                             : 'Cantidad'}
                     </span>
@@ -1089,7 +1487,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                               : 'border-gray-200 bg-white text-gray-700 hover:border-blaze-orange-300 hover:bg-blaze-orange-25'
                           )}
                         >
-                          {formatCapacity(capacity, productType.capacityUnit)}
+                          {formatCapacity(capacity, capacityUnit)}
                         </button>
                       ))}
                     </div>
@@ -1097,14 +1495,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                 </div>
               )}
 
-            {/* Selector de cantidad - ÚNICO */}
-            <QuantitySelector
-              quantity={quantity}
-              onQuantityChange={setQuantity}
-              onIncrement={() => setQuantity(prev => prev + 1)}
-              onDecrement={() => setQuantity(prev => Math.max(1, prev - 1))}
-              stock={fullProductData?.stock || product?.stock || 0}
-            />
+          {/* Selector de cantidad - ÚNICO */}
+          <QuantitySelector
+            quantity={quantity}
+            onQuantityChange={setQuantity}
+            onIncrement={() => setQuantity(prev => prev + 1)}
+            onDecrement={() => setQuantity(prev => Math.max(1, prev - 1))}
+            stock={effectiveStock}
+          />
 
             {/* Selector de grano para lijas */}
             {productType.hasGrainSelector && (
@@ -1211,16 +1609,16 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               {selectedCapacity && (
                 <p className='text-xs text-gray-500'>
                   <span className='font-medium'>
-                    {productType.capacityUnit === 'litros'
+                    {capacityUnit === 'litros'
                       ? 'Capacidad'
-                      : productType.capacityUnit === 'kg'
+                      : capacityUnit === 'kg'
                         ? 'Peso'
-                        : productType.capacityUnit === 'metros'
+                        : capacityUnit === 'metros'
                           ? 'Longitud'
                           : 'Cantidad'}
                     :
                   </span>{' '}
-                  {formatCapacity(selectedCapacity, productType.capacityUnit)}
+                  {formatCapacity(selectedCapacity, capacityUnit)}
                 </p>
               )}
               {productType.hasGrainSelector && selectedGrain && (
@@ -1246,20 +1644,20 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             <Button
               onClick={handleAddToCart}
               disabled={
-                (fullProductData?.stock || product?.stock || 0) === 0 || 
+                effectiveStock === 0 || 
                 isLoading || 
                 loadingProductData ||
-                quantity > (fullProductData?.stock || product?.stock || 0)
+                quantity > effectiveStock
               }
               className='w-full bg-yellow-400 hover:bg-yellow-500 text-black text-lg py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
               size='lg'
             >
               <ShoppingCart className='mr-2 h-5 w-5' />
-              {(fullProductData?.stock || product?.stock || 0) === 0
+              {effectiveStock === 0
                 ? 'Sin Stock'
                 : isLoading || loadingProductData
                   ? 'Cargando...'
-                  : quantity > (fullProductData?.stock || product?.stock || 0)
+                  : quantity > effectiveStock
                     ? 'Stock Insuficiente'
                     : 'Agregar al Carrito'}
             </Button>
@@ -1279,15 +1677,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
             {/* Información de disponibilidad */}
             <div className='text-center text-sm text-gray-600'>
-              {(fullProductData?.stock || product?.stock || 0) > 0 && (
+              {effectiveStock > 0 && (
                 <p>
-                  {(fullProductData?.stock || product?.stock || 0) <= 5 ? (
+                  {effectiveStock <= 5 ? (
                     <span className='text-amber-600 font-medium'>
-                      ¡Últimas {fullProductData?.stock || product?.stock} unidades disponibles!
+                      ¡Últimas {effectiveStock} unidades disponibles!
                     </span>
                   ) : (
                     <span className='text-green-600'>
-                      ✓ Disponible ({fullProductData?.stock || product?.stock} en stock)
+                      ✓ Disponible ({effectiveStock} en stock)
                     </span>
                   )}
                 </p>

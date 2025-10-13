@@ -2,7 +2,7 @@
 import React from 'react'
 import { Product } from '@/types/product'
 import { updateQuickView } from '@/redux/features/quickView-slice'
-import { addItemToCart } from '@/redux/features/cart-slice'
+// import { addItemToCart } from '@/redux/features/cart-slice'
 import { addItemToWishlist } from '@/redux/features/wishlist-slice'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/redux/store'
@@ -12,8 +12,7 @@ import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { ExtendedProduct, calculateProductFeatures } from '@/lib/adapters/productAdapter'
 import { getMainImage } from '@/lib/adapters/product-adapter'
-import { useCartWithBackend } from '@/hooks/useCartWithBackend'
-import { useCartActions } from '@/hooks/useCartActions'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -22,36 +21,26 @@ import { ShoppingCart, Eye } from 'lucide-react'
 const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
   const dispatch = useDispatch<AppDispatch>()
 
-  // Hook para carrito con backend
-  const { addItem, loading } = useCartWithBackend()
+  // Hook unificado de carrito
+  const { addProduct } = useCartUnified()
 
   // update the QuickView state
   const handleQuickViewUpdate = () => {
     dispatch(updateQuickView({ ...item }))
   }
 
-  // add to cart - Conectado con backend
-  const handleAddToCart = async () => {
-    // Intentar agregar al backend primero
-    const success = await addItem(item.id, 1)
-
-    if (success) {
-      // Si el backend funciona, también actualizar Redux para compatibilidad
-      dispatch(
-        addItemToCart({
-          ...item,
-          quantity: 1,
-        })
-      )
-    } else {
-      // Si falla el backend, solo usar Redux (fallback)
-      dispatch(
-        addItemToCart({
-          ...item,
-          quantity: 1,
-        })
-      )
-    }
+  // Agregar al carrito usando el hook unificado
+  const handleAddToCart = () => {
+    addProduct(
+      {
+        id: item.id,
+        title: item.name || item.title,
+        price: item.price,
+        discounted_price: (features?.currentPrice ?? item.price),
+        images: [getMainImage(item)].filter(Boolean),
+      },
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida } }
+    )
   }
 
   const handleItemToWishList = () => {

@@ -3,13 +3,13 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Product } from '@/types/product'
-import { useCartActions } from '@/hooks/useCartActions'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/redux/store'
 import { updateQuickView } from '@/redux/features/quickView-slice'
 import { addItemToWishlist } from '@/redux/features/wishlist-slice'
-import { useCartWithBackend } from '@/hooks/useCartWithBackend'
+// import { useCartWithBackend } from '@/hooks/useCartWithBackend'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { ExtendedProduct, calculateProductFeatures } from '@/lib/adapters/productAdapter'
 import { getMainImage } from '@/lib/adapters/product-adapter'
@@ -20,10 +20,10 @@ interface SingleListItemProps {
 }
 
 const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
-  const { addToCart } = useCartActions()
+  const { addProduct } = useCartUnified()
   const { trackEvent } = useAnalytics()
   const dispatch = useDispatch<AppDispatch>()
-  const { addItem } = useCartWithBackend()
+  // const { addItem } = useCartWithBackend()
 
   // Usar product directamente
   const item = product
@@ -33,28 +33,21 @@ const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
     dispatch(updateQuickView({ ...item }))
   }
 
-  // add to cart - Conectado con backend
-  const handleAddToCart = async () => {
-    // Intentar agregar al backend primero
-    const success = await addItem(item.id, 1)
-
-    if (success) {
-      // Si el backend funciona, también actualizar Redux para compatibilidad
-      dispatch(
-        addItemToCart({
-          ...item,
-          quantity: 1,
-        })
-      )
-    } else {
-      // Si falla el backend, solo usar Redux (fallback)
-      dispatch(
-        addItemToCart({
-          ...item,
-          quantity: 1,
-        })
-      )
-    }
+  // Agregar al carrito usando el hook unificado
+  const handleAddToCart = () => {
+    addProduct(
+      {
+        id: item.id,
+        title: item.name || item.title,
+        price: item.price,
+        discounted_price:
+          features.discount
+            ? Math.round(item.price * (1 - features.discount / 100))
+            : features.currentPrice,
+        images: [getMainImage(item)].filter(Boolean),
+      },
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida } }
+    )
   }
 
   const handleItemToWishList = () => {

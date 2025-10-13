@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import { Product } from '@/types/product'
-import { useCartActions } from '@/hooks/useCartActions'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
@@ -12,7 +12,7 @@ interface ProductItemProps {
 }
 
 const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
-  const { addToCart } = useCartActions()
+  const { addProduct } = useCartUnified()
   const { trackEvent } = useAnalytics()
 
   // Usar product o item, con validación
@@ -26,10 +26,17 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
 
   // add to cart
   const handleAddToCart = () => {
-    addToCart({
-      ...productData,
-      quantity: 1,
-    })
+    // Unificar agregado al carrito
+    addProduct(
+      {
+        id: productData.id,
+        title: (productData as any).name || productData.title,
+        price: productData.price,
+        discounted_price: (productData as any).discounted_price ?? productData.discountedPrice ?? productData.price,
+        images: Array.isArray(productData.images) ? productData.images : productData.imgs?.previews,
+      },
+      { quantity: 1, attributes: { color: (productData as any).color, medida: (productData as any).medida } }
+    )
 
     // Track analytics event
     trackEvent('add_to_cart', {

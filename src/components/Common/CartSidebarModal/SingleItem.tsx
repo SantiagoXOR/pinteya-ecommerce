@@ -5,12 +5,15 @@ import Image from 'next/image'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/redux/store'
 import { removeItemFromCart, updateCartItemQuantity } from '@/redux/features/cart-slice'
-import { getValidImageUrl } from '@/lib/adapters/product-adapter'
+import { getPreviewImage } from '@/lib/adapters/product-adapter'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Minus, Plus, Trash2 } from '@/lib/optimized-imports'
+import { normalizeVariantLabel } from '@/lib/utils/variant-normalizer'
 
 const SingleItem = ({ item }: { item: any }) => {
   const [quantity, setQuantity] = useState(item.quantity)
+  const [imgSrc, setImgSrc] = useState<string>(() => getPreviewImage(item))
   const dispatch = useDispatch<AppDispatch>()
 
   const handleRemoveFromCart = () => {
@@ -37,17 +40,35 @@ const SingleItem = ({ item }: { item: any }) => {
       {/* Product Info */}
       <div className='flex items-start gap-4 mb-4'>
         <div className='relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0'>
-          <Image
-            src={getValidImageUrl(item.imgs?.thumbnails?.[0])}
+          {/* Usar <img> con fallback para evitar dominios no permitidos y 404 */}
+          <img
+            src={imgSrc}
             alt={item.title}
             width={64}
             height={64}
+            loading='lazy'
             className='w-full h-full object-cover'
+            onError={() => setImgSrc('/images/products/placeholder.svg')}
           />
         </div>
 
         <div className='flex-1 min-w-0'>
           <h3 className='font-semibold text-gray-900 text-sm line-clamp-2 mb-1'>{item.title}</h3>
+          {/* Badges de atributos (color y medida) */}
+          {(item.attributes?.color || item.attributes?.medida) && (
+            <div className='flex flex-wrap items-center gap-2 mb-1'>
+              {item.attributes?.medida && (
+                <Badge variant='secondary' className='text-xs px-2 py-0.5'>
+                  {normalizeVariantLabel(item.attributes.medida, 'medida')}
+                </Badge>
+              )}
+              {item.attributes?.color && (
+                <Badge variant='outline' className='text-xs px-2 py-0.5'>
+                  {normalizeVariantLabel(item.attributes.color, 'color')}
+                </Badge>
+              )}
+            </div>
+          )}
           <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
             ${item.discountedPrice ? item.discountedPrice.toLocaleString() : '0'}
           </p>

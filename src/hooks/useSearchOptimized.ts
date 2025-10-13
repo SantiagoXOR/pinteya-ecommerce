@@ -14,6 +14,7 @@ import { useSearchNavigation } from './useSearchNavigation'
 import { useTrendingSearches } from './useTrendingSearches'
 import { useRecentSearches } from './useRecentSearches'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
+import { hasDiscount } from '@/lib/adapters/product-adapter'
 
 // ===================================
 // TIPOS
@@ -26,6 +27,7 @@ export interface SearchSuggestion {
   subtitle?: string
   image?: string
   badge?: string
+  badges?: string[]
   href: string
 }
 
@@ -227,13 +229,47 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
 
       if (products.length > 0) {
         const productSuggestions = products.map((product: ProductWithCategory) => {
+          // Fallbacks robustos para distintas estructuras de imágenes
+          const imageUrl =
+            (product as any)?.images?.previews?.[0] ||
+            (product as any)?.images?.thumbnails?.[0] ||
+            (product as any)?.imgs?.previews?.[0] ||
+            (product as any)?.imgs?.thumbnails?.[0] ||
+            (product as any)?.image ||
+            (product as any)?.thumbnail ||
+            (product as any)?.img ||
+            (Array.isArray((product as any)?.images) ? (product as any)?.images?.[0] : undefined)
+
+          // Construir badges inteligentes: medida, color, oferta, nuevo
+          const badges: string[] = []
+          const medida = (product as any)?.medida
+          const color = (product as any)?.color
+          const isNew = (product as any)?.is_new || (product as any)?.isNew
+          const discounted = hasDiscount(product as any)
+
+          if (typeof medida === 'string' && medida.trim()) {
+            badges.push(medida.trim())
+          }
+          if (typeof color === 'string' && color.trim()) {
+            badges.push(color.trim())
+          }
+          if (discounted) {
+            badges.push('Oferta')
+          }
+          if (isNew) {
+            badges.push('Nuevo')
+          }
+
+          const limitedBadges = badges.slice(0, 3)
+
           return {
             id: product.id.toString(),
             type: 'product' as const,
             title: product.name,
             subtitle: product.category?.name,
-            image: product.images?.previews?.[0] || product.images?.thumbnails?.[0],
+            image: imageUrl,
             badge: product.stock > 0 ? 'En stock' : 'Sin stock',
+            badges: limitedBadges,
             href: `/products/${product.id}`,
           }
         })

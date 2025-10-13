@@ -17,6 +17,7 @@ interface ShopDetailsState {
 type ShopDetailsAction =
   | { type: 'SET_ACTIVE_COLOR'; payload: string }
   | { type: 'SET_PREVIEW_IMG'; payload: number }
+  | { type: 'SET_SELECTED_IMAGE_INDEX'; payload: number }
   | { type: 'SET_STORAGE'; payload: string }
   | { type: 'SET_TYPE'; payload: string }
   | { type: 'SET_SIM'; payload: string }
@@ -32,6 +33,7 @@ type ShopDetailsAction =
 const initialState: ShopDetailsState = {
   activeColor: 'blanco-puro', // Usar ID del color por defecto
   previewImg: 0,
+  selectedImageIndex: 0,
   storage: 'gb128',
   type: 'active',
   sim: 'dual',
@@ -49,6 +51,9 @@ function shopDetailsReducer(state: ShopDetailsState, action: ShopDetailsAction):
 
     case 'SET_PREVIEW_IMG':
       return { ...state, previewImg: action.payload }
+
+    case 'SET_SELECTED_IMAGE_INDEX':
+      return { ...state, selectedImageIndex: action.payload, previewImg: action.payload }
 
     case 'SET_STORAGE':
       return { ...state, storage: action.payload }
@@ -105,6 +110,10 @@ export function useShopDetailsReducer() {
 
       setPreviewImg: (index: number) => dispatch({ type: 'SET_PREVIEW_IMG', payload: index }),
 
+      // Alias para compatibilidad con componentes existentes
+      setSelectedImageIndex: (index: number) =>
+        dispatch({ type: 'SET_SELECTED_IMAGE_INDEX', payload: index }),
+
       setStorage: (storage: string) => dispatch({ type: 'SET_STORAGE', payload: storage }),
 
       setType: (type: string) => dispatch({ type: 'SET_TYPE', payload: type }),
@@ -124,6 +133,46 @@ export function useShopDetailsReducer() {
       decrementQuantity: () => dispatch({ type: 'DECREMENT_QUANTITY' }),
 
       resetState: () => dispatch({ type: 'RESET_STATE' }),
+
+      // Cargar estado persistido desde localStorage usando el ID de producto
+      loadFromStorage: (productId: string) => {
+        if (typeof window === 'undefined' || !productId) {
+          return
+        }
+
+        try {
+          const key = `shop-details-${productId}`
+          const saved = localStorage.getItem(key)
+          if (!saved) return
+
+          const parsedState = JSON.parse(saved)
+
+          if (parsedState && typeof parsedState === 'object') {
+            if (parsedState.activeColor) {
+              dispatch({ type: 'SET_ACTIVE_COLOR', payload: parsedState.activeColor })
+            }
+            if (parsedState.storage) {
+              dispatch({ type: 'SET_STORAGE', payload: parsedState.storage })
+            }
+            if (parsedState.type) {
+              dispatch({ type: 'SET_TYPE', payload: parsedState.type })
+            }
+            if (parsedState.sim) {
+              dispatch({ type: 'SET_SIM', payload: parsedState.sim })
+            }
+            if (typeof parsedState.quantity === 'number') {
+              dispatch({ type: 'SET_QUANTITY', payload: parsedState.quantity })
+            }
+            if (typeof parsedState.selectedImageIndex === 'number') {
+              dispatch({ type: 'SET_SELECTED_IMAGE_INDEX', payload: parsedState.selectedImageIndex })
+            } else if (typeof parsedState.previewImg === 'number') {
+              dispatch({ type: 'SET_PREVIEW_IMG', payload: parsedState.previewImg })
+            }
+          }
+        } catch (error) {
+          console.warn('Error loading shop details from storage:', error)
+        }
+      },
     }),
     []
   )

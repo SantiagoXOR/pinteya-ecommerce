@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { X, ShoppingCart, Heart, Share2, Star, Truck, Shield, RotateCcw } from 'lucide-react'
 import Image from 'next/image'
 import { Product } from '@/types/product'
+import { useRouter } from 'next/navigation'
 
 interface ShopDetailModalV2Props {
   product: Product | null
@@ -26,10 +27,14 @@ export default function ShopDetailModalV2({
   onAddToWishlist
 }: ShopDetailModalV2Props) {
   if (!product) return null
+  const router = useRouter()
 
   const handleAddToCart = () => {
     if (onAddToCart) {
       onAddToCart(product)
+      // Cerrar el modal y redirigir siempre a /products
+      onOpenChange(false)
+      router.push('/products')
     }
   }
 

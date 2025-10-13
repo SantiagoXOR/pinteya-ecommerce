@@ -1,24 +1,6 @@
-import React from 'react'
-import ShopDetailsById from '@/components/ShopDetails/ShopDetailsById'
-import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = {
-  title: 'Detalles del Producto | Pinteya E-commerce',
-  description: 'Detalles completos del producto seleccionado',
+export default function LegacyShopDetailsRedirect({ params }: { params: { id: string } }) {
+  // Redirigir ruta antigua a la nueva ruta canónica
+  redirect(`/products/${params.id}`)
 }
-
-interface ShopDetailsPageProps {
-  params: Promise<{ id: string }>
-}
-
-const ShopDetailsPage = async ({ params }: ShopDetailsPageProps) => {
-  const { id } = await params
-
-  return (
-    <main>
-      <ShopDetailsById productId={id} />
-    </main>
-  )
-}
-
-export default ShopDetailsPage

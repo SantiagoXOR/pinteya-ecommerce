@@ -8,8 +8,10 @@ import ActionButtons from './ActionButtons'
 import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 import { cn } from '@/lib/utils'
 import { SearchSuggestion } from '@/types/search'
+import { useRouter } from 'next/navigation'
 
 const NewHeader = () => {
+  const router = useRouter()
   const [stickyMenu, setStickyMenu] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -34,40 +36,13 @@ const NewHeader = () => {
 
   const handleSuggestionSelect = async (suggestion: SearchSuggestion) => {
     console.log('🔍 handleSuggestionSelect ejecutado con:', suggestion)
-
-    if (suggestion.type === 'product') {
-      console.log('✅ Es una sugerencia de producto, procesando...')
-      try {
-        console.log(`📡 Haciendo fetch a: /api/products/${suggestion.id}`)
-        // Obtener los detalles completos del producto
-        const response = await fetch(`/api/products/${suggestion.id}`)
-        console.log('📡 Respuesta recibida:', response.status, response.statusText)
-
-        if (response.ok) {
-          const product = await response.json()
-          console.log('📦 Producto obtenido:', product)
-          console.log(
-            '🔄 Estado anterior - selectedProduct:',
-            !!selectedProduct,
-            'isModalOpen:',
-            isModalOpen
-          )
-
-          // Actualizar estados
-          console.log('🎯 Actualizando selectedProduct...')
-          setSelectedProduct(product)
-          console.log('🎯 Actualizando isModalOpen a true...')
-          setIsModalOpen(true)
-          console.log('✅ Estados actualizados')
-        } else {
-          console.error('❌ Error al obtener el producto:', response.statusText)
-        }
-      } catch (error) {
-        console.error('❌ Error al cargar el producto:', error)
-      }
-    } else {
-      console.log('⚠️ No es una sugerencia de producto, tipo:', suggestion.type)
+    if (suggestion.type === 'product' && suggestion.id) {
+      // Redirigir directamente al detalle del producto
+      router.push(`/products/${suggestion.id}`)
+      return
     }
+    // Para otros tipos, dejar comportamiento actual (no-op aquí)
+    console.log('⚠️ Sugerencia no es producto:', suggestion.type)
   }
 
   const handleModalClose = () => {

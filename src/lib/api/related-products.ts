@@ -3,8 +3,9 @@
 // ===================================
 
 import { supabase } from '@/lib/supabase'
-import { ProductWithCategory } from '@/types/api'
+import { ProductWithCategory, PaginatedResponse } from '@/types/api'
 import { logError } from '@/lib/error-handling/centralized-error-handler'
+import { safeApiResponseJson } from '@/lib/json-utils'
 
 export interface RelatedProduct {
   id: number
@@ -12,6 +13,7 @@ export interface RelatedProduct {
   measure: string
   price: string
   discounted_price?: string
+  stock?: number
 }
 
 export interface ProductGroup {
@@ -82,7 +84,7 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
     // Primero obtener el producto actual
     const { data: currentProduct, error: currentError } = await supabase
       .from('products')
-      .select('id, name, price, discounted_price, medida')
+      .select('id, name, price, discounted_price, medida, stock')
       .eq('id', productId)
       .eq('is_active', true)
       .single()
@@ -120,7 +122,7 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
     // Buscar productos con nombre similar o exacto
     const { data: relatedProducts, error: relatedError } = await supabase
       .from('products')
-      .select('id, name, price, discounted_price, medida')
+      .select('id, name, price, discounted_price, medida, stock')
       .or(`name.ilike.%${baseName}%,name.eq.${currentProduct.name}`)
       .eq('is_active', true)
       .order('medida')
@@ -138,8 +140,55 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
     }
     
     if (!relatedProducts || relatedProducts.length <= 1) {
-      console.log('No se encontraron productos relacionados suficientes')
-      return null
+      console.log('🟡 Fallback: intentando buscar relacionados vía API /api/products usando baseName')
+
+      try {
+        const search = encodeURIComponent(baseName)
+        const response = await fetch(`/api/products?search=${search}&limit=20`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        })
+
+        const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response)
+        if (!result.success || !result.data) {
+          console.warn('Fallback /api/products sin resultados válidos:', result.error)
+          return null
+        }
+
+        const apiProducts = result.data.data || []
+        if (apiProducts.length <= 1) {
+          console.log('Fallback /api/products: insuficientes productos para agrupar por medida')
+          return null
+        }
+
+        // Construir lista de RelatedProduct desde API
+        const products: RelatedProduct[] = apiProducts.map(p => ({
+          id: p.id,
+          name: p.name,
+          measure: (p as any).medida || extractMeasure(p.name) || 'Sin medida',
+          price: String((p as any).price ?? 0),
+          discounted_price: (p as any).discounted_price != null ? String((p as any).discounted_price) : undefined,
+          stock: typeof (p as any).stock === 'number' ? (p as any).stock : parseFloat(String((p as any).stock ?? 0)),
+        }))
+
+        const selectedProduct = products.find(pr => pr.id === productId) || products[0]
+
+        console.log('✅ Fallback relacionados por API listo:', {
+          baseName,
+          totalProducts: products.length,
+          selectedProduct: selectedProduct?.name,
+          measures: products.map(p => p.measure),
+        })
+
+        return {
+          baseName,
+          selectedProduct,
+          products,
+        }
+      } catch (fallbackError) {
+        logError('Error en fallback getRelatedProducts vía /api/products', fallbackError)
+        return null
+      }
     }
     
     // Convertir a RelatedProduct usando el campo medida de la base de datos
@@ -148,7 +197,8 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
       name: product.name,
       measure: product.medida || extractMeasure(product.name) || 'Sin medida',
       price: product.price.toString(),
-      discounted_price: product.discounted_price?.toString()
+      discounted_price: product.discounted_price?.toString(),
+      stock: typeof product.stock === 'number' ? product.stock : parseFloat(String(product.stock ?? 0))
     }))
     
     // Encontrar el producto seleccionado actual
@@ -198,5 +248,14 @@ export function getAvailableMeasures(products: RelatedProduct[]): string[] {
  * Encuentra un producto por medida específica
  */
 export function findProductByMeasure(products: RelatedProduct[], measure: string): RelatedProduct | null {
-  return products.find(product => product.measure === measure) || null
+  const normalize = (v?: string | null): string => {
+    if (!v) return ''
+    const up = v.trim().toUpperCase()
+    const noSpaces = up.replace(/\s+/g, '')
+    const kg = noSpaces.replace(/(KGS|KILO|KILOS)$/i, 'KG')
+    const l = kg.replace(/(LT|LTS|LITRO|LITROS)$/i, 'L')
+    return l
+  }
+  const target = normalize(measure)
+  return products.find(product => normalize(product.measure) === target) || null
 }

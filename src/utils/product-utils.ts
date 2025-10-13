@@ -218,20 +218,32 @@ export const formatCapacity = (capacity: string, unit: string): string => {
 
   switch (unit) {
     case 'litros':
-      // Verificar si ya termina con 'L' (mayúscula) o 'l' (minúscula)
-      if (capacity.endsWith('L') || capacity.endsWith('l')) {
-        // Si termina con 'l' minúscula, convertir a 'L' mayúscula
-        return capacity.endsWith('l') ? capacity.slice(0, -1) + 'L' : capacity
+      {
+        // Normalizar a mayúsculas y eliminar cualquier sufijo redundante de litros
+        const up = capacity.trim().toUpperCase()
+        const withoutL = up.replace(/\s*(L|LT|LTS|LITRO|LITROS)\s*$/i, '')
+        return `${withoutL}L`
       }
-      return `${capacity}L`
     case 'kg':
-      return capacity.endsWith('kg') ? capacity : `${capacity}kg`
+      {
+        // Normalizar a mayúsculas, limpiar espacios y eliminar cualquier sufijo redundante
+        const up = capacity.trim().toUpperCase()
+        // Quitar variantes: KG, KGS, KILO, KILOS al final si existen
+        const withoutKg = up.replace(/\s*(KG|KGS|KILO|KILOS)\s*$/i, '')
+        return `${withoutKg}KG`
+      }
     case 'metros':
-      return capacity.endsWith('m') ? capacity : `${capacity}m`
+      {
+        const up = capacity.trim().toUpperCase()
+        const withoutM = up.replace(/\s*(M|METRO|METROS)\s*$/i, '')
+        return `${withoutM}m`
+      }
     case 'unidades':
-      return capacity.includes('unidad')
-        ? capacity
-        : `${capacity} unidad${capacity !== '1' ? 'es' : ''}`
+      {
+        const txt = capacity.trim()
+        if (/unidad(es)?$/i.test(txt)) return txt
+        return `${txt} unidad${txt !== '1' ? 'es' : ''}`
+      }
     default:
       return capacity
   }

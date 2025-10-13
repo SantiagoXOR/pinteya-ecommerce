@@ -126,10 +126,37 @@ export function findVariantByCapacity(
 ): ProductVariant | null {
   if (!variants || variants.length === 0) return null
 
-  return variants.find(variant => 
-    (variant.measure && variant.measure.toLowerCase() === capacity.toLowerCase()) ||
-    (variant.capacity && variant.capacity.toLowerCase() === capacity.toLowerCase())
-  ) || null
+  const normalize = (value?: string | null): string => {
+    if (!value) return ''
+    // Quitar espacios, normalizar a mayúsculas y unificar sufijos (KG/L)
+    const up = value.trim().toUpperCase()
+    const noSpaces = up.replace(/\s+/g, '')
+    const replacedKg = noSpaces.replace(/(KGS|KILO|KILOS)$/i, 'KG')
+    const replacedL = replacedKg.replace(/(LT|LTS|LITRO|LITROS)$/i, 'L')
+    return replacedL
+  }
+
+  const target = normalize(capacity)
+
+  // Intento 1: Coincidencia exacta normalizada en measure o capacity
+  const exact = variants.find(v => normalize(v.measure) === target || normalize(v.capacity) === target)
+  if (exact) return exact
+
+  // Intento 2: Comparar solo número + unidad (p.ej. 5KG vs 5 KG)
+  const numUnit = target.match(/^(\d+)([A-Z]+)?$/)
+  if (numUnit) {
+    const [_, num, unit] = numUnit
+    const candidate = variants.find(v => {
+      const vm = normalize(v.measure)
+      const vc = normalize(v.capacity)
+      const matchVm = vm.startsWith(num) && (!unit || vm.endsWith(unit))
+      const matchVc = vc.startsWith(num) && (!unit || vc.endsWith(unit))
+      return matchVm || matchVc
+    })
+    if (candidate) return candidate
+  }
+
+  return null
 }
 
 /**

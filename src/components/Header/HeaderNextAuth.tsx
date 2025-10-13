@@ -56,42 +56,12 @@ const HeaderNextAuth = () => {
     console.log('🔍 HeaderNextAuth - handleSuggestionSelect ejecutado:', suggestion)
 
     if (suggestion.type === 'product' && suggestion.id) {
-      console.log('🛍️ Procesando sugerencia de producto:', suggestion.id)
-
-      try {
-        // Obtener datos completos del producto desde la API
-        const response = await fetch(`/api/products/${suggestion.id}`)
-        console.log('📡 Respuesta de API:', response.status)
-
-        if (response.ok) {
-          const result = await response.json()
-          console.log('📦 Datos del producto obtenidos:', result)
-
-          if (result.success && result.data) {
-            console.log('✅ Abriendo modal con producto:', result.data.name)
-            setSelectedProduct(result.data)
-            setIsProductModalOpen(true)
-            return
-          } else {
-            console.warn('⚠️ API response no exitosa:', result)
-          }
-        } else {
-          console.warn('⚠️ Error en respuesta de API:', response.status)
-        }
-
-        // Si falla la obtención del producto, mostrar error pero NO navegar
-        console.warn('❌ No se pudo obtener los datos del producto')
-        // NO hacer router.push aquí - solo abrir modal con datos básicos si es posible
-      } catch (error) {
-        console.error('💥 Error obteniendo producto:', error)
-        // En caso de error, NO navegar automáticamente
-        // El usuario puede hacer clic en "Ver producto" en el modal si lo desea
-      }
-    } else {
-      console.log('🔍 Sugerencia no es de producto:', suggestion.type)
+      // Redirigir directamente al detalle del producto
+      router.push(`/products/${suggestion.id}`)
+      return
     }
-    // Para categorías o búsquedas, NO navegar automáticamente desde el callback
-    // El componente SearchAutocomplete manejará la navegación si no hay callback personalizado
+
+    console.log('🔍 Sugerencia no es de producto o sin id:', suggestion.type)
   }
 
   // Función para cerrar el modal de producto

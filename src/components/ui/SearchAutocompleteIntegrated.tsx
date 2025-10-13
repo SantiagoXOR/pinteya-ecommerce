@@ -21,6 +21,7 @@ export interface SearchSuggestion {
   subtitle?: string
   image?: string
   badge?: string
+  badges?: string[]
   href: string
 }
 
@@ -106,7 +107,7 @@ export const SearchAutocompleteIntegrated = React.memo(
       // HOOKS DE BÚSQUEDA
       // ===================================
 
-      const {
+  const {
         query,
         results,
         suggestions: searchSuggestions,
@@ -114,12 +115,14 @@ export const SearchAutocompleteIntegrated = React.memo(
         error,
         searchWithDebounce,
         executeSearch,
+        selectSuggestion,
         clearSearch,
       } = useSearchOptimized({
         debounceMs,
         maxSuggestions: searchLimit,
         saveRecentSearches,
         onSearch: onSearchExecuted,
+        onSuggestionSelect: onSuggestionSelected,
       })
 
       const { trendingSearches } = useTrendingSearches({
@@ -244,17 +247,10 @@ export const SearchAutocompleteIntegrated = React.memo(
           setIsOpen(false)
           setSelectedIndex(-1)
 
-          if (suggestion.type === 'product') {
-            console.log('✅ Es producto, llamando onSuggestionSelected:', !!onSuggestionSelected)
-            // Para productos, llamar callback personalizado si existe
-            onSuggestionSelected?.(suggestion)
-          } else {
-            console.log('⚠️ No es producto, ejecutando búsqueda normal')
-            // Para búsquedas, ejecutar búsqueda normal
-            executeSearch(suggestion.title)
-          }
+          // Delegar navegación al hook (usa callback si existe, sino fallback automático)
+          selectSuggestion(suggestion)
         },
-        [executeSearch, onSuggestionSelected]
+        [selectSuggestion]
       )
 
       const handleSubmit = useCallback(
@@ -344,7 +340,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         }
       }
 
-      const renderSuggestion = (suggestion: SearchSuggestion, index: number) => (
+  const renderSuggestion = (suggestion: SearchSuggestion, index: number) => (
         <div
           key={suggestion.id}
           ref={el => (suggestionRefs.current[index] = el)}
@@ -356,17 +352,83 @@ export const SearchAutocompleteIntegrated = React.memo(
           onClick={() => handleSuggestionSelect(suggestion)}
           onMouseEnter={() => setSelectedIndex(index)}
         >
-          {getSuggestionIcon(suggestion.type)}
+          {/* Thumbnail o icono */}
+          {suggestion.image ? (
+            <img
+              src={suggestion.image}
+              alt={suggestion.title}
+              className='w-10 h-10 rounded-md object-cover border border-gray-200 flex-shrink-0'
+            />
+          ) : (
+            getSuggestionIcon(suggestion.type)
+          )}
+
+          {/* Texto */}
           <div className='flex-1 min-w-0'>
             <div className='font-medium text-gray-900 truncate'>{suggestion.title}</div>
             {suggestion.subtitle && (
               <div className='text-sm text-gray-500 truncate'>{suggestion.subtitle}</div>
             )}
           </div>
-          {suggestion.badge && (
-            <span className='px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full'>
-              {suggestion.badge}
-            </span>
+
+          {/* Badges inteligentes */}
+          {(suggestion.badges && suggestion.badges.length > 0) ? (
+            <div className='flex items-center gap-2 flex-shrink-0'>
+              {suggestion.badges.slice(0, 3).map((label, i) => (
+                <span
+                  key={`${suggestion.id}-badge-${i}`}
+                  className={cn(
+                    'px-2 py-1 text-xs rounded-full whitespace-nowrap',
+                    label.toLowerCase().includes('oferta')
+                      ? 'bg-red-100 text-red-800'
+                      : label.toLowerCase().includes('nuevo')
+                      ? 'bg-blue-100 text-blue-800'
+                      : label.toLowerCase().includes('stock')
+                      ? label.toLowerCase().includes('sin')
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-700'
+                  )}
+                >
+                  {label}
+                </span>
+              ))}
+              {suggestion.badge && (
+                <span
+                  className={cn(
+                    'px-2 py-1 text-xs rounded-full whitespace-nowrap',
+                    suggestion.badge?.toLowerCase().includes('stock')
+                      ? suggestion.badge?.toLowerCase().includes('sin')
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-green-100 text-green-800'
+                      : 'bg-blue-100 text-blue-800'
+                  )}
+                >
+                  {suggestion.badge}
+                </span>
+              )}
+            </div>
+          ) : (
+            suggestion.badge && (
+              <span
+                className={cn(
+                  'px-2 py-1 text-xs rounded-full whitespace-nowrap',
+                  suggestion.type === 'product'
+                    ? suggestion.badge?.toLowerCase().includes('stock')
+                      ? suggestion.badge?.toLowerCase().includes('sin')
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-green-100 text-green-800'
+                      : 'bg-blue-100 text-blue-800'
+                    : suggestion.type === 'trending'
+                    ? 'bg-orange-100 text-orange-800'
+                    : suggestion.type === 'recent'
+                    ? 'bg-gray-100 text-gray-700'
+                    : 'bg-gray-100 text-gray-700'
+                )}
+              >
+                {suggestion.badge}
+              </span>
+            )
           )}
         </div>
       )

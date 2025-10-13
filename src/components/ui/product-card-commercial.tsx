@@ -2,10 +2,12 @@
 
 import React from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/core/utils'
 import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { Heart, Eye, Star, ShoppingCart, AlertCircle } from 'lucide-react'
 import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { 
   extractProductCapacity, 
   formatProductBadges, 
@@ -142,6 +144,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [currentImageSrc, setCurrentImageSrc] = React.useState(image || '/images/products/placeholder.svg')
     // Ref para ignorar clics justo después de cerrar el modal (evita re-apertura por burbujeo)
     const ignoreClicksUntilRef = React.useRef<number>(0)
+    // Unificado: usamos el hook central para agregar productos
+    const { addProduct } = useCartUnified()
+    const router = useRouter()
 
     // Handler para el modal - DEBE estar en el nivel superior del componente
     const handleModalOpenChange = React.useCallback((open: boolean) => {
@@ -163,10 +168,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       if (!open) {
         ignoreClicksUntilRef.current = Date.now() + 300 // 300ms de ventana anti-click fantasma
         console.log('🛡️ [CommercialProductCard] Activando guardia anti-click fantasma hasta:', ignoreClicksUntilRef.current)
+        // Redirigir siempre al listado de productos al cerrar
+        router.push('/products')
       }
 
       console.log('✅ [CommercialProductCard] setShowShopDetailModal llamado con:', open)
-    }, [showShopDetailModal, title])
+    }, [showShopDetailModal, title, router])
 
     // ============================================================================
     // SISTEMA DE BADGES INTELIGENTE
@@ -600,9 +607,71 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           }}
           onAddToCart={(productData, variants) => {
             console.log('Agregando al carrito:', productData, variants)
-            if (onAddToCart) {
-              onAddToCart()
+
+            // Mapear datos del modal al CartItem esperado por Redux
+            const images: string[] = Array.isArray((productData as any).images)
+              ? (productData as any).images
+              : (productData as any).image
+              ? [(productData as any).image]
+              : []
+
+            // Precio original y con descuento (no mezclar)
+            const rawOriginal = (productData as any).price ?? originalPrice
+            const originalParsed =
+              typeof rawOriginal === 'string' ? parseFloat(rawOriginal) : Number(rawOriginal)
+
+            const rawDiscounted = (productData as any).discounted_price ?? (productData as any).price_sale
+            const discountedParsed =
+              rawDiscounted !== undefined
+                ? typeof rawDiscounted === 'string'
+                  ? parseFloat(rawDiscounted)
+                  : Number(rawDiscounted)
+                : undefined
+
+            let parsedId = typeof (productData as any).id === 'string'
+              ? parseInt((productData as any).id, 10)
+              : Number((productData as any).id)
+            if (isNaN(parsedId)) {
+              parsedId = typeof productId === 'string' ? parseInt(productId, 10) : Number(productId)
             }
+
+            const cover = images[0] || '/images/products/placeholder.svg'
+            const imgsPayload = {
+              thumbnails: [cover],
+              previews: images.length ? images : [cover],
+            }
+
+            const quantityFromModal = Number((variants as any)?.quantity) || 1
+
+            // Atributos seleccionados para mostrar en el carrito
+            const attributes = {
+              color:
+                (variants as any)?.color || (variants as any)?.selectedColor || (productData as any)?.color || color,
+              medida:
+                (variants as any)?.capacity ||
+                (variants as any)?.selectedCapacity ||
+                (productData as any)?.capacity ||
+                (productData as any)?.medida ||
+                medida,
+            }
+
+            // Servicio unificado: normaliza y agrega
+            addProduct(
+              {
+                ...productData,
+                id: isNaN(parsedId) ? Date.now() : parsedId,
+                name: (productData as any).name || title || 'Producto',
+                price: Number.isFinite(originalParsed) ? originalParsed : 0,
+                discounted_price:
+                  discountedParsed !== undefined && Number.isFinite(discountedParsed)
+                    ? (discountedParsed as number)
+                    : undefined,
+                images: (imgsPayload as any)?.previews ?? (productData as any)?.images ?? [],
+                variants,
+                quantity: quantityFromModal,
+              },
+              { quantity: quantityFromModal, attributes }
+            )
           }}
         />
       </div>

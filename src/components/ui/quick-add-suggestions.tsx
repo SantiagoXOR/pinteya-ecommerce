@@ -8,9 +8,7 @@ import { getProducts } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
 import { getValidImageUrl } from '@/lib/adapters/product-adapter'
 import Image from 'next/image'
-import { useDispatch } from 'react-redux'
-import { AppDispatch } from '@/redux/store'
-import { addItemToCart } from '@/redux/features/cart-slice'
+import { useCartUnified } from '@/hooks/useCartUnified'
 
 interface QuickAddSuggestionsProps {
   onAddToCart?: (productId: string) => void
@@ -26,7 +24,7 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
   const [products, setProducts] = useState<ProductWithCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const dispatch = useDispatch<AppDispatch>()
+  const { addProduct } = useCartUnified()
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -84,22 +82,17 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
     const product = products.find(p => p.id.toString() === productId)
 
     if (product) {
-      // Convertir el producto al formato esperado por el carrito
-      const cartItem = {
-        id: product.id,
-        title: product.name,
-        brand: product.brand || '',
-        price: product.price,
-        discountedPrice: product.discounted_price || product.price,
-        imgs: {
-          thumbnails: product.images ? [product.images[0]] : [],
-          previews: product.images || [],
+      // Servicio unificado: normaliza y agrega
+      addProduct(
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          discounted_price: product.discounted_price || product.price,
+          images: product.images || [],
         },
-        reviews: 0, // No tenemos reviews en la API actual
-        quantity: 1,
-      }
-
-      dispatch(addItemToCart(cartItem))
+        { quantity: 1 }
+      )
     }
 
     // Llamar callback personalizado si existe
