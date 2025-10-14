@@ -2,7 +2,7 @@
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -64,7 +64,7 @@ const ERROR_MESSAGES: Record<string, { title: string; description: string; actio
   },
 }
 
-export default function CheckoutFailurePage() {
+function CheckoutFailureContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [paymentError, setPaymentError] = useState<PaymentError>({})
@@ -248,5 +248,19 @@ export default function CheckoutFailurePage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function CheckoutFailurePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className='min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center'>
+          <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-red-600'></div>
+        </div>
+      }
+    >
+      <CheckoutFailureContent />
+    </Suspense>
   )
 }
