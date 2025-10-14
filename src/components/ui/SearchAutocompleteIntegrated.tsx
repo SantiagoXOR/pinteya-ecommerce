@@ -30,6 +30,14 @@ export interface SearchAutocompleteIntegratedProps {
   placeholder?: string
   className?: string
   disabled?: boolean
+  // Tamaño opcional para compatibilidad con el header
+  size?: 'sm' | 'md' | 'lg'
+
+  // Contexto de categoría (para construir URLs y navegación)
+  categoryId?: string
+
+  // Enlazar el botón externo con el formulario interno
+  formId?: string
 
   // Configuración del hook useSearch
   debounceMs?: number
@@ -49,6 +57,23 @@ export interface SearchAutocompleteIntegratedProps {
   onFocus?: () => void
   onBlur?: () => void
 }
+
+// ===================================
+// BLOQUEO DE TÉRMINOS TRENDING NO DESEADOS
+// ===================================
+const normalizeText = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+
+const TRENDING_BLOCKLIST = new Set<string>([
+  'generico',
+  'el galgo',
+  'cinta papel blanca',
+  'profesionales',
+])
 
 // ===================================
 // COMPONENTE PRINCIPAL
@@ -73,6 +98,9 @@ export const SearchAutocompleteIntegrated = React.memo(
         onSuggestionSelected,
         onFocus,
         onBlur,
+        categoryId,
+        formId,
+        size,
         ...props
       },
       ref
@@ -88,6 +116,7 @@ export const SearchAutocompleteIntegrated = React.memo(
       // Referencias
       const inputRef = useRef<HTMLInputElement>(null)
       const dropdownRef = useRef<HTMLDivElement>(null)
+      const containerRef = useRef<HTMLDivElement>(null)
       const suggestionRefs = useRef<(HTMLDivElement | null)[]>([])
 
       // Combinar refs
@@ -107,7 +136,7 @@ export const SearchAutocompleteIntegrated = React.memo(
       // HOOKS DE BÚSQUEDA
       // ===================================
 
-  const {
+      const {
         query,
         results,
         suggestions: searchSuggestions,
@@ -117,15 +146,22 @@ export const SearchAutocompleteIntegrated = React.memo(
         executeSearch,
         selectSuggestion,
         clearSearch,
+        prefetchProductPage,
       } = useSearchOptimized({
         debounceMs,
-        maxSuggestions: searchLimit,
+        maxSuggestions,
+        searchLimit,
         saveRecentSearches,
         onSearch: onSearchExecuted,
         onSuggestionSelect: onSuggestionSelected,
+        categoryId,
       })
 
-      const { trendingSearches } = useTrendingSearches({
+      const {
+        trendingSearches,
+        isLoading: isTrendingLoading,
+        error: trendingError,
+      } = useTrendingSearches({
         limit: 4,
         enabled: showTrendingSearches,
       })
@@ -153,14 +189,21 @@ export const SearchAutocompleteIntegrated = React.memo(
 
           // Búsquedas trending
           if (showTrendingSearches && trendingSearches && remainingSlots > 0) {
-            const trendingSuggestions = trendingSearches
+            const filteredTrending = trendingSearches.filter(
+              t => !TRENDING_BLOCKLIST.has(normalizeText(t.query))
+            )
+            const trendingSuggestions = filteredTrending
               .slice(0, Math.min(2, remainingSlots))
               .map(trending => ({
                 id: `trending-${trending.query}`,
                 type: 'trending' as const,
                 title: trending.query,
                 subtitle: `${trending.count} búsquedas`,
-                href: `/search?search=${encodeURIComponent(trending.query)}`,
+                href:
+                  `/search?search=${encodeURIComponent(trending.query)}` +
+                  (categoryId && categoryId !== 'all'
+                    ? `&category=${encodeURIComponent(categoryId)}`
+                    : ''),
               }))
             suggestions.push(...trendingSuggestions)
           }
@@ -179,7 +222,11 @@ export const SearchAutocompleteIntegrated = React.memo(
                 type: 'recent' as const,
                 title: recent,
                 subtitle: 'Búsqueda reciente',
-                href: `/search?search=${encodeURIComponent(recent)}`,
+                href:
+                  `/search?search=${encodeURIComponent(recent)}` +
+                  (categoryId && categoryId !== 'all'
+                    ? `&category=${encodeURIComponent(categoryId)}`
+                    : ''),
               }))
             suggestions.push(...recentSuggestions)
           }
@@ -194,6 +241,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         trendingSearches,
         showRecentSearches,
         recentSearches,
+        categoryId,
       ])
 
       // ===================================
@@ -210,7 +258,8 @@ export const SearchAutocompleteIntegrated = React.memo(
             searchWithDebounce(value)
             setIsOpen(true)
           } else {
-            setIsOpen(false)
+            // Mantener el dropdown abierto para mostrar recientes/trending
+            setIsOpen(true)
           }
 
           onSearch?.(value)
@@ -225,9 +274,12 @@ export const SearchAutocompleteIntegrated = React.memo(
 
       const handleInputBlur = useCallback(
         (e: React.FocusEvent) => {
-          // Delay para permitir clicks en sugerencias
+          // Delay para permitir clicks en sugerencias u otros elementos internos
           setTimeout(() => {
-            if (!dropdownRef.current?.contains(document.activeElement)) {
+            const activeEl = document.activeElement
+            const isInsideDropdown = dropdownRef.current?.contains(activeEl) ?? false
+            const isInsideContainer = containerRef.current?.contains(activeEl) ?? false
+            if (!isInsideDropdown && !isInsideContainer) {
               setIsOpen(false)
               setSelectedIndex(-1)
             }
@@ -270,7 +322,8 @@ export const SearchAutocompleteIntegrated = React.memo(
 
       const handleClear = useCallback(() => {
         setInputValue('')
-        setIsOpen(false)
+        // Mantener abierto para mostrar recientes/trending tras limpiar
+        setIsOpen(true)
         setSelectedIndex(-1)
         clearSearch()
         inputRef.current?.focus()
@@ -340,7 +393,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         }
       }
 
-  const renderSuggestion = (suggestion: SearchSuggestion, index: number) => (
+      const renderSuggestion = (suggestion: SearchSuggestion, index: number) => (
         <div
           key={suggestion.id}
           ref={el => (suggestionRefs.current[index] = el)}
@@ -350,7 +403,16 @@ export const SearchAutocompleteIntegrated = React.memo(
             selectedIndex === index && 'bg-gray-50'
           )}
           onClick={() => handleSuggestionSelect(suggestion)}
-          onMouseEnter={() => setSelectedIndex(index)}
+          onMouseEnter={() => {
+            setSelectedIndex(index)
+            if (suggestion.type === 'product') {
+              // Prefetch de la página del producto para mejorar TTI
+              prefetchProductPage(suggestion.id)
+            }
+          }}
+          role='option'
+          id={`option-${suggestion.id}`}
+          aria-selected={selectedIndex === index}
         >
           {/* Thumbnail o icono */}
           {suggestion.image ? (
@@ -438,8 +500,8 @@ export const SearchAutocompleteIntegrated = React.memo(
       // ===================================
 
       return (
-        <div className={cn('relative w-full', className)}>
-          <form onSubmit={handleSubmit} className='relative'>
+        <div ref={containerRef} className={cn('relative w-full', className)}>
+          <form onSubmit={handleSubmit} id={formId || 'search-autocomplete-form'} className='relative'>
             <div className='relative'>
               <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
               <input
@@ -464,6 +526,12 @@ export const SearchAutocompleteIntegrated = React.memo(
                 aria-expanded={isOpen}
                 aria-haspopup='listbox'
                 aria-autocomplete='list'
+                aria-controls='autocomplete-listbox'
+                aria-activedescendant={
+                  selectedIndex >= 0 && allSuggestions[selectedIndex]
+                    ? `option-${allSuggestions[selectedIndex].id}`
+                    : undefined
+                }
               />
               {showClearButton && inputValue && (
                 <button
@@ -487,27 +555,118 @@ export const SearchAutocompleteIntegrated = React.memo(
                 'rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto'
               )}
               role='listbox'
+            id='autocomplete-listbox'
             >
-              {isLoading && (
-                <div className='flex items-center justify-center py-8'>
-                  <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500' />
-                  <span className='ml-2 text-gray-600'>Buscando...</span>
+              {/* Estado inicial sin texto: encabezado y esqueleto/ayuda */}
+              {!inputValue.trim() && (
+                <div className='py-2'>
+                  <div className='px-4 py-2 text-sm text-gray-600'>
+                    Sugerencias populares
+                  </div>
+                  {/* Lista curada de sugerencias siempre visible en estado vacío */}
+                  <div className='py-1'>
+                    {[
+                      'Látex',
+                      'Paredes',
+                      'Metales y Maderas',
+                      'Techos',
+                      'Antihumedad',
+                      'Complementos',
+                      'Piscinas',
+                      'Pisos',
+                      'Reparaciones',
+                    ].map((title, idx) =>
+                      renderSuggestion(
+                        {
+                          id: `curated-${title}-${idx}`,
+                          type: 'trending',
+                          title,
+                          href:
+                            `/search?search=${encodeURIComponent(title)}` +
+                            (categoryId && categoryId !== 'all'
+                              ? `&category=${encodeURIComponent(categoryId)}`
+                              : ''),
+                        },
+                        idx
+                      )
+                    )}
+                  </div>
+                  {isTrendingLoading && (
+                    <div className='py-2' aria-live='polite'>
+                      {[...Array(3)].map((_, i) => (
+                        <div key={`trend-sk-${i}`} className='flex items-center gap-3 px-4 py-3'>
+                          <div className='w-10 h-10 bg-gray-100 rounded-md animate-pulse' />
+                          <div className='flex-1 min-w-0'>
+                            <div className='w-40 h-3 bg-gray-100 rounded-md animate-pulse mb-2' />
+                            <div className='w-24 h-3 bg-gray-100 rounded-md animate-pulse' />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {false && !isTrendingLoading && (trendingSearches?.length || 0) > 0 && (
+                    <div className='py-1'></div>
+                  )}
+                  {!isTrendingLoading && (trendingSearches?.length || 0) === 0 && (
+                    <div className='py-1'>
+                      {[
+                        { query: 'Pintura látex', count: 32 },
+                        { query: 'Sherwin Williams', count: 28 },
+                        { query: 'Rodillos premium', count: 21 },
+                        { query: 'Esmalte sintético', count: 19 },
+                      ].map((fallback, idx) =>
+                        renderSuggestion(
+                          {
+                            id: `trending-fallback-${idx}`,
+                            type: 'trending',
+                            title: fallback.query,
+                            subtitle: `${fallback.count} búsquedas`,
+                            href:
+                              `/search?search=${encodeURIComponent(fallback.query)}` +
+                              (categoryId && categoryId !== 'all'
+                                ? `&category=${encodeURIComponent(categoryId)}`
+                                : ''),
+                          },
+                          idx
+                        )
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isLoading && inputValue.trim() && (
+                <div className='py-2' aria-live='polite'>
+                  {/* Skeletons de carga para mejor percepción de velocidad */}
+                  {[...Array(3)].map((_, i) => (
+                    <div key={`sk-${i}`} className='flex items-center gap-3 px-4 py-3'>
+                      <div className='w-10 h-10 bg-gray-100 rounded-md animate-pulse' />
+                      <div className='flex-1 min-w-0'>
+                        <div className='w-40 h-3 bg-gray-100 rounded-md animate-pulse mb-2' />
+                        <div className='w-24 h-3 bg-gray-100 rounded-md animate-pulse' />
+                      </div>
+                    </div>
+                  ))}
+                  <div className='flex items-center justify-center py-2'>
+                    <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500' />
+                    <span className='ml-2 text-gray-600'>Buscando productos...</span>
+                  </div>
                 </div>
               )}
 
               {error && (
-                <div className='px-4 py-3 text-red-600 text-sm'>
+                <div className='px-4 py-3 text-red-600 text-sm' aria-live='polite'>
                   Error en la búsqueda. Intenta nuevamente.
                 </div>
               )}
 
               {!isLoading && !error && allSuggestions.length === 0 && inputValue.trim() && (
-                <div className='px-4 py-8 text-center text-gray-500'>
+                <div className='px-4 py-8 text-center text-gray-500' aria-live='polite'>
                   No se encontraron resultados para "{inputValue}"
                 </div>
               )}
 
-              {!isLoading && !error && allSuggestions.length > 0 && (
+              {!isLoading && !error && allSuggestions.length > 0 && inputValue.trim() && (
                 <div className='py-2'>
                   {allSuggestions.map((suggestion, index) => renderSuggestion(suggestion, index))}
                 </div>

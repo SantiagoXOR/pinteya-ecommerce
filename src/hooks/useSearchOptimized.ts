@@ -5,7 +5,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebouncedCallback } from 'use-debounce'
-import { searchProducts } from '@/lib/api/products'
+import { searchProducts, getProducts } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
 import { searchQueryKeys, searchQueryConfig } from '@/lib/query-client'
 import { useSearchErrorHandler } from './useSearchErrorHandler'
@@ -42,6 +42,8 @@ export interface UseSearchOptimizedOptions {
   saveRecentSearches?: boolean
   /** Habilitar prefetch de sugerencias */
   enablePrefetch?: boolean
+  /** Categoría actual para filtrar y navegar */
+  categoryId?: string
   /** Callback cuando se realiza una búsqueda */
   onSearch?: (query: string, results: ProductWithCategory[]) => void
   /** Callback cuando se selecciona una sugerencia */
@@ -59,6 +61,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     searchLimit = 12,
     saveRecentSearches = true,
     enablePrefetch = true,
+    categoryId,
     onSearch,
     onSuggestionSelect,
   } = options
@@ -149,25 +152,14 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       }
 
       try {
-        // Usar la API de búsqueda correcta
-        const url = `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${maxSuggestions}`
+        // Usar el endpoint público existente de productos con filtros
+        const data = await getProducts(
+          { search: searchQuery, limit: searchLimit, page: 1 },
+          signal as AbortSignal
+        )
 
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          signal, // Usar AbortController
-        })
-
-        if (!response.ok) {
-          console.error('🔍 useSearchOptimized: API response not ok:', response.status)
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const data = await response.json()
-
-        return data.products || []
+        // Devolver el objeto completo para que el mapeo maneje .data
+        return data
       } catch (error) {
         console.error('🔍 useSearchOptimized: API call failed:', error)
         throw error
@@ -296,7 +288,9 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
           id: `recent-${index}`,
           type: 'recent' as const,
           title: search,
-          href: `/shop?q=${encodeURIComponent(search)}`,
+          href:
+            `/search?search=${encodeURIComponent(search)}` +
+            (categoryId && categoryId !== 'all' ? `&category=${encodeURIComponent(categoryId)}` : ''),
         }))
         allSuggestions.push(...recentSuggestions)
       }
@@ -308,7 +302,9 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
         id: `recent-${index}`,
         type: 'recent' as const,
         title: search,
-        href: `/shop?q=${encodeURIComponent(search)}`,
+        href:
+          `/search?search=${encodeURIComponent(search)}` +
+          (categoryId && categoryId !== 'all' ? `&category=${encodeURIComponent(categoryId)}` : ''),
       }))
       allSuggestions.push(...recentSuggestions)
 
@@ -319,7 +315,9 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
           id: trending.id,
           type: 'trending' as const,
           title: trending.query,
-          href: trending.href,
+          href:
+            `/search?search=${encodeURIComponent(trending.query)}` +
+            (categoryId && categoryId !== 'all' ? `&category=${encodeURIComponent(categoryId)}` : ''),
           badge: trending.count ? `${trending.count}` : undefined,
         }))
         allSuggestions.push(...trendingSuggestions)
@@ -352,18 +350,21 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
 
       // Prefetch si está habilitado y la query es válida
       if (enablePrefetch && searchQuery.trim().length >= 1) {
-        // Prefetch de datos de búsqueda
-        queryClient.prefetchQuery({
-          queryKey: searchQueryKeys.search(searchQuery),
-          queryFn: () => searchProducts(searchQuery, maxSuggestions),
-          ...searchQueryConfig,
-        })
+        // Prefetch de datos de búsqueda (deduplicado por cache)
+        const key = searchQueryKeys.search(searchQuery)
+        if (!queryClient.getQueryData(key)) {
+          queryClient.prefetchQuery({
+            queryKey: key,
+            queryFn: () => searchProducts(searchQuery, searchLimit),
+            ...searchQueryConfig,
+          })
+        }
 
-        // Prefetch de página de resultados
-        navigation.prefetchSearch(searchQuery.trim())
+        // Prefetch de página de resultados con categoría
+        navigation.prefetchSearch(searchQuery.trim(), categoryId)
       }
     },
-    [updateDebouncedQuery, enablePrefetch, queryClient, maxSuggestions, navigation]
+    [updateDebouncedQuery, enablePrefetch, queryClient, searchLimit, navigation, categoryId]
   )
 
   const executeSearch = useCallback(
@@ -384,14 +385,31 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
         trackSearch(searchQuery.trim()).catch(console.warn)
 
         // Navegar a página de resultados usando navegación optimizada
-        navigation.navigateToSearch(searchQuery.trim())
+        navigation.navigateToSearch(searchQuery.trim(), categoryId)
 
-        // Callback externo
+        // Callback externo: pasar siempre un array de productos
         if (onSearch && searchResults) {
-          onSearch(searchQuery, searchResults)
+          const resultsArray = Array.isArray(searchResults)
+            ? (searchResults as ProductWithCategory[])
+            : Array.isArray((searchResults as any)?.data)
+              ? ((searchResults as any).data as ProductWithCategory[])
+              : Array.isArray((searchResults as any)?.products)
+                ? ((searchResults as any).products as ProductWithCategory[])
+                : []
+
+          onSearch(searchQuery, resultsArray)
         }
 
-        toastHandler.showSuccessToast(searchQuery, searchResults?.length || 0)
+        // Mostrar toast con cantidad correcta
+        const count = Array.isArray(searchResults)
+          ? (searchResults as ProductWithCategory[]).length
+          : Array.isArray((searchResults as any)?.data)
+            ? ((searchResults as any).data as ProductWithCategory[]).length
+            : Array.isArray((searchResults as any)?.products)
+              ? ((searchResults as any).products as ProductWithCategory[]).length
+              : 0
+
+        toastHandler.showSuccessToast(searchQuery, count)
       } catch (error) {
         console.error('❌ useSearchOptimized: Error en executeSearch:', error)
         errorHandler.handleError(error)
@@ -424,8 +442,8 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
       if (suggestion.type === 'product') {
         navigation.navigateToProduct(suggestion.id)
       } else {
-        // Para búsquedas recientes o trending, navegar a búsqueda
-        navigation.navigateToSearch(suggestion.title)
+        // Para búsquedas recientes o trending, navegar a búsqueda (respetando categoría)
+        navigation.navigateToSearch(suggestion.title, categoryId)
       }
 
       toastHandler.showInfoToast(
@@ -538,7 +556,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     prefetchSearch: (searchQuery: string) =>
       queryClient.prefetchQuery({
         queryKey: searchQueryKeys.search(searchQuery),
-        queryFn: () => searchProducts(searchQuery, maxSuggestions),
+        queryFn: () => searchProducts(searchQuery, searchLimit),
         ...searchQueryConfig,
       }),
 

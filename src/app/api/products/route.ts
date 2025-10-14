@@ -23,6 +23,7 @@ import { executeWithRLS, withRLS, createRLSFilters } from '@/lib/auth/enterprise
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { API_TIMEOUTS, withDatabaseTimeout, getEndpointTimeouts } from '@/lib/config/api-timeouts'
 import { createSecurityLogger } from '@/lib/logging/security-logger'
+import { expandQueryIntents, stripDiacritics } from '@/lib/search/intents'
 
 // ===================================
 // GET /api/products - Obtener productos con filtros
@@ -139,6 +140,11 @@ export async function GET(request: NextRequest) {
 
       // Construir query base optimizada (solo campos necesarios)
       // Usar timeout centralizado para operaciones de base de datos
+      // Variables para meta de FTS en ámbito externo
+      let ftsUsedOuter = false
+      let orderedIdsOuter: number[] = []
+      let overrideCountOuter: number | null = null
+
       const result = await withDatabaseTimeout(async signal => {
         let query = supabase.from('products').select(
           `
@@ -203,9 +209,61 @@ export async function GET(request: NextRequest) {
         }
 
         if (filters.search) {
-          query = query.or(
-            `name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,brand.ilike.%${filters.search}%`
-          )
+          // ================================
+          // BÚSQUEDA MEJORADA: FTS + INTENCIÓN + FALLBACK ILIKE/TRIGRAM
+          // ================================
+          const raw = String(filters.search).trim()
+
+          // Expandir intención (sinónimos, singularización, diacríticos)
+          const candidates = new Set<string>(expandQueryIntents(raw))
+
+          // Intentar primero FTS vía RPC para resultados relevantes
+          const page = filters.page || 1
+          const limit = filters.limit || 10
+          const from = (page - 1) * limit
+          let ftsUsed = false
+          let orderedIds: number[] = []
+          let overrideCount: number | null = null
+
+          try {
+            // Usar el término original para aprovechar el análisis de tsquery
+            const { data: ftsProducts, error: ftsError } = await supabase.rpc('products_search', {
+              q: raw,
+              lim: limit,
+              off: from,
+            })
+
+            if (!ftsError && ftsProducts && ftsProducts.length > 0) {
+              orderedIds = ftsProducts.map((p: any) => p.id)
+              overrideCount = orderedIds.length // RPC no devuelve count total; usamos tamaño de la página
+              ftsUsed = true
+
+              // Limitar resultados de la consulta principal a los IDs devueltos por FTS
+              query = query.in('id', orderedIds)
+            }
+          } catch (e) {
+            // Si falla RPC, continuar con fallback
+          }
+
+          if (!ftsUsed) {
+            // Fallback: aplicar ILIKE sobre campos clave con todas las variantes
+            const buildIlike = (term: string) => [
+              `name.ilike.%${term}%`,
+              `description.ilike.%${term}%`,
+              `brand.ilike.%${term}%`,
+              `slug.ilike.%${term}%`,
+            ]
+            const orConditions: string[] = []
+            for (const term of candidates) {
+              orConditions.push(...buildIlike(term))
+            }
+            query = query.or(orConditions.join(','))
+          }
+
+          // Guardar metadatos de búsqueda en variables externas
+          ftsUsedOuter = ftsUsed
+          orderedIdsOuter = orderedIds
+          overrideCountOuter = overrideCount
         }
 
         // Filtro por productos con descuento real (discounted_price < price)
@@ -328,7 +386,22 @@ export async function GET(request: NextRequest) {
       // Calcular información de paginación
       const page = filters.page || 1
       const limit = filters.limit || 10
-      const totalPages = Math.ceil((count || 0) / limit)
+
+      // Si FTS fue utilizado, preservar orden y ajustar conteo
+      let totalForPagination = count || 0
+      if (ftsUsedOuter) {
+        // Reordenar productos según IDs devueltos por FTS
+        const orderMap = new Map<number, number>((orderedIdsOuter || []).map((id: number, i: number) => [id, i]))
+        enrichedProducts = (enrichedProducts || []).slice().sort((a: any, b: any) => {
+          const ai = orderMap.get(a.id) ?? 0
+          const bi = orderMap.get(b.id) ?? 0
+          return ai - bi
+        })
+        // Ajustar total (RPC no da total real; usar tamaño de página)
+        totalForPagination = overrideCountOuter ?? enrichedProducts.length
+      }
+
+      const totalPages = Math.ceil((totalForPagination || 0) / limit)
 
       // Log de operación exitosa
       securityLogger.log({
@@ -338,7 +411,7 @@ export async function GET(request: NextRequest) {
         context: securityLogger.context,
         metadata: {
           productsCount: products?.length || 0,
-          totalCount: count || 0,
+          totalCount: totalForPagination || 0,
           page,
           limit,
           filters: filters,
@@ -350,7 +423,7 @@ export async function GET(request: NextRequest) {
         pagination: {
           page,
           limit,
-          total: count || 0,
+          total: totalForPagination || 0,
           totalPages,
         },
         success: true,

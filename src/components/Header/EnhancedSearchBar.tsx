@@ -173,6 +173,8 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             showRecentSearches={true}
             showTrendingSearches={true}
             data-testid={testId || 'search-input'}
+            categoryId={selectedCategory.id !== 'all' ? selectedCategory.id : undefined}
+            formId='search-autocomplete-form'
           />
         </div>
 
@@ -183,15 +185,7 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             'rounded-l-none bg-bright-sun hover:bg-bright-sun-600 text-black border-bright-sun hover:border-bright-sun-600 flex-shrink-0 button-hover-lift font-bold transition-all duration-200',
             buttonSizeClasses[size]
           )}
-          onClick={() => {
-            // Trigger search from SearchAutocomplete if needed
-            const searchInput = document.querySelector(
-              '[data-testid="search-input"]'
-            ) as HTMLInputElement
-            if (searchInput?.value) {
-              handleSearch(searchInput.value)
-            }
-          }}
+          form='search-autocomplete-form'
         >
           <span className='font-medium'>Buscar</span>
         </Button>
