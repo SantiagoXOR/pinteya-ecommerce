@@ -1,6 +1,4 @@
-import React from 'react'
-
-const PreLoader = () => {
+export default function Loading() {
   return (
     <div className='brand-loader'>
       <div className='brand-loader-inner'>
@@ -21,5 +19,3 @@ const PreLoader = () => {
     </div>
   )
 }
-
-export default PreLoader
