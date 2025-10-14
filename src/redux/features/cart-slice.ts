@@ -6,7 +6,7 @@ type InitialState = {
   items: CartItem[]
 }
 
-type CartItem = {
+export type CartItem = {
   id: number
   title: string
   price: number
@@ -20,6 +20,7 @@ type CartItem = {
   attributes?: {
     color?: string
     medida?: string
+    finish?: string
   }
 }
 

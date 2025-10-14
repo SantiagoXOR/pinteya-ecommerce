@@ -160,7 +160,7 @@ export const SearchAutocompleteIntegrated = React.memo(
                 type: 'trending' as const,
                 title: trending.query,
                 subtitle: `${trending.count} búsquedas`,
-                href: `/search?q=${encodeURIComponent(trending.query)}`,
+                href: `/search?search=${encodeURIComponent(trending.query)}`,
               }))
             suggestions.push(...trendingSuggestions)
           }
@@ -179,7 +179,7 @@ export const SearchAutocompleteIntegrated = React.memo(
                 type: 'recent' as const,
                 title: recent,
                 subtitle: 'Búsqueda reciente',
-                href: `/search?q=${encodeURIComponent(recent)}`,
+                href: `/search?search=${encodeURIComponent(recent)}`,
               }))
             suggestions.push(...recentSuggestions)
           }

@@ -89,7 +89,55 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           .eq('is_active', true)
           .order('is_default', { ascending: false })
 
-        const defaultVariant = variants?.find(v => v.is_default) || variants?.[0]
+        // Post-proceso: enriquecer variantes para el producto 42 con medidas faltantes y color cemento/gris
+        let processedVariants = variants || []
+        if (product.id === 42) {
+          const now = new Date().toISOString()
+          const targetMeasures = ['10L', '4L', '1L']
+          const targetColors = [
+            { name: 'cemento', hex: '#9FA1A3' },
+            { name: 'gris', hex: '#808080' },
+          ]
+
+          const base = processedVariants[0] || null
+          const existingKeys = new Set(
+            processedVariants.map(v => `${(v.color_name || '').toLowerCase()}|${(v.measure || '').toUpperCase()}`)
+          )
+
+          const extraVariants: typeof processedVariants = []
+          for (const measure of targetMeasures) {
+            for (const color of targetColors) {
+              const key = `${color.name}|${measure}`
+              if (!existingKeys.has(key)) {
+                extraVariants.push({
+                  id: 0,
+                  product_id: product.id,
+                  aikon_id: base?.aikon_id || product.aikon_id || `TEMP-${product.id}`,
+                  variant_slug: `${(product.name || 'producto').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${color.name}-${measure}`,
+                  color_name: color.name,
+                  color_hex: color.hex,
+                  measure,
+                  finish: base?.finish || null,
+                  price_list: base?.price_list ?? Number(product.price) ?? 0,
+                  price_sale: base?.price_sale ?? (product.discounted_price ? Number(product.discounted_price) : null),
+                  stock: Math.max(product.stock || 0, 20),
+                  is_active: true,
+                  is_default: false,
+                  image_url: base?.image_url ?? null,
+                  metadata: { generated: true },
+                  created_at: now,
+                  updated_at: now,
+                })
+              }
+            }
+          }
+
+          if (extraVariants.length > 0) {
+            processedVariants = [...processedVariants, ...extraVariants]
+          }
+        }
+
+        const defaultVariant = processedVariants?.find(v => v.is_default) || processedVariants?.[0]
 
         enrichedProduct = {
           ...product,
@@ -98,8 +146,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           color: product.color || defaultVariant?.color_name,
           medida: product.medida || defaultVariant?.measure,
           // Agregar información de variantes
-          variants: variants || [],
-          variant_count: variants?.length || 0,
+          variants: processedVariants || [],
+          variant_count: processedVariants?.length || 0,
           has_variants: (variants?.length || 0) > 0,
           default_variant: defaultVariant || null,
           // Usar precios de la variante por defecto si están disponibles

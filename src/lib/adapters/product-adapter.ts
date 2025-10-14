@@ -15,7 +15,7 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
   console.log('📦 API Product original:', apiProduct);
   console.log('🖼️ Imágenes originales:', apiProduct.images);
   
-  // Normalizar imágenes: aceptar arrays de strings u objetos { url | image_url }
+  // Normalizar imágenes: aceptar arrays de strings u objetos { url | image_url } y objeto { main, previews, thumbnails, gallery }
   const normalizedImages: string[] = Array.isArray(apiProduct.images)
     ? (
         apiProduct.images
@@ -27,11 +27,15 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
           })
           .filter(Boolean) as string[]
       )
-    : apiProduct.images?.previews?.[0]
-      ? [apiProduct.images.previews[0]]
-      : apiProduct.images?.thumbnails?.[0]
-        ? [apiProduct.images.thumbnails[0]]
-        : ['/images/products/placeholder.svg']
+    : apiProduct.images?.main
+      ? [apiProduct.images.main]
+      : apiProduct.images?.previews?.[0]
+        ? [apiProduct.images.previews[0]]
+        : apiProduct.images?.thumbnails?.[0]
+          ? [apiProduct.images.thumbnails[0]]
+          : apiProduct.images?.gallery?.[0]
+            ? [apiProduct.images.gallery[0]]
+            : ['/images/products/placeholder.svg']
 
   // Obtener la primera imagen válida o usar placeholder
   const firstImage = normalizedImages[0] || '/images/products/placeholder.svg'
@@ -173,6 +177,19 @@ export function getMainImage(product: Product | ProductWithCategory): string {
       return url.trim()
     }
   }
+  // Nuevo formato basado en objeto { main, previews, thumbnails, gallery }
+  if (
+    'images' in product &&
+    product &&
+    typeof (product as any).images === 'object' &&
+    (product as any).images !== null
+  ) {
+    const imagesObj: any = (product as any).images
+    const candidates = [imagesObj.main, imagesObj.previews?.[0], imagesObj.thumbnails?.[0], imagesObj.gallery?.[0]]
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim() !== '') return c.trim()
+    }
+  }
   // Compatibilidad con estructuras antiguas
   if ('imgs' in product && (product as any).imgs?.previews?.[0]) {
     return (product as any).imgs.previews[0]
@@ -215,6 +232,10 @@ export function getThumbnailImage(product: Product | ProductWithCategory): strin
     imageUrl = product.imgs.thumbnails[0]
   } else if ('images' in product && product.images?.thumbnails?.[0]) {
     imageUrl = product.images.thumbnails[0]
+  } else if ('images' in product && (product as any).images?.previews?.[0]) {
+    imageUrl = (product as any).images.previews[0]
+  } else if ('images' in product && typeof (product as any).images?.main === 'string') {
+    imageUrl = (product as any).images.main
   }
 
   return getValidImageUrl(imageUrl)
@@ -235,6 +256,10 @@ export function getPreviewImage(product: Product | ProductWithCategory): string 
     imageUrl = product.imgs.previews[0]
   } else if ('images' in product && product.images?.previews?.[0]) {
     imageUrl = product.images.previews[0]
+  } else if ('images' in product && product.images?.thumbnails?.[0]) {
+    imageUrl = product.images.thumbnails[0]
+  } else if ('images' in product && typeof (product as any).images?.main === 'string') {
+    imageUrl = (product as any).images.main
   }
 
   return getValidImageUrl(imageUrl)

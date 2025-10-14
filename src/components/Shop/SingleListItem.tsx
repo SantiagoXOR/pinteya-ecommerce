@@ -46,7 +46,7 @@ const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
             : features.currentPrice,
         images: [getMainImage(item)].filter(Boolean),
       },
-      { quantity: 1, attributes: { color: item?.color, medida: item?.medida } }
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida, finish: item?.finish } }
     )
   }
 

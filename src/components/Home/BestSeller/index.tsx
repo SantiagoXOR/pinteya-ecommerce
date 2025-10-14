@@ -14,45 +14,23 @@ import { TrendingUp, ArrowRight, Trophy } from '@/lib/optimized-imports'
 const BestSeller: React.FC = () => {
   const { filters } = useProductFilters({ syncWithUrl: true })
 
-  // IDs específicos de productos para Ofertas Especiales
-  const specialOfferProductIds = [52, 55, 59, 62, 66, 73, 75, 77]
-
-  // Obtener productos con descuentos y más variados
+  // Obtener productos y ordenarlos por precio alto; sin stock al final
   const { data, isLoading, error } = useFilteredProducts({
     categories: filters.categories.length > 0 ? filters.categories : undefined,
-    limit: 50, // Aumentamos el límite para asegurar que obtenemos todos los productos
-    sortBy: 'created_at',
+    limit: 50,
+    sortBy: 'price',
     sortOrder: 'desc',
-    hasDiscount: true, // Nuevo filtro para productos con descuento
   })
 
   // Adaptar productos de la API al formato de componentes
   const adaptedProducts = data?.data ? adaptApiProductsToComponents(data.data) : []
 
-  // Filtrar productos específicos para Ofertas Especiales
-  const specialOfferProducts = adaptedProducts.filter(p => specialOfferProductIds.includes(p.id))
-
-  // Si no encontramos suficientes productos específicos, complementamos con productos con descuento
-  const fallbackProducts = adaptedProducts.filter(
-    p => !specialOfferProductIds.includes(p.id) && p.discountedPrice && p.discountedPrice < p.price
-  )
-
-  // Debug: Verificar productos filtrados
-  console.log('🔍 DEBUG - Productos adaptados:', adaptedProducts.length)
-  console.log('🔍 DEBUG - IDs buscados:', specialOfferProductIds)
-  console.log(
-    '🔍 DEBUG - Productos encontrados por ID:',
-    specialOfferProducts.map(p => `ID: ${p.id} - ${p.brand} - ${p.name}`)
-  )
-  console.log('🔍 DEBUG - Productos de respaldo:', fallbackProducts.length)
-
-  // Construir lista final priorizando productos específicos
-  const bestSellerProducts = [...specialOfferProducts, ...fallbackProducts].slice(0, 8)
-
-  console.log(
-    '🔍 DEBUG - Productos finales ordenados:',
-    bestSellerProducts.map(p => `${p.brand} - ${p.name}`)
-  )
+  // Ordenar por precio (desc) y empujar sin stock al final
+  const sortedByPrice = [...adaptedProducts].sort((a, b) => b.price - a.price)
+  const inStock = sortedByPrice.filter(p => (p.stock ?? 0) > 0)
+  const outOfStock = sortedByPrice.filter(p => (p.stock ?? 0) <= 0)
+  const bestSellerProducts = [...inStock, ...outOfStock].slice(0, 8)
+  console.log('🔍 DEBUG - Best Sellers (precio alto, sin stock al final):', bestSellerProducts.map(p => ({ id: p.id, price: p.price, stock: p.stock })))
 
   // Mostrar título dinámico según si hay filtros activos
   const sectionTitle =

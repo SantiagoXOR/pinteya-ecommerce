@@ -47,6 +47,7 @@ import { getProductById } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
 import { supabase } from '@/lib/supabase'
 import { logError } from '@/lib/error-handling/centralized-error-handler'
+import { getValidImageUrl } from '@/lib/adapters/product-adapter'
 import { useRouter } from 'next/navigation'
 
 
@@ -488,20 +489,66 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     const medidaRaw = ((fullProductData as any)?.medida || (fullProductData as any)?.measure || '')
       .toString()
       .trim()
-    if (medidaRaw && /kg/i.test(medidaRaw)) {
-      return 'kg' as const
-    }
-    // Detectar por nombre del producto
+
     const nameText = (fullProductData?.name || product?.name || '').toString()
-    if (nameText && /\b\d+\s?(kg|kilos?)\b/i.test(nameText)) {
+
+    const hasKgSignal =
+      (!!medidaRaw && /(\b|\s)(kg|kilo|kilos)(\b|\s)/i.test(medidaRaw)) ||
+      (nameText && /\b\d+\s?(kg|kilos?)\b/i.test(nameText)) ||
+      (selectedCapacity && /kg/i.test(selectedCapacity))
+
+    const hasLSignal =
+      (!!medidaRaw && /\b\d+\s?(l|lt|lts|litro|litros)\b/i.test(medidaRaw)) ||
+      (nameText && /\b\d+\s?(l|lt|lts|litro|litros)\b/i.test(nameText)) ||
+      (selectedCapacity && /l$/i.test(selectedCapacity))
+
+    // Analizar medidas de productos relacionados y variantes para detectar unidad dominante
+    let relatedKg = 0,
+      relatedL = 0
+    try {
+      if (relatedProducts?.products) {
+        for (const p of relatedProducts.products) {
+          const m = ((p as any).measure || (p as any).medida || '').toString()
+          if (/\b\d+\s?(kg|kilos?)\b/i.test(m)) relatedKg++
+          if (/\b\d+\s?(l|lt|lts|litro|litros)\b/i.test(m) || /l$/i.test(m)) relatedL++
+        }
+      }
+    } catch {}
+
+    let variantsKg = 0,
+      variantsL = 0
+    try {
+      if (variants && variants.length > 0) {
+        for (const v of variants as any[]) {
+          const m = (v?.measure || '').toString()
+          if (/\b\d+\s?(kg|kilos?)\b/i.test(m)) variantsKg++
+          if (/\b\d+\s?(l|lt|lts|litro|litros)\b/i.test(m) || /l$/i.test(m)) variantsL++
+        }
+      }
+    } catch {}
+
+    // Regla principal: priorizar la unidad del tipo de producto.
+    // Si el tipo es 'litros', solo cambiar a 'kg' cuando NO haya señales de litros
+    // y sí haya señales consistentes de KG en todas las fuentes.
+    if (productType.capacityUnit === 'litros') {
+      if (hasLSignal || relatedL > 0 || variantsL > 0) return 'litros' as const
+      if (!hasLSignal && (hasKgSignal || relatedKg > 0 || variantsKg > 0) && relatedL === 0 && variantsL === 0) {
+        return 'kg' as const
+      }
+      return 'litros' as const
+    }
+
+    // Si el tipo es 'kg', mantener salvo señales fuertes de litros y cero de kg
+    if (productType.capacityUnit === 'kg') {
+      if ((hasLSignal || relatedL > 0 || variantsL > 0) && !hasKgSignal && relatedKg === 0 && variantsKg === 0) {
+        return 'litros' as const
+      }
       return 'kg' as const
     }
-    // Si la capacidad seleccionada contiene KG, ajustar dinámicamente
-    if (selectedCapacity && /kg/i.test(selectedCapacity)) {
-      return 'kg' as const
-    }
+
+    // Otros tipos: respetar tipo por defecto
     return productType.capacityUnit
-  }, [fullProductData, selectedCapacity, productType.capacityUnit])
+  }, [fullProductData, selectedCapacity, productType.capacityUnit, relatedProducts?.products, variants])
 
   // Cargar variantes cuando se abre el modal
   useEffect(() => {
@@ -582,9 +629,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       
       const related = await getRelatedProducts(product.id)
       setRelatedProducts(related)
-      if (related) {
-        setSelectedRelatedProduct(related.selectedProduct)
-      }
+      // No autoseleccionar un producto relacionado al abrir el modal
+      // para no alterar precio/stock iniciales del card
+      // La selección se hará sólo cuando el usuario cambie capacidad/ancho
     } catch (error) {
       logError('❌ Error cargando productos relacionados:', error)
       setRelatedProducts(null)
@@ -665,14 +712,23 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       }
     }
 
-    // Productos relacionados (ej. mismas líneas con 5KG/12KG/24KG)
-    if (capacityUnit === 'kg' && relatedProducts?.products && relatedProducts.products.length > 0) {
-      const fromRelated = relatedProducts.products
-        .flatMap(p => {
-          const txt = `${p.name || ''} ${p.measure || ''}`
-          return extractKgCapacities(txt)
-        })
-      collected.push(...fromRelated)
+    // Productos relacionados: incluir medidas para KG y también para LITROS
+    if (relatedProducts?.products && relatedProducts.products.length > 0) {
+      // Usamos el helper que ya normaliza y ordena medidas de productos relacionados
+      const measures = getAvailableMeasures(relatedProducts.products)
+
+      if (capacityUnit === 'kg') {
+        // Solo medidas en KG
+        collected.push(...measures.filter(m => /kg/i.test(m)))
+      } else if (capacityUnit === 'litros') {
+        // Solo medidas en litros
+        collected.push(
+          ...measures.filter(m => /\b\d+\s?(l|lt|lts|litro|litros)\b/i.test(m) || /l$/i.test(m))
+        )
+      } else {
+        // Otras unidades: incluir todas
+        collected.push(...measures)
+      }
     }
 
     // Nombre del producto actual
@@ -786,24 +842,149 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   // Colores inteligentes basados en datos del producto (p.ej., color "BLANCO")
   const smartColors: ColorOption[] = useMemo(() => {
     if (!productType.hasColorSelector) return []
+
+    const isImpregnante = productType.id === 'impregnante-madera'
+    // Para productos impregnantes SATINADOS (o marca DANZKE), se exige una paleta fija y ordenada
+    const SATINADO_WHITELIST = ['caoba', 'cedro', 'cristal', 'nogal', 'pino', 'roble']
+    const isSatinProduct = /satinad|satin/i.test(
+      `${(fullProductData as any)?.name || product?.name || ''} ${(fullProductData as any)?.finish || ''} ${(fullProductData as any)?.features?.finish || ''}`
+    )
+    const isDanzke = /danzke/i.test(
+      `${(fullProductData as any)?.brand || product?.brand || ''} ${(fullProductData as any)?.name || product?.name || ''}`
+    )
+    const shouldForceSatinPalette = isImpregnante && (isSatinProduct || isDanzke)
+    const BLOCKED = ['blanco', 'blanco-puro', 'blanco puro', 'crema', 'marfil']
+
+    const toSlug = (s: string) =>
+      s
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .replace(/\s+/g, '-')
+        .trim()
+
+    // 1) Para impregnantes, priorizar colores desde variantes de la BD
+    if (isImpregnante && variants && variants.length > 0) {
+      const variantNames = Array.from(
+        new Set(
+          variants
+            .map(v => (v.color_name || '').toString().trim())
+            .filter(Boolean)
+        )
+      )
+        .filter(name => !BLOCKED.some(b => name.toLowerCase().includes(b)))
+
+      // Si es SATINADO o DANZKE, forzar la paleta fija, respetando el orden solicitado
+      if (shouldForceSatinPalette) {
+        const ordered = SATINADO_WHITELIST.map(key =>
+          PAINT_COLORS.find(c => c.id === key || c.name === key)!
+        ).filter(Boolean) as ColorOption[]
+        try { console.log('🎨 smartColors (impregnante satinado - fixed palette):', ordered.map(c => c.displayName)) } catch {}
+        return ordered
+      }
+
+      const list: ColorOption[] = []
+      for (const name of variantNames) {
+        const slug = toSlug(name)
+        const found = PAINT_COLORS.find(
+          c => c.id === slug || c.name === slug || c.displayName.toLowerCase() === name.toLowerCase()
+        )
+        if (found) {
+          if (!list.find(l => l.id === found.id)) list.push(found)
+        } else {
+          list.push({
+            id: slug,
+            name: slug,
+            displayName: name,
+            hex: '#B88A5A',
+            category: 'Madera',
+            family: 'Marrones',
+          })
+        }
+      }
+      try { console.log('🎨 smartColors (variants prioritizados):', list.map(c => c.displayName)) } catch {}
+      return list
+    }
+
+    // 2) Fallback textual para otros productos
     const declaredColor = (((fullProductData as any)?.color || '') as string).toString().trim()
-    const extracted = extractColorFromName(fullProductData?.name || product?.name || '') || ''
-    const colorText = declaredColor || extracted
-    if (colorText) {
-      const normalized = colorText.toLowerCase()
-      const match =
-        PAINT_COLORS.find(
-          c =>
-            c.displayName.toLowerCase() === normalized ||
-            c.name.toLowerCase() === normalized ||
-            (normalized.includes('blanco') && c.name === 'blanco-puro')
-        ) || null
-      if (match) {
-        return [match]
+    const extractedFromName = extractColorFromName(fullProductData?.name || product?.name || '') || ''
+    const descriptionText = (fullProductData?.description || '') as string
+
+    const sourcesText = [declaredColor, extractedFromName, descriptionText]
+      .join(' ')
+      .toLowerCase()
+
+    const hasWholeWord = (text: string, word: string) => {
+      if (!word) return false
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const re = new RegExp(`(^|[^a-z0-9áéíóúüñ])${escaped}([^a-z0-9áéíóúüñ]|$)`, 'i')
+      return re.test(text)
+    }
+
+    const synonyms: Record<string, string> = {
+      blanco: 'blanco',
+      'blanco puro': 'blanco-puro',
+      cemento: 'cemento',
+      gris: 'gris',
+      'rojo teja': 'rojo-teja',
+      teja: 'rojo-teja',
+      'rojo-teja': 'rojo-teja',
+    }
+
+    let matches: ColorOption[] = []
+
+    if (declaredColor) {
+      const colorParts = declaredColor
+        .split(/[,\/;|]+/)
+        .map(s => s.trim().toLowerCase())
+        .filter(Boolean)
+
+      for (const part of colorParts) {
+        const key = synonyms[part] || part
+        const color = PAINT_COLORS.find(
+          c => c.id === key || c.name === key || c.displayName.toLowerCase() === part
+        )
+        if (color && !matches.find(m => m.id === color.id)) {
+          matches.push(color)
+        }
       }
     }
-    return []
-  }, [productType.hasColorSelector, fullProductData, product])
+
+    Object.entries(synonyms).forEach(([keyword, colorKey]) => {
+      if (hasWholeWord(sourcesText, keyword)) {
+        const color = PAINT_COLORS.find(c => c.name === colorKey || c.id === colorKey)
+        if (color && !matches.find(m => m.id === color.id)) {
+          matches.push(color)
+        }
+      }
+    })
+
+    if (isImpregnante) {
+      // Si es SATINADO o DANZKE, forzar la paleta fija ordenada
+      if (shouldForceSatinPalette) {
+        const ordered = SATINADO_WHITELIST.map(key =>
+          PAINT_COLORS.find(c => c.id === key || c.name === key)!
+        ).filter(Boolean) as ColorOption[]
+        try { console.log('🎨 smartColors (fallback satinado - fixed palette):', ordered.map(c => c.displayName)) } catch {}
+        return ordered
+      }
+      // En otros impregnantes, filtrar bloqueados
+      matches = matches.filter(c => !BLOCKED.includes(c.id))
+    }
+
+    try {
+      console.log('🎨 smartColors detectados:', {
+        via: 'text',
+        declaredColor,
+        extractedFromName,
+        count: matches.length,
+        colors: matches.map(m => ({ id: m.id, name: m.displayName })),
+      })
+    } catch {}
+
+    return matches
+  }, [productType.hasColorSelector, productType.id, fullProductData, product, variants])
 
   // Establecer valores por defecto usando colores y capacidades inteligentes
   useEffect(() => {
@@ -850,7 +1031,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         if (!v) return ''
         const up = v.trim().toUpperCase()
         const noSpaces = up.replace(/\s+/g, '')
-        const kg = noSpaces.replace(/(KGS|KILO|KILOS)$/i, 'KG')
+        // Eliminar puntuación común como puntos o guiones ("4 LTS." -> "4LTS")
+        const noPunct = noSpaces.replace(/[.\-_/]/g, '')
+        const kg = noPunct.replace(/(KGS|KILO|KILOS)$/i, 'KG')
         const l = kg.replace(/(LT|LTS|LITRO|LITROS)$/i, 'L')
         return l
       }
@@ -909,10 +1092,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     return map
   }, [])
 
-  // Imagen principal saneada (elimino comillas/backticks y valido URL)
+  // Imagen principal saneada con getValidImageUrl (elimino comillas/backticks y valido URL)
   const mainImageUrl = useMemo(() => {
     const sanitize = (u?: string) => (typeof u === 'string' ? u.replace(/[`"]/g, '').trim() : '')
-    const getUrlFromCandidate = (c: any) => {
+    const urlFrom = (c: any) => {
       if (!c) return ''
       if (typeof c === 'string') return sanitize(c)
       return sanitize(c?.url || c?.image_url)
@@ -925,10 +1108,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       product?.image,
     ]
     for (const c of candidates) {
-      const url = getUrlFromCandidate(c)
-      if (url && /^https?:\/\//.test(url)) return url
+      const candidate = urlFrom(c)
+      const validated = getValidImageUrl(candidate)
+      if (validated && !validated.includes('placeholder')) return validated
     }
-    return '/images/placeholder-product.jpg'
+    return '/images/products/placeholder.svg'
   }, [fullProductData, product])
   // Calcular precio dinámico basado en selecciones
   const calculateDynamicPrice = useCallback(() => {
@@ -951,7 +1135,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
 
     // Para otros productos, usar precio base con multiplicadores (sanear a número)
-    const baseCandidate = (fullProductData as any)?.discounted_price ?? (fullProductData as any)?.price ?? product.price
+    // Priorizar el precio recibido desde la card
+    const baseCandidate = product.price ?? (fullProductData as any)?.discounted_price ?? (fullProductData as any)?.price
     let basePrice = typeof baseCandidate === 'number' ? baseCandidate : parseFloat(String(baseCandidate))
     if (!Number.isFinite(basePrice)) {
       basePrice = typeof product.price === 'number' ? product.price : parseFloat(String(product.price))
@@ -1002,8 +1187,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       path = 'dynamic'
       priceComputed = calculateDynamicPrice()
     } else {
-      // Fallback: precio base del producto (sanear)
-      const candidate = (fullProductData as any)?.discounted_price ?? (fullProductData as any)?.price ?? product.price
+      // Fallback: usar el precio de la card como fuente de verdad
+      const candidate = product.price ?? (fullProductData as any)?.discounted_price ?? (fullProductData as any)?.price
       const n = typeof candidate === 'number' ? candidate : parseFloat(String(candidate))
       priceComputed = Number.isFinite(n) ? n : 0
     }
@@ -1055,7 +1240,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   // Calcular precio original para mostrar descuentos
   const originalPrice = useMemo(() => {
     if (selectedVariant) {
-      return getEffectivePrice(selectedVariant)
+      // Precio de lista de la variante
+      return selectedVariant.price_list
     }
     
     if (selectedRelatedProduct) {
@@ -1066,6 +1252,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       return parseFloat(widthToPriceMap[selectedWidth].price)
     }
     
+    // Fallback: usar originalPrice de la card si existe
     return product.originalPrice || product.price
   }, [selectedVariant, selectedWidth, selectedRelatedProduct, productType.hasWidthSelector, widthToPriceMap, product.originalPrice, product.price])
     
@@ -1117,15 +1304,42 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
     let productToAdd = product
 
+    // Medida normalizada para el carrito
+    const normalize = (v?: string | null): string => {
+      if (!v) return ''
+      const up = v.trim().toUpperCase()
+      const noSpaces = up.replace(/\s+/g, '')
+      const kg = noSpaces.replace(/(KGS|KILO|KILOS)$/i, 'KG')
+      const l = kg.replace(/(LT|LTS|LITRO|LITROS)$/i, 'L')
+      return l
+    }
+    const rawMeasure = (
+      (selectedVariant as any)?.measure ||
+      (selectedRelatedProduct as any)?.measure ||
+      (selectedRelatedProduct as any)?.medida ||
+      selectedCapacity ||
+      (fullProductData as any)?.medida ||
+      (product as any)?.medida
+    ) as string | undefined
+    const normalizedMeasure = normalize(rawMeasure || '')
+
+    // Precio unitario efectivo (lo que ve el usuario) y precio original (para mostrar descuento)
+    const unitPrice = Number(currentPrice) || 0
+    const originalUnitPrice = Number(originalPrice) || unitPrice
+    const discountedUnitPrice = unitPrice < originalUnitPrice ? unitPrice : undefined
+
     // Prioridad 1: Producto relacionado seleccionado (por ancho o capacidad)
     if (selectedRelatedProduct) {
       productToAdd = {
         ...selectedRelatedProduct,
         id: selectedRelatedProduct.id,
         name: selectedRelatedProduct.name,
-        price: selectedRelatedProduct.price,
-        discounted_price: selectedRelatedProduct.discounted_price,
-        medida: selectedRelatedProduct.medida,
+        // Asegurar que el carrito reciba precio original y con descuento cuando corresponda
+        price: originalUnitPrice,
+        ...(discountedUnitPrice !== undefined
+          ? { discounted_price: discountedUnitPrice }
+          : {}),
+        medida: (selectedRelatedProduct as any)?.medida || (selectedRelatedProduct as any)?.measure,
         // Mantener otros datos del producto original
         image: product.image,
         images: product.images,
@@ -1138,9 +1352,23 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       productToAdd = {
         ...product,
         id: selectedVariant.id,
-        price: getEffectivePrice(selectedVariant).toString(),
-        discounted_price: selectedVariant.discounted_price,
-        capacity: selectedVariant.capacity,
+        // Asegurar que el carrito reciba precio original y con descuento cuando corresponda
+        price: originalUnitPrice,
+        ...(discountedUnitPrice !== undefined
+          ? { discounted_price: discountedUnitPrice }
+          : {}),
+        capacity: (selectedVariant as any)?.capacity,
+        medida: (selectedVariant as any)?.measure,
+      }
+    }
+    // Si no hay variante ni producto relacionado, reforzar precios en el objeto base
+    else {
+      productToAdd = {
+        ...productToAdd,
+        price: originalUnitPrice,
+        ...(discountedUnitPrice !== undefined
+          ? { discounted_price: discountedUnitPrice }
+          : {}),
       }
     }
 
@@ -1155,6 +1383,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       variants: {
         color: selectedColor,
         capacity: selectedCapacity,
+        measure: normalizedMeasure,
+        price: unitPrice,
+        stock: effectiveStock,
         grain: selectedGrain,
         size: selectedSize,
         width: selectedWidth,
@@ -1167,12 +1398,19 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       console.log('🛒 ShopDetailModal: Agregando al carrito...', {
         productToAdd,
         variants: cartData.variants,
+        debug: {
+          selectedVariant: selectedVariant ? { id: selectedVariant.id, measure: (selectedVariant as any)?.measure, stock: (selectedVariant as any)?.stock } : null,
+          selectedRelatedProduct: selectedRelatedProduct ? { id: selectedRelatedProduct.id, measure: (selectedRelatedProduct as any)?.measure || (selectedRelatedProduct as any)?.medida, stock: (selectedRelatedProduct as any)?.stock } : null,
+          normalizedMeasure,
+          effectiveStock,
+          unitPrice,
+        }
       })
       await onAddToCart(productToAdd, cartData.variants)
       console.log('🛒 ShopDetailModal: Producto agregado, cerrando modal...')
       onOpenChange(false) // Cerrar modal después de agregar al carrito
       console.log('🛒 ShopDetailModal: onOpenChange(false) llamado')
-      router.push('/products')
+      // Mantener la ubicación actual: no forzar redirección
     } catch (error) {
       console.error('Error al agregar al carrito:', error)
     }
@@ -1280,6 +1518,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               src={mainImageUrl}
               alt={fullProductData?.name || product?.name || 'Producto'}
               className='w-full h-full object-cover'
+              onError={e => {
+                const target = e.currentTarget as HTMLImageElement
+                if (target && target.src !== '/images/products/placeholder.svg') {
+                  target.src = '/images/products/placeholder.svg'
+                }
+              }}
             />
           </div>
 

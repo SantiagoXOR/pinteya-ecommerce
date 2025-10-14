@@ -216,25 +216,88 @@ export const formatCapacity = (capacity: string, unit: string): string => {
     return capacity
   }
 
+  // Normalización global previa: arreglar combinaciones incorrectas de unidades
+  // - "KGL" => "KG"
+  // - "KG L" / "KG LT" / "KG LTS" / "KG LITRO(S)" => "KG"
+  capacity = capacity
+    .replace(/KGL/gi, 'KG')
+    .replace(/\bKG\s*(L|LT|LTS|LITRO|LITROS)\b/gi, 'KG')
+
   switch (unit) {
     case 'litros':
       {
-        // Normalizar a mayúsculas y eliminar cualquier sufijo redundante de litros
-        const up = capacity.trim().toUpperCase()
+        // Normalizar y evitar mezclar unidades (ej: "5KG" + "L" => "5KG")
+        const raw = capacity.trim()
+        const up = raw.toUpperCase()
+
+        // Fijar casos erróneos: sufijo combinado "KGL" (ya saneado arriba) o "KG" seguido de litros
+        if (/KG/i.test(up)) {
+          const normalized = up
+            .replace(/KGL/gi, 'KG')
+            .replace(/\s*(L|LT|LTS|LITRO|LITROS)\s*$/i, '')
+          return normalized
+        }
+
+        // Si el texto ya contiene KG/KILO, respetar y normalizar a KG
+        if (/\b(KG|KGS|KILO|KILOS)\b/i.test(up)) {
+          const withoutKg = up.replace(/\s*(KG|KGS|KILO|KILOS)\s*$/i, '')
+          return `${withoutKg}KG`
+        }
+
+        // Si el texto parece una medida compuesta (mm/cm/m, con "x"), normalizar unidades y no agregar sufijo adicional
+        if (/(MM|CM|\bM\b)/i.test(up) || /x/i.test(up)) {
+          let s = raw
+            .replace(/(?<=\d)MM/gi, 'mm')
+            .replace(/(?<=\d)CM/gi, 'cm')
+            .replace(/(?<=\d)\s*M\b/gi, 'm')
+            .replace(/\s*[xX]\s*/g, ' x ')
+            .replace(/\s*(?:METROS?|M)\s*$/i, 'm')
+            .replace(/\s+/g, ' ')
+            .trim()
+          return s
+        }
+
+        // Caso normal: unificar a sufijo "L"
         const withoutL = up.replace(/\s*(L|LT|LTS|LITRO|LITROS)\s*$/i, '')
         return `${withoutL}L`
       }
     case 'kg':
       {
-        // Normalizar a mayúsculas, limpiar espacios y eliminar cualquier sufijo redundante
-        const up = capacity.trim().toUpperCase()
-        // Quitar variantes: KG, KGS, KILO, KILOS al final si existen
+        // Normalizar, y si contiene litros, respetar y normalizar a L
+        const raw = capacity.trim()
+        const up = raw.toUpperCase()
+        // Si tiene alguna referencia a litros en cualquier posición, eliminarla
+        if (/(L|LT|LTS|LITRO|LITROS)/i.test(up)) {
+          const withoutL = up.replace(/\s*(L|LT|LTS|LITRO|LITROS)\s*$/gi, '')
+          // Evitar repetir sufijos si ya termina en KG
+          const cleaned = /KG\s*$/i.test(withoutL) ? withoutL : `${withoutL}KG`
+          return cleaned
+        }
+        // Quitar variantes: KG, KGS, KILO, KILOS al final si existen y unificar
         const withoutKg = up.replace(/\s*(KG|KGS|KILO|KILOS)\s*$/i, '')
         return `${withoutKg}KG`
       }
     case 'metros':
       {
-        const up = capacity.trim().toUpperCase()
+        const raw = capacity.trim()
+        // Normalizar tokens internos: mm/cm/m y el separador "x"
+        let s = raw
+          .replace(/(?<=\d)MM/gi, 'mm')
+          .replace(/(?<=\d)CM/gi, 'cm')
+          .replace(/(?<=\d)\s*M\b/gi, 'm')
+          .replace(/\s*[xX]\s*/g, ' x ')
+          .replace(/\s+/g, ' ')
+          .trim()
+
+        // Si ya contiene alguna unidad (mm/cm/m) o una composición con "x", no agregar sufijo extra
+        if (/(\bmm\b|\bcm\b|\bm\b)/i.test(s) || /\sx\s/i.test(s)) {
+          // Estandarizar posible sufijo final a "m"
+          s = s.replace(/\s*(?:METROS?|M)\s*$/i, 'm')
+          return s
+        }
+
+        // Valor simple: unificar sufijo final a "m"
+        const up = s.toUpperCase()
         const withoutM = up.replace(/\s*(M|METRO|METROS)\s*$/i, '')
         return `${withoutM}m`
       }
@@ -271,6 +334,10 @@ const COLOR_HEX_MAP: Record<string, string> = {
   'negro': '#000000',
   'gris': '#808080',
   'rojo': '#FF0000',
+  // Variantes específicas de rojo
+  'rojo teja': '#A63A2B',
+  'rojo-teja': '#A63A2B',
+  'teja': '#A63A2B',
   'azul': '#0000FF',
   'verde': '#008000',
   'amarillo': '#FFFF00',
@@ -281,12 +348,12 @@ const COLOR_HEX_MAP: Record<string, string> = {
   'beige': '#F5F5DC',
   
   // Colores de madera
-  'roble': '#DEB887',
-  'caoba': '#C04000',
+  'roble': '#C7955B',
+  'caoba': '#8E3B1F',
   'cerezo': '#DE3163',
-  'nogal': '#8B4513',
-  'pino': '#F4A460',
-  'cedro': '#D2691E',
+  'nogal': '#5C3A1A',
+  'pino': '#E5B57E',
+  'cedro': '#C26A2B',
   'teca': '#CD853F',
   'eucalipto': '#B8860B',
   'castaño': '#954535',
@@ -336,7 +403,9 @@ const COLOR_HEX_MAP: Record<string, string> = {
   // Colores especiales
   'natural': '#DEB887',
   'transparente': 'rgba(255,255,255,0.3)',
-  'incoloro': 'rgba(255,255,255,0.3)'
+  'incoloro': 'rgba(255,255,255,0.3)',
+  // Impregnantes especiales
+  'cristal': '#E8D5B5'
 }
 
 /**
@@ -491,9 +560,11 @@ export const extractProductCapacity = (
   productName: string,
   variants?: Array<{ measure?: string; color_name?: string; finish?: string }>,
   description?: string,
-  databaseData?: ProductDatabaseData
+  databaseData?: ProductDatabaseData,
+  slug?: string
 ): ExtractedProductInfo => {
   const result: ExtractedProductInfo = {}
+  const productType = detectProductType(productName)
 
   // 1. PRIORIDAD MÁXIMA: Datos directos de la base de datos (color y medida)
   if (databaseData) {
@@ -543,10 +614,39 @@ export const extractProductCapacity = (
     if (defaultVariant?.measure && !result.capacity) {
       result.capacity = defaultVariant.measure
     }
-    if (defaultVariant?.color_name && !result.color) {
+
+    // Colores desde variantes: tomar todos los distintos y filtrar los que no aplican
+    const BLOCKED_COLORS = ['blanco', 'blanco puro', 'blanco-puro', 'crema']
+    const uniqueColors = Array.from(
+      new Set(
+        variants
+          .map(v => (v.color_name || '').toString().trim())
+          .filter(Boolean)
+      )
+    )
+      .filter(c => !BLOCKED_COLORS.some(b => c.toLowerCase().includes(b)))
+
+    if (uniqueColors.length > 0) {
+      // Guardar como lista separada por comas para soportar múltiples badges
+      result.color = uniqueColors.join(', ')
+    } else if (defaultVariant?.color_name && !result.color) {
+      // Fallback a color del defaultVariant si no hay lista válida
       result.color = defaultVariant.color_name
     }
-    if (defaultVariant?.finish && !result.finish) {
+
+    // Acabados/terminaciones desde variantes: soportar múltiples
+    const uniqueFinishes = Array.from(
+      new Set(
+        variants
+          .map(v => (v.finish || '').toString().trim())
+          .filter(Boolean)
+          .map(f => f.charAt(0).toUpperCase() + f.slice(1).toLowerCase())
+      )
+    )
+
+    if (uniqueFinishes.length > 0) {
+      result.finish = uniqueFinishes.join(', ')
+    } else if (defaultVariant?.finish && !result.finish) {
       result.finish = defaultVariant.finish
     }
   }
@@ -561,7 +661,22 @@ export const extractProductCapacity = (
   }
 
   if (!result.finish) {
-    result.finish = extractFinishFromName(productName)
+    // Intentar extraer desde el slug real si está disponible; si no, derivarlo del nombre
+    const maybeSlug = (slug || productName)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+    if (/(^|-)satinad[oa](-|$)/i.test(maybeSlug)) {
+      result.finish = 'Satinado'
+    } else if (/(^|-)brillant(e|e-)?(-|$)/i.test(maybeSlug) || /(^|-)brillo(-|$)/i.test(maybeSlug)) {
+      result.finish = 'Brillante'
+    }
+    // Si no está en el slug, probar con el nombre plano
+    if (!result.finish) {
+      result.finish = extractFinishFromName(productName)
+    }
   }
 
   if (!result.material) {
@@ -570,6 +685,28 @@ export const extractProductCapacity = (
 
   if (!result.grit) {
     result.grit = extractGritFromName(productName)
+  }
+
+  // Complementar grano para lijas desde medida/BD/capacidad
+  if (productType?.id === 'lijas' && !result.grit) {
+    const capSource = ((result.capacity || databaseData?.medida || '') as string).toLowerCase()
+    const gritMatch = capSource.match(/grano\s*(\d+)|(\d+)\s*grano|(?:^|\b)(\d{2,4})(?:\b|$)/i)
+    if (gritMatch) {
+      const gritVal = gritMatch[1] || gritMatch[2] || gritMatch[3]
+      if (gritVal) {
+        result.grit = `Grano ${gritVal}`
+      }
+    }
+  }
+
+  // 3.1 Complementar detección de acabado a partir de la descripción si es necesario
+  if (!result.finish && description) {
+    const desc = description.toLowerCase()
+    if (/(^|\b)satinad[oa](\b|$)/.test(desc)) {
+      result.finish = 'Satinado'
+    } else if (/brill/i.test(desc)) {
+      result.finish = 'Brillante'
+    }
   }
 
   // 4. FALLBACK INTELIGENTE POR TIPO DE PRODUCTO
@@ -589,10 +726,49 @@ export const extractProductCapacity = (
 
   // Color por defecto basado en el tipo de producto (solo si aplica y no se extrajo antes)
   if (!result.color) {
-    const productType = detectProductType(productName)
-    if (productType?.hasColorSelector) {
-      const defaultColor = getDefaultColor(productType)
+    const pt = detectProductType(productName)
+    if (pt?.hasColorSelector) {
+      const defaultColor = getDefaultColor(pt)
       if (defaultColor) result.color = defaultColor
+    }
+  }
+
+  // 4.1 Fallback específico para impregnantes DANZKE: aplicar paleta completa en todas las presentaciones
+  // Si el producto es un impregnate para madera y no se detectaron colores válidos
+  // (o viene solo "blanco/incoloro"), usamos una paleta estándar de tonos madera.
+  if (productType?.id === 'impregnante-madera') {
+    const DANZKE_PALETTE = ['caoba', 'cedro', 'cristal', 'nogal', 'pino', 'roble']
+    const lowerName = (productName || '').toLowerCase()
+    const hasValidColors = !!(result.color && /\w/.test(result.color) && !/(^|,\s*)(blanco|blanco\s*puro|blanco-puro|crema)(\s*,|$)/i.test(result.color))
+
+    // Para Danzke, compartir siempre la misma paleta entre Brillante/Satinado y 1L/4L
+    if (lowerName.includes('danzke')) {
+      result.color = DANZKE_PALETTE.join(', ')
+    } else if (!hasValidColors) {
+      // Para otros impregnantes, usar la paleta estándar si no hay colores válidos
+      result.color = DANZKE_PALETTE.join(', ')
+    }
+    // Asegurar acabado para impregnantes si no se detectó
+    if (!result.finish) {
+      // Alternar determinísticamente entre Brillante/Satinado usando nombre + capacidad
+      // para que diferentes presentaciones (1L, 4L, 10L) no colisionen.
+      const measureFromVariants = variants?.find(v => v.measure)?.measure
+      const measure = (result.capacity || databaseData?.medida || measureFromVariants || '').toString()
+      const key = `${(productName || '').toLowerCase()}|${measure.toLowerCase()}`
+      let hash = 0
+      for (let i = 0; i < key.length; i++) {
+        // Hash simple pero con mejor distribución que una suma lineal
+        hash = (hash * 31 + key.charCodeAt(i)) >>> 0
+      }
+      result.finish = hash % 2 === 0 ? 'Brillante' : 'Satinado'
+    }
+  }
+
+  // 5. Normalizar formato de capacidad según unidad del tipo de producto (ej: 4L, 10KG)
+  if (result.capacity) {
+    const pt = detectProductType(productName)
+    if (pt?.capacityUnit) {
+      result.capacity = formatCapacity(result.capacity, pt.capacityUnit)
     }
   }
 
@@ -846,13 +1022,18 @@ export const formatProductBadges = (
 
   // Badge de capacidad/medida
   if (showCapacity && extractedInfo.capacity) {
-    badges.push({
-      type: 'capacity',
-      value: extractedInfo.capacity,
-      displayText: extractedInfo.capacity,
-      color: 'text-blue-700',
-      bgColor: 'bg-blue-100'
-    })
+    const capText = String(extractedInfo.capacity)
+    // Evitar badge redundante para lijas: si hay grano y la capacidad es "unidades"
+    const isUnits = /(unidad(?:es)?)/i.test(capText)
+    if (!(extractedInfo.grit && isUnits)) {
+      badges.push({
+        type: 'capacity',
+        value: extractedInfo.capacity,
+        displayText: capText,
+        color: 'text-blue-700',
+        bgColor: 'bg-blue-100'
+      })
+    }
   }
 
   // Badge de dimensiones
@@ -882,7 +1063,8 @@ export const formatProductBadges = (
     badges.push({
       type: 'grit',
       value: extractedInfo.grit,
-      displayText: `Grano ${extractedInfo.grit}`,
+      // El valor ya puede venir como "Grano 120"; no duplicar prefijo
+      displayText: extractedInfo.grit,
       color: 'text-amber-700',
       bgColor: 'bg-amber-100'
     })
@@ -901,13 +1083,18 @@ export const formatProductBadges = (
 
   // Badge de acabado
   if (showFinish && extractedInfo.finish) {
-    badges.push({
-      type: 'finish',
-      value: extractedInfo.finish,
-      displayText: extractedInfo.finish,
-      color: 'text-pink-700',
-      bgColor: 'bg-pink-100'
-    })
+    // Soportar múltiples acabados separados por coma
+    const finishValues = extractedInfo.finish.split(',').map(f => f.trim()).filter(Boolean)
+    for (const finish of finishValues) {
+      if (badges.length >= maxBadges) break
+      badges.push({
+        type: 'finish',
+        value: finish,
+        displayText: finish,
+        color: 'text-pink-700',
+        bgColor: 'bg-pink-100'
+      })
+    }
   }
 
   // Badge de color - Versión circular (soporte para múltiples colores)

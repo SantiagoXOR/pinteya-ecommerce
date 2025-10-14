@@ -44,7 +44,7 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
       const params = new URLSearchParams()
 
       // Parámetro principal de búsqueda
-      params.set('q', query.trim())
+      params.set('search', query.trim())
 
       // Categoría si se especifica
       if (category && category !== 'all') {
@@ -54,7 +54,7 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
       // Preservar parámetros existentes si está habilitado
       if (preserveParams) {
         searchParams.forEach((value, key) => {
-          if (key !== 'q' && key !== 'category') {
+          if (key !== 'search' && key !== 'category') {
             params.set(key, value)
           }
         })
@@ -133,7 +133,7 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
       }
 
       const params = new URLSearchParams()
-      params.set('q', query.trim())
+      params.set('search', query.trim())
       if (category && category !== 'all') {
         params.set('category', category)
       }
@@ -158,7 +158,7 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
   // ===================================
 
   const getCurrentSearchQuery = useCallback(() => {
-    return searchParams.get('q') || ''
+    return searchParams.get('search') || ''
   }, [searchParams])
 
   const getCurrentCategory = useCallback(() => {
@@ -168,7 +168,7 @@ export function useSearchNavigation(options: SearchNavigationOptions = {}) {
   const buildSearchUrl = useCallback(
     (query: string, category?: string, additionalParams?: Record<string, string>) => {
       const params = new URLSearchParams()
-      params.set('q', query.trim())
+      params.set('search', query.trim())
 
       if (category && category !== 'all') {
         params.set('category', category)

@@ -131,7 +131,9 @@ export function findVariantByCapacity(
     // Quitar espacios, normalizar a mayúsculas y unificar sufijos (KG/L)
     const up = value.trim().toUpperCase()
     const noSpaces = up.replace(/\s+/g, '')
-    const replacedKg = noSpaces.replace(/(KGS|KILO|KILOS)$/i, 'KG')
+    // Eliminar puntuación común que suele venir en textos (ej: "4 LTS.", "5 KG.")
+    const noPunct = noSpaces.replace(/[.\-_/]/g, '')
+    const replacedKg = noPunct.replace(/(KGS|KILO|KILOS)$/i, 'KG')
     const replacedL = replacedKg.replace(/(LT|LTS|LITRO|LITROS)$/i, 'L')
     return replacedL
   }

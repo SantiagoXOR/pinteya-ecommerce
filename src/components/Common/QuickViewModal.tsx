@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 
 import { useModalContext } from '@/app/context/QuickViewModalContext'
 import { AppDispatch, useAppSelector } from '@/redux/store'
-import { addItemToCart } from '@/redux/features/cart-slice'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { useDispatch } from 'react-redux'
 import Image from 'next/image'
 import { usePreviewSlider } from '@/app/context/PreviewSliderContext'
@@ -16,6 +16,7 @@ const QuickViewModal = () => {
   const [quantity, setQuantity] = useState(1)
 
   const dispatch = useDispatch<AppDispatch>()
+  const { addProduct } = useCartUnified()
 
   // get the product data
   const product = useAppSelector(state => state.quickViewReducer.value)
@@ -31,11 +32,29 @@ const QuickViewModal = () => {
 
   // add to cart
   const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...product,
+    if (!product) return
+
+    // Normalizar estructura para el hook unificado
+    const images = Array.isArray((product as any).images)
+      ? (product as any).images
+      : (product as any).imgs?.previews
+
+    addProduct(
+      {
+        id: (product as any).id,
+        title: (product as any).name || (product as any).title,
+        price: (product as any).price,
+        discounted_price:
+          (product as any).discounted_price ?? (product as any).discountedPrice ?? (product as any).price,
+        images,
+      },
+      {
         quantity,
-      })
+        attributes: {
+          color: (product as any).color,
+          medida: (product as any).medida,
+        },
+      }
     )
 
     closeModal()

@@ -11,12 +11,12 @@ import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShippi
 import { Search, AlertCircle, Package, Filter, SortAsc } from 'lucide-react'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 import { Button } from '@/components/ui/button'
-import { useCart } from '@/hooks/useCart'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { toast } from '@/components/ui/use-toast'
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
-  const { addItem } = useCart()
+  const { addProduct } = useCartUnified()
   const query = searchParams.get('search') || ''
   const category = searchParams.get('category')
   const config = useDesignSystemConfig()
@@ -272,12 +272,16 @@ export default function SearchPage() {
                   key={product.id}
                   productId={String(product.id)}
                   title={product.name}
+                  slug={product.slug}
                   brand={product.brand || product.category?.name}
                   image={image}
                   price={currentPrice}
                   originalPrice={originalPrice}
                   discount={discount}
                   stock={product.stock}
+                  // Pasamos datos directos de BD para que los badges sean correctos
+                  color={(product as any).color}
+                  medida={(product as any).medida}
                   shippingText={product.stock > 0 ? 'En stock' : 'Sin stock'}
                   {...(() => {
                     const autoFree = dsShouldShowFreeShipping(currentPrice, config)
@@ -294,13 +298,28 @@ export default function SearchPage() {
                   }
                   onAddToCart={() => {
                     try {
-                      addItem({
-                        id: String(product.id),
-                        name: product.name,
-                        price: currentPrice,
-                        image,
-                        quantity: 1,
-                      })
+                      // Usar el hook unificado para normalizar y agregar al carrito
+                      addProduct(
+                        {
+                          id: product.id,
+                          title: product.name,
+                          price: product.price,
+                          discounted_price:
+                            (product as any).discounted_price ?? currentPrice ?? product.price,
+                          images: Array.isArray((product as any).images)
+                            ? (product as any).images
+                            : [image].filter(Boolean),
+                        },
+                        {
+                          quantity: 1,
+                          attributes: {
+                            color: (product as any).color,
+                            medida: (product as any).medida,
+                            finish: (product as any).finish,
+                          },
+                          image,
+                        }
+                      )
                       toast({
                         title: 'Producto agregado',
                         description: `${product.name} se agregó al carrito`,
@@ -320,12 +339,14 @@ export default function SearchPage() {
                     showCapacity: true,
                     showColor: true,
                     showFinish: true,
-                    showMaterial: true,
-                    showGrit: true,
-                    showDimensions: true,
+                    // Para el grid de búsqueda priorizamos medida, acabado y colores
+                    showMaterial: false,
+                    showGrit: false,
+                    showDimensions: false,
                     showWeight: false,
                     showBrand: false,
-                    maxBadges: 3,
+                    // Aumentamos el límite para permitir medida + acabado + varios colores
+                    maxBadges: 6,
                   }}
                   className={`bg-white shadow-sm hover:shadow-md transition-shadow ${
                     viewMode === 'list' ? 'flex flex-row items-center p-4' : ''

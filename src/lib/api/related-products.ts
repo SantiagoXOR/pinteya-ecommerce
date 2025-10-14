@@ -36,7 +36,9 @@ export function extractBaseName(productName: string): string {
     /\s+\d+\s*pulgadas?$/i, // 2 pulgadas, 3 pulgada, etc.
     /\s+\d+\s*litros?$/i,   // 1 litro, 4 litros, etc.
     /\s+\d+\s*lts?$/i,      // 1 lt, 4 lts, etc.
+    /\s*\d+\s*L$/i,         // 1L, 4L, 20L (con o sin espacio)
     /\s+\d+\s*kg$/i,        // 1kg, 5kg, etc.
+    /\s*\d+\s*KG$/i,        // 1KG, 5KG (con o sin espacio)
     /\s+\d+\s*gr?$/i,       // 500g, 1000gr, etc.
   ]
   
@@ -62,7 +64,9 @@ export function extractMeasure(productName: string): string {
     /(\d+\s*pulgadas?)$/i,
     /(\d+\s*litros?)$/i,
     /(\d+\s*lts?)$/i,
+    /(\d+\s*L)$/i,      // 1L, 4L, 20L (con o sin espacio)
     /(\d+\s*kg)$/i,
+    /(\d+\s*KG)$/i,     // 1KG, 5KG (con o sin espacio)
     /(\d+\s*gr?)$/i,
   ]
   

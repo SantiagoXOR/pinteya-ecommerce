@@ -97,6 +97,32 @@ export async function GET(request: NextRequest) {
 
       // Verificar que el cliente de Supabase esté disponible
       if (!supabase) {
+        // En desarrollo, usar datos mock como fallback para no romper la UI
+        if (process.env.NODE_ENV !== 'production') {
+          const { devMockProducts, filterAndPaginateProducts } = await import('@/lib/dev-mocks')
+
+          const { items, total, totalPages, page, limit } = filterAndPaginateProducts(
+            devMockProducts,
+            filters
+          )
+
+          const response: PaginatedResponse<ProductWithCategory> = {
+            data: items as any,
+            success: true,
+            pagination: { page, limit, total, totalPages },
+          }
+
+          securityLogger.log({
+            type: 'data_access',
+            severity: 'low',
+            message: 'Products served from dev mocks',
+            context: securityLogger.context,
+            metadata: { count: items.length },
+          })
+
+          return NextResponse.json(response)
+        }
+
         securityLogger.logApiError(
           securityLogger.context,
           new Error('Supabase client not available'),
@@ -287,10 +313,10 @@ export async function GET(request: NextRequest) {
               variant_count: productVariants.length,
               has_variants: productVariants.length > 0,
               default_variant: defaultVariant || null,
-              // Usar precios de la variante por defecto si están disponibles
-              price: defaultVariant?.price_list || product.price,
-              discounted_price: defaultVariant?.price_sale || product.discounted_price,
-              stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
+              // Mantener precio y stock exclusivamente desde tabla products (requerimiento)
+              price: product.price,
+              discounted_price: product.discounted_price,
+              stock: product.stock,
             }
           })
         } catch (variantError) {

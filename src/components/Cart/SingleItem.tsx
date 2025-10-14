@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Minus, Plus, Trash2 } from '@/lib/optimized-imports'
 import { getValidImageUrl } from '@/lib/adapters/product-adapter'
+import { normalizeVariantLabel } from '@/lib/utils/variant-normalizer'
 
 const SingleItem = ({ item }: { item: any }) => {
   const [quantity, setQuantity] = useState(item.quantity)
@@ -68,6 +69,26 @@ const SingleItem = ({ item }: { item: any }) => {
                 {item.title}
               </a>
             </h3>
+            {/* Badges de atributos (medida, color, acabado) */}
+            {(item.attributes?.medida || item.attributes?.color || item.attributes?.finish) && (
+              <div className='flex flex-wrap items-center gap-2 mb-1'>
+                {item.attributes?.medida && (
+                  <Badge variant='secondary' className='text-xs px-2 py-0.5'>
+                    {normalizeVariantLabel(item.attributes.medida, 'medida')}
+                  </Badge>
+                )}
+                {item.attributes?.color && (
+                  <Badge variant='outline' className='text-xs px-2 py-0.5'>
+                    {normalizeVariantLabel(item.attributes.color, 'color')}
+                  </Badge>
+                )}
+                {item.attributes?.finish && (
+                  <Badge variant='secondary' className='text-xs px-2 py-0.5'>
+                    {normalizeVariantLabel(item.attributes.finish, 'finish')}
+                  </Badge>
+                )}
+              </div>
+            )}
             {item.price && item.discountedPrice && item.discountedPrice < item.price && (
               <p className='text-sm text-gray-500 line-through'>${item.price}</p>
             )}

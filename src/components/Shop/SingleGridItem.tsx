@@ -39,7 +39,7 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
         discounted_price: (features?.currentPrice ?? item.price),
         images: [getMainImage(item)].filter(Boolean),
       },
-      { quantity: 1, attributes: { color: item?.color, medida: item?.medida } }
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida, finish: item?.finish } }
     )
   }
 
@@ -66,6 +66,7 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
     <CommercialProductCard
       className='bg-white' // Forzar fondo blanco
       image={getMainImage(item)}
+      slug={(item as any)?.slug}
       title={cleanTitle}
       brand={item.brand}
       description={item.description}
@@ -112,13 +113,14 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
         showCapacity: true,
         showColor: true,
         showFinish: true,
-        showMaterial: true,
-        showGrit: true,
-        showDimensions: true,
-        // Alinear con Home/ProductItem
+        // Alinear comportamiento con /search: priorizar medida, acabado y colores
+        showMaterial: false,
+        showGrit: false,
+        showDimensions: false,
         showWeight: false,
         showBrand: false,
-        maxBadges: 3
+        // Permitir medida + acabado + varios colores
+        maxBadges: 6
       }}
     />
   )

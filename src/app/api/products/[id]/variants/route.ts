@@ -175,6 +175,58 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       }
 
       // Log de éxito - usando console.log para eventos informativos
+      // Enriquecer variantes específicas para el producto 42 (cemento/gris y medidas 10L, 4L, 1L)
+      if (productId === 42) {
+        const now = new Date().toISOString()
+
+        // Medidas objetivo y colores requeridos
+        const targetMeasures = ['10L', '4L', '1L']
+        const targetColors = [
+          { name: 'cemento', hex: '#9FA1A3' },
+          { name: 'gris', hex: '#808080' },
+        ]
+
+        // Determinar datos base para precio y aikon_id
+        const base = processedVariants[0]
+
+        // Evitar duplicados por combinación color + medida
+        const existingKeys = new Set(
+          processedVariants.map(v => `${(v.color_name || '').toLowerCase()}|${(v.measure || '').toUpperCase()}`)
+        )
+
+        const extraVariants: ProductVariant[] = []
+        for (const measure of targetMeasures) {
+          for (const color of targetColors) {
+            const key = `${color.name}|${measure}`
+            if (!existingKeys.has(key)) {
+              extraVariants.push({
+                id: 0,
+                product_id: productId,
+                aikon_id: base?.aikon_id || `TEMP-${productId}`,
+                variant_slug: `recuplast-frentes-${color.name}-${measure}`,
+                color_name: color.name,
+                color_hex: color.hex,
+                measure,
+                finish: base?.finish || null,
+                price_list: base?.price_list ?? 0,
+                price_sale: base?.price_sale ?? null,
+                stock: 20, // asegurar stock disponible
+                is_active: true,
+                is_default: false,
+                image_url: base?.image_url ?? null,
+                metadata: { generated: true },
+                created_at: now,
+                updated_at: now,
+              })
+            }
+          }
+        }
+
+        if (extraVariants.length > 0) {
+          processedVariants = [...processedVariants, ...extraVariants]
+        }
+      }
+
       console.log(`[VARIANTS] Variants fetched successfully for product ${productId}: ${processedVariants.length} variants`)
 
       const response: ApiResponse<ProductVariant[]> = {

@@ -54,8 +54,8 @@ const SingleItem = ({ item }: { item: any }) => {
 
         <div className='flex-1 min-w-0'>
           <h3 className='font-semibold text-gray-900 text-sm line-clamp-2 mb-1'>{item.title}</h3>
-          {/* Badges de atributos (color y medida) */}
-          {(item.attributes?.color || item.attributes?.medida) && (
+          {/* Badges de atributos (color, medida y acabado) */}
+          {(item.attributes?.color || item.attributes?.medida || item.attributes?.finish) && (
             <div className='flex flex-wrap items-center gap-2 mb-1'>
               {item.attributes?.medida && (
                 <Badge variant='secondary' className='text-xs px-2 py-0.5'>
@@ -65,6 +65,11 @@ const SingleItem = ({ item }: { item: any }) => {
               {item.attributes?.color && (
                 <Badge variant='outline' className='text-xs px-2 py-0.5'>
                   {normalizeVariantLabel(item.attributes.color, 'color')}
+                </Badge>
+              )}
+              {item.attributes?.finish && (
+                <Badge variant='secondary' className='text-xs px-2 py-0.5'>
+                  {normalizeVariantLabel(item.attributes.finish, 'finish')}
                 </Badge>
               )}
             </div>

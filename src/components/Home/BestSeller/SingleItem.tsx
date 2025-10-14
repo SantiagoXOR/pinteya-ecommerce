@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/redux/store'
 import { updateQuickView } from '@/redux/features/quickView-slice'
 import { addItemToCart } from '@/redux/features/cart-slice'
+import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 
 interface SingleItemProps {
   product: Product
@@ -43,7 +44,7 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
         discounted_price: item.discountedPrice ?? item.price,
         images: item.imgs?.previews ?? [],
       },
-      { quantity: 1, attributes: { color: item?.color, medida: item?.medida } }
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida, finish: item?.finish } }
     )
   }
 
@@ -69,11 +70,12 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
   return (
     <CommercialProductCard
       image={item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
+      slug={(item as any)?.slug}
       title={item.title}
       price={item.discountedPrice}
       originalPrice={item.discountedPrice < item.price ? item.price : undefined}
       discount={discount ? `${discount}%` : undefined}
-isNew={Boolean(product?.isNew)}
+      isNew={Boolean(product?.isNew)}
       stock={50} // Stock por defecto para productos legacy
       productId={item.id}
       cta='Agregar al carrito'
@@ -98,6 +100,17 @@ isNew={Boolean(product?.isNew)}
             ? 'Best Seller'
             : undefined
       }
+      badgeConfig={{
+        showCapacity: true,
+        showColor: true,
+        showFinish: true,
+        showMaterial: false,
+        showGrit: false,
+        showDimensions: false,
+        showWeight: false,
+        showBrand: false,
+        maxBadges: 6
+      }}
     />
   )
 }

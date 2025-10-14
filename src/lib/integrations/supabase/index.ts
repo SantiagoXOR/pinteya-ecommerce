@@ -7,7 +7,7 @@ import { Database } from '@/types/database'
 import { supabaseConfig, isSupabaseConfigured } from '../../../../lib/env-config'
 import { API_TIMEOUTS } from '@/lib/config/api-timeouts'
 
-// Verificar configuración de Supabase
+// Verificar configuración de Supabase (no interrumpir desarrollo si faltan variables)
 if (!isSupabaseConfigured()) {
   console.error('Variables de entorno de Supabase faltantes:', {
     NEXT_PUBLIC_SUPABASE_URL: !!supabaseConfig.url,
@@ -15,15 +15,15 @@ if (!isSupabaseConfigured()) {
     SUPABASE_SERVICE_ROLE_KEY: !!supabaseConfig.serviceRoleKey,
   })
 
-  // En desarrollo, mostrar error detallado
-  if (process.env.NODE_ENV === 'development') {
-    throw new Error(
-      'Faltan variables de entorno de Supabase. Verifica NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en .env.local'
+  if (process.env.NODE_ENV === 'production') {
+    // En producción, emitir advertencia pero continuar (evitar romper build)
+    console.warn('Usando configuración por defecto de Supabase para el build de producción')
+  } else {
+    // En desarrollo, no lanzar excepción: se permitirá fallback a mocks
+    console.warn(
+      'Supabase no configurado en desarrollo. Se utilizarán datos mock/fallback donde aplique.'
     )
   }
-
-  // En producción, continuar con valores por defecto para evitar que falle el build
-  console.warn('Usando configuración por defecto de Supabase para el build')
 }
 
 // ===================================
@@ -104,11 +104,26 @@ export const supabaseAdmin =
 export function getSupabaseClient(useAdmin = false) {
   if (useAdmin) {
     if (!supabaseAdmin) {
-      throw new Error(
-        'Cliente administrativo de Supabase no disponible. Verifica SUPABASE_SERVICE_ROLE_KEY en .env.local'
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          'Cliente administrativo de Supabase no disponible. Verifica SUPABASE_SERVICE_ROLE_KEY en producción.'
+        )
+      }
+      console.warn(
+        '[DEV] Cliente administrativo de Supabase no disponible. Devolviendo null para permitir mocks.'
       )
+      return null
     }
     return supabaseAdmin
+  }
+  if (!supabase) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'Cliente público de Supabase no disponible en producción. Verifica variables de entorno.'
+      )
+    }
+    console.warn('[DEV] Cliente público de Supabase no disponible. Devolviendo null para mocks.')
+    return null
   }
   return supabase
 }

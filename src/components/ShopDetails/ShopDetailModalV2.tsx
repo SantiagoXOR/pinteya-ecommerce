@@ -32,9 +32,8 @@ export default function ShopDetailModalV2({
   const handleAddToCart = () => {
     if (onAddToCart) {
       onAddToCart(product)
-      // Cerrar el modal y redirigir siempre a /products
+      // Cerrar el modal y mantener la página actual
       onOpenChange(false)
-      router.push('/products')
     }
   }
 

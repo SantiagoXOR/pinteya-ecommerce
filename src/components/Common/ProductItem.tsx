@@ -64,9 +64,14 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
 
   return (
     <CommercialProductCard
+      slug={(productData as any)?.slug}
       image={
-        (Array.isArray(productData.images) && productData.images[0]) ||
-        productData.imgs?.previews?.[0] ||
+        (Array.isArray((productData as any).images) && (productData as any).images[0]) ||
+        (productData as any).images?.main ||
+        (productData as any).images?.previews?.[0] ||
+        (productData as any).images?.thumbnails?.[0] ||
+        (productData as any).images?.gallery?.[0] ||
+        (productData as any).imgs?.previews?.[0] ||
         '/images/products/placeholder.svg'
       }
       title={productData.title}
@@ -99,13 +104,14 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
       badgeConfig={{
         showCapacity: true,
         showColor: true,
-        showFinish: true, // Alinear con Products
-        showMaterial: true,
-        showGrit: true,
-        showDimensions: true,
+        showFinish: true, // Mostrar acabado (Satinado/Brillante)
+        // Ocultar para priorizar acabado y círculos de color
+        showMaterial: false,
+        showGrit: false,
+        showDimensions: false,
         showWeight: false,
         showBrand: false,
-        maxBadges: 3
+        maxBadges: 4
       }}
       // Pasar datos estructurados si están disponibles
       features={productData.features}

@@ -3,7 +3,7 @@
 // - Convierte guiones/underscores a espacios
 // - Aplica aliases para colores comunes
 
-export type VariantType = 'color' | 'capacity' | 'size' | 'grain' | 'width' | 'medida'
+export type VariantType = 'color' | 'capacity' | 'size' | 'grain' | 'width' | 'medida' | 'finish'
 
 const stripDiacritics = (str: string) =>
   str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -40,12 +40,22 @@ export function normalizeVariantLabel(value?: string | number | null, type?: Var
     }
   }
 
+  if (type === 'finish') {
+    const low = s.toLowerCase()
+    // Normalizar acabados comunes
+    if (/mate/.test(low)) return 'MATE'
+    if (/(sat(i|í)nado)/.test(low)) return 'SATINADO'
+    if (/(brillante|gloss|brillo)/.test(low)) return 'BRILLANTE'
+    if (/(semimate|semi\s*mate)/.test(low)) return 'SEMIMATE'
+  }
+
   return s.toUpperCase()
 }
 
-export function normalizeAttributes(attrs?: { color?: string; medida?: string }): { color?: string; medida?: string } | undefined {
+export function normalizeAttributes(attrs?: { color?: string; medida?: string; finish?: string }): { color?: string; medida?: string; finish?: string } | undefined {
   if (!attrs) return undefined
   const color = normalizeVariantLabel(attrs.color, 'color')
   const medida = normalizeVariantLabel(attrs.medida, 'medida')
-  return { ...(color ? { color } : {}), ...(medida ? { medida } : {}) }
+  const finish = normalizeVariantLabel(attrs.finish, 'finish')
+  return { ...(color ? { color } : {}), ...(medida ? { medida } : {}), ...(finish ? { finish } : {}) }
 }

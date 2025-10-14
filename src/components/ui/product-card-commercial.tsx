@@ -12,8 +12,10 @@ import {
   extractProductCapacity, 
   formatProductBadges, 
   type ProductBadgeInfo, 
-  type ExtractedProductInfo 
+  type ExtractedProductInfo, 
+  detectProductType 
 } from '@/utils/product-utils'
+import { findVariantByCapacity } from '@/lib/api/product-variants'
 
 // Verificar que Framer Motion esté disponible
 const isFramerMotionAvailable = false // Deshabilitado para usar fallbacks CSS
@@ -53,6 +55,7 @@ export interface BadgeConfig {
 export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
   image?: string
   title?: string
+  slug?: string
   brand?: string
   price?: number
   originalPrice?: number
@@ -97,6 +100,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       className,
       image,
       title,
+      slug,
       brand,
       price,
       originalPrice,
@@ -117,10 +121,11 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         showCapacity: true,
         showColor: true,
         showFinish: true,
-        showMaterial: true,
-        showGrit: true,
-        showDimensions: true,
-        showWeight: true,
+        // Priorizamos acabado y color sobre otros datos para los badges del grid
+        showMaterial: false,
+        showGrit: false,
+        showDimensions: false,
+        showWeight: false,
         showBrand: false,
         maxBadges: 4
       },
@@ -168,8 +173,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       if (!open) {
         ignoreClicksUntilRef.current = Date.now() + 300 // 300ms de ventana anti-click fantasma
         console.log('🛡️ [CommercialProductCard] Activando guardia anti-click fantasma hasta:', ignoreClicksUntilRef.current)
-        // Redirigir siempre al listado de productos al cerrar
-        router.push('/products')
+        // No forzar redirección al cerrar; mantener la ubicación actual
       }
 
       console.log('✅ [CommercialProductCard] setShowShopDetailModal llamado con:', open)
@@ -212,22 +216,195 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       
       console.log('🔧 databaseData creado:', databaseData)
       
-      const result = extractProductCapacity(title, variants, description, databaseData)
+      const result = extractProductCapacity(title, variants, description, databaseData, slug)
       console.log('🎯 Información extraída:', result)
       console.groupEnd()
       
       return result
-    }, [title, variants, description, features, specifications, dimensions, weight, brand, color, medida])
+    }, [title, slug, variants, description, features, specifications, dimensions, weight, brand, color, medida])
+
+    // Utilidad simple para oscurecer colores HEX (para texturas)
+    const darkenHex = React.useCallback((hex: string, amount = 0.2) => {
+      try {
+        const h = hex.replace('#', '')
+        const bigint = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16)
+        const r = Math.max(0, Math.min(255, ((bigint >> 16) & 255) * (1 - amount)))
+        const g = Math.max(0, Math.min(255, ((bigint >> 8) & 255) * (1 - amount)))
+        const b = Math.max(0, Math.min(255, (bigint & 255) * (1 - amount)))
+        return `rgb(${r.toFixed(0)}, ${g.toFixed(0)}, ${b.toFixed(0)})`
+      } catch {
+        return hex
+      }
+    }, [])
+
+    const isImpregnante = (title || '').toLowerCase().includes('impregnante')
+
+    // Determinar acabado priorizando datos directos de variantes (finish consistente)
+    const priceBasedFinish = React.useMemo(() => {
+      if (!variants || variants.length === 0) return undefined
+
+      const roughlyEqual = (a?: number | null, b?: number | null) => {
+        if (a == null || b == null) return false
+        const diff = Math.abs(a - b)
+        const dynamicTolerance = Math.max(100, 0.01 * Math.max(a, b)) // 1% o $100
+        return diff <= dynamicTolerance
+      }
+
+      // Normalizar nombre de acabado a valores canónicos
+      const normalizeFinish = (val?: string | null) => {
+        if (!val) return ''
+        const s = val.toString().trim().toLowerCase()
+        if (/(brillante|gloss)/i.test(s)) return 'brillante'
+        if (/(satinado|satin|semi\s*brillo)/i.test(s)) return 'satinado'
+        if (/(mate)/i.test(s)) return 'mate'
+        return s
+      }
+
+      // Normalizador robusto de medidas/capacidades (4L, 4 LT, 4 litros, 4 lts.)
+      const normalize = (value?: string | null): string => {
+        if (!value) return ''
+        const up = value.toString().trim().toUpperCase()
+        const noSpaces = up.replace(/\s+/g, '')
+        const noPunct = noSpaces.replace(/[.\-_/]/g, '')
+        const replacedKg = noPunct.replace(/(KGS|KILO|KILOS)$/i, 'KG')
+        const replacedL = replacedKg.replace(/(LT|LTS|LITRO|LITROS)$/i, 'L')
+        return replacedL
+      }
+
+      const medidaNorm = normalize(medida)
+
+      // 0) Si todas las variantes comparten el mismo acabado, usarlo directamente
+      const uniqueFinishes = Array.from(
+        new Set(
+          (variants || [])
+            .map(v => normalizeFinish(v.finish))
+            .filter(f => !!f)
+        )
+      )
+      if (uniqueFinishes.length === 1) {
+        const only = uniqueFinishes[0]
+        return only ? only.charAt(0).toUpperCase() + only.slice(1) : undefined
+      }
+
+      let candidate: ProductVariant | undefined
+
+      // 1) Coincidencia combinada (medida + precio) — la más precisa
+      if (medidaNorm && typeof price === 'number') {
+        // Buscar variantes que coincidan por medida normalizada y luego por precio
+        const sameMeasure = variants.filter(v => normalize(v.measure) === medidaNorm)
+        candidate = sameMeasure.find(v =>
+          roughlyEqual(v.price_sale ?? null, price) || roughlyEqual(v.price_list ?? null, price)
+        )
+      }
+
+      // 2) Ranking por precio dentro de la misma medida (selección por precio más cercano)
+      if (!candidate && medidaNorm) {
+        const sameMeasure = variants.filter(v => normalize(v.measure) === medidaNorm)
+        if (sameMeasure.length > 0) {
+          const effectivePrice = (v: ProductVariant) =>
+            typeof v.price_sale === 'number' && v.price_sale > 0
+              ? v.price_sale
+              : (typeof v.price_list === 'number' ? v.price_list : Number.POSITIVE_INFINITY)
+
+          if (typeof price === 'number') {
+            // Elegir la variante cuyo precio efectivo sea más cercano al del card
+            let best: ProductVariant = sameMeasure[0]
+            let bestDist = Math.abs(effectivePrice(best) - price)
+            for (const v of sameMeasure.slice(1)) {
+              const p = effectivePrice(v)
+              const dist = Math.abs(p - price)
+              if (dist < bestDist || (dist === bestDist && p > effectivePrice(best))) {
+                best = v
+                bestDist = dist
+              }
+            }
+            candidate = best
+          } else {
+            // Si no hay precio del card, priorizar la variante por defecto o la primera encontrada
+            candidate = sameMeasure.find(v => v.is_default) || sameMeasure[0]
+          }
+        }
+      }
+
+      // 3) Solo medida
+      if (!candidate && medidaNorm) {
+        const byCapacity = findVariantByCapacity(variants as any, medida as any)
+        candidate = (byCapacity as any) || undefined
+      }
+
+      // 3) Solo precio
+      if (!candidate && typeof price === 'number') {
+        candidate = variants.find(
+          v => roughlyEqual(v.price_sale ?? null, price) || roughlyEqual(v.price_list ?? null, price)
+        )
+      }
+
+      // 4) Fallback: default o primera variante
+      if (!candidate) {
+        candidate = variants.find(v => v.is_default) || variants[0]
+      }
+
+      const finish = (candidate?.finish || '').toString().trim()
+      return finish ? finish.charAt(0).toUpperCase() + finish.slice(1).toLowerCase() : undefined
+    }, [variants, price, medida])
+
+    // Fallback: Determinar acabado por medida cuando no coincide el precio
+    const medidaBasedFinish = React.useMemo(() => {
+      if (!variants || variants.length === 0 || !medida) return undefined
+      const byMeasure = findVariantByCapacity(variants as any, medida as any) as any
+      const finish = (byMeasure?.finish || '').toString().trim()
+      return finish ? finish.charAt(0).toUpperCase() + finish.slice(1).toLowerCase() : undefined
+    }, [variants, medida])
 
     // Generar badges inteligentes basados en la configuración
     const intelligentBadges = React.useMemo(() => {
       console.group(`🎨 [ProductCardCommercial] Generando badges para "${title}"`)
       console.log('📋 extractedInfo:', extractedInfo)
       console.log('⚙️ badgeConfig:', badgeConfig)
-      
-      const badges = formatProductBadges(extractedInfo, badgeConfig)
-      console.log('🎯 Badges generados:', badges)
-      console.log(`📊 Total badges: ${badges.length}`)
+      const infoForBadges: ExtractedProductInfo = {
+        ...extractedInfo,
+        // Priorizar el acabado extraído del slug/nombre sobre inferencias por variantes
+        finish: (extractedInfo as any)?.finish || priceBasedFinish || medidaBasedFinish,
+      }
+      // Habilitar automáticamente el badge de grano para productos de lijas
+      const pt = detectProductType(title || '')
+      const isSandpaper = pt?.id === 'lijas' || /\blija\b/i.test(title || '')
+      const effectiveBadgeConfig = {
+        ...badgeConfig,
+        // Mostrar siempre el grano para lijas; el util detecta el grano aunque no esté en extractedInfo
+        showGrit: isSandpaper ? true : (badgeConfig?.showGrit ?? true),
+      }
+      const badges = formatProductBadges(infoForBadges, effectiveBadgeConfig)
+
+      // Regla anti-duplicados para acabados:
+      // - Si vienen múltiples badges de tipo "finish", priorizar "Brillante"
+      // - Si no hay "Brillante", mantener solo el primero
+      // - Evita casos con "Satinado" y "Brillante" a la vez (se muestra solo "Brillante")
+      const finishBadges = badges.filter(b => b.type === 'finish')
+      let processedBadges = badges
+      if (finishBadges.length > 1) {
+        const brillante = finishBadges.find(b => (b.value || '').toLowerCase() === 'brillante')
+        const chosenFinish = brillante || finishBadges[0]
+        processedBadges = [...badges.filter(b => b.type !== 'finish'), chosenFinish]
+      }
+
+      // Guardia adicional: si hay un acabado "Brillante" seleccionado,
+      // eliminar cualquier aparición de "Satinado" aunque venga por error
+      // como otro tipo de badge (p.ej. color o material).
+      const hasBrillante = processedBadges.some(
+        b => b.type === 'finish' && (b.value || '').toLowerCase() === 'brillante'
+      )
+      if (hasBrillante) {
+        processedBadges = processedBadges.filter(
+          b => !(
+            (b.type === 'finish' || b.type === 'color' || b.type === 'material') &&
+            (b.value || '').toLowerCase() === 'satinado'
+          )
+        )
+      }
+
+      console.log('🎯 Badges generados:', processedBadges)
+      console.log(`📊 Total badges: ${processedBadges.length}`)
       
       if (badges.length === 0) {
         console.warn('⚠️ NO SE GENERARON BADGES - Verificar:')
@@ -241,9 +418,32 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         })
       }
       
+      // Orden requerido: capacidad (ej. 1L) → acabado (Brillante/Satinado) → colores
+      const capacityBadges = processedBadges.filter(b => b.type === 'capacity')
+      const finishOnly = processedBadges.filter(b => b.type === 'finish')
+      const colorBadges = processedBadges.filter(b => b.type === 'color-circle' || b.type === 'color')
+      const others = processedBadges.filter(
+        b => b.type !== 'capacity' && b.type !== 'finish' && b.type !== 'color-circle' && b.type !== 'color'
+      )
+
+      const orderedBadges = [...capacityBadges, ...finishOnly, ...colorBadges, ...others]
+
       console.groupEnd()
-      return badges
-    }, [extractedInfo, badgeConfig, title])
+      return orderedBadges
+    }, [extractedInfo, badgeConfig, title, priceBasedFinish])
+
+    // Resolución final del acabado y su origen para depuración/atributos data
+    const resolvedFinish = React.useMemo(() => {
+      // Mantener consistencia: primero lo extraído (slug/nombre), luego inferencias
+      return (((extractedInfo as any)?.finish || priceBasedFinish || medidaBasedFinish || '') as string)
+    }, [priceBasedFinish, medidaBasedFinish, extractedInfo])
+
+    const resolvedFinishSource = React.useMemo(() => {
+      if ((extractedInfo as any)?.finish) return 'extracted'
+      if (priceBasedFinish) return 'price+measure'
+      if (medidaBasedFinish) return 'measure-only'
+      return 'unknown'
+    }, [priceBasedFinish, medidaBasedFinish, extractedInfo])
 
     // Función para abrir el modal
     const handleOpenModal = React.useCallback(() => {
@@ -357,6 +557,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           className
         )}
         data-testid='commercial-product-card'
+        data-product-id={String(productId || '')}
+        data-finish={resolvedFinish || ''}
+        data-finish-source={resolvedFinishSource}
+        data-medida={medida || ''}
+        data-price={price !== undefined ? String(price) : ''}
+        data-variants-count={Array.isArray(variants) ? String(variants.length) : '0'}
         style={{
           transformOrigin: 'center',
           transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -446,6 +652,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               {intelligentBadges.map((badge, index) => {
                 // Badge circular de color
                 if (badge.isCircular && badge.circleColor && badge.type === 'color-circle') {
+                  const darker = darkenHex(badge.circleColor, 0.35)
                   return (
                     <div
                       key={`badge-${badge.type}-${index}`}
@@ -454,7 +661,23 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                     >
                       <div
                         className='w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-white shadow-lg cursor-pointer transition-transform hover:scale-110'
-                        style={{ backgroundColor: badge.circleColor }}
+                        style={{ 
+                          backgroundColor: badge.circleColor,
+                          backgroundImage: isImpregnante
+                            ? [
+                                // Luz suave
+                                'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
+                                // Vetas verticales gruesas y finas combinadas
+                                `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
+                                `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
+                                // Nudos sutiles
+                                `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
+                                'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
+                              ].join(', ')
+                            : undefined,
+                          backgroundSize: isImpregnante ? '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%' : undefined as any,
+                          backgroundBlendMode: isImpregnante ? 'multiply' : undefined as any,
+                        }}
                       />
                       {/* Tooltip opcional */}
                       <div className='absolute bottom-full right-0 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-30'>

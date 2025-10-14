@@ -344,12 +344,17 @@ export function getProductMainImage(product: ProductWithCategory): string {
     return product.images[0]
   }
 
-  if (product.images?.previews?.[0]) {
-    return product.images.previews[0]
-  }
-
-  if (product.images?.thumbnails?.[0]) {
-    return product.images.thumbnails[0]
+  // Formato de objeto { main, previews, thumbnails, gallery }
+  if (product && typeof product.images === 'object' && product.images !== null) {
+    const candidates = [
+      (product as any).images?.main,
+      (product as any).images?.previews?.[0],
+      (product as any).images?.thumbnails?.[0],
+      (product as any).images?.gallery?.[0],
+    ]
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim() !== '') return c.trim()
+    }
   }
 
   return '/images/products/placeholder.jpg'

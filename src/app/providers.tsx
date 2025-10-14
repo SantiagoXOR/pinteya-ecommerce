@@ -24,7 +24,8 @@ import CartSidebarModal from '@/components/Common/CartSidebarModal/index'
 import PreviewSliderModal from '@/components/Common/PreviewSlider'
 import ScrollToTop from '@/components/Common/ScrollToTop'
 import PreLoader from '@/components/Common/PreLoader'
-import CartNotification, { useCartNotification } from '@/components/Common/CartNotification'
+// CartNotification deshabilitado por requerimiento UX
+// import CartNotification, { useCartNotification } from '@/components/Common/CartNotification'
 // import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import FloatingCartButton from '@/components/ui/floating-cart-button'
 import { Toaster } from '@/components/ui/toast'
@@ -60,7 +61,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   // Componente interno con todos los providers
   const AppContent = () => {
-    const { notification, hideNotification } = useCartNotification()
+    // Notificación deshabilitada: no inicializamos el hook
+    // const { notification, hideNotification } = useCartNotification()
     const pathname = usePathname()
 
     // Detectar si estamos en rutas de admin
@@ -123,15 +125,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                               {/* Botón de carrito flotante - Oculto en checkout para no tapar el botón de finalizar */}
                               {!isAdminRoute && !isCheckoutRoute && <FloatingCartButton />}
 
-                              {/* Notificación del carrito - Solo en rutas públicas */}
-                              {!isAdminRoute && (
+                              {/* Notificación del carrito deshabilitada por requerimiento */}
+                              {/* {!isAdminRoute && (
                                 <CartNotification
                                   show={notification.show}
                                   productName={notification.productName}
                                   productImage={notification.productImage}
                                   onClose={hideNotification}
                                 />
-                              )}
+                              )} */}
 
                               {/* Toaster para notificaciones */}
                               <Toaster />

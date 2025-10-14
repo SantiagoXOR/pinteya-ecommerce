@@ -3,24 +3,31 @@ import { AppDispatch } from '@/redux/store'
 import { useDispatch } from 'react-redux'
 
 import { removeItemFromWishlist } from '@/redux/features/wishlist-slice'
-import { addItemToCart } from '@/redux/features/cart-slice'
+import { useCartUnified } from '@/hooks/useCartUnified'
 
 import Image from 'next/image'
 import { getValidImageUrl } from '@/lib/adapters/product-adapter'
 
 const SingleItem = ({ item }: { item: any }) => {
   const dispatch = useDispatch<AppDispatch>()
+  const { addProduct } = useCartUnified()
 
   const handleRemoveFromWishlist = () => {
     dispatch(removeItemFromWishlist(item.id))
   }
 
   const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...item,
-        quantity: 1,
-      })
+    const images = Array.isArray(item?.images) ? item.images : item?.imgs?.previews
+
+    addProduct(
+      {
+        id: item.id,
+        title: item.name || item.title,
+        price: item.price ?? item.discountedPrice, // usar base si existe
+        discounted_price: item.discounted_price ?? item.discountedPrice ?? item.price,
+        images,
+      },
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida, finish: item?.finish } }
     )
   }
 

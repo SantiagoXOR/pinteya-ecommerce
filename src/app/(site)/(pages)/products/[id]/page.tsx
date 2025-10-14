@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import ShopDetailModal from '@/components/ShopDetails/ShopDetailModal'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getProductById } from '@/lib/api/products'
+import { getMainImage } from '@/lib/adapters/product-adapter'
 
 // Mapea el producto de API al formato mínimo que consume el modal
 function mapToModalProduct(apiProduct: any) {
@@ -38,27 +39,8 @@ function mapToModalProduct(apiProduct: any) {
   const stockCandidate = (apiProduct as any)?.default_variant?.stock ?? (apiProduct as any)?.stock ?? 0
   const stockNum = typeof stockCandidate === 'number' ? stockCandidate : Number(String(stockCandidate))
 
-  // Imagen principal: intentar múltiples ubicaciones
-  const sanitize = (u?: string) => (typeof u === 'string' ? u.replace(/[`"]/g, '').trim() : '')
-  const getUrlFromCandidate = (c: any) => {
-    if (!c) return ''
-    if (typeof c === 'string') return sanitize(c)
-    return sanitize(c?.url || c?.image_url)
-  }
-  const candidates: any[] = [
-    (apiProduct as any)?.images?.main,
-    (apiProduct as any)?.images?.gallery?.[0],
-    (apiProduct as any)?.images?.previews?.[0],
-    (apiProduct as any)?.images?.thumbnails?.[0],
-  ]
-  let mainImage = '/images/placeholder-product.jpg'
-  for (const c of candidates) {
-    const url = getUrlFromCandidate(c)
-    if (url && /^https?:\/\//.test(url)) {
-      mainImage = url
-      break
-    }
-  }
+  // Imagen principal centralizada via adapter
+  const mainImage = getMainImage(apiProduct) || '/images/placeholder-product.jpg'
 
   return {
     id,
@@ -109,8 +91,8 @@ export default function ProductDetailModalPage() {
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen)
     if (!newOpen) {
-      // Al cerrar el modal, navegar de regreso al listado
-      router.push('/products')
+      // Al cerrar el modal, regresar a la ruta anterior sin redirigir a /products
+      router.back()
     }
   }, [router])
 

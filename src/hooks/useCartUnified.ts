@@ -12,6 +12,7 @@ import { normalizeAttributes } from '@/lib/utils/variant-normalizer'
 type Attributes = {
   color?: string
   medida?: string // tamaño/capacidad
+  finish?: string // acabado
 }
 
 export interface AddProductOptions {
@@ -85,9 +86,11 @@ const pickAttributes = (input: any, opts?: AddProductOptions): Attributes | unde
     source?.selectedCapacity ??
     source?.capacity ??
     source?.SelectedSize
+  const finish =
+    source?.finish ?? source?.acabado ?? source?.Finishing ?? source?.terminacion ?? source?.finishName
 
-  if (!color && !medida) return undefined
-  return normalizeAttributes({ color, medida })
+  if (!color && !medida && !finish) return undefined
+  return normalizeAttributes({ color, medida, finish })
 }
 
 export const normalizeToCartItem = (
