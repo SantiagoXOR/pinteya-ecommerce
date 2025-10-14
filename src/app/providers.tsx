@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { BrowserCacheUtils } from '@/lib/cache/browser-cache-optimizer'
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
@@ -23,7 +23,7 @@ import Footer from '../components/layout/Footer'
 import CartSidebarModal from '@/components/Common/CartSidebarModal/index'
 import PreviewSliderModal from '@/components/Common/PreviewSlider'
 import ScrollToTop from '@/components/Common/ScrollToTop'
-import PreLoader from '@/components/Common/PreLoader'
+// PreLoader eliminado por requerimiento: no mostrar pantalla de carga
 // CartNotification deshabilitado por requerimiento UX
 // import CartNotification, { useCartNotification } from '@/components/Common/CartNotification'
 // import { BottomNavigation } from "@/components/ui/bottom-navigation";
@@ -39,14 +39,6 @@ function NextAuthWrapper({ children }: { children: React.ReactNode }) {
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState<boolean>(true)
-  const [isClient, setIsClient] = useState<boolean>(false)
-
-  useEffect(() => {
-    // Verificar que estamos en el cliente para evitar errores de SSG
-    setIsClient(true)
-    setTimeout(() => setLoading(false), 1000)
-  }, [])
 
   useEffect(() => {
     // Desregistrar SW y limpiar caches si el flag está deshabilitado
@@ -79,54 +71,50 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     return (
       <>
-        {loading ? (
-          <PreLoader />
-        ) : (
-          <>
-            <AdvancedErrorBoundary
-              level='page'
-              context='RootApplication'
-              enableRetry={true}
-              maxRetries={3}
-              enableAutoRecovery={true}
-              enableReporting={true}
-            >
-              <MonitoringProvider
-                autoStart={process.env.NODE_ENV === 'production'}
-                enableErrorBoundary={true}
-              >
-                <QueryClientProvider>
-                  <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
-                    <ReduxProvider>
-                      <CartPersistenceProvider>
-                        <AnalyticsProvider>
-                          <ModalProvider>
-                            <CartModalProvider>
-                              <PreviewSliderProvider>
-                              {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
-                              {!isAdminRoute && <Header />}
+        <AdvancedErrorBoundary
+          level='page'
+          context='RootApplication'
+          enableRetry={true}
+          maxRetries={3}
+          enableAutoRecovery={true}
+          enableReporting={true}
+        >
+          <MonitoringProvider
+            autoStart={process.env.NODE_ENV === 'production'}
+            enableErrorBoundary={true}
+          >
+            <QueryClientProvider>
+              <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
+                <ReduxProvider>
+                  <CartPersistenceProvider>
+                    <AnalyticsProvider>
+                      <ModalProvider>
+                        <CartModalProvider>
+                          <PreviewSliderProvider>
+                            {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
+                            {!isAdminRoute && <Header />}
 
-                              {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
-                              {!isAdminRoute && !isCheckoutRoute && <CartSidebarModal />}
-                              <PreviewSliderModal />
-                              <ScrollToTop />
+                            {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
+                            {!isAdminRoute && !isCheckoutRoute && <CartSidebarModal />}
+                            <PreviewSliderModal />
+                            <ScrollToTop />
 
-                              {/* Contenido principal */}
-                              {children}
+                            {/* Contenido principal */}
+                            {children}
 
-                              {/* Footer solo para rutas públicas */}
-                              {!isAdminRoute && <Footer />}
+                            {/* Footer solo para rutas públicas */}
+                            {!isAdminRoute && <Footer />}
 
-                              {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
-                              {/* <div className="md:hidden">
+                            {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
+                            {/* <div className="md:hidden">
                       <BottomNavigation />
                     </div> */}
 
-                              {/* Botón de carrito flotante - Oculto en checkout para no tapar el botón de finalizar */}
-                              {!isAdminRoute && !isCheckoutRoute && <FloatingCartButton />}
+                            {/* Botón de carrito flotante - Oculto en checkout para no tapar el botón de finalizar */}
+                            {!isAdminRoute && !isCheckoutRoute && <FloatingCartButton />}
 
-                              {/* Notificación del carrito deshabilitada por requerimiento */}
-                              {/* {!isAdminRoute && (
+                            {/* Notificación del carrito deshabilitada por requerimiento */}
+                            {/* {!isAdminRoute && (
                                 <CartNotification
                                   show={notification.show}
                                   productName={notification.productName}
@@ -135,20 +123,18 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                                 />
                               )} */}
 
-                              {/* Toaster para notificaciones */}
-                              <Toaster />
-                              </PreviewSliderProvider>
-                            </CartModalProvider>
-                          </ModalProvider>
-                        </AnalyticsProvider>
-                      </CartPersistenceProvider>
-                    </ReduxProvider>
-                  </NetworkErrorProvider>
-                </QueryClientProvider>
-              </MonitoringProvider>
-            </AdvancedErrorBoundary>
-          </>
-        )}
+                            {/* Toaster para notificaciones */}
+                            <Toaster />
+                          </PreviewSliderProvider>
+                        </CartModalProvider>
+                      </ModalProvider>
+                    </AnalyticsProvider>
+                  </CartPersistenceProvider>
+                </ReduxProvider>
+              </NetworkErrorProvider>
+            </QueryClientProvider>
+          </MonitoringProvider>
+        </AdvancedErrorBoundary>
       </>
     )
   }

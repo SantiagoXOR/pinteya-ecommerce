@@ -2,22 +2,14 @@ import React from 'react'
 
 const PreLoader = () => {
   return (
-    <div className='brand-loader'>
-      <div className='brand-loader-inner'>
-        <div className='brand-badge' aria-label='Pinteya cargando'>
-          <img
-            src={'/images/logo/optimized/LogoPinteYa-favicon-hd.png'}
-            alt='PinteYA!'
-            className='brand-logo'
-            width={96}
-            height={96}
-            loading='eager'
-          />
-          <span className='brand-shine' aria-hidden='true' />
-        </div>
-        <div className='brand-micro-drop' aria-hidden='true' />
-        <div className='brand-loader-text'>Cargando tu tienda…</div>
-      </div>
+    <div className='min-h-screen w-full flex flex-col items-center justify-center bg-[#ea5a17] text-white'>
+      <img
+        src='/images/logo/LOGO NEGATIVO.svg'
+        alt='PinteYA'
+        className='w-40 md:w-56 h-auto'
+        loading='eager'
+      />
+      <p className='mt-6 text-center text-lg md:text-xl font-semibold'>Tu pinturería online. Fácil y rápido.</p>
     </div>
   )
 }
