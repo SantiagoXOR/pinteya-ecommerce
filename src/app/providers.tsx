@@ -23,7 +23,7 @@ import Footer from '../components/layout/Footer'
 import CartSidebarModal from '@/components/Common/CartSidebarModal/index'
 import PreviewSliderModal from '@/components/Common/PreviewSlider'
 import ScrollToTop from '@/components/Common/ScrollToTop'
-// PreLoader eliminado por requerimiento: no mostrar pantalla de carga
+
 // CartNotification deshabilitado por requerimiento UX
 // import CartNotification, { useCartNotification } from '@/components/Common/CartNotification'
 // import { BottomNavigation } from "@/components/ui/bottom-navigation";
