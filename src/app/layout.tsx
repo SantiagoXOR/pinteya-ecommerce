@@ -1,5 +1,6 @@
 // Force redeploy to fix Server Action error - 2025-08-02T00:30:00.000Z
 import Providers from './providers'
+import { Suspense } from 'react'
 import './css/style.css'
 import './css/euclid-circular-a-font.css'
 import '../styles/checkout-mobile.css'
@@ -31,7 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* <JsonSafetyInitializer /> */}
         {/* <DebugNotificationDisabler /> */}
         {/* <PerformanceTracker /> */}
-        <Providers>{children}</Providers>
+        {/* Suspense global para componentes compartidos que usan useSearchParams (Header/Search) */}
+        <Suspense fallback={null}>
+          <Providers>{children}</Providers>
+        </Suspense>
       </body>
     </html>
   )
