@@ -41,7 +41,7 @@ export function AddressMapSelector({
   const markerRef = useRef<google.maps.Marker | null>(null)
   const geocoderRef = useRef<google.maps.Geocoder | null>(null)
 
-  const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc'
+  const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   // Límites de Córdoba Capital
   const cordobaBounds = {
@@ -78,9 +78,16 @@ export function AddressMapSelector({
 
   // Inicializar mapa
   useEffect(() => {
-    if (!isMapLoaded || !mapRef.current || !showMap) return
+    if (!showMap || !mapRef.current) return
 
     const initMap = () => {
+      // Verificar si Google Maps está disponible
+      if (!window.google || !window.google.maps) {
+        console.warn('Google Maps no está disponible, reintentando...')
+        setTimeout(initMap, 1000)
+        return
+      }
+
       const map = new google.maps.Map(mapRef.current!, {
         center: { lat: -31.4201, lng: -64.1888 }, // Centro de Córdoba
         zoom: 13,
@@ -152,7 +159,7 @@ export function AddressMapSelector({
 
     // Pequeño delay para asegurar que el DOM esté listo
     setTimeout(initMap, 100)
-  }, [isMapLoaded, showMap])
+  }, [showMap])
 
   // Geocodificación inversa
   const reverseGeocode = (lat: number, lng: number) => {
@@ -334,7 +341,7 @@ export function AddressMapSelector({
           type="button"
           variant="outline"
           onClick={handleToggleMap}
-          disabled={disabled || !isMapLoaded}
+          disabled={disabled}
           className="flex-1"
         >
           {showMap ? 'Ocultar Mapa' : 'Mostrar Mapa'}
@@ -366,6 +373,7 @@ export function AddressMapSelector({
           
           <div 
             ref={mapRef}
+            data-testid="map-container"
             className="w-full h-96 border border-gray-300 rounded-lg"
             style={{ minHeight: '384px' }}
           />

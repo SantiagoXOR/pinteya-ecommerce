@@ -323,7 +323,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
             isMobile && 'touch-manipulation'
           )}
           required
-          apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc'}
+          apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
           label="Dirección de entrega"
           error={errors.streetAddress}
         />

@@ -12,13 +12,13 @@ test.describe('Validación de Direcciones - Córdoba Capital', () => {
     await expect(page.getByText('Selecciona tu ubicación arrastrando el marcador en el mapa')).toBeVisible()
     
     // Verificar que los controles están presentes
-    await expect(page.getByText('Mostrar Mapa')).toBeVisible()
-    await expect(page.getByText('Mi Ubicación')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Mostrar Mapa' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Mi Ubicación' })).toBeVisible()
   })
 
   test('debería abrir el mapa cuando se hace clic en "Mostrar Mapa"', async ({ page }) => {
     // Hacer clic en "Mostrar Mapa"
-    await page.getByText('Mostrar Mapa').click()
+    await page.getByRole('button', { name: 'Mostrar Mapa' }).click()
     
     // Verificar que el mapa se muestra
     await expect(page.getByText('Ocultar Mapa')).toBeVisible()
@@ -30,7 +30,7 @@ test.describe('Validación de Direcciones - Córdoba Capital', () => {
 
   test('debería validar direcciones correctamente', async ({ page }) => {
     // Abrir el mapa
-    await page.getByText('Mostrar Mapa').click()
+    await page.getByRole('button', { name: 'Mostrar Mapa' }).click()
     
     // Esperar a que el mapa se cargue
     await page.waitForTimeout(2000)
@@ -126,10 +126,10 @@ test.describe('Validación de Direcciones - Córdoba Capital', () => {
     
     // Verificar que los elementos se muestran correctamente
     await expect(page.getByText('Selector de Mapa Interactivo')).toBeVisible()
-    await expect(page.getByText('Mostrar Mapa')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Mostrar Mapa' })).toBeVisible()
     
     // Abrir el mapa en móvil
-    await page.getByText('Mostrar Mapa').click()
+    await page.getByRole('button', { name: 'Mostrar Mapa' }).click()
     
     // Verificar que el mapa se muestra correctamente en móvil
     await expect(page.getByText('Ocultar Mapa')).toBeVisible()
@@ -145,12 +145,12 @@ test.describe('Integración en Checkout', () => {
   test('debería mostrar el selector de mapa en el checkout', async ({ page }) => {
     // Verificar que el campo de dirección está presente
     await expect(page.getByText('Dirección de entrega')).toBeVisible()
-    await expect(page.getByText('Mostrar Mapa')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Mostrar Mapa' })).toBeVisible()
   })
 
   test('debería validar la dirección en el checkout', async ({ page }) => {
     // Abrir el mapa
-    await page.getByText('Mostrar Mapa').click()
+    await page.getByRole('button', { name: 'Mostrar Mapa' }).click()
     
     // Esperar a que el mapa se cargue
     await page.waitForTimeout(2000)
@@ -167,7 +167,7 @@ test.describe('Integración en Checkout', () => {
     await page.fill('input[name="phone"]', '1234567890')
     
     // Seleccionar una dirección válida
-    await page.getByText('Mostrar Mapa').click()
+    await page.getByRole('button', { name: 'Mostrar Mapa' }).click()
     await page.waitForTimeout(2000)
     
     // Simular selección de ubicación (esto requeriría interacción real con el mapa)

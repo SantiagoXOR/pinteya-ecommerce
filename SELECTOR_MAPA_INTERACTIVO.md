@@ -90,7 +90,7 @@ Visita: `http://localhost:3000/test-map-selector`
 ## 🔧 Configuración Técnica
 
 ### **Google Maps API**
-- **API Key**: `AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc`
+- **API Key**: `[CONFIGURAR_VARIABLE_ENTORNO]`
 - **Librerías**: Maps JavaScript API, Places API
 - **Región**: Argentina (`region=ar`)
 - **Idioma**: Español (`language=es`)

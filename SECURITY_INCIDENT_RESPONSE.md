@@ -11,7 +11,7 @@
 
 ### Google Maps API Key
 
-- **Clave:** `AIzaSyCdNoDaoentvjXgxIkX2lMYTTdodZhY-BU`
+- **Clave:** `[REVOCADA]`
 - **Ubicaciones:**
   - `docs/guides/ADVANCED_GPS_NAVIGATION_SYSTEM_DOCUMENTATION.md`
   - `.env.local` (local)
@@ -19,7 +19,7 @@
 
 ### Google Places API Key
 
-- **Clave:** `AIzaSyBOti4mM-6x9WDnZIjIeyb21L_Hw_KC_1o`
+- **Clave:** `[REVOCADA]`
 - **Ubicaciones:**
   - `scripts/testing/test-google-places.js`
   - `.env.local` (local)

@@ -246,7 +246,7 @@ export default function TestAddressValidationPage() {
             <div className="text-sm text-gray-600">
               <p><strong>API Key utilizada:</strong></p>
               <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc'}
+                {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'CONFIGURAR_VARIABLE_ENTORNO'}
               </code>
             </div>
           </CardContent>

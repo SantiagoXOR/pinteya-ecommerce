@@ -4,7 +4,7 @@
 Se ha implementado exitosamente un sistema completo de validación de direcciones que asegura que solo se puedan realizar compras con direcciones en Córdoba Capital, utilizando la API de Google Maps existente del proyecto.
 
 ## 🔑 API Key Configurada
-- **API Key**: `AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc`
+- **API Key**: `[CONFIGURAR_VARIABLE_ENTORNO]`
 - **Estado**: ✅ Ya configurada y funcionando para el sistema de drivers
 - **APIs Habilitadas**: Geocoding API, Places API, Directions API
 
@@ -101,7 +101,7 @@ Visita: `http://localhost:3000/test-address-validation`
 
 ### Variables de Entorno
 ```bash
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=tu_api_key_aqui
 ```
 
 ### APIs Utilizadas

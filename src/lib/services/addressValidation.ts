@@ -58,7 +58,7 @@ export async function validateAddressInCordobaCapital(
 ): Promise<AddressValidationResult> {
   try {
     // Usar la API key del proyecto o la proporcionada
-    const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc'
+    const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     
     // Si no hay API key, usar validación básica
     if (!finalApiKey) {
@@ -172,7 +172,7 @@ export async function getAddressSuggestions(
   query: string,
   apiKey?: string
 ): Promise<string[]> {
-  const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc'
+  const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   
   if (!finalApiKey || query.length < 3) {
     return []
