@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AddressMapSelector } from '@/components/ui/AddressMapSelector'
 import { cn } from '@/lib/core/utils'
 import { useMobileCheckoutNavigation } from '@/hooks/useMobileCheckoutNavigation'
 
@@ -301,48 +302,31 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
           )}
         </div>
 
-        {/* Campo Dirección */}
-        <div className='space-y-2'>
-          <Label
-            htmlFor='streetAddress'
-            className='text-sm font-medium text-gray-700 flex items-center gap-2'
-          >
-            <MapPin className='w-4 h-4' />
-            Dirección
-          </Label>
-          <div className='relative'>
-            <Input
-              id='streetAddress'
-              type='text'
-              data-testid='address-input'
-              value={formData.streetAddress}
-              onChange={e => onFieldChange('streetAddress', e.target.value)}
-              onFocus={handleFieldFocus}
-              placeholder='Av. Corrientes 1234, Córdoba'
-              className={cn(
-                'pl-10 text-base transition-all duration-200',
-                isMobile ? 'h-14 text-lg' : 'h-12',
-                errors.streetAddress
-                  ? 'border-red-500 focus:border-red-500'
-                  : formData.streetAddress && !errors.streetAddress
-                    ? 'border-green-500 focus:border-green-600'
-                    : 'border-gray-300 focus:border-blue-500',
-                isMobile && 'touch-manipulation focus:scale-[1.02]'
-              )}
-              required
-            />
-            <MapPin className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
-            {formData.streetAddress && !errors.streetAddress && (
-              <CheckCircle className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500' />
-            )}
-          </div>
-          {errors.streetAddress && (
-            <p className='text-sm text-red-600 flex items-center gap-1'>
-              <AlertCircle className='w-4 h-4' />
-              {errors.streetAddress}
-            </p>
+        {/* Campo Dirección con mapa interactivo */}
+        <AddressMapSelector
+          value={formData.streetAddress}
+          onChange={(address, coordinates) => {
+            onFieldChange('streetAddress', address)
+            // Opcional: guardar coordenadas si las necesitas
+            if (coordinates) {
+              console.log('Coordenadas seleccionadas:', coordinates)
+            }
+          }}
+          onValidationChange={(isValid, error) => {
+            // El error se maneja internamente en AddressMapSelector
+            if (!isValid && error) {
+              console.log('Error de validación:', error)
+            }
+          }}
+          className={cn(
+            'text-base transition-all duration-200',
+            isMobile && 'touch-manipulation'
           )}
-        </div>
+          required
+          apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBBDvjcC42QcHu7qlToPK4tTaV7EdvtJmc'}
+          label="Dirección de entrega"
+          error={errors.streetAddress}
+        />
 
         {/* Campo Observaciones */}
         <div className='space-y-2'>

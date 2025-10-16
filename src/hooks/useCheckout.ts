@@ -271,6 +271,11 @@ export const useCheckout = () => {
       errors.streetAddress = 'La dirección debe tener al menos 10 caracteres'
     }
 
+    // Validación específica para Córdoba Capital
+    if (billing.streetAddress && !billing.streetAddress.toLowerCase().includes('córdoba') && !billing.streetAddress.toLowerCase().includes('cordoba')) {
+      errors.streetAddress = 'La dirección debe estar en Córdoba Capital'
+    }
+
     // Validar código postal argentino (formato XXXX o AXXXX)
     if (billing.zipCode && !/^[A-Z]?\d{4}$/.test(billing.zipCode.toUpperCase())) {
       errors.zipCode = 'Código postal inválido'

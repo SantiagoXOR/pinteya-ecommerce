@@ -46,14 +46,21 @@ export default auth(req => {
     return NextResponse.next()
   }
 
-  // Proteger rutas administrativas y de usuario
+  // Proteger rutas administrativas, de usuario y driver
   const isAdminRoute = nextUrl.pathname.startsWith('/admin')
   const isApiAdminRoute = nextUrl.pathname.startsWith('/api/admin')
   const isDashboardRoute = nextUrl.pathname.startsWith('/dashboard')
   const isApiUserRoute = nextUrl.pathname.startsWith('/api/user')
+  const isDriverRoute = nextUrl.pathname.startsWith('/driver')
+  const isApiDriverRoute = nextUrl.pathname.startsWith('/api/driver')
 
-  if ((isAdminRoute || isApiAdminRoute || isDashboardRoute || isApiUserRoute) && !isLoggedIn) {
-    if (isApiAdminRoute || isApiUserRoute) {
+  if ((isAdminRoute || isApiAdminRoute || isDashboardRoute || isApiUserRoute || isDriverRoute || isApiDriverRoute) && !isLoggedIn) {
+    // Para rutas de admin, redirigir directamente al home
+    if (isAdminRoute) {
+      return NextResponse.redirect(new URL('/', nextUrl.origin))
+    }
+    
+    if (isApiAdminRoute || isApiUserRoute || isApiDriverRoute) {
       return new NextResponse(
         JSON.stringify({ error: 'Unauthorized', message: 'Authentication required' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
@@ -77,7 +84,24 @@ export default auth(req => {
           { status: 403, headers: { 'Content-Type': 'application/json' } }
         )
       } else {
-        return NextResponse.redirect(new URL('/access-denied', nextUrl.origin))
+        return NextResponse.redirect(new URL('/access-denied?type=admin', nextUrl.origin))
+      }
+    }
+  }
+
+  // Verificar autorización driver
+  if ((isDriverRoute || isApiDriverRoute) && isLoggedIn) {
+    const userEmail = req.auth?.user?.email
+    const isDriver = userEmail === 'driver@pinteya.com' || userEmail === 'santiago@xor.com.ar'
+
+    if (!isDriver) {
+      if (isApiDriverRoute) {
+        return new NextResponse(
+          JSON.stringify({ error: 'Forbidden', message: 'Driver access required' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        )
+      } else {
+        return NextResponse.redirect(new URL('/access-denied?type=driver', nextUrl.origin))
       }
     }
   }
@@ -108,11 +132,15 @@ export const config = {
      * - /api/admin/* (admin API routes)
      * - /dashboard/* (user dashboard routes)
      * - /api/user/* (user API routes)
+     * - /driver/* (driver UI routes)
+     * - /api/driver/* (driver API routes)
      * Exclude NextAuth.js routes and static files
      */
     '/admin/:path*',
     '/api/admin/:path*',
     '/dashboard/:path*',
     '/api/user/:path*',
+    '/driver/:path*',
+    '/api/driver/:path*',
   ],
 }
