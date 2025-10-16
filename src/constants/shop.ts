@@ -36,25 +36,45 @@ export const SHOP_CONSTANTS = {
 } as const
 
 export const PRODUCT_CATEGORIES = {
-  PINTURAS: {
-    name: 'Pinturas',
-    slug: 'pinturas',
-    description: 'Pinturas para interior y exterior',
+  PAREDES: {
+    name: 'Paredes',
+    slug: 'paredes',
+    description: 'Pinturas para paredes interiores y exteriores',
   },
-  HERRAMIENTAS: {
-    name: 'Herramientas',
-    slug: 'herramientas',
-    description: 'Herramientas para pintura y construcción',
+  METALES_Y_MADERAS: {
+    name: 'Metales y Maderas',
+    slug: 'metales-y-maderas',
+    description: 'Productos para protección y acabado de maderas y metales',
   },
-  ACCESORIOS: {
-    name: 'Accesorios',
-    slug: 'accesorios',
-    description: 'Accesorios y complementos',
+  TECHOS: {
+    name: 'Techos',
+    slug: 'techos',
+    description: 'Impermeabilizantes y pinturas para techos y cielorrasos',
   },
-  PREPARACION: {
-    name: 'Preparación',
-    slug: 'preparacion',
-    description: 'Productos para preparación de superficies',
+  COMPLEMENTOS: {
+    name: 'Complementos',
+    slug: 'complementos',
+    description: 'Herramientas y accesorios para pintura',
+  },
+  ANTIHUMEDAD: {
+    name: 'Antihumedad',
+    slug: 'antihumedad',
+    description: 'Productos especiales para ambientes húmedos',
+  },
+  PISCINAS: {
+    name: 'Piscinas',
+    slug: 'Piscinas',
+    description: 'Productos para mantenimiento de piscinas',
+  },
+  REPARACIONES: {
+    name: 'Reparaciones',
+    slug: 'reparaciones',
+    description: 'Masillas y productos para reparación de superficies',
+  },
+  PISOS: {
+    name: 'Pisos',
+    slug: 'pisos',
+    description: 'Barnices y productos para pisos de madera',
   },
 } as const
 
