@@ -74,3 +74,35 @@ export function getWhatsAppUrl(message?: string): string {
   }
   return `https://wa.me/${phone}`
 }
+
+/**
+ * Genera mensaje de WhatsApp específico para órdenes de MercadoPago
+ * Similar al mensaje de pago contra entrega pero adaptado para MercadoPago
+ */
+export function generateMercadoPagoWhatsAppMessage(order: any): string {
+  const lines: string[] = [
+    `¡Hola! He completado mi pago con MercadoPago`,
+    '',
+    `${EMOJIS.receipt} *Orden #${order.id}*`,
+    `${EMOJIS.bullet} Cliente: ${order.payer_name} ${order.payer_surname}`,
+    `${EMOJIS.bullet} Email: ${EMOJIS.email} ${order.payer_email}`,
+    `${EMOJIS.bullet} Teléfono: ${EMOJIS.phone} ${order.payer_phone}`,
+    '',
+    `🛍️ *Productos:*`,
+  ]
+
+  order.items?.forEach((item: any, index: number) => {
+    lines.push(`${index + 1}. ${item.product_name} x${item.quantity} - $${item.unit_price.toFixed(2)}`)
+  })
+
+  lines.push('', `${EMOJIS.money} *Total: $${order.total_amount.toFixed(2)}*`, '')
+  lines.push(`💳 *Método de pago:* MercadoPago`)
+  lines.push(`${EMOJIS.calendar} *Fecha del pago:* ${new Date(order.created_at).toLocaleDateString('es-AR')}`)
+  lines.push('')
+  lines.push(`${EMOJIS.check} Pago confirmado y aprobado`)
+  lines.push('')
+  lines.push(`${EMOJIS.info} Gracias por tu compra. Nuestro equipo te contactará en las próximas horas.`)
+
+  const message = sanitizeForWhatsApp(lines.join('\n'))
+  return message
+}

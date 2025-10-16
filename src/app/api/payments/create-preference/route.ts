@@ -446,8 +446,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ===================================
-    // CONVERTIR ITEMS PARA MERCADOPAGO
+    // CONVERTIR ITEMS PARA MERCADOPAGO CON ENVÍO INCLUIDO
     // ===================================
+    // Distribuir el costo de envío proporcionalmente entre los productos
     const mercadoPagoItems: MercadoPagoItem[] = typedProducts.map(product => {
       const orderItem = orderData.items.find(item => item.id === product.id.toString())
       if (!orderItem) {
@@ -456,6 +457,11 @@ export async function POST(request: NextRequest) {
 
       // Usar precio con descuento si existe, sino precio normal
       const finalPrice = getFinalPrice(product)
+      const itemSubtotal = finalPrice * orderItem.quantity
+      
+      // Calcular porción del envío que corresponde a este producto
+      const shippingPortion = itemsTotal > 0 ? (itemSubtotal / itemsTotal) * shippingCost : 0
+      const adjustedPrice = finalPrice + (shippingPortion / orderItem.quantity)
 
       return {
         id: product.id.toString(),
@@ -465,12 +471,12 @@ export async function POST(request: NextRequest) {
         category_id: product.category?.slug || 'general',
         quantity: orderItem.quantity,
         currency_id: 'ARS',
-        unit_price: finalPrice,
+        unit_price: Math.round(adjustedPrice * 100) / 100, // Precio con envío incluido
       }
     })
 
-    // No agregar el costo de envío como ítem separado.
-    // Mercado Pago mostrará y cobrará el envío usando `shipments.cost`.
+    // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
+    // El costo de envío ya está incluido en el precio de cada producto
 
     // ✅ MEJORADO: Usar nueva función con configuración avanzada
     const preferenceResult = await createPaymentPreference({
@@ -495,23 +501,13 @@ export async function POST(request: NextRequest) {
           : undefined,
       },
       back_urls: {
-        success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?order_id=${order.id}`,
+        success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/mercadopago-success?order_id=${order.id}`,
         failure: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failure?order_id=${order.id}`,
         pending: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pending?order_id=${order.id}`,
       },
       external_reference: order.id.toString(),
-      shipments: orderData.shipping
-        ? {
-            cost: orderData.shipping.cost,
-            receiver_address: {
-              zip_code: orderData.shipping.address.zip_code,
-              street_name: orderData.shipping.address.street_name,
-              street_number: orderData.shipping.address.street_number,
-              city_name: orderData.shipping.address.city_name,
-              state_name: orderData.shipping.address.state_name,
-            },
-          }
-        : undefined,
+      // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
+      // shipments: undefined // Comentado intencionalmente
     })
 
     // ✅ MEJORADO: Manejar resultado de la nueva función
