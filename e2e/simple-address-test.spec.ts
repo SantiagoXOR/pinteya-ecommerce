@@ -29,3 +29,4 @@ test.describe('Test Simple de Validación de Direcciones', () => {
     await expect(page.getByText('Dirección de entrega')).toBeVisible()
   })
 })
+

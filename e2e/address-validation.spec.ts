@@ -100,7 +100,7 @@ test.describe('Validación de Direcciones - Córdoba Capital', () => {
     // Verificar que las instrucciones específicas están listadas
     await expect(page.getByText('Haz clic en "Mostrar Mapa" para abrir el mapa interactivo')).toBeVisible()
     await expect(page.getByText('Arrastra el marcador azul a tu domicilio exacto')).toBeVisible()
-    await expect(page.getByText('Solo se permiten ubicaciones dentro de Córdoba Capital')).toBeVisible()
+    await expect(page.getByText('Se recomienda ubicaciones en Córdoba Capital para entrega')).toBeVisible()
   })
 
   test('debería manejar el botón de limpiar', async ({ page }) => {
@@ -133,6 +133,37 @@ test.describe('Validación de Direcciones - Córdoba Capital', () => {
     
     // Verificar que el mapa se muestra correctamente en móvil
     await expect(page.getByText('Ocultar Mapa')).toBeVisible()
+  })
+
+  test('debería tener el botón "Mi Ubicación" disponible', async ({ page }) => {
+    // Verificar que el botón "Mi Ubicación" está presente
+    const locationButton = page.getByRole('button', { name: /Mi Ubicación/i })
+    await expect(locationButton).toBeVisible()
+    await expect(locationButton).toBeEnabled()
+  })
+
+  test('debería mostrar instrucciones sobre GPS fuera de Córdoba', async ({ page }) => {
+    // Verificar que las instrucciones mencionan el comportamiento permisivo
+    await expect(page.getByText(/Se recomienda ubicaciones en Córdoba Capital/i)).toBeVisible()
+    
+    // Las instrucciones no deben decir "solo" o "únicamente" ya que ahora es permisivo
+    await page.getByRole('button', { name: 'Mostrar Mapa' }).click()
+    await expect(page.getByText(/Se recomienda ubicaciones en Córdoba Capital para entrega/i)).toBeVisible()
+  })
+
+  test('debería permitir navegación del mapa fuera de Córdoba', async ({ page }) => {
+    // Abrir el mapa
+    await page.getByRole('button', { name: 'Mostrar Mapa' }).click()
+    
+    // Esperar a que el mapa se cargue
+    await page.waitForTimeout(2000)
+    
+    // El mapa debe ser visible y funcional
+    const mapContainer = page.locator('[data-testid="map-container"]')
+    await expect(mapContainer).toBeVisible()
+    
+    // Nota: El mapa ahora permite visualización fuera de Córdoba aunque con restricción suave
+    // La validación final sigue siendo que la dirección debe estar en Córdoba Capital
   })
 })
 

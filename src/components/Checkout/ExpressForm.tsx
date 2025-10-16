@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AddressMapSelector } from '@/components/ui/AddressMapSelector'
+import { AddressMapSelectorAdvanced } from '@/components/ui/AddressMapSelectorAdvanced'
 import { cn } from '@/lib/core/utils'
 import { useMobileCheckoutNavigation } from '@/hooks/useMobileCheckoutNavigation'
 
@@ -303,7 +303,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
         </div>
 
         {/* Campo Dirección con mapa interactivo */}
-        <AddressMapSelector
+        <AddressMapSelectorAdvanced
           value={formData.streetAddress}
           onChange={(address, coordinates) => {
             onFieldChange('streetAddress', address)
@@ -313,7 +313,7 @@ const ExpressForm: React.FC<ExpressFormProps> = ({
             }
           }}
           onValidationChange={(isValid, error) => {
-            // El error se maneja internamente en AddressMapSelector
+            // El error se maneja internamente en AddressMapSelectorAdvanced
             if (!isValid && error) {
               console.log('Error de validación:', error)
             }

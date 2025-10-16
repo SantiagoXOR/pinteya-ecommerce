@@ -81,6 +81,7 @@ export default function TestMapSelectorPage() {
               required
               label="Ubicación de entrega"
               error={error}
+              showDevButtons={true} // Mostrar botones de desarrollo solo en la página de prueba
             />
 
             {/* Estado de validación */}
@@ -169,16 +170,16 @@ export default function TestMapSelectorPage() {
                 <li>Arrastra el marcador azul a tu domicilio exacto</li>
                 <li>O haz clic en cualquier punto del mapa para mover el marcador</li>
                 <li>Usa "Mi Ubicación" para centrar el mapa en tu posición actual</li>
-                <li>Solo se permiten ubicaciones dentro de Córdoba Capital</li>
+                <li>Se recomienda seleccionar ubicaciones en Córdoba Capital para entrega</li>
               </ul>
             </div>
             
             <div className="text-sm text-gray-600">
               <p><strong>Características del mapa:</strong></p>
               <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>Restringido a los límites de Córdoba Capital</li>
+                <li>Centrado en Córdoba Capital con navegación flexible</li>
                 <li>Geocodificación automática al seleccionar ubicación</li>
-                <li>Validación en tiempo real</li>
+                <li>Validación en tiempo real con advertencias informativas</li>
                 <li>Interfaz responsive para móviles</li>
                 <li>Indicadores visuales de estado</li>
               </ul>

@@ -215,4 +215,142 @@ describe('AddressMapSelector', () => {
     // Simular que se han seleccionado coordenadas
     // En un test real, esto se haría a través de la interacción con el mapa
   })
+
+  describe('Geolocalización GPS', () => {
+    it('debería manejar GPS dentro de Córdoba Capital correctamente', async () => {
+      // Mock de ubicación dentro de Córdoba
+      const mockPosition = {
+        coords: {
+          latitude: -31.4201,
+          longitude: -64.1888,
+          accuracy: 10
+        }
+      }
+
+      const mockGeolocation = {
+        getCurrentPosition: jest.fn((success) => {
+          success(mockPosition)
+        })
+      }
+
+      Object.defineProperty(navigator, 'geolocation', {
+        value: mockGeolocation,
+        writable: true,
+      })
+
+      render(
+        <AddressMapSelector
+          value=""
+          onChange={mockOnChange}
+          onValidationChange={mockOnValidationChange}
+        />
+      )
+
+      const locationButton = screen.getByText('Mi Ubicación')
+      fireEvent.click(locationButton)
+
+      await waitFor(() => {
+        expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled()
+      })
+
+      // Verificar que no hay mensaje de error para ubicación en Córdoba
+      expect(screen.queryByText(/ubicación está fuera de Córdoba Capital/)).not.toBeInTheDocument()
+    })
+
+    it('debería manejar GPS fuera de Córdoba Capital con advertencia', async () => {
+      // Mock de ubicación fuera de Córdoba (ej: Buenos Aires)
+      const mockPosition = {
+        coords: {
+          latitude: -34.6037,
+          longitude: -58.3816,
+          accuracy: 10
+        }
+      }
+
+      const mockGeolocation = {
+        getCurrentPosition: jest.fn((success) => {
+          success(mockPosition)
+        })
+      }
+
+      Object.defineProperty(navigator, 'geolocation', {
+        value: mockGeolocation,
+        writable: true,
+      })
+
+      render(
+        <AddressMapSelector
+          value=""
+          onChange={mockOnChange}
+          onValidationChange={mockOnValidationChange}
+        />
+      )
+
+      const locationButton = screen.getByText('Mi Ubicación')
+      fireEvent.click(locationButton)
+
+      await waitFor(() => {
+        expect(mockGeolocation.getCurrentPosition).toHaveBeenCalled()
+      })
+
+      // Verificar que se muestra la advertencia informativa
+      await waitFor(() => {
+        expect(screen.getByText(/Tu ubicación está fuera de Córdoba Capital/)).toBeInTheDocument()
+      })
+
+      // Verificar que se llama onValidationChange con false
+      expect(mockOnValidationChange).toHaveBeenCalledWith(false, 'Ubicación fuera de zona de entrega')
+    })
+
+    it('debería manejar error de geolocalización', async () => {
+      const mockGeolocation = {
+        getCurrentPosition: jest.fn((success, error) => {
+          error({ code: 1, message: 'Permission denied' })
+        })
+      }
+
+      Object.defineProperty(navigator, 'geolocation', {
+        value: mockGeolocation,
+        writable: true,
+      })
+
+      render(
+        <AddressMapSelector
+          value=""
+          onChange={mockOnChange}
+          onValidationChange={mockOnValidationChange}
+        />
+      )
+
+      const locationButton = screen.getByText('Mi Ubicación')
+      fireEvent.click(locationButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('No se pudo obtener tu ubicación')).toBeInTheDocument()
+      })
+
+      expect(mockOnValidationChange).toHaveBeenCalledWith(false, 'No se pudo obtener tu ubicación')
+    })
+
+    it('debería manejar geolocalización no soportada', () => {
+      // Simular que geolocalización no está disponible
+      Object.defineProperty(navigator, 'geolocation', {
+        value: undefined,
+        writable: true,
+      })
+
+      render(
+        <AddressMapSelector
+          value=""
+          onChange={mockOnChange}
+          onValidationChange={mockOnValidationChange}
+        />
+      )
+
+      const locationButton = screen.getByText('Mi Ubicación')
+      fireEvent.click(locationButton)
+
+      expect(screen.getByText('Geolocalización no soportada por este navegador')).toBeInTheDocument()
+    })
+  })
 })
