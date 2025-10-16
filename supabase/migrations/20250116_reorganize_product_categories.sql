@@ -155,9 +155,34 @@ BEGIN
     RAISE NOTICE '=== Migración completada exitosamente ===';
 END $$;
 
+-- PASO 5: Agregar campo de orden de visualización
+-- ===================================
+
+-- Agregar campo display_order para controlar el orden en la UI
+ALTER TABLE categories 
+ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 999;
+
+-- Asignar orden de visualización específico para cada categoría
+UPDATE categories SET display_order = 1, updated_at = NOW() WHERE id = 38; -- Paredes
+UPDATE categories SET display_order = 2, updated_at = NOW() WHERE id = 39; -- Metales y Maderas
+UPDATE categories SET display_order = 3, updated_at = NOW() WHERE id = 35; -- Techos
+UPDATE categories SET display_order = 4, updated_at = NOW() WHERE id = 40; -- Complementos
+UPDATE categories SET display_order = 5, updated_at = NOW() WHERE id = 41; -- Antihumedad
+UPDATE categories SET display_order = 6, updated_at = NOW() WHERE id = 37; -- Piscinas
+UPDATE categories SET display_order = 7, updated_at = NOW() WHERE id = 33; -- Reparaciones
+UPDATE categories SET display_order = 8, updated_at = NOW() WHERE id = 42; -- Pisos
+
+
+-- PASO 6: Crear índices y actualizar estadísticas
+-- ===================================
+
 -- Crear índice para mejorar consultas por categoría
 CREATE INDEX IF NOT EXISTS idx_products_category_id_active 
 ON products(category_id, is_active);
+
+-- Crear índice para el orden de visualización
+CREATE INDEX IF NOT EXISTS idx_categories_display_order 
+ON categories(display_order);
 
 -- Actualizar estadísticas
 ANALYZE categories;

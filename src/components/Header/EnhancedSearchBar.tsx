@@ -22,6 +22,7 @@ import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocomplete
 import { type SearchSuggestion } from '@/hooks/useSearch'
 
 // Definición de categorías con iconos y placeholders profesionales
+// Orden de visualización: Paredes, Metales y Maderas, Techos, Complementos, Antihumedad, Piscinas, Reparaciones, Pisos
 const categories = [
   {
     id: 'all',
@@ -58,6 +59,12 @@ const categories = [
     name: 'Antihumedad',
     icon: Package,
     placeholder: 'Productos para baños y cocinas...',
+  },
+  {
+    id: 'piscinas',
+    name: 'Piscinas',
+    icon: Package,
+    placeholder: 'Productos para piscinas...',
   },
   {
     id: 'reparaciones',

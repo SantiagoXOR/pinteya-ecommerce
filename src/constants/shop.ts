@@ -35,46 +35,55 @@ export const SHOP_CONSTANTS = {
   ],
 } as const
 
+// Orden de visualización en UI: Paredes, Metales y Maderas, Techos, Complementos, Antihumedad, Piscinas, Reparaciones, Pisos
 export const PRODUCT_CATEGORIES = {
   PAREDES: {
     name: 'Paredes',
     slug: 'paredes',
     description: 'Pinturas para paredes interiores y exteriores',
+    displayOrder: 1,
   },
   METALES_Y_MADERAS: {
     name: 'Metales y Maderas',
     slug: 'metales-y-maderas',
     description: 'Productos para protección y acabado de maderas y metales',
+    displayOrder: 2,
   },
   TECHOS: {
     name: 'Techos',
     slug: 'techos',
     description: 'Impermeabilizantes y pinturas para techos y cielorrasos',
+    displayOrder: 3,
   },
   COMPLEMENTOS: {
     name: 'Complementos',
     slug: 'complementos',
     description: 'Herramientas y accesorios para pintura',
+    displayOrder: 4,
   },
   ANTIHUMEDAD: {
     name: 'Antihumedad',
     slug: 'antihumedad',
     description: 'Productos especiales para ambientes húmedos',
+    displayOrder: 5,
   },
   PISCINAS: {
     name: 'Piscinas',
     slug: 'Piscinas',
     description: 'Productos para mantenimiento de piscinas',
+    displayOrder: 6,
   },
   REPARACIONES: {
     name: 'Reparaciones',
     slug: 'reparaciones',
     description: 'Masillas y productos para reparación de superficies',
+    displayOrder: 7,
   },
   PISOS: {
     name: 'Pisos',
     slug: 'pisos',
     description: 'Barnices y productos para pisos de madera',
+    displayOrder: 8,
   },
 } as const
 

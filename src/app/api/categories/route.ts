@@ -103,7 +103,8 @@ export async function GET(request: NextRequest) {
         products_count:products(count)
       `
           )
-          .order('name')
+          .order('display_order', { ascending: true })
+          .order('name', { ascending: true })
 
         // Aplicar filtros
         let query = baseQuery
