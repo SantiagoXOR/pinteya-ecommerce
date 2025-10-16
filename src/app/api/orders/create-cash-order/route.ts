@@ -315,22 +315,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Datos de envío y enlace a Google Maps
-    const addressParts = [
-      order.shipping_address?.street_name,
-      order.shipping_address?.street_number,
-      order.shipping_address?.city_name,
-      order.shipping_address?.state_name,
-      order.shipping_address?.zip_code,
-      'Argentina'
-    ].filter(Boolean).join(', ');
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressParts)}`;
-
+    // Datos de envío
     lines.push('', `*Datos de Envío:*`);
     lines.push(`${bullet} Dirección: 📍 ${order.shipping_address?.street_name} ${order.shipping_address?.street_number}`);
     lines.push(`${bullet} Ciudad: ${order.shipping_address?.city_name}, ${order.shipping_address?.state_name}`);
     lines.push(`${bullet} CP: ${order.shipping_address?.zip_code}`);
-    lines.push(`${bullet} Mapa: \`${mapsUrl}\``);
     lines.push('', `${EMOJIS.check} ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`);
 
     // Usar CRLF para máxima compatibilidad con clientes que no respetan solo \n

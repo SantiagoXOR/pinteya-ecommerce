@@ -31,7 +31,7 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
   // En mobile siempre mostrar el botón (incluso sin items para consistencia UX)
 
   return (
-    <div className='fixed bottom-8 left-1/2 transform -translate-x-1/2 z-maximum sm:bottom-8 sm:right-8 sm:left-auto sm:transform-none'>
+    <div className='fixed bottom-8 right-8 z-maximum sm:bottom-8 sm:right-8'>
       {/* Liquid Glass Background Effect */}
       <div className='absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/80 via-yellow-300/60 to-yellow-500/80 backdrop-blur-xl border border-white/20 shadow-2xl'></div>
       <div className='absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent'></div>
@@ -44,11 +44,11 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
         className={cn(
           // Posicionamiento relativo dentro del contenedor
           'relative',
-          // Estilos del botón con efecto glass - altura reducida
-          'bg-yellow-400/90 hover:bg-yellow-500/90 text-black font-bold px-4 py-1.5',
+          // Estilos del botón con efecto glass - altura más compacta
+          'bg-yellow-400/90 hover:bg-yellow-500/90 text-black font-bold px-3 py-2',
           'rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out',
           'hover:scale-110 active:scale-95 border border-white/30',
-          'flex items-center gap-1 group floating-button focus-ring',
+          'flex items-center gap-2 group floating-button focus-ring',
           // Animaciones condicionales (igual al header)
           cartShake ? 'animate-bounce cart-badge-animate' : '',
           isAnimating ? 'scale-110 cart-badge-animate' : 'scale-100',
@@ -58,12 +58,12 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
           className
         )}
       >
-        {/* Icono del carrito que puede sobresalir */}
-        <div className='relative -mt-2 -mb-1'>
+        {/* Icono del carrito - tamaño más pequeño y proporcional */}
+        <div className='relative'>
           <OptimizedCartIcon
-            width={44}
-            height={44}
-            className='w-11 h-11 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg'
+            width={32}
+            height={32}
+            className='w-8 h-8 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg'
             alt='Carrito de compras'
           />
           {cartItemCount > 0 && (
@@ -75,7 +75,7 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
             </span>
           )}
         </div>
-        <span className='text-xs font-semibold text-blaze-orange-600' style={{ color: '#ea5a17' }}>
+        <span className='text-sm font-semibold text-blaze-orange-600' style={{ color: '#ea5a17' }}>
           Carrito
         </span>
       </button>

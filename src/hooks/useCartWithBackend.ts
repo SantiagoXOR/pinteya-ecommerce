@@ -198,12 +198,31 @@ export const useCartWithBackend = (): UseCartWithBackendReturn => {
         console.error('❌ Error agregando al carrito:', error)
         setCartState(prev => ({ ...prev, loading: false, error: error.message }))
 
-        if (error.message.includes('Stock insuficiente')) {
-          toast.error(error.message)
+        // Mensajes de error específicos y amigables
+        if (error.message.includes('Stock insuficiente') || error.message.includes('stock')) {
+          toast.error(error.message, {
+            duration: 4000,
+            icon: '📦',
+          })
+        } else if (error.message.includes('No se puede agregar')) {
+          toast.error(error.message, {
+            duration: 4000,
+            icon: '⚠️',
+          })
         } else if (error.message.includes('autenticado')) {
-          toast.error('Debes iniciar sesión para agregar productos')
+          toast.error('Debes iniciar sesión para agregar productos', {
+            duration: 3000,
+            icon: '🔒',
+          })
+        } else if (error.message.includes('no existe') || error.message.includes('no encontrado')) {
+          toast.error('El producto no está disponible en este momento', {
+            duration: 3000,
+            icon: '❌',
+          })
         } else {
-          toast.error('Error agregando producto al carrito')
+          toast.error('Error agregando producto al carrito. Intenta nuevamente', {
+            duration: 3000,
+          })
         }
 
         return false
@@ -273,7 +292,24 @@ export const useCartWithBackend = (): UseCartWithBackendReturn => {
       } catch (error: any) {
         console.error('❌ Error actualizando cantidad:', error)
         setCartState(prev => ({ ...prev, loading: false, error: error.message }))
-        toast.error('Error actualizando cantidad')
+        
+        // Mensajes de error específicos
+        if (error.message.includes('Stock insuficiente') || error.message.includes('stock')) {
+          toast.error(error.message, {
+            duration: 4000,
+            icon: '📦',
+          })
+        } else if (error.message.includes('Solo hay')) {
+          toast.error(error.message, {
+            duration: 4000,
+            icon: '⚠️',
+          })
+        } else {
+          toast.error('Error actualizando cantidad. Intenta nuevamente', {
+            duration: 3000,
+          })
+        }
+        
         return false
       }
     },

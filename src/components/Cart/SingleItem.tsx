@@ -1,36 +1,67 @@
 'use client'
 
-import React, { useState } from 'react'
-import { AppDispatch } from '@/redux/store'
-import { useDispatch } from 'react-redux'
-import { removeItemFromCart, updateCartItemQuantity } from '@/redux/features/cart-slice'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Minus, Plus, Trash2 } from '@/lib/optimized-imports'
+import { Minus, Plus, Trash2, AlertCircle } from '@/lib/optimized-imports'
 import { getValidImageUrl } from '@/lib/adapters/product-adapter'
 import { normalizeVariantLabel } from '@/lib/utils/variant-normalizer'
+import { useCartWithBackend } from '@/hooks/useCartWithBackend'
+import { toast } from 'react-hot-toast'
 
 const SingleItem = ({ item }: { item: any }) => {
   const [quantity, setQuantity] = useState(item.quantity)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const { updateQuantity, removeItem } = useCartWithBackend()
 
-  const dispatch = useDispatch<AppDispatch>()
+  // Sincronizar cantidad local con la del item
+  useEffect(() => {
+    setQuantity(item.quantity)
+  }, [item.quantity])
 
-  const handleRemoveFromCart = () => {
-    dispatch(removeItemFromCart(item.id))
-  }
-
-  const handleIncreaseQuantity = () => {
-    setQuantity(quantity + 1)
-    dispatch(updateCartItemQuantity({ id: item.id, quantity: quantity + 1 }))
-  }
-
-  const handleDecreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1)
-      dispatch(updateCartItemQuantity({ id: item.id, quantity: quantity - 1 }))
-    } else {
+  const handleRemoveFromCart = async () => {
+    setIsUpdating(true)
+    const success = await removeItem(item.id)
+    if (!success) {
+      toast.error('Error al eliminar el producto del carrito')
     }
+    setIsUpdating(false)
+  }
+
+  const handleIncreaseQuantity = async () => {
+    // Verificar si hay stock disponible (si existe en el item)
+    if (item.stock !== undefined && quantity >= item.stock) {
+      toast.error(`Stock máximo alcanzado. Solo hay ${item.stock} disponibles`)
+      return
+    }
+
+    const newQuantity = quantity + 1
+    setIsUpdating(true)
+    const success = await updateQuantity(item.id, newQuantity)
+    if (success) {
+      setQuantity(newQuantity)
+    } else {
+      // El error ya se muestra en el hook
+      setQuantity(item.quantity) // Revertir a la cantidad anterior
+    }
+    setIsUpdating(false)
+  }
+
+  const handleDecreaseQuantity = async () => {
+    if (quantity <= 1) {
+      return
+    }
+
+    const newQuantity = quantity - 1
+    setIsUpdating(true)
+    const success = await updateQuantity(item.id, newQuantity)
+    if (success) {
+      setQuantity(newQuantity)
+    } else {
+      setQuantity(item.quantity) // Revertir a la cantidad anterior
+    }
+    setIsUpdating(false)
   }
 
   // Calcular descuento si existe
@@ -108,36 +139,58 @@ const SingleItem = ({ item }: { item: any }) => {
 
       {/* Quantity Selector - Pinteya Design */}
       <div className='min-w-[275px]'>
-        <div className='flex items-center rounded-xl border-2 border-yellow-400 bg-white shadow-lg w-max overflow-hidden'>
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => handleDecreaseQuantity()}
-            disabled={quantity <= 1}
-            aria-label='Disminuir cantidad'
-            data-testid='quantity-decrease'
-            className='h-12 w-12 rounded-none bg-yellow-400 hover:bg-yellow-500 text-black font-bold disabled:opacity-50 disabled:bg-gray-200 transition-all duration-200'
-          >
-            <Minus className='w-5 h-5' />
-          </Button>
+        <div className='flex flex-col gap-2'>
+          <div className='flex items-center rounded-xl border-2 border-yellow-400 bg-white shadow-lg w-max overflow-hidden'>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={handleDecreaseQuantity}
+              disabled={quantity <= 1 || isUpdating}
+              aria-label='Disminuir cantidad'
+              data-testid='quantity-decrease'
+              className='h-12 w-12 rounded-none bg-yellow-400 hover:bg-yellow-500 text-black font-bold disabled:opacity-50 disabled:bg-gray-200 transition-all duration-200'
+            >
+              <Minus className='w-5 h-5' />
+            </Button>
 
-          <div
-            className='flex items-center justify-center w-16 h-12 bg-white font-bold text-lg text-gray-900 border-x-2 border-yellow-400'
-            data-testid='quantity-input'
-          >
-            {quantity}
+            <div
+              className='flex items-center justify-center w-16 h-12 bg-white font-bold text-lg text-gray-900 border-x-2 border-yellow-400'
+              data-testid='quantity-input'
+            >
+              {quantity}
+            </div>
+
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={handleIncreaseQuantity}
+              disabled={isUpdating || (item.stock !== undefined && quantity >= item.stock)}
+              aria-label='Aumentar cantidad'
+              data-testid='quantity-increase'
+              className='h-12 w-12 rounded-none bg-yellow-400 hover:bg-yellow-500 text-black font-bold disabled:opacity-50 disabled:bg-gray-200 transition-all duration-200'
+            >
+              <Plus className='w-5 h-5' />
+            </Button>
           </div>
-
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => handleIncreaseQuantity()}
-            aria-label='Aumentar cantidad'
-            data-testid='quantity-increase'
-            className='h-12 w-12 rounded-none bg-yellow-400 hover:bg-yellow-500 text-black font-bold transition-all duration-200'
-          >
-            <Plus className='w-5 h-5' />
-          </Button>
+          
+          {/* Mostrar stock disponible */}
+          {item.stock !== undefined && (
+            <div className='flex items-center gap-1.5 text-xs'>
+              {quantity >= item.stock ? (
+                <>
+                  <AlertCircle className='w-3.5 h-3.5 text-amber-600' />
+                  <span className='text-amber-600 font-medium'>Stock máximo alcanzado</span>
+                </>
+              ) : item.stock <= 5 ? (
+                <>
+                  <AlertCircle className='w-3.5 h-3.5 text-orange-600' />
+                  <span className='text-orange-600 font-medium'>Solo quedan {item.stock} disponibles</span>
+                </>
+              ) : (
+                <span className='text-gray-500'>Stock: {item.stock} disponibles</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -158,9 +211,10 @@ const SingleItem = ({ item }: { item: any }) => {
         <Button
           variant='outline'
           size='icon'
-          onClick={() => handleRemoveFromCart()}
+          onClick={handleRemoveFromCart}
+          disabled={isUpdating}
           aria-label='Eliminar producto del carrito'
-          className='h-10 w-10 border-2 border-red-400 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-200 rounded-xl'
+          className='h-10 w-10 border-2 border-red-400 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 rounded-xl'
         >
           <Trash2 className='w-4 h-4' />
         </Button>

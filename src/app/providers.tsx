@@ -28,6 +28,7 @@ import ScrollToTop from '@/components/Common/ScrollToTop'
 // import CartNotification, { useCartNotification } from '@/components/Common/CartNotification'
 // import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import FloatingCartButton from '@/components/ui/floating-cart-button'
+import FloatingWhatsAppButton from '@/components/ui/floating-whatsapp-button'
 import { Toaster } from '@/components/ui/toast'
 
 // Componente NextAuthWrapper para manejar sesiones
@@ -112,6 +113,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
                             {/* Botón de carrito flotante - Oculto en checkout para no tapar el botón de finalizar */}
                             {!isAdminRoute && !isCheckoutRoute && <FloatingCartButton />}
+                            
+                            {/* Botón de WhatsApp flotante */}
+                            {!isAdminRoute && !isCheckoutRoute && <FloatingWhatsAppButton />}
 
                             {/* Notificación del carrito deshabilitada por requerimiento */}
                             {/* {!isAdminRoute && (

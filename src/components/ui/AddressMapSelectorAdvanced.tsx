@@ -1,9 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { MapPin, CheckCircle, AlertCircle, Loader2, X, Navigation } from 'lucide-react'
+import { MapPin, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from './button'
 
 interface AddressMapSelectorAdvancedProps {
   value?: string
@@ -12,10 +11,8 @@ interface AddressMapSelectorAdvancedProps {
   className?: string
   disabled?: boolean
   required?: boolean
-  apiKey?: string
   label?: string
   error?: string
-  showDevButtons?: boolean
 }
 
 export function AddressMapSelectorAdvanced({
@@ -25,10 +22,8 @@ export function AddressMapSelectorAdvanced({
   className,
   disabled = false,
   required = false,
-  apiKey,
-  label = 'Selecciona tu ubicación',
-  error,
-  showDevButtons = false
+  label = 'Dirección de entrega',
+  error
 }: AddressMapSelectorAdvancedProps) {
   const [isMapLoaded, setIsMapLoaded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -36,8 +31,6 @@ export function AddressMapSelectorAdvanced({
   const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat: number; lng: number } | null>(null)
   const [isValid, setIsValid] = useState<boolean | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | undefined>(error)
-  const [showMap, setShowMap] = useState(false)
-  const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null)
   
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<google.maps.Map | null>(null)
@@ -45,7 +38,7 @@ export function AddressMapSelectorAdvanced({
   const geocoderRef = useRef<google.maps.Geocoder | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'DEMO_KEY'
+  const finalApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'DEMO_KEY'
 
   // Límites de Córdoba Capital (más estrictos)
   const cordobaCapitalBounds = {
@@ -55,7 +48,7 @@ export function AddressMapSelectorAdvanced({
     west: -64.35
   }
 
-  // Cargar Google Maps API
+  // Cargar Google Maps API (solo para el mapa, sin Places API)
   useEffect(() => {
     if (!finalApiKey || finalApiKey === 'DEMO_KEY') {
       console.warn('Google Maps API key no configurada. Usando modo demo.')
@@ -63,19 +56,38 @@ export function AddressMapSelectorAdvanced({
     }
 
     const loadGoogleMaps = () => {
-      if (window.google && window.google.maps && window.google.maps.places) {
+      if (window.google && window.google.maps) {
         setIsMapLoaded(true)
         return
       }
 
+      // Verificar si ya existe un script de Google Maps
+      const existingScript = document.querySelector('script[src*="maps.googleapis.com"]')
+      if (existingScript) {
+        // Si ya existe, esperar a que se cargue
+        const checkLoaded = () => {
+          if (window.google && window.google.maps) {
+            setIsMapLoaded(true)
+          } else {
+            setTimeout(checkLoaded, 100)
+          }
+        }
+        checkLoaded()
+        return
+      }
+
       const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${finalApiKey}&libraries=places&language=es&region=ar`
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${finalApiKey}&language=es&region=ar`
       script.async = true
       script.defer = true
-      script.onload = () => setIsMapLoaded(true)
-      script.onerror = () => {
-        console.error('Error cargando Google Maps API')
-        setErrorMessage('Error cargando el mapa. Verifica la configuración de la API key.')
+      script.onload = () => {
+        console.log('Google Maps API cargada correctamente')
+        setIsMapLoaded(true)
+      }
+      script.onerror = (error) => {
+        console.error('Error cargando Google Maps API:', error)
+        setErrorMessage('Error cargando el mapa. Usando modo manual.')
+        setIsMapLoaded(false)
       }
       document.head.appendChild(script)
     }
@@ -83,62 +95,6 @@ export function AddressMapSelectorAdvanced({
     loadGoogleMaps()
   }, [finalApiKey])
 
-  // Inicializar autocompletado
-  useEffect(() => {
-    if (!isMapLoaded || !inputRef.current || finalApiKey === 'DEMO_KEY') return
-
-    const initAutocomplete = () => {
-      if (!window.google || !window.google.maps || !window.google.maps.places) {
-        setTimeout(initAutocomplete, 100)
-        return
-      }
-
-      const autocompleteInstance = new google.maps.places.Autocomplete(inputRef.current!, {
-        componentRestrictions: { country: 'ar' }, // Solo Argentina
-        fields: ['formatted_address', 'geometry', 'address_components'],
-        types: ['address']
-      })
-
-      autocompleteInstance.addListener('place_changed', () => {
-        const place = autocompleteInstance.getPlace()
-        
-        if (!place.geometry || !place.geometry.location) {
-          setErrorMessage('No se pudo encontrar la ubicación')
-          setIsValid(false)
-          onValidationChange?.(false, 'No se pudo encontrar la ubicación')
-          return
-        }
-
-        const lat = place.geometry.location.lat()
-        const lng = place.geometry.location.lng()
-        const address = place.formatted_address || ''
-
-        // Verificar si está en Córdoba Capital
-        const isInCordobaCapital = isWithinCordobaCapitalBounds(lat, lng) && 
-          isCordobaCapitalAddress(place.address_components || [])
-
-        setSelectedAddress(address)
-        setSelectedCoordinates({ lat, lng })
-        setIsValid(isInCordobaCapital)
-        setErrorMessage(isInCordobaCapital ? undefined : 'La dirección debe estar en Córdoba Capital')
-        onValidationChange?.(isInCordobaCapital, isInCordobaCapital ? undefined : 'La dirección debe estar en Córdoba Capital')
-        onChange(address, { lat, lng })
-
-        // Centrar el mapa si está visible
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.setCenter({ lat, lng })
-          mapInstanceRef.current.setZoom(15)
-        }
-        if (markerRef.current) {
-          markerRef.current.setPosition({ lat, lng })
-        }
-      })
-
-      setAutocomplete(autocompleteInstance)
-    }
-
-    initAutocomplete()
-  }, [isMapLoaded, onChange, onValidationChange, finalApiKey])
 
   // Verificar si está dentro de los límites de Córdoba Capital
   const isWithinCordobaCapitalBounds = (lat: number, lng: number): boolean => {
@@ -165,9 +121,9 @@ export function AddressMapSelectorAdvanced({
     )
   }
 
-  // Inicializar mapa
+  // Inicializar mapa (siempre visible)
   useEffect(() => {
-    if (!showMap || !mapRef.current) return
+    if (!mapRef.current || !isMapLoaded) return
 
     const initMap = () => {
       if (!window.google || !window.google.maps) {
@@ -227,7 +183,7 @@ export function AddressMapSelectorAdvanced({
     }
 
     setTimeout(initMap, 100)
-  }, [showMap])
+  }, [isMapLoaded])
 
   // Geocodificación inversa
   const reverseGeocode = (lat: number, lng: number) => {
@@ -265,69 +221,6 @@ export function AddressMapSelectorAdvanced({
     )
   }
 
-  // Obtener ubicación actual del usuario
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setErrorMessage('Geolocalización no soportada por este navegador')
-      return
-    }
-
-    setIsLoading(true)
-    setErrorMessage(undefined)
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude
-        const lng = position.coords.longitude
-        
-        // Centrar el mapa y mover el marcador
-        if (markerRef.current) {
-          markerRef.current.setPosition({ lat, lng })
-        }
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.setCenter({ lat, lng })
-          mapInstanceRef.current.setZoom(15)
-        }
-        setSelectedCoordinates({ lat, lng })
-        reverseGeocode(lat, lng)
-        setIsLoading(false)
-      },
-      (error) => {
-        console.debug('Error obteniendo ubicación:', error)
-        
-        let errorMessage = 'No se pudo obtener tu ubicación'
-        
-        switch (error.code) {
-          case 1:
-            errorMessage = 'Permisos de ubicación denegados. Puedes escribir tu dirección manualmente.'
-            break
-          case 2:
-            errorMessage = 'Ubicación no disponible. Puedes escribir tu dirección manualmente.'
-            break
-          case 3:
-            errorMessage = 'Tiempo de espera agotado. Puedes escribir tu dirección manualmente.'
-            break
-          default:
-            errorMessage = 'Error al obtener ubicación. Puedes escribir tu dirección manualmente.'
-            break
-        }
-        
-        setErrorMessage(errorMessage)
-        setIsValid(false)
-        onValidationChange?.(false, errorMessage)
-        setIsLoading(false)
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
-      }
-    )
-  }
-
-  const handleToggleMap = () => {
-    setShowMap(!showMap)
-  }
 
   const handleClear = () => {
     setSelectedAddress('')
@@ -344,51 +237,26 @@ export function AddressMapSelectorAdvanced({
     onValidationChange?.(false, undefined)
   }
 
-  // Funciones de desarrollo
-  const handleTestLocation = () => {
-    const testLocation = { lat: -31.4201, lng: -64.1888 }
-    const testAddress = 'Córdoba Capital, Córdoba, Argentina'
-    
-    setSelectedAddress(testAddress)
-    setSelectedCoordinates(testLocation)
-    setIsValid(true)
-    setErrorMessage(undefined)
-    onChange(testAddress, testLocation)
-    onValidationChange?.(true, undefined)
-  }
-
-  const handleFallbackLocation = () => {
-    const cordobaCenter = { lat: -31.4201, lng: -64.1888 }
-    const fallbackAddress = 'Córdoba Capital, Córdoba, Argentina'
-    
-    if (markerRef.current) {
-      markerRef.current.setPosition(cordobaCenter)
-    }
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.setCenter(cordobaCenter)
-      mapInstanceRef.current.setZoom(13)
-    }
-    
-    setSelectedCoordinates(cordobaCenter)
-    setSelectedAddress(fallbackAddress)
-    setIsValid(true)
-    setErrorMessage(undefined)
-    onChange(fallbackAddress, cordobaCenter)
-    onValidationChange?.(true, undefined)
-  }
-
-  // Validación manual para modo demo
+  // Validación manual simple
   const handleManualInput = (inputValue: string) => {
     setSelectedAddress(inputValue)
     
     if (inputValue.trim()) {
-      // Validación simple para modo demo
+      // Validación simple que acepta direcciones en Córdoba
       const isManualAddress = inputValue.toLowerCase().includes('córdoba') || 
                             inputValue.toLowerCase().includes('cordoba')
+      
       setIsValid(isManualAddress)
       setErrorMessage(isManualAddress ? undefined : 'La dirección debe estar en Córdoba Capital')
       onValidationChange?.(isManualAddress, isManualAddress ? undefined : 'La dirección debe estar en Córdoba Capital')
       onChange(inputValue, selectedCoordinates || undefined)
+      
+      // Si es una dirección válida pero no tenemos coordenadas, usar coordenadas por defecto de Córdoba
+      if (isManualAddress && !selectedCoordinates) {
+        const defaultCoords = { lat: -31.4201, lng: -64.1888 }
+        setSelectedCoordinates(defaultCoords)
+        onChange(inputValue, defaultCoords)
+      }
     } else {
       setIsValid(null)
       setErrorMessage(undefined)
@@ -407,23 +275,15 @@ export function AddressMapSelectorAdvanced({
         </label>
       )}
 
-      {/* Input de dirección con autocompletado */}
+      {/* Input de dirección manual */}
       <div className="relative">
         <input
           ref={inputRef}
           type="text"
           value={selectedAddress}
-          onChange={(e) => {
-            if (finalApiKey === 'DEMO_KEY') {
-              handleManualInput(e.target.value)
-            } else {
-              setSelectedAddress(e.target.value)
-            }
-          }}
-          placeholder={finalApiKey === 'DEMO_KEY' 
-            ? "Escribe tu dirección en Córdoba Capital (modo demo)" 
-            : "Escribe tu dirección en Córdoba Capital"
-          }
+          onChange={(e) => handleManualInput(e.target.value)}
+          onBlur={(e) => handleManualInput(e.target.value)}
+          placeholder="Dirección en Córdoba Capital"
           disabled={disabled}
           className={cn(
             'w-full px-4 py-3 pr-20 text-base border rounded-lg transition-all duration-200',
@@ -492,75 +352,20 @@ export function AddressMapSelectorAdvanced({
         </p>
       )}
 
-      {/* Botones de control */}
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleToggleMap}
-          disabled={disabled}
-          className="flex-1"
-        >
-          {showMap ? 'Ocultar Mapa' : 'Mostrar Mapa'}
-        </Button>
+
+      {/* Mapa siempre visible */}
+      <div className="space-y-2">
+        <div className="text-sm text-gray-600">
+          <p>🗺️ Arrastra el marcador rojo a tu domicilio o haz clic en el mapa</p>
+        </div>
         
-        <Button
-          type="button"
-          variant="outline"
-          onClick={getCurrentLocation}
-          disabled={disabled || isLoading}
-          className="flex items-center gap-2"
-        >
-          <Navigation className="w-4 h-4" />
-          Mi Ubicación
-        </Button>
+        <div 
+          ref={mapRef}
+          data-testid="map-container"
+          className="w-full h-96 border border-gray-300 rounded-lg"
+          style={{ minHeight: '384px' }}
+        />
       </div>
-
-      {/* Botones de desarrollo - Solo mostrar si showDevButtons es true */}
-      {showDevButtons && (
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleTestLocation}
-            disabled={disabled}
-            className="flex-1 text-sm"
-          >
-            🧪 Ubicación de Prueba
-          </Button>
-          
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleFallbackLocation}
-            disabled={disabled}
-            className="flex-1 text-sm"
-          >
-            📍 Centrar en Córdoba
-          </Button>
-        </div>
-      )}
-
-      {/* Mapa */}
-      {showMap && (
-        <div className="space-y-2">
-          <div className="text-sm text-gray-600">
-            <p>🗺️ <strong>Instrucciones:</strong></p>
-            <ul className="list-disc list-inside mt-1 space-y-1">
-              <li>Arrastra el marcador azul a tu domicilio</li>
-              <li>O haz clic en el mapa para seleccionar una ubicación</li>
-              <li>Solo se permiten ubicaciones en Córdoba Capital</li>
-            </ul>
-          </div>
-          
-          <div 
-            ref={mapRef}
-            data-testid="map-container"
-            className="w-full h-96 border border-gray-300 rounded-lg"
-            style={{ minHeight: '384px' }}
-          />
-        </div>
-      )}
 
       {/* Información adicional */}
       {selectedCoordinates && (

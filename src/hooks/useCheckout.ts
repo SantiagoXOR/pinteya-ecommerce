@@ -109,11 +109,16 @@ export const useCheckout = () => {
   const calculateShippingCost = useCallback(() => {
     const { shippingMethod } = checkoutState.formData
 
+    // Envío gratis para compras mayores a $50,000 (aplica a todos los métodos)
+    if (totalPrice >= 50000) {
+      return 0
+    }
+
     switch (shippingMethod) {
       case 'free':
         return 0
       case 'standard':
-        return totalPrice > 50000 ? 0 : 5000 // Envío gratis por compras mayores a $50,000
+        return 5000
       case 'express':
         return 10000
       default:

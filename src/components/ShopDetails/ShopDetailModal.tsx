@@ -7,6 +7,7 @@ import { useShopDetailsReducer } from '@/hooks/optimization/useShopDetailsReduce
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { toast } from 'react-hot-toast'
 import {
   ShoppingCart,
   Heart,
@@ -19,6 +20,7 @@ import {
   Maximize,
   Hash,
   X,
+  AlertCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/core/utils'
 import { FreeShippingText } from '@/components/ui/free-shipping-text'
@@ -201,47 +203,63 @@ const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         <ShoppingCart className='w-5 h-5 text-blaze-orange-600' />
         Cantidad
       </h4>
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm'>
-          <button
-            onClick={onDecrement}
-            disabled={isMinQuantity}
-            className={cn(
-              'p-3 transition-all duration-200',
-              isMinQuantity
-                ? 'opacity-50 cursor-not-allowed bg-gray-50'
-                : 'hover:bg-blaze-orange-50 hover:text-blaze-orange-600'
-            )}
-            aria-label='Disminuir cantidad'
-          >
-            <Minus className='w-4 h-4' />
-          </button>
+      <div className='flex flex-col gap-2'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm'>
+            <button
+              onClick={onDecrement}
+              disabled={isMinQuantity}
+              className={cn(
+                'p-3 transition-all duration-200',
+                isMinQuantity
+                  ? 'opacity-50 cursor-not-allowed bg-gray-50'
+                  : 'hover:bg-blaze-orange-50 hover:text-blaze-orange-600'
+              )}
+              aria-label='Disminuir cantidad'
+            >
+              <Minus className='w-4 h-4' />
+            </button>
 
-          <div className='w-16 px-3 py-3 text-center border-0 font-semibold text-gray-900 bg-white flex items-center justify-center'>
-            {quantity}
+            <div className='w-16 px-3 py-3 text-center border-0 font-semibold text-gray-900 bg-white flex items-center justify-center'>
+              {quantity}
+            </div>
+
+            <button
+              onClick={onIncrement}
+              disabled={isMaxQuantity}
+              className={cn(
+                'p-3 transition-all duration-200',
+                isMaxQuantity
+                  ? 'opacity-50 cursor-not-allowed bg-gray-50'
+                  : 'hover:bg-blaze-orange-50 hover:text-blaze-orange-600'
+              )}
+              aria-label='Aumentar cantidad'
+            >
+              <Plus className='w-4 h-4' />
+            </button>
           </div>
-
-          <button
-            onClick={onIncrement}
-            disabled={isMaxQuantity}
-            className={cn(
-              'p-3 transition-all duration-200',
-              isMaxQuantity
-                ? 'opacity-50 cursor-not-allowed bg-gray-50'
-                : 'hover:bg-blaze-orange-50 hover:text-blaze-orange-600'
-            )}
-            aria-label='Aumentar cantidad'
-          >
-            <Plus className='w-4 h-4' />
-          </button>
         </div>
 
-        <div className='bg-gray-50 px-3 py-2 rounded-lg hidden'>
-          <span
-            className={cn('text-sm font-medium', stock > 0 ? 'text-green-600' : 'text-red-600')}
-          >
-            {stock > 0 ? `${stock} disponibles` : 'Sin stock'}
-          </span>
+        {/* Indicador de stock disponible */}
+        <div className='flex items-center gap-1.5 text-sm'>
+          {stock === 0 ? (
+            <>
+              <AlertCircle className='w-4 h-4 text-red-600' />
+              <span className='text-red-600 font-medium'>Sin stock disponible</span>
+            </>
+          ) : quantity >= stock ? (
+            <>
+              <AlertCircle className='w-4 h-4 text-amber-600' />
+              <span className='text-amber-600 font-medium'>Stock máximo alcanzado ({stock} disponibles)</span>
+            </>
+          ) : stock <= 5 ? (
+            <>
+              <AlertCircle className='w-4 h-4 text-orange-600' />
+              <span className='text-orange-600 font-medium'>¡Últimas {stock} unidades!</span>
+            </>
+          ) : (
+            <span className='text-gray-600'>{stock} unidades disponibles</span>
+          )}
         </div>
       </div>
     </div>
@@ -1861,6 +1879,22 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
     if (!onAddToCart) {
       console.warn('⚠️ ShopDetailModal: Prop onAddToCart no provista, ignorando click')
+      return
+    }
+
+    // Validar stock disponible antes de agregar al carrito
+    if (effectiveStock !== undefined && quantity > effectiveStock) {
+      toast.error(`Stock insuficiente. Solo hay ${effectiveStock} unidades disponibles`)
+      console.warn('⚠️ ShopDetailModal: Cantidad solicitada excede el stock disponible', {
+        quantity,
+        effectiveStock
+      })
+      return
+    }
+
+    if (effectiveStock === 0) {
+      toast.error('Producto sin stock disponible')
+      console.warn('⚠️ ShopDetailModal: Producto sin stock')
       return
     }
 

@@ -175,16 +175,9 @@ const Header = () => {
               </div>
             </div>
 
-            {/* Sección derecha - Carrito y autenticación */}
+            {/* Sección derecha - Solo para futuras expansiones */}
             <div className='flex items-center gap-1 sm:gap-3'>
-              {/* Autenticación - Desktop */}
-              <div className='hidden sm:block'>
-                {isSignedIn ? <UserAvatarDropdown /> : <LoginButton />}
-              </div>
-              {/* Autenticación - Mobile */}
-              <div className='sm:hidden'>
-                {isSignedIn ? <UserAvatarDropdown /> : <LoginButton />}
-              </div>
+              {/* Espacio reservado para futuras funcionalidades */}
             </div>
           </div>
         </div>

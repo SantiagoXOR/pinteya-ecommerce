@@ -323,7 +323,9 @@ const SimplifiedCheckout = () => {
                     <div className='font-medium'>Envío Express</div>
                     <div className='text-sm text-gray-600'>1-2 días hábiles</div>
                   </div>
-                  <div className='font-semibold'>$10.000</div>
+                  <div className='font-semibold'>
+                    {totalPrice >= 50000 ? 'Gratis' : '$10.000'}
+                  </div>
                 </label>
               </div>
             </CardContent>

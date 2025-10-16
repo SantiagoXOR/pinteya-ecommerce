@@ -65,7 +65,6 @@ export default function TestAddressAdvancedPage() {
                 required
                 label="Dirección de entrega"
                 error={error}
-                showDevButtons={true} // Mostrar botones de desarrollo para testing
               />
 
               {/* Estado de validación */}
