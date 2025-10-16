@@ -66,7 +66,7 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
     <CommercialProductCard
       className='bg-white' // Forzar fondo blanco
       image={getMainImage(item)}
-      slug={(item as any)?.slug}
+      slug={item.slug}
       title={cleanTitle}
       brand={item.brand}
       description={item.description}

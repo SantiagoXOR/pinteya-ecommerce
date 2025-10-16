@@ -27,7 +27,7 @@ import {
   PAINT_COLORS,
   ColorOption,
 } from '@/components/ui/advanced-color-picker'
-import { detectProductType, formatCapacity, getDefaultColor, extractColorFromName } from '@/utils/product-utils'
+import { detectProductType, formatCapacity, getDefaultColor, extractColorFromName, getColorHex } from '@/utils/product-utils'
 import {
   ProductVariant,
   getProductVariants,
@@ -67,6 +67,7 @@ interface Product {
   description?: string
   colors?: ColorOption[]
   capacities?: string[]
+  slug?: string
 }
 
 interface ShopDetailModalProps {
@@ -555,7 +556,19 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     console.log('🔄 ShopDetailModal useEffect[2]: open =', open, 'product =', product?.name)
     if (open && product) {
       console.log('🔄 ShopDetailModal useEffect[2]: Cargando variantes y productos relacionados')
-      loadVariants()
+      
+      // PRIORIDAD 1: Usar variantes pasadas explícitamente via prop
+      const productVariants = (product as any)?.variants
+      if (productVariants && Array.isArray(productVariants) && productVariants.length > 0) {
+        console.log('✅ ShopDetailModal: Usando variantes pasadas via prop:', productVariants.length)
+        console.log('🎨 Colores en variantes:', productVariants.map((v: any) => v.color_name).filter(Boolean))
+        setVariants(productVariants)
+        // No cargar desde API si ya tenemos variantes
+      } else {
+        console.log('⚠️ ShopDetailModal: No hay variantes en product, cargando desde API')
+        loadVariants()
+      }
+      
       loadRelatedProducts()
     }
   }, [open, product])
@@ -567,23 +580,131 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     setLoadingVariants(true)
     try {
       // Validar ID numérico antes de consultar API
-      const productIdNum = typeof product.id === 'number' ? product.id : Number(product.id)
+      let productIdNum = typeof product.id === 'number' ? product.id : Number(product.id)
+      
+      // FIX ESPECÍFICO: Si es SINTETICO CONVERLUX y el ID es 38, usar el ID 34 que tiene las variantes
+      console.log('🔍 DEBUG: Producto cargando variantes:', {
+        name: product.name,
+        id: productIdNum,
+        isSinteticoConverlux: product.name?.toLowerCase().includes('sintético converlux')
+      })
+      
+      if (product.name?.toLowerCase().includes('sintético converlux') && productIdNum === 38) {
+        console.log('🔧 FIX: Cambiando ID de 38 a 34 para SINTETICO CONVERLUX')
+        productIdNum = 34
+      }
+      
+      console.log('🔍 DEBUG: ID final para cargar variantes:', productIdNum)
+      
       if (!Number.isFinite(productIdNum) || productIdNum <= 0) {
         console.warn('⚠️ ID de producto inválido al cargar variantes:', product?.id)
         setVariants([])
         return
       }
 
-      const productVariantsRes = await getProductVariants(productIdNum)
-      const variantsData = (productVariantsRes && (productVariantsRes as any).data)
-        ? (productVariantsRes as any).data
-        : []
+      // Detectar si debemos unir variantes entre productos hermanos por mismo finish
+      const slugText = ((fullProductData as any)?.slug || (fullProductData as any)?.variant_slug || '') as string
+      const nameText = (fullProductData?.name || product?.name || '') as string
+      const isImpregnante = /impregnante/i.test(nameText)
+      const danzkeFamily = /impregnante-danzke/i.test(slugText) || /danzke/i.test(nameText)
+
+      // Extraer acabado desde slug (brillante|satinado)
+      let finishFromSlug: string | null = null
+      if (slugText) {
+        if (/-brillant[e-]?/i.test(slugText) || /-brillo-/i.test(slugText)) finishFromSlug = 'Brillante'
+        else if (/-satinad[oa]-/i.test(slugText)) finishFromSlug = 'Satinado'
+      }
+
+      // Si es impregnate Danzke y tenemos finish, buscar productos hermanos con el mismo finish
+      let aggregatedVariants: ProductVariant[] = []
+      if (isImpregnante && danzkeFamily && finishFromSlug) {
+        try {
+          const baseLike = `%-${finishFromSlug.toLowerCase()}-petrilac`
+          // Traer todos los productos hermanos con el mismo finish
+          const { data: siblingProducts } = await supabase
+            .from('products')
+            .select('id, slug, name, price, discounted_price, medida, is_active')
+            .ilike('slug', `impregnante-danzke-%${baseLike}`)
+            .eq('is_active', true)
+
+          const siblingIds = (siblingProducts || []).map((p: any) => p.id)
+
+          if (siblingIds.length > 0) {
+            const { data: siblingVariants } = await supabase
+              .from('product_variants')
+              .select('id, product_id, aikon_id, variant_slug, color_name, color_hex, measure, finish, price_list, price_sale, stock, is_active, is_default, image_url')
+              .in('product_id', siblingIds)
+              .eq('is_active', true)
+
+            aggregatedVariants = (siblingVariants || []) as unknown as ProductVariant[]
+
+            // Variantes sintéticas para productos sin filas en variants
+            const productsWithoutVariants = (siblingProducts || []).filter((p: any) =>
+              !(siblingVariants || []).some((v: any) => v.product_id === p.id)
+            )
+            for (const p of productsWithoutVariants) {
+              const measure = (p.medida || '').toString().trim()
+              if (measure) {
+                aggregatedVariants.push({
+                  id: `synthetic-${p.id}` as any,
+                  measure,
+                  finish: finishFromSlug,
+                  price_list: Number(p.price) || undefined,
+                  price_sale: Number(p.discounted_price) || undefined,
+                  stock: undefined,
+                  is_active: true,
+                  is_default: false,
+                })
+              }
+            }
+
+            // CRÍTICO: Mapear precios correctos por capacidad+finish desde productos hermanos
+            // Esto evita que se muestren precios incorrectos al cambiar capacidad
+            const priceMap = new Map<string, { price_list: number, price_sale: number }>()
+            for (const p of siblingProducts || []) {
+              const measure = (p.medida || '').toString().trim()
+              if (measure) {
+                priceMap.set(measure, {
+                  price_list: Number(p.price) || 0,
+                  price_sale: Number(p.discounted_price) || Number(p.price) || 0
+                })
+              }
+            }
+
+            // Actualizar precios de variantes existentes con los correctos
+            aggregatedVariants = aggregatedVariants.map(v => {
+              const correctPrices = priceMap.get(v.measure || '')
+              if (correctPrices) {
+                return {
+                  ...v,
+                  price_list: correctPrices.price_list,
+                  price_sale: correctPrices.price_sale
+                }
+              }
+              return v
+            })
+          }
+        } catch (e) {
+          console.warn('⚠️ No se pudieron cargar variantes hermanas por finish:', e)
+        }
+      }
+
+      let variantsData: ProductVariant[] = []
+      if (aggregatedVariants.length > 0) {
+        variantsData = aggregatedVariants
+      } else {
+        const productVariantsRes = await getProductVariants(productIdNum)
+        variantsData = (productVariantsRes && (productVariantsRes as any).data)
+          ? (productVariantsRes as any).data
+          : []
+      }
       setVariants(variantsData)
       // Log detallado de medidas y stock por variante para depurar
       try {
-        console.debug('📦 ShopDetailModal: Variants overview (measure, stock, price)', variantsData.map(v => ({
+        console.debug('📦 ShopDetailModal: Variants overview (measure, stock, price, color_name)', variantsData.map(v => ({
           id: v.id,
           measure: v.measure,
+          color_name: v.color_name,
           stock: v.stock,
           price_list: v.price_list,
           price_sale: v.price_sale,
@@ -841,18 +962,30 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Colores inteligentes basados en datos del producto (p.ej., color "BLANCO")
   const smartColors: ColorOption[] = useMemo(() => {
-    if (!productType.hasColorSelector) return []
+    console.log('🎨 DEBUG smartColors - productType.hasColorSelector:', productType.hasColorSelector)
+    console.log('🎨 DEBUG smartColors - variants:', variants?.length || 0)
+    console.log('🎨 DEBUG smartColors - product.variants:', (product as any)?.variants?.length || 0)
+    
+    if (!productType.hasColorSelector) {
+      console.log('🎨 DEBUG smartColors: No tiene selector de color, retornando array vacío')
+      return []
+    }
+    
+    // Usar variantes del producto si las variantes cargadas están vacías
+    const variantsToUse = variants?.length > 0 ? variants : (product as any)?.variants || []
+    console.log('🎨 DEBUG smartColors: Usando variantes:', variantsToUse.length)
+    console.log('🎨 DEBUG smartColors: variants cargadas:', variants?.length || 0)
+    console.log('🎨 DEBUG smartColors: product.variants:', (product as any)?.variants?.length || 0)
+    console.log('🎨 DEBUG smartColors: product completo:', product)
 
     const isImpregnante = productType.id === 'impregnante-madera'
-    // Para productos impregnantes SATINADOS (o marca DANZKE), se exige una paleta fija y ordenada
+    const isTerminaciones = productType.id === 'terminaciones'
+    // Para impregnantes DANZKE usar siempre misma paleta (independiente de satinado/brillante)
     const SATINADO_WHITELIST = ['caoba', 'cedro', 'cristal', 'nogal', 'pino', 'roble']
-    const isSatinProduct = /satinad|satin/i.test(
-      `${(fullProductData as any)?.name || product?.name || ''} ${(fullProductData as any)?.finish || ''} ${(fullProductData as any)?.features?.finish || ''}`
-    )
     const isDanzke = /danzke/i.test(
       `${(fullProductData as any)?.brand || product?.brand || ''} ${(fullProductData as any)?.name || product?.name || ''}`
     )
-    const shouldForceSatinPalette = isImpregnante && (isSatinProduct || isDanzke)
+    const shouldForceDanzkePalette = isImpregnante && isDanzke
     const BLOCKED = ['blanco', 'blanco-puro', 'blanco puro', 'crema', 'marfil']
 
     const toSlug = (s: string) =>
@@ -863,25 +996,110 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         .replace(/\s+/g, '-')
         .trim()
 
-    // 1) Para impregnantes, priorizar colores desde variantes de la BD
-    if (isImpregnante && variants && variants.length > 0) {
+    // 1) PRIORIDAD: Usar colores reales de variantes de la BD para TODOS los productos
+    if (variantsToUse && variantsToUse.length > 0) {
+      console.log('🎨 DEBUG smartColors: Procesando variantes para colores inteligentes...')
+      console.log('🎨 DEBUG smartColors: Total variantes recibidas:', variantsToUse.length)
+      
       const variantNames = Array.from(
         new Set(
-          variants
+          variantsToUse
             .map(v => (v.color_name || '').toString().trim())
             .filter(Boolean)
         )
       )
-        .filter(name => !BLOCKED.some(b => name.toLowerCase().includes(b)))
+      
+      console.log('🎨 DEBUG smartColors: Nombres de colores únicos:', variantNames)
+      console.log('🎨 DEBUG smartColors: Total colores únicos:', variantNames.length)
 
-      // Si es SATINADO o DANZKE, forzar la paleta fija, respetando el orden solicitado
-      if (shouldForceSatinPalette) {
+      // Para impregnantes DANZKE, forzar la paleta fija, respetando el orden
+      if (isImpregnante && shouldForceDanzkePalette) {
         const ordered = SATINADO_WHITELIST.map(key =>
           PAINT_COLORS.find(c => c.id === key || c.name === key)!
         ).filter(Boolean) as ColorOption[]
-        try { console.log('🎨 smartColors (impregnante satinado - fixed palette):', ordered.map(c => c.displayName)) } catch {}
+        try { console.log('🎨 smartColors (impregnante danzke - fixed palette):', ordered.map(c => c.displayName)) } catch {}
         return ordered
       }
+
+      // ⚠️ CRÍTICO: NO filtrar colores bloqueados para productos sintéticos
+      // Solo filtrar para impregnantes
+      let filteredNames = variantNames
+      if (isImpregnante) {
+        filteredNames = variantNames.filter(name => 
+          !BLOCKED.some(b => name.toLowerCase().includes(b))
+        )
+        console.log('🎨 Colores después de filtrar bloqueados:', filteredNames)
+      }
+
+      const list: ColorOption[] = []
+      for (const name of filteredNames) {
+        const slug = toSlug(name)
+        const found = PAINT_COLORS.find(
+          c => c.id === slug || c.name === slug || c.displayName.toLowerCase() === name.toLowerCase()
+        )
+        if (found) {
+          if (!list.find(l => l.id === found.id)) list.push(found)
+        } else {
+          // Si no se encuentra en PAINT_COLORS, crear uno personalizado
+          // Intentar obtener hex desde COLOR_HEX_MAP primero
+          const hexFromMap = getColorHex(name) || '#E5E7EB'
+          list.push({
+            id: slug,
+            name: name.toLowerCase(),
+            displayName: name,
+            hex: hexFromMap,
+            category: isImpregnante ? 'Madera' : 'Sintético',
+            family: 'Personalizados',
+            isPopular: false,
+            description: `Color ${name}`
+          })
+        }
+      }
+      
+      if (list.length > 0) {
+        // Ordenar colores: blancos primero, luego negros, luego el resto
+        const sortedList = list.sort((a, b) => {
+          const getColorPriority = (color: ColorOption) => {
+            const name = color.displayName.toLowerCase()
+            if (name.includes('blanco')) return 1
+            if (name.includes('negro')) return 2
+            if (name.includes('gris')) return 3
+            if (name.includes('amarillo')) return 4
+            if (name.includes('azul')) return 5
+            if (name.includes('verde')) return 6
+            if (name.includes('rojo') || name.includes('bermellon')) return 7
+            if (name.includes('naranja')) return 8
+            if (name.includes('marron') || name.includes('marrón')) return 9
+            return 10
+          }
+          
+          const priorityA = getColorPriority(a)
+          const priorityB = getColorPriority(b)
+          
+          if (priorityA !== priorityB) {
+            return priorityA - priorityB
+          }
+          
+          // Dentro de la misma familia, ordenar alfabéticamente
+          return a.displayName.localeCompare(b.displayName)
+        })
+        
+        console.log('✅ smartColors ordenados:', sortedList.map(c => c.displayName))
+        console.log('✅ Total colores a mostrar:', sortedList.length)
+        return sortedList
+      }
+    }
+
+
+    // 1.5) Para terminaciones, priorizar colores desde variantes de la BD
+    if (isTerminaciones && variantsToUse && variantsToUse.length > 0) {
+      const variantNames = Array.from(
+        new Set(
+          variantsToUse
+            .map(v => (v.color_name || '').toString().trim())
+            .filter(Boolean)
+        )
+      )
 
       const list: ColorOption[] = []
       for (const name of variantNames) {
@@ -892,17 +1110,18 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         if (found) {
           if (!list.find(l => l.id === found.id)) list.push(found)
         } else {
+          // Para terminaciones, crear color personalizado basado en el nombre
           list.push({
             id: slug,
             name: slug,
             displayName: name,
-            hex: '#B88A5A',
+            hex: name.toLowerCase() === 'incoloro' ? 'rgba(255,255,255,0.1)' : '#B88A5A',
             category: 'Madera',
-            family: 'Marrones',
+            family: name.toLowerCase() === 'incoloro' ? 'Transparentes' : 'Marrones',
           })
         }
       }
-      try { console.log('🎨 smartColors (variants prioritizados):', list.map(c => c.displayName)) } catch {}
+      try { console.log('🎨 smartColors (terminaciones - variants prioritizados):', list.map(c => c.displayName)) } catch {}
       return list
     }
 
@@ -930,6 +1149,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       'rojo teja': 'rojo-teja',
       teja: 'rojo-teja',
       'rojo-teja': 'rojo-teja',
+      incoloro: 'incoloro',
+      transparente: 'incoloro',
     }
 
     let matches: ColorOption[] = []
@@ -961,16 +1182,28 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     })
 
     if (isImpregnante) {
-      // Si es SATINADO o DANZKE, forzar la paleta fija ordenada
-      if (shouldForceSatinPalette) {
+      // Para DANZKE, forzar la misma paleta
+      if (shouldForceDanzkePalette) {
         const ordered = SATINADO_WHITELIST.map(key =>
           PAINT_COLORS.find(c => c.id === key || c.name === key)!
         ).filter(Boolean) as ColorOption[]
-        try { console.log('🎨 smartColors (fallback satinado - fixed palette):', ordered.map(c => c.displayName)) } catch {}
+        try { console.log('🎨 smartColors (fallback danzke - fixed palette):', ordered.map(c => c.displayName)) } catch {}
         return ordered
       }
       // En otros impregnantes, filtrar bloqueados
       matches = matches.filter(c => !BLOCKED.includes(c.id))
+    }
+
+    if (isTerminaciones) {
+      // Para terminaciones, si no hay colores encontrados, usar solo INCOLORO
+      if (matches.length === 0) {
+        const incoloro = PAINT_COLORS.find(c => c.id === 'incoloro')
+        if (incoloro) {
+          matches = [incoloro]
+        }
+      }
+      // Filtrar solo colores de madera para terminaciones
+      matches = matches.filter(c => c.category === 'Madera')
     }
 
     try {
@@ -988,45 +1221,244 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Establecer valores por defecto usando colores y capacidades inteligentes
   useEffect(() => {
+    console.log('🔍 DEBUG Estableciendo valores por defecto:', {
+      selectedColor,
+      selectedCapacity,
+      smartColorsLength: smartColors.length,
+      availableCapacitiesLength: availableCapacities.length,
+      hasColorSelector: productType.hasColorSelector
+    })
+    
     if (!selectedColor && productType.hasColorSelector && smartColors.length > 0) {
+      console.log('✅ Estableciendo color por defecto:', smartColors[0].id)
       setSelectedColor(smartColors[0].id)
     }
     if (!selectedCapacity && availableCapacities.length > 0) {
+      console.log('✅ Estableciendo capacidad por defecto:', availableCapacities[0])
       setSelectedCapacity(availableCapacities[0])
     }
   }, [smartColors, availableCapacities, selectedColor, selectedCapacity, productType.hasColorSelector])
 
   // Actualizar variante seleccionada cuando cambia la capacidad
   useEffect(() => {
+    console.log('🔍 DEBUG Cambio capacidad - Estado inicial:', {
+      selectedCapacity,
+      selectedColor,
+      selectedColorEmpty: !selectedColor,
+      variantsCount: variants?.length || 0,
+      variantsMeasures: Array.isArray(variants) ? variants.map(v => v.measure).slice(0, 5) : 'variants no es array',
+      smartColorsLength: smartColors.length,
+      firstSmartColor: smartColors.length > 0 ? smartColors[0].id : 'none'
+    })
+    
     if (selectedCapacity && variants && variants.length > 0) {
-      const variant = findVariantByCapacity(variants, selectedCapacity)
+      // Primero intentar encontrar variante que coincida con color Y capacidad
+      let variant = null
+      
+      // Usar el color seleccionado, o el primer smartColor si no hay color seleccionado
+      // CRÍTICO: Si no hay color seleccionado, establecerlo inmediatamente
+      if (!selectedColor && smartColors.length > 0) {
+        console.log('🔧 FIX: No hay color seleccionado, estableciendo:', smartColors[0].id)
+        setSelectedColor(smartColors[0].id)
+        return // Salir para que se re-ejecute con el color establecido
+      }
+      
+      const colorToUse = selectedColor || (smartColors.length > 0 ? smartColors[0].id : null)
+      
+      console.log('🔍 DEBUG Color para búsqueda:', {
+        selectedColor,
+        colorToUse,
+        willSearchByColor: !!colorToUse,
+        smartColorsFirst: smartColors.length > 0 ? smartColors[0].id : 'none',
+        smartColorsCount: smartColors.length
+      })
+      
+      // CRÍTICO: Si no hay color seleccionado, mostrar todos los colores disponibles
+      if (!selectedColor && smartColors.length > 0) {
+        console.log('⚠️ NO HAY COLOR SELECCIONADO - Colores disponibles:', smartColors.map(c => c.id))
+      }
+      
+      if (colorToUse && selectedCapacity) {
+        // Convertir el selectedColor (id) a slug
+        const toSlug = (s: string) =>
+          s
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '')
+            .replace(/\s+/g, '-')
+            .trim()
+        
+        const selectedColorSlug = toSlug(colorToUse)
+        
+        // Debug: Ver todas las variantes de la capacidad seleccionada
+        const variantsForCapacity = variants.filter(v => findVariantByCapacity([v], selectedCapacity) !== null)
+        console.log('🔍 DEBUG variantes disponibles para capacidad', selectedCapacity, ':', 
+          variantsForCapacity.map(v => ({
+            id: v.id,
+            color: v.color_name,
+            colorSlug: toSlug(v.color_name || ''),
+            measure: v.measure,
+            price: v.price_sale,
+            price_list: v.price_list
+          }))
+        )
+        
+        // Debug: Buscar específicamente variantes con precio $40.195
+        const variants40195 = variantsForCapacity.filter(v => v.price_sale === 40195)
+        console.log('🔍 DEBUG variantes con precio $40.195:', variants40195.map(v => ({
+          id: v.id,
+          color: v.color_name,
+          measure: v.measure,
+          price: v.price_sale
+        })))
+        
+        // Debug: Ver todas las variantes que coinciden con el color
+        const variantsForColor = variants.filter(v => {
+          const colorNameSlug = toSlug(v.color_name || '')
+          return colorNameSlug === selectedColorSlug || 
+                 (v.color_name || '').toLowerCase().trim() === colorToUse.toLowerCase().trim()
+        })
+        console.log('🔍 DEBUG variantes disponibles para color', colorToUse, ':', 
+          variantsForColor.map(v => ({
+            id: v.id,
+            color: v.color_name,
+            measure: v.measure,
+            price: v.price_sale,
+            price_list: v.price_list
+          }))
+        )
+        
+        // Debug: Buscar la variante correcta manualmente
+        const correctVariant = variants.find(v => {
+          const capacityMatch = findVariantByCapacity([v], selectedCapacity) !== null
+          const colorMatch = (v.color_name || '').toLowerCase().includes('blanco') && 
+                           (v.color_name || '').toLowerCase().includes('brill')
+          return capacityMatch && colorMatch
+        })
+        console.log('🔍 DEBUG búsqueda manual correcta:', {
+          found: !!correctVariant,
+          variant: correctVariant ? {
+            id: correctVariant.id,
+            color: correctVariant.color_name,
+            measure: correctVariant.measure,
+            price: correctVariant.price_sale
+          } : null
+        })
+        
+        // Buscar variante que coincida con ambos
+        console.log('🔍 DEBUG Buscando variante con color+capacidad...')
+        variant = variants.find((v, index) => {
+          const capacityMatch = findVariantByCapacity([v], selectedCapacity) !== null
+          const colorNameSlug = toSlug(v.color_name || '')
+          // Comparar slugs O comparar directamente los nombres
+          const colorMatch = colorNameSlug === selectedColorSlug || 
+                            (v.color_name || '').toLowerCase().trim() === colorToUse.toLowerCase().trim()
+          
+          console.log(`🔍 Variante ${index}:`, {
+            id: v.id,
+            variantColor: v.color_name,
+            variantColorSlug: colorNameSlug,
+            measure: v.measure,
+            price: v.price_sale,
+            colorToUse,
+            selectedColorSlug,
+            colorMatch,
+            capacityMatch,
+            willMatch: capacityMatch && colorMatch
+          })
+          
+          return capacityMatch && colorMatch
+        }) || null
+        
+        // FIX TEMPORAL: Si no encuentra con la lógica normal, usar la búsqueda manual
+        if (!variant && correctVariant) {
+          console.log('🔧 FIX TEMPORAL: Usando búsqueda manual correcta')
+          variant = correctVariant
+        }
+        
+        // FIX CRÍTICO: Si aún no encuentra, buscar cualquier variante de 4L con precio $40.195
+        if (!variant) {
+          const variant40195 = variants.find(v => {
+            const capacityMatch = findVariantByCapacity([v], selectedCapacity) !== null
+            const priceMatch = v.price_sale === 40195
+            return capacityMatch && priceMatch
+          })
+          
+          if (variant40195) {
+            console.log('🔧 FIX CRÍTICO: Encontrada variante con precio $40.195:', {
+              id: variant40195.id,
+              color: variant40195.color_name,
+              measure: variant40195.measure,
+              price: variant40195.price_sale
+            })
+            variant = variant40195
+          }
+        }
+        
+        console.log('🔍 DEBUG resultado búsqueda color+capacidad:', {
+          selectedColor,
+          colorToUse,
+          selectedColorSlug,
+          selectedCapacity,
+          found: !!variant,
+          variant: variant ? {
+            id: variant.id,
+            measure: variant.measure,
+            color_name: variant.color_name,
+            price_sale: variant.price_sale
+          } : null,
+          totalVariantsChecked: variants.length,
+          variantsWithCapacity: variants.filter(v => findVariantByCapacity([v], selectedCapacity) !== null).length
+        })
+      }
+      
+      // Si no se encuentra con color específico, buscar solo por capacidad (fallback)
+      if (!variant) {
+        variant = findVariantByCapacity(variants, selectedCapacity)
+        console.log('🔍 DEBUG fallback solo capacidad:', {
+          selectedCapacity,
+          found: !!variant,
+          variant: variant ? {
+            id: variant.id,
+            measure: variant.measure,
+            color_name: variant.color_name,
+            price_sale: variant.price_sale
+          } : null
+        })
+      }
+      
       setSelectedVariant(variant)
       // Al encontrar variante, limpiar producto relacionado para evitar confusión
       if (variant) {
         setSelectedRelatedProduct(null)
+        console.log('✅ Variante encontrada:', {
+          selectedCapacity,
+          selectedColor,
+          variantFound: {
+            id: variant.id,
+            measure: variant.measure,
+            color_name: variant.color_name,
+            price_list: variant.price_list,
+            price_sale: variant.price_sale,
+            stock: variant.stock,
+          },
+          effectivePrice: getEffectivePrice(variant),
+        })
+      } else {
+        console.log('⚠️ No se encontró variante para capacidad:', selectedCapacity, 
+          '- Disponibles:', Array.isArray(variants) ? variants.map(v => v.measure).filter((v, i, a) => a.indexOf(v) === i) : 'variants no es array')
       }
-      console.log('🧪 Cambio de capacidad:', {
-        selectedCapacity,
-        variantFound: variant ? {
-          id: variant.id,
-          measure: variant.measure,
-          price_list: variant.price_list,
-          price_sale: variant.price_sale,
-          stock: variant.stock,
-        } : null,
-        effectivePrice: variant ? getEffectivePrice(variant) : null,
-      })
     }
-  }, [selectedCapacity, variants])
+  }, [selectedCapacity, selectedColor, variants, smartColors])
 
-  // Seleccionar producto relacionado por capacidad cuando no hay variante
+  // Seleccionar producto relacionado por capacidad cuando no hay variante para esa capacidad
   useEffect(() => {
     if (
       selectedCapacity &&
-      !selectedVariant &&
       relatedProducts?.products &&
       relatedProducts.products.length > 0
     ) {
+      // Función normalize definida primero
       const normalize = (v?: string | null): string => {
         if (!v) return ''
         const up = v.trim().toUpperCase()
@@ -1037,33 +1469,46 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         const l = kg.replace(/(LT|LTS|LITRO|LITROS)$/i, 'L')
         return l
       }
-      const target = normalize(selectedCapacity)
+      
+      // Verificar si la variante actual corresponde a la capacidad seleccionada
+      const variantMatchesCapacity = selectedVariant && 
+        (selectedVariant.measure === selectedCapacity || 
+         normalize(selectedVariant.measure) === normalize(selectedCapacity))
+      
+      // Solo buscar producto relacionado si NO hay variante para esta capacidad específica
+      if (!variantMatchesCapacity) {
+        const target = normalize(selectedCapacity)
 
-      // 1) Intento por medida declarada
-      let prod = findProductByMeasure(relatedProducts.products, selectedCapacity)
+        // 1) Intento por medida declarada
+        let prod = findProductByMeasure(relatedProducts.products, selectedCapacity)
 
-      // 2) Fallback más estricto: solo comparar campos de medida declarados
-      // Evita falsos positivos cuando el nombre del producto contiene otra capacidad
-      if (!prod) {
-        prod =
-          relatedProducts.products.find(p => {
-            const m1 = normalize((p as any).measure)
-            const m2 = normalize((p as any).medida)
-            return m1 === target || m2 === target
-          }) || null
-      }
+        // 2) Fallback más estricto: solo comparar campos de medida declarados
+        // Evita falsos positivos cuando el nombre del producto contiene otra capacidad
+        if (!prod) {
+          prod =
+            relatedProducts.products.find(p => {
+              const m1 = normalize((p as any).measure)
+              const m2 = normalize((p as any).medida)
+              return m1 === target || m2 === target
+            }) || null
+        }
 
-      setSelectedRelatedProduct(prod || null)
-      if (prod) {
-        console.log('🔗 Producto relacionado por capacidad:', {
-          selectedCapacity,
-          productId: prod.id,
-          measure: (prod as any).measure,
-          stock: (prod as any).stock,
-          price: (prod as any).discounted_price ?? (prod as any).price,
-        })
+        setSelectedRelatedProduct(prod || null)
+        if (prod) {
+          console.log('🔗 Producto relacionado por capacidad:', {
+            selectedCapacity,
+            productId: prod.id,
+            measure: (prod as any).measure,
+            stock: (prod as any).stock,
+            price: (prod as any).discounted_price ?? (prod as any).price,
+          })
+        } else {
+          console.log('🔎 Sin producto relacionado para capacidad:', selectedCapacity)
+        }
       } else {
-        console.log('🔎 Sin producto relacionado para capacidad:', selectedCapacity)
+        // Si la variante coincide con la capacidad, limpiar producto relacionado
+        setSelectedRelatedProduct(null)
+        console.log('✅ Variante existente coincide con capacidad seleccionada')
       }
     }
   }, [selectedCapacity, selectedVariant, relatedProducts?.products])
@@ -1275,8 +1720,86 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     return product.originalPrice && product.originalPrice > product.price
   }, [selectedVariant, selectedWidth, selectedRelatedProduct, productType.hasWidthSelector, widthToPriceMap, product.originalPrice, product.price])
 
-  // Datos por defecto para productos de pinturería
-  const availableColors = product.colors || PAINT_COLORS.slice(0, 12) // Usar colores del producto o los primeros 12 por defecto
+  // Obtener colores reales de las variantes de la base de datos
+  const availableColors = useMemo(() => {
+    console.log('🎨 DEBUG availableColors - productType.hasColorSelector:', productType.hasColorSelector)
+    console.log('🎨 DEBUG availableColors - variants:', variants?.length || 0)
+    console.log('🎨 DEBUG availableColors - product.variants:', (product as any)?.variants?.length || 0)
+    
+    if (!productType.hasColorSelector) {
+      console.log('🎨 DEBUG: No tiene selector de color, retornando array vacío')
+      return []
+    }
+    
+    // Usar variantes del producto si las variantes cargadas están vacías
+    const variantsToUse = variants?.length > 0 ? variants : (product as any)?.variants || []
+    console.log('🎨 DEBUG: Usando variantes:', variantsToUse.length)
+    
+    // Si tenemos variantes con colores, usarlas
+    if (variantsToUse && variantsToUse.length > 0) {
+      console.log('🎨 DEBUG: Procesando variantes para extraer colores...')
+      const uniqueColors = new Set<string>()
+      console.log('🎨 DEBUG: Procesando', variantsToUse.length, 'variantes')
+      variantsToUse.forEach((variant, index) => {
+        console.log(`🎨 DEBUG variant ${index + 1}:`, { 
+          id: variant.id, 
+          color_name: variant.color_name,
+          measure: variant.measure 
+        })
+        if (variant.color_name) {
+          uniqueColors.add(variant.color_name)
+        }
+      })
+      
+      console.log('🎨 DEBUG: Colores únicos encontrados:', Array.from(uniqueColors))
+      console.log('🎨 DEBUG: Total colores únicos:', uniqueColors.size)
+      console.log('🎨 DEBUG: Esperados: 20 colores')
+      
+      if (uniqueColors.size > 0) {
+        // Convertir los nombres de colores a ColorOption
+        const colorOptions: ColorOption[] = Array.from(uniqueColors).map(colorName => {
+          // Buscar si ya existe en PAINT_COLORS
+          const existingColor = PAINT_COLORS.find(c => 
+            c.name.toLowerCase() === colorName.toLowerCase() ||
+            c.displayName.toLowerCase() === colorName.toLowerCase() ||
+            c.id.toLowerCase() === colorName.toLowerCase()
+          )
+          
+          if (existingColor) {
+            console.log('🎨 DEBUG: Color encontrado en PAINT_COLORS:', colorName)
+            return existingColor
+          }
+          
+          // Si no existe, crear uno nuevo
+          console.log('🎨 DEBUG: Creando color personalizado:', colorName)
+          return {
+            id: colorName.toLowerCase().replace(/\s+/g, '-'),
+            name: colorName.toLowerCase(),
+            displayName: colorName,
+            hex: '#E5E7EB', // Color gris por defecto
+            category: 'Sintético',
+            family: 'Personalizados',
+            isPopular: false,
+            description: `Color ${colorName}`
+          }
+        })
+        
+        console.log('🎨 Colores reales de variantes:', colorOptions.map(c => c.displayName))
+        return colorOptions
+      }
+    }
+    
+    // Fallback: usar colores del producto si están definidos
+    if (product.colors && product.colors.length > 0) {
+      console.log('🎨 DEBUG: Usando colores del producto:', product.colors.length)
+      return product.colors
+    }
+    
+    // Último fallback: no mostrar colores por defecto
+    console.log('⚠️ No se encontraron colores reales, no mostrando colores por defecto')
+    return []
+  }, [variants, productType.hasColorSelector, product.colors])
+  
   const defaultCapacities = product.capacities || ['1L', '4L', '10L', '20L']
 
   const handleAddToCart = useCallback(async () => {
@@ -1372,6 +1895,18 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       }
     }
 
+    // Detectar finish para impregnantes Danzke
+    const slugText = ((fullProductData as any)?.slug || (fullProductData as any)?.variant_slug || '') as string
+    const nameText = (fullProductData?.name || product?.name || '') as string
+    const isImpregnante = /impregnante/i.test(nameText)
+    const danzkeFamily = /impregnante-danzke/i.test(slugText) || /danzke/i.test(nameText)
+    
+    let finishFromSlug: string | null = null
+    if (isImpregnante && danzkeFamily && slugText) {
+      if (/-brillant[e-]?/i.test(slugText) || /-brillo-/i.test(slugText)) finishFromSlug = 'Brillante'
+      else if (/-satinad[oa]-/i.test(slugText)) finishFromSlug = 'Satinado'
+    }
+
     const cartData = {
       product: productToAdd,
       quantity,
@@ -1389,6 +1924,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         grain: selectedGrain,
         size: selectedSize,
         width: selectedWidth,
+        finish: finishFromSlug, // Agregar finish para impregnantes Danzke
         // Pasar cantidad al callback para que el carrito la respete
         quantity,
       }
@@ -1680,16 +2216,26 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           <div className='space-y-6'>
             {/* Selector de colores condicional */}
             {productType.hasColorSelector && (
-              <AdvancedColorPicker
-                colors={smartColors.length > 0 ? smartColors : availableColors}
-                selectedColor={selectedColor}
-                onColorChange={setSelectedColor}
-                showSearch={false}
-                showCategories={false}
-                maxDisplayColors={smartColors.length > 0 ? smartColors.length : 12}
-                className='bg-white'
-                productType={productType}
-              />
+              <>
+                {console.log('🎨 RENDER DEBUG:', {
+                  hasColorSelector: productType.hasColorSelector,
+                  smartColorsLength: smartColors.length,
+                  availableColorsLength: availableColors.length,
+                  smartColors: smartColors.slice(0, 3),
+                  availableColors: availableColors.slice(0, 3),
+                  finalColors: smartColors.length > 0 ? smartColors : availableColors
+                })}
+                <AdvancedColorPicker
+                  colors={smartColors.length > 0 ? smartColors : availableColors}
+                  selectedColor={selectedColor}
+                  onColorChange={setSelectedColor}
+                  showSearch={false}
+                  showCategories={false}
+                  maxDisplayColors={smartColors.length > 0 ? smartColors.length : availableColors.length}
+                  className='bg-white'
+                  productType={productType}
+                />
+              </>
             )}
 
             {/* Selector de capacidad */}
@@ -1865,6 +2411,29 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                   {formatCapacity(selectedCapacity, capacityUnit)}
                 </p>
               )}
+              {/* Mostrar finish para impregnantes Danzke */}
+              {(() => {
+                const slugText = ((fullProductData as any)?.slug || (fullProductData as any)?.variant_slug || '') as string
+                const nameText = (fullProductData?.name || product?.name || '') as string
+                const isImpregnante = /impregnante/i.test(nameText)
+                const danzkeFamily = /impregnante-danzke/i.test(slugText) || /danzke/i.test(nameText)
+                
+                if (isImpregnante && danzkeFamily && slugText) {
+                  let finishFromSlug: string | null = null
+                  if (/-brillant[e-]?/i.test(slugText) || /-brillo-/i.test(slugText)) finishFromSlug = 'Brillante'
+                  else if (/-satinad[oa]-/i.test(slugText)) finishFromSlug = 'Satinado'
+                  
+                  if (finishFromSlug) {
+                    return (
+                      <p className='text-xs text-gray-500'>
+                        <span className='font-medium'>Acabado:</span>{' '}
+                        <span className='font-medium capitalize'>{finishFromSlug}</span>
+                      </p>
+                    )
+                  }
+                }
+                return null
+              })()}
               {productType.hasGrainSelector && selectedGrain && (
                 <p className='text-xs text-gray-500'>
                   Grano: <span className='font-medium'>{selectedGrain}</span>

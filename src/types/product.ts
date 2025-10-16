@@ -16,6 +16,7 @@ export type Product = {
   // Campos directos de la base de datos
   color?: string
   medida?: string
+  slug?: string
   // Campos adicionales para compatibilidad
   name?: string
   images?: string[]

@@ -64,7 +64,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
 
   return (
     <CommercialProductCard
-      slug={(productData as any)?.slug}
+      slug={productData.slug}
       image={
         (Array.isArray((productData as any).images) && (productData as any).images[0]) ||
         (productData as any).images?.main ||
@@ -74,7 +74,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
         (productData as any).imgs?.previews?.[0] ||
         '/images/products/placeholder.svg'
       }
-      title={productData.title}
+      title={productData.name || productData.title} // Usar name para consistencia con search
       brand={productData.brand}
       price={finalPrice}
       originalPrice={hasDiscount ? productData.price : undefined}

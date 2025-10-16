@@ -150,6 +150,15 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Marrones',
     description: 'Transparente levemente cálido para madera',
   },
+  {
+    id: 'incoloro',
+    name: 'incoloro',
+    displayName: 'Incoloro',
+    hex: 'rgba(255,255,255,0.1)',
+    category: 'Madera',
+    family: 'Transparentes',
+    description: 'Transparente completamente incoloro con brillo',
+  },
 
   // ===================================
   // COLORES PARA PRODUCTOS SINTÉTICOS
@@ -603,7 +612,7 @@ export const PAINT_COLORS: ColorOption[] = [
     id: 'negro-mate',
     name: 'negro-mate',
     displayName: 'Negro Mate',
-    hex: '#28282B',
+    hex: '#000000',
     category: 'Neutros',
     family: 'Negros',
   },
@@ -653,7 +662,15 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
       hasProductType: !!productType,
       allowedColorCategories: productType?.allowedColorCategories,
       totalColors: colors.length,
+      colorsSource: colors.length < 50 ? 'smartColors (pre-filtrados)' : 'PAINT_COLORS (completos)',
     })
+
+    // CRÍTICO: Si recibimos menos de 50 colores, son colores inteligentes ya filtrados
+    // NO aplicar filtrado adicional para evitar perder colores de variantes
+    if (colors.length < 50) {
+      console.log('✅ Usando colores inteligentes pre-filtrados sin filtrado adicional:', colors.length)
+      return colors
+    }
 
     if (!productType || !productType.allowedColorCategories) {
       console.log('⚠️ No hay restricciones de color, mostrando todos los colores')
@@ -808,8 +825,24 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
         </div>
       )}
 
+      {/* Grid de colores cuando showCategories=false (modal) */}
+      {!showCategories && (
+        <div className='space-y-2'>
+          <div className='grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2'>
+            {availableColors.map(color => (
+              <ColorSwatch
+                key={`${color.id}-${color.category.toLowerCase()}`}
+                color={color}
+                isSelected={selectedColor === color.id}
+                onClick={() => onColorChange(color.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Colores populares */}
-      {selectedCategory === 'all' && !searchTerm && (
+      {showCategories && selectedCategory === 'all' && !searchTerm && (
         <div className='space-y-2'>
           <div className='flex items-center gap-2'>
             <Badge variant='secondary' className='text-xs'>
@@ -843,7 +876,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
       )}
 
       {/* Grid de colores filtrados por categoría */}
-      {selectedCategory !== 'all' && (
+      {showCategories && selectedCategory !== 'all' && (
         <div className='space-y-2'>
           <div className='grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2'>
             {filteredColors.map(color => (
@@ -871,7 +904,6 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
               <p className='text-sm text-gray-600'>
                 {currentColor.family} • {currentColor.category}
               </p>
-              <p className='text-xs text-gray-500 font-mono'>{currentColor.hex}</p>
             </div>
           </div>
           {currentColor.description && (
@@ -895,7 +927,32 @@ interface ColorSwatchProps {
 
 const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick }) => {
   const isWood = color.category === 'Madera'
-  const style: React.CSSProperties = isWood
+  const isTransparent = color.id === 'incoloro' || color.family === 'Transparentes'
+  
+  const style: React.CSSProperties = isTransparent
+    ? {
+        // Para colores transparentes: efecto de brillo y transparencia
+        backgroundColor: color.hex,
+        backgroundImage: [
+          // Gradiente de brillo sutil
+          'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
+          // Reflejo brillante
+          'linear-gradient(45deg, rgba(255,255,255,0.6) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.3) 100%)',
+          // Patrón de brillo sutil
+          'radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.5) 0%, transparent 50%)',
+          'radial-gradient(ellipse at 70% 70%, rgba(255,255,255,0.3) 0%, transparent 60%)'
+        ].join(', '),
+        backgroundSize: '100% 100%, 100% 100%, 60% 60%, 50% 50%',
+        backgroundBlendMode: 'overlay',
+        boxShadow: [
+          'inset 0 0 0 1px rgba(255,255,255,0.3)',
+          '0 0 8px rgba(255,255,255,0.2)',
+          'inset 0 1px 2px rgba(255,255,255,0.4)'
+        ].join(', '),
+        position: 'relative',
+        overflow: 'hidden',
+      }
+    : isWood
     ? {
         // Base de la veta en el color principal
         backgroundColor: color.hex,
@@ -941,6 +998,18 @@ const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick })
             }}
           />
         </div>
+      )}
+
+      {/* Efecto de brillo adicional para colores transparentes */}
+      {isTransparent && (
+        <div 
+          className='absolute inset-0 rounded-lg pointer-events-none'
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.4) 100%)',
+            mixBlendMode: 'overlay',
+            opacity: 0.6,
+          }}
+        />
       )}
 
       {/* Tooltip con nombre del color */}

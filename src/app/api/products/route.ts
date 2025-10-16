@@ -274,21 +274,34 @@ export async function GET(request: NextRequest) {
         // Solo productos con stock (temporalmente comentado para testing)
         // query = query.gt('stock', 0);
 
-        // Ordenamiento
-        const orderColumn =
-          filters.sortBy === 'created_at'
-            ? 'created_at'
-            : filters.sortBy === 'brand'
-              ? 'brand'
-              : filters.sortBy || 'created_at'
-        query = query.order(orderColumn, { ascending: filters.sortOrder === 'asc' })
+        // Ordenamiento - Priorizar productos con variantes para búsquedas
+        if (filters.search) {
+          // Para búsquedas, usar ordenamiento personalizado que priorice productos con variantes
+          query = query.order('created_at', { ascending: filters.sortOrder === 'asc' })
+        } else {
+          // Para listados normales, usar el ordenamiento estándar
+          const orderColumn =
+            filters.sortBy === 'created_at'
+              ? 'created_at'
+              : filters.sortBy === 'brand'
+                ? 'brand'
+                : filters.sortBy || 'created_at'
+          query = query.order(orderColumn, { ascending: filters.sortOrder === 'asc' })
+        }
 
-        // Paginación
+        // Para búsquedas, obtener más productos para poder reordenar correctamente
         const page = filters.page || 1
         const limit = filters.limit || 10
         const from = (page - 1) * limit
         const to = from + limit - 1
-        query = query.range(from, to)
+        
+        if (filters.search) {
+          // Para búsquedas, obtener más productos (hasta 50) para poder reordenar
+          query = query.range(0, 49)
+        } else {
+          // Para listados normales, usar paginación estándar
+          query = query.range(from, to)
+        }
 
         // Ejecutar query con timeout
         return await query
@@ -377,6 +390,54 @@ export async function GET(request: NextRequest) {
               stock: product.stock,
             }
           })
+
+          // Reordenar productos priorizando aquellos con variantes
+          console.log('🔍 REORDENAMIENTO: Aplicando reordenamiento')
+          console.log('🔍 REORDENAMIENTO: Antes del sort:', enrichedProducts.map(p => ({
+            id: p.id,
+            name: p.name,
+            has_variants: p.has_variants,
+            variant_count: p.variant_count
+          })))
+          
+          // Reordenar productos: primero los que tienen variantes
+          const sortedProducts = [...enrichedProducts].sort((a, b) => {
+            // Si uno tiene variantes y el otro no, el que tiene variantes va primero
+            if (a.has_variants && !b.has_variants) {
+              console.log(`🔍 REORDENAMIENTO: ${a.id} (con variantes) va antes que ${b.id} (sin variantes)`)
+              return -1
+            }
+            if (!a.has_variants && b.has_variants) {
+              console.log(`🔍 REORDENAMIENTO: ${b.id} (con variantes) va antes que ${a.id} (sin variantes)`)
+              return 1
+            }
+            
+            // Si ambos tienen o no tienen variantes, ordenar por cantidad
+            if (a.variant_count !== b.variant_count) {
+              const result = b.variant_count - a.variant_count
+              console.log(`🔍 REORDENAMIENTO: ${a.id} (${a.variant_count}) vs ${b.id} (${b.variant_count}) = ${result}`)
+              return result
+            }
+            
+            // Si tienen la misma cantidad, ordenar por fecha
+            const dateResult = new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            console.log(`🔍 REORDENAMIENTO: Ordenando por fecha: ${a.id} vs ${b.id} = ${dateResult}`)
+            return dateResult
+          })
+          
+          console.log('🔍 REORDENAMIENTO: Después del sort:', sortedProducts.map(p => ({
+            id: p.id,
+            name: p.name,
+            has_variants: p.has_variants,
+            variant_count: p.variant_count
+          })))
+          
+          // Aplicar paginación después del reordenamiento
+          const page = filters.page || 1
+          const limit = filters.limit || 10
+          const from = (page - 1) * limit
+          const to = from + limit
+          enrichedProducts = sortedProducts.slice(from, to)
         } catch (variantError) {
           // Si hay error obteniendo variantes, continuar con productos originales
           console.warn('Error obteniendo variantes:', variantError)
@@ -390,6 +451,7 @@ export async function GET(request: NextRequest) {
       // Si FTS fue utilizado, preservar orden y ajustar conteo
       let totalForPagination = count || 0
       if (ftsUsedOuter) {
+        console.log('🔍 FTS REORDENAMIENTO: Aplicando reordenamiento FTS que puede sobrescribir nuestro orden')
         // Reordenar productos según IDs devueltos por FTS
         const orderMap = new Map<number, number>((orderedIdsOuter || []).map((id: number, i: number) => [id, i]))
         enrichedProducts = (enrichedProducts || []).slice().sort((a: any, b: any) => {
@@ -397,6 +459,12 @@ export async function GET(request: NextRequest) {
           const bi = orderMap.get(b.id) ?? 0
           return ai - bi
         })
+        console.log('🔍 FTS REORDENAMIENTO: Después del FTS:', enrichedProducts.map(p => ({
+          id: p.id,
+          name: p.name,
+          has_variants: p.has_variants,
+          variant_count: p.variant_count
+        })))
         // Ajustar total (RPC no da total real; usar tamaño de página)
         totalForPagination = overrideCountOuter ?? enrichedProducts.length
       }
@@ -417,6 +485,30 @@ export async function GET(request: NextRequest) {
           filters: filters,
         },
       })
+
+      // REORDENAMIENTO FINAL: Aplicar al final para asegurar que se mantenga
+      if (enrichedProducts && enrichedProducts.length > 0) {
+        console.log('🔍 REORDENAMIENTO FINAL: Aplicando reordenamiento final')
+        console.log('🔍 REORDENAMIENTO FINAL: Antes:', enrichedProducts.map(p => ({
+          id: p.id,
+          name: p.name,
+          has_variants: p.has_variants,
+          variant_count: p.variant_count
+        })))
+        
+        enrichedProducts.sort((a, b) => {
+          if (a.has_variants && !b.has_variants) return -1
+          if (!a.has_variants && b.has_variants) return 1
+          return b.variant_count - a.variant_count
+        })
+        
+        console.log('🔍 REORDENAMIENTO FINAL: Después:', enrichedProducts.map(p => ({
+          id: p.id,
+          name: p.name,
+          has_variants: p.has_variants,
+          variant_count: p.variant_count
+        })))
+      }
 
       const response: PaginatedResponse<ProductWithCategory> = {
         data: enrichedProducts || [],

@@ -71,7 +71,8 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
     <CommercialProductCard
       image={item.imgs?.previews?.[0] || '/images/products/placeholder.svg'}
       slug={(item as any)?.slug}
-      title={item.title}
+      title={item.name || item.title} // Usar name para consistencia con search
+      brand={item.brand} // Pasar brand para extracción correcta
       price={item.discountedPrice}
       originalPrice={item.discountedPrice < item.price ? item.price : undefined}
       discount={discount ? `${discount}%` : undefined}
@@ -81,6 +82,9 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
       cta='Agregar al carrito'
       onAddToCart={handleAddToCart}
       showCartAnimation={true}
+      // Pasar datos de BD para badges correctos (igual que en search)
+      color={(item as any)?.color}
+      medida={(item as any)?.medida}
       // Información de cuotas automática
       installments={
         item.discountedPrice >= 5000

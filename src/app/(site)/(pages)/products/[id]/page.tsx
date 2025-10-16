@@ -111,6 +111,7 @@ export default function ProductDetailModalPage() {
       color: variants?.selectedColor ?? variants?.color ?? variants?.colorName,
       medida:
         variants?.selectedCapacity ?? variants?.capacity ?? variants?.size ?? variants?.SelectedSize,
+      finish: variants?.finish, // Agregar finish para impregnantes Danzke
     }
 
     addProduct(productData, {

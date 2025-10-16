@@ -101,6 +101,15 @@ export const PRODUCT_TYPES: ProductType[] = [
     hasWidthSelector: true,
     widthOptions: ['18mm', '24mm', '36mm', '48mm'],
   },
+  {
+    id: 'terminaciones',
+    name: 'Terminaciones',
+    hasColorSelector: true,
+    capacityUnit: 'litros',
+    defaultCapacities: ['1L', '4L', '10L', '20L'],
+    category: 'terminaciones',
+    allowedColorCategories: ['Madera'], // Solo colores de madera para terminaciones
+  },
 ]
 
 // Función para detectar el tipo de producto basado en nombre y categoría
@@ -124,6 +133,17 @@ export const detectProductType = (productName: string, category?: string): Produ
   // Detección específica para Sintético Converlux
   if (name.includes('converlux') || name.includes('sintético') || name.includes('sintetico')) {
     return PRODUCT_TYPES.find(type => type.id === 'pinturas-esmalte')!
+  }
+
+  // Detección de terminaciones (barnices, lacas, etc.)
+  if (
+    name.includes('barniz') ||
+    name.includes('laca') ||
+    name.includes('terminacion') ||
+    name.includes('terminación') ||
+    name.includes('acabado')
+  ) {
+    return PRODUCT_TYPES.find(type => type.id === 'terminaciones')!
   }
 
   // Detección de productos sintéticos (esmaltes, converlux, etc.)
@@ -190,6 +210,10 @@ export const detectProductType = (productName: string, category?: string): Produ
 
     if (cat.includes('protector') || cat.includes('impregnante')) {
       return PRODUCT_TYPES.find(type => type.id === 'impregnante-madera')!
+    }
+
+    if (cat.includes('terminacion') || cat.includes('terminación')) {
+      return PRODUCT_TYPES.find(type => type.id === 'terminaciones')!
     }
 
     if (cat.includes('adhesivo') || cat.includes('pegamento')) {
@@ -402,10 +426,60 @@ const COLOR_HEX_MAP: Record<string, string> = {
   
   // Colores especiales
   'natural': '#DEB887',
-  'transparente': 'rgba(255,255,255,0.3)',
-  'incoloro': 'rgba(255,255,255,0.3)',
+  'transparente': 'rgba(255,255,255,0.1)',
+  'incoloro': 'rgba(255,255,255,0.1)',
   // Impregnantes especiales
-  'cristal': '#E8D5B5'
+  'cristal': '#E8D5B5',
+  
+  // Colores SINTETICO CONVERLUX (20 colores completos de la BD)
+  'aluminio': '#A8A8A8',
+  'amarillo': '#FFFF00',
+  'amarillo mediano': '#FFD700',
+  'amarillo-mediano': '#FFD700',
+  'azul marino': '#000080',
+  'azul-marino': '#000080',
+  'azul traful': '#4682B4',
+  'azul-traful': '#4682B4',
+  'bermellon': '#E34234',
+  'bermellón': '#E34234',
+  'blanco': '#FFFFFF',
+  'blanco brill': '#FFFFFF',
+  'blanco-brill': '#FFFFFF',
+  'blanco brillante': '#FFFFFF',
+  'blanco-brillante': '#FFFFFF',
+  'blanco mate': '#F5F5F5',
+  'blanco-mate': '#F5F5F5',
+  'blanco sat': '#F8F8FF',
+  'blanco-sat': '#F8F8FF',
+  'blanco satinado': '#F8F8FF',
+  'blanco-satinado': '#F8F8FF',
+  'gris': '#808080',
+  'gris espacial': '#696969',
+  'gris-espacial': '#696969',
+  'gris perla': '#C0C0C0',
+  'gris-perla': '#C0C0C0',
+  'marfil': '#FFFFF0',
+  'marron': '#8B4513',
+  'marrón': '#8B4513',
+  'naranja': '#FF8C00',
+  'negro': '#000000',
+  'negro brill': '#000000',
+  'negro-brill': '#000000',
+  'negro brillante': '#000000',
+  'negro-brillante': '#000000',
+  'negro mate': '#000000',
+  'negro-mate': '#000000',
+  'negro sat': '#000000',
+  'negro-sat': '#000000',
+  'negro satinado': '#000000',
+  'negro-satinado': '#000000',
+  'tostado': '#D2B48C',
+  'verde ingles': '#355E3B',
+  'verde-ingles': '#355E3B',
+  'verde inglés': '#355E3B',
+  'verde-inglés': '#355E3B',
+  'verde noche': '#013220',
+  'verde-noche': '#013220'
 }
 
 /**
@@ -615,8 +689,7 @@ export const extractProductCapacity = (
       result.capacity = defaultVariant.measure
     }
 
-    // Colores desde variantes: tomar todos los distintos y filtrar los que no aplican
-    const BLOCKED_COLORS = ['blanco', 'blanco puro', 'blanco-puro', 'crema']
+    // Colores desde variantes: tomar todos los distintos
     const uniqueColors = Array.from(
       new Set(
         variants
@@ -624,7 +697,6 @@ export const extractProductCapacity = (
           .filter(Boolean)
       )
     )
-      .filter(c => !BLOCKED_COLORS.some(b => c.toLowerCase().includes(b)))
 
     if (uniqueColors.length > 0) {
       // Guardar como lista separada por comas para soportar múltiples badges

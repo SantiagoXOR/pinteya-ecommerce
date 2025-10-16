@@ -87,6 +87,7 @@ export function adaptApiProductToLegacy(apiProduct: ProductWithCategory): Legacy
     dimensions: (apiProduct as any).dimensions || undefined,
     color: (apiProduct as any).color || undefined,
     medida: (apiProduct as any).medida || undefined,
+    slug: (apiProduct as any).slug || undefined, // Agregar slug para consistencia con search/bestsellers
   }
 }
 
@@ -185,6 +186,7 @@ export type ExtendedProduct = LegacyProduct & {
   dimensions?: Record<string, any>
   color?: string
   medida?: string
+  slug?: string
 }
 
 /**

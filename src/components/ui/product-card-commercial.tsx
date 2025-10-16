@@ -192,6 +192,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       console.log('📋 Datos disponibles:')
       console.log('  - title:', title)
       console.log('  - variants:', variants)
+      console.log('  - variants.length:', variants?.length || 0)
+      console.log('  - variants measures:', variants?.map(v => v.measure).filter((v, i, a) => a.indexOf(v) === i) || [])
+      console.log('  - variants colors:', variants?.map(v => v.color_name).filter((v, i, a) => a.indexOf(v) === i) || [])
       console.log('  - description:', description)
       console.log('  - features:', features)
       console.log('  - specifications:', specifications)
@@ -361,10 +364,14 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       console.group(`🎨 [ProductCardCommercial] Generando badges para "${title}"`)
       console.log('📋 extractedInfo:', extractedInfo)
       console.log('⚙️ badgeConfig:', badgeConfig)
+      // Para impregnantes: el acabado debe venir del slug/nombre, no de precio/medida
+      const forceSlugFinish = isImpregnante
       const infoForBadges: ExtractedProductInfo = {
         ...extractedInfo,
-        // Priorizar el acabado extraído del slug/nombre sobre inferencias por variantes
-        finish: (extractedInfo as any)?.finish || priceBasedFinish || medidaBasedFinish,
+        // Priorizar SIEMPRE el acabado extraído del slug/nombre; para impregnantes no se usan heurísticas
+        finish: forceSlugFinish
+          ? (extractedInfo as any)?.finish
+          : ((extractedInfo as any)?.finish || priceBasedFinish || medidaBasedFinish),
       }
       // Habilitar automáticamente el badge de grano para productos de lijas
       const pt = detectProductType(title || '')
@@ -434,16 +441,20 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
     // Resolución final del acabado y su origen para depuración/atributos data
     const resolvedFinish = React.useMemo(() => {
-      // Mantener consistencia: primero lo extraído (slug/nombre), luego inferencias
+      // Mantener consistencia: primero lo extraído (slug/nombre). Para impregnantes, NO usar inferencias
+      if (isImpregnante) {
+        return (((extractedInfo as any)?.finish || '') as string)
+      }
       return (((extractedInfo as any)?.finish || priceBasedFinish || medidaBasedFinish || '') as string)
-    }, [priceBasedFinish, medidaBasedFinish, extractedInfo])
+    }, [priceBasedFinish, medidaBasedFinish, extractedInfo, isImpregnante])
 
     const resolvedFinishSource = React.useMemo(() => {
       if ((extractedInfo as any)?.finish) return 'extracted'
-      if (priceBasedFinish) return 'price+measure'
-      if (medidaBasedFinish) return 'measure-only'
+      // Para impregnantes, nunca reportar heurísticas como fuente
+      if (!isImpregnante && priceBasedFinish) return 'price+measure'
+      if (!isImpregnante && medidaBasedFinish) return 'measure-only'
       return 'unknown'
-    }, [priceBasedFinish, medidaBasedFinish, extractedInfo])
+    }, [priceBasedFinish, medidaBasedFinish, extractedInfo, isImpregnante])
 
     // Función para abrir el modal
     const handleOpenModal = React.useCallback(() => {
@@ -814,6 +825,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           product={{
             id: String(productId || ''),
             name: title || '',
+            slug: slug || '',
             price: price || 0,
             originalPrice,
             discount,
@@ -827,6 +839,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             reviews: 0,
             colors: undefined, // Usará los colores por defecto del sistema
             capacities: [],
+            variants: variants && variants.length > 0 ? variants : undefined,
           }}
           onAddToCart={(productData, variants) => {
             console.log('Agregando al carrito:', productData, variants)
@@ -876,6 +889,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 (productData as any)?.capacity ||
                 (productData as any)?.medida ||
                 medida,
+              finish: (variants as any)?.finish, // Agregar finish para impregnantes Danzke
             }
 
             // Servicio unificado: normaliza y agrega

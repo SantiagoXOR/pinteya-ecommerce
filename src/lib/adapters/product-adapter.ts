@@ -65,6 +65,7 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
     // Campos críticos para generación de badges inteligentes
     color: apiProduct.color || undefined,        // ✅ CRÍTICO: Para badges de color
     medida: apiProduct.medida || undefined,      // ✅ CRÍTICO: Para badges de capacidad/tamaño
+    slug: apiProduct.slug || undefined,          // ✅ CRÍTICO: Para extracción de finish desde slug
     variants: apiProduct.variants || [],
     specifications: apiProduct.specifications || {},
     // Campos de compatibilidad con versiones anteriores
