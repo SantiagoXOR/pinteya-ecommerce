@@ -52,7 +52,7 @@ export const PRODUCT_TYPES: ProductType[] = [
     name: 'Poximix',
     hasColorSelector: false, // Solo viene en gris
     capacityUnit: 'kg',
-    defaultCapacities: ['5kg', '10kg', '25kg'],
+    defaultCapacities: ['0.5kg', '1.25kg', '3kg', '5kg'],
     category: 'adhesivos',
   },
   {
@@ -60,17 +60,17 @@ export const PRODUCT_TYPES: ProductType[] = [
     name: 'Lijas',
     hasColorSelector: false,
     capacityUnit: 'unidades',
-    defaultCapacities: ['1 unidad', '5 unidades', '10 unidades'],
+    defaultCapacities: ['1', '5', '10'],
     category: 'herramientas',
     hasGrainSelector: true,
-    grainOptions: ['80', '120', '150', '220', '320', '400', '600', '800'],
+    grainOptions: ['40', '50', '80', '120', '180'],
   },
   {
     id: 'bandejas',
     name: 'Bandejas',
     hasColorSelector: false,
     capacityUnit: 'unidades',
-    defaultCapacities: ['1 unidad'],
+    defaultCapacities: ['1'],
     category: 'accesorios',
   },
   {
@@ -78,25 +78,34 @@ export const PRODUCT_TYPES: ProductType[] = [
     name: 'Pinceles',
     hasColorSelector: false,
     capacityUnit: 'unidades',
-    defaultCapacities: ['1 unidad'],
+    defaultCapacities: ['1'],
     category: 'herramientas',
     hasSizeSelector: true,
     sizeOptions: ['1/2"', '1"', '1 1/2"', '2"', '2 1/2"', '3"', '4"'],
+  },
+  {
+    id: 'pinceles-persianeros',
+    name: 'Pinceles Persianeros',
+    hasColorSelector: false,
+    capacityUnit: 'unidades',
+    defaultCapacities: ['1'],
+    category: 'herramientas',
+    hasSizeSelector: false,
   },
   {
     id: 'rodillos',
     name: 'Rodillos',
     hasColorSelector: false,
     capacityUnit: 'unidades',
-    defaultCapacities: ['1 unidad'],
+    defaultCapacities: ['1'],
     category: 'herramientas',
   },
   {
     id: 'cintas-papel',
     name: 'Cintas de Papel',
     hasColorSelector: false,
-    capacityUnit: 'metros',
-    defaultCapacities: ['40m'],
+    capacityUnit: 'unidades',
+    defaultCapacities: ['1'],
     category: 'accesorios',
     hasWidthSelector: true,
     widthOptions: ['18mm', '24mm', '36mm', '48mm'],
@@ -177,6 +186,11 @@ export const detectProductType = (productName: string, category?: string): Produ
 
   if (name.includes('bandeja')) {
     return PRODUCT_TYPES.find(type => type.id === 'bandejas')!
+  }
+
+  // Detección específica para pinceles persianeros
+  if (name.includes('pincel') && name.includes('persianero')) {
+    return PRODUCT_TYPES.find(type => type.id === 'pinceles-persianeros')!
   }
 
   if (name.includes('pincel')) {
@@ -328,8 +342,19 @@ export const formatCapacity = (capacity: string, unit: string): string => {
     case 'unidades':
       {
         const txt = capacity.trim()
-        if (/unidad(es)?$/i.test(txt)) return txt
-        return `${txt} unidad${txt !== '1' ? 'es' : ''}`
+        // Remover "unidad" o "unidades" si ya están presentes
+        const withoutUnidad = txt.replace(/\s*unidad(es)?$/i, '')
+        
+        // Para cintas de papel, si ya contiene medidas (mm, cm, m), no agregar "unidades"
+        if (/(mm|cm|\bm\b)/i.test(withoutUnidad) || /\sx\s/i.test(withoutUnidad)) {
+          // Si contiene "x 40m", extraer solo la parte del ancho
+          if (/\sx\s.*m/i.test(withoutUnidad)) {
+            return withoutUnidad.split(' x ')[0]
+          }
+          return withoutUnidad
+        }
+        
+        return withoutUnidad
       }
     default:
       return capacity
@@ -787,9 +812,11 @@ export const extractProductCapacity = (
   if (!result.capacity) {
     const productType = detectProductType(productName)
     const isSandpaper = productType?.id === 'lijas' || /\blija\b/i.test(productName)
+    const isBandeja = productType?.id === 'bandejas' || /\bbandeja\b/i.test(productName)
 
     // Para lijas, si tenemos grano, NO mostrar la capacidad por defecto "1 unidad"
-    if (!(isSandpaper && result.grit)) {
+    // Para bandejas, NO mostrar la capacidad por defecto "1 unidad" ya que no es útil
+    if (!(isSandpaper && result.grit) && !isBandeja) {
       if (productType?.defaultCapacities && productType.defaultCapacities.length > 0) {
         result.capacity = productType.defaultCapacities[0]
       }
@@ -1076,6 +1103,7 @@ export const formatProductBadges = (
     showWeight?: boolean
     showBrand?: boolean
     maxBadges?: number
+    productType?: ProductType
   } = {}
 ): ProductBadgeInfo[] => {
   const {
@@ -1087,7 +1115,8 @@ export const formatProductBadges = (
     showDimensions = true,
     showWeight = true,
     showBrand = false, // Por defecto oculto para no saturar
-    maxBadges = 4
+    maxBadges = 4,
+    productType
   } = options
 
   const badges: ProductBadgeInfo[] = []
@@ -1170,35 +1199,41 @@ export const formatProductBadges = (
   }
 
   // Badge de color - Versión circular (soporte para múltiples colores)
+  // Omitir badge de color para cintas de papel
   if (showColor && extractedInfo.color) {
-    // Detectar múltiples colores separados por comas
-    const colorNames = extractedInfo.color.split(',').map(c => c.trim())
+    // Detectar si es una cinta de papel usando el tipo de producto
+    const isCintaPapel = productType?.id === 'cintas-papel'
     
-    for (const colorName of colorNames) {
-      if (badges.length >= maxBadges) break // Respetar límite de badges
+    if (!isCintaPapel) {
+      // Detectar múltiples colores separados por comas
+      const colorNames = extractedInfo.color.split(',').map(c => c.trim())
       
-      const colorHex = getColorHex(colorName)
-      
-      if (colorHex) {
-        // Badge circular con color real
-        badges.push({
-          type: 'color-circle',
-          value: colorName,
-          displayText: colorName,
-          color: 'text-gray-700',
-          bgColor: 'bg-transparent',
-          isCircular: true,
-          circleColor: colorHex
-        })
-      } else {
-        // Badge tradicional si no se encuentra el color
-        badges.push({
-          type: 'color',
-          value: colorName,
-          displayText: colorName,
-          color: 'text-red-700',
-          bgColor: 'bg-red-100'
-        })
+      for (const colorName of colorNames) {
+        if (badges.length >= maxBadges) break // Respetar límite de badges
+        
+        const colorHex = getColorHex(colorName)
+        
+        if (colorHex) {
+          // Badge circular con color real
+          badges.push({
+            type: 'color-circle',
+            value: colorName,
+            displayText: colorName,
+            color: 'text-gray-700',
+            bgColor: 'bg-transparent',
+            isCircular: true,
+            circleColor: colorHex
+          })
+        } else {
+          // Badge tradicional si no se encuentra el color
+          badges.push({
+            type: 'color',
+            value: colorName,
+            displayText: colorName,
+            color: 'text-red-700',
+            bgColor: 'bg-red-100'
+          })
+        }
       }
     }
   }

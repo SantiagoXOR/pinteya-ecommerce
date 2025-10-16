@@ -176,7 +176,7 @@ export const useOrderNotifications = () => {
     return toast({
       variant: 'warning',
       title: '⚠️ Stock limitado',
-      description: `${productName} tiene solo ${availableStock} unidades disponibles`,
+      description: `${productName} tiene solo ${availableStock} disponibles`,
       duration: 5000,
     })
   }, [])

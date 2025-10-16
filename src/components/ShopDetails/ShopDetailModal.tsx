@@ -371,13 +371,27 @@ const WidthSelector: React.FC<WidthSelectorProps> = ({
   selectedWidth,
   onWidthChange,
 }) => {
+  // Mostrar solo el ancho sin "x 40m"
+  const formatWidthOption = (width: string) => {
+    // Si ya contiene " x ", extraer solo la parte del ancho
+    if (width.includes(' x ')) {
+      return width.split(' x ')[0]
+    }
+    return width
+  }
+
+  // Extraer solo el ancho de la opción seleccionada para mostrar en el texto
+  const getWidthFromOption = (option: string) => {
+    return option.split(' x ')[0] || option
+  }
+
   return (
     <div className='space-y-4'>
       <div className='flex items-center gap-2'>
         <Maximize className='w-5 h-5 text-blaze-orange-600' />
         <span className='text-base font-semibold text-gray-900'>Ancho</span>
       </div>
-      <div className='grid grid-cols-3 gap-2'>
+      <div className='grid grid-cols-2 gap-2'>
         {widthOptions.map(width => (
           <button
             key={width}
@@ -389,13 +403,13 @@ const WidthSelector: React.FC<WidthSelectorProps> = ({
                 : 'border-gray-200 bg-white text-gray-700 hover:border-blaze-orange-300 hover:bg-blaze-orange-25'
             )}
           >
-            {width}
+            {formatWidthOption(width)}
           </button>
         ))}
       </div>
       {selectedWidth && (
         <p className='text-sm text-gray-600'>
-          Ancho seleccionado: <span className='font-medium'>{selectedWidth}</span>
+          Ancho seleccionado: <span className='font-medium'>{getWidthFromOption(selectedWidth)}</span>
         </p>
       )}
     </div>
@@ -886,17 +900,25 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       return []
     }
     
+    // Función para extraer solo el ancho de una medida
+    const extractWidth = (measure: string) => {
+      if (measure.includes(' x ')) {
+        return measure.split(' x ')[0]
+      }
+      return measure
+    }
+    
     // Prioridad 1: Productos relacionados (más específico)
     if (relatedProducts?.products) {
       const measures = getAvailableMeasures(relatedProducts.products)
-      return measures
+      return measures.map(extractWidth)
     }
     
     // Prioridad 2: Variantes con medidas
     if (variants && variants.length > 0) {
       const widths = variants
         .filter(variant => variant.measure && variant.is_active)
-        .map(variant => variant.measure)
+        .map(variant => extractWidth(variant.measure))
         .filter((measure, index, self) => self.indexOf(measure) === index)
         .sort((a, b) => {
           const numA = parseInt(a.replace(/\D/g, ''))
@@ -908,7 +930,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     
     // Prioridad 3: Opciones por defecto del tipo de producto
     if (productType.widthOptions && productType.widthOptions.length > 0) {
-      return productType.widthOptions
+      return productType.widthOptions.map(extractWidth)
     }
     
     return []
@@ -1048,7 +1070,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             name: name.toLowerCase(),
             displayName: name,
             hex: hexFromMap,
-            category: isImpregnante ? 'Madera' : 'Sintético',
+            category: isImpregnante ? 'Madera' : (productType?.id === 'pinturas-latex' ? 'Látex' : 'Sintético'),
             family: 'Personalizados',
             isPopular: false,
             description: `Color ${name}`
@@ -1524,6 +1546,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
   }, [selectedWidth, relatedProducts?.products])
 
+  // Helper para extraer solo el ancho de una medida completa
+  const extractWidthFromMeasure = (measure: string): string => {
+    if (measure.includes(' x ')) {
+      return measure.split(' x ')[0]
+    }
+    return measure
+  }
+
   // Mapeo de anchos a precios para productos de cinta papel (fallback cuando no hay productos relacionados)
   const widthToPriceMap = useMemo(() => {
     const map: { [key: string]: { price: string; discounted_price: string } } = {}
@@ -1588,8 +1618,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       if (!Number.isFinite(basePrice)) basePrice = 0
     }
 
-    // Aplicar modificadores de precio por tamaño (solo para pinceles)
-    if (selectedSize && productType.hasSizeSelector) {
+    // Aplicar modificadores de precio por tamaño (solo para pinceles regulares)
+    if (selectedSize && productType.hasSizeSelector && productType.id === 'pinceles') {
       const sizeMultipliers: { [key: string]: number } = {
         '1/2"': 1.0,
         '1"': 1.2,
@@ -1616,16 +1646,19 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       path = 'variant'
       priceComputed = getEffectivePrice(selectedVariant)
     }
-    // Prioridad 2: Producto relacionado seleccionado (ya sea por ancho o por capacidad)
+    // Prioridad 2: Para productos con selector de ancho, usar mapeo de precios (tiene prioridad sobre productos relacionados)
+    else if (selectedWidth && productType.hasWidthSelector) {
+      const widthKey = extractWidthFromMeasure(selectedWidth)
+      if (widthToPriceMap[widthKey]) {
+        path = 'widthMap'
+        const priceData = widthToPriceMap[widthKey]
+        priceComputed = parseFloat(priceData.discounted_price || priceData.price)
+      }
+    }
+    // Prioridad 3: Producto relacionado seleccionado (ya sea por ancho o por capacidad)
     else if (selectedRelatedProduct) {
       path = 'relatedProduct'
       priceComputed = parseFloat(selectedRelatedProduct.discounted_price || selectedRelatedProduct.price)
-    }
-    // Prioridad 3: Para productos con selector de ancho, usar mapeo de precios cuando no hay relacionados
-    else if (selectedWidth && productType.hasWidthSelector && widthToPriceMap[selectedWidth]) {
-      path = 'widthMap'
-      const priceData = widthToPriceMap[selectedWidth]
-      priceComputed = parseFloat(priceData.discounted_price || priceData.price)
     }
     // Prioridad 4: Usar calculateDynamicPrice para otros casos (p. ej. tamaño en pinceles)
     else if (selectedSize && productType.hasSizeSelector) {
@@ -1693,8 +1726,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       return parseFloat(selectedRelatedProduct.price)
     }
     
-    if (selectedWidth && productType.hasWidthSelector && widthToPriceMap[selectedWidth]) {
-      return parseFloat(widthToPriceMap[selectedWidth].price)
+    if (selectedWidth && productType.hasWidthSelector) {
+      const widthKey = extractWidthFromMeasure(selectedWidth)
+      if (widthToPriceMap[widthKey]) {
+        return parseFloat(widthToPriceMap[widthKey].price)
+      }
     }
     
     // Fallback: usar originalPrice de la card si existe
@@ -1712,9 +1748,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         parseFloat(selectedRelatedProduct.discounted_price) < parseFloat(selectedRelatedProduct.price)
     }
     
-    if (selectedWidth && productType.hasWidthSelector && widthToPriceMap[selectedWidth]) {
-      return widthToPriceMap[selectedWidth].discounted_price && 
-        parseFloat(widthToPriceMap[selectedWidth].discounted_price) < parseFloat(widthToPriceMap[selectedWidth].price)
+    if (selectedWidth && productType.hasWidthSelector) {
+      const widthKey = extractWidthFromMeasure(selectedWidth)
+      if (widthToPriceMap[widthKey]) {
+        return widthToPriceMap[widthKey].discounted_price && 
+          parseFloat(widthToPriceMap[widthKey].discounted_price) < parseFloat(widthToPriceMap[widthKey].price)
+      }
     }
     
     return product.originalPrice && product.originalPrice > product.price
@@ -1777,7 +1816,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             name: colorName.toLowerCase(),
             displayName: colorName,
             hex: '#E5E7EB', // Color gris por defecto
-            category: 'Sintético',
+            category: productType?.id === 'pinturas-latex' ? 'Látex' : 'Sintético',
             family: 'Personalizados',
             isPopular: false,
             description: `Color ${colorName}`
@@ -2132,7 +2171,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             <div className='flex items-center gap-2'>
               <Package className='w-4 h-4 text-gray-500' />
               <span className='text-sm text-gray-600'>
-                Stock: <span className='font-medium'>{effectiveStock}</span> unidades
+                Stock: <span className='font-medium'>{effectiveStock}</span>
               </span>
             </div>
           </div>
@@ -2242,10 +2281,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             {availableCapacities.length > 0 &&
               !(
                 availableCapacities.length === 1 && availableCapacities[0] === 'Sin especificar'
-              ) && (
+              ) &&
+              !productType.hasWidthSelector &&
+              !productType.hasGrainSelector &&
+              !productType.hasSizeSelector &&
+              // No mostrar selector de capacidad para productos que no lo necesitan (como bandejas)
+              !(productType.id === 'bandejas' && availableCapacities.length === 1 && availableCapacities[0] === '1') && (
                 <div className='space-y-4'>
                   <div className='flex items-center gap-2'>
-                    <Box className='w-5 h-5 text-blaze-orange-600' />
+                    <Ruler className='w-5 h-5 text-blaze-orange-600' />
                     <span className='text-base font-semibold text-gray-900'>
                       {capacityUnit === 'litros'
                         ? 'Capacidad'
@@ -2253,7 +2297,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                           ? 'Peso'
                           : capacityUnit === 'metros'
                             ? 'Longitud'
-                            : 'Cantidad'}
+                            : 'Tamaño'}
                     </span>
                   </div>
 
@@ -2314,45 +2358,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
             {/* Selector de ancho para cintas de papel */}
             {productType.hasWidthSelector && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Ruler className="w-4 h-4 text-orange-500" />
-                  <h3 className="text-lg font-semibold text-gray-800">Ancho</h3>
-                </div>
-                
-                {loadingRelatedProducts ? (
-                  <div className="flex items-center justify-center p-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
-                    <span className="ml-2 text-gray-600">Cargando opciones...</span>
-                  </div>
-                ) : availableWidths.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {availableWidths.map((width) => (
-                      <button
-                        key={width}
-                        onClick={() => setSelectedWidth(width)}
-                        className={`p-3 rounded-lg border-2 transition-all duration-200 ${
-                          selectedWidth === width
-                            ? 'border-orange-500 bg-orange-50 text-orange-700'
-                            : 'border-gray-200 hover:border-orange-300 text-gray-700'
-                        }`}
-                      >
-                        {width}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-4 bg-gray-100 rounded-lg text-center text-gray-600">
-                    No hay opciones de ancho disponibles para este producto
-                  </div>
-                )}
-                
-                {selectedWidth && (
-                  <p className="text-sm text-gray-600">
-                    Ancho seleccionado: {selectedWidth}
-                  </p>
-                )}
-              </div>
+              <WidthSelector
+                widthOptions={availableWidths}
+                selectedWidth={selectedWidth}
+                onWidthChange={setSelectedWidth}
+              />
             )}
             
             {/* Debug info para selector de ancho */}
@@ -2364,6 +2374,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                 <p>- availableWidths: [{availableWidths.join(', ')}]</p>
                 <p>- selectedWidth: {selectedWidth || 'none'}</p>
                 <p>- loadingRelatedProducts: {loadingRelatedProducts ? 'true' : 'false'}</p>
+                <p>- widthToPriceMap keys: [{Object.keys(widthToPriceMap).join(', ')}]</p>
+                <p>- extracted width: {selectedWidth ? extractWidthFromMeasure(selectedWidth) : 'none'}</p>
+                <p>- selectedWidth in map: {selectedWidth ? (widthToPriceMap[extractWidthFromMeasure(selectedWidth)] ? 'YES' : 'NO') : 'NO'}</p>
+                <p>- currentPrice: {currentPrice}</p>
+                <p>- selectedRelatedProduct: {selectedRelatedProduct ? 'YES' : 'NO'}</p>
               </div>
             )}
           </div>
@@ -2380,7 +2395,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             </div>
             {quantity > 1 && (
               <p className='text-sm text-gray-600 mt-1'>
-                ${currentPrice.toLocaleString()} × {quantity} unidades
+                ${currentPrice.toLocaleString()} × {quantity}
               </p>
             )}
 
@@ -2396,7 +2411,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                   </span>
                 </p>
               )}
-              {selectedCapacity && (
+              {selectedCapacity && !productType.hasWidthSelector && !productType.hasGrainSelector && (
                 <p className='text-xs text-gray-500'>
                   <span className='font-medium'>
                     {capacityUnit === 'litros'
@@ -2446,7 +2461,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               )}
               {productType.hasWidthSelector && selectedWidth && (
                 <p className='text-xs text-gray-500'>
-                  Ancho: <span className='font-medium'>{selectedWidth}</span>
+                  Ancho: <span className='font-medium'>{selectedWidth.split(' x ')[0] || selectedWidth}</span>
                 </p>
               )}
             </div>
@@ -2494,7 +2509,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                 <p>
                   {effectiveStock <= 5 ? (
                     <span className='text-amber-600 font-medium'>
-                      ¡Últimas {effectiveStock} unidades disponibles!
+                      ¡Últimas {effectiveStock} disponibles!
                     </span>
                   ) : (
                     <span className='text-green-600'>

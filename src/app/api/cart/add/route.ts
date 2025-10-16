@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Stock insuficiente. Solo quedan ${product.stock} unidades disponibles`,
+          error: `Stock insuficiente. Solo quedan ${product.stock} disponibles`,
           availableStock: product.stock,
           requestedQuantity: quantity,
           productName: product.name,

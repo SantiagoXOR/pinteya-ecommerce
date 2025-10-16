@@ -380,6 +380,8 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         ...badgeConfig,
         // Mostrar siempre el grano para lijas; el util detecta el grano aunque no esté en extractedInfo
         showGrit: isSandpaper ? true : (badgeConfig?.showGrit ?? true),
+        // Pasar el tipo de producto para controlar badges específicos
+        productType: pt
       }
       const badges = formatProductBadges(infoForBadges, effectiveBadgeConfig)
 
@@ -393,6 +395,34 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         const brillante = finishBadges.find(b => (b.value || '').toLowerCase() === 'brillante')
         const chosenFinish = brillante || finishBadges[0]
         processedBadges = [...badges.filter(b => b.type !== 'finish'), chosenFinish]
+      }
+
+      // Regla anti-duplicados para granos (lijas):
+      // - Si vienen múltiples badges de tipo "grit", mantener solo el primero
+      const gritBadges = processedBadges.filter(b => b.type === 'grit')
+      console.log(`🔍 [${title}] Badges de grano encontrados: ${gritBadges.length}`, gritBadges)
+      if (gritBadges.length > 1) {
+        const chosenGrit = gritBadges[0]
+        processedBadges = [...processedBadges.filter(b => b.type !== 'grit'), chosenGrit]
+        console.warn(`⚠️ [${title}] Se encontraron ${gritBadges.length} badges de grano duplicados, manteniendo solo el primero:`, chosenGrit)
+      }
+
+      // Regla anti-duplicados entre tipos diferentes para lijas:
+      // - Si hay un badge de "grit" y un badge de "capacity" con el mismo valor "Grano X", 
+      //   mantener solo el badge de "grit" (más específico)
+      const gritBadge = processedBadges.find(b => b.type === 'grit')
+      const capacityBadge = processedBadges.find(b => b.type === 'capacity')
+      
+      if (gritBadge && capacityBadge && 
+          gritBadge.displayText === capacityBadge.displayText &&
+          gritBadge.displayText.includes('Grano')) {
+        console.log(`🔍 [${title}] Encontrado badge duplicado entre grit y capacity:`, {
+          grit: gritBadge.displayText,
+          capacity: capacityBadge.displayText
+        })
+        // Mantener solo el badge de grit, eliminar el de capacity
+        processedBadges = processedBadges.filter(b => !(b.type === 'capacity' && b.displayText === gritBadge.displayText))
+        console.warn(`⚠️ [${title}] Eliminado badge de capacity duplicado, manteniendo solo grit:`, gritBadge.displayText)
       }
 
       // Guardia adicional: si hay un acabado "Brillante" seleccionado,

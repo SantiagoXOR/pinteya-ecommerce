@@ -193,8 +193,8 @@ export const StockIndicator: React.FC<StockIndicatorProps> = ({
                 {isCriticalStock
                   ? '¡ÚLTIMAS UNIDADES!'
                   : isLowStock
-                    ? `Solo quedan ${quantity} unidades`
-                    : `${quantity} unidades disponibles`}
+                    ? `Solo quedan ${quantity}`
+                    : `${quantity} disponibles`}
               </span>
             </div>
             {isCriticalStock && (

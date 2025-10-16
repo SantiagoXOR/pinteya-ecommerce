@@ -28,7 +28,6 @@ export default function SearchPage() {
   const [sortBy, setSortBy] = useState<'relevance' | 'price-asc' | 'price-desc' | 'name'>(
     'relevance'
   )
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Función para ordenar productos
   const sortProducts = (products: ProductWithCategory[], sortBy: string) => {
@@ -115,7 +114,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 py-8'>
+    <div className='min-h-screen bg-gray-50 py-8 overflow-x-hidden'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header de resultados */}
         <div className='mb-8'>
@@ -159,7 +158,7 @@ export default function SearchPage() {
                 )}
               </div>
 
-              {/* Controles de vista y ordenamiento */}
+              {/* Controles de ordenamiento */}
               {!isLoading && totalResults > 0 && (
                 <div className='flex items-center gap-3'>
                   {/* Selector de ordenamiento */}
@@ -173,30 +172,6 @@ export default function SearchPage() {
                     <option value='price-desc'>Precio: mayor a menor</option>
                     <option value='name'>Nombre A-Z</option>
                   </select>
-
-                  {/* Selector de vista */}
-                  <div className='flex border border-gray-300 rounded-lg overflow-hidden'>
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={`px-3 py-2 text-sm ${
-                        viewMode === 'grid'
-                          ? 'bg-blaze-orange-500 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      Grid
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`px-3 py-2 text-sm ${
-                        viewMode === 'list'
-                          ? 'bg-blaze-orange-500 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      Lista
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
@@ -208,8 +183,8 @@ export default function SearchPage() {
           // Estado de loading con skeletons
           <ProductSkeletonGrid
             count={12}
-            variant={viewMode === 'list' ? 'list' : 'card'}
-            className={viewMode === 'list' ? 'grid-cols-1' : ''}
+            variant='card'
+            className='grid-cols-2 md:grid-cols-2 lg:grid-cols-3'
           />
         ) : error ? (
           // Estado de error
@@ -247,14 +222,8 @@ export default function SearchPage() {
             </div>
           </div>
         ) : (
-          // Resultados de productos
-          <div
-            className={`gap-6 ${
-              viewMode === 'list'
-                ? 'space-y-4'
-                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-            }`}
-          >
+          // Resultados de productos - Layout fijo con 2 productos por línea en mobile
+          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full'>
             {products.map(product => {
               const hasDiscount =
                 typeof product.discounted_price === 'number' &&
@@ -348,9 +317,7 @@ export default function SearchPage() {
                     // Aumentamos el límite para permitir medida + acabado + varios colores
                     maxBadges: 6,
                   }}
-                  className={`bg-white shadow-sm hover:shadow-md transition-shadow ${
-                    viewMode === 'list' ? 'flex flex-row items-center p-4' : ''
-                  }`}
+                  className='bg-white shadow-sm hover:shadow-md transition-shadow'
                 />
               )
             })}

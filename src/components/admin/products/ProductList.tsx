@@ -88,7 +88,7 @@ function StockBadge({ stock }: { stock: number }) {
     )
   }
 
-  return <span className='text-sm text-gray-900'>{stock} unidades</span>
+  return <span className='text-sm text-gray-900'>{stock}</span>
 }
 
 export function ProductList({ className }: ProductListProps) {

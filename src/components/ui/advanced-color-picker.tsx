@@ -682,12 +682,18 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
     )
 
     // Para productos de látex, excluir completamente los colores de madera
-    const isLatexProduct =
-      productType.allowedColorCategories!.includes('Látex') &&
-      productType.allowedColorCategories!.length === 1
+    const isLatexProduct = productType.id === 'pinturas-latex'
     if (isLatexProduct) {
       filtered = filtered.filter(color => color.category !== 'Madera')
-      console.log('🎨 Latex product detected - excluding wood colors')
+      // Cambiar categoría de "Sintético" a "Látex" para productos de látex
+      filtered = filtered.map(color => ({
+        ...color,
+        category: color.category === 'Sintético' ? 'Látex' : color.category,
+        description: color.description?.includes('sintéticos') 
+          ? color.description.replace('sintéticos', 'látex')
+          : color.description
+      }))
+      console.log('🎨 Latex product detected - excluding wood colors and updating categories')
     }
 
     // Para Impregnantes de madera: excluir blancos y cremas del selector
@@ -902,12 +908,16 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
             <div className='flex-1'>
               <h5 className='font-medium text-gray-900'>{currentColor.displayName}</h5>
               <p className='text-sm text-gray-600'>
-                {currentColor.family} • {currentColor.category}
+                {currentColor.family} • {productType?.id === 'pinturas-latex' && currentColor.category === 'Sintético' ? 'Látex' : currentColor.category}
               </p>
             </div>
           </div>
           {currentColor.description && (
-            <p className='text-sm text-gray-600 italic'>{currentColor.description}</p>
+            <p className='text-sm text-gray-600 italic'>
+              {productType?.id === 'pinturas-latex' && currentColor.description.includes('sintéticos') 
+                ? currentColor.description.replace('sintéticos', 'látex')
+                : currentColor.description}
+            </p>
           )}
         </div>
       )}

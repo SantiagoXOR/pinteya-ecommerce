@@ -232,7 +232,7 @@ export const CustomTexts: Story = {
     quantity: 3,
     lowStockThreshold: 5,
     customTexts: {
-      lowStock: '¡Últimas unidades disponibles!',
+      lowStock: '¡Últimas disponibles!',
       inStock: 'Disponible para entrega inmediata',
       outOfStock: 'Temporalmente agotado',
       preOrder: 'Reservá tu producto',

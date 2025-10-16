@@ -134,7 +134,7 @@ const Header = () => {
                 isMobile={false}
                 className={`
                   hidden sm:block w-28 h-auto transition-all duration-300 ease-out
-                  hover:scale-110 hover:drop-shadow-lg cursor-pointer
+                  hover:scale-110 cursor-pointer
                   ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
                 `}
               />
@@ -144,7 +144,7 @@ const Header = () => {
                 isMobile={true}
                 className={`
                   sm:hidden w-20 h-auto transition-all duration-300 ease-out
-                  hover:scale-110 hover:drop-shadow-lg cursor-pointer
+                  hover:scale-110 cursor-pointer
                   ${isSticky ? 'logo-sticky-scale scale-90' : 'scale-100'}
                 `}
               />
