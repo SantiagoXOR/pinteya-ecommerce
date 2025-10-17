@@ -16,7 +16,11 @@ const CreateCashOrderSchema = z.object({
   items: z.array(z.object({
     id: z.string(),
     quantity: z.number().min(1),
-    unit_price: z.number().min(0)
+    unit_price: z.number().min(0),
+    // 🔧 AGREGAR: Campos opcionales para información de variante
+    variant_id: z.string().optional(),
+    variant_color: z.string().optional(),
+    variant_finish: z.string().optional(),
   })),
   payer: z.object({
     name: z.string().min(1),
@@ -110,6 +114,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = CreateCashOrderSchema.parse(body);
 
+    // 🔍 DEBUG CRÍTICO: Verificar items recibidos en la API
+    console.log('🛒 create-cash-order: Items recibidos en la API:', validatedData.items.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity
+    })));
+
     logger.info('Creating cash order', {
       itemsCount: validatedData.items.length,
       payerEmail: validatedData.payer.email
@@ -171,13 +183,23 @@ export async function POST(request: NextRequest) {
     // Obtener detalles de productos y validar stock
     const productIds = validatedData.items.map(item => item.id);
     console.log('🔍 Buscando productos con IDs:', productIds);
+    console.log('🔍 Items que se están buscando:', validatedData.items.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      price: item.price
+    })));
     
     const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, name, price, discounted_price, stock, color, medida, brand, description')
+      .select(`
+        id, name, price, discounted_price, stock, color, medida, brand, description,
+        product_variants (
+          id, color_name, measure, price_sale, price_list
+        )
+      `)
       .in('id', productIds);
 
-    console.log('📦 Productos encontrados:', products);
+    console.log('📦 Productos encontrados en BD:', products);
     console.log('❌ Error en consulta:', productsError);
 
     if (productsError || !products) {
@@ -209,10 +231,36 @@ export async function POST(request: NextRequest) {
       const itemTotal = finalPrice * item.quantity;
       itemsSubtotal += itemTotal;
 
+      // 🔧 Preparar product_snapshot con información de variante
+      const productSnapshot: any = {
+        name: product.name,
+        price: finalPrice,
+        medida: product.medida,
+        brand: product.brand,
+      };
+
+      // Incluir color y terminación si están disponibles
+      if (item.variant_color) {
+        productSnapshot.color = item.variant_color;
+      } else if (product.color) {
+        productSnapshot.color = product.color;
+      }
+
+      if (item.variant_finish) {
+        productSnapshot.finish = item.variant_finish;
+      } else if (product.finish) {
+        productSnapshot.finish = product.finish;
+      }
+
       return {
         product_id: parseInt(item.id),
+        product_name: product.name,
+        product_sku: product.aikon_id || null, // Usar aikon_id como SKU
         quantity: item.quantity,
-        price: finalPrice
+        price: finalPrice, // Usar 'price' en lugar de 'unit_price' para compatibilidad
+        unit_price: finalPrice,
+        total_price: itemTotal,
+        product_snapshot: productSnapshot
       };
     });
 
@@ -284,13 +332,16 @@ export async function POST(request: NextRequest) {
       order_id: order.id
     }));
 
+    console.log('🔍 DEBUG: Insertando order_items:', JSON.stringify(orderItemsWithOrderId, null, 2));
+
     const { error: itemsError } = await supabase
       .from('order_items')
       .insert(orderItemsWithOrderId);
 
     if (itemsError) {
+      console.error('❌ Error creating order items:', itemsError);
       logger.error('Error creating order items', { error: itemsError });
-      throw new Error('Error al crear los items de la orden');
+      throw new Error(`Error al crear los items de la orden: ${itemsError.message}`);
     }
 
     // Generar mensaje de WhatsApp con el formato solicitado
@@ -324,7 +375,18 @@ export async function POST(request: NextRequest) {
         
         // Agregar detalles del producto si están disponibles
         const details = [];
-        if (product.color) details.push(`Color: ${product.color}`);
+        
+        // 🔧 PRIORIDAD: Usar color de la variante si está disponible, sino usar color del producto
+        const colorToUse = item.variant_color || product.color;
+        // Solo agregar si NO contiene comas (múltiples colores)
+        if (colorToUse && !colorToUse.includes(',')) {
+          details.push(`Color: ${colorToUse}`);
+        }
+        
+        // 🔧 Agregar terminación si está disponible (de la variante o del producto)
+        const finishToUse = item.variant_finish || product.finish;
+        if (finishToUse) details.push(`Terminación: ${finishToUse}`);
+        
         if (product.medida) details.push(`Medida: ${product.medida}`);
         if (product.brand) details.push(`Marca: ${product.brand}`);
         

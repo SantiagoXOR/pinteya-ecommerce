@@ -1292,6 +1292,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     })
     
     if (selectedCapacity && variants && variants.length > 0) {
+      // Validar que selectedCapacity no sea string vacío
+      if (!selectedCapacity.trim()) {
+        console.log('ℹ️ selectedCapacity está vacío, saltando búsqueda de variante')
+        return
+      }
+      
       // Primero intentar encontrar variante que coincida con color Y capacidad
       let variant = null
       
@@ -1385,53 +1391,56 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           } : null
         })
         
-        // Buscar variante que coincida con ambos
+        // 🔧 LÓGICA SIMPLIFICADA: Buscar variante que coincida exactamente
         console.log('🔍 DEBUG Buscando variante con color+capacidad...')
+        console.log('🔍 DEBUG Valores de búsqueda:', {
+          selectedCapacity,
+          colorToUse,
+          variantsCount: variants.length
+        })
+        
         variant = variants.find((v, index) => {
-          const capacityMatch = findVariantByCapacity([v], selectedCapacity) !== null
-          const colorNameSlug = toSlug(v.color_name || '')
-          // Comparar slugs O comparar directamente los nombres
-          const colorMatch = colorNameSlug === selectedColorSlug || 
-                            (v.color_name || '').toLowerCase().trim() === colorToUse.toLowerCase().trim()
+          // Verificar que la medida coincida exactamente
+          const capacityMatch = v.measure === selectedCapacity
+          // Verificar que el color coincida exactamente (case insensitive)
+          const colorMatch = (v.color_name || '').toLowerCase().trim() === colorToUse.toLowerCase().trim()
           
           console.log(`🔍 Variante ${index}:`, {
             id: v.id,
             variantColor: v.color_name,
-            variantColorSlug: colorNameSlug,
             measure: v.measure,
             price: v.price_sale,
             colorToUse,
-            selectedColorSlug,
-            colorMatch,
+            selectedCapacity,
             capacityMatch,
+            colorMatch,
             willMatch: capacityMatch && colorMatch
           })
           
           return capacityMatch && colorMatch
         }) || null
         
-        // FIX TEMPORAL: Si no encuentra con la lógica normal, usar la búsqueda manual
-        if (!variant && correctVariant) {
-          console.log('🔧 FIX TEMPORAL: Usando búsqueda manual correcta')
-          variant = correctVariant
-        }
-        
-        // FIX CRÍTICO: Si aún no encuentra, buscar cualquier variante de 4L con precio $40.195
+        // Si no encuentra variante, mostrar error solo si hay datos válidos para buscar
         if (!variant) {
-          const variant40195 = variants.find(v => {
-            const capacityMatch = findVariantByCapacity([v], selectedCapacity) !== null
-            const priceMatch = v.price_sale === 40195
-            return capacityMatch && priceMatch
-          })
-          
-          if (variant40195) {
-            console.log('🔧 FIX CRÍTICO: Encontrada variante con precio $40.195:', {
-              id: variant40195.id,
-              color: variant40195.color_name,
-              measure: variant40195.measure,
-              price: variant40195.price_sale
+          // Solo mostrar error si tenemos valores válidos para buscar
+          if (colorToUse && colorToUse.trim() !== '' && 
+              selectedCapacity && selectedCapacity.trim() !== '' && 
+              variants && variants.length > 0) {
+            console.error('❌ No se encontró variante para:', {
+              color: colorToUse,
+              capacity: selectedCapacity,
+              availableVariants: variants.map(v => ({
+                id: v.id,
+                color: v.color_name,
+                measure: v.measure
+              }))
             })
-            variant = variant40195
+          } else {
+            console.log('ℹ️ Variante no encontrada - datos incompletos:', {
+              hasColor: !!colorToUse,
+              hasCapacity: !!selectedCapacity,
+              variantsCount: variants?.length || 0
+            })
           }
         }
         
@@ -1485,8 +1494,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           effectivePrice: getEffectivePrice(variant),
         })
       } else {
-        console.log('⚠️ No se encontró variante para capacidad:', selectedCapacity, 
-          '- Disponibles:', Array.isArray(variants) ? variants.map(v => v.measure).filter((v, i, a) => a.indexOf(v) === i) : 'variants no es array')
+        if (selectedCapacity && variants && variants.length > 0) {
+          console.log('⚠️ No se encontró variante para capacidad:', selectedCapacity, 
+            '- Disponibles:', variants.map(v => v.measure).filter((v, i, a) => a.indexOf(v) === i))
+        }
       }
     }
   }, [selectedCapacity, selectedColor, variants, smartColors])
@@ -1924,11 +1935,47 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     const originalUnitPrice = Number(originalPrice) || unitPrice
     const discountedUnitPrice = unitPrice < originalUnitPrice ? unitPrice : undefined
 
+    // 🔍 DEBUG CRÍTICO: Verificar qué lógica se está ejecutando
+    console.log('🔍 DEBUG: Determinando qué lógica usar:', {
+      hasSelectedRelatedProduct: !!selectedRelatedProduct,
+      hasSelectedVariant: !!selectedVariant,
+      selectedRelatedProduct: selectedRelatedProduct ? {
+        id: selectedRelatedProduct.id,
+        name: selectedRelatedProduct.name
+      } : null,
+      selectedVariant: selectedVariant ? {
+        id: selectedVariant.id,
+        color_name: selectedVariant.color_name,
+        measure: selectedVariant.measure
+      } : null,
+      productOriginal: {
+        id: product.id,
+        name: product.name
+      }
+    })
+
     // Prioridad 1: Producto relacionado seleccionado (por ancho o capacidad)
     if (selectedRelatedProduct) {
+      // 🔍 DEBUG CRÍTICO: Verificar producto relacionado seleccionado
+      console.log('⚠️⚠️⚠️ ALERTA: Se está usando un producto relacionado!', {
+        productoOriginal: {
+          id: product.id,
+          name: product.name,
+        },
+        productoRelacionado: {
+          id: selectedRelatedProduct.id,
+          name: selectedRelatedProduct.name,
+          measure: selectedRelatedProduct.measure,
+          price: selectedRelatedProduct.price,
+          discounted_price: selectedRelatedProduct.discounted_price,
+        },
+        selectedCapacity,
+        selectedColor,
+      })
+      
       productToAdd = {
         ...selectedRelatedProduct,
-        id: selectedRelatedProduct.id,
+        id: selectedRelatedProduct.id, // Para productos relacionados, sí usar el ID del producto relacionado
         name: selectedRelatedProduct.name,
         // Asegurar que el carrito reciba precio original y con descuento cuando corresponda
         price: originalUnitPrice,
@@ -1945,9 +1992,27 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
     // Prioridad 2: Variante seleccionada (para productos con variantes de capacidad)
     else if (selectedVariant) {
+      // 🔍 DEBUG CRÍTICO: Verificar variante seleccionada
+      console.log('✅ CORRECCIÓN: Usando variante pero manteniendo ID del producto original', {
+        productoOriginal: {
+          id: product.id,
+          name: product.name,
+        },
+        varianteSeleccionada: {
+          id: selectedVariant.id,
+          color_name: selectedVariant.color_name,
+          measure: selectedVariant.measure,
+          price_list: selectedVariant.price_list,
+          price_sale: selectedVariant.price_sale,
+        },
+        selectedCapacity,
+        selectedColor,
+        idFinalUsado: product.id, // Confirmar que usamos el ID del producto original
+      })
+      
       productToAdd = {
         ...product,
-        id: selectedVariant.id,
+        id: product.id, // 🔧 CORRECCIÓN: Usar el ID del producto original, no de la variante
         // Asegurar que el carrito reciba precio original y con descuento cuando corresponda
         price: originalUnitPrice,
         ...(discountedUnitPrice !== undefined
@@ -1955,6 +2020,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           : {}),
         capacity: (selectedVariant as any)?.capacity,
         medida: (selectedVariant as any)?.measure,
+        // 🔧 AGREGAR: Información de la variante para referencia
+        variant_id: selectedVariant.id,
+        variant_color: selectedVariant.color_name,
       }
     }
     // Si no hay variante ni producto relacionado, reforzar precios en el objeto base
@@ -2004,6 +2072,39 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
 
     try {
+      // 🔍 DEBUG CRÍTICO: Verificar que el ID del producto sea correcto
+      console.log('🛒 ShopDetailModal: VERIFICACIÓN CRÍTICA DE PRODUCTO', {
+        productoOriginalDelCard: {
+          id: product.id,
+          name: product.name,
+          medida: (product as any)?.medida,
+        },
+        productToAdd: {
+          id: productToAdd.id,
+          name: productToAdd.name,
+          medida: (productToAdd as any)?.medida,
+        },
+        selectedRelatedProduct: selectedRelatedProduct ? {
+          id: selectedRelatedProduct.id,
+          name: selectedRelatedProduct.name,
+          measure: selectedRelatedProduct.measure,
+        } : null,
+        selectedVariant: selectedVariant ? {
+          id: selectedVariant.id,
+          measure: selectedVariant.measure,
+        } : null,
+        selectedCapacity,
+        selectedColor,
+      })
+      
+      // ⚠️ VALIDACIÓN DE SEGURIDAD: Verificar que el ID no haya cambiado incorrectamente
+      if (productToAdd.id !== product.id && !selectedRelatedProduct && !selectedVariant) {
+        console.error('⚠️⚠️⚠️ ALERTA: El ID del producto cambió sin razón aparente!', {
+          idOriginal: product.id,
+          idFinal: productToAdd.id,
+        })
+      }
+      
       console.log('🛒 ShopDetailModal: Agregando al carrito...', {
         productToAdd,
         variants: cartData.variants,
@@ -2014,6 +2115,18 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           effectiveStock,
           unitPrice,
         }
+      })
+      
+      // 🔍 DEBUG CRÍTICO: Verificar el ID final que se está enviando
+      console.log('🎯 ID FINAL QUE SE ENVÍA AL CARRITO:', {
+        id: productToAdd.id,
+        name: productToAdd.name,
+        price: productToAdd.price,
+        discounted_price: productToAdd.discounted_price,
+        variant_id: productToAdd.variant_id,
+        variant_color: productToAdd.variant_color,
+        esVariante: !!selectedVariant,
+        esProductoRelacionado: !!selectedRelatedProduct
       })
       await onAddToCart(productToAdd, cartData.variants)
       console.log('🛒 ShopDetailModal: Producto agregado, cerrando modal...')

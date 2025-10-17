@@ -48,6 +48,17 @@ export const useCheckout = () => {
   const totalPrice = useAppSelector(selectTotalPrice)
   const { user, isLoaded } = useAuth()
 
+  // 🔍 DEBUG CRÍTICO: Verificar items del carrito Redux
+  console.log('🛒 useCheckout: Items del carrito Redux:', cartItems.map((item: any) => ({
+    id: item.id,
+    title: item.title,
+    price: item.price,
+    discountedPrice: item.discountedPrice,
+    quantity: item.quantity,
+    brand: item.brand,
+    attributes: item.attributes
+  })))
+
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     formData: initialFormData,
     isLoading: false,
@@ -423,6 +434,17 @@ export const useCheckout = () => {
       console.log('🔍 processExpressCheckout - Teléfono sanitizado:', sanitizedPhone)
       console.log('🔍 processExpressCheckout - Longitud del teléfono:', sanitizedPhone.length)
 
+      // 🔍 DEBUG CRÍTICO: Verificar items del carrito en checkout express
+      console.log('🛒 processExpressCheckout: Items del carrito antes de crear payload:', cartItems.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        discountedPrice: item.discountedPrice,
+        quantity: item.quantity,
+        brand: item.brand,
+        attributes: item.attributes
+      })))
+
       // Preparar datos para la API (Express Checkout - campos simplificados)
       const payload: CreatePreferencePayload = {
         items: cartItems.map((item: any) => ({
@@ -431,6 +453,9 @@ export const useCheckout = () => {
           price: item.discountedPrice,
           quantity: item.quantity,
           image: item.imgs?.previews?.[0] || '',
+          // 🔧 AGREGAR: Información de la variante para el mensaje de WhatsApp
+          variant_id: item.variant_id,
+          variant_color: item.variant_color,
         })),
         payer: {
           name: billing.firstName || 'Cliente', // Valor por defecto para express checkout
@@ -516,6 +541,17 @@ export const useCheckout = () => {
       const { billing, shipping } = checkoutState.formData
       const shippingCost = calculateShippingCost()
 
+      // 🔍 DEBUG CRÍTICO: Verificar items del carrito antes de enviar
+      console.log('🛒 useCheckout: Items del carrito antes de crear payload:', cartItems.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        discountedPrice: item.discountedPrice,
+        quantity: item.quantity,
+        brand: item.brand,
+        attributes: item.attributes
+      })))
+
       // Preparar datos para la API
       const payload: CreatePreferencePayload = {
         items: cartItems.map((item: any) => ({
@@ -524,6 +560,9 @@ export const useCheckout = () => {
           price: item.discountedPrice,
           quantity: item.quantity,
           image: item.imgs?.previews?.[0] || '',
+          // 🔧 AGREGAR: Información de la variante para el mensaje de WhatsApp
+          variant_id: item.variant_id,
+          variant_color: item.variant_color,
         })),
         payer: {
           name: billing.firstName,
@@ -708,13 +747,13 @@ export const useCheckout = () => {
         phoneNumber = sanitizedPhone
       }
 
-      // Determinar dirección de envío (separar calle y número si vienen juntos)
+      // Determinar dirección de envío (usar dirección completa para evitar errores de parsing)
       const getStreetComponents = (addr?: string) => {
         const full = (addr || '').trim()
-        const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
+        // No separar - enviar dirección completa para evitar errores como "9" solo
         return {
-          street_name: match ? match[1].trim() : full,
-          street_number: match ? match[2].trim() : '',
+          street_name: full,
+          street_number: '',
         }
       }
 
@@ -736,6 +775,9 @@ export const useCheckout = () => {
           quantity: item.quantity,
           // Usar 'unit_price' para cumplir con CreateCashOrderSchema
           unit_price: item.discountedPrice || item.price,
+          // 🔧 Incluir información de variante (color, terminación, etc.)
+          variant_color: item.attributes?.color,
+          variant_finish: item.attributes?.finish,
         })),
         payer: {
           name: billing.firstName,

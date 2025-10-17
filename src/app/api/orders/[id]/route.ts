@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const orderId = params.id
+    const { id: orderId } = await params
 
     if (!orderId) {
       return NextResponse.json({ success: false, error: 'ID de orden requerido' }, { status: 400 })
@@ -17,6 +17,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         { status: 503 }
       )
     }
+
+    // Determinar si es un ID numérico o un external_reference
+    const isNumericId = /^\d+$/.test(orderId)
+    const searchField = isNumericId ? 'id' : 'external_reference'
 
     // Obtener orden con items y productos
     const { data: order, error: orderError } = await supabase
@@ -38,16 +42,21 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         order_items (
           id,
           quantity,
-          price,
+          unit_price,
+          product_snapshot,
           products (
             id,
             name,
-            images
+            images,
+            color,
+            medida,
+            brand,
+            finish
           )
         )
       `
       )
-      .eq('id', orderId)
+      .eq(searchField, orderId)
       .single()
 
     if (orderError) {

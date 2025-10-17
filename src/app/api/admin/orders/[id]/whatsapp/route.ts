@@ -42,9 +42,14 @@ export async function GET(
         *,
         order_items (
           quantity,
-          price,
+          unit_price,
+          product_snapshot,
           products (
-            name
+            name,
+            color,
+            medida,
+            brand,
+            finish
           )
         )
       `)
@@ -63,12 +68,41 @@ export async function GET(
       )
     }
 
-    // Preparar los datos de la orden para WhatsApp
-    const orderItems = order.order_items?.map((item: any) => ({
-      name: item.products?.name || 'Producto',
-      quantity: item.quantity,
-      price: `$${parseFloat(item.price).toLocaleString('es-AR')}`,
-    })) || []
+    // Preparar los datos de la orden para WhatsApp con detalles completos
+    const orderItems = order.order_items?.map((item: any) => {
+      const snapshot = item.product_snapshot || {};
+      const product = item.products || {};
+      
+      // Construir nombre con detalles
+      let productName = snapshot.name || product.name || 'Producto';
+      const details = [];
+      
+      // Color (prioridad: snapshot > producto)
+      const color = snapshot.color || product.color;
+      if (color) details.push(`Color: ${color}`);
+      
+      // Terminación (prioridad: snapshot > producto)
+      const finish = snapshot.finish || product.finish;
+      if (finish) details.push(`Terminación: ${finish}`);
+      
+      // Medida
+      const medida = snapshot.medida || product.medida;
+      if (medida) details.push(`Medida: ${medida}`);
+      
+      // Marca
+      const brand = snapshot.brand || product.brand;
+      if (brand) details.push(`Marca: ${brand}`);
+      
+      if (details.length > 0) {
+        productName += ` (${details.join(', ')})`;
+      }
+      
+      return {
+        name: productName,
+        quantity: item.quantity,
+        price: `$${parseFloat(item.unit_price).toLocaleString('es-AR')}`,
+      };
+    }) || []
 
     const orderDetails: OrderDetails = {
       id: order.id,
