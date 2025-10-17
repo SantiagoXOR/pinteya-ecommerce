@@ -118,23 +118,27 @@ export const useCheckout = () => {
   // FUNCIONES DE CÁLCULO
   // ===================================
   const calculateShippingCost = useCallback(() => {
-    const { shippingMethod } = checkoutState.formData
+    // 🧪 TEMPORAL: Desactivado para prueba de MercadoPago
+    // TODO: Restaurar lógica original después de la prueba
+    return 0
+    
+    // const { shippingMethod } = checkoutState.formData
 
-    // Envío gratis para compras mayores a $50,000 (aplica a todos los métodos)
-    if (totalPrice >= 50000) {
-      return 0
-    }
+    // // Envío gratis para compras mayores a $50,000 (aplica a todos los métodos)
+    // if (totalPrice >= 50000) {
+    //   return 0
+    // }
 
-    switch (shippingMethod) {
-      case 'free':
-        return 0
-      case 'standard':
-        return 5000
-      case 'express':
-        return 10000
-      default:
-        return 0
-    }
+    // switch (shippingMethod) {
+    //   case 'free':
+    //     return 0
+    //   case 'standard':
+    //     return 5000
+    //   case 'express':
+    //     return 10000
+    //   default:
+    //     return 0
+    // }
   }, [checkoutState.formData.shippingMethod, totalPrice])
 
   const calculateDiscount = useCallback(() => {
@@ -388,8 +392,8 @@ export const useCheckout = () => {
     }
 
     // ✅ NUEVO: Solo validar carrito si NO estamos en el step de pago
-    // Durante el step 'payment', el carrito ya se vació pero es normal
-    if (checkoutState.step !== 'payment' && cartItems.length === 0) {
+    // Durante el step 'payment' o 'cash_success', el carrito ya se vació pero es normal
+    if (checkoutState.step !== 'payment' && checkoutState.step !== 'cash_success' && cartItems.length === 0) {
       errors.cart = 'El carrito está vacío'
     }
 
@@ -800,7 +804,9 @@ export const useCheckout = () => {
         external_reference: `cash_order_${Date.now()}`,
       }
 
+      console.log('🔍 DEBUG - Llegó hasta aquí, creando payload...')
       console.log('📦 Enviando orden de pago contra entrega:', payload)
+      console.log('🔍 DEBUG - Justo antes de llamar a la API...')
 
       // Llamar a la API de cash order
       const response = await fetch('/api/orders/create-cash-order', {
@@ -811,28 +817,64 @@ export const useCheckout = () => {
         body: JSON.stringify(payload),
       })
 
+      console.log('🔍 DEBUG - Respuesta recibida de la API, status:', response.status)
+      console.log('🔍 DEBUG - Respuesta OK:', response.ok)
+      
       const result = await response.json()
+      
+      console.log('🔍 DEBUG - Respuesta completa de la API:', result)
+      console.log('🔍 DEBUG - result.success:', result.success)
+      console.log('🔍 DEBUG - result.data:', result.data)
 
       if (!result.success) {
+        console.error('❌ Error en la respuesta de la API:', result.error)
         throw new Error(result.error || 'Error creando la orden')
       }
 
       console.log('✅ Orden de pago contra entrega creada exitosamente:', result.data)
+      console.log('🔍 DEBUG - Llegó hasta aquí, ahora va a guardar en localStorage')
 
       // Persistir datos clave para la página de éxito
+      console.log('🔍 DEBUG - Iniciando guardado en localStorage...')
       try {
         const order = result?.data?.order
         const whatsappUrl = result?.data?.whatsapp_url || order?.whatsapp_url
         const whatsappMessage = result?.data?.whatsapp_message
+        
+        console.log('🔍 DEBUG - order:', order)
+        console.log('🔍 DEBUG - whatsappUrl:', whatsappUrl)
+        console.log('🔍 DEBUG - whatsappMessage:', whatsappMessage)
+        
+        console.log('🔍 DEBUG - result.data:', result.data)
+        console.log('🔍 DEBUG - whatsappMessage from API:', whatsappMessage)
+        
         if (order) {
+          const orderId = order.order_number || String(order.id)
           const successParams = {
-            orderId: order.order_number || String(order.id),
+            orderId,
             total: Number(order.total ?? 0),
             whatsappUrl,
             whatsappMessage,
           }
+          console.log('🔍 DEBUG - successParams to save:', successParams)
+          console.log('🔍 DEBUG - whatsappMessage to save with orderId:', whatsappMessage)
+          
+          // Guardar con múltiples claves para compatibilidad
           localStorage.setItem('cashSuccessParams', JSON.stringify(successParams))
           localStorage.setItem('cashOrderData', JSON.stringify(result.data))
+          
+          // Guardar mensaje específico con clave del orderId (más confiable)
+          if (whatsappMessage) {
+            localStorage.setItem(`order_message_${orderId}`, whatsappMessage)
+            console.log('🔍 DEBUG - Mensaje guardado con clave:', `order_message_${orderId}`)
+            console.log('🔍 DEBUG - Contenido del mensaje guardado:', whatsappMessage.substring(0, 200) + '...')
+            
+            // Verificar que se guardó correctamente
+            const saved = localStorage.getItem(`order_message_${orderId}`)
+            console.log('🔍 DEBUG - Verificación: mensaje recuperado:', saved ? 'SÍ' : 'NO')
+          } else {
+            console.warn('🔍 DEBUG - No hay whatsappMessage para guardar')
+          }
         }
       } catch (e) {
         console.error('❌ No se pudo guardar cashSuccessParams en localStorage', e)
@@ -852,6 +894,11 @@ export const useCheckout = () => {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error procesando la orden'
       console.error('❌ Error en pago contra entrega:', error)
+      console.error('❌ Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined
+      })
       setCheckoutState(prev => ({
         ...prev,
         isLoading: false,
