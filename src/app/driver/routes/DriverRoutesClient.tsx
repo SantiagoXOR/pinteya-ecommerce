@@ -4,17 +4,16 @@ import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Navigation,
-  MapPin,
-  Clock,
-  Package,
-  Play,
-  CheckCircle,
-  AlertCircle,
-  Truck,
-  Route,
-} from 'lucide-react'
+import { Navigation } from 'lucide-react'
+import { MapPin } from 'lucide-react'
+import { Clock } from 'lucide-react'
+import { Package } from 'lucide-react'
+import { Play } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
+import { Truck } from 'lucide-react'
+import { Route } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { useDriver } from '@/contexts/DriverContext'
 import { cn } from '@/lib/core/utils'
 import Link from 'next/link'

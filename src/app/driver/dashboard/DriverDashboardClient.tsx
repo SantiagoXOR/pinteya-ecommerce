@@ -6,21 +6,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Navigation,
-  MapPin,
-  Clock,
-  Package,
-  CheckCircle,
-  AlertCircle,
-  Truck,
-  Route,
-  Play,
-  Pause,
-  MoreVertical,
-  List,
-  Map,
-} from 'lucide-react'
+import { Navigation } from 'lucide-react'
+import { MapPin } from 'lucide-react'
+import { Clock } from 'lucide-react'
+import { Package } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
+import { Truck } from 'lucide-react'
+import { Route } from 'lucide-react'
+import { Play } from 'lucide-react'
+import { Pause } from 'lucide-react'
+import { MoreVertical } from 'lucide-react'
+import { List } from 'lucide-react'
+import { Map } from 'lucide-react'
 import { useDriver } from '@/contexts/DriverContext'
 import { cn } from '@/lib/core/utils'
 import Link from 'next/link'
