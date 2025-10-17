@@ -121,8 +121,8 @@ const CartSidebarModal = () => {
           <div className='flex-1 overflow-y-auto no-scrollbar pt-4'>
             <div className='flex flex-col gap-4 px-1'>
               {/* <!-- cart item --> */}
-              {cartItems.length > 0 ? (
-                cartItems.map((item: any, key: number) => <SingleItem key={key} item={item} />)
+              {effectiveCartItems.length > 0 ? (
+                effectiveCartItems.map((item: any, key: number) => <SingleItem key={key} item={item} />)
               ) : (
                 <EmptyCart />
               )}
@@ -131,9 +131,9 @@ const CartSidebarModal = () => {
 
           <div className='border-t border-gray-200 bg-white pt-3 pb-3 mt-4 sticky bottom-0'>
             {/* Barra de Progreso Envío Gratis */}
-            {cartItems.length > 0 && (
+            {effectiveCartItems.length > 0 && (
               <div className='mb-3'>
-                <ShippingProgressBar currentAmount={totalPrice} variant='compact' />
+                <ShippingProgressBar currentAmount={effectiveTotalPrice} variant='compact' />
               </div>
             )}
 
@@ -141,7 +141,7 @@ const CartSidebarModal = () => {
             <div className='flex items-center justify-between gap-3 mb-3'>
               <p className='font-bold text-lg text-gray-900'>Subtotal:</p>
               <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
-                ${totalPrice.toLocaleString()}
+                ${effectiveTotalPrice.toLocaleString()}
               </p>
             </div>
 

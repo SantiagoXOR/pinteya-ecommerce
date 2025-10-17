@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { getPreviewImage } from '@/lib/adapters/product-adapter'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -8,12 +8,89 @@ import { Minus, Plus, Trash2, AlertCircle } from '@/lib/optimized-imports'
 import { normalizeVariantLabel } from '@/lib/utils/variant-normalizer'
 import { useCartWithBackend } from '@/hooks/useCartWithBackend'
 import { toast } from 'react-hot-toast'
+import { useSession } from 'next-auth/react'
+import { useAppDispatch } from '@/redux/store'
+import { removeItemFromCart, updateCartItemQuantity } from '@/redux/features/cart-slice'
 
 const SingleItem = ({ item }: { item: any }) => {
   const [quantity, setQuantity] = useState(item.quantity)
   const [imgSrc, setImgSrc] = useState<string>(() => getPreviewImage(item))
   const [isUpdating, setIsUpdating] = useState(false)
+  const [productStock, setProductStock] = useState<number | null>(null)
+  const stockCache = useRef<number | null>(null)
+  const hasFetchedStock = useRef(false)
+  const { data: session } = useSession()
   const { updateQuantity, removeItem } = useCartWithBackend()
+  const dispatch = useAppDispatch()
+
+  // Determinar si estamos usando backend o Redux
+  const isBackendMode = !!session?.user && item.product_id !== undefined
+  const isReduxMode = !session?.user || item.product_id === undefined
+
+  // Función para obtener stock del producto (para modo Redux)
+  const fetchProductStock = useCallback(async (productId: number) => {
+    // Usar cache si ya tenemos el stock
+    if (stockCache.current !== null) {
+      console.log(`📦 Usando stock cache para producto ${productId}:`, stockCache.current)
+      return stockCache.current
+    }
+    
+    // Evitar múltiples llamadas si ya estamos obteniendo el stock
+    if (hasFetchedStock.current) {
+      console.log(`📦 Ya se está obteniendo stock para producto ${productId}, esperando...`)
+      return stockCache.current
+    }
+    
+    hasFetchedStock.current = true
+    
+    try {
+      console.log(`📦 Obteniendo stock del producto ${productId}...`)
+      const response = await fetch(`/api/products/${productId}`)
+      console.log(`📦 Response status: ${response.status}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log(`📦 Response data:`, data)
+        
+        if (data.success && data.data) {
+          const stock = data.data.stock
+          stockCache.current = stock
+          setProductStock(stock)
+          console.log(`📦 Stock del producto ${productId} guardado en cache:`, stock)
+          return stock
+        } else {
+          console.error(`📦 Error en respuesta:`, data)
+        }
+      } else {
+        console.error(`📦 Error HTTP: ${response.status}`)
+      }
+    } catch (error) {
+      console.error('Error obteniendo stock:', error)
+      hasFetchedStock.current = false // Permitir reintento en caso de error
+    }
+    
+    console.log(`📦 Retornando stock desde cache:`, stockCache.current)
+    return stockCache.current
+  }, []) // Sin dependencias para evitar recreación
+
+  // Obtener stock del producto al montar el componente (solo para Redux)
+  useEffect(() => {
+    if (isReduxMode && item.id && !hasFetchedStock.current) {
+      fetchProductStock(item.id)
+    }
+  }, [isReduxMode, item.id, fetchProductStock])
+
+  // Debug: Verificar si el usuario está autenticado
+  console.log('🔍 SingleItem Debug:', {
+    hasSession: !!session?.user,
+    userId: session?.user?.id,
+    itemId: item.id || item.product_id,
+    itemStructure: Object.keys(item),
+    isBackendMode,
+    isReduxMode,
+    productStock,
+    currentQuantity: quantity
+  })
 
   // Sincronizar cantidad local con la del item
   useEffect(() => {
@@ -21,45 +98,135 @@ const SingleItem = ({ item }: { item: any }) => {
   }, [item.quantity])
 
   const handleRemoveFromCart = async () => {
+    console.log('🗑️ Intentando eliminar producto:', item)
+    
     setIsUpdating(true)
-    const success = await removeItem(item.id)
-    if (!success) {
-      toast.error('Error al eliminar el producto del carrito')
+    
+    if (isBackendMode) {
+      // Usar backend si el usuario está autenticado
+      const productId = item.product_id
+      console.log('🔍 Backend - ProductId para eliminar:', productId)
+      
+      const success = await removeItem(productId)
+      console.log('✅ Backend - Resultado eliminación:', success)
+      
+      if (!success) {
+        toast.error('Error al eliminar el producto del carrito')
+      }
+    } else {
+      // Usar Redux si no hay autenticación
+      console.log('🔍 Redux - Eliminando producto:', item.id)
+      dispatch(removeItemFromCart(item.id))
+      toast.success('Producto eliminado del carrito')
+      console.log('✅ Redux - Producto eliminado')
     }
+    
     setIsUpdating(false)
   }
 
   const handleIncreaseQuantity = async () => {
-    // Verificar si hay stock disponible (si existe en el item)
-    if (item.stock !== undefined && quantity >= item.stock) {
-      toast.error(`Stock máximo alcanzado. Solo hay ${item.stock} disponibles`)
+    console.log('➕ Intentando aumentar cantidad:', item)
+    console.log('🔍 Debug stock validation:', {
+      isBackendMode,
+      isReduxMode,
+      currentQuantity: quantity,
+      newQuantity: quantity + 1,
+      itemStock: item.stock,
+      stockCache: stockCache.current,
+      hasFetchedStock: hasFetchedStock.current
+    })
+    
+    const newQuantity = quantity + 1
+    
+    // Validación de stock
+    let stockToCheck = null
+    if (isBackendMode) {
+      stockToCheck = item.stock
+      console.log('🔍 Backend mode - Stock from item:', stockToCheck)
+    } else if (isReduxMode) {
+      console.log('🔍 Redux mode - Checking stock...')
+      // Usar cache si está disponible, sino obtener stock
+      if (stockCache.current !== null) {
+        stockToCheck = stockCache.current
+        console.log('🔍 Redux mode - Using cached stock:', stockToCheck)
+      } else {
+        console.log('🔍 Redux mode - Fetching stock from API...')
+        stockToCheck = await fetchProductStock(item.id)
+        console.log('🔍 Redux mode - Fetched stock:', stockToCheck)
+      }
+    }
+    
+    console.log('🔍 Final stock to check:', stockToCheck)
+    
+    // Verificar stock antes de proceder
+    if (stockToCheck !== null && newQuantity > stockToCheck) {
+      toast.error(`Stock máximo alcanzado. Solo hay ${stockToCheck} disponibles`)
+      console.log(`❌ Stock validation failed: ${newQuantity} > ${stockToCheck}`)
       return
     }
-
-    const newQuantity = quantity + 1
+    
+    console.log(`✅ Stock validation passed: ${newQuantity} <= ${stockToCheck}`)
+    proceedWithIncrease(newQuantity)
+  }
+  
+  const proceedWithIncrease = (newQuantity: number) => {
     setIsUpdating(true)
-    const success = await updateQuantity(item.id, newQuantity)
-    if (success) {
-      setQuantity(newQuantity)
+    
+    if (isBackendMode) {
+      // Usar backend si el usuario está autenticado
+      const productId = item.product_id
+      console.log('🔍 Backend - ProductId para aumentar:', productId, 'Nueva cantidad:', newQuantity)
+      
+      updateQuantity(productId, newQuantity).then(success => {
+        console.log('✅ Backend - Resultado aumento:', success)
+        if (success) {
+          setQuantity(newQuantity)
+        } else {
+          setQuantity(item.quantity)
+        }
+        setIsUpdating(false)
+      })
     } else {
-      setQuantity(item.quantity)
+      // Usar Redux si no hay autenticación
+      console.log('🔍 Redux - Aumentando cantidad:', item.id, 'Nueva cantidad:', newQuantity)
+      dispatch(updateCartItemQuantity({ id: item.id, quantity: newQuantity }))
+      setQuantity(newQuantity)
+      console.log('✅ Redux - Cantidad aumentada')
+      setIsUpdating(false)
     }
-    setIsUpdating(false)
   }
 
   const handleDecreaseQuantity = async () => {
+    console.log('➖ Intentando disminuir cantidad:', item)
+    
     if (quantity <= 1) {
       return
     }
 
     const newQuantity = quantity - 1
     setIsUpdating(true)
-    const success = await updateQuantity(item.id, newQuantity)
-    if (success) {
-      setQuantity(newQuantity)
+    
+    if (isBackendMode) {
+      // Usar backend si el usuario está autenticado
+      const productId = item.product_id
+      console.log('🔍 Backend - ProductId para disminuir:', productId, 'Nueva cantidad:', newQuantity)
+      
+      const success = await updateQuantity(productId, newQuantity)
+      console.log('✅ Backend - Resultado disminución:', success)
+      
+      if (success) {
+        setQuantity(newQuantity)
+      } else {
+        setQuantity(item.quantity)
+      }
     } else {
-      setQuantity(item.quantity)
+      // Usar Redux si no hay autenticación
+      console.log('🔍 Redux - Disminuyendo cantidad:', item.id, 'Nueva cantidad:', newQuantity)
+      dispatch(updateCartItemQuantity({ id: item.id, quantity: newQuantity }))
+      setQuantity(newQuantity)
+      console.log('✅ Redux - Cantidad disminuida')
     }
+    
     setIsUpdating(false)
   }
 
@@ -150,7 +317,7 @@ const SingleItem = ({ item }: { item: any }) => {
               variant='ghost'
               size='sm'
               onClick={handleIncreaseQuantity}
-              disabled={isUpdating || (item.stock !== undefined && quantity >= item.stock)}
+              disabled={isUpdating || (isBackendMode && item.stock !== undefined && quantity >= item.stock) || (isReduxMode && stockCache.current !== null && quantity >= stockCache.current)}
               aria-label='Aumentar cantidad'
               className='h-8 w-8 rounded-none bg-yellow-400 hover:bg-yellow-500 text-black font-bold disabled:opacity-50 disabled:bg-gray-200'
             >
