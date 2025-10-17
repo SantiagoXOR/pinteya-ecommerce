@@ -421,19 +421,54 @@ export async function POST(request: NextRequest) {
 
       // Usar precio con descuento si existe, sino precio normal
       const finalPrice = getFinalPrice(product)
+      const itemTotal = finalPrice * item.quantity
+
+      // Preparar product_snapshot con información del producto
+      const productSnapshot = {
+        name: product.name,
+        price: finalPrice,
+        category: product.category?.name || null,
+        image: product.images?.previews?.[0] || null,
+      }
 
       return {
         order_id: order.id,
         product_id: parseInt(item.id),
+        product_name: product.name,
+        product_sku: null, // MercadoPago no tiene SKU, usar null
         quantity: item.quantity,
         price: finalPrice,
+        unit_price: finalPrice,
+        total_price: itemTotal,
+        product_snapshot: productSnapshot
       }
+    })
+
+    // Log detallado de los items a insertar
+    console.log('[ORDER_ITEMS] Preparando inserción:', {
+      orderItemsCount: orderItems.length,
+      orderId: order.id,
+      items: orderItems.map(item => ({
+        product_id: item.product_id,
+        product_name: item.product_name,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price
+      }))
     })
 
     const { error: itemsError } = await supabaseAdmin.from('order_items').insert(orderItems)
 
     if (itemsError) {
-      console.error('Error creating order items:', itemsError)
+      console.error('[ORDER_ITEMS] Error detallado:', {
+        error: itemsError,
+        message: itemsError.message,
+        code: itemsError.code,
+        details: itemsError.details,
+        hint: itemsError.hint,
+        orderItemsAttempted: orderItems,
+        orderId: order.id
+      })
       // Rollback: eliminar orden creada
       await supabaseAdmin.from('orders').delete().eq('id', order.id)
 
