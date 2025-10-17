@@ -104,12 +104,40 @@ export default function MercadoPagoSuccessPage() {
   }
 
   const handleContinueShopping = () => {
-    router.push('/products')
+    router.push('/')
   }
 
   const handleViewOrder = () => {
     if (orderId) {
-      router.push(`/orders/${orderId}`)
+      const params = new URLSearchParams()
+      
+      // Si tenemos orderData completo, usar ese mensaje
+      if (orderData) {
+        const message = generateMercadoPagoWhatsAppMessage(orderData)
+        params.set('message', encodeURIComponent(message))
+        params.set('customerName', customerName || '')
+        params.set('total', orderData.total_amount?.toString() || '')
+        
+        // También guardar en localStorage para compatibilidad
+        try {
+          localStorage.setItem(`order_message_${orderId}`, message)
+          localStorage.setItem('mercadopagoSuccessParams', JSON.stringify({
+            orderId,
+            total: orderData.total_amount || 0,
+            whatsappMessage: message,
+            customerName: customerName || ''
+          }))
+          console.log('🔍 DEBUG - Mensaje de MercadoPago guardado en localStorage:', message.substring(0, 100) + '...')
+        } catch (e) {
+          console.warn('Error guardando en localStorage:', e)
+        }
+      } else {
+        // Si no tenemos orderData, usar datos básicos
+        params.set('customerName', customerName || 'Cliente')
+        params.set('total', '0')
+      }
+      
+      router.push(`/orders/${orderId}?${params.toString()}`)
     }
   }
 
