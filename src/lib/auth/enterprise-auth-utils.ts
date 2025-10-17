@@ -160,32 +160,42 @@ export async function getEnterpriseAuthContext(
       }
     }
 
-    // BYPASS TEMPORAL PARA DESARROLLO
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
     if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-      return {
-        success: true,
-        context: {
-          userId: 'dev-admin',
-          sessionId: 'dev-session',
-          email: 'santiago@xor.com.ar',
-          role: 'admin',
-          permissions: [
-            'admin_access',
-            'products_read',
-            'products_write',
-            'orders_read',
-            'orders_write',
-          ],
-          sessionValid: true,
-          securityLevel: 'critical',
-          supabase: supabaseAdmin,
-          validations: {
-            jwtValid: true,
-            csrfValid: true,
-            rateLimitPassed: true,
-            originValid: true,
-          },
-        },
+      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          return {
+            success: true,
+            context: {
+              userId: 'dev-admin',
+              sessionId: 'dev-session',
+              email: 'santiago@xor.com.ar',
+              role: 'admin',
+              permissions: [
+                'admin_access',
+                'products_read',
+                'products_write',
+                'orders_read',
+                'orders_write',
+              ],
+              sessionValid: true,
+              securityLevel: 'critical',
+              supabase: supabaseAdmin,
+              validations: {
+                jwtValid: true,
+                csrfValid: true,
+                rateLimitPassed: true,
+                originValid: true,
+              },
+            },
+          }
+        }
+      } catch (error) {
+        console.warn('[AUTH] No se pudo verificar .env.local, bypass deshabilitado')
       }
     }
 
@@ -503,33 +513,43 @@ export async function requireAdminAuth(
   request: NextRequest | NextApiRequest,
   requiredPermissions: string[] = ['admin_access']
 ): Promise<EnterpriseAuthResult> {
-  // BYPASS TEMPORAL PARA DESARROLLO
+  // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
   if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-    console.log('[Enterprise Auth] BYPASS AUTH ENABLED - requireAdminAuth')
+    // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+    try {
+      const fs = require('fs')
+      const path = require('path')
+      const envLocalPath = path.join(process.cwd(), '.env.local')
+      if (fs.existsSync(envLocalPath)) {
+        console.log('[Enterprise Auth] BYPASS AUTH ENABLED - requireAdminAuth')
 
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+        const { createClient } = await import('@supabase/supabase-js')
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
 
-    return {
-      success: true,
-      user: {
-        id: 'dev-admin',
-        email: 'santiago@xor.com.ar',
-        role: 'admin',
-      },
-      supabase,
-      context: {
+        return {
+          success: true,
+          user: {
+            id: 'dev-admin',
+            email: 'santiago@xor.com.ar',
+            role: 'admin',
+          },
+          supabase,
+          context: {
         user: {
           id: 'dev-admin',
           email: 'santiago@xor.com.ar',
           role: 'admin',
         },
-        permissions: requiredPermissions,
-        metadata: { bypass: true },
-      },
+            permissions: requiredPermissions,
+            metadata: { bypass: true },
+          },
+        }
+      }
+    } catch (error) {
+      console.warn('[Enterprise Auth] No se pudo verificar .env.local, bypass deshabilitado')
     }
   }
 

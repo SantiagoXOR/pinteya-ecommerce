@@ -322,8 +322,8 @@ export async function POST(request: NextRequest) {
     lines.push(`${bullet} CP: ${order.shipping_address?.zip_code}`);
     lines.push('', `${EMOJIS.check} ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`);
 
-    // Usar CRLF para máxima compatibilidad con clientes que no respetan solo \n
-    const message = sanitizeForWhatsApp(lines.join('\r\n'));
+    // Usar \n para mejor compatibilidad con WhatsApp
+    const message = sanitizeForWhatsApp(lines.join('\n'));
     const whatsappMessage = encodeURIComponent(message);
     // Número de WhatsApp de Pinteya en formato internacional (solo dígitos)
     const rawPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';

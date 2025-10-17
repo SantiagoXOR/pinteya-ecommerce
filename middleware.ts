@@ -13,10 +13,20 @@ export default auth(req => {
   const isProduction = process.env.NODE_ENV === 'production'
   const startTime = Date.now()
 
-  // BYPASS TEMPORAL PARA DESARROLLO - Solo en desarrollo
+  // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
   if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-    console.log(`[NextAuth Middleware] BYPASS AUTH ENABLED - ${nextUrl.pathname}`)
-    return NextResponse.next()
+    // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+    try {
+      const fs = require('fs')
+      const path = require('path')
+      const envLocalPath = path.join(process.cwd(), '.env.local')
+      if (fs.existsSync(envLocalPath)) {
+        console.log(`[NextAuth Middleware] BYPASS AUTH ENABLED - ${nextUrl.pathname}`)
+        return NextResponse.next()
+      }
+    } catch (error) {
+      console.warn('[NextAuth Middleware] No se pudo verificar .env.local, bypass deshabilitado')
+    }
   }
 
   // Logging optimizado - Solo para rutas críticas o desarrollo

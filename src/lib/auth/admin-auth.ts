@@ -166,16 +166,26 @@ export async function requireAdminAuth(): Promise<{
   status?: number
 }> {
   try {
-    // BYPASS TEMPORAL PARA DESARROLLO
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
     if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-      console.log('[AUTH] BYPASS AUTH ENABLED - requireAdminAuth (admin-auth)')
-      return {
-        success: true,
-        user: {
-          id: 'dev-admin',
-          email: 'santiago@xor.com.ar',
-          role: 'admin',
-        },
+      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          console.log('[AUTH] BYPASS AUTH ENABLED - requireAdminAuth (admin-auth)')
+          return {
+            success: true,
+            user: {
+              id: 'dev-admin',
+              email: 'santiago@xor.com.ar',
+              role: 'admin',
+            },
+          }
+        }
+      } catch (error) {
+        console.warn('[AUTH] No se pudo verificar .env.local, bypass deshabilitado')
       }
     }
 
@@ -219,11 +229,21 @@ export async function checkCRUDPermissions(
   error?: string
 }> {
   try {
-    // BYPASS TEMPORAL PARA DESARROLLO
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
     if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-      console.log(`[AUTH] BYPASS AUTH ENABLED - checkCRUDPermissions ${operation} en ${resource}`)
-      return {
-        allowed: true,
+      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          console.log(`[AUTH] BYPASS AUTH ENABLED - checkCRUDPermissions ${operation} en ${resource}`)
+          return {
+            allowed: true,
+          }
+        }
+      } catch (error) {
+        console.warn('[AUTH] No se pudo verificar .env.local, bypass deshabilitado')
       }
     }
 

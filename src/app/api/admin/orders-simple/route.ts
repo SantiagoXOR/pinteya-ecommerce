@@ -23,14 +23,24 @@ const supabase = createClient(
 // =====================================================
 
 async function validateSimpleAuth() {
-  // En desarrollo, permitir acceso directo
+  // En desarrollo, permitir acceso directo con validación estricta
   if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-    return {
-      success: true,
-      user: {
-        id: 'dev-admin',
-        email: 'santiago@xor.com.ar',
-      },
+    // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+    try {
+      const fs = require('fs')
+      const path = require('path')
+      const envLocalPath = path.join(process.cwd(), '.env.local')
+      if (fs.existsSync(envLocalPath)) {
+        return {
+          success: true,
+          user: {
+            id: 'dev-admin',
+            email: 'santiago@xor.com.ar',
+          },
+        }
+      }
+    } catch (error) {
+      console.warn('[API Admin Orders Simple] No se pudo verificar .env.local, bypass deshabilitado')
     }
   }
 

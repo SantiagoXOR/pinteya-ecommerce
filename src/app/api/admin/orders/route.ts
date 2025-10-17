@@ -59,15 +59,25 @@ const CreateOrderSchema = z.object({
 
 async function validateAdminAuth() {
   try {
-    // BYPASS TEMPORAL PARA DESARROLLO
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
     if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-      return {
-        user: {
-          id: 'dev-admin',
-          email: 'santiago@xor.com.ar',
-          name: 'Dev Admin',
-        },
-        userId: 'dev-admin',
+      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          return {
+            user: {
+              id: 'dev-admin',
+              email: 'santiago@xor.com.ar',
+              name: 'Dev Admin',
+            },
+            userId: 'dev-admin',
+          }
+        }
+      } catch (error) {
+        console.warn('[API Admin Orders] No se pudo verificar .env.local, bypass deshabilitado')
       }
     }
 
