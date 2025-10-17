@@ -331,18 +331,41 @@ export async function POST(request: NextRequest) {
     // Usamos api.whatsapp.com para preservar saltos de línea y formato
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappMessage}`;
 
-    // Guardar enlace y mensaje crudo en la orden (no bloquear por error)
+    // Guardar enlace, mensaje y fecha en la orden (no bloquear por error)
     try {
+      const updateData: any = {
+        whatsapp_notification_link: whatsappUrl,
+        whatsapp_generated_at: new Date().toISOString(),
+      };
+      
+      // Intentar guardar whatsapp_message si la columna existe
+      try {
+        updateData.whatsapp_message = message;
+      } catch (e) {
+        // Si falla, no incluir whatsapp_message
+        console.log('[CASH_ORDER] whatsapp_message column not available, skipping...');
+      }
+
       const { error: whatsappUpdateError } = await supabase
         .from('orders')
-        .update({
-          whatsapp_notification_link: whatsappUrl,
-          whatsapp_message: message,
-          whatsapp_generated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', order.id);
+        
       if (whatsappUpdateError) {
         console.error('[CASH_ORDER] Error saving WhatsApp data:', whatsappUpdateError);
+        // Si falla por columna whatsapp_message, intentar sin ella
+        if (whatsappUpdateError.message.includes('whatsapp_message')) {
+          const { error: retryError } = await supabase
+            .from('orders')
+            .update({
+              whatsapp_notification_link: whatsappUrl,
+              whatsapp_generated_at: new Date().toISOString(),
+            })
+            .eq('id', order.id);
+          if (retryError) {
+            console.error('[CASH_ORDER] Error saving WhatsApp data (retry):', retryError);
+          }
+        }
       }
     } catch (e) {
       console.error('[CASH_ORDER] Exception saving WhatsApp data:', e);
