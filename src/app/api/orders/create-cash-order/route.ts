@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
     
     const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, name, price, discounted_price, stock')
+      .select('id, name, price, discounted_price, stock, color, medida, brand, description')
       .in('id', productIds);
 
     console.log('📦 Productos encontrados:', products);
@@ -318,7 +318,22 @@ export async function POST(request: NextRequest) {
       const product = products.find(p => p.id.toString() === item.id.toString());
       if (product) {
         const lineTotal = calculateFinalPrice(product) * item.quantity;
-        lines.push(`${bullet} ${product.name} x${item.quantity} - $${formatARS(lineTotal)}`);
+        
+        // Construir línea detallada del producto
+        let productLine = `${bullet} ${product.name}`;
+        
+        // Agregar detalles del producto si están disponibles
+        const details = [];
+        if (product.color) details.push(`Color: ${product.color}`);
+        if (product.medida) details.push(`Medida: ${product.medida}`);
+        if (product.brand) details.push(`Marca: ${product.brand}`);
+        
+        if (details.length > 0) {
+          productLine += ` (${details.join(', ')})`;
+        }
+        
+        productLine += ` x${item.quantity} - $${formatARS(lineTotal)}`;
+        lines.push(productLine);
       }
     }
 
