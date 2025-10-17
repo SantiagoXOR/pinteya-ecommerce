@@ -228,6 +228,13 @@ export async function POST(request: NextRequest) {
       total: totalAmount,
       status: 'pending',
       payment_status: 'pending',
+      payer_info: {
+        name: validatedData.payer.name,
+        surname: validatedData.payer.surname,
+        email: validatedData.payer.email,
+        phone: `${validatedData.payer.phone.area_code}${validatedData.payer.phone.number}`,
+        identification: validatedData.payer.identification
+      },
       shipping_address: {
         zip_code: validatedData.shipments.receiver_address.zip_code,
         state_name: validatedData.shipments.receiver_address.state_name,
@@ -324,6 +331,7 @@ export async function POST(request: NextRequest) {
 
     // Usar \n para mejor compatibilidad con WhatsApp
     const message = sanitizeForWhatsApp(lines.join('\n'));
+    // Codificar el mensaje para WhatsApp preservando saltos de línea
     const whatsappMessage = encodeURIComponent(message);
     // Número de WhatsApp de Pinteya en formato internacional (solo dígitos)
     const rawPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
