@@ -82,6 +82,63 @@ function getFinalPrice(product: { price: number; discounted_price?: number | nul
   return product.discounted_price ?? product.price
 }
 
+// Función para generar mensaje de WhatsApp para MercadoPago
+function generateMercadoPagoWhatsAppMessage(order: any, orderData: any, products: any[]): string {
+  const formatARS = (v: number) => Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const bullet = '•'
+  
+  const lines: string[] = [
+    `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+    `💳 Tu pago con MercadoPago ha sido procesado exitosamente`,
+    ``,
+    `*Detalle de Orden:*`,
+    `${bullet} Orden: ${order.order_number || order.id}`,
+    `${bullet} Total: $${formatARS(Number(order.total || 0))}`,
+    ``,
+    `*Datos Personales:*`,
+    `${bullet} Nombre: ${orderData.payer.name} ${orderData.payer.surname}`,
+    `${bullet} Teléfono: 📞 ${orderData.payer.phone || 'No proporcionado'}`,
+    `${bullet} Email: ✉️ ${orderData.payer.email}`,
+    ``,
+    `*Productos:*`,
+  ]
+
+  // Agregar productos
+  for (const item of orderData.items) {
+    const product = products.find(p => p.id === parseInt(item.id))
+    if (product) {
+      const finalPrice = getFinalPrice(product)
+      const lineTotal = finalPrice * item.quantity
+      
+      let productLine = `${bullet} ${product.name}`
+      
+      // Agregar detalles del producto si están disponibles
+      const details = []
+      if (product.category?.name) details.push(`Categoría: ${product.category.name}`)
+      if (product.brand) details.push(`Marca: ${product.brand}`)
+      
+      if (details.length > 0) {
+        productLine += ` (${details.join(', ')})`
+      }
+      
+      productLine += ` x${item.quantity} - $${formatARS(lineTotal)}`
+      lines.push(productLine)
+    }
+  }
+
+  // Datos de envío si están disponibles
+  if (orderData.shipping?.address) {
+    lines.push('', `*Datos de Envío:*`)
+    lines.push(`${bullet} Dirección: 📍 ${orderData.shipping.address.street_name} ${orderData.shipping.address.street_number}`)
+    lines.push(`${bullet} Ciudad: ${orderData.shipping.address.city_name}, ${orderData.shipping.address.state_name}`)
+    lines.push(`${bullet} CP: ${orderData.shipping.address.zip_code}`)
+  }
+
+  lines.push('', `✅ ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`)
+
+  return lines.join('\n')
+}
+
 // Función helper para crear usuario temporal
 async function createTemporaryUser(userId: string, email: string, name: string) {
   if (!supabaseAdmin) {
@@ -513,6 +570,20 @@ export async function POST(request: NextRequest) {
     // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
     // El costo de envío ya está incluido en el precio de cada producto
 
+    // ✅ DEBUG: Logging detallado de URLs de retorno
+    const backUrls = {
+      success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/mercadopago-success?order_id=${order.id}`,
+      failure: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failure?order_id=${order.id}`,
+      pending: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pending?order_id=${order.id}`,
+    }
+    
+    console.log('[MERCADOPAGO] URLs de retorno configuradas:', {
+      orderId: order.id,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      backUrls,
+      externalReference: order.id.toString()
+    })
+
     // ✅ MEJORADO: Usar nueva función con configuración avanzada
     const preferenceResult = await createPaymentPreference({
       items: mercadoPagoItems,
@@ -535,11 +606,7 @@ export async function POST(request: NextRequest) {
             }
           : undefined,
       },
-      back_urls: {
-        success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/mercadopago-success?order_id=${order.id}`,
-        failure: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failure?order_id=${order.id}`,
-        pending: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pending?order_id=${order.id}`,
-      },
+      back_urls: backUrls,
       external_reference: order.id.toString(),
       // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
       // shipments: undefined // Comentado intencionalmente
@@ -568,6 +635,39 @@ export async function POST(request: NextRequest) {
         { updateError },
         { clientIP }
       )
+    }
+
+    // ✅ NUEVO: Generar WhatsApp link al crear la orden (similar a pago al recibir)
+    try {
+      const whatsappMessage = generateMercadoPagoWhatsAppMessage(order, orderData, typedProducts)
+      const businessPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${encodeURIComponent(whatsappMessage)}`
+      
+      console.log('[WHATSAPP] Generando link de WhatsApp:', {
+        orderId: order.id,
+        businessPhone,
+        messageLength: whatsappMessage.length,
+        whatsappUrl: whatsappUrl.substring(0, 100) + '...'
+      })
+      
+      // Actualizar orden con whatsapp link
+      const { error: whatsappUpdateError } = await supabaseAdmin
+        .from('orders')
+        .update({
+          whatsapp_notification_link: whatsappUrl,
+          whatsapp_generated_at: new Date().toISOString()
+        })
+        .eq('id', order.id)
+
+      if (whatsappUpdateError) {
+        console.error('[WHATSAPP] Error actualizando orden con WhatsApp link:', whatsappUpdateError)
+        // No fallar la request por error en WhatsApp
+      } else {
+        console.log('[WHATSAPP] WhatsApp link guardado exitosamente en la orden')
+      }
+    } catch (whatsappError) {
+      console.error('[WHATSAPP] Error generando WhatsApp link:', whatsappError)
+      // No fallar la request por error en WhatsApp
     }
 
     // ✅ NUEVO: Logging exitoso de creación de preferencia
