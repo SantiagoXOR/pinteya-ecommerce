@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 const combosData = [
-  { image: '/images/promo/combobanner.png', url: '/search?search=Piscinas' },
+  { image: '/images/promo/comboverano.png', url: '/search?search=Piscinas' },
   { image: '/images/promo/comboeco.png', url: '/search?search=Ecopainting' },
   { image: '/images/promo/comboplavicon.png', url: '/search?search=Plavicon+Muros' },
   { image: '/images/promo/combopoximix.png', url: '/search?search=Poximix' }
