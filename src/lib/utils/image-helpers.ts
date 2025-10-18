@@ -62,3 +62,4 @@ export function getValidImageUrl(imageUrl: string | undefined | null): string {
     return '/images/products/placeholder.svg'
   }
 }
+

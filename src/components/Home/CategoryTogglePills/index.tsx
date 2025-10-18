@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { Filter, X, Tag } from 'lucide-react'
 import Image from 'next/image'
 
 interface CategoryTogglePillsProps {
@@ -39,6 +37,9 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
+  
+  // Estado para controlar la animación inicial
+  const [hasPlayedScrollHint, setHasPlayedScrollHint] = useState(false)
 
   // Manejador para scroll horizontal con rueda del mouse
   useEffect(() => {
@@ -61,6 +62,30 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       carousel.removeEventListener('wheel', handleWheel)
     }
   }, [categories])
+
+  // Animación de "peek" al montar el componente
+  useEffect(() => {
+    if (!carouselRef.current || hasPlayedScrollHint || variant === 'bare') return
+    
+    const carousel = carouselRef.current
+    const timer = setTimeout(() => {
+      // Solo animar si hay contenido que se desborda
+      if (carousel.scrollWidth > carousel.clientWidth) {
+        // Pequeño scroll a la derecha
+        carousel.scrollTo({ left: 100, behavior: 'smooth' })
+        
+        // Volver a la posición inicial después de 800ms
+        setTimeout(() => {
+          carousel.scrollTo({ left: 0, behavior: 'smooth' })
+          setHasPlayedScrollHint(true)
+        }, 800)
+      } else {
+        setHasPlayedScrollHint(true)
+      }
+    }, 500) // Esperar 500ms después de cargar
+    
+    return () => clearTimeout(timer)
+  }, [hasPlayedScrollHint, variant])
 
   // Manejadores para drag scroll
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -114,22 +139,16 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     }
 
     const isSelected = selectedCategories.includes(categorySlug)
-    let newSelection: string[]
-
+    
     if (isSelected) {
-      // Remover categoría
-      newSelection = selectedCategories.filter(slug => slug !== categorySlug)
+      // Si ya está seleccionada, deseleccionar (vaciar array)
+      onCategoryChange([])
     } else {
-      // Agregar categoría
-      newSelection = [...selectedCategories, categorySlug]
+      // Seleccionar nueva categoría (reemplazar array con solo esta)
+      onCategoryChange([categorySlug])
     }
-
-    onCategoryChange(newSelection)
   }
 
-  const clearAllFilters = () => {
-    onCategoryChange([])
-  }
 
   if (loading) {
     if (variant === 'bare') return null
@@ -174,32 +193,27 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
               onClick={() => handleCategoryToggle(category.slug)}
               className={`
                 group flex-shrink-0 transition-all duration-200 border-2 rounded-full
-                h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm
+                h-9 px-2.5 text-xs sm:h-11 sm:px-3.5 sm:text-sm
                 ${
                   isSelected
-                    ? 'bg-[#009e44] text-white border-[#eb6313]'
-                    : 'bg-[#007639] hover:bg-[#009e44] text-white border-[#007639]'
+                    ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] hover:text-[#fff4c6] border-[#eb6313]'
+                    : 'bg-[#007639] hover:bg-[#009e44] hover:border-[#eb6313] text-[#fff4c6] hover:text-[#fff4c6] border-[#007639]'
                 }
               `}
             >
-              <div className='flex items-center gap-1 sm:gap-2'>
+              <div className='flex items-center gap-1 sm:gap-1.5'>
                 {category.image_url && (
-                  <div
-                    className={`
-                      rounded-full overflow-hidden bg-white/30 transition-all duration-200
-                      ${
-                        isSelected
-                          ? 'w-3 h-3 sm:w-5 sm:h-5'
-                          : 'w-3 h-3 group-hover:w-4 group-hover:h-4 sm:w-4 sm:h-4 sm:group-hover:w-5 sm:group-hover:h-5'
-                      }
-                    `}
-                  >
+                  <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                    isSelected 
+                      ? 'w-7 h-7 sm:w-9 sm:h-9' 
+                      : 'w-6 h-6 sm:w-8 sm:h-8 group-hover:w-7 group-hover:h-7 sm:group-hover:w-9 sm:group-hover:h-9'
+                  }`}>
                     <Image
                       src={category.image_url}
                       alt=''
-                      width={20}
-                      height={20}
-                      className='w-full h-full object-cover'
+                      width={36}
+                      height={36}
+                      className='w-full h-full object-contain'
                     />
                   </div>
                 )}
@@ -247,32 +261,27 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                   onClick={() => handleCategoryToggle(category.slug)}
                   className={`
                     group flex-shrink-0 transition-all duration-200 border-2 rounded-full
-                    h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm
+                    h-9 px-2.5 text-xs sm:h-11 sm:px-3.5 sm:text-sm
                     ${
                       isSelected
-                        ? 'bg-[#009e44] text-white border-[#eb6313]'
-                        : 'bg-[#007639] hover:bg-[#009e44] text-white border-[#007639]'
+                        ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] hover:text-[#fff4c6] border-[#eb6313]'
+                        : 'bg-[#007639] hover:bg-[#009e44] hover:border-[#eb6313] text-[#fff4c6] hover:text-[#fff4c6] border-[#007639]'
                     }
                   `}
                 >
-                  <div className='flex items-center gap-1 sm:gap-2'>
+                  <div className='flex items-center gap-1 sm:gap-1.5'>
                     {category.image_url && (
-                      <div
-                        className={`
-                        rounded-full overflow-hidden bg-white/30 transition-all duration-200
-                        ${
-                          isSelected
-                            ? 'w-3 h-3 sm:w-5 sm:h-5'
-                            : 'w-3 h-3 group-hover:w-4 group-hover:h-4 sm:w-4 sm:h-4 sm:group-hover:w-5 sm:group-hover:h-5'
-                        }
-                      `}
-                      >
+                      <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                        isSelected 
+                          ? 'w-7 h-7 sm:w-9 sm:h-9' 
+                          : 'w-6 h-6 sm:w-8 sm:h-8 group-hover:w-7 group-hover:h-7 sm:group-hover:w-9 sm:group-hover:h-9'
+                      }`}>
                         <Image
                           src={category.image_url}
                           alt=''
-                          width={20}
-                          height={20}
-                          className='w-full h-full object-cover'
+                          width={36}
+                          height={36}
+                          className='w-full h-full object-contain'
                         />
                       </div>
                     )}
@@ -283,42 +292,6 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
             })}
           </div>
 
-          {/* Botón limpiar filtros e indicador de filtros activos en la misma línea */}
-          {selectedCategories.length > 0 && (
-            <div className='mt-3 flex items-center gap-3 flex-nowrap overflow-x-auto'>
-              {/* Botón limpiar */}
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={clearAllFilters}
-                className='flex-shrink-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-              >
-                <X className='w-4 h-4 mr-1' />
-                <span className='hidden sm:inline'>Limpiar</span>
-              </Button>
-
-              {/* Indicador de filtros */}
-              <span className='text-xs text-gray-500 whitespace-nowrap flex-shrink-0'>
-                Filtrando por:
-              </span>
-
-              {/* Badges de categorías */}
-              <div className='flex items-center gap-1 flex-nowrap'>
-                {selectedCategories.map(slug => {
-                  const category = categories.find(cat => cat.slug === slug)
-                  return category ? (
-                    <Badge
-                      key={slug}
-                      variant='secondary'
-                      className='text-xs bg-blaze-orange-100 text-blaze-orange-800 flex-shrink-0'
-                    >
-                      {category.name}
-                    </Badge>
-                  ) : null
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </section>
