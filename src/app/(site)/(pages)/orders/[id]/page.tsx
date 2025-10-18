@@ -31,9 +31,15 @@ export default function OrderDetailPage() {
 
     // 1. Primero intentar desde parámetros URL (si vienen)
     if (message) {
-      foundMessage = message
-      foundOrderData = parseWhatsAppOrderMessage(message)
-      console.log('🔍 DEBUG - Mensaje desde URL:', foundMessage)
+      // Decodificar el mensaje que viene de la URL
+      try {
+        foundMessage = decodeURIComponent(message)
+      } catch (e) {
+        // Si falla la decodificación, usar el mensaje tal cual
+        foundMessage = message
+      }
+      foundOrderData = parseWhatsAppOrderMessage(foundMessage)
+      console.log('🔍 DEBUG - Mensaje desde URL (decodificado):', foundMessage)
     } else {
       // 2. Intentar desde localStorage con clave del orderId
       try {

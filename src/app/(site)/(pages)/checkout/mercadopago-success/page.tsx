@@ -280,7 +280,7 @@ export default function MercadoPagoSuccessPage() {
       // Pasar el mensaje de WhatsApp como parámetro para mostrarlo en la página de detalles
       const params = new URLSearchParams()
       if (whatsappMessage) {
-        params.set('message', encodeURIComponent(whatsappMessage))
+        params.set('message', whatsappMessage)  // Next.js lo codificará automáticamente
       }
       params.set('customerName', customerName || orderData?.customer_name || 'Cliente')
       params.set('total', effectiveTotal.toString())
