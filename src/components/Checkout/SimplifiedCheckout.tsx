@@ -290,42 +290,42 @@ const SimplifiedCheckout = () => {
                   <input
                     type='radio'
                     name='shipping'
-                    value='free'
-                    checked={formData.shippingMethod === 'free'}
+                    value='shipping'
+                    checked={formData.shippingMethod === 'shipping'}
                     onChange={e =>
                       updateFormData({
-                        shippingMethod: e.target.value as 'free' | 'express' | 'pickup',
+                        shippingMethod: e.target.value as 'shipping' | 'pickup',
                       })
                     }
                     className='text-primary'
                   />
                   <div className='flex-1'>
-                    <div className='font-medium'>Envío Estándar</div>
-                    <div className='text-sm text-gray-600'>5-7 días hábiles</div>
+                    <div className='font-medium'>Envío a Domicilio</div>
+                    <div className='text-sm text-gray-600'>3-5 días hábiles</div>
                   </div>
-                  <div className='font-semibold'>{totalPrice >= 25000 ? 'Gratis' : '$2.500'}</div>
+                  <div className='font-semibold'>
+                    {totalPrice >= 50000 ? 'Gratis' : '$10.000'}
+                  </div>
                 </label>
 
                 <label className='flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50'>
                   <input
                     type='radio'
                     name='shipping'
-                    value='express'
-                    checked={formData.shippingMethod === 'express'}
+                    value='pickup'
+                    checked={formData.shippingMethod === 'pickup'}
                     onChange={e =>
                       updateFormData({
-                        shippingMethod: e.target.value as 'free' | 'express' | 'pickup',
+                        shippingMethod: e.target.value as 'shipping' | 'pickup',
                       })
                     }
                     className='text-primary'
                   />
                   <div className='flex-1'>
-                    <div className='font-medium'>Envío Express</div>
-                    <div className='text-sm text-gray-600'>1-2 días hábiles</div>
+                    <div className='font-medium'>Retiro en Tienda</div>
+                    <div className='text-sm text-gray-600'>Gratis - Coordinar horario</div>
                   </div>
-                  <div className='font-semibold'>
-                    {totalPrice >= 50000 ? 'Gratis' : '$10.000'}
-                  </div>
+                  <div className='font-semibold text-green-600'>Gratis</div>
                 </label>
               </div>
             </CardContent>

@@ -120,20 +120,20 @@ export const useCheckout = () => {
   const calculateShippingCost = useCallback(() => {
     const { shippingMethod } = checkoutState.formData
 
-    // Envío gratis para compras mayores a $50,000 (aplica a todos los métodos)
+    // Envío gratis para compras mayores a $50,000
     if (totalPrice >= 50000) {
       return 0
     }
 
+    // Solo existe un tipo de envío: $10,000 pesos
+    // Retiro en tienda es gratis
     switch (shippingMethod) {
-      case 'free':
+      case 'pickup':
         return 0
-      case 'standard':
-        return 5000
+      case 'shipping':
       case 'express':
-        return 10000
       default:
-        return 0
+        return 1000000 // $10,000 pesos
     }
   }, [checkoutState.formData.shippingMethod, totalPrice])
 
