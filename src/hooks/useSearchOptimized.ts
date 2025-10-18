@@ -230,7 +230,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
             (product as any)?.image ||
             (product as any)?.thumbnail ||
             (product as any)?.img ||
-            (Array.isArray((product as any)?.images) ? (product as any)?.images?.[0] : undefined)
+            (Array.isArray((product as any)?.images) ? (product as any)?.images?.[0] : (product as any)?.images?.previews?.[0] || (product as any)?.images?.thumbnails?.[0])
 
           // Construir badges inteligentes: medida, color, oferta, nuevo
           const badges: string[] = []

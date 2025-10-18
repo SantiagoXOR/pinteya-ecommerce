@@ -234,7 +234,7 @@ export default function SearchPage() {
               const discount = hasDiscount
                 ? `${Math.round((1 - (product.discounted_price as number) / product.price) * 100)}%`
                 : undefined
-              const image = product.images?.[0] || '/images/products/placeholder.svg'
+              const image = product.images?.previews?.[0] || product.images?.thumbnails?.[0] || '/images/products/placeholder.svg'
 
               return (
                 <CommercialProductCard

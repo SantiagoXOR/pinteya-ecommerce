@@ -142,7 +142,7 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
                 {/* Imagen del producto */}
                 <div className='w-16 h-16 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-300'>
                   <Image
-                    src={getValidImageUrl(product.images?.[0])}
+                    src={getValidImageUrl(product.images?.previews?.[0] || product.images?.thumbnails?.[0])}
                     alt={product.name}
                     width={64}
                     height={64}

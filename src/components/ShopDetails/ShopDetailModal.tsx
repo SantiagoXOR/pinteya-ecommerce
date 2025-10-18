@@ -1605,10 +1605,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       return sanitize(c?.url || c?.image_url)
     }
     const candidates: any[] = [
-      (fullProductData as any)?.images?.[0],
+      (fullProductData as any)?.images?.previews?.[0],
+      (fullProductData as any)?.images?.thumbnails?.[0],
       fullProductData?.images?.main,
       fullProductData?.images?.gallery?.[0],
-      (product as any)?.images?.[0],
+      (product as any)?.images?.previews?.[0],
+      (product as any)?.images?.thumbnails?.[0],
       product?.image,
     ]
     for (const c of candidates) {

@@ -994,7 +994,7 @@ class DynamicSEOManager {
     }
 
     const canonical = product.slug ? `${SITE_CONFIG.url}/products/${product.slug}` : SITE_CONFIG.url
-    const ogImage = product.images?.[0] || SITE_CONFIG.defaultImage
+    const ogImage = product.images?.previews?.[0] || product.images?.thumbnails?.[0] || SITE_CONFIG.defaultImage
 
     return {
       title,

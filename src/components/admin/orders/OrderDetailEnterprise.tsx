@@ -377,9 +377,9 @@ export const OrderDetailEnterprise: React.FC<OrderDetailEnterpriseProps> = ({
         <div className='space-y-4'>
           {order.order_items?.map((item, index) => (
             <div key={item.id} className='flex items-center gap-4 p-4 border rounded-lg'>
-              {item.products?.images?.[0] && (
+              {(item.products?.images?.previews?.[0] || item.products?.images?.thumbnails?.[0]) && (
                 <img
-                  src={item.products.images[0]}
+                  src={item.products.images?.previews?.[0] || item.products.images?.thumbnails?.[0]}
                   alt={item.products.name}
                   className='w-16 h-16 object-cover rounded'
                 />
