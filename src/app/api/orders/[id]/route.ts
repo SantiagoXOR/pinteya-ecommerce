@@ -22,13 +22,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const isNumericId = /^\d+$/.test(orderId)
     const searchField = isNumericId ? 'id' : 'external_reference'
 
-    // Obtener orden con items y productos
+    // Obtener orden SIN order_items (no los necesitamos, el whatsapp_message tiene todo)
+    // Esto evita el error 400 de Supabase con la relación order_items → products
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select(
         `
         id,
-        order_number,  // ✅ AGREGAR order_number
+        order_number,
         external_reference,
         total,
         status,
@@ -39,22 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         updated_at,
         whatsapp_notification_link,
         whatsapp_message,
-        whatsapp_generated_at,
-        order_items (
-          id,
-          quantity,
-          unit_price,
-          product_snapshot,
-          products (
-            id,
-            name,
-            images,
-            color,
-            medida,
-            brand,
-            finish
-          )
-        )
+        whatsapp_generated_at
       `
       )
       .eq(searchField, orderId)
