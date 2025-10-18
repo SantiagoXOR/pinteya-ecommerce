@@ -109,9 +109,13 @@ export default function MercadoPagoSuccessPage() {
         
         // 1. Obtener datos completos de la orden desde la API
         const response = await fetch(`/api/orders/${orderId}`)
-        const { data: order } = await response.json()
+        const responseData = await response.json()
+        const order = responseData.data
         
+        console.log('🔍 DEBUG - Response completo:', responseData)
         console.log('🔍 DEBUG - Orden obtenida:', order)
+        console.log('🔍 DEBUG - whatsapp_message existe?:', !!order?.whatsapp_message)
+        console.log('🔍 DEBUG - whatsapp_message length:', order?.whatsapp_message?.length || 0)
         
         if (order) {
           setOrderData(order)
@@ -127,9 +131,9 @@ export default function MercadoPagoSuccessPage() {
           // 4. Obtener mensaje de WhatsApp de la orden
           let message = order.whatsapp_message || ''
           if (message) {
-            // Decodificar el mensaje que viene codificado desde el backend
-            message = decodeURIComponent(message)
-            console.log('🔍 DEBUG - Mensaje de WhatsApp decodificado:', message.substring(0, 100) + '...')
+            // El mensaje ya viene en texto plano desde la BD, NO necesita decodificación
+            console.log('🔍 DEBUG - Mensaje de WhatsApp desde BD:', message.substring(0, 100) + '...')
+            console.log('🔍 DEBUG - Mensaje completo:', message)
           }
           
           // 5. Si no hay whatsapp_message pero sí hay whatsapp_notification_link, extraerlo
