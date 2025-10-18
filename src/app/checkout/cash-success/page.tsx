@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock, Phone, Mail, Copy } from 'lucide-react'
+import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,6 +24,7 @@ export default function CashSuccessPage() {
   const [effectiveTotal, setEffectiveTotal] = useState<number>(0)
   const [effectiveWhatsappUrl, setEffectiveWhatsappUrl] = useState<string | null>(null)
   const [whatsappMessage, setWhatsappMessage] = useState<string>('')
+  const [orderItems, setOrderItems] = useState<any[]>([])
   const [phoneNumber, setPhoneNumber] = useState<string>('')
 
   // Helper: resuelve el mejor endpoint de WhatsApp según dispositivo
@@ -33,8 +34,8 @@ export default function CashSuccessPage() {
     fallbackPhone: string
   ): string => {
     let phone = (fallbackPhone || '').replace(/\D/g, '')
-    // Convertir \n a \r\n antes de codificar para asegurar saltos de línea en todos los clientes
-    let encodedText = rawMessage ? encodeURIComponent(rawMessage.replace(/\n/g, '\r\n')) : ''
+    // Usar solo \n para saltos de línea (más compatible con WhatsApp)
+    let encodedText = rawMessage ? encodeURIComponent(rawMessage) : ''
 
     try {
       if (baseWaMeUrl) {
@@ -103,25 +104,48 @@ export default function CashSuccessPage() {
       const fallbackPhone = '5493513411796'
       setPhoneNumber(extractedPhone || fallbackPhone)
 
-      // Intentar obtener el mensaje y link desde la DB vía API
-      if (orderId) {
-        ;(async () => {
-          try {
-            const res = await fetch(`/api/orders/${orderId}`)
-            const json = await res.json()
-            if (res.ok && json?.success && json.data) {
-              const o = json.data
-              if (o.whatsapp_notification_link) {
-                setEffectiveWhatsappUrl(o.whatsapp_notification_link)
-              }
-              if (o.whatsapp_message) {
-                setWhatsappMessage(String(o.whatsapp_message))
-              }
-            }
-          } catch (err) {
-            console.warn('No se pudo obtener la orden desde la API:', err)
+      // Intentar obtener el mensaje de WhatsApp desde localStorage primero
+      let foundMessage = ''
+      try {
+        const savedParams = localStorage.getItem('cashSuccessParams')
+        const savedOrderData = localStorage.getItem('cashOrderData')
+        
+        console.log('🔍 DEBUG - savedParams:', savedParams)
+        console.log('🔍 DEBUG - savedOrderData:', savedOrderData)
+        
+        if (savedParams) {
+          const params = JSON.parse(savedParams)
+          console.log('🔍 DEBUG - params.whatsappMessage:', params.whatsappMessage)
+          if (params.whatsappMessage) {
+            // Decodificar el mensaje que viene codificado desde el backend
+            foundMessage = decodeURIComponent(params.whatsappMessage)
           }
-        })()
+        } else if (savedOrderData) {
+          const orderData = JSON.parse(savedOrderData)
+          console.log('🔍 DEBUG - orderData.whatsapp_message:', orderData.whatsapp_message)
+          if (orderData.whatsapp_message) {
+            // Decodificar el mensaje que viene codificado desde el backend
+            foundMessage = decodeURIComponent(orderData.whatsapp_message)
+          }
+        }
+        
+        console.log('🔍 DEBUG - foundMessage:', foundMessage)
+      } catch (e) {
+        console.warn('No se pudo obtener mensaje de WhatsApp desde localStorage:', e)
+      }
+
+      // Si no hay mensaje guardado, generar uno localmente
+      if (!foundMessage && orderId && customerName && effectiveTotal > 0) {
+        foundMessage = generateLocalWhatsAppMessage({
+          orderId,
+          customerName,
+          total: effectiveTotal,
+          phone: phone || ''
+        })
+      }
+
+      if (foundMessage) {
+        setWhatsappMessage(foundMessage)
       }
     } catch (e) {
       // Si hay algún error de parseo, mantenemos valores por defecto
@@ -165,39 +189,52 @@ export default function CashSuccessPage() {
     }
   }
 
+  // Función para generar mensaje de WhatsApp localmente
+  const generateLocalWhatsAppMessage = (data: {
+    orderId: string
+    customerName: string
+    total: number
+    phone: string
+  }) => {
+    const lines = [
+      `¡Hola! He realizado un pedido con pago contra entrega`,
+      '',
+      `🧾 *Orden #${data.orderId}*`,
+      `• Cliente: ${data.customerName}`,
+      `• Teléfono: 📞 ${data.phone || 'No disponible'}`,
+      '',
+      `🛍️ *Productos:*`,
+      `• Producto Pinteya x1 - $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+      '',
+      `💸 *Total: $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}*`,
+      '',
+      `💳 *Método de pago:* Pago contra entrega`,
+      `📅 *Fecha del pedido:* ${new Date().toLocaleDateString('es-AR')}`,
+      '',
+      `✅ Gracias por tu compra. Nuestro equipo te contactará en las próximas horas.`
+    ]
+    
+    return lines.join('\n')
+  }
+
   const defaultMessage = `Hola${customerName ? ` ${customerName}` : ''}, confirmo mi pedido${orderId ? ` #${orderId}` : ''} por un total de $${effectiveTotal.toLocaleString('es-AR')}.` 
 
-  const handleCopyMessage = async () => {
-    const msg = whatsappMessage || defaultMessage
-    try {
-      await navigator.clipboard.writeText(msg)
-      // Feedback simple sin dependencias
-      alert('Mensaje copiado al portapapeles')
-    } catch (err) {
-      console.error('No se pudo copiar el mensaje', err)
-    }
-  }
-
-  const handleCall = () => {
-    if (phoneNumber) {
-      window.location.href = `tel:${phoneNumber}`
-    }
-  }
-
-  const handleEmail = () => {
-    const subject = encodeURIComponent(`Confirmación de Pedido${orderId ? ` #${orderId}` : ''}`)
-    const body = encodeURIComponent((whatsappMessage || defaultMessage) + '\n\nGracias.')
-    const email = 'ventas@pinteya.com'
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
-  }
 
   const handleContinueShopping = () => {
-    router.push('/products')
+    router.push('/')
   }
 
   const handleViewOrder = () => {
     if (orderId) {
-      router.push(`/orders/${orderId}`)
+      // Pasar el mensaje de WhatsApp como parámetro para mostrarlo en la página de detalles
+      const params = new URLSearchParams()
+      if (whatsappMessage) {
+        params.set('message', whatsappMessage)
+      }
+      params.set('customerName', customerName || '')
+      params.set('total', effectiveTotal.toString())
+      
+      router.push(`/orders/${orderId}?${params.toString()}`)
     }
   }
 
@@ -336,35 +373,6 @@ export default function CashSuccessPage() {
           )}
         </div>
 
-        {/* Fallbacks si WhatsApp no funciona */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-base">Si WhatsApp no funciona</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Button
-              variant="secondary"
-              onClick={handleCopyMessage}
-              className="flex items-center justify-center gap-2"
-            >
-              <Copy className="w-4 h-4" /> Copiar Mensaje
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleCall}
-              className="flex items-center justify-center gap-2"
-            >
-              <Phone className="w-4 h-4" /> Llamar al negocio
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleEmail}
-              className="flex items-center justify-center gap-2"
-            >
-              <Mail className="w-4 h-4" /> Enviar Email
-            </Button>
-          </CardContent>
-        </Card>
 
         {/* Información adicional */}
         <div className="mt-8 text-center text-sm text-gray-500">

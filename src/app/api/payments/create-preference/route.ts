@@ -468,6 +468,58 @@ export async function POST(request: NextRequest) {
     }
 
     // ===================================
+    // GENERAR WHATSAPP MESSAGE INMEDIATAMENTE
+    // ===================================
+    console.log('[WHATSAPP] Generando mensaje de WhatsApp inmediatamente para orden:', order.id)
+    
+    // Preparar items para el mensaje de WhatsApp
+    const whatsappItems = orderData.items.map(item => {
+      const product = typedProducts.find(p => p.id === parseInt(item.id))
+      if (!product) return null
+      const finalPrice = getFinalPrice(product)
+      return {
+        name: product.name,
+        quantity: item.quantity,
+        price: `$${finalPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`
+      }
+    }).filter(Boolean)
+
+    // Generar mensaje de WhatsApp usando whatsappLinkService
+    const { link: whatsappLink, message: whatsappMessage } = whatsappLinkService.generateOrderWhatsApp({
+      id: order.id.toString(),
+      orderNumber: order.id.toString(),
+      total: `$${totalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+      status: 'pending',
+      payerInfo: {
+        name: `${orderData.payer.name} ${orderData.payer.surname}`,
+        email: orderData.payer.email,
+        phone: orderData.payer.phone
+      },
+      items: whatsappItems,
+      createdAt: order.created_at
+    })
+
+    console.log('[WHATSAPP] Mensaje generado:', whatsappMessage.substring(0, 100) + '...')
+
+    // Actualizar orden con order_number y whatsapp_message
+    const { error: updateError } = await supabaseAdmin
+      .from('orders')
+      .update({
+        order_number: order.id.toString(),
+        whatsapp_notification_link: whatsappLink,
+        whatsapp_message: whatsappMessage,
+        whatsapp_generated_at: new Date().toISOString()
+      })
+      .eq('id', order.id)
+
+    if (updateError) {
+      console.error('[WHATSAPP] Error actualizando orden con WhatsApp:', updateError)
+      // No fallar el flujo por error de WhatsApp
+    } else {
+      console.log('[WHATSAPP] Orden actualizada exitosamente con order_number y whatsapp_message')
+    }
+
+    // ===================================
     // CREAR ITEMS DE LA ORDEN CON PRECIOS CORRECTOS
     // ===================================
     const orderItems = orderData.items.map(item => {

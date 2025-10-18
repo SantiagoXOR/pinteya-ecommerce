@@ -74,22 +74,23 @@ export default function MercadoPagoSuccessPage() {
     total: number
     phone: string
   }) => {
+    // Usar el mismo formato que whatsappLinkService para consistencia
     const lines = [
-      `¡Hola! He realizado un pedido con MercadoPago`,
+      `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+      `💳 Tu pago con MercadoPago ha sido procesado exitosamente`,
       '',
-      `🧾 *Orden #${data.orderId}*`,
-      `• Cliente: ${data.customerName}`,
+      `*Detalle de Orden:*`,
+      `• Orden: ${data.orderId}`,
+      `• Total: $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+      '',
+      `*Datos Personales:*`,
+      `• Nombre: ${data.customerName}`,
       `• Teléfono: 📞 ${data.phone || 'No disponible'}`,
       '',
-      `🛍️ *Productos:*`,
+      `*Productos:*`,
       `• Producto de Prueba MercadoPago x1 - $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
       '',
-      `💸 *Total: $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}*`,
-      '',
-      `💳 *Método de pago:* MercadoPago`,
-      `📅 *Fecha del pedido:* ${new Date().toLocaleDateString('es-AR')}`,
-      '',
-      `✅ Gracias por tu compra. Nuestro equipo te contactará en las próximas horas.`
+      `✅ ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`
     ]
     
     return lines.join('\n')
@@ -131,10 +132,24 @@ export default function MercadoPagoSuccessPage() {
             console.log('🔍 DEBUG - Mensaje de WhatsApp decodificado:', message.substring(0, 100) + '...')
           }
           
-          // 5. Si no hay mensaje, generar uno localmente
+          // 5. Si no hay whatsapp_message pero sí hay whatsapp_notification_link, extraerlo
+          if (!message && order.whatsapp_notification_link) {
+            try {
+              const url = new URL(order.whatsapp_notification_link)
+              const encodedText = url.searchParams.get('text')
+              if (encodedText) {
+                message = decodeURIComponent(encodedText)
+                console.log('🔍 DEBUG - Mensaje extraído del link:', message.substring(0, 100) + '...')
+              }
+            } catch (e) {
+              console.warn('Error extrayendo mensaje del link:', e)
+            }
+          }
+          
+          // 6. Si aún no hay mensaje, generar uno localmente (fallback)
           if (!message) {
             message = generateLocalWhatsAppMessage({
-              orderId,
+              orderId: order.order_number || order.id.toString(),
               customerName: customerName || order.customer_name || 'Cliente',
               total,
               phone: phone || order.phone || ''
@@ -247,7 +262,9 @@ export default function MercadoPagoSuccessPage() {
       params.set('customerName', customerName || orderData?.customer_name || 'Cliente')
       params.set('total', effectiveTotal.toString())
       
-      router.push(`/orders/${orderId}?${params.toString()}`)
+      // Usar order_number si existe, sino usar orderId
+      const displayOrderId = orderData?.order_number || orderId
+      router.push(`/orders/${displayOrderId}?${params.toString()}`)
     }
   }
 
@@ -278,11 +295,11 @@ export default function MercadoPagoSuccessPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {orderId && (
+            {(orderData?.order_number || orderId) && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Número de Orden:</span>
                 <Badge variant="outline" className="font-mono">
-                  #{orderId}
+                  #{orderData?.order_number || orderId}
                 </Badge>
               </div>
             )}

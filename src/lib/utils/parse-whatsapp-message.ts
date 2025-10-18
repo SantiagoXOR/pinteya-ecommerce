@@ -37,8 +37,19 @@ export function parseWhatsAppOrderMessage(message: string): ParsedOrderData | nu
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim()
 
-      // Extraer número de orden
-      if (line.includes('Orden:') || line.includes('Orden #')) {
+      // Extraer número de orden - soportar ambos formatos
+      // Formato nuevo: "• Orden: 299" (del whatsappLinkService)
+      if (line.includes('• Orden:') && !line.includes('ORD-')) {
+        const match = line.match(/• Orden:\s*#?(\d+)/)
+        if (match) data.orderNumber = match[1]
+      }
+      // Formato antiguo: "🧾 *Orden #ORD-123*" (del frontend)
+      else if (line.includes('🧾') && line.includes('Orden #')) {
+        const match = line.match(/Orden #([A-Z0-9-]+)/i)
+        if (match) data.orderNumber = match[1]
+      }
+      // Formato genérico: "Orden: 299" o "Orden #299"
+      else if (line.includes('Orden:') || line.includes('Orden #')) {
         const match = line.match(/Orden[:\s#]+([A-Z0-9-]+)/i)
         if (match) data.orderNumber = match[1]
       }
@@ -49,8 +60,14 @@ export function parseWhatsAppOrderMessage(message: string): ParsedOrderData | nu
         if (match) data.total = match[1]
       }
 
-      // Extraer nombre
-      if (line.includes('Nombre:')) {
+      // Extraer nombre - soportar ambos formatos
+      // Formato nuevo: "• Nombre: Santiago Martinez" (del whatsappLinkService)
+      if (line.includes('• Nombre:')) {
+        const match = line.match(/• Nombre:\s*(.+)/)
+        if (match) data.customerName = match[1].trim()
+      }
+      // Formato genérico: "Nombre: Santiago"
+      else if (line.includes('Nombre:')) {
         const match = line.match(/Nombre:\s*(.+)/)
         if (match) data.customerName = match[1].trim()
       }

@@ -50,6 +50,7 @@ export default auth(req => {
     '/api/brands',
     '/api/search',
     '/api/payments/webhook',
+    '/api/orders', // Permitir acceso público a órdenes individuales
   ]
 
   if (publicRoutes.some(route => nextUrl.pathname.startsWith(route))) {
