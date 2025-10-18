@@ -240,7 +240,7 @@ export default function OrderDetailPage() {
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium text-gray-900">Total:</span>
                 <span className="text-2xl font-bold text-green-600">
-                  ${parseFloat(orderData.total.replace(/,/g, '')).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  ${parseFloat(orderData.total.replace(/,/g, '.')).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </CardContent>
@@ -335,7 +335,7 @@ export default function OrderDetailPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-semibold text-gray-900">
-                          ${parseFloat(product.price.replace(/,/g, '')).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                          ${parseFloat(product.price.replace(/,/g, '.')).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                         </p>
                       </div>
                     </div>
@@ -349,7 +349,7 @@ export default function OrderDetailPage() {
                       Total de la Orden:
                     </span>
                     <span className="text-2xl font-bold text-gray-900">
-                      ${parseFloat(orderData.total.replace(/,/g, '')).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      ${parseFloat(orderData.total.replace(/,/g, '.')).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
