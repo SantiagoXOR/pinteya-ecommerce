@@ -23,6 +23,7 @@ import {
 import { ENTERPRISE_RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/enterprise-rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
 import { whatsappLinkService } from '@/lib/integrations/whatsapp/whatsapp-link-service'
+import crypto from 'crypto'
 
 // Schema de validación para la entrada
 const CreatePreferenceSchema = z.object({
@@ -425,12 +426,18 @@ export async function POST(request: NextRequest) {
     const totalAmount = itemsTotal + shippingCost
 
     // ===================================
+    // GENERAR ORDER_NUMBER (como en Cash)
+    // ===================================
+    const orderNumber = `ORD-${Math.floor(Date.now() / 1000)}-${crypto.randomBytes(4).toString('hex')}`;
+
+    // ===================================
     // CREAR ORDEN EN BASE DE DATOS
     // ===================================
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         user_id: userId,
+        order_number: orderNumber,  // ✅ AGREGAR order_number en el INSERT
         status: 'pending',
         total: totalAmount,
         shipping_address: orderData.shipping?.address
@@ -469,60 +476,82 @@ export async function POST(request: NextRequest) {
     }
 
     // ===================================
-    // GENERAR WHATSAPP MESSAGE INMEDIATAMENTE
+    // GENERAR WHATSAPP MESSAGE (como en Cash)
     // ===================================
-    console.log('[WHATSAPP] Generando mensaje de WhatsApp inmediatamente para orden:', order.id)
-    
-    // Preparar items para el mensaje de WhatsApp
-    const whatsappItems = orderData.items.map(item => {
-      const product = typedProducts.find(p => p.id === parseInt(item.id))
-      if (!product) return null
-      const finalPrice = getFinalPrice(product)
-      return {
-        name: product.name,
-        quantity: item.quantity,
-        price: `$${finalPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`
+    console.log('[WHATSAPP] Generando mensaje de WhatsApp para orden:', order.id)
+
+    const formatARS = (v: number) => Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const bullet = '•';
+    const lines: string[] = [
+      `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+      `💳 Tu pago con MercadoPago ha sido procesado exitosamente`,
+      '',
+      `*Detalle de Orden:*`,
+      `${bullet} Orden: ${order.order_number}`,  // Usa el order_number generado
+      `${bullet} Total: $${formatARS(totalAmount)}`,
+      '',
+      `*Datos Personales:*`,
+      `${bullet} Nombre: ${orderData.payer.name} ${orderData.payer.surname}`,  // Datos reales
+      `${bullet} Teléfono: 📞 ${orderData.payer.phone || 'No proporcionado'}`,  // Datos reales
+      `${bullet} Email: ✉️ ${orderData.payer.email}`,  // Datos reales
+      '',
+      `*Productos:*`,
+    ];
+
+    // Agregar productos REALES del carrito
+    for (const item of orderData.items) {
+      const product = typedProducts.find(p => p.id === parseInt(item.id));
+      if (product) {
+        const finalPrice = getFinalPrice(product);
+        const lineTotal = finalPrice * item.quantity;
+        
+        let productLine = `${bullet} ${product.name}`;
+        
+        // Agregar detalles del producto si están disponibles
+        const details = [];
+        if (product.category?.name) details.push(`Categoría: ${product.category.name}`);
+        if (product.brand) details.push(`Marca: ${product.brand}`);
+        
+        if (details.length > 0) {
+          productLine += ` (${details.join(', ')})`;
+        }
+        
+        productLine += ` x${item.quantity} - $${formatARS(lineTotal)}`;
+        lines.push(productLine);
       }
-    }).filter(Boolean)
+    }
 
-    // Generar mensaje de WhatsApp usando whatsappLinkService
-    const { link: whatsappLink, message: whatsappMessage } = whatsappLinkService.generateOrderWhatsApp({
-      id: order.id.toString(),
-      orderNumber: order.id.toString(),
-      total: `$${totalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-      status: 'pending',
-      payerInfo: {
-        name: `${orderData.payer.name} ${orderData.payer.surname}`,
-        email: orderData.payer.email,
-        phone: orderData.payer.phone || undefined
-      },
-      items: whatsappItems,
-      shippingInfo: orderData.shipping?.address ? {
-        address: `${orderData.shipping.address.street_name} ${orderData.shipping.address.street_number}`,
-        city: orderData.shipping.address.city_name,
-        postalCode: orderData.shipping.address.zip_code
-      } : undefined,
-      createdAt: order.created_at
-    })
+    // Datos de envío si están disponibles
+    if (orderData.shipping?.address) {
+      lines.push('', `*Datos de Envío:*`);
+      lines.push(`${bullet} Dirección: 📍 ${orderData.shipping.address.street_name} ${orderData.shipping.address.street_number}`);
+      lines.push(`${bullet} Ciudad: ${orderData.shipping.address.city_name}, ${orderData.shipping.address.state_name}`);
+      lines.push(`${bullet} CP: ${orderData.shipping.address.zip_code}`);
+    }
 
-    console.log('[WHATSAPP] Mensaje generado:', whatsappMessage.substring(0, 100) + '...')
+    lines.push('', `✅ ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`);
 
-    // Actualizar orden con order_number y whatsapp_message
+    const message = lines.join('\n');
+    const whatsappMessage = encodeURIComponent(message);
+    const businessPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
+    const whatsappLink = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${whatsappMessage}`;
+
+    console.log('[WHATSAPP] Mensaje generado con datos reales')
+
+    // Actualizar orden con WhatsApp
     const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
-        order_number: order.id.toString(),
         whatsapp_notification_link: whatsappLink,
-        whatsapp_message: whatsappMessage,
+        whatsapp_message: message,  // Guardar mensaje sin codificar
         whatsapp_generated_at: new Date().toISOString()
       })
       .eq('id', order.id)
 
     if (updateError) {
       console.error('[WHATSAPP] Error actualizando orden con WhatsApp:', updateError)
-      // No fallar el flujo por error de WhatsApp
     } else {
-      console.log('[WHATSAPP] Orden actualizada exitosamente con order_number y whatsapp_message')
+      console.log('[WHATSAPP] Orden actualizada exitosamente')
     }
 
     // ===================================

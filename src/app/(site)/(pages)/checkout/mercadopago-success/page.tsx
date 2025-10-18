@@ -117,7 +117,7 @@ export default function MercadoPagoSuccessPage() {
           setOrderData(order)
           
           // 2. Extraer datos de la orden
-          const total = order.total_amount || 0
+          const total = order.total || 0  // Corregido: usar order.total en vez de order.total_amount
           setEffectiveTotal(total)
           
           // 3. Obtener URL de WhatsApp de la orden
@@ -148,13 +148,20 @@ export default function MercadoPagoSuccessPage() {
           
           // 6. Si aún no hay mensaje, generar uno localmente (fallback)
           if (!message) {
+            // Extraer datos del payer_info si está disponible
+            const payerName = order.payer_info?.name && order.payer_info?.surname
+              ? `${order.payer_info.name} ${order.payer_info.surname}`
+              : (customerName || order.customer_name || 'Cliente')
+            
+            const payerPhone = order.payer_info?.phone || phone || order.phone || ''
+            
             message = generateLocalWhatsAppMessage({
               orderId: order.order_number || order.id.toString(),
-              customerName: customerName || order.customer_name || 'Cliente',
+              customerName: payerName,
               total,
-              phone: phone || order.phone || ''
+              phone: payerPhone
             })
-            console.log('🔍 DEBUG - Mensaje generado localmente')
+            console.log('🔍 DEBUG - Mensaje generado con datos del payer_info')
           }
           
           setWhatsappMessage(message)

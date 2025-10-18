@@ -28,6 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .select(
         `
         id,
+        order_number,  // ✅ AGREGAR order_number
         external_reference,
         total,
         status,
