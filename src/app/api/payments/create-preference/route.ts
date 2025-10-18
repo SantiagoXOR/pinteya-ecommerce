@@ -673,18 +673,18 @@ export async function POST(request: NextRequest) {
 
     // Actualizar orden con ID de preferencia
     const preferenceData = 'data' in preferenceResult ? preferenceResult.data : null
-    const { error: updateError } = await supabaseAdmin
+    const { error: preferenceUpdateError } = await supabaseAdmin
       .from('orders')
       .update({
         payment_preference_id: preferenceData?.id,
       })
       .eq('id', order.id)
 
-    if (updateError) {
+    if (preferenceUpdateError) {
       logger.warn(
         LogCategory.PAYMENT,
         'Failed to update order with preference ID',
-        { updateError },
+        { preferenceUpdateError },
         { clientIP }
       )
     }
