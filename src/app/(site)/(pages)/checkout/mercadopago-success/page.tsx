@@ -2,69 +2,217 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock, Phone, Mail, Copy } from 'lucide-react'
+import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { generateMercadoPagoWhatsAppMessage } from '@/lib/integrations/whatsapp/whatsapp-utils'
+import { useAppDispatch } from '@/redux/store'
+import { removeAllItemsFromCart } from '@/redux/features/cart-slice'
 
 export default function MercadoPagoSuccessPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [countdown, setCountdown] = useState(5)
-  const [orderData, setOrderData] = useState<any>(null)
-  const [whatsappUrl, setWhatsappUrl] = useState<string>('')
+  const dispatch = useAppDispatch()
+  const [countdown, setCountdown] = useState(10)
 
-  // Extraer datos de la URL
+  // Extraer datos de la URL de MercadoPago
   const orderId = searchParams.get('order_id')
   const customerName = searchParams.get('customerName')
   const phone = searchParams.get('phone')
 
+  // Estados para la orden
+  const [orderData, setOrderData] = useState<any>(null)
+  const [effectiveTotal, setEffectiveTotal] = useState<number>(0)
+  const [effectiveWhatsappUrl, setEffectiveWhatsappUrl] = useState<string | null>(null)
+  const [whatsappMessage, setWhatsappMessage] = useState<string>('')
+  const [phoneNumber, setPhoneNumber] = useState<string>('')
+
   // Número de WhatsApp del negocio
   const businessPhone = '5493513411796'
 
+  // Helper: resuelve el mejor endpoint de WhatsApp según dispositivo
+  const resolveWhatsAppLink = (
+    baseWaMeUrl: string | null,
+    rawMessage: string,
+    fallbackPhone: string
+  ): string => {
+    let phone = (fallbackPhone || '').replace(/\D/g, '')
+    // Usar solo \n para saltos de línea (más compatible con WhatsApp)
+    let encodedText = rawMessage ? encodeURIComponent(rawMessage) : ''
+
+    try {
+      if (baseWaMeUrl) {
+        const u = new URL(baseWaMeUrl)
+        const m = u.pathname.match(/\/(\d+)/)
+        if (m && m[1]) phone = m[1]
+        const t = u.searchParams.get('text')
+        if (t) encodedText = t
+        // Normalizar cualquier wa.me a api.whatsapp.com/send para consistencia y mejor renderizado
+        if (u.hostname === 'wa.me') {
+          // Si faltara el text, usar el que construimos arriba
+          return `https://api.whatsapp.com/send?phone=${phone}&text=${encodedText}`
+        }
+      }
+    } catch {}
+
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Mobile/i.test(ua)
+
+    if (isMobile) {
+      // En móviles, intentar deep link de la app
+      return `whatsapp://send?phone=${phone}&text=${encodedText}`
+    }
+    // En desktop, preferir el endpoint oficial api.whatsapp.com para respetar saltos de línea
+    return `https://api.whatsapp.com/send?phone=${phone}&text=${encodedText}`
+  }
+
+  // Función para generar mensaje de WhatsApp localmente
+  const generateLocalWhatsAppMessage = (data: {
+    orderId: string
+    customerName: string
+    total: number
+    phone: string
+  }) => {
+    const lines = [
+      `¡Hola! He realizado un pedido con MercadoPago`,
+      '',
+      `🧾 *Orden #${data.orderId}*`,
+      `• Cliente: ${data.customerName}`,
+      `• Teléfono: 📞 ${data.phone || 'No disponible'}`,
+      '',
+      `🛍️ *Productos:*`,
+      `• Producto de Prueba MercadoPago x1 - $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+      '',
+      `💸 *Total: $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}*`,
+      '',
+      `💳 *Método de pago:* MercadoPago`,
+      `📅 *Fecha del pedido:* ${new Date().toLocaleDateString('es-AR')}`,
+      '',
+      `✅ Gracias por tu compra. Nuestro equipo te contactará en las próximas horas.`
+    ]
+    
+    return lines.join('\n')
+  }
+
   useEffect(() => {
+    // Limpiar el carrito inmediatamente al llegar a la página de éxito
+    dispatch(removeAllItemsFromCart())
+    console.log('🛒 Carrito limpiado después del éxito de MercadoPago')
+
     async function fetchOrderAndPrepareWhatsApp() {
       if (!orderId) return
 
       try {
+        console.log('🔍 DEBUG - Obteniendo orden desde API:', orderId)
+        
         // 1. Obtener datos completos de la orden desde la API
         const response = await fetch(`/api/orders/${orderId}`)
         const { data: order } = await response.json()
         
+        console.log('🔍 DEBUG - Orden obtenida:', order)
+        
         if (order) {
           setOrderData(order)
           
-          // 2. Generar mensaje de WhatsApp
-          const message = generateMercadoPagoWhatsAppMessage(order)
+          // 2. Extraer datos de la orden
+          const total = order.total_amount || 0
+          setEffectiveTotal(total)
           
-          // 3. Construir URL de WhatsApp
-          const whatsappUrl = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${encodeURIComponent(message)}`
-          setWhatsappUrl(whatsappUrl)
+          // 3. Obtener URL de WhatsApp de la orden
+          const whatsappUrl = order.whatsapp_notification_link || null
+          setEffectiveWhatsappUrl(whatsappUrl)
+          
+          // 4. Obtener mensaje de WhatsApp de la orden
+          let message = order.whatsapp_message || ''
+          if (message) {
+            // Decodificar el mensaje que viene codificado desde el backend
+            message = decodeURIComponent(message)
+            console.log('🔍 DEBUG - Mensaje de WhatsApp decodificado:', message.substring(0, 100) + '...')
+          }
+          
+          // 5. Si no hay mensaje, generar uno localmente
+          if (!message) {
+            message = generateLocalWhatsAppMessage({
+              orderId,
+              customerName: customerName || order.customer_name || 'Cliente',
+              total,
+              phone: phone || order.phone || ''
+            })
+            console.log('🔍 DEBUG - Mensaje generado localmente')
+          }
+          
+          setWhatsappMessage(message)
+          
+          // 6. Guardar en localStorage para la página de detalles
+          try {
+            localStorage.setItem(`order_message_${orderId}`, message)
+            localStorage.setItem('mercadopagoSuccessParams', JSON.stringify({
+              orderId,
+              total,
+              whatsappMessage: message,
+              customerName: customerName || order.customer_name || 'Cliente'
+            }))
+            console.log('🔍 DEBUG - Mensaje guardado en localStorage')
+          } catch (e) {
+            console.warn('Error guardando en localStorage:', e)
+          }
+          
+          // 7. Extraer número de teléfono
+          let extractedPhone = businessPhone
+          try {
+            if (whatsappUrl) {
+              const u = new URL(whatsappUrl)
+              const match = u.pathname.match(/\/(\d+)/)
+              if (match && match[1]) extractedPhone = match[1]
+            }
+          } catch {}
+          setPhoneNumber(extractedPhone)
+          
+        } else {
+          console.warn('No se encontró la orden en la API')
+          // Crear datos básicos si no se encuentra la orden
+          setEffectiveTotal(10) // Valor por defecto para el producto de prueba
+          setWhatsappMessage(generateLocalWhatsAppMessage({
+            orderId,
+            customerName: customerName || 'Cliente',
+            total: 10,
+            phone: phone || ''
+          }))
+          setPhoneNumber(businessPhone)
         }
       } catch (error) {
         console.error('Error fetching order:', error)
         // En caso de error, crear mensaje básico
-        const basicMessage = `¡Hola! He completado mi pago con MercadoPago. Orden #${orderId}. Gracias por tu compra.`
-        const fallbackUrl = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${encodeURIComponent(basicMessage)}`
-        setWhatsappUrl(fallbackUrl)
+        const basicMessage = generateLocalWhatsAppMessage({
+          orderId,
+          customerName: customerName || 'Cliente',
+          total: 10,
+          phone: phone || ''
+        })
+        setWhatsappMessage(basicMessage)
+        setEffectiveTotal(10)
+        setPhoneNumber(businessPhone)
       }
     }
 
     fetchOrderAndPrepareWhatsApp()
-  }, [orderId])
+  }, [orderId, customerName, phone, dispatch])
 
   // Countdown para redirección automática
   useEffect(() => {
-    if (!whatsappUrl) return
+    if (!effectiveWhatsappUrl || !whatsappMessage) return
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          // Redirigir a WhatsApp
-          window.open(whatsappUrl, '_blank')
+          const finalLink = resolveWhatsAppLink(
+            effectiveWhatsappUrl,
+            whatsappMessage,
+            phoneNumber
+          )
+          window.open(finalLink, '_blank')
           return 0
         }
         return prev - 1
@@ -72,35 +220,17 @@ export default function MercadoPagoSuccessPage() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [whatsappUrl])
+  }, [effectiveWhatsappUrl, whatsappMessage, phoneNumber])
 
   const handleWhatsAppRedirect = () => {
-    if (whatsappUrl) {
-      window.open(whatsappUrl, '_blank')
+    if (whatsappMessage) {
+      const finalLink = resolveWhatsAppLink(
+        effectiveWhatsappUrl,
+        whatsappMessage,
+        phoneNumber
+      )
+      window.open(finalLink, '_blank')
     }
-  }
-
-  const handleCopyMessage = async () => {
-    if (!orderData) return
-    
-    const message = generateMercadoPagoWhatsAppMessage(orderData)
-    try {
-      await navigator.clipboard.writeText(message)
-      alert('Mensaje copiado al portapapeles')
-    } catch (err) {
-      console.error('No se pudo copiar el mensaje', err)
-    }
-  }
-
-  const handleCall = () => {
-    window.location.href = `tel:${businessPhone}`
-  }
-
-  const handleEmail = () => {
-    const subject = encodeURIComponent(`Confirmación de Pedido${orderId ? ` #${orderId}` : ''}`)
-    const body = encodeURIComponent(`Hola, he completado mi pago con MercadoPago. Orden #${orderId}. Gracias.`)
-    const email = 'ventas@pinteya.com'
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
   }
 
   const handleContinueShopping = () => {
@@ -109,45 +239,27 @@ export default function MercadoPagoSuccessPage() {
 
   const handleViewOrder = () => {
     if (orderId) {
+      // Pasar el mensaje de WhatsApp como parámetro para mostrarlo en la página de detalles
       const params = new URLSearchParams()
-      
-      // Si tenemos orderData completo, usar ese mensaje
-      if (orderData) {
-        const message = generateMercadoPagoWhatsAppMessage(orderData)
-        params.set('message', encodeURIComponent(message))
-        params.set('customerName', customerName || '')
-        params.set('total', orderData.total_amount?.toString() || '')
-        
-        // También guardar en localStorage para compatibilidad
-        try {
-          localStorage.setItem(`order_message_${orderId}`, message)
-          localStorage.setItem('mercadopagoSuccessParams', JSON.stringify({
-            orderId,
-            total: orderData.total_amount || 0,
-            whatsappMessage: message,
-            customerName: customerName || ''
-          }))
-          console.log('🔍 DEBUG - Mensaje de MercadoPago guardado en localStorage:', message.substring(0, 100) + '...')
-        } catch (e) {
-          console.warn('Error guardando en localStorage:', e)
-        }
-      } else {
-        // Si no tenemos orderData, usar datos básicos
-        params.set('customerName', customerName || 'Cliente')
-        params.set('total', '0')
+      if (whatsappMessage) {
+        params.set('message', encodeURIComponent(whatsappMessage))
       }
+      params.set('customerName', customerName || orderData?.customer_name || 'Cliente')
+      params.set('total', effectiveTotal.toString())
       
       router.push(`/orders/${orderId}?${params.toString()}`)
     }
   }
 
+  const defaultMessage = `Hola${customerName ? ` ${customerName}` : ''}, confirmo mi pedido${orderId ? ` #${orderId}` : ''} por un total de $${effectiveTotal.toLocaleString('es-AR')}.` 
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header de éxito */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
-            <CheckCircle className="w-10 h-10 text-blue-600" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+            <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             ¡Pago Exitoso!
@@ -189,13 +301,13 @@ export default function MercadoPagoSuccessPage() {
               </div>
             )}
 
-            {orderData?.total_amount && (
+            {effectiveTotal > 0 && (
               <>
                 <Separator />
                 <div className="flex justify-between items-center text-lg font-semibold">
                   <span>Total Pagado:</span>
-                  <span className="text-blue-600">
-                    ${orderData.total_amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  <span className="text-green-600">
+                    ${effectiveTotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </>
@@ -218,7 +330,7 @@ export default function MercadoPagoSuccessPage() {
         </Card>
 
         {/* Redirección a WhatsApp */}
-        {whatsappUrl && (
+        {whatsappMessage && (
           <Card className="mb-6 border-green-200 bg-green-50">
             <CardContent className="pt-6">
               <div className="text-center">
@@ -274,36 +386,6 @@ export default function MercadoPagoSuccessPage() {
             </Button>
           )}
         </div>
-
-        {/* Fallbacks si WhatsApp no funciona */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-base">Si WhatsApp no funciona</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Button
-              variant="secondary"
-              onClick={handleCopyMessage}
-              className="flex items-center justify-center gap-2"
-            >
-              <Copy className="w-4 h-4" /> Copiar Mensaje
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleCall}
-              className="flex items-center justify-center gap-2"
-            >
-              <Phone className="w-4 h-4" /> Llamar al negocio
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={handleEmail}
-              className="flex items-center justify-center gap-2"
-            >
-              <Mail className="w-4 h-4" /> Enviar Email
-            </Button>
-          </CardContent>
-        </Card>
 
         {/* Información adicional */}
         <div className="mt-8 text-center text-sm text-gray-500">
