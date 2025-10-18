@@ -150,8 +150,12 @@ export default function MercadoPagoSuccessPage() {
             }
           }
           
-          // 6. Si aún no hay mensaje, generar uno localmente (fallback)
+          // 6. Si aún no hay mensaje, generar uno localmente (fallback) - MEJORADO
           if (!message) {
+            console.warn('⚠️ ADVERTENCIA: whatsapp_message no encontrado en BD, usando fallback')
+            console.log('🔍 DEBUG - order.whatsapp_message:', order.whatsapp_message)
+            console.log('🔍 DEBUG - order.whatsapp_notification_link:', order.whatsapp_notification_link)
+            
             // Extraer datos del payer_info si está disponible
             const payerName = order.payer_info?.name && order.payer_info?.surname
               ? `${order.payer_info.name} ${order.payer_info.surname}`
@@ -160,15 +164,23 @@ export default function MercadoPagoSuccessPage() {
             const payerPhone = order.payer_info?.phone || phone || order.phone || ''
             
             message = generateLocalWhatsAppMessage({
-              orderId: order.order_number || order.id.toString(),
+              orderId: order.order_number || order.id.toString(),  // ✅ Usar order_number, no id
               customerName: payerName,
               total,
               phone: payerPhone
             })
             console.log('🔍 DEBUG - Mensaje generado con datos del payer_info')
+            console.log('🔍 DEBUG - Mensaje fallback generado:', message.substring(0, 100))
           }
           
           setWhatsappMessage(message)
+          
+          // Log final para confirmar qué mensaje se está usando
+          console.log('✅ MENSAJE FINAL CONFIGURADO:')
+          console.log('📝 Primeras 200 caracteres:', message.substring(0, 200))
+          console.log('📏 Longitud total:', message.length)
+          console.log('🔍 Contiene order_number?:', message.includes('ORD-'))
+          console.log('🔍 Contiene nombre real?:', message.includes('Santiago') || message.includes('Martinez'))
           
           // 6. Guardar en localStorage para la página de detalles
           try {
