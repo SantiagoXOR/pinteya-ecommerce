@@ -118,27 +118,23 @@ export const useCheckout = () => {
   // FUNCIONES DE CÁLCULO
   // ===================================
   const calculateShippingCost = useCallback(() => {
-    // 🧪 TEMPORAL: Desactivado para prueba de MercadoPago
-    // TODO: Restaurar lógica original después de la prueba
-    return 0
-    
-    // const { shippingMethod } = checkoutState.formData
+    const { shippingMethod } = checkoutState.formData
 
-    // // Envío gratis para compras mayores a $50,000 (aplica a todos los métodos)
-    // if (totalPrice >= 50000) {
-    //   return 0
-    // }
+    // Envío gratis para compras mayores a $50,000 (aplica a todos los métodos)
+    if (totalPrice >= 50000) {
+      return 0
+    }
 
-    // switch (shippingMethod) {
-    //   case 'free':
-    //     return 0
-    //   case 'standard':
-    //     return 5000
-    //   case 'express':
-    //     return 10000
-    //   default:
-    //     return 0
-    // }
+    switch (shippingMethod) {
+      case 'free':
+        return 0
+      case 'standard':
+        return 5000
+      case 'express':
+        return 10000
+      default:
+        return 0
+    }
   }, [checkoutState.formData.shippingMethod, totalPrice])
 
   const calculateDiscount = useCallback(() => {
