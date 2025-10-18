@@ -32,7 +32,23 @@ export function parseWhatsAppOrderMessage(message: string): ParsedOrderData | nu
   }
 
   try {
-    const lines = message.split('\n')
+    // Normalizar el mensaje: agregar saltos de línea donde faltan
+    let normalizedMessage = message
+      .replace(/([🛍💳])([A-Z])/g, '$1\n$2') // Después de emojis
+      .replace(/([!])([A-Z])/g, '$1\n$2') // Después de !
+      .replace(/([A-Za-z])(\*[A-Z])/g, '$1\n$2') // Antes de *Detalle*
+      .replace(/([A-Za-z])(\*[A-Z])/g, '$1\n$2') // Antes de *Datos*
+      .replace(/([A-Za-z])(\*[A-Z])/g, '$1\n$2') // Antes de *Productos*
+      .replace(/([A-Za-z])(\*[A-Z])/g, '$1\n$2') // Antes de *Datos de Envío*
+      .replace(/([A-Za-z])(•)/g, '$1\n$2') // Antes de •
+      .replace(/([A-Za-z])(✅)/g, '$1\n$2') // Antes de ✅
+    
+    const lines = normalizedMessage.split('\n')
+    
+    // Log para debug
+    console.log('🔍 DEBUG - Mensaje original:', message.substring(0, 200))
+    console.log('🔍 DEBUG - Mensaje normalizado:', normalizedMessage.substring(0, 200))
+    console.log('🔍 DEBUG - Líneas separadas:', lines.slice(0, 10))
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim()
