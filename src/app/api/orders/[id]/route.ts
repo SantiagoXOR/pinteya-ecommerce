@@ -18,9 +18,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       )
     }
 
-    // Determinar si es un ID numérico o un external_reference
+    // Determinar el tipo de ID y campo de búsqueda
     const isNumericId = /^\d+$/.test(orderId)
-    const searchField = isNumericId ? 'id' : 'external_reference'
+    const isOrderNumber = /^ORD-/.test(orderId)
+    
+    let searchField, searchValue
+    if (isNumericId) {
+      searchField = 'id'
+      searchValue = orderId
+    } else if (isOrderNumber) {
+      searchField = 'order_number'
+      searchValue = orderId
+    } else {
+      searchField = 'external_reference'
+      searchValue = orderId
+    }
 
     // Obtener orden SIN order_items (no los necesitamos, el whatsapp_message tiene todo)
     // Esto evita el error 400 de Supabase con la relación order_items → products
@@ -43,7 +55,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         whatsapp_generated_at
       `
       )
-      .eq(searchField, orderId)
+      .eq(searchField, searchValue)
       .single()
 
     if (orderError) {
