@@ -22,6 +22,7 @@ import {
 } from '@/lib/enterprise/rate-limiter'
 import { ENTERPRISE_RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/enterprise-rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { whatsappLinkService } from '@/lib/integrations/whatsapp/whatsapp-link-service'
 
 // Schema de validación para la entrada
 const CreatePreferenceSchema = z.object({
@@ -493,9 +494,14 @@ export async function POST(request: NextRequest) {
       payerInfo: {
         name: `${orderData.payer.name} ${orderData.payer.surname}`,
         email: orderData.payer.email,
-        phone: orderData.payer.phone
+        phone: orderData.payer.phone || undefined
       },
       items: whatsappItems,
+      shippingInfo: orderData.shipping?.address ? {
+        address: `${orderData.shipping.address.street_name} ${orderData.shipping.address.street_number}`,
+        city: orderData.shipping.address.city_name,
+        postalCode: orderData.shipping.address.zip_code
+      } : undefined,
       createdAt: order.created_at
     })
 
