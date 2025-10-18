@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 import { generateProductSEOText, generateCategorySEOText } from './dynamic-seo-text'
 import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger'
 import { getRedisClient } from '@/lib/integrations/redis'
+import { getProductImage } from '@/lib/utils/image-helpers'
 
 // ===================================
 // INTERFACES Y TIPOS MEJORADOS
@@ -994,7 +995,7 @@ class DynamicSEOManager {
     }
 
     const canonical = product.slug ? `${SITE_CONFIG.url}/products/${product.slug}` : SITE_CONFIG.url
-    const ogImage = product.images?.previews?.[0] || product.images?.thumbnails?.[0] || SITE_CONFIG.defaultImage
+    const ogImage = getProductImage(product.images) || SITE_CONFIG.defaultImage
 
     return {
       title,

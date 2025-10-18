@@ -50,6 +50,7 @@ import { ProductWithCategory } from '@/types/api'
 import { supabase } from '@/lib/supabase'
 import { logError } from '@/lib/error-handling/centralized-error-handler'
 import { getValidImageUrl } from '@/lib/adapters/product-adapter'
+import { getProductImage } from '@/lib/utils/image-helpers'
 import { useRouter } from 'next/navigation'
 
 
@@ -1605,12 +1606,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       return sanitize(c?.url || c?.image_url)
     }
     const candidates: any[] = [
-      (fullProductData as any)?.images?.previews?.[0],
-      (fullProductData as any)?.images?.thumbnails?.[0],
-      fullProductData?.images?.main,
-      fullProductData?.images?.gallery?.[0],
-      (product as any)?.images?.previews?.[0],
-      (product as any)?.images?.thumbnails?.[0],
+      getProductImage((fullProductData as any)?.images),
+      getProductImage((product as any)?.images),
       product?.image,
     ]
     for (const c of candidates) {

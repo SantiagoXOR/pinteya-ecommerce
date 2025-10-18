@@ -15,6 +15,7 @@ import { useTrendingSearches } from './useTrendingSearches'
 import { useRecentSearches } from './useRecentSearches'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
 import { hasDiscount } from '@/lib/adapters/product-adapter'
+import { getProductImage } from '@/lib/utils/image-helpers'
 
 // ===================================
 // TIPOS
@@ -221,16 +222,8 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
 
       if (products.length > 0) {
         const productSuggestions = products.map((product: ProductWithCategory) => {
-          // Fallbacks robustos para distintas estructuras de imágenes
-          const imageUrl =
-            (product as any)?.images?.previews?.[0] ||
-            (product as any)?.images?.thumbnails?.[0] ||
-            (product as any)?.imgs?.previews?.[0] ||
-            (product as any)?.imgs?.thumbnails?.[0] ||
-            (product as any)?.image ||
-            (product as any)?.thumbnail ||
-            (product as any)?.img ||
-            (Array.isArray((product as any)?.images) ? (product as any)?.images?.[0] : (product as any)?.images?.previews?.[0] || (product as any)?.images?.thumbnails?.[0])
+          // Usar helper universal para extraer imagen
+          const imageUrl = getProductImage((product as any)?.images)
 
           // Construir badges inteligentes: medida, color, oferta, nuevo
           const badges: string[] = []

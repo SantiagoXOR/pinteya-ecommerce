@@ -13,6 +13,7 @@ import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 import { Button } from '@/components/ui/button'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { toast } from '@/components/ui/use-toast'
+import { getProductImage } from '@/lib/utils/image-helpers'
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
@@ -234,7 +235,7 @@ export default function SearchPage() {
               const discount = hasDiscount
                 ? `${Math.round((1 - (product.discounted_price as number) / product.price) * 100)}%`
                 : undefined
-              const image = product.images?.previews?.[0] || product.images?.thumbnails?.[0] || '/images/products/placeholder.svg'
+              const image = getProductImage(product.images)
 
               return (
                 <CommercialProductCard

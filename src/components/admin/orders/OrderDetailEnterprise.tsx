@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { OrderEnterprise, OrderStatusHistory, OrderNote } from '@/types/orders-enterprise'
 import { formatOrderStatus, formatPaymentStatus } from '@/lib/orders-enterprise'
+import { getProductImage } from '@/lib/utils/image-helpers'
 import { useToast } from '@/hooks/use-toast'
 import { OrderStatusManager } from './OrderStatusManager'
 import { OrderNotesManager } from './OrderNotesManager'
@@ -377,9 +378,9 @@ export const OrderDetailEnterprise: React.FC<OrderDetailEnterpriseProps> = ({
         <div className='space-y-4'>
           {order.order_items?.map((item, index) => (
             <div key={item.id} className='flex items-center gap-4 p-4 border rounded-lg'>
-              {(item.products?.images?.previews?.[0] || item.products?.images?.thumbnails?.[0]) && (
+              {getProductImage(item.products?.images) && getProductImage(item.products?.images) !== '/images/products/placeholder.svg' && (
                 <img
-                  src={item.products.images?.previews?.[0] || item.products.images?.thumbnails?.[0]}
+                  src={getProductImage(item.products?.images)}
                   alt={item.products.name}
                   className='w-16 h-16 object-cover rounded'
                 />
