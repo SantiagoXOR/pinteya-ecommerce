@@ -34,21 +34,26 @@ export function parseWhatsAppOrderMessage(message: string): ParsedOrderData | nu
   try {
     // Normalizar el mensaje: agregar saltos de línea donde faltan
     let normalizedMessage = message
-      .replace(/([🛍💳])([A-Z])/g, '$1\n$2') // Después de emojis
-      .replace(/([!])([A-Z])/g, '$1\n$2') // Después de !
-      .replace(/([A-Za-z])(\*[A-Z])/g, '$1\n$2') // Antes de *Detalle*
-      .replace(/([A-Za-z])(\*[A-Z])/g, '$1\n$2') // Antes de *Datos*
-      .replace(/([A-Za-z])(\*[A-Z])/g, '$1\n$2') // Antes de *Productos*
-      .replace(/([A-Za-z])(\*[A-Z])/g, '$1\n$2') // Antes de *Datos de Envío*
-      .replace(/([A-Za-z])(•)/g, '$1\n$2') // Antes de •
-      .replace(/([A-Za-z])(✅)/g, '$1\n$2') // Antes de ✅
+      // Después de emojis principales
+      .replace(/([🛍💳✨])(\s*)([*A-Z])/g, '$1\n$3')
+      // Después de signos de exclamación seguidos de texto
+      .replace(/([!])(\s*)([*A-Z])/g, '$1\n$3')
+      // Antes de secciones con asterisco
+      .replace(/([a-záéíóúñ])(\s*)(\*[A-Z])/gi, '$1\n$3')
+      // Antes de cada bullet point •
+      .replace(/([a-záéíóúñ0-9,:])(\s*)(•)/gi, '$1\n$3')
+      // Antes de emoji de check
+      .replace(/([a-záéíóúñ0-9,:])(\s*)(✅)/gi, '$1\n$3')
+      // Después de emoji de check seguido de texto
+      .replace(/(✅)(\s*)([A-Z¡])/g, '$1\n$3')
     
     const lines = normalizedMessage.split('\n')
     
     // Log para debug
     console.log('🔍 DEBUG - Mensaje original:', message.substring(0, 200))
     console.log('🔍 DEBUG - Mensaje normalizado:', normalizedMessage.substring(0, 200))
-    console.log('🔍 DEBUG - Líneas separadas:', lines.slice(0, 10))
+    console.log('🔍 DEBUG - Líneas separadas:', lines.slice(0, 15))
+    console.log('🔍 DEBUG - Total de líneas:', lines.length)
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim()
@@ -124,28 +129,31 @@ export function parseWhatsAppOrderMessage(message: string): ParsedOrderData | nu
         if (match) data.paymentMethod = match[1].trim()
       }
 
-      // Extraer productos (líneas que empiezan con • o número seguido de punto)
-      if ((line.startsWith('•') || /^\d+\./.test(line)) && line.includes('x') && line.includes('$')) {
-        const productMatch = line.match(/[•\d.]\s*(.+?)\s+x(\d+)\s+-\s+\$?([\d.,]+)/)
-        if (productMatch) {
-          data.products!.push({
-            name: productMatch[1].trim(),
-            quantity: parseInt(productMatch[2]),
-            price: productMatch[3]
-          })
+      // Extraer productos (líneas que empiezan con • y tienen formato: nombre x cantidad - $ precio)
+      if (line.startsWith('•') && line.includes('x') && line.includes('$') && line.includes('-')) {
+        // Excluir líneas que no son productos
+        if (line.includes('Orden:') || line.includes('Total:') || line.includes('Nombre:') || 
+            line.includes('Teléfono:') || line.includes('Email:') || line.includes('Dirección:') ||
+            line.includes('Ciudad:') || line.includes('CP:')) {
+          continue
         }
-      }
-
-      // Extraer productos con formato más simple (solo •)
-      if (line.startsWith('•') && !line.includes('Cliente:') && !line.includes('Teléfono:') && !line.includes('Email:') && !line.includes('Dirección:')) {
-        // Si contiene "Producto" y tiene precio, es un producto
-        if (line.includes('Producto') && line.includes('$')) {
-          const simpleMatch = line.match(/•\s*(.+?)\s+x(\d+)\s+-\s+\$?([\d.,]+)/)
-          if (simpleMatch) {
+        
+        const productMatch = line.match(/•\s*(.+?)\s+x(\d+)\s+-\s+\$?([\d.,]+)/)
+        if (productMatch) {
+          const productName = productMatch[1].trim()
+          const quantity = parseInt(productMatch[2])
+          const price = productMatch[3]
+          
+          // Verificar que no sea un duplicado
+          const isDuplicate = data.products!.some(p => 
+            p.name === productName && p.quantity === quantity && p.price === price
+          )
+          
+          if (!isDuplicate) {
             data.products!.push({
-              name: simpleMatch[1].trim(),
-              quantity: parseInt(simpleMatch[2]),
-              price: simpleMatch[3]
+              name: productName,
+              quantity: quantity,
+              price: price
             })
           }
         }
@@ -166,6 +174,11 @@ export function parseWhatsAppOrderMessage(message: string): ParsedOrderData | nu
     if (!data.customerName) {
       data.customerName = 'Cliente'
     }
+
+    // Log final de productos parseados
+    console.log('🔍 DEBUG - Productos parseados:', data.products)
+    console.log('🔍 DEBUG - Total parseado:', data.total)
+    console.log('🔍 DEBUG - Order number parseado:', data.orderNumber)
 
     return data as ParsedOrderData
   } catch (error) {
