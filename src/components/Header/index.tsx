@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth'
 import ActionButtons from './ActionButtons'
 import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocompleteIntegrated'
 import { useCartAnimation } from '@/hooks/useCartAnimation'
-import { MapPin, Loader2, ShoppingCart, MessageCircle } from '@/lib/optimized-imports'
+import { MapPin, Loader2, ShoppingCart, MessageCircle, Search, X } from '@/lib/optimized-imports'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { HeaderLogo } from '@/components/ui/OptimizedLogo'
 import ScrollingBanner from './ScrollingBanner'
@@ -109,12 +109,19 @@ const Header = () => {
   }, [])
 
   // Handlers para expansión del searchbar en mobile
-  const handleSearchFocus = useCallback(() => {
+  const handleSearchClick = useCallback(() => {
     setIsSearchExpanded(true)
   }, [])
 
-  const handleSearchBlur = useCallback(() => {
+  const handleSearchCollapse = useCallback(() => {
     setIsSearchExpanded(false)
+  }, [])
+
+  const handleSearchBlur = useCallback(() => {
+    // Delay para permitir clicks en sugerencias
+    setTimeout(() => {
+      setIsSearchExpanded(false)
+    }, 200)
   }, [])
 
   // Handlers para botones de acción mobile
@@ -147,8 +154,8 @@ const Header = () => {
         style={{ top: '34px' }}
       >
         {/* Header principal - Layout optimizado mobile-first */}
-        <div className='max-w-[1200px] mx-auto px-4 sm:px-4 py-3'>
-          <div className='flex items-center justify-between sm:justify-center gap-4 sm:gap-4 min-h-[60px]'>
+        <div className='max-w-[1200px] mx-auto px-2 sm:px-4 py-3'>
+          <div className='flex items-center justify-between sm:justify-center gap-2 sm:gap-4 min-h-[60px]'>
             {/* 1. Logo - Ocultar mobile cuando search expandido */}
             <Link 
               href='/' 
@@ -168,12 +175,42 @@ const Header = () => {
               />
             </Link>
             
-            {/* 2. Search - Botón circular en mobile (colapsado), expandible al click */}
-            <div className={`
-              ${isSearchExpanded ? 'flex-1' : 'w-12 h-12'}
-              sm:flex-1
-              flex items-center transition-all duration-300 min-w-0
-            `}>
+            {/* 2. Search Expandido - Con botón de colapso DENTRO */}
+            {isSearchExpanded && (
+              <div className='flex-1'>
+                <div className='relative w-full'>
+                  <div
+                    style={{ backgroundColor: '#fff3c5', borderRadius: '9999px', padding: '1px' }}
+                    className='flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.02] search-focus-ring'
+                  >
+                    <SearchAutocompleteIntegrated
+                      placeholder='Buscar productos...'
+                      autoFocus={true}
+                      onBlur={handleSearchBlur}
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border-2 [&>div>div>input]:border-orange-300 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:pr-12 [&>div>div>input]:py-2.5 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-sm [&>div>div>input]:sm:text-base [&>div>div>input]:font-medium [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-orange-500 [&>div>div>input]:focus:ring-2 [&>div>div>input]:focus:ring-orange-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-300 [&>div>div>input]:hover:border-orange-400 [&>div>div>input]:!bg-transparent'
+                      style={{ backgroundColor: 'transparent' } as React.CSSProperties}
+                      size='lg'
+                      debounceMs={100}
+                      maxSuggestions={6}
+                      showRecentSearches={true}
+                      showTrendingSearches={true}
+                    />
+                    
+                    {/* Botón de colapso - X DENTRO del searchbar */}
+                    <button
+                      onClick={handleSearchCollapse}
+                      className='absolute right-2 w-8 h-8 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg z-10'
+                      aria-label='Cerrar búsqueda'
+                    >
+                      <X className='w-4 h-4 text-white' strokeWidth={2.5} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Desktop searchbar - Siempre expandido */}
+            <div className='hidden sm:flex flex-1 mx-8 max-w-2xl'>
               <div className='relative w-full'>
                 <div
                   style={{ backgroundColor: '#fff3c5', borderRadius: '9999px', padding: '1px' }}
@@ -181,9 +218,7 @@ const Header = () => {
                 >
                   <SearchAutocompleteIntegrated
                     placeholder='Buscar productos...'
-                    onFocus={handleSearchFocus}
-                    onBlur={handleSearchBlur}
-                    className='[&>div>div>input]:w-full [&>div>div>input]:border-2 [&>div>div>input]:border-orange-300 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:pr-12 [&>div>div>input]:py-2.5 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-sm [&>div>div>input]:sm:text-base [&>div>div>input]:font-medium [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-orange-500 [&>div>div>input]:focus:ring-2 [&>div>div>input]:focus:ring-orange-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-300 [&>div>div>input]:hover:border-orange-400 [&>div>div>input]:!bg-transparent'
+                    className='[&>div>div>input]:w-full [&>div>div>input]:border-2 [&>div>div>input]:border-orange-300 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:pr-12 [&>div>div>input]:py-2.5 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-base [&>div>div>input]:font-medium [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-orange-500 [&>div>div>input]:focus:ring-2 [&>div>div>input]:focus:ring-orange-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-300 [&>div>div>input]:hover:border-orange-400 [&>div>div>input]:!bg-transparent'
                     style={{ backgroundColor: 'transparent' } as React.CSSProperties}
                     size='lg'
                     debounceMs={100}
@@ -194,66 +229,77 @@ const Header = () => {
                 </div>
               </div>
             </div>
-            
-            {/* Grupo de botones centrados - Solo visible cuando search NO está expandido */}
-            <div className={`flex items-center gap-2 transition-all duration-300 ${isSearchExpanded ? 'hidden' : 'flex'} sm:ml-0`}>
-              {/* 3. Carrito - Centrado entre search y WhatsApp */}
-              <div className='relative flex-shrink-0'>
-                {/* Liquid Glass Background Effect */}
-                <div className='absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/80 via-yellow-300/60 to-yellow-500/80 backdrop-blur-xl border border-white/20 shadow-2xl' />
-                <div className='absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent' />
-                <div className='absolute inset-0 rounded-full bg-gradient-to-tl from-yellow-600/20 via-transparent to-white/10' />
+
+            {/* 3. Grupo de botones - Solo visible cuando search NO expandido en mobile */}
+            {!isSearchExpanded && (
+              <div className='flex items-center gap-3 sm:gap-4 flex-shrink-0'>
                 
-                {/* Botón con altura fija h-12 para evitar desacomodo */}
+                {/* 3.1. Search Button - Circular */}
                 <button
-                  onClick={handleCartClick}
-                  className='relative bg-yellow-400/90 hover:bg-yellow-500/90 text-black font-bold h-12 px-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 border border-white/30 flex items-center gap-2 group floating-button focus-ring hover:rotate-3 hover:shadow-2xl backdrop-blur-md bg-gradient-to-r from-yellow-400/80 to-yellow-500/80'
-                  aria-label='Ver carrito de compras'
+                  onClick={handleSearchClick}
+                  className='w-12 h-12 min-w-[48px] rounded-full bg-[#fff3c5] border-2 border-orange-300 hover:border-orange-400 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-md hover:shadow-lg sm:hidden'
+                  aria-label='Buscar productos'
                 >
-                  <div className='relative'>
-                    <OptimizedCartIcon
-                      width={32}
-                      height={32}
-                      className='w-8 h-8 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg'
-                      alt='Carrito de compras'
+                  <Search className='w-5 h-5 sm:w-6 sm:h-6 text-orange-500' strokeWidth={2.5} />
+                </button>
+                
+                {/* 3.2. Carrito Button - Con texto (como estaba antes) */}
+                <div className='relative flex-shrink-0'>
+                  {/* Liquid Glass Background Effect */}
+                  <div className='absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/80 via-yellow-300/60 to-yellow-500/80 backdrop-blur-xl border border-white/20 shadow-2xl' />
+                  <div className='absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent' />
+                  <div className='absolute inset-0 rounded-full bg-gradient-to-tl from-yellow-600/20 via-transparent to-white/10' />
+                  
+                  <button
+                    onClick={handleCartClick}
+                    className='relative bg-yellow-400/90 hover:bg-yellow-500/90 text-black font-bold h-12 px-2 sm:px-3 min-w-[90px] sm:min-w-[110px] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 border border-white/30 flex items-center gap-1 sm:gap-2 group floating-button focus-ring hover:rotate-3 hover:shadow-2xl backdrop-blur-md bg-gradient-to-r from-yellow-400/80 to-yellow-500/80'
+                    aria-label='Ver carrito de compras'
+                  >
+                    <div className='relative'>
+                      <OptimizedCartIcon
+                        width={32}
+                        height={32}
+                        className='w-6 h-6 sm:w-8 sm:h-8 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg'
+                        alt='Carrito de compras'
+                      />
+                      {product.length > 0 && (
+                        <span className='absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-125 animate-pulse' style={{ backgroundColor: '#007639', color: '#fbbf24' }}>
+                          {product.length > 99 ? '99+' : product.length}
+                        </span>
+                      )}
+                    </div>
+                    <span className='text-xs sm:text-sm font-semibold' style={{ color: '#ea5a17' }}>
+                      Carrito
+                    </span>
+                  </button>
+                </div>
+                
+                {/* 3.3. WhatsApp Button - Circular */}
+                <div className='relative flex-shrink-0'>
+                  {/* Liquid Glass Background Effect */}
+                  <div className='absolute inset-0 rounded-full bg-gradient-to-r from-green-500/80 via-green-400/60 to-green-600/80 backdrop-blur-xl border border-white/20 shadow-2xl' />
+                  <div className='absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent' />
+                  <div className='absolute inset-0 rounded-full bg-gradient-to-tl from-green-700/20 via-transparent to-white/10' />
+                  
+                  <button
+                    onClick={handleWhatsAppClick}
+                    className='relative bg-green-500/90 hover:bg-green-600/90 text-white font-bold w-12 h-12 min-w-[48px] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 border border-white/30 flex items-center justify-center group floating-button focus-ring hover:rotate-6 hover:shadow-2xl backdrop-blur-md bg-gradient-to-r from-green-500/80 to-green-600/80'
+                    aria-label='Contactar por WhatsApp'
+                  >
+                    <MessageCircle 
+                      className='w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg' 
+                      strokeWidth={2.5}
                     />
-                    {product.length > 0 && (
-                      <span className='absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-125 animate-pulse' style={{ backgroundColor: '#007639', color: '#fbbf24' }}>
-                        {product.length > 99 ? '99+' : product.length}
-                      </span>
-                    )}
-                  </div>
-                  <span className='text-sm font-semibold' style={{ color: '#ea5a17' }}>
-                    Carrito
-                  </span>
-                </button>
-              </div>
-              
-              {/* 4. WhatsApp - A la derecha del carrito */}
-              <div className='relative flex-shrink-0'>
-                {/* Liquid Glass Background Effect */}
-                <div className='absolute inset-0 rounded-full bg-gradient-to-r from-green-500/80 via-green-400/60 to-green-600/80 backdrop-blur-xl border border-white/20 shadow-2xl' />
-                <div className='absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent' />
-                <div className='absolute inset-0 rounded-full bg-gradient-to-tl from-green-700/20 via-transparent to-white/10' />
+                    {/* Indicador de pulso */}
+                    <span className='absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5'>
+                      <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75' />
+                      <span className='relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500' />
+                    </span>
+                  </button>
+                </div>
                 
-                {/* Botón con altura fija w-12 h-12 */}
-                <button
-                  onClick={handleWhatsAppClick}
-                  className='relative bg-green-500/90 hover:bg-green-600/90 text-white font-bold w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 border border-white/30 flex items-center justify-center group floating-button focus-ring hover:rotate-6 hover:shadow-2xl backdrop-blur-md bg-gradient-to-r from-green-500/80 to-green-600/80'
-                  aria-label='Contactar por WhatsApp'
-                >
-                  <MessageCircle 
-                    className='w-6 h-6 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg' 
-                    strokeWidth={2.5}
-                  />
-                  {/* Indicador de pulso */}
-                  <span className='absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5'>
-                    <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75' />
-                    <span className='relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500' />
-                  </span>
-                </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </header>

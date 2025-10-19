@@ -93,7 +93,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     const timer = setTimeout(executeAnimation, 800)
     
     return () => clearTimeout(timer)
-  }, [hasPlayedScrollHint, variant, categories])
+  }, [hasPlayedScrollHint, variant])
 
   // Manejadores para drag scroll
   const handleMouseDown = (e: React.MouseEvent) => {
