@@ -68,9 +68,14 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     if (!carouselRef.current || hasPlayedScrollHint || variant === 'bare') return
     
     const carousel = carouselRef.current
-    const timer = setTimeout(() => {
-      // Solo animar si hay contenido que se desborda
-      if (carousel.scrollWidth > carousel.clientWidth) {
+    
+    // Función para verificar y ejecutar la animación
+    const executeAnimation = () => {
+      // Solo animar si hay contenido que se desborda o si hay suficientes categorías
+      const hasOverflow = carousel.scrollWidth > carousel.clientWidth
+      const hasEnoughCategories = categories.length > 4 // Si hay más de 4 categorías, probablemente necesite scroll
+      
+      if (hasOverflow || hasEnoughCategories) {
         // Pequeño scroll a la derecha
         carousel.scrollTo({ left: 100, behavior: 'smooth' })
         
@@ -82,10 +87,13 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       } else {
         setHasPlayedScrollHint(true)
       }
-    }, 500) // Esperar 500ms después de cargar
+    }
+    
+    // Esperar a que las categorías se carguen completamente
+    const timer = setTimeout(executeAnimation, 800)
     
     return () => clearTimeout(timer)
-  }, [hasPlayedScrollHint, variant])
+  }, [hasPlayedScrollHint, variant, categories])
 
   // Manejadores para drag scroll
   const handleMouseDown = (e: React.MouseEvent) => {

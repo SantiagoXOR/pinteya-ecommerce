@@ -516,7 +516,7 @@ export const SearchAutocompleteIntegrated = React.memo(
                 placeholder={placeholder}
                 disabled={disabled}
                 className={cn(
-                  'w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg',
+                  'w-full pl-10 pr-10 py-3 border border-gray-300 rounded-full',
                   'focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
                   'placeholder-gray-500 text-gray-900',
                   'disabled:bg-gray-50 disabled:text-gray-500',

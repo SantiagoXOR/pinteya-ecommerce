@@ -62,9 +62,14 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = ({
   return (
     <Image
       {...logoProps}
+      unoptimized={logoProps.src.endsWith('.svg')}
       className={combinedClassName}
       onClick={onClick}
       data-testid={testId}
+      style={{
+        willChange: 'transform',
+        backfaceVisibility: 'hidden',
+      }}
       // Fallback automático para WebP
       onError={e => {
         const target = e.target as HTMLImageElement
@@ -72,6 +77,13 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = ({
           // Cambiar a PNG si WebP falla
           const pngSrc = target.src.replace('.webp', '.png')
           target.src = pngSrc
+        }
+      }}
+      onLoad={() => {
+        // Limpiar cualquier placeholder después de cargar
+        const img = document.querySelector(`[data-testid="${testId}"]`) as HTMLImageElement
+        if (img) {
+          img.style.opacity = '1'
         }
       }}
     />

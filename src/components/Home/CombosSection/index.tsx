@@ -45,7 +45,7 @@ const CombosSection: React.FC = () => {
   }, [currentIndex])
 
   return (
-    <section className='w-full py-2 px-4 bg-white'>
+    <section className='w-full pt-6 pb-2 px-4 bg-white'>
       <div className='max-w-7xl mx-auto'>
         {/* Carrusel horizontal */}
         <div className='relative'>

@@ -164,6 +164,17 @@
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  /* Logo container optimizations */
+  .logo-container {
+    overflow: visible !important;
+    contain: none !important;
+  }
+
+  .logo-container img {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
   .focus-ring:focus {
     outline: 2px solid #f27a1d;
     outline-offset: 2px;

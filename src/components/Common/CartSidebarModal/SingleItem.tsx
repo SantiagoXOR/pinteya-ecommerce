@@ -29,6 +29,12 @@ const SingleItem = ({ item }: { item: any }) => {
 
   // Función para obtener stock del producto (para modo Redux)
   const fetchProductStock = useCallback(async (productId: number) => {
+    // NUEVA VALIDACIÓN: Rechazar IDs que parecen timestamps o inválidos
+    if (!productId || productId > 1000000000) { // Timestamps son > 1 billón
+      console.warn(`📦 ID de producto parece inválido (posible timestamp): ${productId}`)
+      return null
+    }
+    
     // Usar cache si ya tenemos el stock
     if (stockCache.current !== null) {
       console.log(`📦 Usando stock cache para producto ${productId}:`, stockCache.current)
@@ -59,10 +65,10 @@ const SingleItem = ({ item }: { item: any }) => {
           console.log(`📦 Stock del producto ${productId} guardado en cache:`, stock)
           return stock
         } else {
-          console.error(`📦 Error en respuesta:`, data)
+          console.warn(`📦 Error en respuesta:`, data)
         }
       } else {
-        console.error(`📦 Error HTTP: ${response.status}`)
+        console.warn(`📦 Producto ${productId} no encontrado (HTTP ${response.status})`)
       }
     } catch (error) {
       console.error('Error obteniendo stock:', error)
@@ -75,7 +81,7 @@ const SingleItem = ({ item }: { item: any }) => {
 
   // Obtener stock del producto al montar el componente (solo para Redux)
   useEffect(() => {
-    if (isReduxMode && item.id && !hasFetchedStock.current) {
+    if (isReduxMode && item.id && item.id < 1000000000 && !hasFetchedStock.current) {
       fetchProductStock(item.id)
     }
   }, [isReduxMode, item.id, fetchProductStock])

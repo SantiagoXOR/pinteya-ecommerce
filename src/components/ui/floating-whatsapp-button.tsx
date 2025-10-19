@@ -22,7 +22,7 @@ const FloatingWhatsAppButton: React.FC<FloatingWhatsAppButtonProps> = ({
   }
 
   return (
-    <div className='fixed bottom-8 left-8 z-maximum sm:bottom-8 sm:right-40 sm:left-auto'>
+    <div className='hidden fixed bottom-8 left-8 z-maximum'>
       {/* Liquid Glass Background Effect - Verde WhatsApp */}
       <div className='absolute inset-0 rounded-full bg-gradient-to-r from-green-500/80 via-green-400/60 to-green-600/80 backdrop-blur-xl border border-white/20 shadow-2xl'></div>
       <div className='absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent'></div>

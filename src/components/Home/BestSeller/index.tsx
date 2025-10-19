@@ -118,7 +118,7 @@ const BestSeller: React.FC = () => {
     <section className='overflow-hidden py-2 sm:py-4'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
         {/* Section Header - Migrado al Design System */}
-        <div className='mb-10 flex items-center justify-between'>
+        <div className='mb-4 flex items-center justify-between'>
           <div>
             <div className='flex items-center gap-2.5 font-medium text-gray-700 mb-1.5'>
               <div className='w-5 h-5 rounded-full bg-yellow-100 flex items-center justify-center'>

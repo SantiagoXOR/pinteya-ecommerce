@@ -901,6 +901,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               parsedId = typeof productId === 'string' ? parseInt(productId, 10) : Number(productId)
             }
 
+            // NUEVA VALIDACIÓN: No usar Date.now() - mejor rechazar
+            if (isNaN(parsedId) || parsedId <= 0) {
+              console.error('❌ ID de producto inválido, no se puede agregar al carrito:', { productData, productId })
+              return // No agregar al carrito
+            }
+
             const cover = images[0] || '/images/products/placeholder.svg'
             const imgsPayload = {
               thumbnails: [cover],
@@ -926,7 +932,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             addProduct(
               {
                 ...productData,
-                id: isNaN(parsedId) ? Date.now() : parsedId,
+                id: parsedId, // Ya validado arriba
                 name: (productData as any).name || title || 'Producto',
                 price: Number.isFinite(originalParsed) ? originalParsed : 0,
                 discounted_price:

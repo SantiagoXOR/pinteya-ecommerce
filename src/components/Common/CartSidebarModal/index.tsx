@@ -17,6 +17,7 @@ import { useCartWithBackend } from '@/hooks/useCartWithBackend'
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext()
   const cartItems = useAppSelector(state => state.cartReducer.items)
+  const [mounted, setMounted] = useState(false)
 
   // Hook para carrito con backend
   const {
@@ -31,7 +32,7 @@ const CartSidebarModal = () => {
   // Usar carrito del backend si está disponible, sino usar Redux
   const effectiveCartItems = backendCartItems.length > 0 ? backendCartItems : cartItems
   const effectiveTotalPrice = backendCartItems.length > 0 ? backendTotalAmount : totalPrice
-  const hasItems = effectiveCartItems.length > 0
+  const hasItems = mounted && effectiveCartItems.length > 0
 
   // Estimación de envío: gratis desde $50.000; caso contrario $10.000 (express)
   const estimatedShippingCost = effectiveTotalPrice >= 50000 ? 0 : 10000
@@ -47,6 +48,11 @@ const CartSidebarModal = () => {
         // La navegación se maneja automáticamente en el componente de animación
       },
     })
+
+  // Efecto para evitar error de hidratación
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     // closing modal while clicking outside
@@ -93,7 +99,7 @@ const CartSidebarModal = () => {
                   🛒 Tu Selección
                 </h2>
                 <p className='text-xs text-gray-500'>
-                  {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'} listos
+                  {mounted ? effectiveCartItems.length : 0} {mounted && effectiveCartItems.length === 1 ? 'producto' : 'productos'} listos
                 </p>
               </div>
             </div>
@@ -121,7 +127,7 @@ const CartSidebarModal = () => {
           <div className='flex-1 overflow-y-auto no-scrollbar pt-4'>
             <div className='flex flex-col gap-4 px-1'>
               {/* <!-- cart item --> */}
-              {effectiveCartItems.length > 0 ? (
+              {mounted && effectiveCartItems.length > 0 ? (
                 effectiveCartItems.map((item: any, key: number) => <SingleItem key={key} item={item} />)
               ) : (
                 <EmptyCart />
@@ -131,7 +137,7 @@ const CartSidebarModal = () => {
 
           <div className='border-t border-gray-200 bg-white pt-3 pb-3 mt-4 sticky bottom-0'>
             {/* Barra de Progreso Envío Gratis */}
-            {effectiveCartItems.length > 0 && (
+            {mounted && effectiveCartItems.length > 0 && (
               <div className='mb-3'>
                 <ShippingProgressBar currentAmount={effectiveTotalPrice} variant='compact' />
               </div>
@@ -141,7 +147,7 @@ const CartSidebarModal = () => {
             <div className='flex items-center justify-between gap-3 mb-3'>
               <p className='font-bold text-lg text-gray-900'>Subtotal:</p>
               <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
-                ${effectiveTotalPrice.toLocaleString()}
+                ${mounted ? effectiveTotalPrice.toLocaleString() : '0'}
               </p>
             </div>
 
@@ -164,7 +170,7 @@ const CartSidebarModal = () => {
               <div className='flex items-center justify-between gap-3 mb-3'>
                 <p className='font-bold text-lg text-gray-900'>Total:</p>
                 <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
-                  ${(effectiveTotalPrice + estimatedShippingCost).toLocaleString()}
+                  ${mounted ? (effectiveTotalPrice + estimatedShippingCost).toLocaleString() : '0'}
                 </p>
               </div>
             )}
