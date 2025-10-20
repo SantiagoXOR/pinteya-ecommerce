@@ -217,29 +217,59 @@ lhci autorun --upload.target=temporary-public-storage
 
 ## 📊 Monitoring y Analytics
 
-### **Vercel Analytics**
+### **Vercel Web Analytics**
 
 ```javascript
-// app/layout.tsx
+// src/app/layout.tsx
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
         {children}
-        <Analytics />
+        
+        {/* Vercel Analytics - Solo en producción */}
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   )
 }
 ```
 
+### **Características Implementadas**
+
+#### **Web Analytics**
+- ✅ **Visitantes únicos**: Conteo de usuarios únicos por día
+- ✅ **Páginas vistas**: Total de páginas visitadas
+- ✅ **Bounce rate**: Porcentaje de usuarios que abandonan después de una página
+- ✅ **Tiempo real**: Datos disponibles en ~30 segundos
+
+#### **Speed Insights**
+- ✅ **Core Web Vitals**: LCP, FID, CLS de usuarios reales
+- ✅ **Métricas de rendimiento**: Tiempo de carga, renderizado
+- ✅ **Datos históricos**: Tendencias de performance a lo largo del tiempo
+- ✅ **Alertas automáticas**: Notificaciones cuando las métricas empeoran
+
+### **Verificación en Dashboard**
+
+1. **Acceder al Dashboard**: [vercel.com/dashboard](https://vercel.com/dashboard)
+2. **Seleccionar proyecto**: pinteya-ecommerce
+3. **Ir a Analytics**: Pestaña "Analytics" en el sidebar
+4. **Verificar datos**: Los datos aparecen después del primer visitante en producción
+
 ### **Error Tracking**
 
 - ✅ **Vercel Functions**: Logs automáticos
 - ✅ **Error Boundaries**: Captura de errores React
 - ✅ **API Monitoring**: Logs de endpoints
+- ✅ **Performance Monitoring**: Sistema personalizado complementario
 
 ## 🚨 Troubleshooting
 

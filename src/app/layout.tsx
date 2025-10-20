@@ -16,6 +16,10 @@ import {
 } from '@/lib/structured-data'
 import type { Metadata } from 'next'
 
+// Vercel Analytics - Solo en producción
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
+
 export const metadata: Metadata = defaultMetadata
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -36,6 +40,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <Providers>{children}</Providers>
         </Suspense>
+        
+        {/* Vercel Analytics - Solo en producción */}
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   )
