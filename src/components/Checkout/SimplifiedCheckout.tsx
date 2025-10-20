@@ -406,8 +406,8 @@ const SimplifiedCheckout = () => {
                   // En checkout, no necesitamos agregar más al carrito
                 }}
                 showCartAnimation={false}
-                freeShipping={item.discountedPrice >= 15000}
-                shippingText={item.discountedPrice >= 15000 ? 'Envío gratis' : 'En carrito'}
+                freeShipping={item.discountedPrice >= 50000}
+                shippingText={item.discountedPrice >= 50000 ? 'Envío gratis' : 'En carrito'}
               />
             </div>
           ))}

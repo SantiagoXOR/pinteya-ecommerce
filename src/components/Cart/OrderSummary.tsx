@@ -15,7 +15,7 @@ const OrderSummary = () => {
   const totalPrice = useSelector(selectTotalPrice)
 
   // Calcular envío
-  const shippingCost = totalPrice >= 15000 ? 0 : 2500
+  const shippingCost = totalPrice >= 50000 ? 0 : 2500
   const finalTotal = totalPrice + shippingCost
 
   return (

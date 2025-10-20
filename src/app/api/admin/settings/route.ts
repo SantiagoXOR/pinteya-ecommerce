@@ -181,7 +181,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
   ecommerce: {
     tax_rate: 21.0,
     shipping_cost: 500.0,
-    free_shipping_threshold: 15000.0,
+    free_shipping_threshold: 50000.0,
     inventory_tracking: true,
     low_stock_threshold: 10,
     allow_backorders: false,

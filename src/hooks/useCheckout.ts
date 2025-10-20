@@ -133,7 +133,7 @@ export const useCheckout = () => {
       case 'shipping':
       case 'express':
       default:
-        return 1000000 // $10,000 pesos
+        return 10000 // $10,000 pesos
     }
   }, [checkoutState.formData.shippingMethod, totalPrice])
 
