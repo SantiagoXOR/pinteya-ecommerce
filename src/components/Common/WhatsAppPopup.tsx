@@ -122,7 +122,7 @@ const WhatsAppPopup = () => {
           </h2>
 
           {/* Subtítulo */}
-          <p className='text-white/90 text-lg mb-6'>
+          <p className='text-white text-lg mb-6 drop-shadow-lg'>
             Dejanos tu número y te enviamos las mejores promos
           </p>
 
@@ -133,9 +133,9 @@ const WhatsAppPopup = () => {
               'Ofertas y descuentos exclusivos',
               'Asesoramiento personalizado',
             ].map((feature, idx) => (
-              <div key={idx} className='flex items-center gap-2 text-white/90'>
+              <div key={idx} className='flex items-center gap-2 text-white'>
                 <CheckCircle className='w-5 h-5 text-yellow-300 flex-shrink-0' />
-                <span className='text-sm font-medium'>{feature}</span>
+                <span className='text-sm font-medium drop-shadow-lg'>{feature}</span>
               </div>
             ))}
           </div>
