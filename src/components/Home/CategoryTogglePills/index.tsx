@@ -204,14 +204,14 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                 variant={isSelected ? 'default' : 'outline'}
                 size='sm'
                 className={`
-                  group transition-all duration-200 border-2
+                  group transition-all duration-200 border
                   flex items-center justify-center p-0
                   w-14 h-14 sm:w-16 sm:h-16 rounded-full
                   md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
                   ${
                     isSelected
-                      ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
-                      : 'bg-[#007639] hover:bg-[#009e44] hover:border-[#eb6313] text-[#fff4c6] border-[#007639]'
+                      ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
+                      : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-700 border-gray-200 shadow-md'
                   }
                 `}
               >
@@ -278,14 +278,14 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     variant={isSelected ? 'default' : 'outline'}
                     size='sm'
                     className={`
-                      group transition-all duration-200 border-2
+                      group transition-all duration-200 border
                       flex items-center justify-center p-0
                       w-14 h-14 sm:w-16 sm:h-16 rounded-full
                       md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
                       ${
                         isSelected
-                          ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
-                          : 'bg-[#007639] hover:bg-[#009e44] hover:border-[#eb6313] text-[#fff4c6] border-[#007639]'
+                          ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
+                          : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-700 border-gray-200 shadow-md'
                       }
                     `}
                   >
