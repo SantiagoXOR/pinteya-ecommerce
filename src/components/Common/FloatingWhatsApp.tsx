@@ -8,7 +8,7 @@ const FloatingWhatsApp = () => {
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const whatsappNumber = '5493515555555' // Reemplazar con número real
+  const whatsappNumber = '5493513411796' // Número oficial de Pinteya
   const defaultMessage = 'Hola! Necesito ayuda con productos de pinturería'
 
   useEffect(() => {
