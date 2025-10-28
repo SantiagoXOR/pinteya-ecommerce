@@ -39,7 +39,8 @@ const FloatingCart = () => {
     }
   }, [isAnimating])
 
-  if (cartItemCount === 0) return null
+  // No renderizar hasta que esté montado (evitar hidratación)
+  if (!mounted) return null
 
   return (
     <div
@@ -81,9 +82,13 @@ const FloatingCart = () => {
             className='w-8 h-8 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg'
             alt='Carrito de compras'
           />
-          {mounted && cartItemCount > 0 && (
+          {/* Badge siempre visible, incluso con 0 items */}
+          {mounted && (
             <span
-              className='absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-badge shadow-lg transition-all duration-200 group-hover:scale-125 animate-pulse'
+              className={cn(
+                'absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-badge shadow-lg transition-all duration-200 group-hover:scale-125',
+                cartItemCount > 0 ? 'animate-pulse' : ''
+              )}
               style={{ backgroundColor: '#007639', color: '#fbbf24' }}
             >
               {cartItemCount > 99 ? '99+' : cartItemCount}
