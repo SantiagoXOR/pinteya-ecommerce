@@ -1,0 +1,28 @@
+/**
+ * Estilos globales específicos para el panel admin
+ * Previene double scroll forzando que solo el contenido haga scroll
+ */
+
+/* Prevenir scroll en el body cuando estamos en admin */
+html:has(body [data-admin-layout]),
+body:has([data-admin-layout]) {
+  overflow: hidden !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Asegurar que el contenedor raíz ocupe toda la altura */
+#__next:has([data-admin-layout]) {
+  height: 100vh !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Eliminar cualquier margen/padding del body en admin */
+body [data-admin-layout] {
+  margin: 0 !important;
+  padding: 0 !important;
+}
