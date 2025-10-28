@@ -97,12 +97,10 @@ export async function GET(request: NextRequest) {
         // Construir query base - simplificado para la estructura actual
         const baseQuery = supabase
           .from('categories')
-          .select(
-            `
-        *,
-        products_count:products(count)
-      `
-          )
+          .select(`
+            *,
+            products_count:products(count)
+          `)
           .order('display_order', { ascending: true })
           .order('name', { ascending: true })
 
@@ -114,7 +112,7 @@ export async function GET(request: NextRequest) {
 
         // Ejecutar query con timeout de base de datos
         const { data: categories, error } = await withDatabaseTimeout(async signal => {
-          return await query.abortSignal(signal)
+          return await query
         }, API_TIMEOUTS.database)
 
         if (error) {

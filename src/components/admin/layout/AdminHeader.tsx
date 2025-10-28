@@ -28,7 +28,7 @@ export function AdminHeader({
   const [notificationsOpen, setNotificationsOpen] = useState(false)
 
   return (
-    <header className='bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-6'>
+    <header className='bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-6 m-0 flex-shrink-0'>
       {/* Left Section */}
       <div className='flex items-center space-x-4'>
         {/* Mobile Menu Toggle */}

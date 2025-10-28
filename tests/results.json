@@ -1,11 +1,11 @@
 {
   "config": {
-    "configFile": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\playwright.config.ts",
+    "configFile": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\playwright.simple.config.ts",
     "rootDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
     "forbidOnly": false,
     "fullyParallel": false,
-    "globalSetup": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\global-setup.ts",
-    "globalTeardown": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\global-teardown.ts",
+    "globalSetup": null,
+    "globalTeardown": null,
     "globalTimeout": 0,
     "grep": {},
     "grepInvert": null,
@@ -26,12 +26,6 @@
         }
       ],
       [
-        "junit",
-        {
-          "outputFile": "tests/results.xml"
-        }
-      ],
-      [
         "list",
         null
       ]
@@ -47,189 +41,15 @@
         "repeatEach": 1,
         "retries": 1,
         "metadata": {},
-        "id": "setup",
-        "name": "setup",
+        "id": "chromium",
+        "name": "chromium",
         "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/auth.setup.ts"
-        ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "cleanup",
-        "name": "cleanup",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/auth.cleanup.ts"
-        ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "api-admin",
-        "name": "api-admin",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/api-admin.spec.ts"
-        ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "api-public",
-        "name": "api-public",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/api-public.spec.ts"
-        ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "ui-admin",
-        "name": "ui-admin",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/admin/**/*.spec.ts",
-          "**/auth/**/*.spec.ts",
-          "!**/api-*.spec.ts"
-        ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "ui-public",
-        "name": "ui-public",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
+        "testIgnore": [],
         "testMatch": [
           "**/*.spec.ts",
-          "!**/admin/**/*.spec.ts",
-          "!**/auth/**/*.spec.ts",
-          "!**/api-*.spec.ts"
+          "**/*.e2e.ts"
         ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "firefox",
-        "name": "firefox",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/*.spec.ts",
-          "!**/admin/**/*.spec.ts"
-        ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "webkit",
-        "name": "webkit",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/*.spec.ts",
-          "!**/admin/**/*.spec.ts"
-        ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "Mobile Chrome",
-        "name": "Mobile Chrome",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/*.spec.ts",
-          "!**/admin/**/*.spec.ts"
-        ],
-        "timeout": 30000
-      },
-      {
-        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
-        "repeatEach": 1,
-        "retries": 1,
-        "metadata": {},
-        "id": "Mobile Safari",
-        "name": "Mobile Safari",
-        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [
-          "**/node_modules/**",
-          "**/.next/**",
-          "**/coverage/**"
-        ],
-        "testMatch": [
-          "**/*.spec.ts",
-          "!**/admin/**/*.spec.ts"
-        ],
-        "timeout": 30000
+        "timeout": 60000
       }
     ],
     "shard": null,
@@ -252,8 +72,8 @@
     }
   ],
   "stats": {
-    "startTime": "2025-10-16T15:24:25.487Z",
-    "duration": 4512.405000000001,
+    "startTime": "2025-10-26T19:52:37.687Z",
+    "duration": 1254.4739999999997,
     "expected": 0,
     "skipped": 0,
     "unexpected": 0,

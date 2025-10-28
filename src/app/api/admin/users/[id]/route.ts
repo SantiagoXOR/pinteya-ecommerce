@@ -178,10 +178,12 @@ async function getUserWithStats(userId: string): Promise<UserWithStats | null> {
 // ===================================
 // GET - Obtener usuario específico por ID
 // ===================================
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
 
   try {
+    const { id } = await context.params
+    
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
@@ -211,7 +213,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Validar parámetros
-    const paramsValidation = UserParamsSchema.safeParse({ id: params.id })
+    const paramsValidation = UserParamsSchema.safeParse({ id })
     if (!paramsValidation.success) {
       const errorResponse: ApiResponse<null> = {
         data: null,
@@ -285,10 +287,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // ===================================
 // PUT - Actualizar usuario
 // ===================================
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
 
   try {
+    const { id } = await context.params
+    
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
@@ -318,7 +322,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Validar parámetros
-    const paramsValidation = UserParamsSchema.safeParse({ id: params.id })
+    const paramsValidation = UserParamsSchema.safeParse({ id })
     if (!paramsValidation.success) {
       const errorResponse: ApiResponse<null> = {
         data: null,
@@ -455,10 +459,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // ===================================
 // DELETE - Eliminar usuario
 // ===================================
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
 
   try {
+    const { id } = await context.params
+    
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
@@ -488,7 +494,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Validar parámetros
-    const paramsValidation = UserParamsSchema.safeParse({ id: params.id })
+    const paramsValidation = UserParamsSchema.safeParse({ id })
     if (!paramsValidation.success) {
       const errorResponse: ApiResponse<null> = {
         data: null,

@@ -34,12 +34,13 @@ interface ProductVariant {
 // ===================================
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; variantId: string } }
+  context: { params: Promise<{ id: string; variantId: string }> }
 ): Promise<NextResponse<ApiResponse<ProductVariant>>> {
   const securityLogger = createSecurityLogger(request)
 
   return withRateLimit(request, RATE_LIMIT_CONFIGS.products, async () => {
     try {
+      const params = await context.params
       const productId = parseInt(params.id)
       const variantId = parseInt(params.variantId)
 
@@ -150,12 +151,13 @@ export async function GET(
 // ===================================
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; variantId: string } }
+  context: { params: Promise<{ id: string; variantId: string }> }
 ): Promise<NextResponse<ApiResponse<ProductVariant>>> {
   const securityLogger = createSecurityLogger(request)
 
   return withRateLimit(request, RATE_LIMIT_CONFIGS.admin, async () => {
     try {
+      const params = await context.params
       const productId = parseInt(params.id)
       const variantId = parseInt(params.variantId)
 
@@ -193,7 +195,8 @@ export async function PUT(
       }
 
       // Preparar datos de actualización
-      const updateData: Partial<ProductVariant> = {}
+      const updateData: any = {}
+      updateData.updated_at = new Date().toISOString()
 
       if (body.color_name !== undefined) updateData.color_name = body.color_name
       if (body.color_hex !== undefined) updateData.color_hex = body.color_hex
@@ -207,6 +210,8 @@ export async function PUT(
       if (body.image_url !== undefined) updateData.image_url = body.image_url
       if (body.metadata !== undefined) updateData.metadata = body.metadata
 
+      console.log('[VARIANT UPDATE] Updating variant:', { variantId, productId, updateData })
+
       // Actualizar variante
       const { data: updatedVariant, error: updateError } = await supabase
         .from('product_variants')
@@ -217,6 +222,7 @@ export async function PUT(
         .single()
 
       if (updateError) {
+        console.error('[VARIANT UPDATE] Error:', updateError)
         securityLogger.logApiError(
           securityLogger.context,
           new Error(updateError.message),
@@ -273,12 +279,13 @@ export async function PUT(
 // ===================================
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; variantId: string } }
+  context: { params: Promise<{ id: string; variantId: string }> }
 ): Promise<NextResponse<ApiResponse<null>>> {
   const securityLogger = createSecurityLogger(request)
 
   return withRateLimit(request, RATE_LIMIT_CONFIGS.admin, async () => {
     try {
+      const params = await context.params
       const productId = parseInt(params.id)
       const variantId = parseInt(params.variantId)
 

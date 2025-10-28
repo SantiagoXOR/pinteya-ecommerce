@@ -28,7 +28,7 @@ export function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   return (
-    <div className='flex h-screen bg-gray-50'>
+    <div data-admin-layout className='flex h-screen bg-gray-50 overflow-hidden'>
       {/* Sidebar */}
       <div
         className={cn(
@@ -48,7 +48,7 @@ export function AdminLayout({
       )}
 
       {/* Main Content */}
-      <div className='flex-1 flex flex-col min-w-0'>
+      <div className='flex-1 flex flex-col min-w-0 h-screen m-0 p-0'>
         {/* Header */}
         <AdminHeader
           title={title}
@@ -59,7 +59,7 @@ export function AdminLayout({
         />
 
         {/* Page Content */}
-        <main className={cn('flex-1 overflow-auto p-4 lg:p-6', className)}>{children}</main>
+        <main className={cn('flex-1 overflow-y-auto', className)}>{children}</main>
       </div>
     </div>
   )

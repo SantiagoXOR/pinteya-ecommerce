@@ -18,57 +18,49 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status || 401 })
     }
 
-    // Obtener estadísticas usando una sola query optimizada
-    const { data: stats, error } = await supabaseAdmin.rpc('get_product_stats')
+    // Obtener estadísticas directamente sin función RPC
+    const [totalResult, activeResult, lowStockResult, noStockResult] = await Promise.all([
+      // Total de productos
+      supabaseAdmin.from('products').select('id', { count: 'exact', head: true }),
 
-    if (error) {
-      console.error('Error obteniendo estadísticas de productos:', error)
+      // Productos con stock > 0
+      supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).gt('stock', 0),
 
-      // Fallback: calcular estadísticas manualmente
-      const [totalResult, activeResult, lowStockResult, noStockResult] = await Promise.all([
-        supabaseAdmin.from('products').select('id', { count: 'exact', head: true }),
-        supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).gt('stock', 0),
-        supabaseAdmin
-          .from('products')
-          .select('id', { count: 'exact', head: true })
-          .gt('stock', 0)
-          .lte('stock', 10),
-        supabaseAdmin
-          .from('products')
-          .select('id', { count: 'exact', head: true })
-          .or('stock.eq.0,stock.is.null'),
-      ])
+      // Productos con stock bajo (1-10)
+      supabaseAdmin
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .gt('stock', 0)
+        .lte('stock', 10),
 
-      const fallbackStats = {
-        total_products: totalResult.count || 0,
-        active_products: activeResult.count || 0,
-        low_stock_products: lowStockResult.count || 0,
-        no_stock_products: noStockResult.count || 0,
-      }
+      // Productos sin stock
+      supabaseAdmin
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .or('stock.eq.0,stock.is.null'),
+    ])
 
-      return NextResponse.json({
-        success: true,
-        stats: fallbackStats,
-        source: 'fallback',
-        timestamp: new Date().toISOString(),
-      })
-    }
-
-    const productStats = stats?.[0] || {
-      total_products: 0,
-      active_products: 0,
-      low_stock_products: 0,
-      no_stock_products: 0,
+    const stats = {
+      total_products: totalResult.count || 0,
+      active_products: activeResult.count || 0,
+      low_stock_products: lowStockResult.count || 0,
+      no_stock_products: noStockResult.count || 0,
     }
 
     return NextResponse.json({
       success: true,
-      stats: productStats,
-      source: 'database_function',
+      stats,
+      source: 'direct_queries',
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Error en GET /api/admin/products/stats:', error)
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Error interno del servidor',
+        message: error instanceof Error ? error.message : 'Error desconocido',
+      },
+      { status: 500 }
+    )
   }
 }

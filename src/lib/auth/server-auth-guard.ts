@@ -13,6 +13,18 @@ import { redirect } from 'next/navigation'
  * @returns Session del usuario autenticado
  */
 export async function requireAdminAuth() {
+  // BYPASS PARA DESARROLLO
+  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    console.log('[Server Auth Guard] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación')
+    return {
+      user: {
+        email: 'santiago@xor.com.ar',
+        name: 'Admin (Bypass Mode)',
+        id: 'bypass-admin-id'
+      }
+    } as any
+  }
+
   const session = await auth()
   
   if (!session?.user) {

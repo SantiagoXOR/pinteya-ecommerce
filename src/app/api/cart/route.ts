@@ -22,6 +22,7 @@ interface CartItem {
   id: string
   user_id: string
   product_id: number
+  variant_id?: number | null
   quantity: number
   created_at: string
   updated_at: string
@@ -38,6 +39,17 @@ interface CartItem {
       name: string
     }
   }
+  product_variants?: {
+    id: number
+    aikon_id: string | null
+    color_name: string | null
+    measure: string | null
+    finish: string | null
+    price_list: number
+    price_sale: number | null
+    stock: number
+    image_url: string | null
+  } | null
 }
 
 interface CartSummary {
@@ -155,6 +167,7 @@ export async function GET(request: NextRequest) {
                   id,
                   user_id,
                   product_id,
+                  variant_id,
                   quantity,
                   created_at,
                   updated_at,
@@ -170,6 +183,17 @@ export async function GET(request: NextRequest) {
                       id,
                       name
                     )
+                  ),
+                  product_variants (
+                    id,
+                    aikon_id,
+                    color_name,
+                    measure,
+                    finish,
+                    price_list,
+                    price_sale,
+                    stock,
+                    image_url
                   )
                 `
               )
@@ -217,11 +241,15 @@ export async function GET(request: NextRequest) {
           )
         }
 
-        // Calcular totales
+        // Calcular totales usando precios de variantes si existen
         const totalItems = cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0
         const totalAmount =
           cartItems?.reduce((sum, item) => {
-            const price = item.products?.discounted_price || item.products?.price || 0
+            // Priorizar precio de variante sobre precio de producto
+            const price = item.product_variants?.price_sale || 
+                         item.product_variants?.price_list ||
+                         item.products?.discounted_price || 
+                         item.products?.price || 0
             return sum + price * item.quantity
           }, 0) || 0
 
@@ -322,7 +350,7 @@ export async function POST(request: NextRequest) {
 
         // Obtener datos del request
         const body = await request.json()
-        const { productId, quantity = 1 } = body
+        const { productId, variantId, quantity = 1 } = body
 
         // Validaciones
         if (!productId) {
@@ -340,7 +368,7 @@ export async function POST(request: NextRequest) {
         }
 
         console.log(
-          `🔍 Cart API: Agregando producto ${productId} (cantidad: ${quantity}) para usuario ${userId}`
+          `🔍 Cart API: Agregando producto ${productId} ${variantId ? `variante ${variantId}` : '(sin variante)'} (cantidad: ${quantity}) para usuario ${userId}`
         )
 
         // Obtener cliente de Supabase
@@ -353,10 +381,10 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        // Verificar que el producto existe y tiene stock
+        // Verificar que el producto existe
         const { data: product, error: productError } = await supabase
           .from('products')
-          .select('id, name, stock, price')
+          .select('id, name')
           .eq('id', productId)
           .single()
 
@@ -368,18 +396,98 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        if (product.stock < quantity) {
-          console.log(
-            `❌ Cart API: Stock insuficiente para producto ${productId}. Stock: ${product.stock}, Solicitado: ${quantity}`
-          )
-          return NextResponse.json(
-            {
-              success: false,
-              error: 'Stock insuficiente',
-              availableStock: product.stock,
-            },
-            { status: 400 }
-          )
+        // Si no se especifica variante, buscar la default
+        let finalVariantId = variantId
+
+        if (!finalVariantId) {
+          console.log(`🔍 Cart API: Buscando variante default para producto ${productId}`)
+          const { data: defaultVariant } = await supabase
+            .from('product_variants')
+            .select('id')
+            .eq('product_id', productId)
+            .eq('is_default', true)
+            .eq('is_active', true)
+            .single()
+
+          if (defaultVariant) {
+            finalVariantId = defaultVariant.id
+            console.log(`✅ Cart API: Variante default encontrada: ${finalVariantId}`)
+          } else {
+            // Si no hay variante default, buscar la primera activa
+            const { data: firstVariant } = await supabase
+              .from('product_variants')
+              .select('id')
+              .eq('product_id', productId)
+              .eq('is_active', true)
+              .order('id', { ascending: true })
+              .limit(1)
+              .single()
+
+            if (firstVariant) {
+              finalVariantId = firstVariant.id
+              console.log(`✅ Cart API: Primera variante activa encontrada: ${finalVariantId}`)
+            }
+          }
+        }
+
+        // Validar stock de la variante (si existe)
+        let stockAvailable = 0
+        let variantInfo = null
+
+        if (finalVariantId) {
+          const { data: variant, error: variantError } = await supabase
+            .from('product_variants')
+            .select('id, stock, price_sale, price_list, aikon_id, color_name, measure')
+            .eq('id', finalVariantId)
+            .single()
+
+          if (variantError || !variant) {
+            console.log(`❌ Cart API: Variante ${finalVariantId} no encontrada`)
+            return NextResponse.json(
+              { success: false, error: 'Variante no encontrada' },
+              { status: 404 }
+            )
+          }
+
+          stockAvailable = variant.stock
+          variantInfo = variant
+
+          if (variant.stock < quantity) {
+            console.log(
+              `❌ Cart API: Stock insuficiente para variante ${finalVariantId}. Stock: ${variant.stock}, Solicitado: ${quantity}`
+            )
+            return NextResponse.json(
+              {
+                success: false,
+                error: 'Stock insuficiente para esta variante',
+                availableStock: variant.stock,
+              },
+              { status: 400 }
+            )
+          }
+        } else {
+          // Fallback: usar stock del producto padre (para productos sin variantes)
+          const { data: productStock } = await supabase
+            .from('products')
+            .select('stock')
+            .eq('id', productId)
+            .single()
+
+          stockAvailable = productStock?.stock || 0
+
+          if (stockAvailable < quantity) {
+            console.log(
+              `❌ Cart API: Stock insuficiente para producto ${productId}. Stock: ${stockAvailable}, Solicitado: ${quantity}`
+            )
+            return NextResponse.json(
+              {
+                success: false,
+                error: 'Stock insuficiente',
+                availableStock: stockAvailable,
+              },
+              { status: 400 }
+            )
+          }
         }
 
         // Upsert: agregar o actualizar item en carrito
@@ -389,10 +497,11 @@ export async function POST(request: NextRequest) {
             {
               user_id: userId,
               product_id: productId,
+              variant_id: finalVariantId,
               quantity: quantity,
             },
             {
-              onConflict: 'user_id,product_id',
+              onConflict: 'user_id,product_id,variant_id',
             }
           )
           .select(
@@ -400,6 +509,7 @@ export async function POST(request: NextRequest) {
         id,
         user_id,
         product_id,
+        variant_id,
         quantity,
         created_at,
         updated_at
@@ -419,17 +529,21 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        console.log(`✅ Cart API: Producto ${product.name} agregado al carrito exitosamente`)
+        const displayName = variantInfo 
+          ? `${product.name} - ${variantInfo.measure || ''} ${variantInfo.color_name || ''}`.trim()
+          : product.name
+
+        console.log(`✅ Cart API: ${displayName} agregado al carrito exitosamente`)
 
         return NextResponse.json({
           success: true,
-          message: `${product.name} agregado al carrito`,
+          message: `${displayName} agregado al carrito`,
           item: cartItem,
           product: {
             id: product.id,
             name: product.name,
-            price: product.price,
           },
+          variant: variantInfo,
         })
       } catch (error: any) {
         console.error('❌ Cart API: Error inesperado:', error)

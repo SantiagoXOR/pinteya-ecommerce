@@ -145,6 +145,33 @@ export async function GET(request: NextRequest) {
       let orderedIdsOuter: number[] = []
       let overrideCountOuter: number | null = null
 
+      // Obtener IDs de categorías antes del timeout si es necesario
+      let categoryId: number | null = null
+      let categoryIds: number[] = []
+
+      if (filters.category) {
+        const { data: categoryData } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', filters.category)
+          .single()
+
+        if (categoryData) {
+          categoryId = categoryData.id
+        }
+      }
+
+      if (filters.categories && filters.categories.length > 0) {
+        const { data: categoriesData } = await supabase
+          .from('categories')
+          .select('id')
+          .in('slug', filters.categories)
+
+        if (categoriesData && categoriesData.length > 0) {
+          categoryIds = categoriesData.map(cat => cat.id)
+        }
+      }
+
       const result = await withDatabaseTimeout(async signal => {
         let query = supabase.from('products').select(
           `
@@ -154,31 +181,14 @@ export async function GET(request: NextRequest) {
           { count: 'exact' }
         )
 
-        // Aplicar filtros
-        if (filters.category) {
-          // Primero obtener el ID de la categoría por su slug
-          const { data: categoryData } = await supabase
-            .from('categories')
-            .select('id')
-            .eq('slug', filters.category)
-            .single()
-
-          if (categoryData) {
-            query = query.eq('category_id', categoryData.id)
-          }
+        // Aplicar filtros de categoría
+        if (categoryId) {
+          query = query.eq('category_id', categoryId)
         }
 
-        // Filtro por múltiples categorías (nuevo)
-        if (filters.categories && filters.categories.length > 0) {
-          const { data: categoriesData } = await supabase
-            .from('categories')
-            .select('id')
-            .in('slug', filters.categories)
-
-          if (categoriesData && categoriesData.length > 0) {
-            const categoryIds = categoriesData.map(cat => cat.id)
-            query = query.in('category_id', categoryIds)
-          }
+        // Filtro por múltiples categorías
+        if (categoryIds.length > 0) {
+          query = query.in('category_id', categoryIds)
         }
 
         if (filters.brand) {
@@ -226,7 +236,8 @@ export async function GET(request: NextRequest) {
           let overrideCount: number | null = null
 
           try {
-            // Usar el término original para aprovechar el análisis de tsquery
+            // Intentar usar FTS solo si la función existe
+            // NOTA: products_search RPC debe estar definida en la base de datos
             const { data: ftsProducts, error: ftsError } = await supabase.rpc('products_search', {
               q: raw,
               lim: limit,
@@ -240,8 +251,12 @@ export async function GET(request: NextRequest) {
 
               // Limitar resultados de la consulta principal a los IDs devueltos por FTS
               query = query.in('id', orderedIds)
+            } else if (ftsError) {
+              console.warn('[FTS] Error en products_search RPC:', ftsError.message)
+              // Continuar con fallback ILIKE
             }
           } catch (e) {
+            console.warn('[FTS] Exception en products_search RPC:', e)
             // Si falla RPC, continuar con fallback
           }
 
@@ -334,30 +349,38 @@ export async function GET(request: NextRequest) {
       
       if (products && products.length > 0) {
         try {
-          // Obtener variantes para todos los productos
+          // Obtener variantes para todos los productos con timeout
           const productIds = products.map(p => p.id)
           
-          const { data: variants } = await supabase
-            .from('product_variants')
-            .select(`
-              id,
-              product_id,
-              aikon_id,
-              variant_slug,
-              color_name,
-              color_hex,
-              measure,
-              finish,
-              price_list,
-              price_sale,
-              stock,
-              is_active,
-              is_default,
-              image_url
-            `)
-            .in('product_id', productIds)
-            .eq('is_active', true)
-            .order('is_default', { ascending: false })
+          const variantsResult = await withDatabaseTimeout(async signal => {
+            return await supabase
+              .from('product_variants')
+              .select(`
+                id,
+                product_id,
+                aikon_id,
+                variant_slug,
+                color_name,
+                color_hex,
+                measure,
+                finish,
+                price_list,
+                price_sale,
+                stock,
+                is_active,
+                is_default,
+                image_url
+              `)
+              .in('product_id', productIds)
+              .eq('is_active', true)
+              .order('is_default', { ascending: false })
+          }, API_TIMEOUTS.supabase.simple)
+          
+          const { data: variants, error: variantsError } = variantsResult
+          
+          if (variantsError) {
+            console.warn('Error obteniendo variantes:', variantsError)
+          }
 
           // Agrupar variantes por producto
           const variantsByProduct = (variants || []).reduce((acc, variant) => {

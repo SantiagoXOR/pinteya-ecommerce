@@ -3,7 +3,8 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
-import { ProductForm } from '@/components/admin/products/ProductForm'
+import { ProductFormMinimal } from '@/components/admin/products/ProductFormMinimal'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { toast } from 'react-hot-toast'
 import { AlertCircle } from 'lucide-react'
 
@@ -145,13 +146,16 @@ export default function EditProductPage() {
 
   return (
     <AdminLayout title={`Editar: ${product.name}`} breadcrumbs={breadcrumbs}>
-      <ProductForm
-        mode='edit'
-        initialData={product}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        isLoading={updateProductMutation.isPending}
-      />
+      <AdminContentWrapper>
+        <ProductFormMinimal
+          mode='edit'
+          productId={productId}
+          initialData={product}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          isLoading={updateProductMutation.isPending}
+        />
+      </AdminContentWrapper>
     </AdminLayout>
   )
 }

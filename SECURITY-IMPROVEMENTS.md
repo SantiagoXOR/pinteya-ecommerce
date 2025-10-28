@@ -306,6 +306,18 @@ Para preguntas sobre estas mejoras de seguridad:
 
 ## 📝 Changelog
 
+### v1.1.0 - 19 de Octubre, 2025 🆕
+
+**Correcciones Críticas de Base de Datos**
+
+- ✅ **Security Definer View eliminado** - Vista `products_with_default_variant` migrada a SECURITY INVOKER
+- ✅ **13 funciones securizadas** - Agregado `SET search_path` para prevenir SQL injection
+- ✅ **Extensiones relocalizadas** - `unaccent` y `pg_trgm` movidas de public a extensions schema
+- ✅ **94% reducción de vulnerabilidades** - De 18 warnings/errors a solo 1 pendiente
+- ⚠️ **Actualización Postgres pendiente** - Requiere acción manual desde Dashboard
+
+**Detalles**: Ver [SECURITY_FIXES_2025_10_19.md](./SECURITY_FIXES_2025_10_19.md)
+
 ### v1.0.0 - Enero 2025
 
 - ✅ Implementación inicial de todas las mejoras de seguridad

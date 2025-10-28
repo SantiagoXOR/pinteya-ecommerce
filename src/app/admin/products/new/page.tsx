@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
-import { ProductForm } from '@/components/admin/products/ProductForm'
+import { ProductFormMinimal } from '@/components/admin/products/ProductFormMinimal'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { toast } from 'react-hot-toast'
 
 interface ProductFormData {
@@ -93,12 +94,14 @@ export default function NewProductPage() {
 
   return (
     <AdminLayout title='Crear Nuevo Producto' breadcrumbs={breadcrumbs}>
-      <ProductForm
-        mode='create'
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        isLoading={createProductMutation.isPending}
-      />
+      <AdminContentWrapper>
+        <ProductFormMinimal
+          mode='create'
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          isLoading={createProductMutation.isPending}
+        />
+      </AdminContentWrapper>
     </AdminLayout>
   )
 }

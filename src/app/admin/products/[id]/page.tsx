@@ -71,7 +71,10 @@ function StatusBadge({ status }: { status: Product['status'] }) {
     },
   }
 
-  const config = statusConfig[status]
+  const config = statusConfig[status] || {
+    label: status || 'Desconocido',
+    className: 'bg-gray-100 text-gray-800 border-gray-200',
+  }
 
   return (
     <span
@@ -111,8 +114,7 @@ export default function ProductDetailPage() {
   }
 
   const handleViewPublic = () => {
-    // TODO: Open product in new tab
-    window.open(`/productos/${product?.slug || productId}`, '_blank')
+    window.open(`/products/${productId}`, '_blank')
   }
 
   if (isLoading) {
@@ -258,6 +260,30 @@ export default function ProductDetailPage() {
                     <span className='text-sm font-medium text-gray-500'>SKU:</span>
                     <p className='text-sm text-gray-900'>{product.id}</p>
                   </div>
+                  {(product as any).brand && (
+                    <div>
+                      <span className='text-sm font-medium text-gray-500'>Marca:</span>
+                      <p className='text-sm text-gray-900'>{(product as any).brand}</p>
+                    </div>
+                  )}
+                  {(product as any).medida && (
+                    <div>
+                      <span className='text-sm font-medium text-gray-500'>Medida:</span>
+                      <p className='text-sm text-gray-900'>{(product as any).medida}</p>
+                    </div>
+                  )}
+                  {(product as any).color && (
+                    <div>
+                      <span className='text-sm font-medium text-gray-500'>Color:</span>
+                      <p className='text-sm text-gray-900'>{(product as any).color}</p>
+                    </div>
+                  )}
+                  {(product as any).aikon_id && (
+                    <div>
+                      <span className='text-sm font-medium text-gray-500'>Código Aikon:</span>
+                      <p className='text-sm text-gray-900 font-mono'>{(product as any).aikon_id}</p>
+                    </div>
+                  )}
                   <div>
                     <span className='text-sm font-medium text-gray-500'>Creado:</span>
                     <p className='text-sm text-gray-900'>
@@ -276,13 +302,24 @@ export default function ProductDetailPage() {
 
             {/* Pricing Details */}
             <AdminCard title='Detalles de Precios' className='p-6'>
-              <div className='grid grid-cols-3 gap-4'>
+              <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
                 <div>
                   <span className='text-sm font-medium text-gray-500'>Precio de Venta</span>
                   <p className='text-lg font-bold text-gray-900'>
                     ${product.price.toLocaleString('es-AR')}
                   </p>
                 </div>
+                {(product as any).discounted_price && (
+                  <div>
+                    <span className='text-sm font-medium text-gray-500'>Precio con Descuento</span>
+                    <p className='text-lg font-bold text-green-600'>
+                      ${Number((product as any).discounted_price).toLocaleString('es-AR')}
+                    </p>
+                    <p className='text-xs text-green-600 mt-1'>
+                      {Math.round(((product.price - Number((product as any).discounted_price)) / product.price) * 100)}% OFF
+                    </p>
+                  </div>
+                )}
                 {product.compare_price && (
                   <div>
                     <span className='text-sm font-medium text-gray-500'>Precio de Comparación</span>

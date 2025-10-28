@@ -314,6 +314,8 @@ export function AdminDataTable<T extends Record<string, any>>({
 
           <div className='flex items-center space-x-2'>
             <button
+              data-testid="pagination-first"
+              aria-label="Primera página"
               onClick={() => pagination.onPageChange(1)}
               disabled={pagination.page === 1}
               className='p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
@@ -321,6 +323,8 @@ export function AdminDataTable<T extends Record<string, any>>({
               <ChevronsLeft className='w-4 h-4' />
             </button>
             <button
+              data-testid="pagination-prev"
+              aria-label="Página anterior"
               onClick={() => pagination.onPageChange(pagination.page - 1)}
               disabled={pagination.page === 1}
               className='p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
@@ -333,6 +337,8 @@ export function AdminDataTable<T extends Record<string, any>>({
             </span>
 
             <button
+              data-testid="pagination-next"
+              aria-label="Siguiente página"
               onClick={() => pagination.onPageChange(pagination.page + 1)}
               disabled={pagination.page >= Math.ceil(pagination.total / pagination.pageSize)}
               className='p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
@@ -340,6 +346,8 @@ export function AdminDataTable<T extends Record<string, any>>({
               <ChevronRight className='w-4 h-4' />
             </button>
             <button
+              data-testid="pagination-last"
+              aria-label="Última página"
               onClick={() =>
                 pagination.onPageChange(Math.ceil(pagination.total / pagination.pageSize))
               }

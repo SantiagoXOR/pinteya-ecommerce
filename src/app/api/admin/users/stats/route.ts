@@ -18,32 +18,38 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status || 401 })
     }
 
-    // Obtener estadísticas de usuarios
-    const [totalResult, activeResult, newResult] = await Promise.all([
+    // Obtener estadísticas de usuarios desde user_profiles
+    const [totalResult, activeResult, newResult, inactiveResult] = await Promise.all([
       // Total de usuarios
-      supabaseAdmin.from('users').select('id', { count: 'exact', head: true }),
-      // Usuarios activos (con sesiones recientes)
+      supabaseAdmin.from('user_profiles').select('id', { count: 'exact', head: true }),
+      // Usuarios activos
       supabaseAdmin
-        .from('users')
+        .from('user_profiles')
         .select('id', { count: 'exact', head: true })
-        .gte('last_sign_in_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
-      // Usuarios nuevos (últimos 7 días)
+        .eq('is_active', true),
+      // Usuarios nuevos (últimos 30 días)
       supabaseAdmin
-        .from('users')
+        .from('user_profiles')
         .select('id', { count: 'exact', head: true })
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+      // Usuarios inactivos
+      supabaseAdmin
+        .from('user_profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', false),
     ])
 
     const stats = {
       total_users: totalResult.count || 0,
       active_users: activeResult.count || 0,
-      new_users: newResult.count || 0,
+      new_users_30d: newResult.count || 0,
+      inactive_users: inactiveResult.count || 0,
       growth_rate: 0, // Placeholder para cálculo de crecimiento
     }
 
     return NextResponse.json({
       success: true,
-      data: stats,
+      stats: stats,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
@@ -56,7 +62,8 @@ export async function GET(request: NextRequest) {
         data: {
           total_users: 0,
           active_users: 0,
-          new_users: 0,
+          new_users_30d: 0,
+          inactive_users: 0,
           growth_rate: 0,
         },
       },

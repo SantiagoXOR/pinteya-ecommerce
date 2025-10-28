@@ -135,21 +135,28 @@ export { es } from 'date-fns/locale'
 // FRAMER MOTION OPTIMIZED
 // ===================================
 // Importamos solo los componentes que necesitamos
+// Usar LazyMotion + domAnimation para reducir bundle size en ~50KB
 
 export {
-  motion,
+  // LazyMotion debe usarse como wrapper principal
+  LazyMotion,
+  domAnimation, // Feature set reducido para animaciones DOM comunes
+  m, // Componente m en lugar de motion cuando usamos LazyMotion
+  
+  // Componentes básicos
   AnimatePresence,
+  
+  // Hooks - solo los esenciales
   useAnimation,
   useMotionValue,
   useTransform,
   useSpring,
   useInView,
   useScroll,
-  useDragControls,
   useAnimationControls,
-  LazyMotion,
-  domAnimation,
-  m,
+  
+  // motion solo para casos legacy (preferir 'm' con LazyMotion)
+  motion,
 } from 'framer-motion'
 
 // ===================================

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { OrderListSimple } from '@/components/admin/orders/OrderListSimple'
 import { NewOrderModal } from '@/components/admin/orders/NewOrderModal'
 import { ExportOrdersModal } from '@/components/admin/orders/ExportOrdersModal'
@@ -35,7 +36,8 @@ export function OrdersPageClient() {
 
   return (
     <AdminLayout title='Gestión de Órdenes' breadcrumbs={breadcrumbs}>
-      <div className='space-y-6'>
+      <AdminContentWrapper>
+        <div className='space-y-6'>
         {/* Header con acciones */}
         <div className='flex items-center justify-between'>
           <div>
@@ -136,7 +138,8 @@ export function OrdersPageClient() {
             />
           </>
         )}
-      </div>
+        </div>
+      </AdminContentWrapper>
     </AdminLayout>
   )
 }

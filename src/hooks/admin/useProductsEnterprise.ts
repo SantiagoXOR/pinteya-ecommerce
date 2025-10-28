@@ -6,8 +6,9 @@
 
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { logger } from '@/lib/utils/logger'
 
 // =====================================================
 // TIPOS E INTERFACES
@@ -125,9 +126,17 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
-      return response.json()
+      const data = await response.json()
+      logger.dev('[useProductsEnterprise] API Response:', {
+        productsCount: data?.data?.length,
+        count: data?.count,
+        total: data?.total,
+      })
+      return data
     },
-    staleTime: 30000,
+    enabled: filters.page > 0 && filters.limit > 0,
+    staleTime: 30000,          // 30 seg - datos frescos
+    gcTime: 300000,            // 5 min - mantener en memoria (cacheTime deprecado, usar gcTime)
     refetchOnWindowFocus: false,
   })
 
@@ -143,9 +152,12 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
-      return response.json()
+      const data = await response.json()
+      logger.dev('[useProductsEnterprise] Stats Response:', data?.stats)
+      return data
     },
-    staleTime: 60000,
+    staleTime: 60000,          // 1 min - stats cambian menos frecuentemente
+    gcTime: 600000,            // 10 min
     refetchOnWindowFocus: false,
   })
 
@@ -159,7 +171,8 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       }
       return response.json()
     },
-    staleTime: 300000, // 5 minutos
+    staleTime: 300000,         // 5 min - categorías casi nunca cambian
+    gcTime: 3600000,           // 1 hora
     refetchOnWindowFocus: false,
   })
 
@@ -353,11 +366,23 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   // MÉTRICAS DERIVADAS
   // =====================================================
 
-  const derivedMetrics = {
-    totalPages: productsData?.pagination?.total_pages || 0,
-    totalProducts: productsData?.pagination?.total_count || 0,
+  // Calcular total de productos y páginas de forma consistente
+  const totalProducts = productsData?.total || productsData?.count || 0
+  const totalPages = Math.ceil(totalProducts / filters.limit) || 1
+  
+  logger.dev('[useProductsEnterprise] Paginación:', {
+    totalProducts,
+    limit: filters.limit,
+    totalPages,
     currentPage: filters.page,
-    hasNextPage: filters.page < (productsData?.pagination?.total_pages || 0),
+  })
+
+  const derivedMetrics = {
+    // La API retorna 'total' (no 'count')
+    totalProducts,
+    totalPages,
+    currentPage: filters.page,
+    hasNextPage: filters.page < totalPages,
     hasPrevPage: filters.page > 1,
 
     // Estadísticas calculadas
@@ -379,9 +404,15 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   // =====================================================
 
   return {
-    // Datos
+    // Datos ya transformados por el API - NO transformar de nuevo
     products: productsData?.data || [],
-    stats: statsData?.data || null,
+    // Transformar stats de snake_case a camelCase
+    stats: statsData?.stats ? {
+      totalProducts: statsData.stats.total_products,
+      activeProducts: statsData.stats.active_products,
+      lowStockProducts: statsData.stats.low_stock_products,
+      noStockProducts: statsData.stats.no_stock_products,
+    } : null,
     categories: categoriesData?.data || [],
 
     // Estados de carga
@@ -433,6 +464,16 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       goToPage: (page: number) => updateFilters({ page }),
       nextPage: () => derivedMetrics.hasNextPage && updateFilters({ page: filters.page + 1 }),
       prevPage: () => derivedMetrics.hasPrevPage && updateFilters({ page: filters.page - 1 }),
+    },
+    
+    // Función refresh simplificada
+    refreshProducts: refetchProducts,
+    
+    // Handlers para componente
+    handleBulkOperation: bulkUpdateStatus,
+    handleProductAction: (action: string, productId: string) => {
+      // Placeholder para acciones de producto
+      console.log('Product action:', action, productId)
     },
   }
 }

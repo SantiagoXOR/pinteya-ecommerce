@@ -163,10 +163,11 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return (
       <section className='bg-white border-b border-gray-200 py-2'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='flex items-center gap-3 overflow-x-auto pb-2'>
+          <div className='flex items-start gap-3 sm:gap-4 md:gap-3 overflow-x-auto pb-2'>
             {[...Array(8)].map((_, index) => (
-              <div key={index} className='flex-shrink-0 animate-pulse'>
-                <div className='h-10 w-24 bg-gray-200 rounded-full'></div>
+              <div key={index} className='flex-shrink-0 animate-pulse flex flex-col items-center gap-1.5'>
+                <div className='h-14 w-14 sm:h-16 sm:w-16 md:h-10 md:w-24 bg-gray-200 rounded-full'></div>
+                <div className='h-3 w-12 bg-gray-200 rounded md:hidden'></div>
               </div>
             ))}
           </div>
@@ -184,7 +185,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return (
       <div
         ref={carouselRef}
-        className='flex items-center gap-1 sm:gap-2 overflow-x-auto flex-nowrap py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+        className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto flex-nowrap py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
         onMouseDown={handleMouseDown}
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
@@ -193,41 +194,47 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         {categories.map(category => {
           const isSelected = selectedCategories.includes(category.slug)
           return (
-            <Button
+            <div 
               key={category.id}
-              data-testid={`category-pill-${category.slug}`}
-              variant={isSelected ? 'default' : 'outline'}
-              size='sm'
+              className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
               onClick={() => handleCategoryToggle(category.slug)}
-              className={`
-                group flex-shrink-0 transition-all duration-200 border-2 rounded-full
-                h-9 px-2.5 text-xs sm:h-11 sm:px-3.5 sm:text-sm
-                ${
-                  isSelected
-                    ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] hover:text-[#fff4c6] border-[#eb6313]'
-                    : 'bg-[#007639] hover:bg-[#009e44] hover:border-[#eb6313] text-[#fff4c6] hover:text-[#fff4c6] border-[#007639]'
-                }
-              `}
             >
-              <div className='flex items-center gap-1 sm:gap-1.5'>
+              <Button
+                data-testid={`category-pill-${category.slug}`}
+                variant={isSelected ? 'default' : 'outline'}
+                size='sm'
+                className={`
+                  group transition-all duration-200 border-2
+                  flex items-center justify-center p-0
+                  w-14 h-14 sm:w-16 sm:h-16 rounded-full
+                  md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
+                  ${
+                    isSelected
+                      ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
+                      : 'bg-[#007639] hover:bg-[#009e44] hover:border-[#eb6313] text-[#fff4c6] border-[#007639]'
+                  }
+                `}
+              >
                 {category.image_url && (
-                  <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                    isSelected 
-                      ? 'w-7 h-7 sm:w-9 sm:h-9' 
-                      : 'w-6 h-6 sm:w-8 sm:h-8 group-hover:w-7 group-hover:h-7 sm:group-hover:w-9 sm:group-hover:h-9'
-                  }`}>
+                  <div className={`
+                    flex items-center justify-center 
+                    w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8
+                    transition-transform duration-300 ease-out
+                    ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
+                  `}>
                     <Image
                       src={category.image_url}
                       alt=''
-                      width={36}
-                      height={36}
+                      width={32}
+                      height={32}
                       className='w-full h-full object-contain'
                     />
                   </div>
                 )}
-                <span className='text-xs font-medium sm:text-sm'>{category.name}</span>
-              </div>
-            </Button>
+                <span className='hidden md:inline-block text-sm font-medium ml-1.5 text-[#fff4c6]'>{category.name}</span>
+              </Button>
+              <span className='text-[10px] font-medium text-center leading-[1.1] text-gray-700 max-w-[64px] line-clamp-2 md:hidden'>{category.name}</span>
+            </div>
           )
         })}
       </div>
@@ -251,7 +258,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
           {/* Pills de categorías */}
           <div
             ref={carouselRef}
-            className='flex items-center gap-1 sm:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+            className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
             onMouseDown={handleMouseDown}
             onMouseLeave={handleMouseLeave}
             onMouseUp={handleMouseUp}
@@ -261,41 +268,47 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
               const isSelected = selectedCategories.includes(category.slug)
 
               return (
-                <Button
+                <div 
                   key={category.id}
-                  data-testid={`category-pill-${category.slug}`}
-                  variant={isSelected ? 'default' : 'outline'}
-                  size='sm'
+                  className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
                   onClick={() => handleCategoryToggle(category.slug)}
-                  className={`
-                    group flex-shrink-0 transition-all duration-200 border-2 rounded-full
-                    h-9 px-2.5 text-xs sm:h-11 sm:px-3.5 sm:text-sm
-                    ${
-                      isSelected
-                        ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] hover:text-[#fff4c6] border-[#eb6313]'
-                        : 'bg-[#007639] hover:bg-[#009e44] hover:border-[#eb6313] text-[#fff4c6] hover:text-[#fff4c6] border-[#007639]'
-                    }
-                  `}
                 >
-                  <div className='flex items-center gap-1 sm:gap-1.5'>
+                  <Button
+                    data-testid={`category-pill-${category.slug}`}
+                    variant={isSelected ? 'default' : 'outline'}
+                    size='sm'
+                    className={`
+                      group transition-all duration-200 border-2
+                      flex items-center justify-center p-0
+                      w-14 h-14 sm:w-16 sm:h-16 rounded-full
+                      md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
+                      ${
+                        isSelected
+                          ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
+                          : 'bg-[#007639] hover:bg-[#009e44] hover:border-[#eb6313] text-[#fff4c6] border-[#007639]'
+                      }
+                    `}
+                  >
                     {category.image_url && (
-                      <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                        isSelected 
-                          ? 'w-7 h-7 sm:w-9 sm:h-9' 
-                          : 'w-6 h-6 sm:w-8 sm:h-8 group-hover:w-7 group-hover:h-7 sm:group-hover:w-9 sm:group-hover:h-9'
-                      }`}>
+                      <div className={`
+                        flex items-center justify-center 
+                        w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8
+                        transition-transform duration-300 ease-out
+                        ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
+                      `}>
                         <Image
                           src={category.image_url}
                           alt=''
-                          width={36}
-                          height={36}
+                          width={32}
+                          height={32}
                           className='w-full h-full object-contain'
                         />
                       </div>
                     )}
-                    <span className='text-xs font-medium sm:text-sm'>{category.name}</span>
-                  </div>
-                </Button>
+                    <span className='hidden md:inline-block text-sm font-medium ml-1.5 text-[#fff4c6]'>{category.name}</span>
+                  </Button>
+                  <span className='text-[10px] font-medium text-center leading-[1.1] text-gray-700 max-w-[64px] line-clamp-2 md:hidden'>{category.name}</span>
+                </div>
               )
             })}
           </div>

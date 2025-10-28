@@ -136,6 +136,8 @@ function generateMercadoPagoWhatsAppMessage(order: any, orderData: any, products
     lines.push(`${bullet} CP: ${orderData.shipping.address.zip_code}`)
   }
 
+  lines.push('')
+  lines.push(`💳 *Método de pago:* MercadoPago`)
   lines.push('', `✅ ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`)
 
   return lines.join('\n')
@@ -439,6 +441,8 @@ export async function POST(request: NextRequest) {
         user_id: userId,
         order_number: orderNumber,  // ✅ AGREGAR order_number en el INSERT
         status: 'pending',
+        payment_status: 'pending',
+        payment_method: 'mercadopago',
         total: totalAmount,
         shipping_address: orderData.shipping?.address
           ? JSON.stringify(orderData.shipping.address)
@@ -529,6 +533,8 @@ export async function POST(request: NextRequest) {
       lines.push(`${bullet} CP: ${orderData.shipping.address.zip_code}`);
     }
 
+    lines.push('');
+    lines.push(`💳 *Método de pago:* MercadoPago`);
     lines.push('', `✅ ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`);
 
     const message = lines.join('\n');

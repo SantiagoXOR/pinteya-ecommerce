@@ -84,10 +84,12 @@ function validateStateTransition(currentStatus: string, newStatus: string): bool
 // ===================================
 // GET - Obtener orden específica
 // ===================================
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
 
   try {
+    const { id } = await context.params
+    
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
@@ -108,7 +110,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const orderId = params.id
+    const orderId = id
 
     // Obtener orden con todos los detalles
     const { data: order, error } = await supabaseAdmin
@@ -248,7 +250,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/orders/[id]', {
       error,
-      orderId: params.id,
+      orderId: id,
     })
 
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
@@ -258,8 +260,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // ===================================
 // PATCH - Actualizar orden
 // ===================================
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
+  const { id } = await context.params
 
   try {
     // Rate limiting
@@ -282,7 +285,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const orderId = params.id
+    const orderId = id
 
     // Validar datos de entrada
     const body = await request.json()
@@ -408,7 +411,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PATCH /api/admin/orders/[id]', {
       error,
-      orderId: params.id,
+      orderId: id,
     })
 
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })

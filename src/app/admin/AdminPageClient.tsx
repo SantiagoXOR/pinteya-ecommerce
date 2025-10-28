@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminCard } from '@/components/admin/ui/AdminCard'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import {
   Package,
   ShoppingCart,
@@ -41,8 +42,7 @@ export function AdminPageClient() {
       href: '/admin/orders',
       icon: ShoppingCart,
       color: 'bg-green-500',
-      stats: '23 pendientes',
-      badge: 'Beta',
+      stats: loading ? 'Cargando...' : `${stats?.pendingOrders || 0} pendientes`,
     },
     {
       title: 'Clientes',
@@ -50,8 +50,7 @@ export function AdminPageClient() {
       href: '/admin/customers',
       icon: Users,
       color: 'bg-purple-500',
-      stats: '1,247 usuarios',
-      badge: 'Beta',
+      stats: loading ? 'Cargando...' : `${stats?.totalUsers || 0} usuarios`,
     },
     {
       title: 'Logística',
@@ -168,7 +167,8 @@ export function AdminPageClient() {
 
   return (
     <AdminLayout title='Dashboard'>
-      <div className='space-y-6'>
+      <AdminContentWrapper>
+        <div className='space-y-6'>
         {/* Welcome Section */}
         <AdminCard className='bg-gradient-to-r from-blaze-orange-500 to-blaze-orange-600 text-white border-0'>
           <div className='flex items-center justify-between'>
@@ -348,7 +348,8 @@ export function AdminPageClient() {
             </div>
           </div>
         </AdminCard>
-      </div>
+        </div>
+      </AdminContentWrapper>
     </AdminLayout>
   )
 }

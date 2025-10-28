@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useShopDetailsReducer } from '@/hooks/optimization/useShopDetailsReducer'
@@ -174,6 +174,45 @@ const CapacitySelector: React.FC<CapacitySelectorProps> = ({
           <span className='font-medium'>{selectedCapacity}</span>
         </p>
       )}
+    </div>
+  )
+}
+
+interface FinishSelectorProps {
+  finishes: string[]
+  selectedFinish: string
+  onFinishChange: (finish: string) => void
+}
+
+const FinishSelector: React.FC<FinishSelectorProps> = ({
+  finishes,
+  selectedFinish,
+  onFinishChange,
+}) => {
+  if (!finishes || finishes.length === 0) return null
+  
+  return (
+    <div className='space-y-3'>
+      <h4 className='text-sm font-medium text-gray-900 flex items-center gap-2'>
+        <Layers className='w-4 h-4 text-blaze-orange-600' />
+        Acabado
+      </h4>
+      <div className='grid grid-cols-2 gap-2'>
+        {finishes.map(finish => (
+          <button
+            key={finish}
+            onClick={() => onFinishChange(finish)}
+            className={cn(
+              'px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200',
+              selectedFinish === finish
+                ? 'border-blaze-orange-500 bg-blaze-orange-50 text-blaze-orange-700'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+            )}
+          >
+            {finish}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
@@ -455,6 +494,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   const [selectedGrain, setSelectedGrain] = useState<string>('')
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [selectedWidth, setSelectedWidth] = useState<string>('')
+  const [selectedFinish, setSelectedFinish] = useState<string>('') // NUEVO: Estado para acabado
   const [quantity, setQuantity] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [variants, setVariants] = useState<ProductVariant[]>([])  
@@ -463,6 +503,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   const [selectedRelatedProduct, setSelectedRelatedProduct] = useState<RelatedProduct | null>(null)
   const [loadingVariants, setLoadingVariants] = useState(false)
   const [loadingRelatedProducts, setLoadingRelatedProducts] = useState(false)
+  
+  // Ref para prevenir re-inicialización múltiple
+  const hasInitialized = useRef(false)
   
   // Estado para datos completos del producto
   const [fullProductData, setFullProductData] = useState<ProductWithCategory | null>(null)
@@ -475,10 +518,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     setSelectedGrain('')
     setSelectedSize('')
     setSelectedWidth('')
+    setSelectedFinish('') // NUEVO: Reset finish
     setQuantity(1)
     setVariants([])
     setSelectedVariant(null)
     setFullProductData(null)
+    hasInitialized.current = false // Reset flag de inicialización
   }
 
   // Cargar datos completos del producto
@@ -552,7 +597,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     let variantsKg = 0,
       variantsL = 0
     try {
-      if (variants && variants.length > 0) {
+      if (Array.isArray(variants) && variants.length > 0) {
         for (const v of variants as any[]) {
           const m = (v?.measure || '').toString()
           if (/\b\d+\s?(kg|kilos?)\b/i.test(m)) variantsKg++
@@ -596,6 +641,26 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         console.log('✅ ShopDetailModal: Usando variantes pasadas via prop:', productVariants.length)
         console.log('🎨 Colores en variantes:', productVariants.map((v: any) => v.color_name).filter(Boolean))
         setVariants(productVariants)
+        
+        // Inicializar selectedVariant con la variante default (solo una vez)
+        if (!hasInitialized.current) {
+          const defaultVariant = productVariants.find((v: any) => v.is_default) || productVariants[0]
+          setSelectedVariant(defaultVariant)
+          
+          // Inicializar selectedFinish desde variante default
+          if (defaultVariant?.finish) {
+            setSelectedFinish(defaultVariant.finish)
+          }
+          
+          hasInitialized.current = true
+          
+          console.debug('🎯 Variante default inicializada (from props):', {
+            id: defaultVariant?.id,
+            measure: defaultVariant?.measure,
+            color_name: defaultVariant?.color_name,
+            finish: defaultVariant?.finish,
+          })
+        }
         // No cargar desde API si ya tenemos variantes
       } else {
         console.log('⚠️ ShopDetailModal: No hay variantes en product, cargando desde API')
@@ -732,12 +797,35 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           : []
       }
       setVariants(variantsData)
+      
+      // Inicializar selectedVariant con la variante default (solo una vez)
+      if (variantsData.length > 0 && !hasInitialized.current) {
+        const defaultVariant = variantsData.find(v => v.is_default) || variantsData[0]
+        setSelectedVariant(defaultVariant)
+        
+        // Inicializar selectedFinish desde variante default
+        if (defaultVariant?.finish) {
+          setSelectedFinish(defaultVariant.finish)
+        }
+        
+        hasInitialized.current = true
+        
+        console.debug('🎯 Variante default inicializada:', {
+          id: defaultVariant.id,
+          measure: defaultVariant.measure,
+          color_name: defaultVariant.color_name,
+          finish: defaultVariant.finish,
+          stock: defaultVariant.stock,
+        })
+      }
+      
       // Log detallado de medidas y stock por variante para depurar
       try {
         console.debug('📦 ShopDetailModal: Variants overview (measure, stock, price, color_name)', variantsData.map(v => ({
           id: v.id,
           measure: v.measure,
           color_name: v.color_name,
+          finish: v.finish,
           stock: v.stock,
           price_list: v.price_list,
           price_sale: v.price_sale,
@@ -796,6 +884,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Configurar valores por defecto
   useEffect(() => {
+    // Solo ejecutar durante inicialización, no después
+    if (hasInitialized.current) return
+    
     if (!selectedColor && productType.hasColorSelector) {
       const defaultColorName = getDefaultColor(productType)
       const defaultColor = PAINT_COLORS.find(color =>
@@ -821,7 +912,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     if (!selectedWidth && productType.hasWidthSelector && productType.widthOptions.length > 0) {
       setSelectedWidth(productType.widthOptions[0])
     }
-  }, [productType, selectedColor, selectedCapacity, selectedGrain, selectedSize, selectedWidth])
+  }, [productType])
 
   // Helper para extraer capacidades en KG desde distintos textos
   const extractKgCapacities = (text: string): string[] => {
@@ -837,18 +928,39 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Calcular capacidades disponibles basándose en variantes, productos relacionados o medida/nombre
   const availableCapacities = useMemo(() => {
-    // Acumular capacidades desde todas las fuentes y luego unificar
-    const collected: string[] = []
-
-    // Variantes explícitas
-    if (variants && variants.length > 0) {
-      const vCaps = getAvailableCapacities(variants)
-      collected.push(
-        ...vCaps.filter(c => (capacityUnit === 'kg' ? /kg/i.test(c) : true))
-      )
+    // ✅ PRIORIDAD 1: Si hay variantes con medidas, usar SOLO esas
+    if (Array.isArray(variants) && variants.length > 0) {
+      const variantMeasures = variants
+        .map(v => v.measure)
+        .filter(Boolean)
+        .filter((v, i, a) => a.indexOf(v) === i) // unique
+      
+      if (variantMeasures.length > 0) {
+        console.debug('📦 Capacidades desde variantes:', variantMeasures)
+        // Normalizar a mayúsculas y ordenar
+        const normalized = variantMeasures
+          .map(c => c.toUpperCase())
+          .sort((a, b) => parseInt(a) - parseInt(b))
+        return normalized
+      }
     }
 
-    // Medida en BD (simple o lista separada por comas, barras, punto y coma)
+    // ⚠️ PRIORIDAD 2: Productos relacionados (legacy, sin variantes)
+    if (relatedProducts?.products && relatedProducts.products.length > 0) {
+      const measures = getAvailableMeasures(relatedProducts.products)
+
+      if (capacityUnit === 'kg') {
+        const kgMeasures = measures.filter(m => /kg/i.test(m))
+        if (kgMeasures.length > 0) return kgMeasures
+      } else if (capacityUnit === 'litros') {
+        const litrosMeasures = measures.filter(m => /\b\d+\s?(l|lt|lts|litro|litros)\b/i.test(m) || /l$/i.test(m))
+        if (litrosMeasures.length > 0) return litrosMeasures
+      } else {
+        if (measures.length > 0) return measures
+      }
+    }
+
+    // ⚠️ PRIORIDAD 3: Producto padre (fallback para productos sin variantes)
     const medidaFromDb = ((fullProductData as any)?.medida || (fullProductData as any)?.measure || '')
       .toString()
       .trim()
@@ -860,49 +972,24 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
       if (capacityUnit === 'kg') {
         const kgList = parts.flatMap(s => extractKgCapacities(s))
-        collected.push(...kgList)
-      } else {
-        collected.push(...parts)
+        if (kgList.length > 0) {
+          return kgList.map(c => c.toUpperCase()).sort((a, b) => parseInt(a) - parseInt(b))
+        }
+      } else if (parts.length > 0) {
+        return parts.map(c => c.toUpperCase()).sort((a, b) => parseInt(a) - parseInt(b))
       }
     }
 
-    // Productos relacionados: incluir medidas para KG y también para LITROS
-    if (relatedProducts?.products && relatedProducts.products.length > 0) {
-      // Usamos el helper que ya normaliza y ordena medidas de productos relacionados
-      const measures = getAvailableMeasures(relatedProducts.products)
-
-      if (capacityUnit === 'kg') {
-        // Solo medidas en KG
-        collected.push(...measures.filter(m => /kg/i.test(m)))
-      } else if (capacityUnit === 'litros') {
-        // Solo medidas en litros
-        collected.push(
-          ...measures.filter(m => /\b\d+\s?(l|lt|lts|litro|litros)\b/i.test(m) || /l$/i.test(m))
-        )
-      } else {
-        // Otras unidades: incluir todas
-        collected.push(...measures)
-      }
-    }
-
-    // Nombre del producto actual
+    // Último fallback: nombre del producto
     const nameText = (fullProductData?.name || product?.name || '').toString()
     if (capacityUnit === 'kg' && nameText) {
       const caps = extractKgCapacities(nameText)
-      collected.push(...caps)
+      if (caps.length > 0) {
+        return caps.map(c => c.toUpperCase()).sort((a, b) => parseInt(a) - parseInt(b))
+      }
     }
 
-    // Unificar: normalizar a mayúsculas, quitar duplicados y ordenar
-    const normalized = collected
-      .map(c => c.toUpperCase())
-      .filter((c, idx, self) => self.indexOf(c) === idx)
-
-    if (normalized.length > 0) {
-      const sorted = normalized.sort((a, b) => parseInt(a) - parseInt(b))
-      return sorted
-    }
-
-    // Fallback: capacidades por defecto del tipo de producto
+    // Fallback final: capacidades por defecto del tipo de producto
     return productType.defaultCapacities
   }, [
     variants,
@@ -934,7 +1021,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
     
     // Prioridad 2: Variantes con medidas
-    if (variants && variants.length > 0) {
+    if (Array.isArray(variants) && variants.length > 0) {
       const widths = variants
         .filter(variant => variant.measure && variant.is_active)
         .map(variant => extractWidth(variant.measure))
@@ -962,6 +1049,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Establecer valores por defecto para selectores dinámicos
   useEffect(() => {
+    // Solo ejecutar durante inicialización, no después
+    if (hasInitialized.current) return
+    
     if (productType.hasWidthSelector && availableWidths.length > 0 && !selectedWidth) {
       setSelectedWidth(availableWidths[0])
     }
@@ -979,10 +1069,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         if (kgOption) setSelectedCapacity(kgOption)
       }
     }
-  }, [availableWidths, availableCapacities, selectedWidth, selectedCapacity])
+  }, [availableWidths, availableCapacities])
 
-  // Logs de diagnóstico para verificar unidad y selección
+  // Logs de diagnóstico para verificar unidad y selección (solo en desarrollo)
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return
+    
     console.log(
       '🧪 ShopDetailModal capacidades:', {
         capacityUnit,
@@ -1262,6 +1354,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Establecer valores por defecto usando colores y capacidades inteligentes
   useEffect(() => {
+    // Solo ejecutar durante inicialización, no después
+    if (hasInitialized.current) return
+    
     console.log('🔍 DEBUG Estableciendo valores por defecto:', {
       selectedColor,
       selectedCapacity,
@@ -1278,10 +1373,13 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       console.log('✅ Estableciendo capacidad por defecto:', availableCapacities[0])
       setSelectedCapacity(availableCapacities[0])
     }
-  }, [smartColors, availableCapacities, selectedColor, selectedCapacity, productType.hasColorSelector])
+  }, [smartColors, availableCapacities, productType.hasColorSelector])
 
   // Actualizar variante seleccionada cuando cambia la capacidad
   useEffect(() => {
+    // Solo ejecutar después de la inicialización
+    if (!hasInitialized.current) return
+    
     console.log('🔍 DEBUG Cambio capacidad - Estado inicial:', {
       selectedCapacity,
       selectedColor,
@@ -1292,7 +1390,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       firstSmartColor: smartColors.length > 0 ? smartColors[0].id : 'none'
     })
     
-    if (selectedCapacity && variants && variants.length > 0) {
+    if (selectedCapacity && Array.isArray(variants) && variants.length > 0) {
       // Validar que selectedCapacity no sea string vacío
       if (!selectedCapacity.trim()) {
         console.log('ℹ️ selectedCapacity está vacío, saltando búsqueda de variante')
@@ -1302,15 +1400,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       // Primero intentar encontrar variante que coincida con color Y capacidad
       let variant = null
       
-      // Usar el color seleccionado, o el primer smartColor si no hay color seleccionado
-      // CRÍTICO: Si no hay color seleccionado, establecerlo inmediatamente
-      if (!selectedColor && smartColors.length > 0) {
-        console.log('🔧 FIX: No hay color seleccionado, estableciendo:', smartColors[0].id)
-        setSelectedColor(smartColors[0].id)
-        return // Salir para que se re-ejecute con el color establecido
-      }
-      
-      const colorToUse = selectedColor || (smartColors.length > 0 ? smartColors[0].id : null)
+      // Usar el color seleccionado (no auto-establecer para evitar loops)
+      const colorToUse = selectedColor
       
       console.log('🔍 DEBUG Color para búsqueda:', {
         selectedColor,
@@ -1405,20 +1496,25 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           const capacityMatch = v.measure === selectedCapacity
           // Verificar que el color coincida exactamente (case insensitive)
           const colorMatch = (v.color_name || '').toLowerCase().trim() === colorToUse.toLowerCase().trim()
+          // Verificar que el finish coincida (si hay finish seleccionado)
+          const finishMatch = !selectedFinish || v.finish === selectedFinish
           
           console.log(`🔍 Variante ${index}:`, {
             id: v.id,
             variantColor: v.color_name,
+            variantFinish: v.finish,
             measure: v.measure,
             price: v.price_sale,
             colorToUse,
             selectedCapacity,
+            selectedFinish,
             capacityMatch,
             colorMatch,
-            willMatch: capacityMatch && colorMatch
+            finishMatch,
+            willMatch: capacityMatch && colorMatch && finishMatch
           })
           
-          return capacityMatch && colorMatch
+          return capacityMatch && colorMatch && finishMatch
         }) || null
         
         // Si no encuentra variante, mostrar error solo si hay datos válidos para buscar
@@ -1426,7 +1522,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           // Solo mostrar error si tenemos valores válidos para buscar
           if (colorToUse && colorToUse.trim() !== '' && 
               selectedCapacity && selectedCapacity.trim() !== '' && 
-              variants && variants.length > 0) {
+              Array.isArray(variants) && variants.length > 0) {
             console.error('❌ No se encontró variante para:', {
               color: colorToUse,
               capacity: selectedCapacity,
@@ -1462,7 +1558,27 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         })
       }
       
-      // Si no se encuentra con color específico, buscar solo por capacidad (fallback)
+      // Fallback 1: Si no se encuentra con color, buscar por measure + finish
+      if (!variant && selectedFinish) {
+        variant = variants.find(v =>
+          v.measure === selectedCapacity &&
+          v.finish === selectedFinish
+        )
+        console.log('🔍 DEBUG fallback measure + finish:', {
+          selectedCapacity,
+          selectedFinish,
+          found: !!variant,
+          variant: variant ? {
+            id: variant.id,
+            measure: variant.measure,
+            finish: variant.finish,
+            color_name: variant.color_name,
+            price_sale: variant.price_sale
+          } : null
+        })
+      }
+      
+      // Fallback 2: Si no se encuentra, buscar solo por capacidad
       if (!variant) {
         variant = findVariantByCapacity(variants, selectedCapacity)
         console.log('🔍 DEBUG fallback solo capacidad:', {
@@ -1495,16 +1611,19 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           effectivePrice: getEffectivePrice(variant),
         })
       } else {
-        if (selectedCapacity && variants && variants.length > 0) {
+        if (selectedCapacity && Array.isArray(variants) && variants.length > 0) {
           console.log('⚠️ No se encontró variante para capacidad:', selectedCapacity, 
             '- Disponibles:', variants.map(v => v.measure).filter((v, i, a) => a.indexOf(v) === i))
         }
       }
     }
-  }, [selectedCapacity, selectedColor, variants, smartColors])
+  }, [selectedCapacity, selectedColor, variants])
 
   // Seleccionar producto relacionado por capacidad cuando no hay variante para esa capacidad
   useEffect(() => {
+    // Solo ejecutar después de la inicialización
+    if (!hasInitialized.current) return
+    
     if (
       selectedCapacity &&
       relatedProducts?.products &&
@@ -1563,18 +1682,54 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         console.log('✅ Variante existente coincide con capacidad seleccionada')
       }
     }
-  }, [selectedCapacity, selectedVariant, relatedProducts?.products])
+  }, [selectedCapacity, relatedProducts?.products])
 
   // Actualizar selectedVariant cuando cambia selectedWidth
   useEffect(() => {
-    if (selectedWidth && relatedProducts?.products) {
-      const relatedProduct = findProductByMeasure(relatedProducts.products, selectedWidth)
+    // ⚠️ IMPORTANTE: Este useEffect debe ejecutarse SIEMPRE que cambie selectedWidth,
+    // incluso durante la inicialización, para sincronizar precio con ancho seleccionado
+    
+    if (selectedWidth) {
+      console.log('🔄 selectedWidth cambió:', {
+        selectedWidth,
+        variantsCount: variants?.length || 0,
+        variantsAvailable: Array.isArray(variants) ? variants.map(v => v.measure) : 'no es array'
+      })
       
-      if (relatedProduct) {
-        setSelectedRelatedProduct(relatedProduct)
+      // PRIORIDAD 1: Buscar en variants por measure que CONTENGA el ancho
+      if (Array.isArray(variants) && variants.length > 0) {
+        // Buscar variante que tenga el ancho seleccionado en su measure
+        // Ej: selectedWidth="48mm" debe coincidir con measure="48mm x 40m"
+        const variantByWidth = variants.find(v => 
+          v.measure && v.measure.includes(selectedWidth)
+        )
+        if (variantByWidth) {
+          setSelectedVariant(variantByWidth)
+          setSelectedRelatedProduct(null) // Limpiar producto relacionado
+          console.log('✅ Variante actualizada por ancho:', {
+            width: selectedWidth,
+            measure: variantByWidth.measure,
+            variantId: variantByWidth.id,
+            stock: variantByWidth.stock,
+            price: variantByWidth.price_sale || variantByWidth.price_list
+          })
+          return
+        } else {
+          console.warn('❌ No se encontró variante para ancho:', selectedWidth)
+        }
+      }
+      
+      // PRIORIDAD 2: Buscar en productos relacionados (legacy)
+      if (relatedProducts?.products) {
+        const relatedProduct = findProductByMeasure(relatedProducts.products, selectedWidth)
+        if (relatedProduct) {
+          setSelectedRelatedProduct(relatedProduct)
+          setSelectedVariant(null) // Limpiar variante
+          console.log('⚠️ Usando producto relacionado (legacy) para ancho:', selectedWidth)
+        }
       }
     }
-  }, [selectedWidth, relatedProducts?.products])
+  }, [selectedWidth, variants, relatedProducts?.products])
 
   // Helper para extraer solo el ancho de una medida completa
   const extractWidthFromMeasure = (measure: string): string => {
@@ -1605,6 +1760,30 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       if (typeof c === 'string') return sanitize(c)
       return sanitize(c?.url || c?.image_url)
     }
+    
+    // 🎨 PRIORIDAD 1: Imagen de variante seleccionada (para Poximix y futuros productos)
+    if (selectedVariant?.image_url) {
+      const variantImage = sanitize(selectedVariant.image_url)
+      const validated = getValidImageUrl(variantImage)
+      if (validated && !validated.includes('placeholder')) {
+        console.log('🖼️ Usando imagen de variante:', {
+          productName: product.name,
+          variantId: selectedVariant.id,
+          measure: selectedVariant.measure,
+          imageUrl: validated
+        })
+        return validated
+      }
+    }
+    
+    // 🎨 PRIORIDAD 2: Imagen de producto relacionado
+    if (selectedRelatedProduct?.image_url) {
+      const relatedImage = sanitize(selectedRelatedProduct.image_url)
+      const validated = getValidImageUrl(relatedImage)
+      if (validated && !validated.includes('placeholder')) return validated
+    }
+    
+    // 🎨 PRIORIDAD 3: Imagen principal del producto
     const candidates: any[] = [
       getProductImage((fullProductData as any)?.images),
       getProductImage((product as any)?.images),
@@ -1616,7 +1795,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       if (validated && !validated.includes('placeholder')) return validated
     }
     return '/images/products/placeholder.svg'
-  }, [fullProductData, product])
+  }, [selectedVariant, selectedRelatedProduct, fullProductData, product])
   // Calcular precio dinámico basado en selecciones
   const calculateDynamicPrice = useCallback(() => {
     // Si hay una variante seleccionada, usar su precio efectivo directamente
@@ -1626,7 +1805,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
 
     // Para productos con selector de ancho, buscar variante por medida
-    if (selectedWidth && productType.hasWidthSelector && variants && variants.length > 0) {
+    if (selectedWidth && productType.hasWidthSelector && Array.isArray(variants) && variants.length > 0) {
       const variantByMeasure = variants.find(variant => 
         variant.measure && variant.measure.includes(selectedWidth)
       )
@@ -1868,6 +2047,47 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   }, [variants, productType.hasColorSelector, product.colors])
   
   const defaultCapacities = product.capacities || ['1L', '4L', '10L', '20L']
+  
+  // Obtener acabados únicos desde variantes
+  const availableFinishes = useMemo(() => {
+    if (!Array.isArray(variants) || variants.length === 0) return []
+    
+    const uniqueFinishes = Array.from(
+      new Set(variants.map(v => v.finish).filter(Boolean))
+    )
+    
+    console.log('🎨 Acabados disponibles:', uniqueFinishes)
+    return uniqueFinishes
+  }, [variants])
+  
+  // Actualizar selectedVariant cuando cambia selectedFinish
+  useEffect(() => {
+    if (!selectedFinish || !Array.isArray(variants) || variants.length === 0) return
+    
+    // Solo ejecutar si ya pasó la inicialización
+    if (!hasInitialized.current) return
+    
+    // Buscar variante compatible con finish seleccionado (priorizar measure y color actuales)
+    const compatibleVariant = variants.find(v =>
+      v.finish === selectedFinish &&
+      (!selectedCapacity || v.measure === selectedCapacity) &&
+      (!selectedColor || v.color_name === selectedColor)
+    ) || variants.find(v =>
+      v.finish === selectedFinish &&
+      (!selectedCapacity || v.measure === selectedCapacity)
+    ) || variants.find(v => v.finish === selectedFinish)
+    
+    if (compatibleVariant && compatibleVariant.id !== selectedVariant?.id) {
+      setSelectedVariant(compatibleVariant)
+      console.debug('🎯 Variante actualizada por cambio de acabado:', {
+        finish: selectedFinish,
+        variantId: compatibleVariant.id,
+        measure: compatibleVariant.measure,
+        color: compatibleVariant.color_name,
+        price: compatibleVariant.price_sale || compatibleVariant.price_list,
+      })
+    }
+  }, [selectedFinish, variants])
 
   const handleAddToCart = useCallback(async () => {
     // Debug inicial del click
@@ -1989,7 +2209,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         brand: product.brand,
       }
     }
-    // Prioridad 2: Variante seleccionada (para productos con variantes de capacidad)
+    // Prioridad 2: Variante seleccionada (para productos con variantes de capacidad/ancho)
     else if (selectedVariant) {
       // 🔍 DEBUG CRÍTICO: Verificar variante seleccionada
       console.log('✅ CORRECCIÓN: Usando variante pero manteniendo ID del producto original', {
@@ -2003,9 +2223,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           measure: selectedVariant.measure,
           price_list: selectedVariant.price_list,
           price_sale: selectedVariant.price_sale,
+          stock: selectedVariant.stock,
         },
         selectedCapacity,
         selectedColor,
+        selectedWidth,
         idFinalUsado: product.id, // Confirmar que usamos el ID del producto original
       })
       
@@ -2022,6 +2244,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         // 🔧 AGREGAR: Información de la variante para referencia
         variant_id: selectedVariant.id,
         variant_color: selectedVariant.color_name,
+        variant_measure: selectedVariant.measure, // Medida completa de la variante
       }
     }
     // Si no hay variante ni producto relacionado, reforzar precios en el objeto base
@@ -2035,18 +2258,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       }
     }
 
-    // Detectar finish para impregnantes Danzke
-    const slugText = ((fullProductData as any)?.slug || (fullProductData as any)?.variant_slug || '') as string
-    const nameText = (fullProductData?.name || product?.name || '') as string
-    const isImpregnante = /impregnante/i.test(nameText)
-    const danzkeFamily = /impregnante-danzke/i.test(slugText) || /danzke/i.test(nameText)
+    // Extraer solo el ancho si selectedWidth tiene formato "Xmm x Ym"
+    const widthForBadge = selectedWidth 
+      ? (selectedWidth.includes(' x ') ? selectedWidth.split(' x ')[0] : selectedWidth)
+      : null
     
-    let finishFromSlug: string | null = null
-    if (isImpregnante && danzkeFamily && slugText) {
-      if (/-brillant[e-]?/i.test(slugText) || /-brillo-/i.test(slugText)) finishFromSlug = 'Brillante'
-      else if (/-satinad[oa]-/i.test(slugText)) finishFromSlug = 'Satinado'
-    }
-
     const cartData = {
       product: productToAdd,
       quantity,
@@ -2055,6 +2271,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       selectedGrain,
       selectedSize,
       selectedWidth,
+      selectedFinish,
       variants: {
         color: selectedColor,
         capacity: selectedCapacity,
@@ -2063,8 +2280,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         stock: effectiveStock,
         grain: selectedGrain,
         size: selectedSize,
-        width: selectedWidth,
-        finish: finishFromSlug, // Agregar finish para impregnantes Danzke
+        width: widthForBadge || selectedWidth, // Usar ancho limpio para badge
+        finish: selectedFinish || selectedVariant?.finish, // Usar finish seleccionado o de variante
         // Pasar cantidad al callback para que el carrito la respete
         quantity,
       }
@@ -2423,6 +2640,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               </>
             )}
 
+            {/* Selector de acabado (finish) - MOVIDO DESPUÉS DE COLOR */}
+            {availableFinishes.length > 1 && (
+              <FinishSelector
+                finishes={availableFinishes}
+                selectedFinish={selectedFinish}
+                onFinishChange={setSelectedFinish}
+              />
+            )}
+
             {/* Selector de capacidad */}
             {availableCapacities.length > 0 &&
               !(
@@ -2431,8 +2657,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               !productType.hasWidthSelector &&
               !productType.hasGrainSelector &&
               !productType.hasSizeSelector &&
-              // No mostrar selector de capacidad para productos que no lo necesitan (como bandejas)
-              !(productType.id === 'bandejas' && availableCapacities.length === 1 && availableCapacities[0] === '1') && (
+              // No mostrar selector para productos de precio único (capacidad "1" única)
+              !(availableCapacities.length === 1 && availableCapacities[0] === '1') && (
                 <div className='space-y-4'>
                   <div className='flex items-center gap-2'>
                     <Ruler className='w-5 h-5 text-blaze-orange-600' />
@@ -2460,11 +2686,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                         <button
                           key={capacity}
                           onClick={() => setSelectedCapacity(capacity)}
+                          disabled={availableFinishes.length > 1 && !selectedFinish}
                           className={cn(
-                            'px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all duration-200 hover:shadow-md',
+                            'px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all duration-200',
                             selectedCapacity === capacity
                               ? 'border-blaze-orange-500 bg-blaze-orange-50 text-blaze-orange-700 shadow-sm'
-                              : 'border-gray-200 bg-white text-gray-700 hover:border-blaze-orange-300 hover:bg-blaze-orange-25'
+                              : availableFinishes.length > 1 && !selectedFinish
+                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+                                : 'border-gray-200 bg-white text-gray-700 hover:border-blaze-orange-300 hover:bg-blaze-orange-25 hover:shadow-md'
                           )}
                         >
                           {formatCapacity(capacity, capacityUnit)}
@@ -2572,29 +2801,13 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                   {formatCapacity(selectedCapacity, capacityUnit)}
                 </p>
               )}
-              {/* Mostrar finish para impregnantes Danzke */}
-              {(() => {
-                const slugText = ((fullProductData as any)?.slug || (fullProductData as any)?.variant_slug || '') as string
-                const nameText = (fullProductData?.name || product?.name || '') as string
-                const isImpregnante = /impregnante/i.test(nameText)
-                const danzkeFamily = /impregnante-danzke/i.test(slugText) || /danzke/i.test(nameText)
-                
-                if (isImpregnante && danzkeFamily && slugText) {
-                  let finishFromSlug: string | null = null
-                  if (/-brillant[e-]?/i.test(slugText) || /-brillo-/i.test(slugText)) finishFromSlug = 'Brillante'
-                  else if (/-satinad[oa]-/i.test(slugText)) finishFromSlug = 'Satinado'
-                  
-                  if (finishFromSlug) {
-                    return (
-                      <p className='text-xs text-gray-500'>
-                        <span className='font-medium'>Acabado:</span>{' '}
-                        <span className='font-medium capitalize'>{finishFromSlug}</span>
-                      </p>
-                    )
-                  }
-                }
-                return null
-              })()}
+              {/* Mostrar finish desde variante seleccionada */}
+              {selectedVariant?.finish && (
+                <p className='text-xs text-gray-500'>
+                  <span className='font-medium'>Acabado:</span>{' '}
+                  <span className='font-medium capitalize'>{selectedVariant.finish}</span>
+                </p>
+              )}
               {productType.hasGrainSelector && selectedGrain && (
                 <p className='text-xs text-gray-500'>
                   Grano: <span className='font-medium'>{selectedGrain}</span>

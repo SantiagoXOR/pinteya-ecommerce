@@ -2,6 +2,7 @@
 
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminCard } from '@/components/admin/ui/AdminCard'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { Settings, Store, CreditCard, Truck, Bell, Shield, AlertTriangle } from 'lucide-react'
 
 export function SettingsPageClient() {
@@ -54,7 +55,8 @@ export function SettingsPageClient() {
 
   return (
     <AdminLayout title='Configuración del Sistema' breadcrumbs={breadcrumbs}>
-      <div className='space-y-6'>
+      <AdminContentWrapper>
+        <div className='space-y-6'>
         {/* Header */}
         <AdminCard className='bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0'>
           <div className='flex items-center justify-between'>
@@ -162,7 +164,8 @@ export function SettingsPageClient() {
             </div>
           </div>
         </AdminCard>
-      </div>
+        </div>
+      </AdminContentWrapper>
     </AdminLayout>
   )
 }

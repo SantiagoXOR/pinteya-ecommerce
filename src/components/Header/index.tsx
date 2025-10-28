@@ -24,6 +24,7 @@ const Header = () => {
   const [isScrollingUp, setIsScrollingUp] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const [isMounted, setIsMounted] = useState(false) // Para evitar hydration mismatch
   const { openCartModal } = useCartModalContext()
   const { isAnimating } = useCartAnimation()
   const { isSignedIn } = useAuth()
@@ -58,6 +59,11 @@ const Header = () => {
 
   // Log para debugging del estado de geolocalización (solo cuando cambia la zona)
   useEffect(() => {}, [detectedZone?.name]) // Solo depender del nombre de la zona
+
+  // Marcar como montado para evitar hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const product = useAppSelector(state => state.cartReducer.items)
   const totalPrice = useSelector(selectTotalPrice)
@@ -262,7 +268,7 @@ const Header = () => {
                         className='w-6 h-6 sm:w-8 sm:h-8 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg'
                         alt='Carrito de compras'
                       />
-                      {product.length > 0 && (
+                      {isMounted && product.length > 0 && (
                         <span className='absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-125 animate-pulse' style={{ backgroundColor: '#007639', color: '#fbbf24' }}>
                           {product.length > 99 ? '99+' : product.length}
                         </span>

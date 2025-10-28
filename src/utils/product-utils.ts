@@ -193,8 +193,14 @@ export const detectProductType = (productName: string, category?: string): Produ
     return PRODUCT_TYPES.find(type => type.id === 'pinceles-persianeros')!
   }
 
-  if (name.includes('pincel')) {
+  // Detección de pinceles genéricos (EXCLUIR "pinceleta" que es precio único)
+  if (name.includes('pincel') && !name.includes('pinceleta')) {
     return PRODUCT_TYPES.find(type => type.id === 'pinceles')!
+  }
+
+  // Pinceletas: producto de precio único, sin selector de tamaño
+  if (name.includes('pinceleta')) {
+    return PRODUCT_TYPES.find(type => type.id === 'pinceles-persianeros')! // Reutilizar tipo sin selector
   }
 
   if (name.includes('rodillo')) {

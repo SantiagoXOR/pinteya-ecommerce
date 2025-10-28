@@ -14,6 +14,7 @@ import {
 } from '@/lib/validation/enterprise-schemas'
 import { ProductFiltersSchema } from '@/lib/validation/admin-schemas'
 import type { ValidatedRequest } from '@/lib/validation/enterprise-validation-middleware'
+import { logger } from '@/lib/utils/logger'
 
 // Helper function to check admin permissions with proper role verification
 async function checkAdminPermissionsForProducts(
@@ -74,18 +75,31 @@ const getHandler = async (request: ValidatedRequest) => {
 
     const filters = ProductFiltersSchema.parse(rawParams)
 
+    // ✅ DIAGNÓSTICO: Log de filtros recibidos
+    console.log('🔍 [API /admin/products] Filtros recibidos:', {
+      page: filters.page,
+      limit: filters.limit,
+      stock_status: searchParams.get('stock_status'),
+      rawParams,
+    })
+
     // Build query
     let query = supabase.from('products').select(
       `
         id,
         name,
+        slug,
         description,
         price,
+        discounted_price,
         stock,
         category_id,
         images,
         color,
         medida,
+        brand,
+        aikon_id,
+        is_active,
         created_at,
         updated_at,
         categories (
@@ -112,28 +126,68 @@ const getHandler = async (request: ValidatedRequest) => {
     if (filters.price_max !== undefined) {
       query = query.lte('price', filters.price_max)
     }
+    
+    // ✅ NUEVO: Filtro de stock status
+    const stockStatus = searchParams.get('stock_status')
+    console.log('🔍 [API] stock_status recibido:', stockStatus)
+    
+    if (stockStatus === 'low_stock') {
+      query = query.gt('stock', 0).lte('stock', 10)
+      console.log('🔍 [API] Filtro LOW_STOCK aplicado: stock > 0 AND stock <= 10')
+    } else if (stockStatus === 'out_of_stock') {
+      query = query.or('stock.eq.0,stock.is.null')
+      console.log('🔍 [API] Filtro OUT_OF_STOCK aplicado: stock = 0 OR stock IS NULL')
+    } else {
+      console.log('🔍 [API] Sin filtro de stock (mostrando todos)')
+    }
+    // Si es 'all' o no se especifica, no aplicar filtro de stock
 
-    // Apply sorting
-    query = query.order(filters.sort_by, { ascending: filters.sort_order === 'asc' })
-
-    // Apply pagination
+    // Apply pagination BEFORE sorting (más eficiente)
     const from = (filters.page - 1) * filters.limit
     const to = from + filters.limit - 1
+    
+    console.log('🔥 [API] Aplicando .range():', {
+      page: filters.page,
+      limit: filters.limit,
+      from,
+      to,
+      calculation: `(${filters.page} - 1) * ${filters.limit} = ${from}, hasta ${to}`,
+    })
+    
     query = query.range(from, to)
 
-    const { data: products, error, count } = await query
+    // Apply sorting AFTER range
+    query = query.order(filters.sort_by, { ascending: filters.sort_order === 'asc' })
 
+    const { data: products, error, count } = await query
+    
     if (error) {
-      console.error('Error fetching products:', error)
+      console.error('🔥 [API] Error en query:', error)
       return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 })
     }
+    
+    console.log('🔥 [API] Productos retornados con .range():', {
+      cantidad: products?.length,
+      totalCount: count,
+      IDs: products?.map(p => p.id) || [],
+      primeros3: products?.slice(0, 3).map(p => `${p.id}:${p.name?.substring(0, 15)}`) || [],
+      ultimos3: products?.slice(-3).map(p => `${p.id}:${p.name?.substring(0, 15)}`) || [],
+    })
 
-    // Transform data to include category name
+    // Transform data to include category name and all fields
     const transformedProducts =
       products?.map(product => ({
         ...product,
         category_name: product.categories?.name || null,
         categories: undefined, // Remove nested object
+        // Transform images JSONB to image_url
+        image_url: 
+          product.images?.previews?.[0] || 
+          product.images?.thumbnails?.[0] ||
+          product.images?.main ||
+          null,
+        // Derive status from is_active (status column doesn't exist in DB)
+        status: product.is_active ? 'active' : 'inactive',
       })) || []
 
     const total = count || 0
@@ -435,76 +489,138 @@ const postHandlerSimple = async (request: NextRequest) => {
   }
 }
 
-// USAR VERSIÓN SIMPLIFICADA TEMPORALMENTE PARA DEBUG
+// Export GET handler - Versión simplificada con paginación funcionando
 export const GET = async (request: NextRequest) => {
   try {
-    console.log('🔍 GET /api/admin/products - Starting request')
+    logger.api('GET', '/api/admin/products')
 
-    // Simple auth check
+    // Auth check simple
     const authResult = await checkAdminPermissionsForProducts('read')
     if (!authResult.allowed) {
-      console.log('❌ Auth failed:', authResult.error)
-      return NextResponse.json({ error: authResult.error || 'Acceso denegado' }, { status: 403 })
+      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
-    // Get supabase instance
-    const { supabaseAdmin } = await import('@/lib/supabase')
-    const supabase = supabaseAdmin
-    console.log('✅ Auth successful, querying products...')
+    const { searchParams } = new URL(request.url)
+    
+    // Parse parameters
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '25')
+    const sortBy = searchParams.get('sort_by') || 'created_at'
+    const sortOrder = searchParams.get('sort_order') || 'desc'
+    const stockStatus = searchParams.get('stock_status')
+    const search = searchParams.get('search')
 
-    // Simple query without complex filters
-    const {
-      data: products,
-      error,
-      count,
-    } = await supabase
-      .from('products')
-      .select(
-        `
-        *,
-        categories!inner(name)
+    logger.dev('[API] Parámetros:', { page, limit, sortBy, sortOrder, stockStatus, search })
+
+    // Build query
+    let query = supabaseAdmin.from('products').select(
+      `
+        id,
+        name,
+        slug,
+        description,
+        price,
+        discounted_price,
+        stock,
+        category_id,
+        images,
+        color,
+        medida,
+        brand,
+        aikon_id,
+        is_active,
+        created_at,
+        updated_at,
+        categories (
+          id,
+          name
+        )
       `,
-        { count: 'exact' }
-      )
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(20)
+      { count: 'exact' }
+    )
+
+    // Apply filters
+    if (search) {
+      query = query.ilike('name', `%${search}%`)
+    }
+    
+    // Stock status filter
+    if (stockStatus === 'low_stock') {
+      query = query.gt('stock', 0).lte('stock', 10)
+      logger.dev('[API] Filtro LOW_STOCK aplicado')
+    } else if (stockStatus === 'out_of_stock') {
+      query = query.or('stock.eq.0,stock.is.null')
+      logger.dev('[API] Filtro OUT_OF_STOCK aplicado')
+    }
+
+    // Apply pagination
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+    
+    logger.db('range', 'products', { from, to, page, limit })
+    
+    query = query.range(from, to)
+
+    // Apply sorting
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+
+    const { data: products, error, count } = await query
+    
+    logger.dev('[API] Resultado:', {
+      productsLength: products?.length,
+      count,
+      primeros5IDs: products?.slice(0, 5).map(p => p.id) || [],
+    })
 
     if (error) {
-      console.error('❌ Database error:', error)
-      return NextResponse.json(
-        { error: 'Error al obtener productos', details: error.message },
-        { status: 500 }
-      )
+      logger.error('[API] Database error:', error)
+      return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 })
     }
 
-    console.log('✅ Products fetched:', products?.length || 0, 'total:', count)
-
-    // Transform data
-    const transformedProducts =
-      products?.map(product => ({
-        ...product,
-        category_name: product.categories?.name || null,
-        categories: undefined,
-      })) || []
+    // Obtener conteo de variantes para cada producto
+    const productIds = products?.map(p => p.id) || []
+    let variantCounts: Record<number, number> = {}
+    
+    if (productIds.length > 0) {
+      const { data: variantCountData } = await supabaseAdmin
+        .from('product_variants')
+        .select('product_id')
+        .in('product_id', productIds)
+        .eq('is_active', true)
+      
+      variantCountData?.forEach(v => {
+        variantCounts[v.product_id] = (variantCounts[v.product_id] || 0) + 1
+      })
+    }
+    
+    // Transform data - COMPLETO
+    const transformedProducts = products?.map(product => ({
+      ...product,
+      category_name: product.categories?.name || null,
+      categories: undefined,
+      // Agregar conteo de variantes
+      variant_count: variantCounts[product.id] || 0,
+      // Transform images JSONB to image_url
+      image_url: 
+        product.images?.previews?.[0] || 
+        product.images?.thumbnails?.[0] ||
+        product.images?.main ||
+        null,
+      // Default status si es null
+      status: product.status || (product.is_active ? 'active' : 'inactive'),
+    })) || []
 
     return NextResponse.json({
       products: transformedProducts,
       data: transformedProducts,
       total: count || 0,
-      page: 1,
-      pageSize: 20,
-      totalPages: Math.ceil((count || 0) / 20),
+      page,
+      pageSize: limit,
+      totalPages: Math.ceil((count || 0) / limit),
     })
   } catch (error) {
-    console.error('❌ Error in GET /api/admin/products:', error)
-    return NextResponse.json(
-      {
-        error: 'Error interno del servidor',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    )
+    logger.error('[API] Error en GET /api/admin/products:', error)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
 

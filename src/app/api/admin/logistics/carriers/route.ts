@@ -224,7 +224,7 @@ async function postHandler(request: NextRequest) {
     .single()
 
   if (existingCarrier) {
-    throw new ValidationError('El código del transportista ya existe')
+    throw ValidationError('El código del transportista ya existe')
   }
 
   // Encriptar API key si se proporciona
@@ -288,7 +288,7 @@ async function putHandler(request: NextRequest) {
   const carrierId = searchParams.get('id')
 
   if (!carrierId) {
-    throw new ValidationError('ID del transportista es requerido')
+    throw ValidationError('ID del transportista es requerido')
   }
 
   const body = await request.json()
@@ -356,7 +356,7 @@ async function deleteHandler(request: NextRequest) {
   const carrierId = searchParams.get('id')
 
   if (!carrierId) {
-    throw new ValidationError('ID del transportista es requerido')
+    throw ValidationError('ID del transportista es requerido')
   }
 
   const supabase = createClient()
@@ -384,7 +384,7 @@ async function deleteHandler(request: NextRequest) {
   }
 
   if (activeShipments && activeShipments.length > 0) {
-    throw new ValidationError('No se puede eliminar un transportista con envíos activos')
+    throw ValidationError('No se puede eliminar un transportista con envíos activos')
   }
 
   // Eliminar transportista (soft delete - marcar como inactivo)

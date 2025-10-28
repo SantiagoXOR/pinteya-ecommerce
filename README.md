@@ -12,6 +12,11 @@
 
 ## 🧩 Documentos recientes
 
+- **🚀 Optimización de Performance en Producción**: [PERFORMANCE_OPTIMIZATION_REPORT.md](./PERFORMANCE_OPTIMIZATION_REPORT.md) ⭐ **NUEVO** (27 Oct 2025)
+- **📊 Resumen de Implementación Performance**: [PERFORMANCE_IMPLEMENTATION_SUMMARY.md](./PERFORMANCE_IMPLEMENTATION_SUMMARY.md) ⭐ **NUEVO** (27 Oct 2025)
+- **⚡ Performance Round 3 - Auth RLS InitPlan**: [PERFORMANCE_ROUND_3_SUMMARY.md](./PERFORMANCE_ROUND_3_SUMMARY.md) (20 Oct 2025)
+- **📋 Instrucciones Aplicar Round 3**: [INSTRUCCIONES_APLICAR_ROUND_3_PERFORMANCE.md](./INSTRUCCIONES_APLICAR_ROUND_3_PERFORMANCE.md)
+- **✅ Resolución Error 500 - Recursión RLS**: [RESOLUCION_ERROR_500_FINAL.md](./RESOLUCION_ERROR_500_FINAL.md)
 - **Fix estabilidad de hooks en Checkout Express**: [docs/fixes/CHECKOUT_EXPRESS_HOOKS_STABILIZATION.md](./docs/fixes/CHECKOUT_EXPRESS_HOOKS_STABILIZATION.md)
 - **Guía de Testing de Checkout**: [docs/testing/checkout.md](./docs/testing/checkout.md)
 - **Arquitectura del Flujo de Checkout**: [docs/architecture/checkout-flow.md](./docs/architecture/checkout-flow.md)
@@ -411,11 +416,16 @@ npm install
 cp .env.example .env.local
 # Editar .env.local con tus credenciales
 
-# Iniciar desarrollo
+# Iniciar desarrollo con Turbopack (recomendado - 5-10x más rápido)
+npm run dev:turbo
+
+# O iniciar desarrollo tradicional
 npm run dev
 ```
 
 Visita http://localhost:3001
+
+> **💡 Nota:** Se recomienda usar `npm run dev:turbo` para compilación más rápida (Next.js 15 con Turbopack)
 
 ## 🌟 Características del Proyecto
 
