@@ -1,7 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+
+// ===================================
+// MIDDLEWARE DE AUTENTICACIÓN ADMIN
+// ===================================
+
+async function validateAdminAuth() {
+  try {
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          return {
+            user: {
+              id: 'dev-admin',
+              email: 'santiago@xor.com.ar',
+              name: 'Dev Admin',
+            },
+            userId: 'dev-admin',
+          }
+        }
+      } catch (error) {
+        console.warn('[API Admin Refund] No se pudo verificar .env.local, bypass deshabilitado')
+      }
+    }
+
+    const session = await auth()
+    if (!session?.user) {
+      return { error: 'Usuario no autenticado', status: 401 }
+    }
+
+    // Verificar si es admin (usando email como en otros endpoints admin)
+    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    if (!isAdmin) {
+      return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 }
+    }
+
+    return { user: session.user, userId: session.user.id }
+  } catch (error) {
+    logger.log(LogLevel.ERROR, LogCategory.AUTH, 'Error en validación admin', { error })
+    return { error: 'Error de autenticación', status: 500 }
+  }
+}
 
 /**
  * POST /api/admin/orders/[id]/refund
@@ -9,22 +54,24 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  let orderId: string | undefined
   try {
-    const orderId = params.id
+    const { id } = await context.params
+    orderId = id
     const body = await request.json()
     const { amount, reason = 'Reembolso solicitado por administrador' } = body
 
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
+    // Verificar autenticación admin
+    const authResult = await validateAdminAuth()
+    if ('error' in authResult) {
+      return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status || 401 })
     }
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Processing refund for order', {
       orderId,
-      userId: session.user.id,
+      userId: authResult.userId,
       amount,
       reason,
     })
@@ -95,7 +142,7 @@ export async function POST(
       .eq('id', orderId)
 
     if (updateError) {
-      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error updating order after refund', {
+      logger.log(LogLevel.ERROR, LogCategory.API, 'Error updating order after refund', {
         orderId,
         updateError,
       })
@@ -111,20 +158,20 @@ export async function POST(
         order_id: orderId,
         previous_status: order.status,
         new_status: 'refunded',
-        changed_by: session.user.id,
+        changed_by: authResult.userId,
         reason: `Reembolso procesado: ${reason}`,
         metadata: JSON.stringify({
           refund_id: refundResult.refund_id,
           refund_amount: refundAmount,
           refund_reason: reason,
-          processed_by: session.user.id,
+          processed_by: authResult.userId,
         }),
       })
     } catch (historyError) {
       // Si la tabla no existe, continuar sin registrar historial
       logger.log(
         LogLevel.WARN,
-        LogCategory.DATABASE,
+        LogCategory.API,
         'Could not register refund in status history',
         { historyError }
       )
@@ -154,7 +201,7 @@ export async function POST(
     })
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Unexpected error processing refund', {
-      orderId: params.id,
+      orderId: orderId || 'unknown',
       error,
     })
 

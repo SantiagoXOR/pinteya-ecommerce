@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Filter, X, Search, SlidersHorizontal, ChevronDown } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Filter, X, Search, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/core/utils'
 import { ProductFilters as ProductFiltersType } from '@/hooks/admin/useProductsEnterprise'
+import { Badge } from '../ui/Badge'
+import { Input } from '../ui/Input'
 
 interface Category {
   id: number
@@ -66,54 +69,72 @@ export function ProductFilters({
   }
 
   return (
-    <div className={cn('bg-white border border-gray-200 rounded-lg', className)}>
-      {/* Header */}
-      <div className='p-4 border-b border-gray-200'>
+    <motion.div 
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn('bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden', className)}
+    >
+      {/* Header Mejorado */}
+      <div className='p-4 bg-gradient-to-r from-gray-50/50 to-white border-b border-gray-200'>
         <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-3'>
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className='flex items-center space-x-2 text-gray-700 hover:text-gray-900'
-            >
-              <Filter className='w-5 h-5' />
-              <span className='font-medium'>Filtros</span>
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className='flex items-center gap-3 text-gray-700 hover:text-gray-900 transition-colors group'
+          >
+            <div className='p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors'>
+              <SlidersHorizontal className='w-4 h-4 text-primary' />
+            </div>
+            <div className='flex items-center gap-2'>
+              <span className='font-semibold'>Filtros</span>
               {hasActiveFilters && (
-                <span className='bg-blaze-orange-100 text-blaze-orange-800 text-xs px-2 py-1 rounded-full'>
-                  Activos
-                </span>
+                <Badge variant="warning" size="sm" pulse>
+                  {Object.values(filters).filter(v => v !== undefined && v !== '' && v !== 'all').length}
+                </Badge>
               )}
-            </button>
-          </div>
+            </div>
+            <motion.div
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className='w-4 h-4 text-gray-400' />
+            </motion.div>
+          </button>
 
           {hasActiveFilters && (
-            <button
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               onClick={onClearFilters}
-              className='flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900'
+              className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors'
             >
               <X className='w-4 h-4' />
-              <span>Limpiar filtros</span>
-            </button>
+              <span>Limpiar</span>
+            </motion.button>
           )}
         </div>
       </div>
 
       {/* Search Bar - Always visible */}
       <div className='p-4'>
-        <div className='relative'>
-          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
-          <input
-            type='text'
-            placeholder='Buscar productos por nombre, descripción...'
-            value={filters.search || ''}
-            onChange={e => handleInputChange('search', e.target.value)}
-            className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
-          />
-        </div>
+        <Input
+          icon={Search}
+          type='text'
+          placeholder='Buscar productos por nombre, descripción, marca...'
+          value={filters.search || ''}
+          onChange={e => handleInputChange('search', e.target.value)}
+        />
       </div>
 
-      {/* Advanced Filters */}
-      {isExpanded && (
-        <div className='p-4 border-t border-gray-200 space-y-6'>
+      {/* Advanced Filters con animación */}
+      <AnimatePresence>
+        {isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+          className='p-4 border-t border-gray-200 space-y-6'
+        >
           {/* First Row - Basic Filters */}
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
             {/* Category Filter */}
@@ -238,108 +259,158 @@ export function ProductFilters({
             </div>
           </div>
 
-          {/* Active Filters Summary */}
+          {/* Active Filters Summary Mejorado */}
           {hasActiveFilters && (
-            <div className='pt-4 border-t border-gray-200'>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className='pt-4 border-t border-gray-200'
+            >
               <div className='flex flex-wrap gap-2'>
                 {filters.search && (
-                  <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
-                    Búsqueda: "{filters.search}"
-                    <button
-                      onClick={() => handleInputChange('search', '')}
-                      className='ml-2 text-blue-600 hover:text-blue-800'
-                    >
-                      <X className='w-3 h-3' />
-                    </button>
-                  </span>
+                  <FilterTag
+                    variant="info"
+                    label="Búsqueda"
+                    value={`"${filters.search}"`}
+                    onRemove={() => handleInputChange('search', '')}
+                  />
                 )}
 
                 {filters.category_id && (
-                  <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800'>
-                    Categoría:{' '}
-                    {categories.find(c => c.id === filters.category_id)?.name ||
-                      filters.category_id}
-                    <button
-                      onClick={() => handleInputChange('category_id', undefined)}
-                      className='ml-2 text-green-600 hover:text-green-800'
-                    >
-                      <X className='w-3 h-3' />
-                    </button>
-                  </span>
+                  <FilterTag
+                    variant="success"
+                    label="Categoría"
+                    value={categories.find(c => c.id === filters.category_id)?.name || String(filters.category_id)}
+                    onRemove={() => handleInputChange('category_id', undefined)}
+                  />
                 )}
 
                 {filters.status && filters.status !== 'all' && (
-                  <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800'>
-                    Estado:{' '}
-                    {statusOptions.find(s => s.value === filters.status)?.label || filters.status}
-                    <button
-                      onClick={() => handleInputChange('status', 'all')}
-                      className='ml-2 text-purple-600 hover:text-purple-800'
-                    >
-                      <X className='w-3 h-3' />
-                    </button>
-                  </span>
+                  <FilterTag
+                    variant="secondary"
+                    label="Estado"
+                    value={statusOptions.find(s => s.value === filters.status)?.label || filters.status}
+                    onRemove={() => handleInputChange('status', 'all')}
+                  />
                 )}
 
                 {filters.stock_status && filters.stock_status !== 'all' && (
-                  <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800'>
-                    Stock:{' '}
-                    {stockStatusOptions.find(s => s.value === filters.stock_status)?.label ||
-                      filters.stock_status}
-                    <button
-                      onClick={() => handleInputChange('stock_status', 'all')}
-                      className='ml-2 text-orange-600 hover:text-orange-800'
-                    >
-                      <X className='w-3 h-3' />
-                    </button>
-                  </span>
+                  <FilterTag
+                    variant="warning"
+                    label="Stock"
+                    value={stockStatusOptions.find(s => s.value === filters.stock_status)?.label || filters.stock_status}
+                    onRemove={() => handleInputChange('stock_status', 'all')}
+                  />
                 )}
 
                 {filters.brand && (
-                  <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800'>
-                    Marca: {filters.brand}
-                    <button
-                      onClick={() => handleInputChange('brand', '')}
-                      className='ml-2 text-indigo-600 hover:text-indigo-800'
-                    >
-                      <X className='w-3 h-3' />
-                    </button>
-                  </span>
+                  <FilterTag
+                    variant="soft"
+                    label="Marca"
+                    value={filters.brand}
+                    onRemove={() => handleInputChange('brand', '')}
+                  />
                 )}
 
                 {(filters.price_min || filters.price_max) && (
-                  <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800'>
-                    Precio: ${filters.price_min || 0} - ${filters.price_max || '∞'}
-                    <button
-                      onClick={() => {
-                        handleInputChange('price_min', undefined)
-                        handleInputChange('price_max', undefined)
-                      }}
-                      className='ml-2 text-yellow-600 hover:text-yellow-800'
-                    >
-                      <X className='w-3 h-3' />
-                    </button>
-                  </span>
+                  <FilterTag
+                    variant="soft"
+                    label="Precio"
+                    value={`$${filters.price_min || 0} - $${filters.price_max || '∞'}`}
+                    onRemove={() => {
+                      handleInputChange('price_min', undefined)
+                      handleInputChange('price_max', undefined)
+                    }}
+                  />
                 )}
 
                 {((filters.sort_by && filters.sort_by !== 'created_at') ||
                   (filters.sort_order && filters.sort_order !== 'desc')) && (
-                  <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800'>
-                    Orden: {sortOptions.find(s => s.value === filters.sort_by)?.label} (
-                    {sortOrderOptions.find(s => s.value === filters.sort_order)?.label})
-                    <button
-                      onClick={() => handleSortChange('created_at', 'desc')}
-                      className='ml-2 text-gray-600 hover:text-gray-800'
-                    >
-                      <X className='w-3 h-3' />
-                    </button>
-                  </span>
+                  <FilterTag
+                    variant="outline"
+                    label="Orden"
+                    value={`${sortOptions.find(s => s.value === filters.sort_by)?.label} (${sortOrderOptions.find(s => s.value === filters.sort_order)?.label})`}
+                    onRemove={() => handleSortChange('created_at', 'desc')}
+                  />
                 )}
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
-      )}
-    </div>
+        </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
+}
+
+// Helper component para tags de filtros
+function FilterTag({
+  variant,
+  label,
+  value,
+  onRemove
+}: {
+  variant: 'info' | 'success' | 'warning' | 'secondary' | 'soft' | 'outline'
+  label: string
+  value: string
+  onRemove: () => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border bg-gradient-to-r transition-all hover:shadow-sm'
+      style={{
+        ...getVariantStyles(variant)
+      }}
+    >
+      <span className='opacity-70'>{label}:</span>
+      <span className='font-semibold'>{value}</span>
+      <button
+        onClick={onRemove}
+        className='ml-1 hover:bg-black/10 rounded-full p-0.5 transition-colors'
+        type='button'
+      >
+        <X className='w-3 h-3' />
+      </button>
+    </motion.div>
+  )
+}
+
+function getVariantStyles(variant: string) {
+  const styles = {
+    info: {
+      background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+      color: '#1e40af',
+      borderColor: '#93c5fd'
+    },
+    success: {
+      background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
+      color: '#065f46',
+      borderColor: '#6ee7b7'
+    },
+    warning: {
+      background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+      color: '#92400e',
+      borderColor: '#fcd34d'
+    },
+    secondary: {
+      background: 'linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%)',
+      color: '#6b21a8',
+      borderColor: '#c084fc'
+    },
+    soft: {
+      background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
+      color: '#374151',
+      borderColor: '#d1d5db'
+    },
+    outline: {
+      background: '#ffffff',
+      color: '#374151',
+      borderColor: '#d1d5db'
+    }
+  }
+  
+  return styles[variant as keyof typeof styles] || styles.soft
 }

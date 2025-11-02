@@ -14,33 +14,44 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
   console.group(`🔄 [ProductAdapter] Adaptando producto: ${apiProduct.name}`);
   console.log('📦 API Product original:', apiProduct);
   console.log('🖼️ Imágenes originales:', apiProduct.images);
+  console.log('🎨 Variantes:', apiProduct.variants);
   
-  // Normalizar imágenes: aceptar arrays de strings u objetos { url | image_url } y objeto { main, previews, thumbnails, gallery }
-  const normalizedImages: string[] = Array.isArray(apiProduct.images)
-    ? (
-        apiProduct.images
-          .map((img: any) => {
-            if (typeof img === 'string') return img
-            if (img && typeof img?.url === 'string') return img.url
-            if (img && typeof img?.image_url === 'string') return img.image_url
-            return null
-          })
-          .filter(Boolean) as string[]
-      )
-    : apiProduct.images?.main
-      ? [apiProduct.images.main]
-      : apiProduct.images?.previews?.[0]
-        ? [apiProduct.images.previews[0]]
-        : apiProduct.images?.thumbnails?.[0]
-          ? [apiProduct.images.thumbnails[0]]
-          : apiProduct.images?.gallery?.[0]
-            ? [apiProduct.images.gallery[0]]
-            : ['/images/products/placeholder.svg']
+  // ✅ PRIORIDAD DE IMAGEN: Variante por defecto > Producto padre
+  let firstImage = '/images/products/placeholder.svg'
+  let normalizedImages: string[] = []
+  
+  // 1. Intentar obtener imagen de variante por defecto
+  const defaultVariant = (apiProduct as any).default_variant || (apiProduct as any).variants?.[0]
+  if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
+    firstImage = defaultVariant.image_url.trim()
+    normalizedImages = [firstImage]
+    console.log('🎯 Usando imagen de variante por defecto:', firstImage)
+  } else {
+    // 2. Normalizar imágenes del producto padre
+    normalizedImages = Array.isArray(apiProduct.images)
+      ? (
+          apiProduct.images
+            .map((img: any) => {
+              if (typeof img === 'string') return img
+              if (img && typeof img?.url === 'string') return img.url
+              if (img && typeof img?.image_url === 'string') return img.image_url
+              return null
+            })
+            .filter(Boolean) as string[]
+        )
+      : apiProduct.images?.main
+        ? [apiProduct.images.main]
+        : apiProduct.images?.previews?.[0]
+          ? [apiProduct.images.previews[0]]
+          : apiProduct.images?.thumbnails?.[0]
+            ? [apiProduct.images.thumbnails[0]]
+            : apiProduct.images?.gallery?.[0]
+              ? [apiProduct.images.gallery[0]]
+              : ['/images/products/placeholder.svg']
 
-  // Obtener la primera imagen válida o usar placeholder
-  const firstImage = normalizedImages[0] || '/images/products/placeholder.svg'
-    
-  console.log('🎯 Primera imagen seleccionada:', firstImage);
+    firstImage = normalizedImages[0] || '/images/products/placeholder.svg'
+    console.log('🎯 Usando imagen de producto padre:', firstImage);
+  }
 
   const adaptedProduct: Product = {
     id: apiProduct.id,

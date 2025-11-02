@@ -1,414 +1,270 @@
-// ===================================
-// PINTEYA E-COMMERCE - API DE VARIANTE INDIVIDUAL
-// ===================================
-
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase'
-import { ApiResponse } from '@/types/api'
-import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
-import { createSecurityLogger } from '@/lib/logging/security-logger'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
+import { z } from 'zod'
 
-// Tipo para variante de producto
-interface ProductVariant {
-  id: number
-  product_id: number
-  aikon_id: string
-  variant_slug: string
-  color_name?: string
-  color_hex?: string
-  measure?: string
-  finish?: string
-  price_list: number
-  price_sale?: number
-  stock: number
-  is_active: boolean
-  is_default: boolean
-  image_url?: string
-  metadata?: Record<string, any>
-  created_at: string
-  updated_at: string
-}
+// Schema de validación para actualización de variante
+const UpdateVariantSchema = z.object({
+  color_name: z.string().optional(),
+  color_hex: z.string().optional(),
+  measure: z.string().optional(),
+  finish: z.string().optional().nullable(),
+  price_list: z.number().optional(),
+  price_sale: z.number().optional().nullable(),
+  stock: z.number().int().min(0).optional(),
+  is_active: z.boolean().optional(),
+  is_default: z.boolean().optional(),
+  image_url: z.string().optional().nullable(), // Cualquier string o null
+  aikon_id: z.string().optional(),
+})
 
-// ===================================
-// GET /api/products/[id]/variants/[variantId] - Obtener variante específica
-// ===================================
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string; variantId: string }> }
-): Promise<NextResponse<ApiResponse<ProductVariant>>> {
-  const securityLogger = createSecurityLogger(request)
-
-  return withRateLimit(request, RATE_LIMIT_CONFIGS.products, async () => {
-    try {
-      const params = await context.params
-      const productId = parseInt(params.id)
-      const variantId = parseInt(params.variantId)
-
-      if (isNaN(productId) || productId <= 0 || isNaN(variantId) || variantId <= 0) {
-        securityLogger.logSuspiciousActivity(
-          securityLogger.context,
-          'Invalid product or variant ID provided',
-          {
-            productId: params.id,
-            variantId: params.variantId,
-            endpoint: '/api/products/[id]/variants/[variantId]',
-          }
-        )
-
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'ID de producto o variante inválido',
-            data: null,
-          },
-          { status: 400 }
-        )
-      }
-
-      const supabase = getSupabaseClient()
-
-      // Obtener variante específica
-      const { data: variant, error: variantError } = await supabase
-        .from('product_variants')
-        .select(`
-          id,
-          product_id,
-          aikon_id,
-          variant_slug,
-          color_name,
-          color_hex,
-          measure,
-          finish,
-          price_list,
-          price_sale,
-          stock,
-          is_active,
-          is_default,
-          image_url,
-          metadata,
-          created_at,
-          updated_at
-        `)
-        .eq('id', variantId)
-        .eq('product_id', productId)
-        .eq('is_active', true)
-        .single()
-
-      if (variantError || !variant) {
-        securityLogger.logSuspiciousActivity(
-          securityLogger.context,
-          'Variant not found',
-          {
-            productId,
-            variantId,
-            endpoint: '/api/products/[id]/variants/[variantId]',
-          }
-        )
-
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Variante no encontrada',
-            data: null,
-          },
-          { status: 404 }
-        )
-      }
-
-      // Log de éxito - usando console.log para eventos informativos
-      console.log(`[VARIANT] Variant fetched successfully: ${variantId} for product ${productId}`)
-
-      return NextResponse.json({
-        success: true,
-        data: variant,
-        error: null,
-      })
-    } catch (error: any) {
-      securityLogger.logApiError(
-        securityLogger.context,
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          productId,
-          variantId,
-          endpoint: '/api/products/[id]/variants/[variantId]',
-        }
-      )
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Error interno del servidor',
-          data: null,
-        },
-        { status: 500 }
-      )
-    }
-  })
-}
-
-// ===================================
-// PUT /api/products/[id]/variants/[variantId] - Actualizar variante (Admin only)
-// ===================================
+/**
+ * PUT /api/products/[id]/variants/[variantId]
+ * Actualizar una variante específica
+ */
 export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string; variantId: string }> }
-): Promise<NextResponse<ApiResponse<ProductVariant>>> {
-  const securityLogger = createSecurityLogger(request)
-
-  return withRateLimit(request, RATE_LIMIT_CONFIGS.admin, async () => {
-    try {
-      const params = await context.params
-      const productId = parseInt(params.id)
-      const variantId = parseInt(params.variantId)
-
-      if (isNaN(productId) || isNaN(variantId)) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'ID de producto o variante inválido',
-            data: null,
-          },
-          { status: 400 }
-        )
-      }
-
-      const body = await request.json()
-      const supabase = getSupabaseClient()
-
-      // Verificar que la variante existe
-      const { data: existingVariant, error: existingError } = await supabase
-        .from('product_variants')
-        .select('id, product_id, aikon_id')
-        .eq('id', variantId)
-        .eq('product_id', productId)
-        .single()
-
-      if (existingError || !existingVariant) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Variante no encontrada',
-            data: null,
-          },
-          { status: 404 }
-        )
-      }
-
-      // Preparar datos de actualización
-      const updateData: any = {}
-      updateData.updated_at = new Date().toISOString()
-
-      if (body.color_name !== undefined) updateData.color_name = body.color_name
-      if (body.color_hex !== undefined) updateData.color_hex = body.color_hex
-      if (body.measure !== undefined) updateData.measure = body.measure
-      if (body.finish !== undefined) updateData.finish = body.finish
-      if (body.price_list !== undefined) updateData.price_list = parseFloat(body.price_list)
-      if (body.price_sale !== undefined) updateData.price_sale = body.price_sale ? parseFloat(body.price_sale) : null
-      if (body.stock !== undefined) updateData.stock = parseInt(body.stock)
-      if (body.is_active !== undefined) updateData.is_active = body.is_active
-      if (body.is_default !== undefined) updateData.is_default = body.is_default
-      if (body.image_url !== undefined) updateData.image_url = body.image_url
-      if (body.metadata !== undefined) updateData.metadata = body.metadata
-
-      console.log('[VARIANT UPDATE] Updating variant:', { variantId, productId, updateData })
-
-      // Actualizar variante
-      const { data: updatedVariant, error: updateError } = await supabase
-        .from('product_variants')
-        .update(updateData)
-        .eq('id', variantId)
-        .eq('product_id', productId)
-        .select()
-        .single()
-
-      if (updateError) {
-        console.error('[VARIANT UPDATE] Error:', updateError)
-        securityLogger.logApiError(
-          securityLogger.context,
-          new Error(updateError.message),
-          {
-            productId,
-            variantId,
-            endpoint: '/api/products/[id]/variants/[variantId]',
-          }
-        )
-
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Error al actualizar variante',
-            data: null,
-          },
-          { status: 500 }
-        )
-      }
-
-      // Log de éxito - usando console.log para eventos informativos
-      console.log(`[VARIANT] Variant updated successfully: ${variantId} for product ${productId}`)
-
-      return NextResponse.json({
-        success: true,
-        data: updatedVariant,
-        error: null,
+) {
+  try {
+    const { id: productId, variantId } = await context.params
+    
+    // Parse body
+    const body = await request.json()
+    
+    console.log('📥 [PUT Variant] Datos recibidos:', {
+      productId,
+      variantId,
+      body: JSON.stringify(body, null, 2),
+      bodyKeys: Object.keys(body),
+      stock: body.stock,
+      stockType: typeof body.stock
+    })
+    
+    // Validar datos
+    // Filtrar solo los campos que se pueden actualizar (ignorar campos de solo lectura)
+    const allowedFields = {
+      color_name: body.color_name,
+      color_hex: body.color_hex,
+      measure: body.measure,
+      finish: body.finish,
+      price_list: body.price_list,
+      price_sale: body.price_sale,
+      stock: body.stock,
+      is_active: body.is_active,
+      is_default: body.is_default,
+      image_url: body.image_url,
+      aikon_id: body.aikon_id,
+    }
+    
+    // Remover campos undefined
+    const filteredBody = Object.fromEntries(
+      Object.entries(allowedFields).filter(([_, value]) => value !== undefined)
+    )
+    
+    console.log('📦 [PUT Variant] Campos filtrados:', {
+      original: Object.keys(body).length,
+      filtered: Object.keys(filteredBody).length,
+      filteredBody
+    })
+    
+    const validation = UpdateVariantSchema.safeParse(filteredBody)
+    
+    if (!validation.success) {
+      console.error('❌ [PUT Variant] Validación fallida:', {
+        errors: validation.error.errors,
+        filteredBody
       })
-    } catch (error: any) {
-      securityLogger.logApiError(
-        securityLogger.context,
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          productId,
-          variantId,
-          endpoint: '/api/products/[id]/variants/[variantId]',
-        }
-      )
-
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Error interno del servidor',
-          data: null,
+        { 
+          error: 'Datos inválidos', 
+          details: validation.error.errors,
+          received: filteredBody
         },
+        { status: 400 }
+      )
+    }
+    
+    const validatedData = validation.data
+    
+    console.log('✅ [PUT Variant] Validación exitosa:', {
+      productId,
+      variantId,
+      data: validatedData
+    })
+    
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Error de configuración del servidor' },
         { status: 500 }
       )
     }
-  })
+    
+    const numericProductId = parseInt(productId, 10)
+    const numericVariantId = parseInt(variantId, 10)
+    
+    // Preparar datos de actualización
+    const updateData: Record<string, any> = {
+      ...validatedData,
+      updated_at: new Date().toISOString(),
+    }
+    
+    console.log('🔍 [PUT Variant] updateData antes de enviar a Supabase:', {
+      updateData,
+      hasStock: 'stock' in updateData,
+      stockValue: updateData.stock,
+      stockType: typeof updateData.stock,
+      allKeys: Object.keys(updateData)
+    })
+    
+    // Si se marca como default, desmarcar las demás
+    if (validatedData.is_default === true) {
+      // @ts-ignore - Supabase types are too strict
+      await supabaseAdmin
+        .from('product_variants')
+        .update({ is_default: false })
+        .eq('product_id', numericProductId)
+        .neq('id', numericVariantId)
+    }
+    
+    // Actualizar la variante
+    // @ts-ignore - Supabase types are too strict
+    const { data: variant, error } = await supabaseAdmin
+      .from('product_variants')
+      .update(updateData)
+      .eq('id', numericVariantId)
+      .eq('product_id', numericProductId)
+      .select('*')
+      .single()
+    
+    if (error) {
+      console.error('❌ [PUT Variant] Error al actualizar variante en Supabase:', {
+        error,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        updateData
+      })
+      return NextResponse.json(
+        { error: 'Error al actualizar variante', details: error.message },
+        { status: 500 }
+      )
+    }
+    
+    if (!variant) {
+      console.error('❌ [PUT Variant] Variante no encontrada después de update')
+      return NextResponse.json(
+        { error: 'Variante no encontrada' },
+        { status: 404 }
+      )
+    }
+    
+    console.log('✅ [PUT Variant] Variante actualizada exitosamente:', {
+      id: (variant as any).id,
+      measure: (variant as any).measure,
+      stockAntes: body.stock,
+      stockDespues: (variant as any).stock,
+      updated_at: (variant as any).updated_at
+    })
+    
+    return NextResponse.json({
+      data: variant,
+      success: true,
+      message: 'Variante actualizada exitosamente',
+    })
+  } catch (error: any) {
+    console.error('❌ Error en PUT /api/products/[id]/variants/[variantId]:', error)
+    
+    return NextResponse.json(
+      { error: 'Error interno del servidor', details: error.message },
+      { status: 500 }
+    )
+  }
 }
 
-// ===================================
-// DELETE /api/products/[id]/variants/[variantId] - Eliminar variante (Admin only)
-// ===================================
+/**
+ * DELETE /api/products/[id]/variants/[variantId]
+ * Eliminar una variante específica
+ */
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string; variantId: string }> }
-): Promise<NextResponse<ApiResponse<null>>> {
-  const securityLogger = createSecurityLogger(request)
-
-  return withRateLimit(request, RATE_LIMIT_CONFIGS.admin, async () => {
-    try {
-      const params = await context.params
-      const productId = parseInt(params.id)
-      const variantId = parseInt(params.variantId)
-
-      if (isNaN(productId) || isNaN(variantId)) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'ID de producto o variante inválido',
-            data: null,
-          },
-          { status: 400 }
-        )
-      }
-
-      const supabase = getSupabaseClient()
-
-      // Verificar que la variante existe y no es la única variante del producto
-      const { data: variants, error: variantsError } = await supabase
-        .from('product_variants')
-        .select('id, is_default')
-        .eq('product_id', productId)
-        .eq('is_active', true)
-
-      if (variantsError) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Error al verificar variantes',
-            data: null,
-          },
-          { status: 500 }
-        )
-      }
-
-      if (variants.length <= 1) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'No se puede eliminar la única variante del producto',
-            data: null,
-          },
-          { status: 400 }
-        )
-      }
-
-      const variantToDelete = variants.find(v => v.id === variantId)
-      if (!variantToDelete) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Variante no encontrada',
-            data: null,
-          },
-          { status: 404 }
-        )
-      }
-
-      // Si es la variante por defecto, asignar otra como defecto
-      if (variantToDelete.is_default) {
-        const newDefaultVariant = variants.find(v => v.id !== variantId)
-        if (newDefaultVariant) {
-          await supabase
-            .from('product_variants')
-            .update({ is_default: true })
-            .eq('id', newDefaultVariant.id)
-        }
-      }
-
-      // Eliminar variante (soft delete)
-      const { error: deleteError } = await supabase
-        .from('product_variants')
-        .update({ is_active: false })
-        .eq('id', variantId)
-        .eq('product_id', productId)
-
-      if (deleteError) {
-        securityLogger.logApiError(
-          securityLogger.context,
-          new Error(deleteError.message),
-          {
-            productId,
-            variantId,
-            endpoint: '/api/products/[id]/variants/[variantId]',
-          }
-        )
-
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Error al eliminar variante',
-            data: null,
-          },
-          { status: 500 }
-        )
-      }
-
-      // Log de éxito - usando console.log para eventos informativos
-      console.log(`[VARIANT] Variant deleted successfully: ${variantId} for product ${productId}`)
-
-      return NextResponse.json({
-        success: true,
-        data: null,
-        message: 'Variante eliminada exitosamente',
-      })
-    } catch (error: any) {
-      securityLogger.logApiError(
-        securityLogger.context,
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          productId,
-          variantId,
-          endpoint: '/api/products/[id]/variants/[variantId]',
-        }
-      )
-
+) {
+  try {
+    const { id: productId, variantId } = await context.params
+    
+    console.log('🗑️ Eliminando variante:', {
+      productId,
+      variantId
+    })
+    
+    if (!supabaseAdmin) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Error interno del servidor',
-          data: null,
-        },
+        { error: 'Error de configuración del servidor' },
         { status: 500 }
       )
     }
-  })
+    
+    const numericProductId = parseInt(productId, 10)
+    const numericVariantId = parseInt(variantId, 10)
+    
+    // Verificar que no sea la única variante
+    // @ts-ignore - Supabase types are too strict
+    const { count } = await supabaseAdmin
+      .from('product_variants')
+      .select('*', { count: 'exact', head: true })
+      .eq('product_id', numericProductId)
+    
+    if (count && count <= 1) {
+      return NextResponse.json(
+        { error: 'No se puede eliminar la única variante del producto' },
+        { status: 400 }
+      )
+    }
+    
+    // Verificar que no sea la variante default
+    // @ts-ignore - Supabase types are too strict
+    const { data: variant } = await supabaseAdmin
+      .from('product_variants')
+      .select('is_default')
+      .eq('id', numericVariantId)
+      .single()
+    
+    if ((variant as any)?.is_default) {
+      return NextResponse.json(
+        { error: 'No se puede eliminar la variante predeterminada. Marca otra como predeterminada primero.' },
+        { status: 400 }
+      )
+    }
+    
+    // Eliminar la variante
+    // @ts-ignore - Supabase types are too strict
+    const { error } = await supabaseAdmin
+      .from('product_variants')
+      .delete()
+      .eq('id', numericVariantId)
+      .eq('product_id', numericProductId)
+    
+    if (error) {
+      console.error('❌ Error al eliminar variante:', error)
+      return NextResponse.json(
+        { error: 'Error al eliminar variante', details: error.message },
+        { status: 500 }
+      )
+    }
+    
+    console.log('✅ Variante eliminada exitosamente')
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Variante eliminada exitosamente',
+    })
+  } catch (error: any) {
+    console.error('❌ Error en DELETE /api/products/[id]/variants/[variantId]:', error)
+    
+    return NextResponse.json(
+      { error: 'Error interno del servidor', details: error.message },
+      { status: 500 }
+    )
+  }
 }

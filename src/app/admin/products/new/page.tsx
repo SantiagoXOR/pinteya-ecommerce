@@ -11,7 +11,7 @@ interface ProductFormData {
   name: string
   description?: string
   short_description?: string
-  category_id: string
+  category_id: number // ✅ CORREGIDO: number (no string) - alineado con BD y schemas Zod
   status: 'active' | 'inactive' | 'draft'
   price: number
   compare_price?: number

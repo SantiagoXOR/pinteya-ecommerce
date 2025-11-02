@@ -298,6 +298,7 @@ export function ProductsPageClient() {
                       error={error}
                       onProductAction={handleProductAction}
                     filters={filters}
+                    categories={categories}
                     updateFilters={updateFilters}
                     resetFilters={resetFilters}
                     pagination={pagination}

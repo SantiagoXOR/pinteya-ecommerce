@@ -55,7 +55,7 @@ const getHandler = async (request: ValidatedRequest) => {
       )
     }
 
-    const { supabase, user } = authResult
+    const { user } = authResult
     const { searchParams } = new URL(request.url)
 
     // Parse query parameters - let schema handle type conversion
@@ -65,12 +65,13 @@ const getHandler = async (request: ValidatedRequest) => {
       page: searchParams.get('page') || '1',
       limit: searchParams.get('limit') || searchParams.get('pageSize') || '20',
       search: searchParams.get('search') || undefined,
-      category_id: searchParams.get('category') || undefined,
+      category_id: searchParams.get('category') || searchParams.get('category_id') || undefined,
+      brand: searchParams.get('brand') || undefined, // ✅ NUEVO: Filtro de marca
       is_active: statusParam ? statusParam === 'active' : undefined,
       price_min: searchParams.get('priceMin') || undefined,
       price_max: searchParams.get('priceMax') || undefined,
-      sort_by: searchParams.get('sortBy') || 'created_at',
-      sort_order: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
+      sort_by: searchParams.get('sortBy') || searchParams.get('sort_by') || 'created_at',
+      sort_order: (searchParams.get('sortOrder') || searchParams.get('sort_order') as 'asc' | 'desc') || 'desc',
     }
 
     const filters = ProductFiltersSchema.parse(rawParams)
@@ -83,8 +84,8 @@ const getHandler = async (request: ValidatedRequest) => {
       rawParams,
     })
 
-    // Build query
-    let query = supabase.from('products').select(
+    // Build query con supabaseAdmin
+    let query = supabaseAdmin.from('products').select(
       `
         id,
         name,
@@ -102,20 +103,43 @@ const getHandler = async (request: ValidatedRequest) => {
         is_active,
         created_at,
         updated_at,
-        categories (
+        category:categories (
           id,
           name
+        ),
+        product_categories (
+          category:categories (
+            id,
+            name,
+            slug
+          )
         )
       `,
       { count: 'exact' }
     )
 
-    // Apply filters
+    // ✅ BÚSQUEDA MULTI-CAMPO MEJORADA
+    // Busca en: nombre, descripción, marca, SKU (aikon_id)
     if (filters.search) {
-      query = query.ilike('name', `%${filters.search}%`)
+      const searchTerm = filters.search.trim()
+      query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%,aikon_id.ilike.%${searchTerm}%`)
+      console.log('🔍 [API] Búsqueda multi-campo aplicada:', searchTerm)
     }
+    
+    // ✅ ACTUALIZADO: Filtrar usando product_categories para soportar múltiples categorías
     if (filters.category_id) {
-      query = query.eq('category_id', filters.category_id)
+      const { data: productIdsData } = await supabaseAdmin
+        .from('product_categories')
+        .select('product_id')
+        .eq('category_id', filters.category_id)
+      
+      if (productIdsData && productIdsData.length > 0) {
+        const productIds = productIdsData.map(pc => pc.product_id)
+        query = query.in('id', productIds)
+      } else {
+        // Si no hay productos con esta categoría, retornar vacío
+        query = query.eq('id', -1)
+      }
     }
     if (filters.is_active !== undefined) {
       query = query.eq('is_active', filters.is_active)
@@ -125,6 +149,13 @@ const getHandler = async (request: ValidatedRequest) => {
     }
     if (filters.price_max !== undefined) {
       query = query.lte('price', filters.price_max)
+    }
+    
+    // ✅ NUEVO: Filtro de marca
+    const brandFilter = searchParams.get('brand')
+    if (brandFilter && brandFilter.trim()) {
+      query = query.ilike('brand', `%${brandFilter.trim()}%`)
+      console.log('🔍 [API] Filtro de marca aplicado:', brandFilter)
     }
     
     // ✅ NUEVO: Filtro de stock status
@@ -178,8 +209,8 @@ const getHandler = async (request: ValidatedRequest) => {
     const transformedProducts =
       products?.map(product => ({
         ...product,
-        category_name: product.categories?.name || null,
-        categories: undefined, // Remove nested object
+        category_name: product.category?.name || null,
+        category: undefined, // Remove nested object
         // Transform images JSONB to image_url
         image_url: 
           product.images?.previews?.[0] || 
@@ -297,9 +328,16 @@ const postHandler = async (request: ValidatedRequest) => {
         images,
         created_at,
         updated_at,
-        categories (
+        category:categories (
           id,
           name
+        ),
+        product_categories (
+          category:categories (
+            id,
+            name,
+            slug
+          )
         )
       `
       )
@@ -313,8 +351,8 @@ const postHandler = async (request: ValidatedRequest) => {
     // Transform response
     const transformedProduct = {
       ...product,
-      category_name: product.categories?.name || null,
-      categories: undefined,
+      category_name: product.category?.name || null,
+      category: undefined,
     }
 
     // Log admin action
@@ -512,6 +550,12 @@ export const GET = async (request: NextRequest) => {
 
     logger.dev('[API] Parámetros:', { page, limit, sortBy, sortOrder, stockStatus, search })
 
+    // Validar supabaseAdmin
+    if (!supabaseAdmin) {
+      logger.error('[API] supabaseAdmin is not initialized')
+      return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 })
+    }
+
     // Build query
     let query = supabaseAdmin.from('products').select(
       `
@@ -531,9 +575,16 @@ export const GET = async (request: NextRequest) => {
         is_active,
         created_at,
         updated_at,
-        categories (
+        category:categories (
           id,
           name
+        ),
+        product_categories (
+          category:categories (
+            id,
+            name,
+            slug
+          )
         )
       `,
       { count: 'exact' }
@@ -596,8 +647,8 @@ export const GET = async (request: NextRequest) => {
     // Transform data - COMPLETO
     const transformedProducts = products?.map(product => ({
       ...product,
-      category_name: product.categories?.name || null,
-      categories: undefined,
+      category_name: product.category?.name || null,
+      category: undefined,
       // Agregar conteo de variantes
       variant_count: variantCounts[product.id] || 0,
       // Transform images JSONB to image_url

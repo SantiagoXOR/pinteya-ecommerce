@@ -21,7 +21,7 @@ const ProductFormEnterpriseSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(255, 'Máximo 255 caracteres'),
   description: z.string().optional(),
   short_description: z.string().max(500, 'Máximo 500 caracteres').optional(),
-  category_id: z.string().uuid('Selecciona una categoría válida'),
+  category_id: z.number().int().positive('Selecciona una categoría válida'),
   status: z.enum(['active', 'inactive', 'draft']),
 
   // Pricing

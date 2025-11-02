@@ -1,7 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+
+// ===================================
+// MIDDLEWARE DE AUTENTICACIÓN ADMIN
+// ===================================
+
+async function validateAdminAuth() {
+  try {
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          return {
+            user: {
+              id: 'dev-admin',
+              email: 'santiago@xor.com.ar',
+              name: 'Dev Admin',
+            },
+            userId: 'dev-admin',
+          }
+        }
+      } catch (error) {
+        console.warn('[API Admin History] No se pudo verificar .env.local, bypass deshabilitado')
+      }
+    }
+
+    const session = await auth()
+    if (!session?.user) {
+      return { error: 'Usuario no autenticado', status: 401 }
+    }
+
+    // Verificar si es admin (usando email como en otros endpoints admin)
+    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    if (!isAdmin) {
+      return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 }
+    }
+
+    return { user: session.user, userId: session.user.id }
+  } catch (error) {
+    logger.log(LogLevel.ERROR, LogCategory.AUTH, 'Error en validación admin', { error })
+    return { error: 'Error de autenticación', status: 500 }
+  }
+}
 
 /**
  * GET /api/admin/orders/[id]/history
@@ -9,20 +54,22 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  let orderId: string | undefined
   try {
-    const orderId = params.id
+    const { id } = await context.params
+    orderId = id
 
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
+    // Verificar autenticación admin
+    const authResult = await validateAdminAuth()
+    if ('error' in authResult) {
+      return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status || 401 })
     }
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Fetching order history', {
       orderId,
-      userId: session.user.id,
+      userId: authResult.userId,
     })
 
     // Verificar que la orden existe
@@ -51,7 +98,8 @@ export async function GET(
           reason,
           created_at,
           user_profiles!order_status_history_changed_by_fkey (
-            name,
+            first_name,
+            last_name,
             email
           )
         `
@@ -61,13 +109,19 @@ export async function GET(
 
       if (!historyError && history && history.length > 0) {
         // Formatear historial real
-        statusHistory = history.map((item, index) => ({
-          id: item.id,
-          status: item.new_status,
-          timestamp: item.created_at,
-          note: item.reason || `Estado cambiado a ${item.new_status}`,
-          user: item.user_profiles?.name || 'Sistema',
-        }))
+        statusHistory = history.map((item, index) => {
+          const userProfiles = Array.isArray(item.user_profiles) ? item.user_profiles[0] : item.user_profiles
+          const userName = userProfiles
+            ? `${userProfiles.first_name || ''} ${userProfiles.last_name || ''}`.trim()
+            : 'Sistema'
+          return {
+            id: item.id,
+            status: item.new_status,
+            timestamp: item.created_at,
+            note: item.reason || `Estado cambiado a ${item.new_status}`,
+            user: userName || 'Sistema',
+          }
+        })
       } else {
         // Si no hay historial en la tabla, crear historial básico
         statusHistory = [
@@ -94,7 +148,7 @@ export async function GET(
     } catch (historyError) {
       logger.log(
         LogLevel.WARN,
-        LogCategory.DATABASE,
+        LogCategory.API,
         'Error fetching order history, using fallback',
         {
           orderId,
@@ -125,7 +179,7 @@ export async function GET(
     })
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Unexpected error in order history API', {
-      orderId: params.id,
+      orderId: orderId || 'unknown',
       error,
     })
 

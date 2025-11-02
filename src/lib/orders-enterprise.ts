@@ -180,6 +180,16 @@ export function formatPaymentStatus(status: PaymentStatus): {
       color: 'gray',
       description: 'Dinero devuelto',
     },
+    awaiting_transfer: {
+      label: 'Esperando Transferencia',
+      color: 'blue',
+      description: 'Esperando transferencia bancaria',
+    },
+    cash_on_delivery: {
+      label: 'Pago al recibir',
+      color: 'purple',
+      description: 'Pago contra entrega',
+    },
   }
 
   return statusMap[status] || statusMap.pending
@@ -201,13 +211,16 @@ export function calculateAverageStateTime(
     const current = statusHistory[i]
     const next = statusHistory[i + 1]
 
+    // Validar que current y next existan antes de acceder a sus propiedades
+    if (!current || !next) continue
+
     const timeInState = new Date(next.created_at).getTime() - new Date(current.created_at).getTime()
     const stateKey = `${current.new_status}_to_${next.new_status}`
 
     if (!stateTimes[stateKey]) {
       stateTimes[stateKey] = []
     }
-    stateTimes[stateKey].push(timeInState)
+    stateTimes[stateKey]!.push(timeInState)
   }
 
   const averages: Record<string, number> = {}
@@ -230,8 +243,15 @@ export function calculateOrderMetrics(order: OrderEnterprise): {
   const totalItems = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) || 0
   const averageItemPrice = totalItems > 0 ? order.total / totalItems : 0
 
-  let processingTime: number | undefined
-  let deliveryTime: number | undefined
+  const result: {
+    totalItems: number
+    averageItemPrice: number
+    processingTime?: number
+    deliveryTime?: number
+  } = {
+    totalItems,
+    averageItemPrice,
+  }
 
   if (order.status_history && order.status_history.length > 0) {
     const confirmedTime = order.status_history.find(h => h.new_status === 'confirmed')?.created_at
@@ -239,20 +259,15 @@ export function calculateOrderMetrics(order: OrderEnterprise): {
     const deliveredTime = order.status_history.find(h => h.new_status === 'delivered')?.created_at
 
     if (confirmedTime && shippedTime) {
-      processingTime = new Date(shippedTime).getTime() - new Date(confirmedTime).getTime()
+      result.processingTime = new Date(shippedTime).getTime() - new Date(confirmedTime).getTime()
     }
 
     if (shippedTime && deliveredTime) {
-      deliveryTime = new Date(deliveredTime).getTime() - new Date(shippedTime).getTime()
+      result.deliveryTime = new Date(deliveredTime).getTime() - new Date(shippedTime).getTime()
     }
   }
 
-  return {
-    totalItems,
-    averageItemPrice,
-    processingTime,
-    deliveryTime,
-  }
+  return result
 }
 
 // ===================================

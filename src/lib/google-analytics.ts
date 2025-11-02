@@ -290,6 +290,77 @@ export const trackScrollDepth = (percentage: number, page: string): void => {
   })
 }
 
+// ===== NUEVAS FUNCIONES PARA HOME V2 =====
+
+// Trackear clicks en CTAs del Hero
+export const trackHeroCTA = (ctaName: string): void => {
+  trackEvent('hero_cta_click', 'engagement', ctaName, undefined, {
+    cta_name: ctaName,
+    page_location: window.location.pathname,
+  })
+}
+
+// Trackear clicks en categorías
+export const trackCategoryClick = (category: string): void => {
+  trackEvent('category_click', 'engagement', category, undefined, {
+    category_name: category,
+    page_location: window.location.pathname,
+  })
+}
+
+// Trackear clicks en búsquedas tendencia
+export const trackTrendingSearch = (searchTerm: string): void => {
+  trackEvent('trending_search_click', 'engagement', searchTerm, undefined, {
+    search_term: searchTerm,
+    page_location: window.location.pathname,
+  })
+}
+
+// Trackear clicks en combos
+export const trackComboClick = (comboId: string, comboTitle: string): void => {
+  trackEvent('combo_click', 'engagement', comboTitle, undefined, {
+    combo_id: comboId,
+    combo_title: comboTitle,
+    page_location: window.location.pathname,
+  })
+}
+
+// Trackear interacción con WhatsApp flotante
+export const trackWhatsAppClick = (source: string = 'floating_button'): void => {
+  trackEvent('whatsapp_click', 'engagement', source, undefined, {
+    source,
+    page_location: window.location.pathname,
+  })
+}
+
+// Trackear Exit Intent Modal
+export const trackExitIntentShown = (): void => {
+  trackEvent('exit_intent_shown', 'engagement', 'modal', undefined, {
+    page_location: window.location.pathname,
+  })
+}
+
+export const trackExitIntentClosed = (): void => {
+  trackEvent('exit_intent_closed', 'engagement', 'modal', undefined, {
+    page_location: window.location.pathname,
+  })
+}
+
+export const trackExitIntentConverted = (email: string): void => {
+  trackEvent('exit_intent_converted', 'conversion', 'email_captured', undefined, {
+    page_location: window.location.pathname,
+    has_email: !!email,
+  })
+}
+
+// Trackear tiempo en homepage
+export const trackTimeOnHomepage = (timeInSeconds: number): void => {
+  trackEvent('time_on_homepage', 'engagement', 'homepage', timeInSeconds, {
+    time_seconds: timeInSeconds,
+    page_location: window.location.pathname,
+  })
+}
+
 // Trackear error
 export const trackError = (errorMessage: string, errorType: string, page: string): void => {
   trackEvent('exception', 'error', errorMessage, undefined, {

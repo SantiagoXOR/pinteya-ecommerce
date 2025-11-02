@@ -71,6 +71,26 @@ export interface Database {
           updated_at?: string | null
         }
       }
+      product_categories: {
+        Row: {
+          id: number
+          product_id: number
+          category_id: number
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          product_id: number
+          category_id: number
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          product_id?: number
+          category_id?: number
+          created_at?: string
+        }
+      }
       products: {
         Row: {
           id: number
@@ -171,6 +191,7 @@ export interface Database {
 // Tipos auxiliares
 export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type Category = Database['public']['Tables']['categories']['Row']
+export type ProductCategory = Database['public']['Tables']['product_categories']['Row']
 export type Product = Database['public']['Tables']['products']['Row']
 export type Order = Database['public']['Tables']['orders']['Row']
 export type OrderItem = Database['public']['Tables']['order_items']['Row']
@@ -178,6 +199,7 @@ export type OrderItem = Database['public']['Tables']['order_items']['Row']
 // Tipos para inserción
 export type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert']
 export type CategoryInsert = Database['public']['Tables']['categories']['Insert']
+export type ProductCategoryInsert = Database['public']['Tables']['product_categories']['Insert']
 export type ProductInsert = Database['public']['Tables']['products']['Insert']
 export type OrderInsert = Database['public']['Tables']['orders']['Insert']
 export type OrderItemInsert = Database['public']['Tables']['order_items']['Insert']
@@ -185,6 +207,7 @@ export type OrderItemInsert = Database['public']['Tables']['order_items']['Inser
 // Tipos para actualización
 export type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
 export type CategoryUpdate = Database['public']['Tables']['categories']['Update']
+export type ProductCategoryUpdate = Database['public']['Tables']['product_categories']['Update']
 export type ProductUpdate = Database['public']['Tables']['products']['Update']
 export type OrderUpdate = Database['public']['Tables']['orders']['Update']
 export type OrderItemUpdate = Database['public']['Tables']['order_items']['Update']

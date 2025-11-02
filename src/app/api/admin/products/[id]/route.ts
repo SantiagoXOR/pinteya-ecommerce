@@ -29,7 +29,7 @@ const UpdateProductSchema = z.object({
   discounted_price: z.number().min(0).optional(),
   stock: z.number().min(0, 'El stock debe ser mayor o igual a 0').optional(),
   low_stock_threshold: z.number().min(0).optional(),
-  category_id: z.string().uuid('ID de categoría inválido').optional(),
+  category_id: z.number().int().positive('ID de categoría inválido').optional(),
   brand: z.string().optional(),
   images: z
     .array(
@@ -183,7 +183,7 @@ const getHandler = async (request: NextRequest, context: { params: Promise<{ id:
  * Actualizar producto específico con middleware enterprise
  */
 const putHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-  const { supabase, user, validatedData } = request as any
+  const { user, validatedData } = request as any
   const { id } = await context.params
   const productId = id
 
@@ -193,12 +193,12 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
     throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
-  // Verificar que el producto existe
-  const existingProduct = await getProductById(supabase, productId)
+  // Verificar que el producto existe - Usar supabaseAdmin directamente
+  const existingProduct = await getProductById(supabaseAdmin, productId)
 
   // Verificar categoría si se está actualizando
   if (validatedData.category_id) {
-    const { data: category, error: categoryError } = await supabase
+    const { data: category, error: categoryError } = await supabaseAdmin
       .from('categories')
       .select('id')
       .eq('id', validatedData.category_id)
@@ -209,37 +209,58 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
     }
   }
 
-  // Generar slug si se actualiza el nombre
-  const updateData = {
-    ...validatedData,
+  // LOG: Datos recibidos del frontend
+  console.log('📥 validatedData recibido del frontend:', JSON.stringify(validatedData, null, 2))
+  console.log('📦 Stock recibido:', validatedData.stock, '(tipo:', typeof validatedData.stock, ')')
+
+  // Crear updateData solo con campos que existen en la tabla products
+  const updateData: any = {
     updated_at: new Date().toISOString(),
   }
 
+  // Mapear solo campos válidos de la BD
+  if (validatedData.name !== undefined) updateData.name = validatedData.name
+  if (validatedData.description !== undefined) updateData.description = validatedData.description
+  if (validatedData.price !== undefined) updateData.price = validatedData.price
+  if (validatedData.discounted_price !== undefined) updateData.discounted_price = validatedData.discounted_price
+  if (validatedData.stock !== undefined) updateData.stock = validatedData.stock
+  if (validatedData.category_id !== undefined) updateData.category_id = validatedData.category_id
+  if (validatedData.brand !== undefined) updateData.brand = validatedData.brand
+  if (validatedData.images !== undefined) updateData.images = validatedData.images
+  
+  // Generar slug si se actualiza el nombre
   if (validatedData.name) {
     updateData.slug = generateSlug(validatedData.name)
   }
 
+  console.log('🔍 updateData preparado:', JSON.stringify(updateData, null, 2))
+  console.log('📦 Stock en updateData:', updateData.stock, '(tipo:', typeof updateData.stock, ')')
+
+  // Verificar que supabaseAdmin esté disponible
+  if (!supabaseAdmin) {
+    throw new ApiError('Cliente de Supabase no disponible', 500, 'CONFIG_ERROR')
+  }
+
+  // Convertir productId a número para la query
+  const numericProductId = parseInt(productId, 10)
+  
   // Actualizar producto
-  const { data: updatedProduct, error } = await supabase
+  const { data: updatedProduct, error } = await supabaseAdmin
     .from('products')
     .update(updateData)
-    .eq('id', productId)
+    .eq('id', numericProductId)
     .select(
       `
       id,
       name,
       slug,
       description,
-      short_description,
       price,
       discounted_price,
       stock,
-      low_stock_threshold,
       category_id,
       brand,
       images,
-      is_active,
-      is_featured,
       created_at,
       updated_at,
       categories (
@@ -251,11 +272,48 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
     .single()
 
   if (error) {
-    throw new ApiError('Error al actualizar producto', 500, 'DATABASE_ERROR', error)
+    console.error('🔥 DATABASE ERROR al actualizar producto:', {
+      error,
+      productId,
+      updateData,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    })
+    throw new ApiError(`Error al actualizar producto: ${error.message}`, 500, 'DATABASE_ERROR', error)
+  }
+
+  console.log('✅ Producto actualizado en BD:', {
+    id: updatedProduct.id,
+    name: updatedProduct.name,
+    stock: updatedProduct.stock,
+    stockTipo: typeof updatedProduct.stock
+  })
+
+  // Si se actualizó el stock del producto principal, actualizar también la variante predeterminada
+  // (las demás variantes se manejan de forma independiente a través del endpoint específico)
+  if (validatedData.stock !== undefined) {
+    console.log('📦 Actualizando stock de variante predeterminada a:', validatedData.stock)
+    // @ts-ignore - Supabase types are too strict
+    const { error: variantError, count } = await supabaseAdmin
+      .from('product_variants')
+      .update({ 
+        stock: validatedData.stock,
+        updated_at: new Date().toISOString()
+      })
+      .eq('product_id', numericProductId)
+      .eq('is_default', true)
+    
+    if (variantError) {
+      console.error('⚠️ Error actualizando variante predeterminada:', variantError)
+    } else {
+      console.log(`✅ Variante predeterminada actualizada con stock ${validatedData.stock} (${count || 0} registros)`)
+    }
   }
 
   // Log de auditoría
-  await logAdminAction(user.id, 'UPDATE', 'product', productId, existingProduct, updatedProduct)
+  await logAdminAction(user?.id || 'system', 'UPDATE', 'product', productId, existingProduct, updatedProduct)
 
   // Transform response
   const transformedProduct = {
@@ -263,6 +321,11 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
     category_name: updatedProduct.categories?.name || null,
     categories: undefined,
   }
+
+  console.log('📤 Respuesta que se enviará al frontend:', {
+    stock: transformedProduct.stock,
+    stockTipo: typeof transformedProduct.stock
+  })
 
   return NextResponse.json({
     data: transformedProduct,
@@ -276,7 +339,7 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
  * Eliminar producto específico con middleware enterprise
  */
 const deleteHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-  const { supabase, user } = request as any
+  const { user } = request as any
   const { id } = await context.params
   const productId = id
 
@@ -286,11 +349,11 @@ const deleteHandler = async (request: NextRequest, context: { params: Promise<{ 
     throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
-  // Verificar que el producto existe
-  const existingProduct = await getProductById(supabase, productId)
+  // Verificar que el producto existe - Usar supabaseAdmin directamente
+  const existingProduct = await getProductById(supabaseAdmin, productId)
 
   // Verificar si el producto está referenciado en órdenes
-  const { data: orderItems, error: orderCheckError } = await supabase
+  const { data: orderItems, error: orderCheckError } = await supabaseAdmin
     .from('order_items')
     .select('id')
     .eq('product_id', productId)
@@ -306,7 +369,7 @@ const deleteHandler = async (request: NextRequest, context: { params: Promise<{ 
 
   if (orderItems && orderItems.length > 0) {
     // Soft delete: marcar como inactivo
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('products')
       .update({
         is_active: false,
@@ -324,7 +387,7 @@ const deleteHandler = async (request: NextRequest, context: { params: Promise<{ 
     }
   } else {
     // Hard delete si no hay referencias
-    const { error } = await supabase.from('products').delete().eq('id', productId)
+    const { error } = await supabaseAdmin.from('products').delete().eq('id', productId)
 
     if (error) {
       throw new ApiError('Error al eliminar producto', 500, 'DATABASE_ERROR', error)
@@ -339,7 +402,7 @@ const deleteHandler = async (request: NextRequest, context: { params: Promise<{ 
 
   // Log de auditoría
   await logAdminAction(
-    user.id,
+    user?.id || 'system',
     isHardDelete ? 'DELETE' : 'SOFT_DELETE',
     'product',
     productId,

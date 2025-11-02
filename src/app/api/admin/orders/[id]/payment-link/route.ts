@@ -1,8 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { createPaymentPreference } from '@/lib/integrations/mercadopago'
+
+// ===================================
+// MIDDLEWARE DE AUTENTICACIÓN ADMIN
+// ===================================
+
+async function validateAdminAuth() {
+  try {
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          return {
+            user: {
+              id: 'dev-admin',
+              email: 'santiago@xor.com.ar',
+              name: 'Dev Admin',
+            },
+            userId: 'dev-admin',
+          }
+        }
+      } catch (error) {
+        console.warn('[API Admin Payment Link] No se pudo verificar .env.local, bypass deshabilitado')
+      }
+    }
+
+    const session = await auth()
+    if (!session?.user) {
+      return { error: 'Usuario no autenticado', status: 401 }
+    }
+
+    // Verificar si es admin (usando email como en otros endpoints admin)
+    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    if (!isAdmin) {
+      return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 }
+    }
+
+    return { user: session.user, userId: session.user.id }
+  } catch (error) {
+    logger.log(LogLevel.ERROR, LogCategory.AUTH, 'Error en validación admin', { error })
+    return { error: 'Error de autenticación', status: 500 }
+  }
+}
 
 /**
  * POST /api/admin/orders/[id]/payment-link
@@ -10,20 +55,22 @@ import { createPaymentPreference } from '@/lib/integrations/mercadopago'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  let orderId: string | undefined
   try {
-    const orderId = params.id
+    const { id } = await context.params
+    orderId = id
 
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
+    // Verificar autenticación admin
+    const authResult = await validateAdminAuth()
+    if ('error' in authResult) {
+      return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status || 401 })
     }
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Creating payment link for order', {
       orderId,
-      userId: session.user.id,
+      userId: authResult.userId,
     })
 
     // Obtener datos de la orden
@@ -77,7 +124,7 @@ export async function POST(
       .eq('order_id', orderId)
 
     if (itemsError || !orderItems) {
-      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error fetching order items', {
+      logger.log(LogLevel.ERROR, LogCategory.API, 'Error fetching order items', {
         orderId,
         itemsError,
       })
@@ -89,17 +136,20 @@ export async function POST(
 
     // Preparar datos para MercadoPago
     const preferenceData = {
-      items: orderItems.map(item => ({
-        id: item.products.id.toString(),
-        title: item.products.name,
-        description: item.products.description || item.products.name,
-        quantity: item.quantity,
-        unit_price: item.price,
-        currency_id: 'ARS',
-      })),
+      items: orderItems.map(item => {
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        return {
+          id: product?.id?.toString() || 'unknown',
+          title: product?.name || 'Producto',
+          description: product?.description || product?.name || 'Producto',
+          quantity: item.quantity,
+          unit_price: item.price,
+          currency_id: 'ARS',
+        }
+      }),
       payer: {
-        name: order.user_profiles?.name || 'Cliente',
-        email: order.user_profiles?.email || 'cliente@pinteya.com',
+        name: (Array.isArray(order.user_profiles) ? order.user_profiles[0]?.name : order.user_profiles?.name) || 'Cliente',
+        email: (Array.isArray(order.user_profiles) ? order.user_profiles[0]?.email : order.user_profiles?.email) || 'cliente@pinteya.com',
       },
       external_reference: order.external_reference || orderId.toString(),
       back_urls: {
@@ -135,7 +185,7 @@ export async function POST(
       .eq('id', orderId)
 
     if (updateError) {
-      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error updating order with preference_id', {
+      logger.log(LogLevel.ERROR, LogCategory.API, 'Error updating order with preference_id', {
         orderId,
         updateError,
       })
@@ -157,7 +207,7 @@ export async function POST(
     })
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Unexpected error creating payment link', {
-      orderId: params.id,
+      orderId: orderId || 'unknown',
       error,
     })
 

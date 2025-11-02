@@ -176,19 +176,42 @@ export async function GET(request: NextRequest) {
         let query = supabase.from('products').select(
           `
               id, name, slug, price, discounted_price, brand, stock, images, color, medida,
-              category:categories(id, name, slug)
+              category:categories(id, name, slug),
+              categories:product_categories(category:categories(id, name, slug))
             `,
           { count: 'exact' }
         )
 
         // Aplicar filtros de categoría
+        // ✅ CORREGIDO: Combinar categoryId y categoryIds en un solo filtro (OR, no AND)
+        const allCategoryIds = []
+        
         if (categoryId) {
-          query = query.eq('category_id', categoryId)
+          allCategoryIds.push(categoryId)
         }
-
-        // Filtro por múltiples categorías
+        
         if (categoryIds.length > 0) {
-          query = query.in('category_id', categoryIds)
+          allCategoryIds.push(...categoryIds)
+        }
+        
+        // Aplicar filtro combinado si hay categorías
+        if (allCategoryIds.length > 0) {
+          // Eliminar duplicados
+          const uniqueCategoryIds = [...new Set(allCategoryIds)]
+          
+          // Buscar productos que tengan CUALQUIERA de estas categorías
+          const { data: productIdsData } = await supabase
+            .from('product_categories')
+            .select('product_id')
+            .in('category_id', uniqueCategoryIds)
+          
+          if (productIdsData && productIdsData.length > 0) {
+            const productIds = [...new Set(productIdsData.map(pc => pc.product_id))]
+            query = query.in('id', productIds)
+          } else {
+            // Si no hay productos con estas categorías, retornar vacío
+            query = query.eq('id', -1)
+          }
         }
 
         if (filters.brand) {
@@ -662,7 +685,8 @@ export async function POST(request: NextRequest) {
           .select(
             `
               *,
-              category:categories(id, name, slug)
+              category:categories(id, name, slug),
+              categories:product_categories(category:categories(id, name, slug))
             `
           )
           .single()

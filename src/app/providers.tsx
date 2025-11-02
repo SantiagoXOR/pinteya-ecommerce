@@ -127,7 +127,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                                 />
                               )} */}
 
-                            {/* Toaster para notificaciones */}
+                            {/* Toaster para notificaciones con z-index alto */}
                             <Toaster />
                           </PreviewSliderProvider>
                         </CartModalProvider>

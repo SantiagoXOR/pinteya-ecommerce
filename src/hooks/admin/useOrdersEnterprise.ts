@@ -146,7 +146,17 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
-      return response.json()
+      const data = await response.json()
+      console.log('🔍 API Response:', {
+        hasData: !!data,
+        hasSuccess: data.success,
+        hasOrders: !!data.data?.orders,
+        ordersCount: data.data?.orders?.length,
+        hasPagination: !!data.data?.pagination,
+        structure: Object.keys(data),
+        dataKeys: data.data ? Object.keys(data.data) : []
+      })
+      return data
     },
     staleTime: 30000, // 30 segundos
     refetchOnWindowFocus: false,
@@ -170,7 +180,7 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     refetchOnWindowFocus: false,
   })
 
-  // Query para analytics
+  // Query para analytics (opcional - no bloquea si falla)
   const {
     data: analyticsData,
     isLoading: analyticsLoading,
@@ -178,14 +188,25 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   } = useQuery({
     queryKey: ['admin-orders-analytics'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/orders/analytics')
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
+      try {
+        const response = await fetch('/api/admin/orders/analytics')
+        if (!response.ok) {
+          // Si es 401 o 404, retornar datos vacíos en lugar de fallar
+          if (response.status === 401 || response.status === 404) {
+            console.warn('Analytics endpoint not available or unauthorized')
+            return { data: null }
+          }
+          throw new Error(`Error ${response.status}: ${response.statusText}`)
+        }
+        return response.json()
+      } catch (error) {
+        console.warn('Analytics fetch failed:', error)
+        return { data: null }
       }
-      return response.json()
     },
     staleTime: 300000, // 5 minutos
     refetchOnWindowFocus: false,
+    retry: false, // No reintentar si falla
   })
 
   // =====================================================
@@ -204,13 +225,14 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       notes?: string
     }) => {
       const response = await fetch(`/api/admin/orders/${orderId}`, {
-        method: 'PUT',
+        method: 'PATCH', // Cambio de PUT a PATCH
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, notes }),
       })
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`)
       }
 
       return response.json()
@@ -269,7 +291,11 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
 
   const updateOrderStatus = useCallback(
     (orderId: string, status: OrderStatus, notes?: string) => {
-      return updateOrderStatusMutation.mutateAsync({ orderId, status, notes })
+      return updateOrderStatusMutation.mutateAsync({ 
+        orderId, 
+        status, 
+        ...(notes !== undefined && { notes })
+      })
     },
     [updateOrderStatusMutation]
   )
@@ -290,11 +316,11 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   // =====================================================
 
   const derivedMetrics = {
-    totalPages: ordersData?.pagination?.total_pages || 0,
-    totalOrders: ordersData?.pagination?.total_count || 0,
+    totalPages: ordersData?.data?.pagination?.totalPages || 0,
+    totalOrders: ordersData?.data?.pagination?.total || 0,
     currentPage: filters.page,
-    hasNextPage: filters.page < (ordersData?.pagination?.total_pages || 0),
-    hasPrevPage: filters.page > 1,
+    hasNextPage: ordersData?.data?.pagination?.hasNextPage || false,
+    hasPrevPage: ordersData?.data?.pagination?.hasPreviousPage || false,
 
     // Estadísticas calculadas
     completionRate: statsData?.data
@@ -315,9 +341,19 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   // =====================================================
 
   return {
-    // Datos
-    orders: ordersData?.data || [],
-    stats: statsData?.data || null,
+    // Datos ya transformados por el API - Acceder correctamente a la estructura anidada
+    orders: ordersData?.data?.orders || ordersData?.data || [],
+    // Transformar stats de snake_case a camelCase
+    stats: statsData?.stats ? {
+      totalOrders: statsData.stats.total_orders,
+      pendingOrders: statsData.stats.pending_orders,
+      processingOrders: statsData.stats.processing_orders || 0,
+      completedOrders: statsData.stats.completed_orders,
+      cancelledOrders: statsData.stats.cancelled_orders,
+      totalRevenue: statsData.stats.total_revenue,
+      averageOrderValue: statsData.stats.average_order_value,
+      ordersToday: statsData.stats.orders_today || 0,
+    } : null,
     analytics: analyticsData?.data || null,
 
     // Estados de carga
@@ -359,6 +395,38 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       goToPage: (page: number) => updateFilters({ page }),
       nextPage: () => derivedMetrics.hasNextPage && updateFilters({ page: filters.page + 1 }),
       prevPage: () => derivedMetrics.hasPrevPage && updateFilters({ page: filters.page - 1 }),
+    },
+    
+    // Función refresh simplificada
+    refreshOrders: refetchOrders,
+    
+    // Handlers para componente
+    handleBulkOperation: bulkUpdateStatus,
+    handleOrderAction: async (action: string, orderId: string) => {
+      console.log('Order action:', action, orderId)
+      
+      // Mapear acciones a estados
+      const actionToStatusMap: Record<string, OrderStatus | null> = {
+        'process': 'processing',
+        'deliver': 'delivered',
+        'ship': 'shipped',
+        'confirm': 'confirmed',
+        'cancel': 'cancelled',
+      }
+      
+      const newStatus = actionToStatusMap[action]
+      
+      if (newStatus) {
+        try {
+          await updateOrderStatus(orderId, newStatus)
+        } catch (error) {
+          console.error('Error updating order status:', error)
+          throw error
+        }
+      } else {
+        // Para otras acciones que no sean cambio de estado
+        console.log('Action not mapped to status change:', action)
+      }
     },
   }
 }

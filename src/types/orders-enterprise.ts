@@ -21,6 +21,8 @@ export type PaymentStatus =
   | 'paid' // Pagado
   | 'failed' // Falló el pago
   | 'refunded' // Reembolsado
+  | 'awaiting_transfer' // Esperando transferencia
+  | 'cash_on_delivery' // Pago al recibir
 
 export type FulfillmentStatus =
   | 'unfulfilled' // Sin procesar

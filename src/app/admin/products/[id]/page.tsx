@@ -28,7 +28,7 @@ interface Product {
   compare_price?: number
   cost_price?: number
   stock: number
-  category_id: string
+  category_id: number // ✅ CORREGIDO: number (no string) - alineado con BD y schemas Zod
   category_name?: string
   image_url?: string
   status: 'active' | 'inactive' | 'draft'
@@ -102,6 +102,8 @@ export default function ProductDetailPage() {
     queryKey: ['admin-product', productId],
     queryFn: () => fetchProduct(productId),
     enabled: !!productId,
+    staleTime: 0, // Siempre considerar los datos como obsoletos
+    refetchOnMount: 'always', // Siempre refetch al montar
   })
 
   const handleEdit = () => {

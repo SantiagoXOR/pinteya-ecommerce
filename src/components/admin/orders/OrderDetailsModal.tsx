@@ -31,7 +31,8 @@ import {
   Copy,
   ExternalLink,
 } from 'lucide-react'
-import { useOrderNotifications } from '@/hooks/admin/useOrderNotifications'
+import { toast } from 'sonner'
+import { PaymentProofModal } from './PaymentProofModal'
 
 // ===================================
 // TIPOS
@@ -40,7 +41,8 @@ import { useOrderNotifications } from '@/hooks/admin/useOrderNotifications'
 interface OrderItem {
   id: number
   quantity: number
-  price: number
+  unit_price: number
+  total_price: number
   products: {
     id: number
     name: string
@@ -53,6 +55,7 @@ interface Order {
   external_reference?: string
   status: string
   payment_status?: string
+  payment_id?: string
   total: number
   created_at: string
   updated_at: string
@@ -63,8 +66,12 @@ interface Order {
   }
   shipping_address?: {
     street?: string
+    street_name?: string
+    street_number?: string
     city?: string
+    city_name?: string
     state?: string
+    state_name?: string
     zip_code?: string
     country?: string
   }
@@ -143,13 +150,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   onClose,
   orderId,
 }) => {
-  const notifications = useOrderNotifications()
-
   // Estados
   const [order, setOrder] = useState<Order | null>(null)
   const [statusHistory, setStatusHistory] = useState<StatusHistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
+  const [isPaymentProofModalOpen, setIsPaymentProofModalOpen] = useState(false)
 
   // ===================================
   // EFECTOS
@@ -171,13 +177,26 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       let orderData: any = null
 
       // Cargar detalles de la orden
-      const response = await fetch(`/api/orders/${orderId}`)
+      const response = await fetch(`/api/admin/orders/${orderId}`)
       if (response.ok) {
         const data = await response.json()
-        orderData = data.data
+        orderData = data.data.order
+        
+        // Transformar shipping_address para compatibilidad
+        if (orderData.shipping_address) {
+          const addr = orderData.shipping_address
+          orderData.shipping_address = {
+            street: addr.street || `${addr.street_name || ''} ${addr.street_number || ''}`.trim() || undefined,
+            city: addr.city || addr.city_name || undefined,
+            state: addr.state || addr.state_name || undefined,
+            zip_code: addr.zip_code || undefined,
+            country: addr.country || undefined,
+          }
+        }
+        
         setOrder(orderData)
       } else {
-        notifications.showNetworkError('cargar detalles de la orden')
+        toast.error('Error al cargar detalles de la orden')
         return
       }
 
@@ -186,8 +205,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         const historyResponse = await fetch(`/api/admin/orders/${orderId}/history`)
         if (historyResponse.ok) {
           const historyData = await historyResponse.json()
-          if (historyData.success && historyData.data) {
-            setStatusHistory(historyData.data)
+          if (historyData.success && historyData.data?.statusHistory) {
+            setStatusHistory(historyData.data.statusHistory)
           } else {
             // Fallback: crear historial básico basado en el estado actual de la orden
             const basicHistory: StatusHistoryItem[] = [
@@ -230,7 +249,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       }
     } catch (error) {
       console.error('Error loading order details:', error)
-      notifications.showNetworkError('cargar detalles de la orden')
+      toast.error('Error al cargar detalles de la orden')
     } finally {
       setIsLoading(false)
     }
@@ -238,7 +257,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
-    notifications.showProcessingInfo(`${label} copiado al portapapeles`)
+    toast.success(`${label} copiado al portapapeles`)
   }
 
   // ===================================
@@ -251,7 +270,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
 
     try {
-      notifications.showProcessingInfo('Creando link de pago...')
+      const loadingToast = toast.loading('Creando link de pago...')
 
       const response = await fetch(`/api/admin/orders/${order.id}/payment-link`, {
         method: 'POST',
@@ -263,19 +282,19 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         if (data.success && data.data.payment_url) {
           // Copiar link al portapapeles y mostrar notificación
           await navigator.clipboard.writeText(data.data.payment_url)
-          notifications.showSuccess('Link de pago creado y copiado al portapapeles')
+          toast.success('Link de pago creado y copiado al portapapeles', { id: loadingToast })
 
           // Opcional: abrir en nueva ventana
           window.open(data.data.payment_url, '_blank')
         } else {
-          notifications.showError('Error al crear link de pago')
+          toast.error('Error al crear link de pago', { id: loadingToast })
         }
       } else {
-        notifications.showError('Error al crear link de pago')
+        toast.error('Error al crear link de pago', { id: loadingToast })
       }
     } catch (error) {
       console.error('Error creating payment link:', error)
-      notifications.showError('Error al crear link de pago')
+      toast.error('Error al crear link de pago')
     }
   }
 
@@ -285,7 +304,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
 
     try {
-      notifications.showProcessingInfo('Marcando orden como pagada...')
+      const loadingToast = toast.loading('Marcando orden como pagada...')
 
       const response = await fetch(`/api/admin/orders/${order.id}/mark-paid`, {
         method: 'POST',
@@ -299,18 +318,18 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          notifications.showSuccess('Orden marcada como pagada')
+          toast.success('Orden marcada como pagada', { id: loadingToast })
           // Recargar datos de la orden
           loadOrderDetails()
         } else {
-          notifications.showError('Error al marcar orden como pagada')
+          toast.error('Error al marcar orden como pagada', { id: loadingToast })
         }
       } else {
-        notifications.showError('Error al marcar orden como pagada')
+        toast.error('Error al marcar orden como pagada', { id: loadingToast })
       }
     } catch (error) {
       console.error('Error marking as paid:', error)
-      notifications.showError('Error al marcar orden como pagada')
+      toast.error('Error al marcar orden como pagada')
     }
   }
 
@@ -320,7 +339,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
 
     try {
-      notifications.showProcessingInfo('Procesando reembolso...')
+      const loadingToast = toast.loading('Procesando reembolso...')
 
       const response = await fetch(`/api/admin/orders/${order.id}/refund`, {
         method: 'POST',
@@ -334,18 +353,18 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          notifications.showSuccess('Reembolso procesado exitosamente')
+          toast.success('Reembolso procesado exitosamente', { id: loadingToast })
           // Recargar datos de la orden
           loadOrderDetails()
         } else {
-          notifications.showError('Error al procesar reembolso')
+          toast.error('Error al procesar reembolso', { id: loadingToast })
         }
       } else {
-        notifications.showError('Error al procesar reembolso')
+        toast.error('Error al procesar reembolso', { id: loadingToast })
       }
     } catch (error) {
       console.error('Error processing refund:', error)
-      notifications.showError('Error al procesar reembolso')
+      toast.error('Error al procesar reembolso')
     }
   }
 
@@ -473,12 +492,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                             <div className='flex-1'>
                               <h4 className='font-medium text-sm'>{item.products.name}</h4>
                               <p className='text-xs text-gray-600'>
-                                Cantidad: {item.quantity} × {formatCurrency(item.price)}
+                                Cantidad: {item.quantity} × {formatCurrency(item.unit_price)}
                               </p>
                             </div>
                             <div className='text-right'>
                               <p className='font-medium'>
-                                {formatCurrency(item.quantity * item.price)}
+                                {formatCurrency(item.total_price || item.quantity * item.unit_price)}
                               </p>
                             </div>
                           </div>
@@ -693,7 +712,13 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                               Procesar Reembolso
                             </Button>
                           )}
-                          <Button variant='outline' size='sm' className='w-full justify-start'>
+                          <Button 
+                            variant='outline' 
+                            size='sm' 
+                            className='w-full justify-start'
+                            onClick={() => setIsPaymentProofModalOpen(true)}
+                            disabled={!order.payment_id}
+                          >
                             <FileText className='h-4 w-4 mr-2' />
                             Ver Comprobante
                           </Button>
@@ -757,6 +782,15 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           </div>
         )}
       </DialogContent>
+
+      {/* Modal de Comprobante de Pago */}
+      {order && (
+        <PaymentProofModal
+          isOpen={isPaymentProofModalOpen}
+          onClose={() => setIsPaymentProofModalOpen(false)}
+          orderId={order.id}
+        />
+      )}
     </Dialog>
   )
 }

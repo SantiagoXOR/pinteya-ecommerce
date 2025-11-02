@@ -18,7 +18,7 @@ const ProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(255),
   description: z.string().max(5000).optional(),
   brand: z.string().max(100).optional(),
-  category_id: z.string().uuid('Selecciona una categoría'),
+  category_id: z.number().int().positive('Selecciona una categoría'),
   is_active: z.boolean().default(true),
   
   // Metadata
@@ -104,7 +104,7 @@ export function ProductFormMinimal({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
-      notifications.showSuccess('Variante creada exitosamente')
+      notifications.showInfoMessage('Variante creada', 'La variante se creó exitosamente')
     },
     onError: (error: any) => {
       console.error('Error al crear variante:', error)
@@ -113,21 +113,38 @@ export function ProductFormMinimal({
   
   const updateVariantMutation = useMutation({
     mutationFn: async ({ id, ...data }: any) => {
+      console.log('🚀 [Frontend] Enviando actualización de variante:', {
+        id,
+        data,
+        dataKeys: Object.keys(data),
+        stock: data.stock,
+        stockType: typeof data.stock
+      })
+      
       const res = await fetch(`/api/products/${productId}/variants/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
+      
+      console.log('📡 [Frontend] Respuesta del servidor:', {
+        status: res.status,
+        ok: res.ok
+      })
+      
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: 'Error desconocido' }))
-        console.error('Error del servidor:', res.status, errorData)
+        console.error('❌ [Frontend] Error del servidor:', res.status, errorData)
         throw new Error(errorData.error || `Error ${res.status}: Error actualizando variante`)
       }
-      return res.json()
+      
+      const result = await res.json()
+      console.log('✅ [Frontend] Variante actualizada, respuesta:', result)
+      return result
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
-      notifications.showSuccess('Variante actualizada exitosamente')
+      notifications.showInfoMessage('Variante actualizada', 'La variante se actualizó exitosamente')
     },
     onError: (error: any) => {
       console.error('Error al actualizar variante:', error)
@@ -144,7 +161,7 @@ export function ProductFormMinimal({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
-      notifications.showSuccess('Variante eliminada exitosamente')
+      notifications.showInfoMessage('Variante eliminada', 'La variante se eliminó exitosamente')
     },
     onError: (error: any) => {
       console.error('Error al eliminar variante:', error)
@@ -176,16 +193,23 @@ export function ProductFormMinimal({
 
   const handleFormSubmit = async (data: ProductFormData) => {
     try {
-      notifications.showInfo(
+      notifications.showProcessingInfo(
         mode === 'create' ? 'Creando producto...' : 'Actualizando producto...'
       )
       await onSubmit(data)
-      notifications.showSuccess(
-        mode === 'create' ? 'Producto creado exitosamente' : 'Producto actualizado exitosamente'
-      )
+      
+      if (mode === 'create') {
+        notifications.showProductCreated({ productName: data.name })
+      } else {
+        notifications.showProductUpdated({ productName: data.name })
+      }
     } catch (error) {
       console.error('Error submitting form:', error)
-      notifications.showError('Error al guardar el producto')
+      if (mode === 'create') {
+        notifications.showProductCreationError('Error al guardar el producto')
+      } else {
+        notifications.showProductUpdateError('Error al guardar el producto', data.name)
+      }
     }
   }
 
@@ -297,7 +321,7 @@ export function ProductFormMinimal({
               <CategorySelector
                 value={watchedData.category_id}
                 onChange={(categoryId) => form.setValue('category_id', categoryId)}
-                error={errors.category_id?.message}
+                {...(errors.category_id?.message && { error: errors.category_id.message })}
               />
             </div>
 
@@ -427,7 +451,7 @@ export function ProductFormMinimal({
                       </tr>
                     </thead>
                     <tbody className='bg-white divide-y divide-gray-200'>
-                      {variants.map((variant, index) => (
+                      {variants.map((variant: ProductVariant, index: number) => (
                         <tr key={variant.id || index} className='hover:bg-gray-50'>
                           <td className='px-4 py-3 text-sm text-gray-900'>{variant.color_name}</td>
                           <td className='px-4 py-3 text-sm text-gray-900'>{variant.measure}</td>

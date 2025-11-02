@@ -361,6 +361,51 @@ export async function getPaymentInfo(paymentId: string) {
 }
 
 /**
+ * Obtiene detalles completos de un pago desde MercadoPago
+ * Usado para mostrar comprobantes de pago en el panel admin
+ */
+export async function getPaymentDetails(paymentId: string) {
+  try {
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN
+
+    if (!accessToken) {
+      return {
+        success: false,
+        error: 'MercadoPago access token not configured',
+      }
+    }
+
+    const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `MercadoPago API error: ${response.status}`,
+      }
+    }
+
+    const data = await response.json()
+
+    return {
+      success: true,
+      data,
+    }
+  } catch (error) {
+    console.error('Error getting payment details:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}
+
+/**
  * Valida la firma del webhook de MercadoPago con seguridad mejorada
  */
 export function validateWebhookSignature(

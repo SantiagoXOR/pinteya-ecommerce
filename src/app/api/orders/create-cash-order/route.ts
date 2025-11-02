@@ -4,12 +4,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/integrations/supabase/server';
 import { auth } from '@/auth';
 import { z } from 'zod';
-import { logger } from '@/lib/enterprise/logger';
+import { logger, LogCategory } from '@/lib/enterprise/logger';
 import { createRateLimiter } from '@/lib/rate-limiting/rate-limiter';
 import { metricsCollector } from '@/lib/enterprise/metrics';
 import crypto from 'crypto';
 import { normalizeWhatsAppPhoneNumber } from '@/lib/integrations/whatsapp/whatsapp-link-service';
 import { sanitizeForWhatsApp, EMOJIS } from '@/lib/integrations/whatsapp/whatsapp-utils';
+
+// Tipo para productos desde la base de datos
+interface ProductFromDB {
+  id: string;
+  name: string;
+  price: number;
+  discounted_price?: number | null;
+  stock: number;
+  color?: string | null;
+  medida?: string | null;
+  brand?: string | null;
+  description?: string | null;
+  finish?: string | null;
+  aikon_id?: string | null;
+  product_variants?: Array<{
+    id: string;
+    color_name: string;
+    measure: string;
+    price_sale: number;
+    price_list: number;
+  }>;
+}
 
 // Schema de validación para la orden de pago contra entrega
 const CreateCashOrderSchema = z.object({
@@ -50,7 +72,7 @@ const CreateCashOrderSchema = z.object({
 });
 
 // Función helper para calcular precio final del producto
-function calculateFinalPrice(product: any): number {
+function calculateFinalPrice(product: ProductFromDB): number {
   // Si hay precio con descuento, usarlo directamente
   if (product.discounted_price && product.discounted_price > 0) {
     return product.discounted_price;
@@ -100,7 +122,7 @@ export async function POST(request: NextRequest) {
     const rateLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60 * 1000 });
     const rateLimitResult = await rateLimiter(request);
     if (!rateLimitResult.allowed) {
-      logger.warn('Rate limit exceeded for create-cash-order', {
+      logger.warn(LogCategory.API, 'Rate limit exceeded for create-cash-order', {
         limit: rateLimitResult.limit,
         remaining: rateLimitResult.remaining
       });
@@ -122,7 +144,7 @@ export async function POST(request: NextRequest) {
       quantity: item.quantity
     })));
 
-    logger.info('Creating cash order', {
+    logger.info(LogCategory.ORDER, 'Creating cash order', {
       itemsCount: validatedData.items.length,
       payerEmail: validatedData.payer.email
     });
@@ -135,7 +157,7 @@ export async function POST(request: NextRequest) {
     
     if (session?.user?.id) {
       userId = session.user.id;
-      logger.info('Using authenticated user', { userId });
+      logger.info(LogCategory.AUTH, 'Using authenticated user', { userId });
     } else {
       // Crear usuario temporal para checkout sin autenticación
       const tempUserEmail = validatedData.payer.email;
@@ -150,7 +172,7 @@ export async function POST(request: NextRequest) {
 
       if (existingUser) {
         userId = existingUser.id;
-        logger.info('Using existing temp user', { userId, email: tempUserEmail });
+        logger.info(LogCategory.USER, 'Using existing temp user', { userId, email: tempUserEmail });
       } else {
         const tempUserId = crypto.randomUUID();
         const { data: newUser, error: userError } = await supabase
@@ -171,12 +193,12 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (userError || !newUser) {
-          logger.error('Error creating temporary user', { error: userError });
+          logger.error(LogCategory.USER, 'Error creating temporary user', userError || undefined);
           throw new Error('Error al crear usuario temporal');
         }
 
         userId = newUser.id;
-        logger.info('Created new temp user', { userId, email: tempUserEmail });
+        logger.info(LogCategory.USER, 'Created new temp user', { userId, email: tempUserEmail });
       }
     }
 
@@ -192,18 +214,18 @@ export async function POST(request: NextRequest) {
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select(`
-        id, name, price, discounted_price, stock, color, medida, brand, description,
+        id, name, price, discounted_price, stock, color, medida, brand, description, finish, aikon_id,
         product_variants (
           id, color_name, measure, price_sale, price_list
         )
       `)
-      .in('id', productIds);
+      .in('id', productIds) as { data: ProductFromDB[] | null; error: any };
 
     console.log('📦 Productos encontrados en BD:', products);
     console.log('❌ Error en consulta:', productsError);
 
     if (productsError || !products) {
-      logger.error('Error fetching products', { error: productsError });
+      logger.error(LogCategory.API, 'Error fetching products', productsError || undefined);
       throw new Error('Error al obtener información de productos');
     }
 
@@ -275,7 +297,8 @@ export async function POST(request: NextRequest) {
       order_number: orderNumber,
       total: totalAmount,
       status: 'pending',
-      payment_status: 'pending',
+      payment_status: 'cash_on_delivery',
+      payment_method: 'cash',
       payer_info: {
         name: validatedData.payer.name,
         surname: validatedData.payer.surname,
@@ -314,15 +337,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (orderError || !order) {
-      logger.error('Error creating order', { 
-        error: orderError, 
-        orderData: {
-          user_id: userId,
-          total: totalAmount,
-          status: 'pending',
-          payment_status: 'cash_on_delivery'
-        }
-      });
+      logger.error(LogCategory.ORDER, 'Error creating order', orderError || undefined);
       throw new Error(orderError?.message || orderError?.details || orderError?.hint || 'Error al crear la orden');
     }
 
@@ -340,7 +355,7 @@ export async function POST(request: NextRequest) {
 
     if (itemsError) {
       console.error('❌ Error creating order items:', itemsError);
-      logger.error('Error creating order items', { error: itemsError });
+      logger.error(LogCategory.ORDER, 'Error creating order items', itemsError);
       throw new Error(`Error al crear los items de la orden: ${itemsError.message}`);
     }
 
@@ -404,6 +419,8 @@ export async function POST(request: NextRequest) {
     lines.push(`${bullet} Dirección: 📍 ${order.shipping_address?.street_name} ${order.shipping_address?.street_number}`);
     lines.push(`${bullet} Ciudad: ${order.shipping_address?.city_name}, ${order.shipping_address?.state_name}`);
     lines.push(`${bullet} CP: ${order.shipping_address?.zip_code}`);
+    lines.push('');
+    lines.push(`💳 *Método de pago:* Pago al recibir`);
     lines.push('', `${EMOJIS.check} ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`);
 
     // Usar \n para mejor compatibilidad con WhatsApp
@@ -458,9 +475,14 @@ export async function POST(request: NextRequest) {
 
     // Métricas de performance
     const duration = Date.now() - startTime;
-    metricsCollector.recordApiCall('create-cash-order', duration, 'success');
+    metricsCollector.recordApiCall({
+      endpoint: 'create-cash-order',
+      method: 'POST',
+      statusCode: 200,
+      responseTime: duration
+    });
 
-    logger.info('Cash order created successfully', {
+    logger.info(LogCategory.ORDER, 'Cash order created successfully', {
       orderId: order.id,
       totalAmount,
       itemsCount: orderItems.length,
@@ -487,13 +509,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    metricsCollector.recordApiCall('create-cash-order', duration, 'error');
-    
-    logger.error('Error in create-cash-order API', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      duration
+    metricsCollector.recordApiCall({
+      endpoint: 'create-cash-order',
+      method: 'POST',
+      statusCode: 500,
+      responseTime: duration,
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
+    
+    logger.error(LogCategory.API, 'Error in create-cash-order API', error instanceof Error ? error : undefined);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(

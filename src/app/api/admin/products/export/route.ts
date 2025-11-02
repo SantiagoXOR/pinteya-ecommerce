@@ -2,15 +2,16 @@
 export const runtime = 'nodejs'
 
 // =====================================================
-// API: EXPORTACIÓN DE PRODUCTOS CSV
+// API: EXPORTACIÓN DE PRODUCTOS CSV/EXCEL
 // Ruta: /api/admin/products/export
-// Descripción: Exportación masiva de productos a CSV
+// Descripción: Exportación masiva de productos a CSV o Excel
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { auth } from '@/lib/auth/config'
 import { z } from 'zod'
+import * as XLSX from 'xlsx' // ✅ NUEVO: Librería para generar Excel
 
 // =====================================================
 // CONFIGURACIÓN
@@ -97,6 +98,56 @@ function generateCSV(products: any[]): string {
 
   // Convertir a CSV
   return allRows.map(row => row.map(field => escapeCSVField(field)).join(',')).join('\n')
+}
+
+// ✅ NUEVA FUNCIÓN: Generar archivo Excel
+function generateExcel(products: any[]): Buffer {
+  // Preparar datos para Excel
+  const excelData = products.map(product => ({
+    'ID': product.id,
+    'Nombre': product.name,
+    'Descripción': product.description || '',
+    'Precio': product.price,
+    'Precio Descuento': product.discounted_price || '',
+    'Stock': product.stock,
+    'SKU': product.sku || product.aikon_id || '',
+    'Categoría': product.category_name || 'Sin categoría',
+    'Marca': product.brand || '',
+    'Estado': product.is_active ? 'Activo' : 'Inactivo',
+    'Destacado': product.is_featured ? 'Sí' : 'No',
+    'Fecha Creación': new Date(product.created_at).toLocaleDateString('es-AR'),
+    'Última Actualización': new Date(product.updated_at).toLocaleDateString('es-AR'),
+  }))
+
+  // Crear workbook
+  const wb = XLSX.utils.book_new()
+  const ws = XLSX.utils.json_to_sheet(excelData)
+
+  // Ajustar anchos de columnas
+  const columnWidths = [
+    { wch: 6 },  // ID
+    { wch: 30 }, // Nombre
+    { wch: 50 }, // Descripción
+    { wch: 12 }, // Precio
+    { wch: 15 }, // Precio Descuento
+    { wch: 8 },  // Stock
+    { wch: 15 }, // SKU
+    { wch: 20 }, // Categoría
+    { wch: 15 }, // Marca
+    { wch: 10 }, // Estado
+    { wch: 10 }, // Destacado
+    { wch: 15 }, // Fecha Creación
+    { wch: 15 }, // Última Actualización
+  ]
+  ws['!cols'] = columnWidths
+
+  // Agregar hoja al workbook
+  XLSX.utils.book_append_sheet(wb, ws, 'Productos')
+
+  // Generar buffer
+  const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
+  
+  return buffer
 }
 
 // =====================================================
@@ -220,32 +271,51 @@ export async function GET(request: NextRequest) {
       category_name: product.categories?.name || 'Sin categoría',
     }))
 
-    // Generar CSV
-    const csvContent = generateCSV(transformedProducts)
-
-    // Crear nombre de archivo con timestamp
+    // ✅ Determinar formato solicitado
+    const format = validatedFilters.format || searchParams.get('format') || 'csv'
     const timestamp = new Date().toISOString().split('T')[0]
-    const filename = `productos-pinteya-${timestamp}.csv`
 
     // Log de la exportación
     console.log('✅ Exportación completada:', {
       products_count: products.length,
+      format,
       filters: validatedFilters,
       user_id: session.user.id,
       timestamp: new Date().toISOString(),
     })
 
-    // Retornar archivo CSV
-    return new NextResponse(csvContent, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        Pragma: 'no-cache',
-        Expires: '0',
-      },
-    })
+    // ✅ Generar archivo según formato
+    if (format === 'xlsx') {
+      // Generar Excel
+      const excelBuffer = generateExcel(transformedProducts)
+      const filename = `productos-pinteya-${timestamp}.xlsx`
+
+      return new NextResponse(excelBuffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      })
+    } else {
+      // Generar CSV (por defecto)
+      const csvContent = generateCSV(transformedProducts)
+      const filename = `productos-pinteya-${timestamp}.csv`
+
+      return new NextResponse(csvContent, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      })
+    }
   } catch (error) {
     console.error('❌ Error en exportación de productos:', error)
 
@@ -330,7 +400,7 @@ export async function POST(request: NextRequest) {
         estimated_products: count || 0,
         max_products: 10000,
         estimated_file_size: `${Math.round((count || 0) * 0.5)}KB`, // Estimación aproximada
-        supported_formats: ['CSV'],
+        supported_formats: ['CSV', 'Excel (XLSX)'], // ✅ ACTUALIZADO: Excel soportado
         filters_applied: filters,
       },
     })

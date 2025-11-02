@@ -2,10 +2,13 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
 import { VariantActions } from './VariantActions'
-import { Package, Image as ImageIcon } from 'lucide-react'
+import { Badge } from '../ui/Badge'
+import { Skeleton } from '../ui/Skeleton'
+import { Package, Image as ImageIcon, Star, AlertCircle, TrendingDown, TrendingUp, CheckCircle } from 'lucide-react'
 
 interface ProductVariant {
   id: number
@@ -30,62 +33,48 @@ interface ExpandableVariantsRowProps {
   onEditVariant?: (variant: ProductVariant) => void
 }
 
-// Stock Badge Component
+// Stock Badge Component - Mejorado
 function StockBadge({ stock }: { stock: number }) {
   if (stock === 0) {
-    return (
-      <span className='inline-flex items-center px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'>
-        Sin stock
-      </span>
-    )
+    return <Badge variant="destructive" icon={AlertCircle} pulse size="sm">Sin stock</Badge>
   }
 
   if (stock <= 10) {
-    return (
-      <span className='inline-flex items-center px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full'>
-        Stock bajo ({stock})
-      </span>
-    )
+    return <Badge variant="warning" icon={TrendingDown} size="sm">{stock} un.</Badge>
   }
 
-  return <span className='text-sm text-gray-900'>{stock}</span>
+  if (stock >= 50) {
+    return <Badge variant="success" icon={TrendingUp} size="sm">{stock} un.</Badge>
+  }
+
+  return <Badge variant="soft" size="sm">{stock} un.</Badge>
 }
 
-// Status Badge Component
+// Status Badge Component - Mejorado
 function StatusBadge({ isActive }: { isActive: boolean }) {
-  if (isActive) {
-    return (
-      <span className='inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full'>
-        Activo
-      </span>
-    )
-  }
-
-  return (
-    <span className='inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full'>
-      Inactivo
-    </span>
-  )
+  return isActive 
+    ? <Badge variant="success" icon={CheckCircle} size="sm">Activo</Badge>
+    : <Badge variant="soft" size="sm">Inactivo</Badge>
 }
 
-// Default Badge Component
+// Default Badge Component - Mejorado
 function DefaultBadge({ isDefault }: { isDefault: boolean }) {
   if (!isDefault) return null
-
-  return (
-    <span className='inline-flex items-center px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full'>
-      ★ Default
-    </span>
-  )
+  return <Badge variant="warning" icon={Star} size="sm">Predeterminada</Badge>
 }
 
-// Loading Skeleton
+// Loading Skeleton - Mejorado
 function VariantsSkeleton() {
   return (
-    <div className='animate-pulse space-y-3'>
-      <div className='h-4 bg-gray-200 rounded w-1/4'></div>
-      <div className='h-4 bg-gray-200 rounded w-1/2'></div>
-      <div className='h-4 bg-gray-200 rounded w-1/3'></div>
+    <div className='space-y-4 p-4'>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className='flex items-center gap-4'>
+          <Skeleton variant="rectangle" className='h-10 w-10' />
+          <Skeleton className='h-4 flex-1' />
+          <Skeleton className='h-4 w-20' />
+          <Skeleton className='h-4 w-24' />
+        </div>
+      ))}
     </div>
   )
 }
@@ -132,116 +121,138 @@ export function ExpandableVariantsRow({
 
   return (
     <tr data-testid={`expandable-variants-row-${productId}`}>
-      <td colSpan={100} className='px-0 py-0 bg-gray-50'>
-        <div className='px-6 py-4'>
-          <div className='mb-3'>
-            <h4 className='text-sm font-semibold text-gray-900'>
-              Variantes del Producto ({variants.length})
-            </h4>
+      <td colSpan={100} className='px-0 py-0 bg-gradient-to-b from-gray-50/80 to-white'>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className='px-6 py-4'
+        >
+          <div className='mb-4'>
+            <div className='flex items-center justify-between'>
+              <h4 className='text-sm font-semibold text-gray-900 flex items-center gap-2'>
+                <Package className='h-4 w-4 text-primary' />
+                Variantes del Producto
+                <Badge variant="soft" size="sm">{variants.length}</Badge>
+              </h4>
+            </div>
           </div>
 
-          {/* Tabla de variantes con scroll horizontal en móvil */}
-          <div className='overflow-x-auto'>
-            <table className='min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow-sm' data-testid="variant-table">
-              <thead className='bg-gray-100'>
+          {/* Tabla de variantes mejorada */}
+          <div className='overflow-x-auto rounded-lg border border-gray-200'>
+            <table className='min-w-full divide-y divide-gray-200 bg-white' data-testid="variant-table">
+              <thead className='bg-gradient-to-r from-gray-50 to-gray-100/50'>
                 <tr>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Imagen
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Color
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Medida
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Acabado
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Precio Lista
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Precio Venta
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Stock
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Estado
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     SKU
                   </th>
-                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider'>
+                  <th className='px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                     Acciones
                   </th>
                 </tr>
               </thead>
-              <tbody className='bg-white divide-y divide-gray-200'>
-                {variants.map((variant) => (
-                  <tr
+              <tbody className='bg-white divide-y divide-gray-100'>
+                {variants.map((variant, index) => (
+                  <motion.tr
                     key={variant.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05, duration: 0.2 }}
                     className={cn(
-                      'hover:bg-gray-50 transition-colors',
+                      'group hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-transparent transition-all duration-200',
                       !variant.is_active && 'opacity-50'
                     )}
                     data-testid="variant-row"
                   >
-                    {/* Imagen */}
+                    {/* Imagen con hover effect */}
                     <td className='px-4 py-3'>
-                      <div className='w-10 h-10 bg-gray-100 rounded overflow-hidden flex items-center justify-center'>
+                      <div className='relative w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center ring-2 ring-gray-200 group-hover:ring-primary/30 transition-all'>
                         {variant.image_url ? (
                           <Image
                             src={variant.image_url}
                             alt={variant.color_name || 'Variante'}
-                            width={40}
-                            height={40}
-                            className='w-full h-full object-cover'
+                            width={48}
+                            height={48}
+                            className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-200'
                             unoptimized
                           />
                         ) : (
-                          <ImageIcon className='w-5 h-5 text-gray-400' />
+                          <ImageIcon className='w-6 h-6 text-gray-400' />
                         )}
                       </div>
                     </td>
 
-                    {/* Color */}
+                    {/* Color con badge */}
                     <td className='px-4 py-3'>
-                      <div className='flex items-center space-x-2'>
+                      <div className='flex items-center gap-2'>
                         {variant.color_hex && (
                           <div
-                            className='w-4 h-4 rounded-full border border-gray-300'
+                            className='w-5 h-5 rounded-full border-2 border-white shadow-sm ring-1 ring-gray-200'
                             style={{ backgroundColor: variant.color_hex }}
                             title={variant.color_hex}
                           />
                         )}
-                        <span className='text-sm text-gray-900'>
+                        <span className='text-sm font-medium text-gray-900'>
                           {variant.color_name || '-'}
                         </span>
                       </div>
                     </td>
 
                     {/* Medida */}
-                    <td className='px-4 py-3 text-sm text-gray-900'>
-                      {variant.measure || '-'}
+                    <td className='px-4 py-3'>
+                      <Badge variant="outline" size="sm">
+                        {variant.measure || '-'}
+                      </Badge>
                     </td>
 
                     {/* Acabado */}
-                    <td className='px-4 py-3 text-sm text-gray-900'>
+                    <td className='px-4 py-3 text-sm text-gray-700'>
                       {variant.finish || '-'}
                     </td>
 
                     {/* Precio Lista */}
-                    <td className='px-4 py-3 text-sm text-gray-900'>
+                    <td className='px-4 py-3 text-sm font-medium text-gray-900'>
                       ${variant.price_list?.toLocaleString('es-AR') || '0'}
                     </td>
 
                     {/* Precio Venta */}
                     <td className='px-4 py-3 text-sm'>
                       {variant.price_sale ? (
-                        <span className='text-green-600 font-medium'>
-                          ${variant.price_sale.toLocaleString('es-AR')}
-                        </span>
+                        <div className='flex flex-col'>
+                          <span className='text-green-600 font-semibold'>
+                            ${variant.price_sale.toLocaleString('es-AR')}
+                          </span>
+                          {variant.price_list && variant.price_sale < variant.price_list && (
+                            <span className='text-xs text-green-600'>
+                              -{Math.round(((variant.price_list - variant.price_sale) / variant.price_list) * 100)}%
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span className='text-gray-400'>-</span>
                       )}
@@ -254,15 +265,17 @@ export function ExpandableVariantsRow({
 
                     {/* Estado */}
                     <td className='px-4 py-3'>
-                      <div className='flex items-center space-x-2'>
+                      <div className='flex flex-wrap items-center gap-2'>
                         <StatusBadge isActive={variant.is_active} />
                         <DefaultBadge isDefault={variant.is_default} />
                       </div>
                     </td>
 
                     {/* SKU */}
-                    <td className='px-4 py-3 text-sm text-gray-500 font-mono'>
-                      {variant.aikon_id}
+                    <td className='px-4 py-3'>
+                      <code className='text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded font-mono'>
+                        {variant.aikon_id}
+                      </code>
                     </td>
 
                     {/* Acciones */}
@@ -273,12 +286,12 @@ export function ExpandableVariantsRow({
                         onEdit={onEditVariant || (() => {})}
                       />
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </motion.div>
       </td>
     </tr>
   )

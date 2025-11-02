@@ -6,6 +6,7 @@ import ShopDetailModal from '@/components/ShopDetails/ShopDetailModal'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getProductById } from '@/lib/api/products'
 import { getMainImage } from '@/lib/adapters/product-adapter'
+import { SimplePageLoading } from '@/components/ui/simple-page-loading'
 
 // Mapea el producto de API al formato mínimo que consume el modal
 function mapToModalProduct(apiProduct: any) {
@@ -58,15 +59,25 @@ function mapToModalProduct(apiProduct: any) {
 export default function ProductDetailModalPage() {
   const router = useRouter()
   const [product, setProduct] = useState<any | null>(null)
+  const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(true)
   const { addProduct } = useCartUnified()
   const routeParams = useParams() as { id?: string }
   const productId = routeParams?.id ?? ''
 
+  // Forzar scroll al top cuando se monta el componente
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [])
+
   useEffect(() => {
     const idNum = Number(productId)
-    if (!idNum || Number.isNaN(idNum)) return
+    if (!idNum || Number.isNaN(idNum)) {
+      setLoading(false)
+      return
+    }
 
+    setLoading(true)
     ;(async () => {
       try {
         const apiProduct = await getProductById(idNum)
@@ -84,6 +95,8 @@ export default function ProductDetailModalPage() {
         setProduct(mapped)
       } catch (error) {
         console.error('Error cargando producto', error)
+      } finally {
+        setLoading(false)
       }
     })()
   }, [productId])
@@ -121,16 +134,28 @@ export default function ProductDetailModalPage() {
     })
   }, [addProduct])
 
-  // Render del modal cuando el producto esté cargado
+  // Render con spinner minimalista mientras carga y como fondo del modal
   return (
     <div>
+      {/* Spinner simple mientras carga */}
+      {!product && <SimplePageLoading message="Cargando producto..." />}
+      
+      {/* Cuando el producto esté cargado, mostrar spinner de fondo + modal */}
       {product && (
-        <ShopDetailModal
-          product={product}
-          open={open}
-          onOpenChange={handleOpenChange}
-          onAddToCart={handleAddToCart}
-        />
+        <>
+          {/* Spinner simple como fondo para mantener el layout */}
+          <div className="pointer-events-none" aria-hidden="true">
+            <SimplePageLoading message="Cargando producto..." />
+          </div>
+          
+          {/* Modal sobre el fondo */}
+          <ShopDetailModal
+            product={product}
+            open={open}
+            onOpenChange={handleOpenChange}
+            onAddToCart={handleAddToCart}
+          />
+        </>
       )}
     </div>
   )

@@ -62,18 +62,39 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
   const autoFree = dsShouldShowFreeShipping(finalPrice, config)
   const freeShipping = Boolean((productData as any)?.freeShipping) || autoFree
 
+  // ✅ PRIORIDAD DE IMAGEN: Variante por defecto > Producto padre
+  const productImage = (() => {
+    // 1. Imagen de variante por defecto (productos con sistema de variantes)
+    const defaultVariant = (productData as any).default_variant || (productData as any).variants?.[0]
+    if (defaultVariant?.image_url) {
+      return defaultVariant.image_url
+    }
+    
+    // 2. Imagen del producto padre (formato array)
+    if (Array.isArray((productData as any).images) && (productData as any).images[0]) {
+      return (productData as any).images[0]
+    }
+    
+    // 3. Imagen del producto padre (formato objeto)
+    const candidates = [
+      (productData as any).images?.main,
+      (productData as any).images?.previews?.[0],
+      (productData as any).images?.thumbnails?.[0],
+      (productData as any).images?.gallery?.[0],
+      (productData as any).imgs?.previews?.[0],
+    ]
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim() !== '') return c.trim()
+    }
+    
+    // 4. Placeholder
+    return '/images/products/placeholder.svg'
+  })()
+
   return (
     <CommercialProductCard
       slug={productData.slug}
-      image={
-        (Array.isArray((productData as any).images) && (productData as any).images[0]) ||
-        (productData as any).images?.main ||
-        (productData as any).images?.previews?.[0] ||
-        (productData as any).images?.thumbnails?.[0] ||
-        (productData as any).images?.gallery?.[0] ||
-        (productData as any).imgs?.previews?.[0] ||
-        '/images/products/placeholder.svg'
-      }
+      image={productImage}
       title={productData.name || productData.title} // Usar name para consistencia con search
       brand={productData.brand}
       price={finalPrice}

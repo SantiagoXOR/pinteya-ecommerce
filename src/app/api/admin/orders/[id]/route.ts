@@ -4,12 +4,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { ApiResponse } from '@/types/api'
 import { z } from 'zod'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
-import { checkRateLimit } from '@/lib/auth/rate-limiting'
-import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
+import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/auth/rate-limiting'
 import { MetricsCollector } from '@/lib/enterprise/metrics'
 
 // ===================================
@@ -41,12 +40,34 @@ const UpdateOrderSchema = z.object({
 
 async function validateAdminAuth() {
   try {
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          return {
+            user: {
+              id: 'dev-admin',
+              email: 'santiago@xor.com.ar',
+              name: 'Dev Admin',
+            },
+            userId: 'dev-admin',
+          }
+        }
+      } catch (error) {
+        console.warn('[API Admin Orders Detail] No se pudo verificar .env.local, bypass deshabilitado')
+      }
+    }
+
     const session = await auth()
     if (!session?.user) {
       return { error: 'Usuario no autenticado', status: 401 }
     }
 
-    // Verificar si es admin
+    // Verificar si es admin (usando email como en otros endpoints admin)
     const isAdmin = session.user.email === 'santiago@xor.com.ar'
     if (!isAdmin) {
       return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 }
@@ -86,22 +107,21 @@ function validateStateTransition(currentStatus: string, newStatus: string): bool
 // ===================================
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
+  let orderId: string | undefined
 
   try {
     const { id } = await context.params
+    orderId = id
     
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
-      RATE_LIMIT_CONFIGS.admin.requests,
-      RATE_LIMIT_CONFIGS.admin.window,
+      RATE_LIMIT_CONFIGS.admin,
       'admin-order-detail'
     )
 
-    if (!rateLimitResult.success) {
-      const response = NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
-      addRateLimitHeaders(response, rateLimitResult)
-      return response
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
     }
 
     // Validar autenticación admin
@@ -110,9 +130,35 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const orderId = id
-
     // Obtener orden con todos los detalles
+    console.log('[ORDER_DETAIL] Fetching order with ID:', id)
+    
+    if (!supabaseAdmin) {
+      console.error('[ORDER_DETAIL] supabaseAdmin is null!')
+      return NextResponse.json({ error: 'Database not available' }, { status: 500 })
+    }
+
+    // Primero intentar obtener la orden sin las relaciones para diagnosticar
+    const { data: basicOrder, error: basicError } = await supabaseAdmin
+      .from('orders')
+      .select('*')
+      .eq('id' as any, id)
+      .single()
+
+    console.log('[ORDER_DETAIL] Basic order query:', { hasBasicOrder: !!basicOrder, basicError })
+
+    if (basicError) {
+      console.error('[ORDER_DETAIL] Basic order query failed:', basicError)
+      if (basicError.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
+      }
+      return NextResponse.json({ 
+        error: 'Error al obtener orden básica',
+        details: basicError.message 
+      }, { status: 500 })
+    }
+
+    // Ahora intentar con todas las relaciones
     const { data: order, error } = await supabaseAdmin
       .from('orders')
       .select(
@@ -120,7 +166,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         *,
         user_profiles!orders_user_id_fkey (
           id,
-          name,
+          first_name,
+          last_name,
           email,
           phone
         ),
@@ -133,26 +180,48 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
             id,
             name,
             images,
-            sku,
-            category
+            brand,
+            slug
           )
         )
       `
       )
-      .eq('id', orderId)
+      .eq('id' as any, id)
       .single()
 
+    console.log('[ORDER_DETAIL] Query result:', { hasOrder: !!order, error })
+
     if (error) {
+      console.error('[ORDER_DETAIL] Database error:', error)
+      
       if (error.code === 'PGRST116') {
         return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
       }
 
-      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error al obtener orden', { error, orderId })
-      return NextResponse.json({ error: 'Error al obtener orden' }, { status: 500 })
+      logger.log(LogLevel.ERROR, LogCategory.API, 'Error al obtener orden', { 
+        error: {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        }, 
+        orderId: id 
+      })
+      return NextResponse.json({ 
+        error: 'Error al obtener orden',
+        details: error.message 
+      }, { status: 500 })
     }
 
+    if (!order) {
+      console.error('[ORDER_DETAIL] Order is null but no error!')
+      return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
+    }
+
+    console.log('[ORDER_DETAIL] Order fetched successfully, ID:', order.id)
+
     // Obtener historial de estados si existe la tabla
-    let statusHistory = []
+    let statusHistory: any[] = []
     try {
       const { data: history } = await supabaseAdmin
         .from('order_status_history')
@@ -164,24 +233,25 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           reason,
           created_at,
           user_profiles!order_status_history_changed_by_fkey (
-            name,
+            first_name,
+            last_name,
             email
           )
         `
         )
-        .eq('order_id', orderId)
+        .eq('order_id' as any, id)
         .order('created_at', { ascending: false })
 
       statusHistory = history || []
     } catch (historyError) {
       // Si la tabla no existe, continuar sin historial
-      logger.log(LogLevel.WARN, LogCategory.DATABASE, 'Tabla order_status_history no existe', {
+      logger.log(LogLevel.WARN, LogCategory.API, 'Tabla order_status_history no existe', {
         historyError,
       })
     }
 
     // Obtener notas si existe la tabla
-    let orderNotes = []
+    let orderNotes: any[] = []
     try {
       const { data: notes } = await supabaseAdmin
         .from('order_notes')
@@ -193,18 +263,19 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           is_visible_to_customer,
           created_at,
           user_profiles!order_notes_admin_id_fkey (
-            name,
+            first_name,
+            last_name,
             email
           )
         `
         )
-        .eq('order_id', orderId)
+        .eq('order_id' as any, id)
         .order('created_at', { ascending: false })
 
       orderNotes = notes || []
     } catch (notesError) {
       // Si la tabla no existe, continuar sin notas
-      logger.log(LogLevel.WARN, LogCategory.DATABASE, 'Tabla order_notes no existe', { notesError })
+      logger.log(LogLevel.WARN, LogCategory.API, 'Tabla order_notes no existe', { notesError })
     }
 
     // Métricas de performance
@@ -218,8 +289,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     const response: ApiResponse<{
       order: typeof order
-      statusHistory: typeof statusHistory
-      notes: typeof orderNotes
+      statusHistory: any[]
+      notes: any[]
     }> = {
       data: {
         order,
@@ -227,18 +298,15 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         notes: orderNotes,
       },
       success: true,
-      error: null,
+      error: '',
     }
 
-    const nextResponse = NextResponse.json(response)
-    addRateLimitHeaders(nextResponse, rateLimitResult)
-
     logger.log(LogLevel.INFO, LogCategory.API, 'Orden obtenida exitosamente', {
-      orderId,
+      orderId: id,
       responseTime,
     })
 
-    return nextResponse
+    return NextResponse.json(response)
   } catch (error) {
     const responseTime = Date.now() - startTime
     await MetricsCollector.getInstance().recordRequest(
@@ -250,7 +318,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/orders/[id]', {
       error,
-      orderId: id,
+      orderId: orderId || 'unknown',
     })
 
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
@@ -268,15 +336,12 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
-      RATE_LIMIT_CONFIGS.admin.requests,
-      RATE_LIMIT_CONFIGS.admin.window,
+      RATE_LIMIT_CONFIGS.admin,
       'admin-order-update'
     )
 
-    if (!rateLimitResult.success) {
-      const response = NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
-      addRateLimitHeaders(response, rateLimitResult)
-      return response
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
     }
 
     // Validar autenticación admin
@@ -301,10 +366,14 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     const updateData = validationResult.data
 
     // Obtener orden actual para validar transiciones
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Base de datos no disponible' }, { status: 500 })
+    }
+    
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
       .from('orders')
       .select('id, status, payment_status')
-      .eq('id', orderId)
+      .eq('id' as any, orderId)
       .single()
 
     if (fetchError) {
@@ -312,7 +381,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
       }
 
-      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error al obtener orden actual', {
+      logger.log(LogLevel.ERROR, LogCategory.API, 'Error al obtener orden actual', {
         fetchError,
         orderId,
       })
@@ -339,15 +408,15 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     }
 
     // Actualizar orden
-    const { data: updatedOrder, error: updateError } = await supabaseAdmin
+    const { data: updatedOrder, error: updateError } = await supabaseAdmin!
       .from('orders')
       .update(updatePayload)
-      .eq('id', orderId)
+      .eq('id' as any, orderId)
       .select()
       .single()
 
     if (updateError) {
-      logger.log(LogLevel.ERROR, LogCategory.DATABASE, 'Error al actualizar orden', {
+      logger.log(LogLevel.ERROR, LogCategory.API, 'Error al actualizar orden', {
         updateError,
         orderId,
       })
@@ -355,20 +424,20 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     }
 
     // Registrar cambio de estado en historial si cambió el status
-    if (updateData.status && updateData.status !== currentOrder.status) {
+    if (updateData.status && currentOrder && 'status' in currentOrder && updateData.status !== currentOrder.status) {
       try {
-        await supabaseAdmin.from('order_status_history').insert({
-          order_id: orderId,
-          previous_status: currentOrder.status,
+        await supabaseAdmin!.from('order_status_history').insert({
+          order_id: orderId as any,
+          previous_status: currentOrder.status as any,
           new_status: updateData.status,
-          changed_by: authResult.user.id,
+          changed_by: authResult.userId,
           reason: `Cambio manual por administrador`,
         })
       } catch (historyError) {
         // Si la tabla no existe, continuar sin registrar historial
         logger.log(
           LogLevel.WARN,
-          LogCategory.DATABASE,
+          LogCategory.API,
           'No se pudo registrar historial de estado',
           { historyError }
         )
@@ -387,11 +456,8 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     const response: ApiResponse<typeof updatedOrder> = {
       data: updatedOrder,
       success: true,
-      error: null,
+      error: '',
     }
-
-    const nextResponse = NextResponse.json(response)
-    addRateLimitHeaders(nextResponse, rateLimitResult)
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Orden actualizada exitosamente', {
       orderId,
@@ -399,7 +465,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       responseTime,
     })
 
-    return nextResponse
+    return NextResponse.json(response)
   } catch (error) {
     const responseTime = Date.now() - startTime
     await MetricsCollector.getInstance().recordRequest(

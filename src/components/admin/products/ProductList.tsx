@@ -3,13 +3,17 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AdminDataTable } from '../ui/AdminDataTable'
 import { ProductFilters } from './ProductFilters'
 import { ProductActions, ProductRowActions } from './ProductActions'
 import { useProductList } from '@/hooks/admin/useProductList'
 import { ExpandableVariantsRow } from './ExpandableVariantsRow'
+import { Skeleton, TableSkeleton } from '../ui/Skeleton'
+import { EmptyState } from '../ui/EmptyState'
+import { Badge } from '../ui/Badge'
 import { cn } from '@/lib/core/utils'
-import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight } from 'lucide-react'
+import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 interface Product {
   id: string
@@ -17,8 +21,9 @@ interface Product {
   description: string
   price: number
   stock: number
-  category_id: string
+  category_id: number // ✅ CORREGIDO: number (no string) - alineado con BD y schemas Zod
   category_name?: string
+  categories?: Array<{ id: number; name: string; slug: string }> // ✅ NUEVO: Múltiples categorías
   image_url?: string
   images?: {
     main: string
@@ -31,11 +36,17 @@ interface Product {
   updated_at: string
 }
 
+interface Category {
+  id: number
+  name: string
+}
+
 interface ProductListProps {
   products: Product[]
   isLoading: boolean
   error: any
   filters?: any
+  categories?: Category[] // ✅ AGREGADO: Array de categorías para filtros
   updateFilters?: (filters: any) => void
   resetFilters?: () => void
   pagination?: {
@@ -52,61 +63,79 @@ interface ProductListProps {
   className?: string
 }
 
-// Status Badge Component
+// Status Badge Component - Mejorado con animaciones
 function StatusBadge({ status }: { status: Product['status'] }) {
   const statusConfig = {
     active: {
       label: 'Activo',
       icon: CheckCircle,
-      className: 'bg-green-100 text-green-800 border-green-200',
+      variant: 'success' as const,
+      pulse: true,
     },
     inactive: {
       label: 'Inactivo',
       icon: AlertCircle,
-      className: 'bg-red-100 text-red-800 border-red-200',
+      variant: 'destructive' as const,
+      pulse: false,
     },
     draft: {
       label: 'Borrador',
       icon: Clock,
-      className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      variant: 'warning' as const,
+      pulse: false,
     },
   }
 
-  const config = statusConfig[status]
-  const Icon = config && config.icon ? config.icon : Package
+  const config = statusConfig[status] || {
+    label: 'Estado',
+    icon: Package,
+    variant: 'soft' as const,
+    pulse: false,
+  }
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border',
-        config && config.className ? config.className : 'bg-gray-100 text-gray-800 border-gray-200'
-      )}
+    <Badge 
+      variant={config.variant} 
+      icon={config.icon}
+      pulse={config.pulse}
+      className="animate-fade-in"
     >
-      <Icon className='w-3 h-3' />
-      <span>{config && config.label ? config.label : 'Estado'}</span>
-    </span>
+      {config.label}
+    </Badge>
   )
 }
 
-// Stock Badge Component
+// Stock Badge Component - Mejorado con indicadores visuales
 function StockBadge({ stock }: { stock: number }) {
   if (stock === 0) {
     return (
-      <span className='inline-flex items-center px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'>
+      <Badge variant="destructive" icon={AlertCircle} pulse>
         Sin stock
-      </span>
+      </Badge>
     )
   }
 
   if (stock <= 10) {
     return (
-      <span className='inline-flex items-center px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full'>
-        Stock bajo
-      </span>
+      <Badge variant="warning" icon={TrendingDown}>
+        {stock} unidades
+      </Badge>
     )
   }
 
-  return <span className='text-sm text-gray-900'>{stock}</span>
+  if (stock >= 50) {
+    return (
+      <Badge variant="success" icon={TrendingUp}>
+        {stock} unidades
+      </Badge>
+    )
+  }
+
+  return (
+    <Badge variant="soft">
+      {stock} unidades
+    </Badge>
+  )
 }
 
 export function ProductList({ 
@@ -114,6 +143,7 @@ export function ProductList({
   isLoading = false,
   error = null,
   filters = {},
+  categories = [], // ✅ AGREGADO: Recibir categorías desde el padre
   updateFilters = () => {},
   resetFilters = () => {},
   pagination = {
@@ -131,6 +161,10 @@ export function ProductList({
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
 
+  // ✅ Estado de sorting
+  const [sortColumn, setSortColumn] = useState<string>(filters.sort_by || 'created_at')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(filters.sort_order || 'desc')
+
   // Usar datos de props (no hook interno)
   const total = pagination.totalItems
   const currentPage = pagination.currentPage
@@ -143,6 +177,24 @@ export function ProductList({
   const bulkDelete = () => {}
   const isDeleting = false
   const isBulkDeleting = false
+
+  // ✅ Handler para sorting por columnas
+  const handleSort = (columnKey: string) => {
+    const newDirection = sortColumn === columnKey && sortDirection === 'desc' ? 'asc' : 'desc'
+    setSortColumn(columnKey)
+    setSortDirection(newDirection)
+    updateFilters({ sort_by: columnKey, sort_order: newDirection })
+  }
+
+  // ✅ Renderizar ícono de sort
+  const renderSortIcon = (columnKey: string) => {
+    if (sortColumn !== columnKey) {
+      return <ArrowUpDown className='w-3.5 h-3.5 opacity-0 group-hover:opacity-50 transition-opacity' />
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className='w-3.5 h-3.5 text-primary' />
+      : <ArrowDown className='w-3.5 h-3.5 text-primary' />
+  }
 
   // Table columns configuration
   const columns = [
@@ -251,12 +303,30 @@ export function ProductList({
       },
     },
     {
-      key: 'category_name',
-      title: 'Categoría',
-      sortable: true,
-      render: (categoryName: string) => (
-        <span className='text-sm text-gray-900'>{categoryName || 'Sin categoría'}</span>
-      ),
+      key: 'categories',
+      title: 'Categorías',
+      sortable: false,
+      render: (_: any, product: Product) => {
+        const categories = product.categories || []
+        
+        if (categories.length === 0) {
+          return <span className='text-sm text-gray-500'>Sin categorías</span>
+        }
+        
+        return (
+          <div className='flex flex-wrap gap-1'>
+            {categories.map(cat => (
+              <Badge 
+                key={cat.id} 
+                variant='soft'
+                className='text-xs'
+              >
+                {cat.name}
+              </Badge>
+            ))}
+          </div>
+        )
+      },
     },
     {
       key: 'brand',
@@ -372,21 +442,14 @@ export function ProductList({
 
   // Event handlers
   const handleDeleteProduct = async (productId: string) => {
-    const result = await deleteProduct(productId)
-    if (!result.success) {
-      // Handle error (show toast, etc.)
-      console.error('Error deleting product:', result.error)
-    }
+    // TODO: Implement actual delete functionality
+    console.log('Delete product:', productId)
   }
 
   const handleBulkDelete = async (productIds: string[]) => {
-    const result = await bulkDelete(productIds)
-    if (result.success) {
-      setSelectedProducts([])
-    } else {
-      // Handle error
-      console.error('Error bulk deleting products:', result.error)
-    }
+    // TODO: Implement bulk delete
+    console.log('Bulk delete products:', productIds)
+    setSelectedProducts([])
   }
 
   const handleDuplicateProduct = (productId: string) => {
@@ -433,17 +496,30 @@ export function ProductList({
     onPageSizeChange: changePageSize,
   }
 
+  // Error state mejorado
   if (error) {
     return (
-      <div className='bg-red-50 border border-red-200 rounded-lg p-6'>
-        <div className='flex items-center space-x-3'>
-          <AlertCircle className='w-6 h-6 text-red-600' />
-          <div>
-            <h3 className='text-lg font-medium text-red-800'>Error al cargar productos</h3>
-            <p className='text-red-700 mt-1'>{error.message}</p>
-          </div>
-        </div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={cn('space-y-6', className)}
+      >
+        <ProductFilters
+          filters={params.filters || {}}
+          onFiltersChange={updateFilters}
+          onClearFilters={clearFilters}
+          categories={[]}
+        />
+        <EmptyState
+          variant="error"
+          title="Error al cargar productos"
+          description={error.message || 'Ocurrió un error inesperado. Por favor, intenta de nuevo.'}
+          action={{
+            label: 'Reintentar',
+            onClick: () => window.location.reload()
+          }}
+        />
+      </motion.div>
     )
   }
 
@@ -454,7 +530,7 @@ export function ProductList({
         filters={params.filters || {}}
         onFiltersChange={updateFilters}
         onClearFilters={clearFilters}
-        categories={[]} // TODO: Load categories from API
+        categories={categories} // ✅ Pasar categorías reales desde el padre
       />
 
       {/* Actions */}
@@ -467,122 +543,181 @@ export function ProductList({
         isLoading={isDeleting || isBulkDeleting}
       />
 
-      {/* Custom Table with Expandable Rows */}
-      <div className='bg-white rounded-lg shadow-sm overflow-hidden'>
+      {/* Modern Table with Improved UX */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+      >
         <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200' data-testid="products-table">
-            <thead className='bg-gray-50'>
+          <table className='min-w-full divide-y divide-gray-100' data-testid="products-table">
+            {/* Sticky Header con blur backdrop y sorting */}
+            <thead className='bg-gradient-to-r from-gray-50/95 to-gray-100/95 sticky top-0 z-10 backdrop-blur-sm border-b border-gray-200'>
               <tr>
                 {columns.slice(0, -1).map((column, index) => (
                   <th
                     key={`header-${column.key.toString()}-${index}`}
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className={cn(
+                      'px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider',
+                      column.sortable && 'cursor-pointer select-none group hover:bg-gray-100/50 transition-colors'
+                    )}
                     style={{ width: column.width }}
+                    onClick={() => column.sortable && handleSort(column.key.toString())}
                   >
-                    {column.title}
+                    <div className='flex items-center gap-2'>
+                      <span>{column.title}</span>
+                      {column.sortable && renderSortIcon(column.key.toString())}
+                    </div>
                   </th>
                 ))}
-                <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th className='px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider'>
                   Acciones
                 </th>
               </tr>
             </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
+            <tbody className='bg-white divide-y divide-gray-50'>
               {isLoading ? (
-                <tr>
-                  <td colSpan={columns.length} className='px-6 py-12 text-center'>
-                    <div className='flex items-center justify-center space-x-2'>
-                      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blaze-orange-600' />
-                      <span className='text-gray-500'>Cargando productos...</span>
-                    </div>
-                  </td>
-                </tr>
+                /* Skeleton Loading State */
+                <>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className='animate-pulse'>
+                      {columns.map((column, colIndex) => (
+                        <td 
+                          key={`skeleton-${i}-${colIndex}`}
+                          className='px-6 py-4'
+                        >
+                          <Skeleton className='h-4 w-full' />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </>
               ) : products.length === 0 ? (
+                /* Empty State Mejorado */
                 <tr>
-                  <td colSpan={columns.length} className='px-6 py-12 text-center'>
-                    <Package className='w-12 h-12 text-gray-400 mx-auto mb-3' />
-                    <p className='text-gray-500'>No se encontraron productos</p>
+                  <td colSpan={columns.length} className='px-6 py-12'>
+                    <EmptyState
+                      title="No hay productos"
+                      description={
+                        Object.keys(filters).length > 0
+                          ? 'No se encontraron productos con los filtros aplicados. Intenta ajustar los criterios de búsqueda.'
+                          : 'Comienza creando tu primer producto para verlo aquí.'
+                      }
+                      action={
+                        Object.keys(filters).length > 0
+                          ? { label: 'Limpiar filtros', onClick: clearFilters }
+                          : { label: 'Crear producto', onClick: handleCreateProduct }
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
-                  <React.Fragment key={product.id}>
-                    {/* Fila principal del producto */}
-                    <tr
-                      onClick={() => handleRowClick(product)}
-                      className='hover:bg-gray-50 cursor-pointer transition-colors'
-                      data-testid="product-row"
-                    >
-                      {columns.slice(0, -1).map((column, colIndex) => (
-                        <td
-                          key={`${product.id}-${column.key.toString()}-${colIndex}`}
-                          className={cn(
-                            'px-6 py-4 whitespace-nowrap',
-                            column.align === 'center' && 'text-center',
-                            column.align === 'right' && 'text-right'
-                          )}
-                        >
-                          {column.render
-                            ? column.render(product[column.key as keyof Product], product)
-                            : product[column.key as keyof Product]}
+                /* Productos con animaciones */
+                <>
+                  {products.map((product, index) => (
+                    <React.Fragment key={product.id}>
+                      {/* Fila principal del producto con hover mejorado */}
+                      <tr
+                        onClick={() => handleRowClick(product)}
+                        className={cn(
+                          'group cursor-pointer transition-all duration-200',
+                          // ✅ Zebra striping para mejor separación visual
+                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50/40',
+                          // ✅ Hover state mejorado
+                          'hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent',
+                          // ✅ Border más visible
+                          'border-b border-gray-200',
+                          'hover:border-primary/20',
+                          // ✅ Padding vertical aumentado
+                          '[&>td]:py-5'
+                        )}
+                        data-testid="product-row"
+                      >
+                        {columns.slice(0, -1).map((column, colIndex) => (
+                          <td
+                            key={`${product.id}-${column.key.toString()}-${colIndex}`}
+                            className={cn(
+                              'px-6 py-4 whitespace-nowrap transition-colors',
+                              column.align === 'center' && 'text-center',
+                              column.align === 'right' && 'text-right'
+                            )}
+                          >
+                            {column.render
+                              ? column.render(product[column.key as keyof Product], product)
+                              : String(product[column.key as keyof Product] || '-')}
+                          </td>
+                        ))}
+                        <td className='px-6 py-4 whitespace-nowrap text-right'>
+                          {columns[columns.length - 1]?.render?.(null, product) || null}
                         </td>
-                      ))}
-                      <td className='px-6 py-4 whitespace-nowrap text-right'>
-                        {columns[columns.length - 1].render
-                          ? columns[columns.length - 1].render(null, product)
-                          : null}
-                      </td>
-                    </tr>
+                      </tr>
 
-                    {/* Fila expandible de variantes */}
-                    {expandedRows.has(product.id) && (
-                      <ExpandableVariantsRow
-                        productId={product.id}
-                        onEditVariant={(variant) => {
-                          // Navegar a edición del producto con variante seleccionada
-                          router.push(`/admin/products/${product.id}/edit?variantId=${variant.id}`)
-                        }}
-                      />
-                    )}
-                  </React.Fragment>
-                ))
+                      {/* Fila expandible de variantes */}
+                      {expandedRows.has(product.id) && (
+                        <tr key={`expanded-${product.id}`}>
+                          <td colSpan={columns.length} className='px-0 py-0 bg-gray-50/50'>
+                            <ExpandableVariantsRow
+                              productId={product.id}
+                              onEditVariant={(variant) => {
+                                router.push(`/admin/products/${product.id}/edit?variantId=${variant.id}`)
+                              }}
+                            />
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination Mejorado */}
         {pagination && !isLoading && products.length > 0 && (
-          <div className='bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200'>
-            <div className='flex items-center space-x-2'>
-              <span className='text-sm text-gray-700'>
-                Mostrando {products.length} de {total} productos
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className='bg-gradient-to-r from-gray-50 to-gray-100/50 px-6 py-4 flex items-center justify-between border-t border-gray-200'
+          >
+            <div className='flex items-center space-x-3'>
+              <Badge variant="soft" size="sm">
+                {products.length} de {total}
+              </Badge>
+              <span className='text-sm text-muted-foreground'>
+                productos en total
               </span>
             </div>
-            <div className='flex items-center space-x-2'>
+            <div className='flex items-center gap-2'>
               <button
                 onClick={() => pagination.prevPage()}
                 disabled={pagination.currentPage === 1}
-                className='px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
+                className='px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-white hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:shadow-none transition-all duration-200'
                 data-testid="pagination-prev"
               >
                 Anterior
               </button>
-              <span className='text-sm text-gray-700'>
-                Página {pagination.currentPage} de {pagination.totalPages}
-              </span>
+              <div className='flex items-center gap-1.5 px-3 py-2 bg-white rounded-lg border border-gray-200 shadow-sm'>
+                <span className='text-sm font-semibold text-gray-900'>
+                  {pagination.currentPage}
+                </span>
+                <span className='text-sm text-gray-400'>/</span>
+                <span className='text-sm text-gray-600'>
+                  {pagination.totalPages}
+                </span>
+              </div>
               <button
                 onClick={() => pagination.nextPage()}
                 disabled={pagination.currentPage === pagination.totalPages}
-                className='px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
+                className='px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-white hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:shadow-none transition-all duration-200'
                 data-testid="pagination-next"
               >
                 Siguiente
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     </div>
   )
 }

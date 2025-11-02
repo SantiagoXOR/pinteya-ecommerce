@@ -29,6 +29,7 @@ import {
   PAINT_COLORS,
   ColorOption,
 } from '@/components/ui/advanced-color-picker'
+import { ProductModalSkeleton } from '@/components/ui/product-modal-skeleton'
 import { detectProductType, formatCapacity, getDefaultColor, extractColorFromName, getColorHex } from '@/utils/product-utils'
 import {
   ProductVariant,
@@ -1519,8 +1520,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         
         // Si no encuentra variante, mostrar error solo si hay datos válidos para buscar
         if (!variant) {
-          // Solo mostrar error si tenemos valores válidos para buscar
-          if (colorToUse && colorToUse.trim() !== '' && 
+          // ✅ MEJORADO: Solo mostrar error si el producto tiene variantes con colores
+          const hasColorVariants = Array.isArray(variants) && variants.some(v => v.color_name && v.color_name.trim() !== '')
+          
+          if (hasColorVariants && 
+              colorToUse && colorToUse.trim() !== '' && 
               selectedCapacity && selectedCapacity.trim() !== '' && 
               Array.isArray(variants) && variants.length > 0) {
             console.error('❌ No se encontró variante para:', {
@@ -1533,7 +1537,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               }))
             })
           } else {
-            console.log('ℹ️ Variante no encontrada - datos incompletos:', {
+            console.log('ℹ️ Variante no encontrada - usando primera variante disponible:', {
               hasColor: !!colorToUse,
               hasCapacity: !!selectedCapacity,
               variantsCount: variants?.length || 0
@@ -2448,6 +2452,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         {/* Contenido principal con scroll */}
         <ScrollArea className="h-full">
           <div className="p-6">
+          {/* Mostrar skeleton mientras carga los datos del producto */}
+          {loadingProductData ? (
+            <ProductModalSkeleton />
+          ) : (
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
         {/* Imagen del producto */}
         <div className='space-y-4'>
@@ -2483,16 +2491,6 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
         {/* Información del producto */}
         <div className='space-y-6'>
-          {/* Loading state para datos del producto */}
-          {loadingProductData && (
-            <div className='space-y-4'>
-              <div className='animate-pulse'>
-                <div className='h-4 bg-gray-200 rounded w-1/4 mb-2'></div>
-                <div className='h-8 bg-gray-200 rounded w-3/4 mb-4'></div>
-                <div className='h-6 bg-gray-200 rounded w-1/2'></div>
-              </div>
-            </div>
-          )}
 
           {/* Header */}
           <div className='space-y-2'>
@@ -2888,6 +2886,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           </div>
         </div>
           </div>
+          )}
         </div>
         </ScrollArea>
       </DialogContent>
