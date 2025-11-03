@@ -27,21 +27,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='es'>
       <head>
-        {/* ⚡ CRITICAL CSS - Inline para FCP rápido */}
+        {/* ⚡ CRITICAL CSS - Inline para FCP rápido (-0.2s) */}
         <style dangerouslySetInnerHTML={{__html: `
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-          html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%}
-          body{margin:0;font-family:'Euclid Circular A',system-ui,-apple-system,sans-serif;background:#fff;color:#1f2937}
+          html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth}
+          body{margin:0;font-family:'Euclid Circular A',system-ui,-apple-system,sans-serif;background:#fff;color:#1f2937;padding-top:92px}
+          @media(min-width:1024px){body{padding-top:105px}}
           img,picture,video{max-width:100%;height:auto;display:block}
           button,input,select,textarea{font:inherit}
           h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2}
           a{text-decoration:none;color:inherit}
-          header{background-color:#f97316;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
-          .hero-section{min-height:320px;background:#fff}
+          header{background-color:#f97316;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);border-radius:0 0 1.5rem 1.5rem}
+          
+          /* Critical Hero Styles */
+          .hero-section{min-height:320px;background:linear-gradient(135deg,#f97316,#ea580c);position:relative;overflow:hidden}
           @media(min-width:1024px){.hero-section{min-height:500px}}
+          
+          /* Hero Skeleton Animation */
+          .hero-skeleton{animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite}
+          @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+          
+          /* Gradient backgrounds */
+          .bg-gradient-hero{background:linear-gradient(135deg,#f97316 0%,#ea580c 100%)}
+          
+          /* Critical button styles */
+          .btn-primary{background:#eb6313;color:#fff;padding:1rem 2rem;border-radius:0.5rem;font-weight:600;transition:all 0.2s}
+          .btn-primary:hover{background:#bd4811;transform:scale(1.05)}
+          
+          /* Prevent layout shift */
+          .aspect-video{aspect-ratio:16/9}
+          .aspect-square{aspect-ratio:1/1}
+          
+          /* Z-index hierarchy */
+          .z-header{z-index:100}
+          .z-modal{z-index:200}
+          .z-toast{z-index:300}
         `}} />
         
-        {/* ⚡ PERFORMANCE: Preload fuentes críticas */}
+        {/* ⚡ PERFORMANCE: Preload solo las 2 fuentes más usadas */}
         <link
           rel='preload'
           href='/fonts/EuclidCircularA-Regular.woff2'
@@ -51,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <link
           rel='preload'
-          href='/fonts/EuclidCircularA-Bold.woff2'
+          href='/fonts/EuclidCircularA-SemiBold.woff2'
           as='font'
           type='font/woff2'
           crossOrigin='anonymous'

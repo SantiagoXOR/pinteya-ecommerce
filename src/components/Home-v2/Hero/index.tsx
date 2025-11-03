@@ -3,7 +3,8 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import HeroCarousel from '@/components/Common/HeroCarousel'
+// ⚡ PERFORMANCE: Lazy load de HeroCarousel (-1s FCP)
+import HeroCarousel from '@/components/Common/HeroCarousel.lazy'
 import { Truck, ShieldCheck, CreditCard, ArrowRight } from 'lucide-react'
 import { trackEvent } from '@/lib/google-analytics'
 

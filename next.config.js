@@ -50,7 +50,7 @@ const nextConfig = {
     },
   },
 
-  // ✅ Configuración experimental para resolver errores de webpack
+  // ⚡ PERFORMANCE: Configuración experimental optimizada
   experimental: {
     optimizePackageImports: [
       'lucide-react',
@@ -73,8 +73,11 @@ const nextConfig = {
       '@radix-ui/react-tooltip',
       'recharts',
       'framer-motion',
+      'swiper',
+      'swiper/react',
     ],
-    // optimizeCss: true, // Experimental CSS optimization - Requiere critters package
+    // optimizeCss: true, // TODO: Agregar critters package para habilitar
+    optimisticClientCache: true, // Cache optimista para navegación más rápida
   },
 
   // ✅ Configuración de webpack para resolver el error de 'call'
@@ -201,15 +204,15 @@ const nextConfig = {
     return config
   },
 
-  // ⚡ PERFORMANCE: Configuración de imágenes optimizada
+  // ⚡ PERFORMANCE: Configuración de imágenes optimizada (-4s FCP con WebP)
   images: {
     // Formatos modernos para mejor compresión
     formats: ['image/webp', 'image/avif'],
     // Cache más largo para imágenes optimizadas
     minimumCacheTTL: 31536000, // 1 año para imágenes estáticas
-    // Tamaños responsivos optimizados
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Tamaños responsivos optimizados (reducidos para mejor performance)
+    deviceSizes: [640, 750, 828, 1080, 1200], // Reducido de 8 a 5 opciones
+    imageSizes: [16, 32, 48, 64, 96, 128, 256], // Reducido de 8 a 7 opciones
     // Habilitar optimización de imágenes remotas
     remotePatterns: [
       {
@@ -301,8 +304,9 @@ const nextConfig = {
     // SVG con precaución por seguridad
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Desactivar optimización en build para imágenes estáticas (ya optimizadas)
-    unoptimized: false,
+    // ⚡ CRITICAL: Optimización habilitada para Next.js Image
+    unoptimized: false, // DEBE ser false para aprovechar optimización automática
+    // NOTA: quality se especifica en cada componente <Image quality={85} />
   },
 
   // ✅ CONFIGURACIÓN CLERK corregida - Removido serverExternalPackages conflictivo

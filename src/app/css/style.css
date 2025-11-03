@@ -28,6 +28,16 @@
   img:not([width]):not([height]) {
     height: auto;
   }
+
+  /* ⚡ PERFORMANCE: Shimmer animation para skeletons */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
 
 @layer base {

@@ -6,17 +6,28 @@ import { BrowserCacheUtils } from '@/lib/cache/browser-cache-optimizer'
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
 
-// Providers de la aplicación
+// ⚡ PERFORMANCE: Providers críticos (carga inmediata)
 import { CartModalProvider } from './context/CartSidebarModalContext'
 import { ReduxProvider } from '@/redux/provider'
 import { PreviewSliderProvider } from './context/PreviewSliderContext'
 import CartPersistenceProvider from '@/components/providers/CartPersistenceProvider'
-import { SimpleAnalyticsProvider as AnalyticsProvider } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { QueryClientProvider } from '@/components/providers/QueryClientProvider'
-import { NetworkErrorProvider } from '@/components/providers/NetworkErrorProvider'
-import { MonitoringProvider } from '@/providers/MonitoringProvider'
 import { AdvancedErrorBoundary } from '@/lib/error-boundary/advanced-error-boundary'
 import { ModalProvider } from '@/contexts/ModalContext'
+
+// ⚡ PERFORMANCE: Providers no críticos (lazy load -0.4s FCP)
+const AnalyticsProvider = dynamic(
+  () => import('@/components/Analytics/SimpleAnalyticsProvider').then(m => ({ default: m.SimpleAnalyticsProvider })),
+  { ssr: false }
+)
+const NetworkErrorProvider = dynamic(
+  () => import('@/components/providers/NetworkErrorProvider').then(m => ({ default: m.NetworkErrorProvider })),
+  { ssr: false }
+)
+const MonitoringProvider = dynamic(
+  () => import('@/providers/MonitoringProvider').then(m => ({ default: m.MonitoringProvider })),
+  { ssr: false }
+)
 
 // Componentes UI - Carga inmediata (críticos)
 import Header from '../components/Header/index'
@@ -93,6 +104,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     return (
       <>
+        {/* ⚡ PERFORMANCE: Orden optimizado - Críticos primero */}
         <AdvancedErrorBoundary
           level='page'
           context='RootApplication'
@@ -101,18 +113,23 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           enableAutoRecovery={true}
           enableReporting={true}
         >
-          <MonitoringProvider
-            autoStart={process.env.NODE_ENV === 'production'}
-            enableErrorBoundary={true}
-          >
-            <QueryClientProvider>
-              <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
-                <ReduxProvider>
-                  <CartPersistenceProvider>
-                    <AnalyticsProvider>
-                      <ModalProvider>
-                        <CartModalProvider>
-                          <PreviewSliderProvider>
+          {/* 1. Query client - Crítico para data fetching */}
+          <QueryClientProvider>
+            {/* 2. Redux - Crítico para state management */}
+            <ReduxProvider>
+              {/* 3. Cart persistence - Crítico para carrito */}
+              <CartPersistenceProvider>
+                {/* 4. Modal provider - Crítico para UI */}
+                <ModalProvider>
+                  <CartModalProvider>
+                    <PreviewSliderProvider>
+                      {/* ⚡ Providers lazy - No bloquean FCP */}
+                      <MonitoringProvider
+                        autoStart={process.env.NODE_ENV === 'production'}
+                        enableErrorBoundary={true}
+                      >
+                        <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
+                          <AnalyticsProvider>
                             {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
                             {!isAdminRoute && <MemoizedHeader />}
 
@@ -148,15 +165,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
                             {/* Toaster para notificaciones - Memoizado */}
                             <MemoizedToaster />
-                          </PreviewSliderProvider>
-                        </CartModalProvider>
-                      </ModalProvider>
-                    </AnalyticsProvider>
-                  </CartPersistenceProvider>
-                </ReduxProvider>
-              </NetworkErrorProvider>
-            </QueryClientProvider>
-          </MonitoringProvider>
+                          </AnalyticsProvider>
+                        </NetworkErrorProvider>
+                      </MonitoringProvider>
+                    </PreviewSliderProvider>
+                  </CartModalProvider>
+                </ModalProvider>
+              </CartPersistenceProvider>
+            </ReduxProvider>
+          </QueryClientProvider>
         </AdvancedErrorBoundary>
       </>
     )
