@@ -31,7 +31,7 @@ const ScrollingBanner = () => {
   )
 
   return (
-    <div className='w-full bg-blaze-orange-600 text-white overflow-hidden relative h-[32px] flex items-center rounded-lg mx-2 my-1'>
+    <div className='w-full bg-blaze-orange-600 text-white overflow-hidden relative h-[28px] flex items-center rounded-lg mx-2 my-0.5'>
       {/* Contenedor de animación mejorado para loop infinito */}
       <div className='whitespace-nowrap animate-scroll-banner-infinite'>
         <div className='inline-flex items-center px-4'>

@@ -5,6 +5,7 @@ import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamic
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
+import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
 
 interface CategoryTogglePillsProps {
   onCategoryChange: (selectedCategories: string[]) => void
@@ -12,6 +13,7 @@ interface CategoryTogglePillsProps {
   searchTerm?: string
   otherFilters?: any
   variant?: 'default' | 'bare'
+  useDynamicCarousel?: boolean // Nueva prop para indicar si debe usar el contexto de carrusel dinámico
 }
 
 const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
@@ -20,7 +22,25 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   searchTerm,
   otherFilters = {},
   variant = 'default',
+  useDynamicCarousel = false,
 }) => {
+  // Conectar con el contexto solo si useDynamicCarousel es true
+  let contextSelectedCategory: string | null = null
+  let contextToggleCategory: ((category: string) => void) | undefined
+  
+  try {
+    if (useDynamicCarousel) {
+      const context = useCategoryFilter()
+      contextSelectedCategory = context.selectedCategory
+      contextToggleCategory = context.toggleCategory
+    }
+  } catch (error) {
+    console.warn('[CategoryPills] No se pudo acceder al contexto:', error)
+  }
+  
+  const selectedCategory = contextSelectedCategory
+  const toggleCategory = contextToggleCategory
+
   const { categories, loading, error, stats } = useCategoriesWithDynamicCounts({
     baseFilters: {
       ...(searchTerm && { search: searchTerm }),
@@ -29,6 +49,29 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     selectedCategories,
     enableDynamicCounts: false, // Deshabilitar conteos dinámicos para evitar errores de API
   })
+  
+  // Debug: Log de categorías para verificar image_url
+  useEffect(() => {
+    if (categories.length > 0) {
+      console.log('[CategoryPills] Categorías cargadas:', categories.map(c => ({
+        name: c.name,
+        slug: c.slug,
+        hasImage: !!c.image_url,
+        image_url: c.image_url
+      })))
+    }
+  }, [categories])
+  
+  // Debug: Log de categoría seleccionada
+  useEffect(() => {
+    if (useDynamicCarousel) {
+      console.log('[CategoryPills] Estado del contexto:', {
+        useDynamicCarousel,
+        selectedCategory,
+        hasToggleFunction: !!toggleCategory
+      })
+    }
+  }, [selectedCategory, useDynamicCarousel, toggleCategory])
 
   // Referencia para el contenedor del carrusel
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -146,14 +189,29 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       return
     }
 
-    const isSelected = selectedCategories.includes(categorySlug)
-    
-    if (isSelected) {
-      // Si ya está seleccionada, deseleccionar (vaciar array)
-      onCategoryChange([])
+    // Si usamos el carrusel dinámico, actualizar el contexto
+    if (useDynamicCarousel && toggleCategory) {
+      console.log('[CategoryPills] Toggle category:', categorySlug, '- Actual:', selectedCategory)
+      toggleCategory(categorySlug)
+      
+      // Scroll suave al carrusel dinámico
+      setTimeout(() => {
+        const carousel = document.getElementById('dynamic-carousel')
+        if (carousel) {
+          carousel.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
     } else {
-      // Seleccionar nueva categoría (reemplazar array con solo esta)
-      onCategoryChange([categorySlug])
+      // Comportamiento original para filtros de productos
+      const isSelected = selectedCategories.includes(categorySlug)
+      
+      if (isSelected) {
+        // Si ya está seleccionada, deseleccionar (vaciar array)
+        onCategoryChange([])
+      } else {
+        // Seleccionar nueva categoría (reemplazar array con solo esta)
+        onCategoryChange([categorySlug])
+      }
     }
   }
 
@@ -192,29 +250,49 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         onMouseMove={handleMouseMove}
       >
         {categories.map(category => {
-          const isSelected = selectedCategories.includes(category.slug)
+          // Determinar si está seleccionada según el modo (contexto o props)
+          const isSelected = useDynamicCarousel 
+            ? selectedCategory === category.slug 
+            : selectedCategories.includes(category.slug)
+          
+          // Debug individual por categoría
+          if (useDynamicCarousel && category.slug === selectedCategory) {
+            console.log(`[CategoryPills] Pill "${category.name}" debería estar seleccionada:`, {
+              categorySlug: category.slug,
+              selectedCategory,
+              isSelected,
+              shouldHighlight: isSelected && useDynamicCarousel
+            })
+          }
+          
           return (
             <div 
               key={category.id}
               className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
               onClick={() => handleCategoryToggle(category.slug)}
             >
-              <Button
-                data-testid={`category-pill-${category.slug}`}
-                variant={isSelected ? 'default' : 'outline'}
-                size='sm'
-                className={`
-                  group transition-all duration-200 border
-                  flex items-center justify-center p-0
-                  w-14 h-14 sm:w-16 sm:h-16 rounded-full
-                  md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
-                  ${
-                    isSelected
-                      ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
-                      : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-700 border-gray-200 shadow-md'
-                  }
-                `}
-              >
+              <div className={`
+                relative rounded-full transition-all duration-300
+                ${isSelected && useDynamicCarousel ? 'ring-[5px] ring-bright-sun-400 ring-offset-[3px] scale-[1.15] shadow-xl' : 'scale-100'}
+              `}>
+                <Button
+                  data-testid={`category-pill-${category.slug}`}
+                  variant={isSelected ? 'default' : 'outline'}
+                  size='sm'
+                  className={`
+                    group transition-all duration-200 border-2
+                    flex items-center justify-center p-0
+                    w-14 h-14 sm:w-16 sm:h-16 rounded-full
+                    md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
+                    ${
+                      isSelected && useDynamicCarousel
+                        ? 'bg-bright-sun-400 hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600 shadow-lg'
+                        : isSelected
+                        ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
+                        : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-700 border-gray-200 shadow-sm'
+                    }
+                  `}
+                >
                 {category.image_url && (
                   <div className={`
                     flex items-center justify-center 
@@ -231,8 +309,11 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     />
                   </div>
                 )}
-                <span className='hidden md:inline-block text-sm font-medium ml-1.5 text-[#fff4c6]'>{category.name}</span>
+                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected && useDynamicCarousel ? 'text-gray-900' : 'text-[#fff4c6]'}`}>
+                  {category.name}
+                </span>
               </Button>
+              </div>
               <span className='text-[10px] font-medium text-center leading-[1.1] text-gray-700 max-w-[64px] line-clamp-2 md:hidden'>{category.name}</span>
             </div>
           )
@@ -242,7 +323,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   }
 
   return (
-    <section className='bg-white border-b border-gray-200 py-1 sticky top-[110px] lg:top-[120px] z-40'>
+    <section className='bg-white border-b border-gray-200 py-2 sticky top-[92px] lg:top-[105px] z-40'>
       <div
         className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
         data-testid='category-pills-container'
@@ -273,19 +354,25 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                   className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
                   onClick={() => handleCategoryToggle(category.slug)}
                 >
+                  <div className={`
+                  relative rounded-full transition-all duration-300
+                  ${isSelected && useDynamicCarousel ? 'ring-[5px] ring-bright-sun-400 ring-offset-[3px] scale-[1.15] shadow-xl' : 'scale-100'}
+                `}>
                   <Button
                     data-testid={`category-pill-${category.slug}`}
                     variant={isSelected ? 'default' : 'outline'}
                     size='sm'
                     className={`
-                      group transition-all duration-200 border
+                      group transition-all duration-200 border-2
                       flex items-center justify-center p-0
                       w-14 h-14 sm:w-16 sm:h-16 rounded-full
                       md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
                       ${
-                        isSelected
+                        isSelected && useDynamicCarousel
+                          ? 'bg-bright-sun-400 hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600 shadow-lg'
+                          : isSelected
                           ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
-                          : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-700 border-gray-200 shadow-md'
+                          : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-700 border-gray-200 shadow-sm'
                       }
                     `}
                   >
@@ -304,11 +391,14 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                           className='w-full h-full object-contain'
                         />
                       </div>
-                    )}
-                    <span className='hidden md:inline-block text-sm font-medium ml-1.5 text-[#fff4c6]'>{category.name}</span>
-                  </Button>
-                  <span className='text-[10px] font-medium text-center leading-[1.1] text-gray-700 max-w-[64px] line-clamp-2 md:hidden'>{category.name}</span>
-                </div>
+                )}
+                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected && useDynamicCarousel ? 'text-gray-900' : 'text-[#fff4c6]'}`}>
+                  {category.name}
+                </span>
+              </Button>
+              </div>
+              <span className='text-[10px] font-medium text-center leading-[1.1] text-gray-700 max-w-[64px] line-clamp-2 md:hidden'>{category.name}</span>
+            </div>
               )
             })}
           </div>

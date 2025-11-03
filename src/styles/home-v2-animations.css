@@ -227,3 +227,63 @@
   transform: scale(1.05);
 }
 
+/* ===================================
+   ANIMACIONES PARA CARRUSEL DINÁMICO
+   =================================== */
+
+/* Transición suave al cambiar categoría */
+@keyframes category-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.category-transition {
+  animation: category-fade-in 0.4s ease-out;
+}
+
+/* Highlight de categoría activa en pills */
+.category-pill-active {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  animation: pill-pulse 2s ease-in-out infinite;
+}
+
+@keyframes pill-pulse {
+  0%, 100% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Transición del background del carrusel */
+.carousel-bg-transition {
+  transition: background-image 0.5s ease-in-out;
+}
+
+/* Animación de entrada para el icono del carrusel */
+@keyframes icon-bounce-in {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.icon-bounce-in {
+  animation: icon-bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+

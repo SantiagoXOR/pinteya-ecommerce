@@ -143,38 +143,36 @@ const Header = () => {
 
   return (
     <>
-      {/* Banner deslizante arriba del header */}
-      <div className='fixed top-0 left-0 w-full z-[99999] bg-blaze-orange-600'>
-        <ScrollingBanner />
-      </div>
-
       <header
         className={`
-        fixed left-0 w-full z-header
+        fixed top-0 left-0 w-full z-header
         bg-blaze-orange-600 rounded-b-3xl shadow-lg
         header-sticky-transition
         ${isSticky ? 'shadow-2xl backdrop-blur-sm' : 'shadow-lg'}
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
       `}
-        style={{ top: '34px' }}
       >
+        {/* ScrollingBanner integrado en la parte superior del header */}
+        <div className='w-full'>
+          <ScrollingBanner />
+        </div>
         {/* Header principal - Con expansión de búsqueda al hacer click */}
-        <div className='max-w-[1200px] mx-auto px-3 sm:px-4 py-2 sm:py-3'>
-          <div className='flex items-center gap-4 sm:gap-6 min-h-[60px]'>
+        <div className='max-w-[1200px] mx-auto px-3 sm:px-4 py-2 sm:py-2.5'>
+          <div className='flex items-center gap-3 sm:gap-4 min-h-[52px]'>
             {/* 1. Logo - Ocultar cuando search está expandido */}
             <Link 
               href='/' 
               className={`
                 flex-shrink-0 overflow-visible logo-container transition-all duration-300
                 ${isSearchExpanded ? 'hidden sm:hidden' : 'flex'}
-                ml-2 sm:ml-8 md:ml-12
+                ml-3 sm:ml-8 md:ml-12
               `}
             >
               <HeaderLogo
                 isMobile={false}
                 className={`
-                  w-16 sm:w-24 md:w-32 h-auto transition-all duration-300 ease-out
+                  w-20 sm:w-28 md:w-36 h-auto transition-all duration-300 ease-out
                   hover:scale-110 cursor-pointer
                   ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
                 `}
@@ -186,12 +184,11 @@ const Header = () => {
               <div className='flex-1'>
                 <div className='relative w-full'>
                   <div
-                    style={{ backgroundColor: '#fff3c5', borderRadius: '9999px', padding: '1px' }}
-                    className='flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.01] search-focus-ring'
+                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 rounded-full'
                   >
                     <SearchAutocompleteIntegrated
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border-2 [&>div>div>input]:border-orange-300 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:pr-12 [&>div>div>input]:py-2.5 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-sm [&>div>div>input]:sm:text-base [&>div>div>input]:font-medium [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-orange-500 [&>div>div>input]:focus:ring-2 [&>div>div>input]:focus:ring-orange-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-300 [&>div>div>input]:hover:border-orange-400 [&>div>div>input]:!bg-transparent'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}
@@ -201,7 +198,7 @@ const Header = () => {
                     {/* Botón X para cerrar */}
                     <button
                       onClick={handleSearchCollapse}
-                      className='absolute right-2 w-8 h-8 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg z-10'
+                      className='absolute right-2 w-7 h-7 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg z-10'
                       aria-label='Cerrar búsqueda'
                     >
                       <X className='w-4 h-4 text-white' strokeWidth={2.5} />
@@ -219,12 +216,11 @@ const Header = () => {
               >
                 <div className='relative w-full'>
                   <div
-                    style={{ backgroundColor: '#fff3c5', borderRadius: '9999px', padding: '1px' }}
-                    className='flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.01] sm:hover:scale-[1.02] search-focus-ring'
+                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 rounded-full'
                   >
                     <SearchAutocompleteIntegrated
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border-2 [&>div>div>input]:border-orange-300 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-3 [&>div>div>input]:sm:pr-4 [&>div>div>input]:py-2 [&>div>div>input]:sm:py-2.5 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-xs [&>div>div>input]:sm:text-sm [&>div>div>input]:md:text-base [&>div>div>input]:font-medium [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-orange-500 [&>div>div>input]:focus:ring-2 [&>div>div>input]:focus:ring-orange-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-300 [&>div>div>input]:hover:border-orange-400 [&>div>div>input]:!bg-transparent'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-3 [&>div>div>input]:sm:pr-4 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-xs [&>div>div>input]:sm:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}

@@ -177,7 +177,7 @@ const ProductCard = React.memo(
           ref={ref}
           className={cn(
             // Mobile-first: diseño compacto para 2 columnas
-            'bg-white rounded-xl shadow-sm p-2 w-full flex flex-col relative overflow-hidden',
+            'bg-white rounded-xl shadow-sm p-2 w-full flex flex-col relative',
             // Mobile: altura compacta
             'h-[280px] sm:h-[320px]',
             // Tablet y desktop: altura completa
@@ -188,29 +188,10 @@ const ProductCard = React.memo(
           data-testid='product-card'
           {...props}
         >
-          {/* Badge de descuento - Responsive */}
-          {discount && (
-            <div className='absolute top-2 left-2 md:top-3 md:left-3 z-30'>
-              <div
-                className='text-white text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-t'
-                style={{ backgroundColor: '#EA5A17' }}
-              >
-                {discount}
-              </div>
-              <div
-                className='bg-white text-xs font-semibold px-1.5 py-0.5 md:px-2 md:py-1 rounded-b shadow-sm text-left leading-none'
-                style={{ color: '#EA5A17' }}
-              >
-                <div>Descuento</div>
-                <div>especial</div>
-              </div>
-            </div>
-          )}
-
-          {/* Badge "Nuevo" en esquina superior derecha - Responsive */}
+          {/* Badge "Nuevo" en esquina superior derecha */}
           {isNew && (
             <span
-              className='absolute top-2 right-2 md:top-3 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-30 shadow'
+              className='absolute top-2 right-2 md:top-3 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-40 shadow'
               style={{ backgroundColor: '#FFD600', color: '#EA5A17' }}
             >
               Nuevo
@@ -241,6 +222,17 @@ const ProductCard = React.memo(
 
             {/* Degradado suave hacia blanco en la parte inferior - Responsive */}
             <div className='absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none' />
+            
+            {/* Icono de envío gratis - Esquina inferior derecha de la imagen */}
+            {!useNewComponents && (badge === 'Envío gratis' || legacyAutoFree) && (
+              <div className='absolute bottom-2 right-2 md:bottom-3 md:right-3 z-30 pointer-events-none'>
+                <img
+                  src='/images/icons/icon-envio.svg'
+                  alt='Envío gratis'
+                  className='h-6 sm:h-8 md:h-10 w-auto object-contain drop-shadow-lg'
+                />
+              </div>
+            )}
           </div>
 
           {/* Sección de información del producto - Integrada con degradado y responsive */}
@@ -311,6 +303,22 @@ const ProductCard = React.memo(
                   >
                     ${price?.toLocaleString('es-AR') || '0'}
                   </span>
+                  
+                  {/* Badge de descuento inline con el precio */}
+                  {discount && (
+                    <div
+                      className='inline-flex flex-col items-center justify-center px-1.5 py-0.5 rounded shadow-sm'
+                      style={{ backgroundColor: '#EA5A17' }}
+                    >
+                      <span className='font-extrabold text-[10px] sm:text-[11px] text-white leading-none'>
+                        {discount}
+                      </span>
+                      <span className='uppercase text-[7px] sm:text-[8px] font-semibold text-white leading-none -mt-[1px]'>
+                        OFF
+                      </span>
+                    </div>
+                  )}
+                  
                   {originalPrice && originalPrice > (price || 0) && (
                     <span className='text-gray-400 line-through text-sm truncate'>
                       ${originalPrice.toLocaleString('es-AR')}
@@ -333,17 +341,6 @@ const ProductCard = React.memo(
               {/* Badge de stock oculto por solicitud del usuario */}
             </div>
           </div>
-
-          {/* Badge de envío gratis con ícono SVG personalizado - Solo cuando no se usan nuevos componentes - Responsive */}
-          {!useNewComponents && (badge === 'Envío gratis' || legacyAutoFree) && (
-            <div className='flex justify-start mb-1 md:mb-2 flex-shrink-0 px-2 md:px-0'>
-              <img
-                src='/images/icons/icon-envio.svg'
-                alt='Envío gratis'
-                className='h-6 md:h-10 w-auto object-contain'
-              />
-            </div>
-          )}
 
           {/* Sección inferior - Botón responsive */}
           <div className='flex flex-col mt-auto flex-shrink-0 px-2 md:px-0'>

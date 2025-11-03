@@ -35,6 +35,7 @@ const CategoryTogglePillsWithSearch = () => {
       selectedCategories={filters.categories}
       onCategoryChange={updateCategories}
       searchTerm={currentSearchTerm}
+      useDynamicCarousel={true}
     />
   )
 }

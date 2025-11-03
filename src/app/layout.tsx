@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           button,input,select,textarea{font:inherit}
           h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2}
           a{text-decoration:none;color:inherit}
-          header{background-color:#f97316;position:fixed;top:34px;left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
+          header{background-color:#f97316;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
           .hero-section{min-height:320px;background:#fff}
           @media(min-width:1024px){.hero-section{min-height:500px}}
         `}} />

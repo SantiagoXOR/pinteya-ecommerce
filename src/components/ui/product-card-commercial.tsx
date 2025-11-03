@@ -559,13 +559,13 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const config = useDesignSystemConfig()
     const autoFreeShipping = price ? dsShouldShowFreeShipping(price, config) : false
     const shouldShowFreeShipping = Boolean(freeShipping || autoFreeShipping)
-
+    
     return (
       <div
         ref={ref}
         className={cn(
           // Mobile-first: diseño compacto para 2 columnas
-          'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer overflow-hidden',
+          'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer',
           // Mobile: más compacto
           'h-[280px] sm:h-[320px]',
           // Tablet y desktop: tamaño completo
@@ -599,6 +599,16 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         onClick={handleCardClick}
         {...props}
       >
+        {/* Badge "Nuevo" en esquina superior derecha */}
+        {isNew && (
+          <span
+            className='absolute top-2 right-2 md:top-3 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-40 shadow'
+            style={{ backgroundColor: '#FFD600', color: '#EA5A17' }}
+          >
+            Nuevo
+          </span>
+        )}
+
         {/* Contenedor de imagen completa con degradado - Responsive */}
         <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-2 md:mb-3 flex-1'>
           {currentImageSrc && !imageError ? (
@@ -632,34 +642,23 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           {/* Degradado suave hacia blanco en la parte inferior - Responsive */}
           <div className='absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none' />
 
+          {/* Icono de envío gratis - Esquina inferior derecha de la imagen */}
+          {shouldShowFreeShipping && (
+            <div className='absolute bottom-2 right-2 md:bottom-3 md:right-3 z-30 pointer-events-none'>
+              <Image
+                src='/images/icons/icon-envio.svg'
+                alt='Envío gratis'
+                width={32}
+                height={32}
+                className='h-6 sm:h-8 md:h-10 w-auto object-contain drop-shadow-lg'
+                priority
+                unoptimized
+              />
+            </div>
+          )}
+
           {/* Quick Actions eliminados - Ya no se muestran los botones de wishlist y quick view */}
         </div>
-
-        {/* Badge de descuento compacto en esquina superior izquierda - Responsive */}
-        {discount && (
-          <div className='absolute top-2 left-2 md:top-3 md:left-3 z-30'>
-            <div
-              className='text-white px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-sm leading-none flex flex-col items-center justify-center'
-              style={{ backgroundColor: '#EA5A17' }}
-            >
-              <span className='font-extrabold text-[11px] md:text-[12px] tracking-tight'>{discount}</span>
-              <span className='uppercase text-[8px] md:text-[9px] font-semibold -mt-[2px]'>OFF</span>
-            </div>
-          </div>
-        )}
-
-        {/* Badge "Nuevo" en esquina superior izquierda (debajo del descuento si existe) - Responsive */}
-        {isNew && (
-          <span
-            className={cn(
-              'absolute left-2 md:left-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-30 shadow',
-              discount ? 'top-10 md:top-12' : 'top-2 md:top-3'
-            )}
-            style={{ backgroundColor: '#FFD600', color: '#EA5A17' }}
-          >
-            Nuevo
-          </span>
-        )}
 
         {/* ============================================================================ */}
         {/* ZONA EXCLUSIVA PARA BADGES INTELIGENTES */}
@@ -756,6 +755,21 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 }
               </div>
 
+              {/* Badge de descuento inline con el precio */}
+              {discount && (
+                <div
+                  className='inline-flex flex-col items-center justify-center px-1.5 py-0.5 rounded shadow-sm'
+                  style={{ backgroundColor: '#EA5A17' }}
+                >
+                  <span className='font-extrabold text-[10px] sm:text-[11px] text-white leading-none'>
+                    {discount}
+                  </span>
+                  <span className='uppercase text-[7px] sm:text-[8px] font-semibold text-white leading-none -mt-[1px]'>
+                    OFF
+                  </span>
+                </div>
+              )}
+
               {/* Precio anterior tachado - Responsive (sin decimales) */}
               {originalPrice && originalPrice > (price || 0) && (
                 <div className='text-gray-500 line-through text-xs md:text-sm drop-shadow-sm'>
@@ -771,17 +785,6 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
             {/* Cuotas ocultas temporalmente por solicitud del usuario */}
           </div>
-
-          {/* Badge de envío gratis - Compacto y responsive */}
-          {shouldShowFreeShipping && (
-            <div className='flex justify-start mt-1 md:mt-2'>
-              <img
-                src='/images/icons/icon-envio.svg'
-                alt='Envío gratis'
-                className='h-6 md:h-10 w-auto object-contain drop-shadow-sm'
-              />
-            </div>
-          )}
 
           {/* Botón "Agregar al carrito" - Animado y responsive */}
           <div className='w-full mt-2 md:mt-3'>

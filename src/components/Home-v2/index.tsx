@@ -3,15 +3,16 @@
 import dynamic from 'next/dynamic'
 import { useEffect } from 'react'
 import { trackScrollDepth } from '@/lib/google-analytics'
+import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 
 // Lazy loading de componentes para mejor performance
 const Hero = dynamic(() => import('./Hero'), {
   loading: () => <HeroSkeleton />,
 })
-const BenefitsBar = dynamic(() => import('./BenefitsBar/index'))
+// BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
 const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePillsWithSearch'))
 const PromoBanners = dynamic(() => import('./PromoBanners/index'))
-const FreeShippingSection = dynamic(() => import('./FreeShippingSection/index'))
+const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'))
 const TrendingSearches = dynamic(() => import('./TrendingSearches/index'))
 const CombosSection = dynamic(() => import('./CombosSection/index'))
 const BestSeller = dynamic(() => import('./BestSeller/index'))
@@ -77,32 +78,30 @@ const HomeV2 = () => {
   }, [])
 
   return (
-    <main>
-      {/* Barra de beneficios sticky en la parte superior */}
-      <BenefitsBar />
+    <CategoryFilterProvider>
+      <main>
+        {/* BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner */}
 
-      {/* NUEVO ORDEN OPTIMIZADO - REDISTRIBUCIÓN DE BANNERS */}
+        {/* NUEVO ORDEN OPTIMIZADO - REDISTRIBUCIÓN DE BANNERS */}
 
-      {/* 1. Banner CYBERMONDAY - Arriba del Hero */}
-      <div className='-mt-1'>
+        {/* 1. Banner CYBERMONDAY - Arriba del Hero */}
         <PromoBanners bannerId={1} />
-      </div>
 
-      {/* 2. Hero - Captar atención inmediata */}
-      <Hero />
+        {/* 2. Hero - Captar atención inmediata */}
+        <Hero />
 
-      {/* 3. Navegación rápida por categorías */}
-      <div className='-mt-2'>
-        <CategoryTogglePillsWithSearch />
-      </div>
+        {/* 3. Navegación rápida por categorías */}
+        <div className='-mt-2'>
+          <CategoryTogglePillsWithSearch />
+        </div>
 
-      {/* 4. NUEVO: Envío Gratis - Después de categorías */}
+      {/* 4. NUEVO: Carrusel Dinámico de Productos por Categoría - Reemplaza FreeShippingSection */}
       <div className='-mt-3'>
-        <FreeShippingSection />
+        <DynamicProductCarousel />
       </div>
 
       {/* 5. Productos Destacados (antes era "Combos") */}
-      <div className='-mt-4'>
+      <div className='-mt-8'>
         <CombosSection />
       </div>
 
@@ -151,7 +150,8 @@ const HomeV2 = () => {
       
       {/* WhatsApp Popup para captura de leads (aparece a los 18 segundos) */}
       <WhatsAppPopup />
-    </main>
+      </main>
+    </CategoryFilterProvider>
   )
 }
 
