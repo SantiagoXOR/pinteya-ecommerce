@@ -163,9 +163,10 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 className='object-contain transition-all duration-500 ease-in-out'
                 priority={image.priority || index === 0}
                 sizes='(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw'
-                quality={95}
-                unoptimized={image.unoptimized || true}
+                quality={85}
+                unoptimized={image.unoptimized || false}
                 aria-describedby={`slide-description-${index}`}
+                style={{ objectFit: 'contain' }}
               />
               <div id={`slide-description-${index}`} className='sr-only'>
                 {image.alt}
