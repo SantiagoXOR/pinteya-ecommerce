@@ -160,7 +160,7 @@ const Header = () => {
         style={{ top: '34px' }}
       >
         {/* Header principal - Con expansión de búsqueda al hacer click */}
-        <div className='max-w-[1200px] mx-auto px-2 sm:px-4 py-3'>
+        <div className='max-w-[1200px] mx-auto px-3 sm:px-4 py-2 sm:py-3'>
           <div className='flex items-center gap-4 sm:gap-6 min-h-[60px]'>
             {/* 1. Logo - Ocultar cuando search está expandido */}
             <Link 
@@ -168,13 +168,13 @@ const Header = () => {
               className={`
                 flex-shrink-0 overflow-visible logo-container transition-all duration-300
                 ${isSearchExpanded ? 'hidden sm:hidden' : 'flex'}
-                ml-8 sm:ml-12
+                ml-2 sm:ml-8 md:ml-12
               `}
             >
               <HeaderLogo
                 isMobile={false}
                 className={`
-                  w-24 sm:w-32 md:w-36 h-auto transition-all duration-300 ease-out
+                  w-16 sm:w-24 md:w-32 h-auto transition-all duration-300 ease-out
                   hover:scale-110 cursor-pointer
                   ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
                 `}

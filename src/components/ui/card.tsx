@@ -306,7 +306,7 @@ const ProductCard = React.memo(
               >
                 <div className='flex items-center gap-2 w-full'>
                   <span
-                    className='font-bold text-2xl leading-tight truncate'
+                    className='font-bold text-xl sm:text-2xl leading-tight truncate'
                     style={{ color: '#EA5A17' }}
                   >
                     ${price?.toLocaleString('es-AR') || '0'}
@@ -354,7 +354,7 @@ const ProductCard = React.memo(
                 disabled={isAddingToCart || stock === 0}
                 data-testid='add-to-cart-btn'
                 className={cn(
-                  'flex items-center justify-center gap-1 md:gap-2 font-semibold py-1.5 md:py-2 px-2 md:px-3 rounded-lg transition w-full text-xs md:text-sm',
+                  'flex items-center justify-center gap-1 md:gap-2 font-semibold py-2 sm:py-2.5 md:py-3 px-3 sm:px-4 rounded-lg transition w-full text-sm sm:text-base',
                   stock === 0
                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                     : 'bg-gradient-to-r from-[#FFCB00] to-[#FFD700] hover:from-[#FFB800] hover:to-[#FFCB00] shadow-sm hover:shadow-md'

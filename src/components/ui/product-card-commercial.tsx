@@ -745,7 +745,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             <div className='flex items-center gap-1 md:gap-2'>
               {/* Precio actual - Grande y destacado, responsive (sin decimales) */}
               <div
-                className='text-lg md:text-2xl font-bold drop-shadow-sm'
+                className='text-base sm:text-lg md:text-2xl font-bold drop-shadow-sm'
                 style={{ color: '#EA5A17' }}
               >
                 {
@@ -792,7 +792,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 data-testid='add-to-cart'
                 data-testid-btn='add-to-cart-btn'
                 className={cn(
-                  'w-full py-2 md:py-3 rounded-lg md:rounded-xl text-center shadow-md font-semibold flex items-center justify-center gap-1 md:gap-2 text-sm md:text-base relative overflow-hidden',
+                  'w-full py-2 sm:py-2.5 md:py-3 rounded-lg md:rounded-xl text-center shadow-md font-semibold flex items-center justify-center gap-1 md:gap-2 text-sm relative overflow-hidden',
                   'transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] transform-gpu will-change-transform',
                   stock === 0
                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
