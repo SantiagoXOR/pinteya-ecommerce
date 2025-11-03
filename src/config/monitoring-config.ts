@@ -182,19 +182,32 @@ const environmentConfigs: Record<string, Partial<MonitoringConfig>> = {
 // Función para obtener la configuración final
 export function getMonitoringConfig(): MonitoringConfig {
   const environment = process.env.NODE_ENV || 'development'
+  
+  // 🔧 DESACTIVAR MONITORING DURANTE BUILD
+  // Evita errores de persistencia de alertas y reduce consumo de memoria
+  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
+                      process.env.VERCEL_ENV === 'production' && !process.env.RUNTIME
+  
   const envConfig = environmentConfigs[environment] || {}
 
   // Merge deep de configuraciones
   const config = {
     ...defaultConfig,
     ...envConfig,
+    // 🔧 DESACTIVAR MONITORING DURANTE BUILD TIME
+    enabled: isBuildTime ? false : (envConfig.enabled ?? defaultConfig.enabled),
     metrics: {
       ...defaultConfig.metrics,
       ...envConfig.metrics,
+      enableWebVitals: isBuildTime ? false : (envConfig.metrics?.enableWebVitals ?? defaultConfig.metrics.enableWebVitals),
+      enableApiMetrics: isBuildTime ? false : (envConfig.metrics?.enableApiMetrics ?? defaultConfig.metrics.enableApiMetrics),
+      enableErrorTracking: isBuildTime ? false : (envConfig.metrics?.enableErrorTracking ?? defaultConfig.metrics.enableErrorTracking),
     },
     alerts: {
       ...defaultConfig.alerts,
       ...envConfig.alerts,
+      // ⚡ DESACTIVAR ALERTAS DURANTE BUILD
+      enabled: isBuildTime ? false : (envConfig.alerts?.enabled ?? defaultConfig.alerts.enabled),
       thresholds: {
         ...defaultConfig.alerts.thresholds,
         ...envConfig.alerts?.thresholds,
@@ -207,6 +220,8 @@ export function getMonitoringConfig(): MonitoringConfig {
     healthCheck: {
       ...defaultConfig.healthCheck,
       ...envConfig.healthCheck,
+      // ⚡ DESACTIVAR HEALTH CHECKS DURANTE BUILD
+      enabled: isBuildTime ? false : (envConfig.healthCheck?.enabled ?? defaultConfig.healthCheck.enabled),
       endpoints: {
         ...defaultConfig.healthCheck.endpoints,
         ...envConfig.healthCheck?.endpoints,
@@ -219,6 +234,8 @@ export function getMonitoringConfig(): MonitoringConfig {
     reporting: {
       ...defaultConfig.reporting,
       ...envConfig.reporting,
+      // ⚡ DESACTIVAR REPORTING DURANTE BUILD
+      enabled: isBuildTime ? false : (envConfig.reporting?.enabled ?? defaultConfig.reporting.enabled),
     },
   }
 

@@ -6,11 +6,25 @@
   "devCommand": "npm run dev",
   "env": {
     "NEXT_PUBLIC_APP_URL": "https://pinteya.com",
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "NEXT_PHASE": "phase-production-build"
+  },
+  "build": {
+    "env": {
+      "NEXT_PHASE": "phase-production-build",
+      "MONITORING_ENABLED": "false",
+      "GENERATE_SITEMAP_PRODUCTS": "false",
+      "NODE_OPTIONS": "--max-old-space-size=4096"
+    }
   },
   "functions": {
     "app/api/**/*.ts": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "app/**/*.tsx": {
+      "maxDuration": 60,
+      "memory": 3008
     }
   },
   "regions": ["iad1"],
@@ -30,6 +44,28 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type, Authorization"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=60, stale-while-revalidate=300"
+        }
+      ]
+    },
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/productos/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=300, stale-while-revalidate=600"
         }
       ]
     }
