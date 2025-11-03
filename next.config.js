@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
+
+// ⚡ PERFORMANCE: Bundle Analyzer para optimización
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
 const nextConfig = {
   // ✅ Configuración mínima y estable para Next.js 15
 
@@ -31,6 +37,19 @@ const nextConfig = {
             exclude: ['error', 'warn'],
           }
         : false,
+  },
+
+  // ⚡ PERFORMANCE: SWC Minification (más rápido que Terser)
+  swcMinify: true,
+
+  // ⚡ PERFORMANCE: Modular imports para reducir bundle size
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+    },
+    '@radix-ui/react-icons': {
+      transform: '@radix-ui/react-icons/dist/{{member}}',
+    },
   },
 
   // ✅ Configuración experimental para resolver errores de webpack
@@ -97,26 +116,71 @@ const nextConfig = {
       }
     }
 
-    // Optimizar chunks para evitar errores de carga
+    // ⚡ PERFORMANCE: Optimizar chunks para mejor code splitting
     if (!dev) {
       config.optimization.splitChunks = {
-        ...config.optimization.splitChunks,
+        chunks: 'all',
         cacheGroups: {
-          ...config.optimization.splitChunks.cacheGroups,
+          // Framework core (React, Next.js)
+          framework: {
+            test: /[\\/]node_modules[\\/](react|react-dom|next|scheduler)[\\/]/,
+            name: 'framework',
+            priority: 40,
+            enforce: true,
+          },
+          // Bibliotecas compartidas grandes
+          lib: {
+            test: /[\\/]node_modules[\\/](@radix-ui|framer-motion|recharts)[\\/]/,
+            name: 'lib',
+            priority: 30,
+            reuseExistingChunk: true,
+          },
+          // Redux y state management
+          redux: {
+            test: /[\\/]node_modules[\\/](@reduxjs|react-redux)[\\/]/,
+            name: 'redux',
+            priority: 25,
+            reuseExistingChunk: true,
+          },
+          // React Query
+          query: {
+            test: /[\\/]node_modules[\\/](@tanstack)[\\/]/,
+            name: 'query',
+            priority: 25,
+            reuseExistingChunk: true,
+          },
+          // Otros vendors
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
-            chunks: 'all',
+            priority: 20,
+            reuseExistingChunk: true,
+          },
+          // Componentes compartidos
+          commons: {
+            minChunks: 2,
+            priority: 10,
+            reuseExistingChunk: true,
           },
         },
+        maxInitialRequests: 25,
+        minSize: 20000,
       }
     }
 
     return config
   },
 
-  // Configuración de imágenes existente
+  // ⚡ PERFORMANCE: Configuración de imágenes optimizada
   images: {
+    // Formatos modernos para mejor compresión
+    formats: ['image/webp', 'image/avif'],
+    // Cache más largo para imágenes optimizadas
+    minimumCacheTTL: 31536000, // 1 año para imágenes estáticas
+    // Tamaños responsivos optimizados
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Habilitar optimización de imágenes remotas
     remotePatterns: [
       {
         protocol: 'https',
@@ -204,10 +268,11 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    formats: ['image/webp', 'image/avif'],
-    minimumCacheTTL: 60,
+    // SVG con precaución por seguridad
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Desactivar optimización en build para imágenes estáticas (ya optimizadas)
+    unoptimized: false,
   },
 
   // ✅ CONFIGURACIÓN CLERK corregida - Removido serverExternalPackages conflictivo
@@ -296,5 +361,5 @@ const nextConfig = {
   },
 }
 
-// Export configuration without bundle analyzer to avoid potential issues
-module.exports = nextConfig
+// Export configuration with bundle analyzer
+module.exports = withBundleAnalyzer(nextConfig)

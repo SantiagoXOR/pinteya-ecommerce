@@ -73,8 +73,9 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
       variants={item?.variants || []}
       specifications={item?.specifications}
       dimensions={item?.dimensions}
-      color={item?.color}
-      medida={item?.medida}
+      // ✅ NO pasar color/medida legacy - usar solo variantes para badges
+      // color={item?.color}
+      // medida={item?.medida}
       price={features.currentPrice}
       originalPrice={features.discount ? item.price : undefined}
       discount={features.discount ? `${features.discount}%` : undefined}

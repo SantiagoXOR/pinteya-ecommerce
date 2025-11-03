@@ -9,6 +9,8 @@
  * Esto ayuda a Next.js a hacer mejor tree-shaking
  */
 
+import React from 'react'
+
 // ===================================
 // LUCIDE REACT ICONS - OPTIMIZED
 // ===================================
@@ -16,7 +18,8 @@
 // Esto reduce significativamente el bundle size y mejora el rendimiento
 
 // Iconos utilizados en el proyecto (basado en análisis de código)
-export {
+// Importación directa sin paths específicos (compatible con todas las versiones)
+import {
   // Navegación básica
   Search,
   ShoppingCart,
@@ -79,6 +82,56 @@ export {
   Users,
   Zap,
 } from 'lucide-react'
+
+// Re-exportar para uso en el proyecto
+export {
+  Search,
+  ShoppingCart,
+  Heart,
+  User,
+  Menu,
+  X,
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  ArrowRight,
+  Home,
+  Plus,
+  Minus,
+  Check,
+  Star,
+  Eye,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  Circle,
+  ShoppingBag,
+  Package,
+  Truck,
+  CreditCard,
+  DollarSign,
+  Gift,
+  Trophy,
+  TrendingUp,
+  MapPin,
+  Phone,
+  Mail,
+  MessageCircle,
+  Trash2,
+  ZoomIn,
+  Filter,
+  Calendar,
+  Shield,
+  Palette,
+  Sparkles,
+  Brush,
+  Wrench,
+  Clock,
+  Users,
+  Zap,
+}
 
 // ===================================
 // DATE-FNS OPTIMIZED IMPORTS

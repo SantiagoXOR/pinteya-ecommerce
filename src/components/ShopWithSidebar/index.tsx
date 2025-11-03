@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 // import { SizeTogglePills } from './SizeTogglePills'
 // import { ColorTogglePills } from './ColorTogglePills'
 // import { BrandTogglePills } from './BrandTogglePills'
-import UnifiedFilters from '@/components/filters/UnifiedFilters'
+import ImprovedFilters from '@/components/filters/ImprovedFilters'
 import { useProducts } from '@/hooks/useProducts'
 import { useCategoriesForFilters } from '@/hooks/useCategories'
 import { SHOP_CONSTANTS } from '@/constants/shop'
@@ -21,6 +21,8 @@ const ShopWithSidebar = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
+  const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([])
+  const [freeShippingOnly, setFreeShippingOnly] = useState<boolean>(false)
   const [volumeMin, setVolumeMin] = useState<number | undefined>(undefined)
   const [volumeMax, setVolumeMax] = useState<number | undefined>(undefined)
   const [colorsExpanded, setColorsExpanded] = useState<boolean>(false)
@@ -85,7 +87,7 @@ const ShopWithSidebar = () => {
     } else {
       // Mantener la UI mostrando la última seleccionada, pero aplicar todas
       const lastSelected = categories[categories.length - 1]
-      setSelectedCategory(lastSelected)
+      setSelectedCategory(lastSelected || '')
       filterByCategories(categories)
     }
   }
@@ -104,6 +106,8 @@ const ShopWithSidebar = () => {
     setSelectedSizes([])
     setSelectedColors([])
     setSelectedBrands([])
+    setSelectedPriceRanges([])
+    setFreeShippingOnly(false)
     setVolumeMin(undefined)
     setVolumeMax(undefined)
     setColorsExpanded(false)
@@ -170,7 +174,17 @@ const ShopWithSidebar = () => {
     return colors
   }, [products])
 
-  
+  // Lista de marcas dinámicas desde productos
+  const brandsList = useMemo(() => {
+    const uniqueBrands = Array.from(
+      new Set(products.map(p => p.brand).filter(Boolean) as string[])
+    ).sort()
+    
+    return uniqueBrands.map((brand) => ({
+      name: brand,
+      slug: brand.toLowerCase().replace(/\s+/g, '-').replace(/\+/g, 'mas-'),
+    }))
+  }, [products])
 
   // Se eliminan rangos dinámicos de precio
 
@@ -183,7 +197,7 @@ const ShopWithSidebar = () => {
           <div className='flex gap-7.5'>
             {/* <!-- Sidebar oculto: mostramos filtros arriba como en mobile --> */}
             <div className='hidden'>
-              <UnifiedFilters
+              <ImprovedFilters
                 variant='sidebar'
                 selectedCategories={selectedCategoriesPills}
                 onCategoryChange={handleCategoryPillsChange}
@@ -193,16 +207,28 @@ const ShopWithSidebar = () => {
                   setSelectedSizes(sizes)
                   updateFilters({ sizes })
                 }}
-                colorOptions={derivedColorObjects.length ? derivedColorObjects.slice(0, 20) : undefined}
+                colorOptions={derivedColorObjects.length > 0 ? derivedColorObjects.slice(0, 20) : []}
                 selectedColors={selectedColors}
                 onColorsChange={(colors) => {
                   setSelectedColors(colors)
                   updateFilters({ colors })
                 }}
+                brands={brandsList}
                 selectedBrands={selectedBrands}
                 onBrandsChange={(brands) => {
                   setSelectedBrands(brands)
                   updateFilters({ brands })
+                }}
+                selectedPriceRanges={selectedPriceRanges}
+                onPriceRangesChange={(ranges) => {
+                  setSelectedPriceRanges(ranges)
+                  // Convertir rangos a priceMin/priceMax para la API
+                  // Por ahora solo guardamos el estado, la lógica de filtrado se implementa en el hook
+                }}
+                freeShippingOnly={freeShippingOnly}
+                onFreeShippingChange={(enabled) => {
+                  setFreeShippingOnly(enabled)
+                  // La lógica de filtrado se implementa en el hook
                 }}
                 onClearAll={clearAll}
               />
@@ -213,7 +239,7 @@ const ShopWithSidebar = () => {
             <div className='w-full'>
               {/* Filtros barra horizontal en todas las resoluciones */}
               <div className='mb-4'>
-                <UnifiedFilters
+                <ImprovedFilters
                   variant='horizontal'
                   selectedCategories={selectedCategoriesPills}
                   onCategoryChange={handleCategoryPillsChange}
@@ -223,17 +249,29 @@ const ShopWithSidebar = () => {
                     setSelectedSizes(sizes)
                     updateFilters({ sizes })
                   }}
-                  colorOptions={derivedColorObjects.length ? derivedColorObjects.slice(0, 20) : undefined}
+                  colorOptions={derivedColorObjects.length > 0 ? derivedColorObjects.slice(0, 20) : []}
                   selectedColors={selectedColors}
                   onColorsChange={(colors) => {
                     setSelectedColors(colors)
                     updateFilters({ colors })
                   }}
+                  brands={brandsList}
                   selectedBrands={selectedBrands}
                   onBrandsChange={(brands) => {
                     setSelectedBrands(brands)
                     updateFilters({ brands })
                   }}
+                  selectedPriceRanges={selectedPriceRanges}
+                  onPriceRangesChange={(ranges) => {
+                    setSelectedPriceRanges(ranges)
+                    // Convertir rangos a priceMin/priceMax para la API
+                  }}
+                  freeShippingOnly={freeShippingOnly}
+                  onFreeShippingChange={(enabled) => {
+                    setFreeShippingOnly(enabled)
+                    // La lógica de filtrado se implementa en el hook
+                  }}
+                  onClearAll={clearAll}
                 />
               </div>
               <div className='hidden'>
@@ -341,8 +379,8 @@ const ShopWithSidebar = () => {
                   <div className='text-center'>
                     <p className='text-red-500 mb-4'>
                       Error:{' '}
-                      {error instanceof Error
-                        ? error.message
+                      {typeof error === 'object' && error !== null && 'message' in error
+                        ? (error as Error).message
                         : String(error) || 'Error desconocido'}
                     </p>
                     <button

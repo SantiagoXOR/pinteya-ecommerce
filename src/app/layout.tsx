@@ -26,6 +26,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='es'>
       <head>
+        {/* ⚡ PERFORMANCE: Preload fuentes críticas para evitar FOIT */}
+        <link
+          rel='preload'
+          href='/fonts/EuclidCircularA-Regular.woff2'
+          as='font'
+          type='font/woff2'
+          crossOrigin='anonymous'
+        />
+        <link
+          rel='preload'
+          href='/fonts/EuclidCircularA-Bold.woff2'
+          as='font'
+          type='font/woff2'
+          crossOrigin='anonymous'
+        />
+        <link
+          rel='preload'
+          href='/fonts/EuclidCircularA-Medium.woff2'
+          as='font'
+          type='font/woff2'
+          crossOrigin='anonymous'
+        />
+        
         <StructuredData
           data={[organizationStructuredData, websiteStructuredData, storeStructuredData]}
         />

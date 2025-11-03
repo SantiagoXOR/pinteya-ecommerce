@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { BrowserCacheUtils } from '@/lib/cache/browser-cache-optimizer'
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
@@ -17,27 +18,47 @@ import { MonitoringProvider } from '@/providers/MonitoringProvider'
 import { AdvancedErrorBoundary } from '@/lib/error-boundary/advanced-error-boundary'
 import { ModalProvider } from '@/contexts/ModalContext'
 
-// Componentes UI
+// Componentes UI - Carga inmediata (críticos)
 import Header from '../components/Header/index'
 import Footer from '../components/layout/Footer'
-import CartSidebarModal from '@/components/Common/CartSidebarModal/index'
-import PreviewSliderModal from '@/components/Common/PreviewSlider'
 import ScrollToTop from '@/components/Common/ScrollToTop'
-
-// CartNotification deshabilitado por requerimiento UX
-// import CartNotification, { useCartNotification } from '@/components/Common/CartNotification'
-// import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import FloatingCartButton from '@/components/ui/floating-cart-button'
-import FloatingWhatsAppButton from '@/components/ui/floating-whatsapp-button'
 import { Toaster } from '@/components/ui/toast'
 
+// ⚡ PERFORMANCE: Lazy loading de componentes pesados
+// Estos componentes se cargan solo cuando son necesarios
+const CartSidebarModal = dynamic(() => import('@/components/Common/CartSidebarModal/index'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const PreviewSliderModal = dynamic(() => import('@/components/Common/PreviewSlider'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const FloatingCartButton = dynamic(() => import('@/components/ui/floating-cart-button'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const FloatingWhatsAppButton = dynamic(() => import('@/components/ui/floating-whatsapp-button'), {
+  ssr: false,
+  loading: () => null,
+})
+
+// ⚡ PERFORMANCE: Memoizar componentes para evitar re-renders innecesarios
+const MemoizedHeader = React.memo(Header)
+const MemoizedFooter = React.memo(Footer)
+const MemoizedScrollToTop = React.memo(ScrollToTop)
+const MemoizedToaster = React.memo(Toaster)
+
 // Componente NextAuthWrapper para manejar sesiones
-function NextAuthWrapper({ children }: { children: React.ReactNode }) {
+const NextAuthWrapper = React.memo(({ children }: { children: React.ReactNode }) => {
   // DEBUG: Log de configuración NextAuth
   console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce')
 
   return <SessionProvider>{children}</SessionProvider>
-}
+})
 
 export default function Providers({ children }: { children: React.ReactNode }) {
 
@@ -92,29 +113,27 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                       <ModalProvider>
                         <CartModalProvider>
                           <PreviewSliderProvider>
-                            {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
-                            {!isAdminRoute && <Header />}
+                            {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
+                            {!isAdminRoute && <MemoizedHeader />}
 
                             {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
                             {!isAdminRoute && !isCheckoutRoute && <CartSidebarModal />}
                             <PreviewSliderModal />
-                            <ScrollToTop />
+                            <MemoizedScrollToTop />
 
                             {/* Contenido principal */}
                             {children}
 
-                            {/* Footer solo para rutas públicas */}
-                            {!isAdminRoute && <Footer />}
+                            {/* Footer solo para rutas públicas - Memoizado */}
+                            {!isAdminRoute && <MemoizedFooter />}
 
                             {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
                             {/* <div className="md:hidden">
                       <BottomNavigation />
                     </div> */}
 
-                            {/* Botón de carrito flotante - Oculto en checkout para no tapar el botón de finalizar */}
+                            {/* Botones flotantes - Lazy loaded y solo para rutas públicas */}
                             {!isAdminRoute && !isCheckoutRoute && <FloatingCartButton />}
-                            
-                            {/* Botón de WhatsApp flotante */}
                             {!isAdminRoute && !isCheckoutRoute && <FloatingWhatsAppButton />}
 
                             {/* Notificación del carrito deshabilitada por requerimiento */}
@@ -127,8 +146,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                                 />
                               )} */}
 
-                            {/* Toaster para notificaciones con z-index alto */}
-                            <Toaster />
+                            {/* Toaster para notificaciones - Memoizado */}
+                            <MemoizedToaster />
                           </PreviewSliderProvider>
                         </CartModalProvider>
                       </ModalProvider>

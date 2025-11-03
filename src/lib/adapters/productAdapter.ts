@@ -150,8 +150,9 @@ export function calculateProductFeatures(
   // Badge principal
   const badge = discount ? `${discount}% OFF` : undefined
 
-  // Stock disponible
-  const stock = product.stock || 0
+  // Stock disponible - priorizar stock de variante por defecto
+  const defaultVariant = (product as any).default_variant || (product as any).variants?.[0]
+  const stock = defaultVariant?.stock ?? product.stock ?? 0
 
   return {
     currentPrice,

@@ -13,7 +13,7 @@ import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 import { Button } from '@/components/ui/button'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { toast } from '@/components/ui/use-toast'
-import { getProductImage } from '@/lib/utils/image-helpers'
+import { getMainImage } from '@/lib/adapters/product-adapter'
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
@@ -235,7 +235,7 @@ export default function SearchPage() {
               const discount = hasDiscount
                 ? `${Math.round((1 - (product.discounted_price as number) / product.price) * 100)}%`
                 : undefined
-              const image = getProductImage(product.images)
+              const image = getMainImage(product)
 
               return (
                 <CommercialProductCard
@@ -249,9 +249,10 @@ export default function SearchPage() {
                   originalPrice={originalPrice}
                   discount={discount}
                   stock={product.stock}
-                  // Pasamos datos directos de BD para que los badges sean correctos
-                  color={(product as any).color}
-                  medida={(product as any).medida}
+                  // ✅ NO pasar color/medida legacy - usar solo variantes para badges
+                  // color={(product as any).color}
+                  // medida={(product as any).medida}
+                  variants={(product as any).variants || []}
                   shippingText={product.stock > 0 ? 'En stock' : 'Sin stock'}
                   {...(() => {
                     const autoFree = dsShouldShowFreeShipping(currentPrice, config)

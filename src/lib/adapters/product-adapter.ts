@@ -181,7 +181,13 @@ export function getFinalPrice(product: Product | ProductWithCategory): number {
  * @returns string - URL de la imagen
  */
 export function getMainImage(product: Product | ProductWithCategory): string {
-  // Priorizar el formato de array. Puede ser string[] u objetos con url
+  // 1. PRIORIDAD: Imagen de variante por defecto (productos con sistema de variantes)
+  const defaultVariant = (product as any).default_variant || (product as any).variants?.[0]
+  if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
+    return defaultVariant.image_url.trim()
+  }
+
+  // 2. Priorizar el formato de array. Puede ser string[] u objetos con url
   if ('images' in product && Array.isArray((product as any).images) && (product as any).images[0]) {
     const first = (product as any).images[0]
     const url = typeof first === 'string' ? first : first?.url ?? first?.image_url
@@ -189,7 +195,7 @@ export function getMainImage(product: Product | ProductWithCategory): string {
       return url.trim()
     }
   }
-  // Nuevo formato basado en objeto { main, previews, thumbnails, gallery }
+  // 3. Nuevo formato basado en objeto { main, previews, thumbnails, gallery }
   if (
     'images' in product &&
     product &&
@@ -202,13 +208,14 @@ export function getMainImage(product: Product | ProductWithCategory): string {
       if (typeof c === 'string' && c.trim() !== '') return c.trim()
     }
   }
-  // Compatibilidad con estructuras antiguas
+  // 4. Compatibilidad con estructuras antiguas
   if ('imgs' in product && (product as any).imgs?.previews?.[0]) {
     return (product as any).imgs.previews[0]
   }
   if ('images' in product && (product as any).images?.previews?.[0]) {
     return (product as any).images.previews[0]
   }
+  // 5. Placeholder
   return '/images/products/placeholder.svg'
 }
 

@@ -35,6 +35,10 @@
     "bundle-optimization:analyze": "node scripts/performance/analyze-bundle-optimization.js --verbose",
     "bundle-optimization:report": "node scripts/performance/analyze-bundle-optimization.js --output bundle-reports",
     "bundle-optimization:check": "node scripts/performance/analyze-bundle-optimization.js --no-report",
+    "analyze": "ANALYZE=true npm run build",
+    "analyze:server": "ANALYZE=true BUNDLE_ANALYZE=server npm run build",
+    "analyze:browser": "ANALYZE=true BUNDLE_ANALYZE=browser npm run build",
+    "optimize:images": "node scripts/optimize-images.js",
     "build-storybook": "storybook build",
     "storybook": "storybook dev -p 6006"
   },
@@ -42,6 +46,7 @@
     "@auth/supabase-adapter": "^1.10.0",
     "@googlemaps/google-maps-services-js": "^3.4.2",
     "@hookform/resolvers": "^3.3.1",
+    "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
