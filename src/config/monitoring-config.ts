@@ -185,8 +185,9 @@ export function getMonitoringConfig(): MonitoringConfig {
   
   // 🔧 DESACTIVAR MONITORING DURANTE BUILD
   // Evita errores de persistencia de alertas y reduce consumo de memoria
-  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
-                      process.env.VERCEL_ENV === 'production' && !process.env.RUNTIME
+  // UNIFICADO: Misma lógica que real-time-performance-monitor.ts y enterprise-monitoring-manager.ts
+  const isBuildTime = (process.env.VERCEL && !process.env.VERCEL_ENV) || 
+                      process.env.DISABLE_MONITORING === 'true'
   
   const envConfig = environmentConfigs[environment] || {}
 
