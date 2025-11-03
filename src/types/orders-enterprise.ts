@@ -3,7 +3,7 @@
 // ===================================
 
 // ===================================
-// ESTADOS DE ÓRDENES
+// ESTADOS DE ÓRDENES ENTERPRISE
 // ===================================
 
 export type OrderStatus =

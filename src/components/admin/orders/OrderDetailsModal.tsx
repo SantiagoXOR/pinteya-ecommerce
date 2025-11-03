@@ -205,8 +205,9 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         const historyResponse = await fetch(`/api/admin/orders/${orderId}/history`)
         if (historyResponse.ok) {
           const historyData = await historyResponse.json()
-          if (historyData.success && historyData.data?.statusHistory) {
-            setStatusHistory(historyData.data.statusHistory)
+          // Bug Fix: API retorna { success: true, data: statusHistory } donde data ES el array
+          if (historyData.success && historyData.data) {
+            setStatusHistory(historyData.data)
           } else {
             // Fallback: crear historial básico basado en el estado actual de la orden
             const basicHistory: StatusHistoryItem[] = [

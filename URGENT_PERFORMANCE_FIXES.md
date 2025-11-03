@@ -300,3 +300,6 @@ npm run start
 
 **NOTA IMPORTANTE:** Las imágenes Hero son el problema #1. Si solo tienes 20 minutos, **optimiza solo las imágenes**. Eso solo dará una mejora dramática.
 
+
+
+

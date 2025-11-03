@@ -273,3 +273,6 @@ Para automatizar este proceso en el futuro:
 - [ ] Ajustar configuración según resultados
 
 
+
+
+

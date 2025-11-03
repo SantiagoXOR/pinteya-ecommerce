@@ -198,3 +198,6 @@ npx sharp-cli -i hero-01.png -o hero-01.webp --webp
 
 **¡HAZLO AHORA! Es la optimización más importante. 20 minutos de trabajo = 50% mejora en performance.** 🚀
 
+
+
+

@@ -263,3 +263,6 @@ Los próximos pasos (CSS crítico, otras imágenes) son importantes pero **secun
 
 🚀 **¡Deploy recomendado AHORA para ver mejoras inmediatas!**
 
+
+
+

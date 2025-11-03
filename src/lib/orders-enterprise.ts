@@ -14,7 +14,7 @@ import {
 } from '@/types/orders-enterprise'
 
 // ===================================
-// VALIDACIONES DE ESTADO
+// VALIDACIONES DE ESTADO DE ORDEN
 // ===================================
 
 /**

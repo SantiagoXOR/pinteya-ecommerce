@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createBrowserClient } from '@supabase/supabase-js'
 
 interface ParticipateRequest {
   phoneNumber: string
@@ -25,8 +25,12 @@ interface ParticipateResponse {
 
 export async function POST(request: NextRequest): Promise<NextResponse<ParticipateResponse>> {
   try {
+    console.log('[FLASH_DAYS] POST /participate - Inicio')
+    
     const body: ParticipateRequest = await request.json()
     const { phoneNumber, metadata } = body
+
+    console.log('[FLASH_DAYS] Phone recibido:', phoneNumber)
 
     // ===================================
     // 1. VALIDACIÓN DEL NÚMERO
@@ -34,6 +38,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Participa
     const cleanPhone = phoneNumber.replace(/\D/g, '')
 
     if (cleanPhone.length < 8 || cleanPhone.length > 10) {
+      console.log('[FLASH_DAYS] Validación fallida - largo:', cleanPhone.length)
       return NextResponse.json(
         {
           success: false,
@@ -45,6 +50,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Participa
 
     // Normalizar a formato argentino internacional (549 + área + número)
     const normalizedPhone = `549${cleanPhone}`
+    console.log('[FLASH_DAYS] Phone normalizado:', normalizedPhone)
 
     // ===================================
     // 2. CAPTURAR METADATA DEL SERVIDOR
@@ -57,22 +63,49 @@ export async function POST(request: NextRequest): Promise<NextResponse<Participa
 
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
+    console.log('[FLASH_DAYS] Metadata:', { ip: ipAddress, deviceType: metadata?.deviceType })
+
     // ===================================
-    // 3. CONECTAR A SUPABASE
+    // 3. CONECTAR A SUPABASE (Cliente público - no requiere auth)
     // ===================================
-    const supabase = await createClient()
+    console.log('[FLASH_DAYS] Conectando a Supabase...')
+    
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('[FLASH_DAYS] ERROR: Variables de entorno faltantes')
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Error de configuración. Contactá al administrador.',
+        },
+        { status: 500 }
+      )
+    }
+    
+    // Crear cliente público (permite operaciones anónimas según RLS policies)
+    const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
+    
+    console.log('[FLASH_DAYS] Cliente Supabase creado OK')
 
     // ===================================
     // 4. VERIFICAR SI YA PARTICIPÓ
     // ===================================
+    console.log('[FLASH_DAYS] Verificando duplicados...')
     const { data: existing, error: checkError } = await supabase
       .from('flash_days_participants')
       .select('id, participated_at, phone_number')
       .eq('phone_normalized', normalizedPhone)
-      .single()
+      .maybeSingle() // Usar maybeSingle en lugar de single para evitar error si no existe
+
+    if (checkError) {
+      console.error('[FLASH_DAYS] Error verificando duplicados:', checkError)
+    }
 
     if (existing) {
       // Ya participó antes
+      console.log('[FLASH_DAYS] Participante duplicado encontrado:', existing.id)
       return NextResponse.json({
         success: true,
         alreadyParticipated: true,
@@ -82,33 +115,45 @@ export async function POST(request: NextRequest): Promise<NextResponse<Participa
       })
     }
 
+    console.log('[FLASH_DAYS] No hay duplicados, procediendo a guardar...')
+
     // ===================================
     // 5. GUARDAR NUEVO PARTICIPANTE
     // ===================================
+    console.log('[FLASH_DAYS] Preparando INSERT...')
+    
+    const insertData = {
+      phone_number: phoneNumber,
+      phone_normalized: normalizedPhone,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      referrer: metadata?.referrer || null,
+      device_type: metadata?.deviceType || 'unknown',
+      browser_language: metadata?.browserLanguage || null,
+      screen_resolution: metadata?.screenResolution || null,
+      timezone: metadata?.timezone || null,
+      utm_source: metadata?.utmSource || null,
+      utm_medium: metadata?.utmMedium || null,
+      utm_campaign: metadata?.utmCampaign || null,
+      status: 'pending' as const,
+      already_participated: false,
+      whatsapp_opened: false,
+    }
+    
+    console.log('[FLASH_DAYS] Datos a insertar:', JSON.stringify(insertData, null, 2))
+    
     const { data: participant, error: insertError } = await supabase
       .from('flash_days_participants')
-      .insert({
-        phone_number: phoneNumber,
-        phone_normalized: normalizedPhone,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-        referrer: metadata?.referrer || null,
-        device_type: metadata?.deviceType || 'unknown',
-        browser_language: metadata?.browserLanguage || null,
-        screen_resolution: metadata?.screenResolution || null,
-        timezone: metadata?.timezone || null,
-        utm_source: metadata?.utmSource || null,
-        utm_medium: metadata?.utmMedium || null,
-        utm_campaign: metadata?.utmCampaign || null,
-        status: 'pending',
-        already_participated: false,
-        whatsapp_opened: false,
-      })
+      .insert(insertData)
       .select()
       .single()
 
     if (insertError) {
-      console.error('[FLASH_DAYS] Error saving participant:', insertError)
+      console.error('[FLASH_DAYS] Error saving participant:', JSON.stringify(insertError, null, 2))
+      console.error('[FLASH_DAYS] Error code:', insertError.code)
+      console.error('[FLASH_DAYS] Error message:', insertError.message)
+      console.error('[FLASH_DAYS] Error details:', insertError.details)
+      console.error('[FLASH_DAYS] Error hint:', insertError.hint)
 
       // Si es error de duplicado
       if (insertError.code === '23505') {
@@ -146,7 +191,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Participa
       participatedAt: participant.participated_at,
     })
   } catch (error) {
-    console.error('[FLASH_DAYS] Error in participate endpoint:', error)
+    console.error('[FLASH_DAYS] CATCH - Error in participate endpoint:', error)
+    console.error('[FLASH_DAYS] CATCH - Error stack:', error instanceof Error ? error.stack : 'No stack')
+    console.error('[FLASH_DAYS] CATCH - Error message:', error instanceof Error ? error.message : String(error))
+    
     return NextResponse.json(
       {
         success: false,

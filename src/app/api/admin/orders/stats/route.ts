@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      stats: stats,
+      data: stats, // Consistente con otros endpoints que usan 'data'
       timestamp: new Date().toISOString(),
     })
   } catch (error) {

@@ -182,3 +182,6 @@ Los siguientes componentes ahora se cargan dinámicamente:
 - [Bundle Analyzer](https://github.com/vercel/next.js/tree/canary/packages/next-bundle-analyzer)
 
 
+
+
+

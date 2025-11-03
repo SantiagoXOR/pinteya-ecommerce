@@ -33,7 +33,7 @@ interface ProductFromDB {
   }>;
 }
 
-// Schema de validación para la orden de pago contra entrega
+// Schema de validación para la orden de pago contra entrega (CASH ON DELIVERY)
 const CreateCashOrderSchema = z.object({
   items: z.array(z.object({
     id: z.string(),

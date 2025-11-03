@@ -343,16 +343,16 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   return {
     // Datos ya transformados por el API - Acceder correctamente a la estructura anidada
     orders: ordersData?.data?.orders || ordersData?.data || [],
-    // Transformar stats de snake_case a camelCase
-    stats: statsData?.stats ? {
-      totalOrders: statsData.stats.total_orders,
-      pendingOrders: statsData.stats.pending_orders,
-      processingOrders: statsData.stats.processing_orders || 0,
-      completedOrders: statsData.stats.completed_orders,
-      cancelledOrders: statsData.stats.cancelled_orders,
-      totalRevenue: statsData.stats.total_revenue,
-      averageOrderValue: statsData.stats.average_order_value,
-      ordersToday: statsData.stats.orders_today || 0,
+    // Bug Fix: Acceder a statsData.data en lugar de statsData.stats (consistente con API)
+    stats: statsData?.data ? {
+      totalOrders: statsData.data.total_orders,
+      pendingOrders: statsData.data.pending_orders,
+      processingOrders: statsData.data.processing_orders || 0,
+      completedOrders: statsData.data.completed_orders,
+      cancelledOrders: statsData.data.cancelled_orders,
+      totalRevenue: statsData.data.total_revenue,
+      averageOrderValue: statsData.data.average_order_value,
+      ordersToday: statsData.data.orders_today || 0,
     } : null,
     analytics: analyticsData?.data || null,
 

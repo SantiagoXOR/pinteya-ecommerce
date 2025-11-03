@@ -341,3 +341,6 @@ Si encuentras problemas:
 El proyecto ahora tiene una base sólida de optimización. El siguiente paso crítico es habilitar Speed Insights en Vercel y optimizar las imágenes siguiendo la guía proporcionada.
 
 
+
+
+

@@ -350,3 +350,6 @@ Antes de considerar completada la optimización:
 Recuerda: Las métricas reales aparecerán en Speed Insights después de 24-48h de tráfico real. Mientras tanto, usa Lighthouse y PageSpeed Insights para verificar mejoras.
 
 
+
+
+
