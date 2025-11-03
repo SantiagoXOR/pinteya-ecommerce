@@ -64,19 +64,19 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <section className='py-3 bg-white category-transition'>
+      <section className='py-4 bg-white category-transition'>
         <div className='max-w-7xl mx-auto px-4'>
           <div className='animate-pulse'>
-            <div className='flex items-center gap-4 mb-4'>
-              <div className='w-20 h-20 bg-gray-200 rounded-full'></div>
+            <div className='flex items-center gap-3 mb-3'>
+              <div className='w-[68px] h-[68px] md:w-[84px] md:h-[84px] bg-gray-200 rounded-full'></div>
               <div>
-                <div className='h-8 bg-gray-200 rounded w-64 mb-2'></div>
-                <div className='h-4 bg-gray-200 rounded w-48'></div>
+                <div className='h-6 md:h-7 bg-gray-200 rounded w-48 mb-1'></div>
+                <div className='h-3 md:h-4 bg-gray-200 rounded w-32'></div>
               </div>
             </div>
-            <div className='flex gap-4 overflow-hidden'>
+            <div className='flex gap-4 md:gap-6 overflow-hidden'>
               {[...Array(5)].map((_, i) => (
-                <div key={i} className='min-w-[250px] h-80 bg-gray-200 rounded-lg'></div>
+                <div key={i} className='min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-1.125rem)] h-80 bg-gray-200 rounded-lg'></div>
               ))}
             </div>
           </div>
@@ -98,29 +98,29 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   return (
     <section
       id='dynamic-carousel'
-      className={`py-8 bg-gradient-to-br ${categoryConfig.bgGradient} scroll-mt-20 category-transition`}
+      className={`py-4 bg-gradient-to-br ${categoryConfig.bgGradient} scroll-mt-20 category-transition`}
     >
       <div className='max-w-7xl mx-auto px-4'>
-        {/* Header Dinámico */}
-        <div className='flex items-center justify-between mb-4'>
+        {/* Header Dinámico - 2 líneas máximo */}
+        <div className='flex items-center justify-between mb-3'>
           <div className='flex items-center gap-3'>
-            {/* Icono con imagen de la categoría real de la BD */}
-            <div className='relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0'>
+            {/* Icono grande - 4px más grande */}
+            <div className='relative w-[68px] h-[68px] md:w-[84px] md:h-[84px] flex-shrink-0'>
               <Image
                 src={categoryIcon}
                 alt={categoryConfig.title}
-                width={80}
-                height={80}
+                width={84}
+                height={84}
                 className='w-full h-full object-contain'
                 unoptimized={categoryIcon.includes('.svg')}
               />
             </div>
             
-            <div>
-              <h2 className={`text-2xl md:text-3xl font-bold ${categoryConfig.textColor || 'text-gray-900'} leading-tight`}>
+            <div className='flex flex-col justify-center' style={{maxHeight: '3.5rem'}}>
+              <h2 className={`text-xl md:text-2xl font-bold ${categoryConfig.textColor || 'text-gray-900'} leading-tight line-clamp-1`}>
                 {categoryConfig.title}
               </h2>
-              <p className='text-sm text-gray-600'>
+              <p className='text-xs md:text-sm text-gray-600 leading-tight line-clamp-1'>
                 {categoryConfig.subtitle}
               </p>
             </div>

@@ -18,7 +18,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
       badge: '30% OFF',
       badgeColor: 'bg-yellow-400 text-gray-900',
       ctaText: '',
-      ctaUrl: '#flash-days-popup',
+      ctaUrl: '#ofertas-especiales',
       bgImage: '/images/promo/CYBERMONDAY.png',
       bgGradient: 'from-red-600/85 via-red-500/85 to-orange-600/85',
     },
@@ -50,15 +50,6 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
     if (url.startsWith('#')) {
       e.preventDefault()
       
-      // Si es el popup de Flash Days, activar el WhatsAppPopup
-      if (url === '#flash-days-popup') {
-        // Simular click en el botón que abre el popup
-        // El WhatsAppPopup se muestra automáticamente, pero podemos forzarlo
-        localStorage.removeItem('pinturaFlashDaysShown')
-        window.location.reload()
-        return
-      }
-      
       const element = document.querySelector(url)
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -72,7 +63,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
     : banners
 
   return (
-    <section className='px-4 bg-white pt-4'>
+    <section className='px-4 bg-white py-2'>
       <div className='max-w-7xl mx-auto space-y-2'>
         {bannersToShow.map((banner) => {
           const isFlashDays = banner.id === 1
@@ -86,7 +77,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
             >
               {/* DISEÑO ESPECIAL PARA FLASH DAYS (Banner ID 1) */}
               {isFlashDays ? (
-                <div className='relative h-20 md:h-24'>
+                <div className='relative h-12 md:h-14'>
                   {/* Background Image optimizada */}
                   <Image
                     src={banner.bgImage}
@@ -100,32 +91,24 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                   {/* Gradient Overlay rojo intenso */}
                   <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient}`}></div>
                   
-                  {/* Content - Estilo compacto */}
-                  <div className='relative h-full flex items-center justify-between px-4 md:px-8'>
+                  {/* Content - Súper compacto */}
+                  <div className='relative h-full flex items-center justify-between px-3 md:px-5'>
                     {/* Left Content */}
-                    <div className='flex items-center gap-2 md:gap-3'>
-                      {/* Badge 30% OFF - amarillo y más pequeño */}
-                      <div className={`inline-flex items-center gap-1 ${banner.badgeColor} px-2 py-1 md:px-2.5 md:py-1 rounded-full font-bold text-xs md:text-sm shadow-lg`}>
+                    <div className='flex items-center gap-1.5 md:gap-2'>
+                      {/* Badge 30% OFF - mini */}
+                      <div className={`inline-flex items-center ${banner.badgeColor} px-1.5 py-0.5 rounded-full font-bold text-[10px] md:text-xs shadow-sm`}>
                         <span>{banner.badge}</span>
                       </div>
                       
                       {/* Text Content - PINTURA FLASH DAYS */}
-                      <div className='flex flex-col'>
-                        {/* Título PINTURA FLASH DAYS */}
-                        <h2 className='text-lg md:text-2xl lg:text-3xl font-black text-white leading-tight'>
-                          {banner.title}
-                        </h2>
-                        
-                        {/* Subtitle - solo desktop */}
-                        <p className='hidden md:block text-white/90 text-xs md:text-sm font-medium mt-0.5'>
-                          {banner.subtitle}
-                        </p>
-                      </div>
+                      <h2 className='text-sm md:text-lg font-black text-white leading-none'>
+                        {banner.title}
+                      </h2>
                     </div>
 
-                    {/* CTA Button - Solo flecha AMARILLA */}
-                    <div className='flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 text-gray-900 w-10 h-10 md:w-12 md:h-12 rounded-full transition-all shadow-lg hover:shadow-xl hover:scale-110'>
-                      <ArrowRight className='w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} />
+                    {/* CTA Button - Flecha mini */}
+                    <div className='flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 text-gray-900 w-7 h-7 md:w-9 md:h-9 rounded-full transition-all shadow-sm hover:shadow-md hover:scale-110'>
+                      <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} />
                     </div>
                   </div>
                 </div>

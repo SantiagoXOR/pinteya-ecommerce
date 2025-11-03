@@ -76,24 +76,7 @@ const CombosSection: React.FC = () => {
   return (
     <section className='w-full pt-6 pb-2 px-4 bg-white'>
       <div className='max-w-7xl mx-auto'>
-        {/* Header */}
-        <div className='mb-4 flex items-center justify-between'>
-          <div>
-            <h2 className='text-2xl font-bold text-gray-900 mb-1'>
-              Productos Destacados
-            </h2>
-            <p className='text-gray-600 text-sm'>
-              Ofertas especiales en productos seleccionados
-            </p>
-          </div>
-          <Link
-            href='/search?search=combos'
-            className='hidden md:flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium text-sm transition-colors'
-          >
-            Ver todos
-            <ArrowRight className='w-4 h-4' />
-          </Link>
-        </div>
+        {/* Header removido según solicitud del usuario */}
 
         {/* Carrusel horizontal mejorado */}
         <div className='relative group'>

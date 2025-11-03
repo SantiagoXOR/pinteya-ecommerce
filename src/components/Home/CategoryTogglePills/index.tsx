@@ -273,7 +273,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
             >
               <div className={`
                 relative rounded-full transition-all duration-300
-                ${isSelected && useDynamicCarousel ? 'ring-[5px] ring-bright-sun-400 ring-offset-[3px] scale-[1.15] shadow-xl' : 'scale-100'}
+                ${isSelected && useDynamicCarousel ? 'ring-2 ring-bright-sun-400 scale-105 shadow-md' : 'scale-100'}
               `}>
                 <Button
                   data-testid={`category-pill-${category.slug}`}
@@ -346,7 +346,10 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
             onMouseMove={handleMouseMove}
           >
             {categories.map(category => {
-              const isSelected = selectedCategories.includes(category.slug)
+              // Determinar si está seleccionada según el modo (contexto o props)
+              const isSelected = useDynamicCarousel 
+                ? selectedCategory === category.slug 
+                : selectedCategories.includes(category.slug)
 
               return (
                 <div 
@@ -356,7 +359,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                 >
                   <div className={`
                   relative rounded-full transition-all duration-300
-                  ${isSelected && useDynamicCarousel ? 'ring-[5px] ring-bright-sun-400 ring-offset-[3px] scale-[1.15] shadow-xl' : 'scale-100'}
+                  ${isSelected && useDynamicCarousel ? 'ring-2 ring-bright-sun-400 scale-105 shadow-md' : 'scale-100'}
                 `}>
                   <Button
                     data-testid={`category-pill-${category.slug}`}

@@ -87,22 +87,50 @@ export const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
     slug: 'antihumedad',
   },
   
-  // Categoría: Piscinas
-  piscina: {
-    title: 'Piscinas y Agua',
+  // Categoría: Piscinas (slug con mayúscula como está en BD)
+  Piscinas: {
+    title: 'Piscinas',
     subtitle: 'Pinturas especiales para piscinas',
-    iconUrl: 'https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/piscinas.webp',
+    iconUrl: 'https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/category-images/categories/piscinas.webp',
     color: 'sky',
     bgGradient: 'from-sky-50 to-blue-50',
     badgeColor: 'bg-sky-500',
     textColor: 'text-sky-700',
-    slug: 'piscina',
+    slug: 'Piscinas',
+  },
+  
+  // Categoría: Reparaciones
+  reparaciones: {
+    title: 'Reparaciones',
+    subtitle: 'Productos para reparar y restaurar',
+    iconUrl: 'https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/categories/reparaciones.webp',
+    color: 'indigo',
+    bgGradient: 'from-indigo-50 to-blue-50',
+    badgeColor: 'bg-indigo-500',
+    textColor: 'text-indigo-700',
+    slug: 'reparaciones',
+  },
+  
+  // Categoría: Pisos
+  pisos: {
+    title: 'Pisos',
+    subtitle: 'Barnices y acabados para pisos',
+    iconUrl: 'https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/category-images/categories/interiores.webp',
+    color: 'amber',
+    bgGradient: 'from-amber-50 to-yellow-50',
+    badgeColor: 'bg-amber-500',
+    textColor: 'text-amber-700',
+    slug: 'pisos',
   },
 }
 
 // Helper para obtener configuración por slug
 export const getCategoryConfig = (slug: string | null): CategoryConfig => {
   if (!slug) return CATEGORY_CONFIGS.default
+  
+  // Log para debugging
+  console.log('[getCategoryConfig] Buscando config para slug:', slug, 'Encontrado:', !!CATEGORY_CONFIGS[slug])
+  
   return CATEGORY_CONFIGS[slug] || CATEGORY_CONFIGS.default
 }
 

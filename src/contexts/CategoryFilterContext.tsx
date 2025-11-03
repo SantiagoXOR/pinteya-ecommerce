@@ -42,8 +42,17 @@ export const CategoryFilterProvider: React.FC<CategoryFilterProviderProps> = ({
 
   // Toggle: si es la misma categoría, volver a default (null)
   const toggleCategory = useCallback((category: string) => {
-    setSelectedCategory(prev => (prev === category ? null : category))
-  }, [])
+    console.log('[CategoryFilterContext] Toggle category:', {
+      previous: selectedCategory,
+      clicked: category,
+      willBe: selectedCategory === category ? null : category
+    })
+    setSelectedCategory(prev => {
+      const newValue = prev === category ? null : category
+      console.log('[CategoryFilterContext] State updated:', prev, '→', newValue)
+      return newValue
+    })
+  }, [selectedCategory])
 
   const value = {
     selectedCategory,

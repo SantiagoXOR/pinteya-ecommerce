@@ -82,18 +82,16 @@ const HomeV2 = () => {
       <main>
         {/* BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner */}
 
-        {/* NUEVO ORDEN OPTIMIZADO - REDISTRIBUCIÓN DE BANNERS */}
+      {/* NUEVO ORDEN OPTIMIZADO - Hero primero, luego banner */}
 
-        {/* 1. Banner CYBERMONDAY - Arriba del Hero */}
-        <PromoBanners bannerId={1} />
+      {/* 1. Hero - Captar atención inmediata */}
+      <Hero />
 
-        {/* 2. Hero - Captar atención inmediata */}
-        <Hero />
+      {/* 2. Banner PINTURA FLASH DAYS - Ultra compacto y con espacio */}
+      <PromoBanners bannerId={1} />
 
-        {/* 3. Navegación rápida por categorías */}
-        <div className='-mt-2'>
-          <CategoryTogglePillsWithSearch />
-        </div>
+      {/* 3. Navegación rápida por categorías */}
+      <CategoryTogglePillsWithSearch />
 
       {/* 4. NUEVO: Carrusel Dinámico de Productos por Categoría - Reemplaza FreeShippingSection */}
       <div className='-mt-3'>
