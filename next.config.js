@@ -39,10 +39,8 @@ const nextConfig = {
         : false,
   },
 
-  // ⚡ PERFORMANCE: SWC Minification (más rápido que Terser)
-  swcMinify: true,
-
   // ⚡ PERFORMANCE: Modular imports para reducir bundle size
+  // Nota: swcMinify removido - es por defecto en Next.js 15
   modularizeImports: {
     'lucide-react': {
       transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
