@@ -375,7 +375,7 @@ export const getDefaultColor = (productType: ProductType): string => {
     return 'natural'
   }
 
-  return 'blanco-puro' // Color por defecto para productos con selector
+  return 'BLANCO' // Color por defecto para productos con selector (normalizado)
 }
 
 // ============================================================================
@@ -386,6 +386,7 @@ export const getDefaultColor = (productType: ProductType): string => {
 const COLOR_HEX_MAP: Record<string, string> = {
   // Colores básicos
   'blanco': '#FFFFFF',
+  'blanco-puro': '#FFFFFF',
   'negro': '#000000',
   'gris': '#808080',
   'rojo': '#FF0000',
@@ -671,13 +672,54 @@ export const extractProductCapacity = (
   const result: ExtractedProductInfo = {}
   const productType = detectProductType(productName)
 
-  // 1. PRIORIDAD MÁXIMA: Datos directos de la base de datos (color y medida)
+  // 1. PRIORIDAD MÁXIMA: Variantes (más confiable que campos legacy)
+  if (variants && variants.length > 0) {
+    const defaultVariant = variants.find(v => v.measure) || variants[0]
+    if (defaultVariant?.measure) {
+      result.capacity = defaultVariant.measure
+    }
+
+    // Colores desde variantes: tomar todos los distintos
+    const uniqueColors = Array.from(
+      new Set(
+        variants
+          .map(v => (v.color_name || '').toString().trim())
+          .filter(Boolean)
+      )
+    )
+
+    if (uniqueColors.length > 0) {
+      // Guardar como lista separada por comas para soportar múltiples badges
+      result.color = uniqueColors.join(', ')
+    } else if (defaultVariant?.color_name) {
+      // Fallback a color del defaultVariant si no hay lista válida
+      result.color = defaultVariant.color_name
+    }
+
+    // Acabados/terminaciones desde variantes: soportar múltiples
+    const uniqueFinishes = Array.from(
+      new Set(
+        variants
+          .map(v => (v.finish || '').toString().trim())
+          .filter(Boolean)
+          .map(f => f.charAt(0).toUpperCase() + f.slice(1).toLowerCase())
+      )
+    )
+
+    if (uniqueFinishes.length > 0) {
+      result.finish = uniqueFinishes.join(', ')
+    } else if (defaultVariant?.finish) {
+      result.finish = defaultVariant.finish
+    }
+  }
+
+  // 2. SEGUNDA PRIORIDAD: Datos de la base de datos (features, specifications, etc.)
   if (databaseData) {
-    // Usar campos directos de la BD primero
-    if (databaseData.color) {
+    // Campos legacy solo como fallback si no hay variantes
+    if (!result.color && databaseData.color) {
       result.color = databaseData.color
     }
-    if (databaseData.medida) {
+    if (!result.capacity && databaseData.medida) {
       result.capacity = databaseData.medida
     }
 
@@ -713,53 +755,14 @@ export const extractProductCapacity = (
     }
   }
 
-  // 2. SEGUNDA PRIORIDAD: Variantes (más confiable que el nombre)
-  if (variants && variants.length > 0) {
-    const defaultVariant = variants.find(v => v.measure) || variants[0]
-    if (defaultVariant?.measure && !result.capacity) {
-      result.capacity = defaultVariant.measure
-    }
-
-    // Colores desde variantes: tomar todos los distintos
-    const uniqueColors = Array.from(
-      new Set(
-        variants
-          .map(v => (v.color_name || '').toString().trim())
-          .filter(Boolean)
-      )
-    )
-
-    if (uniqueColors.length > 0) {
-      // Guardar como lista separada por comas para soportar múltiples badges
-      result.color = uniqueColors.join(', ')
-    } else if (defaultVariant?.color_name && !result.color) {
-      // Fallback a color del defaultVariant si no hay lista válida
-      result.color = defaultVariant.color_name
-    }
-
-    // Acabados/terminaciones desde variantes: soportar múltiples
-    const uniqueFinishes = Array.from(
-      new Set(
-        variants
-          .map(v => (v.finish || '').toString().trim())
-          .filter(Boolean)
-          .map(f => f.charAt(0).toUpperCase() + f.slice(1).toLowerCase())
-      )
-    )
-
-    if (uniqueFinishes.length > 0) {
-      result.finish = uniqueFinishes.join(', ')
-    } else if (defaultVariant?.finish && !result.finish) {
-      result.finish = defaultVariant.finish
-    }
-  }
-
   // 3. TERCERA PRIORIDAD: Extraer del nombre del producto (fallback)
   if (!result.capacity) {
     result.capacity = extractCapacityFromName(productName)
   }
   
-  if (!result.color) {
+  // Solo extraer color del nombre si NO hay variantes (productos sin variantes pueden necesitarlo)
+  // Si hay variantes con color_name: null, significa que el producto es incoloro
+  if (!result.color && (!variants || variants.length === 0)) {
     result.color = extractColorFromName(productName)
   }
 
@@ -829,16 +832,7 @@ export const extractProductCapacity = (
     }
   }
 
-  // Color por defecto basado en el tipo de producto (solo si aplica y no se extrajo antes)
-  if (!result.color) {
-    const pt = detectProductType(productName)
-    if (pt?.hasColorSelector) {
-      const defaultColor = getDefaultColor(pt)
-      if (defaultColor) result.color = defaultColor
-    }
-  }
-
-  // 4.1 Fallback específico para impregnantes DANZKE: aplicar paleta completa en todas las presentaciones
+  // 4. Fallback específico para impregnantes DANZKE: aplicar paleta completa en todas las presentaciones
   // Si el producto es un impregnate para madera y no se detectaron colores válidos
   // (o viene solo "blanco/incoloro"), usamos una paleta estándar de tonos madera.
   if (productType?.id === 'impregnante-madera') {
@@ -869,8 +863,9 @@ export const extractProductCapacity = (
     }
   }
 
-  // 5. Normalizar formato de capacidad según unidad del tipo de producto (ej: 4L, 10KG)
-  if (result.capacity) {
+  // 5. Normalizar formato de capacidad SOLO si NO viene de variantes
+  // Las variantes ya tienen medidas normalizadas ("350GR", "1L", etc.)
+  if (result.capacity && (!variants || variants.length === 0)) {
     const pt = detectProductType(productName)
     if (pt?.capacityUnit) {
       result.capacity = formatCapacity(result.capacity, pt.capacityUnit)

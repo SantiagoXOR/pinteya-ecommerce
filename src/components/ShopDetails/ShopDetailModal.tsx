@@ -2614,28 +2614,18 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
           {/* Selectores de variantes */}
           <div className='space-y-6'>
-            {/* Selector de colores condicional */}
-            {productType.hasColorSelector && (
-              <>
-                {console.log('🎨 RENDER DEBUG:', {
-                  hasColorSelector: productType.hasColorSelector,
-                  smartColorsLength: smartColors.length,
-                  availableColorsLength: availableColors.length,
-                  smartColors: smartColors.slice(0, 3),
-                  availableColors: availableColors.slice(0, 3),
-                  finalColors: smartColors.length > 0 ? smartColors : availableColors
-                })}
-                <AdvancedColorPicker
-                  colors={smartColors.length > 0 ? smartColors : availableColors}
-                  selectedColor={selectedColor}
-                  onColorChange={setSelectedColor}
-                  showSearch={false}
-                  showCategories={false}
-                  maxDisplayColors={smartColors.length > 0 ? smartColors.length : availableColors.length}
-                  className='bg-white'
-                  productType={productType}
-                />
-              </>
+            {/* Selector de colores condicional - solo mostrar si hay colores disponibles */}
+            {productType.hasColorSelector && (smartColors.length > 0 || availableColors.length > 0) && (
+              <AdvancedColorPicker
+                colors={smartColors.length > 0 ? smartColors : availableColors}
+                selectedColor={selectedColor}
+                onColorChange={setSelectedColor}
+                showSearch={false}
+                showCategories={false}
+                maxDisplayColors={smartColors.length > 0 ? smartColors.length : availableColors.length}
+                className='bg-white'
+                productType={productType}
+              />
             )}
 
             {/* Selector de acabado (finish) - MOVIDO DESPUÉS DE COLOR */}

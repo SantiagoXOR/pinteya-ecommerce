@@ -139,9 +139,9 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
       specifications={productData.specifications}
       dimensions={productData.dimensions}
       weight={productData.weight}
-      // Pasar datos directos de la BD
-      color={productData.color}
-      medida={productData.medida}
+      // ✅ NO pasar color/medida legacy - usar solo variantes para badges
+      // color={productData.color}
+      // medida={productData.medida}
     />
   )
 }

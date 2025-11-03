@@ -187,24 +187,6 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const extractedInfo = React.useMemo(() => {
       if (!title) return {}
       
-      // Debug: Verificar datos disponibles
-      console.group(`🔍 [ProductCardCommercial] Debug badges - Producto: ${title}`)
-      console.log('📋 Datos disponibles:')
-      console.log('  - title:', title)
-      console.log('  - variants:', variants)
-      console.log('  - variants.length:', variants?.length || 0)
-      console.log('  - variants measures:', variants?.map(v => v.measure).filter((v, i, a) => a.indexOf(v) === i) || [])
-      console.log('  - variants colors:', variants?.map(v => v.color_name).filter((v, i, a) => a.indexOf(v) === i) || [])
-      console.log('  - description:', description)
-      console.log('  - features:', features)
-      console.log('  - specifications:', specifications)
-      console.log('  - dimensions:', dimensions)
-      console.log('  - weight:', weight)
-      console.log('  - brand:', brand)
-      console.log('  - color (BD):', color)
-      console.log('  - medida (BD):', medida)
-      console.log('  - badgeConfig:', badgeConfig)
-      
       // Crear objeto con datos estructurados de la base de datos
       const databaseData = {
         features,
@@ -212,16 +194,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         dimensions,
         weight,
         brand,
-        // Campos directos de la BD - IMPORTANTE: usar los nombres correctos
-        color: color, // Campo color de la BD
-        medida: medida // Campo medida de la BD
+        // ✅ NO incluir color/medida legacy - usar solo variantes
+        // color: color,
+        // medida: medida
       }
       
-      console.log('🔧 databaseData creado:', databaseData)
-      
       const result = extractProductCapacity(title, variants, description, databaseData, slug)
-      console.log('🎯 Información extraída:', result)
-      console.groupEnd()
       
       return result
     }, [title, slug, variants, description, features, specifications, dimensions, weight, brand, color, medida])
