@@ -191,6 +191,15 @@ export class RealTimePerformanceMonitor {
    * Recolecta métricas del sistema
    */
   private async collectSystemMetrics(): Promise<void> {
+    // 🔧 QUICK FIX: Deshabilitar durante build de Vercel
+    // Previene alertas de memoria/CPU durante compilación
+    if (process.env.VERCEL && !process.env.VERCEL_ENV) {
+      return // Build time en Vercel
+    }
+    if (process.env.DISABLE_MONITORING === 'true') {
+      return // Deshabilitado explícitamente
+    }
+
     try {
       const metrics: RealTimeMetrics = {
         timestamp: Date.now(),
@@ -295,6 +304,14 @@ export class RealTimePerformanceMonitor {
    * Verifica umbrales y genera alertas
    */
   private async checkThresholds(metrics: RealTimeMetrics): Promise<void> {
+    // 🔧 QUICK FIX: Deshabilitar alertas durante build
+    if (process.env.VERCEL && !process.env.VERCEL_ENV) {
+      return // Build time en Vercel
+    }
+    if (process.env.DISABLE_MONITORING === 'true') {
+      return // Deshabilitado explícitamente
+    }
+
     // Verificar tiempo de respuesta
     if (metrics.responseTime > this.thresholds.responseTime.critical) {
       await this.createAlert(

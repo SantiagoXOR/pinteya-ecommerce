@@ -198,7 +198,15 @@ class EnterpriseMonitoringManager {
     this.startPerformanceMonitoring()
   }
 
-  static getInstance(config?: MonitoringConfig): EnterpriseMonitoringManager {
+  static getInstance(config?: MonitoringConfig): EnterpriseMonitoringManager | null {
+    // 🔧 QUICK FIX: No inicializar durante build de Vercel
+    if (process.env.VERCEL && !process.env.VERCEL_ENV) {
+      return null // Build time en Vercel
+    }
+    if (process.env.DISABLE_MONITORING === 'true') {
+      return null // Deshabilitado explícitamente
+    }
+
     if (!EnterpriseMonitoringManager.instance) {
       if (!config) {
         throw new Error('Configuration required for first initialization')
