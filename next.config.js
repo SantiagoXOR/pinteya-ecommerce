@@ -119,20 +119,49 @@ const nextConfig = {
       config.optimization.splitChunks = {
         chunks: 'all',
         cacheGroups: {
-          // Framework core (React, Next.js)
+          // Framework core (React, Next.js) - NO CAMBIAR
           framework: {
             test: /[\\/]node_modules[\\/](react|react-dom|next|scheduler)[\\/]/,
             name: 'framework',
             priority: 40,
             enforce: true,
           },
+          
+          // ⚡ NUEVO: Radix UI separado
+          radixUI: {
+            test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+            name: 'radix-ui',
+            priority: 35,
+            reuseExistingChunk: true,
+            enforce: true,
+          },
+          
+          // ⚡ NUEVO: Recharts separado (solo carga en admin)
+          recharts: {
+            test: /[\\/]node_modules[\\/]recharts[\\/]/,
+            name: 'recharts',
+            priority: 33,
+            reuseExistingChunk: true,
+            enforce: true,
+          },
+          
+          // ⚡ NUEVO: Framer Motion separado
+          framerMotion: {
+            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+            name: 'framer-motion',
+            priority: 32,
+            reuseExistingChunk: true,
+            enforce: true,
+          },
+          
           // Bibliotecas compartidas grandes
           lib: {
-            test: /[\\/]node_modules[\\/](@radix-ui|framer-motion|recharts)[\\/]/,
+            test: /[\\/]node_modules[\\/](swiper|react-hook-form)[\\/]/,
             name: 'lib',
             priority: 30,
             reuseExistingChunk: true,
           },
+          
           // Redux y state management
           redux: {
             test: /[\\/]node_modules[\\/](@reduxjs|react-redux)[\\/]/,
@@ -140,6 +169,7 @@ const nextConfig = {
             priority: 25,
             reuseExistingChunk: true,
           },
+          
           // React Query
           query: {
             test: /[\\/]node_modules[\\/](@tanstack)[\\/]/,
@@ -147,6 +177,7 @@ const nextConfig = {
             priority: 25,
             reuseExistingChunk: true,
           },
+          
           // Otros vendors
           vendor: {
             test: /[\\/]node_modules[\\/]/,
@@ -154,6 +185,7 @@ const nextConfig = {
             priority: 20,
             reuseExistingChunk: true,
           },
+          
           // Componentes compartidos
           commons: {
             minChunks: 2,
@@ -161,8 +193,8 @@ const nextConfig = {
             reuseExistingChunk: true,
           },
         },
-        maxInitialRequests: 25,
-        minSize: 20000,
+        maxInitialRequests: 30, // ⚡ Aumentado de 25
+        minSize: 10000, // ⚡ Reducido de 20000 (10 KB mínimo)
       }
     }
 
@@ -289,12 +321,17 @@ const nextConfig = {
         destination: '/admin/:path*', // Preservar subrutas
         permanent: false,
       },
-      // Comentado temporalmente hasta verificar que no cause problemas
-      // {
-      //   source: '/home',
-      //   destination: '/admin',
-      //   permanent: false,
-      // },
+      // ⚡ PERFORMANCE: Fix 404 de /shop
+      {
+        source: '/shop',
+        destination: '/products',
+        permanent: true, // 301 redirect permanente
+      },
+      {
+        source: '/shop/:path*',
+        destination: '/products/:path*',
+        permanent: true,
+      },
       {
         source: '/product/:id',
         destination: '/shop-details/:id',

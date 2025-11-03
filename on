@@ -1,0 +1,30 @@
+[1mdiff --git a/src/app/layout.tsx b/src/app/layout.tsx[m
+[1mindex 3a15f8f..ed2d03e 100644[m
+[1m--- a/src/app/layout.tsx[m
+[1m+++ b/src/app/layout.tsx[m
+[36m@@ -16,6 +16,10 @@[m [mimport {[m
+ } from '@/lib/structured-data'[m
+ import type { Metadata } from 'next'[m
+ [m
+[32m+[m[32m// Vercel Analytics - Solo en producción[m
+[32m+[m[32mimport { Analytics } from '@vercel/analytics/react'[m
+[32m+[m[32mimport { SpeedInsights } from '@vercel/speed-insights/next'[m
+[32m+[m
+ export const metadata: Metadata = defaultMetadata[m
+ [m
+ export default function RootLayout({ children }: { children: React.ReactNode }) {[m
+[36m@@ -36,6 +40,14 @@[m [mexport default function RootLayout({ children }: { children: React.ReactNode })[m
+         <Suspense fallback={null}>[m
+           <Providers>{children}</Providers>[m
+         </Suspense>[m
+[32m+[m[41m        [m
+[32m+[m[32m        {/* Vercel Analytics - Solo en producción */}[m
+[32m+[m[32m        {process.env.NODE_ENV === 'production' && ([m
+[32m+[m[32m          <>[m
+[32m+[m[32m            <Analytics />[m
+[32m+[m[32m            <SpeedInsights />[m
+[32m+[m[32m          </>[m
+[32m+[m[32m        )}[m
+       </body>[m
+     </html>[m
+   )[m

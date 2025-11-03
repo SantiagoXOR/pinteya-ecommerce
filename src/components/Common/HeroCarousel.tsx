@@ -162,8 +162,10 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 fill
                 className='object-contain transition-all duration-500 ease-in-out'
                 priority={image.priority || index === 0}
-                sizes='(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw'
-                quality={85}
+                // ⚡ MOBILE OPT: Sizes específicos por breakpoint
+                sizes='(max-width: 640px) 100vw, (max-width: 768px) 95vw, (max-width: 1024px) 80vw, 60vw'
+                // ⚡ MOBILE OPT: Quality reducida para mobile (75 es suficiente para WebP)
+                quality={75}
                 unoptimized={image.unoptimized || false}
                 aria-describedby={`slide-description-${index}`}
                 style={{ objectFit: 'contain' }}

@@ -6,6 +6,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ⚡ PERFORMANCE: Aspect ratio para prevenir CLS */
+@layer utilities {
+  .hero-carousel img,
+  .hero-carousel picture {
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+  }
+  
+  .product-image {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+  
+  .category-image {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  
+  /* Prevenir layout shifts en todas las imágenes */
+  img:not([width]):not([height]) {
+    height: auto;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

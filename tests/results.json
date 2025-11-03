@@ -1,16 +1,18 @@
 {
   "config": {
-    "configFile": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\playwright.simple.config.ts",
+    "configFile": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\playwright.config.ts",
     "rootDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
     "forbidOnly": false,
     "fullyParallel": false,
-    "globalSetup": null,
-    "globalTeardown": null,
+    "globalSetup": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\global-setup.ts",
+    "globalTeardown": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\global-teardown.ts",
     "globalTimeout": 0,
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {},
+    "metadata": {
+      "actualWorkers": 1
+    },
     "preserveOutput": "always",
     "reporter": [
       [
@@ -23,6 +25,12 @@
         "json",
         {
           "outputFile": "tests/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "tests/results.xml"
         }
       ],
       [
@@ -40,16 +48,210 @@
         "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
         "repeatEach": 1,
         "retries": 1,
-        "metadata": {},
-        "id": "chromium",
-        "name": "chromium",
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "setup",
+        "name": "setup",
         "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
-        "testIgnore": [],
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/auth.setup.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "cleanup",
+        "name": "cleanup",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/auth.cleanup.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "api-admin",
+        "name": "api-admin",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/api-admin.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "api-public",
+        "name": "api-public",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/api-public.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "ui-admin",
+        "name": "ui-admin",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/admin/**/*.spec.ts",
+          "**/auth/**/*.spec.ts",
+          "!**/api-*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "ui-public",
+        "name": "ui-public",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
         "testMatch": [
           "**/*.spec.ts",
-          "**/*.e2e.ts"
+          "!**/admin/**/*.spec.ts",
+          "!**/auth/**/*.spec.ts",
+          "!**/api-*.spec.ts"
         ],
-        "timeout": 60000
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "C:/Users/marti/Desktop/DESARROLLOSW/BOILERPLATTE E-COMMERCE/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/.next/**",
+          "**/coverage/**"
+        ],
+        "testMatch": [
+          "**/*.spec.ts",
+          "!**/admin/**/*.spec.ts"
+        ],
+        "timeout": 30000
       }
     ],
     "shard": null,
@@ -64,19 +266,1576 @@
       "timeout": 120000
     }
   },
-  "suites": [],
-  "errors": [
+  "suites": [
     {
-      "message": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments.",
-      "stack": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments."
+      "title": "cyber-monday-popup.spec.ts",
+      "file": "cyber-monday-popup.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cyber Monday Popup - Desktop",
+          "file": "cyber-monday-popup.spec.ts",
+          "line": 44,
+          "column": 6,
+          "specs": [
+            {
+              "title": "modal aparece después de 5 segundos",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13024,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T18:58:32.875Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-14c6884c5e0b92cf4904",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 53,
+              "column": 7
+            },
+            {
+              "title": "muestra diseño desktop (2 columnas)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 21677,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\n    at waitForModal (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:19:14)\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:68:5",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 14,
+                          "line": 19
+                        },
+                        "snippet": "  17 |   \n  18 |   // Esperar a que el modal sea visible\n> 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })\n     |              ^\n  20 | }\n  21 |\n  22 | const closeModal = async (page: Page) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 14,
+                            "line": 19
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\n\n  17 |   \n  18 |   // Esperar a que el modal sea visible\n> 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })\n     |              ^\n  20 | }\n  21 |\n  22 | const closeModal = async (page: Page) => {\n    at waitForModal (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:19:14)\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:68:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T18:58:46.001Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-638db--diseño-desktop-2-columnas--ui-public\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-638db--diseño-desktop-2-columnas--ui-public\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-638db--diseño-desktop-2-columnas--ui-public\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 14,
+                        "line": 19
+                      }
+                    },
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10612,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-01T18:59:08.285Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-638db--diseño-desktop-2-columnas--ui-public-retry1\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "flaky"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-33bc3c89a0f09a3e4159",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 66,
+              "column": 7
+            },
+            {
+              "title": "badge Cyber Monday visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9349,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T18:59:19.809Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-ae639baeaf0169e67ef0",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 78,
+              "column": 7
+            },
+            {
+              "title": "3 gift cards visibles",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9099,
+                      "error": {
+                        "message": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n",
+                        "stack": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:91:45",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 45,
+                          "line": 91
+                        },
+                        "snippet": "  89 |     // Verificar texto de gift card - usar .first() para evitar strict mode\n  90 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()\n> 91 |     await expect(page.getByText('$75.000')).toBeVisible()\n     |                                             ^\n  92 |   })\n  93 |\n  94 |   test('formulario funcional', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 45,
+                            "line": 91
+                          },
+                          "message": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n\n\n  89 |     // Verificar texto de gift card - usar .first() para evitar strict mode\n  90 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()\n> 91 |     await expect(page.getByText('$75.000')).toBeVisible()\n     |                                             ^\n  92 |   })\n  93 |\n  94 |   test('formulario funcional', async ({ page }) => {\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:91:45"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T18:59:29.170Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 45,
+                        "line": 91
+                      }
+                    },
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10599,
+                      "error": {
+                        "message": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n",
+                        "stack": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:91:45",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 45,
+                          "line": 91
+                        },
+                        "snippet": "  89 |     // Verificar texto de gift card - usar .first() para evitar strict mode\n  90 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()\n> 91 |     await expect(page.getByText('$75.000')).toBeVisible()\n     |                                             ^\n  92 |   })\n  93 |\n  94 |   test('formulario funcional', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 45,
+                            "line": 91
+                          },
+                          "message": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n\n\n  89 |     // Verificar texto de gift card - usar .first() para evitar strict mode\n  90 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()\n> 91 |     await expect(page.getByText('$75.000')).toBeVisible()\n     |                                             ^\n  92 |   })\n  93 |\n  94 |   test('formulario funcional', async ({ page }) => {\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:91:45"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-01T18:59:38.949Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 45,
+                        "line": 91
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-381674ebbbc4e80a209e",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 85,
+              "column": 7
+            },
+            {
+              "title": "formulario funcional",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8576,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T18:59:51.339Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-a4beb0dda5a3931e54e7",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 94,
+              "column": 7
+            },
+            {
+              "title": "botón \"Participar por WhatsApp\" funciona",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9257,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:00:00.013Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-76ef2d831c9b53545340",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 108,
+              "column": 7
+            },
+            {
+              "title": "redirección a WhatsApp correcta",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10088,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:00:09.281Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-a44e0238d671e95e44e6",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 117,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Cyber Monday Popup - Mobile",
+          "file": "cyber-monday-popup.spec.ts",
+          "line": 141,
+          "column": 6,
+          "specs": [
+            {
+              "title": "modal aparece después de 5 segundos en mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9066,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:00:19.379Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-bf2fc825d01414ac3d28",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 149,
+              "column": 7
+            },
+            {
+              "title": "muestra diseño mobile (vertical)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8919,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:00:28.454Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-feef2c69a4e15a2f8c00",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 159,
+              "column": 7
+            },
+            {
+              "title": "scroll funciona si el contenido es largo",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8210,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:00:37.384Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-3c16d86578c29e05f997",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 171,
+              "column": 7
+            },
+            {
+              "title": "elementos táctiles son accesibles (44px min)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9304,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m36\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m36\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:206:31",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 31,
+                          "line": 206
+                        },
+                        "snippet": "  204 |     expect(closeBox).not.toBeNull()\n  205 |     if (closeBox) {\n> 206 |       expect(closeBox.height).toBeGreaterThanOrEqual(40)\n      |                               ^\n  207 |     }\n  208 |   })\n  209 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 31,
+                            "line": 206
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m36\u001b[39m\n\n  204 |     expect(closeBox).not.toBeNull()\n  205 |     if (closeBox) {\n> 206 |       expect(closeBox.height).toBeGreaterThanOrEqual(40)\n      |                               ^\n  207 |     }\n  208 |   })\n  209 |\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:206:31"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:00:45.603Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 31,
+                        "line": 206
+                      }
+                    },
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10733,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m36\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m36\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:206:31",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 31,
+                          "line": 206
+                        },
+                        "snippet": "  204 |     expect(closeBox).not.toBeNull()\n  205 |     if (closeBox) {\n> 206 |       expect(closeBox.height).toBeGreaterThanOrEqual(40)\n      |                               ^\n  207 |     }\n  208 |   })\n  209 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 31,
+                            "line": 206
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m36\u001b[39m\n\n  204 |     expect(closeBox).not.toBeNull()\n  205 |     if (closeBox) {\n> 206 |       expect(closeBox.height).toBeGreaterThanOrEqual(40)\n      |                               ^\n  207 |     }\n  208 |   })\n  209 |\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:206:31"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-01T19:00:55.876Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 31,
+                        "line": 206
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-48a7062c2884f220ffed",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 187,
+              "column": 7
+            },
+            {
+              "title": "formulario optimizado para mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13189,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:01:08.017Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-853d59edbbe454565358",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 210,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Cyber Monday Popup - Validación de Formulario",
+          "file": "cyber-monday-popup.spec.ts",
+          "line": 233,
+          "column": 6,
+          "specs": [
+            {
+              "title": "no permite letras en el input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7900,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:01:21.309Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-8462f5d3504f1e5488a2",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 240,
+              "column": 7
+            },
+            {
+              "title": "formatea número automáticamente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12815,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:01:29.226Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-5277ad60e5e75403384a",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 249,
+              "column": 7
+            },
+            {
+              "title": "muestra error con número inválido",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7654,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:01:42.054Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-cdbf02958802c91dfff5",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 259,
+              "column": 7
+            },
+            {
+              "title": "permite envío con número válido",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8389,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:01:49.719Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-ce4424b1f91fe9b3386c",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 273,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Cyber Monday Popup - Interacciones",
+          "file": "cyber-monday-popup.spec.ts",
+          "line": 290,
+          "column": 6,
+          "specs": [
+            {
+              "title": "botón cerrar (X) funciona",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7506,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:01:58.117Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-934a2848e30b603f3e94",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 297,
+              "column": 7
+            },
+            {
+              "title": "click fuera del modal lo cierra",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8899,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:02:05.635Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-64971fb7169f9a3d38a8",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 305,
+              "column": 7
+            },
+            {
+              "title": "modal no se muestra dos veces (localStorage)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19940,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\n    at waitForModal (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:19:14)\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:294:5",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 14,
+                          "line": 19
+                        },
+                        "snippet": "  17 |   \n  18 |   // Esperar a que el modal sea visible\n> 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })\n     |              ^\n  20 | }\n  21 |\n  22 | const closeModal = async (page: Page) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 14,
+                            "line": 19
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\n\n  17 |   \n  18 |   // Esperar a que el modal sea visible\n> 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })\n     |              ^\n  20 | }\n  21 |\n  22 | const closeModal = async (page: Page) => {\n    at waitForModal (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:19:14)\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:294:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:02:14.554Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-7ecf5-tra-dos-veces-localStorage--ui-public\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-7ecf5-tra-dos-veces-localStorage--ui-public\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-7ecf5-tra-dos-veces-localStorage--ui-public\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 14,
+                        "line": 19
+                      }
+                    },
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 21223,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-01T19:02:35.095Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-7ecf5-tra-dos-veces-localStorage--ui-public-retry1\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "flaky"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-9557f771c3ca4bc598e7",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 317,
+              "column": 7
+            },
+            {
+              "title": "animaciones funcionan correctamente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7708,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:02:57.425Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-79c4e806a48b14d4ee80",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 333,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Cyber Monday Popup - Accesibilidad",
+          "file": "cyber-monday-popup.spec.ts",
+          "line": 348,
+          "column": 6,
+          "specs": [
+            {
+              "title": "navegación por teclado (Tab)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 27490,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\n    at waitForModal (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:19:14)\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:352:5",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 14,
+                          "line": 19
+                        },
+                        "snippet": "  17 |   \n  18 |   // Esperar a que el modal sea visible\n> 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })\n     |              ^\n  20 | }\n  21 |\n  22 | const closeModal = async (page: Page) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 14,
+                            "line": 19
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\n\n  17 |   \n  18 |   // Esperar a que el modal sea visible\n> 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })\n     |              ^\n  20 | }\n  21 |\n  22 | const closeModal = async (page: Page) => {\n    at waitForModal (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:19:14)\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:352:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:03:05.145Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 14,
+                        "line": 19
+                      }
+                    },
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 18206,
+                      "error": {
+                        "message": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\u001b[2m    - waiting for\" http://localhost:3000/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:3000/\"\u001b[22m\n",
+                        "stack": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\u001b[2m    - waiting for\" http://localhost:3000/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:3000/\"\u001b[22m\n\n    at waitForModal (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:19:14)\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:352:5",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 14,
+                          "line": 19
+                        },
+                        "snippet": "  17 |   \n  18 |   // Esperar a que el modal sea visible\n> 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })\n     |              ^\n  20 | }\n  21 |\n  22 | const closeModal = async (page: Page) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 14,
+                            "line": 19
+                          },
+                          "message": "TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/participá por 1 de las/i') to be visible\u001b[22m\n\u001b[2m    - waiting for\" http://localhost:3000/\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://localhost:3000/\"\u001b[22m\n\n\n  17 |   \n  18 |   // Esperar a que el modal sea visible\n> 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })\n     |              ^\n  20 | }\n  21 |\n  22 | const closeModal = async (page: Page) => {\n    at waitForModal (C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:19:14)\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:352:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-01T19:03:33.270Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 14,
+                        "line": 19
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-bf21ceae439f0980c53c",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 355,
+              "column": 7
+            },
+            {
+              "title": "Enter envía el formulario",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8838,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:03:52.635Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-998fd76ba14a2b0e9743",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 368,
+              "column": 7
+            },
+            {
+              "title": "Escape cierra el modal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8764,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:04:01.580Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-41e47331a0966b769cab",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 378,
+              "column": 7
+            },
+            {
+              "title": "ARIA labels correctos",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7383,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:04:10.357Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-eb861c1c6d24e2b2c332",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 389,
+              "column": 7
+            },
+            {
+              "title": "contraste de colores adecuado",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7581,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:04:17.752Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-250383c592ee4e8c4d30",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 398,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Cyber Monday Popup - Elementos Visuales",
+          "file": "cyber-monday-popup.spec.ts",
+          "line": 415,
+          "column": 6,
+          "specs": [
+            {
+              "title": "muestra todos los elementos visuales requeridos",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8687,
+                      "error": {
+                        "message": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n",
+                        "stack": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:428:45",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 45,
+                          "line": 428
+                        },
+                        "snippet": "  426 |     // Gift Cards - usar .first() para evitar strict mode\n  427 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()\n> 428 |     await expect(page.getByText('$75.000')).toBeVisible()\n      |                                             ^\n  429 |     \n  430 |     // Texto del sorteo\n  431 |     await expect(page.getByText(/3 gift cards/i)).toBeVisible()"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 45,
+                            "line": 428
+                          },
+                          "message": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n\n\n  426 |     // Gift Cards - usar .first() para evitar strict mode\n  427 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()\n> 428 |     await expect(page.getByText('$75.000')).toBeVisible()\n      |                                             ^\n  429 |     \n  430 |     // Texto del sorteo\n  431 |     await expect(page.getByText(/3 gift cards/i)).toBeVisible()\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:428:45"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:04:25.344Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 45,
+                        "line": 428
+                      }
+                    },
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9118,
+                      "error": {
+                        "message": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n",
+                        "stack": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:428:45",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                          "column": 45,
+                          "line": 428
+                        },
+                        "snippet": "  426 |     // Gift Cards - usar .first() para evitar strict mode\n  427 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()\n> 428 |     await expect(page.getByText('$75.000')).toBeVisible()\n      |                                             ^\n  429 |     \n  430 |     // Texto del sorteo\n  431 |     await expect(page.getByText(/3 gift cards/i)).toBeVisible()"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                            "column": 45,
+                            "line": 428
+                          },
+                          "message": "Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:\n    1) <p class=\"text-3xl md:text-4xl font-black mt-1\">$75.000</p> aka getByText('$75.000', { exact: true })\n    2) <p class=\"text-white/80 text-sm mt-1\">$75.000 cada una</p> aka getByText('$75.000 cada una')\n    3) <span class=\"text-sm font-medium\">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('$75.000')\u001b[22m\n\n\n  426 |     // Gift Cards - usar .first() para evitar strict mode\n  427 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()\n> 428 |     await expect(page.getByText('$75.000')).toBeVisible()\n      |                                             ^\n  429 |     \n  430 |     // Texto del sorteo\n  431 |     await expect(page.getByText(/3 gift cards/i)).toBeVisible()\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts:428:45"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-11-01T19:04:34.632Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\cyber-monday-popup.spec.ts",
+                        "column": 45,
+                        "line": 428
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-2b29a1575a7241817bcb",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 422,
+              "column": 7
+            },
+            {
+              "title": "renderiza correctamente en diferentes navegadores",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10678,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:04:45.294Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-45eeb05049481b5c1be2",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 442,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Cyber Monday Popup - Performance",
+          "file": "cyber-monday-popup.spec.ts",
+          "line": 456,
+          "column": 6,
+          "specs": [
+            {
+              "title": "modal se carga rápidamente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7500,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:04:56.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-046b0787a2b9ffa929d7",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 457,
+              "column": 7
+            },
+            {
+              "title": "imágenes y recursos cargan correctamente",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9446,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-01T19:05:03.584Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ead6af071bc93c700fbd-75e2137eaf21d4916315",
+              "file": "cyber-monday-popup.spec.ts",
+              "line": 470,
+              "column": 7
+            }
+          ]
+        }
+      ]
     }
   ],
+  "errors": [],
   "stats": {
-    "startTime": "2025-10-26T19:52:37.687Z",
-    "duration": 1254.4739999999997,
-    "expected": 0,
+    "startTime": "2025-11-01T18:58:29.448Z",
+    "duration": 403649.94800000003,
+    "expected": 23,
     "skipped": 0,
-    "unexpected": 0,
-    "flaky": 0
+    "unexpected": 4,
+    "flaky": 2
   }
 }
