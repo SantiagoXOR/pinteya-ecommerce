@@ -31,9 +31,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style dangerouslySetInnerHTML={{__html: `
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth}
-          body{margin:0;font-family:'Euclid Circular A',system-ui,-apple-system,sans-serif;background:#f97316;color:#1f2937;padding-top:92px}
+          body{margin:0;font-family:'Euclid Circular A',system-ui,-apple-system,sans-serif;background:#fff;color:#1f2937;padding-top:92px}
           @media(min-width:1024px){body{padding-top:105px}}
-          main{background:#fff}
           img,picture,video{max-width:100%;height:auto;display:block}
           button,input,select,textarea{font:inherit}
           h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2}

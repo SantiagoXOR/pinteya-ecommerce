@@ -78,7 +78,7 @@ const Hero = () => {
   return (
     <section className='relative overflow-hidden'>
       {/* Carrusel móvil - solo visible en mobile */}
-      <div className='lg:hidden relative z-50'>
+      <div className='lg:hidden relative z-50 -mt-[92px] pt-[92px]'>
         <div className='w-full'>
           <div className='relative w-full h-[320px] sm:h-[360px] overflow-hidden'>
             <HeroCarousel

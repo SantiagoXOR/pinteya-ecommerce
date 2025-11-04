@@ -63,8 +63,8 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
     : banners
 
   return (
-    <section className=''>
-      <div className='w-full'>
+    <section className='px-4'>
+      <div className='max-w-7xl mx-auto space-y-2'>
         {bannersToShow.map((banner) => {
           const isFlashDays = banner.id === 1
           

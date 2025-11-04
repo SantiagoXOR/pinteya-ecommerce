@@ -87,10 +87,8 @@ const HomeV2 = () => {
       {/* 1. Hero - Captar atención inmediata */}
       <Hero />
 
-      {/* 2. Banner PINTURA FLASH DAYS - Ultra compacto sin espacio */}
-      <div className='-mt-0'>
-        <PromoBanners bannerId={1} />
-      </div>
+      {/* 2. Banner PINTURA FLASH DAYS - Ultra compacto y con espacio */}
+      <PromoBanners bannerId={1} />
 
       {/* 3. Navegación rápida por categorías */}
       <CategoryTogglePillsWithSearch />
