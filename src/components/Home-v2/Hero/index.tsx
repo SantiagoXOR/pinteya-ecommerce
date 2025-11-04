@@ -76,11 +76,11 @@ const Hero = () => {
   }
 
   return (
-    <section className='relative bg-white overflow-hidden'>
+    <section className='relative overflow-hidden'>
       {/* Carrusel móvil - solo visible en mobile */}
-      <div className='lg:hidden bg-white relative z-50 -mt-8 px-4'>
-        <div className='max-w-7xl mx-auto'>
-          <div className='relative w-full h-[320px] sm:h-[360px] overflow-hidden rounded-2xl'>
+      <div className='lg:hidden relative z-50'>
+        <div className='w-full'>
+          <div className='relative w-full h-[320px] sm:h-[360px] overflow-hidden'>
             <HeroCarousel
               images={heroImagesMobile}
               autoplayDelay={5000}
