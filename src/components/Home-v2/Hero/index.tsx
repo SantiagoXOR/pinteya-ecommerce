@@ -8,52 +8,119 @@ import HeroCarousel from '@/components/Common/HeroCarousel.lazy'
 import { Truck, ShieldCheck, CreditCard, ArrowRight } from 'lucide-react'
 import { trackEvent } from '@/lib/google-analytics'
 
-// ⚡ PERFORMANCE OPTIMIZADA: WebP -94% tamaño (19.6MB → 1.1MB)
+// ⚡ PERFORMANCE OPTIMIZADA: WebP -93% tamaño (7.8MB → 643KB)
+// ⚡ Priority Hints API para optimizar orden de carga
 const heroImagesMobile = [
   {
-    src: '/images/hero/hero-01.webp',
+    src: '/images/hero/hero2/hero1.webp',
     alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
-    priority: true, // Solo la primera imagen tiene priority
-    unoptimized: false, // Optimización habilitada
+    priority: true, // Primera imagen crítica
+    unoptimized: false,
+    fetchPriority: 'high' as const, // ⚡ Alta prioridad explícita
+    quality: 85, // Mejor calidad para LCP
+    sizes: '(max-width: 768px) 100vw, 50vw',
   },
   {
-    src: '/images/hero/hero-02.webp',
+    src: '/images/hero/hero2/hero2.webp',
     alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
     priority: false,
     unoptimized: false,
+    fetchPriority: 'low' as const, // Baja prioridad
+    quality: 75,
+    sizes: '(max-width: 768px) 100vw, 50vw',
   },
   {
-    src: '/images/hero/hero-03.webp',
+    src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
     priority: false,
     unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 768px) 100vw, 50vw',
   },
   {
-    src: '/images/hero/hero-04.webp',
+    src: '/images/hero/hero2/hero4.webp',
     alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
     priority: false,
     unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 768px) 100vw, 50vw',
+  },
+  {
+    src: '/images/hero/hero2/hero5.webp',
+    alt: 'Descuentos exclusivos en pinturas y accesorios',
+    priority: false,
+    unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 768px) 100vw, 50vw',
+  },
+  {
+    src: '/images/hero/hero2/hero6.webp',
+    alt: 'Catálogo completo de productos para pinturería profesional',
+    priority: false,
+    unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 768px) 100vw, 50vw',
   },
 ]
 
 const heroImagesDesktop = [
   {
-    src: '/images/hero/hero-02.webp',
-    alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
+    src: '/images/hero/hero2/hero1.webp',
+    alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
     priority: true,
     unoptimized: false,
+    fetchPriority: 'high' as const, // Alta prioridad para desktop
+    quality: 85,
+    sizes: '(max-width: 1024px) 80vw, 50vw',
   },
   {
-    src: '/images/hero/hero-03.webp',
+    src: '/images/hero/hero2/hero2.webp',
+    alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
+    priority: false,
+    unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 1024px) 80vw, 50vw',
+  },
+  {
+    src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
     priority: false,
     unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 1024px) 80vw, 50vw',
   },
   {
-    src: '/images/hero/hero-04.webp',
+    src: '/images/hero/hero2/hero4.webp',
     alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
     priority: false,
     unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 1024px) 80vw, 50vw',
+  },
+  {
+    src: '/images/hero/hero2/hero5.webp',
+    alt: 'Descuentos exclusivos en pinturas y accesorios',
+    priority: false,
+    unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 1024px) 80vw, 50vw',
+  },
+  {
+    src: '/images/hero/hero2/hero6.webp',
+    alt: 'Catálogo completo de productos para pinturería profesional',
+    priority: false,
+    unoptimized: false,
+    fetchPriority: 'low' as const,
+    quality: 75,
+    sizes: '(max-width: 1024px) 80vw, 50vw',
   },
 ]
 

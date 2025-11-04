@@ -292,3 +292,4 @@ Los elementos **SIGUEN viéndose muy grandes**, entonces necesitamos:
 **Archivos modificados:** 6  
 **Líneas cambiadas:** ~50
 
+

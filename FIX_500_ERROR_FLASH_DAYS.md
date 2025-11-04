@@ -198,3 +198,4 @@ Si después del deploy sigue fallando:
 **Estado:** ✅ FIX APLICADO - Listo para deploy  
 **Próximo paso:** Commit + Push + Esperar Vercel Deploy + Probar 🚀
 
+

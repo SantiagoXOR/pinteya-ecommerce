@@ -11,6 +11,9 @@ import { UserAvatarDropdown, LoginButton } from './UserAvatarDropdown'
 import { useAuth } from '@/hooks/useAuth'
 import ActionButtons from './ActionButtons'
 import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocompleteIntegrated'
+
+// ⚡ PERFORMANCE: Memoizar SearchAutocomplete para evitar re-renders innecesarios
+const MemoizedSearchAutocomplete = React.memo(SearchAutocompleteIntegrated)
 import { useCartAnimation } from '@/hooks/useCartAnimation'
 import { MapPin, Loader2, ShoppingCart, MessageCircle, Search, X } from '@/lib/optimized-imports'
 import { useGeolocation } from '@/hooks/useGeolocation'
@@ -29,7 +32,19 @@ const Header = () => {
   const { isAnimating } = useCartAnimation()
   const { isSignedIn } = useAuth()
 
-  // Hook de geolocalización para detectar ubicación
+  // ⚡ PERFORMANCE: Hook de geolocalización diferido (no bloquea FCP)
+  // Solo se inicializa después de 2 segundos del mount
+  const [geoEnabled, setGeoEnabled] = useState(false)
+  
+  useEffect(() => {
+    // Defer geolocalización para no bloquear el FCP
+    const timer = setTimeout(() => {
+      setGeoEnabled(true)
+    }, 2000) // 2s después del mount
+    
+    return () => clearTimeout(timer)
+  }, [])
+
   const {
     detectedZone,
     requestLocation,
@@ -38,7 +53,7 @@ const Header = () => {
     error,
     location,
     testLocation,
-  } = useGeolocation()
+  } = useGeolocation(geoEnabled ? undefined : { skip: true })
 
   // Sticky header logic con detección de dirección de scroll
   useEffect(() => {
@@ -186,7 +201,7 @@ const Header = () => {
                   <div
                     className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 rounded-full'
                   >
-                    <SearchAutocompleteIntegrated
+                    <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'
                       className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
                       debounceMs={100}
@@ -218,7 +233,7 @@ const Header = () => {
                   <div
                     className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 rounded-full'
                   >
-                    <SearchAutocompleteIntegrated
+                    <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'
                       className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-3 [&>div>div>input]:sm:pr-4 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-xs [&>div>div>input]:sm:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
                       debounceMs={100}

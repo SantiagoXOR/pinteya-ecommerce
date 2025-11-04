@@ -15,6 +15,9 @@ interface HeroImage {
   alt: string
   priority?: boolean
   unoptimized?: boolean
+  fetchPriority?: 'high' | 'low' | 'auto' // ⚡ Priority Hints API
+  quality?: number // Calidad de compresión
+  sizes?: string // Responsive sizes
 }
 
 interface HeroCarouselProps {
@@ -162,10 +165,13 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 fill
                 className='object-contain transition-all duration-500 ease-in-out'
                 priority={image.priority || index === 0}
+                // ⚡ PERFORMANCE: Priority Hints API para optimizar carga
+                // @ts-ignore - fetchPriority es válido pero no está en tipos oficiales
+                fetchPriority={(image.priority || index === 0) ? 'high' : 'low'}
                 // ⚡ MOBILE OPT: Sizes específicos por breakpoint
-                sizes='(max-width: 640px) 100vw, (max-width: 768px) 95vw, (max-width: 1024px) 80vw, 60vw'
-                // ⚡ MOBILE OPT: Quality reducida para mobile (75 es suficiente para WebP)
-                quality={75}
+                sizes={image.sizes || '(max-width: 640px) 100vw, (max-width: 768px) 95vw, (max-width: 1024px) 80vw, 60vw'}
+                // ⚡ MOBILE OPT: Quality para WebP optimizado
+                quality={image.quality || 75}
                 unoptimized={image.unoptimized || false}
                 aria-describedby={`slide-description-${index}`}
                 style={{ objectFit: 'contain' }}

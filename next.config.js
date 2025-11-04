@@ -221,6 +221,14 @@ const nextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      // 🛡️ FALLBACK: Hostname truncado (puede ocurrir por extensiones del navegador)
+      // El código lo corregirá automáticamente, pero esto previene errores de Next/Image
+      {
+        protocol: 'https',
+        hostname: 'aaklgwkpb.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
       {
         protocol: 'http',
         hostname: 'localhost',

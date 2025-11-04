@@ -5,30 +5,42 @@ import Image from 'next/image'
 // ⚡ PERFORMANCE: Lazy load de HeroCarousel (-1s FCP)
 import HeroCarousel from '@/components/Common/HeroCarousel.lazy'
 
-// ⚡ PERFORMANCE OPTIMIZADA: WebP -94% tamaño (19.6MB → 1.1MB)
+// ⚡ PERFORMANCE OPTIMIZADA: WebP -93% tamaño (7.8MB → 643KB)
 // Configuración de imágenes para el carrusel móvil
 const heroImagesMobile = [
   {
-    src: '/images/hero/hero-01.webp',
+    src: '/images/hero/hero2/hero1.webp',
     alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
     priority: true, // Primera imagen con priority para FCP
     unoptimized: false, // Optimización de Next.js habilitada
   },
   {
-    src: '/images/hero/hero-02.webp',
+    src: '/images/hero/hero2/hero2.webp',
     alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
     priority: false,
     unoptimized: false,
   },
   {
-    src: '/images/hero/hero-03.webp',
+    src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
     priority: false,
     unoptimized: false,
   },
   {
-    src: '/images/hero/hero-04.webp',
+    src: '/images/hero/hero2/hero4.webp',
     alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
+    priority: false,
+    unoptimized: false,
+  },
+  {
+    src: '/images/hero/hero2/hero5.webp',
+    alt: 'Descuentos exclusivos en pinturas y accesorios',
+    priority: false,
+    unoptimized: false,
+  },
+  {
+    src: '/images/hero/hero2/hero6.webp',
+    alt: 'Catálogo completo de productos para pinturería profesional',
     priority: false,
     unoptimized: false,
   },
@@ -37,20 +49,38 @@ const heroImagesMobile = [
 // Configuración de imágenes para el carrusel desktop (WebP optimizado)
 const heroImagesDesktop = [
   {
-    src: '/images/hero/hero-02.webp',
-    alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
+    src: '/images/hero/hero2/hero1.webp',
+    alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
     priority: true, // Primera imagen desktop con priority
     unoptimized: false,
   },
   {
-    src: '/images/hero/hero-03.webp',
+    src: '/images/hero/hero2/hero2.webp',
+    alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
+    priority: false,
+    unoptimized: false,
+  },
+  {
+    src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
     priority: false,
     unoptimized: false,
   },
   {
-    src: '/images/hero/hero-04.webp',
+    src: '/images/hero/hero2/hero4.webp',
     alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
+    priority: false,
+    unoptimized: false,
+  },
+  {
+    src: '/images/hero/hero2/hero5.webp',
+    alt: 'Descuentos exclusivos en pinturas y accesorios',
+    priority: false,
+    unoptimized: false,
+  },
+  {
+    src: '/images/hero/hero2/hero6.webp',
+    alt: 'Catálogo completo de productos para pinturería profesional',
     priority: false,
     unoptimized: false,
   },

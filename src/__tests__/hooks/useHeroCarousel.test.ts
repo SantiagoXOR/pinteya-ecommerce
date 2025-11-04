@@ -6,9 +6,9 @@ jest.useFakeTimers()
 
 describe('useHeroCarousel', () => {
   const mockImages = [
-    '/images/hero/hero-01.png',
-    '/images/hero/hero-02.png',
-    '/images/hero/hero-03.png',
+    '/images/hero/hero2/hero1.webp',
+    '/images/hero/hero2/hero2.webp',
+    '/images/hero/hero2/hero3.webp',
   ]
 
   beforeEach(() => {
@@ -304,7 +304,7 @@ describe('useHeroCarousel', () => {
   })
 
   it('should handle single image gracefully', () => {
-    const singleImage = ['/images/hero/hero-01.png']
+    const singleImage = ['/images/hero/hero2/hero1.webp']
 
     const { result } = renderHook(() =>
       useHeroCarousel({

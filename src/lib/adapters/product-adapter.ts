@@ -39,18 +39,19 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
             })
             .filter(Boolean) as string[]
         )
-      : apiProduct.images?.main
-        ? [apiProduct.images.main]
-        : apiProduct.images?.previews?.[0]
-          ? [apiProduct.images.previews[0]]
-          : apiProduct.images?.thumbnails?.[0]
-            ? [apiProduct.images.thumbnails[0]]
-            : apiProduct.images?.gallery?.[0]
-              ? [apiProduct.images.gallery[0]]
+      : apiProduct.images?.previews && Array.isArray(apiProduct.images.previews) && apiProduct.images.previews.length > 0
+        ? apiProduct.images.previews // ✅ USAR TODOS los previews, no solo el primero
+        : apiProduct.images?.thumbnails && Array.isArray(apiProduct.images.thumbnails) && apiProduct.images.thumbnails.length > 0
+          ? apiProduct.images.thumbnails // ✅ USAR TODOS los thumbnails
+          : apiProduct.images?.main
+            ? [apiProduct.images.main]
+            : apiProduct.images?.gallery && Array.isArray(apiProduct.images.gallery) && apiProduct.images.gallery.length > 0
+              ? apiProduct.images.gallery
               : ['/images/products/placeholder.svg']
 
     firstImage = normalizedImages[0] || '/images/products/placeholder.svg'
     console.log('🎯 Usando imagen de producto padre:', firstImage);
+    console.log('📸 Imágenes normalizadas:', normalizedImages);
   }
 
   const adaptedProduct: Product = {
@@ -81,7 +82,8 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
     specifications: apiProduct.specifications || {},
     // Campos de compatibilidad con versiones anteriores
     imgs: {
-      previews: normalizedImages
+      previews: normalizedImages,
+      thumbnails: normalizedImages // ✅ Incluir thumbnails también
     }
   };
 
@@ -221,6 +223,7 @@ export function getMainImage(product: Product | ProductWithCategory): string {
 
 /**
  * Valida y obtiene una URL de imagen válida, manejando cadenas vacías y undefined
+ * También detecta y corrige URLs de Supabase malformadas
  * @param imageUrl - URL de imagen a validar
  * @param fallback - URL de fallback (por defecto: placeholder)
  * @returns string - URL de imagen válida
@@ -231,7 +234,29 @@ export function getValidImageUrl(
 ): string {
   // Verificar si la imagen existe y no es una cadena vacía o solo espacios
   if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
-    return imageUrl.trim()
+    const trimmedUrl = imageUrl.trim()
+    
+    // 🛡️ PROTECCIÓN: Detectar y corregir hostname incorrecto de Supabase
+    // Este problema puede ocurrir por extensiones del navegador o errores de red
+    const incorrectHostname = 'aaklgwkpb.supabase.co'
+    const correctHostname = 'aakzspzfulgftqlgwkpb.supabase.co'
+    
+    if (trimmedUrl.includes(incorrectHostname)) {
+      const correctedUrl = trimmedUrl.replace(incorrectHostname, correctHostname)
+      
+      // Log para debugging (solo en desarrollo)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[getValidImageUrl] URL malformada detectada y corregida:', {
+          original: trimmedUrl,
+          corrected: correctedUrl,
+          issue: 'hostname_truncado'
+        })
+      }
+      
+      return correctedUrl
+    }
+    
+    return trimmedUrl
   }
   return fallback
 }

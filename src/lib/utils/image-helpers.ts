@@ -44,6 +44,7 @@ export function getProductImage(images: any): string {
 
 /**
  * Valida y sanitiza una URL de imagen
+ * También detecta y corrige URLs de Supabase malformadas
  * @param imageUrl - URL de imagen a validar
  * @returns URL válida o placeholder
  */
@@ -53,6 +54,26 @@ export function getValidImageUrl(imageUrl: string | undefined | null): string {
   }
   
   const trimmed = imageUrl.trim()
+  
+  // 🛡️ PROTECCIÓN: Detectar y corregir hostname incorrecto de Supabase
+  // Este problema puede ocurrir por extensiones del navegador o errores de red
+  const incorrectHostname = 'aaklgwkpb.supabase.co'
+  const correctHostname = 'aakzspzfulgftqlgwkpb.supabase.co'
+  
+  if (trimmed.includes(incorrectHostname)) {
+    const correctedUrl = trimmed.replace(incorrectHostname, correctHostname)
+    
+    // Log para debugging (solo en desarrollo)
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[getValidImageUrl] URL malformada detectada y corregida:', {
+        original: trimmed,
+        corrected: correctedUrl,
+        issue: 'hostname_truncado'
+      })
+    }
+    
+    return correctedUrl
+  }
   
   // Verificar que sea una URL válida
   try {

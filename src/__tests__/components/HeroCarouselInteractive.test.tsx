@@ -312,7 +312,7 @@ describe('HeroCarouselInteractive', () => {
         ...originalModule,
         HERO_IMAGES: [
           {
-            src: '/images/hero/hero-01.png',
+            src: '/images/hero/hero2/hero1.webp',
             alt: 'Single image',
             priority: true,
           },

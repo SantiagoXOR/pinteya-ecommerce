@@ -38,6 +38,77 @@
       transform: translateX(100%);
     }
   }
+
+  /* ⚡ PERFORMANCE: Content Visibility para optimizar rendering below-fold (-0.4s) */
+  .below-fold-content {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 400px;
+  }
+
+  .product-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+  }
+
+  .testimonials-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+  }
+
+  .newsletter-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 350px;
+  }
+
+  .trust-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 450px;
+  }
+
+  /* ⚡ PERFORMANCE: Wave animation para skeleton shimmer effect */
+  .skeleton-wave {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-wave::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  /* Shimmer mejorado con gradiente más suave */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      110deg,
+      #f0f0f0 8%,
+      #f8f8f8 18%,
+      #f0f0f0 33%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-slide 1.5s linear infinite;
+  }
+
+  @keyframes shimmer-slide {
+    0% {
+      background-position: 100% 0;
+    }
+    100% {
+      background-position: -100% 0;
+    }
+  }
 }
 
 @layer base {

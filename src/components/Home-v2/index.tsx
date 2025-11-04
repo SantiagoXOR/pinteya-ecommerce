@@ -94,50 +94,50 @@ const HomeV2 = () => {
       <CategoryTogglePillsWithSearch />
 
       {/* 4. NUEVO: Carrusel Dinámico de Productos por Categoría - Reemplaza FreeShippingSection */}
-      <div className='-mt-3'>
+      <div className='-mt-3 product-section'>
         <DynamicProductCarousel />
       </div>
 
       {/* 5. Productos Destacados (antes era "Combos") */}
-      <div className='-mt-8'>
+      <div className='-mt-8 product-section'>
         <CombosSection />
       </div>
 
       {/* 6. Ofertas Especiales (BestSeller) */}
-      <div className='-mt-6'>
+      <div className='-mt-6 product-section'>
         <BestSeller />
       </div>
 
       {/* 7. Banner ENVÍO GRATIS - Entre Productos Destacados y Nuevos */}
-      <div className='-mt-4'>
+      <div className='-mt-4 below-fold-content'>
         <PromoBanners bannerId={2} />
       </div>
 
       {/* 8. Nuevos productos - Descubrimiento */}
-      <div className='-mt-4'>
+      <div className='-mt-4 product-section'>
         <NewArrivals />
       </div>
 
       {/* 9. Banner LÍDERES EN CÓRDOBA - Después de Nuevos Productos */}
-      <div className='-mt-4'>
+      <div className='-mt-4 below-fold-content'>
         <PromoBanners bannerId={3} />
       </div>
 
       {/* 10. Búsquedas Populares - DESPUÉS de nuevos productos */}
-      <div className='-mt-6'>
+      <div className='-mt-6 below-fold-content'>
         <TrendingSearches />
       </div>
 
       {/* 11. Trust signals y testimonios */}
-      <div className='-mt-4'>
+      <div className='-mt-4 trust-section'>
         <TrustSection />
       </div>
-      <div className='-mt-6'>
+      <div className='-mt-6 testimonials-section'>
         <Testimonials />
       </div>
 
       {/* 12. Newsletter */}
-      <div className='-mt-6'>
+      <div className='-mt-6 newsletter-section'>
         <Newsletter />
       </div>
 

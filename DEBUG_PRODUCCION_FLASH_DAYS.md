@@ -266,3 +266,4 @@ Y en Vercel logs:
 
 **Estado Actual:** Esperando logs de Vercel para identificar causa exacta del error 🔍
 
+
