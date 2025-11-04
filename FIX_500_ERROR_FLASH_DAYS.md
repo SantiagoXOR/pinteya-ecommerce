@@ -199,3 +199,4 @@ Si después del deploy sigue fallando:
 **Próximo paso:** Commit + Push + Esperar Vercel Deploy + Probar 🚀
 
 
+

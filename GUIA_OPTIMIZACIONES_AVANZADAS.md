@@ -655,3 +655,4 @@ ANALYZE=true npm run build
 **Próximo paso**: Validar con Lighthouse y ajustar según resultados reales.
 
 
+

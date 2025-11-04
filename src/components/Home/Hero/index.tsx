@@ -5,7 +5,7 @@ import Image from 'next/image'
 // ⚡ PERFORMANCE: Lazy load de HeroCarousel (-1s FCP)
 import HeroCarousel from '@/components/Common/HeroCarousel.lazy'
 
-// ⚡ PERFORMANCE OPTIMIZADA: WebP -93% tamaño (7.8MB → 643KB)
+// ⚡ PERFORMANCE OPTIMIZADA: WebP -93% tamaño + Reducido a 3 imágenes (332KB)
 // Configuración de imágenes para el carrusel móvil
 const heroImagesMobile = [
   {
@@ -23,24 +23,6 @@ const heroImagesMobile = [
   {
     src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
-    priority: false,
-    unoptimized: false,
-  },
-  {
-    src: '/images/hero/hero2/hero4.webp',
-    alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
-    priority: false,
-    unoptimized: false,
-  },
-  {
-    src: '/images/hero/hero2/hero5.webp',
-    alt: 'Descuentos exclusivos en pinturas y accesorios',
-    priority: false,
-    unoptimized: false,
-  },
-  {
-    src: '/images/hero/hero2/hero6.webp',
-    alt: 'Catálogo completo de productos para pinturería profesional',
     priority: false,
     unoptimized: false,
   },
@@ -63,24 +45,6 @@ const heroImagesDesktop = [
   {
     src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
-    priority: false,
-    unoptimized: false,
-  },
-  {
-    src: '/images/hero/hero2/hero4.webp',
-    alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
-    priority: false,
-    unoptimized: false,
-  },
-  {
-    src: '/images/hero/hero2/hero5.webp',
-    alt: 'Descuentos exclusivos en pinturas y accesorios',
-    priority: false,
-    unoptimized: false,
-  },
-  {
-    src: '/images/hero/hero2/hero6.webp',
-    alt: 'Catálogo completo de productos para pinturería profesional',
     priority: false,
     unoptimized: false,
   },

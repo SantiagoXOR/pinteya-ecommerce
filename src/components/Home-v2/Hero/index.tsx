@@ -8,7 +8,7 @@ import HeroCarousel from '@/components/Common/HeroCarousel.lazy'
 import { Truck, ShieldCheck, CreditCard, ArrowRight } from 'lucide-react'
 import { trackEvent } from '@/lib/google-analytics'
 
-// ⚡ PERFORMANCE OPTIMIZADA: WebP -93% tamaño (7.8MB → 643KB)
+// ⚡ PERFORMANCE OPTIMIZADA: WebP -93% tamaño + Reducido a 3 imágenes (332KB)
 // ⚡ Priority Hints API para optimizar orden de carga
 const heroImagesMobile = [
   {
@@ -32,33 +32,6 @@ const heroImagesMobile = [
   {
     src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
-    priority: false,
-    unoptimized: false,
-    fetchPriority: 'low' as const,
-    quality: 75,
-    sizes: '(max-width: 768px) 100vw, 50vw',
-  },
-  {
-    src: '/images/hero/hero2/hero4.webp',
-    alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
-    priority: false,
-    unoptimized: false,
-    fetchPriority: 'low' as const,
-    quality: 75,
-    sizes: '(max-width: 768px) 100vw, 50vw',
-  },
-  {
-    src: '/images/hero/hero2/hero5.webp',
-    alt: 'Descuentos exclusivos en pinturas y accesorios',
-    priority: false,
-    unoptimized: false,
-    fetchPriority: 'low' as const,
-    quality: 75,
-    sizes: '(max-width: 768px) 100vw, 50vw',
-  },
-  {
-    src: '/images/hero/hero2/hero6.webp',
-    alt: 'Catálogo completo de productos para pinturería profesional',
     priority: false,
     unoptimized: false,
     fetchPriority: 'low' as const,
@@ -89,33 +62,6 @@ const heroImagesDesktop = [
   {
     src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
-    priority: false,
-    unoptimized: false,
-    fetchPriority: 'low' as const,
-    quality: 75,
-    sizes: '(max-width: 1024px) 80vw, 50vw',
-  },
-  {
-    src: '/images/hero/hero2/hero4.webp',
-    alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
-    priority: false,
-    unoptimized: false,
-    fetchPriority: 'low' as const,
-    quality: 75,
-    sizes: '(max-width: 1024px) 80vw, 50vw',
-  },
-  {
-    src: '/images/hero/hero2/hero5.webp',
-    alt: 'Descuentos exclusivos en pinturas y accesorios',
-    priority: false,
-    unoptimized: false,
-    fetchPriority: 'low' as const,
-    quality: 75,
-    sizes: '(max-width: 1024px) 80vw, 50vw',
-  },
-  {
-    src: '/images/hero/hero2/hero6.webp',
-    alt: 'Catálogo completo de productos para pinturería profesional',
     priority: false,
     unoptimized: false,
     fetchPriority: 'low' as const,
