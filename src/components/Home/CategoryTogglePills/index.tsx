@@ -219,8 +219,8 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   if (loading) {
     if (variant === 'bare') return null
     return (
-      <section className='bg-white border-b border-gray-200 py-2'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+      <section className='bg-transparent'>
+        <div className='w-full px-3 sm:px-4'>
           <div className='flex items-start gap-3 sm:gap-4 md:gap-3 overflow-x-auto pb-2'>
             {[...Array(8)].map((_, index) => (
               <div key={index} className='flex-shrink-0 animate-pulse flex flex-col items-center gap-1.5'>
@@ -238,12 +238,12 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return null // No mostrar nada si hay error o no hay categorías
   }
 
-  // Variante bare: solo las pills sin sección ni degradados
+  // Variante bare: solo las pills sin sección ni degradados ni márgenes
   if (variant === 'bare') {
     return (
       <div
         ref={carouselRef}
-        className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto flex-nowrap py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+        className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto flex-nowrap py-1 px-3 sm:px-4 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
         onMouseDown={handleMouseDown}
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
@@ -309,12 +309,12 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     />
                   </div>
                 )}
-                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected && useDynamicCarousel ? 'text-gray-900' : 'text-[#fff4c6]'}`}>
+                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
                   {category.name}
                 </span>
               </Button>
               </div>
-              <span className='text-[10px] font-medium text-center leading-[1.1] text-gray-700 max-w-[64px] line-clamp-2 md:hidden'>{category.name}</span>
+              <span className='text-[9px] font-medium text-center leading-[1.1] text-gray-700 max-w-[85px] line-clamp-1 md:hidden truncate'>{category.name}</span>
             </div>
           )
         })}
@@ -323,28 +323,20 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   }
 
   return (
-    <section className='bg-white border-b border-gray-200 py-2 sticky top-[92px] lg:top-[105px] z-40'>
+    <section className='bg-transparent sticky top-[92px] lg:top-[105px] z-40'>
       <div
-        className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
+        className='w-full px-3 sm:px-4'
         data-testid='category-pills-container'
       >
-        {/* Contenedor con degradados en los bordes */}
-        <div className='relative'>
-          {/* Degradado izquierdo */}
-          <div className='absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none'></div>
-
-          {/* Degradado derecho */}
-          <div className='absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none'></div>
-
-          {/* Pills de categorías */}
-          <div
-            ref={carouselRef}
-            className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
-            onMouseDown={handleMouseDown}
-            onMouseLeave={handleMouseLeave}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
-          >
+        {/* Pills de categorías - Full width sin degradados */}
+        <div
+          ref={carouselRef}
+          className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+        >
             {categories.map(category => {
               // Determinar si está seleccionada según el modo (contexto o props)
               const isSelected = useDynamicCarousel 
@@ -379,33 +371,31 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                       }
                     `}
                   >
-                    {category.image_url && (
-                      <div className={`
-                        flex items-center justify-center 
-                        w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8
-                        transition-transform duration-300 ease-out
-                        ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
-                      `}>
-                        <Image
-                          src={category.image_url}
-                          alt=''
-                          width={32}
-                          height={32}
-                          className='w-full h-full object-contain'
-                        />
-                      </div>
+                {category.image_url && (
+                  <div className={`
+                    flex items-center justify-center 
+                    w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8
+                    transition-transform duration-300 ease-out
+                    ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
+                  `}>
+                    <Image
+                      src={category.image_url}
+                      alt=''
+                      width={32}
+                      height={32}
+                      className='w-full h-full object-contain'
+                    />
+                  </div>
                 )}
-                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected && useDynamicCarousel ? 'text-gray-900' : 'text-[#fff4c6]'}`}>
+                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
                   {category.name}
                 </span>
               </Button>
               </div>
-              <span className='text-[10px] font-medium text-center leading-[1.1] text-gray-700 max-w-[64px] line-clamp-2 md:hidden'>{category.name}</span>
+              <span className='text-[9px] font-medium text-center leading-[1.1] text-gray-700 max-w-[85px] line-clamp-1 md:hidden truncate'>{category.name}</span>
             </div>
               )
             })}
-          </div>
-
         </div>
       </div>
     </section>

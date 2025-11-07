@@ -11,37 +11,43 @@ import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamic
 
 interface DynamicProductCarouselProps {
   maxProducts?: number
+  freeShippingOnly?: boolean
 }
 
 const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   maxProducts = 12,
+  freeShippingOnly = false,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const { selectedCategory, categoryConfig } = useCategoryFilter()
+  const { selectedCategory, categoryConfig: contextCategoryConfig } = useCategoryFilter()
   
   // Obtener categorías reales de la BD para obtener los iconos
   const { categories } = useCategoriesWithDynamicCounts({
     enableDynamicCounts: false,
   })
   
-  // Encontrar la categoría actual para obtener su icono real
-  const currentCategory = selectedCategory 
+  // Configuración para modo Envío Gratis
+  const freeShippingConfig = {
+    title: 'Envío Gratis',
+    subtitle: 'Productos seleccionados con envío sin costo',
+    iconUrl: '/images/icons/icon-envio.svg',
+    textColor: 'text-green-700',
+  }
+  
+  // Usar configuración de envío gratis si el modo está activo, sino usar la del contexto
+  const categoryConfig = freeShippingOnly ? freeShippingConfig : contextCategoryConfig
+  
+  // Encontrar la categoría actual para obtener su icono real (solo si no es envío gratis)
+  const currentCategory = !freeShippingOnly && selectedCategory 
     ? categories.find(cat => cat.slug === selectedCategory)
     : null
   
   // Icono: usar el de la categoría real si existe, sino el del config
   const categoryIcon = currentCategory?.image_url || categoryConfig.iconUrl
   
-  console.log('[DynamicCarousel] Debug:', {
-    selectedCategory,
-    currentCategory: currentCategory?.name,
-    categoryIcon,
-    allCategories: categories.map(c => ({ slug: c.slug, hasIcon: !!c.image_url }))
-  })
-  
-  // Fetch productos según categoría
+  // Fetch productos - Si freeShippingOnly es true, pasar null como categorySlug
   const { products: rawProducts, isLoading, error } = useProductsByCategory({
-    categorySlug: selectedCategory,
+    categorySlug: freeShippingOnly ? null : selectedCategory,
     limit: maxProducts,
   })
 
@@ -97,23 +103,34 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
 
   return (
     <section
-      id='dynamic-carousel'
+      id={freeShippingOnly ? 'envio-gratis-carousel' : 'dynamic-carousel'}
       className={`py-4 bg-gradient-to-br ${categoryConfig.bgGradient} scroll-mt-20 category-transition`}
     >
       <div className='max-w-7xl mx-auto px-4'>
         {/* Header Dinámico - 2 líneas máximo */}
         <div className='flex items-center justify-between mb-3'>
           <div className='flex items-center gap-3'>
-            {/* Icono grande - 4px más grande */}
-            <div className='relative w-[68px] h-[68px] md:w-[84px] md:h-[84px] flex-shrink-0'>
-              <Image
-                src={categoryIcon}
-                alt={categoryConfig.title}
-                width={84}
-                height={84}
-                className='w-full h-full object-contain'
-                unoptimized={categoryIcon.includes('.svg')}
-              />
+            {/* Icono - Más grande para envío gratis */}
+            <div className={`relative flex-shrink-0 flex items-center justify-center ${
+              freeShippingOnly 
+                ? 'w-[100px] h-[40px] md:w-[120px] md:h-[48px]' 
+                : 'w-[68px] h-[68px] md:w-[84px] md:h-[84px]'
+            }`}>
+              {categoryIcon.includes('.svg') ? (
+                <img
+                  src={categoryIcon}
+                  alt={categoryConfig.title}
+                  className='w-full h-full object-contain'
+                />
+              ) : (
+                <Image
+                  src={categoryIcon}
+                  alt={categoryConfig.title}
+                  width={84}
+                  height={84}
+                  className='w-full h-full object-contain'
+                />
+              )}
             </div>
             
             <div className='flex flex-col justify-center' style={{maxHeight: '3.5rem'}}>

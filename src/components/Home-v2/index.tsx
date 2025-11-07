@@ -5,11 +5,8 @@ import { useEffect } from 'react'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 
-// Lazy loading de componentes para mejor performance
-const Hero = dynamic(() => import('./Hero'), {
-  loading: () => <HeroSkeleton />,
-})
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
+const HeroCarousel = dynamic(() => import('./HeroCarousel/index'))
 const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePillsWithSearch'))
 const PromoBanners = dynamic(() => import('./PromoBanners/index'))
 const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'))
@@ -22,24 +19,9 @@ const Testimonials = dynamic(() => import('./Testimonials/index'))
 const Newsletter = dynamic(() => import('./Newsletter/index'))
 const FloatingCart = dynamic(() => import('@/components/Common/FloatingCart'))
 const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhatsApp'))
-const ExitIntentModal = dynamic(() => import('@/components/Common/ExitIntentModal'))
+// const ExitIntentModal = dynamic(() => import('@/components/Common/ExitIntentModal')) // Desactivado - Solo WhatsAppPopup activo
 const WhatsAppPopup = dynamic(() => import('@/components/Common/WhatsAppPopup'))
 
-// Skeleton para Hero mientras carga
-const HeroSkeleton = () => (
-  <div className='bg-gradient-to-br from-blaze-orange-500 via-blaze-orange-400 to-blaze-orange-600 min-h-[500px] animate-pulse'>
-    <div className='max-w-7xl mx-auto px-4 py-12'>
-      <div className='space-y-4'>
-        <div className='h-12 bg-white/20 rounded-lg w-3/4'></div>
-        <div className='h-8 bg-white/20 rounded-lg w-1/2'></div>
-        <div className='flex gap-4 mt-6'>
-          <div className='h-14 bg-white/20 rounded-lg w-48'></div>
-          <div className='h-14 bg-white/20 rounded-lg w-48'></div>
-        </div>
-      </div>
-    </div>
-  </div>
-)
 
 const HomeV2 = () => {
   // Scroll depth tracking
@@ -79,74 +61,80 @@ const HomeV2 = () => {
 
   return (
     <CategoryFilterProvider>
-      <main>
+      <main className='min-h-screen'>
         {/* BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner */}
 
-      {/* NUEVO ORDEN OPTIMIZADO - Hero primero, luego banner */}
+      {/* NUEVO ORDEN OPTIMIZADO */}
 
-      {/* 1. Hero - Captar atención inmediata */}
-      <Hero />
-
-      {/* 2. Banner PINTURA FLASH DAYS - Ultra compacto y con espacio */}
-      <PromoBanners bannerId={1} />
-
-      {/* 3. Navegación rápida por categorías */}
-      <CategoryTogglePillsWithSearch />
-
-      {/* 4. NUEVO: Carrusel Dinámico de Productos por Categoría - Reemplaza FreeShippingSection */}
-      <div className='-mt-3 product-section'>
-        <DynamicProductCarousel />
+      {/* 0. Hero Carousel - Primer elemento después del header */}
+      <div className='pt-3 sm:pt-4 md:pt-6'>
+        <HeroCarousel />
       </div>
 
-      {/* 5. Productos Destacados (antes era "Combos") */}
-      <div className='-mt-8 product-section'>
-        <CombosSection />
+      {/* 1. Navegación rápida por categorías - Espaciado mínimo */}
+      <div className='mt-2 sm:mt-3'>
+        <CategoryTogglePillsWithSearch />
       </div>
 
-      {/* 6. Ofertas Especiales (BestSeller) */}
-      <div className='-mt-6 product-section'>
+      {/* 2. Ofertas Especiales (BestSeller) - Ahora con filtro de categorías */}
+      <div className='mt-4 sm:mt-6 product-section'>
         <BestSeller />
       </div>
 
-      {/* 7. Banner ENVÍO GRATIS - Entre Productos Destacados y Nuevos */}
-      <div className='-mt-4 below-fold-content'>
+      {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
+      <div className='mt-3 sm:mt-4'>
+        <PromoBanners bannerId={1} />
+      </div>
+
+      {/* 4. Productos Destacados (Combos) */}
+      <div className='mt-4 sm:mt-6 product-section'>
+        <CombosSection />
+      </div>
+
+      {/* 5. Carrusel Dinámico - Solo Envío Gratis */}
+      <div className='mt-4 sm:mt-6 product-section'>
+        <DynamicProductCarousel freeShippingOnly={true} />
+      </div>
+
+      {/* 6. Banner ASESORAMIENTO GRATIS */}
+      <div className='mt-4 sm:mt-6 below-fold-content'>
         <PromoBanners bannerId={2} />
       </div>
 
-      {/* 8. Nuevos productos - Descubrimiento */}
-      <div className='-mt-4 product-section'>
+      {/* 7. Nuevos productos */}
+      <div className='mt-3 sm:mt-4 product-section'>
         <NewArrivals />
       </div>
 
-      {/* 9. Banner LÍDERES EN CÓRDOBA - Después de Nuevos Productos */}
-      <div className='-mt-4 below-fold-content'>
+      {/* 8. Banner CALCULADORA DE PINTURA */}
+      <div className='mt-4 sm:mt-6 below-fold-content'>
         <PromoBanners bannerId={3} />
       </div>
 
-      {/* 10. Búsquedas Populares - DESPUÉS de nuevos productos */}
-      <div className='-mt-6 below-fold-content'>
+      {/* 9. Búsquedas Populares */}
+      <div className='mt-6 sm:mt-8 below-fold-content'>
         <TrendingSearches />
       </div>
 
-      {/* 11. Trust signals y testimonios */}
-      <div className='-mt-4 trust-section'>
+      {/* 10. Trust signals y testimonios */}
+      <div className='mt-6 sm:mt-8 trust-section'>
         <TrustSection />
       </div>
-      <div className='-mt-6 testimonials-section'>
+      <div className='mt-6 sm:mt-8 testimonials-section'>
         <Testimonials />
       </div>
 
-      {/* 12. Newsletter */}
-      <div className='-mt-6 newsletter-section'>
+      {/* 11. Newsletter */}
+      <div className='mt-6 sm:mt-8 newsletter-section'>
         <Newsletter />
       </div>
 
       {/* Elementos flotantes de engagement */}
       <FloatingCart />
       <FloatingWhatsApp />
-      <ExitIntentModal />
+      {/* <ExitIntentModal /> */} {/* Desactivado - Solo WhatsAppPopup activo para evitar sobrecarga de popups */}
       
-      {/* WhatsApp Popup para captura de leads (aparece a los 18 segundos) */}
+      {/* WhatsApp Popup para captura de leads - Rediseñado con paleta Pinteya */}
       <WhatsAppPopup />
       </main>
     </CategoryFilterProvider>

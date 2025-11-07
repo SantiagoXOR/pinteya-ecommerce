@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,15 +37,31 @@ export function OrderFilters({
 }: OrderFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [searchTerm, setSearchTerm] = useState(filters.search || '')
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Handle search with debounce
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Handle search with debounce (sin memory leak)
   const handleSearchChange = (value: string) => {
     setSearchTerm(value)
-    // Simple debounce
-    const timeoutId = setTimeout(() => {
+    
+    // Limpiar timeout anterior si existe
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+    
+    // Crear nuevo timeout
+    searchTimeoutRef.current = setTimeout(() => {
       updateFilters({ search: value, page: 1 })
+      searchTimeoutRef.current = null
     }, 500)
-    return () => clearTimeout(timeoutId)
   }
 
   const hasActiveFilters =

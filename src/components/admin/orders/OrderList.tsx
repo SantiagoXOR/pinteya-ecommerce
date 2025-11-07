@@ -82,6 +82,8 @@ interface OrderListProps {
   orders: Order[]
   isLoading: boolean
   error: any
+  selectedOrders?: string[]
+  setSelectedOrders?: React.Dispatch<React.SetStateAction<string[]>>
   filters?: any
   updateFilters?: (filters: any) => void
   resetFilters?: () => void
@@ -220,6 +222,8 @@ export function OrderList({
   orders = [], // Valor por defecto para evitar undefined
   isLoading,
   error,
+  selectedOrders: externalSelectedOrders,
+  setSelectedOrders: externalSetSelectedOrders,
   filters,
   updateFilters,
   resetFilters,
@@ -228,7 +232,11 @@ export function OrderList({
   className,
 }: OrderListProps) {
   const router = useRouter()
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([])
+  const [internalSelectedOrders, setInternalSelectedOrders] = useState<string[]>([])
+
+  // Usar estado externo si se proporciona, sino usar estado interno
+  const selectedOrders = externalSelectedOrders ?? internalSelectedOrders
+  const setSelectedOrders = externalSetSelectedOrders ?? setInternalSelectedOrders
 
   // Asegurar que orders siempre sea un array
   const safeOrders = Array.isArray(orders) ? orders : []

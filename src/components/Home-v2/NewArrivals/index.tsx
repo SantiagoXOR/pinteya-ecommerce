@@ -30,44 +30,16 @@ const NewArrival: React.FC = () => {
       : 'Nuevos Productos'
 
   return (
-    <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-gradient-to-b from-orange-50/30 to-white'>
+    <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
-        {/* Header mejorado */}
-        <div className='mb-8 sm:mb-10 flex items-center justify-between'>
-          <div>
-            <div className='flex items-center gap-3 mb-2'>
-              <div className='w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg animate-pulse'>
-                <Sparkles className='w-5 h-5 text-white' />
-              </div>
-              <div>
-                <div className='flex items-center gap-2'>
-                  <Badge className='animate-bounce bg-blue-100 text-blue-700 text-xs px-2 py-0.5'>
-                    Nuevos
-                  </Badge>
-                  <span className='text-sm font-medium text-gray-600'>
-                    Esta Semana
-                  </span>
-                </div>
-                <h2 className='text-2xl md:text-3xl font-bold text-gray-900 mt-1'>
-                  {sectionTitle}
-                </h2>
-              </div>
-            </div>
-            <p className='text-gray-600 text-sm ml-13'>
-              Descubrí las últimas novedades en pinturería
-            </p>
+        {/* Header simplificado - Paleta Pinteya */}
+        <div className='mb-4 sm:mb-6 flex items-center gap-3'>
+          <div className='w-10 h-10 rounded-full bg-gradient-to-br from-[#eb6313] to-[#f27a1d] flex items-center justify-center shadow-md'>
+            <Sparkles className='w-5 h-5 text-white' />
           </div>
-
-          <Button 
-            variant='outline' 
-            asChild 
-            className='hidden md:flex border-[#eb6313] text-[#eb6313] hover:bg-orange-50'
-          >
-            <Link href='/products'>
-              Ver Todos
-              <ArrowRight className='ml-2 h-4 w-4' />
-            </Link>
-          </Button>
+          <h2 className='text-xl md:text-2xl font-bold text-gray-900'>
+            {sectionTitle}
+          </h2>
         </div>
 
         {isLoading ? (
@@ -147,19 +119,6 @@ const NewArrival: React.FC = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* CTA mobile */}
-        <div className='mt-8 text-center md:hidden'>
-          <Button 
-            asChild 
-            className='w-full max-w-sm bg-[#eb6313] hover:bg-[#bd4811] text-white'
-          >
-            <Link href='/products'>
-              Ver Todos los Productos
-              <ArrowRight className='ml-2 h-4 w-4' />
-            </Link>
-          </Button>
-        </div>
       </div>
     </section>
   )

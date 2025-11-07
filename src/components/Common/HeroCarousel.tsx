@@ -1,18 +1,27 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, Pagination, Navigation, Keyboard, A11y } from 'swiper/modules'
-import { HeroSlide as HeroSlideType } from '@/types/hero'
-import HeroSlide from '@/components/Home/Hero/HeroSlide'
 
 // Import Swiper styles
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
 
+interface HeroImage {
+  src: string
+  alt: string
+  priority?: boolean
+  unoptimized?: boolean
+  fetchPriority?: 'high' | 'low' | 'auto'
+  quality?: number
+  sizes?: string
+}
+
 interface HeroCarouselProps {
-  slides: HeroSlideType[]
+  images: HeroImage[]
   autoplayDelay?: number
   className?: string
   showNavigation?: boolean
@@ -21,7 +30,7 @@ interface HeroCarouselProps {
 }
 
 const HeroCarousel: React.FC<HeroCarouselProps> = ({
-  slides,
+  images,
   autoplayDelay = 5000,
   className = '',
   showNavigation = true,
@@ -88,9 +97,9 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   return (
     <div
       role='region'
-      aria-label='Carrusel de promociones principales'
+      aria-label='Carrusel de imágenes principales'
       aria-live='polite'
-      className={`hero-carousel relative w-full ${className}`}
+      className={`hero-carousel relative w-full h-full ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -139,21 +148,33 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
         onSwiper={(swiper: any) => {
           swiperRef.current = swiper
         }}
-        aria-label='Galería de promociones'
-        className='w-full min-h-[400px] lg:min-h-[500px]'
+        aria-label='Galería de imágenes de productos'
+        className='w-full h-full'
       >
-        {slides.map((slide, index) => (
+        {images.map((image, index) => (
           <SwiperSlide
-            key={slide.id}
+            key={`${image.src}-${index}`}
             role='group'
-            aria-label={`${index + 1} de ${slides.length}`}
-            className='w-full h-full'
+            aria-label={`${index + 1} de ${images.length}`}
+            className='flex items-center justify-center'
           >
-            <HeroSlide
-              slide={slide}
-              isActive={index === currentSlide}
-              className='w-full h-full min-h-[400px] lg:min-h-[500px]'
-            />
+            <div className='relative w-full h-full'>
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                className='object-contain transition-all duration-500 ease-in-out'
+                priority={image.priority || index === 0}
+                unoptimized={image.unoptimized || image.src.endsWith('.svg')}
+                sizes='(max-width: 640px) 100vw, (max-width: 768px) 95vw, (max-width: 1024px) 80vw, 60vw'
+                quality={image.quality || 90}
+                aria-describedby={`slide-description-${index}`}
+                style={{ objectFit: 'contain' }}
+              />
+              <div id={`slide-description-${index}`} className='sr-only'>
+                {image.alt}
+              </div>
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>
@@ -202,7 +223,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
       {/* Slide Counter for Screen Readers */}
       <div className='sr-only' aria-live='polite' aria-atomic='true'>
-        Promoción {currentSlide + 1} de {slides.length}
+        Imagen {currentSlide + 1} de {images.length}
         {isAutoplayPaused
           ? ' - Reproducción automática pausada'
           : ' - Reproducción automática activa'}

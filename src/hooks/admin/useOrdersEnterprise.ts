@@ -322,12 +322,12 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     hasNextPage: ordersData?.data?.pagination?.hasNextPage || false,
     hasPrevPage: ordersData?.data?.pagination?.hasPreviousPage || false,
 
-    // Estadísticas calculadas
-    completionRate: statsData?.data
+    // Estadísticas calculadas (protegido contra división por cero)
+    completionRate: statsData?.data && statsData.data.total_orders > 0
       ? ((statsData.data.completed_orders / statsData.data.total_orders) * 100).toFixed(1)
       : '0',
 
-    cancellationRate: statsData?.data
+    cancellationRate: statsData?.data && statsData.data.total_orders > 0
       ? ((statsData.data.cancelled_orders / statsData.data.total_orders) * 100).toFixed(1)
       : '0',
 
@@ -344,15 +344,16 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     // Datos ya transformados por el API - Acceder correctamente a la estructura anidada
     orders: ordersData?.data?.orders || ordersData?.data || [],
     // Bug Fix: Acceder a statsData.data en lugar de statsData.stats (consistente con API)
+    // Todos los campos ahora son provistos por el API
     stats: statsData?.data ? {
       totalOrders: statsData.data.total_orders,
       pendingOrders: statsData.data.pending_orders,
-      processingOrders: statsData.data.processing_orders || 0,
+      processingOrders: statsData.data.processing_orders,
       completedOrders: statsData.data.completed_orders,
       cancelledOrders: statsData.data.cancelled_orders,
       totalRevenue: statsData.data.total_revenue,
       averageOrderValue: statsData.data.average_order_value,
-      ordersToday: statsData.data.orders_today || 0,
+      ordersToday: statsData.data.orders_today,
     } : null,
     analytics: analyticsData?.data || null,
 

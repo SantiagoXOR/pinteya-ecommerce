@@ -25,7 +25,8 @@ const ExitIntentModal = () => {
       if (e.clientY <= 0 && !hasShown) {
         setIsOpen(true)
         setHasShown(true)
-        sessionStorage.setItem('exitIntentShown', 'true')
+        // Guardar timestamp para coordinación con WhatsAppPopup
+        sessionStorage.setItem('exitIntentShown', Date.now().toString())
         trackEvent('exit_intent_shown', 'engagement', 'modal')
       }
     }

@@ -56,6 +56,9 @@ export interface ProductImage {
   // Responsive positioning
   mobilePosition?: Position
   mobileSize?: Size
+  // Nuevas propiedades responsive para mejor control
+  desktopSize?: Size
+  aspectRatio?: string // ej: "16/9", "4/3", "737/266"
 }
 
 /**

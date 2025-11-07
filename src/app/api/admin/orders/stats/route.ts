@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
     const [
       totalResult,
       pendingResult,
+      processingResult,
       completedResult,
+      cancelledResult,
       todayResult,
       revenueResult,
       todayRevenueResult,
@@ -35,12 +37,22 @@ export async function GET(request: NextRequest) {
       supabaseAdmin
         .from('orders')
         .select('id', { count: 'exact', head: true })
-        .in('status', ['pending', 'confirmed', 'processing']),
+        .eq('status', 'pending'),
+      // Órdenes en procesamiento (confirmadas + en proceso)
+      supabaseAdmin
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['confirmed', 'processing']),
       // Órdenes completadas
       supabaseAdmin
         .from('orders')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'delivered'),
+      // Órdenes canceladas
+      supabaseAdmin
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'cancelled'),
       // Órdenes de hoy
       supabaseAdmin
         .from('orders')
@@ -64,13 +76,20 @@ export async function GET(request: NextRequest) {
     const todayRevenue =
       todayRevenueResult.data?.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0) || 0
 
+    // Calcular valor promedio de orden
+    const completedCount = completedResult.count || 0
+    const averageOrderValue = completedCount > 0 ? totalRevenue / completedCount : 0
+
     const stats = {
       total_orders: totalResult.count || 0,
       pending_orders: pendingResult.count || 0,
-      completed_orders: completedResult.count || 0,
-      today_orders: todayResult.count || 0,
+      processing_orders: processingResult.count || 0,
+      completed_orders: completedCount,
+      cancelled_orders: cancelledResult.count || 0,
+      orders_today: todayResult.count || 0,
       total_revenue: totalRevenue,
       today_revenue: todayRevenue,
+      average_order_value: averageOrderValue,
     }
 
     return NextResponse.json({
@@ -81,6 +100,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error obteniendo estadísticas de órdenes:', error)
 
+    // Estructura de fallback consistente con respuesta exitosa
     return NextResponse.json(
       {
         success: false,
@@ -88,10 +108,13 @@ export async function GET(request: NextRequest) {
         data: {
           total_orders: 0,
           pending_orders: 0,
+          processing_orders: 0, // ✅ Agregado para consistencia
           completed_orders: 0,
-          today_orders: 0,
+          cancelled_orders: 0, // ✅ Agregado para consistencia
+          orders_today: 0, // ✅ Corregido: era 'today_orders'
           total_revenue: 0,
           today_revenue: 0,
+          average_order_value: 0, // ✅ Agregado para consistencia
         },
       },
       { status: 500 }

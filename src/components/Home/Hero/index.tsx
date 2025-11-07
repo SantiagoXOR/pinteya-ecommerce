@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { HeroSlide as HeroSlideType } from '@/types/hero'
-// ⚡ PERFORMANCE: Lazy load de HeroCarousel (-1s FCP)
-import HeroCarousel from '@/components/Common/HeroCarousel.lazy'
+// ⚡ PERFORMANCE: Lazy load de HeroSlideCarousel (-1s FCP)
+import HeroSlideCarousel from '@/components/Common/HeroSlideCarousel.lazy'
 
 // ⚡ HERO MODULAR Y RESPONSIVE: Diseño estilo Mercado Libre
 // Contenido separado de imágenes para máxima flexibilidad responsive
@@ -41,9 +41,14 @@ const heroSlides: HeroSlideType[] = [
           top: '50%',
           left: '50%',
         },
-        size: {
-          width: '90%',
+        mobileSize: {
+          width: '95%',
         },
+        desktopSize: {
+          width: '70%',
+          height: '90%',
+        },
+        aspectRatio: '737/266',
         zIndex: 2,
       },
     ],
@@ -81,9 +86,14 @@ const heroSlides: HeroSlideType[] = [
           top: '50%',
           left: '50%',
         },
-        size: {
-          width: '90%',
+        mobileSize: {
+          width: '95%',
         },
+        desktopSize: {
+          width: '70%',
+          height: '90%',
+        },
+        aspectRatio: '737/266',
         zIndex: 2,
       },
     ],
@@ -120,9 +130,14 @@ const heroSlides: HeroSlideType[] = [
           top: '50%',
           left: '50%',
         },
-        size: {
-          width: '90%',
+        mobileSize: {
+          width: '95%',
         },
+        desktopSize: {
+          width: '70%',
+          height: '90%',
+        },
+        aspectRatio: '737/266',
         zIndex: 2,
       },
     ],
@@ -138,7 +153,7 @@ const Hero = () => {
   return (
     <section className='relative overflow-hidden w-full'>
       {/* Hero Modular y Responsive - Layout único que se adapta */}
-      <HeroCarousel
+      <HeroSlideCarousel
         slides={heroSlides}
         autoplayDelay={5000}
         showNavigation={true}

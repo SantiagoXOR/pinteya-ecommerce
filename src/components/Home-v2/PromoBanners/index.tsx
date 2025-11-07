@@ -17,32 +17,32 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
       subtitle: 'En productos seleccionados',
       badge: '30% OFF',
       badgeColor: 'bg-yellow-400 text-gray-900',
-      ctaText: '',
-      ctaUrl: '#ofertas-especiales',
+      ctaText: 'Ver Todos los Productos',
+      ctaUrl: '/products',
       bgImage: '/images/promo/CYBERMONDAY.png',
       bgGradient: 'from-red-600/85 via-red-500/85 to-orange-600/85',
     },
     {
       id: 2,
-      title: 'ENVÍO GRATIS',
-      subtitle: 'En compras mayores a $50.000',
-      badge: 'SIN COSTO',
-      badgeColor: 'bg-green-500',
-      ctaText: 'Ver productos',
-      ctaUrl: '#envio-gratis',
+      title: 'ASESORAMIENTO GRATIS',
+      subtitle: 'Te ayudamos con tu proyecto',
+      badge: '100% GRATIS',
+      badgeColor: 'bg-blue-500',
+      ctaText: 'Contactar ahora',
+      ctaUrl: 'https://wa.me/5493513411796?text=Hola!%20Necesito%20asesoramiento%20para%20mi%20proyecto',
       bgImage: '/images/promo/comboeco.png',
-      bgGradient: 'from-orange-900/80 to-red-900/80',
+      bgGradient: 'from-blue-900/80 to-blue-700/80',
     },
     {
       id: 3,
-      title: 'LÍDERES EN CÓRDOBA',
-      subtitle: '+15 años en el mercado',
-      badge: '15.000+ CLIENTES',
-      badgeColor: 'bg-yellow-500 text-gray-900',
-      ctaText: 'Conocenos',
-      ctaUrl: '#trust-section',
+      title: 'CALCULÁ TU PINTURA',
+      subtitle: 'Herramienta para estimar materiales',
+      badge: 'GRATIS',
+      badgeColor: 'bg-purple-500',
+      ctaText: 'Calcular ahora',
+      ctaUrl: '/calculator',
       bgImage: '/images/promo/comboplavicon.png',
-      bgGradient: 'from-gray-900/80 to-gray-700/80',
+      bgGradient: 'from-purple-900/80 to-purple-700/80',
     },
   ]
 
@@ -66,7 +66,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
     <section className='px-4'>
       <div className='max-w-7xl mx-auto space-y-2'>
         {bannersToShow.map((banner) => {
-          const isFlashDays = banner.id === 1
+          const isCompactBanner = banner.id === 1 || banner.id === 2 || banner.id === 3 // Flash Days, Asesoramiento y Calculadora
           
           return (
             <Link
@@ -75,8 +75,8 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
               onClick={(e) => handleBannerClick(e, banner.ctaUrl)}
               className='group block relative overflow-hidden rounded-3xl shadow-md hover:shadow-xl transition-all duration-300'
             >
-              {/* DISEÑO ESPECIAL PARA FLASH DAYS (Banner ID 1) */}
-              {isFlashDays ? (
+              {/* DISEÑO COMPACTO PARA BANNERS 1 Y 2 */}
+              {isCompactBanner ? (
                 <div className='relative h-12 md:h-14'>
                   {/* Background Image optimizada */}
                   <Image
@@ -88,26 +88,26 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     priority
                   />
                   
-                  {/* Gradient Overlay rojo intenso */}
+                  {/* Gradient Overlay */}
                   <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient}`}></div>
                   
                   {/* Content - Súper compacto */}
                   <div className='relative h-full flex items-center justify-between px-3 md:px-5'>
                     {/* Left Content */}
                     <div className='flex items-center gap-1.5 md:gap-2'>
-                      {/* Badge 30% OFF - mini */}
-                      <div className={`inline-flex items-center ${banner.badgeColor} px-1.5 py-0.5 rounded-full font-bold text-[10px] md:text-xs shadow-sm`}>
+                      {/* Badge mini */}
+                      <div className={`inline-flex items-center ${banner.badgeColor} text-white px-1.5 py-0.5 rounded-full font-bold text-[10px] md:text-xs shadow-sm`}>
                         <span>{banner.badge}</span>
                       </div>
                       
-                      {/* Text Content - PINTURA FLASH DAYS */}
+                      {/* Text Content - Solo título */}
                       <h2 className='text-sm md:text-lg font-black text-white leading-none'>
                         {banner.title}
                       </h2>
                     </div>
 
-                    {/* CTA Button - Flecha mini */}
-                    <div className='flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 text-gray-900 w-7 h-7 md:w-9 md:h-9 rounded-full transition-all shadow-sm hover:shadow-md hover:scale-110'>
+                    {/* CTA Button - Flecha mini en círculo */}
+                    <div className={`flex items-center justify-center ${banner.id === 1 ? 'bg-yellow-400 hover:bg-yellow-300' : 'bg-white hover:bg-gray-100'} text-gray-900 w-7 h-7 md:w-9 md:h-9 rounded-full transition-all shadow-sm hover:shadow-md hover:scale-110`}>
                       <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} />
                     </div>
                   </div>

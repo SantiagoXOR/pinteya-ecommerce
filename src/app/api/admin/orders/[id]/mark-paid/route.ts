@@ -97,9 +97,11 @@ export async function POST(
     }
 
     // Actualizar estado de pago y orden
+    // payment_status='paid' (estado de PAGO)
+    // status='confirmed' (estado de ORDEN - orden confirmada después del pago)
     const updateData = {
       payment_status: 'paid',
-      status: order.status === 'pending' ? 'paid' : order.status,
+      status: order.status === 'pending' ? 'confirmed' : order.status,
       updated_at: new Date().toISOString(),
     }
 
@@ -120,12 +122,12 @@ export async function POST(
     }
 
     // Registrar en historial de estados si cambió el status
-    if (order.status === 'pending' && updateData.status === 'paid') {
+    if (order.status === 'pending' && updateData.status === 'confirmed') {
       try {
         await supabase.from('order_status_history').insert({
           order_id: orderId,
           previous_status: 'pending',
-          new_status: 'paid',
+          new_status: 'confirmed',
           changed_by: authResult.userId,
           reason: `Pago confirmado manualmente por administrador (${payment_method})`,
           metadata: JSON.stringify({

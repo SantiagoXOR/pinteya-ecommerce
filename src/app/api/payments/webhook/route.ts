@@ -199,40 +199,57 @@ export async function POST(request: NextRequest) {
     )
 
     if (!signatureValidation.isValid) {
+      const isProduction = process.env.NODE_ENV === 'production'
+      
       logger.security(
-        LogLevel.WARN,
-        'Webhook signature validation failed - MODO PERMISIVO',
+        LogLevel.ERROR,
+        'Webhook signature validation failed',
         {
           threat: 'invalid_signature',
-          blocked: false, // TEMPORAL: No bloquear
+          blocked: isProduction,
           reason: signatureValidation.error || 'Signature validation failed',
+          environment: process.env.NODE_ENV,
         },
         { clientIP }
       )
 
-      console.log('[WEBHOOK_DEBUG] SIGNATURE VALIDATION FAILED - PERMITIENDO TEMPORALMENTE')
-      console.log('[WEBHOOK_DEBUG] Signature error:', signatureValidation.error)
-      console.log('[WEBHOOK_DEBUG] xSignature:', xSignature?.substring(0, 50))
-      console.log('[WEBHOOK_DEBUG] xRequestId:', xRequestId)
-      console.log('[WEBHOOK_DEBUG] timestamp:', timestamp)
-      console.log('[WEBHOOK_DEBUG] webhookData.data.id:', webhookData.data.id)
+      console.error('[WEBHOOK_SECURITY] ❌ SIGNATURE VALIDATION FAILED')
+      console.error('[WEBHOOK_SECURITY] Signature error:', signatureValidation.error)
+      console.error('[WEBHOOK_SECURITY] xSignature:', xSignature?.substring(0, 50))
+      console.error('[WEBHOOK_SECURITY] xRequestId:', xRequestId)
+      console.error('[WEBHOOK_SECURITY] timestamp:', timestamp)
+      console.error('[WEBHOOK_SECURITY] webhookData.data.id:', webhookData.data.id)
 
-      // ✅ TEMPORAL: Continuar procesamiento a pesar del error de firma
-      console.log('[WEBHOOK] CONTINUANDO A PESAR DE FIRMA INVÁLIDA - SOLO PARA DIAGNÓSTICO')
+      // 🔒 SEGURIDAD: En producción, rechazar webhooks con firma inválida
+      if (isProduction) {
+        console.error('[WEBHOOK_SECURITY] 🚨 BLOCKING WEBHOOK - Invalid signature in production')
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Invalid webhook signature',
+            blocked: true,
+            reason: 'Signature validation failed in production environment'
+          },
+          { status: 401 }
+        )
+      }
+
+      // ⚠️ DESARROLLO: Permitir temporalmente para debugging
+      console.warn('[WEBHOOK_DEV] ⚠️ Continuing despite invalid signature (development only)')
     } else {
-      console.log('[WEBHOOK_DEBUG] Signature validation SUCCESS')
+      console.log('[WEBHOOK_SECURITY] ✅ Signature validation SUCCESS')
+      
+      logger.security(
+        LogLevel.INFO,
+        'Webhook signature validated successfully',
+        {
+          threat: 'none',
+          blocked: false,
+          reason: 'Valid signature',
+        },
+        { clientIP }
+      )
     }
-
-    logger.security(
-      LogLevel.INFO,
-      'Webhook signature validated successfully',
-      {
-        threat: 'none',
-        blocked: false,
-        reason: 'Valid signature',
-      },
-      { clientIP }
-    )
 
     // ✅ OPTIMIZACIÓN: Respuesta rápida para evitar timeout de MercadoPago
     console.log('[WEBHOOK] Respondiendo inmediatamente para evitar timeout')
@@ -492,7 +509,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
 
     switch (payment.status) {
       case 'approved':
-        newOrderStatus = 'paid' // ✅ CORREGIDO: Usar estado válido
+        newOrderStatus = 'confirmed' // ✅ Orden confirmada después del pago
         newPaymentStatus = 'paid'
         shouldUpdateStock = true
         shouldSendEmail = true
@@ -509,7 +526,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
         break
       case 'refunded':
       case 'charged_back':
-        newOrderStatus = 'cancelled' // ✅ CORREGIDO: Usar estado válido
+        newOrderStatus = 'refunded' // ✅ Usar estado 'refunded' para reembolsos
         newPaymentStatus = 'refunded'
         // TODO: Restaurar stock si es necesario
         break

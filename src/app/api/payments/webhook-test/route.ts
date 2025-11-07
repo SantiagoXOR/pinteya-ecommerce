@@ -206,7 +206,7 @@ async function processWebhookTestAsync(webhookData: MercadoPagoWebhookData, clie
 
     switch (paymentData.status) {
       case 'approved':
-        newOrderStatus = 'paid' // ✅ CORREGIDO: Usar estado válido
+        newOrderStatus = 'confirmed' // ✅ Orden confirmada después del pago
         newPaymentStatus = 'paid'
         break
       case 'pending':

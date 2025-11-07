@@ -74,7 +74,7 @@ const CombosSection: React.FC = () => {
   }
 
   return (
-    <section className='w-full pt-6 pb-2 px-4 bg-white'>
+    <section className='w-full pt-2 pb-2 px-4 bg-transparent'>
       <div className='max-w-7xl mx-auto'>
         {/* Header removido según solicitud del usuario */}
 

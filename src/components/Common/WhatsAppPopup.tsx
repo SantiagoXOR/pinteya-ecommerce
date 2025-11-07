@@ -11,8 +11,8 @@ import { trackEvent } from '@/lib/google-analytics'
 const PINTURA_FLASH_DAYS_CONFIG = {
   prizeAmount: 75000, // Valor del medio rango ($50k - $100k)
   prizeCount: 3,
-  startDate: '3 de noviembre',
-  endDate: '5 de noviembre',
+  startDate: '15 de diciembre',
+  endDate: '31 de diciembre',
   termsUrl: '/terminos-flash-days',
   whatsappNumber: '5493513411796',
 }
@@ -26,6 +26,7 @@ const WhatsAppPopup = () => {
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [isDuplicate, setIsDuplicate] = useState(false)
   const [participantId, setParticipantId] = useState<string | null>(null)
+  const [scrollProgress, setScrollProgress] = useState(0)
 
   // Detección de viewport (mobile vs desktop)
   useEffect(() => {
@@ -39,25 +40,58 @@ const WhatsAppPopup = () => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Timer de 5 segundos y verificación de localStorage
+  // Tracking de scroll
   useEffect(() => {
-    const hasSeenPopup = localStorage.getItem('pinturaFlashDaysShown')
-    if (hasSeenPopup) {
-      setHasShown(true)
-      return
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+      const scrollTop = window.scrollY
+      const scrollPercentage = (scrollTop / (documentHeight - windowHeight)) * 100
+      setScrollProgress(scrollPercentage)
     }
 
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Timer mejorado con scroll tracking y persistencia de 3 días
+  useEffect(() => {
+    // Verificar si ya se mostró en los últimos 3 días
+    const lastShown = localStorage.getItem('pinturaFlashDaysLastShown')
+    if (lastShown) {
+      const daysSinceShown = (Date.now() - parseInt(lastShown)) / (1000 * 60 * 60 * 24)
+      if (daysSinceShown < 3) {
+        setHasShown(true)
+        return
+      }
+    }
+
+    // Verificar si ExitIntent se mostró recientemente (últimas 24 horas)
+    const exitIntentShown = sessionStorage.getItem('exitIntentShown')
+    if (exitIntentShown) {
+      const exitShownTime = parseInt(exitIntentShown) || 0
+      const hoursSinceExit = (Date.now() - exitShownTime) / (1000 * 60 * 60)
+      if (hoursSinceExit < 24) {
+        setHasShown(true)
+        return
+      }
+    }
+
+    // Timer adaptativo según dispositivo
+    const delay = isMobile ? 45000 : 30000 // 45s mobile, 30s desktop
+    const requiredScroll = isMobile ? 30 : 50 // 30% mobile, 50% desktop
+
     const timer = setTimeout(() => {
-      if (!hasShown) {
+      if (!hasShown && scrollProgress >= requiredScroll) {
         setIsOpen(true)
         setHasShown(true)
-        localStorage.setItem('pinturaFlashDaysShown', 'true')
+        localStorage.setItem('pinturaFlashDaysLastShown', Date.now().toString())
         trackEvent('flash_days_popup_shown', 'engagement', 'timed_popup')
       }
-    }, 5000) // 5 segundos
+    }, delay)
 
     return () => clearTimeout(timer)
-  }, [hasShown])
+  }, [hasShown, isMobile, scrollProgress])
 
   const handleClose = () => {
     setIsOpen(false)
@@ -205,36 +239,25 @@ Saludos! 🎨✨`
   // COMPONENTES AUXILIARES
   // ===================================
   
-  // Componente de Gift Card con efecto apilado
-  const GiftCardStack = () => (
-    <div className='relative w-full flex items-center justify-center py-4 md:py-12'>
-      {/* Gift Cards Apiladas */}
-      <div className='relative w-48 h-28 md:w-80 md:h-48'>
-        {/* Card 3 (más atrás) */}
-        <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl transform rotate-[-8deg] opacity-60'></div>
-        
-        {/* Card 2 (medio) */}
-        <div className='absolute top-2 left-2 w-full h-full bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl shadow-xl transform rotate-[-4deg] opacity-80'></div>
-        
-        {/* Card 1 (frontal) - Principal */}
-        <div className='absolute top-4 left-4 w-full h-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-2xl shadow-2xl transform rotate-0 flex flex-col items-center justify-center p-6 border-2 border-white/30'>
-          <Gift className='w-12 h-12 md:w-16 md:h-16 text-white mb-2' />
-          <div className='text-white text-center'>
-            <p className='text-sm md:text-base font-bold uppercase tracking-wider'>GIFT CARD</p>
-            <p className='text-3xl md:text-4xl font-black mt-1'>
-              ${PINTURA_FLASH_DAYS_CONFIG.prizeAmount.toLocaleString('es-AR')}
-            </p>
-          </div>
-          <Sparkles className='absolute top-2 right-2 w-6 h-6 text-yellow-300 animate-pulse' />
-          <Sparkles className='absolute bottom-2 left-2 w-4 h-4 text-yellow-300 animate-pulse' style={{animationDelay: '0.5s'}} />
-        </div>
+  // Componente de Banner con imagen personalizada de Pinteya - OVERLAY
+  const PinteyaBanner = ({ isMobileVersion = false }: { isMobileVersion?: boolean }) => (
+    <div className={`absolute ${isMobileVersion ? 'bottom-0 right-0 w-48 h-48 translate-y-1/4' : 'bottom-0 right-0 w-64 h-64 translate-y-1/4'} z-20 pointer-events-none`}>
+      <div className='relative w-full h-full'>
+        <Image
+          src='/images/promo/popuppinteya.png'
+          alt='Pintura Flash Days - Pinteya'
+          fill
+          className='object-contain drop-shadow-2xl'
+          priority
+          sizes='(max-width: 768px) 192px, 256px'
+        />
       </div>
     </div>
   )
 
-  // Badge de Pintura Flash Days
+  // Badge de Pintura Flash Days - Paleta Pinteya
   const FlashDaysBadge = () => (
-    <div className='inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 px-4 py-2 rounded-full shadow-lg'>
+    <div className='inline-flex items-center gap-2 bg-gradient-to-r from-[#f27a1d] to-[#eb6313] px-4 py-2 rounded-full shadow-lg'>
       <div className='w-2 h-2 bg-white rounded-full animate-pulse'></div>
       <span className='text-white font-bold text-xs md:text-sm uppercase tracking-wider'>
         PINTURA FLASH DAYS
@@ -259,8 +282,8 @@ Saludos! 🎨✨`
             <X className='w-5 h-5' />
           </button>
 
-          {/* Header con gradiente Pintura Flash Days */}
-          <div className='relative bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 px-4 pt-6 pb-4'>
+          {/* Header con gradiente Pinteya */}
+          <div className='relative bg-gradient-to-br from-[#eb6313] via-[#f27a1d] to-[#bd4811] px-4 pt-6 pb-4 overflow-visible'>
             {/* Patrón de fondo */}
             <div className='absolute inset-0 opacity-10'>
               <div
@@ -280,21 +303,20 @@ Saludos! 🎨✨`
 
               {/* Título */}
               <h2 className='text-white font-black text-xl sm:text-2xl mb-2 leading-tight'>
-                ¡Participá por 1 de las{' '}
-                <span className='text-yellow-300'>{PINTURA_FLASH_DAYS_CONFIG.prizeCount} GIFT CARDS</span>
+                ¡Sorteo Flash Days!
                 <br />
-                de ${PINTURA_FLASH_DAYS_CONFIG.prizeAmount.toLocaleString('es-AR')}!
+                <span className='text-[#FFD700]'>{PINTURA_FLASH_DAYS_CONFIG.prizeCount} GIFT CARDS</span> de ${PINTURA_FLASH_DAYS_CONFIG.prizeAmount.toLocaleString('es-AR')}
               </h2>
 
               {/* Subtítulo */}
               <p className='text-white/90 text-sm'>
-                Color & Ahorro - Dejanos tu WhatsApp
+                Dejanos tu WhatsApp y participá
               </p>
             </div>
-          </div>
 
-          {/* Gift Cards */}
-          <GiftCardStack />
+            {/* Banner Pinteya - OVERLAY */}
+            <PinteyaBanner isMobileVersion={true} />
+          </div>
 
           {/* Features */}
           <div className='px-4 pb-3'>
@@ -325,14 +347,14 @@ Saludos! 🎨✨`
                   onChange={handlePhoneChange}
                   placeholder='Ej: 3513411796'
                   required
-                  className='w-full bg-gray-50 border-2 border-gray-200 focus:border-purple-500 outline-none rounded-xl placeholder:text-gray-400 py-3 pl-12 pr-4 text-gray-900 font-medium transition-all'
+                  className='w-full bg-gray-50 border-2 border-gray-200 focus:border-[#eb6313] outline-none rounded-xl placeholder:text-gray-400 py-3 pl-12 pr-4 text-gray-900 font-medium transition-all'
                 />
               </div>
 
               <button
                 type='submit'
                 disabled={isSubmitting}
-                className='group w-full inline-flex items-center justify-center gap-2 py-3 px-6 text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed'
+                className='group w-full inline-flex items-center justify-center gap-2 py-3 px-6 text-white bg-gradient-to-r from-[#00ca53] to-[#009e44] hover:from-[#009e44] hover:to-[#007638] font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 <MessageCircle className='w-5 h-5' />
                 <span>{isSubmitting ? 'Registrando...' : 'Participar por WhatsApp'}</span>
@@ -361,7 +383,7 @@ Saludos! 🎨✨`
                   : 'Tu participación fue registrada exitosamente. Abrimos WhatsApp para confirmar tu interés.'}
               </p>
 
-              <div className='flex items-center gap-2 text-purple-600'>
+              <div className='flex items-center gap-2 text-[#00ca53]'>
                 <MessageCircle className='w-5 h-5' />
                 <span className='font-medium'>Revisá tu WhatsApp</span>
               </div>
@@ -383,7 +405,7 @@ Saludos! 🎨✨`
 
           <div className='flex flex-row'>
             {/* Columna Izquierda - Visual */}
-            <div className='w-1/2 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 p-10 flex flex-col justify-center items-center relative overflow-hidden'>
+            <div className='w-1/2 bg-gradient-to-br from-[#eb6313] via-[#f27a1d] to-[#bd4811] p-10 flex flex-col justify-center items-center relative overflow-visible'>
               {/* Patrón de fondo */}
               <div className='absolute inset-0 opacity-10'>
                 <div
@@ -401,9 +423,6 @@ Saludos! 🎨✨`
                   <FlashDaysBadge />
                 </div>
 
-                {/* Gift Cards con efecto fan */}
-                <GiftCardStack />
-
                 {/* Texto de cantidad de premios */}
                 <div className='mt-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4'>
                   <p className='text-white text-lg font-bold'>
@@ -414,21 +433,26 @@ Saludos! 🎨✨`
                   </p>
                 </div>
               </div>
+
+              {/* Banner Pinteya - OVERLAY */}
+              <PinteyaBanner isMobileVersion={false} />
             </div>
 
             {/* Columna Derecha - Formulario */}
             <div className='w-1/2 p-10 flex flex-col justify-center'>
               {/* Título */}
               <h2 className='text-gray-900 font-black text-3xl mb-3 leading-tight'>
-                ¡Color & Ahorro! Participá por 1 de las{' '}
-                <span className='bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent'>
+                ¡Sorteo Flash Days!
+                <br />
+                Participá por 1 de las{' '}
+                <span className='bg-gradient-to-r from-[#eb6313] to-[#f27a1d] bg-clip-text text-transparent'>
                   {PINTURA_FLASH_DAYS_CONFIG.prizeCount} Gift Cards!
                 </span>
               </h2>
 
               {/* Subtítulo */}
               <p className='text-gray-600 text-base mb-6'>
-                Dejanos tu WhatsApp y participá del Pintura Flash Days
+                Dejanos tu WhatsApp y participá del sorteo
               </p>
 
               {/* Features */}
@@ -457,14 +481,14 @@ Saludos! 🎨✨`
                     onChange={handlePhoneChange}
                     placeholder='Ej: 3513411796'
                     required
-                    className='w-full bg-gray-50 border-2 border-gray-200 focus:border-purple-500 outline-none rounded-xl placeholder:text-gray-400 py-4 pl-12 pr-4 text-gray-900 font-medium transition-all'
+                    className='w-full bg-gray-50 border-2 border-gray-200 focus:border-[#eb6313] outline-none rounded-xl placeholder:text-gray-400 py-4 pl-12 pr-4 text-gray-900 font-medium transition-all'
                   />
                 </div>
 
                 <button
                   type='submit'
                   disabled={isSubmitting}
-                  className='group w-full inline-flex items-center justify-center gap-2 py-4 px-6 text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='group w-full inline-flex items-center justify-center gap-2 py-4 px-6 text-white bg-gradient-to-r from-[#00ca53] to-[#009e44] hover:from-[#009e44] hover:to-[#007638] font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed'
                 >
                   <MessageCircle className='w-5 h-5' />
                   <span>{isSubmitting ? 'Registrando...' : 'Participar por WhatsApp'}</span>
@@ -472,7 +496,7 @@ Saludos! 🎨✨`
 
                 <p className='text-gray-500 text-xs text-center leading-relaxed'>
                   Al participar del Pintura Flash Days aceptás nuestros{' '}
-                  <a href={PINTURA_FLASH_DAYS_CONFIG.termsUrl} className='text-purple-600 hover:underline'>
+                  <a href={PINTURA_FLASH_DAYS_CONFIG.termsUrl} className='text-[#eb6313] hover:underline'>
                     términos y condiciones
                   </a>
                   .
@@ -498,7 +522,7 @@ Saludos! 🎨✨`
                   : 'Tu participación fue registrada exitosamente. Abrimos WhatsApp para confirmar tu interés. ¡Mucha suerte! 🍀'}
               </p>
 
-              <div className='flex items-center gap-2 text-purple-600 text-lg'>
+              <div className='flex items-center gap-2 text-[#00ca53] text-lg'>
                 <MessageCircle className='w-6 h-6' />
                 <span className='font-bold'>Revisá tu WhatsApp</span>
               </div>

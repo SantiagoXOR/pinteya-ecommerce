@@ -1,6 +1,5 @@
 'use client'
 
-import Hero from './Hero'
 // import PromoBanner from './PromoBanner';
 import BestSeller from './BestSeller'
 // import PinteyaRaffle from './PinteyaRaffle';
@@ -19,9 +18,7 @@ const Home = () => {
       <CategoryTogglePillsWithSearch />
       <BestSeller />
       {/* <PromoBanner /> */}
-      {/* Carrusel Hero movido después de ofertas especiales */}
-      <Hero />
-      {/* Sección de nuevos productos bajo el hero */}
+      {/* Sección de nuevos productos */}
       <NewArrivals />
       {/* <PinteyaRaffle /> */}
       <TrustSection />

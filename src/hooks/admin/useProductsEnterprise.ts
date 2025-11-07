@@ -385,16 +385,16 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
     hasNextPage: filters.page < totalPages,
     hasPrevPage: filters.page > 1,
 
-    // Estadísticas calculadas
-    stockHealthScore: statsData?.data
+    // Estadísticas calculadas (protegido contra división por cero)
+    stockHealthScore: statsData?.data && statsData.data.total_products > 0
       ? ((statsData.data.active_products / statsData.data.total_products) * 100).toFixed(1)
       : '0',
 
-    lowStockPercentage: statsData?.data
+    lowStockPercentage: statsData?.data && statsData.data.total_products > 0
       ? ((statsData.data.low_stock_products / statsData.data.total_products) * 100).toFixed(1)
       : '0',
 
-    averageStockValue: statsData?.data
+    averageStockValue: statsData?.data && statsData.data.total_products > 0
       ? (statsData.data.total_value / statsData.data.total_products).toFixed(0)
       : '0',
   }

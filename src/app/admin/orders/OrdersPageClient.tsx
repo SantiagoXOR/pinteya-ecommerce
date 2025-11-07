@@ -44,6 +44,9 @@ export function OrdersPageClient() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  
+  // Estado para selección múltiple de órdenes
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([])
 
   const {
     // Datos
@@ -387,7 +390,7 @@ export function OrdersPageClient() {
 
               {/* Operaciones masivas si hay órdenes seleccionadas */}
               <OrderBulkOperations 
-                selectedOrders={[]} 
+                selectedOrders={selectedOrders} 
                 onBulkAction={(action: string, orderIds: string[]) => {
                   // Convertir la acción a un OrderStatus válido
                   const statusMap: Record<string, any> = {
@@ -399,6 +402,8 @@ export function OrdersPageClient() {
                   }
                   const status = statusMap[action] || 'pending'
                   handleBulkOperation(orderIds, status)
+                  // Limpiar selección después de la operación
+                  setSelectedOrders([])
                 }} 
               />
             </div>
@@ -414,6 +419,8 @@ export function OrdersPageClient() {
                         orders={orders}
                         isLoading={isLoadingOrders}
                         error={error}
+                        selectedOrders={selectedOrders}
+                        setSelectedOrders={setSelectedOrders}
                         onOrderAction={(action, orderId) => {
                           if (action === 'view') {
                             handleViewOrder(orderId)
@@ -445,6 +452,8 @@ export function OrdersPageClient() {
                         orders={orders}
                         isLoading={isLoadingOrders}
                         error={error}
+                        selectedOrders={selectedOrders}
+                        setSelectedOrders={setSelectedOrders}
                         onOrderAction={(action, orderId) => {
                           if (action === 'view') {
                             handleViewOrder(orderId)
@@ -476,6 +485,8 @@ export function OrdersPageClient() {
                         orders={orders}
                         isLoading={isLoadingOrders}
                         error={error}
+                        selectedOrders={selectedOrders}
+                        setSelectedOrders={setSelectedOrders}
                         onOrderAction={(action, orderId) => {
                           if (action === 'view') {
                             handleViewOrder(orderId)
@@ -507,6 +518,8 @@ export function OrdersPageClient() {
                         orders={orders}
                         isLoading={isLoadingOrders}
                         error={error}
+                        selectedOrders={selectedOrders}
+                        setSelectedOrders={setSelectedOrders}
                         onOrderAction={(action, orderId) => {
                           if (action === 'view') {
                             handleViewOrder(orderId)

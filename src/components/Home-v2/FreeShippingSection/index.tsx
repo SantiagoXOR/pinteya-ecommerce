@@ -2,7 +2,6 @@
 
 import React, { useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Image from 'next/image'
 import ProductItem from '@/components/Common/ProductItem'
 import { useFilteredProducts } from '@/hooks/useFilteredProducts'
 import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
@@ -60,21 +59,40 @@ const FreeShippingSection = () => {
   if (freeShippingProducts.length === 0) return null
 
   return (
-    <section id='envio-gratis' className='py-3 bg-gradient-to-br from-green-50 to-white scroll-mt-20'>
+    <section id='envio-gratis' className='py-3 bg-white/40 backdrop-blur-sm scroll-mt-20'>
       <div className='max-w-7xl mx-auto px-4'>
+        {/* Carousel Horizontal - Sin badge de envío gratis */}
+        <div className='relative mb-4'>
+          <div
+            ref={scrollRef}
+            className='flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4'
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {freeShippingProducts.map((product, idx) => (
+              <div key={idx} className='min-w-[250px] flex-shrink-0'>
+                <ProductItem product={product} />
+              </div>
+            ))}
+          </div>
+
+          {/* Fade edges */}
+          <div className='absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-green-50 to-transparent pointer-events-none'></div>
+          <div className='absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none'></div>
+        </div>
+
         {/* Header */}
-        <div className='flex items-center justify-between mb-4'>
+        <div className='flex items-center justify-between'>
           <div className='flex items-center gap-4'>
-            {/* SVG sin círculo, DOBLE de grande (96x96px) */}
-            <Image 
-              src='/images/icons/icon-envio.svg' 
-              alt='Envío gratis' 
-              width={96} 
-              height={96}
-              className='w-24 h-24'
-            />
+            {/* SVG completo con diseño de envío gratis */}
+            <div className='w-[100px] h-[40px] md:w-[140px] md:h-[56px] flex items-center justify-center flex-shrink-0'>
+              <img 
+                src='/images/icons/icon-envio.svg' 
+                alt='Envío gratis' 
+                className='w-full h-full object-contain'
+              />
+            </div>
             <div>
-              <h2 className='text-2xl md:text-3xl font-bold text-gray-900'>
+              <h2 className='text-2xl md:text-3xl font-bold text-green-700'>
                 Envío Gratis
               </h2>
               <p className='text-sm text-gray-600'>
@@ -100,25 +118,6 @@ const FreeShippingSection = () => {
               <ChevronRight className='w-5 h-5' />
             </button>
           </div>
-        </div>
-
-        {/* Carousel Horizontal - Sin badge de envío gratis */}
-        <div className='relative'>
-          <div
-            ref={scrollRef}
-            className='flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4'
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {freeShippingProducts.map((product, idx) => (
-              <div key={idx} className='min-w-[250px] flex-shrink-0'>
-                <ProductItem product={product} />
-              </div>
-            ))}
-          </div>
-
-          {/* Fade edges */}
-          <div className='absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-green-50 to-transparent pointer-events-none'></div>
-          <div className='absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none'></div>
         </div>
       </div>
     </section>

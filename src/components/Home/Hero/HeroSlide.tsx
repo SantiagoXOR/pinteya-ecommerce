@@ -73,7 +73,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
       `}
     >
       {/* ==================== LAYOUT MOBILE ==================== */}
-      <div className="lg:hidden px-4 py-8 sm:py-10 flex flex-col items-center text-center space-y-6">
+      <div className="lg:hidden px-4 py-4 sm:py-6 flex flex-col items-center text-center space-y-4 sm:space-y-6">
         {/* Título principal - Mobile */}
         <h1 className="text-3xl xsm:text-4xl sm:text-5xl font-bold text-white leading-tight drop-shadow-2xl max-w-xl">
           {highlightWords(titleToDisplay, wordsToHighlight)}
@@ -101,17 +101,25 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         )}
 
         {/* Imagen principal - Mobile: solo la primera imagen */}
-        {productImages.length > 0 && (
-          <div className="relative w-full max-w-md h-[280px] xsm:h-[320px] sm:h-[360px] mt-4">
+        {productImages.length > 0 && productImages[0] && (
+          <div 
+            className="relative w-full mt-4"
+            style={{
+              maxWidth: productImages[0].mobileSize?.width || '95%',
+              aspectRatio: productImages[0].aspectRatio || 'auto',
+              margin: '0 auto',
+            }}
+          >
             <Image
               src={productImages[0].src}
               alt={productImages[0].alt}
               fill
               className="object-contain drop-shadow-2xl"
-              priority={productImages[0].priority}
+              priority={productImages[0].priority ?? false}
               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 80vw, 50vw"
               quality={90}
               unoptimized={productImages[0].src.endsWith('.svg')}
+              style={{ objectPosition: 'center' }}
             />
           </div>
         )}
@@ -200,7 +208,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
             </div>
 
             {/* ========== COLUMNA DERECHA: Imágenes de Productos ========== */}
-            <div className="relative h-[400px] lg:h-[450px] xl:h-[500px] 2xl:h-[550px]">
+            <div className="relative h-[380px] lg:h-[420px] xl:h-[480px] 2xl:h-[530px]">
               {productImages.map((image, index) => {
                 // Posición por defecto si no se especifica
                 const defaultPosition = {
@@ -209,19 +217,22 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
                 }
 
                 const position = image.position || defaultPosition
-                const size = image.size || { width: '90%' }
+                const desktopSize = image.desktopSize || image.size || { width: '70%' }
 
                 return (
                   <div
                     key={`product-desktop-${index}`}
                     className="absolute"
                     style={{
-                      top: position.top,
-                      bottom: position.bottom,
-                      left: position.left,
-                      right: position.right,
-                      width: size.width,
-                      height: size.height,
+                      top: position.top || 'auto',
+                      bottom: (position as any).bottom || 'auto',
+                      left: position.left || 'auto',
+                      right: (position as any).right || 'auto',
+                      width: desktopSize.width,
+                      height: desktopSize.height || 'auto',
+                      maxWidth: 'min(100%, 600px)',
+                      maxHeight: '100%',
+                      aspectRatio: image.aspectRatio || 'auto',
                       zIndex: image.zIndex || index + 1,
                       transform:
                         position.top === '50%' && position.left === '50%'
@@ -239,6 +250,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
                         sizes="(max-width: 1024px) 70vw, 50vw"
                         quality={90}
                         unoptimized={image.src.endsWith('.svg')}
+                        style={{ objectPosition: 'center' }}
                       />
                     </div>
                   </div>

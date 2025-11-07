@@ -19,7 +19,7 @@ const Newsletter = () => {
   }
 
   return (
-    <section className='overflow-hidden py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-gray-50 to-white'>
+    <section className='overflow-hidden py-12 sm:py-16 lg:py-20 bg-white/50 backdrop-blur-sm'>
       <div className='max-w-[1170px] mx-auto px-4 sm:px-8 xl:px-0'>
         <div className='relative z-1 overflow-hidden rounded-3xl shadow-2xl'>
           {/* Background Image */}
