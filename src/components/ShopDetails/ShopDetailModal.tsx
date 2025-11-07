@@ -1520,13 +1520,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         
         // Si no encuentra variante, mostrar error solo si hay datos válidos para buscar
         if (!variant) {
-          // ✅ MEJORADO: Solo mostrar error si el producto tiene variantes con colores
+          // ✅ MEJORADO: Solo mostrar error si el producto tiene variantes con colores Y hay valores para buscar
           const hasColorVariants = Array.isArray(variants) && variants.some(v => v.color_name && v.color_name.trim() !== '')
+          const hasValidSearchParams = colorToUse && typeof colorToUse === 'string' && colorToUse.trim() !== '' && 
+                                       selectedCapacity && typeof selectedCapacity === 'string' && selectedCapacity.trim() !== ''
           
-          if (hasColorVariants && 
-              colorToUse && colorToUse.trim() !== '' && 
-              selectedCapacity && selectedCapacity.trim() !== '' && 
-              Array.isArray(variants) && variants.length > 0) {
+          if (hasColorVariants && hasValidSearchParams && Array.isArray(variants) && variants.length > 0) {
             console.error('❌ No se encontró variante para:', {
               color: colorToUse,
               capacity: selectedCapacity,
@@ -1537,9 +1536,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               }))
             })
           } else {
-            console.log('ℹ️ Variante no encontrada - usando primera variante disponible:', {
+            console.log('ℹ️ Variante no encontrada o búsqueda sin parámetros completos:', {
               hasColor: !!colorToUse,
               hasCapacity: !!selectedCapacity,
+              hasValidParams: hasValidSearchParams,
               variantsCount: variants?.length || 0
             })
           }

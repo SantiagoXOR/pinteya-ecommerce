@@ -16,6 +16,7 @@ import {
   detectProductType 
 } from '@/utils/product-utils'
 import { findVariantByCapacity } from '@/lib/api/product-variants'
+import { PAINT_COLORS, type ColorOption } from '@/components/ui/advanced-color-picker'
 
 // Verificar que Framer Motion esté disponible
 const isFramerMotionAvailable = false // Deshabilitado para usar fallbacks CSS
@@ -140,13 +141,17 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     },
     ref
   ) => {
-    const [isAddingToCart, setIsAddingToCart] = React.useState(false)
     const [isHovered, setIsHovered] = React.useState(false)
+    const [isAddingToCart, setIsAddingToCart] = React.useState(false)
     const [isWishlisted, setIsWishlisted] = React.useState(false)
     const [showQuickActions, setShowQuickActions] = React.useState(false)
     const [showShopDetailModal, setShowShopDetailModal] = React.useState(false)
     const [imageError, setImageError] = React.useState(false)
     const [currentImageSrc, setCurrentImageSrc] = React.useState(image || '/images/products/placeholder.svg')
+    const [selectedColor, setSelectedColor] = React.useState<string | undefined>(undefined)
+    const [selectedQuantity, setSelectedQuantity] = React.useState<number>(1)
+    const [selectedMeasure, setSelectedMeasure] = React.useState<string | undefined>(undefined)
+    const [cartAddCount, setCartAddCount] = React.useState<number>(0)
     // Ref para ignorar clics justo después de cerrar el modal (evita re-apertura por burbujeo)
     const ignoreClicksUntilRef = React.useRef<number>(0)
     // Unificado: usamos el hook central para agregar productos
@@ -216,6 +221,104 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       } catch {
         return hex
       }
+    }, [])
+
+    // Helper para convertir nombres de colores a códigos hexadecimales
+    const getColorHexFromName = React.useCallback((colorName: string): string => {
+      const colorMap: Record<string, string> = {
+        // Colores básicos
+        'blanco': '#FFFFFF',
+        'white': '#FFFFFF',
+        'negro': '#000000',
+        'black': '#000000',
+        'rojo': '#DC2626',
+        'red': '#DC2626',
+        'azul': '#2563EB',
+        'blue': '#2563EB',
+        'verde': '#16A34A',
+        'green': '#16A34A',
+        'amarillo': '#EAB308',
+        'yellow': '#EAB308',
+        'naranja': '#EA580C',
+        'orange': '#EA580C',
+        'gris': '#9CA3AF',
+        'gray': '#9CA3AF',
+        'grey': '#9CA3AF',
+        'marron': '#92400E',
+        'marrón': '#92400E',
+        'brown': '#92400E',
+        'rosa': '#EC4899',
+        'pink': '#EC4899',
+        'violeta': '#9333EA',
+        'purple': '#9333EA',
+        'celeste': '#38BDF8',
+        'cyan': '#06B6D4',
+        'turquesa': '#14B8A6',
+        'teal': '#14B8A6',
+        'beige': '#D4C5B9',
+        'crema': '#FEF3C7',
+        'cream': '#FEF3C7',
+        
+        // Tonos de madera (Impregnantes)
+        'natural': '#D4A574',
+        'roble': '#8B4513',
+        'oak': '#8B4513',
+        'caoba': '#6B3410',
+        'mahogany': '#6B3410',
+        'cedro': '#D2691E',
+        'cedar': '#D2691E',
+        'nogal': '#654321',
+        'walnut': '#654321',
+        'pino': '#DEB887',
+        'pine': '#DEB887',
+        'teca': '#8B7355',
+        'teak': '#8B7355',
+        'wengué': '#3C2415',
+        'wenge': '#3C2415',
+        'cerezo': '#8B4049',
+        'cherry': '#8B4049',
+        'alerce': '#B8956D',
+        'larch': '#B8956D',
+        
+        // Colores sintéticos adicionales
+        'bordó': '#800020',
+        'bordo': '#800020',
+        'burgundy': '#800020',
+        'fucsia': '#FF00FF',
+        'magenta': '#D946EF',
+        'lima': '#84CC16',
+        'lime': '#84CC16',
+        'oliva': '#808000',
+        'olive': '#808000',
+        'plateado': '#C0C0C0',
+        'silver': '#C0C0C0',
+        'dorado': '#FFD700',
+        'gold': '#FFD700',
+        'cristal': '#F0F8FF',
+        'crystal': '#F0F8FF',
+        'transparente': '#F0F8FF',
+        'transparent': '#F0F8FF',
+        'incoloro': '#F5F5F5',
+        'colorless': '#F5F5F5',
+        
+        // Colores adicionales comunes
+        'verde oscuro': '#047857',
+        'dark green': '#047857',
+        'azul oscuro': '#1E3A8A',
+        'dark blue': '#1E3A8A',
+        'rojo oscuro': '#991B1B',
+        'dark red': '#991B1B',
+        'verde claro': '#86EFAC',
+        'light green': '#86EFAC',
+        'azul claro': '#BFDBFE',
+        'light blue': '#BFDBFE',
+        'terracota': '#C2410C',
+        'terracotta': '#C2410C',
+        'arena': '#E9D7C3',
+        'sand': '#E9D7C3',
+      }
+      const normalized = colorName.toLowerCase().trim()
+      return colorMap[normalized] || '#9CA3AF' // gris por defecto
     }, [])
 
     const isImpregnante = (title || '').toLowerCase().includes('impregnante')
@@ -531,13 +634,146 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       [handleOpenModal]
     )
 
+    // Calcular si mostrar envío gratis automáticamente con umbral global
+    const config = useDesignSystemConfig()
+    const autoFreeShipping = price ? dsShouldShowFreeShipping(price, config) : false
+    const shouldShowFreeShipping = Boolean(freeShipping || autoFreeShipping)
+
+    // Extraer medidas únicas del array de variantes para el badge de medidas
+    const uniqueMeasures = React.useMemo(() => {
+      if (!variants || variants.length === 0) return []
+      const measures = variants
+        .map(v => v.measure)
+        .filter((m): m is string => Boolean(m))
+      // Eliminar duplicados y ordenar
+      return Array.from(new Set(measures)).sort((a, b) => {
+        const numA = parseFloat(a)
+        const numB = parseFloat(b)
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB
+        return a.localeCompare(b)
+      })
+    }, [variants])
+
+    // Extraer colores únicos del array de variantes para el selector
+    // Usa la misma lógica que el modal: extrae color_name y busca en PAINT_COLORS
+    const uniqueColors = React.useMemo(() => {
+      const colorsMap = new Map<string, { name: string; hex: string }>()
+      
+      if (variants && variants.length > 0) {
+        // Primero extraer todos los color_name únicos
+        const uniqueColorNames = new Set<string>()
+        variants.forEach(v => {
+          if (v.color_name && v.color_name.trim() !== '') {
+            uniqueColorNames.add(v.color_name)
+          }
+        })
+        
+        // Convertir cada color_name a hex usando PAINT_COLORS o el helper
+        Array.from(uniqueColorNames).forEach(colorName => {
+          // Buscar si existe en PAINT_COLORS (igual que el modal)
+          const existingColor = PAINT_COLORS.find(c => 
+            c.name.toLowerCase() === colorName.toLowerCase() ||
+            c.displayName.toLowerCase() === colorName.toLowerCase() ||
+            c.id.toLowerCase() === colorName.toLowerCase()
+          )
+          
+          if (existingColor) {
+            colorsMap.set(existingColor.hex, { name: colorName, hex: existingColor.hex })
+          } else {
+            // Fallback: usar el helper para convertir nombre a hex
+            const hexFromName = getColorHexFromName(colorName)
+            colorsMap.set(hexFromName, { name: colorName, hex: hexFromName })
+          }
+        })
+      }
+      
+      // NO agregar color por defecto - solo mostrar colores reales
+      return Array.from(colorsMap.values())
+    }, [variants, getColorHexFromName])
+
+    // Establecer color por defecto al cargar
+    React.useEffect(() => {
+      if (!selectedColor && uniqueColors.length > 0) {
+        setSelectedColor(uniqueColors[0].hex)
+      }
+    }, [selectedColor, uniqueColors])
+
+    // Establecer medida por defecto al cargar
+    React.useEffect(() => {
+      if (!selectedMeasure && uniqueMeasures.length > 0) {
+        setSelectedMeasure(uniqueMeasures[0])
+      }
+    }, [selectedMeasure, uniqueMeasures])
+
+    // Helper para separar número y unidad en medidas
+    const parseMeasure = React.useCallback((measure: string): { number: string; unit: string } => {
+      // Para "N°10", "N°15", etc. (pinceles/brochas) o "N120", "N180" (lijas)
+      const nMatch = measure.match(/^(N°|Nº|n°|nº|N|n)\s*(\d+)$/i)
+      if (nMatch) {
+        return { number: nMatch[2], unit: 'N°' }
+      }
+      
+      // Para "Grano 60", "Grano 80", etc.
+      const granoMatch = measure.match(/^(grano)\s*(\d+)$/i)
+      if (granoMatch) {
+        return { number: granoMatch[2], unit: 'Grano' }
+      }
+      
+      // Regex para separar número de unidad (ej: "4L" -> "4" + "L")
+      const match = measure.match(/^(\d+(?:\.\d+)?)\s*(.*)$/)
+      if (match) {
+        return { number: match[1], unit: match[2].toUpperCase() }
+      }
+      
+      return { number: measure, unit: '' }
+    }, [])
+
+    // Extraer la unidad común de todas las medidas (para mostrarla una vez)
+    const commonUnit = React.useMemo(() => {
+      if (uniqueMeasures.length === 0) return ''
+      const { unit } = parseMeasure(uniqueMeasures[0])
+      return unit
+    }, [uniqueMeasures, parseMeasure])
+
+    // Sincronizar precio con variante seleccionada
+    const currentVariant = React.useMemo(() => {
+      if (!variants || variants.length === 0) return null
+      
+      // Buscar variante que coincida con color y medida seleccionados
+      const matchingVariant = variants.find(v => {
+        const colorMatch = selectedColor ? (v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor) : true
+        const measureMatch = selectedMeasure ? v.measure === selectedMeasure : true
+        return colorMatch && measureMatch
+      })
+      
+      return matchingVariant || null
+    }, [variants, selectedColor, selectedMeasure, getColorHexFromName])
+
+    // Precio dinámico basado en la variante seleccionada
+    const displayPrice = React.useMemo(() => {
+      if (currentVariant) {
+        // Priorizar price_sale sobre price_list
+        return currentVariant.price_sale || currentVariant.price_list || price
+      }
+      return price
+    }, [currentVariant, price])
+
+    // Precio original para mostrar tachado (si hay descuento)
+    const displayOriginalPrice = React.useMemo(() => {
+      if (currentVariant && currentVariant.price_sale && currentVariant.price_list) {
+        return currentVariant.price_list
+      }
+      return originalPrice
+    }, [currentVariant, originalPrice])
+
+    // Handler para agregar al carrito con color y medida seleccionados
     const handleAddToCart = React.useCallback(
       async (e?: React.MouseEvent) => {
         if (e) {
           e.stopPropagation() // Evitar que se propague al card
         }
 
-        if (!onAddToCart || isAddingToCart || stock === 0) return
+        if (isAddingToCart || stock === 0) return
 
         if (showCartAnimation) {
           setIsAddingToCart(true)
@@ -545,20 +781,43 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         }
 
         try {
-          await onAddToCart()
-          // NO abrir el modal después de agregar al carrito
-          // El modal debe cerrarse después de agregar al carrito
+          // Buscar el nombre del color seleccionado
+          const selectedColorData = uniqueColors.find(c => c.hex === selectedColor)
+          
+          // Construir objeto de producto para el carrito
+          const productData = {
+            id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
+            name: title || 'Producto',
+            price: displayPrice || price || 0,
+            discounted_price: currentVariant?.price_sale || undefined,
+            images: image ? [image] : [],
+            variants: variants || [],
+            quantity: 1,
+          }
+
+          // Atributos seleccionados (color, medida, finish)
+          const attributes = {
+            color: selectedColorData?.name || selectedColor || '',
+            medida: selectedMeasure || '',
+            finish: currentVariant?.finish || '',
+          }
+
+          console.log('🛒 Agregando al carrito desde card:', { productData, attributes })
+
+          // Usar addProduct del hook directamente con atributos seleccionados
+          addProduct(productData, { quantity: 1, attributes })
+          
+          // Incrementar el contador de agregados
+          setCartAddCount(prev => prev + 1)
+          
+          // NO llamar onAddToCart para evitar duplicación - addProduct ya agrega al carrito
+          // Mantener el color y medida seleccionados (no resetear)
         } catch (error) {
           console.error('Error al agregar al carrito:', error)
         }
       },
-      [onAddToCart, isAddingToCart, stock, showCartAnimation]
+      [isAddingToCart, stock, showCartAnimation, selectedColor, selectedMeasure, uniqueColors, displayPrice, price, currentVariant, productId, title, image, variants, addProduct]
     )
-
-    // Calcular si mostrar envío gratis automáticamente con umbral global
-    const config = useDesignSystemConfig()
-    const autoFreeShipping = price ? dsShouldShowFreeShipping(price, config) : false
-    const shouldShowFreeShipping = Boolean(freeShipping || autoFreeShipping)
     
     return (
       <div
@@ -616,7 +875,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               src={currentImageSrc}
               alt={title || 'Producto'}
               fill
-              className='object-contain scale-110 z-0'
+              className='object-contain scale-125 z-0'
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
               priority={false}
               onError={handleImageError}
@@ -660,81 +919,19 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           {/* Quick Actions eliminados - Ya no se muestran los botones de wishlist y quick view */}
         </div>
 
-        {/* ============================================================================ */}
-        {/* ZONA EXCLUSIVA PARA BADGES INTELIGENTES */}
-        {/* Posicionados en el margen superior derecho */}
-        {/* ============================================================================ */}
-        {intelligentBadges.length > 0 && (
-          <div className='absolute top-2 right-2 md:top-3 md:right-3 z-20 max-w-[120px] md:max-w-[140px]'>
-            <div className='flex flex-col gap-1 md:gap-1.5 items-end'>
-              {intelligentBadges.map((badge, index) => {
-                // Badge circular de color
-                if (badge.isCircular && badge.circleColor && badge.type === 'color-circle') {
-                  const darker = darkenHex(badge.circleColor, 0.35)
-                  return (
-                    <div
-                      key={`badge-${badge.type}-${index}`}
-                      className='relative group'
-                      title={badge.displayText}
-                    >
-                      <div
-                        className='w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-white shadow-lg cursor-pointer transition-transform hover:scale-110'
-                        style={{ 
-                          backgroundColor: badge.circleColor,
-                          backgroundImage: isImpregnante
-                            ? [
-                                // Luz suave
-                                'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
-                                // Vetas verticales gruesas y finas combinadas
-                                `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
-                                `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
-                                // Nudos sutiles
-                                `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
-                                'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
-                              ].join(', ')
-                            : undefined,
-                          backgroundSize: isImpregnante ? '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%' : undefined as any,
-                          backgroundBlendMode: isImpregnante ? 'multiply' : undefined as any,
-                        }}
-                      />
-                      {/* Tooltip opcional */}
-                      <div className='absolute bottom-full right-0 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-30'>
-                        {badge.displayText}
-                      </div>
-                    </div>
-                  )
-                }
-                
-                // Badge tradicional
-                return (
-                  <div
-                    key={`badge-${badge.type}-${index}`}
-                    className='text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded shadow-md flex-shrink-0 backdrop-blur-sm'
-                    style={{ 
-                      backgroundColor: badge.bgColor, 
-                      color: badge.color,
-                      border: '1px solid rgba(255,255,255,0.2)'
-                    }}
-                  >
-                    {badge.displayText}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
+        {/* Badge de medidas eliminado según solicitud del usuario */}
 
         {/* Content con transición suave - Responsive */}
-        <div className='relative z-20 text-left p-2 md:p-4 bg-white -mt-2 md:-mt-3 flex-shrink-0'>
+        <div className='relative z-20 text-left p-2 md:p-2.5 bg-white -mt-3 md:-mt-4 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
           {/* Marca del producto - Responsive */}
           {brand && (
-            <div className='text-xs md:text-sm uppercase text-gray-600 font-semibold tracking-wide drop-shadow-sm'>
+            <div className='text-xs md:text-sm uppercase text-gray-400 font-normal tracking-wide'>
               {brand}
             </div>
           )}
 
           {/* Título del producto - Con mejor contraste y responsive */}
-          <h3 className='font-bold text-gray-900 text-sm md:text-lg drop-shadow-sm line-clamp-2 leading-tight mb-1 md:mb-2'>
+          <h3 className='font-medium text-gray-600 text-sm md:text-lg line-clamp-2 leading-[1.1] mb-0.5'>
             {title}
           </h3>
 
@@ -748,7 +945,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 style={{ color: '#EA5A17' }}
               >
                 {
-                  `$${(price ?? 0).toLocaleString('es-AR', {
+                  `$${(displayPrice ?? 0).toLocaleString('es-AR', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
                   })}`
@@ -771,10 +968,10 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               )}
 
               {/* Precio anterior tachado - Responsive (sin decimales) */}
-              {originalPrice && originalPrice > (price || 0) && (
+              {displayOriginalPrice && displayOriginalPrice > (displayPrice || 0) && (
                 <div className='text-gray-500 line-through text-xs md:text-sm drop-shadow-sm'>
                   {
-                    `$${originalPrice.toLocaleString('es-AR', {
+                    `$${displayOriginalPrice.toLocaleString('es-AR', {
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0,
                     })}`
@@ -786,44 +983,145 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             {/* Cuotas ocultas temporalmente por solicitud del usuario */}
           </div>
 
-          {/* Botón "Agregar al carrito" - Animado y responsive */}
-          <div className='w-full mt-2 md:mt-3'>
-            {onAddToCart && (
-              <button
-                onClick={handleAddToCart}
-                disabled={isAddingToCart || stock === 0}
-                data-testid='add-to-cart'
-                data-testid-btn='add-to-cart-btn'
-                className={cn(
-                  'w-full py-2 sm:py-2.5 md:py-3 rounded-lg md:rounded-xl text-center shadow-md font-semibold flex items-center justify-center gap-1 md:gap-2 text-sm relative overflow-hidden',
-                  'transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] transform-gpu will-change-transform',
-                  stock === 0
-                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    : 'bg-yellow-400 hover:bg-yellow-500 text-[#EA5A17]'
-                )}
-                style={{
-                  backgroundColor: stock !== 0 ? '#facc15' : undefined,
-                  transformOrigin: 'center',
-                }}
-              >
-                {isAddingToCart ? (
-                  <div className='flex items-center justify-center gap-2'>
-                    <div className='w-4 h-4 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
-                    <span>Agregando...</span>
+          {/* Layout optimizado: Colores + (Medidas | Carrito) */}
+          <div className='w-full mt-1 md:mt-1.5'>
+            <div className='flex flex-col gap-0'>
+              {/* Fila 1: Colores con scroll horizontal (solo si hay colores) */}
+              {uniqueColors.length > 0 && (
+                <div className='flex items-center'>
+                  {/* Container con scroll horizontal y fade gradient */}
+                  <div className='relative overflow-y-hidden'>
+                    <div 
+                      className='flex gap-1.5 overflow-x-auto scrollbar-hide scroll-smooth pr-4 py-1.5'
+                      style={{
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        WebkitOverflowScrolling: 'touch',
+                        maxWidth: '200px',
+                        paddingLeft: '5px'
+                      }}
+                    >
+                      {uniqueColors.map((colorData) => {
+                        // Aplicar textura de madera para impregnantes
+                        const darker = darkenHex(colorData.hex, 0.35)
+                        const woodTexture = isImpregnante ? {
+                          backgroundImage: [
+                            // Luz suave
+                            'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
+                            // Vetas verticales gruesas y finas combinadas
+                            `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
+                            `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
+                            // Nudos sutiles
+                            `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
+                            'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
+                          ].join(', '),
+                          backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
+                          backgroundBlendMode: 'multiply' as const
+                        } : {}
+                        
+                        return (
+                          <button
+                            key={colorData.hex}
+                            type='button'
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedColor(colorData.hex)
+                            }}
+                            title={colorData.name}
+                            className={cn(
+                              'w-7 h-7 flex-shrink-0 rounded-full border-2 border-white shadow-md transition-all hover:scale-110',
+                              selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-1'
+                            )}
+                            style={{
+                              backgroundColor: colorData.hex,
+                              ...woodTexture
+                            }}
+                          />
+                        )
+                      })}
+                    </div>
+                    {/* Fade gradient a la derecha si hay más de 3 colores */}
+                    {uniqueColors.length > 3 && (
+                      <div className='absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none' />
+                    )}
                   </div>
-                ) : stock === 0 ? (
-                  <>
-                    <AlertCircle className='w-4 h-4' />
-                    <span>Sin stock</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className='w-4 h-4' />
-                    <span>Agregar al carrito</span>
-                  </>
+                  {/* Mostrar nombre del color seleccionado pegado a la derecha */}
+                  {selectedColor && uniqueColors.find(c => c.hex === selectedColor) && (
+                    <span className='text-[9px] md:text-[10px] font-light text-gray-500 whitespace-nowrap'>
+                      {uniqueColors.find(c => c.hex === selectedColor)?.name}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Fila 2: Medidas + Unidad + Carrito en la misma línea */}
+              <div className='flex items-center justify-end gap-2'>
+                {/* Selector de medidas - círculos sutiles + unidad al lado derecho */}
+                {uniqueMeasures.length > 0 && (
+                  <div className='flex items-center gap-1 md:gap-1.5 mr-auto'>
+                    {uniqueMeasures.map((measure) => {
+                      const { number } = parseMeasure(measure)
+                      return (
+                        <button
+                          key={measure}
+                          type='button'
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedMeasure(measure)
+                          }}
+                          className={cn(
+                            'w-8 h-8 md:w-9 md:h-9 rounded-full text-xs md:text-sm font-bold transition-all hover:scale-110 flex items-center justify-center',
+                            selectedMeasure === measure
+                              ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-md'
+                              : 'bg-transparent text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
+                          )}
+                        >
+                          {number}
+                        </button>
+                      )
+                    })}
+                    {/* Unidad común mostrada UNA VEZ al lado derecho */}
+                    {commonUnit && (
+                      <span className='text-[9px] md:text-[10px] text-gray-400 font-light ml-0.5'>
+                        {commonUnit}
+                      </span>
+                    )}
+                  </div>
                 )}
-              </button>
-            )}
+
+                {/* Botón circular de carrito con contador */}
+                {onAddToCart && (
+                  <button
+                    type='button'
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart || stock === 0}
+                    data-testid='add-to-cart'
+                    data-testid-btn='add-to-cart-btn'
+                    className={cn(
+                      'w-10 h-10 md:w-11 md:h-11 rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform flex-shrink-0',
+                      stock === 0
+                        ? 'bg-gray-200 cursor-not-allowed'
+                        : 'bg-yellow-400 hover:bg-yellow-500'
+                    )}
+                    style={{
+                      backgroundColor: stock !== 0 ? '#facc15' : undefined,
+                    }}
+                  >
+                    {isAddingToCart ? (
+                      <div className='w-4 h-4 md:w-5 md:h-5 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
+                    ) : stock === 0 ? (
+                      <AlertCircle className='w-4 h-4 md:w-5 md:h-5 text-gray-500' />
+                    ) : cartAddCount > 0 ? (
+                      <span className='font-bold text-sm md:text-base text-[#EA5A17]'>
+                        +{cartAddCount}
+                      </span>
+                    ) : (
+                      <ShoppingCart className='w-4 h-4 md:w-5 md:h-5 text-[#EA5A17]' />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -834,22 +1132,26 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           open={showShopDetailModal}
           onOpenChange={handleModalOpenChange}
           product={{
-            id: String(productId || ''),
+            id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
             name: title || '',
             slug: slug || '',
-            price: price || 0,
-            originalPrice,
-            discount,
+            price: displayPrice || price || 0,
+            originalPrice: displayOriginalPrice || originalPrice,
+            image: image || '',
             brand: brand || '',
-            category: '',
-            description: '',
-            images: image ? [image] : [],
             stock: stock || 0,
-            isNew: isNew,
-            rating: 0,
-            reviews: 0,
-            colors: undefined, // Usará los colores por defecto del sistema
-            capacities: [],
+            description: description || '',
+            colors: uniqueColors.length > 0 ? uniqueColors.map(c => ({
+              id: c.name.toLowerCase().replace(/\s+/g, '-'),
+              name: c.name.toLowerCase(),
+              displayName: c.name,
+              hex: c.hex,
+              category: '',
+              family: '',
+              isPopular: false,
+              description: `Color ${c.name}`
+            })) : undefined,
+            capacities: uniqueMeasures.length > 0 ? uniqueMeasures : [],
             variants: variants && variants.length > 0 ? variants : undefined,
           }}
           onAddToCart={(productData, variants) => {
@@ -899,12 +1201,13 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             // Atributos seleccionados para mostrar en el carrito
             const attributes = {
               color:
-                (variants as any)?.color || (variants as any)?.selectedColor || (productData as any)?.color || color,
+                (variants as any)?.color || (variants as any)?.selectedColor || (productData as any)?.color || selectedColor || color,
               medida:
                 (variants as any)?.capacity ||
                 (variants as any)?.selectedCapacity ||
                 (productData as any)?.capacity ||
                 (productData as any)?.medida ||
+                selectedMeasure ||
                 medida,
               finish: (variants as any)?.finish, // Agregar finish para impregnantes Danzke
             }

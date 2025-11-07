@@ -271,3 +271,4 @@ FROM flash_days_participants;
 **Estado:** ✅ Código actualizado y listo para deploy
 **Próximo paso:** Verificar variables de entorno en Vercel y testear en producción
 
+

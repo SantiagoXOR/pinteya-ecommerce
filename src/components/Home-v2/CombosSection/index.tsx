@@ -98,12 +98,49 @@ const CombosSection: React.FC = () => {
                     onMouseEnter={() => setHoveredIndex(index)}
                     onMouseLeave={() => setHoveredIndex(null)}
                   >
-                    {/* Imagen del combo */}
-                    <div className='relative overflow-hidden rounded-2xl'>
+                    {/* DISEÑO DESKTOP - Fondo naranja con dos columnas */}
+                    <div className='hidden md:block bg-gradient-to-r from-[#eb6313] to-[#f27a1d] rounded-2xl overflow-hidden'>
+                      <div className='flex items-center min-h-[400px]'>
+                        {/* Columna izquierda - Texto */}
+                        <div className='w-2/5 p-8 lg:p-12 text-white'>
+                          {/* Badge de Oferta */}
+                          <div className='mb-4 bg-red-500 text-white font-bold px-4 py-2 rounded-full text-sm shadow-lg inline-block'>
+                            🔥 Oferta
+                          </div>
+                          
+                          <h3 className='font-bold text-3xl lg:text-4xl mb-4 leading-tight'>
+                            {combo.title}
+                          </h3>
+                          
+                          <p className='text-white/90 text-base lg:text-lg mb-6 leading-relaxed'>
+                            {combo.description}
+                          </p>
+
+                          {/* CTA Button */}
+                          <div className='inline-flex items-center gap-2 bg-white hover:bg-white/90 text-[#eb6313] font-bold px-6 py-3 rounded-lg transition-all group-hover/card:scale-105 shadow-lg'>
+                            <Eye className='w-5 h-5' />
+                            <span>Ver detalles</span>
+                            <ArrowRight className='w-5 h-5 group-hover/card:translate-x-1 transition-transform' />
+                          </div>
+                        </div>
+                        
+                        {/* Columna derecha - Imagen */}
+                        <div className='w-3/5 relative h-[400px] flex items-center justify-center p-4'>
+                          <img
+                            src={combo.image}
+                            alt={combo.title}
+                            className='max-w-full max-h-full object-contain transition-transform duration-500 group-hover/card:scale-[1.02]'
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* DISEÑO MOBILE - Mantener diseño actual */}
+                    <div className='md:hidden relative overflow-hidden rounded-2xl'>
                       <img
                         src={combo.image}
                         alt={combo.title}
-                        className='w-full h-auto object-contain max-h-[300px] md:max-h-[400px] transition-transform duration-500 group-hover/card:scale-105'
+                        className='w-full h-auto object-contain max-h-[300px] transition-transform duration-500 group-hover/card:scale-105'
                       />
 
                       {/* Overlay con gradiente en hover */}

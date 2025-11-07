@@ -504,3 +504,4 @@ Se implementaron **7 optimizaciones críticas**:
 
 
 
+

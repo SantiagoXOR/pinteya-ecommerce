@@ -220,7 +220,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     if (variant === 'bare') return null
     return (
       <section className='bg-transparent'>
-        <div className='w-full px-3 sm:px-4'>
+        <div className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8'>
           <div className='flex items-start gap-3 sm:gap-4 md:gap-3 overflow-x-auto pb-2'>
             {[...Array(8)].map((_, index) => (
               <div key={index} className='flex-shrink-0 animate-pulse flex flex-col items-center gap-1.5'>
@@ -325,10 +325,10 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   return (
     <section className='bg-transparent sticky top-[92px] lg:top-[105px] z-40'>
       <div
-        className='w-full px-3 sm:px-4'
+        className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8'
         data-testid='category-pills-container'
       >
-        {/* Pills de categorías - Full width sin degradados */}
+        {/* Pills de categorías - Centrado en desktop */}
         <div
           ref={carouselRef}
           className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
