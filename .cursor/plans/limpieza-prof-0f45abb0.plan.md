@@ -1,481 +1,201 @@
 <!-- 0f45abb0-c626-4b53-a6bb-71d8b31f0bf1 0f096e36-7ca8-4781-8f0e-0f32c5a165d9 -->
-# Plan de Optimización Agresiva del Codebase
+# Plan de Limpieza Detallada del Root
 
-## 🎯 Objetivo
+## 1. ELIMINACION INMEDIATA (Confirmado)
 
-Reducir de ~2600 archivos rastreados a ~500-700 archivos esenciales, eliminando reportes generados, documentación redundante, y archivos de debug temporal.
+### Archivos Debug HTML (4 archivos)
 
-## 📊 Impacto Esperado
+- `debug-console-logs.html` → ELIMINAR
+- `debug-trending-searches.html` → ELIMINAR
+- `debug-trending-ui.html` → ELIMINAR
+- `debug-trending.html` → ELIMINAR
 
-- **Antes**: ~2,600 archivos rastreados (sin node_modules/.next)
-- **Después**: ~500-700 archivos esenciales
-- **Reducción**: ~2,000 archivos (~77% menos)
+### Archivos Build Output (4 archivos)
 
----
-
-## 🗑️ Fase 1: Eliminación de Reportes y Artifacts (2,800+ archivos)
-
-### 1.1 Carpeta Coverage (2,541 archivos) - CRÍTICO
-
-**Acción**: Eliminar carpeta completa
-
-```bash
-coverage/  # Reportes de Jest - se regeneran con npm run test:coverage
-```
-
-**Justificación**: Se regenera automáticamente, ocupa espacio innecesario
-
-### 1.2 Security Reports (268 archivos)
-
-**Acción**: Eliminar o consolidar
-
-```bash
-security-reports/  # Reportes antiguos de auditoría
-```
-
-### 1.3 Carpetas de Reportes (~20 archivos)
-
-**Acción**: Eliminar carpetas completas
-
-```bash
-bundle-reports/
-bundle-analysis/
-ci-performance-reports/
-performance-reports/
-reports/
-playwright-report/
-test-results/
-test-results-debug/
-audit-screenshots/
-```
-
-### 1.4 Actualizar .gitignore
-
-**Acción**: Agregar estas carpetas para que no se trackeen en el futuro
-
-```
-coverage/
-security-reports/
-*-reports/
-test-results*/
-playwright-report/
-audit-screenshots/
-```
+- `build-output-final.txt` → ELIMINAR
+- `build-output-new.txt` → ELIMINAR
+- `build-output.txt` → ELIMINAR
+- `build-success.txt` → ELIMINAR
 
 ---
 
-## 📝 Fase 2: Documentación en Root (~150 .md → ~10 .md)
+## 2. DOCUMENTOS .MD - REVISION CASO POR CASO (66 archivos)
 
-### 2.1 Identificar Documentación Activa (Mantener)
+### CATEGORIA A: FIXES HISTORICOS → `docs/archive/fixes/` (14 docs)
 
-- `README.md` - Principal
-- `CHANGELOG.md` - Historial
-- Los 6 docs de limpieza recién creados (2025-11-08)
+**Recomendación: MOVER a docs/archive/fixes/**
 
-### 2.2 Categorizar Resto de Docs (~140 .md)
+- `ADMIN_LAYOUT_FIX_PRODUCTOS.md`
+- `ADMIN_PRODUCT_FIXES_SUMMARY.md`
+- `BARNIZ_CAMPBELL_FIX_SUMMARY.md`
+- `CORRECCIONES_FUNCIONALES_COMPLETADAS.md`
+- `DATABASE_FIXES_SUMMARY.md`
+- `DOUBLE_SCROLL_FIX_SUMMARY.md`
+- `GOOGLE_MAPS_CHECKOUT_FIX.md`
+- `OCULTAR_RGBA_DISPLAY_SUMMARY.md`
+- `PRODUCT_DETAIL_DATA_FIX_SUMMARY.md`
+- `RESOLUCION_ERROR_500_FINAL.md`
+- `STOCK_VALIDATION_CART_FIX.md`
+- `INCOLORO_BRILLANTE_UPDATE.md`
+- `PROBLEMA_WHATSAPP_DIAGNOSTICO.md`
+- `REEMPLAZAR_IMAGENES_FONDO_BLANCO.md`
 
-**A. Docs de Performance** (~15 docs):
+### CATEGORIA B: IMPLEMENTACIONES COMPLETADAS → `docs/archive/implementations/` (14 docs)
 
-```
-PERFORMANCE_*.md
-OPTIMIZATION_*.md
-OPTIMIZACIONES_*.md
-OPTIMIZAR_*.md
-```
+**Recomendación: MOVER a docs/archive/implementations/**
 
-→ Mover a `/docs/archive/performance/`
+- `ADMIN_UI_IMPROVEMENTS_IMPLEMENTED.md`
+- `CYBER_MONDAY_IMPLEMENTATION_COMPLETE.md`
+- `CONSOLIDACION_FASE2_COMPLETADA.md`
+- `FASE_1_COMPLETADA.md`
+- `FASE_1_ERRORES_CRITICOS_COMPLETADA.md`
+- `FORMULARIO_MINIMAL_FINAL.md`
+- `HEADER_IMPLEMENTATION_SUMMARY.md`
+- `MERCADOPAGO_FLOW_IMPLEMENTATION_SUMMARY.md`
+- `MOBILE_FIRST_ADMIN_PANELS_IMPLEMENTED.md`
+- `SELECTOR_ACABADO_IMPLEMENTADO.md`
+- `SELECTOR_MAPA_INTERACTIVO.md`
+- `SISTEMA_VARIANTES_COMPLETADO_RESUMEN_FINAL.md`
+- `SISTEMA_VARIANTES_IMPLEMENTADO.md`
+- `WHATSAPP_ORDERS_IMPLEMENTATION_SUMMARY.md`
 
-**B. Docs de Fixes Específicos** (~30 docs):
+### CATEGORIA C: TESTING Y DIAGNOSTICOS → `docs/archive/testing-debug/` (10 docs)
 
-```
-FIX_*.md
-CORRECCION_*.md
-SOLUCION_*.md
-```
+**Recomendación: MOVER a docs/archive/testing-debug/**
 
-→ Mover a `/docs/archive/fixes/`
+- `CYBER_MONDAY_TESTS_CORRECTED_SUMMARY.md`
+- `PLAYWRIGHT_DIAGNOSTICO_PANEL_PRODUCTOS.md`
+- `SUITE_TESTING_E2E_ADMIN_PRODUCTS_RESUMEN.md`
+- `SUITE_TESTING_FINAL_RESULTS.md`
+- `SUITE_TESTING_FIXES_APLICADOS.md`
+- `SUITE_TESTING_RESULTADOS.md`
+- `TEST_ADMIN_PRODUCTS_E2E_STATUS.md`
+- `TEST_MANUAL_MERCADOPAGO_FLOW.md`
+- `TEST-MERCADOPAGO-WHATSAPP.md`
+- `TESTING_RESULTS_ADMIN_PRODUCTS.md`
 
-**C. Docs de Implementaciones** (~20 docs):
+### CATEGORIA D: GUIAS Y PROCEDIMIENTOS → `docs/archive/guides/` (8 docs)
 
-```
-IMPLEMENTACION_*.md
-PANEL_*.md
-PROYECTO_*.md
-```
+**Recomendación: MOVER a docs/archive/guides/**
 
-→ Mover a `/docs/archive/implementations/`
+- `DATABASE_DEPLOYMENT_GUIDE.md`
+- `DEPLOYMENT-GUIDE.md`
+- `COMO_USAR_HOME_V2.md`
+- `GOOGLE_MAPS_API_KEY_SETUP.md`
+- `GOOGLE_MAPS_SETUP.md`
+- `TEST_ADMIN_PRODUCTS_GUIDE.md`
+- `VALIDACION_DIRECCIONES_IMPLEMENTACION.md`
+- `SISTEMA_WHATSAPP_FINAL_VERIFICADO.md`
 
-**D. Docs de Testing/Debug** (~15 docs):
+### CATEGORIA E: MEJORAS Y FEATURES → `docs/archive/features/` (5 docs)
 
-```
-DEBUG_*.md
-DIAGNOSTICO_*.md
-REPORTE_*.md
-TEST_*.md
-```
+**Recomendación: MOVER a docs/archive/features/**
 
-→ Mover a `/docs/archive/testing-debug/`
+- `MEJORA_FILTROS_SHADCN.md`
+- `MEJORA_FILTROS_V2_FINAL.md`
+- `MEJORAS_ADMIN_DASHBOARD_22_OCT_2025.md`
+- `UX_UI_IMPROVEMENTS_PHASE_2.md`
+- `VALIDACION_DIRECCIONES_FINAL.md`
 
-**E. Docs de Resúmenes** (~25 docs):
+### CATEGORIA F: SEGURIDAD → `docs/archive/security/` (5 docs)
 
-```
-RESUMEN_*.md
-REPORTE_*.md
-ANALISIS_*.md
-AUDITORIA_*.md
-```
+**Recomendación: MOVER a docs/archive/security/ (nueva carpeta)**
 
-→ Mover a `/docs/archive/summaries/`
+- `SECURITY_AUDIT_COMMIT_8951d83.md`
+- `SECURITY_CRITICAL_FIXES_SUMMARY.md`
+- `SECURITY_FIXES_2025_10_19.md`
+- `SECURITY_INCIDENT_RESPONSE.md`
+- `SECURITY-IMPROVEMENTS.md`
 
-**F. Docs de Features Específicas** (~15 docs):
+### CATEGORIA G: REFERENCIAS Y LISTAS → `docs/archive/references/` (5 docs)
 
-```
-HERO_*.md
-HOME_*.md
-CARRUSEL_*.md
-FILTROS_*.md
-```
+**Recomendación: MOVER a docs/archive/references/**
 
-→ Mover a `/docs/archive/features/`
+- `LISTA_PRODUCTOS_SIN_IMAGENES_PARA_BUSCAR.md`
+- `LISTA_PRODUCTOS_TODAS_COLUMNAS_COMPLETADO.md`
+- `TABLAS_FINALES_PRODUCTOS_VARIANTES.md`
+- `ESTADO_ORDENES_FUTURAS.md`
+- `VALIDACION_STOCK_CARRITO.md`
 
-**G. Docs de Instrucciones/Guías** (~10 docs):
+### CATEGORIA H: PLANES Y OPTIMIZACIONES → `docs/archive/planning/` (3 docs)
 
-```
-INSTRUCCIONES_*.md
-GUIA_*.md
-DEPLOYMENT_*.md
-```
+**Recomendación: MOVER a docs/archive/planning/ (nueva carpeta)**
 
-→ Mover a `/docs/archive/guides/`
+- `PLAN_DESARROLLO_SEGUNDA_ITERACION.md`
+- `PLAN_OPTIMIZACION_COMPLETA.md`
+- `README_OPTIMIZACIONES.md`
 
-**H. Docs de Flash Days** (~5 docs):
+### CATEGORIA I: VERIFICACIONES → `docs/archive/verification/` (2 docs)
 
-```
-*FLASH_DAYS*.md
-PLAN_FLASH_DAYS*.md
-```
+**Recomendación: MOVER a docs/archive/verification/ (nueva carpeta)**
 
-→ Mover a `/docs/archive/campaigns/`
+- `VERIFICACION_API_BADGES_CORRECTOS.md`
+- `VERIFICACION_FINAL_COMPLETA.md`
 
-**I. Índices y Quick Reference** (~5 docs):
+### CATEGORIA J: MANTENER EN ROOT (2 docs)
 
-```
-INDICE_*.md
-QUICK_*.md
-```
+**Recomendación: MANTENER en root** ✅
 
-→ Mover a `/docs/archive/references/`
-
----
-
-## 🖼️ Fase 3: Screenshots y Archivos de Debug (~60 archivos)
-
-### 3.1 Screenshots PNG en Root (~50 archivos)
-
-**Acción**: Mover a carpeta temporal o eliminar
-
-```bash
-*.png en root → /temp/old-screenshots/ o eliminar
-```
-
-**Ejemplos**:
-
-- debug-*.png
-- modal-*.png
-- homepage-*.png
-- panel-*.png
-- diagnostico-*.png
-
-### 3.2 Archivos HTML de Debug (~10 archivos)
-
-```bash
-debug-*.html
-force-admin-access.html
-```
-
-→ Eliminar (debug temporal)
-
-### 3.3 Archivos JS de Debug (~15 archivos)
-
-```bash
-debug-*.js en root
-compare-urls.js
-fix-client-pages.js
-manual-verification.js
-```
-
-→ Eliminar o mover a /scripts/archive/
+- `README.md` → Mantener
+- `CHANGELOG.md` → Mantener
+- `OPTIMIZACION_AGRESIVA_2025-11-08.md` → Mantener (recién creado)
 
 ---
 
-## 🗄️ Fase 4: Archivos SQL en Root (~15 archivos)
+## 3. ARCHIVOS TEMPORALES ADICIONALES (Opcional)
 
-**Acción**: Consolidar todos en `/database/archive/`
+### Scripts de Testing Temporales (30+ archivos)
 
-```bash
-*.sql en root → /database/archive/
-```
+**Recomendación: MOVER a `scripts/temp-testing/` o ELIMINAR**
 
-**Archivos a mover**:
+- `test-*.js` (30+ archivos de scripts de prueba temporales)
+- `test-trending-component.html`
+- `verify-*.js` (scripts de verificación)
+- `sync-*.js` (scripts de sincronización)
+- `compare-urls.js`, `fix-*.js`, `manual-verification.js`, etc.
 
-- 20250201_*.sql
-- database_fixes_*.sql
-- create_product_variants_table.sql
-- migrate_*.sql
-- fix_*.sql
-- APLICAR_SOLUCION_*.sql
+### Archivos JSON de Reportes
 
----
+**Recomendación: MOVER a `reports/` o ELIMINAR**
 
-## ⚙️ Fase 5: Configuraciones Duplicadas (~8 archivos)
+- `sync-analysis-report.json`
+- `sync-final-report.json`
+- `sync-report.json`
+- `url-comparison-report.json`
+- `test-product.json`
+- `csv-urls.json`
+- `performance-baseline-metrics.json`
 
-### 5.1 Configs Jest Duplicadas
+### Archivo Extraño
 
-```bash
-jest.config.js               ✅ Mantener (principal)
-jest.config.ci.js            ✅ Mantener (CI/CD)
-jest.setup.js                ✅ Mantener
-jest.env.setup.js            ✅ Mantener
+- `on` → ELIMINAR (archivo sin extensión, probablemente error)
 
-jest.config.minimal.js       ❌ Eliminar
-jest.config.animations.js    ❌ Eliminar
-jest.animation.setup.js      ❌ Eliminar
-jest.address-validation.config.js ❌ Consolidar
-```
+### Archivo HTML Temporal
 
-### 5.2 Configs Playwright Duplicadas
+- `force-admin-access.html` → ELIMINAR o mover a scripts/temp-testing/
+- `test-trending-component.html` → ELIMINAR o mover a scripts/temp-testing/
 
-```bash
-playwright.config.ts                  ✅ Mantener (principal)
-playwright.admin-products.config.ts   ✅ Mantener (testing específico)
-playwright.address-validation.config.ts ✅ Mantener (testing específico)
+### Archivo de Texto
 
-playwright-debug.config.ts            ❌ Eliminar
-playwright-diagnostico-simple.config.ts ❌ Eliminar
-playwright.diagnostic.config.ts       ❌ Eliminar
-playwright.simple.config.ts           ❌ Eliminar
-playwright.structural.config.ts       ❌ Eliminar
-playwright.enterprise.config.ts       ❌ Eliminar (si no se usa)
-playwright.user-flow.config.ts        ❌ Eliminar (si no se usa)
-```
-
-### 5.3 Otros Configs
-
-```bash
-next.config.js               ✅ Mantener
-next.config.logistics.js     ❌ Eliminar (duplicado)
-eslint.config.js             ✅ Mantener
-eslint.config.mjs            ❌ Eliminar (duplicado)
-```
+- `MIGRACIONES_COMPLETADAS_RESUMEN.txt` → Mover a docs/archive/summaries/ o database/
 
 ---
 
-## 📦 Fase 6: Archivos Backup y Temporales (~20 archivos)
+## RESUMEN DE ACCIONES
 
-**Acción**: Eliminar todos
+**Eliminaciones Inmediatas:** 8 archivos (debug HTML + build outputs)
+**Documentos .md a archivar:** 64 documentos
+**Documentos .md a mantener:** 3 documentos (README, CHANGELOG, OPTIMIZACION_AGRESIVA)
+**Archivos temporales (scripts/reportes):** ~45 archivos para decisión adicional
 
-```bash
-*.backup
-backup-*.json
-backup-*.txt
-*.log
-*.old
-auth.json (si es temporal)
-clerk-keys-template.txt
-package.json.backup
-```
+**Nuevas carpetas a crear:**
 
----
+- `docs/archive/security/`
+- `docs/archive/planning/`
+- `docs/archive/verification/`
+- `scripts/temp-testing/` (opcional)
 
-## 📁 Fase 7: Carpetas Temporales
-
-**Acción**: Eliminar carpetas completas
-
-```bash
-/Downloads/
-/temp_images/
-/design-system/ (si está vacía o es temporal)
-/.jest-cache/ (si existe)
-/.husky/ (revisar si se usa)
-```
-
----
-
-## 📄 Fase 8: Archivos CSV y JSON de Data (~10 archivos)
-
-**Acción**: Mover a `/database/data/` o eliminar
-
-```bash
-productos_pinteya.csv
-reporte-productos-completo.csv
-csv-urls.json
-auth.json (si no es config)
-```
-
----
-
-## 🔧 Fase 9: Scripts de Utilities Root (~15 archivos)
-
-**Acción**: Mover a `/scripts/archive/` o eliminar
-
-```bash
-En root:
-- compare-urls.js
-- debug-badge-config.js
-- debug-badges-*.js
-- debug-barniz-campbell-browser.js
-- debug-cinta-papel-click.js
-- debug-complete-flow.js
-- debug-csv.js
-- debug-dom-simple.js
-- debug-modal-*.js
-- debug-product-detection.js
-- debug-products-data.js
-- debug-simple-modal.js
-- debug-trending-*.html
-- fix-client-pages.js
-- fix-csv-database-sync.js
-- manual-verification.js
-```
-
----
-
-## 📊 Fase 10: Reorganización de Docs Activa
-
-### 10.1 Consolidar en /docs Principal
-
-```bash
-/docs/
-├── README.md
-├── /getting-started/
-├── /architecture/
-├── /api/
-├── /components/
-├── /testing/
-└── /archive/          # TODO lo histórico
-    ├── /clerk-migration/
-    ├── /performance/   # ✨ NUEVO
-    ├── /fixes/         # ✨ NUEVO
-    ├── /implementations/ # ✨ NUEVO
-    ├── /testing-debug/ # ✨ NUEVO
-    ├── /summaries/     # ✨ NUEVO
-    ├── /features/      # ✨ NUEVO
-    ├── /guides/        # ✨ NUEVO
-    ├── /campaigns/     # ✨ NUEVO (Flash Days)
-    └── /references/    # ✨ NUEVO
-```
-
-### 10.2 Root Limpio (Solo 5-10 .md)
-
-```bash
-Root debería tener SOLO:
-- README.md
-- CHANGELOG.md
-- CONTRIBUTING.md (si existe)
-- LICENSE.md (si existe)
-- .gitignore, .env.example, package.json, etc.
-```
-
----
-
-## 🎯 Resultados Esperados
-
-### Antes
-
-```
-Total archivos: ~2,600 (sin node_modules/.next)
-- Docs .md: 716
-- Coverage: 2,541
-- Security reports: 268
-- Screenshots: ~50
-- Configs duplicados: ~15
-- SQL en root: ~15
-- Carpetas reportes: ~50
-```
-
-### Después
-
-```
-Total archivos: ~500-700
-- Docs .md en root: 5-10
-- Docs en /docs: ~100 (organizados)
-- Coverage: 0 (agregado a .gitignore)
-- Security reports: 0 (eliminados)
-- Screenshots: 0 (eliminados)
-- Configs: ~8 (solo esenciales)
-- SQL: Organizados en /database
-```
-
-### Reducción Total
-
-**~2,000 archivos eliminados (~77% menos)**
-
----
-
-## ⚠️ Archivos a Preservar
-
-### Esenciales del Root
-
-- package.json, package-lock.json
-- next.config.js
-- tsconfig.json
-- eslint.config.js
-- tailwind.config.js
-- postcss.config.js
-- .gitignore, .env.example
-- README.md, CHANGELOG.md
-- middleware.ts, auth.ts
-- components.json (shadcn)
-
-### Carpetas Esenciales
-
-- /src (código fuente)
-- /public (assets públicos - 23 archivos OK)
-- /supabase (migraciones)
-- /docs (reorganizados)
-- /scripts (organizados - 68 archivos OK)
-- /**tests** y /e2e (testing)
-
----
-
-## 🚀 Orden de Ejecución
-
-1. **Coverage y .jest-cache** (2,543 archivos) - Máxima prioridad
-2. **Security-reports** (268 archivos)
-3. **Carpetas de reportes** (50+ archivos)
-4. **Screenshots en root** (50+ archivos)
-5. **Documentación masiva** (140+ .md del root a /docs/archive)
-6. **SQL files en root** (15 archivos)
-7. **Configs duplicados** (10 archivos)
-8. **Archivos backup/temp** (20 archivos)
-9. **Scripts debug en root** (15 archivos)
-10. **Actualizar .gitignore** (prevenir futuros artifacts)
-
----
-
-## 💡 Beneficios
-
-✅ **Navegación más rápida** - Menos archivos en root
-
-✅ **Git más rápido** - Menos archivos tracked
-
-✅ **IDE más rápido** - Menos archivos indexados
-
-✅ **Menos confusión** - Solo archivos relevantes
-
-✅ **Profesional** - Root limpio como proyecto enterprise
-
-✅ **Mejor organización** - Todo en su lugar
-
----
-
-## ⚠️ Precauciones
-
-1. **Hacer commit antes** - Punto de restauración
-2. **No eliminar /src, /public, /supabase** - Son esenciales
-3. **Actualizar .gitignore** - Prevenir regeneración
-4. **Docs importantes** - Mover a /docs/archive, no eliminar
-5. **Verificar build** - Después de cada fase crítica
+**Reducción esperada en root:** De ~120 archivos no-código a ~5-10 archivos esenciales
 
 ### To-dos
 
