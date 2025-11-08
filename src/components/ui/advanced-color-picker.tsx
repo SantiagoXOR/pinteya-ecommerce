@@ -48,7 +48,7 @@ export const PAINT_COLORS: ColorOption[] = [
     id: 'blanco-puro',
     name: 'blanco-puro',
     displayName: 'Blanco Puro',
-    hex: '#FFFFFF',
+    hex: '#F5F5F5',
     category: 'Madera',
     family: 'Blancos',
     isPopular: true,

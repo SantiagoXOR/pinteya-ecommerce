@@ -272,3 +272,5 @@ FROM flash_days_participants;
 **Próximo paso:** Verificar variables de entorno en Vercel y testear en producción
 
 
+
+

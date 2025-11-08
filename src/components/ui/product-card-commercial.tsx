@@ -17,6 +17,8 @@ import {
 } from '@/utils/product-utils'
 import { findVariantByCapacity } from '@/lib/api/product-variants'
 import { PAINT_COLORS, type ColorOption } from '@/components/ui/advanced-color-picker'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { ChevronRight } from 'lucide-react'
 
 // Verificar que Framer Motion esté disponible
 const isFramerMotionAvailable = false // Deshabilitado para usar fallbacks CSS
@@ -152,6 +154,8 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const [selectedQuantity, setSelectedQuantity] = React.useState<number>(1)
     const [selectedMeasure, setSelectedMeasure] = React.useState<string | undefined>(undefined)
     const [cartAddCount, setCartAddCount] = React.useState<number>(0)
+    const [showColorsSheet, setShowColorsSheet] = React.useState(false)
+    const [showSuccessToast, setShowSuccessToast] = React.useState(false)
     // Ref para ignorar clics justo después de cerrar el modal (evita re-apertura por burbujeo)
     const ignoreClicksUntilRef = React.useRef<number>(0)
     // Unificado: usamos el hook central para agregar productos
@@ -226,9 +230,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     // Helper para convertir nombres de colores a códigos hexadecimales
     const getColorHexFromName = React.useCallback((colorName: string): string => {
       const colorMap: Record<string, string> = {
-        // Colores básicos
-        'blanco': '#FFFFFF',
-        'white': '#FFFFFF',
+        // Colores básicos (blanco con tono gris sutil para diferenciarlo del fondo)
+        'blanco': '#F5F5F5',
+        'white': '#F5F5F5',
         'negro': '#000000',
         'black': '#000000',
         'rojo': '#DC2626',
@@ -296,10 +300,10 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         'gold': '#FFD700',
         'cristal': '#F0F8FF',
         'crystal': '#F0F8FF',
-        'transparente': '#F0F8FF',
-        'transparent': '#F0F8FF',
-        'incoloro': '#F5F5F5',
-        'colorless': '#F5F5F5',
+        'transparente': 'rgba(240, 248, 255, 0.85)',
+        'transparent': 'rgba(240, 248, 255, 0.85)',
+        'incoloro': 'rgba(245, 245, 245, 0.85)',
+        'colorless': 'rgba(245, 245, 245, 0.85)',
         
         // Colores adicionales comunes
         'verde oscuro': '#047857',
@@ -641,23 +645,45 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
     // Extraer medidas únicas del array de variantes para el badge de medidas
     const uniqueMeasures = React.useMemo(() => {
-      if (!variants || variants.length === 0) return []
+      if (!variants || variants.length === 0) {
+        console.log(`⚠️ [${title}] Sin variantes disponibles para extraer medidas`)
+        return []
+      }
+      
+      console.log(`📦 [${title}] Variantes recibidas:`, variants.map(v => ({
+        measure: v.measure,
+        color_name: v.color_name,
+        stock: v.stock
+      })))
+      
       const measures = variants
         .map(v => v.measure)
         .filter((m): m is string => Boolean(m))
+      
+      console.log(`📏 [${title}] Medidas extraídas antes de deduplicar:`, measures)
+      
       // Eliminar duplicados y ordenar
-      return Array.from(new Set(measures)).sort((a, b) => {
+      const result = Array.from(new Set(measures)).sort((a, b) => {
         const numA = parseFloat(a)
         const numB = parseFloat(b)
         if (!isNaN(numA) && !isNaN(numB)) return numA - numB
         return a.localeCompare(b)
       })
-    }, [variants])
+      
+      console.log(`✅ [${title}] Medidas únicas finales:`, result)
+      
+      return result
+    }, [variants, title])
 
     // Extraer colores únicos del array de variantes para el selector
     // Usa la misma lógica que el modal: extrae color_name y busca en PAINT_COLORS
     const uniqueColors = React.useMemo(() => {
       const colorsMap = new Map<string, { name: string; hex: string }>()
+      
+      if (!variants || variants.length === 0) {
+        console.log(`⚠️ [${title}] Sin variantes para extraer colores`)
+        return []
+      }
       
       if (variants && variants.length > 0) {
         // Primero extraer todos los color_name únicos
@@ -687,9 +713,35 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         })
       }
       
-      // NO agregar color por defecto - solo mostrar colores reales
-      return Array.from(colorsMap.values())
-    }, [variants, getColorHexFromName])
+      const result = Array.from(colorsMap.values())
+      console.log(`🎨 [${title}] Colores únicos extraídos:`, result)
+      
+      // NO agregar color por defecto para productos que no deberían tener color
+      // (pinceles, lijas, cintas, masillas, etc.)
+      const productNameLower = (title || '').toLowerCase()
+      const shouldNotHaveColor = 
+        productNameLower.includes('pincel') ||
+        productNameLower.includes('brocha') ||
+        productNameLower.includes('lija') ||
+        productNameLower.includes('cinta') ||
+        productNameLower.includes('papel') ||
+        productNameLower.includes('poximix') ||
+        productNameLower.includes('masilla') ||
+        productNameLower.includes('enduido')
+      
+      if (shouldNotHaveColor) {
+        console.log(`🚫 [${title}] Producto sin selector de color`)
+        return []
+      }
+      
+      // Si no hay colores pero sí hay medidas, agregar "Incoloro" por defecto para otros productos
+      if (result.length === 0 && variants.some(v => v.measure)) {
+        console.log(`➕ [${title}] Agregando color "Incoloro" por defecto`)
+        return [{ name: 'Incoloro', hex: 'rgba(245, 245, 245, 0.85)' }]
+      }
+      
+      return result
+    }, [variants, getColorHexFromName, title])
 
     // Establecer color por defecto al cargar
     React.useEffect(() => {
@@ -735,15 +787,66 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       return unit
     }, [uniqueMeasures, parseMeasure])
 
+    // Limitar display según cantidad de medidas
+    // Si hay ≤3 medidas, mostrar todas. Si hay más, mostrar solo las primeras 3 para apilar
+    const displayMeasures = uniqueMeasures.length <= 3 ? uniqueMeasures : uniqueMeasures.slice(0, 3)
+    const remainingMeasures = Math.max(0, uniqueMeasures.length - 3)
+
     // Sincronizar precio con variante seleccionada
     const currentVariant = React.useMemo(() => {
       if (!variants || variants.length === 0) return null
       
+      // LOG: Mostrar todas las variantes disponibles
+      console.log('📦 Variantes disponibles:', variants.map(v => ({
+        measure: v.measure,
+        color_name: v.color_name,
+        color_hex: v.color_hex,
+        price_sale: v.price_sale,
+        price_list: v.price_list
+      })))
+      
+      console.log('🎯 Buscando variante para:', { selectedMeasure, selectedColor })
+      
       // Buscar variante que coincida con color y medida seleccionados
-      const matchingVariant = variants.find(v => {
-        const colorMatch = selectedColor ? (v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor) : true
-        const measureMatch = selectedMeasure ? v.measure === selectedMeasure : true
-        return colorMatch && measureMatch
+      // Estrategia de búsqueda flexible:
+      
+      let matchingVariant = null
+      
+      // Estrategia 1: Coincidencia exacta (color + medida)
+      if (selectedMeasure && selectedColor) {
+        matchingVariant = variants.find(v => {
+          const colorMatch = v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor
+          const measureMatch = v.measure === selectedMeasure
+          return colorMatch && measureMatch
+        })
+        console.log('🔍 Estrategia 1 (exacta):', matchingVariant ? 'Encontrada' : 'No encontrada')
+      }
+      
+      // Estrategia 2: Solo por medida (común cuando hay 1 solo color)
+      if (!matchingVariant && selectedMeasure) {
+        matchingVariant = variants.find(v => v.measure === selectedMeasure)
+        console.log('🔍 Estrategia 2 (por medida):', matchingVariant ? 'Encontrada' : 'No encontrada')
+      }
+      
+      // Estrategia 3: Solo por color
+      if (!matchingVariant && selectedColor) {
+        matchingVariant = variants.find(v => 
+          v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor
+        )
+        console.log('🔍 Estrategia 3 (por color):', matchingVariant ? 'Encontrada' : 'No encontrada')
+      }
+      
+      // Estrategia 4: Fallback a primera variante
+      if (!matchingVariant && variants.length > 0) {
+        matchingVariant = variants[0]
+        console.log('🔍 Estrategia 4 (fallback a primera)')
+      }
+      
+      console.log('✅ Variante seleccionada:', {
+        measure: matchingVariant?.measure,
+        color: matchingVariant?.color_name,
+        price_sale: matchingVariant?.price_sale,
+        price_list: matchingVariant?.price_list
       })
       
       return matchingVariant || null
@@ -751,12 +854,24 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
     // Precio dinámico basado en la variante seleccionada
     const displayPrice = React.useMemo(() => {
+      console.log('💰 [displayPrice] Calculando precio:', {
+        currentVariant,
+        selectedColor,
+        selectedMeasure,
+        variants: variants?.length,
+        price
+      })
+      
       if (currentVariant) {
         // Priorizar price_sale sobre price_list
-        return currentVariant.price_sale || currentVariant.price_list || price
+        const variantPrice = currentVariant.price_sale || currentVariant.price_list || price
+        console.log('💰 Usando precio de variante:', variantPrice)
+        return variantPrice
       }
+      
+      console.log('💰 Usando precio base:', price)
       return price
-    }, [currentVariant, price])
+    }, [currentVariant, price, selectedColor, selectedMeasure, variants])
 
     // Precio original para mostrar tachado (si hay descuento)
     const displayOriginalPrice = React.useMemo(() => {
@@ -983,83 +1098,60 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             {/* Cuotas ocultas temporalmente por solicitud del usuario */}
           </div>
 
-          {/* Layout optimizado: Colores + (Medidas | Carrito) */}
+          {/* Layout unificado: Colores apilados (si múltiples) o color único + Medidas + Botón Ver Más + Carrito */}
           <div className='w-full mt-1 md:mt-1.5'>
-            <div className='flex flex-col gap-0'>
-              {/* Fila 1: Colores con scroll horizontal (solo si hay colores) */}
-              {uniqueColors.length > 0 && (
-                <div className='flex items-center'>
-                  {/* Container con scroll horizontal y fade gradient */}
-                  <div className='relative overflow-y-hidden'>
-                    <div 
-                      className='flex gap-1.5 overflow-x-auto scrollbar-hide scroll-smooth pr-4 py-1.5'
-                      style={{
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                        WebkitOverflowScrolling: 'touch',
-                        maxWidth: '200px',
-                        paddingLeft: '5px'
-                      }}
-                    >
-                      {uniqueColors.map((colorData) => {
-                        // Aplicar textura de madera para impregnantes
-                        const darker = darkenHex(colorData.hex, 0.35)
-                        const woodTexture = isImpregnante ? {
-                          backgroundImage: [
-                            // Luz suave
-                            'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
-                            // Vetas verticales gruesas y finas combinadas
-                            `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
-                            `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
-                            // Nudos sutiles
-                            `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
-                            'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
-                          ].join(', '),
-                          backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
-                          backgroundBlendMode: 'multiply' as const
-                        } : {}
-                        
-                        return (
-                          <button
-                            key={colorData.hex}
-                            type='button'
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSelectedColor(colorData.hex)
-                            }}
-                            title={colorData.name}
-                            className={cn(
-                              'w-7 h-7 flex-shrink-0 rounded-full border-2 border-white shadow-md transition-all hover:scale-110',
-                              selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-1'
-                            )}
-                            style={{
-                              backgroundColor: colorData.hex,
-                              ...woodTexture
-                            }}
-                          />
-                        )
-                      })}
-                    </div>
-                    {/* Fade gradient a la derecha si hay más de 3 colores */}
-                    {uniqueColors.length > 3 && (
-                      <div className='absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none' />
-                    )}
-                  </div>
-                  {/* Mostrar nombre del color seleccionado pegado a la derecha */}
-                  {selectedColor && uniqueColors.find(c => c.hex === selectedColor) && (
-                    <span className='text-[9px] md:text-[10px] font-light text-gray-500 whitespace-nowrap'>
-                      {uniqueColors.find(c => c.hex === selectedColor)?.name}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Fila 2: Medidas + Unidad + Carrito en la misma línea */}
-              <div className='flex items-center justify-end gap-2'>
-                {/* Selector de medidas - círculos sutiles + unidad al lado derecho */}
-                {uniqueMeasures.length > 0 && (
-                  <div className='flex items-center gap-1 md:gap-1.5 mr-auto'>
-                    {uniqueMeasures.map((measure) => {
+            <div className='flex items-center gap-1 md:gap-1.5'>
+              {/* LÓGICA UNIFICADA: Color + Medidas Apiladas */}
+              
+              {/* Caso 1: 1 color + cualquier cantidad de medidas (≥1) -> SIEMPRE APILADAS */}
+              {uniqueColors.length === 1 && uniqueMeasures.length >= 1 && (
+                <div className='flex items-center gap-1 mr-1'>
+                  <div className='flex items-center -space-x-1.5'>
+                    {/* Color al frente */}
+                    {uniqueColors.map((colorData) => {
+                      const darker = darkenHex(colorData.hex, 0.35)
+                      const woodTexture = isImpregnante ? {
+                        backgroundImage: [
+                          'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
+                          `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
+                          `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
+                          `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
+                          'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
+                        ].join(', '),
+                        backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
+                        backgroundBlendMode: 'multiply' as const
+                      } : {}
+                      
+                      return (
+                        <button
+                          key={colorData.hex}
+                          type='button'
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedColor(colorData.hex)
+                          }}
+                          title={colorData.name}
+                          className={cn(
+                            'w-7 h-7 flex-shrink-0 rounded-full border-2 border-gray-200 shadow-sm transition-all hover:scale-110',
+                            (colorData.name.toLowerCase().includes('incoloro') || 
+                             colorData.name.toLowerCase().includes('transparente') ||
+                             colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
+                          )}
+                          style={{
+                            backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex,
+                            zIndex: 10,
+                            ...(colorData.name.toLowerCase().includes('incoloro') || 
+                                colorData.name.toLowerCase().includes('transparente') ||
+                                colorData.name.toLowerCase().includes('transparent') 
+                              ? { backgroundImage: 'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)' }
+                              : {}),
+                            ...woodTexture
+                          }}
+                        />
+                      )
+                    })}
+                    {/* Hasta 2 medidas detrás del color (o 1 si solo hay 1) */}
+                    {uniqueMeasures.slice(0, Math.min(2, uniqueMeasures.length)).map((measure, index) => {
                       const { number } = parseMeasure(measure)
                       return (
                         <button
@@ -1070,57 +1162,300 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                             setSelectedMeasure(measure)
                           }}
                           className={cn(
-                            'w-8 h-8 md:w-9 md:h-9 rounded-full text-xs md:text-sm font-bold transition-all hover:scale-110 flex items-center justify-center',
+                            'w-7 h-7 rounded-full text-xs font-bold transition-all hover:scale-110 flex items-center justify-center border-2 border-gray-200 shadow-sm',
                             selectedMeasure === measure
-                              ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-md'
-                              : 'bg-transparent text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
+                              ? 'bg-[#facc15] text-[#EA5A17]'
+                              : 'bg-gray-50 text-gray-600'
                           )}
+                          style={{
+                            zIndex: 2 - index
+                          }}
                         >
                           {number}
                         </button>
                       )
                     })}
-                    {/* Unidad común mostrada UNA VEZ al lado derecho */}
-                    {commonUnit && (
-                      <span className='text-[9px] md:text-[10px] text-gray-400 font-light ml-0.5'>
-                        {commonUnit}
-                      </span>
-                    )}
                   </div>
-                )}
+                  {/* Unidad */}
+                  {commonUnit && (
+                    <span className='text-[9px] md:text-[10px] text-gray-400 font-light ml-0.5'>
+                      {commonUnit}
+                    </span>
+                  )}
+                </div>
+              )}
+              
+              {/* Caso 2: Sin colores pero con medidas -> Mostrar solo medidas */}
+              {uniqueColors.length === 0 && uniqueMeasures.length > 0 && (
+                <div className='flex items-center gap-1'>
+                  {displayMeasures.map((measure) => {
+                    const { number } = parseMeasure(measure)
+                    return (
+                      <button
+                        key={measure}
+                        type='button'
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedMeasure(measure)
+                        }}
+                        className={cn(
+                          'w-8 h-8 md:w-9 md:h-9 rounded-full text-xs md:text-sm font-bold transition-all hover:scale-110 flex items-center justify-center',
+                          selectedMeasure === measure
+                            ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-sm'
+                            : 'bg-transparent text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
+                        )}
+                      >
+                        {number}
+                      </button>
+                    )
+                  })}
+                  
+                  {/* Unidad común */}
+                  {commonUnit && (
+                    <span className='text-[9px] md:text-[10px] text-gray-400 font-light ml-0.5'>
+                      {commonUnit}
+                    </span>
+                  )}
+                </div>
+              )}
+              
+              {/* Caso 3: Múltiples colores (≥2) -> Colores apilados, sin medidas */}
+              {uniqueColors.length > 1 && (
+                <div className='flex items-center mr-1'>
+                  <div className='flex items-center -space-x-1.5'>
+                    {uniqueColors.slice(0, 3).map((colorData, index) => {
+                      const darker = darkenHex(colorData.hex, 0.35)
+                      const woodTexture = isImpregnante ? {
+                        backgroundImage: [
+                          'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
+                          `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
+                          `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
+                          `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
+                          'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
+                        ].join(', '),
+                        backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
+                        backgroundBlendMode: 'multiply' as const
+                      } : {}
+                      
+                        return (
+                          <button
+                            key={colorData.hex}
+                            type='button'
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedColor(colorData.hex)
+                            }}
+                            title={colorData.name}
+                            className={cn(
+                              'w-7 h-7 flex-shrink-0 rounded-full border-2 border-gray-200 shadow-sm transition-all hover:scale-110',
+                              selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-1',
+                              (colorData.name.toLowerCase().includes('incoloro') || 
+                               colorData.name.toLowerCase().includes('transparente') ||
+                               colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
+                            )}
+                            style={{
+                              backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex,
+                              zIndex: 3 - index,
+                              ...(colorData.name.toLowerCase().includes('incoloro') || 
+                                  colorData.name.toLowerCase().includes('transparente') ||
+                                  colorData.name.toLowerCase().includes('transparent') 
+                                ? { backgroundImage: 'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)' }
+                                : {}),
+                              ...woodTexture
+                            }}
+                          />
+                        )
+                    })}
+                  </div>
+                </div>
+              )}
 
-                {/* Botón circular de carrito con contador */}
-                {onAddToCart && (
-                  <button
-                    type='button'
-                    onClick={handleAddToCart}
-                    disabled={isAddingToCart || stock === 0}
-                    data-testid='add-to-cart'
-                    data-testid-btn='add-to-cart-btn'
-                    className={cn(
-                      'w-10 h-10 md:w-11 md:h-11 rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform flex-shrink-0',
-                      stock === 0
-                        ? 'bg-gray-200 cursor-not-allowed'
-                        : 'bg-yellow-400 hover:bg-yellow-500'
-                    )}
-                    style={{
-                      backgroundColor: stock !== 0 ? '#facc15' : undefined,
-                    }}
+              {/* Botón ">" para ver más opciones - Solo si hay más de 1 color O más de 3 medidas */}
+              {(uniqueColors.length > 1 || remainingMeasures > 0) && (
+                <Sheet open={showColorsSheet} onOpenChange={setShowColorsSheet}>
+                  <SheetTrigger asChild>
+                    <button
+                      type='button'
+                      onClick={(e) => e.stopPropagation()}
+                      className='w-7 h-7 flex-shrink-0 rounded-full bg-[#EA5A17] hover:bg-[#d14d0f] flex items-center justify-center transition-all hover:scale-110 shadow-sm'
+                      title='Ver todas las opciones'
+                    >
+                      <ChevronRight className='w-4 h-4 text-white' />
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent 
+                    side='bottom' 
+                    className='h-[50vh] md:h-auto md:max-h-[60vh]'
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {isAddingToCart ? (
-                      <div className='w-4 h-4 md:w-5 md:h-5 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
-                    ) : stock === 0 ? (
-                      <AlertCircle className='w-4 h-4 md:w-5 md:h-5 text-gray-500' />
-                    ) : cartAddCount > 0 ? (
-                      <span className='font-bold text-sm md:text-base text-[#EA5A17]'>
-                        +{cartAddCount}
-                      </span>
-                    ) : (
-                      <ShoppingCart className='w-4 h-4 md:w-5 md:h-5 text-[#EA5A17]' />
+                    <SheetHeader>
+                      <SheetTitle>Seleccionar Opciones</SheetTitle>
+                    </SheetHeader>
+                    <div className='space-y-4 mt-4 overflow-y-auto max-h-[40vh] md:max-h-[50vh] p-2'>
+                      {/* Sección de Colores */}
+                      {uniqueColors.length > 1 && (
+                        <div>
+                          <h3 className='text-sm font-semibold text-gray-700 mb-2'>Color</h3>
+                          <div className='grid grid-cols-4 md:grid-cols-5 gap-3'>
+                            {uniqueColors.map((colorData) => {
+                              const darker = darkenHex(colorData.hex, 0.35)
+                              const woodTexture = isImpregnante ? {
+                                backgroundImage: [
+                                  'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
+                                  `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
+                                  `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
+                                  `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
+                                  'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
+                                ].join(', '),
+                                backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
+                                backgroundBlendMode: 'multiply' as const
+                              } : {}
+                              
+                              return (
+                                <div key={colorData.hex} className='flex flex-col items-center gap-1'>
+                                  <button
+                                    type='button'
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setSelectedColor(colorData.hex)
+                                      // NO cerrar el sheet, dejar que el usuario confirme con el botón "Listo"
+                                    }}
+                                    title={colorData.name}
+                                    className={cn(
+                                      'w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-gray-200 shadow-sm transition-all hover:scale-110 active:scale-95',
+                                      selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-1',
+                                      (colorData.name.toLowerCase().includes('incoloro') || 
+                                       colorData.name.toLowerCase().includes('transparente') ||
+                                       colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
+                                    )}
+                                    style={{
+                                      backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex,
+                                      ...(colorData.name.toLowerCase().includes('incoloro') || 
+                                          colorData.name.toLowerCase().includes('transparente') ||
+                                          colorData.name.toLowerCase().includes('transparent') 
+                                        ? { backgroundImage: 'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)' }
+                                        : {}),
+                                      ...woodTexture
+                                    }}
+                                  />
+                                  <span className='text-[9px] md:text-[10px] text-gray-600 text-center max-w-[70px] truncate'>
+                                    {colorData.name}
+                                  </span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Sección de Medidas */}
+                      {uniqueMeasures.length > 0 && (
+                        <div>
+                          <h3 className='text-sm font-semibold text-gray-700 mb-2'>Medida</h3>
+                          <div className='grid grid-cols-4 md:grid-cols-5 gap-2'>
+                            {uniqueMeasures.map((measure) => {
+                              const { number } = parseMeasure(measure)
+                              return (
+                                <button
+                                  key={measure}
+                                  type='button'
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSelectedMeasure(measure)
+                                    // NO cerrar el sheet, dejar que el usuario confirme con el botón "Listo"
+                                  }}
+                                  className={cn(
+                                    'h-12 md:h-14 rounded-lg text-sm md:text-base font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center',
+                                    selectedMeasure === measure
+                                      ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-sm'
+                                      : 'bg-white text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
+                                  )}
+                                >
+                                  <span className='font-bold'>{number}</span>
+                                  <span className='text-xs ml-0.5 font-normal'>{commonUnit}</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Botón "Listo" centrado abajo - Agrega al carrito y cierra */}
+                    <div className='flex justify-center pt-4 pb-2 border-t border-gray-200 mt-4'>
+                      <button
+                        type='button'
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          // Agregar al carrito
+                          await handleAddToCart(e)
+                          // Mostrar toast de éxito
+                          setShowSuccessToast(true)
+                          setTimeout(() => setShowSuccessToast(false), 2000)
+                          // Esperar un momento para que se vea la animación antes de cerrar
+                          setTimeout(() => setShowColorsSheet(false), 800)
+                        }}
+                        disabled={isAddingToCart || stock === 0}
+                        className={cn(
+                          'w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-md',
+                          stock === 0 || isAddingToCart
+                            ? 'bg-gray-200 cursor-not-allowed'
+                            : 'bg-[#facc15] hover:bg-[#f5c000] hover:scale-105 active:scale-95',
+                          isAddingToCart && 'animate-pulse'
+                        )}
+                      >
+                        {isAddingToCart ? (
+                          <div className='w-5 h-5 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
+                        ) : (
+                          <svg className='w-6 h-6 text-[#EA5A17] transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    
+                    {/* Toast de éxito - Aparece cuando se agrega al carrito */}
+                    {showSuccessToast && (
+                      <div className='absolute top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-in slide-in-from-top-5 fade-in duration-300 z-50'>
+                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                        </svg>
+                        <span className='font-medium text-sm'>¡Agregado al carrito!</span>
+                      </div>
                     )}
-                  </button>
+                  </SheetContent>
+                </Sheet>
+              )}
+
+              {/* Botón circular de carrito con contador - Siempre visible */}
+              <button
+                type='button'
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || stock === 0}
+                data-testid='add-to-cart'
+                data-testid-btn='add-to-cart-btn'
+                className={cn(
+                  'ml-auto w-10 h-10 md:w-11 md:h-11 rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform flex-shrink-0',
+                  stock === 0
+                    ? 'bg-gray-200 cursor-not-allowed'
+                    : 'bg-yellow-400 hover:bg-yellow-500'
                 )}
-              </div>
+                style={{
+                  backgroundColor: stock !== 0 ? '#facc15' : undefined,
+                }}
+              >
+                {isAddingToCart ? (
+                  <div className='w-4 h-4 md:w-5 md:h-5 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
+                ) : stock === 0 ? (
+                  <AlertCircle className='w-4 h-4 md:w-5 md:h-5 text-gray-500' />
+                ) : cartAddCount > 0 ? (
+                  <span className='font-bold text-sm md:text-base text-[#EA5A17]'>
+                    +{cartAddCount}
+                  </span>
+                ) : (
+                  <ShoppingCart className='w-4 h-4 md:w-5 md:h-5 text-[#EA5A17]' />
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -1199,18 +1534,23 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             const quantityFromModal = Number((variants as any)?.quantity) || 1
 
             // Atributos seleccionados para mostrar en el carrito
+            // PRIORIDAD: Selecciones del modal > Datos del producto > Fallback card (solo como último recurso)
             const attributes = {
               color:
-                (variants as any)?.color || (variants as any)?.selectedColor || (productData as any)?.color || selectedColor || color,
+                (variants as any)?.selectedColor || 
+                (variants as any)?.color || 
+                (productData as any)?.color || 
+                '', // No usar selectedColor del card como fallback (puede estar stale)
               medida:
-                (variants as any)?.capacity ||
                 (variants as any)?.selectedCapacity ||
+                (variants as any)?.capacity ||
                 (productData as any)?.capacity ||
                 (productData as any)?.medida ||
-                selectedMeasure ||
-                medida,
-              finish: (variants as any)?.finish, // Agregar finish para impregnantes Danzke
+                '', // No usar selectedMeasure del card como fallback (puede estar stale)
+              finish: (variants as any)?.finish || '', // Agregar finish para impregnantes Danzke
             }
+            
+            console.log('🎯 Atributos desde modal:', attributes)
 
             // Servicio unificado: normaliza y agrega
             addProduct(
