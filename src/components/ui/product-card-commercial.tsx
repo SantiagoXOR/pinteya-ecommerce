@@ -1186,39 +1186,34 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 </div>
               )}
               
-              {/* Caso 2: Sin colores pero con medidas -> Mostrar medidas apiladas */}
+              {/* Caso 2: Sin colores pero con medidas -> Mostrar solo medidas */}
               {uniqueColors.length === 0 && uniqueMeasures.length > 0 && (
-                <div className='flex items-center mr-1'>
-                  <div className='flex items-center -space-x-1.5'>
-                    {displayMeasures.map((measure, index) => {
-                      const { number } = parseMeasure(measure)
-                      return (
-                        <button
-                          key={measure}
-                          type='button'
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedMeasure(measure)
-                          }}
-                          className={cn(
-                            'w-7 h-7 flex-shrink-0 rounded-full text-xs font-bold transition-all hover:scale-110 flex items-center justify-center border-2 shadow-sm',
-                            selectedMeasure === measure
-                              ? 'bg-[#facc15] text-[#EA5A17] border-[#facc15] ring-2 ring-[#EA5A17] ring-offset-1'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-[#EA5A17]'
-                          )}
-                          style={{
-                            zIndex: 3 - index
-                          }}
-                        >
-                          {number}
-                        </button>
-                      )
-                    })}
-                  </div>
+                <div className='flex items-center gap-1'>
+                  {displayMeasures.map((measure) => {
+                    const { number } = parseMeasure(measure)
+                    return (
+                      <button
+                        key={measure}
+                        type='button'
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedMeasure(measure)
+                        }}
+                        className={cn(
+                          'w-8 h-8 md:w-9 md:h-9 rounded-full text-xs md:text-sm font-bold transition-all hover:scale-110 flex items-center justify-center',
+                          selectedMeasure === measure
+                            ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-sm'
+                            : 'bg-transparent text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
+                        )}
+                      >
+                        {number}
+                      </button>
+                    )
+                  })}
                   
                   {/* Unidad común */}
                   {commonUnit && (
-                    <span className='text-[9px] md:text-[10px] text-gray-400 font-light ml-2'>
+                    <span className='text-[9px] md:text-[10px] text-gray-400 font-light ml-0.5'>
                       {commonUnit}
                     </span>
                   )}
