@@ -1,8 +1,6 @@
 // Desarrollo: datos y utilidades mock para APIs cuando Supabase no está configurado
 // Estos mocks solo se usan en desarrollo y no afectan producción
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 type Product = any
 type Category = any
 

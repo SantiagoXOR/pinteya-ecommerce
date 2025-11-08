@@ -252,7 +252,6 @@ export default function SearchPage() {
                   // ✅ NO pasar color/medida legacy - usar solo variantes para badges
                   // color={(product as any).color}
                   // medida={(product as any).medida}
-                  variants={(product as any).variants || []}
                   shippingText={product.stock > 0 ? 'En stock' : 'Sin stock'}
                   {...(() => {
                     const autoFree = dsShouldShowFreeShipping(currentPrice, config)

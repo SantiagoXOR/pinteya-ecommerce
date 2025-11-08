@@ -152,7 +152,6 @@ export default function CashSuccessPage() {
       setEffectiveTotal(totalParam ? Number(totalParam) || 0 : 0)
       setEffectiveWhatsappUrl(whatsappUrlParam || null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Countdown para redirección automática
