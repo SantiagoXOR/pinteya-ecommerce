@@ -1186,32 +1186,37 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 </div>
               )}
               
-              {/* Caso 2: Sin colores pero con medidas -> Mostrar solo medidas */}
+              {/* Caso 2: Sin colores pero con medidas -> Mostrar medidas apiladas (mismo estilo que Caso 1) */}
               {uniqueColors.length === 0 && uniqueMeasures.length > 0 && (
-                <div className='flex items-center gap-1'>
-                  {displayMeasures.map((measure) => {
-                    const { number } = parseMeasure(measure)
-                    return (
-                      <button
-                        key={measure}
-                        type='button'
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedMeasure(measure)
-                        }}
-                        className={cn(
-                          'w-8 h-8 md:w-9 md:h-9 rounded-full text-xs md:text-sm font-bold transition-all hover:scale-110 flex items-center justify-center',
-                          selectedMeasure === measure
-                            ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-sm'
-                            : 'bg-transparent text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
-                        )}
-                      >
-                        {number}
-                      </button>
-                    )
-                  })}
-                  
-                  {/* Unidad común */}
+                <div className='flex items-center mr-1'>
+                  <div className='flex items-center -space-x-1.5'>
+                    {/* Mostrar hasta 3 medidas apiladas */}
+                    {uniqueMeasures.slice(0, Math.min(3, uniqueMeasures.length)).map((measure, index) => {
+                      const { number } = parseMeasure(measure)
+                      return (
+                        <button
+                          key={measure}
+                          type='button'
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedMeasure(measure)
+                          }}
+                          className={cn(
+                            'w-7 h-7 rounded-full text-xs font-bold transition-all hover:scale-110 flex items-center justify-center border-2 border-gray-200 shadow-sm',
+                            selectedMeasure === measure
+                              ? 'bg-[#facc15] text-[#EA5A17]'
+                              : 'bg-gray-50 text-gray-600'
+                          )}
+                          style={{
+                            zIndex: 3 - index
+                          }}
+                        >
+                          {number}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {/* Unidad */}
                   {commonUnit && (
                     <span className='text-[9px] md:text-[10px] text-gray-400 font-light ml-0.5'>
                       {commonUnit}
