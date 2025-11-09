@@ -5,7 +5,6 @@ import Image from 'next/image'
 import ProductItem from '@/components/Common/ProductItem'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
 import { useProductsByCategory } from '@/hooks/useProductsByCategory'
-import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
 
@@ -51,11 +50,8 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     limit: maxProducts,
   })
 
-  // Adaptar productos al formato de componentes
-  // Asegurarse de que rawProducts sea un array
-  const products = Array.isArray(rawProducts) 
-    ? adaptApiProductsToComponents(rawProducts)
-    : []
+  // Los productos ya vienen adaptados del hook, no necesitamos adaptarlos nuevamente
+  const products = Array.isArray(rawProducts) ? rawProducts : []
   
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {

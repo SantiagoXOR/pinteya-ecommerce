@@ -2,40 +2,44 @@
 
 import React from 'react'
 import ProductItem from '@/components/Common/ProductItem'
-import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
 import Link from 'next/link'
 import { useProductsByCategory } from '@/hooks/useProductsByCategory'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from 'lucide-react'
+import HelpCard from './HelpCard'
 
 const BestSeller: React.FC = () => {
   const { selectedCategory } = useCategoryFilter()
 
   // Fetch productos según categoría seleccionada
-  const { products: rawProducts, isLoading, error } = useProductsByCategory({
+  const { products, isLoading, error } = useProductsByCategory({
     categorySlug: selectedCategory,
-    limit: 50,
+    limit: 100, // Aumentado para mostrar más productos por categoría
   })
 
-  // Adaptar productos al formato de componentes
-  const adaptedProducts = Array.isArray(rawProducts) 
-    ? adaptApiProductsToComponents(rawProducts)
-    : []
+  // Los productos ya vienen adaptados del hook, no necesitamos adaptarlos nuevamente
+  const adaptedProducts = Array.isArray(products) ? products : []
 
   // Ordenar por precio y separar en stock/sin stock
   const sortedByPrice = [...adaptedProducts].sort((a, b) => b.price - a.price)
   const inStock = sortedByPrice.filter(p => (p.stock ?? 0) > 0)
   const outOfStock = sortedByPrice.filter(p => (p.stock ?? 0) <= 0)
-  const bestSellerProducts = [...inStock, ...outOfStock].slice(0, 8)
+  // Mostrar todos los productos de la categoría seleccionada
+  const bestSellerProducts = [...inStock, ...outOfStock]
+
+  // Calcular si hay espacios vacíos en la última fila
+  // Desktop: 4 cols, Tablet: 2 cols, Mobile: 2 cols
+  const shouldShowHelpCard = bestSellerProducts.length > 0 && 
+    (bestSellerProducts.length % 4 !== 0 || bestSellerProducts.length % 2 !== 0)
 
   if (isLoading) {
     return (
       <section className='overflow-hidden py-4 sm:py-6 bg-transparent'>
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
           <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-            {[...Array(8)].map((_, index) => (
+            {[...Array(12)].map((_, index) => (
               <Card key={index} className='overflow-hidden'>
                 <div className='animate-pulse'>
                   <div className='bg-gray-200 h-40 md:h-64 rounded-t-lg'></div>
@@ -65,9 +69,12 @@ const BestSeller: React.FC = () => {
         {/* Grid de productos mejorado - 4 columnas en desktop */}
         <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
           {bestSellerProducts.length > 0 ? (
-            bestSellerProducts.map((item, key) => (
-              <ProductItem key={key} product={item} />
-            ))
+            <>
+              {bestSellerProducts.map((item, key) => (
+                <ProductItem key={key} product={item} />
+              ))}
+              {shouldShowHelpCard && <HelpCard categoryName={selectedCategory} />}
+            </>
           ) : (
             <div className='col-span-full'>
               <Card variant='outlined' className='border-gray-200'>
