@@ -10,6 +10,9 @@ import {
   hydrateCart,
   replaceCart,
   removeAllItemsFromCart,
+  addItemToCart,
+  removeItemFromCart,
+  updateCartItemQuantity,
 } from '@/redux/features/cart-slice'
 import {
   loadCartFromStorage,
@@ -129,9 +132,33 @@ export const useCart = () => {
   const cartItems = useAppSelector(selectCartItems)
   const dispatch = useAppDispatch()
 
+  // Función para agregar producto al carrito
+  const addToCart = useCallback((item: any) => {
+    dispatch(addItemToCart(item))
+  }, [dispatch])
+
+  // Función para remover producto del carrito
+  const removeFromCart = useCallback((itemId: number) => {
+    dispatch(removeItemFromCart(itemId))
+  }, [dispatch])
+
+  // Función para actualizar cantidad de un producto
+  const updateQuantity = useCallback((itemId: number, quantity: number) => {
+    dispatch(updateCartItemQuantity({ id: itemId, quantity }))
+  }, [dispatch])
+
+  // Función para limpiar el carrito
+  const clearCart = useCallback(() => {
+    dispatch(removeAllItemsFromCart())
+  }, [dispatch])
+
   return {
     cartItems,
     dispatch,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
   }
 }
 

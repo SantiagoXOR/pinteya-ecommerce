@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { useEffect } from 'react'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
+import NewArrivals from './NewArrivals/index'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
 const HeroCarousel = dynamic(() => import('./HeroCarousel/index'))
@@ -13,7 +14,6 @@ const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/in
 const TrendingSearches = dynamic(() => import('./TrendingSearches/index'))
 const CombosSection = dynamic(() => import('./CombosSection/index'))
 const BestSeller = dynamic(() => import('./BestSeller/index'))
-const NewArrivals = dynamic(() => import('./NewArrivals/index'))
 const TrustSection = dynamic(() => import('./TrustSection/index'))
 const Testimonials = dynamic(() => import('./Testimonials/index'))
 const Newsletter = dynamic(() => import('./Newsletter/index'))
