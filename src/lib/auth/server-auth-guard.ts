@@ -18,9 +18,10 @@ export async function requireAdminAuth() {
     console.log('[Server Auth Guard] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación')
     return {
       user: {
-        email: 'santiago@xor.com.ar',
+        email: 'admin@bypass.dev',
         name: 'Admin (Bypass Mode)',
-        id: 'bypass-admin-id'
+        id: 'bypass-admin-id',
+        role: 'admin'
       }
     } as any
   }
@@ -32,13 +33,16 @@ export async function requireAdminAuth() {
     redirect('/')
   }
   
-  const isAdmin = session.user.email === 'santiago@xor.com.ar'
+  // Verificar el rol desde la sesión (ya está cargado en el JWT)
+  const userRole = session.user.role || 'customer'
+  const isAdmin = userRole === 'admin'
+  
   if (!isAdmin) {
-    console.warn(`[Server Auth Guard] Usuario no-admin (${session.user.email}) intentando acceder a admin`)
+    console.warn(`[Server Auth Guard] Usuario no-admin (${session.user.email}, rol: ${userRole}) intentando acceder a admin`)
     redirect('/access-denied?type=admin')
   }
   
-  console.log(`[Server Auth Guard] Admin autenticado: ${session.user.email}`)
+  console.log(`[Server Auth Guard] Admin autenticado: ${session.user.email} (rol: ${userRole})`)
   return session
 }
 

@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 import { SupabaseAdapter } from './src/lib/integrations/supabase/supabase-adapter'
+import { upsertUserProfile, getUserRole } from './src/lib/auth/role-service'
 
 // Debugging de variables de entorno
 console.log('🔍 Debugging NextAuth configuration:')
@@ -45,12 +46,26 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     error: '/auth/error',
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
+      // En el primer login, agregar userId
       if (account && user) {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
         token.userId = user.id
       }
+
+      // Obtener el rol del usuario desde Supabase user_profiles
+      if (token.userId && (!token.role || trigger === 'update')) {
+        try {
+          const role = await getUserRole(token.userId as string)
+          token.role = role
+          console.log(`[NextAuth] User role loaded: ${role} for user ${token.userId}`)
+        } catch (error) {
+          console.error('[NextAuth] Error loading user role:', error)
+          token.role = 'customer' // Fallback
+        }
+      }
+
       return token
     },
     async session({ session, token }) {
@@ -58,12 +73,26 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         session.accessToken = token.accessToken as string
         session.refreshToken = token.refreshToken as string
         session.user.id = token.userId as string
+        session.user.role = token.role as string || 'customer'
       }
       return session
     },
     async signIn({ user, account, profile }) {
       // Permitir el sign-in para todos los usuarios de Google
       if (account?.provider === 'google') {
+        try {
+          // Sincronizar/crear el perfil del usuario en user_profiles
+          await upsertUserProfile({
+            supabase_user_id: user.id,
+            email: user.email!,
+            first_name: user.name?.split(' ')[0] || null,
+            last_name: user.name?.split(' ').slice(1).join(' ') || null,
+          })
+          console.log(`[NextAuth] User profile synced for: ${user.email}`)
+        } catch (error) {
+          console.error('[NextAuth] Error syncing user profile:', error)
+          // No bloqueamos el login si falla la sincronización
+        }
         return true
       }
       return false
@@ -90,12 +119,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 // Tipos TypeScript para extender la sesión
 declare module 'next-auth' {
   interface Session {
+    accessToken?: string
+    refreshToken?: string
     supabaseAccessToken?: string
     user: {
       id: string
       name?: string | null
       email?: string | null
       image?: string | null
+      role?: string
     }
   }
 }
@@ -103,5 +135,9 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     sub: string
+    userId?: string
+    role?: string
+    accessToken?: string
+    refreshToken?: string
   }
 }

@@ -7,7 +7,7 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 
-export default auth(req => {
+export default auth(async (req) => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
   const isProduction = process.env.NODE_ENV === 'production'
@@ -75,8 +75,9 @@ export default auth(req => {
 
   // Verificar autorización admin
   if ((isAdminRoute || isApiAdminRoute) && isLoggedIn) {
-    const userEmail = req.auth?.user?.email
-    const isAdmin = userEmail === 'santiago@xor.com.ar'
+    // Obtener el rol desde la sesión (ya está cargado en el JWT)
+    const userRole = req.auth?.user?.role || 'customer'
+    const isAdmin = userRole === 'admin'
 
     if (!isAdmin) {
       if (isApiAdminRoute) {
