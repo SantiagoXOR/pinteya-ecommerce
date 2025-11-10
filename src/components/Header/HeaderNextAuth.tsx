@@ -154,7 +154,7 @@ const HeaderNextAuth = () => {
             {/* Envío gratis */}
             <div className='flex items-center gap-1' style={{ color: '#fff3c5' }}>
               <ShoppingCart className='w-3 h-3 text-yellow-400' />
-              <span className='font-medium text-xs'>Envío gratis desde $15.000</span>
+              <span className='font-medium text-xs'>Envío gratis desde $50.000</span>
             </div>
 
             <div className='hidden lg:block text-yellow-400 font-light'>|</div>

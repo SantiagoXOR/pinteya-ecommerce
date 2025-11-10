@@ -368,7 +368,7 @@ const Checkout = () => {
             {/* Timer de Urgencia */}
             <UrgencyTimer
               initialMinutes={15}
-              message='Completa tu compra para mantener el precio y envío gratis desde $15.000'
+              message='Completa tu compra para mantener el precio y envío gratis desde $50.000'
               variant='warning'
               showProgress={true}
             />
@@ -606,7 +606,7 @@ const Checkout = () => {
                       </div>
                       <div className='flex items-center gap-1'>
                         <Truck className='w-4 h-4 text-blue-600' />
-                        <span>Envío Gratis +$15.000</span>
+                        <span>Envío Gratis +$50.000</span>
                       </div>
                     </div>
                   </CardContent>

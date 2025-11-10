@@ -103,6 +103,12 @@ const SingleItem = ({ item }: { item: any }) => {
     setQuantity(item.quantity)
   }, [item.quantity])
 
+  // Actualizar imagen cuando cambia el item (corrige bug de imagen al eliminar)
+  useEffect(() => {
+    const newImgSrc = getPreviewImage(item)
+    setImgSrc(newImgSrc)
+  }, [item.id, item.product_id])
+
   const handleRemoveFromCart = async () => {
     console.log('🗑️ Intentando eliminar producto:', item)
     

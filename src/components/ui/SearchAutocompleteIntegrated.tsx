@@ -30,6 +30,7 @@ export interface SearchAutocompleteIntegratedProps {
   placeholder?: string
   className?: string
   disabled?: boolean
+  autoFocus?: boolean
   // Tamaño opcional para compatibilidad con el header
   size?: 'sm' | 'md' | 'lg'
 
@@ -86,6 +87,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         placeholder = 'Látex interior blanco 20lts, rodillos, pinceles...',
         className,
         disabled = false,
+        autoFocus = false,
         debounceMs = 300,
         maxSuggestions = 6,
         searchLimit = 12,
@@ -374,6 +376,18 @@ export const SearchAutocompleteIntegrated = React.memo(
         }
       }, [selectedIndex])
 
+      // Auto focus cuando se activa la prop
+      useEffect(() => {
+        if (autoFocus && inputRef.current) {
+          // Pequeño delay para asegurar que el componente está renderizado
+          const timer = setTimeout(() => {
+            inputRef.current?.focus()
+            setIsOpen(true) // Abrir dropdown automáticamente
+          }, 50)
+          return () => clearTimeout(timer)
+        }
+      }, [autoFocus])
+
       // ===================================
       // FUNCIONES DE RENDERIZADO
       // ===================================
@@ -433,65 +447,6 @@ export const SearchAutocompleteIntegrated = React.memo(
             )}
           </div>
 
-          {/* Badges inteligentes */}
-          {(suggestion.badges && suggestion.badges.length > 0) ? (
-            <div className='flex items-center gap-2 flex-shrink-0'>
-              {suggestion.badges.slice(0, 3).map((label, i) => (
-                <span
-                  key={`${suggestion.id}-badge-${i}`}
-                  className={cn(
-                    'px-2 py-1 text-xs rounded-full whitespace-nowrap',
-                    label.toLowerCase().includes('oferta')
-                      ? 'bg-red-100 text-red-800'
-                      : label.toLowerCase().includes('nuevo')
-                      ? 'bg-blue-100 text-blue-800'
-                      : label.toLowerCase().includes('stock')
-                      ? label.toLowerCase().includes('sin')
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-700'
-                  )}
-                >
-                  {label}
-                </span>
-              ))}
-              {suggestion.badge && (
-                <span
-                  className={cn(
-                    'px-2 py-1 text-xs rounded-full whitespace-nowrap',
-                    suggestion.badge?.toLowerCase().includes('stock')
-                      ? suggestion.badge?.toLowerCase().includes('sin')
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-green-100 text-green-800'
-                      : 'bg-blue-100 text-blue-800'
-                  )}
-                >
-                  {suggestion.badge}
-                </span>
-              )}
-            </div>
-          ) : (
-            suggestion.badge && (
-              <span
-                className={cn(
-                  'px-2 py-1 text-xs rounded-full whitespace-nowrap',
-                  suggestion.type === 'product'
-                    ? suggestion.badge?.toLowerCase().includes('stock')
-                      ? suggestion.badge?.toLowerCase().includes('sin')
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-green-100 text-green-800'
-                      : 'bg-blue-100 text-blue-800'
-                    : suggestion.type === 'trending'
-                    ? 'bg-orange-100 text-orange-800'
-                    : suggestion.type === 'recent'
-                    ? 'bg-gray-100 text-gray-700'
-                    : 'bg-gray-100 text-gray-700'
-                )}
-              >
-                {suggestion.badge}
-              </span>
-            )
-          )}
         </div>
       )
 

@@ -37,15 +37,15 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
         className
       )}
     >
-      {/* Header centrado con icono grande */}
+      {/* Header centrado con icono reducido */}
       <div className='text-center mb-4'>
         {showIcon && (
           <div className='flex justify-center mb-3'>
             <Image
               src='/images/icons/icon-envio.svg'
               alt='Envío'
-              width={isCompact ? 120 : 140}
-              height={isCompact ? 120 : 140}
+              width={isCompact ? 80 : 100}
+              height={isCompact ? 80 : 100}
               className='w-auto h-auto'
             />
           </div>

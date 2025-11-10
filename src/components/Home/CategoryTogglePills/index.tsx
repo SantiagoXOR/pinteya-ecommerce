@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -215,6 +216,17 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     }
   }
 
+  // Función para scroll con botones de navegación
+  const scroll = (direction: 'left' | 'right') => {
+    if (carouselRef.current) {
+      const scrollAmount = 300
+      carouselRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      })
+    }
+  }
+
 
   if (loading) {
     if (variant === 'bare') return null
@@ -325,9 +337,27 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   return (
     <section className='bg-transparent sticky top-[92px] lg:top-[105px] z-40'>
       <div
-        className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8'
+        className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 relative'
         data-testid='category-pills-container'
       >
+        {/* Botones de navegación minimalistas */}
+        <div className='hidden md:flex gap-2 absolute right-3 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 z-10'>
+          <button
+            onClick={() => scroll('left')}
+            className='text-gray-400 hover:text-green-600 transition-colors p-1'
+            aria-label='Anterior'
+          >
+            <ChevronLeft className='w-5 h-5' />
+          </button>
+          <button
+            onClick={() => scroll('right')}
+            className='text-gray-400 hover:text-green-600 transition-colors p-1'
+            aria-label='Siguiente'
+          >
+            <ChevronRight className='w-5 h-5' />
+          </button>
+        </div>
+
         {/* Pills de categorías - Centrado en desktop */}
         <div
           ref={carouselRef}

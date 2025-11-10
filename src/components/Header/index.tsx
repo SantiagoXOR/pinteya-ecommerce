@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { OptimizedCartIcon } from '@/components/ui/optimized-cart-icon'
@@ -129,9 +129,18 @@ const Header = () => {
     // Este handler previene el comportamiento por defecto del form
   }, [])
 
+  // Ref para el input del search expandido
+  const expandedSearchRef = useRef<HTMLInputElement>(null)
+
   // Handlers para expansión del searchbar en mobile
   const handleSearchClick = useCallback(() => {
     setIsSearchExpanded(true)
+    // Enfocar el input después de la animación de expansión
+    setTimeout(() => {
+      expandedSearchRef.current?.focus()
+      // Simular un clic para abrir el dropdown
+      expandedSearchRef.current?.click()
+    }, 100)
   }, [])
 
   const handleSearchCollapse = useCallback(() => {
@@ -196,18 +205,20 @@ const Header = () => {
             
             {/* 2. Search Expandido - Ocupa TODO el ancho cuando está activo */}
             {isSearchExpanded && (
-              <div className='flex-1'>
+              <div className='flex-1 animate-in fade-in zoom-in-95 duration-200'>
                 <div className='relative w-full'>
                   <div
                     className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 rounded-full'
                   >
                     <MemoizedSearchAutocomplete
+                      ref={expandedSearchRef}
                       placeholder='Buscar productos...'
                       className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}
                       showTrendingSearches={true}
+                      autoFocus={true}
                     />
                     
                     {/* Botón X para cerrar */}
@@ -231,7 +242,7 @@ const Header = () => {
               >
                 <div className='relative w-full'>
                   <div
-                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 rounded-full'
+                    className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring bg-bright-sun-100 rounded-full'
                   >
                     <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'

@@ -1,15 +1,27 @@
 'use client'
 
-import React from 'react'
+import React, { useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Truck, Percent, Gift } from 'lucide-react'
+import { ArrowRight, Truck, Percent, Gift, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface PromoBannersProps {
   bannerId?: number // Si se proporciona, muestra solo ese banner
 }
 
 const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 400
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      })
+    }
+  }
+
   const banners = [
     {
       id: 1,
@@ -30,7 +42,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
       badgeColor: 'bg-blue-500',
       ctaText: 'Contactar ahora',
       ctaUrl: 'https://wa.me/5493513411796?text=Hola!%20Necesito%20asesoramiento%20para%20mi%20proyecto',
-      bgImage: '/images/promo/comboeco.png',
+      bgImage: '/images/promo/assetpaint.png',
       bgGradient: 'from-blue-900/80 to-blue-700/80',
     },
     {
@@ -41,7 +53,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
       badgeColor: 'bg-purple-500',
       ctaText: 'Calcular ahora',
       ctaUrl: '/calculator',
-      bgImage: '/images/promo/comboplavicon.png',
+      bgImage: '/images/promo/assetpaint.png',
       bgGradient: 'from-purple-900/80 to-purple-700/80',
     },
   ]
@@ -64,7 +76,31 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
 
   return (
     <section className='px-4'>
-      <div className='max-w-7xl mx-auto space-y-2'>
+      <div className='max-w-7xl mx-auto relative'>
+        {/* Botones de navegación minimalistas */}
+        <div className='hidden md:flex gap-2 absolute right-0 -top-10 z-10'>
+          <button
+            onClick={() => scroll('left')}
+            className='text-gray-400 hover:text-blaze-orange-600 transition-colors p-1'
+            aria-label='Anterior'
+          >
+            <ChevronLeft className='w-5 h-5' />
+          </button>
+          <button
+            onClick={() => scroll('right')}
+            className='text-gray-400 hover:text-blaze-orange-600 transition-colors p-1'
+            aria-label='Siguiente'
+          >
+            <ChevronRight className='w-5 h-5' />
+          </button>
+        </div>
+
+        {/* Contenedor con scroll horizontal */}
+        <div
+          ref={scrollRef}
+          className='flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth pb-2'
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
         {bannersToShow.map((banner) => {
           const isCompactBanner = banner.id === 1 || banner.id === 2 || banner.id === 3 // Flash Days, Asesoramiento y Calculadora
           
@@ -73,7 +109,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
               key={banner.id}
               href={banner.ctaUrl}
               onClick={(e) => handleBannerClick(e, banner.ctaUrl)}
-              className='group block relative overflow-hidden rounded-3xl shadow-md hover:shadow-xl transition-all duration-300'
+              className='group block relative overflow-hidden rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 flex-shrink-0 w-full md:w-[calc(50%-0.25rem)] lg:w-[calc(33.333%-0.375rem)]'
             >
               {/* DISEÑO COMPACTO PARA BANNERS 1 Y 2 */}
               {isCompactBanner ? (
@@ -158,6 +194,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
             </Link>
           )
         })}
+        </div>
       </div>
     </section>
   )

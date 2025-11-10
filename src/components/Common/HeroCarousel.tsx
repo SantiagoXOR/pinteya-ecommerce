@@ -179,16 +179,16 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
         ))}
       </Swiper>
 
-      {/* Custom Navigation Buttons */}
+      {/* Custom Navigation Buttons - Minimalista */}
       {showNavigation && (
         <>
           <button
-            className='hero-carousel-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white/80 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-blaze-orange-600 hover:text-blaze-orange-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2'
+            className='hero-carousel-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-blaze-orange-600 transition-colors focus:outline-none'
             aria-label='Imagen anterior'
             type='button'
           >
             <svg
-              className='w-5 h-5 md:w-6 md:h-6'
+              className='w-6 h-6'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
@@ -204,12 +204,12 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
           </button>
 
           <button
-            className='hero-carousel-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white/80 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-blaze-orange-600 hover:text-blaze-orange-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2'
+            className='hero-carousel-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-blaze-orange-600 transition-colors focus:outline-none'
             aria-label='Imagen siguiente'
             type='button'
           >
             <svg
-              className='w-5 h-5 md:w-6 md:h-6'
+              className='w-6 h-6'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'

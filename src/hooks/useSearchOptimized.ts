@@ -222,30 +222,8 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
 
       if (products.length > 0) {
         const productSuggestions = products.map((product: ProductWithCategory) => {
-          // Usar helper universal para extraer imagen
-          const imageUrl = getProductImage((product as any)?.images)
-
-          // Construir badges inteligentes: medida, color, oferta, nuevo
-          const badges: string[] = []
-          const medida = (product as any)?.medida
-          const color = (product as any)?.color
-          const isNew = (product as any)?.is_new || (product as any)?.isNew
-          const discounted = hasDiscount(product as any)
-
-          if (typeof medida === 'string' && medida.trim()) {
-            badges.push(medida.trim())
-          }
-          if (typeof color === 'string' && color.trim()) {
-            badges.push(color.trim())
-          }
-          if (discounted) {
-            badges.push('Oferta')
-          }
-          if (isNew) {
-            badges.push('Nuevo')
-          }
-
-          const limitedBadges = badges.slice(0, 3)
+          // Usar helper universal para extraer imagen (ahora prioriza variantes)
+          const imageUrl = getProductImage((product as any)?.images, product)
 
           return {
             id: product.id.toString(),
@@ -253,8 +231,6 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
             title: product.name,
             subtitle: product.category?.name,
             image: imageUrl,
-            badge: product.stock > 0 ? 'En stock' : 'Sin stock',
-            badges: limitedBadges,
             href: `/products/${product.id}`,
           }
         })
@@ -311,7 +287,6 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
           href:
             `/search?search=${encodeURIComponent(trending.query)}` +
             (categoryId && categoryId !== 'all' ? `&category=${encodeURIComponent(categoryId)}` : ''),
-          badge: trending.count ? `${trending.count}` : undefined,
         }))
         allSuggestions.push(...trendingSuggestions)
       }

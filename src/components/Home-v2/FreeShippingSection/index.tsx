@@ -42,7 +42,7 @@ const FreeShippingSection = () => {
   if (isLoading) {
     return (
       <section className='py-3 bg-white'>
-        <div className='max-w-7xl mx-auto px-4'>
+        <div className='px-4'>
           <div className='animate-pulse'>
             <div className='h-8 bg-gray-200 rounded w-64 mb-4'></div>
             <div className='flex gap-4 overflow-hidden'>
@@ -60,7 +60,7 @@ const FreeShippingSection = () => {
 
   return (
     <section id='envio-gratis' className='py-3 bg-white/40 backdrop-blur-sm scroll-mt-20'>
-      <div className='max-w-7xl mx-auto px-4'>
+      <div className='px-4'>
         {/* Carousel Horizontal - Sin badge de envío gratis */}
         <div className='relative mb-4'>
           <div

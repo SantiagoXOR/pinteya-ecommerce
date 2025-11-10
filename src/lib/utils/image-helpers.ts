@@ -5,9 +5,19 @@
 /**
  * Extrae la primera imagen válida de un producto, manejando múltiples formatos
  * @param images - Campo images del producto (puede ser array u objeto)
+ * @param product - Producto completo (opcional, para buscar en variantes)
  * @returns URL de la primera imagen o placeholder
  */
-export function getProductImage(images: any): string {
+export function getProductImage(images: any, product?: any): string {
+  // PRIORIDAD 1: Imagen de variante por defecto (productos con sistema de variantes)
+  if (product) {
+    const defaultVariant = product.default_variant || product.variants?.[0]
+    if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim()) {
+      return defaultVariant.image_url.trim()
+    }
+  }
+  
+  // PRIORIDAD 2: Campo images del producto
   if (!images) return '/images/products/placeholder.svg'
   
   // Caso 1: Array simple de strings ["url1", "url2"]
