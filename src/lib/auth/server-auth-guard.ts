@@ -59,15 +59,16 @@ export async function requireDriverAuth() {
     redirect('/driver/login')
   }
   
-  const allowedDrivers = ['driver@pinteya.com', 'santiago@xor.com.ar']
-  const isDriver = allowedDrivers.includes(session.user.email || '')
+  // Verificar el rol desde la sesión
+  const userRole = session.user.role || 'customer'
+  const isDriver = userRole === 'driver' || userRole === 'admin' // Admin también puede acceder
   
   if (!isDriver) {
-    console.warn(`[Server Auth Guard] Usuario no-driver (${session.user.email}) intentando acceder a driver`)
+    console.warn(`[Server Auth Guard] Usuario no-driver (${session.user.email}, rol: ${userRole}) intentando acceder a driver`)
     redirect('/access-denied?type=driver')
   }
   
-  console.log(`[Server Auth Guard] Driver autenticado: ${session.user.email}`)
+  console.log(`[Server Auth Guard] Driver/Admin autenticado: ${session.user.email} (rol: ${userRole})`)
   return session
 }
 
@@ -95,7 +96,7 @@ export async function requireAuth() {
  */
 export async function isAdmin(): Promise<boolean> {
   const session = await auth()
-  return session?.user?.email === 'santiago@xor.com.ar'
+  return session?.user?.role === 'admin'
 }
 
 /**
@@ -105,8 +106,8 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function isDriver(): Promise<boolean> {
   const session = await auth()
-  const allowedDrivers = ['driver@pinteya.com', 'santiago@xor.com.ar']
-  return allowedDrivers.includes(session?.user?.email || '')
+  const userRole = session?.user?.role || 'customer'
+  return userRole === 'driver' || userRole === 'admin' // Admin también puede acceder
 }
 
 /**

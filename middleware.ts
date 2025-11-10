@@ -93,8 +93,9 @@ export default auth(async (req) => {
 
   // Verificar autorización driver
   if ((isDriverRoute || isApiDriverRoute) && isLoggedIn) {
-    const userEmail = req.auth?.user?.email
-    const isDriver = userEmail === 'driver@pinteya.com' || userEmail === 'santiago@xor.com.ar'
+    // Obtener el rol desde la sesión (ya está cargado en el JWT)
+    const userRole = req.auth?.user?.role || 'customer'
+    const isDriver = userRole === 'driver' || userRole === 'admin' // Admin también puede acceder
 
     if (!isDriver) {
       if (isApiDriverRoute) {
