@@ -1,0 +1,52 @@
+/**
+ * Estilos específicos para páginas de autenticación
+ * Elimina el padding-top del body que se aplica por el header fijo
+ * Aplica el mismo fondo amarillo que home-v2
+ */
+
+/* Reset del padding y aplicar fondo de home-v2 para páginas de auth */
+body:has(.auth-page-container) {
+  padding-top: 0 !important;
+  background: linear-gradient(180deg, #ffd549 0%, #fff4c6 50%, #ffffff 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Animaciones sutiles para la página de signin */
+.auth-gradient-overlay {
+  animation: gradient-shift 15s ease infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animación del logo en mobile */
+.auth-logo-badge {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Backdrop blur mejorado para navegadores antiguos */
+@supports not (backdrop-filter: blur(2px)) {
+  .auth-backdrop-blur {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+

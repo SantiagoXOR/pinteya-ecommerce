@@ -94,6 +94,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     const isAdminRoute = pathname?.startsWith('/admin')
     // Detectar si estamos en checkout express para ocultar el botón flotante
     const isCheckoutRoute = pathname?.startsWith('/checkout')
+    // Detectar si estamos en rutas de autenticación
+    const isAuthRoute = pathname?.startsWith('/auth/') || pathname === '/auth'
 
     // DEBUG: Logs para verificar la detección de rutas admin (DESHABILITADO)
     // console.log('🔧 PROVIDERS DEBUG:', {
@@ -131,10 +133,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                         <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
                           <AnalyticsProvider>
                             {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
-                            {!isAdminRoute && <MemoizedHeader />}
+                            {!isAdminRoute && !isAuthRoute && <MemoizedHeader />}
 
                             {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
-                            {!isAdminRoute && !isCheckoutRoute && <CartSidebarModal />}
+                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
                             <PreviewSliderModal />
                             <MemoizedScrollToTop />
 
@@ -142,7 +144,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                             {children}
 
                             {/* Footer solo para rutas públicas - Memoizado */}
-                            {!isAdminRoute && <MemoizedFooter />}
+                            {!isAdminRoute && !isAuthRoute && <MemoizedFooter />}
 
                             {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
                             {/* <div className="md:hidden">
@@ -150,8 +152,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     </div> */}
 
                             {/* Botones flotantes - Lazy loaded y solo para rutas públicas */}
-                            {!isAdminRoute && !isCheckoutRoute && <FloatingCartButton />}
-                            {!isAdminRoute && !isCheckoutRoute && <FloatingWhatsAppButton />}
+                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingCartButton />}
+                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingWhatsAppButton />}
 
                             {/* Notificación del carrito deshabilitada por requerimiento */}
                             {/* {!isAdminRoute && (
