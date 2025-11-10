@@ -207,9 +207,9 @@ export interface PaginationOptions {
 // VALIDACIONES DE CONFIGURACIÓN
 // ===================================
 
-if (!supabaseServiceKey) {
-  console.warn('SUPABASE_SERVICE_ROLE_KEY not found - Admin functions will be limited')
-}
+// NOTA: La SUPABASE_SERVICE_ROLE_KEY solo existe en el servidor (server-side)
+// Es NORMAL que no exista en el cliente (browser) por seguridad
+// El supabaseAdmin ya está correctamente configurado para retornar null si no existe
 
 // ===================================
 // INICIALIZACIÓN DEL SISTEMA

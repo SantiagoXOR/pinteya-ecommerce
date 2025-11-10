@@ -172,3 +172,4 @@ Actualmente en la base de datos:
 
 **Conclusión**: El sistema de roles ahora está **100% libre de hardcode** y completamente integrado para admin, driver y cualquier otro rol futuro.
 
+

@@ -1,6 +1,34 @@
+/* 
+ * ============================================
+ * POPUP DE SORTEO FLASH DAYS - DESHABILITADO
+ * ============================================
+ * Este popup ha sido comentado temporalmente.
+ * Campaña: "Pintura Flash Days - Color & Ahorro"
+ * Fecha: Noviembre 2025
+ * ============================================
+ */
+
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
+
+// ===================================
+// COMPONENTE DESHABILITADO
+// ===================================
+
+const WhatsAppPopup = () => {
+  // Popup deshabilitado - retornar null directamente
+  return null
+}
+
+export default WhatsAppPopup
+
+/* 
+// ===================================
+// CÓDIGO ORIGINAL COMENTADO
+// ===================================
+
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { X, Phone, MessageCircle, CheckCircle, Gift, Sparkles } from 'lucide-react'
 import { trackEvent } from '@/lib/google-analytics'
@@ -269,10 +297,10 @@ Saludos! 🎨✨`
 
   return (
     <div className='fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 animate-fadeIn'>
-      {/* DISEÑO MOBILE */}
+      {/* DISEÑO MOBILE *\/}
       {isMobile ? (
         <div className='bg-white rounded-3xl shadow-2xl max-w-[420px] w-full relative animate-slideUp overflow-hidden max-h-[75vh] overflow-y-auto'>
-          {/* Close button */}
+          {/* Close button *\/}
           <button
             onClick={handleClose}
             data-testid='flash-days-close-button'
@@ -282,9 +310,9 @@ Saludos! 🎨✨`
             <X className='w-5 h-5' />
           </button>
 
-          {/* Header con gradiente Pinteya */}
+          {/* Header con gradiente Pinteya *\/}
           <div className='relative bg-gradient-to-br from-[#eb6313] via-[#f27a1d] to-[#bd4811] px-4 pt-6 pb-4 overflow-visible'>
-            {/* Patrón de fondo */}
+            {/* Patrón de fondo *\/}
             <div className='absolute inset-0 opacity-10'>
               <div
                 className='absolute inset-0'
@@ -296,29 +324,29 @@ Saludos! 🎨✨`
             </div>
 
             <div className='relative z-10'>
-              {/* Badge Pintura Flash Days */}
+              {/* Badge Pintura Flash Days *\/}
               <div className='mb-3'>
                 <FlashDaysBadge />
               </div>
 
-              {/* Título */}
+              {/* Título *\/}
               <h2 className='text-white font-black text-xl sm:text-2xl mb-2 leading-tight'>
                 ¡Sorteo Flash Days!
                 <br />
                 <span className='text-[#FFD700]'>{PINTURA_FLASH_DAYS_CONFIG.prizeCount} GIFT CARDS</span> de ${PINTURA_FLASH_DAYS_CONFIG.prizeAmount.toLocaleString('es-AR')}
               </h2>
 
-              {/* Subtítulo */}
+              {/* Subtítulo *\/}
               <p className='text-white/90 text-sm'>
                 Dejanos tu WhatsApp y participá
               </p>
             </div>
 
-            {/* Banner Pinteya - OVERLAY */}
+            {/* Banner Pinteya - OVERLAY *\/}
             <PinteyaBanner isMobileVersion={true} />
           </div>
 
-          {/* Features */}
+          {/* Features *\/}
           <div className='px-4 pb-3'>
             <div className='flex flex-col gap-2'>
               {[
@@ -334,7 +362,7 @@ Saludos! 🎨✨`
             </div>
           </div>
 
-          {/* Formulario */}
+          {/* Formulario *\/}
           <form onSubmit={handleSubmit} className='px-4 pb-6'>
             <div className='flex flex-col gap-2'>
               <div className='relative'>
@@ -366,7 +394,7 @@ Saludos! 🎨✨`
             </div>
           </form>
 
-          {/* Pantalla de Confirmación - Mobile */}
+          {/* Pantalla de Confirmación - Mobile *\/}
           {showConfirmation && (
             <div className='absolute inset-0 bg-white z-30 flex flex-col items-center justify-center p-8 rounded-3xl animate-fadeIn'>
               <div className='w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mb-6'>
@@ -391,9 +419,9 @@ Saludos! 🎨✨`
           )}
         </div>
       ) : (
-        /* DISEÑO DESKTOP */
+        /* DISEÑO DESKTOP *\/}
         <div className='bg-white rounded-3xl shadow-2xl max-w-[900px] w-full relative animate-slideUp overflow-hidden'>
-          {/* Close button */}
+          {/* Close button *\/}
           <button
             onClick={handleClose}
             data-testid='flash-days-close-button'
@@ -404,9 +432,9 @@ Saludos! 🎨✨`
           </button>
 
           <div className='flex flex-row'>
-            {/* Columna Izquierda - Visual */}
+            {/* Columna Izquierda - Visual *\/}
             <div className='w-1/2 bg-gradient-to-br from-[#eb6313] via-[#f27a1d] to-[#bd4811] p-10 flex flex-col justify-center items-center relative overflow-visible'>
-              {/* Patrón de fondo */}
+              {/* Patrón de fondo *\/}
               <div className='absolute inset-0 opacity-10'>
                 <div
                   className='absolute inset-0'
@@ -418,12 +446,12 @@ Saludos! 🎨✨`
               </div>
 
               <div className='relative z-10 text-center'>
-                {/* Badge Pintura Flash Days */}
+                {/* Badge Pintura Flash Days *\/}
                 <div className='mb-6 flex justify-center'>
                   <FlashDaysBadge />
                 </div>
 
-                {/* Texto de cantidad de premios */}
+                {/* Texto de cantidad de premios *\/}
                 <div className='mt-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4'>
                   <p className='text-white text-lg font-bold'>
                     🎨 {PINTURA_FLASH_DAYS_CONFIG.prizeCount} Gift Cards en Juego
@@ -434,13 +462,13 @@ Saludos! 🎨✨`
                 </div>
               </div>
 
-              {/* Banner Pinteya - OVERLAY */}
+              {/* Banner Pinteya - OVERLAY *\/}
               <PinteyaBanner isMobileVersion={false} />
             </div>
 
-            {/* Columna Derecha - Formulario */}
+            {/* Columna Derecha - Formulario *\/}
             <div className='w-1/2 p-10 flex flex-col justify-center'>
-              {/* Título */}
+              {/* Título *\/}
               <h2 className='text-gray-900 font-black text-3xl mb-3 leading-tight'>
                 ¡Sorteo Flash Days!
                 <br />
@@ -450,12 +478,12 @@ Saludos! 🎨✨`
                 </span>
               </h2>
 
-              {/* Subtítulo */}
+              {/* Subtítulo *\/}
               <p className='text-gray-600 text-base mb-6'>
                 Dejanos tu WhatsApp y participá del sorteo
               </p>
 
-              {/* Features */}
+              {/* Features *\/}
               <div className='flex flex-col gap-3 mb-8'>
                 {[
                   `${PINTURA_FLASH_DAYS_CONFIG.prizeCount} ganadoras de $${PINTURA_FLASH_DAYS_CONFIG.prizeAmount.toLocaleString('es-AR')} cada una`,
@@ -469,7 +497,7 @@ Saludos! 🎨✨`
                 ))}
               </div>
 
-              {/* Formulario */}
+              {/* Formulario *\/}
               <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
                 <div className='relative'>
                   <Phone className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
@@ -505,7 +533,7 @@ Saludos! 🎨✨`
             </div>
           </div>
 
-          {/* Pantalla de Confirmación - Desktop */}
+          {/* Pantalla de Confirmación - Desktop *\/}
           {showConfirmation && (
             <div className='absolute inset-0 bg-white z-30 flex flex-col items-center justify-center p-12 rounded-3xl animate-fadeIn'>
               <div className='w-28 h-28 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mb-8'>
@@ -534,5 +562,4 @@ Saludos! 🎨✨`
   )
 }
 
-export default WhatsAppPopup
-
+*/

@@ -97,7 +97,31 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
  */
 export async function getUserRole(userId: string): Promise<string> {
   try {
-    const profile = await getUserProfile(userId)
+    let profile = await getUserProfile(userId)
+
+    // Si no encontramos por userId, intentar buscar por email
+    if (!profile) {
+      const supabase = getSupabaseAdmin()
+      const { data: user } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', userId)
+        .single()
+
+      if (user?.email) {
+        console.log(`[Role Service] Profile not found by userId, trying by email: ${user.email}`)
+        profile = await getUserProfileByEmail(user.email)
+        
+        // Si encontramos el perfil por email, actualizar el supabase_user_id
+        if (profile) {
+          await supabase
+            .from('user_profiles')
+            .update({ supabase_user_id: userId, updated_at: new Date().toISOString() })
+            .eq('email', user.email)
+          console.log(`[Role Service] Updated supabase_user_id for ${user.email}`)
+        }
+      }
+    }
 
     if (!profile || !profile.role) {
       return 'customer' // Rol por defecto
@@ -219,27 +243,38 @@ export async function upsertUserProfile(userData: {
   try {
     const supabase = getSupabaseAdmin()
 
-    // Obtener el ID del rol 'customer' por defecto
-    const { data: customerRole } = await supabase
-      .from('user_roles')
-      .select('id')
-      .eq('role_name', 'customer')
+    // Primero, verificar si ya existe un perfil con este email
+    const { data: existingProfile } = await supabase
+      .from('user_profiles')
+      .select('id, role_id')
+      .eq('email', userData.email)
       .single()
 
-    const roleId = customerRole?.id || null
+    // Si existe, preservar su rol actual (no sobreescribir admin/driver con customer)
+    const roleToUse = existingProfile?.role_id
+
+    // Si no existe, obtener el rol 'customer' por defecto
+    let defaultRoleId = roleToUse
+    if (!defaultRoleId) {
+      const { data: customerRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('role_name', 'customer')
+        .single()
+      defaultRoleId = customerRole?.id || null
+    }
 
     // Intentar hacer upsert del perfil
     const { data, error } = await supabase
       .from('user_profiles')
       .upsert(
         {
-          supabase_user_id: userData.supabase_user_id,
+          supabase_user_id: userData.supabase_user_id, // Siempre actualizar el user_id
           email: userData.email,
-          first_name: userData.first_name,
-          last_name: userData.last_name,
-          role_id: roleId,
+          first_name: userData.first_name || 'Usuario',
+          last_name: userData.last_name || '',
+          role_id: defaultRoleId, // Preservar rol existente o usar customer
           is_active: true,
-          is_verified: false,
           updated_at: new Date().toISOString(),
         },
         {
@@ -272,6 +307,8 @@ export async function upsertUserProfile(userData: {
     }
 
     const role = Array.isArray(data.user_roles) ? data.user_roles[0] : data.user_roles
+    
+    console.log(`[Role Service] Profile synced for ${userData.email} with role: ${role?.role_name || 'none'}`)
 
     return {
       ...data,
