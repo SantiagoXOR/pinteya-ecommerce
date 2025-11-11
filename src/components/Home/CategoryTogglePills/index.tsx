@@ -340,28 +340,28 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 relative'
         data-testid='category-pills-container'
       >
-        {/* Botones de navegación minimalistas */}
-        <div className='hidden md:flex gap-2 absolute right-3 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 z-10'>
-          <button
-            onClick={() => scroll('left')}
-            className='text-gray-400 hover:text-green-600 transition-colors p-1'
-            aria-label='Anterior'
-          >
-            <ChevronLeft className='w-5 h-5' />
-          </button>
-          <button
-            onClick={() => scroll('right')}
-            className='text-gray-400 hover:text-green-600 transition-colors p-1'
-            aria-label='Siguiente'
-          >
-            <ChevronRight className='w-5 h-5' />
-          </button>
-        </div>
+        {/* Flecha izquierda */}
+        <button
+          onClick={() => scroll('left')}
+          className='absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-green-600 transition-colors p-1 bg-white/90 rounded-full shadow-sm'
+          aria-label='Anterior'
+        >
+          <ChevronLeft className='w-5 h-5' />
+        </button>
 
-        {/* Pills de categorías - Centrado en desktop */}
+        {/* Flecha derecha */}
+        <button
+          onClick={() => scroll('right')}
+          className='absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-green-600 transition-colors p-1 bg-white/90 rounded-full shadow-sm'
+          aria-label='Siguiente'
+        >
+          <ChevronRight className='w-5 h-5' />
+        </button>
+
+        {/* Pills de categorías - Espaciado uniforme */}
         <div
           ref={carouselRef}
-          className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+          className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 px-8 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}

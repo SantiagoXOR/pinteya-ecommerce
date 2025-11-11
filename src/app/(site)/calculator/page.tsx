@@ -78,6 +78,8 @@ export default function CalculatorPage() {
   }
 
   const handleAddToCart = (product: any) => {
+    const mainImage = getMainImage(product)
+    
     addProduct(
       {
         id: product.id,
@@ -87,7 +89,10 @@ export default function CalculatorPage() {
         images: product.images || [],
         brand: product.brand,
       },
-      { quantity: 1 }
+      { 
+        quantity: 1,
+        image: mainImage
+      }
     )
     toast.success(`${product.name} agregado al carrito`)
   }
@@ -246,7 +251,7 @@ export default function CalculatorPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className='text-center py-8'>
+                  <div className='text-center py-8'>
                       <div className='text-5xl md:text-6xl font-bold bg-gradient-to-r from-[#eb6313] to-[#bd4811] bg-clip-text text-transparent mb-2'>
                         {calculationResult.totalLiters}L
                       </div>
@@ -273,7 +278,7 @@ export default function CalculatorPage() {
                             <div className='w-1.5 h-1.5 bg-[#eb6313] rounded-full'></div>
                             + {calculationResult.wastePercentage}% desperdicio
                           </li>
-                        </ul>
+                      </ul>
                       </div>
                     </div>
                   )}
@@ -310,7 +315,7 @@ export default function CalculatorPage() {
                                 height={64}
                                 className='w-full h-full object-cover'
                               />
-                            </div>
+                      </div>
                             <div className='flex-1 min-w-0'>
                               <h4 className='font-bold text-gray-900 line-clamp-1'>{product.name}</h4>
                               <p className='text-xs text-gray-500'>{product.brand || 'Sin marca'}</p>
@@ -323,8 +328,8 @@ export default function CalculatorPage() {
                                     ${product.price.toLocaleString()}
                                   </span>
                                 )}
-                              </div>
-                            </div>
+                    </div>
+                  </div>
                             <Button
                               size='sm'
                               onClick={() => handleAddToCart(product)}
@@ -355,8 +360,8 @@ export default function CalculatorPage() {
                         variant='default'
                       >
                         Agregar Todo al Carrito
-                      </Button>
-                    </div>
+                    </Button>
+                  </div>
                   )}
                 </CardContent>
               </Card>

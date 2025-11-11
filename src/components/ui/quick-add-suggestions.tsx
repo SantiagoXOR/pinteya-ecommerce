@@ -6,7 +6,7 @@ import { Plus, Star, Loader2 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { getProducts } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
-import { getValidImageUrl } from '@/lib/adapters/product-adapter'
+import { getValidImageUrl, getMainImage } from '@/lib/adapters/product-adapter'
 import { getProductImage } from '@/lib/utils/image-helpers'
 import Image from 'next/image'
 import { useCartUnified } from '@/hooks/useCartUnified'
@@ -83,6 +83,9 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
     const product = products.find(p => p.id.toString() === productId)
 
     if (product) {
+      // Obtener la imagen principal del producto
+      const mainImage = getMainImage(product)
+      
       // Servicio unificado: normaliza y agrega
       addProduct(
         {
@@ -91,8 +94,12 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
           price: product.price,
           discounted_price: product.discounted_price || product.price,
           images: product.images || [],
+          brand: product.brand,
         },
-        { quantity: 1 }
+        { 
+          quantity: 1,
+          image: mainImage // Pasar imagen principal directamente
+        }
       )
     }
 

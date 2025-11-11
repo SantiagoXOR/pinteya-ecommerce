@@ -102,7 +102,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
       id={freeShippingOnly ? 'envio-gratis-carousel' : 'dynamic-carousel'}
       className={`py-4 bg-gradient-to-br ${categoryConfig.bgGradient} scroll-mt-20 category-transition`}
     >
-      <div className='max-w-7xl mx-auto px-4'>
+      <div className={freeShippingOnly ? 'px-4' : 'max-w-7xl mx-auto px-4'}>
         {/* Header Dinámico - 2 líneas máximo */}
         <div className='flex items-center justify-between mb-3'>
           <div className='flex items-center gap-3'>

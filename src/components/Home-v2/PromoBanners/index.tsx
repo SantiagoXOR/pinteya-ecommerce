@@ -109,7 +109,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
               key={banner.id}
               href={banner.ctaUrl}
               onClick={(e) => handleBannerClick(e, banner.ctaUrl)}
-              className='group block relative overflow-hidden rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 flex-shrink-0 w-full md:w-[calc(50%-0.25rem)] lg:w-[calc(33.333%-0.375rem)]'
+              className='group block relative overflow-hidden rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 flex-shrink-0 min-w-full md:min-w-[400px]'
             >
               {/* DISEÑO COMPACTO PARA BANNERS 1 Y 2 */}
               {isCompactBanner ? (

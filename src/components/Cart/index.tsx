@@ -118,7 +118,7 @@ const Cart = () => {
                 <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600'>
                   <div className='flex items-center justify-center gap-2'>
                     <div className='w-3 h-3 bg-green-500 rounded-full'></div>
-                    <span>Envío gratis desde $15.000</span>
+                    <span>Envío gratis desde $50.000</span>
                   </div>
                   <div className='flex items-center justify-center gap-2'>
                     <div className='w-3 h-3 bg-blue-500 rounded-full'></div>
