@@ -23,6 +23,9 @@ const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext()
   const cartItems = useAppSelector(state => state.cartReducer.items)
   const [mounted, setMounted] = useState(false)
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
+  const [dragCurrentY, setDragCurrentY] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   // Hook para carrito con backend
   const {
@@ -59,18 +62,92 @@ const CartSidebarModal = () => {
     setMounted(true)
   }, [])
 
+  // Handlers para el drag to dismiss
+  const handleDragStart = (clientY: number) => {
+    setDragStartY(clientY)
+    setIsDragging(true)
+  }
+
+  const handleDragMove = (clientY: number) => {
+    if (dragStartY === null) return
+    setDragCurrentY(clientY)
+  }
+
+  const handleDragEnd = () => {
+    if (dragStartY !== null && dragCurrentY !== null) {
+      const dragDistance = dragCurrentY - dragStartY
+      // Si arrastró hacia abajo más de 100px, cerrar el modal
+      if (dragDistance > 100) {
+        closeCartModal()
+      }
+    }
+    setDragStartY(null)
+    setDragCurrentY(null)
+    setIsDragging(false)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches[0]) {
+      handleDragStart(e.touches[0].clientY)
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches[0]) {
+      handleDragMove(e.touches[0].clientY)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    handleDragEnd()
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    handleDragStart(e.clientY)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      handleDragMove(e.clientY)
+    }
+  }
+
+  const handleMouseUp = () => {
+    if (isDragging) {
+      handleDragEnd()
+    }
+  }
+
+  // Calcular el translateY para el efecto visual
+  const translateY = dragStartY !== null && dragCurrentY !== null
+    ? Math.max(0, dragCurrentY - dragStartY)
+    : 0
+
   return (
     <>
       <Sheet open={isCartModalOpen} onOpenChange={closeCartModal}>
         <SheetContent
           side='bottom'
           className='h-[88vh] max-h-[88vh] rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden'
+          style={{
+            transform: isDragging ? `translateY(${translateY}px)` : undefined,
+            transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+          }}
         >
           {/* Título oculto para accesibilidad */}
           <SheetTitle className='sr-only'>Carrito de Compras</SheetTitle>
 
           {/* Drag Handle - Indicador visual estilo Instagram */}
-          <div className='flex justify-center pt-3 pb-2 bg-white rounded-t-3xl flex-shrink-0'>
+          <div 
+            className='flex justify-center pt-3 pb-2 bg-white rounded-t-3xl flex-shrink-0 cursor-grab active:cursor-grabbing'
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
             <div className='w-12 h-1.5 bg-gray-300 rounded-full' />
           </div>
 
