@@ -5,14 +5,26 @@
   min-height: 400px;
 }
 
+/* Cursor grab cuando se puede arrastrar */
 .hero-carousel .swiper {
   @apply w-full h-full;
   min-height: inherit;
+  cursor: grab;
 }
 
+.hero-carousel .swiper:active {
+  cursor: grabbing;
+}
+
+/* Efecto de sombra durante el drag */
 .hero-carousel .swiper-slide {
   @apply w-full h-full;
   min-height: inherit;
+  transition: box-shadow 0.3s ease;
+}
+
+.hero-carousel .swiper:active .swiper-slide-active {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 /* Asegurar que HeroSlide ocupe todo el espacio */
@@ -78,10 +90,10 @@
     margin: 0 4px !important;
   }
 
+  /* Ocultar botones en móvil - solo drag/swipe */
   .hero-carousel .hero-carousel-button-prev,
   .hero-carousel .hero-carousel-button-next {
-    @apply w-10 h-10;
-    @apply opacity-80;
+    display: none !important;
   }
 }
 

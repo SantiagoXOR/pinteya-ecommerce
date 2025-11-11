@@ -109,6 +109,17 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
         spaceBetween={0}
         slidesPerView={1}
         centeredSlides={true}
+        // Habilitar drag con mouse en desktop
+        simulateTouch={true}
+        allowTouchMove={true}
+        touchRatio={1}
+        // Optimizar touch en móvil
+        touchStartPreventDefault={false}
+        threshold={10}
+        resistance={true}
+        resistanceRatio={0.85}
+        // Cursor grab en desktop
+        grabCursor={true}
         onSlideChange={handleSlideChange}
         onSwiper={(swiper: any) => {
           swiperRef.current = swiper
@@ -128,11 +139,11 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
         ))}
       </Swiper>
 
-      {/* Custom Navigation Buttons */}
+      {/* Custom Navigation Buttons - Solo en desktop */}
       {showNavigation && (
         <>
           <button
-            className='hero-carousel-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white/80 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-blaze-orange-600 hover:text-blaze-orange-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2'
+            className='hero-carousel-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white/80 hover:bg-white rounded-full shadow-lg hidden lg:flex items-center justify-center text-blaze-orange-600 hover:text-blaze-orange-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2'
             aria-label='Slide anterior'
             type='button'
           >
@@ -153,7 +164,7 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
           </button>
 
           <button
-            className='hero-carousel-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white/80 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-blaze-orange-600 hover:text-blaze-orange-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2'
+            className='hero-carousel-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white/80 hover:bg-white rounded-full shadow-lg hidden lg:flex items-center justify-center text-blaze-orange-600 hover:text-blaze-orange-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2'
             aria-label='Slide siguiente'
             type='button'
           >

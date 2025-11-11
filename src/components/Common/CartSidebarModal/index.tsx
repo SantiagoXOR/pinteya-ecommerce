@@ -62,6 +62,19 @@ const CartSidebarModal = () => {
     setMounted(true)
   }, [])
 
+  // Prevenir scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isCartModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isCartModalOpen])
+
   // Handlers para el drag to dismiss
   const handleDragStart = (clientY: number) => {
     setDragStartY(clientY)
@@ -78,7 +91,15 @@ const CartSidebarModal = () => {
       const dragDistance = dragCurrentY - dragStartY
       // Si arrastró hacia abajo más de 100px, cerrar el modal
       if (dragDistance > 100) {
-        closeCartModal()
+        // Primero resetear el estado del drag para que vuelva a su posición
+        setDragStartY(null)
+        setDragCurrentY(null)
+        setIsDragging(false)
+        // Luego cerrar el modal después de un pequeño delay
+        setTimeout(() => {
+          closeCartModal()
+        }, 50)
+        return
       }
     }
     setDragStartY(null)
@@ -94,6 +115,7 @@ const CartSidebarModal = () => {
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches[0]) {
+      e.preventDefault() // Prevenir scroll mientras arrastra
       handleDragMove(e.touches[0].clientY)
     }
   }
@@ -130,8 +152,9 @@ const CartSidebarModal = () => {
           side='bottom'
           className='h-[88vh] max-h-[88vh] rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden'
           style={{
-            transform: isDragging ? `translateY(${translateY}px)` : undefined,
-            transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+            transform: isDragging && translateY > 0 ? `translateY(${translateY}px)` : undefined,
+            transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            willChange: isDragging ? 'transform' : 'auto'
           }}
         >
           {/* Título oculto para accesibilidad */}
@@ -139,7 +162,7 @@ const CartSidebarModal = () => {
 
           {/* Drag Handle - Indicador visual estilo Instagram */}
           <div 
-            className='flex justify-center pt-3 pb-2 bg-white rounded-t-3xl flex-shrink-0 cursor-grab active:cursor-grabbing'
+            className='flex justify-center pt-3 pb-2 bg-white rounded-t-3xl flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none'
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -148,7 +171,7 @@ const CartSidebarModal = () => {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
-            <div className='w-12 h-1.5 bg-gray-300 rounded-full' />
+            <div className='w-12 h-1.5 bg-gray-300 rounded-full pointer-events-none' />
           </div>
 
           {/* Content Area - Scrollable */}
