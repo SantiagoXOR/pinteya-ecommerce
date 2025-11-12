@@ -11,6 +11,8 @@ import Billing from './Billing'
 import Coupon from './Coupon'
 import UserInfo from './UserInfo'
 import { useCheckout } from '@/hooks/useCheckout'
+import { trackBeginCheckout } from '@/lib/google-analytics'
+import { trackInitiateCheckout } from '@/lib/meta-pixel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form'
@@ -143,6 +145,43 @@ const Checkout = () => {
       router.push('/cart')
     }
   }, [cartItems.length, step, router])
+
+  // 📊 ANALYTICS: Track initiate checkout (solo una vez al cargar)
+  useEffect(() => {
+    if (cartItems.length > 0 && step === 'form') {
+      try {
+        // Preparar items para tracking
+        const items = cartItems.map((item: any) => ({
+          item_id: String(item.id),
+          item_name: item.name || item.title || 'Producto',
+          item_category: item.brand || item.category || 'Producto',
+          price: item.discounted_price || item.price || 0,
+          quantity: item.quantity || 1,
+        }))
+
+        // Preparar items para Meta Pixel (formato diferente)
+        const metaContents = cartItems.map((item: any) => ({
+          id: String(item.id),
+          quantity: item.quantity || 1,
+          item_price: item.discounted_price || item.price || 0,
+        }))
+
+        // Google Analytics
+        trackBeginCheckout(items, totalPrice, 'ARS')
+
+        // Meta Pixel
+        trackInitiateCheckout(metaContents, totalPrice, 'ARS', cartItems.length)
+
+        console.debug('[Analytics] Initiate checkout tracked:', {
+          items: items.length,
+          totalValue: totalPrice,
+        })
+      } catch (analyticsError) {
+        console.warn('[Analytics] Error tracking initiate checkout:', analyticsError)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Solo ejecutar una vez al montar el componente
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

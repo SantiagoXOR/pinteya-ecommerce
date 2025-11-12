@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle, Package, Truck, ArrowRight, Home, Receipt } from 'lucide-react'
+import { trackPurchase as trackGA4Purchase } from '@/lib/google-analytics'
+import { trackPurchase as trackMetaPurchase } from '@/lib/meta-pixel'
 
 interface PaymentInfo {
   payment_id?: string
@@ -46,6 +48,80 @@ export default function CheckoutSuccessPage() {
       merchant_order_id,
     })
   }, [searchParams])
+
+  // 📊 ANALYTICS: Track purchase (solo una vez al cargar con pago exitoso)
+  useEffect(() => {
+    if (paymentInfo.payment_id && paymentInfo.status === 'approved') {
+      try {
+        // Obtener datos del carrito del sessionStorage (si están disponibles)
+        const checkoutData = sessionStorage.getItem('checkout-data')
+        let items: any[] = []
+        let totalValue = 0
+        let shippingCost = 0
+
+        if (checkoutData) {
+          const parsed = JSON.parse(checkoutData)
+          items = parsed.items || []
+          totalValue = parsed.total || 0
+          shippingCost = parsed.shipping || 0
+        }
+
+        // Si no hay datos en sessionStorage, intentar reconstruir desde URL
+        const transactionId = paymentInfo.external_reference || paymentInfo.payment_id
+
+        if (items.length > 0 && totalValue > 0) {
+          // Preparar items para Google Analytics
+          const ga4Items = items.map((item: any) => ({
+            item_id: String(item.id),
+            item_name: item.name || item.title || 'Producto',
+            item_category: item.brand || item.category || 'Producto',
+            price: item.discounted_price || item.price || 0,
+            quantity: item.quantity || 1,
+          }))
+
+          // Preparar items para Meta Pixel
+          const metaContents = items.map((item: any) => ({
+            id: String(item.id),
+            quantity: item.quantity || 1,
+            item_price: item.discounted_price || item.price || 0,
+          }))
+
+          // Google Analytics
+          trackGA4Purchase(
+            transactionId,
+            ga4Items,
+            totalValue,
+            'ARS',
+            shippingCost,
+            0 // tax
+          )
+
+          // Meta Pixel
+          trackMetaPurchase(
+            totalValue,
+            'ARS',
+            metaContents,
+            items.length,
+            transactionId
+          )
+
+          console.debug('[Analytics] Purchase tracked:', {
+            transactionId,
+            items: items.length,
+            totalValue,
+          })
+
+          // Limpiar datos del checkout del sessionStorage
+          sessionStorage.removeItem('checkout-data')
+          sessionStorage.removeItem('checkout-in-progress')
+        } else {
+          console.warn('[Analytics] No checkout data found for purchase tracking')
+        }
+      } catch (analyticsError) {
+        console.warn('[Analytics] Error tracking purchase:', analyticsError)
+      }
+    }
+  }, [paymentInfo])
 
   const handleContinueShopping = () => {
     router.push('/')

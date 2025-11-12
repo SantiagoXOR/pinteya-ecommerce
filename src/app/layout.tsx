@@ -8,6 +8,7 @@ import '../styles/z-index-hierarchy.css'
 import { metadata as defaultMetadata } from './metadata'
 import StructuredData from '@/components/SEO/StructuredData'
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics'
+import MetaPixel from '@/components/Analytics/MetaPixel'
 import { ClientErrorSuppression } from '@/components/ErrorSuppression/ClientErrorSuppression'
 import {
   organizationStructuredData,
@@ -83,12 +84,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⚡ PERFORMANCE: Preconnect a dominios externos */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.google-analytics.com" />
+        <link rel="preconnect" href="https://connect.facebook.net" />
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
         
         <StructuredData
           data={[organizationStructuredData, websiteStructuredData, storeStructuredData]}
         />
         <GoogleAnalytics />
+        <MetaPixel />
       </head>
       <body>
         <ClientErrorSuppression />

@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'react-hot-toast'
+import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
+import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
 import {
   ShoppingCart,
   Heart,
@@ -2349,6 +2351,43 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         esProductoRelacionado: !!selectedRelatedProduct
       })
       await onAddToCart(productToAdd, cartData.variants)
+      
+      // 📊 ANALYTICS: Track add to cart
+      try {
+        const category = (productToAdd as any)?.brand || (productToAdd as any)?.category || 'Producto'
+        const productPrice = productToAdd.discounted_price || productToAdd.price || 0
+        const productName = productToAdd.name || productToAdd.title || 'Producto'
+
+        // Google Analytics
+        trackGA4AddToCart(
+          String(productToAdd.id),
+          productName,
+          category,
+          productPrice,
+          quantity,
+          'ARS'
+        )
+
+        // Meta Pixel
+        trackMetaAddToCart(
+          productName,
+          String(productToAdd.id),
+          category,
+          productPrice * quantity,
+          'ARS'
+        )
+
+        console.debug('[Analytics] Add to cart tracked from modal:', {
+          id: productToAdd.id,
+          name: productName,
+          category,
+          price: productPrice,
+          quantity,
+        })
+      } catch (analyticsError) {
+        console.warn('[Analytics] Error tracking add to cart from modal:', analyticsError)
+      }
+      
       console.log('🛒 ShopDetailModal: Producto agregado, cerrando modal...')
       onOpenChange(false) // Cerrar modal después de agregar al carrito
       console.log('🛒 ShopDetailModal: onOpenChange(false) llamado')

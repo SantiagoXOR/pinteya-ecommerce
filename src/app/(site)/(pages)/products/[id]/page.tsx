@@ -7,6 +7,8 @@ import { useCartUnified } from '@/hooks/useCartUnified'
 import { getProductById } from '@/lib/api/products'
 import { getMainImage } from '@/lib/adapters/product-adapter'
 import { SimplePageLoading } from '@/components/ui/simple-page-loading'
+import { trackProductView } from '@/lib/google-analytics'
+import { trackViewContent } from '@/lib/meta-pixel'
 
 // Mapea el producto de API al formato mínimo que consume el modal
 function mapToModalProduct(apiProduct: any) {
@@ -93,6 +95,41 @@ export default function ProductDetailModalPage() {
         }
         console.debug('[products/[id]] Producto mapeado para modal:', mapped)
         setProduct(mapped)
+
+        // 📊 ANALYTICS: Track product view
+        if (mapped && mapped.id && mapped.title) {
+          try {
+            const price = mapped.discountedPrice || mapped.price || 0
+            const category = apiData?.category?.name || apiData?.category || 'Sin categoría'
+
+            // Google Analytics
+            trackProductView(
+              String(mapped.id),
+              mapped.title,
+              category,
+              price,
+              'ARS'
+            )
+
+            // Meta Pixel
+            trackViewContent(
+              mapped.title,
+              category,
+              [String(mapped.id)],
+              price,
+              'ARS'
+            )
+
+            console.debug('[Analytics] Product view tracked:', {
+              id: mapped.id,
+              name: mapped.title,
+              category,
+              price,
+            })
+          } catch (analyticsError) {
+            console.warn('[Analytics] Error tracking product view:', analyticsError)
+          }
+        }
       } catch (error) {
         console.error('Error cargando producto', error)
       } finally {

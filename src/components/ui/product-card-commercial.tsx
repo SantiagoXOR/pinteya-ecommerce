@@ -8,6 +8,8 @@ import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShippi
 import { Heart, Eye, Star, ShoppingCart, AlertCircle } from 'lucide-react'
 import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 import { useCartUnified } from '@/hooks/useCartUnified'
+import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
+import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
 import { 
   extractProductCapacity, 
   formatProductBadges, 
@@ -922,6 +924,40 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
           // Usar addProduct del hook directamente con atributos seleccionados
           addProduct(productData, { quantity: 1, attributes })
+          
+          // 📊 ANALYTICS: Track add to cart
+          try {
+            const category = brand || 'Producto'
+            const productPrice = productData.discounted_price || productData.price
+
+            // Google Analytics
+            trackGA4AddToCart(
+              String(productData.id),
+              productData.name,
+              category,
+              productPrice,
+              1,
+              'ARS'
+            )
+
+            // Meta Pixel
+            trackMetaAddToCart(
+              productData.name,
+              String(productData.id),
+              category,
+              productPrice,
+              'ARS'
+            )
+
+            console.debug('[Analytics] Add to cart tracked:', {
+              id: productData.id,
+              name: productData.name,
+              category,
+              price: productPrice,
+            })
+          } catch (analyticsError) {
+            console.warn('[Analytics] Error tracking add to cart:', analyticsError)
+          }
           
           // Incrementar el contador de agregados
           setCartAddCount(prev => prev + 1)

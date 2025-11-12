@@ -506,6 +506,28 @@ export const useCheckout = () => {
       // Esto evita el problema de hooks con el Wallet Brick embebido
       console.log('🔄 Redirigiendo directamente a MercadoPago:', result.data.init_point)
 
+      // 📊 ANALYTICS: Guardar datos del checkout para tracking de Purchase
+      try {
+        const checkoutData = {
+          items: cartItems.map((item: any) => ({
+            id: item.id,
+            name: item.title,
+            title: item.title,
+            brand: item.brand,
+            category: item.category,
+            price: item.price,
+            discounted_price: item.discountedPrice,
+            quantity: item.quantity,
+          })),
+          total: totalPrice + shippingCost,
+          shipping: shippingCost,
+          discount: 0,
+        }
+        sessionStorage.setItem('checkout-data', JSON.stringify(checkoutData))
+      } catch (storageError) {
+        console.warn('[Analytics] Error saving checkout data:', storageError)
+      }
+
       // Cambiar a estado de redirección inmediatamente
       setCheckoutState(prev => ({
         ...prev,
@@ -612,6 +634,28 @@ export const useCheckout = () => {
 
       // ✅ CORREGIDO: Ir directamente a redirect para evitar error de hooks con MercadoPagoWallet
       console.log('🔄 Redirigiendo directamente a MercadoPago:', result.data.init_point)
+
+      // 📊 ANALYTICS: Guardar datos del checkout para tracking de Purchase
+      try {
+        const checkoutData = {
+          items: cartItems.map((item: any) => ({
+            id: item.id,
+            name: item.title,
+            title: item.title,
+            brand: item.brand,
+            category: item.category,
+            price: item.price,
+            discounted_price: item.discountedPrice,
+            quantity: item.quantity,
+          })),
+          total: totalPrice + shippingCost,
+          shipping: shippingCost,
+          discount: 0,
+        }
+        sessionStorage.setItem('checkout-data', JSON.stringify(checkoutData))
+      } catch (storageError) {
+        console.warn('[Analytics] Error saving checkout data:', storageError)
+      }
 
       setCheckoutState(prev => ({
         ...prev,
