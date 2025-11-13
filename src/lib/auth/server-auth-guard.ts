@@ -118,3 +118,62 @@ export async function isDriver(): Promise<boolean> {
 export async function getCurrentUser() {
   return await auth()
 }
+
+/**
+ * Verifica autenticación de admin para API routes (sin redirect)
+ * Devuelve el resultado con session o error para manejar en la ruta API
+ * @returns Objeto con session y error
+ */
+export async function checkAdminAuth(): Promise<{
+  session: any | null
+  error: string | null
+  status: number
+}> {
+  // BYPASS PARA DESARROLLO
+  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    console.log('[API Auth Check] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación')
+    return {
+      session: {
+        user: {
+          email: 'admin@bypass.dev',
+          name: 'Admin (Bypass Mode)',
+          id: 'bypass-admin-id',
+          role: 'admin'
+        }
+      },
+      error: null,
+      status: 200
+    }
+  }
+
+  const session = await auth()
+  
+  if (!session?.user) {
+    console.warn('[API Auth Check] Usuario no autenticado intentando acceder a API admin')
+    return {
+      session: null,
+      error: 'No autenticado',
+      status: 401
+    }
+  }
+  
+  // Verificar el rol desde la sesión
+  const userRole = session.user.role || 'customer'
+  const isAdmin = userRole === 'admin'
+  
+  if (!isAdmin) {
+    console.warn(`[API Auth Check] Usuario no-admin (${session.user.email}, rol: ${userRole}) intentando acceder a API admin`)
+    return {
+      session: null,
+      error: 'Acceso denegado: se requiere rol de administrador',
+      status: 403
+    }
+  }
+  
+  console.log(`[API Auth Check] Admin autenticado: ${session.user.email} (rol: ${userRole})`)
+  return {
+    session,
+    error: null,
+    status: 200
+  }
+}

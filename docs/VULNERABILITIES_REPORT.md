@@ -318,3 +318,4 @@ npm run dev
 *Generado automáticamente por sistema de auditoría*  
 *Última actualización: 13 de Noviembre de 2025*
 
+

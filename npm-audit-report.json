@@ -1,0 +1,171 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@playwright/test": {
+      "name": "@playwright/test",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "playwright"
+      ],
+      "effects": [],
+      "range": "0.9.7 - 0.1112.0-alpha2 || 1.38.0-alpha-1692262648000 - 1.55.1-beta-1758616458000",
+      "nodes": [
+        "node_modules/@playwright/test"
+      ],
+      "fixAvailable": true
+    },
+    "next-auth": {
+      "name": "next-auth",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1109304,
+          "name": "next-auth",
+          "dependency": "next-auth",
+          "title": "NextAuthjs Email misdelivery Vulnerability",
+          "url": "https://github.com/advisories/GHSA-5jpx-9hw9-2fx4",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=5.0.0-beta.0 <5.0.0-beta.30"
+        }
+      ],
+      "effects": [],
+      "range": "5.0.0-beta.0 - 5.0.0-beta.29",
+      "nodes": [
+        "node_modules/next-auth"
+      ],
+      "fixAvailable": true
+    },
+    "playwright": {
+      "name": "playwright",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109208,
+          "name": "playwright",
+          "dependency": "playwright",
+          "title": "Playwright downloads and installs browsers without verifying the authenticity of the SSL certificate",
+          "url": "https://github.com/advisories/GHSA-7mvr-c777-76hp",
+          "severity": "high",
+          "cwe": [
+            "CWE-347"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<1.55.1"
+        }
+      ],
+      "effects": [
+        "@playwright/test"
+      ],
+      "range": "<1.55.1",
+      "nodes": [
+        "node_modules/playwright"
+      ],
+      "fixAvailable": true
+    },
+    "validator": {
+      "name": "validator",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1109241,
+          "name": "validator",
+          "dependency": "validator",
+          "title": "validator.js has a URL validation bypass vulnerability in its isURL function",
+          "url": "https://github.com/advisories/GHSA-9965-vmph-33xx",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<13.15.20"
+        }
+      ],
+      "effects": [],
+      "range": "<13.15.20",
+      "nodes": [
+        "node_modules/validator"
+      ],
+      "fixAvailable": true
+    },
+    "xlsx": {
+      "name": "xlsx",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1108110,
+          "name": "xlsx",
+          "dependency": "xlsx",
+          "title": "Prototype Pollution in sheetJS",
+          "url": "https://github.com/advisories/GHSA-4r6h-8v6p-xvw6",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.8,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"
+          },
+          "range": "<0.19.3"
+        },
+        {
+          "source": 1108111,
+          "name": "xlsx",
+          "dependency": "xlsx",
+          "title": "SheetJS Regular Expression Denial of Service (ReDoS)",
+          "url": "https://github.com/advisories/GHSA-5pgg-2g8v-p4x9",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<0.20.2"
+        }
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/xlsx"
+      ],
+      "fixAvailable": false
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 2,
+      "high": 3,
+      "critical": 0,
+      "total": 5
+    },
+    "dependencies": {
+      "prod": 371,
+      "dev": 601,
+      "optional": 66,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 1006
+    }
+  }
+}

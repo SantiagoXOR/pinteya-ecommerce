@@ -9,7 +9,7 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { serverAuthGuard } from '@/lib/auth/server-auth-guard'
+import { checkAdminAuth } from '@/lib/auth/server-auth-guard'
 import { z } from 'zod'
 import ExcelJS from 'exceljs' // ✅ SEGURO: Librería segura para generar Excel (sin vulnerabilidades)
 
@@ -164,9 +164,9 @@ async function generateExcel(products: any[]): Promise<Buffer> {
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación (con bypass en desarrollo)
-    const authResult = await serverAuthGuard(request, ['admin'])
+    const authResult = await checkAdminAuth()
     if (authResult.error) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status || 401 })
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
     const session = authResult.session
 
@@ -328,11 +328,13 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error('❌ Error en exportación de productos:', error)
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'N/A')
 
     return NextResponse.json(
       {
         error: 'Error interno del servidor',
         details: error instanceof Error ? error.message : 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined,
       },
       { status: 500 }
     )
@@ -346,9 +348,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Verificar autenticación (con bypass en desarrollo)
-    const authResult = await serverAuthGuard(request, ['admin'])
+    const authResult = await checkAdminAuth()
     if (authResult.error) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status || 401 })
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
     const session = authResult.session
 

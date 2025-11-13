@@ -558,3 +558,4 @@ npm run build
 *Proyecto: Pinteya E-commerce*  
 *Desarrollador: Sistema Automatizado*
 
+
