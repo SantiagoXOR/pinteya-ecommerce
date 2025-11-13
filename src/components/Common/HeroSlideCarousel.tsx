@@ -113,13 +113,27 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
         simulateTouch={true}
         allowTouchMove={true}
         touchRatio={1}
-        // Optimizar touch en móvil
+        longSwipes={true}
+        longSwipesRatio={0.5}
+        longSwipesMs={300}
+        followFinger={true}
+        // Optimizar touch en móvil - NO prevenir default para permitir scroll
         touchStartPreventDefault={false}
+        touchMoveStopPropagation={false}
         threshold={10}
+        touchAngle={45}
         resistance={true}
         resistanceRatio={0.85}
+        // Permitir deslizar en ambas direcciones
+        allowSlidePrev={true}
+        allowSlideNext={true}
         // Cursor grab en desktop
         grabCursor={true}
+        // Prevenir clicks durante el drag
+        preventClicks={true}
+        preventClicksPropagation={true}
+        // Detectar la dirección del swipe
+        touchEventsTarget='container'
         onSlideChange={handleSlideChange}
         onSwiper={(swiper: any) => {
           swiperRef.current = swiper

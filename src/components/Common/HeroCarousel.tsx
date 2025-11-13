@@ -144,6 +144,33 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
         spaceBetween={0}
         slidesPerView={1}
         centeredSlides={true}
+        // Habilitar drag con mouse en desktop
+        simulateTouch={true}
+        allowTouchMove={true}
+        touchRatio={1}
+        longSwipes={true}
+        longSwipesRatio={0.5}
+        longSwipesMs={300}
+        followFinger={true}
+        // Optimizar touch en móvil
+        touchStartPreventDefault={false}
+        touchMoveStopPropagation={false}
+        threshold={5}
+        touchAngle={45}
+        edgeSwipeDetection={false}
+        edgeSwipeThreshold={20}
+        resistance={true}
+        resistanceRatio={0.85}
+        // Permitir deslizar en ambas direcciones
+        allowSlidePrev={true}
+        allowSlideNext={true}
+        // Cursor grab en desktop
+        grabCursor={true}
+        // Prevenir clicks durante el drag
+        preventClicks={true}
+        preventClicksPropagation={true}
+        // Detectar la dirección del swipe
+        touchEventsTarget='container'
         onSlideChange={handleSlideChange}
         onSwiper={(swiper: any) => {
           swiperRef.current = swiper
@@ -163,13 +190,14 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 src={image.src}
                 alt={image.alt}
                 fill
-                className='object-contain transition-all duration-500 ease-in-out'
+                className='object-contain transition-all duration-500 ease-in-out select-none'
                 priority={image.priority || index === 0}
                 unoptimized={image.unoptimized || image.src.endsWith('.svg')}
                 sizes='(max-width: 640px) 100vw, (max-width: 768px) 95vw, (max-width: 1024px) 80vw, 60vw'
                 quality={image.quality || 90}
                 aria-describedby={`slide-description-${index}`}
                 style={{ objectFit: 'contain' }}
+                draggable={false}
               />
               <div id={`slide-description-${index}`} className='sr-only'>
                 {image.alt}
@@ -179,11 +207,11 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
         ))}
       </Swiper>
 
-      {/* Custom Navigation Buttons - Minimalista */}
+      {/* Custom Navigation Buttons - Solo en desktop */}
       {showNavigation && (
         <>
           <button
-            className='hero-carousel-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-blaze-orange-600 transition-colors focus:outline-none'
+            className='hero-carousel-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-blaze-orange-600 transition-colors focus:outline-none hidden lg:block'
             aria-label='Imagen anterior'
             type='button'
           >
@@ -204,7 +232,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
           </button>
 
           <button
-            className='hero-carousel-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-blaze-orange-600 transition-colors focus:outline-none'
+            className='hero-carousel-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-blaze-orange-600 transition-colors focus:outline-none hidden lg:block'
             aria-label='Imagen siguiente'
             type='button'
           >

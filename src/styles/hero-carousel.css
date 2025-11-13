@@ -33,6 +33,49 @@
   min-height: inherit;
 }
 
+/* Los elementos interactivos dentro del slide mantienen su funcionalidad */
+.hero-carousel .swiper-slide a,
+.hero-carousel .swiper-slide button:not(.hero-carousel-button-prev):not(.hero-carousel-button-next) {
+  cursor: pointer;
+}
+
+/* Prevenir selección de texto durante el drag pero permitir scroll */
+.hero-carousel .swiper-container,
+.hero-carousel .swiper {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Textos e imágenes no deben ser seleccionables durante el drag */
+.hero-carousel .swiper-slide img,
+.hero-carousel .swiper-slide h1,
+.hero-carousel .swiper-slide h2,
+.hero-carousel .swiper-slide p,
+.hero-carousel .swiper-slide span:not(.hero-carousel-bullet) {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Asegurar que las imágenes Next.js no bloqueen el drag */
+.hero-carousel .swiper-slide img,
+.hero-carousel .swiper-slide picture,
+.hero-carousel .swiper-slide [data-nimg] {
+  pointer-events: none !important;
+  -webkit-user-drag: none !important;
+  user-drag: none !important;
+}
+
+/* Swiper maneja touch-action internamente, no lo bloqueamos en CSS */
+
 /* Custom Pagination Styles */
 .hero-carousel .swiper-pagination {
   @apply bottom-4 left-1/2 transform -translate-x-1/2 z-30;
