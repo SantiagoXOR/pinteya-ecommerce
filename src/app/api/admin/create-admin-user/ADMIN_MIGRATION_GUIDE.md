@@ -47,7 +47,7 @@ const response = await fetch('/api/admin/create-admin-user', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     email: 'admin@example.com',
-    password: 'password123',
+    password: 'CHANGE_ME_SECURE_PASSWORD_123!',
     securityKey: 'your-security-key',
   }),
 })
@@ -77,7 +77,7 @@ const response = await fetch('/api/admin/create-admin-user/unified', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     email: 'admin@example.com',
-    password: 'password123',
+    password: 'CHANGE_ME_SECURE_PASSWORD_123!',
     securityKey: 'your-security-key',
   }),
 })

@@ -50,7 +50,7 @@ const diagnosticTools: DiagnosticTool[] = [
     id: 'env-api',
     name: 'API Variables Entorno',
     description: 'API para verificar configuración del servidor',
-    path: '/api/debug/env?debug=pinteya2024',
+    path: '/api/debug/env',
     category: 'environment',
     status: 'active',
     lastUpdated: '2024-12-16',
@@ -75,8 +75,15 @@ export default function DiagnosticsPage() {
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Contraseña simple para desarrollo (en producción usar algo más seguro)
-    if (password === 'pinteya2024' || password === 'admin') {
+    // 🔒 SEGURIDAD: Usar variable de entorno para la contraseña
+    const validPassword = process.env.NEXT_PUBLIC_DIAGNOSTICS_PASSWORD || ''
+    
+    if (!validPassword) {
+      alert('❌ Sistema de diagnósticos no configurado. Contacta al administrador.')
+      return
+    }
+    
+    if (password === validPassword) {
       setAccessGranted(true)
       localStorage.setItem('diagnostics_access', 'granted')
     } else {
