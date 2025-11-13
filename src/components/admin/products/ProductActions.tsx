@@ -89,10 +89,10 @@ export function ProductActions({
     if (onBulkDelete && selectedProducts.length > 0) {
       try {
         await onBulkDelete(selectedProducts.map(p => p.id))
-        notifications.bulkDeleteSuccess(selectedProducts.length)
+        notifications.showBulkActionSuccess({ selectedCount: selectedProducts.length, action: 'delete' })
         setShowDeleteConfirm(false)
       } catch (error) {
-        notifications.bulkDeleteError(error as Error)
+        notifications.showBulkActionError('eliminar productos', error instanceof Error ? error.message : 'Error desconocido')
       }
     }
   }
@@ -104,10 +104,10 @@ export function ProductActions({
           selectedProducts.map(p => p.id),
           status
         )
-        notifications.bulkStatusChangeSuccess(selectedProducts.length, status)
+        notifications.showBulkActionSuccess({ selectedCount: selectedProducts.length, action: `update_status_${status}` })
         setShowBulkActions(false)
       } catch (error) {
-        notifications.bulkStatusChangeError(error as Error)
+        notifications.showBulkActionError('cambiar estado', error instanceof Error ? error.message : 'Error desconocido')
       }
     }
   }
@@ -116,10 +116,10 @@ export function ProductActions({
     if (onBulkArchive && selectedProducts.length > 0) {
       try {
         await onBulkArchive(selectedProducts.map(p => p.id))
-        notifications.bulkArchiveSuccess(selectedProducts.length)
+        notifications.showBulkActionSuccess({ selectedCount: selectedProducts.length, action: 'archive' })
         setShowBulkActions(false)
       } catch (error) {
-        notifications.bulkArchiveError(error as Error)
+        notifications.showBulkActionError('archivar productos', error instanceof Error ? error.message : 'Error desconocido')
       }
     }
   }
@@ -127,12 +127,13 @@ export function ProductActions({
   const handleExport = async (format: 'csv' | 'xlsx' | 'json') => {
     if (onExportProducts) {
       try {
-        notifications.exportStarted(format)
+        notifications.showProcessingInfo(`Exportando productos en formato ${format.toUpperCase()}...`)
         await onExportProducts(format)
-        notifications.exportSuccess(format)
+        // Estimamos que exporta todos los productos visibles
+        notifications.showExportSuccess({ format: format.toUpperCase() as 'CSV' | 'Excel' | 'JSON', recordCount: totalProducts || 0 })
         setShowExportOptions(false)
       } catch (error) {
-        notifications.exportError(error as Error, format)
+        notifications.showExportError(format.toUpperCase(), error instanceof Error ? error.message : 'Error desconocido')
       }
     }
   }
@@ -140,11 +141,12 @@ export function ProductActions({
   const handleImport = async () => {
     if (onImportProducts) {
       try {
-        notifications.importStarted()
+        notifications.showProcessingInfo('Importando productos...')
         await onImportProducts()
-        notifications.importSuccess()
+        // Asumimos que importa exitosamente, la función onImportProducts debería pasar los datos
+        notifications.showImportSuccess({ format: 'CSV', successCount: 0, errorCount: 0, recordCount: 0 })
       } catch (error) {
-        notifications.importError(error as Error)
+        notifications.showImportError('CSV', error instanceof Error ? error.message : 'Error desconocido')
       }
     }
   }
@@ -153,9 +155,9 @@ export function ProductActions({
     if (onCreateProduct) {
       try {
         await onCreateProduct()
-        notifications.createSuccess()
+        notifications.showProductCreated({ productName: 'Nuevo producto' })
       } catch (error) {
-        notifications.createError(error as Error)
+        notifications.showProductCreationError(error instanceof Error ? error.message : 'Error desconocido')
       }
     }
   }
@@ -571,10 +573,10 @@ export function ProductRowActions({
     if (onEdit) {
       try {
         await onEdit(product.id)
-        notifications.updateSuccess(product.name)
+        notifications.showProductUpdated({ productName: product.name })
         setShowActions(false)
       } catch (error) {
-        notifications.updateError(error as Error)
+        notifications.showProductUpdateError(error instanceof Error ? error.message : 'Error desconocido', product.name)
       }
     }
   }
@@ -583,10 +585,10 @@ export function ProductRowActions({
     if (onDelete) {
       try {
         await onDelete(product.id)
-        notifications.deleteSuccess(product.name)
+        notifications.showProductDeleted({ productName: product.name })
         setShowActions(false)
       } catch (error) {
-        notifications.deleteError(error as Error)
+        notifications.showProductDeleteError(error instanceof Error ? error.message : 'Error desconocido', product.name)
       }
     }
   }
@@ -595,10 +597,10 @@ export function ProductRowActions({
     if (onDuplicate) {
       try {
         await onDuplicate(product.id)
-        notifications.duplicateSuccess(product.name)
+        notifications.showProductDuplicated({ productName: product.name })
         setShowActions(false)
       } catch (error) {
-        notifications.duplicateError(error as Error)
+        notifications.showProductCreationError(error instanceof Error ? error.message : 'Error al duplicar')
       }
     }
   }
@@ -608,10 +610,10 @@ export function ProductRowActions({
       try {
         await onToggleStatus(product.id)
         const newStatus = product.status === 'active' ? 'inactive' : 'active'
-        notifications.statusChangeSuccess(product.name, newStatus)
+        notifications.showProductStatusChanged(product.name, newStatus)
         setShowActions(false)
       } catch (error) {
-        notifications.statusChangeError(error as Error)
+        notifications.showProductUpdateError(error instanceof Error ? error.message : 'Error al cambiar estado', product.name)
       }
     }
   }
@@ -620,10 +622,10 @@ export function ProductRowActions({
     if (onManageInventory) {
       try {
         await onManageInventory(product.id)
-        notifications.inventoryUpdateSuccess(product.name)
+        notifications.showInventoryUpdated({ productName: product.name, stock: 0 })
         setShowActions(false)
       } catch (error) {
-        notifications.inventoryUpdateError(error as Error)
+        notifications.showProductUpdateError(error instanceof Error ? error.message : 'Error al actualizar inventario', product.name)
       }
     }
   }
