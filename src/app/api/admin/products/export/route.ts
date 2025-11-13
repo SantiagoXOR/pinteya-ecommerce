@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { auth } from '@/lib/auth/config'
 import { z } from 'zod'
-import * as XLSX from 'xlsx' // ✅ NUEVO: Librería para generar Excel
+import ExcelJS from 'exceljs' // ✅ SEGURO: Librería segura para generar Excel (sin vulnerabilidades)
 
 // =====================================================
 // CONFIGURACIÓN
@@ -100,54 +100,61 @@ function generateCSV(products: any[]): string {
   return allRows.map(row => row.map(field => escapeCSVField(field)).join(',')).join('\n')
 }
 
-// ✅ NUEVA FUNCIÓN: Generar archivo Excel
-function generateExcel(products: any[]): Buffer {
-  // Preparar datos para Excel
-  const excelData = products.map(product => ({
-    'ID': product.id,
-    'Nombre': product.name,
-    'Descripción': product.description || '',
-    'Precio': product.price,
-    'Precio Descuento': product.discounted_price || '',
-    'Stock': product.stock,
-    'SKU': product.sku || product.aikon_id || '',
-    'Categoría': product.category_name || 'Sin categoría',
-    'Marca': product.brand || '',
-    'Estado': product.is_active ? 'Activo' : 'Inactivo',
-    'Destacado': product.is_featured ? 'Sí' : 'No',
-    'Fecha Creación': new Date(product.created_at).toLocaleDateString('es-AR'),
-    'Última Actualización': new Date(product.updated_at).toLocaleDateString('es-AR'),
-  }))
-
+// ✅ NUEVA FUNCIÓN: Generar archivo Excel (usando exceljs - más seguro)
+async function generateExcel(products: any[]): Promise<Buffer> {
   // Crear workbook
-  const wb = XLSX.utils.book_new()
-  const ws = XLSX.utils.json_to_sheet(excelData)
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet('Productos')
 
-  // Ajustar anchos de columnas
-  const columnWidths = [
-    { wch: 6 },  // ID
-    { wch: 30 }, // Nombre
-    { wch: 50 }, // Descripción
-    { wch: 12 }, // Precio
-    { wch: 15 }, // Precio Descuento
-    { wch: 8 },  // Stock
-    { wch: 15 }, // SKU
-    { wch: 20 }, // Categoría
-    { wch: 15 }, // Marca
-    { wch: 10 }, // Estado
-    { wch: 10 }, // Destacado
-    { wch: 15 }, // Fecha Creación
-    { wch: 15 }, // Última Actualización
+  // Definir columnas con headers y anchos
+  worksheet.columns = [
+    { header: 'ID', key: 'id', width: 6 },
+    { header: 'Nombre', key: 'name', width: 30 },
+    { header: 'Descripción', key: 'description', width: 50 },
+    { header: 'Precio', key: 'price', width: 12 },
+    { header: 'Precio Descuento', key: 'discounted_price', width: 15 },
+    { header: 'Stock', key: 'stock', width: 8 },
+    { header: 'SKU', key: 'sku', width: 15 },
+    { header: 'Categoría', key: 'category_name', width: 20 },
+    { header: 'Marca', key: 'brand', width: 15 },
+    { header: 'Estado', key: 'status', width: 10 },
+    { header: 'Destacado', key: 'featured', width: 10 },
+    { header: 'Fecha Creación', key: 'created_at', width: 15 },
+    { header: 'Última Actualización', key: 'updated_at', width: 15 },
   ]
-  ws['!cols'] = columnWidths
 
-  // Agregar hoja al workbook
-  XLSX.utils.book_append_sheet(wb, ws, 'Productos')
+  // Estilizar header
+  worksheet.getRow(1).font = { bold: true }
+  worksheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFF97316' }, // Naranja de Pinteya
+  }
+  worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }
+
+  // Agregar datos
+  products.forEach(product => {
+    worksheet.addRow({
+      id: product.id,
+      name: product.name,
+      description: product.description || '',
+      price: product.price,
+      discounted_price: product.discounted_price || '',
+      stock: product.stock,
+      sku: product.sku || product.aikon_id || '',
+      category_name: product.category_name || 'Sin categoría',
+      brand: product.brand || '',
+      status: product.is_active ? 'Activo' : 'Inactivo',
+      featured: product.is_featured ? 'Sí' : 'No',
+      created_at: new Date(product.created_at).toLocaleDateString('es-AR'),
+      updated_at: new Date(product.updated_at).toLocaleDateString('es-AR'),
+    })
+  })
 
   // Generar buffer
-  const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
+  const buffer = await workbook.xlsx.writeBuffer()
   
-  return buffer
+  return Buffer.from(buffer)
 }
 
 // =====================================================
@@ -268,7 +275,9 @@ export async function GET(request: NextRequest) {
     // Transformar datos para incluir nombre de categoría
     const transformedProducts = products.map(product => ({
       ...product,
-      category_name: product.categories?.name || 'Sin categoría',
+      category_name: Array.isArray(product.categories) 
+        ? product.categories[0]?.name || 'Sin categoría'
+        : (product.categories as any)?.name || 'Sin categoría',
     }))
 
     // ✅ Determinar formato solicitado
@@ -287,7 +296,7 @@ export async function GET(request: NextRequest) {
     // ✅ Generar archivo según formato
     if (format === 'xlsx') {
       // Generar Excel
-      const excelBuffer = generateExcel(transformedProducts)
+      const excelBuffer = await generateExcel(transformedProducts)
       const filename = `productos-pinteya-${timestamp}.xlsx`
 
       return new NextResponse(excelBuffer, {
