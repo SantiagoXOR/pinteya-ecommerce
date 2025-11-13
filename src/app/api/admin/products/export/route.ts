@@ -9,7 +9,7 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { auth } from '@/lib/auth/config'
+import { serverAuthGuard } from '@/lib/auth/server-auth-guard'
 import { z } from 'zod'
 import ExcelJS from 'exceljs' // ✅ SEGURO: Librería segura para generar Excel (sin vulnerabilidades)
 
@@ -163,11 +163,12 @@ async function generateExcel(products: any[]): Promise<Buffer> {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    // Verificar autenticación (con bypass en desarrollo)
+    const authResult = await serverAuthGuard(request, ['admin'])
+    if (authResult.error) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status || 401 })
     }
+    const session = authResult.session
 
     // Obtener parámetros de consulta
     const { searchParams } = new URL(request.url)
@@ -344,11 +345,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    // Verificar autenticación (con bypass en desarrollo)
+    const authResult = await serverAuthGuard(request, ['admin'])
+    if (authResult.error) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status || 401 })
     }
+    const session = authResult.session
 
     // Obtener filtros del body
     const body = await request.json()

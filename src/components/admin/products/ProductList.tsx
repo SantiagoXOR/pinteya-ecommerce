@@ -461,9 +461,49 @@ export function ProductList({
     router.push('/admin/products/new')
   }
 
-  const handleExportProducts = () => {
-    // TODO: Implement export functionality
-    console.log('Export products')
+  const handleExportProducts = async (format: 'csv' | 'xlsx' | 'json') => {
+    try {
+      console.log(`📊 Exportando productos en formato ${format}...`)
+      
+      // Construir URL con filtros actuales
+      const params = new URLSearchParams({
+        format: format,
+        ...(filters.category && { category_id: filters.category }),
+        ...(filters.brand && { brand: filters.brand }),
+        ...(filters.status && filters.status !== 'all' && { status: filters.status }),
+        ...(filters.stock_status && filters.stock_status !== 'all' && { stock_status: filters.stock_status }),
+      })
+
+      // Hacer request a la API
+      const response = await fetch(`/api/admin/products/export?${params.toString()}`)
+      
+      if (!response.ok) {
+        throw new Error(`Error al exportar: ${response.statusText}`)
+      }
+
+      // Obtener el blob
+      const blob = await response.blob()
+      
+      // Obtener el filename del header Content-Disposition o generar uno
+      const contentDisposition = response.headers.get('Content-Disposition')
+      const filenameMatch = contentDisposition?.match(/filename="?(.+)"?/)
+      const filename = filenameMatch ? filenameMatch[1] : `productos-pinteya-${new Date().toISOString().split('T')[0]}.${format}`
+
+      // Crear link de descarga y triggerearlo
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      console.log(`✅ Exportación completada: ${filename}`)
+    } catch (error) {
+      console.error('❌ Error al exportar productos:', error)
+      throw error
+    }
   }
 
   const handleImportProducts = () => {
