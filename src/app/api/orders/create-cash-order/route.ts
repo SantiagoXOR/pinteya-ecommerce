@@ -203,10 +203,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener detalles de productos y validar stock
-    const productIds = validatedData.items.map(item => item.id);
-    console.log('🔍 Buscando productos con IDs:', productIds);
+    // 🔧 FIX: Convertir IDs a números para match con la BD
+    const productIds = validatedData.items.map(item => {
+      const numId = parseInt(item.id, 10);
+      if (isNaN(numId)) {
+        throw new Error(`ID de producto inválido: ${item.id}`);
+      }
+      return numId;
+    });
+    console.log('🔍 Buscando productos con IDs (numéricos):', productIds);
     console.log('🔍 Items que se están buscando:', validatedData.items.map((item: any) => ({
       id: item.id,
+      idNumerico: parseInt(item.id, 10),
       name: item.name,
       price: item.price
     })));
