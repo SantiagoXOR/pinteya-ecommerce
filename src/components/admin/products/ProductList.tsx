@@ -477,17 +477,27 @@ export function ProductList({
       // Hacer request a la API
       const response = await fetch(`/api/admin/products/export?${params.toString()}`)
       
+      console.log(`📡 Response status: ${response.status} ${response.statusText}`)
+      console.log(`📡 Content-Type: ${response.headers.get('Content-Type')}`)
+      
       if (!response.ok) {
         throw new Error(`Error al exportar: ${response.statusText}`)
       }
 
       // Obtener el blob
       const blob = await response.blob()
+      console.log(`📦 Blob size: ${blob.size} bytes, type: ${blob.type}`)
+      
+      if (blob.size === 0) {
+        throw new Error('El archivo descargado está vacío')
+      }
       
       // Obtener el filename del header Content-Disposition o generar uno
       const contentDisposition = response.headers.get('Content-Disposition')
-      const filenameMatch = contentDisposition?.match(/filename="?(.+)"?/)
+      const filenameMatch = contentDisposition?.match(/filename="([^"]+)"/) || contentDisposition?.match(/filename=([^;\s]+)/)
       const filename = filenameMatch ? filenameMatch[1] : `productos-pinteya-${new Date().toISOString().split('T')[0]}.${format}`
+
+      console.log(`📄 Filename: ${filename}`)
 
       // Crear link de descarga y triggerearlo
       const url = window.URL.createObjectURL(blob)
