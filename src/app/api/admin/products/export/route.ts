@@ -190,19 +190,7 @@ export async function GET(request: NextRequest) {
 
     // Construir query base
     let query = supabase.from('products').select(`
-        id,
-        name,
-        slug,
-        description,
-        price,
-        discounted_price,
-        stock,
-        sku,
-        brand,
-        is_active,
-        is_featured,
-        created_at,
-        updated_at,
+        *,
         categories (
           id,
           name
@@ -276,9 +264,7 @@ export async function GET(request: NextRequest) {
     // Transformar datos para incluir nombre de categoría
     const transformedProducts = products.map(product => ({
       ...product,
-      category_name: Array.isArray(product.categories) 
-        ? product.categories[0]?.name || 'Sin categoría'
-        : (product.categories as any)?.name || 'Sin categoría',
+      category_name: (product.categories as any)?.name || 'Sin categoría',
     }))
 
     // ✅ Determinar formato solicitado
