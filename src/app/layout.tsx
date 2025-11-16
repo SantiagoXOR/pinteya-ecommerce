@@ -65,22 +65,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-toast{z-index:300}
         `}} />
         
-        {/* ⚡ PERFORMANCE: Preload solo las 2 fuentes más usadas */}
-        <link
-          rel='preload'
-          href='/fonts/EuclidCircularA-Regular.woff2'
-          as='font'
-          type='font/woff2'
-          crossOrigin='anonymous'
-        />
-        <link
-          rel='preload'
-          href='/fonts/EuclidCircularA-SemiBold.woff2'
-          as='font'
-          type='font/woff2'
-          crossOrigin='anonymous'
-        />
-        
         {/* ⚡ PERFORMANCE: Preconnect a dominios externos */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.google-analytics.com" />

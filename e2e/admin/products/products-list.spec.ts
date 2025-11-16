@@ -35,8 +35,9 @@ test.describe('Panel Admin - Lista de Productos', () => {
     // Verificar URL correcta
     expect(page.url()).toContain('/admin/products')
     
-    // Verificar título o header de la página
-    await expect(page.locator('h1, h2').filter({ hasText: /producto/i }).first()).toBeVisible()
+    // Verificar título o header de la página (actualmente "Gestión de Productos")
+    const pageHeading = page.locator('h1, h2').filter({ hasText: /gestión de productos|lista de productos|productos/i }).first()
+    await expect(pageHeading).toBeVisible()
     
     await takeStepScreenshot(page, 'products-page-loaded')
     console.log('✅ Página de productos cargada correctamente')

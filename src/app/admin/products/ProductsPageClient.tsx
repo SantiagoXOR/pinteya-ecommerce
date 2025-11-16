@@ -5,18 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Package,
-  BarChart3,
-  TrendingUp,
-  Plus,
-  RefreshCw,
-  Download,
-  Upload,
-  Settings,
-} from 'lucide-react'
+import { Package, BarChart3, TrendingUp, Plus, RefreshCw } from 'lucide-react'
 import { useProductsEnterprise } from '@/hooks/admin/useProductsEnterprise'
-import { ProductBulkOperations } from '@/components/admin/products/ProductBulkOperations'
 import { ProductList } from '@/components/admin/products/ProductList'
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
@@ -184,51 +174,6 @@ export function ProductsPageClient() {
         </Card>
       </div>
 
-        {/* Acciones Rápidas */}
-      <Card>
-        <CardHeader>
-            <CardTitle className='flex items-center space-x-2'>
-              <Settings className='w-5 h-5' />
-              <span>Acciones Rápidas</span>
-            </CardTitle>
-            <CardDescription>Herramientas para gestión masiva de productos</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-              <Button
-                variant='outline'
-                className='flex items-center justify-center space-x-2 h-20'
-                onClick={() => {
-                  /* TODO: Implementar */
-                }}
-              >
-                <Upload className='w-5 h-5' />
-                <span>Importar CSV</span>
-              </Button>
-              <Button
-                variant='outline'
-                className='flex items-center justify-center space-x-2 h-20'
-                onClick={() => {
-                  /* TODO: Implementar */
-                }}
-              >
-                <Download className='w-5 h-5' />
-                <span>Exportar CSV</span>
-              </Button>
-              <Button
-                variant='outline'
-                className='flex items-center justify-center space-x-2 h-20'
-                onClick={() => {
-                  /* TODO: Implementar */
-                }}
-              >
-                <BarChart3 className='w-5 h-5' />
-                <span>Análisis Masivo</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Tabs Mejoradas */}
         <Tabs 
           defaultValue='all' 
@@ -244,7 +189,7 @@ export function ProductsPageClient() {
             }
           }}
         >
-          <div className='flex items-center justify-between mb-4'>
+          <div className='flex justify-center sm:justify-start mb-4'>
             <TabsList className='bg-gray-100 p-1 rounded-lg'>
               <TabsTrigger
                 value='all'
@@ -280,9 +225,6 @@ export function ProductsPageClient() {
                 )}
               </TabsTrigger>
             </TabsList>
-
-            {/* Operaciones masivas si hay productos seleccionados */}
-            <ProductBulkOperations selectedProducts={[]} onBulkAction={handleBulkOperation} />
           </div>
 
           {/* Tab: Todos los Productos */}

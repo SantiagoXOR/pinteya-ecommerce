@@ -22,6 +22,43 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+const AIKON_COLUMNS = [
+  'Código',
+  'Descripción',
+  'Familia',
+  'Nombre Familia',
+  'UM',
+  'Unidad de Medida',
+  'Marca',
+  'Nombre Marca',
+  'Costo Neto',
+  'Descuento',
+  'Descuento Máximo',
+  'Oferta',
+  'Moneda',
+  'Maneja Stock',
+  'Estado',
+  'Condicion de Venta',
+  'Deposito por Defecto',
+  'Precio Sugerido',
+  'Venta Mínima',
+  'Rentabilidad Min',
+  'Rentabilidad Max',
+  'Compre Ahora',
+  'Activo Compre Ahora',
+  'Cód.Ref 001',
+  'Ref 001',
+  'Cód.Ref 002',
+  'Ref 002',
+  'Stock Disponible',
+  'Necesita Sync Aikon',
+]
+
+const DEFAULT_SALE_CONDITION = 'Contado'
+const DEFAULT_DEPOSIT = 'Deposito Central'
+const DEFAULT_CURRENCY = 'ARS'
+const DEFAULT_MIN_SALE = 1
+
 // =====================================================
 // ESQUEMAS DE VALIDACIÓN
 // =====================================================
@@ -58,70 +95,25 @@ function escapeCSVField(field: any): string {
   return str
 }
 
-function generateCSV(products: any[]): string {
-  // Headers del CSV
-  const headers = [
-    'ID',
-    'Nombre',
-    'Descripción',
-    'Precio',
-    'Precio Descuento',
-    'Stock',
-    'SKU',
-    'Categoría',
-    'Marca',
-    'Estado',
-    'Destacado',
-    'Fecha Creación',
-    'Última Actualización',
-  ]
-
-  // Crear filas
-  const rows = products.map(product => [
-    product.id,
-    product.name,
-    product.description || '',
-    product.price,
-    product.discounted_price || '',
-    product.stock,
-    product.sku || '',
-    product.category_name || '',
-    product.brand || '',
-    product.is_active ? 'Activo' : 'Inactivo',
-    product.is_featured ? 'Sí' : 'No',
-    new Date(product.created_at).toLocaleDateString('es-AR'),
-    new Date(product.updated_at).toLocaleDateString('es-AR'),
-  ])
-
-  // Combinar headers y filas
-  const allRows = [headers, ...rows]
-
-  // Convertir a CSV
-  return allRows.map(row => row.map(field => escapeCSVField(field)).join(',')).join('\n')
+function generateCSV(aikonRows: Record<string, any>[]): string {
+  const header = AIKON_COLUMNS
+  const csvRows = aikonRows.map(row => header.map(column => row[column] ?? ''))
+  return [header, ...csvRows].map(row => row.map(field => escapeCSVField(field)).join(',')).join('\n')
 }
 
 // ✅ NUEVA FUNCIÓN: Generar archivo Excel (usando exceljs - más seguro)
-async function generateExcel(products: any[]): Promise<Buffer> {
+async function generateExcel(rows: ExportRow[], aikonRows: Record<string, any>[]): Promise<Buffer> {
   // Crear workbook
   const workbook = new ExcelJS.Workbook()
   const worksheet = workbook.addWorksheet('Productos')
 
-  // Definir columnas con headers y anchos
-  worksheet.columns = [
-    { header: 'ID', key: 'id', width: 6 },
-    { header: 'Nombre', key: 'name', width: 30 },
-    { header: 'Descripción', key: 'description', width: 50 },
-    { header: 'Precio', key: 'price', width: 12 },
-    { header: 'Precio Descuento', key: 'discounted_price', width: 15 },
-    { header: 'Stock', key: 'stock', width: 8 },
-    { header: 'SKU', key: 'sku', width: 15 },
-    { header: 'Categoría', key: 'category_name', width: 20 },
-    { header: 'Marca', key: 'brand', width: 15 },
-    { header: 'Estado', key: 'status', width: 10 },
-    { header: 'Destacado', key: 'featured', width: 10 },
-    { header: 'Fecha Creación', key: 'created_at', width: 15 },
-    { header: 'Última Actualización', key: 'updated_at', width: 15 },
-  ]
+  const worksheetColumns = AIKON_COLUMNS.map((header, index) => ({
+    header,
+    key: `col_${index}`,
+    width: Math.min(Math.max(header.length + 5, 14), 40),
+  }))
+
+  worksheet.columns = worksheetColumns
 
   // Estilizar header
   worksheet.getRow(1).font = { bold: true }
@@ -132,29 +124,234 @@ async function generateExcel(products: any[]): Promise<Buffer> {
   }
   worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }
 
-  // Agregar datos
-  products.forEach(product => {
-    worksheet.addRow({
-      id: product.id,
-      name: product.name,
-      description: product.description || '',
-      price: product.price,
-      discounted_price: product.discounted_price || '',
-      stock: product.stock,
-      sku: product.sku || product.aikon_id || '',
-      category_name: product.category_name || 'Sin categoría',
-      brand: product.brand || '',
-      status: product.is_active ? 'Activo' : 'Inactivo',
-      featured: product.is_featured ? 'Sí' : 'No',
-      created_at: new Date(product.created_at).toLocaleDateString('es-AR'),
-      updated_at: new Date(product.updated_at).toLocaleDateString('es-AR'),
+  const columnKeys = worksheetColumns.map(column => column.key as string)
+
+  aikonRows.forEach(row => {
+    const excelRow: Record<string, any> = {}
+    columnKeys.forEach((key, index) => {
+      const header = AIKON_COLUMNS[index]
+      excelRow[key] = row[header] ?? ''
     })
+
+    worksheet.addRow(excelRow)
   })
+
+  const summarySheet = workbook.addWorksheet('Resumen')
+  const uniqueProducts = new Set(rows.map((row: any) => row.product_id))
+  const totalVariants = rows.filter((row: any) => row.variant_id).length
+  const totalStock = rows.reduce((acc: number, row: any) => acc + (row.variant_stock || 0), 0)
+  const productsWithoutCategory = new Set(
+    rows.filter((row: any) => !row.category_id).map((row: any) => row.product_id)
+  )
+  const variantsWithoutAikon = rows.filter(
+    (row: any) => !row.variant_aikon_id || row.variant_aikon_id.trim() === ''
+  ).length
+
+  summarySheet.addRows([
+    ['Total productos únicos', uniqueProducts.size],
+    ['Total filas / variantes', rows.length],
+    ['Total variantes con ID', totalVariants],
+    ['Stock total (sumatoria variantes)', totalStock],
+    ['Productos sin categoría', productsWithoutCategory.size],
+    ['Variantes sin aikon_id', variantsWithoutAikon],
+  ])
 
   // Generar buffer
   const buffer = await workbook.xlsx.writeBuffer()
   
   return Buffer.from(buffer)
+}
+
+type SupabaseProduct = {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  price: number | null
+  discounted_price: number | null
+  stock: number | null
+  category_id: number | null
+  brand: string | null
+  is_active: boolean
+  is_featured?: boolean | null
+  aikon_id?: string | null
+  medida?: string | null
+  created_at: string
+  updated_at: string
+  product_variants?: any[]
+  categories?: {
+    id: number
+    name: string
+  } | null
+}
+
+type ExportRow = {
+  product_id: number
+  product_name: string
+  product_slug: string
+  product_description: string | null
+  category_id: number | null
+  category_name: string
+  brand: string | null
+  is_active: boolean
+  is_featured: boolean
+  product_price: number | null
+  product_discounted_price: number | null
+  product_total_stock: number
+  variant_id: number | null
+  variant_aikon_id: string
+  variant_slug: string
+  variant_color: string
+  variant_color_hex: string
+  variant_measure: string
+  variant_finish: string
+  variant_price_list: number | null
+  variant_price_sale: number | null
+  variant_stock: number
+  variant_is_active: boolean
+  variant_is_default: boolean
+  variant_image_url: string
+  product_created_at: string
+  product_updated_at: string
+  needs_aikon_sync: boolean
+}
+
+function buildExportRow(
+  product: SupabaseProduct,
+  categoryName: string,
+  totalStock: number,
+  variant?: any | null
+): ExportRow {
+  const hasVariant = Boolean(variant)
+  const variantAikonId = hasVariant ? variant.aikon_id || '' : product.aikon_id || ''
+
+  return {
+    product_id: product.id,
+    product_name: product.name,
+    product_slug: product.slug,
+    product_description: product.description,
+    category_id: product.category_id,
+    category_name: categoryName,
+    brand: product.brand,
+    is_active: product.is_active,
+    is_featured: Boolean(product.is_featured),
+    product_price: product.price,
+    product_discounted_price: product.discounted_price,
+    product_total_stock: totalStock,
+    variant_id: hasVariant ? variant.id : null,
+    variant_aikon_id: variantAikonId,
+    variant_slug: hasVariant ? variant.variant_slug || '' : '',
+    variant_color: hasVariant ? variant.color_name || '' : '',
+    variant_color_hex: hasVariant ? variant.color_hex || '' : '',
+    variant_measure: hasVariant ? variant.measure || '' : product.medida || '',
+    variant_finish: hasVariant ? variant.finish || '' : '',
+    variant_price_list: hasVariant ? variant.price_list : product.price,
+    variant_price_sale: hasVariant ? variant.price_sale : product.discounted_price,
+    variant_stock: hasVariant ? variant.stock ?? 0 : product.stock ?? 0,
+    variant_is_active: hasVariant ? Boolean(variant.is_active) : product.is_active,
+    variant_is_default: hasVariant ? Boolean(variant.is_default) : true,
+    variant_image_url: hasVariant ? variant.image_url || '' : '',
+    product_created_at: product.created_at,
+    product_updated_at: product.updated_at,
+    needs_aikon_sync: variantAikonId.trim() === '',
+  }
+}
+
+function buildRowsFromProducts(products: SupabaseProduct[]): ExportRow[] {
+  const rows: ExportRow[] = []
+
+  products.forEach(product => {
+    const categoryName = (product.categories as any)?.name || 'Sin categoría'
+    const variants = Array.isArray(product.product_variants) ? product.product_variants : []
+    const totalVariantStock =
+      variants.length > 0
+        ? variants.reduce((sum, variant) => sum + (variant?.stock ?? 0), 0)
+        : product.stock ?? 0
+
+    if (variants.length > 0) {
+      variants.forEach(variant => {
+        rows.push(buildExportRow(product, categoryName, totalVariantStock, variant))
+      })
+    } else {
+      rows.push(buildExportRow(product, categoryName, totalVariantStock, null))
+    }
+  })
+
+  return rows
+}
+
+function filterRowsByStockStatus(rows: ExportRow[], status?: string | null): ExportRow[] {
+  if (!status || status === 'all') {
+    return rows
+  }
+
+  return rows.filter(row => {
+    const totalStock = row.product_total_stock ?? 0
+    switch (status) {
+      case 'out_of_stock':
+        return totalStock === 0
+      case 'low_stock':
+        return totalStock > 0 && totalStock <= 10
+      case 'in_stock':
+        return totalStock > 10
+      default:
+        return true
+    }
+  })
+}
+
+function buildAikonDescription(row: ExportRow): string {
+  const parts = [row.product_name]
+
+  if (row.variant_measure) {
+    parts.push(row.variant_measure)
+  }
+
+  if (row.variant_color) {
+    parts.push(row.variant_color)
+  }
+
+  return parts.filter(Boolean).join(' - ')
+}
+
+function mapRowToAikon(row: ExportRow): Record<string, any> {
+  const priceList = row.variant_price_list ?? row.product_price ?? null
+  const priceSale = row.variant_price_sale ?? row.product_discounted_price ?? priceList
+  const handlesStock = row.variant_id !== null
+  const discount =
+    priceList !== null && priceSale !== null ? Math.max(0, Number(priceList) - Number(priceSale)) : 0
+
+  return {
+    Código: row.variant_aikon_id || '',
+    Descripción: buildAikonDescription(row),
+    Familia: row.category_id ?? '',
+    'Nombre Familia': row.category_name || 'Sin categoría',
+    UM: row.variant_measure || '',
+    'Unidad de Medida': row.variant_measure || '',
+    Marca: row.brand || '',
+    'Nombre Marca': row.brand || '',
+    'Costo Neto': priceList ?? '',
+    Descuento: discount,
+    'Descuento Máximo': discount,
+    Oferta: discount > 0 ? 'Sí' : 'No',
+    Moneda: DEFAULT_CURRENCY,
+    'Maneja Stock': handlesStock ? 'Sí' : 'No',
+    Estado: row.is_active ? 'Activo' : 'Inactivo',
+    'Condicion de Venta': DEFAULT_SALE_CONDITION,
+    'Deposito por Defecto': DEFAULT_DEPOSIT,
+    'Precio Sugerido': priceSale ?? '',
+    'Venta Mínima': DEFAULT_MIN_SALE,
+    'Rentabilidad Min': '',
+    'Rentabilidad Max': '',
+    'Compre Ahora': row.is_active ? 'Sí' : 'No',
+    'Activo Compre Ahora': row.is_active ? 'Sí' : 'No',
+    'Cód.Ref 001': row.product_id,
+    'Ref 001': row.product_slug,
+    'Cód.Ref 002': row.variant_id ?? '',
+    'Ref 002': row.variant_slug || '',
+    'Stock Disponible': row.variant_stock ?? 0,
+    'Necesita Sync Aikon': row.needs_aikon_sync ? 'Sí' : 'No',
+  }
 }
 
 // =====================================================
@@ -194,7 +391,8 @@ export async function GET(request: NextRequest) {
         categories (
           id,
           name
-        )
+        ),
+        product_variants (*)
       `)
 
     // Aplicar filtros
@@ -208,20 +406,6 @@ export async function GET(request: NextRequest) {
 
     if (validatedFilters.status && validatedFilters.status !== 'all') {
       query = query.eq('is_active', validatedFilters.status === 'active')
-    }
-
-    if (validatedFilters.stock_status && validatedFilters.stock_status !== 'all') {
-      switch (validatedFilters.stock_status) {
-        case 'out_of_stock':
-          query = query.eq('stock', 0)
-          break
-        case 'low_stock':
-          query = query.gt('stock', 0).lte('stock', 10)
-          break
-        case 'in_stock':
-          query = query.gt('stock', 10)
-          break
-      }
     }
 
     if (validatedFilters.price_min) {
@@ -261,11 +445,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Transformar datos para incluir nombre de categoría
-    const transformedProducts = products.map(product => ({
-      ...product,
-      category_name: (product.categories as any)?.name || 'Sin categoría',
-    }))
+    const flattenedRows = buildRowsFromProducts(products as SupabaseProduct[])
+    const rowsAfterStockFilter = filterRowsByStockStatus(flattenedRows, validatedFilters.stock_status)
+
+    if (rowsAfterStockFilter.length === 0) {
+      return NextResponse.json(
+        { error: 'No se encontraron productos para exportar con los filtros aplicados' },
+        { status: 404 }
+      )
+    }
+
+    const aikonRows = rowsAfterStockFilter.map(mapRowToAikon)
 
     // ✅ Determinar formato solicitado
     const format = validatedFilters.format || searchParams.get('format') || 'csv'
@@ -273,7 +463,8 @@ export async function GET(request: NextRequest) {
 
     // Log de la exportación
     console.log('✅ Exportación completada:', {
-      products_count: products.length,
+      products_count: rowsAfterStockFilter.length,
+      aikon_rows: aikonRows.length,
       format,
       filters: validatedFilters,
       user_id: session.user.id,
@@ -283,7 +474,7 @@ export async function GET(request: NextRequest) {
     // ✅ Generar archivo según formato
     if (format === 'xlsx') {
       // Generar Excel
-      const excelBuffer = await generateExcel(transformedProducts)
+      const excelBuffer = await generateExcel(rowsAfterStockFilter, aikonRows)
       const filename = `productos-pinteya-${timestamp}.xlsx`
 
       return new NextResponse(excelBuffer, {
@@ -298,7 +489,7 @@ export async function GET(request: NextRequest) {
       })
     } else {
       // Generar CSV (por defecto)
-      const csvContent = generateCSV(transformedProducts)
+      const csvContent = generateCSV(aikonRows)
       const filename = `productos-pinteya-${timestamp}.csv`
 
       return new NextResponse(csvContent, {

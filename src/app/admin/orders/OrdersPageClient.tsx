@@ -1,7 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,6 +17,7 @@ import {
   Clock,
   CheckCircle,
   ShoppingCart,
+  ShieldAlert,
 } from 'lucide-react'
 import { useOrdersEnterprise } from '@/hooks/admin/useOrdersEnterprise'
 import { OrderBulkOperations } from '@/components/admin/orders/OrderBulkOperations'
@@ -30,14 +30,13 @@ import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 // =====================================================
 // COMPONENTE PRINCIPAL
 // =====================================================
 
 export function OrdersPageClient() {
-  const router = useRouter()
-
   // Estados de modales
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
@@ -74,16 +73,22 @@ export function OrdersPageClient() {
     handleOrderAction,
   } = useOrdersEnterprise()
 
-  // Debug: Ver qué datos tenemos
-  console.log('🔍 OrdersPageClient Debug:', {
-    ordersCount: orders?.length,
-    isLoading,
-    isLoadingOrders,
-    error: error instanceof Error ? error.message : error,
-    filters,
-    stats,
-    pagination,
-  })
+  const isBypassAuthEnabled =
+    process.env.BYPASS_AUTH === 'true' || process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true'
+  const bypassDescription = useMemo(() => {
+    if (!isBypassAuthEnabled) {
+      return null
+    }
+    return (
+      <Alert className='border-amber-300 bg-amber-50 text-amber-900'>
+        <ShieldAlert className='h-5 w-5 text-amber-600' />
+        <AlertTitle>Bypass de autenticación activo</AlertTitle>
+        <AlertDescription>
+          Este entorno omite el login para pruebas locales. Recuerda deshabilitarlo antes de desplegar.
+        </AlertDescription>
+      </Alert>
+    )
+  }, [isBypassAuthEnabled])
 
   // Handlers de modales
   const handleViewOrder = (orderId: string) => {
@@ -151,38 +156,39 @@ export function OrdersPageClient() {
   return (
     <AdminLayout title='Órdenes' breadcrumbs={breadcrumbs}>
       <AdminContentWrapper>
-        <div className='space-y-6'>
+        <div className='space-y-5 sm:space-y-6'>
+          {bypassDescription}
           {/* Header con Gradiente - Responsive */}
-          <div className='bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-xl shadow-lg p-4 sm:p-6 text-white'>
-            <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0'>
-          <div>
-                <div className='flex items-center space-x-3 mb-2'>
+          <div className='bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-2xl shadow-lg p-4 sm:p-6 text-white space-y-4'>
+            <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
+              <div className='space-y-2'>
+                <div className='flex items-center gap-3'>
                   <ShoppingCart className='w-6 h-6 sm:w-8 sm:h-8' />
                   <h1 className='text-2xl sm:text-3xl font-bold'>Gestión de Órdenes</h1>
                 </div>
                 <p className='text-indigo-100 text-sm sm:text-base'>
-              Administra y procesa todas las órdenes de tu tienda
-            </p>
-          </div>
-              <div className='flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto'>
-            <Button
+                  Administra y procesa todas las órdenes de tu tienda
+                </p>
+              </div>
+              <div className='flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-3'>
+                <Button
                   variant='secondary'
                   onClick={() => refreshOrders()}
                   disabled={isLoading}
-                  className='flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-white/20 hover:bg-white/30 text-white border-white/30'
+                  className='flex-1 flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30'
                 >
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                  <span className='hidden sm:inline'>Actualizar</span>
-            </Button>
-            <Button
-              onClick={() => setIsNewOrderModalOpen(true)}
-                  className='flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-white text-indigo-600 hover:bg-indigo-50'
-            >
-              <Plus className='w-4 h-4' />
-                  <span>Nueva</span>
-            </Button>
-          </div>
-        </div>
+                  <span>Actualizar</span>
+                </Button>
+                <Button
+                  onClick={() => setIsNewOrderModalOpen(true)}
+                  className='flex-1 flex items-center justify-center gap-2 bg-white text-indigo-600 hover:bg-indigo-50'
+                >
+                  <Plus className='w-4 h-4' />
+                  <span>Nueva orden</span>
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Stats Cards - Mobile First */}
@@ -278,42 +284,42 @@ export function OrdersPageClient() {
 
           {/* Acciones Rápidas */}
           <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center space-x-2'>
+            <CardHeader className='pb-3'>
+              <CardTitle className='flex items-center gap-2'>
                 <BarChart3 className='w-5 h-5' />
                 <span>Acciones Rápidas</span>
               </CardTitle>
               <CardDescription>Herramientas para gestión de órdenes</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4'>
                 <Button
                   variant='outline'
-                  className='flex items-center justify-center space-x-2 h-20'
+                  className='flex items-center justify-center gap-2 h-16'
                   onClick={() => setIsExportModalOpen(true)}
-                  type="button"
+                  type='button'
                 >
                   <Download className='w-5 h-5' />
                   <span>Exportar CSV</span>
                 </Button>
                 <Button
                   variant='outline'
-                  className='flex items-center justify-center space-x-2 h-20'
+                  className='flex items-center justify-center gap-2 h-16'
                   onClick={() => {
-                    console.log('TODO: Implementar generación de reportes')
+                    toast.info('Generación de reportes disponible próximamente')
                   }}
-                  type="button"
+                  type='button'
                 >
                   <FileText className='w-5 h-5' />
                   <span>Generar Reportes</span>
                 </Button>
                 <Button
                   variant='outline'
-                  className='flex items-center justify-center space-x-2 h-20'
+                  className='flex items-center justify-center gap-2 h-16'
                   onClick={() => {
-                    console.log('TODO: Implementar análisis de ventas')
+                    toast.info('Análisis avanzado llegará en la próxima iteración')
                   }}
-                  type="button"
+                  type='button'
                 >
                   <TrendingUp className='w-5 h-5' />
                   <span>Análisis de Ventas</span>
@@ -340,8 +346,8 @@ export function OrdersPageClient() {
               }
             }}
           >
-            <div className='flex items-center justify-between mb-4'>
-              <TabsList className='bg-gray-100 p-1 rounded-lg'>
+            <div className='flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between mb-4'>
+              <TabsList className='bg-gray-100 p-1 rounded-lg flex flex-wrap gap-2'>
                 <TabsTrigger
                   value='all'
                   className='data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 py-2.5'
@@ -389,8 +395,8 @@ export function OrdersPageClient() {
               </TabsList>
 
               {/* Operaciones masivas si hay órdenes seleccionadas */}
-              <OrderBulkOperations 
-                selectedOrders={selectedOrders} 
+              <OrderBulkOperations
+                selectedOrders={selectedOrders}
                 onBulkAction={(action: string, orderIds: string[]) => {
                   // Convertir la acción a un OrderStatus válido
                   const statusMap: Record<string, any> = {
@@ -574,7 +580,7 @@ export function OrdersPageClient() {
         {selectedOrderId && (
           <>
             <OrderDetailsModal
-              orderId={Number(selectedOrderId)}
+              orderId={selectedOrderId}
               isOpen={isDetailsModalOpen}
               onClose={() => {
                 setIsDetailsModalOpen(false)
@@ -583,7 +589,7 @@ export function OrdersPageClient() {
             />
 
             <EditOrderModal
-              orderId={Number(selectedOrderId)}
+              orderId={selectedOrderId}
               isOpen={isEditModalOpen}
               onClose={() => {
                 setIsEditModalOpen(false)

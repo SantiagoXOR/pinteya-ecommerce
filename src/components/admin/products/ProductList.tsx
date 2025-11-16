@@ -15,6 +15,52 @@ import { Badge } from '../ui/Badge'
 import { cn } from '@/lib/core/utils'
 import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
+const resolveImageSource = (payload: any): string | null => {
+  const normalize = (value?: string | null) => {
+    if (!value || typeof value !== 'string') {
+      return null
+    }
+    const trimmed = value.trim()
+    return trimmed.length > 0 ? trimmed : null
+  }
+
+  if (!payload) {
+    return null
+  }
+
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim()
+    if (!trimmed) return null
+
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return resolveImageSource(JSON.parse(trimmed))
+      } catch {
+        return normalize(trimmed)
+      }
+    }
+
+    return normalize(trimmed)
+  }
+
+  if (Array.isArray(payload)) {
+    return normalize(payload[0])
+  }
+
+  if (typeof payload === 'object') {
+    return (
+      normalize(payload.preview) ||
+      normalize(payload.previews?.[0]) ||
+      normalize(payload.thumbnails?.[0]) ||
+      normalize(payload.gallery?.[0]) ||
+      normalize(payload.main) ||
+      normalize(payload.url)
+    )
+  }
+
+  return null
+}
+
 interface Product {
   id: string
   name: string
@@ -203,19 +249,7 @@ export function ProductList({
       title: 'Imagen',
       width: '100px',
       render: (images: any, product: Product) => {
-        // Manejar diferentes formatos de imágenes
-        let imageUrl = null
-        
-        if (product.image_url) {
-          // Formato transformado por el hook
-          imageUrl = product.image_url
-        } else if (Array.isArray(images) && images.length > 0) {
-          // Array de URLs
-          imageUrl = images[0]
-        } else if (typeof images === 'object' && images?.main) {
-          // Formato objeto
-          imageUrl = images.main
-        }
+        const imageUrl = resolveImageSource(product.image_url || images)
         
         return (
           <div className='w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shadow-sm'>
@@ -521,7 +555,21 @@ export function ProductList({
     console.log('Import products')
   }
 
-  const handleRowClick = (product: Product) => {
+  const handleRowClick = (
+    event: React.MouseEvent<HTMLTableRowElement>,
+    product: Product
+  ) => {
+    if (event.defaultPrevented) return
+
+    const target = event.target as HTMLElement
+    if (
+      target.closest(
+        'button, a, input, select, textarea, label, [role="button"], [data-interactive="true"]'
+      )
+    ) {
+      return
+    }
+
     router.push(`/admin/products/${product.id}`)
   }
 
@@ -668,7 +716,7 @@ export function ProductList({
                     <React.Fragment key={product.id}>
                       {/* Fila principal del producto con hover mejorado */}
                       <tr
-                        onClick={() => handleRowClick(product)}
+                        onClick={(event) => handleRowClick(event, product)}
                         className={cn(
                           'group cursor-pointer transition-all duration-200',
                           // ✅ Zebra striping para mejor separación visual

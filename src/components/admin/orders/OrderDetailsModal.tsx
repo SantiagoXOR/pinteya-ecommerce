@@ -51,7 +51,8 @@ interface OrderItem {
 }
 
 interface Order {
-  id: number
+  id: string | number
+  order_number?: string
   external_reference?: string
   status: string
   payment_status?: string
@@ -93,7 +94,7 @@ interface StatusHistoryItem {
 interface OrderDetailsModalProps {
   isOpen: boolean
   onClose: () => void
-  orderId: number | null
+  orderId: string | null
 }
 
 // ===================================
@@ -174,16 +175,20 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   const loadOrderDetails = async () => {
     try {
       setIsLoading(true)
+      setStatusHistory([])
       let orderData: any = null
+      let responsePayload: any = null
+      let historyApplied = false
 
       // Cargar detalles de la orden
-      const response = await fetch(`/api/admin/orders/${orderId}`)
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(orderId!)}`)
       if (response.ok) {
         const data = await response.json()
+        responsePayload = data
         orderData = data.data.order
-        
+      
         // Transformar shipping_address para compatibilidad
-        if (orderData.shipping_address) {
+        if (orderData?.shipping_address) {
           const addr = orderData.shipping_address
           orderData.shipping_address = {
             street: addr.street || `${addr.street_name || ''} ${addr.street_number || ''}`.trim() || undefined,
@@ -193,60 +198,49 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             country: addr.country || undefined,
           }
         }
-        
+
         setOrder(orderData)
+
+        if (
+          Array.isArray(responsePayload?.data?.statusHistory) &&
+          responsePayload.data.statusHistory.length > 0
+        ) {
+          setStatusHistory(responsePayload.data.statusHistory)
+          historyApplied = true
+        }
       } else {
         toast.error('Error al cargar detalles de la orden')
         return
       }
 
-      // Cargar historial de estados real desde el backend
-      try {
-        const historyResponse = await fetch(`/api/admin/orders/${orderId}/history`)
-        if (historyResponse.ok) {
-          const historyData = await historyResponse.json()
-          // Bug Fix: API retorna { success: true, data: statusHistory } donde data ES el array
-          if (historyData.success && historyData.data) {
-            setStatusHistory(historyData.data)
-          } else {
-            // Fallback: crear historial básico basado en el estado actual de la orden
-            const basicHistory: StatusHistoryItem[] = [
-              {
-                id: '1',
-                status: orderData?.status || 'pending',
-                timestamp: orderData?.created_at || new Date().toISOString(),
-                note: 'Orden creada',
-                user: 'Sistema',
-              },
-            ]
-            setStatusHistory(basicHistory)
+      if (!historyApplied && orderData) {
+        try {
+          const historyResponse = await fetch(
+            `/api/admin/orders/${encodeURIComponent(orderId!)}/history`
+          )
+          if (historyResponse.ok) {
+            const historyData = await historyResponse.json()
+            if (historyData.success && historyData.data) {
+              setStatusHistory(historyData.data)
+              historyApplied = true
+            }
           }
-        } else {
-          // Fallback: crear historial básico
-          const basicHistory: StatusHistoryItem[] = [
-            {
-              id: '1',
-              status: orderData?.status || 'pending',
-              timestamp: orderData?.created_at || new Date().toISOString(),
-              note: 'Orden creada',
-              user: 'Sistema',
-            },
-          ]
-          setStatusHistory(basicHistory)
+        } catch (historyError) {
+          console.error('Error loading order history:', historyError)
         }
-      } catch (historyError) {
-        console.error('Error loading order history:', historyError)
-        // Fallback: crear historial básico
-        const basicHistory: StatusHistoryItem[] = [
+      }
+
+      if (orderData && !historyApplied) {
+        const fallbackHistory: StatusHistoryItem[] = [
           {
             id: '1',
-            status: orderData?.status || 'pending',
-            timestamp: orderData?.created_at || new Date().toISOString(),
+            status: orderData.status || 'pending',
+            timestamp: orderData.created_at || new Date().toISOString(),
             note: 'Orden creada',
             user: 'Sistema',
           },
         ]
-        setStatusHistory(basicHistory)
+        setStatusHistory(fallbackHistory)
       }
     } catch (error) {
       console.error('Error loading order details:', error)
@@ -375,14 +369,20 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
   const StatusIcon = order ? getStatusIcon(order.status) : Clock
 
+  const handleDialogChange = (open: boolean) => {
+    if (!open) {
+      onClose()
+    }
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogChange}>
       <DialogContent className='max-w-5xl max-h-[90vh] overflow-hidden'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-3'>
             <Package className='h-6 w-6' />
             <div className='flex items-center gap-3'>
-              <span>Orden #{order?.id || orderId}</span>
+              <span>Orden {order?.order_number || `#${order?.id || orderId}`}</span>
               {order && (
                 <Badge className={getStatusColor(order.status)}>
                   <StatusIcon className='h-3 w-3 mr-1' />

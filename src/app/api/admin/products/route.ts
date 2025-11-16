@@ -16,6 +16,55 @@ import { ProductFiltersSchema } from '@/lib/validation/admin-schemas'
 import type { ValidatedRequest } from '@/lib/validation/enterprise-validation-middleware'
 import { logger } from '@/lib/utils/logger'
 
+// =====================================================
+// HELPERS
+// =====================================================
+
+function extractImageUrl(images: any): string | null {
+  const normalize = (value?: string | null) => {
+    if (!value || typeof value !== 'string') return null
+    const trimmed = value.trim()
+    return trimmed.length > 0 ? trimmed : null
+  }
+
+  if (!images) {
+    return null
+  }
+
+  if (typeof images === 'string') {
+    const trimmed = images.trim()
+    if (!trimmed) return null
+
+    // Intentar parsear JSON si corresponde
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return extractImageUrl(JSON.parse(trimmed))
+      } catch {
+        return normalize(trimmed)
+      }
+    }
+
+    return normalize(trimmed)
+  }
+
+  if (Array.isArray(images)) {
+    return normalize(images[0])
+  }
+
+  if (typeof images === 'object') {
+    return (
+      normalize(images.preview) ||
+      normalize(images.previews?.[0]) ||
+      normalize(images.thumbnails?.[0]) ||
+      normalize(images.gallery?.[0]) ||
+      normalize(images.main) ||
+      normalize(images.url)
+    )
+  }
+
+  return null
+}
+
 // Helper function to check admin permissions with proper role verification
 async function checkAdminPermissionsForProducts(
   action: 'create' | 'read' | 'update' | 'delete',
@@ -207,19 +256,19 @@ const getHandler = async (request: ValidatedRequest) => {
 
     // Transform data to include category name and all fields
     const transformedProducts =
-      products?.map(product => ({
-        ...product,
-        category_name: product.category?.name || null,
-        category: undefined, // Remove nested object
-        // Transform images JSONB to image_url
-        image_url: 
-          product.images?.previews?.[0] || 
-          product.images?.thumbnails?.[0] ||
-          product.images?.main ||
-          null,
-        // Derive status from is_active (status column doesn't exist in DB)
-        status: product.is_active ? 'active' : 'inactive',
-      })) || []
+      products?.map(product => {
+        const resolvedImage = extractImageUrl(product.images)
+
+        return {
+          ...product,
+          category_name: product.category?.name || null,
+          category: undefined, // Remove nested object
+          // Transform images JSONB/legacy formats to image_url
+          image_url: resolvedImage,
+          // Derive status from is_active (status column doesn't exist in DB)
+          status: product.is_active ? 'active' : 'inactive',
+        }
+      }) || []
 
     const total = count || 0
     const totalPages = Math.ceil(total / filters.limit)
@@ -628,38 +677,48 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 })
     }
 
-    // Obtener conteo de variantes para cada producto
     const productIds = products?.map(p => p.id) || []
-    let variantCounts: Record<number, number> = {}
+    const variantCounts: Record<number, number> = {}
+    const variantImages: Record<number, string | null> = {}
     
     if (productIds.length > 0) {
-      const { data: variantCountData } = await supabaseAdmin
+      const { data: variantData } = await supabaseAdmin
         .from('product_variants')
-        .select('product_id')
+        .select('product_id,image_url,is_default')
         .in('product_id', productIds)
         .eq('is_active', true)
       
-      variantCountData?.forEach(v => {
-        variantCounts[v.product_id] = (variantCounts[v.product_id] || 0) + 1
+      variantData?.forEach(variant => {
+        const normalizedImage = extractImageUrl(variant.image_url)
+        variantCounts[variant.product_id] = (variantCounts[variant.product_id] || 0) + 1
+
+        if (!variantImages[variant.product_id] && normalizedImage) {
+          variantImages[variant.product_id] = normalizedImage
+        }
+
+        if (variant.is_default && normalizedImage) {
+          variantImages[variant.product_id] = normalizedImage
+        }
       })
     }
     
-    // Transform data - COMPLETO
-    const transformedProducts = products?.map(product => ({
-      ...product,
-      category_name: product.category?.name || null,
-      category: undefined,
-      // Agregar conteo de variantes
-      variant_count: variantCounts[product.id] || 0,
-      // Transform images JSONB to image_url
-      image_url: 
-        product.images?.previews?.[0] || 
-        product.images?.thumbnails?.[0] ||
-        product.images?.main ||
-        null,
-      // Default status si es null
-      status: product.status || (product.is_active ? 'active' : 'inactive'),
-    })) || []
+    const transformedProducts =
+      products?.map(product => {
+        const variantImage = variantImages[product.id]
+        const fallbackImage = extractImageUrl(product.images)
+
+        return {
+          ...product,
+          category_name: product.category?.name || null,
+          category: undefined,
+          // Agregar conteo de variantes
+          variant_count: variantCounts[product.id] || 0,
+          // Imagen priorizando variantes
+          image_url: variantImage || fallbackImage,
+          // Default status si es null
+          status: product.status || (product.is_active ? 'active' : 'inactive'),
+        }
+      }) || []
 
     return NextResponse.json({
       products: transformedProducts,

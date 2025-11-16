@@ -35,7 +35,7 @@ export function OrderFilters({
   resetFilters,
   className,
 }: OrderFiltersProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(true)
   const [searchTerm, setSearchTerm] = useState(filters.search || '')
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -47,6 +47,14 @@ export function OrderFilters({
       }
     }
   }, [])
+
+// Sincronizar input cuando los filtros cambian externamente (ej: tabs)
+useEffect(() => {
+  const normalizedFilterValue = filters.search || ''
+  if (normalizedFilterValue !== searchTerm) {
+    setSearchTerm(normalizedFilterValue)
+  }
+}, [filters.search, searchTerm])
 
   // Handle search with debounce (sin memory leak)
   const handleSearchChange = (value: string) => {
@@ -73,24 +81,44 @@ export function OrderFilters({
     filters.min_amount ||
     filters.max_amount
 
+  const renderActiveSummary = () => {
+    if (!hasActiveFilters) {
+      return <p className='text-sm text-gray-500'>Sin filtros aplicados.</p>
+    }
+
+    const chips: string[] = []
+    if (filters.status && filters.status !== 'all') chips.push(`Estado: ${filters.status}`)
+    if (filters.payment_status && filters.payment_status !== 'all')
+      chips.push(`Pago: ${filters.payment_status}`)
+    if (filters.date_from) chips.push(`Desde: ${filters.date_from}`)
+    if (filters.date_to) chips.push(`Hasta: ${filters.date_to}`)
+    if (filters.min_amount) chips.push(`Min: $${filters.min_amount}`)
+    if (filters.max_amount) chips.push(`Max: $${filters.max_amount}`)
+    if (filters.search) chips.push(`Buscar: "${filters.search}"`)
+
+    return (
+      <div className='flex flex-wrap gap-2'>
+        {chips.map(chip => (
+          <span
+            key={chip}
+            className='text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full border border-blue-100'
+          >
+            {chip}
+          </span>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <Card className={cn('border-t-4 border-t-blue-500', className)}>
       <CardHeader>
-        <div className='flex items-center justify-between'>
-          <CardTitle className='flex items-center space-x-2'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+          <CardTitle className='flex items-center gap-2'>
             <Filter className='w-5 h-5' />
             <span>Filtros</span>
           </CardTitle>
-          <div className='flex items-center gap-2'>
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className='text-sm'
-            >
-              <SlidersHorizontal className='w-4 h-4 mr-2' />
-              {showAdvanced ? 'Ocultar' : 'Mostrar'} Avanzados
-            </Button>
+          <div className='flex items-center gap-2 flex-wrap'>
             {hasActiveFilters && (
               <Button
                 variant='outline'
@@ -105,10 +133,23 @@ export function OrderFilters({
                 Limpiar
               </Button>
             )}
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className='text-sm'
+            >
+              <SlidersHorizontal className='w-4 h-4 mr-2' />
+              {isCollapsed ? 'Mostrar' : 'Ocultar'} filtros
+            </Button>
           </div>
         </div>
+        {isCollapsed && (
+          <div className='pt-3 text-sm text-gray-600'>{renderActiveSummary()}</div>
+        )}
       </CardHeader>
-      <CardContent className='space-y-4'>
+      {!isCollapsed && (
+        <CardContent className='space-y-6'>
         {/* Búsqueda y filtros básicos */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
           {/* Búsqueda */}
@@ -181,9 +222,8 @@ export function OrderFilters({
           </div>
         </div>
 
-        {/* Filtros avanzados */}
-        {showAdvanced && (
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t'>
+        {/* Campos adicionales */}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t'>
             {/* Fecha Desde */}
             <div>
               <Label htmlFor='date_from'>
@@ -264,7 +304,6 @@ export function OrderFilters({
               />
             </div>
           </div>
-        )}
 
         {/* Ordenamiento y resultados por página */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t'>
@@ -314,6 +353,7 @@ export function OrderFilters({
           </div>
         </div>
       </CardContent>
+      )}
     </Card>
   )
 }

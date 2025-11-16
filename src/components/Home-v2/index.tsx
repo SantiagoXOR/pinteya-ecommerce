@@ -5,18 +5,17 @@ import { useEffect } from 'react'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 import NewArrivals from './NewArrivals/index'
+import type { PromoBannersProps } from './PromoBanners'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
 const HeroCarousel = dynamic(() => import('./HeroCarousel/index'))
 const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePillsWithSearch'))
-const PromoBanners = dynamic(() => import('./PromoBanners/index'))
+const PromoBanners = dynamic<PromoBannersProps>(() => import('./PromoBanners/index'))
 const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'))
 const TrendingSearches = dynamic(() => import('./TrendingSearches/index'))
 const CombosSection = dynamic(() => import('./CombosSection/index'))
 const BestSeller = dynamic(() => import('./BestSeller/index'))
-const TrustSection = dynamic(() => import('./TrustSection/index'))
 const Testimonials = dynamic(() => import('./Testimonials/index'))
-const Newsletter = dynamic(() => import('./Newsletter/index'))
 const FloatingCart = dynamic(() => import('@/components/Common/FloatingCart'))
 const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhatsApp'))
 // const ExitIntentModal = dynamic(() => import('@/components/Common/ExitIntentModal')) // Desactivado - Solo WhatsAppPopup activo
@@ -117,16 +116,8 @@ const HomeV2 = () => {
       </div>
 
       {/* 10. Trust signals y testimonios */}
-      <div className='mt-6 sm:mt-8 trust-section'>
-        <TrustSection />
-      </div>
       <div className='mt-6 sm:mt-8 testimonials-section'>
         <Testimonials />
-      </div>
-
-      {/* 11. Newsletter */}
-      <div className='mt-6 sm:mt-8 newsletter-section'>
-        <Newsletter />
       </div>
 
       {/* Elementos flotantes de engagement */}

@@ -59,7 +59,8 @@ interface OrderItem {
 }
 
 interface Order {
-  id: number
+  id: string | number
+  order_number?: string
   external_reference?: string
   status: string
   payment_status?: string
@@ -88,7 +89,7 @@ interface Order {
 interface EditOrderModalProps {
   isOpen: boolean
   onClose: () => void
-  orderId: number | null
+  orderId: string | null
   onOrderUpdated: (order: Order) => void
 }
 
@@ -139,10 +140,12 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
     try {
       setIsLoading(true)
 
-      const response = await fetch(`/api/orders/${orderId}`)
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(orderId!)}`)
       if (response.ok) {
         const data = await response.json()
-        setOrder(data.data)
+        if (data?.data?.order) {
+          setOrder(data.data.order)
+        }
         setEditedOrder({})
       } else {
         notifications.showNetworkError('cargar detalles de la orden')
@@ -194,37 +197,69 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
 
   const saveChanges = async () => {
     try {
-      if (!order || !hasChanges) {
+      if (!order) {
+        return
+      }
+
+      const payload: Record<string, unknown> = {}
+      if (editedOrder.status && editedOrder.status !== order.status) {
+        payload.status = editedOrder.status
+      }
+      if (editedOrder.payment_status && editedOrder.payment_status !== order.payment_status) {
+        payload.payment_status = editedOrder.payment_status
+      }
+      if (
+        editedOrder.tracking_number !== undefined &&
+        editedOrder.tracking_number !== order.tracking_number
+      ) {
+        payload.tracking_number = editedOrder.tracking_number
+      }
+      if (editedOrder.notes !== undefined && editedOrder.notes !== order.notes) {
+        payload.notes = editedOrder.notes
+      }
+
+      if (Object.keys(payload).length === 0) {
+        notifications.showValidationWarning('No hay cambios para guardar')
         return
       }
 
       setIsSaving(true)
       const processingToast = notifications.showProcessingInfo('Guardando cambios')
 
-      // Calcular nuevo total si hay cambios en items
-      const finalOrder = {
-        ...editedOrder,
-        total: editedOrder.order_items ? calculateNewTotal() : order.total,
+      const response = await fetch(
+        `/api/admin/orders/${encodeURIComponent(String(order.id))}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      )
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => ({}))
+        processingToast.dismiss?.()
+        notifications.showOrderUpdateError(
+          errorPayload?.error || 'No se pudieron guardar los cambios'
+        )
+        return
       }
 
-      // Simular guardado (reemplazar con API real)
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const payloadResponse = await response.json()
+      const updatedOrder = (payloadResponse?.data as Order) || order
 
-      const updatedOrder = {
-        ...order,
-        ...finalOrder,
-        updated_at: new Date().toISOString(),
-      }
-
-      processingToast.dismiss()
+      processingToast.dismiss?.()
 
       notifications.showOrderUpdated({
-        orderId: order.id,
-        changes: Object.keys(editedOrder).length,
+        orderId: updatedOrder.order_number || updatedOrder.id,
+        changes: Object.keys(payload).length,
       })
 
+      setOrder(updatedOrder)
       onOrderUpdated(updatedOrder)
-      handleClose()
+      setEditedOrder({})
+      setHasChanges(false)
+      setActiveTab('basic')
+      onClose()
     } catch (error) {
       console.error('Error saving order:', error)
       notifications.showOrderUpdateError('Error interno del servidor')
@@ -269,8 +304,14 @@ export const EditOrderModal: React.FC<EditOrderModalProps> = ({
     return null
   }
 
+  const handleDialogChange = (open: boolean) => {
+    if (!open) {
+      handleClose()
+    }
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogChange}>
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-hidden'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-3'>

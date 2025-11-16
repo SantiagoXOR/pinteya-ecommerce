@@ -221,8 +221,9 @@ export const useOrderNotifications = () => {
   // ===================================
 
   const dismissAll = useCallback(() => {
-    // Implementar lógica para cerrar todos los toasts si es necesario
-    console.log('Dismissing all toasts')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Dismissing all toasts')
+    }
   }, [])
 
   return {

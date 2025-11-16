@@ -9,6 +9,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { logger } from '@/lib/utils/logger'
+import { Category } from '@/types/database'
 
 // =====================================================
 // TIPOS E INTERFACES
@@ -366,6 +367,18 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   // MÉTRICAS DERIVADAS
   // =====================================================
 
+  const normalizedCategories = useMemo(() => {
+    if (Array.isArray(categoriesData?.data)) {
+      return categoriesData?.data as Category[]
+    }
+
+    if (Array.isArray(categoriesData?.data?.categories)) {
+      return categoriesData.data.categories as Category[]
+    }
+
+    return []
+  }, [categoriesData])
+
   // Calcular total de productos y páginas de forma consistente
   const totalProducts = productsData?.total || productsData?.count || 0
   const totalPages = Math.ceil(totalProducts / filters.limit) || 1
@@ -413,7 +426,7 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       lowStockProducts: statsData.stats.low_stock_products,
       noStockProducts: statsData.stats.no_stock_products,
     } : null,
-    categories: categoriesData?.data || [],
+    categories: normalizedCategories,
 
     // Estados de carga
     isLoading: productsLoading || statsLoading,

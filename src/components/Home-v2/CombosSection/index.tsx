@@ -1,199 +1,134 @@
-'use client'
+ 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { Eye, ArrowRight } from 'lucide-react'
-import { trackEvent } from '@/lib/google-analytics'
+ import React, { useState, useEffect, useCallback, useMemo } from 'react'
+ import Image from 'next/image'
+ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-const combosData = [
-  {
-    id: 'combo-verano',
-    image: '/images/promo/comboverano.png',
-    url: '/search?search=Piscinas',
-    title: 'Combo Verano - Piscinas',
-    description: 'Todo lo que necesitás para tu pileta',
-  },
-  {
-    id: 'combo-eco',
-    image: '/images/promo/comboeco.png',
-    url: '/search?search=Ecopainting',
-    title: 'Combo Eco - Pinturas Ecológicas',
-    description: 'Cuidá el ambiente con nuestras pinturas eco-friendly',
-  },
-  {
-    id: 'combo-plavicon',
-    image: '/images/promo/comboplavicon.png',
-    url: '/search?search=Plavicon+Muros',
-    title: 'Combo Plavicon - Impermeabilizantes',
-    description: 'Protegé tus muros con la mejor tecnología',
-  },
-  {
-    id: 'combo-poximix',
-    image: '/images/promo/combopoximix.png',
-    url: '/search?search=Poximix',
-    title: 'Combo Poximix - Epoxi Premium',
-    description: 'Acabados profesionales para pisos y superficies',
-  },
-]
+ interface Slide {
+   id: string
+   image: string
+   alt: string
+ }
 
-const CombosSection: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(true)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+ // Carrusel igual al de Hero pero con los SVG hero4, hero5 y hero6
+ const slides: Slide[] = [
+   { id: 'combo-hero-4', image: '/images/hero/hero2/hero4.svg', alt: 'Combo destacado - slide 1' },
+   { id: 'combo-hero-5', image: '/images/hero/hero2/hero5.svg', alt: 'Combo destacado - slide 2' },
+   { id: 'combo-hero-6', image: '/images/hero/hero2/hero6.svg', alt: 'Combo destacado - slide 3' },
+ ]
 
-  // Duplicar las imágenes para crear efecto infinito
-  const infiniteData = [...combosData, ...combosData]
+ const CombosSection: React.FC = () => {
+   const [currentIndex, setCurrentIndex] = useState(1)
+   const [isTransitioning, setIsTransitioning] = useState(false)
+   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
-  // Scroll automático infinito
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex(prevIndex => prevIndex + 1)
-    }, 5000) // Cambiar cada 5 segundos (más tiempo para leer)
+   const extendedSlides = useMemo(
+     () => [slides[slides.length - 1], ...slides, slides[0]],
+     []
+   )
 
-    return () => clearInterval(interval)
-  }, [])
+   const goToSlide = useCallback((index: number) => {
+     setIsTransitioning(true)
+     setCurrentIndex(index + 1)
+     setIsAutoPlaying(false)
+     setTimeout(() => setIsAutoPlaying(true), 10000)
+   }, [])
 
-  // Manejar el reinicio del scroll infinito
-  useEffect(() => {
-    if (currentIndex === combosData.length) {
-      const timeout = setTimeout(() => {
-        setIsTransitioning(false)
-        setCurrentIndex(0)
-        requestAnimationFrame(() => {
-          setIsTransitioning(true)
-        })
-      }, 300)
+   const goToPrevious = useCallback(() => {
+     setIsTransitioning(true)
+     setCurrentIndex((prev) => prev - 1)
+     setIsAutoPlaying(false)
+     setTimeout(() => setIsAutoPlaying(true), 10000)
+   }, [])
 
-      return () => clearTimeout(timeout)
-    }
-  }, [currentIndex])
+   const goToNext = useCallback(() => {
+     setIsTransitioning(true)
+     setCurrentIndex((prev) => prev + 1)
+     setIsAutoPlaying(false)
+     setTimeout(() => setIsAutoPlaying(true), 10000)
+   }, [])
 
-  const handleComboClick = (comboId: string, comboTitle: string) => {
-    trackEvent('combo_click', 'engagement', comboTitle)
-  }
+   useEffect(() => {
+     if (!isAutoPlaying) return
+     const interval = setInterval(() => {
+       goToNext()
+     }, 5000)
+     return () => clearInterval(interval)
+   }, [isAutoPlaying, goToNext])
 
-  return (
-    <section className='w-full pt-2 pb-2 px-4 bg-transparent'>
-      <div className='max-w-7xl mx-auto'>
-        {/* Header removido según solicitud del usuario */}
+   useEffect(() => {
+     if (!isTransitioning) return
+     if (currentIndex === extendedSlides.length - 1) {
+       setTimeout(() => {
+         setIsTransitioning(false)
+         setCurrentIndex(1)
+       }, 700)
+     }
+     if (currentIndex === 0) {
+       setTimeout(() => {
+         setIsTransitioning(false)
+         setCurrentIndex(slides.length)
+       }, 700)
+     }
+   }, [currentIndex, isTransitioning, extendedSlides.length])
 
-        {/* Carrusel horizontal mejorado */}
-        <div className='relative group'>
-          {/* Contenedor del carrusel */}
-          <div className='overflow-hidden rounded-2xl'>
-            <div
-              ref={containerRef}
-              className={`flex ${isTransitioning ? 'transition-transform duration-300 ease-in-out' : ''}`}
-              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-            >
-              {infiniteData.map((combo, index) => (
-                <div key={index} className='w-full flex-shrink-0 px-1'>
-                  <Link
-                    href={combo.url}
-                    onClick={() =>
-                      handleComboClick(combo.id, combo.title)
-                    }
-                    className='group/card block relative'
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                  >
-                    {/* DISEÑO DESKTOP - Fondo naranja con dos columnas */}
-                    <div className='hidden md:block bg-gradient-to-r from-[#eb6313] to-[#f27a1d] rounded-2xl overflow-hidden'>
-                      <div className='flex items-center min-h-[400px]'>
-                        {/* Columna izquierda - Texto */}
-                        <div className='w-2/5 p-8 lg:p-12 text-white'>
-                          {/* Badge de Oferta */}
-                          <div className='mb-4 bg-red-500 text-white font-bold px-4 py-2 rounded-full text-sm shadow-lg inline-block'>
-                            🔥 Oferta
-                          </div>
-                          
-                          <h3 className='font-bold text-3xl lg:text-4xl mb-4 leading-tight'>
-                            {combo.title}
-                          </h3>
-                          
-                          <p className='text-white/90 text-base lg:text-lg mb-6 leading-relaxed'>
-                            {combo.description}
-                          </p>
+   return (
+     <section className='w-full pt-2 pb-2 px-4 bg-transparent'>
+       <div className='max-w-[1200px] mx-auto'>
+         <div className='relative w-full overflow-hidden rounded-2xl' style={{ aspectRatio: '2.77' }}>
+           <div
+             className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
+             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+           >
+             {extendedSlides.map((slide, index) => (
+               <div key={`${slide.id}-${index}`} className='min-w-full h-full flex-shrink-0 relative'>
+                 <Image
+                   src={slide.image}
+                   alt={slide.alt}
+                   fill
+                   priority={index === 1}
+                   className='object-contain'
+                   sizes='(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px'
+                 />
+               </div>
+             ))}
+           </div>
 
-                          {/* CTA Button */}
-                          <div className='inline-flex items-center gap-2 bg-white hover:bg-white/90 text-[#eb6313] font-bold px-6 py-3 rounded-lg transition-all group-hover/card:scale-105 shadow-lg'>
-                            <Eye className='w-5 h-5' />
-                            <span>Ver detalles</span>
-                            <ArrowRight className='w-5 h-5 group-hover/card:translate-x-1 transition-transform' />
-                          </div>
-                        </div>
-                        
-                        {/* Columna derecha - Imagen */}
-                        <div className='w-3/5 relative h-[400px] flex items-center justify-center p-4'>
-                          <img
-                            src={combo.image}
-                            alt={combo.title}
-                            className='max-w-full max-h-full object-contain transition-transform duration-500 group-hover/card:scale-[1.02]'
-                          />
-                        </div>
-                      </div>
-                    </div>
+           <button
+             onClick={goToPrevious}
+             className='hidden md:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-blaze-orange-600 p-2 lg:p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 items-center justify-center group'
+             aria-label='Slide anterior'
+           >
+             <ChevronLeft className='w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[-2px] transition-transform' />
+           </button>
+           <button
+             onClick={goToNext}
+             className='hidden md:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-blaze-orange-600 p-2 lg:p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 items-center justify-center group'
+             aria-label='Siguiente slide'
+           >
+             <ChevronRight className='w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[2px] transition-transform' />
+           </button>
 
-                    {/* DISEÑO MOBILE - Mantener diseño actual */}
-                    <div className='md:hidden relative overflow-hidden rounded-2xl'>
-                      <img
-                        src={combo.image}
-                        alt={combo.title}
-                        className='w-full h-auto object-contain max-h-[300px] transition-transform duration-500 group-hover/card:scale-105'
-                      />
+           <div className='absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-2 sm:gap-3'>
+             {slides.map((_, index) => {
+               let realIndex = currentIndex - 1
+               if (currentIndex === 0) realIndex = slides.length - 1
+               if (currentIndex === extendedSlides.length - 1) realIndex = 0
+               return (
+                 <button
+                   key={index}
+                   onClick={() => goToSlide(index)}
+                   className={`transition-all duration-300 rounded-full ${realIndex === index ? 'bg-white w-6 sm:w-8 h-2 sm:h-2.5 shadow-md' : 'bg-white/60 hover:bg-white/80 w-2 sm:w-2.5 h-2 sm:h-2.5'}`}
+                   aria-label={`Ir al slide ${index + 1}`}
+                 />
+               )
+             })}
+           </div>
+         </div>
+       </div>
+     </section>
+   )
+ }
 
-                      {/* Overlay con gradiente en hover */}
-                      <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 rounded-2xl'>
-                        {/* Texto informativo en hover */}
-                        <div className='absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover/card:translate-y-0 transition-transform duration-300'>
-                          <h3 className='font-bold text-xl mb-2'>
-                            {combo.title}
-                          </h3>
-                          <p className='text-white/90 text-sm mb-4'>
-                            {combo.description}
-                          </p>
-
-                          {/* CTA Button */}
-                          <div className='flex items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-medium px-4 py-2 rounded-lg w-fit transition-all'>
-                            <Eye className='w-4 h-4' />
-                            <span>Ver detalles</span>
-                            <ArrowRight className='w-4 h-4 group-hover/card:translate-x-1 transition-transform' />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Badge de "Oferta" */}
-                      <div className='absolute top-4 right-4 bg-red-500 text-white font-bold px-4 py-2 rounded-full text-sm shadow-lg transform group-hover/card:scale-110 transition-transform'>
-                        🔥 Oferta
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Indicadores de posición */}
-          <div className='flex justify-center gap-2 mt-4'>
-            {combosData.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`transition-all ${
-                  index === currentIndex % combosData.length
-                    ? 'bg-orange-500 w-8 h-2'
-                    : 'bg-gray-300 w-2 h-2 hover:bg-gray-400'
-                } rounded-full`}
-                aria-label={`Ir al combo ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-export default CombosSection
+ export default CombosSection
 

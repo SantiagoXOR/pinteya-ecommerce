@@ -99,6 +99,68 @@ async function validateAdminAuth() {
   }
 }
 
+const SEARCHABLE_BASE_COLUMNS = [
+  'external_reference',
+  'payment_id',
+  'order_number',
+  'payer_info->>name',
+  'payer_info->>surname',
+  'payer_info->>email',
+  'payer_info->>phone',
+  'shipping_address->>street_name',
+  'shipping_address->>city_name',
+]
+
+const SEARCHABLE_PROFILE_COLUMNS = ['email', 'first_name', 'last_name']
+
+function buildSearchConditions(rawSearch: string) {
+  if (!rawSearch) {
+    return { base: [] as string[], profile: [] as string[] }
+  }
+
+  const sanitize = (value: string) =>
+    value
+      .trim()
+      .normalize('NFKC')
+      .replace(/[%]/g, '')
+      .replace(/,/g, ' ')
+      .replace(/\s+/g, ' ')
+
+  const base = sanitize(rawSearch)
+  if (!base) {
+    return { base: [], profile: [] }
+  }
+
+  const variations = new Set<string>()
+  variations.add(base.replace(/^#/, ''))
+
+  const digitsOnly = base.replace(/\D/g, '')
+  if (digitsOnly.length) {
+    variations.add(digitsOnly)
+  }
+
+  const baseConditions = new Set<string>()
+  const profileConditions = new Set<string>()
+
+  variations.forEach(value => {
+    if (!value) {
+      return
+    }
+    const wildcard = `%${value}%`
+    SEARCHABLE_BASE_COLUMNS.forEach(column => {
+      baseConditions.add(`${column}.ilike.${wildcard}`)
+    })
+    SEARCHABLE_PROFILE_COLUMNS.forEach(column => {
+      profileConditions.add(`${column}.ilike.${wildcard}`)
+    })
+  })
+
+  return {
+    base: Array.from(baseConditions),
+    profile: Array.from(profileConditions),
+  }
+}
+
 // ===================================
 // GET - Listar órdenes con filtros avanzados
 // ===================================
@@ -163,8 +225,10 @@ export async function GET(request: NextRequest) {
     let query = supabaseAdmin.from('orders').select(
       `
         id,
+        order_number,
         status,
         total,
+        payment_status,
         payment_id,
         created_at,
         updated_at,
@@ -206,9 +270,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (filters.search) {
-      query = query.or(
-        `external_reference.ilike.%${filters.search}%,payment_id.ilike.%${filters.search}%`
-      )
+      const { base: baseConditions, profile: profileConditions } = buildSearchConditions(filters.search)
+      if (baseConditions.length > 0) {
+        query = query.or(baseConditions.join(','))
+      }
+      if (profileConditions.length > 0) {
+        query = query.or(profileConditions.join(','), { foreignTable: 'user_profiles' })
+      }
     }
 
     // Aplicar ordenamiento y paginación

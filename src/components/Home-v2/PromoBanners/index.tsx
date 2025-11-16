@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Truck, Percent, Gift, ChevronLeft, ChevronRight } from 'lucide-react'
 
-interface PromoBannersProps {
+export interface PromoBannersProps {
   bannerId?: number // Si se proporciona, muestra solo ese banner
 }
 

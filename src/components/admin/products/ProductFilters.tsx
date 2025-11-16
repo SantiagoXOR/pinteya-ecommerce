@@ -54,6 +54,7 @@ export function ProductFilters({
   className,
 }: ProductFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const safeCategories = Array.isArray(categories) ? categories : []
 
   const hasActiveFilters = Object.values(filters).some(value => value !== undefined && value !== '')
 
@@ -146,7 +147,7 @@ export function ProductFilters({
                 className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
               >
                 <option value=''>Todas las categorías</option>
-                {categories.map(category => (
+                {safeCategories.map(category => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
@@ -280,7 +281,7 @@ export function ProductFilters({
                   <FilterTag
                     variant="success"
                     label="Categoría"
-                    value={categories.find(c => c.id === filters.category_id)?.name || String(filters.category_id)}
+                    value={safeCategories.find(c => c.id === filters.category_id)?.name || String(filters.category_id)}
                     onRemove={() => handleInputChange('category_id', undefined)}
                   />
                 )}

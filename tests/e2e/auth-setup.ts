@@ -7,6 +7,26 @@
 
 import { Page, BrowserContext } from '@playwright/test'
 
+const BASE_URL =
+  process.env.PLAYWRIGHT_BASE_URL ||
+  process.env.PLAYWRIGHT_TEST_BASE_URL ||
+  process.env.BASE_URL ||
+  'http://localhost:3000'
+
+const resolveUrl = (path: string) => {
+  if (!path) {
+    return BASE_URL
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    return path
+  }
+
+  const normalizedBase = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return `${normalizedBase}${normalizedPath}`
+}
+
 // Credenciales del usuario administrador
 export const ADMIN_CREDENTIALS = {
   email: 'santiago@xor.com.ar',
@@ -44,7 +64,7 @@ export async function authenticateAdminSimple(
   try {
     // 1. Navegar a la página principal
     console.log('📍 Navegando a página principal...')
-    await page.goto(URLS.home)
+    await page.goto(resolveUrl(URLS.home))
     await page.waitForLoadState('networkidle')
 
     // 2. Configurar cookies de sesión simuladas
@@ -115,12 +135,12 @@ export async function authenticateAdmin(
 
     // 2. Navegar primero a la página principal para establecer contexto
     console.log('📍 Navegando a página principal...')
-    await page.goto(URLS.home)
+    await page.goto(resolveUrl(URLS.home))
     await page.waitForLoadState('networkidle')
 
     // 3. Ahora navegar a la página de login
     console.log('📍 Navegando a página de login...')
-    await page.goto(URLS.signIn)
+    await page.goto(resolveUrl(URLS.signIn))
     await page.waitForLoadState('networkidle')
 
     // 4. Verificar que estamos en la página de login y buscar el botón de Google
@@ -198,7 +218,7 @@ export async function authenticateAdmin(
       ])
 
       // Navegar al admin
-      await page.goto(URLS.admin)
+      await page.goto(resolveUrl(URLS.admin))
       await page.waitForLoadState('networkidle')
     }
 
@@ -274,7 +294,7 @@ export async function verifyAdminAccess(page: Page): Promise<void> {
 
   try {
     // Navegar al panel administrativo
-    await page.goto(URLS.admin)
+      await page.goto(resolveUrl(URLS.admin))
     await page.waitForLoadState('networkidle')
 
     // Verificar que no fuimos redirigidos al login
@@ -357,7 +377,7 @@ export async function ensureAuthenticated(page: Page): Promise<void> {
 
   try {
     // Intentar acceder al admin directamente
-    await page.goto(URLS.admin)
+    await page.goto(resolveUrl(URLS.admin))
     await page.waitForLoadState('networkidle')
 
     // Si fuimos redirigidos al login, autenticar

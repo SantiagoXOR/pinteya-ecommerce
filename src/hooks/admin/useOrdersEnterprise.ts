@@ -99,6 +99,9 @@ export interface OrderAnalytics {
 
 export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   const queryClient = useQueryClient()
+  const isDevEnvironment = process.env.NODE_ENV === 'development'
+  const isBypassAuthEnabled =
+    process.env.BYPASS_AUTH === 'true' || process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true'
 
   // Hook inicializado correctamente
 
@@ -110,6 +113,7 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     sort_order: 'desc',
     ...initialFilters,
   })
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false)
 
   // Filtros configurados
 
@@ -147,15 +151,6 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
-      console.log('🔍 API Response:', {
-        hasData: !!data,
-        hasSuccess: data.success,
-        hasOrders: !!data.data?.orders,
-        ordersCount: data.data?.orders?.length,
-        hasPagination: !!data.data?.pagination,
-        structure: Object.keys(data),
-        dataKeys: data.data ? Object.keys(data.data) : []
-      })
       return data
     },
     staleTime: 30000, // 30 segundos
@@ -181,6 +176,8 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   })
 
   // Query para analytics (opcional - no bloquea si falla)
+  const analyticsQueryEnabled = !isBypassAuthEnabled
+
   const {
     data: analyticsData,
     isLoading: analyticsLoading,
@@ -191,22 +188,27 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       try {
         const response = await fetch('/api/admin/orders/analytics')
         if (!response.ok) {
-          // Si es 401 o 404, retornar datos vacíos en lugar de fallar
-          if (response.status === 401 || response.status === 404) {
-            console.warn('Analytics endpoint not available or unauthorized')
+          // Si es 401/403/404, retornar datos vacíos sin ensuciar la consola
+          if ([401, 403, 404].includes(response.status)) {
+            if (isDevEnvironment) {
+              console.info('[OrdersAnalytics] Endpoint no disponible (', response.status, ')')
+            }
             return { data: null }
           }
           throw new Error(`Error ${response.status}: ${response.statusText}`)
         }
         return response.json()
       } catch (error) {
-        console.warn('Analytics fetch failed:', error)
+        if (isDevEnvironment) {
+          console.debug('Analytics fetch skipped:', error)
+        }
         return { data: null }
       }
     },
     staleTime: 300000, // 5 minutos
     refetchOnWindowFocus: false,
     retry: false, // No reintentar si falla
+    enabled: analyticsQueryEnabled,
   })
 
   // =====================================================
@@ -276,9 +278,18 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   // FUNCIONES AUXILIARES
   // =====================================================
 
-  const updateFilters = useCallback((newFilters: Partial<OrderFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
-  }, [])
+  const updateFilters = useCallback(
+    (newFilters: Partial<OrderFilters>) => {
+      setFilters(prev => {
+        const nextFilters = { ...prev, ...newFilters }
+        if (typeof newFilters.page === 'number' && newFilters.page !== prev.page) {
+          setIsPageTransitioning(true)
+        }
+        return nextFilters
+      })
+    },
+    [setIsPageTransitioning]
+  )
 
   const resetFilters = useCallback(() => {
     setFilters({
@@ -287,6 +298,7 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       sort_by: 'created_at',
       sort_order: 'desc',
     })
+    setIsPageTransitioning(false)
   }, [])
 
   const updateOrderStatus = useCallback(
@@ -310,6 +322,29 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     },
     [bulkOperationMutation]
   )
+
+  useEffect(() => {
+    const currentPageFromApi = ordersData?.data?.pagination?.page
+    if (currentPageFromApi && currentPageFromApi === filters.page) {
+      setIsPageTransitioning(false)
+    }
+  }, [ordersData?.data?.pagination?.page, filters.page])
+
+  useEffect(() => {
+    const totalPagesFromApi = ordersData?.data?.pagination?.totalPages
+    if (totalPagesFromApi && filters.page > totalPagesFromApi) {
+      setFilters(prev => ({
+        ...prev,
+        page: Math.max(1, totalPagesFromApi),
+      }))
+    }
+  }, [ordersData?.data?.pagination?.totalPages, filters.page])
+
+  useEffect(() => {
+    if (ordersError) {
+      setIsPageTransitioning(false)
+    }
+  }, [ordersError])
 
   // =====================================================
   // MÉTRICAS DERIVADAS
@@ -355,7 +390,7 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       averageOrderValue: statsData.data.average_order_value,
       ordersToday: statsData.data.orders_today,
     } : null,
-    analytics: analyticsData?.data || null,
+    analytics: analyticsQueryEnabled ? analyticsData?.data || null : null,
 
     // Estados de carga
     isLoading: ordersLoading || statsLoading,
@@ -393,9 +428,24 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       totalItems: derivedMetrics.totalOrders,
       hasNext: derivedMetrics.hasNextPage,
       hasPrev: derivedMetrics.hasPrevPage,
-      goToPage: (page: number) => updateFilters({ page }),
-      nextPage: () => derivedMetrics.hasNextPage && updateFilters({ page: filters.page + 1 }),
-      prevPage: () => derivedMetrics.hasPrevPage && updateFilters({ page: filters.page - 1 }),
+      isTransitioning: isPageTransitioning,
+      goToPage: (page: number) => {
+        if (page !== filters.page) {
+          updateFilters({ page })
+        }
+      },
+      nextPage: () => {
+        if (!derivedMetrics.hasNextPage || isPageTransitioning) {
+          return
+        }
+        updateFilters({ page: filters.page + 1 })
+      },
+      prevPage: () => {
+        if (!derivedMetrics.hasPrevPage || isPageTransitioning) {
+          return
+        }
+        updateFilters({ page: filters.page - 1 })
+      },
     },
     
     // Función refresh simplificada

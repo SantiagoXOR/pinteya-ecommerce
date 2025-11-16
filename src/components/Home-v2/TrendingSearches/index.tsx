@@ -36,21 +36,25 @@ const TrendingSearches = () => {
         </div>
 
         {/* Chips de búsquedas */}
-        <div className='grid grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-3'>
+        <div
+          className='flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide snap-x snap-mandatory py-0.5 -mx-2 sm:-mx-3 lg:-mx-4 px-2 sm:px-3 lg:px-4'
+          role='list'
+          aria-label='Búsquedas populares'
+        >
           {trendingSearches.map((search, index) => (
             <Link
               key={index}
               href={`/search?search=${encodeURIComponent(search.term)}`}
               onClick={() => handleSearchClick(search.term)}
-              className='group relative bg-white hover:bg-orange-50 border-2 border-gray-200 hover:border-orange-300 rounded-full px-3 py-2.5 md:px-4 transition-all hover:shadow-lg hover:scale-105 flex items-center gap-2 min-w-0'
+              className='group relative bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-300 rounded-full px-3 py-1.5 transition-all hover:shadow-md hover:scale-[1.01] flex items-center gap-1 min-w-fit snap-start'
             >
               {/* Icon */}
-              <span className='text-xl group-hover:scale-110 transition-transform flex-shrink-0'>
+              <span className='text-base group-hover:scale-110 transition-transform flex-shrink-0'>
                 {search.icon}
               </span>
 
               {/* Term */}
-              <span className='text-sm md:text-base font-medium text-gray-700 group-hover:text-orange-600 transition-colors break-words'>
+              <span className='text-xs sm:text-sm font-medium text-gray-700 group-hover:text-orange-600 transition-colors break-words whitespace-nowrap'>
                 {search.term}
               </span>
 

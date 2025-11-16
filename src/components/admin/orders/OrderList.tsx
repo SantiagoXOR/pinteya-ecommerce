@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { 
   Table,
   TableBody,
@@ -23,7 +23,8 @@ import {
   XCircle,
   RefreshCw,
   DollarSign,
-  CreditCard
+  CreditCard,
+  Search,
 } from 'lucide-react'
 import { OrderFilters } from './OrderFilters'
 import { OrderRowActions } from './OrderActions'
@@ -96,6 +97,7 @@ interface OrderListProps {
     prevPage: () => void
     hasNext?: boolean
     hasPrev?: boolean
+    isTransitioning?: boolean
   }
   onOrderAction?: (action: string, orderId: string) => void
   className?: string
@@ -231,24 +233,19 @@ export function OrderList({
   onOrderAction,
   className,
 }: OrderListProps) {
-  const router = useRouter()
   const [internalSelectedOrders, setInternalSelectedOrders] = useState<string[]>([])
+  const [quickSearchTerm, setQuickSearchTerm] = useState(filters?.search || '')
 
   // Usar estado externo si se proporciona, sino usar estado interno
   const selectedOrders = externalSelectedOrders ?? internalSelectedOrders
   const setSelectedOrders = externalSetSelectedOrders ?? setInternalSelectedOrders
 
+  useEffect(() => {
+    setQuickSearchTerm(filters?.search || '')
+  }, [filters?.search])
+
   // Asegurar que orders siempre sea un array
   const safeOrders = Array.isArray(orders) ? orders : []
-
-  // Debug
-  console.log('📋 OrderList Debug:', {
-    ordersReceived: orders,
-    safeOrdersLength: safeOrders.length,
-    isLoading,
-    error,
-    filters,
-  })
 
   // Handle row selection
   const handleSelectOrder = (orderId: string) => {
@@ -265,6 +262,25 @@ export function OrderList({
     } else {
       setSelectedOrders(safeOrders.map(order => order.id))
     }
+  }
+
+  const handleQuickSearch = () => {
+    if (!updateFilters) {
+      return
+    }
+    const nextValue = quickSearchTerm.trim()
+    updateFilters({
+      search: nextValue || undefined,
+      page: 1,
+    })
+  }
+
+  const handleClearSearch = () => {
+    if (!updateFilters) {
+      return
+    }
+    setQuickSearchTerm('')
+    updateFilters({ search: undefined, page: 1 })
   }
 
   if (error) {
@@ -286,6 +302,43 @@ export function OrderList({
 
   return (
     <div className={cn('space-y-4', className)}>
+      {/* Búsqueda rápida */}
+      {updateFilters && (
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+          <div className='flex w-full gap-2'>
+            <div className='relative flex-1'>
+              <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
+              <Input
+                value={quickSearchTerm}
+                onChange={e => setQuickSearchTerm(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    handleQuickSearch()
+                  }
+                }}
+                placeholder='Buscar por número de orden, cliente o email...'
+                className='pl-9'
+                aria-label='Buscar órdenes'
+              />
+            </div>
+            <Button
+              variant='secondary'
+              onClick={handleQuickSearch}
+              disabled={
+                !quickSearchTerm.trim() && !(filters?.search && filters.search.length > 0)
+              }
+            >
+              Buscar
+            </Button>
+            {(filters?.search || quickSearchTerm) && (
+              <Button variant='ghost' onClick={handleClearSearch}>
+                Limpiar
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Filtros */}
       {filters && updateFilters && resetFilters && (
         <OrderFilters
@@ -295,121 +348,190 @@ export function OrderList({
         />
       )}
 
-      {/* Tabla de órdenes */}
-      <div className='border rounded-lg overflow-hidden'>
-        <div className='overflow-x-auto'>
-          <Table>
-            <TableHeader>
-              <TableRow className='bg-gray-50'>
-                <TableHead className='w-12'>
-                  <Checkbox
-                    checked={selectedOrders.length === safeOrders.length && safeOrders.length > 0}
-                    onCheckedChange={() => handleSelectAll()}
-                  />
-                </TableHead>
-                <TableHead>Número de Orden</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Pago</TableHead>
-                <TableHead className='text-right'>Total</TableHead>
-                <TableHead className='text-right'>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {safeOrders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className='text-center py-8'>
-                    <Package className='w-16 h-16 mx-auto text-gray-300 mb-4' />
-                    <p className='text-lg font-medium text-gray-900 mb-2'>No se encontraron órdenes</p>
-                    <p className='text-sm text-gray-500'>No hay órdenes que coincidan con los filtros aplicados</p>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                safeOrders.map((order) => (
-                  <TableRow key={order.id} className='hover:bg-gray-50'>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedOrders.includes(order.id)}
-                        onCheckedChange={() => handleSelectOrder(order.id)}
-                      />
-                    </TableCell>
-                    <TableCell className='font-medium text-gray-900'>
-                      {order.order_number || `#${order.id}`}
-                    </TableCell>
-                    <TableCell>
-                      <div className='min-w-[150px]'>
-                        <div className='font-medium text-gray-900'>
-                          {order.payer_info?.name ||
-                            order.user_profiles?.name ||
-                            'Cliente no especificado'}
-                        </div>
-                        {(order.payer_info?.email || order.user_profiles?.email) && (
-                          <div className='text-sm text-gray-500'>
-                            {order.payer_info?.email || order.user_profiles?.email}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className='text-sm text-gray-600'>
-                      {formatDate(order.created_at)}
-                    </TableCell>
-                    <TableCell>
-                      <OrderStatusBadge status={order.status} />
-                    </TableCell>
-                    <TableCell>
-                      <PaymentStatusBadge status={order.payment_status} />
-                    </TableCell>
-                    <TableCell className='text-right font-semibold text-gray-900'>
-                      {formatCurrency(order.total, order.currency)}
-                    </TableCell>
-                    <TableCell className='text-right'>
-                      <OrderRowActions
-                        order={order}
-                        onAction={(action: string) => {
-                          if (onOrderAction) {
-                            onOrderAction(action, order.id)
-                          }
-                        }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+      {/* Listado responsivo */}
+      {safeOrders.length === 0 ? (
+        <div className='border rounded-lg p-8 text-center text-gray-500 bg-white'>
+          <Package className='w-16 h-16 mx-auto text-gray-300 mb-4' />
+          <p className='text-lg font-medium text-gray-900 mb-2'>No se encontraron órdenes</p>
+          <p className='text-sm text-gray-500'>Ajusta los filtros o crea una nueva orden.</p>
         </div>
+      ) : (
+        <>
+          <div className='space-y-4 lg:hidden'>
+            {safeOrders.map(order => (
+              <div
+                key={`${order.id}-mobile`}
+                className='bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-4'
+              >
+                <div className='flex items-start justify-between gap-3'>
+                  <div className='min-w-0 space-y-1'>
+                    <p className='text-xs uppercase text-gray-400 tracking-wide'>Orden</p>
+                    <p className='text-base font-semibold text-gray-900 truncate'>
+                      {order.order_number || `#${order.id}`}
+                    </p>
+                    <p className='text-sm text-gray-500 truncate'>
+                      {order.payer_info?.name ||
+                        order.user_profiles?.name ||
+                        'Cliente no especificado'}
+                    </p>
+                    {(order.payer_info?.email || order.user_profiles?.email) && (
+                      <p className='text-xs text-gray-400 truncate'>
+                        {order.payer_info?.email || order.user_profiles?.email}
+                      </p>
+                    )}
+                  </div>
+                  <Checkbox
+                    checked={selectedOrders.includes(order.id)}
+                    onCheckedChange={() => handleSelectOrder(order.id)}
+                  />
+                </div>
 
-        {/* Paginación */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className='flex items-center justify-between px-6 py-4 border-t bg-gray-50'>
-            <div className='text-sm text-gray-700'>
-              Mostrando página {pagination.currentPage} de {pagination.totalPages}
-              {' '}({pagination.totalItems} órdenes en total)
-            </div>
-            <div className='flex items-center space-x-2'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => pagination.prevPage()}
-                disabled={!pagination.hasPrev}
-              >
-                <ChevronLeft className='w-4 h-4' />
-                Anterior
-              </Button>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => pagination.nextPage()}
-                disabled={!pagination.hasNext}
-              >
-                Siguiente
-                <ChevronRight className='w-4 h-4' />
-              </Button>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <OrderStatusBadge status={order.status} />
+                  <PaymentStatusBadge status={order.payment_status} />
+                </div>
+
+                <div className='space-y-1 text-sm text-gray-600'>
+                  <p className='flex justify-between'>
+                    <span className='text-gray-500'>Fecha:</span>
+                    <span className='font-medium text-gray-900'>
+                      {formatDate(order.created_at)}
+                    </span>
+                  </p>
+                  <p className='flex justify-between'>
+                    <span className='text-gray-500'>Total:</span>
+                    <span className='font-semibold text-gray-900'>
+                      {formatCurrency(order.total, order.currency)}
+                    </span>
+                  </p>
+                </div>
+
+                <div className='flex items-center justify-between pt-3 border-t'>
+                  <div className='text-xs text-gray-500'>
+                    Actualizada {formatDate(order.updated_at)}
+                  </div>
+                  <OrderRowActions
+                    order={order}
+                    onAction={(action: string) => {
+                      if (onOrderAction) {
+                        onOrderAction(action, order.id)
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className='hidden lg:block border rounded-lg overflow-hidden'>
+            <div className='overflow-x-auto'>
+              <Table>
+                <TableHeader>
+                  <TableRow className='bg-gray-50'>
+                    <TableHead className='w-12'>
+                      <Checkbox
+                        checked={selectedOrders.length === safeOrders.length && safeOrders.length > 0}
+                        onCheckedChange={() => handleSelectAll()}
+                      />
+                    </TableHead>
+                    <TableHead>Número de Orden</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Pago</TableHead>
+                    <TableHead className='text-right'>Total</TableHead>
+                    <TableHead className='text-right'>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {safeOrders.map(order => (
+                    <TableRow key={order.id} className='hover:bg-gray-50'>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedOrders.includes(order.id)}
+                          onCheckedChange={() => handleSelectOrder(order.id)}
+                        />
+                      </TableCell>
+                      <TableCell className='font-medium text-gray-900'>
+                        {order.order_number || `#${order.id}`}
+                      </TableCell>
+                      <TableCell>
+                        <div className='min-w-[150px]'>
+                          <div className='font-medium text-gray-900'>
+                            {order.payer_info?.name ||
+                              order.user_profiles?.name ||
+                              'Cliente no especificado'}
+                          </div>
+                          {(order.payer_info?.email || order.user_profiles?.email) && (
+                            <div className='text-sm text-gray-500'>
+                              {order.payer_info?.email || order.user_profiles?.email}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className='text-sm text-gray-600'>
+                        {formatDate(order.created_at)}
+                      </TableCell>
+                      <TableCell>
+                        <OrderStatusBadge status={order.status} />
+                      </TableCell>
+                      <TableCell>
+                        <PaymentStatusBadge status={order.payment_status} />
+                      </TableCell>
+                      <TableCell className='text-right font-semibold text-gray-900'>
+                        {formatCurrency(order.total, order.currency)}
+                      </TableCell>
+                      <TableCell className='text-right'>
+                        <OrderRowActions
+                          order={order}
+                          onAction={(action: string) => {
+                            if (onOrderAction) {
+                              onOrderAction(action, order.id)
+                            }
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {/* Paginación */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className='flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between px-4 lg:px-6 py-4 border rounded-lg bg-white'>
+          <div className='text-sm text-gray-700'>
+            Mostrando página {pagination.currentPage} de {pagination.totalPages} ({' '}
+            {pagination.totalItems} órdenes en total)
+          </div>
+          <div className='flex items-center gap-2'>
+            {pagination.isTransitioning && (
+              <span className='text-xs text-gray-500'>Actualizando resultados...</span>
+            )}
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => pagination.prevPage()}
+              disabled={!pagination.hasPrev || pagination.isTransitioning}
+            >
+              <ChevronLeft className='w-4 h-4' />
+              Anterior
+            </Button>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => pagination.nextPage()}
+              disabled={!pagination.hasNext || pagination.isTransitioning}
+            >
+              Siguiente
+              <ChevronRight className='w-4 h-4 ml-2' />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

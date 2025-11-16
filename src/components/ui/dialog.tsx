@@ -21,19 +21,9 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      'fixed inset-0 z-modal-backdrop bg-dark/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      'pointer-events-auto data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className
     )}
-    // Evitar que el clic/press en el overlay burbujee al elemento debajo y dispare onClick del card
-    onClick={(e) => {
-      e.stopPropagation()
-    }}
-    onPointerDown={(e) => {
-      e.stopPropagation()
-    }}
-    onMouseDown={(e) => {
-      e.stopPropagation()
-    }}
     {...props}
   />
 ))

@@ -25,7 +25,7 @@ export function AdminLayout({
   actions,
   className,
 }: AdminLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div data-admin-layout className='flex h-screen bg-gray-50 overflow-hidden'>
@@ -59,7 +59,15 @@ export function AdminLayout({
         />
 
         {/* Page Content */}
-        <main className={cn('flex-1 overflow-y-auto', className)}>{children}</main>
+        <main
+          className={cn(
+            'flex-1 overflow-y-auto px-4 py-4 lg:px-6 bg-gray-50/80',
+            'scroll-smooth [scroll-padding-top:3.5rem]',
+            className
+          )}
+        >
+          {children}
+        </main>
       </div>
     </div>
   )

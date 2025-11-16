@@ -152,10 +152,10 @@ export default function ProductDetailPage() {
   ]
 
   const actions = (
-    <div className='flex items-center space-x-3'>
+    <div className='flex w-full flex-wrap items-center justify-end gap-2 sm:gap-3'>
       <button
         onClick={handleViewPublic}
-        className='flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium'
       >
         <Eye className='w-4 h-4' />
         <span>Ver Público</span>
@@ -163,7 +163,7 @@ export default function ProductDetailPage() {
 
       <button
         onClick={handleEdit}
-        className='flex items-center space-x-2 px-4 py-2 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors'
+        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors text-sm font-medium'
       >
         <Edit className='w-4 h-4' />
         <span>Editar</span>
@@ -171,7 +171,7 @@ export default function ProductDetailPage() {
 
       <button
         onClick={handleDelete}
-        className='flex items-center space-x-2 px-4 py-2 border border-red-300 text-red-700 hover:bg-red-50 rounded-lg transition-colors'
+        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 border border-red-300 text-red-700 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium'
       >
         <Trash2 className='w-4 h-4' />
         <span>Eliminar</span>
@@ -180,11 +180,16 @@ export default function ProductDetailPage() {
   )
 
   return (
-    <AdminLayout title={product.name} breadcrumbs={breadcrumbs} actions={actions}>
-      <div className='space-y-6'>
+    <AdminLayout
+      title={product.name}
+      breadcrumbs={breadcrumbs}
+      actions={actions}
+      className='pb-10'
+    >
+      <div className='space-y-5 sm:space-y-6'>
         {/* Header Info */}
-        <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
-          <AdminCard className='p-6'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6'>
+          <AdminCard className='p-4 sm:p-6'>
             <div className='text-center'>
               <DollarSign className='w-8 h-8 text-green-600 mx-auto mb-2' />
               <div className='text-2xl font-bold text-gray-900'>
@@ -199,7 +204,7 @@ export default function ProductDetailPage() {
             </div>
           </AdminCard>
 
-          <AdminCard className='p-6'>
+          <AdminCard className='p-4 sm:p-6'>
             <div className='text-center'>
               <Package className='w-8 h-8 text-blue-600 mx-auto mb-2' />
               <div className='text-2xl font-bold text-gray-900'>{product.stock}</div>
@@ -210,7 +215,7 @@ export default function ProductDetailPage() {
             </div>
           </AdminCard>
 
-          <AdminCard className='p-6'>
+          <AdminCard className='p-4 sm:p-6'>
             <div className='text-center'>
               <BarChart3 className='w-8 h-8 text-purple-600 mx-auto mb-2' />
               <div className='text-2xl font-bold text-gray-900'>
@@ -222,7 +227,7 @@ export default function ProductDetailPage() {
             </div>
           </AdminCard>
 
-          <AdminCard className='p-6'>
+          <AdminCard className='p-4 sm:p-6'>
             <div className='text-center'>
               <Tag className='w-8 h-8 text-orange-600 mx-auto mb-2' />
               <div className='text-lg font-bold text-gray-900 mb-2'>
@@ -234,10 +239,10 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Main Content */}
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+        <div className='grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6'>
           {/* Product Details */}
-          <div className='lg:col-span-2 space-y-6'>
-            <AdminCard title='Información del Producto' className='p-6'>
+          <div className='xl:col-span-2 space-y-4 sm:space-y-6 order-2 xl:order-1'>
+            <AdminCard title='Información del Producto' className='p-4 sm:p-6'>
               <div className='space-y-4'>
                 <div>
                   <h3 className='text-lg font-medium text-gray-900 mb-2'>{product.name}</h3>
@@ -251,7 +256,7 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-                <div className='grid grid-cols-2 gap-4 pt-4 border-t border-gray-200'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-200'>
                   <div>
                     <span className='text-sm font-medium text-gray-500'>Categoría:</span>
                     <p className='text-sm text-gray-900'>
@@ -303,8 +308,8 @@ export default function ProductDetailPage() {
             </AdminCard>
 
             {/* Pricing Details */}
-            <AdminCard title='Detalles de Precios' className='p-6'>
-              <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
+            <AdminCard title='Detalles de Precios' className='p-4 sm:p-6'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'>
                 <div>
                   <span className='text-sm font-medium text-gray-500'>Precio de Venta</span>
                   <p className='text-lg font-bold text-gray-900'>
@@ -342,9 +347,9 @@ export default function ProductDetailPage() {
             </AdminCard>
 
             {/* Inventory Details */}
-            <AdminCard title='Gestión de Inventario' className='p-6'>
+            <AdminCard title='Gestión de Inventario' className='p-4 sm:p-6'>
               <div className='space-y-4'>
-                <div className='flex items-center justify-between'>
+                <div className='flex flex-wrap items-center justify-between gap-2'>
                   <span className='text-sm font-medium text-gray-500'>Rastrear Inventario:</span>
                   <span
                     className={cn(
@@ -360,7 +365,7 @@ export default function ProductDetailPage() {
 
                 {product.track_inventory && (
                   <>
-                    <div className='flex items-center justify-between'>
+                    <div className='flex flex-wrap items-center justify-between gap-2'>
                       <span className='text-sm font-medium text-gray-500'>Stock Actual:</span>
                       <span className='text-sm font-bold text-gray-900'>
                         {product.stock} unidades
@@ -368,7 +373,7 @@ export default function ProductDetailPage() {
                     </div>
 
                     {product.low_stock_threshold && (
-                      <div className='flex items-center justify-between'>
+                      <div className='flex flex-wrap items-center justify-between gap-2'>
                         <span className='text-sm font-medium text-gray-500'>
                           Umbral Stock Bajo:
                         </span>
@@ -378,7 +383,7 @@ export default function ProductDetailPage() {
                       </div>
                     )}
 
-                    <div className='flex items-center justify-between'>
+                    <div className='flex flex-wrap items-center justify-between gap-2'>
                       <span className='text-sm font-medium text-gray-500'>
                         Permitir Pedidos Pendientes:
                       </span>
@@ -400,10 +405,10 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className='space-y-6'>
+          <div className='space-y-4 sm:space-y-6 order-1 xl:order-2'>
             {/* Product Image */}
-            <AdminCard title='Imagen Principal' className='p-6'>
-              <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden'>
+            <AdminCard title='Imagen Principal' className='p-4 sm:p-6'>
+              <div className='aspect-[4/3] sm:aspect-square bg-gray-100 rounded-lg overflow-hidden'>
                 {product.image_url ? (
                   <Image
                     src={product.image_url}
@@ -422,7 +427,7 @@ export default function ProductDetailPage() {
 
             {/* SEO Information */}
             {(product.seo_title || product.seo_description || product.slug) && (
-              <AdminCard title='Información SEO' className='p-6'>
+              <AdminCard title='Información SEO' className='p-4 sm:p-6'>
                 <div className='space-y-3'>
                   {product.seo_title && (
                     <div>
@@ -449,7 +454,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Quick Actions */}
-            <AdminCard title='Acciones Rápidas' className='p-6'>
+            <AdminCard title='Acciones Rápidas' className='p-4 sm:p-6'>
               <div className='space-y-3'>
                 <button
                   onClick={handleEdit}
