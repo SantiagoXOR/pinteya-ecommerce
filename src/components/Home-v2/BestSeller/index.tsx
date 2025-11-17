@@ -1,9 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import ProductItem from '@/components/Common/ProductItem'
 import Link from 'next/link'
-import { useProductsByCategory } from '@/hooks/useProductsByCategory'
+import { useBestSellerProducts } from '@/hooks/useBestSellerProducts'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,20 +14,24 @@ const BestSeller: React.FC = () => {
   const { selectedCategory } = useCategoryFilter()
 
   // Fetch productos según categoría seleccionada
-  const { products, isLoading, error } = useProductsByCategory({
+  // Sin categoría: 10 productos específicos hardcodeados
+  // Con categoría: Todos los productos de la categoría (limit 50)
+  const { products, isLoading, error } = useBestSellerProducts({
     categorySlug: selectedCategory,
-    limit: 100, // Aumentado para mostrar más productos por categoría
   })
 
-  // Los productos ya vienen adaptados del hook, no necesitamos adaptarlos nuevamente
-  const adaptedProducts = Array.isArray(products) ? products : []
-
-  // Ordenar por precio y separar en stock/sin stock
-  const sortedByPrice = [...adaptedProducts].sort((a, b) => b.price - a.price)
-  const inStock = sortedByPrice.filter(p => (p.stock ?? 0) > 0)
-  const outOfStock = sortedByPrice.filter(p => (p.stock ?? 0) <= 0)
-  // Mostrar todos los productos de la categoría seleccionada
-  const bestSellerProducts = [...inStock, ...outOfStock]
+  // Memoizar ordenamiento y filtrado de productos
+  const bestSellerProducts = useMemo(() => {
+    const adaptedProducts = Array.isArray(products) ? products : []
+    
+    // Ordenar por precio y separar en stock/sin stock
+    const sortedByPrice = [...adaptedProducts].sort((a, b) => b.price - a.price)
+    const inStock = sortedByPrice.filter(p => (p.stock ?? 0) > 0)
+    const outOfStock = sortedByPrice.filter(p => (p.stock ?? 0) <= 0)
+    
+    // Mostrar todos los productos (con stock primero)
+    return [...inStock, ...outOfStock]
+  }, [products])
 
   // Calcular si hay espacios vacíos en la última fila
   // Desktop: 4 cols, Tablet: 2 cols, Mobile: 2 cols
@@ -67,15 +71,15 @@ const BestSeller: React.FC = () => {
     <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
         {/* Grid de productos mejorado - 4 columnas en desktop */}
-        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-          {bestSellerProducts.length > 0 ? (
-            <>
-              {bestSellerProducts.map((item, key) => (
-                <ProductItem key={key} product={item} />
-              ))}
-              {shouldShowHelpCard && <HelpCard categoryName={selectedCategory} />}
-            </>
-          ) : (
+          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
+            {bestSellerProducts.length > 0 ? (
+              <>
+                {bestSellerProducts.map((item, index) => (
+                  <ProductItem key={`${item.id}-${index}`} product={item} />
+                ))}
+                {shouldShowHelpCard && <HelpCard categoryName={selectedCategory} />}
+              </>
+            ) : (
             <div className='col-span-full'>
               <Card variant='outlined' className='border-gray-200'>
                 <CardContent className='p-12 text-center'>

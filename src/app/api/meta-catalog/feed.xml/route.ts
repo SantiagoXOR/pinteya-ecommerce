@@ -133,7 +133,8 @@ export async function GET(request: NextRequest) {
     // Agregar cada producto al feed
     products.forEach((product: any) => {
       const productSlug = product.slug || `product-${product.id}`
-      const productUrl = `${fullBaseUrl}/products/${productSlug}`
+      // URL directa al checkout: agregar producto al carrito y redirigir
+      const productUrl = `${fullBaseUrl}/buy/${productSlug}`
       const defaultVariant = variantsMap.get(product.id)
       
       // Usar imagen de variante si existe, sino del producto
@@ -152,9 +153,9 @@ export async function GET(request: NextRequest) {
       xml += `      <g:description>${escapeXml(description)}</g:description>\n`
       xml += `      <g:link>${productUrl}</g:link>\n`
       
-      if (imageUrl) {
-        xml += `      <g:image_link>${imageUrl}</g:image_link>\n`
-      }
+      // g:image_link es obligatorio, usar placeholder si no hay imagen
+      const finalImageUrl = imageUrl || `${fullBaseUrl}/images/products/placeholder.svg`
+      xml += `      <g:image_link>${finalImageUrl}</g:image_link>\n`
       
       xml += `      <g:price>${price.toFixed(2)} ARS</g:price>\n`
       xml += `      <g:availability>${availability}</g:availability>\n`
@@ -163,7 +164,7 @@ export async function GET(request: NextRequest) {
       xml += `      <g:google_product_category>${escapeXml(category)}</g:google_product_category>\n`
       
       // Agregar categoría personalizada si existe
-      if (product.category?.slug) {
+      if (product.category?.name) {
         xml += `      <g:product_type>${escapeXml(category)}</g:product_type>\n`
       }
       

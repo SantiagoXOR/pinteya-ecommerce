@@ -115,13 +115,15 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
               {isCompactBanner ? (
                 <div className='relative h-12 md:h-14'>
                   {/* Background Image optimizada */}
+                  {/* Solo bannerId 1 tiene priority (above-fold), los demás usan lazy loading */}
                   <Image
                     src={banner.bgImage}
                     alt={banner.title}
                     fill
                     className='object-cover object-center'
                     sizes='(max-width: 768px) 100vw, 1200px'
-                    priority
+                    priority={banner.id === 1}
+                    loading={banner.id === 1 ? undefined : 'lazy'}
                   />
                   
                   {/* Gradient Overlay */}
@@ -157,6 +159,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     fill
                     className='object-cover'
                     sizes='(max-width: 768px) 100vw, 1200px'
+                    loading='lazy'
                   />
                   
                   {/* Gradient Overlay */}

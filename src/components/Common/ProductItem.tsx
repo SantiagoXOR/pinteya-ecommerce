@@ -11,7 +11,7 @@ interface ProductItemProps {
   item?: Product // Prop legacy para compatibilidad
 }
 
-const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
+const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) => {
   const { addProduct } = useCartUnified()
   const { trackEvent } = useAnalytics()
 
@@ -144,6 +144,22 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, item }) => {
       // medida={productData.medida}
     />
   )
-}
+}, (prevProps, nextProps) => {
+  // Comparación personalizada para evitar re-renders innecesarios
+  const prevProduct = prevProps.product || prevProps.item
+  const nextProduct = nextProps.product || nextProps.item
+  
+  if (!prevProduct || !nextProduct) return false
+  
+  // Comparar propiedades clave
+  return (
+    prevProduct.id === nextProduct.id &&
+    prevProduct.price === nextProduct.price &&
+    prevProduct.discountedPrice === nextProduct.discountedPrice &&
+    prevProduct.stock === nextProduct.stock
+  )
+})
+
+ProductItem.displayName = 'ProductItem'
 
 export default ProductItem

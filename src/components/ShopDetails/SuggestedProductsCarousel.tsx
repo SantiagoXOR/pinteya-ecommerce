@@ -198,3 +198,5 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
 
 export default SuggestedProductsCarousel
 
+
+

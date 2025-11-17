@@ -79,6 +79,8 @@
 
         <button onclick="clearEverything()">Limpiar Todo Ahora</button>
         
+        <button onclick="clearServiceWorkers()">Solo Desregistrar Service Workers</button>
+        
         <button onclick="clearLocalStorage()">Solo Limpiar LocalStorage</button>
         
         <button onclick="clearCacheStorage()">Solo Limpiar Cache Storage</button>
@@ -174,17 +176,41 @@
             }
         }
 
+        async function clearServiceWorkers() {
+            try {
+                addLog('Desregistrando Service Workers...');
+                
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    addLog(`Encontrados ${registrations.length} Service Workers registrados`);
+                    
+                    for (const registration of registrations) {
+                        addLog(`  - Desregistrando: ${registration.scope}`);
+                        await registration.unregister();
+                    }
+                    
+                    addLog('✅ Service Workers desregistrados correctamente', false);
+                } else {
+                    addLog('ℹ️ Service Workers no disponibles', false);
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, true);
+            }
+        }
+
         async function clearEverything() {
             addLog('====================================');
             addLog('Iniciando limpieza completa...');
             addLog('====================================');
             
+            await clearServiceWorkers();
             await clearLocalStorage();
             await clearCacheStorage();
             await clearIndexedDB();
             
             addLog('====================================');
             addLog('✅ Limpieza completa finalizada');
+            addLog('Service Workers desregistrados y caches limpiados');
             addLog('====================================');
             
             successMsg.style.display = 'block';

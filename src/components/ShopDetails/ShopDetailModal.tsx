@@ -55,6 +55,7 @@ import { logError } from '@/lib/error-handling/centralized-error-handler'
 import { getValidImageUrl } from '@/lib/adapters/product-adapter'
 import { getProductImage } from '@/lib/utils/image-helpers'
 import { useRouter } from 'next/navigation'
+import SuggestedProductsCarousel from './SuggestedProductsCarousel'
 
 
 
@@ -2917,6 +2918,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           </div>
           )}
         </div>
+
+        {/* Carrusel de productos sugeridos */}
+        {product && product.id && (
+          <SuggestedProductsCarousel
+            productId={product.id}
+            categoryId={(product as any).category?.id}
+            limit={8}
+          />
+        )}
         </ScrollArea>
       </DialogContent>
     </Dialog>

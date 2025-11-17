@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import ShopDetailModal from '@/components/ShopDetails/ShopDetailModal'
 import { useCartUnified } from '@/hooks/useCartUnified'
-import { getProductBySlug } from '@/lib/api/products'
+import { getProductBySlug, getProductById } from '@/lib/api/products'
 import { getMainImage } from '@/lib/adapters/product-adapter'
 import { SimplePageLoading } from '@/components/ui/simple-page-loading'
 import { trackProductView } from '@/lib/google-analytics'
@@ -66,7 +66,7 @@ export default function ProductDetailPage() {
   const [open, setOpen] = useState(true)
   const { addProduct } = useCartUnified()
   const routeParams = useParams() as { slug?: string }
-  const productSlug = routeParams?.slug ?? ''
+  const productParam = routeParams?.slug ?? ''
 
   // Forzar scroll al top cuando se monta el componente
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function ProductDetailPage() {
   }, [])
 
   useEffect(() => {
-    if (!productSlug || productSlug.trim() === '') {
+    if (!productParam || productParam.trim() === '') {
       setLoading(false)
       return
     }
@@ -85,7 +85,14 @@ export default function ProductDetailPage() {
     
     ;(async () => {
       try {
-        const apiProduct = await getProductBySlug(productSlug)
+        // Detectar si el parámetro es un ID numérico o un slug
+        const idNum = Number(productParam)
+        const isNumericId = !isNaN(idNum) && idNum > 0 && productParam === String(idNum)
+        
+        // Usar la función apropiada según el tipo de parámetro
+        const apiProduct = isNumericId 
+          ? await getProductById(idNum)
+          : await getProductBySlug(productParam)
         
         // Verificar si el componente aún está montado
         if (abortController.signal.aborted) return
@@ -96,6 +103,17 @@ export default function ProductDetailPage() {
             ? (apiProduct as any).data
             : apiProduct
         console.debug('[products/[slug]] Producto API (desempaquetado):', apiData)
+        
+        // 🔄 REDIRECCIÓN 301: Si se accedió por ID y el producto tiene slug, redirigir a la ruta con slug
+        if (isNumericId && apiData?.slug) {
+          const newUrl = `/products/${apiData.slug}`
+          console.debug('[products/[slug]] Redirigiendo de ID a slug:', newUrl)
+          if (!abortController.signal.aborted) {
+            router.replace(newUrl)
+            return
+          }
+        }
+        
         const mapped = mapToModalProduct(apiData)
         if (!mapped) {
           console.warn('[products/[slug]] Producto vacío o sin datos. Verifica respuesta del API.')
@@ -113,7 +131,7 @@ export default function ProductDetailPage() {
             const price = mapped.discounted_price || mapped.price || 0
             const category = apiData?.category?.name || apiData?.category || 'Sin categoría'
             const productName = mapped.name || 'Producto'
-            const productSlugForUrl = mapped.slug || apiData?.slug || productSlug
+            const productSlugForUrl = mapped.slug || apiData?.slug || productParam
             const productUrl = typeof window !== 'undefined' && productSlugForUrl 
               ? `${window.location.origin}/products/${productSlugForUrl}` 
               : undefined
@@ -165,7 +183,7 @@ export default function ProductDetailPage() {
     return () => {
       abortController.abort()
     }
-  }, [productSlug, router])
+  }, [productParam, router])
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen)

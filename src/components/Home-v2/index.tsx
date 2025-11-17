@@ -1,10 +1,10 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
-import NewArrivals from './NewArrivals/index'
+import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import type { PromoBannersProps } from './PromoBanners'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
@@ -16,11 +16,120 @@ const TrendingSearches = dynamic(() => import('./TrendingSearches/index'))
 const CombosSection = dynamic(() => import('./CombosSection/index'))
 const BestSeller = dynamic(() => import('./BestSeller/index'))
 const Testimonials = dynamic(() => import('./Testimonials/index'))
-const FloatingCart = dynamic(() => import('@/components/Common/FloatingCart'))
-const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhatsApp'))
-// const ExitIntentModal = dynamic(() => import('@/components/Common/ExitIntentModal')) // Desactivado - Solo WhatsAppPopup activo
-const WhatsAppPopup = dynamic(() => import('@/components/Common/WhatsAppPopup'))
+// Componentes below-fold con lazy loading
+const NewArrivals = dynamic(() => import('./NewArrivals/index'), {
+  loading: () => (
+    <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-transparent'>
+      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
+        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6'>
+          {[...Array(8)].map((_, index) => (
+            <div key={index} className='animate-pulse'>
+              <div className='bg-gray-200 h-32 md:h-48 rounded-lg'></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  ),
+})
+// Componentes flotantes con carga diferida
+// FloatingCart: cargar después de 2 segundos
+const FloatingCart = dynamic(() => import('@/components/Common/FloatingCart'), {
+  ssr: false,
+})
 
+// FloatingWhatsApp: cargar después de 5 segundos
+const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhatsApp'), {
+  ssr: false,
+})
+
+// WhatsAppPopup: mantener delay actual pero usar dynamic import con ssr: false
+const WhatsAppPopup = dynamic(() => import('@/components/Common/WhatsAppPopup'), {
+  ssr: false,
+})
+
+// Wrapper para componentes flotantes con carga diferida
+const DelayedFloatingCart = () => {
+  const [shouldLoad, setShouldLoad] = React.useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShouldLoad(true)
+    }, 2000) // 2 segundos
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  return shouldLoad ? <FloatingCart /> : null
+}
+
+const DelayedFloatingWhatsApp = () => {
+  const [shouldLoad, setShouldLoad] = React.useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShouldLoad(true)
+    }, 5000) // 5 segundos
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  return shouldLoad ? <FloatingWhatsApp /> : null
+}
+
+
+// Wrapper para componentes below-fold con lazy loading
+const LazyPromoBanner = ({ bannerId }: { bannerId: number }) => {
+  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
+    rootMargin: '200px',
+    threshold: 0.01,
+  })
+
+  return (
+    <div ref={ref}>
+      {isVisible ? <PromoBanners bannerId={bannerId} /> : null}
+    </div>
+  )
+}
+
+const LazyNewArrivals = () => {
+  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
+    rootMargin: '300px',
+    threshold: 0.01,
+  })
+
+  return (
+    <div ref={ref}>
+      {isVisible ? <NewArrivals /> : null}
+    </div>
+  )
+}
+
+const LazyTrendingSearches = () => {
+  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
+    rootMargin: '200px',
+    threshold: 0.01,
+  })
+
+  return (
+    <div ref={ref}>
+      {isVisible ? <TrendingSearches /> : null}
+    </div>
+  )
+}
+
+const LazyTestimonials = () => {
+  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
+    rootMargin: '200px',
+    threshold: 0.01,
+  })
+
+  return (
+    <div ref={ref}>
+      {isVisible ? <Testimonials /> : null}
+    </div>
+  )
+}
 
 const HomeV2 = () => {
   // Scroll depth tracking
@@ -95,34 +204,34 @@ const HomeV2 = () => {
         <DynamicProductCarousel freeShippingOnly={true} />
       </div>
 
-      {/* 6. Banner ASESORAMIENTO GRATIS */}
+      {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded */}
       <div className='mt-4 sm:mt-6 below-fold-content'>
-        <PromoBanners bannerId={2} />
+        <LazyPromoBanner bannerId={2} />
       </div>
 
-      {/* 7. Nuevos productos */}
+      {/* 7. Nuevos productos - Lazy loaded */}
       <div className='mt-3 sm:mt-4 product-section'>
-        <NewArrivals />
+        <LazyNewArrivals />
       </div>
 
-      {/* 8. Banner CALCULADORA DE PINTURA */}
+      {/* 8. Banner CALCULADORA DE PINTURA - Lazy loaded */}
       <div className='mt-4 sm:mt-6 below-fold-content'>
-        <PromoBanners bannerId={3} />
+        <LazyPromoBanner bannerId={3} />
       </div>
 
-      {/* 9. Búsquedas Populares */}
+      {/* 9. Búsquedas Populares - Lazy loaded */}
       <div className='mt-6 sm:mt-8 below-fold-content'>
-        <TrendingSearches />
+        <LazyTrendingSearches />
       </div>
 
-      {/* 10. Trust signals y testimonios */}
+      {/* 10. Trust signals y testimonios - Lazy loaded */}
       <div className='mt-6 sm:mt-8 testimonials-section'>
-        <Testimonials />
+        <LazyTestimonials />
       </div>
 
-      {/* Elementos flotantes de engagement */}
-      <FloatingCart />
-      <FloatingWhatsApp />
+      {/* Elementos flotantes de engagement - Carga diferida */}
+      <DelayedFloatingCart />
+      <DelayedFloatingWhatsApp />
       {/* <ExitIntentModal /> */} {/* Desactivado - Solo WhatsAppPopup activo para evitar sobrecarga de popups */}
       
       {/* WhatsApp Popup para captura de leads - Rediseñado con paleta Pinteya */}
