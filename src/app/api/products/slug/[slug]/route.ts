@@ -1,25 +1,24 @@
 // ===================================
-// PINTEYA E-COMMERCE - API DE PRODUCTO INDIVIDUAL
+// PINTEYA E-COMMERCE - API DE PRODUCTO POR SLUG
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase'
-import { validateData, ProductSchema } from '@/lib/validations'
 import { ApiResponse, ProductWithCategory } from '@/types/api'
 
 // ===================================
-// GET /api/products/[id] - Obtener producto por ID
+// GET /api/products/slug/[slug] - Obtener producto por slug
 // ===================================
-export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
     const params = await context.params
-    // Validar parámetro ID
-    const id = parseInt(params.id, 10)
-    if (isNaN(id) || id <= 0) {
+    const slug = params.slug
+
+    if (!slug || slug.trim() === '') {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
-        error: 'ID de producto inválido',
+        error: 'Slug de producto inválido',
       }
       return NextResponse.json(errorResponse, { status: 400 })
     }
@@ -28,7 +27,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     // Verificar que el cliente de Supabase esté disponible
     if (!supabase) {
-      console.error('Cliente de Supabase no disponible en GET /api/products/[id]')
+      console.error('Cliente de Supabase no disponible en GET /api/products/slug/[slug]')
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -37,7 +36,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json(errorResponse, { status: 503 })
     }
 
-    // Obtener producto con categoría y variantes
+    // Obtener producto con categoría por slug
     const { data: product, error } = await supabase
       .from('products')
       .select(
@@ -46,7 +45,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         category:categories(id, name, slug)
       `
       )
-      .eq('id', id)
+      .eq('slug', slug)
+      .eq('is_active', true)
       .single()
 
     if (error) {
@@ -58,12 +58,21 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         }
         return NextResponse.json(notFoundResponse, { status: 404 })
       }
-      handleSupabaseError(error, `GET /api/products/${id}`)
+      handleSupabaseError(error, `GET /api/products/slug/${slug}`)
+    }
+
+    if (!product) {
+      const notFoundResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Producto no encontrado',
+      }
+      return NextResponse.json(notFoundResponse, { status: 404 })
     }
 
     // Obtener variantes del producto
     let enrichedProduct = product
-    
+
     if (product) {
       try {
         const { data: variants } = await supabase
@@ -85,12 +94,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
             image_url,
             metadata
           `)
-          .eq('product_id', id)
+          .eq('product_id', product.id)
           .eq('is_active', true)
           .order('is_default', { ascending: false })
 
-        // Post-proceso: enriquecer variantes para el producto 42 con medidas faltantes y color cemento/gris
+        // Post-proceso: enriquecer variantes (similar al endpoint por ID)
         let processedVariants = variants || []
+        
+        // Lógica especial para producto 42 (si aplica)
         if (product.id === 42) {
           const now = new Date().toISOString()
           const targetMeasures = ['10L', '4L', '1L']
@@ -157,7 +168,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         }
       } catch (variantError) {
         // Si hay error obteniendo variantes, continuar con producto original
-        console.warn('Error obteniendo variantes para producto:', id, variantError)
+        console.warn('Error obteniendo variantes para producto:', product.id, variantError)
       }
     }
 
@@ -174,7 +185,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       },
     })
   } catch (error: any) {
-    console.error('Error en GET /api/products/[id]:', error)
+    console.error('Error en GET /api/products/slug/[slug]:', error)
 
     const errorResponse: ApiResponse<null> = {
       data: null,
@@ -186,151 +197,3 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   }
 }
 
-// ===================================
-// PUT /api/products/[id] - Actualizar producto (Admin)
-// ===================================
-export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-  try {
-    const params = await context.params
-    // TODO: Verificar permisos de administrador
-    // const { userId } = auth();
-    // if (!userId || !isAdmin(userId)) {
-    //   return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    // }
-
-    // Validar parámetro ID
-    const id = parseInt(params.id, 10)
-    if (isNaN(id) || id <= 0) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'ID de producto inválido',
-      }
-      return NextResponse.json(errorResponse, { status: 400 })
-    }
-
-    const body = await request.json()
-
-    // Validar datos del producto (permitir actualizaciones parciales)
-    const productData = validateData(ProductSchema.partial(), body)
-
-    const supabase = getSupabaseClient(true) // Usar cliente admin
-
-    // Verificar que el cliente administrativo esté disponible
-    if (!supabase) {
-      console.error('Cliente administrativo de Supabase no disponible en PUT /api/products/[id]')
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Servicio administrativo no disponible',
-      }
-      return NextResponse.json(errorResponse, { status: 503 })
-    }
-
-    // Actualizar producto
-    const { data: product, error } = await supabase
-      .from('products')
-      .update(productData)
-      .eq('id', id)
-      .select(
-        `
-        *,
-        category:categories(id, name, slug)
-      `
-      )
-      .single()
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        const notFoundResponse: ApiResponse<null> = {
-          data: null,
-          success: false,
-          error: 'Producto no encontrado',
-        }
-        return NextResponse.json(notFoundResponse, { status: 404 })
-      }
-      handleSupabaseError(error, `PUT /api/products/${id}`)
-    }
-
-    const response: ApiResponse<ProductWithCategory> = {
-      data: product,
-      success: true,
-      message: 'Producto actualizado exitosamente',
-    }
-
-    return NextResponse.json(response)
-  } catch (error: any) {
-    console.error('Error en PUT /api/products/[id]:', error)
-
-    const errorResponse: ApiResponse<null> = {
-      data: null,
-      success: false,
-      error: error.message || 'Error interno del servidor',
-    }
-
-    return NextResponse.json(errorResponse, { status: 500 })
-  }
-}
-
-// ===================================
-// DELETE /api/products/[id] - Eliminar producto (Admin)
-// ===================================
-export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-  try {
-    const params = await context.params
-    // TODO: Verificar permisos de administrador
-    // const { userId } = auth();
-    // if (!userId || !isAdmin(userId)) {
-    //   return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    // }
-
-    // Validar parámetro ID
-    const id = parseInt(params.id, 10)
-    if (isNaN(id) || id <= 0) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'ID de producto inválido',
-      }
-      return NextResponse.json(errorResponse, { status: 400 })
-    }
-
-    const supabase = getSupabaseClient(true) // Usar cliente admin
-
-    // Verificar que el cliente administrativo esté disponible
-    if (!supabase) {
-      console.error('Cliente administrativo de Supabase no disponible en DELETE /api/products/[id]')
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Servicio administrativo no disponible',
-      }
-      return NextResponse.json(errorResponse, { status: 503 })
-    }
-
-    // Eliminar producto
-    const { error } = await supabase.from('products').delete().eq('id', id)
-
-    if (error) {
-      handleSupabaseError(error, `DELETE /api/products/${id}`)
-    }
-
-    const response: ApiResponse<null> = {
-      data: null,
-      success: true,
-      message: 'Producto eliminado exitosamente',
-    }
-
-    return NextResponse.json(response)
-  } catch (error: any) {
-    console.error('Error en DELETE /api/products/[id]:', error)
-
-    const errorResponse: ApiResponse<null> = {
-      data: null,
-      success: false,
-      error: error.message || 'Error interno del servidor',
-    }
-
-    return NextResponse.json(errorResponse, { status: 500 })
-  }
-}

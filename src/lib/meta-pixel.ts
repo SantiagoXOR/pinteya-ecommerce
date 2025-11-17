@@ -124,22 +124,31 @@ export const trackCustomEvent = (eventName: string, parameters?: Record<string, 
  * @param contentIds - Array de IDs de contenido
  * @param value - Valor del contenido
  * @param currency - Moneda (default: ARS)
+ * @param contentUrl - URL completa del producto (opcional, con slug)
  */
 export const trackViewContent = (
   contentName: string,
   contentCategory: string,
   contentIds: string[],
   value: number,
-  currency: string = 'ARS'
+  currency: string = 'ARS',
+  contentUrl?: string
 ): void => {
-  trackEvent('ViewContent', {
+  const eventData: Record<string, any> = {
     content_name: contentName,
     content_category: contentCategory,
     content_ids: contentIds,
     content_type: 'product',
     value: value,
     currency: currency,
-  })
+  }
+  
+  // Agregar URL si está disponible (para mejor tracking y remarketing)
+  if (contentUrl) {
+    eventData.content_url = contentUrl
+  }
+  
+  trackEvent('ViewContent', eventData)
 }
 
 /**
@@ -149,22 +158,31 @@ export const trackViewContent = (
  * @param contentCategory - Categoría del producto
  * @param value - Valor total (precio * cantidad)
  * @param currency - Moneda (default: ARS)
+ * @param contentUrl - URL completa del producto (opcional, con slug)
  */
 export const trackAddToCart = (
   contentName: string,
   contentId: string,
   contentCategory: string,
   value: number,
-  currency: string = 'ARS'
+  currency: string = 'ARS',
+  contentUrl?: string
 ): void => {
-  trackEvent('AddToCart', {
+  const eventData: Record<string, any> = {
     content_name: contentName,
     content_ids: [contentId],
     content_type: 'product',
     content_category: contentCategory,
     value: value,
     currency: currency,
-  })
+  }
+  
+  // Agregar URL si está disponible
+  if (contentUrl) {
+    eventData.content_url = contentUrl
+  }
+  
+  trackEvent('AddToCart', eventData)
 }
 
 /**

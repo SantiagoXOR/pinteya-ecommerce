@@ -116,7 +116,10 @@ export default function ProductDetailPage() {
   }
 
   const handleViewPublic = () => {
-    window.open(`/products/${productId}`, '_blank')
+    // Usar slug si está disponible, sino usar ID
+    const productSlug = product?.slug
+    const productUrl = productSlug ? `/products/${productSlug}` : `/products/${productId}`
+    window.open(productUrl, '_blank')
   }
 
   if (isLoading) {

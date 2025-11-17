@@ -37,8 +37,10 @@ const NewHeader = () => {
   const handleSuggestionSelect = async (suggestion: SearchSuggestion) => {
     console.log('🔍 handleSuggestionSelect ejecutado con:', suggestion)
     if (suggestion.type === 'product' && suggestion.id) {
-      // Redirigir directamente al detalle del producto
-      router.push(`/products/${suggestion.id}`)
+      // Redirigir directamente al detalle del producto usando slug si está disponible
+      const productSlug = (suggestion as any).slug
+      const productUrl = productSlug ? `/products/${productSlug}` : `/products/${suggestion.id}`
+      router.push(productUrl)
       return
     }
     // Para otros tipos, dejar comportamiento actual (no-op aquí)

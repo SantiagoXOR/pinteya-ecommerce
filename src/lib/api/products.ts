@@ -146,6 +146,34 @@ export async function getProductById(id: number): Promise<ApiResponse<ProductWit
 }
 
 /**
+ * Obtiene un producto por slug desde la API
+ * @param slug - Slug del producto
+ * @returns Promise<ApiResponse<ProductWithCategory>>
+ */
+export async function getProductBySlug(slug: string): Promise<ApiResponse<ProductWithCategory>> {
+  try {
+    const response = await fetch(`/api/products/slug/${encodeURIComponent(slug)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    // Usar parsing seguro de JSON
+    const result = await safeApiResponseJson<ApiResponse<ProductWithCategory>>(response)
+
+    if (!result || !result.success || !result.data) {
+      throw new Error(result?.error || 'Error parsing API response')
+    }
+
+    return result.data
+  } catch (error) {
+    console.error(`Error obteniendo producto por slug ${slug}:`, error)
+    throw error
+  }
+}
+
+/**
  * Busca productos por término de búsqueda
  * @param searchTerm - Término de búsqueda
  * @param limit - Límite de resultados

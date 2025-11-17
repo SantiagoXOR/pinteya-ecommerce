@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { useRouter, useParams, redirect } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import ShopDetailModal from '@/components/ShopDetails/ShopDetailModal'
 import { useCartUnified } from '@/hooks/useCartUnified'
-import { getProductById } from '@/lib/api/products'
+import { getProductBySlug } from '@/lib/api/products'
 import { getMainImage } from '@/lib/adapters/product-adapter'
 import { SimplePageLoading } from '@/components/ui/simple-page-loading'
 import { trackProductView } from '@/lib/google-analytics'
@@ -55,17 +55,18 @@ function mapToModalProduct(apiProduct: any) {
     brand: (apiProduct as any)?.brand || 'Producto',
     stock: Number.isFinite(stockNum) ? stockNum : 0,
     description: (apiProduct as any)?.description || '',
+    slug: (apiProduct as any)?.slug,
   }
 }
 
-export default function ProductDetailModalPage() {
+export default function ProductDetailPage() {
   const router = useRouter()
   const [product, setProduct] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(true)
   const { addProduct } = useCartUnified()
-  const routeParams = useParams() as { id?: string }
-  const productId = routeParams?.id ?? ''
+  const routeParams = useParams() as { slug?: string }
+  const productSlug = routeParams?.slug ?? ''
 
   // Forzar scroll al top cuando se monta el componente
   useEffect(() => {
@@ -73,45 +74,49 @@ export default function ProductDetailModalPage() {
   }, [])
 
   useEffect(() => {
-    const idNum = Number(productId)
-    if (!idNum || Number.isNaN(idNum)) {
+    if (!productSlug || productSlug.trim() === '') {
       setLoading(false)
       return
     }
 
     setLoading(true)
+    // AbortController para cancelar request si el componente se desmonta
+    const abortController = new AbortController()
+    
     ;(async () => {
       try {
-        const apiProduct = await getProductById(idNum)
-        console.debug('[products/[id]] Producto API (raw):', apiProduct)
+        const apiProduct = await getProductBySlug(productSlug)
+        
+        // Verificar si el componente aún está montado
+        if (abortController.signal.aborted) return
+        
+        console.debug('[products/[slug]] Producto API (raw):', apiProduct)
         const apiData =
           apiProduct && typeof apiProduct === 'object' && 'data' in (apiProduct as any)
             ? (apiProduct as any).data
             : apiProduct
-        console.debug('[products/[id]] Producto API (desempaquetado):', apiData)
-        
-        // 🔄 REDIRECCIÓN 301: Si el producto tiene slug, redirigir a la nueva ruta
-        if (apiData?.slug) {
-          const newUrl = `/products/${apiData.slug}`
-          console.debug('[products/[id]] Redirigiendo a slug:', newUrl)
-          // Usar replace para mantener el historial limpio (equivalente a 301)
-          router.replace(newUrl)
-          return
-        }
-        
+        console.debug('[products/[slug]] Producto API (desempaquetado):', apiData)
         const mapped = mapToModalProduct(apiData)
         if (!mapped) {
-          console.warn('[products/[id]] Producto vacío o sin datos. Verifica respuesta del API.')
+          console.warn('[products/[slug]] Producto vacío o sin datos. Verifica respuesta del API.')
         }
-        console.debug('[products/[id]] Producto mapeado para modal:', mapped)
-        setProduct(mapped)
+        console.debug('[products/[slug]] Producto mapeado para modal:', mapped)
+        
+        // Verificar nuevamente antes de actualizar estado
+        if (!abortController.signal.aborted) {
+          setProduct(mapped)
+        }
 
         // 📊 ANALYTICS: Track product view
-        if (mapped && mapped.id && mapped.name) {
+        if (mapped && mapped.id && mapped.name && !abortController.signal.aborted) {
           try {
             const price = mapped.discounted_price || mapped.price || 0
             const category = apiData?.category?.name || apiData?.category || 'Sin categoría'
             const productName = mapped.name || 'Producto'
+            const productSlugForUrl = mapped.slug || apiData?.slug || productSlug
+            const productUrl = typeof window !== 'undefined' && productSlugForUrl 
+              ? `${window.location.origin}/products/${productSlugForUrl}` 
+              : undefined
 
             // Google Analytics
             trackProductView(
@@ -122,13 +127,14 @@ export default function ProductDetailModalPage() {
               'ARS'
             )
 
-            // Meta Pixel
+            // Meta Pixel con URL completa para mejor remarketing
             trackViewContent(
               productName,
               category,
               [String(mapped.id)],
               price,
-              'ARS'
+              'ARS',
+              productUrl
             )
 
             console.debug('[Analytics] Product view tracked:', {
@@ -136,18 +142,30 @@ export default function ProductDetailModalPage() {
               name: productName,
               category,
               price,
+              url: productUrl,
             })
           } catch (analyticsError) {
             console.warn('[Analytics] Error tracking product view:', analyticsError)
           }
         }
       } catch (error) {
-        console.error('Error cargando producto', error)
+        if (!abortController.signal.aborted) {
+          console.error('Error cargando producto', error)
+          // Si el producto no se encuentra, redirigir a 404 o página de error
+          // router.push('/404')
+        }
       } finally {
-        setLoading(false)
+        if (!abortController.signal.aborted) {
+          setLoading(false)
+        }
       }
     })()
-  }, [productId, router])
+
+    // Cleanup: cancelar request si el componente se desmonta
+    return () => {
+      abortController.abort()
+    }
+  }, [productSlug, router])
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen)
@@ -208,3 +226,4 @@ export default function ProductDetailModalPage() {
     </div>
   )
 }
+
