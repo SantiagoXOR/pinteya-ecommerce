@@ -6,7 +6,7 @@
 // Contexto para compartir el estado de la categoría seleccionada
 // entre CategoryTogglePills y DynamicProductCarousel
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react'
 import { getCategoryConfig, CategoryConfig } from '@/constants/categories'
 
 interface CategoryFilterContextType {
@@ -37,29 +37,27 @@ export const CategoryFilterProvider: React.FC<CategoryFilterProviderProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory)
 
-  // Obtener configuración de la categoría activa
-  const categoryConfig = getCategoryConfig(selectedCategory)
+  // Memoizar configuración de la categoría activa
+  const categoryConfig = useMemo(() => getCategoryConfig(selectedCategory), [selectedCategory])
 
   // Toggle: si es la misma categoría, volver a default (null)
   const toggleCategory = useCallback((category: string) => {
-    console.log('[CategoryFilterContext] Toggle category:', {
-      previous: selectedCategory,
-      clicked: category,
-      willBe: selectedCategory === category ? null : category
-    })
     setSelectedCategory(prev => {
       const newValue = prev === category ? null : category
-      console.log('[CategoryFilterContext] State updated:', prev, '→', newValue)
       return newValue
     })
-  }, [selectedCategory])
+  }, [])
 
-  const value = {
-    selectedCategory,
-    setSelectedCategory,
-    categoryConfig,
-    toggleCategory,
-  }
+  // Memoizar el value del contexto para evitar re-renders innecesarios
+  const value = useMemo(
+    () => ({
+      selectedCategory,
+      setSelectedCategory,
+      categoryConfig,
+      toggleCategory,
+    }),
+    [selectedCategory, categoryConfig, toggleCategory]
+  )
 
   return (
     <CategoryFilterContext.Provider value={value}>

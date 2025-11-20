@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import React from 'react'
 import { Product } from '@/types/product'
 
 // ===================================
@@ -70,8 +71,15 @@ export const useProductsByCategory = ({
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const fetchingRef = useRef(false)
+  const categorySlugRef = useRef<string | null>(null)
+  const hasInitializedRef = useRef(false)
 
   const fetchProducts = useCallback(async () => {
+    // Evitar múltiples fetches simultáneos
+    if (fetchingRef.current) return
+
+    fetchingRef.current = true
     setIsLoading(true)
     setError(null)
 
@@ -79,19 +87,14 @@ export const useProductsByCategory = ({
       // Construir clave de caché
       const cacheKey = categorySlug || 'free-shipping'
       
-      console.log('[useProductsByCategory] Fetching for:', {
-        categorySlug,
-        cacheKey,
-        cacheEnabled: enableCache
-      })
-      
       // Verificar caché si está habilitado
       if (enableCache) {
         const cached = productsCache.get(cacheKey)
         if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-          console.log('[useProductsByCategory] Using cached data for:', cacheKey)
           setProducts(cached.products)
           setIsLoading(false)
+          fetchingRef.current = false
+          categorySlugRef.current = categorySlug
           return
         }
       }
@@ -120,15 +123,6 @@ export const useProductsByCategory = ({
 
       const data = await response.json()
       
-      console.log('[useProductsByCategory] Respuesta de API:', {
-        categorySlug,
-        dataType: typeof data,
-        isArray: Array.isArray(data),
-        hasProducts: !!data?.products,
-        hasData: !!data?.data,
-        keys: data ? Object.keys(data) : [],
-      })
-      
       // La API puede devolver diferentes estructuras:
       // { products: [], total: X } o { data: [], total: X } o directamente []
       let fetchedProducts: Product[] = []
@@ -143,8 +137,6 @@ export const useProductsByCategory = ({
         console.warn('[useProductsByCategory] Formato de respuesta inesperado:', data)
         fetchedProducts = []
       }
-      
-      console.log('[useProductsByCategory] Productos procesados:', fetchedProducts.length)
 
       // Si es "Envío Gratis" (sin categoría), filtrar y ordenar productos específicos
       let finalProducts: Product[] = []
@@ -157,22 +149,9 @@ export const useProductsByCategory = ({
         
         // Ordenar según el orden de prioridad
         finalProducts = orderProductsByPriority(specificProducts, FREE_SHIPPING_PRODUCTS_SLUGS)
-        
-        console.log('[useProductsByCategory] Productos filtrados para Envío Gratis:', {
-          total: fetchedProducts.length,
-          filtered: specificProducts.length,
-          ordered: finalProducts.length,
-          slugsFound: finalProducts.map(p => p.slug)
-        })
       } else {
         finalProducts = fetchedProducts
       }
-      
-      console.log('[useProductsByCategory] Productos ordenados:', {
-        isDefaultOrder: !categorySlug,
-        count: finalProducts.length,
-        first3: finalProducts.slice(0, 3).map(p => p.slug || p.name)
-      })
 
       // Guardar en caché
       if (enableCache) {
@@ -183,19 +162,25 @@ export const useProductsByCategory = ({
       }
 
       setProducts(finalProducts)
+      categorySlugRef.current = categorySlug
     } catch (err) {
       console.error('[useProductsByCategory] Error:', err)
       setError(err instanceof Error ? err.message : 'Error desconocido')
       setProducts([])
     } finally {
       setIsLoading(false)
+      fetchingRef.current = false
     }
   }, [categorySlug, limit, enableCache])
 
-  // Effect para fetch automático al cambiar categoría
+  // Effect para fetch automático cuando cambia categorySlug o en el primer render
   useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+    // Hacer fetch si es el primer render o si la categoría cambió
+    if (!hasInitializedRef.current || categorySlugRef.current !== categorySlug) {
+      hasInitializedRef.current = true
+      fetchProducts()
+    }
+  }, [categorySlug, fetchProducts])
 
   return {
     products,

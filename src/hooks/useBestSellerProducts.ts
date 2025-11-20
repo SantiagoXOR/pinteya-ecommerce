@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import React from 'react'
 import { Product } from '@/types/product'
 
 // ===================================
@@ -62,8 +63,15 @@ export const useBestSellerProducts = ({
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const fetchingRef = React.useRef(false)
+  const categorySlugRef = React.useRef<string | null>(null)
+  const hasInitializedRef = React.useRef(false)
 
   const fetchProducts = useCallback(async () => {
+    // Evitar múltiples fetches simultáneos
+    if (fetchingRef.current) return
+
+    fetchingRef.current = true
     setIsLoading(true)
     setError(null)
 
@@ -77,6 +85,8 @@ export const useBestSellerProducts = ({
         if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
           setProducts(cached.products)
           setIsLoading(false)
+          fetchingRef.current = false
+          categorySlugRef.current = categorySlug
           return
         }
       }
@@ -144,19 +154,25 @@ export const useBestSellerProducts = ({
       }
 
       setProducts(finalProducts)
+      categorySlugRef.current = categorySlug
     } catch (err) {
       console.error('[useBestSellerProducts] Error:', err)
       setError(err instanceof Error ? err.message : 'Error desconocido')
       setProducts([])
     } finally {
       setIsLoading(false)
+      fetchingRef.current = false
     }
   }, [categorySlug, enableCache])
 
-  // Effect para fetch automático al cambiar categoría
+  // Effect para fetch automático cuando cambia categorySlug o en el primer render
   useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+    // Hacer fetch si es el primer render o si la categoría cambió
+    if (!hasInitializedRef.current || categorySlugRef.current !== categorySlug) {
+      hasInitializedRef.current = true
+      fetchProducts()
+    }
+  }, [categorySlug, fetchProducts])
 
   return {
     products,
