@@ -367,6 +367,59 @@ export const trackClickProduct = (
   })
 }
 
+/**
+ * ViewProductAddedScreen - Usuario ve la pantalla de producto agregado (Meta checkout flow)
+ * @param productId - ID del producto agregado
+ * @param productName - Nombre del producto
+ * @param productPrice - Precio del producto
+ */
+export const trackViewProductAddedScreen = (
+  productId: string,
+  productName: string,
+  productPrice: number
+): void => {
+  trackCustomEvent('ViewProductAddedScreen', {
+    product_id: productId,
+    product_name: productName,
+    product_price: productPrice,
+    currency: 'ARS',
+  })
+}
+
+/**
+ * CheckoutStepCompleted - Usuario completa un paso del checkout Meta
+ * @param step - Paso completado (summary, contact, shipping, payment, confirmation)
+ * @param stepNumber - Número del paso (1-5)
+ * @param totalSteps - Total de pasos (5)
+ */
+export const trackCheckoutStepCompleted = (
+  step: string,
+  stepNumber: number,
+  totalSteps: number = 5
+): void => {
+  trackCustomEvent('CheckoutStepCompleted', {
+    step: step,
+    step_number: stepNumber,
+    total_steps: totalSteps,
+  })
+}
+
+/**
+ * CheckoutAbandoned - Usuario abandona el checkout
+ * @param step - Paso donde se abandonó
+ * @param stepNumber - Número del paso
+ */
+export const trackCheckoutAbandoned = (
+  step: string,
+  stepNumber: number
+): void => {
+  trackCustomEvent('CheckoutAbandoned', {
+    step: step,
+    step_number: stepNumber,
+    abandoned_at: new Date().toISOString(),
+  })
+}
+
 // ===== UTILIDADES AVANZADAS =====
 
 /**

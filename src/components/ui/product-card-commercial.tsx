@@ -790,11 +790,6 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       return unit
     }, [uniqueMeasures, parseMeasure])
 
-    // Limitar display según cantidad de medidas
-    // Si hay ≤2 medidas, mostrar todas. Si hay más, mostrar solo las primeras 2 para apilar
-    const displayMeasures = uniqueMeasures.length <= 2 ? uniqueMeasures : uniqueMeasures.slice(0, 2)
-    const remainingMeasures = Math.max(0, uniqueMeasures.length - 2)
-
     // Sincronizar precio con variante seleccionada
     const currentVariant = React.useMemo(() => {
       if (!variants || variants.length === 0) return null
@@ -1137,269 +1132,262 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
           {/* Barra: Color + Medidas → debajo del precio/título */}
           <div className='w-full mt-2 md:mt-2.5'>
-            <div className='flex items-center justify-between gap-1 md:gap-1.5 min-h-[36px]'>
-              {/* Siempre: Color (si existe) + Medidas (si existen) + Descriptor juntos en una sola línea */}
-              <div className='flex items-center flex-1'>
-                {/* Colores: 1 muestra al frente, múltiples hasta 3 apilados */}
-                {uniqueColors.length > 0 && (
-                  <div className='flex items-center -space-x-1.5'>
-                    {(uniqueColors.length > 1 ? uniqueColors.slice(0, 2) : uniqueColors.slice(0, 1)).map((colorData, index) => {
-                      const darker = darkenHex(colorData.hex, 0.35)
-                      const woodTexture = isImpregnante ? {
-                        backgroundImage: [
-                          'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
-                          `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
-                          `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
-                          `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
-                          'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
-                        ].join(', '),
-                        backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
-                        backgroundBlendMode: 'multiply' as const
-                      } : {}
-                      return (
-                        <button
-                          key={`${colorData.hex}-${index}`}
-                          type='button'
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedColor(colorData.hex)
-                          }}
-                          title={colorData.name}
-                          className={cn(
-                            'w-7 h-7 flex-shrink-0 rounded-full border-2 border-gray-200 shadow-sm transition-all hover:scale-110',
-                            selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-1',
-                            (colorData.name.toLowerCase().includes('incoloro') || 
-                             colorData.name.toLowerCase().includes('transparente') ||
-                             colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
-                          )}
-                          style={{
-                            backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex,
-                            // Mantener colores por encima de medidas pero sin tapar descriptores
-                            zIndex: (uniqueColors.length > 1 ? 20 - index : 20),
-                            ...(colorData.name.toLowerCase().includes('incoloro') || 
-                                colorData.name.toLowerCase().includes('transparente') ||
-                                colorData.name.toLowerCase().includes('transparent') 
-                              ? { backgroundImage: 'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)' }
-                              : {}),
-                            ...woodTexture
-                          }}
-                        />
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* Medidas: siempre junto al color si existen */}
-                {uniqueMeasures.length > 0 && (
-                  <div className='flex items-center -space-x-1.5 -ml-1.5'>
-                    {uniqueMeasures.slice(0, Math.min(2, uniqueMeasures.length)).map((measure, index) => {
-                      const { number } = parseMeasure(measure)
-                      return (
-                        <button
-                          key={measure}
-                          type='button'
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedMeasure(measure)
-                          }}
-                          className={cn(
-                            'w-7 h-7 rounded-full text-xs font-bold transition-all hover:scale-110 flex items-center justify-center border-2 border-gray-200 shadow-sm',
-                            selectedMeasure === measure
-                              ? 'bg-[#facc15] text-[#EA5A17]'
-                              : 'bg-gray-50 text-gray-600'
-                          )}
-                          style={{
-                            // Las medidas por debajo de los colores y descriptores
-                            zIndex: 10 - index
-                          }}
-                        >
-                          {number}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-                
-                {/* Descriptor junto a los círculos, con leve separación */}
-                {(uniqueColors.length === 1 || !!commonUnit) && (
-                  <div className='relative z-30 flex flex-col items-start justify-center ml-3 md:ml-4 leading-none whitespace-nowrap'>
-                    {uniqueColors.length === 1 && (
-                      <span className='text-[9px] md:text-[10px] text-gray-500 uppercase truncate max-w-[90px]'>
-                        {(uniqueColors.find(c => c.hex === selectedColor)?.name ||
-                          uniqueColors[0]?.name ||
-                          '')
-                          .toString()
-                          .trim()}
-                      </span>
-                    )}
-                    {commonUnit && (
-                      <span className='text-[9px] md:text-[10px] text-gray-400 font-light'>
-                        {commonUnit}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Botón ">" para ver más opciones - Solo si hay más de 1 color O más de 3 medidas */}
-              {(uniqueColors.length > 1 || remainingMeasures > 0) && (
-                <Sheet open={showColorsSheet} onOpenChange={setShowColorsSheet}>
-                  <SheetTrigger asChild>
-                    <button
-                      type='button'
-                      onClick={(e) => e.stopPropagation()}
-                      aria-label='Ver todas las opciones de color y medidas'
-                      className='px-1 py-0.5 flex-shrink-0 text-[#EA5A17] hover:text-[#d14d0f] bg-transparent flex items-center justify-center transition-colors'
-                      title='Ver todas las opciones'
-                    >
-                      <ChevronRight className='w-5 h-5 md:w-5 md:h-5' />
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent 
-                    side='bottom' 
-                    className='h-[50vh] md:h-auto md:max-h-[60vh]'
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <SheetHeader>
-                      <SheetTitle>Seleccionar Opciones</SheetTitle>
-                    </SheetHeader>
-                    <div className='space-y-4 mt-4 overflow-y-auto max-h-[40vh] md:max-h-[50vh] p-2'>
-                      {/* Sección de Colores */}
-                      {uniqueColors.length > 1 && (
-                        <div>
-                          <h3 className='text-sm font-semibold text-gray-700 mb-2'>Color</h3>
-                          <div className='grid grid-cols-4 md:grid-cols-5 gap-3'>
-                            {uniqueColors.map((colorData) => {
-                              const darker = darkenHex(colorData.hex, 0.35)
-                              const woodTexture = isImpregnante ? {
-                                backgroundImage: [
-                                  'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
-                                  `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
-                                  `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
-                                  `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
-                                  'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
-                                ].join(', '),
-                                backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
-                                backgroundBlendMode: 'multiply' as const
-                              } : {}
-                              
-                              return (
-                                <div key={colorData.hex} className='flex flex-col items-center gap-1'>
-                                  <button
-                                    type='button'
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      setSelectedColor(colorData.hex)
-                                      // NO cerrar el sheet, dejar que el usuario confirme con el botón "Listo"
-                                    }}
-                                    title={colorData.name}
-                                    className={cn(
-                                      'w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-gray-200 shadow-sm transition-all hover:scale-110 active:scale-95',
-                                      selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-1',
-                                      (colorData.name.toLowerCase().includes('incoloro') || 
-                                       colorData.name.toLowerCase().includes('transparente') ||
-                                       colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
-                                    )}
-                                    style={{
-                                      backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex,
-                                      ...(colorData.name.toLowerCase().includes('incoloro') || 
-                                          colorData.name.toLowerCase().includes('transparente') ||
-                                          colorData.name.toLowerCase().includes('transparent') 
-                                        ? { backgroundImage: 'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)' }
-                                        : {}),
-                                      ...woodTexture
-                                    }}
-                                  />
-                                  <span className='text-[9px] md:text-[10px] text-gray-600 text-center max-w-[70px] truncate'>
-                                    {colorData.name}
-                                  </span>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Sección de Medidas */}
-                      {uniqueMeasures.length > 0 && (
-                        <div>
-                          <h3 className='text-sm font-semibold text-gray-700 mb-2'>Medida</h3>
-                          <div className='grid grid-cols-4 md:grid-cols-5 gap-2'>
-                            {uniqueMeasures.map((measure) => {
-                              const { number } = parseMeasure(measure)
-                              return (
-                                <button
-                                  key={measure}
-                                  type='button'
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setSelectedMeasure(measure)
-                                    // NO cerrar el sheet, dejar que el usuario confirme con el botón "Listo"
-                                  }}
-                                  className={cn(
-                                    'h-12 md:h-14 rounded-lg text-sm md:text-base font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center',
-                                    selectedMeasure === measure
-                                      ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-sm'
-                                      : 'bg-white text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
-                                  )}
-                                >
-                                  <span className='font-bold'>{number}</span>
-                                  <span className='text-xs ml-0.5 font-normal'>{commonUnit}</span>
-                                </button>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )}
+            <div className='flex flex-col gap-0.5'>
+              {/* Primera línea: Colores - Carrusel horizontal */}
+              {uniqueColors.length > 0 && (
+                <div className='relative flex items-center justify-between gap-2'>
+                  <div className='relative flex-1 min-w-0 overflow-visible'>
+                    <div className='flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth py-1 px-1 pr-16' style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                      {uniqueColors.map((colorData, index) => {
+                        const darker = darkenHex(colorData.hex, 0.35)
+                        const woodTexture = isImpregnante ? {
+                          backgroundImage: [
+                            'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
+                            `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
+                            `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
+                            `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
+                            'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
+                          ].join(', '),
+                          backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
+                          backgroundBlendMode: 'multiply' as const
+                        } : {}
+                        return (
+                          <button
+                            key={`${colorData.hex}-${index}`}
+                            type='button'
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedColor(colorData.hex)
+                            }}
+                            title={colorData.name}
+                            className={cn(
+                              'w-6 h-6 flex-shrink-0 rounded-full border-2 border-gray-200 shadow-sm transition-all hover:scale-110',
+                              selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-0',
+                              (colorData.name.toLowerCase().includes('incoloro') || 
+                               colorData.name.toLowerCase().includes('transparente') ||
+                               colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
+                            )}
+                            style={{
+                              backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex,
+                              ...(colorData.name.toLowerCase().includes('incoloro') || 
+                                  colorData.name.toLowerCase().includes('transparente') ||
+                                  colorData.name.toLowerCase().includes('transparent') 
+                                ? { backgroundImage: 'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)' }
+                                : {}),
+                              ...woodTexture
+                            }}
+                          />
+                        )
+                      })}
                     </div>
-                    
-                    {/* Botón "Listo" centrado abajo - Agrega al carrito y cierra */}
-                    <div className='flex justify-center pt-4 pb-2 border-t border-gray-200 mt-4'>
-                      <button
-                        type='button'
-                        onClick={async (e) => {
-                          e.stopPropagation()
-                          // Agregar al carrito
-                          await handleAddToCart(e)
-                          // Mostrar toast de éxito
-                          setShowSuccessToast(true)
-                          setTimeout(() => setShowSuccessToast(false), 2000)
-                          // Esperar un momento para que se vea la animación antes de cerrar
-                          setTimeout(() => setShowColorsSheet(false), 800)
-                        }}
-                        disabled={isAddingToCart || stock === 0}
-                        className={cn(
-                          'w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-md',
-                          stock === 0 || isAddingToCart
-                            ? 'bg-gray-200 cursor-not-allowed'
-                            : 'bg-[#facc15] hover:bg-[#f5c000] hover:scale-105 active:scale-95',
-                          isAddingToCart && 'animate-pulse'
-                        )}
-                      >
-                        {isAddingToCart ? (
-                          <div className='w-5 h-5 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
-                        ) : (
-                          <svg className='w-6 h-6 text-[#EA5A17] transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
-                          </svg>
-                        )}
-                      </button>
+                  </div>
+                  {/* Nombre del color seleccionado a la derecha */}
+                  {selectedColor && (
+                    <div className='flex-shrink-0 z-10'>
+                      <span className='text-[9px] md:text-[10px] text-gray-500 uppercase whitespace-nowrap'>
+                        {uniqueColors.find(c => c.hex === selectedColor)?.name || ''}
+                      </span>
                     </div>
-                    
-                    {/* Toast de éxito - Aparece cuando se agrega al carrito */}
-                    {showSuccessToast && (
-                      <div className='absolute top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-in slide-in-from-top-5 fade-in duration-300 z-50'>
-                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
-                        </svg>
-                        <span className='font-medium text-sm'>¡Agregado al carrito!</span>
-                      </div>
-                    )}
-                  </SheetContent>
-                </Sheet>
+                  )}
+                </div>
               )}
 
-              {/* Botón ">" ocupa el extremo derecho; el carrito se reubica como overlay absoluto */}
+              {/* Segunda línea: Medidas - Carrusel horizontal */}
+              {uniqueMeasures.length > 0 && (
+                <div className='relative flex items-center justify-between gap-2'>
+                  <div className='relative flex-1 min-w-0 overflow-visible'>
+                    <div className='flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth py-1 px-1 pr-16' style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                      {uniqueMeasures.map((measure, index) => {
+                        const { number } = parseMeasure(measure)
+                        return (
+                          <button
+                            key={measure}
+                            type='button'
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedMeasure(measure)
+                            }}
+                            className={cn(
+                              'w-6 h-6 flex-shrink-0 rounded-full text-xs font-bold transition-all hover:scale-110 flex items-center justify-center border-2 border-gray-200 shadow-sm',
+                              selectedMeasure === measure
+                                ? 'bg-[#facc15] text-[#EA5A17]'
+                                : 'bg-gray-50 text-gray-600'
+                            )}
+                          >
+                            {number}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                  {/* Unidad + Botón ">" a la derecha (solo si hay selección) */}
+                  {selectedMeasure && (
+                    <div className='flex items-center gap-1 flex-shrink-0 z-10'>
+                      {commonUnit && (
+                        <span className='text-[9px] md:text-[10px] text-gray-400 font-light whitespace-nowrap'>
+                          {commonUnit}
+                        </span>
+                      )}
+                      {(uniqueColors.length > 1 || uniqueMeasures.length > 1) && (
+                        <Sheet open={showColorsSheet} onOpenChange={setShowColorsSheet}>
+                          <SheetTrigger asChild>
+                            <button
+                              type='button'
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label='Ver todas las opciones de color y medidas'
+                              className='px-1 py-0.5 flex-shrink-0 text-[#EA5A17] hover:text-[#d14d0f] bg-transparent flex items-center justify-center transition-colors'
+                              title='Ver todas las opciones'
+                            >
+                              <ChevronRight className='w-4 h-4 md:w-5 md:h-5' />
+                            </button>
+                          </SheetTrigger>
+                          <SheetContent 
+                            side='bottom' 
+                            className='h-[50vh] md:h-auto md:max-h-[60vh]'
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <SheetHeader>
+                              <SheetTitle>Seleccionar Opciones</SheetTitle>
+                            </SheetHeader>
+                            <div className='space-y-4 mt-4 overflow-y-auto max-h-[40vh] md:max-h-[50vh] p-2'>
+                              {/* Sección de Colores */}
+                              {uniqueColors.length > 0 && (
+                                <div>
+                                  <h3 className='text-sm font-semibold text-gray-700 mb-2'>Color</h3>
+                                  <div className='grid grid-cols-4 md:grid-cols-5 gap-3'>
+                                    {uniqueColors.map((colorData) => {
+                                      const darker = darkenHex(colorData.hex, 0.35)
+                                      const woodTexture = isImpregnante ? {
+                                        backgroundImage: [
+                                          'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
+                                          `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
+                                          `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
+                                          `radial-gradient(ellipse at 30% 45%, ${darker.replace('rgb','rgba').replace(')',',0.18)')} 0 3px, rgba(0,0,0,0) 4px)`,
+                                          'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)'
+                                        ].join(', '),
+                                        backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
+                                        backgroundBlendMode: 'multiply' as const
+                                      } : {}
+                                      
+                                      return (
+                                        <div key={colorData.hex} className='flex flex-col items-center gap-1'>
+                                          <button
+                                            type='button'
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setSelectedColor(colorData.hex)
+                                              // NO cerrar el sheet, dejar que el usuario confirme con el botón "Listo"
+                                            }}
+                                            title={colorData.name}
+                                            className={cn(
+                                              'w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-gray-200 shadow-sm transition-all hover:scale-110 active:scale-95',
+                                              selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-1',
+                                              (colorData.name.toLowerCase().includes('incoloro') || 
+                                               colorData.name.toLowerCase().includes('transparente') ||
+                                               colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
+                                            )}
+                                            style={{
+                                              backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex,
+                                              ...(colorData.name.toLowerCase().includes('incoloro') || 
+                                                  colorData.name.toLowerCase().includes('transparente') ||
+                                                  colorData.name.toLowerCase().includes('transparent') 
+                                                ? { backgroundImage: 'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)' }
+                                                : {}),
+                                              ...woodTexture
+                                            }}
+                                          />
+                                          <span className='text-[9px] md:text-[10px] text-gray-600 text-center max-w-[70px] truncate'>
+                                            {colorData.name}
+                                          </span>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Sección de Medidas */}
+                              {uniqueMeasures.length > 0 && (
+                                <div>
+                                  <h3 className='text-sm font-semibold text-gray-700 mb-2'>Medida</h3>
+                                  <div className='grid grid-cols-4 md:grid-cols-5 gap-2'>
+                                    {uniqueMeasures.map((measure) => {
+                                      const { number } = parseMeasure(measure)
+                                      return (
+                                        <button
+                                          key={measure}
+                                          type='button'
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setSelectedMeasure(measure)
+                                            // NO cerrar el sheet, dejar que el usuario confirme con el botón "Listo"
+                                          }}
+                                          className={cn(
+                                            'h-12 md:h-14 rounded-lg text-sm md:text-base font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center',
+                                            selectedMeasure === measure
+                                              ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-sm'
+                                              : 'bg-white text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
+                                          )}
+                                        >
+                                          <span className='font-bold'>{number}</span>
+                                          <span className='text-xs ml-0.5 font-normal'>{commonUnit}</span>
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Botón "Listo" centrado abajo - Agrega al carrito y cierra */}
+                            <div className='flex justify-center pt-4 pb-2 border-t border-gray-200 mt-4'>
+                              <button
+                                type='button'
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  // Agregar al carrito
+                                  await handleAddToCart(e)
+                                  // Mostrar toast de éxito
+                                  setShowSuccessToast(true)
+                                  setTimeout(() => setShowSuccessToast(false), 2000)
+                                  // Esperar un momento para que se vea la animación antes de cerrar
+                                  setTimeout(() => setShowColorsSheet(false), 800)
+                                }}
+                                disabled={isAddingToCart || stock === 0}
+                                className={cn(
+                                  'w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-md',
+                                  stock === 0 || isAddingToCart
+                                    ? 'bg-gray-200 cursor-not-allowed'
+                                    : 'bg-[#facc15] hover:bg-[#f5c000] hover:scale-105 active:scale-95',
+                                  isAddingToCart && 'animate-pulse'
+                                )}
+                              >
+                                {isAddingToCart ? (
+                                  <div className='w-5 h-5 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
+                                ) : (
+                                  <svg className='w-6 h-6 text-[#EA5A17] transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
+                            
+                            {/* Toast de éxito - Aparece cuando se agrega al carrito */}
+                            {showSuccessToast && (
+                              <div className='absolute top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-in slide-in-from-top-5 fade-in duration-300 z-50'>
+                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                                </svg>
+                                <span className='font-medium text-sm'>¡Agregado al carrito!</span>
+                              </div>
+                            )}
+                          </SheetContent>
+                        </Sheet>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

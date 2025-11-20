@@ -1,21 +1,31 @@
 'use client'
+// Force recompilation - Using direct fetch API instead of getProductBySlug
 
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { getProductBySlug } from '@/lib/api/products'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getMainImage } from '@/lib/adapters/product-adapter'
 import { SimplePageLoading } from '@/components/ui/simple-page-loading'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
 import { trackAddToCart as trackGAAddToCart } from '@/lib/google-analytics'
+import { ProductGridInfinite } from '@/components/Checkout/ProductGridInfinite'
+import { FloatingCheckoutButton } from '@/components/Checkout/FloatingCheckoutButton'
+
+interface ProductData {
+  id: number
+  categoryId?: number
+  categorySlug?: string | null
+}
 
 export default function BuyProductPage() {
+  console.log('[BuyProductPage] Componente montado')
   const router = useRouter()
   const params = useParams() as { slug?: string }
   const productSlug = params?.slug ?? ''
   const { addProduct } = useCartUnified()
-  const [status, setStatus] = useState<'loading' | 'adding' | 'redirecting' | 'error'>('loading')
+  const [status, setStatus] = useState<'loading' | 'adding' | 'ready' | 'error'>('loading')
   const [error, setError] = useState<string | null>(null)
+  const [productData, setProductData] = useState<ProductData | null>(null)
 
   useEffect(() => {
     if (!productSlug || productSlug.trim() === '') {
@@ -28,29 +38,48 @@ export default function BuyProductPage() {
       try {
         setStatus('loading')
         
-        // 1. Obtener producto por slug
-        const apiProduct = await getProductBySlug(productSlug)
-        const apiData =
-          apiProduct && typeof apiProduct === 'object' && 'data' in (apiProduct as any)
-            ? (apiProduct as any).data
-            : apiProduct
+        // 1. Obtener producto por slug directamente desde la API para evitar problemas de bundling
+        const response = await fetch(`/api/products/slug/${encodeURIComponent(productSlug)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
 
-        if (!apiData) {
-          throw new Error('Producto no encontrado')
+        // Parsear respuesta incluso si hay error para obtener el mensaje de la API
+        const result = await response.json()
+        
+        if (!response.ok) {
+          // Usar el mensaje de error de la API si está disponible
+          const errorMessage = result?.error || `Error al obtener producto: ${response.statusText}`
+          throw new Error(errorMessage)
+        }
+        
+        if (!result || !result.success || !result.data) {
+          throw new Error(result?.error || 'Error parsing API response')
+        }
+
+        const apiResponse = result.data
+        
+        // apiResponse ya es el producto directamente (result.data)
+        const apiData = apiResponse
+
+        if (!apiData || (!apiData.id && !apiData.name && !apiData.title)) {
+          throw new Error('Producto no encontrado o datos inválidos')
         }
 
         // 2. Preparar datos del producto para el carrito
         const productId = apiData.id
         const productName = apiData.name || 'Producto'
         
-        // Precio: priorizar variante por defecto, luego discounted_price, luego price
+        // Precio original/de lista: priorizar price_list de variante, luego price del producto
         const productPrice = 
-          apiData.default_variant?.price_sale || 
-          apiData.discounted_price || 
           apiData.default_variant?.price_list || 
           apiData.price || 
           0
         
+        // Precio de venta/descuento: priorizar price_sale de variante, luego discounted_price del producto
+        // Si no hay precio de descuento, usar el precio original
         const discountedPrice = 
           apiData.default_variant?.price_sale || 
           apiData.discounted_price || 
@@ -119,13 +148,23 @@ export default function BuyProductPage() {
           console.warn('[Analytics] Error tracking add to cart:', analyticsError)
         }
 
-        // 5. Pequeño delay para asegurar que el carrito se actualice
+        // 5. Guardar datos del producto para mostrar recomendaciones
+        setProductData({
+          id: productId,
+          categoryId: apiData.category_id || apiData.category?.id,
+          categorySlug: apiData.category?.slug || apiData.category,
+        })
+
+        // 6. Pequeño delay para asegurar que el carrito se actualice
         await new Promise(resolve => setTimeout(resolve, 300))
 
-        setStatus('redirecting')
-
-        // 6. Redirigir al checkout
-        router.push('/checkout')
+        // 7. Mostrar página intermedia con productos
+        console.log('[BuyProductPage] Estado listo, mostrando página intermedia', {
+          productId,
+          categoryId: apiData.category_id || apiData.category?.id,
+          categorySlug: apiData.category?.slug || apiData.category,
+        })
+        setStatus('ready')
       } catch (err) {
         console.error('Error procesando compra:', err)
         setError(err instanceof Error ? err.message : 'Error al procesar la compra')
@@ -158,6 +197,25 @@ export default function BuyProductPage() {
     )
   }
 
+  // Mostrar página intermedia con productos
+  if (status === 'ready' && productData) {
+    console.log('[BuyProductPage] Renderizando página intermedia', { status, productData })
+    return (
+      <main className='min-h-screen bg-white pb-24'>
+        <div className='max-w-7xl mx-auto px-4 py-6'>
+          <ProductGridInfinite
+            currentProductId={productData.id}
+            currentProductCategoryId={productData.categoryId}
+            categorySlug={productData.categorySlug}
+          />
+        </div>
+        <FloatingCheckoutButton />
+      </main>
+    )
+  }
+
+  console.log('[BuyProductPage] Estado actual:', { status, productData, error })
+
   return (
     <SimplePageLoading 
       message={
@@ -165,7 +223,7 @@ export default function BuyProductPage() {
           ? 'Cargando producto...' 
           : status === 'adding' 
           ? 'Agregando al carrito...' 
-          : 'Redirigiendo al checkout...'
+          : 'Preparando productos...'
       } 
     />
   )

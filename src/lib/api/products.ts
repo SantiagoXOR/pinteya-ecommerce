@@ -159,8 +159,14 @@ export async function getProductBySlug(slug: string): Promise<ApiResponse<Produc
       },
     })
 
-    // Usar parsing seguro de JSON
+    // Parsear respuesta incluso si hay error para obtener el mensaje de la API
     const result = await safeApiResponseJson<ApiResponse<ProductWithCategory>>(response)
+
+    if (!response.ok) {
+      // Usar el mensaje de error de la API si está disponible
+      const errorMessage = result?.error || `Error al obtener producto: ${response.statusText}`
+      throw new Error(`HTTP ${response.status}: ${errorMessage}`)
+    }
 
     if (!result || !result.success || !result.data) {
       throw new Error(result?.error || 'Error parsing API response')

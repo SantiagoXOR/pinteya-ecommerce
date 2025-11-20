@@ -371,6 +371,42 @@ export const trackError = (errorMessage: string, errorType: string, page: string
   })
 }
 
+// Trackear visualización de pantalla de producto agregado (Meta checkout flow)
+export const trackViewProductAddedScreen = (
+  productId: string,
+  productName: string,
+  productPrice: number
+): void => {
+  trackEvent('view_product_added_screen', 'checkout', productName, productPrice, {
+    product_id: productId,
+    traffic_source: 'meta',
+  })
+}
+
+// Trackear paso completado en checkout Meta
+export const trackCheckoutStepCompleted = (
+  step: string,
+  stepNumber: number,
+  totalSteps: number = 5
+): void => {
+  trackEvent('checkout_step_completed', 'checkout', step, stepNumber, {
+    step_number: stepNumber,
+    total_steps: totalSteps,
+    traffic_source: 'meta',
+  })
+}
+
+// Trackear abandono de checkout
+export const trackCheckoutAbandoned = (
+  step: string,
+  stepNumber: number
+): void => {
+  trackEvent('checkout_abandoned', 'checkout', step, stepNumber, {
+    abandoned_at: new Date().toISOString(),
+    traffic_source: 'meta',
+  })
+}
+
 // Configurar usuario
 export const setUserProperties = (userId: string, properties: Record<string, any>): void => {
   if (!isGAEnabled()) {

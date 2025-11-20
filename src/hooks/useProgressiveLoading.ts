@@ -93,17 +93,22 @@ export function useProgressiveLoading<T extends HTMLElement>({
   const [hasLoaded, setHasLoaded] = useState(false)
   const ref = useRef<T>(null)
   const timeoutRef = useRef<NodeJS.Timeout>()
+  // Usar ref para trackear si ya se cargó sin causar re-renders
+  const hasLoadedRef = useRef(false)
+  const observerRef = useRef<IntersectionObserver | null>(null)
 
   // Función para forzar la carga
   const forceLoad = () => {
     setIsVisible(true)
     setHasLoaded(true)
+    hasLoadedRef.current = true
   }
 
   // Función para resetear el estado
   const reset = () => {
     setIsVisible(false)
     setHasLoaded(false)
+    hasLoadedRef.current = false
   }
 
   useEffect(() => {
@@ -114,7 +119,7 @@ export function useProgressiveLoading<T extends HTMLElement>({
     if (!element) return
 
     // Si ya cargó y triggerOnce es true, no observar
-    if (hasLoaded && triggerOnce) return
+    if (hasLoadedRef.current && triggerOnce) return
 
     // Si no hay soporte para IntersectionObserver, cargar inmediatamente
     if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
@@ -122,24 +127,32 @@ export function useProgressiveLoading<T extends HTMLElement>({
       return
     }
 
-    const observer = new IntersectionObserver(
+    // Limpiar observer anterior si existe
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+    }
+
+    observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasLoaded) {
+          if (entry.isIntersecting && !hasLoadedRef.current) {
+            // Marcar como cargado inmediatamente para evitar múltiples triggers
+            hasLoadedRef.current = true
+
             // Aplicar delay si está configurado
             if (delay > 0) {
               timeoutRef.current = setTimeout(() => {
                 setIsVisible(true)
+                setHasLoaded(true)
                 if (triggerOnce) {
-                  setHasLoaded(true)
-                  observer.disconnect()
+                  observerRef.current?.disconnect()
                 }
               }, delay)
             } else {
               setIsVisible(true)
+              setHasLoaded(true)
               if (triggerOnce) {
-                setHasLoaded(true)
-                observer.disconnect()
+                observerRef.current?.disconnect()
               }
             }
           } else if (!entry.isIntersecting && !triggerOnce) {
@@ -154,16 +167,19 @@ export function useProgressiveLoading<T extends HTMLElement>({
       }
     )
 
-    observer.observe(element)
+    observerRef.current.observe(element)
 
     // Cleanup
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
-      observer.disconnect()
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+        observerRef.current = null
+      }
     }
-  }, [rootMargin, threshold, triggerOnce, delay, hasLoaded, disabled])
+  }, [rootMargin, threshold, triggerOnce, delay, disabled])
 
   return {
     ref,
