@@ -36,28 +36,29 @@ export const FloatingCheckoutButton: React.FC = () => {
   })
 
   return (
-    <div className='fixed bottom-6 right-6 z-50'>
+    <div className='fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[9999]'>
       <Button
         onClick={handleCheckout}
         className={cn(
           'bg-green-600 hover:bg-green-700 text-white font-semibold',
           'shadow-lg hover:shadow-xl transition-all duration-300',
-          'px-6 py-4 rounded-full',
-          'flex items-center gap-3',
-          'min-w-[200px] md:min-w-[250px]',
-          'text-sm md:text-base'
+          'px-4 py-3 md:px-6 md:py-4 rounded-full',
+          'flex items-center gap-2 md:gap-3',
+          'min-w-[180px] md:min-w-[250px]',
+          'text-xs md:text-sm',
+          'touch-manipulation'
         )}
         size='lg'
       >
-        <div className='flex items-center gap-2'>
-          <ShoppingCart className='w-5 h-5' />
-          <span className='font-bold'>
+        <div className='flex items-center gap-1.5 md:gap-2'>
+          <ShoppingCart className='w-4 h-4 md:w-5 md:h-5' />
+          <span className='font-bold text-xs md:text-sm'>
             {itemCount} {itemCount === 1 ? 'producto' : 'productos'}
           </span>
         </div>
-        <div className='flex items-center gap-2 border-l border-white/30 pl-3'>
-          <span className='font-bold'>{formattedPrice}</span>
-          <ArrowRight className='w-4 h-4' />
+        <div className='flex items-center gap-1.5 md:gap-2 border-l border-white/30 pl-2 md:pl-3'>
+          <span className='font-bold text-xs md:text-sm'>{formattedPrice}</span>
+          <ArrowRight className='w-3 h-3 md:w-4 md:h-4' />
         </div>
       </Button>
     </div>

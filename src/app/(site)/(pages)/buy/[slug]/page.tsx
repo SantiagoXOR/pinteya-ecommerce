@@ -10,6 +10,7 @@ import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
 import { trackAddToCart as trackGAAddToCart } from '@/lib/google-analytics'
 import { ProductGridInfinite } from '@/components/Checkout/ProductGridInfinite'
 import { FloatingCheckoutButton } from '@/components/Checkout/FloatingCheckoutButton'
+import { BuyPageHeader } from '@/components/Checkout/BuyPageHeader'
 
 interface ProductData {
   id: number
@@ -202,6 +203,10 @@ export default function BuyProductPage() {
     console.log('[BuyProductPage] Renderizando página intermedia', { status, productData })
     return (
       <main className='min-h-screen bg-white pb-24'>
+        {/* Cabecera estilo MercadoLibre */}
+        <BuyPageHeader />
+        
+        {/* Grid de productos */}
         <div className='max-w-7xl mx-auto px-4 py-6'>
           <ProductGridInfinite
             currentProductId={productData.id}
@@ -209,6 +214,8 @@ export default function BuyProductPage() {
             categorySlug={productData.categorySlug}
           />
         </div>
+        
+        {/* Botón flotante de checkout */}
         <FloatingCheckoutButton />
       </main>
     )

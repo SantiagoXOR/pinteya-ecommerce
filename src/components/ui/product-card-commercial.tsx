@@ -1005,9 +1005,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         onClick={handleCardClick}
         {...props}
       >
-        {/* Icono de envío gratis - Borde izquierdo del card (no sale del contenedor) */}
+        {/* Icono de envío gratis - Parte superior izquierda del card */}
         {shouldShowFreeShipping && (
-          <div className='absolute left-2 md:left-3 top-1/2 -translate-y-1/2 z-30 pointer-events-none select-none'>
+          <div className='absolute left-2 md:left-3 top-2 md:top-3 z-30 pointer-events-none select-none'>
             <Image
               src='/images/icons/icon-envio.svg'
               alt='Envío gratis'
@@ -1072,13 +1072,13 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         <div className='relative z-20 text-left p-2 md:p-2.5 bg-white -mt-3 md:-mt-4 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
           {/* Marca del producto - Responsive */}
           {brand && (
-            <div className='text-xs md:text-sm uppercase text-gray-400 font-normal tracking-wide'>
+            <div className='text-xs md:text-sm uppercase text-gray-400 font-normal tracking-wide mb-0.5'>
               {brand}
             </div>
           )}
 
           {/* Título del producto - Con mejor contraste y responsive */}
-          <h3 className='font-medium text-gray-600 text-sm md:text-lg line-clamp-2 leading-[1.1] mb-0.5'>
+          <h3 className='font-medium text-gray-600 text-sm md:text-lg line-clamp-2 leading-[1.1] mb-1'>
             {title}
           </h3>
 
@@ -1132,7 +1132,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
           {/* Barra: Color + Medidas → debajo del precio/título */}
           <div className='w-full mt-2 md:mt-2.5'>
-            <div className='flex flex-col gap-0.5'>
+            <div className='flex flex-col gap-1.5'>
               {/* Primera línea: Colores - Carrusel horizontal */}
               {uniqueColors.length > 0 && (
                 <div className='relative flex items-center justify-between gap-2'>
