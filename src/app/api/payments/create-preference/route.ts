@@ -654,8 +654,10 @@ export async function POST(request: NextRequest) {
       return {
         id: product.id.toString(),
         title: product.name,
-        // ✅ CORREGIR: Usar descripción más específica de Pinteya
-        description: `Pinteya - ${product.name}${product.category?.name ? ` (${product.category.name})` : ''}`,
+        // ✅ MEJORAR: Descripción más descriptiva que incluya cantidad y categoría
+        // Nota: Mercado Pago solo muestra el título del primer producto en la UI,
+        // pero la descripción ayuda a identificar cada producto en el backend
+        description: `Pinteya - ${product.name}${product.category?.name ? ` (${product.category.name})` : ''} - Cantidad: ${orderItem.quantity}`,
         picture_url: product.images?.previews?.[0] || '',
         category_id: product.category?.slug || 'general',
         quantity: orderItem.quantity,

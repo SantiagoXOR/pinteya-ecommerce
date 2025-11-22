@@ -415,8 +415,12 @@ export const useCheckout = () => {
   // ===================================
 
   // Procesar checkout express
-  const processExpressCheckout = useCallback(async (isMetaFlow: boolean = false): Promise<void> => {
-    if (!validateExpressForm(isMetaFlow)) {
+  const processExpressCheckout = useCallback(async (
+    isMetaFlow: boolean = false,
+    overrideBillingData?: Partial<CheckoutFormData['billing']> // ✅ AGREGAR: Parámetro opcional
+  ): Promise<void> => {
+    // ✅ CORREGIR: Pasar overrideBillingData a validateExpressForm
+    if (!validateExpressForm(isMetaFlow, overrideBillingData)) {
       return
     }
 
@@ -426,7 +430,10 @@ export const useCheckout = () => {
     setCheckoutState(prev => ({ ...prev, isLoading: true, step: 'processing' }))
 
     try {
-      const { billing } = checkoutState.formData
+      // ✅ CORREGIR: Usar datos override si están disponibles, sino usar el estado
+      const billing = overrideBillingData 
+        ? { ...checkoutState.formData.billing, ...overrideBillingData }
+        : checkoutState.formData.billing
       const shippingCost = calculateShippingCost()
 
       // Sanitizar teléfono para el backend (solo números, formato argentino 10-11 dígitos)
@@ -557,7 +564,7 @@ export const useCheckout = () => {
         errors: { general: errorMessage },
       }))
     }
-  }, [checkoutState.formData, cartItems, validateExpressForm, calculateShippingCost, dispatch])
+  }, [checkoutState.formData, cartItems, validateExpressForm, calculateShippingCost, dispatch, totalPrice])
 
   // Procesar checkout completo
   const processCheckout = useCallback(async (): Promise<void> => {

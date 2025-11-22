@@ -461,11 +461,12 @@ export const useMetaCheckout = () => {
         observations: state.formData.shipping.observations || '',
       }
 
-      console.log('🔄 useMetaCheckout - Datos preparados para processCashOnDelivery:', {
+      console.log('🔄 useMetaCheckout - Datos preparados para checkout:', {
         firstName: billingData.firstName,
         lastName: billingData.lastName,
         phone: billingData.phone,
-        streetAddress: billingData.streetAddress
+        streetAddress: billingData.streetAddress,
+        paymentMethod: state.formData.paymentMethod
       })
 
       // ✅ Sincronizar estado para mantener consistencia (pero usar datos directos para validación)
@@ -475,8 +476,9 @@ export const useMetaCheckout = () => {
         // ✅ CORREGIR: Pasar datos directamente para evitar problemas de timing con el estado
         await processCashOnDelivery(true, billingData)
       } else {
-        // Pasar true para indicar que es flujo meta (no requiere DNI ni email)
-        await processExpressCheckout(true)
+        // ✅ CORREGIR: Pasar billingData directamente a processExpressCheckout
+        // Esto evita que tenga que leer del estado que puede no estar actualizado aún
+        await processExpressCheckout(true, billingData)
       }
     } catch (error) {
       // Manejar errores si es necesario
