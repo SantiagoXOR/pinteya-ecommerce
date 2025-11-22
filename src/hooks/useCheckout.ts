@@ -327,8 +327,12 @@ export const useCheckout = () => {
   }, [checkoutState.formData, cartItems.length])
 
   // Validar formulario express (solo campos esenciales)
-  const validateExpressForm = useCallback(() => {
-    const { billing } = checkoutState.formData
+  const validateExpressForm = useCallback((isMetaFlow: boolean = false, overrideBillingData?: Partial<CheckoutFormData['billing']>) => {
+    // ✅ CORREGIR: Usar datos override si están disponibles (para flujo meta con datos directos)
+    const billing = overrideBillingData 
+      ? { ...checkoutState.formData.billing, ...overrideBillingData }
+      : checkoutState.formData.billing
+    
     const errors: Record<string, string> = {}
 
     console.log('🔍 validateExpressForm - Datos del formulario:', {
@@ -340,7 +344,9 @@ export const useCheckout = () => {
       streetAddress: billing.streetAddress,
       paymentMethod: checkoutState.formData.paymentMethod,
       cartItemsLength: cartItems.length,
-      currentStep: checkoutState.step, // ✅ NUEVO: Agregar step actual
+      currentStep: checkoutState.step,
+      isMetaFlow, // ✅ NUEVO: Indicar si es flujo meta
+      hasOverrideData: !!overrideBillingData, // ✅ DEBUG: Indicar si se usan datos override
     })
 
     // Validaciones esenciales para checkout express
@@ -350,10 +356,14 @@ export const useCheckout = () => {
     if (!billing.lastName?.trim()) {
       errors.lastName = 'Apellido es requerido'
     }
-    if (!billing.dni?.trim()) {
+    
+    // DNI solo requerido si NO es flujo meta
+    if (!isMetaFlow && !billing.dni?.trim()) {
       errors.dni = 'DNI/CUIT es requerido'
     }
-    if (!billing.email?.trim()) {
+    
+    // Email solo requerido si NO es flujo meta
+    if (!isMetaFlow && !billing.email?.trim()) {
       errors.email = 'Email es requerido'
     }
     if (!billing.phone?.trim()) {
@@ -405,8 +415,8 @@ export const useCheckout = () => {
   // ===================================
 
   // Procesar checkout express
-  const processExpressCheckout = useCallback(async (): Promise<void> => {
-    if (!validateExpressForm()) {
+  const processExpressCheckout = useCallback(async (isMetaFlow: boolean = false): Promise<void> => {
+    if (!validateExpressForm(isMetaFlow)) {
       return
     }
 
@@ -460,7 +470,8 @@ export const useCheckout = () => {
         payer: {
           name: billing.firstName || 'Cliente', // Valor por defecto para express checkout
           surname: billing.lastName || 'Express', // Valor por defecto para express checkout
-          email: billing.email,
+          // Si no hay email (flujo meta), generar uno temporal basado en teléfono
+          email: billing.email || (sanitizedPhone ? `${sanitizedPhone}@temp.metacheckout.local` : 'noreply@metacheckout.local'),
           phone: sanitizedPhone, // Teléfono sanitizado (solo números)
         },
         shipping:
@@ -742,13 +753,14 @@ export const useCheckout = () => {
   // ===================================
   // FUNCIÓN PARA PAGO CONTRA ENTREGA
   // ===================================
-  const processCashOnDelivery = useCallback(async () => {
-    console.log('💰 Iniciando proceso de pago contra entrega')
+  const processCashOnDelivery = useCallback(async (isMetaFlow: boolean = false, overrideBillingData?: Partial<CheckoutFormData['billing']>) => {
+    console.log('💰 Iniciando proceso de pago contra entrega', { isMetaFlow, hasOverrideData: !!overrideBillingData })
     
-    // Validar formulario EXPRESS (campos esenciales)
-    const isValid = validateExpressForm()
+    // ✅ CORREGIR: Validar con datos override si están disponibles
+    const isValid = validateExpressForm(isMetaFlow, overrideBillingData)
     if (!isValid) {
       // Los errores ya se establecen dentro de validateForm()
+      console.warn('⚠️ Validación falló, no se puede procesar la orden')
       return
     }
 
@@ -759,7 +771,11 @@ export const useCheckout = () => {
     }))
 
     try {
-      const { billing, shipping } = checkoutState.formData
+      // ✅ CORREGIR: Usar datos override si están disponibles, sino usar el estado
+      const billing = overrideBillingData 
+        ? { ...checkoutState.formData.billing, ...overrideBillingData }
+        : checkoutState.formData.billing
+      const shipping = checkoutState.formData.shipping
 
       // Sanitizar teléfono para separar código de área y número
       let sanitizedPhone = billing.phone?.replace(/\D/g, '') || ''
@@ -809,6 +825,11 @@ export const useCheckout = () => {
           city_name: (shipping.differentAddress ? shipping.city : billing.city) || 'Córdoba',
           state_name: (shipping.differentAddress ? shipping.state : billing.state) || 'Córdoba',
           zip_code: (shipping.differentAddress ? shipping.zipCode : billing.zipCode) || '5000',
+          // ✅ AGREGAR: Incluir piso/depto y observaciones si existen
+          ...(billing.apartment && { apartment: billing.apartment }),
+          ...(shipping.apartment && { apartment: shipping.apartment }),
+          ...(billing.observations && { observations: billing.observations }),
+          ...(shipping.observations && { observations: shipping.observations }),
         }
       })()
 
@@ -826,7 +847,8 @@ export const useCheckout = () => {
         payer: {
           name: billing.firstName,
           surname: billing.lastName,
-          email: billing.email,
+          // Si no hay email (flujo meta), generar uno temporal basado en teléfono
+          email: billing.email || (phoneNumber ? `${phoneNumber}@temp.metacheckout.local` : 'noreply@metacheckout.local'),
           phone: {
             area_code: areaCode,
             number: phoneNumber,
@@ -924,12 +946,26 @@ export const useCheckout = () => {
       dispatch(removeAllItemsFromCart())
 
       // Actualizar estado a cash_success
-      setCheckoutState(prev => ({
-        ...prev,
-        step: 'cash_success',
-        cashOrderData: result.data,
-        isLoading: false,
-      }))
+      console.log('🔄 useCheckout - Actualizando estado a cash_success con datos:', {
+        hasOrder: !!result.data?.order,
+        hasWhatsappUrl: !!result.data?.whatsapp_url,
+        hasWhatsappMessage: !!result.data?.whatsapp_message,
+        orderNumber: result.data?.order?.order_number
+      })
+      
+      setCheckoutState(prev => {
+        const newState = {
+          ...prev,
+          step: 'cash_success' as const,
+          cashOrderData: result.data,
+          isLoading: false,
+        }
+        console.log('🔄 useCheckout - Nuevo estado establecido:', {
+          step: newState.step,
+          hasCashOrderData: !!newState.cashOrderData
+        })
+        return newState
+      })
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error procesando la orden'
@@ -946,7 +982,7 @@ export const useCheckout = () => {
         errors: { general: errorMessage },
       }))
     }
-  }, [checkoutState.formData, cartItems, validateForm, memoizedShippingCost, memoizedDiscount, memoizedFinalTotal, dispatch])
+      }, [checkoutState.formData, cartItems, validateForm, memoizedShippingCost, memoizedDiscount, memoizedFinalTotal, dispatch, validateExpressForm])
 
   return {
     // Estado

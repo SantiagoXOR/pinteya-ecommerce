@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems, selectTotalPrice } from '@/redux/features/cart-slice'
 import { useCheckout } from './useCheckout'
+import { validateEmail, validatePhoneNumber, validateDNI } from '@/lib/utils/consolidated-utils'
 
 export type MetaCheckoutStep = 'summary' | 'contact' | 'shipping' | 'payment' | 'confirmation'
 
@@ -11,18 +12,14 @@ export interface MetaCheckoutState {
   currentStep: MetaCheckoutStep
   formData: {
     contact: {
-      email: string
+      firstName: string
+      lastName: string
       phone: string
     }
     shipping: {
-      firstName: string
-      lastName: string
-      dni: string
       streetAddress: string
-      city: string
-      state: string
-      zipCode: string
       apartment?: string
+      observations?: string
     }
     paymentMethod: 'mercadopago' | 'cash'
   }
@@ -34,18 +31,14 @@ const STORAGE_KEY = 'meta_checkout_state'
 
 const initialFormData: MetaCheckoutState['formData'] = {
   contact: {
-    email: '',
+    firstName: '',
+    lastName: '',
     phone: '',
   },
   shipping: {
-    firstName: '',
-    lastName: '',
-    dni: '',
     streetAddress: '',
-    city: '',
-    state: '',
-    zipCode: '',
     apartment: '',
+    observations: '',
   },
   paymentMethod: 'mercadopago',
 }
@@ -73,9 +66,16 @@ export const useMetaCheckout = () => {
     updateFormData,
     processExpressCheckout,
     processCashOnDelivery,
-    isLoading,
+    isLoading: checkoutIsLoading,
     errors: checkoutErrors,
+    step: checkoutStep, // ✅ AGREGAR: Exponer step para redirección
+    cashOrderData, // ✅ AGREGAR: Exponer cashOrderData para redirección
+    finalTotal, // ✅ AGREGAR: Exponer finalTotal para redirección
+    initPoint, // ✅ AGREGAR: Exponer initPoint para redirección a MercadoPago
   } = useCheckout()
+
+  // ✅ Estado local de loading que se actualiza inmediatamente al hacer clic
+  const [localIsLoading, setLocalIsLoading] = useState(false)
 
   const [state, setState] = useState<MetaCheckoutState>(() => {
     // Intentar recuperar del localStorage
@@ -118,26 +118,22 @@ export const useMetaCheckout = () => {
 
   // Sincronizar con datos del usuario autenticado si están disponibles
   useEffect(() => {
-    if (checkoutFormData.billing.email && !state.formData.contact.email) {
+    if (checkoutFormData.billing.firstName && !state.formData.contact.firstName) {
       setState((prev) => ({
         ...prev,
         formData: {
           ...prev.formData,
           contact: {
-            email: checkoutFormData.billing.email,
-            phone: checkoutFormData.billing.phone,
-          },
-          shipping: {
-            ...prev.formData.shipping,
             firstName: checkoutFormData.billing.firstName,
             lastName: checkoutFormData.billing.lastName,
-            dni: checkoutFormData.billing.dni || '',
-            streetAddress: checkoutFormData.billing.streetAddress,
-            city: checkoutFormData.billing.city,
-            state: checkoutFormData.billing.state,
-            zipCode: checkoutFormData.billing.zipCode,
-            apartment: checkoutFormData.billing.apartment,
+            phone: checkoutFormData.billing.phone,
           },
+                  shipping: {
+                    ...prev.formData.shipping,
+                    streetAddress: checkoutFormData.billing.streetAddress,
+                    apartment: checkoutFormData.billing.apartment || '',
+                    observations: checkoutFormData.billing.observations || '',
+                  },
         },
       }))
     }
@@ -154,24 +150,106 @@ export const useMetaCheckout = () => {
     }
   }, [state])
 
-  // Validar email
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
-
-  // Validar teléfono (formato argentino básico)
+  // Validar teléfono (usando la misma lógica permisiva del checkout original)
   const validatePhone = (phone: string): boolean => {
-    const phoneRegex = /^(\+?54)?\s?9?\s?\d{4}[\s-]?\d{4}$/
-    return phoneRegex.test(phone.replace(/\s/g, ''))
+    if (!phone || phone.trim() === '') return false
+    
+    // Primero validar que solo contenga caracteres válidos para teléfonos
+    // Permitir: dígitos, espacios, guiones, paréntesis, + (código de país)
+    const validCharsRegex = /^[\d\s\-\(\)\+]+$/
+    if (!validCharsRegex.test(phone)) {
+      return false
+    }
+    
+    // Luego contar solo dígitos, aceptar 8-13 dígitos (como en validateExpressForm)
+    const digitsOnly = phone.replace(/\D/g, '')
+    return digitsOnly.length >= 8 && digitsOnly.length <= 13
   }
 
-  // Validar DNI
-  const validateDNI = (dni: string): boolean => {
-    return /^\d{7,8}$/.test(dni)
+  // Validar nombre/apellido (debe tener al menos 2 caracteres y no ser solo números)
+  const validateName = (name: string): boolean => {
+    if (!name || name.trim() === '') return false
+    const trimmed = name.trim()
+    // Debe tener al menos 2 caracteres y contener al menos una letra
+    return trimmed.length >= 2 && /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(trimmed)
   }
 
-  // Validar paso actual
+  // Validar campo individual (para validación en tiempo real)
+  const validateField = useCallback((step: MetaCheckoutStep, field: string, value: string): string | null => {
+    switch (step) {
+      case 'contact':
+        if (field === 'firstName') {
+          if (!value?.trim()) {
+            return 'Nombre es requerido'
+          }
+          if (!validateName(value)) {
+            return 'El nombre debe tener al menos 2 caracteres y contener letras'
+          }
+        }
+        if (field === 'lastName') {
+          if (!value?.trim()) {
+            return 'Apellido es requerido'
+          }
+          if (!validateName(value)) {
+            return 'El apellido debe tener al menos 2 caracteres y contener letras'
+          }
+        }
+        if (field === 'phone') {
+          if (!value?.trim()) {
+            return 'Teléfono es requerido'
+          }
+          if (!validatePhone(value)) {
+            return 'Teléfono inválido. Ingresá 8–13 dígitos'
+          }
+        }
+        break
+
+      case 'shipping':
+        if (field === 'streetAddress' && !value?.trim()) {
+          return 'Dirección es requerida'
+        }
+        break
+    }
+    return null
+  }, [])
+
+  // Validar y generar errores para el paso actual
+  const validateCurrentStep = useCallback((): boolean => {
+    const errors: Record<string, string> = {}
+
+    switch (state.currentStep) {
+      case 'contact':
+        const firstNameError = validateField('contact', 'firstName', state.formData.contact.firstName)
+        if (firstNameError) errors.firstName = firstNameError
+        
+        const lastNameError = validateField('contact', 'lastName', state.formData.contact.lastName)
+        if (lastNameError) errors.lastName = lastNameError
+        
+        const phoneError = validateField('contact', 'phone', state.formData.contact.phone)
+        if (phoneError) errors.phone = phoneError
+        break
+
+      case 'shipping':
+        const streetAddressError = validateField('shipping', 'streetAddress', state.formData.shipping.streetAddress)
+        if (streetAddressError) errors.streetAddress = streetAddressError
+        break
+
+      case 'payment':
+        if (!state.formData.paymentMethod) {
+          errors.paymentMethod = 'Método de pago es requerido'
+        }
+        break
+    }
+
+    setState((prev) => ({
+      ...prev,
+      errors,
+    }))
+
+    return Object.keys(errors).length === 0
+  }, [state.currentStep, state.formData])
+
+  // Validar paso actual (sin generar errores, solo verificar)
   const validateStep = useCallback((step: MetaCheckoutStep): boolean => {
     switch (step) {
       case 'summary':
@@ -179,23 +257,16 @@ export const useMetaCheckout = () => {
 
       case 'contact':
         return (
-          validateEmail(state.formData.contact.email) &&
+          validateName(state.formData.contact.firstName) &&
+          validateName(state.formData.contact.lastName) &&
           validatePhone(state.formData.contact.phone)
         )
 
       case 'shipping':
-        return (
-          state.formData.shipping.firstName.trim() !== '' &&
-          state.formData.shipping.lastName.trim() !== '' &&
-          validateDNI(state.formData.shipping.dni) &&
-          state.formData.shipping.streetAddress.trim() !== '' &&
-          state.formData.shipping.city.trim() !== '' &&
-          state.formData.shipping.state.trim() !== '' &&
-          state.formData.shipping.zipCode.trim() !== ''
-        )
+        return state.formData.shipping.streetAddress?.trim() !== ''
 
       case 'payment':
-        return state.formData.paymentMethod !== ''
+        return !!state.formData.paymentMethod
 
       case 'confirmation':
         return Object.values(state.isValid).every((v) => v)
@@ -217,19 +288,27 @@ export const useMetaCheckout = () => {
     }))
   }, [state.currentStep, state.formData, validateStep])
 
-  // Navegar al siguiente paso
+  // Navegar al siguiente paso (con validación)
   const nextStep = useCallback(() => {
+    // Validar antes de avanzar
+    if (!validateCurrentStep()) {
+      return
+    }
+
     const steps: MetaCheckoutStep[] = ['summary', 'contact', 'shipping', 'payment', 'confirmation']
     const currentIndex = steps.indexOf(state.currentStep)
 
     if (currentIndex < steps.length - 1) {
       const nextStepValue = steps[currentIndex + 1]
-      setState((prev) => ({
-        ...prev,
-        currentStep: nextStepValue,
-      }))
+      if (nextStepValue) {
+        setState((prev) => ({
+          ...prev,
+          currentStep: nextStepValue,
+          errors: {}, // Limpiar errores al avanzar
+        }))
+      }
     }
-  }, [state.currentStep])
+  }, [state.currentStep, validateCurrentStep])
 
   // Navegar al paso anterior
   const previousStep = useCallback(() => {
@@ -238,10 +317,12 @@ export const useMetaCheckout = () => {
 
     if (currentIndex > 0) {
       const previousStepValue = steps[currentIndex - 1]
-      setState((prev) => ({
-        ...prev,
-        currentStep: previousStepValue,
-      }))
+      if (previousStepValue) {
+        setState((prev) => ({
+          ...prev,
+          currentStep: previousStepValue,
+        }))
+      }
     }
   }, [state.currentStep])
 
@@ -255,33 +336,79 @@ export const useMetaCheckout = () => {
 
   // Actualizar datos de contacto
   const updateContact = useCallback((data: Partial<MetaCheckoutState['formData']['contact']>) => {
-    setState((prev) => ({
-      ...prev,
-      formData: {
-        ...prev.formData,
-        contact: {
-          ...prev.formData.contact,
-          ...data,
+    setState((prev) => {
+      const updatedContact = {
+        ...prev.formData.contact,
+        ...data,
+      }
+      
+      // Validar en tiempo real y actualizar errores
+      const errors = { ...prev.errors }
+      if (data.firstName !== undefined) {
+        const error = validateField('contact', 'firstName', updatedContact.firstName)
+        if (error) {
+          errors.firstName = error
+        } else {
+          delete errors.firstName
+        }
+      }
+      if (data.lastName !== undefined) {
+        const error = validateField('contact', 'lastName', updatedContact.lastName)
+        if (error) {
+          errors.lastName = error
+        } else {
+          delete errors.lastName
+        }
+      }
+      if (data.phone !== undefined) {
+        const error = validateField('contact', 'phone', updatedContact.phone)
+        if (error) {
+          errors.phone = error
+        } else {
+          delete errors.phone
+        }
+      }
+
+      return {
+        ...prev,
+        formData: {
+          ...prev.formData,
+          contact: updatedContact,
         },
-      },
-      errors: {},
-    }))
-  }, [])
+        errors,
+      }
+    })
+  }, [validateField])
 
   // Actualizar datos de envío
   const updateShipping = useCallback((data: Partial<MetaCheckoutState['formData']['shipping']>) => {
-    setState((prev) => ({
-      ...prev,
-      formData: {
-        ...prev.formData,
-        shipping: {
-          ...prev.formData.shipping,
-          ...data,
+    setState((prev) => {
+      const updatedShipping = {
+        ...prev.formData.shipping,
+        ...data,
+      }
+      
+      // Validar en tiempo real y actualizar errores
+      const errors = { ...prev.errors }
+      Object.keys(data).forEach((key) => {
+        const error = validateField('shipping', key, updatedShipping[key as keyof typeof updatedShipping] as string)
+        if (error) {
+          errors[key] = error
+        } else {
+          delete errors[key]
+        }
+      })
+
+      return {
+        ...prev,
+        formData: {
+          ...prev.formData,
+          shipping: updatedShipping,
         },
-      },
-      errors: {},
-    }))
-  }, [])
+        errors,
+      }
+    })
+  }, [validateField])
 
   // Actualizar método de pago
   const updatePaymentMethod = useCallback((method: 'mercadopago' | 'cash') => {
@@ -298,30 +425,68 @@ export const useMetaCheckout = () => {
   // Sincronizar con checkout principal antes de procesar
   const syncWithCheckout = useCallback(() => {
     updateBillingData({
-      firstName: state.formData.shipping.firstName,
-      lastName: state.formData.shipping.lastName,
-      dni: state.formData.shipping.dni,
-      email: state.formData.contact.email,
+      firstName: state.formData.contact.firstName,
+      lastName: state.formData.contact.lastName,
+      dni: '', // DNI no se pide en shipping, se puede agregar después si es necesario
+      email: '', // Email se puede obtener después si es necesario
       phone: state.formData.contact.phone,
       streetAddress: state.formData.shipping.streetAddress,
-      city: state.formData.shipping.city,
-      state: state.formData.shipping.state,
-      zipCode: state.formData.shipping.zipCode,
-      apartment: state.formData.shipping.apartment,
+      city: 'Córdoba', // Ciudad fija para Córdoba Capital
+      state: 'Córdoba', // Provincia fija para Córdoba Capital
+      zipCode: '5000', // Código postal por defecto para Córdoba Capital
+      apartment: state.formData.shipping.apartment || '',
+      observations: state.formData.shipping.observations || '',
     })
     updateFormData({ paymentMethod: state.formData.paymentMethod })
   }, [state.formData, updateBillingData, updateFormData])
 
   // Procesar checkout
   const processCheckout = useCallback(async () => {
-    syncWithCheckout()
+    // ✅ ACTUALIZAR: Establecer loading inmediatamente antes de cualquier operación
+    setLocalIsLoading(true)
+    
+    try {
+      // ✅ CORREGIR: Preparar datos directamente para evitar problemas de timing
+      const billingData = {
+        firstName: state.formData.contact.firstName,
+        lastName: state.formData.contact.lastName,
+        dni: '', // DNI no se pide en flujo meta
+        email: '', // Email no se pide en flujo meta
+        phone: state.formData.contact.phone,
+        streetAddress: state.formData.shipping.streetAddress,
+        city: 'Córdoba',
+        state: 'Córdoba',
+        zipCode: '5000',
+        apartment: state.formData.shipping.apartment || '',
+        observations: state.formData.shipping.observations || '',
+      }
 
-    if (state.formData.paymentMethod === 'cash') {
-      await processCashOnDelivery()
-    } else {
-      await processExpressCheckout()
+      console.log('🔄 useMetaCheckout - Datos preparados para processCashOnDelivery:', {
+        firstName: billingData.firstName,
+        lastName: billingData.lastName,
+        phone: billingData.phone,
+        streetAddress: billingData.streetAddress
+      })
+
+      // ✅ Sincronizar estado para mantener consistencia (pero usar datos directos para validación)
+      syncWithCheckout()
+
+      if (state.formData.paymentMethod === 'cash') {
+        // ✅ CORREGIR: Pasar datos directamente para evitar problemas de timing con el estado
+        await processCashOnDelivery(true, billingData)
+      } else {
+        // Pasar true para indicar que es flujo meta (no requiere DNI ni email)
+        await processExpressCheckout(true)
+      }
+    } catch (error) {
+      // Manejar errores si es necesario
+      console.error('Error en processCheckout:', error)
+      // El error se manejará en useCheckout, pero reseteamos nuestro loading local
+      setLocalIsLoading(false)
     }
-  }, [state.formData.paymentMethod, syncWithCheckout, processCashOnDelivery, processExpressCheckout])
+    // Nota: No reseteamos localIsLoading aquí porque queremos que se mantenga
+    // hasta que checkoutIsLoading también sea false (manejado por useEffect)
+  }, [state.formData, syncWithCheckout, processCashOnDelivery, processExpressCheckout])
 
   // Limpiar estado
   const clearState = useCallback(() => {
@@ -342,6 +507,17 @@ export const useMetaCheckout = () => {
     })
   }, [])
 
+  // ✅ Combinar ambos estados de loading para respuesta inmediata
+  const isLoading = localIsLoading || checkoutIsLoading
+
+  // ✅ Sincronizar localIsLoading cuando checkoutIsLoading cambia
+  useEffect(() => {
+    if (!checkoutIsLoading && localIsLoading) {
+      // Si checkout terminó, resetear local también
+      setLocalIsLoading(false)
+    }
+  }, [checkoutIsLoading, localIsLoading])
+
   return {
     state,
     cartItems: Array.isArray(cartItems) ? cartItems : [],
@@ -356,8 +532,14 @@ export const useMetaCheckout = () => {
     updatePaymentMethod,
     processCheckout,
     validateStep,
+    validateCurrentStep,
     clearState,
     canProceed: state.isValid[state.currentStep],
+    // ✅ AGREGAR: Exponer estado de useCheckout para redirección
+    checkoutStep, // step del checkout principal (form, cash_success, etc.)
+    cashOrderData, // datos de la orden de cash on delivery
+    finalTotal, // total final calculado
+    initPoint, // URL de redirección a MercadoPago
   }
 }
 

@@ -4,11 +4,10 @@ import React from 'react'
 
 export const BuyPageHeader: React.FC = () => {
   return (
-    <div className='w-full bg-gray-800 py-3 px-4'>
-      <h2 className='text-white text-sm font-medium text-center'>
-        Llevate lo que estás buscando
-      </h2>
-    </div>
+    <span className='fixed left-1/2 -translate-x-1/2 top-[calc(104px+60px)] md:top-[calc(117px+60px)] z-[9999] bg-gray-100 text-gray-700 text-xs font-medium px-4 py-1.5 rounded-full shadow-sm'>
+      Llevate lo que estás buscando
+    </span>
   )
 }
+
 

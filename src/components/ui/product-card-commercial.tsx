@@ -21,6 +21,9 @@ import { findVariantByCapacity } from '@/lib/api/product-variants'
 import { PAINT_COLORS, type ColorOption } from '@/components/ui/advanced-color-picker'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ChevronRight } from 'lucide-react'
+import { useAppSelector } from '@/redux/store'
+import { selectCartItems } from '@/redux/features/cart-slice'
+import { toast } from 'react-hot-toast'
 
 // Verificar que Framer Motion esté disponible
 const isFramerMotionAvailable = false // Deshabilitado para usar fallbacks CSS
@@ -163,6 +166,14 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     // Unificado: usamos el hook central para agregar productos
     const { addProduct } = useCartUnified()
     const router = useRouter()
+    const cartItems = useAppSelector(selectCartItems) // Obtener items del carrito
+
+    // Obtener cantidad actual del producto en el carrito
+    const currentCartQuantity = React.useMemo(() => {
+      if (!productId) return 0
+      const item = cartItems.find(item => String(item.id) === String(productId))
+      return item?.quantity || 0
+    }, [cartItems, productId])
 
     // Handler para el modal - DEBE estar en el nivel superior del componente
     const handleModalOpenChange = React.useCallback((open: boolean) => {
@@ -888,6 +899,21 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
         if (isAddingToCart || stock === 0) return
 
+        // Validar stock disponible antes de agregar
+        const quantityToAdd = 1
+        const totalQuantityAfterAdd = currentCartQuantity + quantityToAdd
+
+        if (stock !== undefined && stock > 0 && totalQuantityAfterAdd > stock) {
+          toast.error(`Stock insuficiente. Solo hay ${stock} unidades disponibles. Ya tienes ${currentCartQuantity} en el carrito.`)
+          console.warn('⚠️ CommercialProductCard: Cantidad solicitada excede el stock disponible', {
+            stock,
+            currentCartQuantity,
+            quantityToAdd,
+            totalQuantityAfterAdd
+          })
+          return
+        }
+
         if (showCartAnimation) {
           setIsAddingToCart(true)
           setTimeout(() => setIsAddingToCart(false), 1000)
@@ -963,7 +989,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           console.error('Error al agregar al carrito:', error)
         }
       },
-      [isAddingToCart, stock, showCartAnimation, selectedColor, selectedMeasure, uniqueColors, displayPrice, price, currentVariant, productId, title, image, variants, addProduct]
+      [isAddingToCart, stock, currentCartQuantity, showCartAnimation, selectedColor, selectedMeasure, uniqueColors, displayPrice, price, currentVariant, productId, title, image, variants, addProduct]
     )
     
     return (
@@ -973,9 +999,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           // Mobile-first: diseño compacto para 2 columnas
           'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer',
           // Mobile: más compacto
-          'h-[280px] sm:h-[320px]',
+          'h-[300px] sm:h-[360px]',
           // Tablet y desktop: tamaño completo
-          'md:h-[400px] lg:h-[450px]',
+          'md:h-[450px] lg:h-[500px]',
           'md:rounded-2xl',
           'transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl',
           'transform-gpu will-change-transform',
@@ -1005,9 +1031,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         onClick={handleCardClick}
         {...props}
       >
-        {/* Icono de envío gratis - Parte superior izquierda del card */}
+        {/* Icono de envío gratis - Alineado horizontalmente con el botón de carrito */}
         {shouldShowFreeShipping && (
-          <div className='absolute left-2 md:left-3 top-2 md:top-3 z-30 pointer-events-none select-none'>
+          <div className='absolute right-2 md:right-3 top-2 md:top-2.5 z-30 pointer-events-none select-none flex items-center'>
             <Image
               src='/images/icons/icon-envio.svg'
               alt='Envío gratis'
@@ -1020,10 +1046,10 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           </div>
         )}
 
-        {/* Badge "Nuevo" en esquina superior derecha */}
+        {/* Badge "Nuevo" en esquina superior derecha - Debajo del icono de envío */}
         {isNew && (
           <span
-            className='absolute top-2 right-2 md:top-3 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-40 shadow'
+            className='absolute top-12 md:top-14 right-2 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-40 shadow'
             style={{ backgroundColor: '#FFD600', color: '#EA5A17' }}
           >
             Nuevo
@@ -1031,7 +1057,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         )}
 
         {/* Contenedor de imagen completa con degradado - Responsive */}
-        <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-2 md:mb-3 flex-1'>
+        <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-1 md:mb-2 flex-1'>
           {currentImageSrc && !imageError ? (
             <Image
               src={currentImageSrc}
@@ -1069,7 +1095,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         {/* Badge de medidas eliminado según solicitud del usuario */}
 
         {/* Content con transición suave - Responsive */}
-        <div className='relative z-20 text-left p-2 md:p-2.5 bg-white -mt-3 md:-mt-4 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
+        <div className='relative z-20 text-left p-1.5 md:p-2 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
           {/* Marca del producto - Responsive */}
           {brand && (
             <div className='text-xs md:text-sm uppercase text-gray-400 font-normal tracking-wide mb-0.5'>
@@ -1394,7 +1420,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
         {children}
 
-        {/* Botón circular de carrito reubicado: borde derecho, media altura sobre el título */}
+        {/* Botón circular de carrito - Arriba del card, alineado con el icono de envío */}
         <button
           type='button'
           onClick={handleAddToCart}
@@ -1403,7 +1429,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           data-testid-btn='add-to-cart-btn'
           aria-label='Agregar al carrito'
           className={cn(
-            'absolute right-2 md:right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform',
+            'absolute left-2 md:left-3 top-2 md:top-2.5 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform',
             stock === 0
               ? 'bg-gray-200 cursor-not-allowed'
               : 'bg-yellow-400 hover:bg-yellow-500'

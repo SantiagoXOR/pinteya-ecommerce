@@ -101,7 +101,7 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
       originalPrice={hasDiscount ? productData.price : undefined}
       discount={discount ? `${discount}%` : undefined}
       isNew={isNew}
-      stock={50} // Stock por defecto para productos legacy
+      stock={(productData as any).stock ?? productData.stock ?? 50} // Usar stock real del producto
       productId={productData.id}
       cta='Agregar al carrito'
       onAddToCart={handleAddToCart}

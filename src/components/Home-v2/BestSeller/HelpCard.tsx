@@ -30,10 +30,10 @@ const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
       className={cn(
         // Mismo formato base que CommercialProductCard
         'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer',
-        // Mobile: más compacto
-        'h-[280px] sm:h-[320px]',
-        // Tablet y desktop: tamaño completo
-        'md:h-[400px] lg:h-[450px]',
+        // Mobile: altura igual a CommercialProductCard
+        'h-[300px] sm:h-[360px]',
+        // Tablet y desktop: altura igual a CommercialProductCard
+        'md:h-[450px] lg:h-[500px]',
         'md:rounded-2xl',
         'transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl',
         'transform-gpu will-change-transform',

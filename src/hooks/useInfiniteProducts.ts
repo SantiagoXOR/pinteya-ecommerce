@@ -1,9 +1,18 @@
+/**
+ * @deprecated Este hook ha sido reemplazado por useInfiniteProductsQuery que usa React Query.
+ * Usa useInfiniteProductsQuery en su lugar para mejor manejo del estado y preservación del scroll.
+ * 
+ * Este archivo se mantiene temporalmente para referencia pero será eliminado en el futuro.
+ */
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Product } from '@/types/product'
 import { useBestSellerProducts } from './useBestSellerProducts'
 import { getRelatedProducts as getRelatedProductsByName } from '@/lib/api/related-products'
 import { getRelatedProducts as getRelatedProductsByCategory } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
+
+// Marcas premium que deben aparecer primero
+const PREMIUM_BRANDS = ['Plavicon', 'Sinteplast']
 
 interface UseInfiniteProductsOptions {
   currentProductId?: number | string
@@ -163,6 +172,38 @@ export const useInfiniteProducts = ({
     }
   }, [])
 
+  // Función para obtener productos premium (Plavicon, Sinteplast)
+  const fetchPremiumProducts = useCallback(async (limit: number = 30): Promise<Product[]> => {
+    try {
+      const params = new URLSearchParams()
+      params.append('brands', PREMIUM_BRANDS.join(','))
+      params.append('limit', limit.toString())
+      params.append('sortBy', 'price')
+      params.append('sortOrder', 'desc')
+
+      const response = await fetch(`/api/products?${params.toString()}`)
+      if (!response.ok) {
+        return []
+      }
+
+      const data = await response.json()
+      let fetchedProducts: any[] = []
+
+      if (Array.isArray(data)) {
+        fetchedProducts = data
+      } else if (data.products && Array.isArray(data.products)) {
+        fetchedProducts = data.products
+      } else if (data.data && Array.isArray(data.data)) {
+        fetchedProducts = data.data
+      }
+
+      return fetchedProducts.map(adaptProduct)
+    } catch (err) {
+      console.warn('Error obteniendo productos premium:', err)
+      return []
+    }
+  }, [])
+
   // Función principal para combinar todas las fuentes de productos
   const combineProducts = useCallback(async () => {
     setIsLoading(true)
@@ -177,15 +218,44 @@ export const useInfiniteProducts = ({
       if (!productId) {
         // Si no hay producto actual, solo usar best sellers
         const adapted = bestSellerProducts.map(adaptProduct)
-        setAllProducts(adapted)
-        setDisplayedProducts(adapted.slice(0, currentDisplayLimit))
-        setHasMore(adapted.length > currentDisplayLimit)
+        // Ordenar: primero marcas premium, luego resto, ambos por precio descendente
+        const sorted = adapted.sort((a, b) => {
+          const brandA = (a.brand || '').trim()
+          const brandB = (b.brand || '').trim()
+          const isPremiumA = PREMIUM_BRANDS.some(premium => 
+            brandA.toLowerCase().includes(premium.toLowerCase())
+          )
+          const isPremiumB = PREMIUM_BRANDS.some(premium => 
+            brandB.toLowerCase().includes(premium.toLowerCase())
+          )
+
+          // Si uno es premium y el otro no, el premium va primero
+          if (isPremiumA && !isPremiumB) return -1
+          if (!isPremiumA && isPremiumB) return 1
+
+          // Si ambos son premium o ambos no lo son, ordenar por precio
+          const priceA = a.discountedPrice || a.price || 0
+          const priceB = b.discountedPrice || b.price || 0
+          return priceB - priceA // Descendente (más caro primero)
+        })
+        setAllProducts(sorted)
+        setDisplayedProducts(sorted.slice(0, currentDisplayLimit))
+        setHasMore(sorted.length > currentDisplayLimit)
         setIsLoading(false)
         return
       }
 
       const combined: Product[] = []
       const usedIds = new Set<number | string>()
+
+      // 0. Productos premium (máxima prioridad)
+      const premiumProducts = await fetchPremiumProducts(30)
+      premiumProducts.forEach(product => {
+        if (!usedIds.has(product.id) && String(product.id) !== String(productId)) {
+          combined.push(product)
+          usedIds.add(product.id)
+        }
+      })
 
       // 1. Productos relacionados por nombre (prioridad alta)
       const relatedByName = await fetchRelatedByName(productId)
@@ -223,10 +293,31 @@ export const useInfiniteProducts = ({
       // Filtrar el producto actual
       const filtered = combined.filter(p => String(p.id) !== String(productId))
 
+      // Ordenar: primero marcas premium, luego resto, ambos por precio descendente
+      const sorted = filtered.sort((a, b) => {
+        const brandA = (a.brand || '').trim()
+        const brandB = (b.brand || '').trim()
+        const isPremiumA = PREMIUM_BRANDS.some(premium => 
+          brandA.toLowerCase().includes(premium.toLowerCase())
+        )
+        const isPremiumB = PREMIUM_BRANDS.some(premium => 
+          brandB.toLowerCase().includes(premium.toLowerCase())
+        )
+
+        // Si uno es premium y el otro no, el premium va primero
+        if (isPremiumA && !isPremiumB) return -1
+        if (!isPremiumA && isPremiumB) return 1
+
+        // Si ambos son premium o ambos no lo son, ordenar por precio
+        const priceA = a.discountedPrice || a.price || 0
+        const priceB = b.discountedPrice || b.price || 0
+        return priceB - priceA // Descendente (más caro primero)
+      })
+
       usedIdsRef.current = usedIds
-      setAllProducts(filtered)
-      setDisplayedProducts(filtered.slice(0, currentDisplayLimit))
-      setHasMore(filtered.length > currentDisplayLimit)
+      setAllProducts(sorted)
+      setDisplayedProducts(sorted.slice(0, currentDisplayLimit))
+      setHasMore(sorted.length > currentDisplayLimit)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar productos')
       console.error('Error combinando productos:', err)
@@ -239,6 +330,7 @@ export const useInfiniteProducts = ({
     bestSellerProducts,
     fetchRelatedByName,
     fetchRelatedByCategory,
+    fetchPremiumProducts,
     currentDisplayLimit,
   ])
 
@@ -253,6 +345,10 @@ export const useInfiniteProducts = ({
   const loadMore = useCallback(() => {
     if (isLoadingMore || !hasMore) return
 
+    // Guardar posición del scroll antes de cargar
+    const scrollPosition = window.scrollY || document.documentElement.scrollTop || 0
+    const scrollHeight = document.documentElement.scrollHeight
+
     setIsLoadingMore(true)
     
     setTimeout(() => {
@@ -261,6 +357,36 @@ export const useInfiniteProducts = ({
       setDisplayedProducts(allProducts.slice(0, newLimit))
       setHasMore(newLimit < allProducts.length)
       setIsLoadingMore(false)
+      
+      // Restaurar posición del scroll después de cargar usando múltiples intentos
+      const restoreScroll = () => {
+        // Usar múltiples métodos para asegurar que funcione
+        if (window.scrollTo) {
+          window.scrollTo(0, scrollPosition)
+        }
+        if (document.documentElement) {
+          document.documentElement.scrollTop = scrollPosition
+        }
+        if (document.body) {
+          document.body.scrollTop = scrollPosition
+        }
+      }
+      
+      // Múltiples intentos para asegurar que el scroll se restaure
+      restoreScroll()
+      requestAnimationFrame(() => {
+        restoreScroll()
+        requestAnimationFrame(() => {
+          restoreScroll()
+          // Verificar y corregir si es necesario
+          setTimeout(() => {
+            const currentScroll = window.scrollY || document.documentElement.scrollTop || 0
+            if (Math.abs(currentScroll - scrollPosition) > 5) {
+              restoreScroll()
+            }
+          }, 50)
+        })
+      })
     }, 300) // Pequeño delay para UX suave
   }, [isLoadingMore, hasMore, currentDisplayLimit, loadMoreLimit, allProducts])
 

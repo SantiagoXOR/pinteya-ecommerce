@@ -11,31 +11,7 @@ import type { PromoBannersProps } from './PromoBanners'
 const HeroCarousel = dynamic(() => import('./HeroCarousel/index'))
 const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePillsWithSearch'))
 const PromoBanners = dynamic<PromoBannersProps>(() => import('./PromoBanners/index'))
-const DynamicProductCarousel = dynamic(
-  () => import('./DynamicProductCarousel/index').catch((err) => {
-    console.error('Error loading DynamicProductCarousel:', err)
-    // Retornar un componente de fallback
-    return { default: () => null }
-  }),
-  {
-    ssr: false,
-    loading: () => (
-      <section className='py-4 bg-white'>
-        <div className='max-w-7xl mx-auto px-4'>
-          <div className='animate-pulse'>
-            <div className='flex items-center gap-3 mb-3'>
-              <div className='w-[68px] h-[68px] md:w-[84px] md:h-[84px] bg-gray-200 rounded-full'></div>
-              <div>
-                <div className='h-6 md:h-7 bg-gray-200 rounded w-48 mb-1'></div>
-                <div className='h-3 md:h-4 bg-gray-200 rounded w-32'></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    ),
-  }
-)
+const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'))
 const TrendingSearches = dynamic(() => import('./TrendingSearches/index'))
 const CombosSection = dynamic(() => import('./CombosSection/index'))
 const BestSeller = dynamic(() => import('./BestSeller/index'))

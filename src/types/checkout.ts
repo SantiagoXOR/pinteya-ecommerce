@@ -30,6 +30,7 @@ export interface ShippingData {
   city?: string
   state?: string
   zipCode?: string
+  observations?: string
 }
 
 export interface CheckoutFormData {

@@ -266,7 +266,7 @@ const SingleItem = ({ item }: { item: any }) => {
           <h3 className='font-semibold text-gray-900 text-sm line-clamp-2 mb-1'>{item.title}</h3>
           {/* Badges de atributos (color, medida y acabado) */}
           {(item.attributes?.color || item.attributes?.medida || item.attributes?.finish) && (
-            <div className='flex flex-wrap items-center gap-2 mb-1'>
+            <div className='flex flex-wrap items-center gap-2'>
               {item.attributes?.medida && (
                 <Badge variant='secondary' className='text-xs px-2 py-0.5'>
                   {normalizeVariantLabel(item.attributes.medida, 'medida')}
@@ -283,12 +283,6 @@ const SingleItem = ({ item }: { item: any }) => {
                 </Badge>
               )}
             </div>
-          )}
-          <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
-            ${item.discountedPrice ? item.discountedPrice.toLocaleString() : '0'}
-          </p>
-          {item.price && item.discountedPrice && item.discountedPrice < item.price && (
-            <p className='text-xs text-gray-500 line-through'>${item.price.toLocaleString()}</p>
           )}
         </div>
 

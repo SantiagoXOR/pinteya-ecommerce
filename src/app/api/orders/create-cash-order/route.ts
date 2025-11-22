@@ -22,7 +22,6 @@ interface ProductFromDB {
   medida?: string | null;
   brand?: string | null;
   description?: string | null;
-  finish?: string | null;
   aikon_id?: string | null;
   product_variants?: Array<{
     id: string;
@@ -30,6 +29,7 @@ interface ProductFromDB {
     measure: string;
     price_sale: number;
     price_list: number;
+    finish?: string | null;
   }>;
 }
 
@@ -65,7 +65,10 @@ const CreateCashOrderSchema = z.object({
       state_name: z.string(),
       city_name: z.string(),
       street_name: z.string(),
-      street_number: z.string()
+      street_number: z.string(),
+      // ✅ AGREGAR: Campos opcionales para piso/depto y observaciones
+      apartment: z.string().optional(),
+      observations: z.string().optional(),
     })
   }),
   external_reference: z.string().optional()
@@ -222,9 +225,9 @@ export async function POST(request: NextRequest) {
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select(`
-        id, name, price, discounted_price, stock, color, medida, brand, description, finish, aikon_id,
+        id, name, price, discounted_price, stock, color, medida, brand, description, aikon_id,
         product_variants (
-          id, color_name, measure, price_sale, price_list
+          id, color_name, measure, price_sale, price_list, finish
         )
       `)
       .in('id', productIds) as { data: ProductFromDB[] | null; error: any };
@@ -278,8 +281,18 @@ export async function POST(request: NextRequest) {
 
       if (item.variant_finish) {
         productSnapshot.finish = item.variant_finish;
-      } else if (product.finish) {
-        productSnapshot.finish = product.finish;
+      } else if (item.variant_id && product.product_variants) {
+        // Buscar finish en la variante específica
+        const variant = product.product_variants.find((v: any) => v.id.toString() === item.variant_id?.toString());
+        if (variant?.finish) {
+          productSnapshot.finish = variant.finish;
+        }
+      } else if (product.product_variants && product.product_variants.length > 0) {
+        // Usar finish de la primera variante disponible
+        const firstVariant = product.product_variants[0];
+        if (firstVariant?.finish) {
+          productSnapshot.finish = firstVariant.finish;
+        }
       }
 
       return {
@@ -306,20 +319,31 @@ export async function POST(request: NextRequest) {
       total: totalAmount,
       status: 'pending',
       payment_status: 'cash_on_delivery',
+      // ✅ AGREGADO: payment_method ahora existe en la tabla (migración aplicada)
       payment_method: 'cash',
       payer_info: {
         name: validatedData.payer.name,
         surname: validatedData.payer.surname,
         email: validatedData.payer.email,
         phone: `${validatedData.payer.phone.area_code}${validatedData.payer.phone.number}`,
-        identification: validatedData.payer.identification
+        identification: validatedData.payer.identification,
+        // ✅ También guardar en payer_info para compatibilidad y consultas JSONB
+        payment_method: 'cash',
+        order_number: orderNumber
       },
       shipping_address: {
         zip_code: validatedData.shipments.receiver_address.zip_code,
         state_name: validatedData.shipments.receiver_address.state_name,
         city_name: validatedData.shipments.receiver_address.city_name,
         street_name: validatedData.shipments.receiver_address.street_name,
-        street_number: validatedData.shipments.receiver_address.street_number
+        street_number: validatedData.shipments.receiver_address.street_number,
+        // ✅ AGREGAR: Guardar piso/depto y observaciones si existen
+        ...(validatedData.shipments.receiver_address.apartment && {
+          apartment: validatedData.shipments.receiver_address.apartment
+        }),
+        ...(validatedData.shipments.receiver_address.observations && {
+          observations: validatedData.shipments.receiver_address.observations
+        }),
       },
       external_reference: validatedData.external_reference || `cash_order_${Date.now()}`
     };
@@ -383,7 +407,7 @@ export async function POST(request: NextRequest) {
       `*Datos Personales:*`,
       `${bullet} Nombre: ${validatedData.payer.name} ${validatedData.payer.surname}`,
       `${bullet} Teléfono: ${EMOJIS.phone} ${validatedData.payer.phone.area_code}${validatedData.payer.phone.number}`,
-      `${bullet} Email: ${EMOJIS.email} ${validatedData.payer.email}`,
+      // ✅ ELIMINAR: Línea del email (no se muestra en el mensaje)
       '',
       `*Productos:*`,
     ];
@@ -406,8 +430,15 @@ export async function POST(request: NextRequest) {
           details.push(`Color: ${colorToUse}`);
         }
         
-        // 🔧 Agregar terminación si está disponible (de la variante o del producto)
-        const finishToUse = item.variant_finish || product.finish;
+        // 🔧 Agregar terminación si está disponible (de la variante o de product_variants)
+        let finishToUse: string | undefined = item.variant_finish;
+        if (!finishToUse && item.variant_id && product.product_variants) {
+          const variant = product.product_variants.find((v: any) => v.id.toString() === item.variant_id?.toString());
+          finishToUse = variant?.finish || undefined;
+        }
+        if (!finishToUse && product.product_variants && product.product_variants.length > 0) {
+          finishToUse = product.product_variants[0]?.finish || undefined;
+        }
         if (finishToUse) details.push(`Terminación: ${finishToUse}`);
         
         if (product.medida) details.push(`Medida: ${product.medida}`);
@@ -425,16 +456,34 @@ export async function POST(request: NextRequest) {
     // Datos de envío
     lines.push('', `*Datos de Envío:*`);
     lines.push(`${bullet} Dirección: 📍 ${order.shipping_address?.street_name} ${order.shipping_address?.street_number}`);
+    
+    // ✅ AGREGAR: Piso/Depto si existe
+    if (order.shipping_address?.apartment) {
+      lines.push(`${bullet} Piso/Depto: ${order.shipping_address.apartment}`);
+    }
+    
     lines.push(`${bullet} Ciudad: ${order.shipping_address?.city_name}, ${order.shipping_address?.state_name}`);
     lines.push(`${bullet} CP: ${order.shipping_address?.zip_code}`);
+    
+    // ✅ AGREGAR: Observaciones si existen
+    if (order.shipping_address?.observations) {
+      lines.push(`${bullet} Observaciones: ${order.shipping_address.observations}`);
+    }
+    
     lines.push('');
     lines.push(`💳 *Método de pago:* Pago al recibir`);
     lines.push('', `${EMOJIS.check} ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`);
 
     // Usar \n para mejor compatibilidad con WhatsApp
     const message = sanitizeForWhatsApp(lines.join('\n'));
-    // Codificar el mensaje para WhatsApp preservando saltos de línea
-    const whatsappMessage = encodeURIComponent(message);
+    
+    // ✅ CORREGIR: Reemplazar \n por %0A directamente (más compatible con WhatsApp Web)
+    // WhatsApp Web necesita %0A explícito para mostrar saltos de línea correctamente
+    // No usar encodeURIComponent porque ya estamos reemplazando \n por %0A
+    const messageWithLineBreaks = message.replace(/\n/g, '%0A');
+    
+    // El mensaje ya tiene %0A, no necesitamos codificar de nuevo
+    const whatsappMessage = messageWithLineBreaks;
     // Número de WhatsApp de Pinteya en formato internacional (solo dígitos)
     const rawPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
     const whatsappNumber = normalizeWhatsAppPhoneNumber(rawPhone);

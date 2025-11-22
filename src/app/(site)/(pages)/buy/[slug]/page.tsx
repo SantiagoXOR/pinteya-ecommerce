@@ -1,16 +1,18 @@
 'use client'
 // Force recompilation - Using direct fetch API instead of getProductBySlug
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getMainImage } from '@/lib/adapters/product-adapter'
-import { SimplePageLoading } from '@/components/ui/simple-page-loading'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
 import { trackAddToCart as trackGAAddToCart } from '@/lib/google-analytics'
 import { ProductGridInfinite } from '@/components/Checkout/ProductGridInfinite'
 import { FloatingCheckoutButton } from '@/components/Checkout/FloatingCheckoutButton'
 import { BuyPageHeader } from '@/components/Checkout/BuyPageHeader'
+import { useAppSelector } from '@/redux/store'
+import { selectCartItems } from '@/redux/features/cart-slice'
+import { Loader2 } from 'lucide-react'
 
 interface ProductData {
   id: number
@@ -24,17 +26,64 @@ export default function BuyProductPage() {
   const params = useParams() as { slug?: string }
   const productSlug = params?.slug ?? ''
   const { addProduct } = useCartUnified()
+  const cartItems = useAppSelector(selectCartItems) // Obtener items del carrito
   const [status, setStatus] = useState<'loading' | 'adding' | 'ready' | 'error'>('loading')
   const [error, setError] = useState<string | null>(null)
   const [productData, setProductData] = useState<ProductData | null>(null)
+  
+  // Ref para rastrear si ya se procesó este slug específico en esta ejecución
+  const processedSlugRef = useRef<string | null>(null)
+
+  // Guardar el slug en sessionStorage para poder volver desde checkout
+  useEffect(() => {
+    if (productSlug && typeof window !== 'undefined') {
+      sessionStorage.setItem('last_buy_page_slug', productSlug)
+    }
+  }, [productSlug])
 
   useEffect(() => {
+    // Si ya se procesó este slug en esta ejecución, no hacer nada
+    if (processedSlugRef.current === productSlug) {
+      return
+    }
+
     if (!productSlug || productSlug.trim() === '') {
       setError('Slug de producto no válido')
       setStatus('error')
       return
     }
 
+    // Verificar en sessionStorage si ya se procesó este slug en esta sesión
+    const storageKey = `processed_slug_${productSlug}`
+    const alreadyProcessed = typeof window !== 'undefined' && sessionStorage.getItem(storageKey) === 'true'
+    
+    if (alreadyProcessed) {
+      console.log('[BuyProductPage] Slug ya procesado en esta sesión, saltando agregado al carrito')
+      // Si ya se procesó, solo mostrar la página intermedia si tenemos los datos
+      // Intentar obtener los datos del producto para mostrar la página
+      const fetchProductData = async () => {
+        try {
+          const response = await fetch(`/api/products/slug/${encodeURIComponent(productSlug)}`)
+          const result = await response.json()
+          if (result?.success && result?.data) {
+            const apiData = result.data
+            setProductData({
+              id: apiData.id,
+              categoryId: apiData.category_id || apiData.category?.id,
+              categorySlug: apiData.category?.slug || apiData.category,
+            })
+            setStatus('ready')
+          }
+        } catch (err) {
+          console.error('Error obteniendo datos del producto:', err)
+        }
+      }
+      fetchProductData()
+      return
+    }
+
+    // Pequeño delay para asegurar que el carrito se haya hidratado desde localStorage
+    // Esto evita que se agregue el producto múltiples veces cuando se recarga la página
     const processPurchase = async () => {
       try {
         setStatus('loading')
@@ -97,27 +146,38 @@ export default function BuyProductPage() {
 
         setStatus('adding')
 
-        // 3. Agregar producto al carrito
-        addProduct(
-          {
-            id: productId,
-            title: productName,
-            name: productName,
-            price: productPrice,
-            discounted_price: discountedPrice,
-            images: images,
-            brand: apiData.brand,
-          },
-          {
-            quantity: 1,
-            attributes: {
-              color: apiData.default_variant?.color_name || apiData.color,
-              medida: apiData.default_variant?.measure || apiData.medida,
-              finish: apiData.default_variant?.finish,
+        // 3. Esperar un momento para que el carrito se haya hidratado desde localStorage
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
+        // Verificar nuevamente si el producto ya está en el carrito después de la hidratación
+        const isAlreadyInCart = cartItems.some(item => String(item.id) === String(productId))
+        
+        if (!isAlreadyInCart) {
+          // Solo agregar si no está ya en el carrito
+          addProduct(
+            {
+              id: productId,
+              title: productName,
+              name: productName,
+              price: productPrice,
+              discounted_price: discountedPrice,
+              images: images,
+              brand: apiData.brand,
             },
-            image: mainImage,
-          }
-        )
+            {
+              quantity: 1,
+              attributes: {
+                color: apiData.default_variant?.color_name || apiData.color,
+                medida: apiData.default_variant?.measure || apiData.medida,
+                finish: apiData.default_variant?.finish,
+              },
+              image: mainImage,
+            }
+          )
+          console.log('[BuyProductPage] Producto agregado al carrito')
+        } else {
+          console.log('[BuyProductPage] Producto ya está en el carrito, saltando agregado')
+        }
 
         // 4. Trackear evento de AddToCart
         try {
@@ -171,6 +231,13 @@ export default function BuyProductPage() {
         setError(err instanceof Error ? err.message : 'Error al procesar la compra')
         setStatus('error')
         
+        // Resetear ref y sessionStorage solo en caso de error para permitir reintento
+        processedSlugRef.current = null
+        if (typeof window !== 'undefined') {
+          const storageKey = `processed_slug_${productSlug}`
+          sessionStorage.removeItem(storageKey)
+        }
+        
         // Redirigir a la página del producto después de 3 segundos
         setTimeout(() => {
           router.push(`/products/${productSlug}`)
@@ -178,8 +245,15 @@ export default function BuyProductPage() {
       }
     }
 
+    // Marcar como procesado ANTES de iniciar el proceso
+    processedSlugRef.current = productSlug
+    if (typeof window !== 'undefined') {
+      const storageKey = `processed_slug_${productSlug}`
+      sessionStorage.setItem(storageKey, 'true')
+    }
+
     processPurchase()
-  }, [productSlug, addProduct, router])
+  }, [productSlug, router, cartItems, addProduct]) // Incluir todas las dependencias necesarias
 
   if (status === 'error') {
     return (
@@ -198,41 +272,57 @@ export default function BuyProductPage() {
     )
   }
 
-  // Mostrar página intermedia con productos
-  if (status === 'ready' && productData) {
-    console.log('[BuyProductPage] Renderizando página intermedia', { status, productData })
-    return (
-      <main className='min-h-screen bg-white pb-24'>
-        {/* Cabecera estilo MercadoLibre */}
-        <BuyPageHeader />
-        
-        {/* Grid de productos */}
-        <div className='max-w-7xl mx-auto px-4 py-6'>
-          <ProductGridInfinite
-            currentProductId={productData.id}
-            currentProductCategoryId={productData.categoryId}
-            categorySlug={productData.categorySlug}
-          />
-        </div>
-        
-        {/* Botón flotante de checkout */}
-        <FloatingCheckoutButton />
-      </main>
-    )
-  }
-
+  // ✅ MODIFICAR: Renderizar siempre el layout de la página, incluso durante loading
+  // Esto mejora el First Paint porque el usuario ve inmediatamente la estructura (header, fondo, etc.)
+  // en lugar de una pantalla de carga completa
   console.log('[BuyProductPage] Estado actual:', { status, productData, error })
 
   return (
-    <SimplePageLoading 
-      message={
-        status === 'loading' 
-          ? 'Cargando producto...' 
-          : status === 'adding' 
-          ? 'Agregando al carrito...' 
-          : 'Preparando productos...'
-      } 
-    />
+    <main className='min-h-screen pb-24 relative' style={{ background: 'linear-gradient(180deg, #ffd549 0%, #fff4c6 50%, #ffffff 100%)', backgroundAttachment: 'fixed' }}>
+      {/* Botón de carrito flotante justo debajo del header */}
+      <FloatingCheckoutButton />
+      
+      {/* Badge flotante con título */}
+      <BuyPageHeader />
+      
+      {/* Spacer para compensar los elementos flotantes */}
+      <div className='h-[146px] md:h-[171px]'></div>
+      
+      {/* Grid de productos o skeleton inline */}
+      <div className='max-w-7xl mx-auto px-4 pb-6 relative z-0'>
+        {status === 'ready' && productData ? (
+          <ProductGridInfinite
+            currentProductId={productData.id}
+            {...(productData.categoryId && { currentProductCategoryId: productData.categoryId })}
+            {...(productData.categorySlug && { categorySlug: productData.categorySlug })}
+          />
+        ) : (
+          // ✅ AGREGAR: Skeleton inline en lugar de pantalla de carga completa
+          // Esto permite que el usuario vea el layout inmediatamente mientras se cargan los datos
+          <div className='flex flex-col items-center justify-center py-20'>
+            <div className='flex flex-col items-center gap-4'>
+              <div className='relative'>
+                <div className='h-16 w-16 rounded-full bg-orange-100 flex items-center justify-center'>
+                  <Loader2 className='h-8 w-8 text-orange-600 animate-spin' />
+                </div>
+              </div>
+              <div className='text-center space-y-1'>
+                <p className='text-lg font-medium text-gray-900'>
+                  {status === 'loading' 
+                    ? 'Cargando producto...' 
+                    : status === 'adding' 
+                    ? 'Agregando al carrito...' 
+                    : 'Preparando productos...'}
+                </p>
+                <p className='text-sm text-gray-500'>
+                  Por favor espera un momento
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   )
 }
 
