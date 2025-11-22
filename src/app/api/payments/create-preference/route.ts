@@ -654,13 +654,48 @@ export async function POST(request: NextRequest) {
       return {
         id: product.id.toString(),
         title: product.name,
-        description: `Producto de pinturería - ${product.category?.name || 'General'}`,
+        // ✅ CORREGIR: Usar descripción más específica de Pinteya
+        description: `Pinteya - ${product.name}${product.category?.name ? ` (${product.category.name})` : ''}`,
         picture_url: product.images?.previews?.[0] || '',
         category_id: product.category?.slug || 'general',
         quantity: orderItem.quantity,
         currency_id: 'ARS',
         unit_price: Math.round(adjustedPrice * 100) / 100, // Precio con envío incluido
       }
+    })
+
+    // ✅ CORREGIR: Ajustar el último producto para que el total coincida exactamente
+    // Esto corrige cualquier diferencia de redondeo al distribuir el envío proporcionalmente
+    const mercadoPagoTotal = mercadoPagoItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+    const difference = totalAmount - mercadoPagoTotal
+    
+    if (Math.abs(difference) > 0.01 && mercadoPagoItems.length > 0) {
+      // Ajustar el último producto para compensar la diferencia
+      const lastItem = mercadoPagoItems[mercadoPagoItems.length - 1]
+      const adjustment = difference / lastItem.quantity
+      lastItem.unit_price = Math.round((lastItem.unit_price + adjustment) * 100) / 100
+      
+      console.log('[MERCADOPAGO] Ajuste de total aplicado:', {
+        diferenciaOriginal: difference,
+        ajustePorUnidad: adjustment,
+        nuevoPrecioUnitario: lastItem.unit_price,
+        nuevoTotal: mercadoPagoItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0),
+        totalEsperado: totalAmount
+      })
+    }
+
+    // ✅ DEBUG: Verificar que el total coincida exactamente
+    const finalMercadoPagoTotal = mercadoPagoItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+    console.log('[MERCADOPAGO] Verificación de totales:', {
+      frontendTotal: totalAmount,
+      mercadoPagoTotal: finalMercadoPagoTotal,
+      diferencia: Math.abs(totalAmount - finalMercadoPagoTotal),
+      items: mercadoPagoItems.map(item => ({
+        title: item.title,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        subtotal: item.unit_price * item.quantity
+      }))
     })
 
     // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
