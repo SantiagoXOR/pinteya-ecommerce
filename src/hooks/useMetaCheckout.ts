@@ -40,7 +40,7 @@ const initialFormData: MetaCheckoutState['formData'] = {
     apartment: '',
     observations: '',
   },
-  paymentMethod: 'mercadopago',
+  paymentMethod: 'cash',
 }
 
 export const useMetaCheckout = () => {

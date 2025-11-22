@@ -118,6 +118,20 @@ export const MetaCheckoutWizard: React.FC = () => {
     })
   }, [state.currentStep, currentStepIndex])
 
+  // Scroll al top cuando cambia el paso (especialmente importante para el paso de pago)
+  useEffect(() => {
+    // Para el paso de pago, hacer scroll inmediato sin delay
+    if (state.currentStep === 'payment') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      // Para otros pasos, pequeño delay para asegurar que el DOM se haya actualizado
+      const scrollTimer = setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 100)
+      return () => clearTimeout(scrollTimer)
+    }
+  }, [state.currentStep])
+
   // Manejar redirección a MercadoPago cuando el checkout principal esté listo
   useEffect(() => {
     if (checkoutStep === 'redirect' && initPoint) {

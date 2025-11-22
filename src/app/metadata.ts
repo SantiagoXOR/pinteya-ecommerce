@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     siteName: 'Pinteya E-commerce',
     images: [
       {
-        url: '/images/logo/LOGO POSITIVO.svg',
-        width: 620,
-        height: 333,
+        url: '/images/quickview/quick-view-01.png',
+        width: 1200,
+        height: 630,
         alt: 'Pinteya - Tu Pinturería Online',
       },
     ],
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
     description:
       'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad y herramientas profesionales.',
-    images: ['/images/logo/LOGO POSITIVO.svg'],
+    images: ['/images/quickview/quick-view-01.png'],
   },
   robots: {
     index: true,
