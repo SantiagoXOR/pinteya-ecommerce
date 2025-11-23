@@ -711,14 +711,20 @@ const ShippingStep: React.FC<{
         <AddressMapSelectorAdvanced
           value={formData.streetAddress}
           onChange={(address, coordinates) => {
-            // Resetear validación cuando se cambia la dirección manualmente
-            onUpdate({ 
-              streetAddress: address,
-              isValidated: false
-            })
-            // Opcional: guardar coordenadas si las necesitas
+            // Si viene con coordenadas, es resultado de una validación automática
+            // No resetear isValidated en ese caso (onValidationChange ya lo maneja)
+            // Solo resetear cuando el usuario cambia manualmente (sin coordenadas)
             if (coordinates) {
+              // Es resultado de validación, solo actualizar la dirección
+              // La validación se actualizará en onValidationChange que se llama después
+              onUpdate({ streetAddress: address })
               console.log('Coordenadas seleccionadas:', coordinates)
+            } else {
+              // Cambio manual del usuario, resetear validación
+              onUpdate({ 
+                streetAddress: address,
+                isValidated: false
+              })
             }
           }}
           onValidationChange={(isValid, error) => {
