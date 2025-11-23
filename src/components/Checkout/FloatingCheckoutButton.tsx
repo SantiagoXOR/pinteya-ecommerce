@@ -12,6 +12,7 @@ export const FloatingCheckoutButton: React.FC = () => {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [lastProductInfo, setLastProductInfo] = useState<{ brand?: string; name: string; image?: string } | null>(null)
+  const [imageError, setImageError] = useState(false)
   const cartItems = useAppSelector(selectCartItems)
   const totalPrice = useAppSelector(selectTotalPrice)
 
@@ -59,6 +60,7 @@ export const FloatingCheckoutButton: React.FC = () => {
       }
 
       fetchProductBrand()
+      setImageError(false) // Resetear error al cambiar de producto
     }
   }, [cartItems])
 
@@ -117,7 +119,7 @@ export const FloatingCheckoutButton: React.FC = () => {
         {/* Lado izquierdo: Imagen + Marca y título */}
         <div className='flex items-center gap-3 flex-1 min-w-0'>
           {/* Imagen del producto */}
-          {lastProductInfo?.image && (
+          {lastProductInfo?.image && !imageError && (
             <div className='relative w-12 h-12 md:w-14 md:h-14 rounded-md overflow-hidden border-2 border-white/20 flex-shrink-0 bg-white'>
               <Image
                 src={lastProductInfo.image}
@@ -125,6 +127,8 @@ export const FloatingCheckoutButton: React.FC = () => {
                 fill
                 className='object-cover'
                 sizes='56px'
+                onError={() => setImageError(true)}
+                unoptimized={!lastProductInfo.image.startsWith('/')}
               />
             </div>
           )}

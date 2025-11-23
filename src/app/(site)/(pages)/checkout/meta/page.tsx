@@ -3,8 +3,9 @@ import React, { Suspense } from 'react'
 import dynamic from 'next/dynamic'
 
 // ⚡ PERFORMANCE: Lazy load del componente pesado con loading state
+// ✅ CORRECCIÓN: Manejar correctamente el named export para evitar React error #306
 const MetaCheckoutWizard = dynamic(
-  () => import('@/components/Checkout/MetaCheckoutFlow/MetaCheckoutWizard'),
+  () => import('@/components/Checkout/MetaCheckoutFlow/MetaCheckoutWizard').then(mod => ({ default: mod.MetaCheckoutWizard })),
   {
     loading: () => (
       <div className='min-h-screen flex items-center justify-center'>
