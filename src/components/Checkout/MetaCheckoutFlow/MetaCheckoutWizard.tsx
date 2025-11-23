@@ -291,6 +291,7 @@ export const MetaCheckoutWizard: React.FC = () => {
                       streetAddress: state.formData.shipping.streetAddress,
                       ...(state.formData.shipping.apartment && { apartment: state.formData.shipping.apartment }),
                       ...(state.formData.shipping.observations && { observations: state.formData.shipping.observations }),
+                      isValidated: state.formData.shipping.isValidated,
                     }}
                     errors={errors}
                     onUpdate={updateShipping}
@@ -692,6 +693,7 @@ const ShippingStep: React.FC<{
     streetAddress: string
     apartment?: string
     observations?: string
+    isValidated?: boolean
   }
   errors: Record<string, string>
   onUpdate: (data: Partial<any>) => void
@@ -709,18 +711,23 @@ const ShippingStep: React.FC<{
         <AddressMapSelectorAdvanced
           value={formData.streetAddress}
           onChange={(address, coordinates) => {
-            onUpdate({ streetAddress: address })
+            // Resetear validación cuando se cambia la dirección manualmente
+            onUpdate({ 
+              streetAddress: address,
+              isValidated: false
+            })
             // Opcional: guardar coordenadas si las necesitas
             if (coordinates) {
               console.log('Coordenadas seleccionadas:', coordinates)
             }
           }}
           onValidationChange={(isValid, error) => {
+            // Actualizar el estado de validación cuando cambie
+            onUpdate({ 
+              streetAddress: formData.streetAddress,
+              isValidated: isValid
+            })
             // El error se maneja internamente en AddressMapSelectorAdvanced
-            if (!isValid && error) {
-              // Actualizar error si es necesario
-              onUpdate({ streetAddress: formData.streetAddress })
-            }
           }}
           className='text-base transition-all duration-200'
           required

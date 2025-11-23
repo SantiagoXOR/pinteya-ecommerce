@@ -1,6 +1,10 @@
 'use client'
 // Force recompilation - Using direct fetch API instead of getProductBySlug
 
+// ⚡ PERFORMANCE: Configuración de página dinámica
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
+
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useCartUnified } from '@/hooks/useCartUnified'
@@ -60,10 +64,15 @@ export default function BuyProductPage() {
     if (alreadyProcessed) {
       console.log('[BuyProductPage] Slug ya procesado en esta sesión, saltando agregado al carrito')
       // Si ya se procesó, solo mostrar la página intermedia si tenemos los datos
-      // Intentar obtener los datos del producto para mostrar la página
+      // ⚡ PERFORMANCE: Prefetch de datos del producto con mejor caching
       const fetchProductData = async () => {
         try {
-          const response = await fetch(`/api/products/slug/${encodeURIComponent(productSlug)}`)
+          const response = await fetch(`/api/products/slug/${encodeURIComponent(productSlug)}`, {
+            // Agregar headers de cache para mejor performance
+            headers: {
+              'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+            },
+          })
           const result = await response.json()
           if (result?.success && result?.data) {
             const apiData = result.data
@@ -89,10 +98,12 @@ export default function BuyProductPage() {
         setStatus('loading')
         
         // 1. Obtener producto por slug directamente desde la API para evitar problemas de bundling
+        // ⚡ PERFORMANCE: Agregar headers de cache para mejor performance
         const response = await fetch(`/api/products/slug/${encodeURIComponent(productSlug)}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
           },
         })
 

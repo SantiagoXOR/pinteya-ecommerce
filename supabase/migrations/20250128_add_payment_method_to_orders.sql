@@ -56,3 +56,5 @@ COMMENT ON COLUMN public.orders.payment_method IS 'Método de pago utilizado (ca
 -- ===================================
 
 
+
+

@@ -178,10 +178,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       message: 'Producto obtenido exitosamente',
     }
 
-    // Agregar headers de caché para optimización
+    // ⚡ PERFORMANCE: Headers de caché optimizados (aumentado de 60 a 120 segundos)
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
       },
     })
   } catch (error: any) {

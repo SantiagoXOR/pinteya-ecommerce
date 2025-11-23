@@ -404,6 +404,26 @@ const nextConfig = {
           },
         ],
       },
+      // ⚡ PERFORMANCE: Headers para fuentes críticas
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // ⚡ PERFORMANCE: Headers para imágenes estáticas
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
     ]
   },
 }

@@ -116,7 +116,8 @@ const HeroCarousel = () => {
                   src={slide.image}
                   alt={slide.alt}
                   fill
-                  priority={index === 1} // La primera slide real está en índice 1
+                  priority={index === 1} // ⚡ CRITICAL: La primera slide real está en índice 1 - Prioridad para LCP
+                  quality={85} // ⚡ PERFORMANCE: Calidad optimizada
                   className="object-contain"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
                 />

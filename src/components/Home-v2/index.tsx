@@ -8,14 +8,93 @@ import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import type { PromoBannersProps } from './PromoBanners'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
-const HeroCarousel = dynamic(() => import('./HeroCarousel/index'))
-const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePillsWithSearch'))
-const PromoBanners = dynamic<PromoBannersProps>(() => import('./PromoBanners/index'))
-const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'))
-const TrendingSearches = dynamic(() => import('./TrendingSearches/index'))
-const CombosSection = dynamic(() => import('./CombosSection/index'))
-const BestSeller = dynamic(() => import('./BestSeller/index'))
-const Testimonials = dynamic(() => import('./Testimonials/index'))
+// ⚡ PERFORMANCE: Loading states para componentes críticos
+const HeroCarousel = dynamic(() => import('./HeroCarousel/index'), {
+  loading: () => (
+    <div className='w-full h-[320px] md:h-[500px] bg-gradient-to-r from-orange-500 to-orange-600 animate-pulse' />
+  ),
+})
+
+const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePillsWithSearch'), {
+  loading: () => (
+    <div className='flex gap-2 px-4 overflow-x-auto'>
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className='h-8 w-24 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
+      ))}
+    </div>
+  ),
+})
+
+const PromoBanners = dynamic<PromoBannersProps>(() => import('./PromoBanners/index'), {
+  loading: () => (
+    <div className='w-full h-32 md:h-48 bg-gray-200 animate-pulse rounded-lg mx-4' />
+  ),
+})
+
+const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'), {
+  loading: () => (
+    <div className='px-4'>
+      <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='flex gap-4 overflow-x-auto'>
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className='w-48 h-64 bg-gray-200 rounded-lg animate-pulse flex-shrink-0' />
+        ))}
+      </div>
+    </div>
+  ),
+})
+
+const TrendingSearches = dynamic(() => import('./TrendingSearches/index'), {
+  loading: () => (
+    <div className='px-4'>
+      <div className='h-8 w-40 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='flex flex-wrap gap-2'>
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className='h-8 w-24 bg-gray-200 rounded-full animate-pulse' />
+        ))}
+      </div>
+    </div>
+  ),
+})
+
+const CombosSection = dynamic(() => import('./CombosSection/index'), {
+  loading: () => (
+    <div className='px-4'>
+      <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className='h-64 bg-gray-200 rounded-lg animate-pulse' />
+        ))}
+      </div>
+    </div>
+  ),
+})
+
+const BestSeller = dynamic(() => import('./BestSeller/index'), {
+  loading: () => (
+    <div className='px-4'>
+      <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className='h-64 bg-gray-200 rounded-lg animate-pulse' />
+        ))}
+      </div>
+    </div>
+  ),
+})
+
+const Testimonials = dynamic(() => import('./Testimonials/index'), {
+  loading: () => (
+    <div className='px-4'>
+      <div className='h-8 w-40 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='flex gap-4 overflow-x-auto'>
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className='w-80 h-48 bg-gray-200 rounded-lg animate-pulse flex-shrink-0' />
+        ))}
+      </div>
+    </div>
+  ),
+})
 // Componentes below-fold con lazy loading
 const NewArrivals = dynamic(() => import('./NewArrivals/index'), {
   loading: () => (

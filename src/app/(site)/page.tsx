@@ -36,6 +36,9 @@ export const metadata: Metadata = {
   },
 }
 
+// ⚡ PERFORMANCE: ISR - Revalidar cada 60 segundos para mejor cache
+export const revalidate = 60
+
 export default function HomePage() {
   return <HomeV2 />
 }

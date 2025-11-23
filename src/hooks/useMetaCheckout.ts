@@ -20,6 +20,7 @@ export interface MetaCheckoutState {
       streetAddress: string
       apartment?: string
       observations?: string
+      isValidated?: boolean // Estado de validación de dirección en Córdoba Capital
     }
     paymentMethod: 'mercadopago' | 'cash'
   }
@@ -133,6 +134,7 @@ export const useMetaCheckout = () => {
                     streetAddress: checkoutFormData.billing.streetAddress,
                     apartment: checkoutFormData.billing.apartment || '',
                     observations: checkoutFormData.billing.observations || '',
+                    isValidated: false, // Resetear validación al sincronizar
                   },
         },
       }))
@@ -263,7 +265,9 @@ export const useMetaCheckout = () => {
         )
 
       case 'shipping':
-        return state.formData.shipping.streetAddress?.trim() !== ''
+        // Verificar que la dirección no esté vacía Y que esté validada en Córdoba Capital
+        return state.formData.shipping.streetAddress?.trim() !== '' && 
+               state.formData.shipping.isValidated === true
 
       case 'payment':
         return !!state.formData.paymentMethod
