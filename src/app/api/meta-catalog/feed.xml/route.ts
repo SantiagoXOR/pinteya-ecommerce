@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     const fullBaseUrl = `${protocol}://${domain}`
 
     // Obtener todos los productos activos con sus categorías
-    const { data: products, error } = await supabase
+    const { data: allProducts, error } = await supabase
       .from('products')
       .select(`
         id,
@@ -84,9 +84,10 @@ export async function GET(request: NextRequest) {
         stock,
         brand,
         images,
+        is_active,
+        exclude_from_meta_feed,
         category:categories(id, name, slug)
       `)
-      .eq('is_active', true)
       .order('updated_at', { ascending: false })
       .limit(10000) // Límite razonable para el feed
 
@@ -97,6 +98,11 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Filtrar productos: solo activos Y que NO estén excluidos del feed de Meta
+    const products = (allProducts || []).filter((p: any) => {
+      return p.is_active === true && (p.exclude_from_meta_feed !== true)
+    })
 
     if (!products || products.length === 0) {
       return NextResponse.json(
@@ -113,62 +119,165 @@ export async function GET(request: NextRequest) {
     xml += `    <link>${fullBaseUrl}</link>\n`
     xml += `    <description>Catálogo completo de productos de Pinteya</description>\n`
 
-    // Obtener variantes por defecto para cada producto (en batch)
+    // Obtener TODAS las variantes activas para cada producto (en batch)
     const productIds = products.map((p: any) => p.id)
-    const { data: variants } = await supabase
+    const { data: variants, error: variantsError } = await supabase
       .from('product_variants')
-      .select('product_id, price_list, price_sale, stock, image_url, is_default')
+      .select('id, product_id, price_list, price_sale, stock, image_url, is_default, is_active, color_name, measure, finish, aikon_id, variant_slug')
       .in('product_id', productIds)
-      .eq('is_active', true)
-      .eq('is_default', true)
-
-    // Crear mapa de variantes por producto
-    const variantsMap = new Map()
-    if (variants) {
-      variants.forEach((v: any) => {
-        variantsMap.set(v.product_id, v)
+    
+    if (variantsError) {
+      console.error('Error obteniendo variantes para feed:', variantsError)
+    }
+    
+    // Filtrar variantes activas en memoria (más confiable que el filtro de Supabase con tipos)
+    const activeVariants = (variants || []).filter((v: any) => v.is_active === true)
+      .sort((a: any, b: any) => {
+        // Ordenar por is_default primero (true primero), luego por id
+        if (a.is_default !== b.is_default) {
+          return b.is_default ? 1 : -1
+        }
+        return a.id - b.id
       })
+
+    // Crear mapa de productos por ID para acceso rápido
+    const productsMap = new Map()
+    products.forEach((p: any) => {
+      productsMap.set(p.id, p)
+    })
+
+    // Crear mapa de variantes agrupadas por producto
+    const variantsByProduct = new Map()
+    activeVariants.forEach((v: any) => {
+      if (!variantsByProduct.has(v.product_id)) {
+        variantsByProduct.set(v.product_id, [])
+      }
+      variantsByProduct.get(v.product_id).push(v)
+    })
+
+    // Función para construir título de variante
+    const buildVariantTitle = (product: any, variant: any | null): string => {
+      const baseName = product.name || 'Producto'
+      if (!variant) return baseName
+
+      const parts: string[] = [baseName]
+      if (variant.color_name) parts.push(variant.color_name)
+      if (variant.measure) parts.push(variant.measure)
+      if (variant.finish) parts.push(variant.finish)
+
+      return parts.join(' - ')
     }
 
-    // Agregar cada producto al feed
-    products.forEach((product: any) => {
-      const productSlug = product.slug || `product-${product.id}`
-      // URL directa al checkout: agregar producto al carrito y redirigir
-      const productUrl = `${fullBaseUrl}/buy/${productSlug}`
-      const defaultVariant = variantsMap.get(product.id)
+    // Función para construir descripción de variante
+    const buildVariantDescription = (product: any, variant: any | null): string => {
+      let description = product.description || product.name || ''
       
-      // Usar imagen de variante si existe, sino del producto
-      const productWithVariant = { ...product, default_variant: defaultVariant }
-      const imageUrl = getFullImageUrl(getMainProductImage(productWithVariant), fullBaseUrl)
-      
-      const price = defaultVariant?.price_sale || product.discounted_price || defaultVariant?.price_list || product.price || 0
-      const availability = getAvailability(defaultVariant?.stock ?? product.stock)
-      const category = product.category?.name || 'General'
-      const brand = product.brand || 'Pinteya'
-      const description = product.description || product.name || ''
-
-      xml += `    <item>\n`
-      xml += `      <g:id>${product.id}</g:id>\n`
-      xml += `      <g:title>${escapeXml(product.name)}</g:title>\n`
-      xml += `      <g:description>${escapeXml(description)}</g:description>\n`
-      xml += `      <g:link>${productUrl}</g:link>\n`
-      
-      // g:image_link es obligatorio, usar placeholder si no hay imagen
-      const finalImageUrl = imageUrl || `${fullBaseUrl}/images/products/placeholder.svg`
-      xml += `      <g:image_link>${finalImageUrl}</g:image_link>\n`
-      
-      xml += `      <g:price>${price.toFixed(2)} ARS</g:price>\n`
-      xml += `      <g:availability>${availability}</g:availability>\n`
-      xml += `      <g:brand>${escapeXml(brand)}</g:brand>\n`
-      xml += `      <g:condition>new</g:condition>\n`
-      xml += `      <g:google_product_category>${escapeXml(category)}</g:google_product_category>\n`
-      
-      // Agregar categoría personalizada si existe
-      if (product.category?.name) {
-        xml += `      <g:product_type>${escapeXml(category)}</g:product_type>\n`
+      if (variant) {
+        const variantDetails: string[] = []
+        if (variant.color_name) variantDetails.push(`Color: ${variant.color_name}`)
+        if (variant.measure) variantDetails.push(`Medida: ${variant.measure}`)
+        if (variant.finish) variantDetails.push(`Terminación: ${variant.finish}`)
+        
+        if (variantDetails.length > 0) {
+          description += ` | ${variantDetails.join(', ')}`
+        }
       }
+
+      return description
+    }
+
+    // Agregar cada variante como producto separado al feed
+    products.forEach((product: any) => {
+      const productVariants = variantsByProduct.get(product.id) || []
       
-      xml += `    </item>\n`
+      // Si el producto tiene variantes, crear un item por cada variante
+      if (productVariants.length > 0) {
+        productVariants.forEach((variant: any) => {
+          const variantSlug = variant.variant_slug || product.slug || `product-${product.id}`
+          // URL con variante específica
+          const productUrl = `${fullBaseUrl}/buy/${variantSlug}`
+          
+          // Usar imagen de variante si existe, sino del producto
+          const productWithVariant = { ...product, default_variant: variant }
+          const imageUrl = getFullImageUrl(getMainProductImage(productWithVariant), fullBaseUrl)
+          
+          const price = variant.price_sale || variant.price_list || product.discounted_price || product.price || 0
+          const availability = getAvailability(variant.stock ?? product.stock)
+          const category = product.category?.name || 'General'
+          const brand = product.brand || 'Pinteya'
+          
+          const variantTitle = buildVariantTitle(product, variant)
+          const variantDescription = buildVariantDescription(product, variant)
+          
+          // Usar ID de variante como identificador único para el feed
+          const itemId = `variant-${variant.id}`
+
+          xml += `    <item>\n`
+          xml += `      <g:id>${itemId}</g:id>\n`
+          xml += `      <g:title>${escapeXml(variantTitle)}</g:title>\n`
+          xml += `      <g:description>${escapeXml(variantDescription)}</g:description>\n`
+          xml += `      <g:link>${productUrl}</g:link>\n`
+          
+          // g:image_link es obligatorio, usar placeholder si no hay imagen
+          const finalImageUrl = imageUrl || `${fullBaseUrl}/images/products/placeholder.svg`
+          xml += `      <g:image_link>${finalImageUrl}</g:image_link>\n`
+          
+          xml += `      <g:price>${price.toFixed(2)} ARS</g:price>\n`
+          xml += `      <g:availability>${availability}</g:availability>\n`
+          xml += `      <g:brand>${escapeXml(brand)}</g:brand>\n`
+          xml += `      <g:condition>new</g:condition>\n`
+          xml += `      <g:google_product_category>${escapeXml(category)}</g:google_product_category>\n`
+          
+          // Agregar categoría personalizada si existe
+          if (product.category?.name) {
+            xml += `      <g:product_type>${escapeXml(category)}</g:product_type>\n`
+          }
+          
+          // Agregar información adicional de la variante si está disponible
+          if (variant.color_name) {
+            xml += `      <g:color>${escapeXml(variant.color_name)}</g:color>\n`
+          }
+          
+          // Agregar SKU si está disponible
+          if (variant.aikon_id) {
+            xml += `      <g:mpn>${escapeXml(variant.aikon_id)}</g:mpn>\n`
+          }
+          
+          xml += `    </item>\n`
+        })
+      } else {
+        // Si el producto no tiene variantes, crear un item con el producto base
+        const productSlug = product.slug || `product-${product.id}`
+        const productUrl = `${fullBaseUrl}/buy/${productSlug}`
+        
+        const imageUrl = getFullImageUrl(getMainProductImage(product), fullBaseUrl)
+        const price = product.discounted_price || product.price || 0
+        const availability = getAvailability(product.stock)
+        const category = product.category?.name || 'General'
+        const brand = product.brand || 'Pinteya'
+        const description = product.description || product.name || ''
+
+        xml += `    <item>\n`
+        xml += `      <g:id>product-${product.id}</g:id>\n`
+        xml += `      <g:title>${escapeXml(product.name)}</g:title>\n`
+        xml += `      <g:description>${escapeXml(description)}</g:description>\n`
+        xml += `      <g:link>${productUrl}</g:link>\n`
+        
+        const finalImageUrl = imageUrl || `${fullBaseUrl}/images/products/placeholder.svg`
+        xml += `      <g:image_link>${finalImageUrl}</g:image_link>\n`
+        
+        xml += `      <g:price>${price.toFixed(2)} ARS</g:price>\n`
+        xml += `      <g:availability>${availability}</g:availability>\n`
+        xml += `      <g:brand>${escapeXml(brand)}</g:brand>\n`
+        xml += `      <g:condition>new</g:condition>\n`
+        xml += `      <g:google_product_category>${escapeXml(category)}</g:google_product_category>\n`
+        
+        if (product.category?.name) {
+          xml += `      <g:product_type>${escapeXml(category)}</g:product_type>\n`
+        }
+        
+        xml += `    </item>\n`
+      }
     })
 
     xml += `  </channel>\n`
