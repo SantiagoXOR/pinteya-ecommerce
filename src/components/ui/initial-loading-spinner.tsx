@@ -102,10 +102,13 @@ export function InitialLoadingSpinner({
     <div
       className={cn(
         'fixed inset-0 z-[10000] flex items-center justify-center',
-        'bg-gradient-to-br from-bright-sun-100 via-white to-bright-sun-50',
         'transition-opacity duration-300',
         !isVisible && 'opacity-0 pointer-events-none'
       )}
+      style={{
+        background: 'linear-gradient(180deg, #ffd549 0%, #fff4c6 50%, #ffffff 100%)',
+        backgroundAttachment: 'fixed',
+      }}
       aria-label="Cargando Pinteya"
       role="status"
       data-z-index="10000"
