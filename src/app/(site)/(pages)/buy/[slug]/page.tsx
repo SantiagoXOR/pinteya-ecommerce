@@ -208,9 +208,14 @@ export default function BuyProductPage() {
           )
 
           // Meta Pixel
+          // ✅ CORREGIDO: Si hay una variante por defecto, usar su ID para que coincida con el feed XML
+          const contentIdForMeta = apiData.default_variant?.id
+            ? String(apiData.default_variant.id)
+            : String(productId)
+          
           trackMetaAddToCart(
             productName,
-            String(productId),
+            contentIdForMeta,
             category,
             productPrice,
             'ARS',

@@ -147,12 +147,18 @@ export async function GET(request: NextRequest) {
     })
 
     // Crear mapa de variantes agrupadas por producto
+    // ✅ Solo incluir variantes de productos que NO están excluidos del feed
     const variantsByProduct = new Map()
     activeVariants.forEach((v: any) => {
-      if (!variantsByProduct.has(v.product_id)) {
-        variantsByProduct.set(v.product_id, [])
+      const product = productsMap.get(v.product_id)
+      
+      // Verificar que el producto padre NO esté excluido del feed
+      if (product && product.exclude_from_meta_feed !== true) {
+        if (!variantsByProduct.has(v.product_id)) {
+          variantsByProduct.set(v.product_id, [])
+        }
+        variantsByProduct.get(v.product_id).push(v)
       }
-      variantsByProduct.get(v.product_id).push(v)
     })
 
     // Función para construir título de variante
@@ -193,9 +199,10 @@ export async function GET(request: NextRequest) {
       // Si el producto tiene variantes, crear un item por cada variante
       if (productVariants.length > 0) {
         productVariants.forEach((variant: any) => {
-          const variantSlug = variant.variant_slug || product.slug || `product-${product.id}`
-          // URL con variante específica
-          const productUrl = `${fullBaseUrl}/buy/${variantSlug}`
+          // ✅ CORREGIDO: Usar siempre el slug del producto base, no el variant_slug
+          // La ruta /buy/[slug] busca por el slug del producto en la tabla products, no por variant_slug
+          const productSlug = product.slug || `product-${product.id}`
+          const productUrl = `${fullBaseUrl}/buy/${productSlug}`
           
           // Usar imagen de variante si existe, sino del producto
           const productWithVariant = { ...product, default_variant: variant }
@@ -209,8 +216,9 @@ export async function GET(request: NextRequest) {
           const variantTitle = buildVariantTitle(product, variant)
           const variantDescription = buildVariantDescription(product, variant)
           
-          // Usar ID de variante como identificador único para el feed
-          const itemId = `variant-${variant.id}`
+          // ✅ CORREGIDO: Usar solo el ID numérico de la variante (sin prefijo)
+          // Meta requiere IDs sin símbolos adicionales para que coincidan con los eventos
+          const itemId = String(variant.id)
 
           xml += `    <item>\n`
           xml += `      <g:id>${itemId}</g:id>\n`
@@ -258,7 +266,7 @@ export async function GET(request: NextRequest) {
         const description = product.description || product.name || ''
 
         xml += `    <item>\n`
-        xml += `      <g:id>product-${product.id}</g:id>\n`
+        xml += `      <g:id>${product.id}</g:id>\n`
         xml += `      <g:title>${escapeXml(product.name)}</g:title>\n`
         xml += `      <g:description>${escapeXml(description)}</g:description>\n`
         xml += `      <g:link>${productUrl}</g:link>\n`

@@ -54,3 +54,4 @@ OR LOWER(TRIM(brand)) LIKE '%rapifix%';
 COMMENT ON COLUMN products.exclude_from_meta_feed IS 
     'Campo para excluir productos del feed XML de Meta Commerce Manager. Actualizado automáticamente para marcas: +COLOR, El Galgo, Duxol, Genérico, Rapifix';
 
+

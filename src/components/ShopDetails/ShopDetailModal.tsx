@@ -2370,9 +2370,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         )
 
         // Meta Pixel
+        // ✅ CORREGIDO: Si hay una variante seleccionada, usar su ID para que coincida con el feed XML
+        const contentIdForMeta = (productToAdd as any)?.variant_id 
+          ? String((productToAdd as any).variant_id)
+          : String(productToAdd.id)
+        
         trackMetaAddToCart(
           productName,
-          String(productToAdd.id),
+          contentIdForMeta,
           category,
           productPrice * quantity,
           'ARS'

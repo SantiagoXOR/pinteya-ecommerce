@@ -30,3 +30,4 @@ WHERE is_active = true AND exclude_from_meta_feed = false;
 COMMENT ON TABLE products IS 
     'Tabla de productos - use exclude_from_meta_feed para controlar visibilidad en feed de Meta';
 
+

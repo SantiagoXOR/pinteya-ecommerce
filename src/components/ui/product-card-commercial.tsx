@@ -962,9 +962,14 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             )
 
             // Meta Pixel
+            // ✅ CORREGIDO: Si hay una variante seleccionada, usar su ID para que coincida con el feed XML
+            const contentIdForMeta = currentVariant?.id
+              ? String(currentVariant.id)
+              : String(productData.id)
+            
             trackMetaAddToCart(
               productData.name,
-              String(productData.id),
+              contentIdForMeta,
               category,
               productPrice,
               'ARS'
