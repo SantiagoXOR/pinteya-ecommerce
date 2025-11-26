@@ -3,7 +3,7 @@
 import React, { useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Truck, Percent, Gift, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, Percent } from 'lucide-react'
 
 export interface PromoBannersProps {
   bannerId?: number // Si se proporciona, muestra solo ese banner
@@ -11,16 +11,6 @@ export interface PromoBannersProps {
 
 const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 400
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      })
-    }
-  }
 
   const banners = [
     {
@@ -75,26 +65,8 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
     : banners
 
   return (
-    <section className='px-4'>
+    <section className='px-4 sm:px-4 lg:px-8'>
       <div className='max-w-7xl mx-auto relative'>
-        {/* Botones de navegación minimalistas */}
-        <div className='hidden md:flex gap-2 absolute right-0 -top-10 z-10'>
-          <button
-            onClick={() => scroll('left')}
-            className='text-gray-400 hover:text-blaze-orange-600 transition-colors p-1'
-            aria-label='Anterior'
-          >
-            <ChevronLeft className='w-5 h-5' />
-          </button>
-          <button
-            onClick={() => scroll('right')}
-            className='text-gray-400 hover:text-blaze-orange-600 transition-colors p-1'
-            aria-label='Siguiente'
-          >
-            <ChevronRight className='w-5 h-5' />
-          </button>
-        </div>
-
         {/* Contenedor con scroll horizontal */}
         <div
           ref={scrollRef}
@@ -109,7 +81,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
               key={banner.id}
               href={banner.ctaUrl}
               onClick={(e) => handleBannerClick(e, banner.ctaUrl)}
-              className='group block relative overflow-hidden rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 flex-shrink-0 min-w-full md:min-w-[400px]'
+              className='group block relative overflow-hidden rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 flex-shrink-0 w-full md:w-full'
             >
               {/* DISEÑO COMPACTO PARA BANNERS 1 Y 2 */}
               {isCompactBanner ? (

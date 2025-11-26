@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useSwipeGestures } from '@/hooks/useSwipeGestures'
 
 interface HeroSlide {
   id: string
@@ -94,60 +95,71 @@ const HeroCarousel = () => {
     }
   }, [currentIndex, isTransitioning, extendedSlides.length])
 
+  // Configurar gestos táctiles para mobile
+  const swipeRef = useSwipeGestures({
+    onSwipeLeft: goToNext, // Deslizar izquierda = siguiente slide
+    onSwipeRight: goToPrevious, // Deslizar derecha = slide anterior
+    threshold: 50, // Distancia mínima de 50px para detectar swipe
+    preventDefaultTouchmove: false, // No interferir con scroll vertical
+  })
+
   return (
     <div className="relative w-full">
       {/* Contenedor del carrusel con aspect ratio preservado */}
-      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
+      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3 relative">
         <div 
-          className="relative w-full overflow-hidden"
+          className="relative w-full overflow-visible"
           style={{ aspectRatio: '2.77' }}
         >
-          {/* Slides */}
-          <div 
-            className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-          >
-            {extendedSlides.map((slide, index) => (
-              <div
-                key={`${slide.id}-${index}`}
-                className="min-w-full h-full flex-shrink-0 relative"
-              >
-                <Image
-                  src={slide.image}
-                  alt={slide.alt}
-                  fill
-                  priority={index === 1} // ⚡ CRITICAL: La primera slide real está en índice 1 - Prioridad para LCP
-                  quality={85} // ⚡ PERFORMANCE: Calidad optimizada
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-                />
-              </div>
-            ))}
+          {/* Contenedor interno con overflow-hidden para las slides */}
+          <div ref={swipeRef as React.RefObject<HTMLDivElement>} className="relative w-full h-full overflow-hidden">
+            {/* Slides */}
+            <div 
+              className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
+              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            >
+              {extendedSlides.map((slide, index) => (
+                <div
+                  key={`${slide.id}-${index}`}
+                  className="min-w-full h-full flex-shrink-0 relative"
+                >
+                  <Image
+                    src={slide.image}
+                    alt={slide.alt}
+                    fill
+                    priority={index === 1} // ⚡ CRITICAL: La primera slide real está en índice 1 - Prioridad para LCP
+                    quality={85} // ⚡ PERFORMANCE: Calidad optimizada
+                    className="object-contain"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Botones de navegación - Solo en desktop */}
+          {/* Botones de navegación - Solo en desktop, mitad y mitad al borde del banner */}
           <button
             onClick={goToPrevious}
-            className="hidden md:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-10 
-                     bg-white/90 hover:bg-white text-blaze-orange-600 
-                     p-2 lg:p-3 rounded-full shadow-lg hover:shadow-xl
+            className="hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 
+                     w-10 h-10 rounded-full bg-white/90 hover:bg-white border-2 border-gray-200
+                     text-blaze-orange-600 shadow-lg hover:shadow-xl
                      transition-all duration-300 hover:scale-110 active:scale-95
                      items-center justify-center group"
             aria-label="Slide anterior"
           >
-            <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[-2px] transition-transform" />
+            <ChevronLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
           </button>
 
           <button
             onClick={goToNext}
-            className="hidden md:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-10 
-                     bg-white/90 hover:bg-white text-blaze-orange-600 
-                     p-2 lg:p-3 rounded-full shadow-lg hover:shadow-xl
+            className="hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 
+                     w-10 h-10 rounded-full bg-white/90 hover:bg-white border-2 border-gray-200
+                     text-blaze-orange-600 shadow-lg hover:shadow-xl
                      transition-all duration-300 hover:scale-110 active:scale-95
                      items-center justify-center group"
             aria-label="Siguiente slide"
           >
-            <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[2px] transition-transform" />
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-[2px] transition-transform" />
           </button>
 
           {/* Indicadores (dots) - Estilo Mercado Libre */}

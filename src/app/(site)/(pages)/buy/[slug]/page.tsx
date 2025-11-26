@@ -1,6 +1,4 @@
 'use client'
-// Force recompilation - Using direct fetch API instead of getProductBySlug
-
 // ⚡ PERFORMANCE: Configuración de página dinámica
 export const dynamic = 'force-dynamic'
 export const dynamicParams = true
@@ -16,7 +14,8 @@ import { FloatingCheckoutButton } from '@/components/Checkout/FloatingCheckoutBu
 import { BuyPageHeader } from '@/components/Checkout/BuyPageHeader'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
-import { Loader2 } from 'lucide-react'
+import { useProductBySlug } from '@/hooks/useProductBySlug'
+import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
 interface ProductData {
   id: number
@@ -31,12 +30,21 @@ export default function BuyProductPage() {
   const productSlug = params?.slug ?? ''
   const { addProduct } = useCartUnified()
   const cartItems = useAppSelector(selectCartItems) // Obtener items del carrito
+  
+  // ⚡ PERFORMANCE: Usar TanStack Query para obtener producto (caché automático)
+  const { product, isLoading: isLoadingProduct, error: productError } = useProductBySlug({
+    slug: productSlug,
+    enabled: !!productSlug && productSlug.trim() !== '',
+  })
+  
   const [status, setStatus] = useState<'loading' | 'adding' | 'ready' | 'error'>('loading')
   const [error, setError] = useState<string | null>(null)
   const [productData, setProductData] = useState<ProductData | null>(null)
   
   // Ref para rastrear si ya se procesó este slug específico en esta ejecución
   const processedSlugRef = useRef<string | null>(null)
+  // Ref para evitar agregar el producto múltiples veces
+  const hasAddedToCartRef = useRef(false)
 
   // Guardar el slug en sessionStorage para poder volver desde checkout
   useEffect(() => {
@@ -45,15 +53,40 @@ export default function BuyProductPage() {
     }
   }, [productSlug])
 
+  // Manejar errores del producto
   useEffect(() => {
-    // Si ya se procesó este slug en esta ejecución, no hacer nada
-    if (processedSlugRef.current === productSlug) {
-      return
+    if (productError) {
+      setError(productError.message)
+      setStatus('error')
+      
+      // Resetear ref para permitir reintento
+      processedSlugRef.current = null
+      if (typeof window !== 'undefined') {
+        const storageKey = `processed_slug_${productSlug}`
+        sessionStorage.removeItem(storageKey)
+      }
+      
+      // Redirigir a la página del producto después de 3 segundos
+      setTimeout(() => {
+        router.push(`/products/${productSlug}`)
+      }, 3000)
     }
+  }, [productError, productSlug, router])
 
+  // Verificar si el slug es válido
+  useEffect(() => {
     if (!productSlug || productSlug.trim() === '') {
       setError('Slug de producto no válido')
       setStatus('error')
+      return
+    }
+  }, [productSlug])
+
+  // Procesar producto cuando se carga desde TanStack Query
+  useEffect(() => {
+    // Si está cargando o no hay producto, esperar
+    if (isLoadingProduct || !product) {
+      setStatus('loading')
       return
     }
 
@@ -63,108 +96,71 @@ export default function BuyProductPage() {
     
     if (alreadyProcessed) {
       console.log('[BuyProductPage] Slug ya procesado en esta sesión, saltando agregado al carrito')
-      // Si ya se procesó, solo mostrar la página intermedia si tenemos los datos
-      // ⚡ PERFORMANCE: Prefetch de datos del producto con mejor caching
-      const fetchProductData = async () => {
-        try {
-          const response = await fetch(`/api/products/slug/${encodeURIComponent(productSlug)}`, {
-            // Agregar headers de cache para mejor performance
-            headers: {
-              'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-            },
-          })
-          const result = await response.json()
-          if (result?.success && result?.data) {
-            const apiData = result.data
-            setProductData({
-              id: apiData.id,
-              categoryId: apiData.category_id || apiData.category?.id,
-              categorySlug: apiData.category?.slug || apiData.category,
-            })
-            setStatus('ready')
-          }
-        } catch (err) {
-          console.error('Error obteniendo datos del producto:', err)
-        }
-      }
-      fetchProductData()
+      // Solo mostrar la página intermedia con los datos del producto
+      setProductData({
+        id: product.id,
+        categoryId: product.category_id || product.category?.id,
+        categorySlug: product.category?.slug || product.category,
+      })
+      setStatus('ready')
       return
     }
 
-    // Pequeño delay para asegurar que el carrito se haya hidratado desde localStorage
-    // Esto evita que se agregue el producto múltiples veces cuando se recarga la página
+    // Si ya se procesó este slug en esta ejecución, no hacer nada
+    if (processedSlugRef.current === productSlug) {
+      return
+    }
+
+    // Marcar como procesado ANTES de iniciar el proceso
+    processedSlugRef.current = productSlug
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(storageKey, 'true')
+    }
+
+    // Procesar agregado al carrito
     const processPurchase = async () => {
       try {
-        setStatus('loading')
-        
-        // 1. Obtener producto por slug directamente desde la API para evitar problemas de bundling
-        // ⚡ PERFORMANCE: Agregar headers de cache para mejor performance
-        const response = await fetch(`/api/products/slug/${encodeURIComponent(productSlug)}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-          },
-        })
-
-        // Parsear respuesta incluso si hay error para obtener el mensaje de la API
-        const result = await response.json()
-        
-        if (!response.ok) {
-          // Usar el mensaje de error de la API si está disponible
-          const errorMessage = result?.error || `Error al obtener producto: ${response.statusText}`
-          throw new Error(errorMessage)
-        }
-        
-        if (!result || !result.success || !result.data) {
-          throw new Error(result?.error || 'Error parsing API response')
-        }
-
-        const apiResponse = result.data
-        
-        // apiResponse ya es el producto directamente (result.data)
-        const apiData = apiResponse
-
-        if (!apiData || (!apiData.id && !apiData.name && !apiData.title)) {
+        // Validar datos del producto
+        if (!product || (!product.id && !product.name && !product.title)) {
           throw new Error('Producto no encontrado o datos inválidos')
         }
 
-        // 2. Preparar datos del producto para el carrito
-        const productId = apiData.id
-        const productName = apiData.name || 'Producto'
+        // Preparar datos del producto para el carrito
+        const productId = product.id
+        const productName = product.name || 'Producto'
         
         // Precio original/de lista: priorizar price_list de variante, luego price del producto
         const productPrice = 
-          apiData.default_variant?.price_list || 
-          apiData.price || 
+          product.default_variant?.price_list || 
+          product.price || 
           0
         
         // Precio de venta/descuento: priorizar price_sale de variante, luego discounted_price del producto
-        // Si no hay precio de descuento, usar el precio original
         const discountedPrice = 
-          apiData.default_variant?.price_sale || 
-          apiData.discounted_price || 
+          product.default_variant?.price_sale || 
+          product.discounted_price || 
           productPrice
         
-        const mainImage = getMainImage(apiData) || '/images/products/placeholder.svg'
+        const mainImage = getMainImage(product) || '/images/products/placeholder.svg'
         
         // Obtener imagen como array para el formato del carrito
-        const images = Array.isArray(apiData.images) 
-          ? apiData.images 
-          : apiData.images?.previews 
-          ? apiData.images.previews 
+        const images = Array.isArray(product.images) 
+          ? product.images 
+          : product.images?.previews 
+          ? product.images.previews 
           : [mainImage]
 
         setStatus('adding')
 
-        // 3. Esperar un momento para que el carrito se haya hidratado desde localStorage
+        // Esperar un momento para que el carrito se haya hidratado desde localStorage
         await new Promise(resolve => setTimeout(resolve, 200))
         
         // Verificar nuevamente si el producto ya está en el carrito después de la hidratación
         const isAlreadyInCart = cartItems.some(item => String(item.id) === String(productId))
         
-        if (!isAlreadyInCart) {
+        if (!isAlreadyInCart && !hasAddedToCartRef.current) {
           // Solo agregar si no está ya en el carrito
+          hasAddedToCartRef.current = true
           addProduct(
             {
               id: productId,
@@ -173,73 +169,72 @@ export default function BuyProductPage() {
               price: productPrice,
               discounted_price: discountedPrice,
               images: images,
-              brand: apiData.brand,
+              brand: product.brand,
             },
             {
               quantity: 1,
               attributes: {
-                color: apiData.default_variant?.color_name || apiData.color,
-                medida: apiData.default_variant?.measure || apiData.medida,
-                finish: apiData.default_variant?.finish,
+                color: product.default_variant?.color_name || product.color,
+                medida: product.default_variant?.measure || product.medida,
+                finish: product.default_variant?.finish,
               },
               image: mainImage,
             }
           )
           console.log('[BuyProductPage] Producto agregado al carrito')
+
+          // Trackear evento de AddToCart
+          try {
+            const category = product?.category?.name || product?.category || 'Producto'
+            const productUrl = typeof window !== 'undefined' 
+              ? `${window.location.origin}/buy/${productSlug}` 
+              : undefined
+
+            // Google Analytics
+            trackGAAddToCart(
+              String(productId),
+              productName,
+              category,
+              productPrice,
+              1,
+              'ARS'
+            )
+
+            // Meta Pixel
+            const contentIdForMeta = product.default_variant?.id
+              ? String(product.default_variant.id)
+              : String(productId)
+            
+            trackMetaAddToCart(
+              productName,
+              contentIdForMeta,
+              category,
+              productPrice,
+              'ARS',
+              productUrl
+            )
+          } catch (analyticsError) {
+            console.warn('[Analytics] Error tracking add to cart:', analyticsError)
+          }
         } else {
           console.log('[BuyProductPage] Producto ya está en el carrito, saltando agregado')
         }
 
-        // 4. Trackear evento de AddToCart
-        try {
-          const category = apiData?.category?.name || apiData?.category || 'Producto'
-          const productUrl = typeof window !== 'undefined' 
-            ? `${window.location.origin}/buy/${productSlug}` 
-            : undefined
-
-          // Google Analytics
-          trackGAAddToCart(
-            String(productId),
-            productName,
-            category,
-            productPrice,
-            1,
-            'ARS'
-          )
-
-          // Meta Pixel
-          // ✅ CORREGIDO: Si hay una variante por defecto, usar su ID para que coincida con el feed XML
-          const contentIdForMeta = apiData.default_variant?.id
-            ? String(apiData.default_variant.id)
-            : String(productId)
-          
-          trackMetaAddToCart(
-            productName,
-            contentIdForMeta,
-            category,
-            productPrice,
-            'ARS',
-            productUrl
-          )
-        } catch (analyticsError) {
-          console.warn('[Analytics] Error tracking add to cart:', analyticsError)
-        }
-
-        // 5. Guardar datos del producto para mostrar recomendaciones
+        // Guardar datos del producto para mostrar recomendaciones
         setProductData({
           id: productId,
-          categoryId: apiData.category_id || apiData.category?.id,
-          categorySlug: apiData.category?.slug || apiData.category,
+          categoryId: product.category_id || product.category?.id,
+          categorySlug: product.category?.slug || product.category,
         })
 
-        // 6. Pequeño delay para asegurar que el carrito se actualice
+        // Pequeño delay para asegurar que el carrito se actualice
         await new Promise(resolve => setTimeout(resolve, 300))
 
-        // 7. Mostrar página intermedia con productos
+        // Mostrar página intermedia con productos
         console.log('[BuyProductPage] Estado listo, mostrando página intermedia', {
           productId,
-          categoryId: apiData.category_id || apiData.category?.id,
-          categorySlug: apiData.category?.slug || apiData.category,
+          categoryId: product.category_id || product.category?.id,
+          categorySlug: product.category?.slug || product.category,
         })
         setStatus('ready')
       } catch (err) {
@@ -249,6 +244,7 @@ export default function BuyProductPage() {
         
         // Resetear ref y sessionStorage solo en caso de error para permitir reintento
         processedSlugRef.current = null
+        hasAddedToCartRef.current = false
         if (typeof window !== 'undefined') {
           const storageKey = `processed_slug_${productSlug}`
           sessionStorage.removeItem(storageKey)
@@ -261,15 +257,8 @@ export default function BuyProductPage() {
       }
     }
 
-    // Marcar como procesado ANTES de iniciar el proceso
-    processedSlugRef.current = productSlug
-    if (typeof window !== 'undefined') {
-      const storageKey = `processed_slug_${productSlug}`
-      sessionStorage.setItem(storageKey, 'true')
-    }
-
     processPurchase()
-  }, [productSlug, router, cartItems, addProduct]) // Incluir todas las dependencias necesarias
+  }, [product, isLoadingProduct, productSlug, router, cartItems, addProduct])
 
   if (status === 'error') {
     return (
@@ -313,25 +302,18 @@ export default function BuyProductPage() {
             {...(productData.categorySlug && { categorySlug: productData.categorySlug })}
           />
         ) : (
-          // ✅ AGREGAR: Skeleton inline en lugar de pantalla de carga completa
-          // Esto permite que el usuario vea el layout inmediatamente mientras se cargan los datos
-          <div className='flex flex-col items-center justify-center py-20'>
-            <div className='flex flex-col items-center gap-4'>
-              <div className='relative'>
-                <div className='h-16 w-16 rounded-full bg-orange-100 flex items-center justify-center'>
-                  <Loader2 className='h-8 w-8 text-orange-600 animate-spin' />
-                </div>
-              </div>
+          // ✅ SKELETON UNIFICADO: Usar ProductSkeletonGrid para consistencia con Home-v2
+          <div className='w-full'>
+            <ProductSkeletonGrid count={8} />
+            {/* Mensaje de estado adicional */}
+            <div className='flex flex-col items-center justify-center py-8'>
               <div className='text-center space-y-1'>
-                <p className='text-lg font-medium text-gray-900'>
+                <p className='text-sm font-medium text-gray-900'>
                   {status === 'loading' 
                     ? 'Cargando producto...' 
                     : status === 'adding' 
                     ? 'Agregando al carrito...' 
                     : 'Preparando productos...'}
-                </p>
-                <p className='text-sm text-gray-500'>
-                  Por favor espera un momento
                 </p>
               </div>
             </div>

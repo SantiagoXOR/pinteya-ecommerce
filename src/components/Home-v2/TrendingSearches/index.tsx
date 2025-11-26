@@ -1,11 +1,13 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import { TrendingUp, Search } from 'lucide-react'
 import { trackEvent } from '@/lib/google-analytics'
+import { useTrendingSearches } from '@/hooks/useTrendingSearches'
 
-const trendingSearches = [
+// Búsquedas por defecto como fallback
+const defaultTrendingSearches = [
   { term: 'Pintura', icon: '🎨' },
   { term: 'Látex', icon: '🖌️' },
   { term: 'Blanco', icon: '⚪' },
@@ -16,7 +18,54 @@ const trendingSearches = [
   { term: 'Sellador', icon: '🛡️' },
 ]
 
+// Mapeo de términos comunes a iconos
+const termToIconMap: Record<string, string> = {
+  'pintura': '🎨',
+  'látex': '🖌️',
+  'latex': '🖌️',
+  'blanco': '⚪',
+  'rodillo': '🔄',
+  'pinceles': '✏️',
+  'pincel': '✏️',
+  'barniz': '✨',
+  'esmalte': '💎',
+  'sellador': '🛡️',
+  'sintetico': '🎯',
+  'sintético': '🎯',
+  'impermeabilizante': '💧',
+  'plavicon': '🏢',
+  'plavipint': '🏢',
+  'membrana': '🛡️',
+  'recuplast': '🔧',
+}
+
+// Función para obtener icono basado en el término
+const getIconForTerm = (term: string): string => {
+  const normalizedTerm = term.toLowerCase().trim()
+  return termToIconMap[normalizedTerm] || '🔍'
+}
+
 const TrendingSearches = () => {
+  // Obtener búsquedas trending dinámicas
+  const { trendingSearches: dynamicSearches, isLoading, error } = useTrendingSearches({
+    limit: 8,
+    enabled: true,
+  })
+
+  // Mapear búsquedas dinámicas al formato esperado por el componente
+  const mappedSearches = useMemo(() => {
+    if (dynamicSearches && dynamicSearches.length > 0) {
+      return dynamicSearches.map(search => ({
+        term: search.query,
+        icon: getIconForTerm(search.query),
+      }))
+    }
+    return null
+  }, [dynamicSearches])
+
+  // Usar búsquedas dinámicas si están disponibles, sino usar fallback
+  const trendingSearches = mappedSearches || defaultTrendingSearches
+
   const handleSearchClick = (term: string) => {
     trackEvent('trending_search_click', 'engagement', term)
   }
@@ -35,13 +84,26 @@ const TrendingSearches = () => {
           <div className='h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent'></div>
         </div>
 
+        {/* Loading state */}
+        {isLoading && (
+          <div className='flex gap-2 overflow-x-auto py-0.5'>
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className='h-8 w-24 bg-gray-200 rounded-full animate-pulse flex-shrink-0'
+              />
+            ))}
+          </div>
+        )}
+
         {/* Chips de búsquedas */}
-        <div
-          className='flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide snap-x snap-mandatory py-0.5 -mx-2 sm:-mx-3 lg:-mx-4 px-2 sm:px-3 lg:px-4'
-          role='list'
-          aria-label='Búsquedas populares'
-        >
-          {trendingSearches.map((search, index) => (
+        {!isLoading && (
+          <div
+            className='flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide snap-x snap-mandatory py-0.5 -mx-2 sm:-mx-3 lg:-mx-4 px-2 sm:px-3 lg:px-4'
+            role='list'
+            aria-label='Búsquedas populares'
+          >
+            {trendingSearches.map((search, index) => (
             <Link
               key={index}
               href={`/search?search=${encodeURIComponent(search.term)}`}
@@ -65,7 +127,8 @@ const TrendingSearches = () => {
               <div className='absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity -translate-x-full group-hover:translate-x-full duration-1000'></div>
             </Link>
           ))}
-        </div>
+          </div>
+        )}
 
         {/* CTA secundario */}
         <div className='mt-6 text-center'>

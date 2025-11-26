@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from 'lucide-react'
 import HelpCard from './HelpCard'
+import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
 const BestSeller: React.FC = () => {
   const { selectedCategory } = useCategoryFilter()
@@ -40,24 +41,9 @@ const BestSeller: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className='overflow-hidden py-4 sm:py-6 bg-transparent'>
+      <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
-          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-            {[...Array(12)].map((_, index) => (
-              <Card key={index} className='overflow-hidden'>
-                <div className='animate-pulse'>
-                  <div className='bg-gray-200 h-40 md:h-64 rounded-t-lg'></div>
-                  <CardContent className='p-2 md:p-4'>
-                    <div className='space-y-2 md:space-y-3'>
-                      <div className='bg-gray-200 h-3 md:h-4 rounded w-3/4'></div>
-                      <div className='bg-gray-200 h-3 md:h-4 rounded w-1/2'></div>
-                      <div className='bg-gray-200 h-4 md:h-6 rounded w-1/3'></div>
-                    </div>
-                  </CardContent>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <ProductSkeletonGrid count={12} />
         </div>
       </section>
     )

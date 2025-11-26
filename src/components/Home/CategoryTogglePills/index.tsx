@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
+import { usePrefetchOnHover, usePrefetchBestSellerOnHover } from '@/hooks/usePrefetchOnHover'
 
 interface CategoryTogglePillsProps {
   onCategoryChange: (selectedCategories: string[]) => void
@@ -49,6 +50,16 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     },
     selectedCategories,
     enableDynamicCounts: false, // Deshabilitar conteos dinámicos para evitar errores de API
+  })
+
+  // Prefetch de productos al hacer hover sobre categorías
+  const { handleMouseEnter: prefetchCategory, handleMouseLeave: stopPrefetchCategory } = usePrefetchOnHover({
+    delay: 300,
+  })
+
+  // Prefetch de best sellers al hacer hover
+  const { handleMouseEnter: prefetchBestSeller } = usePrefetchBestSellerOnHover({
+    delay: 300,
   })
   
   // Debug: Log de categorías para verificar image_url
@@ -282,6 +293,12 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
               key={category.id}
               className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
               onClick={() => handleCategoryToggle(category.slug)}
+              onMouseEnter={() => {
+                // Prefetch productos de la categoría y best sellers
+                prefetchCategory(category.slug, 12)
+                prefetchBestSeller(category.slug)
+              }}
+              onMouseLeave={stopPrefetchCategory}
             >
               <div className={`
                 relative rounded-full transition-all duration-300
@@ -336,39 +353,43 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
 
   return (
     <section className='bg-transparent sticky top-[92px] lg:top-[105px] z-40'>
-      <div
-        className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 relative'
-        data-testid='category-pills-container'
-      >
-        {/* Flecha izquierda - Estilo semicírculo Mercado Libre */}
-        <button
-          onClick={() => scroll('left')}
-          className='absolute -left-1 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-end pr-0.5 md:pr-1 rounded-r-full border border-l-0 border-gray-200'
-          aria-label='Anterior'
-          style={{ top: 'calc(50% - 7px)', transform: 'translateY(-50%)' }}
-        >
-          <ChevronLeft className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
-        </button>
+      <div className='relative w-full'>
+        {/* Contenedor para los botones que se extiende hasta los bordes */}
+        <div className='absolute inset-0 pointer-events-none lg:pointer-events-auto'>
+          {/* Flecha izquierda - Estilo semicírculo Mercado Libre */}
+          <button
+            onClick={() => scroll('left')}
+            className='absolute -left-1 lg:left-0 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-end pr-0.5 md:pr-1 rounded-r-full border border-l-0 border-gray-200 pointer-events-auto'
+            aria-label='Anterior'
+            style={{ top: '50%', transform: 'translateY(-50%)' }}
+          >
+            <ChevronLeft className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
+          </button>
 
-        {/* Flecha derecha - Estilo semicírculo Mercado Libre */}
-        <button
-          onClick={() => scroll('right')}
-          className='absolute -right-1 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-start pl-0.5 md:pl-1 rounded-l-full border border-r-0 border-gray-200'
-          aria-label='Siguiente'
-          style={{ top: 'calc(50% - 7px)', transform: 'translateY(-50%)' }}
-        >
-          <ChevronRight className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
-        </button>
+          {/* Flecha derecha - Estilo semicírculo Mercado Libre */}
+          <button
+            onClick={() => scroll('right')}
+            className='absolute -right-1 lg:right-0 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-start pl-0.5 md:pl-1 rounded-l-full border border-r-0 border-gray-200 pointer-events-auto'
+            aria-label='Siguiente'
+            style={{ top: '50%', transform: 'translateY(-50%)' }}
+          >
+            <ChevronRight className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
+          </button>
+        </div>
 
-        {/* Pills de categorías - Espaciado uniforme */}
         <div
-          ref={carouselRef}
-          className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseLeave}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
+          className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 relative'
+          data-testid='category-pills-container'
         >
+          {/* Pills de categorías - Espaciado uniforme */}
+          <div
+            ref={carouselRef}
+            className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+          >
             {categories.map(category => {
               // Determinar si está seleccionada según el modo (contexto o props)
               const isSelected = useDynamicCarousel 
@@ -380,6 +401,12 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                   key={category.id}
                   className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
                   onClick={() => handleCategoryToggle(category.slug)}
+                  onMouseEnter={() => {
+                    // Prefetch productos de la categoría y best sellers
+                    prefetchCategory(category.slug, 12)
+                    prefetchBestSeller(category.slug)
+                  }}
+                  onMouseLeave={stopPrefetchCategory}
                 >
                   <div className={`
                   relative rounded-full transition-all duration-300
@@ -428,6 +455,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
             </div>
               )
             })}
+        </div>
         </div>
       </div>
     </section>

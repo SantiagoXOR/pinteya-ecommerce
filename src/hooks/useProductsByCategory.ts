@@ -1,12 +1,15 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Product } from '@/types/product'
+import { getProducts } from '@/lib/api/products'
+import { adaptApiProductsToLegacy } from '@/lib/adapters/productAdapter'
+import { productQueryKeys } from './queries/productQueryKeys'
 
 // ===================================
 // HOOK: useProductsByCategory
 // ===================================
 // Hook personalizado para obtener productos según la categoría seleccionada
 // Maneja loading states, errores y caché básico
+// Ahora usa TanStack Query para mejor performance y caché automático
 
 interface UseProductsByCategoryOptions {
   categorySlug: string | null
@@ -21,10 +24,6 @@ interface UseProductsByCategoryReturn {
   refetch: () => void
 }
 
-// Caché simple en memoria para evitar fetches repetidos
-const productsCache = new Map<string, { products: Product[]; timestamp: number }>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
-
 // Slugs específicos de productos para "Envío Gratis" (orden prioritario)
 const FREE_SHIPPING_PRODUCTS_SLUGS = [
   'latex-impulso-generico',           // 1. Látex Impulso
@@ -36,10 +35,10 @@ const FREE_SHIPPING_PRODUCTS_SLUGS = [
   'latex-muros',                       // 7. Plavicon Muros (Látex Muros)
   'piscinas-solvente-plavipint-plavicon', // 8. Pintura Piscina
   'cielorrasos',                       // 9. Cielorraso
-]
+] as const
 
 // Helper para ordenar productos según el orden específico
-const orderProductsByPriority = (products: Product[], priorityOrder: string[]): Product[] => {
+const orderProductsByPriority = (products: Product[], priorityOrder: readonly string[]): Product[] => {
   const orderedProducts: Product[] = []
   const usedIds = new Set<string | number>()
   
@@ -68,83 +67,37 @@ export const useProductsByCategory = ({
   limit = 12,
   enableCache = true,
 }: UseProductsByCategoryOptions): UseProductsByCategoryReturn => {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const fetchingRef = useRef(false)
-  const categorySlugRef = useRef<string | null>(null)
-  const hasInitializedRef = useRef(false)
-
-  const fetchProducts = useCallback(async () => {
-    // Evitar múltiples fetches simultáneos
-    if (fetchingRef.current) return
-
-    fetchingRef.current = true
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // Construir clave de caché
-      const cacheKey = categorySlug || 'free-shipping'
-      
-      // Verificar caché si está habilitado
-      if (enableCache) {
-        const cached = productsCache.get(cacheKey)
-        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-          setProducts(cached.products)
-          setIsLoading(false)
-          fetchingRef.current = false
-          categorySlugRef.current = categorySlug
-          return
-        }
+  
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['products', 'categories', categorySlug ?? 'free-shipping', limit ?? 12] as const,
+    queryFn: async (): Promise<Product[]> => {
+      // Construir filtros
+      const filters: any = {
+        limit: 100, // Traer más productos para luego filtrar
+        sortBy: categorySlug ? 'created_at' : 'price',
+        sortOrder: 'desc',
       }
-
-      // Construir query params
-      const params = new URLSearchParams()
-      params.append('limit', '100') // Traer más productos para luego filtrar
       
       if (categorySlug) {
-        // Filtrar por categoría específica
-        params.append('category', categorySlug)
-        params.append('sortBy', 'created_at')
-        params.append('sortOrder', 'desc')
-      } else {
-        // Sin categoría = traer todos para luego filtrar los específicos
-        params.append('sortBy', 'price')
-        params.append('sortOrder', 'desc')
+        filters.category = categorySlug
       }
 
-      // Fetch productos
-      const response = await fetch(`/api/products?${params.toString()}`)
+      // Fetch productos usando la función de API existente
+      const response = await getProducts(filters)
       
-      if (!response.ok) {
-        throw new Error('Error al cargar productos')
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Error al cargar productos')
       }
 
-      const data = await response.json()
+      // Adaptar productos del formato API al formato legacy
+      const fetchedProducts = adaptApiProductsToLegacy(response.data)
       
-      // La API puede devolver diferentes estructuras:
-      // { products: [], total: X } o { data: [], total: X } o directamente []
-      let fetchedProducts: Product[] = []
-      
-      if (Array.isArray(data)) {
-        fetchedProducts = data
-      } else if (data.products && Array.isArray(data.products)) {
-        fetchedProducts = data.products
-      } else if (data.data && Array.isArray(data.data)) {
-        fetchedProducts = data.data
-      } else {
-        console.warn('[useProductsByCategory] Formato de respuesta inesperado:', data)
-        fetchedProducts = []
-      }
-
-      // Si es "Envío Gratis" (sin categoría), filtrar y ordenar productos específicos
-      let finalProducts: Product[] = []
+      let finalProducts: Product[]
       
       if (!categorySlug) {
-        // Filtrar solo los productos específicos de la lista
+        // Si es "Envío Gratis" (sin categoría), filtrar y ordenar productos específicos
         const specificProducts = fetchedProducts.filter(p => 
-          FREE_SHIPPING_PRODUCTS_SLUGS.includes(p.slug || '')
+          FREE_SHIPPING_PRODUCTS_SLUGS.includes((p.slug || '') as any)
         )
         
         // Ordenar según el orden de prioridad
@@ -153,40 +106,27 @@ export const useProductsByCategory = ({
         finalProducts = fetchedProducts
       }
 
-      // Guardar en caché
-      if (enableCache) {
-        productsCache.set(cacheKey, {
-          products: finalProducts,
-          timestamp: Date.now(),
-        })
-      }
-
-      setProducts(finalProducts)
-      categorySlugRef.current = categorySlug
-    } catch (err) {
-      console.error('[useProductsByCategory] Error:', err)
-      setError(err instanceof Error ? err.message : 'Error desconocido')
-      setProducts([])
-    } finally {
-      setIsLoading(false)
-      fetchingRef.current = false
-    }
-  }, [categorySlug, limit, enableCache])
-
-  // Effect para fetch automático cuando cambia categorySlug o en el primer render
-  useEffect(() => {
-    // Hacer fetch si es el primer render o si la categoría cambió
-    if (!hasInitializedRef.current || categorySlugRef.current !== categorySlug) {
-      hasInitializedRef.current = true
-      fetchProducts()
-    }
-  }, [categorySlug, fetchProducts])
+      // Limitar resultados según el parámetro limit
+      return finalProducts.slice(0, limit)
+    },
+    // Configuración optimizada
+    staleTime: enableCache ? 5 * 60 * 1000 : 0, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: true,
+  })
 
   return {
-    products,
+    products: data || [],
     isLoading,
-    error,
-    refetch: fetchProducts,
+    // Convertir Error a string para mantener compatibilidad con componentes
+    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    refetch: () => {
+      refetch()
+    },
   }
 }
 

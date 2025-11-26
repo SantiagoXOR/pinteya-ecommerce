@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Product } from '@/types/product'
+import { getProducts } from '@/lib/api/products'
+import { adaptApiProductsToLegacy } from '@/lib/adapters/productAdapter'
+import { productQueryKeys } from './queries/productQueryKeys'
 
 // ===================================
 // HOOK: useBestSellerProducts
@@ -8,6 +10,7 @@ import { Product } from '@/types/product'
 // Hook específico para BestSeller que maneja:
 // - Sin categoría: 10 productos específicos hardcodeados
 // - Con categoría: Todos los productos de la categoría (limit 50)
+// Ahora usa TanStack Query para mejor performance y caché automático
 
 interface UseBestSellerProductsOptions {
   categorySlug: string | null
@@ -21,10 +24,6 @@ interface UseBestSellerProductsReturn {
   refetch: () => void
 }
 
-// Caché simple en memoria
-const productsCache = new Map<string, { products: Product[]; timestamp: number }>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
-
 // Lista de 10 productos bestseller específicos (orden prioritario)
 const BESTSELLER_PRODUCTS_SLUGS = [
   'latex-impulso-generico',                    // 1. Latex Impulso 20L
@@ -37,10 +36,10 @@ const BESTSELLER_PRODUCTS_SLUGS = [
   'hidroesmalte-4l',                            // 8. Hidroesmalte 4L (slug a verificar)
   'piscinas-solvente-plavipint-plavicon',      // 9. Pintura Piscinas Plavicon
   'cielorrasos',                                // 10. Cielorraso Plavicon 20L
-]
+] as const
 
 // Helper para ordenar productos según el orden específico
-const orderProductsByPriority = (products: Product[], priorityOrder: string[]): Product[] => {
+const orderProductsByPriority = (products: Product[], priorityOrder: readonly string[]): Product[] => {
   const orderedProducts: Product[] = []
   const usedIds = new Set<string | number>()
   
@@ -60,125 +59,67 @@ export const useBestSellerProducts = ({
   categorySlug,
   enableCache = true,
 }: UseBestSellerProductsOptions): UseBestSellerProductsReturn => {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const fetchingRef = React.useRef(false)
-  const categorySlugRef = React.useRef<string | null>(null)
-  const hasInitializedRef = React.useRef(false)
-
-  const fetchProducts = useCallback(async () => {
-    // Evitar múltiples fetches simultáneos
-    if (fetchingRef.current) return
-
-    fetchingRef.current = true
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      // Construir clave de caché
-      const cacheKey = categorySlug ? `bestseller-${categorySlug}` : 'bestseller-default'
-      
-      // Verificar caché si está habilitado
-      if (enableCache) {
-        const cached = productsCache.get(cacheKey)
-        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-          setProducts(cached.products)
-          setIsLoading(false)
-          fetchingRef.current = false
-          categorySlugRef.current = categorySlug
-          return
-        }
+  
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: productQueryKeys.bestseller(categorySlug),
+    queryFn: async (): Promise<Product[]> => {
+      // Construir filtros según si hay categoría o no
+      const filters: any = {
+        limit: categorySlug ? 50 : 100,
+        sortBy: categorySlug ? 'created_at' : 'price',
+        sortOrder: 'desc',
       }
-
-      // Construir query params
-      const params = new URLSearchParams()
       
       if (categorySlug) {
-        // Con categoría: traer todos los productos de la categoría con limit 50
-        params.append('category', categorySlug)
-        params.append('limit', '50')
-        params.append('sortBy', 'created_at')
-        params.append('sortOrder', 'desc')
-      } else {
-        // Sin categoría: traer todos los productos para filtrar los 10 específicos
-        params.append('limit', '100') // Traer más para asegurar que encontremos los 10
-        params.append('sortBy', 'price')
-        params.append('sortOrder', 'desc')
+        filters.category = categorySlug
       }
 
-      // Fetch productos
-      const response = await fetch(`/api/products?${params.toString()}`)
+      // Fetch productos usando la función de API existente
+      const response = await getProducts(filters)
       
-      if (!response.ok) {
-        throw new Error('Error al cargar productos')
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Error al cargar productos')
       }
 
-      const data = await response.json()
+      // Adaptar productos del formato API al formato legacy
+      const fetchedProducts = adaptApiProductsToLegacy(response.data)
       
-      // La API puede devolver diferentes estructuras
-      let fetchedProducts: Product[] = []
-      
-      if (Array.isArray(data)) {
-        fetchedProducts = data
-      } else if (data.products && Array.isArray(data.products)) {
-        fetchedProducts = data.products
-      } else if (data.data && Array.isArray(data.data)) {
-        fetchedProducts = data.data
-      } else {
-        console.warn('[useBestSellerProducts] Formato de respuesta inesperado:', data)
-        fetchedProducts = []
-      }
-
-      let finalProducts: Product[] = []
+      let finalProducts: Product[]
       
       if (!categorySlug) {
         // Sin categoría: filtrar solo los 10 productos específicos
         const specificProducts = fetchedProducts.filter(p => 
-          BESTSELLER_PRODUCTS_SLUGS.includes(p.slug || '')
+          BESTSELLER_PRODUCTS_SLUGS.includes((p.slug || '') as any)
         )
         
         // Ordenar según el orden de prioridad y limitar a 10
         finalProducts = orderProductsByPriority(specificProducts, BESTSELLER_PRODUCTS_SLUGS).slice(0, 10)
       } else {
-        // Con categoría: usar todos los productos de la categoría (ya limitados a 50)
+        // Con categoría: usar todos los productos de la categoría
         finalProducts = fetchedProducts
       }
 
-      // Guardar en caché
-      if (enableCache) {
-        productsCache.set(cacheKey, {
-          products: finalProducts,
-          timestamp: Date.now(),
-        })
-      }
-
-      setProducts(finalProducts)
-      categorySlugRef.current = categorySlug
-    } catch (err) {
-      console.error('[useBestSellerProducts] Error:', err)
-      setError(err instanceof Error ? err.message : 'Error desconocido')
-      setProducts([])
-    } finally {
-      setIsLoading(false)
-      fetchingRef.current = false
-    }
-  }, [categorySlug, enableCache])
-
-  // Effect para fetch automático cuando cambia categorySlug o en el primer render
-  useEffect(() => {
-    // Hacer fetch si es el primer render o si la categoría cambió
-    if (!hasInitializedRef.current || categorySlugRef.current !== categorySlug) {
-      hasInitializedRef.current = true
-      fetchProducts()
-    }
-  }, [categorySlug, fetchProducts])
+      return finalProducts
+    },
+    // Configuración optimizada para Home-v2
+    staleTime: enableCache ? 5 * 60 * 1000 : 0, // 5 minutos de caché
+    gcTime: 10 * 60 * 1000, // 10 minutos en caché
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    // No refetch automático en focus para mejor performance
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // Usar caché si está disponible
+    refetchOnReconnect: true, // Refetch si se reconecta
+  })
 
   return {
-    products,
+    products: data || [],
     isLoading,
-    error,
-    refetch: fetchProducts,
+    // Convertir Error a string para mantener compatibilidad con componentes
+    error: error ? (error instanceof Error ? error.message : String(error)) : null,
+    refetch: () => {
+      refetch()
+    },
   }
 }
 

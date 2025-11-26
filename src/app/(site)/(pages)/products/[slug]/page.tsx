@@ -56,6 +56,12 @@ function mapToModalProduct(apiProduct: any) {
     stock: Number.isFinite(stockNum) ? stockNum : 0,
     description: (apiProduct as any)?.description || '',
     slug: (apiProduct as any)?.slug,
+    // Incluir variantes si están disponibles para que el modal las use
+    variants: (apiProduct as any)?.variants || [],
+    has_variants: (apiProduct as any)?.has_variants || false,
+    default_variant: (apiProduct as any)?.default_variant || null,
+    // Incluir category para que el modal pueda usar categoryId en productos sugeridos
+    category: (apiProduct as any)?.category || null,
   }
 }
 

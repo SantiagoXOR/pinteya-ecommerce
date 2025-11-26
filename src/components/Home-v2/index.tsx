@@ -6,6 +6,7 @@ import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import type { PromoBannersProps } from './PromoBanners'
+import { ProductSkeletonGrid, ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
 // ⚡ PERFORMANCE: Loading states para componentes críticos
@@ -35,11 +36,7 @@ const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/in
   loading: () => (
     <div className='px-4'>
       <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
-      <div className='flex gap-4 overflow-x-auto'>
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className='w-48 h-64 bg-gray-200 rounded-lg animate-pulse flex-shrink-0' />
-        ))}
-      </div>
+      <ProductSkeletonCarousel count={4} />
     </div>
   ),
 })
@@ -60,12 +57,7 @@ const TrendingSearches = dynamic(() => import('./TrendingSearches/index'), {
 const CombosSection = dynamic(() => import('./CombosSection/index'), {
   loading: () => (
     <div className='px-4'>
-      <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className='h-64 bg-gray-200 rounded-lg animate-pulse' />
-        ))}
-      </div>
+      <ProductSkeletonGrid count={4} />
     </div>
   ),
 })
@@ -73,12 +65,7 @@ const CombosSection = dynamic(() => import('./CombosSection/index'), {
 const BestSeller = dynamic(() => import('./BestSeller/index'), {
   loading: () => (
     <div className='px-4'>
-      <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className='h-64 bg-gray-200 rounded-lg animate-pulse' />
-        ))}
-      </div>
+      <ProductSkeletonGrid count={4} />
     </div>
   ),
 })
@@ -100,13 +87,7 @@ const NewArrivals = dynamic(() => import('./NewArrivals/index'), {
   loading: () => (
     <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
-        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6'>
-          {[...Array(8)].map((_, index) => (
-            <div key={index} className='animate-pulse'>
-              <div className='bg-gray-200 h-32 md:h-48 rounded-lg'></div>
-            </div>
-          ))}
-        </div>
+        <ProductSkeletonGrid count={8} />
       </div>
     </section>
   ),
@@ -167,8 +148,10 @@ DelayedFloatingWhatsApp.displayName = 'DelayedFloatingWhatsApp'
 
 // Wrapper para componentes below-fold con lazy loading - Memoizados para evitar re-renders
 const LazyPromoBanner = React.memo(({ bannerId }: { bannerId: number }) => {
+  // Banner más importante (bannerId 2) tiene más rootMargin para cargar antes
+  const rootMargin = bannerId === 2 ? '300px' : '200px'
   const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '200px',
+    rootMargin,
     threshold: 0.01,
   })
 
@@ -186,8 +169,9 @@ const LazyPromoBanner = React.memo(({ bannerId }: { bannerId: number }) => {
 LazyPromoBanner.displayName = 'LazyPromoBanner'
 
 const LazyNewArrivals = React.memo(() => {
+  // NewArrivals es importante, cargar con más anticipación
   const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '300px',
+    rootMargin: '400px',
     threshold: 0.01,
   })
 
@@ -238,6 +222,25 @@ const LazyTestimonials = React.memo(() => {
   )
 })
 LazyTestimonials.displayName = 'LazyTestimonials'
+
+const LazyBestSeller = React.memo(() => {
+  // BestSeller es importante pero puede cargar después del hero y categorías
+  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
+    rootMargin: '100px', // Cargar poco después de que entre al viewport
+    threshold: 0.01,
+  })
+
+  const content = React.useMemo(() => {
+    return isVisible ? <BestSeller /> : null
+  }, [isVisible])
+
+  return (
+    <div ref={ref} className='mt-4 sm:mt-6 product-section' style={{ minHeight: isVisible ? 'auto' : '1px' }}>
+      {content}
+    </div>
+  )
+})
+LazyBestSeller.displayName = 'LazyBestSeller'
 
 const HomeV2 = () => {
   // Scroll depth tracking - Optimizado con requestAnimationFrame para evitar re-renders
@@ -301,9 +304,7 @@ const HomeV2 = () => {
       </div>
 
       {/* 2. Ofertas Especiales (BestSeller) - Ahora con filtro de categorías */}
-      <div className='mt-4 sm:mt-6 product-section'>
-        <BestSeller />
-      </div>
+      <LazyBestSeller />
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
       <div className='mt-3 sm:mt-4'>

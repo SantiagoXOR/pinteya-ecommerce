@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Sparkles, ArrowRight } from '@/lib/optimized-imports'
+import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
 const NewArrival: React.FC = () => {
   const { filters } = useProductFilters({ syncWithUrl: true })
@@ -43,22 +44,7 @@ const NewArrival: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6'>
-            {[...Array(8)].map((_, index) => (
-              <Card key={index} className='overflow-hidden'>
-                <div className='animate-pulse'>
-                  <div className='bg-gray-200 h-32 md:h-48 rounded-t-lg'></div>
-                  <CardContent className='p-2 md:p-4'>
-                    <div className='space-y-2 md:space-y-3'>
-                      <div className='bg-gray-200 h-3 md:h-4 rounded w-3/4'></div>
-                      <div className='bg-gray-200 h-3 md:h-4 rounded w-1/2'></div>
-                      <div className='bg-gray-200 h-4 md:h-6 rounded w-1/3'></div>
-                    </div>
-                  </CardContent>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <ProductSkeletonGrid count={8} />
         ) : error ? (
           <Card variant='outlined' className='border-red-200 bg-red-50'>
             <CardContent className='p-8 text-center'>

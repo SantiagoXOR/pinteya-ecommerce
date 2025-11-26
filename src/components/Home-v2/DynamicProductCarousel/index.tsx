@@ -7,6 +7,7 @@ import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
 import { useProductsByCategory } from '@/hooks/useProductsByCategory'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
+import { ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
 
 interface DynamicProductCarouselProps {
   maxProducts?: number
@@ -68,20 +69,16 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     return (
       <section className='py-4 bg-white category-transition'>
         <div className='max-w-7xl mx-auto px-4'>
-          <div className='animate-pulse'>
-            <div className='flex items-center gap-3 mb-3'>
+          <div className='animate-pulse mb-3'>
+            <div className='flex items-center gap-3'>
               <div className='w-[68px] h-[68px] md:w-[84px] md:h-[84px] bg-gray-200 rounded-full'></div>
               <div>
                 <div className='h-6 md:h-7 bg-gray-200 rounded w-48 mb-1'></div>
                 <div className='h-3 md:h-4 bg-gray-200 rounded w-32'></div>
               </div>
             </div>
-            <div className='flex gap-4 md:gap-6 overflow-hidden'>
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className='min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-1.125rem)] h-80 bg-gray-200 rounded-lg'></div>
-              ))}
-            </div>
           </div>
+          <ProductSkeletonCarousel count={5} />
         </div>
       </section>
     )
@@ -102,7 +99,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
       id={freeShippingOnly ? 'envio-gratis-carousel' : 'dynamic-carousel'}
       className={`py-4 bg-gradient-to-br ${categoryConfig.bgGradient} scroll-mt-20 category-transition`}
     >
-      <div className={freeShippingOnly ? 'px-4' : 'max-w-7xl mx-auto px-4'}>
+      <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8'>
         {/* Header Dinámico - 2 líneas máximo */}
         <div className='flex items-center justify-between mb-3'>
           <div className='flex items-center gap-3'>
@@ -112,21 +109,15 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                 ? 'w-[100px] h-[40px] md:w-[120px] md:h-[48px]' 
                 : 'w-[68px] h-[68px] md:w-[84px] md:h-[84px]'
             }`}>
-              {categoryIcon.includes('.svg') ? (
-                <img
-                  src={categoryIcon}
-                  alt={categoryConfig.title}
-                  className='w-full h-full object-contain'
-                />
-              ) : (
-                <Image
-                  src={categoryIcon}
-                  alt={categoryConfig.title}
-                  width={84}
-                  height={84}
-                  className='w-full h-full object-contain'
-                />
-              )}
+              <Image
+                src={categoryIcon}
+                alt={categoryConfig.title}
+                width={84}
+                height={84}
+                className='w-full h-full object-contain'
+                loading={freeShippingOnly ? 'lazy' : 'eager'}
+                priority={!freeShippingOnly}
+              />
             </div>
             
             <div className='flex flex-col justify-center' style={{maxHeight: '3.5rem'}}>
@@ -138,28 +129,26 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
               </p>
             </div>
           </div>
-
-          {/* Controles de navegación */}
-          <div className='hidden md:flex gap-2'>
-            <button
-              onClick={() => scroll('left')}
-              className='w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-gray-400 transition-colors'
-              aria-label='Anterior'
-            >
-              <ChevronLeft className='w-5 h-5' />
-            </button>
-            <button
-              onClick={() => scroll('right')}
-              className='w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-gray-400 transition-colors'
-              aria-label='Siguiente'
-            >
-              <ChevronRight className='w-5 h-5' />
-            </button>
-          </div>
         </div>
 
         {/* Carrusel Horizontal de productos - ancho igual que grid */}
         <div className='relative'>
+          {/* Controles de navegación - A los costados del carrusel, mitad y mitad */}
+          <button
+            onClick={() => scroll('left')}
+            className='hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-gray-400 transition-colors shadow-lg'
+            aria-label='Anterior'
+          >
+            <ChevronLeft className='w-5 h-5' />
+          </button>
+          <button
+            onClick={() => scroll('right')}
+            className='hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-gray-400 transition-colors shadow-lg'
+            aria-label='Siguiente'
+          >
+            <ChevronRight className='w-5 h-5' />
+          </button>
+
           <div
             ref={scrollRef}
             className='flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4'

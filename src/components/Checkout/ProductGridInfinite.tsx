@@ -3,9 +3,9 @@
 import React, { useMemo } from 'react'
 import ProductItem from '@/components/Common/ProductItem'
 import { useInfiniteProductsQuery } from '@/hooks/useInfiniteProductsQuery'
-import { Loader2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import HelpCard from '@/components/Home-v2/BestSeller/HelpCard'
+import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
 // Lazy load de los carruseles para mejor performance
 const HeroCarousel = dynamic(() => import('@/components/Home-v2/HeroCarousel'), {
@@ -70,10 +70,9 @@ export const ProductGridInfinite: React.FC<ProductGridInfiniteProps> = ({
     return sections
   }, [products])
 
-  // ✅ ELIMINAR: No mostrar spinner aquí, la página principal ya maneja el estado de loading
-  // Esto evita mostrar un spinner gris redundante
+  // ✅ SKELETON UNIFICADO: Mostrar skeleton mientras carga para mejor UX
   if (isLoading) {
-    return null
+    return <ProductSkeletonGrid count={12} />
   }
 
   if (products.length === 0) {

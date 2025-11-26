@@ -10,6 +10,7 @@ import StructuredData from '@/components/SEO/StructuredData'
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics'
 import MetaPixel from '@/components/Analytics/MetaPixel'
 import { ClientErrorSuppression } from '@/components/ErrorSuppression/ClientErrorSuppression'
+import { InitialLoadingSpinner } from '@/components/ui/initial-loading-spinner'
 import {
   organizationStructuredData,
   websiteStructuredData,
@@ -95,6 +96,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ClientErrorSuppression />
+        <InitialLoadingSpinner minDisplayTime={800} autoHide={true} />
         {/* <JsonSafetyInitializer /> */}
         {/* <DebugNotificationDisabler /> */}
         {/* <PerformanceTracker /> */}
