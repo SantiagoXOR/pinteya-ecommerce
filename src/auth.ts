@@ -86,6 +86,28 @@ const nextAuth = NextAuth({
       }
       return session
     },
+    async redirect({ url, baseUrl }) {
+      const base: string = (baseUrl || process.env.NEXTAUTH_URL || 'http://localhost:3000') as string
+      // Si la URL es el callback de auth, redirigir a nuestra página de callback
+      if (url.includes('/api/auth/callback') || url === base || url === `${base}/`) {
+        return `${base}/auth/callback`
+      }
+      // Si la URL es relativa, construir la URL completa
+      if (url.startsWith('/')) {
+        return `${base}${url}`
+      }
+      // Si la URL es del mismo dominio, permitirla
+      try {
+        const urlObj = new URL(url)
+        if (urlObj.origin === base) {
+          return url
+        }
+      } catch {
+        // Si la URL no es válida, continuar
+      }
+      // Por defecto, redirigir al callback para verificar el rol
+      return `${base}/auth/callback`
+    },
     async signIn({ user, account, profile }) {
       // Permitir el sign-in para todos los usuarios de Google
       if (account?.provider === 'google') {
