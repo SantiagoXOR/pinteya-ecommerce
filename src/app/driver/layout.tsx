@@ -13,6 +13,14 @@ export const metadata: Metadata = {
   title: 'Pinteya Driver - Navegación GPS',
   description: 'Sistema de navegación GPS para drivers de Pinteya E-commerce',
   manifest: '/driver-manifest.json',
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 }
 
 interface DriverLayoutProps {

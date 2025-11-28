@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,18 @@ import { AddressMapSelectorAdvanced } from '@/components/ui/AddressMapSelectorAd
 import { CheckCircle, AlertCircle } from 'lucide-react'
 
 export default function TestAddressAdvancedPage() {
+  // Bloquear indexación para SEO
+  useEffect(() => {
+    const metaRobots = document.querySelector('meta[name="robots"]')
+    if (!metaRobots) {
+      const meta = document.createElement('meta')
+      meta.name = 'robots'
+      meta.content = 'noindex, nofollow'
+      document.head.appendChild(meta)
+    } else {
+      metaRobots.setAttribute('content', 'noindex, nofollow')
+    }
+  }, [])
   const [address, setAddress] = useState('')
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null)
   const [isValid, setIsValid] = useState<boolean | null>(null)

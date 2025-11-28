@@ -2,11 +2,23 @@
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { SimpleAddressForm } from '@/components/Address/SimpleAddressForm'
 import { AddressFormAdvanced, AdvancedAddress } from '@/components/Address/AddressFormAdvanced'
 
 export default function TestAddressPage() {
+  // Bloquear indexación para SEO
+  useEffect(() => {
+    const metaRobots = document.querySelector('meta[name="robots"]')
+    if (!metaRobots) {
+      const meta = document.createElement('meta')
+      meta.name = 'robots'
+      meta.content = 'noindex, nofollow'
+      document.head.appendChild(meta)
+    } else {
+      metaRobots.setAttribute('content', 'noindex, nofollow')
+    }
+  }, [])
   const [result, setResult] = useState<any>(null)
   const [simpleResult, setSimpleResult] = useState<any>(null)
 

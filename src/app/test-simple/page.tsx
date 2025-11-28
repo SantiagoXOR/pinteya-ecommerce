@@ -1,8 +1,20 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 
 export default function TestSimplePage() {
+  // Bloquear indexación para SEO
+  useEffect(() => {
+    const metaRobots = document.querySelector('meta[name="robots"]')
+    if (!metaRobots) {
+      const meta = document.createElement('meta')
+      meta.name = 'robots'
+      meta.content = 'noindex, nofollow'
+      document.head.appendChild(meta)
+    } else {
+      metaRobots.setAttribute('content', 'noindex, nofollow')
+    }
+  }, [])
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">

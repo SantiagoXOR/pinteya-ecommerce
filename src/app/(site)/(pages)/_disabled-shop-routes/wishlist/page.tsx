@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     'wishlist',
     'Pinteya',
   ],
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 const WishlistPage = () => {

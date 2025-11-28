@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Shield, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
@@ -19,6 +19,19 @@ interface TestResult {
 }
 
 export default function TestAdminProtectionPage() {
+  // Bloquear indexación para SEO
+  useEffect(() => {
+    const metaRobots = document.querySelector('meta[name="robots"]')
+    if (!metaRobots) {
+      const meta = document.createElement('meta')
+      meta.name = 'robots'
+      meta.content = 'noindex, nofollow'
+      document.head.appendChild(meta)
+    } else {
+      metaRobots.setAttribute('content', 'noindex, nofollow')
+    }
+  }, [])
+
   const [results, setResults] = useState<TestResult[]>([])
   const [testing, setTesting] = useState(false)
 

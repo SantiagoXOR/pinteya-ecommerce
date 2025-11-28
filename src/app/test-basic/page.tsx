@@ -1,3 +1,13 @@
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Test Basic Page | Pinteya E-commerce',
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
 export default function TestBasicPage() {
   return (
     <div>

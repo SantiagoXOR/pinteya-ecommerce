@@ -57,16 +57,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
 
       // Obtener el rol del usuario desde Supabase user_profiles
-      // Siempre recargar si no existe, es 'customer' (fallback), o se fuerza actualización
-      if (token.userId && (!token.role || token.role === 'customer' || trigger === 'update')) {
+      // SIEMPRE recargar el rol si userId está presente para asegurar que esté actualizado
+      // Esto es especialmente importante después de cambios en la base de datos
+      if (token.userId) {
         try {
           const role = await getUserRole(token.userId as string)
           token.role = role
-          console.log(`[NextAuth] User role loaded: ${role} for user ${token.userId}`)
+          console.log(`[NextAuth] User role loaded: ${role} for user ${token.userId} (trigger: ${trigger || 'auto'})`)
         } catch (error) {
           console.error('[NextAuth] Error loading user role:', error)
           // Solo usar 'customer' como fallback si realmente no hay perfil
-          // No sobrescribir si ya hay un rol válido
           if (!token.role) {
             token.role = 'customer'
           }
@@ -87,11 +87,20 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async signIn({ user, account, profile }) {
       // Permitir el sign-in para todos los usuarios de Google
       if (account?.provider === 'google') {
+        if (!user.email) {
+          console.warn('[NextAuth] User email is missing, skipping profile sync')
+          return true
+        }
+        // Ya verificamos que user.email no es null/undefined arriba
+        // Extraer email con type assertion para evitar problemas de TypeScript
+        // @ts-ignore - user.email es string después del check !user.email arriba
+        const email: string = user.email as string
         try {
           // Sincronizar/crear el perfil del usuario en user_profiles
+          // @ts-ignore - email es string después del check y type assertion
           await upsertUserProfile({
             supabase_user_id: user.id,
-            email: user.email!,
+            email,
             first_name: user.name?.split(' ')[0] || null,
             last_name: user.name?.split(' ').slice(1).join(' ') || null,
           })
@@ -109,7 +118,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async signIn({ user, account, profile }) {
       console.log('Usuario autenticado:', user.email)
     },
-    async signOut({ session, token }) {
+    async signOut() {
       console.log('Usuario desconectado')
     },
   },
@@ -139,12 +148,13 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/jwt' {
-  interface JWT {
-    sub: string
-    userId?: string
-    role?: string
-    accessToken?: string
-    refreshToken?: string
-  }
-}
+// Tipos para JWT - Comentado si causa problemas con la versión de NextAuth
+// declare module 'next-auth/jwt' {
+//   interface JWT {
+//     sub: string
+//     userId?: string
+//     role?: string
+//     accessToken?: string
+//     refreshToken?: string
+//   }
+// }

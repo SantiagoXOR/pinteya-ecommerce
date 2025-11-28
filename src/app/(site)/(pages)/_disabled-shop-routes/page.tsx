@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description:
     'Descubre nuestra amplia selección de productos de pinturería, ferretería y corralón. Pinturas, herramientas, accesorios y más.',
   keywords: 'pinturería, ferretería, corralón, pinturas, herramientas, accesorios, construcción',
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 const ShopPage = () => {

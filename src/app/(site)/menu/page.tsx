@@ -22,6 +22,10 @@ import {
 export const metadata: Metadata = {
   title: 'Menú Principal | Pinteya E-commerce',
   description: 'Accede a todas las secciones de Pinteya E-commerce desde el menú principal.',
+  robots: {
+    index: false,
+    follow: true,
+  },
 }
 
 const menuSections = [
