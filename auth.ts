@@ -61,16 +61,20 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       // Esto es especialmente importante después de cambios en la base de datos
       if (token.userId) {
         try {
+          console.log(`[NextAuth JWT] Loading role for user ${token.userId} (trigger: ${trigger || 'auto'}, current role: ${token.role || 'none'})`)
           const role = await getUserRole(token.userId as string)
           token.role = role
-          console.log(`[NextAuth] User role loaded: ${role} for user ${token.userId} (trigger: ${trigger || 'auto'})`)
+          console.log(`[NextAuth JWT] ✅ User role loaded: ${role} for user ${token.userId}`)
         } catch (error) {
-          console.error('[NextAuth] Error loading user role:', error)
+          console.error('[NextAuth JWT] ❌ Error loading user role:', error)
           // Solo usar 'customer' como fallback si realmente no hay perfil
           if (!token.role) {
             token.role = 'customer'
+            console.log(`[NextAuth JWT] ⚠️ Using fallback role: customer`)
           }
         }
+      } else {
+        console.log(`[NextAuth JWT] ⚠️ No userId in token, skipping role load`)
       }
 
       return token
@@ -80,7 +84,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         session.accessToken = token.accessToken as string
         session.refreshToken = token.refreshToken as string
         session.user.id = token.userId as string
-        session.user.role = token.role as string || 'customer'
+        const role = token.role as string || 'customer'
+        session.user.role = role
+        console.log(`[NextAuth Session] Setting role: ${role} for user ${token.userId || 'unknown'}`)
+      } else {
+        console.log(`[NextAuth Session] ⚠️ No token provided to session callback`)
       }
       return session
     },
