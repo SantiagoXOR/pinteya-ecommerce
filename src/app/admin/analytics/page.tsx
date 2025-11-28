@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import AnalyticsDashboard from '@/components/Analytics/AnalyticsDashboard'
 import ConversionFunnel from '@/components/Analytics/ConversionFunnel'
 import HeatmapViewer from '@/components/Analytics/HeatmapViewer'
@@ -17,6 +17,7 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { BarChart3, TrendingUp, Users, Eye, Download, RefreshCw, Settings } from 'lucide-react'
 
 const AnalyticsPage: React.FC = () => {
+  const router = useRouter()
   const { user, isLoaded } = useAuth()
   const { userProfile, isAdmin, hasPermission, isLoading: roleLoading } = useUserRole()
   const { getEvents, getInteractions, getConversionMetrics } = useAnalytics()
@@ -33,15 +34,15 @@ const AnalyticsPage: React.FC = () => {
   useEffect(() => {
     if (isLoaded && !roleLoading) {
       if (!user) {
-        redirect('/signin')
+        router.push('/auth/signin')
         return
       }
 
       if (!isAdmin && !hasPermission(['dashboard', 'access'])) {
-        redirect('/')
+        router.push('/')
       }
     }
-  }, [user, isLoaded, isAdmin, hasPermission, roleLoading])
+  }, [user, isLoaded, isAdmin, hasPermission, roleLoading, router])
 
   useEffect(() => {
     loadConversionData()
