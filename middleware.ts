@@ -79,6 +79,17 @@ export default auth(async (req) => {
     const userRole = req.auth?.user?.role || 'customer'
     const isAdmin = userRole === 'admin'
 
+    // Logging para debugging
+    if (!isProduction || isAdminRoute) {
+      console.log(`[Middleware] Admin check - Route: ${nextUrl.pathname}, UserRole: ${userRole}, IsAdmin: ${isAdmin}`)
+      console.log(`[Middleware] req.auth structure:`, JSON.stringify({
+        hasAuth: !!req.auth,
+        hasUser: !!req.auth?.user,
+        userRole: req.auth?.user?.role,
+        userEmail: req.auth?.user?.email,
+      }, null, 2))
+    }
+
     if (!isAdmin) {
       if (isApiAdminRoute) {
         return new NextResponse(

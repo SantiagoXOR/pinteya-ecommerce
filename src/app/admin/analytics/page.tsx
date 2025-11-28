@@ -30,19 +30,21 @@ const AnalyticsPage: React.FC = () => {
     checkoutCompletions: 0,
   })
 
-  // Verificar permisos de administrador usando el sistema de roles de Supabase
+  // Verificar permisos de administrador - Usar rol de la sesión de NextAuth
   useEffect(() => {
-    if (isLoaded && !roleLoading) {
+    if (isLoaded) {
       if (!user) {
         router.push('/auth/signin')
         return
       }
 
-      if (!isAdmin && !hasPermission(['dashboard', 'access'])) {
+      // Verificar si el usuario es admin usando el rol de la sesión
+      const userRole = (user as any)?.role || userProfile?.user_roles?.role_name
+      if (userRole !== 'admin' && !hasPermission(['dashboard', 'access'])) {
         router.push('/')
       }
     }
-  }, [user, isLoaded, isAdmin, hasPermission, roleLoading, router])
+  }, [user, isLoaded, isAdmin, hasPermission, userProfile, router])
 
   useEffect(() => {
     loadConversionData()

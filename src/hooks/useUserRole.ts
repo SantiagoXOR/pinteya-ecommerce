@@ -46,19 +46,13 @@ export interface UseUserRoleReturn {
 }
 
 export const useUserRole = (): UseUserRoleReturn => {
-  // 🚨 TEMPORAL: Hook simplificado sin autenticación durante migración
-  // TODO: Restaurar funcionalidad completa cuando NextAuth esté configurado
-  // const { user, isLoaded, isSignedIn } = useAuth();
+  // ✅ Usar NextAuth.js para obtener el usuario autenticado
+  const { user, isLoaded, isSignedIn } = useAuth()
 
-  // 🚨 TEMPORAL: Estados simplificados sin autenticación
+  // Estados para el perfil de usuario
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  // 🚨 TEMPORAL: Variables mock para evitar errores
-  const user = null
-  const isLoaded = true
-  const isSignedIn = false
 
   const syncUser = useCallback(async () => {
     if (!user?.email) {
@@ -198,10 +192,11 @@ export const useUserRole = (): UseUserRoleReturn => {
     return permissions.every(permission => hasPermission(permission))
   }
 
-  // Verificaciones de roles
-  const isAdmin = userProfile?.user_roles?.role_name === 'admin'
-  const isCustomer = userProfile?.user_roles?.role_name === 'customer'
-  const isModerator = userProfile?.user_roles?.role_name === 'moderator'
+  // Verificaciones de roles - Usar el rol de la sesión de NextAuth como fallback
+  const sessionRole = (user as any)?.role || userProfile?.user_roles?.role_name
+  const isAdmin = sessionRole === 'admin' || userProfile?.user_roles?.role_name === 'admin'
+  const isCustomer = sessionRole === 'customer' || userProfile?.user_roles?.role_name === 'customer'
+  const isModerator = sessionRole === 'moderator' || userProfile?.user_roles?.role_name === 'moderator'
 
   // Verificaciones de permisos específicos
   const canAccessAdminPanel = hasPermission(['admin_panel', 'access'])
