@@ -55,22 +55,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Procesar evento de forma asíncrona usando función optimizada
+    // Procesar evento de forma asíncrona insertando directamente en la tabla
     setImmediate(async () => {
       try {
-        await supabase.rpc('insert_analytics_event_optimized', {
-          p_event_name: event.event,
-          p_category: event.category,
-          p_action: event.action,
-          p_label: event.label,
-          p_value: event.value,
-          p_user_id: event.userId,
-          p_session_id: event.sessionId,
-          p_page: event.page,
-          p_user_agent: event.userAgent,
-        })
+        const { error: insertError } = await supabase
+          .from('analytics_events')
+          .insert({
+            event_name: event.event,
+            category: event.category,
+            action: event.action,
+            label: event.label || null,
+            value: event.value || null,
+            user_id: event.userId || null,
+            session_id: event.sessionId,
+            page: event.page || null,
+            user_agent: event.userAgent || null,
+            metadata: event.metadata || null,
+          })
+
+        if (insertError) {
+          console.error('Error insertando evento analytics:', insertError)
+        }
       } catch (error) {
-        console.error('Error procesando evento analytics optimizado (async):', error)
+        console.error('Error procesando evento analytics (async):', error)
       }
     })
 

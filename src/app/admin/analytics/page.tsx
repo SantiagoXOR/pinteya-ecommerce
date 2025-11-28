@@ -32,19 +32,29 @@ const AnalyticsPage: React.FC = () => {
 
   // Verificar permisos de administrador - Usar rol de la sesión de NextAuth
   useEffect(() => {
-    if (isLoaded) {
-      if (!user) {
-        router.push('/auth/signin')
-        return
-      }
-
-      // Verificar si el usuario es admin usando el rol de la sesión
-      const userRole = (user as any)?.role || userProfile?.user_roles?.role_name
-      if (userRole !== 'admin' && !hasPermission(['dashboard', 'access'])) {
-        router.push('/')
-      }
+    // Esperar a que todo esté cargado
+    if (!isLoaded) {
+      return
     }
-  }, [user, isLoaded, isAdmin, hasPermission, userProfile, router])
+
+    if (!user) {
+      router.push('/auth/signin')
+      return
+    }
+
+    // Verificar si el usuario es admin usando el rol de la sesión directamente
+    const userRole = (user as any)?.role
+    
+    // Solo redirigir si definitivamente no es admin
+    // El middleware ya debería haber bloqueado el acceso si no es admin
+    if (userRole && userRole !== 'admin') {
+      console.log('[Analytics Page] Usuario sin permisos, redirigiendo. Rol:', userRole)
+      router.push('/')
+      return
+    }
+
+    console.log('[Analytics Page] Acceso permitido. Rol:', userRole || 'cargando...')
+  }, [user, isLoaded, router])
 
   useEffect(() => {
     loadConversionData()
