@@ -47,13 +47,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user, account, trigger }) {
+      console.log(`[NextAuth JWT] Callback ejecutado - trigger: ${trigger || 'auto'}, hasUser: ${!!user}, hasAccount: ${!!account}, hasTokenUserId: ${!!token.userId}`)
+      
       // En el primer login, agregar userId
       if (account && user) {
+        console.log(`[NextAuth JWT] Primer login detectado para usuario: ${user.id} (${user.email})`)
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
         token.userId = user.id
         // Limpiar el rol para forzar recarga
         delete token.role
+        console.log(`[NextAuth JWT] Token inicializado con userId: ${token.userId}`)
       }
 
       // Obtener el rol del usuario desde Supabase user_profiles
