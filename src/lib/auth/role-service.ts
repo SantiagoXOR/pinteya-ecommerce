@@ -31,7 +31,6 @@ export interface UserProfile {
   last_name: string | null
   role_id: number | null
   is_active: boolean
-  is_verified: boolean
   role?: {
     role_name: string
     permissions: Record<string, any>
@@ -59,7 +58,6 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         last_name,
         role_id,
         is_active,
-        is_verified,
         user_roles:role_id (
           role_name,
           permissions
@@ -197,7 +195,6 @@ export async function getUserProfileByEmail(email: string): Promise<UserProfile 
         last_name,
         role_id,
         is_active,
-        is_verified,
         user_roles:role_id (
           role_name,
           permissions
@@ -288,7 +285,6 @@ export async function upsertUserProfile(userData: {
         last_name,
         role_id,
         is_active,
-        is_verified,
         user_roles:role_id (
           role_name,
           permissions
