@@ -171,3 +171,4 @@ Después de implementar estas optimizaciones, deberíamos ver mejoras en:
 - Testing después de cada cambio
 - Monitorear métricas antes y después
 
+

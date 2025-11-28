@@ -52,17 +52,24 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
         token.userId = user.id
+        // Limpiar el rol para forzar recarga
+        delete token.role
       }
 
       // Obtener el rol del usuario desde Supabase user_profiles
-      if (token.userId && (!token.role || trigger === 'update')) {
+      // Siempre recargar si no existe, es 'customer' (fallback), o se fuerza actualización
+      if (token.userId && (!token.role || token.role === 'customer' || trigger === 'update')) {
         try {
           const role = await getUserRole(token.userId as string)
           token.role = role
           console.log(`[NextAuth] User role loaded: ${role} for user ${token.userId}`)
         } catch (error) {
           console.error('[NextAuth] Error loading user role:', error)
-          token.role = 'customer' // Fallback
+          // Solo usar 'customer' como fallback si realmente no hay perfil
+          // No sobrescribir si ya hay un rol válido
+          if (!token.role) {
+            token.role = 'customer'
+          }
         }
       }
 
