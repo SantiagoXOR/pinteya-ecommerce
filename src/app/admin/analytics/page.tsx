@@ -21,7 +21,7 @@ const AnalyticsPage: React.FC = () => {
   const { user, isLoaded } = useAuth()
   const { userProfile, isAdmin, hasPermission, isLoading: roleLoading } = useUserRole()
   const { getEvents, getInteractions, getConversionMetrics } = useAnalytics()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'funnel' | 'heatmap'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'funnel' | 'heatmap' | 'google' | 'meta'>('dashboard')
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [conversionData, setConversionData] = useState({
     productViews: 0,
@@ -167,6 +167,18 @@ const AnalyticsPage: React.FC = () => {
       name: 'Mapa de Calor',
       icon: Eye,
       description: 'Interacciones de usuarios',
+    },
+    {
+      id: 'google',
+      name: 'Google Analytics',
+      icon: BarChart3,
+      description: 'Métricas de Google Analytics',
+    },
+    {
+      id: 'meta',
+      name: 'Meta Pixel',
+      icon: Eye,
+      description: 'Métricas de Meta Pixel',
     },
   ]
 
@@ -321,6 +333,37 @@ const AnalyticsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'google' && (
+            <div className='space-y-6'>
+              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
+                <h2 className='text-xl font-semibold text-gray-900 mb-4'>Google Analytics</h2>
+                <p className='text-gray-600 mb-6'>
+                  Visualización de métricas y reportes de Google Analytics 4. Los reportes embebidos
+                  requieren que tengas acceso a la cuenta de Google Analytics asociada.
+                </p>
+              </div>
+
+              <GoogleAnalyticsEmbed />
+            </div>
+          )}
+
+          {activeTab === 'meta' && (
+            <div className='space-y-6'>
+              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
+                <h2 className='text-xl font-semibold text-gray-900 mb-4'>Meta Pixel Analytics</h2>
+                <p className='text-gray-600 mb-6'>
+                  Métricas basadas en eventos trackeados por el Meta Pixel. Estos datos muestran los
+                  eventos que se están enviando desde nuestro sistema al Pixel de Meta.
+                </p>
+              </div>
+
+              <MetaMetrics
+                startDate={new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()}
+                endDate={new Date().toISOString()}
+              />
             </div>
           )}
         </motion.div>

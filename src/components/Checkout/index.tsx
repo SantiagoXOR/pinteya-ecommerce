@@ -13,6 +13,7 @@ import UserInfo from './UserInfo'
 import { useCheckout } from '@/hooks/useCheckout'
 import { trackBeginCheckout } from '@/lib/google-analytics'
 import { trackInitiateCheckout } from '@/lib/meta-pixel'
+import { trackGoogleAdsBeginCheckout } from '@/lib/google-ads'
 import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -173,6 +174,9 @@ const Checkout = () => {
 
         // Meta Pixel
         trackInitiateCheckout(metaContents, totalPrice, 'ARS', cartItems.length)
+
+        // Google Ads
+        trackGoogleAdsBeginCheckout(totalPrice, 'ARS', items)
 
         // 📊 Analytics propio - Trackear begin_checkout
         trackEvent('begin_checkout', 'shop', 'begin_checkout', undefined, totalPrice, {

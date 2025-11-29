@@ -20,6 +20,8 @@ import {
   Activity,
 } from 'lucide-react'
 import { useAnalytics, useRealTimeMetrics } from '@/hooks/useAnalytics'
+import GoogleAnalyticsEmbed from './GoogleAnalyticsEmbed'
+import MetaMetrics from './MetaMetrics'
 
 interface MetricsData {
   ecommerce: {
@@ -332,6 +334,24 @@ const AnalyticsDashboard: React.FC = () => {
             ))}
           </div>
         </motion.div>
+      </div>
+
+      {/* Integración Google Analytics y Meta */}
+      <div className='space-y-6'>
+        {/* Google Analytics Embed */}
+        <GoogleAnalyticsEmbed />
+
+        {/* Meta Pixel Metrics */}
+        <MetaMetrics
+          startDate={
+            timeRange === '1d'
+              ? new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+              : timeRange === '30d'
+                ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+                : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+          }
+          endDate={new Date().toISOString()}
+        />
       </div>
     </div>
   )

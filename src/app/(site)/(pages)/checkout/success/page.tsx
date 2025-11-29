@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle, Package, Truck, ArrowRight, Home, Receipt } from 'lucide-react'
 import { trackPurchase as trackGA4Purchase } from '@/lib/google-analytics'
 import { trackPurchase as trackMetaPurchase } from '@/lib/meta-pixel'
+import { trackGoogleAdsPurchase } from '@/lib/google-ads'
 
 interface PaymentInfo {
   payment_id?: string
@@ -104,6 +105,9 @@ export default function CheckoutSuccessPage() {
             items.length,
             transactionId
           )
+
+          // Google Ads
+          trackGoogleAdsPurchase(transactionId, totalValue, 'ARS', ga4Items)
 
           console.debug('[Analytics] Purchase tracked:', {
             transactionId,

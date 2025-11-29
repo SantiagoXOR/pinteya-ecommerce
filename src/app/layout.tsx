@@ -9,6 +9,7 @@ import { metadata as defaultMetadata } from './metadata'
 import StructuredData from '@/components/SEO/StructuredData'
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics'
 import MetaPixel from '@/components/Analytics/MetaPixel'
+import GoogleAds from '@/components/Analytics/GoogleAds'
 import { ClientErrorSuppression } from '@/components/ErrorSuppression/ClientErrorSuppression'
 import { InitialLoadingSpinner } from '@/components/ui/initial-loading-spinner'
 import {
@@ -85,14 +86,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⚡ PERFORMANCE: Preconnect a dominios externos */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.google-analytics.com" />
+        <link rel="preconnect" href="https://www.googleadservices.com" />
         <link rel="preconnect" href="https://connect.facebook.net" />
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
+        
+        {/* Google Merchant Center Verification */}
+        <meta
+          name="google-site-verification"
+          content="YoGAj7X-fCg9Xclet5ZnoNgCpzkuLd74sEzyfDI9WXs"
+        />
         
         <StructuredData
           data={[organizationStructuredData, websiteStructuredData, storeStructuredData]}
         />
         <GoogleAnalytics />
         <MetaPixel />
+        <GoogleAds />
       </head>
       <body>
         <ClientErrorSuppression />
