@@ -121,8 +121,10 @@ const AnalyticsPage: React.FC = () => {
     )
   }
 
-  // Verificar si el usuario tiene permisos
-  if (!isAdmin && !hasPermission(['dashboard', 'access'])) {
+  // Verificar si el usuario tiene permisos - Usar rol de la sesión directamente
+  const userRole = user ? (user as any)?.role : null
+  
+  if (userRole && userRole !== 'admin') {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <div className='text-center'>
