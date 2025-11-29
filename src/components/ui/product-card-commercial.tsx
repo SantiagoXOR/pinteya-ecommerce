@@ -10,6 +10,7 @@ import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
+import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { 
   extractProductCapacity, 
   formatProductBadges, 
@@ -167,6 +168,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const { addProduct } = useCartUnified()
     const router = useRouter()
     const cartItems = useAppSelector(selectCartItems) // Obtener items del carrito
+    const { trackCartAction } = useAnalytics() // Analytics propio
 
     // Obtener cantidad actual del producto en el carrito
     const currentCartQuantity = React.useMemo(() => {
@@ -974,6 +976,15 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               productPrice,
               'ARS'
             )
+
+            // 📊 Analytics propio - Trackear add_to_cart
+            trackCartAction('add', String(productData.id), {
+              productName: productData.name,
+              category,
+              price: productPrice,
+              quantity: 1,
+              currency: 'ARS',
+            })
 
             console.debug('[Analytics] Add to cart tracked:', {
               id: productData.id,

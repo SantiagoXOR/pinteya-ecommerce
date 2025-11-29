@@ -219,16 +219,22 @@ export const useUserRole = (): UseUserRoleReturn => {
   const canViewAnalytics = hasPermission(['analytics', 'read'])
 
   useEffect(() => {
-    if (isLoaded && isSignedIn && user) {
-      console.log('[useUserRole] Usuario autenticado, obteniendo perfil...')
-      fetchUserProfile()
+    // Solo intentar cargar el perfil si el usuario está autenticado y tiene email
+    if (isLoaded && isSignedIn && user?.email) {
+      // Evitar múltiples llamadas simultáneas
+      const timeoutId = setTimeout(() => {
+        console.log('[useUserRole] Usuario autenticado, obteniendo perfil...')
+        fetchUserProfile()
+      }, 100) // Pequeño delay para evitar llamadas múltiples
+
+      return () => clearTimeout(timeoutId)
     } else if (isLoaded && !isSignedIn) {
       console.log('[useUserRole] Usuario no autenticado')
       setUserProfile(null)
       setIsLoading(false)
       setError(null)
     }
-  }, [isLoaded, isSignedIn, user, fetchUserProfile])
+  }, [isLoaded, isSignedIn, user?.email, fetchUserProfile])
 
   return {
     userProfile,

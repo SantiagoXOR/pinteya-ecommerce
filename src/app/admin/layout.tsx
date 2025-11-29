@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const nonce = headersList.get('X-Nonce') || undefined
 
   return (
-    <div className='h-screen overflow-hidden bg-gray-50'>
+    <div className='min-h-screen bg-gray-50'>
       {/* ✅ CSP NONCE - Script para configuración admin */}
       {nonce && (
         <script

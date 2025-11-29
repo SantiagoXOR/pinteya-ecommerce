@@ -13,6 +13,7 @@ import UserInfo from './UserInfo'
 import { useCheckout } from '@/hooks/useCheckout'
 import { trackBeginCheckout } from '@/lib/google-analytics'
 import { trackInitiateCheckout } from '@/lib/meta-pixel'
+import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form'
@@ -55,6 +56,7 @@ const Checkout = () => {
   const router = useRouter()
   const [showExitIntent, setShowExitIntent] = useState(false)
   const [isExpressMode, setIsExpressMode] = useState(true) // ✅ TEMPORAL: Activado por defecto para testing
+  const { trackEvent } = useAnalytics() // Analytics propio
 
   const {
     formData,
@@ -171,6 +173,13 @@ const Checkout = () => {
 
         // Meta Pixel
         trackInitiateCheckout(metaContents, totalPrice, 'ARS', cartItems.length)
+
+        // 📊 Analytics propio - Trackear begin_checkout
+        trackEvent('begin_checkout', 'shop', 'begin_checkout', undefined, totalPrice, {
+          itemCount: cartItems.length,
+          currency: 'ARS',
+          items: items,
+        })
 
         console.debug('[Analytics] Initiate checkout tracked:', {
           items: items.length,

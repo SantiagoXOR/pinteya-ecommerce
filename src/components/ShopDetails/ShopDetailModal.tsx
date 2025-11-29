@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from 'react-hot-toast'
 import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
+import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
 import {
   ShoppingCart,
   Heart,
@@ -491,6 +492,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 }) => {
   const router = useRouter()
   const { state, actions, selectors } = useShopDetailsReducer()
+  const { trackCartAction } = useAnalytics() // Analytics propio
 
   // Estados del modal
   const [selectedColor, setSelectedColor] = useState<string>('')
@@ -2382,6 +2384,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           productPrice * quantity,
           'ARS'
         )
+
+        // 📊 Analytics propio - Trackear add_to_cart
+        trackCartAction('add', String(productToAdd.id), {
+          productName,
+          category,
+          price: productPrice,
+          quantity,
+          currency: 'ARS',
+        })
 
         console.debug('[Analytics] Add to cart tracked from modal:', {
           id: productToAdd.id,
