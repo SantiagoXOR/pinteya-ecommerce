@@ -107,15 +107,13 @@ const AnalyticsPage: React.FC = () => {
     URL.revokeObjectURL(url)
   }
 
-  // Mostrar pantalla de carga mientras se verifican permisos
-  if (!isLoaded || roleLoading) {
+  // Mostrar pantalla de carga solo mientras se carga la sesión
+  if (!isLoaded) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-400 mx-auto'></div>
-          <p className='mt-4 text-gray-600'>
-            {!isLoaded ? 'Cargando...' : 'Verificando permisos...'}
-          </p>
+          <p className='mt-4 text-gray-600'>Cargando...</p>
         </div>
       </div>
     )
@@ -124,6 +122,19 @@ const AnalyticsPage: React.FC = () => {
   // Verificar si el usuario tiene permisos - Usar rol de la sesión directamente
   const userRole = user ? (user as any)?.role : null
   
+  // Si no hay usuario, redirigir (ya se maneja en useEffect, pero por si acaso)
+  if (!user) {
+    return (
+      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-400 mx-auto'></div>
+          <p className='mt-4 text-gray-600'>Redirigiendo...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Si el usuario tiene un rol y no es admin, mostrar acceso denegado
   if (userRole && userRole !== 'admin') {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
