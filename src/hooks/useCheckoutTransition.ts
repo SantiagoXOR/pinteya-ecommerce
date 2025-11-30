@@ -205,7 +205,7 @@ export function useCheckoutTransition(
 
           // Navegación con error handling
           try {
-            router.push('/checkout')
+            router.push('/checkout/meta')
           } catch (error) {
             console.error('[useCheckoutTransition] Error during navigation:', error)
             onTransitionError?.(error as Error)

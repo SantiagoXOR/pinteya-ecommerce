@@ -102,7 +102,7 @@ function CheckoutFailureContent() {
 
   const handleRetryPayment = () => {
     // Volver al checkout manteniendo los datos del carrito
-    router.push('/checkout')
+    router.push('/checkout/meta')
   }
 
   const handleBackToCart = () => {

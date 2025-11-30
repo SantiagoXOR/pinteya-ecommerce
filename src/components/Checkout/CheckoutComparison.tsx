@@ -210,7 +210,7 @@ const CheckoutComparison = () => {
             </div>
 
             <Button asChild variant='outline' className='w-full'>
-              <Link href='/checkout'>Ver Checkout Actual</Link>
+              <Link href='/checkout/meta'>Ver Checkout Actual</Link>
             </Button>
           </CardContent>
         </Card>
@@ -358,7 +358,7 @@ const CheckoutComparison = () => {
             </Link>
           </Button>
           <Button asChild variant='outline' size='lg'>
-            <Link href='/checkout'>Ver Checkout Actual</Link>
+            <Link href='/checkout/meta'>Ver Checkout Actual</Link>
           </Button>
         </div>
       </div>
