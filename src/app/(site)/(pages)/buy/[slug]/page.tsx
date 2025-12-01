@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 export const dynamicParams = true
 
-import React, { useEffect, useState, useRef, useDeferredValue, startTransition } from 'react'
+import React, { useEffect, useState, useRef, startTransition } from 'react'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter } from 'next/navigation'
 import { useCartUnified } from '@/hooks/useCartUnified'
@@ -18,12 +18,21 @@ import { selectCartItems } from '@/redux/features/cart-slice'
 import { useProductBySlug } from '@/hooks/useProductBySlug'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 // ⚡ PERFORMANCE: Lazy load de componentes no críticos
-const FloatingWhatsAppBuy = dynamic(() => import('@/components/Common/FloatingWhatsAppBuy'), {
-  ssr: false,
-})
-const BuyPageWhatsAppPopup = dynamic(() => import('@/components/Common/BuyPageWhatsAppPopup'), {
-  ssr: false,
-})
+// Usar .then() para asegurar que el default export se maneje correctamente
+const FloatingWhatsAppBuy = dynamic(
+  () => import('@/components/Common/FloatingWhatsAppBuy').then(mod => ({ default: mod.default })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+)
+const BuyPageWhatsAppPopup = dynamic(
+  () => import('@/components/Common/BuyPageWhatsAppPopup').then(mod => ({ default: mod.default })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+)
 
 interface ProductData {
   id: number
@@ -50,9 +59,6 @@ export default function BuyProductPage() {
   const [productData, setProductData] = useState<ProductData | null>(null)
   const [shouldLoadWhatsApp, setShouldLoadWhatsApp] = useState(false)
   const [alreadyProcessed, setAlreadyProcessed] = useState(false)
-  
-  // ⚡ PERFORMANCE: Usar useDeferredValue para valores no críticos
-  const deferredProductData = useDeferredValue(productData)
   
   // Ref para rastrear si ya se procesó este slug específico en esta ejecución
   const processedSlugRef = useRef<string | null>(null)
@@ -375,11 +381,11 @@ export default function BuyProductPage() {
       
       {/* Grid de productos o skeleton inline */}
       <div className='max-w-7xl mx-auto px-4 pb-6 relative z-0'>
-        {status === 'ready' && deferredProductData ? (
+        {status === 'ready' && productData ? (
           <ProductGridInfinite
-            currentProductId={deferredProductData.id}
-            {...(deferredProductData.categoryId && { currentProductCategoryId: deferredProductData.categoryId })}
-            {...(deferredProductData.categorySlug && { categorySlug: deferredProductData.categorySlug })}
+            currentProductId={productData.id}
+            {...(productData.categoryId && { currentProductCategoryId: productData.categoryId })}
+            {...(productData.categorySlug && { categorySlug: productData.categorySlug })}
           />
         ) : (
           // ✅ SKELETON UNIFICADO: Usar ProductSkeletonGrid para consistencia con Home-v2
