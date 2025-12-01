@@ -299,7 +299,7 @@ export default function BuyProductPage() {
       <FloatingCheckoutButton />
       
       {/* Botón flotante de WhatsApp (sin delay en /buy) */}
-      <FloatingWhatsApp />
+      <FloatingWhatsApp showImmediately={true} />
       
       {/* Popup de WhatsApp (aparece a los 500ms) */}
       <BuyPageWhatsAppPopup />
