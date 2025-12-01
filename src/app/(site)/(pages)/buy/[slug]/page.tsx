@@ -3,7 +3,8 @@
 export const dynamic = 'force-dynamic'
 export const dynamicParams = true
 
-import React, { useEffect, useState, useRef, useDeferredValue, startTransition, useMemo } from 'react'
+import React, { useEffect, useState, useRef, useDeferredValue, startTransition } from 'react'
+import dynamic from 'next/dynamic'
 import { useParams, useRouter } from 'next/navigation'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getMainImage } from '@/lib/adapters/product-adapter'
@@ -48,6 +49,7 @@ export default function BuyProductPage() {
   const [error, setError] = useState<string | null>(null)
   const [productData, setProductData] = useState<ProductData | null>(null)
   const [shouldLoadWhatsApp, setShouldLoadWhatsApp] = useState(false)
+  const [alreadyProcessed, setAlreadyProcessed] = useState(false)
   
   // ⚡ PERFORMANCE: Usar useDeferredValue para valores no críticos
   const deferredProductData = useDeferredValue(productData)
@@ -58,12 +60,38 @@ export default function BuyProductPage() {
   const hasAddedToCartRef = useRef(false)
   const whatsAppTriggerRef = useRef<HTMLDivElement>(null)
 
-  // ⚡ PERFORMANCE: Cachear lectura de sessionStorage
-  const alreadyProcessed = useMemo(() => {
-    if (typeof window === 'undefined' || !productSlug) return false
-    const storageKey = `processed_slug_${productSlug}`
-    return sessionStorage.getItem(storageKey) === 'true'
+  // ⚡ PERFORMANCE: Verificar sessionStorage en useEffect (solo en cliente) para evitar problemas de hidratación
+  useEffect(() => {
+    if (typeof window !== 'undefined' && productSlug) {
+      const storageKey = `processed_slug_${productSlug}`
+      const processed = sessionStorage.getItem(storageKey) === 'true'
+      setAlreadyProcessed(processed)
+    }
   }, [productSlug])
+
+  // ⚡ PERFORMANCE: Intersection Observer para cargar componentes de WhatsApp cuando están cerca
+  useEffect(() => {
+    if (!whatsAppTriggerRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setShouldLoadWhatsApp(true)
+          observer.disconnect()
+        }
+      },
+      {
+        rootMargin: '500px', // Cargar cuando está a 500px del viewport
+        threshold: 0.1,
+      }
+    )
+
+    observer.observe(whatsAppTriggerRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   // Guardar el slug en sessionStorage para poder volver desde checkout
   // ⚡ PERFORMANCE: Usar requestIdleCallback para operaciones no críticas
