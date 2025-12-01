@@ -14,9 +14,11 @@ import {
   isGoogleAdsEnabled,
   waitForGoogleAds,
 } from '@/lib/google-ads'
+import { useSlowConnection } from '@/hooks/useSlowConnection'
 
 const GoogleAds: React.FC = () => {
   const [isGoogleAdsLoaded, setIsGoogleAdsLoaded] = useState(false)
+  const isSlowConnection = useSlowConnection()
 
   // Manejar cuando Google Ads está listo
   const handleGoogleAdsLoad = async () => {
@@ -50,11 +52,21 @@ const GoogleAds: React.FC = () => {
 
   // Google Ads usa el mismo gtag que Google Analytics, así que no necesitamos cargar un script adicional
   // Solo inicializamos cuando GA está listo
+  // ⚡ PERFORMANCE: En conexiones lentas, deferir más agresivamente
   useEffect(() => {
     if (typeof window !== 'undefined' && window.gtag) {
-      handleGoogleAdsLoad()
+      if (isSlowConnection) {
+        // En conexiones lentas, usar requestIdleCallback
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(handleGoogleAdsLoad, { timeout: 5000 })
+        } else {
+          setTimeout(handleGoogleAdsLoad, 2000)
+        }
+      } else {
+        handleGoogleAdsLoad()
+      }
     }
-  }, [])
+  }, [isSlowConnection])
 
   // No necesitamos renderizar scripts adicionales porque Google Ads usa el mismo gtag de GA4
   // El tracking se hace a través de las funciones en google-ads.ts que usan gtag

@@ -1,22 +1,22 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems, selectTotalPrice } from '@/redux/features/cart-slice'
 import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useProductById } from '@/hooks/useProductById'
 
-export const FloatingCheckoutButton: React.FC = () => {
+// ⚡ PERFORMANCE: Memoizar componente para evitar re-renders innecesarios
+export const FloatingCheckoutButton: React.FC = memo(() => {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [imageError, setImageError] = useState(false)
   const cartItems = useAppSelector(selectCartItems)
   const totalPrice = useAppSelector(selectTotalPrice)
 
-  // Obtener el último producto del carrito
+  // ⚡ PERFORMANCE: Obtener el último producto del carrito (optimizado)
   const lastItem = useMemo(() => {
     if (Array.isArray(cartItems) && cartItems.length > 0) {
       return cartItems[cartItems.length - 1]
@@ -24,13 +24,7 @@ export const FloatingCheckoutButton: React.FC = () => {
     return null
   }, [cartItems])
 
-  // ⚡ PERFORMANCE: Usar TanStack Query para obtener producto (caché automático)
-  const { product, isLoading: isLoadingProduct } = useProductById({
-    id: lastItem?.id,
-    enabled: !!lastItem?.id,
-  })
-
-  // Construir información del producto combinando datos del carrito y de la API
+  // ⚡ PERFORMANCE: Usar solo datos del carrito, sin query adicional
   const lastProductInfo = useMemo(() => {
     if (!lastItem) return null
 
@@ -41,11 +35,11 @@ export const FloatingCheckoutButton: React.FC = () => {
       || '/images/placeholder.png'
 
     return {
-      brand: product?.brand || lastItem.brand || '',
-      name: lastItem.title || lastItem.name || product?.name || 'Producto',
+      brand: lastItem.brand || '',
+      name: lastItem.title || lastItem.name || 'Producto',
       image: productImage,
     }
-  }, [lastItem, product])
+  }, [lastItem])
 
   useEffect(() => {
     setMounted(true)
@@ -159,6 +153,8 @@ export const FloatingCheckoutButton: React.FC = () => {
         </div>
       </button>
   )
-}
+})
+
+FloatingCheckoutButton.displayName = 'FloatingCheckoutButton'
 
 

@@ -15,10 +15,12 @@ import {
   isGAEnabled,
   waitForGA,
 } from '@/lib/google-analytics'
+import { useSlowConnection } from '@/hooks/useSlowConnection'
 
 const GoogleAnalytics: React.FC = () => {
   const pathname = usePathname()
   const [isGALoaded, setIsGALoaded] = useState(false)
+  const isSlowConnection = useSlowConnection()
 
   // Manejar cuando GA está listo
   const handleGALoad = async () => {
@@ -66,15 +68,35 @@ const GoogleAnalytics: React.FC = () => {
       {GA_TRACKING_ID && GA_TRACKING_ID !== 'G-XXXXXXXXXX' && GA_TRACKING_ID.length >= 10 && (
         <>
           {/* ⚡ PERFORMANCE: lazyOnload carga GA DESPUÉS de FCP (-0.2s) */}
-          <Script
-            strategy='lazyOnload'
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
-            onLoad={handleGALoad}
-            onError={error => {
-              console.warn('Error loading Google Analytics script:', error)
-              setIsGALoaded(false)
-            }}
-          />
+          {/* ⚡ PERFORMANCE: En conexiones lentas, usar requestIdleCallback para cargar aún más tarde */}
+          {isSlowConnection ? (
+            <Script
+              strategy='lazyOnload'
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+              onLoad={() => {
+                // En conexiones lentas, agregar delay adicional
+                if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+                  requestIdleCallback(handleGALoad, { timeout: 5000 })
+                } else {
+                  setTimeout(handleGALoad, 2000)
+                }
+              }}
+              onError={error => {
+                console.warn('Error loading Google Analytics script:', error)
+                setIsGALoaded(false)
+              }}
+            />
+          ) : (
+            <Script
+              strategy='lazyOnload'
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+              onLoad={handleGALoad}
+              onError={error => {
+                console.warn('Error loading Google Analytics script:', error)
+                setIsGALoaded(false)
+              }}
+            />
+          )}
           {/* Cargar también el script de Google tag con G-MN070Y406E si es diferente */}
           {GA_TRACKING_ID !== GOOGLE_TAG_ID && (
             <Script
@@ -82,27 +104,51 @@ const GoogleAnalytics: React.FC = () => {
               src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_ID}`}
             />
           )}
-          <Script
-            id='google-analytics'
-            strategy='lazyOnload'
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_TRACKING_ID}', {
-                  page_title: document.title,
-                  page_location: window.location.href,
-                  send_page_view: false
-                });
-                ${GA_TRACKING_ID !== GOOGLE_TAG_ID ? `gtag('config', '${GOOGLE_TAG_ID}');` : ''}
-                gtag('config', '${GOOGLE_ADS_ID}');
-              `,
-            }}
-            onError={error => {
-              console.warn('Error executing Google Analytics script:', error)
-            }}
-          />
+          {isSlowConnection ? (
+            <Script
+              id='google-analytics'
+              strategy='lazyOnload'
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${GA_TRACKING_ID}', {
+                    page_title: document.title,
+                    page_location: window.location.href,
+                    send_page_view: false
+                  });
+                  ${GA_TRACKING_ID !== GOOGLE_TAG_ID ? `gtag('config', '${GOOGLE_TAG_ID}');` : ''}
+                  gtag('config', '${GOOGLE_ADS_ID}');
+                `,
+              }}
+              onError={error => {
+                console.warn('Error executing Google Analytics script:', error)
+              }}
+            />
+          ) : (
+            <Script
+              id='google-analytics'
+              strategy='lazyOnload'
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${GA_TRACKING_ID}', {
+                    page_title: document.title,
+                    page_location: window.location.href,
+                    send_page_view: false
+                  });
+                  ${GA_TRACKING_ID !== GOOGLE_TAG_ID ? `gtag('config', '${GOOGLE_TAG_ID}');` : ''}
+                  gtag('config', '${GOOGLE_ADS_ID}');
+                `,
+              }}
+              onError={error => {
+                console.warn('Error executing Google Analytics script:', error)
+              }}
+            />
+          )}
           {/* Script adicional para asegurar que Google tag se carga correctamente */}
           {GA_TRACKING_ID === GOOGLE_TAG_ID && (
             <Script

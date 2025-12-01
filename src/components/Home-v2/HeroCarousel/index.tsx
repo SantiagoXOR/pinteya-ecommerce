@@ -33,6 +33,7 @@ const HeroCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(1) // Empezar en la primera slide real
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set([1])) // Cargar primera slide inmediatamente
 
   // Crear array extendido: [última, ...originales, primera]
   const extendedSlides = useMemo(() => [
@@ -62,6 +63,20 @@ const HeroCarousel = () => {
     setIsAutoPlaying(false)
     setTimeout(() => setIsAutoPlaying(true), 10000)
   }, [])
+
+  // ⚡ PERFORMANCE: Preload slide siguiente cuando está cerca
+  useEffect(() => {
+    const nextIndex = currentIndex + 1
+    const prevIndex = currentIndex - 1
+    
+    // Preload slides adyacentes
+    if (nextIndex < extendedSlides.length && !loadedSlides.has(nextIndex)) {
+      setLoadedSlides((prev) => new Set([...prev, nextIndex]))
+    }
+    if (prevIndex >= 0 && !loadedSlides.has(prevIndex)) {
+      setLoadedSlides((prev) => new Set([...prev, prevIndex]))
+    }
+  }, [currentIndex, extendedSlides.length, loadedSlides])
 
   // Auto-play cada 5 segundos
   useEffect(() => {
@@ -118,22 +133,33 @@ const HeroCarousel = () => {
               className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
               style={{ transform: `translateX(-${currentIndex * 100}%)` }}
             >
-              {extendedSlides.map((slide, index) => (
-                <div
-                  key={`${slide.id}-${index}`}
-                  className="min-w-full h-full flex-shrink-0 relative"
-                >
-                  <Image
-                    src={slide.image}
-                    alt={slide.alt}
-                    fill
-                    priority={index === 1} // ⚡ CRITICAL: La primera slide real está en índice 1 - Prioridad para LCP
-                    quality={85} // ⚡ PERFORMANCE: Calidad optimizada
-                    className="object-contain"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-                  />
-                </div>
-              ))}
+              {extendedSlides.map((slide, index) => {
+                const isFirstSlide = index === 1 // La primera slide real está en índice 1
+                const shouldLoad = loadedSlides.has(index)
+                
+                return (
+                  <div
+                    key={`${slide.id}-${index}`}
+                    className="min-w-full h-full flex-shrink-0 relative"
+                  >
+                    {shouldLoad ? (
+                      <Image
+                        src={slide.image}
+                        alt={slide.alt}
+                        fill
+                        priority={isFirstSlide} // ⚡ CRITICAL: Solo primera slide con priority para LCP
+                        loading={isFirstSlide ? undefined : 'lazy'} // ⚡ PERFORMANCE: Lazy load de slides no visibles
+                        quality={85} // ⚡ PERFORMANCE: Calidad optimizada
+                        className="object-contain"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                      />
+                    ) : (
+                      // Placeholder mientras carga
+                      <div className="w-full h-full bg-gradient-to-r from-orange-500 to-orange-600 animate-pulse" />
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
 

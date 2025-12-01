@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 export const dynamicParams = true
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useDeferredValue, startTransition, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getMainImage } from '@/lib/adapters/product-adapter'
@@ -16,9 +16,13 @@ import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { useProductBySlug } from '@/hooks/useProductBySlug'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
-// Importar directamente para evitar problemas de serialización con dynamic imports
-import FloatingWhatsAppBuy from '@/components/Common/FloatingWhatsAppBuy'
-import BuyPageWhatsAppPopup from '@/components/Common/BuyPageWhatsAppPopup'
+// ⚡ PERFORMANCE: Lazy load de componentes no críticos
+const FloatingWhatsAppBuy = dynamic(() => import('@/components/Common/FloatingWhatsAppBuy'), {
+  ssr: false,
+})
+const BuyPageWhatsAppPopup = dynamic(() => import('@/components/Common/BuyPageWhatsAppPopup'), {
+  ssr: false,
+})
 
 interface ProductData {
   id: number
@@ -43,21 +47,50 @@ export default function BuyProductPage() {
   const [status, setStatus] = useState<'loading' | 'adding' | 'ready' | 'error'>('loading')
   const [error, setError] = useState<string | null>(null)
   const [productData, setProductData] = useState<ProductData | null>(null)
+  const [shouldLoadWhatsApp, setShouldLoadWhatsApp] = useState(false)
+  
+  // ⚡ PERFORMANCE: Usar useDeferredValue para valores no críticos
+  const deferredProductData = useDeferredValue(productData)
   
   // Ref para rastrear si ya se procesó este slug específico en esta ejecución
   const processedSlugRef = useRef<string | null>(null)
   // Ref para evitar agregar el producto múltiples veces
   const hasAddedToCartRef = useRef(false)
+  const whatsAppTriggerRef = useRef<HTMLDivElement>(null)
+
+  // ⚡ PERFORMANCE: Cachear lectura de sessionStorage
+  const alreadyProcessed = useMemo(() => {
+    if (typeof window === 'undefined' || !productSlug) return false
+    const storageKey = `processed_slug_${productSlug}`
+    return sessionStorage.getItem(storageKey) === 'true'
+  }, [productSlug])
 
   // Guardar el slug en sessionStorage para poder volver desde checkout
+  // ⚡ PERFORMANCE: Usar requestIdleCallback para operaciones no críticas
   useEffect(() => {
     if (productSlug && typeof window !== 'undefined') {
-      sessionStorage.setItem('last_buy_page_slug', productSlug)
+      const saveToStorage = () => {
+        sessionStorage.setItem('last_buy_page_slug', productSlug)
+      }
+      
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(saveToStorage, { timeout: 2000 })
+      } else {
+        setTimeout(saveToStorage, 0)
+      }
     }
   }, [productSlug])
 
-  // Manejar errores del producto
+  // ⚡ PERFORMANCE: Combinar validación y manejo de errores en un solo useEffect
   useEffect(() => {
+    // Verificar si el slug es válido
+    if (!productSlug || productSlug.trim() === '') {
+      setError('Slug de producto no válido')
+      setStatus('error')
+      return
+    }
+
+    // Manejar errores del producto
     if (productError) {
       setError(productError.message)
       setStatus('error')
@@ -76,15 +109,6 @@ export default function BuyProductPage() {
     }
   }, [productError, productSlug, router])
 
-  // Verificar si el slug es válido
-  useEffect(() => {
-    if (!productSlug || productSlug.trim() === '') {
-      setError('Slug de producto no válido')
-      setStatus('error')
-      return
-    }
-  }, [productSlug])
-
   // Procesar producto cuando se carga desde TanStack Query
   useEffect(() => {
     // Si está cargando o no hay producto, esperar
@@ -93,19 +117,18 @@ export default function BuyProductPage() {
       return
     }
 
-    // Verificar en sessionStorage si ya se procesó este slug en esta sesión
-    const storageKey = `processed_slug_${productSlug}`
-    const alreadyProcessed = typeof window !== 'undefined' && sessionStorage.getItem(storageKey) === 'true'
-    
+    // Si ya se procesó este slug en esta sesión, solo mostrar datos
     if (alreadyProcessed) {
       console.log('[BuyProductPage] Slug ya procesado en esta sesión, saltando agregado al carrito')
       // Solo mostrar la página intermedia con los datos del producto
-      setProductData({
-        id: product.id,
-        categoryId: product.category_id || product.category?.id,
-        categorySlug: product.category?.slug || product.category,
+      startTransition(() => {
+        setProductData({
+          id: product.id,
+          categoryId: product.category_id || product.category?.id,
+          categorySlug: product.category?.slug || product.category,
+        })
+        setStatus('ready')
       })
-      setStatus('ready')
       return
     }
 
@@ -117,11 +140,23 @@ export default function BuyProductPage() {
     // Marcar como procesado ANTES de iniciar el proceso
     processedSlugRef.current = productSlug
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem(storageKey, 'true')
+      const storageKey = `processed_slug_${productSlug}`
+      // ⚡ PERFORMANCE: Usar requestIdleCallback para escritura de sessionStorage
+      const saveToStorage = () => {
+        sessionStorage.setItem(storageKey, 'true')
+      }
+      
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(saveToStorage, { timeout: 2000 })
+      } else {
+        setTimeout(saveToStorage, 0)
+      }
     }
 
-    // Procesar agregado al carrito
-    const processPurchase = async () => {
+    // ⚡ PERFORMANCE: Procesar agregado al carrito en startTransition para no bloquear UI
+    startTransition(() => {
+      // Procesar agregado al carrito
+      const processPurchase = async () => {
       try {
         // Validar datos del producto
         if (!product || (!product.id && !product.name && !product.title)) {
@@ -260,8 +295,9 @@ export default function BuyProductPage() {
       }
     }
 
-    processPurchase()
-  }, [product, isLoadingProduct, productSlug, router, cartItems, addProduct])
+      processPurchase()
+    })
+  }, [product, isLoadingProduct, productSlug, router, cartItems, addProduct, alreadyProcessed])
 
   if (status === 'error') {
     return (
@@ -290,11 +326,14 @@ export default function BuyProductPage() {
       {/* Botón de carrito flotante justo debajo del header */}
       <FloatingCheckoutButton />
       
-      {/* Botón flotante de WhatsApp (sin delay en /buy) */}
-      <FloatingWhatsAppBuy />
+      {/* ⚡ PERFORMANCE: Trigger invisible para cargar componentes de WhatsApp */}
+      <div ref={whatsAppTriggerRef} className='absolute top-0 left-0 w-1 h-1 opacity-0 pointer-events-none' />
       
-      {/* Popup de WhatsApp (aparece a los 500ms) */}
-      <BuyPageWhatsAppPopup />
+      {/* Botón flotante de WhatsApp - Lazy load cuando está cerca */}
+      {shouldLoadWhatsApp && <FloatingWhatsAppBuy />}
+      
+      {/* Popup de WhatsApp - Lazy load cuando está cerca */}
+      {shouldLoadWhatsApp && <BuyPageWhatsAppPopup />}
       
       {/* Badge flotante con título */}
       <BuyPageHeader />
@@ -304,11 +343,11 @@ export default function BuyProductPage() {
       
       {/* Grid de productos o skeleton inline */}
       <div className='max-w-7xl mx-auto px-4 pb-6 relative z-0'>
-        {status === 'ready' && productData ? (
+        {status === 'ready' && deferredProductData ? (
           <ProductGridInfinite
-            currentProductId={productData.id}
-            {...(productData.categoryId && { currentProductCategoryId: productData.categoryId })}
-            {...(productData.categorySlug && { categorySlug: productData.categorySlug })}
+            currentProductId={deferredProductData.id}
+            {...(deferredProductData.categoryId && { currentProductCategoryId: deferredProductData.categoryId })}
+            {...(deferredProductData.categorySlug && { categorySlug: deferredProductData.categorySlug })}
           />
         ) : (
           // ✅ SKELETON UNIFICADO: Usar ProductSkeletonGrid para consistencia con Home-v2
