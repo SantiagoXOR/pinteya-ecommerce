@@ -4,11 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { trackEvent } from '@/lib/google-analytics'
 
-interface FloatingWhatsAppProps {
-  showImmediately?: boolean
-}
-
-const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ showImmediately = false }) => {
+// Versión específica para /buy que aparece inmediatamente
+const FloatingWhatsAppBuy = () => {
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -16,16 +13,9 @@ const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ showImmediately = f
   const defaultMessage = 'Hola! Necesito ayuda con productos de pinturería'
 
   useEffect(() => {
-    // Si showImmediately es true, mostrar inmediatamente
-    // Si no, mostrar después de 5 segundos (comportamiento por defecto)
-    const delay = showImmediately ? 0 : 5000
-
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, delay)
-
-    return () => clearTimeout(timer)
-  }, [showImmediately])
+    // En /buy, mostrar inmediatamente
+    setIsVisible(true)
+  }, [])
 
   const handleClick = () => {
     trackEvent('whatsapp_click', 'engagement', 'floating_button')
@@ -100,5 +90,5 @@ const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ showImmediately = f
   )
 }
 
-export default FloatingWhatsApp
+export default FloatingWhatsAppBuy
 

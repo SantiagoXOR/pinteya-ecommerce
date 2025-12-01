@@ -18,8 +18,8 @@ import { useProductBySlug } from '@/hooks/useProductBySlug'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 import dynamic from 'next/dynamic'
 
-// FloatingWhatsApp: cargar sin delay (ssr: false)
-const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhatsApp'), {
+// FloatingWhatsApp: versión específica para /buy que aparece inmediatamente
+const FloatingWhatsAppBuy = dynamic(() => import('@/components/Common/FloatingWhatsAppBuy'), {
   ssr: false,
 })
 
@@ -299,7 +299,7 @@ export default function BuyProductPage() {
       <FloatingCheckoutButton />
       
       {/* Botón flotante de WhatsApp (sin delay en /buy) */}
-      <FloatingWhatsApp showImmediately={true} />
+      <FloatingWhatsAppBuy />
       
       {/* Popup de WhatsApp (aparece a los 500ms) */}
       <BuyPageWhatsAppPopup />
