@@ -16,6 +16,17 @@ import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { useProductBySlug } from '@/hooks/useProductBySlug'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
+import dynamic from 'next/dynamic'
+
+// FloatingWhatsApp: cargar sin delay (ssr: false)
+const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhatsApp'), {
+  ssr: false,
+})
+
+// Popup de WhatsApp para página /buy (aparece a los 500ms)
+const BuyPageWhatsAppPopup = dynamic(() => import('@/components/Common/BuyPageWhatsAppPopup'), {
+  ssr: false,
+})
 
 interface ProductData {
   id: number
@@ -286,6 +297,12 @@ export default function BuyProductPage() {
     <main className='min-h-screen pb-24 relative' style={{ background: 'linear-gradient(180deg, #ffd549 0%, #fff4c6 50%, #ffffff 100%)', backgroundAttachment: 'fixed' }}>
       {/* Botón de carrito flotante justo debajo del header */}
       <FloatingCheckoutButton />
+      
+      {/* Botón flotante de WhatsApp (sin delay en /buy) */}
+      <FloatingWhatsApp />
+      
+      {/* Popup de WhatsApp (aparece a los 500ms) */}
+      <BuyPageWhatsAppPopup />
       
       {/* Badge flotante con título */}
       <BuyPageHeader />

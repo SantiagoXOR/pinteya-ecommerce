@@ -12,7 +12,7 @@ interface InitialLoadingSpinnerProps {
 }
 
 export function InitialLoadingSpinner({
-  minDisplayTime = 800,
+  minDisplayTime = 300, // Reducido de 800ms a 300ms para respuesta más rápida
   autoHide = true,
 }: InitialLoadingSpinnerProps) {
   const [isVisible, setIsVisible] = useState(true)
@@ -24,14 +24,18 @@ export function InitialLoadingSpinner({
 
     const startTime = Date.now()
     let animationFrame: number
+    let hideTimeout: NodeJS.Timeout | null = null
+    let isHiding = false
 
     // Simular progreso de carga
     const updateProgress = () => {
+      if (isHiding) return
+      
       const elapsed = Date.now() - startTime
       const progressValue = Math.min((elapsed / minDisplayTime) * 100, 95) // Máximo 95% hasta que esté listo
       setProgress(progressValue)
 
-      if (elapsed < minDisplayTime) {
+      if (elapsed < minDisplayTime && !isHiding) {
         animationFrame = requestAnimationFrame(updateProgress)
       }
     }
@@ -40,50 +44,73 @@ export function InitialLoadingSpinner({
 
     // Ocultar cuando el contenido esté listo
     const hideLoader = () => {
+      if (isHiding) return
+      isHiding = true
+
       const elapsed = Date.now() - startTime
+      // Si ya pasó el tiempo mínimo, ocultar inmediatamente
+      // Si no, esperar solo lo necesario para completar el mínimo
       const remainingTime = Math.max(0, minDisplayTime - elapsed)
 
-      setTimeout(() => {
+      if (hideTimeout) clearTimeout(hideTimeout)
+      
+      hideTimeout = setTimeout(() => {
         setProgress(100)
-        // Fade out animation
+        // Fade out más rápido (150ms en lugar de 300ms)
         setTimeout(() => {
           setIsVisible(false)
-        }, 300)
+        }, 150)
       }, remainingTime)
     }
 
     // Detectar cuando el contenido está listo
     if (typeof window !== 'undefined') {
-      // Opción 1: Cuando el DOM está listo
+      // Si el contenido ya está listo al montar, ocultar inmediatamente
       if (document.readyState === 'complete') {
-        hideLoader()
+        // Si ya pasó suficiente tiempo, ocultar inmediatamente
+        // Si no, esperar solo el mínimo necesario
+        const elapsed = Date.now() - startTime
+        if (elapsed >= minDisplayTime) {
+          setProgress(100)
+          setTimeout(() => setIsVisible(false), 150)
+        } else {
+          hideLoader()
+        }
       } else {
-        window.addEventListener('load', hideLoader)
+        // Escuchar eventos de carga
+        window.addEventListener('load', hideLoader, { once: true })
+        document.addEventListener('DOMContentLoaded', hideLoader, { once: true })
       }
 
-      // Opción 2: Cuando hay contenido visible (FCP)
-      const observer = new PerformanceObserver((list) => {
-        for (const entry of list.getEntries()) {
-          if (entry.name === 'first-contentful-paint') {
-            hideLoader()
-            break
-          }
-        }
-      })
-
+      // Detectar First Contentful Paint (FCP) - más rápido que 'load'
+      let observer: PerformanceObserver | null = null
       try {
+        observer = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            if (entry.name === 'first-contentful-paint') {
+              hideLoader()
+              break
+            }
+          }
+        })
         observer.observe({ entryTypes: ['paint'] })
       } catch (e) {
         // Fallback si PerformanceObserver no está disponible
-        hideLoader()
+        // Usar DOMContentLoaded como fallback
       }
 
       return () => {
         if (animationFrame) {
           cancelAnimationFrame(animationFrame)
         }
+        if (hideTimeout) {
+          clearTimeout(hideTimeout)
+        }
         window.removeEventListener('load', hideLoader)
-        observer.disconnect()
+        document.removeEventListener('DOMContentLoaded', hideLoader)
+        if (observer) {
+          observer.disconnect()
+        }
       }
     }
   }, [autoHide, minDisplayTime])
@@ -102,7 +129,7 @@ export function InitialLoadingSpinner({
     <div
       className={cn(
         'fixed inset-0 z-[10000] flex items-center justify-center',
-        'transition-opacity duration-300',
+        'transition-opacity duration-150', // Reducido de 300ms a 150ms para fade out más rápido
         !isVisible && 'opacity-0 pointer-events-none'
       )}
       style={{

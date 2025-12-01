@@ -3,22 +3,28 @@
 import React, { useState, useEffect } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { trackEvent } from '@/lib/google-analytics'
+import { usePathname } from 'next/navigation'
 
 const FloatingWhatsApp = () => {
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const pathname = usePathname()
 
   const whatsappNumber = '5493513411796' // Número oficial de Pinteya
   const defaultMessage = 'Hola! Necesito ayuda con productos de pinturería'
 
   useEffect(() => {
-    // Mostrar después de 5 segundos
+    // En la página /buy, mostrar inmediatamente
+    // En otras páginas, mostrar después de 5 segundos
+    const isBuyPage = pathname?.startsWith('/buy')
+    const delay = isBuyPage ? 0 : 5000
+
     const timer = setTimeout(() => {
       setIsVisible(true)
-    }, 5000)
+    }, delay)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [pathname])
 
   const handleClick = () => {
     trackEvent('whatsapp_click', 'engagement', 'floating_button')

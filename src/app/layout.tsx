@@ -105,7 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ClientErrorSuppression />
-        <InitialLoadingSpinner minDisplayTime={800} autoHide={true} />
+        <InitialLoadingSpinner minDisplayTime={300} autoHide={true} />
         {/* <JsonSafetyInitializer /> */}
         {/* <DebugNotificationDisabler /> */}
         {/* <PerformanceTracker /> */}
