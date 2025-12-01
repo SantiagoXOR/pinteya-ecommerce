@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 export const dynamicParams = true
 
-import React, { useEffect, useState, useRef, startTransition } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter } from 'next/navigation'
 import { useCartUnified } from '@/hooks/useCartUnified'
@@ -18,21 +18,13 @@ import { selectCartItems } from '@/redux/features/cart-slice'
 import { useProductBySlug } from '@/hooks/useProductBySlug'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 // ⚡ PERFORMANCE: Lazy load de componentes no críticos
-// Usar .then() para asegurar que el default export se maneje correctamente
-const FloatingWhatsAppBuy = dynamic(
-  () => import('@/components/Common/FloatingWhatsAppBuy').then(mod => ({ default: mod.default })),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-)
-const BuyPageWhatsAppPopup = dynamic(
-  () => import('@/components/Common/BuyPageWhatsAppPopup').then(mod => ({ default: mod.default })),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-)
+// Simplificado para evitar problemas de serialización
+const FloatingWhatsAppBuy = dynamic(() => import('@/components/Common/FloatingWhatsAppBuy'), {
+  ssr: false,
+})
+const BuyPageWhatsAppPopup = dynamic(() => import('@/components/Common/BuyPageWhatsAppPopup'), {
+  ssr: false,
+})
 
 interface ProductData {
   id: number
@@ -64,7 +56,6 @@ export default function BuyProductPage() {
   const processedSlugRef = useRef<string | null>(null)
   // Ref para evitar agregar el producto múltiples veces
   const hasAddedToCartRef = useRef(false)
-  const whatsAppTriggerRef = useRef<HTMLDivElement>(null)
 
   // ⚡ PERFORMANCE: Verificar sessionStorage en useEffect (solo en cliente) para evitar problemas de hidratación
   useEffect(() => {
@@ -75,28 +66,14 @@ export default function BuyProductPage() {
     }
   }, [productSlug])
 
-  // ⚡ PERFORMANCE: Intersection Observer para cargar componentes de WhatsApp cuando están cerca
+  // ⚡ PERFORMANCE: Cargar componentes de WhatsApp después del mount para evitar problemas de hidratación
   useEffect(() => {
-    if (!whatsAppTriggerRef.current) return
+    // Cargar después de un pequeño delay para evitar problemas de serialización
+    const timer = setTimeout(() => {
+      setShouldLoadWhatsApp(true)
+    }, 100)
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setShouldLoadWhatsApp(true)
-          observer.disconnect()
-        }
-      },
-      {
-        rootMargin: '500px', // Cargar cuando está a 500px del viewport
-        threshold: 0.1,
-      }
-    )
-
-    observer.observe(whatsAppTriggerRef.current)
-
-    return () => {
-      observer.disconnect()
-    }
+    return () => clearTimeout(timer)
   }, [])
 
   // Guardar el slug en sessionStorage para poder volver desde checkout
@@ -155,14 +132,16 @@ export default function BuyProductPage() {
     if (alreadyProcessed) {
       console.log('[BuyProductPage] Slug ya procesado en esta sesión, saltando agregado al carrito')
       // Solo mostrar la página intermedia con los datos del producto
-      startTransition(() => {
-        setProductData({
-          id: product.id,
-          categoryId: product.category_id || product.category?.id,
-          categorySlug: product.category?.slug || product.category,
-        })
-        setStatus('ready')
+      // Evitar startTransition aquí para prevenir problemas de serialización
+      const categoryId = product.category_id || product.category?.id || undefined
+      const categorySlug = product.category?.slug || product.category || undefined
+      
+      setProductData({
+        id: product.id,
+        ...(categoryId && { categoryId }),
+        ...(categorySlug && { categorySlug }),
       })
+      setStatus('ready')
       return
     }
 
@@ -221,10 +200,8 @@ export default function BuyProductPage() {
           ? product.images.previews 
           : [mainImage]
 
-        // ⚡ PERFORMANCE: Usar startTransition solo para actualizaciones de estado síncronas
-        startTransition(() => {
-          setStatus('adding')
-        })
+        // Actualizar estado sin startTransition para evitar problemas de serialización
+        setStatus('adding')
 
         // Esperar un momento para que el carrito se haya hidratado desde localStorage
         await new Promise(resolve => setTimeout(resolve, 200))
@@ -297,23 +274,24 @@ export default function BuyProductPage() {
         // Pequeño delay para asegurar que el carrito se actualice
         await new Promise(resolve => setTimeout(resolve, 300))
 
-        // ⚡ PERFORMANCE: Usar startTransition solo para actualizaciones de estado finales
-        startTransition(() => {
-          // Guardar datos del producto para mostrar recomendaciones
-          setProductData({
-            id: productId,
-            categoryId: product.category_id || product.category?.id,
-            categorySlug: product.category?.slug || product.category,
-          })
-          
-          // Mostrar página intermedia con productos
-          console.log('[BuyProductPage] Estado listo, mostrando página intermedia', {
-            productId,
-            categoryId: product.category_id || product.category?.id,
-            categorySlug: product.category?.slug || product.category,
-          })
-          setStatus('ready')
+        // Guardar datos del producto para mostrar recomendaciones
+        // Evitar startTransition para prevenir problemas de serialización
+        const categoryId = product.category_id || product.category?.id || undefined
+        const categorySlug = product.category?.slug || product.category || undefined
+        
+        setProductData({
+          id: productId,
+          ...(categoryId && { categoryId }),
+          ...(categorySlug && { categorySlug }),
         })
+        
+        // Mostrar página intermedia con productos
+        console.log('[BuyProductPage] Estado listo, mostrando página intermedia', {
+          productId,
+          categoryId,
+          categorySlug,
+        })
+        setStatus('ready')
       } catch (err) {
         console.error('Error procesando compra:', err)
         setError(err instanceof Error ? err.message : 'Error al procesar la compra')
@@ -364,13 +342,10 @@ export default function BuyProductPage() {
       {/* Botón de carrito flotante justo debajo del header */}
       <FloatingCheckoutButton />
       
-      {/* ⚡ PERFORMANCE: Trigger invisible para cargar componentes de WhatsApp */}
-      <div ref={whatsAppTriggerRef} className='absolute top-0 left-0 w-1 h-1 opacity-0 pointer-events-none' />
-      
-      {/* Botón flotante de WhatsApp - Lazy load cuando está cerca */}
+      {/* Botón flotante de WhatsApp - Lazy load */}
       {shouldLoadWhatsApp && <FloatingWhatsAppBuy />}
       
-      {/* Popup de WhatsApp - Lazy load cuando está cerca */}
+      {/* Popup de WhatsApp - Lazy load */}
       {shouldLoadWhatsApp && <BuyPageWhatsAppPopup />}
       
       {/* Badge flotante con título */}
