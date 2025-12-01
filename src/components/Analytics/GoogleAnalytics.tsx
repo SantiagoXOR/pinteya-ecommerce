@@ -103,6 +103,21 @@ const GoogleAnalytics: React.FC = () => {
               console.warn('Error executing Google Analytics script:', error)
             }}
           />
+          {/* Script adicional para asegurar que Google tag se carga correctamente */}
+          {GA_TRACKING_ID === GOOGLE_TAG_ID && (
+            <Script
+              id='google-tag-verification'
+              strategy='lazyOnload'
+              dangerouslySetInnerHTML={{
+                __html: `
+                  // Verificación adicional para Google tag G-MN070Y406E
+                  if (typeof window.gtag === 'function') {
+                    window.gtag('config', '${GOOGLE_TAG_ID}');
+                  }
+                `,
+              }}
+            />
+          )}
         </>
       )}
     </>
