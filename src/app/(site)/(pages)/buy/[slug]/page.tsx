@@ -181,10 +181,9 @@ export default function BuyProductPage() {
       }
     }
 
-    // ⚡ PERFORMANCE: Procesar agregado al carrito en startTransition para no bloquear UI
-    startTransition(() => {
-      // Procesar agregado al carrito
-      const processPurchase = async () => {
+    // ⚡ PERFORMANCE: Procesar agregado al carrito - NO usar startTransition con async
+    // startTransition no puede envolver funciones async, solo actualizaciones de estado síncronas
+    const processPurchase = async () => {
       try {
         // Validar datos del producto
         if (!product || (!product.id && !product.name && !product.title)) {
@@ -216,7 +215,10 @@ export default function BuyProductPage() {
           ? product.images.previews 
           : [mainImage]
 
-        setStatus('adding')
+        // ⚡ PERFORMANCE: Usar startTransition solo para actualizaciones de estado síncronas
+        startTransition(() => {
+          setStatus('adding')
+        })
 
         // Esperar un momento para que el carrito se haya hidratado desde localStorage
         await new Promise(resolve => setTimeout(resolve, 200))
@@ -286,23 +288,26 @@ export default function BuyProductPage() {
           console.log('[BuyProductPage] Producto ya está en el carrito, saltando agregado')
         }
 
-        // Guardar datos del producto para mostrar recomendaciones
-        setProductData({
-          id: productId,
-          categoryId: product.category_id || product.category?.id,
-          categorySlug: product.category?.slug || product.category,
-        })
-
         // Pequeño delay para asegurar que el carrito se actualice
         await new Promise(resolve => setTimeout(resolve, 300))
 
-        // Mostrar página intermedia con productos
-        console.log('[BuyProductPage] Estado listo, mostrando página intermedia', {
-          productId,
-          categoryId: product.category_id || product.category?.id,
-          categorySlug: product.category?.slug || product.category,
+        // ⚡ PERFORMANCE: Usar startTransition solo para actualizaciones de estado finales
+        startTransition(() => {
+          // Guardar datos del producto para mostrar recomendaciones
+          setProductData({
+            id: productId,
+            categoryId: product.category_id || product.category?.id,
+            categorySlug: product.category?.slug || product.category,
+          })
+          
+          // Mostrar página intermedia con productos
+          console.log('[BuyProductPage] Estado listo, mostrando página intermedia', {
+            productId,
+            categoryId: product.category_id || product.category?.id,
+            categorySlug: product.category?.slug || product.category,
+          })
+          setStatus('ready')
         })
-        setStatus('ready')
       } catch (err) {
         console.error('Error procesando compra:', err)
         setError(err instanceof Error ? err.message : 'Error al procesar la compra')
@@ -323,8 +328,7 @@ export default function BuyProductPage() {
       }
     }
 
-      processPurchase()
-    })
+    processPurchase()
   }, [product, isLoadingProduct, productSlug, router, cartItems, addProduct, alreadyProcessed])
 
   if (status === 'error') {

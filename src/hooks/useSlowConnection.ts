@@ -61,3 +61,4 @@ export const useSlowConnection = (): boolean => {
   return isSlowConnection
 }
 
+

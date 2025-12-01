@@ -151,3 +151,4 @@ console.log('dataLayer:', window.dataLayer)
 - [Google Ads Help - Conversion Tracking](https://support.google.com/google-ads/answer/1722054)
 - [Verificar etiquetas en Google Ads](https://support.google.com/google-ads/answer/6331314)
 
+
