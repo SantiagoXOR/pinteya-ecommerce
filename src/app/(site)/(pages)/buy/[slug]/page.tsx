@@ -16,17 +16,9 @@ import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { useProductBySlug } from '@/hooks/useProductBySlug'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
-import dynamic from 'next/dynamic'
-
-// FloatingWhatsApp: versión específica para /buy que aparece inmediatamente
-const FloatingWhatsAppBuy = dynamic(() => import('@/components/Common/FloatingWhatsAppBuy'), {
-  ssr: false,
-})
-
-// Popup de WhatsApp para página /buy (aparece a los 500ms)
-const BuyPageWhatsAppPopup = dynamic(() => import('@/components/Common/BuyPageWhatsAppPopup'), {
-  ssr: false,
-})
+// Importar directamente para evitar problemas de serialización con dynamic imports
+import FloatingWhatsAppBuy from '@/components/Common/FloatingWhatsAppBuy'
+import BuyPageWhatsAppPopup from '@/components/Common/BuyPageWhatsAppPopup'
 
 interface ProductData {
   id: number
