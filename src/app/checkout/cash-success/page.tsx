@@ -147,12 +147,20 @@ export default function CashSuccessPage() {
       if (foundMessage) {
         setWhatsappMessage(foundMessage)
       }
+
+      // 📊 Google Ads Conversion Event
+      if (orderId && typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'conversion', {
+          'send_to': 'AW-17767977006/pWuOCOrskMkbEK6gt5hC',
+          'transaction_id': orderId
+        })
+      }
     } catch (e) {
       // Si hay algún error de parseo, mantenemos valores por defecto
       setEffectiveTotal(totalParam ? Number(totalParam) || 0 : 0)
       setEffectiveWhatsappUrl(whatsappUrlParam || null)
     }
-  }, [])
+  }, [orderId, totalParam, whatsappUrlParam, customerName, phone])
 
   // Countdown para redirección automática
   useEffect(() => {

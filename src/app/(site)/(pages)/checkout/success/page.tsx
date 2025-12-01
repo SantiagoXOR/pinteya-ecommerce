@@ -109,6 +109,14 @@ export default function CheckoutSuccessPage() {
           // Google Ads
           trackGoogleAdsPurchase(transactionId, totalValue, 'ARS', ga4Items)
 
+          // Google Ads Conversion Event (fragmento de conversión)
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'conversion', {
+              'send_to': 'AW-17767977006/pWuOCOrskMkbEK6gt5hC',
+              'transaction_id': transactionId
+            })
+          }
+
           console.debug('[Analytics] Purchase tracked:', {
             transactionId,
             items: items.length,

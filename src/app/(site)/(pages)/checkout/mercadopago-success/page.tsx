@@ -207,6 +207,17 @@ export default function MercadoPagoSuccessPage() {
           } catch {}
           setPhoneNumber(extractedPhone)
           
+          // 📊 Google Ads Conversion Event
+          if (typeof window !== 'undefined' && window.gtag) {
+            const transactionId = order.order_number || order.id?.toString() || orderId
+            if (transactionId) {
+              window.gtag('event', 'conversion', {
+                'send_to': 'AW-17767977006/pWuOCOrskMkbEK6gt5hC',
+                'transaction_id': transactionId
+              })
+            }
+          }
+          
         } else {
           console.warn('No se encontró la orden en la API')
           // Crear datos básicos si no se encuentra la orden
