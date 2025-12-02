@@ -9,10 +9,9 @@ import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShippi
 interface ProductItemProps {
   product?: Product
   item?: Product // Prop legacy para compatibilidad
-  imagePriority?: boolean // ⚡ PERFORMANCE: Para indicar si la imagen debe tener priority
 }
 
-const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item, imagePriority = false }) => {
+const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) => {
   const { addProduct } = useCartUnified()
   const { trackEvent } = useAnalytics()
 
@@ -143,8 +142,6 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item, ima
       // ✅ NO pasar color/medida legacy - usar solo variantes para badges
       // color={productData.color}
       // medida={productData.medida}
-      // ⚡ PERFORMANCE: Pasar priority para imágenes críticas
-      imagePriority={imagePriority}
     />
   )
 }, (prevProps, nextProps) => {

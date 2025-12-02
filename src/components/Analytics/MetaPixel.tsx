@@ -15,12 +15,10 @@ import {
   isMetaPixelEnabled,
   waitForMetaPixel,
 } from '@/lib/meta-pixel'
-import { useSlowConnection } from '@/hooks/useSlowConnection'
 
 const MetaPixel: React.FC = () => {
   const pathname = usePathname()
   const [isPixelLoaded, setIsPixelLoaded] = useState(false)
-  const isSlowConnection = useSlowConnection()
 
   // Manejar cuando Meta Pixel está listo
   const handlePixelLoad = async () => {
@@ -61,63 +59,29 @@ const MetaPixel: React.FC = () => {
       {META_PIXEL_ID && META_PIXEL_ID.length >= 10 && (
         <>
           {/* ⚡ PERFORMANCE: lazyOnload carga Meta Pixel DESPUÉS de FCP */}
-          {/* ⚡ PERFORMANCE: En conexiones lentas, usar requestIdleCallback para cargar aún más tarde */}
-          {isSlowConnection ? (
-            <Script
-              id='meta-pixel'
-              strategy='lazyOnload'
-              onLoad={() => {
-                // En conexiones lentas, agregar delay adicional
-                if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-                  requestIdleCallback(handlePixelLoad, { timeout: 5000 })
-                } else {
-                  setTimeout(handlePixelLoad, 2000)
-                }
-              }}
-              onError={error => {
-                console.warn('Error loading Meta Pixel script:', error)
-                setIsPixelLoaded(false)
-              }}
-              dangerouslySetInnerHTML={{
-                __html: `
-                  !function(f,b,e,v,n,t,s)
-                  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                  n.queue=[];t=b.createElement(e);t.async=!0;
-                  t.src=v;s=b.getElementsByTagName(e)[0];
-                  s.parentNode.insertBefore(t,s)}(window, document,'script',
-                  'https://connect.facebook.net/en_US/fbevents.js');
-                  fbq('init', '${META_PIXEL_ID}');
-                  fbq('track', 'PageView');
-                `,
-              }}
-            />
-          ) : (
-            <Script
-              id='meta-pixel'
-              strategy='lazyOnload'
-              onLoad={handlePixelLoad}
-              onError={error => {
-                console.warn('Error loading Meta Pixel script:', error)
-                setIsPixelLoaded(false)
-              }}
-              dangerouslySetInnerHTML={{
-                __html: `
-                  !function(f,b,e,v,n,t,s)
-                  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                  n.queue=[];t=b.createElement(e);t.async=!0;
-                  t.src=v;s=b.getElementsByTagName(e)[0];
-                  s.parentNode.insertBefore(t,s)}(window, document,'script',
-                  'https://connect.facebook.net/en_US/fbevents.js');
-                  fbq('init', '${META_PIXEL_ID}');
-                  fbq('track', 'PageView');
-                `,
-              }}
-            />
-          )}
+          <Script
+            id='meta-pixel'
+            strategy='lazyOnload'
+            onLoad={handlePixelLoad}
+            onError={error => {
+              console.warn('Error loading Meta Pixel script:', error)
+              setIsPixelLoaded(false)
+            }}
+            dangerouslySetInnerHTML={{
+              __html: `
+                !function(f,b,e,v,n,t,s)
+                {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                n.queue=[];t=b.createElement(e);t.async=!0;
+                t.src=v;s=b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t,s)}(window, document,'script',
+                'https://connect.facebook.net/en_US/fbevents.js');
+                fbq('init', '${META_PIXEL_ID}');
+                fbq('track', 'PageView');
+              `,
+            }}
+          />
           {/* Noscript fallback para usuarios sin JavaScript */}
           <noscript>
             <img

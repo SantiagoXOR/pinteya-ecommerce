@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { getMetaEventsManagerUrl } from '@/lib/integrations/meta-pixel-analytics'
 import { MetaPixelMetrics } from '@/types/analytics'
 import { ShoppingCart, CreditCard, CheckCircle, Eye, Search, ExternalLink, TrendingUp } from 'lucide-react'
@@ -27,22 +27,47 @@ const MetaMetrics: React.FC<MetaMetricsProps> = ({
   const [metrics, setMetrics] = useState<MetaPixelMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const metaPixelId = pixelId || process.env.NEXT_PUBLIC_META_PIXEL_ID || ''
 
+  // Memoizar las fechas para evitar recálculos innecesarios
+  const memoizedStartDate = useMemo(() => {
+    return startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  }, [startDate])
+
+  const memoizedEndDate = useMemo(() => {
+    return endDate || new Date().toISOString()
+  }, [endDate])
+
   useEffect(() => {
+    // Cancelar solicitud anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
     const fetchMetrics = async () => {
+      // Crear nuevo AbortController para esta solicitud
+      const abortController = new AbortController()
+      abortControllerRef.current = abortController
+
       try {
         setIsLoading(true)
         setError(null)
 
-        const start = startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        const end = endDate || new Date().toISOString()
+        const start = memoizedStartDate
+        const end = memoizedEndDate
 
-        // Llamar al endpoint API en lugar de la función directa
+        // Llamar al endpoint API con señal de cancelación
         const response = await fetch(
-          `/api/analytics/meta?startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`
+          `/api/analytics/meta?startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`,
+          { signal: abortController.signal }
         )
+
+        // Verificar si la solicitud fue cancelada
+        if (abortController.signal.aborted) {
+          return
+        }
 
         if (!response.ok) {
           throw new Error('Error al obtener métricas de Meta Pixel')
@@ -55,10 +80,17 @@ const MetaMetrics: React.FC<MetaMetricsProps> = ({
           throw new Error(result.error || 'Error al procesar métricas')
         }
       } catch (err) {
+        // Ignorar errores de cancelación
+        if (err instanceof Error && err.name === 'AbortError') {
+          return
+        }
         console.error('Error fetching Meta Pixel metrics:', err)
         setError(err instanceof Error ? err.message : 'Error al cargar métricas de Meta')
       } finally {
-        setIsLoading(false)
+        // Solo actualizar el estado si la solicitud no fue cancelada
+        if (!abortController.signal.aborted) {
+          setIsLoading(false)
+        }
       }
     }
 
@@ -68,7 +100,14 @@ const MetaMetrics: React.FC<MetaMetricsProps> = ({
       setError('Meta Pixel ID no configurado')
       setIsLoading(false)
     }
-  }, [metaPixelId, startDate, endDate])
+
+    // Cleanup: cancelar solicitud al desmontar o cambiar dependencias
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [metaPixelId, memoizedStartDate, memoizedEndDate])
 
   if (!metaPixelId) {
     return (

@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   TrendingUp,
@@ -118,6 +118,24 @@ const MetricCard: React.FC<MetricCardProps> = ({
     </motion.div>
   )
 }
+
+// Componente memoizado para MetaMetrics para evitar re-renders innecesarios
+const MetaMetricsMemoized: React.FC<{ timeRange: string }> = React.memo(({ timeRange }) => {
+  const { startDate, endDate } = useMemo(() => {
+    const end = new Date().toISOString()
+    const start =
+      timeRange === '1d'
+        ? new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+        : timeRange === '30d'
+          ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+          : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    return { startDate: start, endDate: end }
+  }, [timeRange])
+
+  return <MetaMetrics startDate={startDate} endDate={endDate} />
+})
+
+MetaMetricsMemoized.displayName = 'MetaMetricsMemoized'
 
 const AnalyticsDashboard: React.FC = () => {
   const [metricsData, setMetricsData] = useState<MetricsData | null>(null)
@@ -342,16 +360,7 @@ const AnalyticsDashboard: React.FC = () => {
         <GoogleAnalyticsEmbed />
 
         {/* Meta Pixel Metrics */}
-        <MetaMetrics
-          startDate={
-            timeRange === '1d'
-              ? new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-              : timeRange === '30d'
-                ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-                : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-          }
-          endDate={new Date().toISOString()}
-        />
+        <MetaMetricsMemoized timeRange={timeRange} />
       </div>
     </div>
   )

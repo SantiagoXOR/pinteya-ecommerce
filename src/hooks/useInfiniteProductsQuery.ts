@@ -8,15 +8,8 @@ import { ProductWithCategory } from '@/types/api'
 // Marcas premium que deben aparecer primero
 const PREMIUM_BRANDS = ['Plavicon', 'Sinteplast']
 
-// ⚡ PERFORMANCE: Límites reducidos para mobile
-const MOBILE_PRODUCTS_LIMIT = 12
-const DESKTOP_PRODUCTS_LIMIT = 100
-
-// Función para detectar si es mobile
-const isMobileDevice = (): boolean => {
-  if (typeof window === 'undefined') return false
-  return window.innerWidth < 768
-}
+// Cargar todos los productos de una vez (sin paginación)
+const PRODUCTS_PER_PAGE = 9999 // Número grande para cargar todos
 
 interface UseInfiniteProductsQueryOptions {
   currentProductId?: number | string
@@ -85,7 +78,7 @@ const adaptRelatedProduct = (relatedProduct: any): Product => {
 }
 
 // Función para obtener productos relacionados por nombre
-const fetchRelatedByName = async (productId: number, limit: number = 20): Promise<Product[]> => {
+const fetchRelatedByName = async (productId: number): Promise<Product[]> => {
   try {
     const productGroup = await getRelatedProductsByName(productId)
     if (!productGroup || !productGroup.products) {
@@ -100,7 +93,7 @@ const fetchRelatedByName = async (productId: number, limit: number = 20): Promis
       return []
     }
 
-    const productsPromises = relatedIds.slice(0, limit).map(async (id) => { // Límite dinámico según dispositivo
+    const productsPromises = relatedIds.slice(0, 100).map(async (id) => { // Límite máximo permitido por la API
       try {
         const response = await fetch(`/api/products/${id}`)
         if (!response.ok) return null
@@ -225,35 +218,15 @@ const fetchProductsPage = async (
     allCombinedProducts = []
     const usedIds = new Set<number | string>()
 
-    // ⚡ PERFORMANCE: Detectar mobile y usar límites reducidos
-    const isMobile = isMobileDevice()
-    const premiumLimit = isMobile ? MOBILE_PRODUCTS_LIMIT : DESKTOP_PRODUCTS_LIMIT
-    const categoryLimit = isMobile ? MOBILE_PRODUCTS_LIMIT : 99 // 99 porque getRelatedProducts suma +1 (máx 100)
-    const relatedByNameLimit = isMobile ? MOBILE_PRODUCTS_LIMIT : 20
-
-    // ⚡ PERFORMANCE: En mobile, hacer llamadas secuenciales para reducir carga inicial
-    // En desktop, mantener paralelas para mejor performance
-    let premiumProducts: Product[]
-    let relatedByName: Product[]
-    let relatedByCategory: Product[]
-
-    if (isMobile) {
-      // Mobile: Cargar secuencialmente, priorizando productos premium
-      premiumProducts = await fetchPremiumProducts(premiumLimit)
-      relatedByName = await fetchRelatedByName(productId, relatedByNameLimit)
-      relatedByCategory = currentProductCategoryId 
-        ? await fetchRelatedByCategory(productId, currentProductCategoryId, categoryLimit)
-        : []
-    } else {
-      // Desktop: Cargar en paralelo para mejor performance
-      [premiumProducts, relatedByName, relatedByCategory] = await Promise.all([
-        fetchPremiumProducts(premiumLimit),
-        fetchRelatedByName(productId, relatedByNameLimit),
-        currentProductCategoryId 
-          ? fetchRelatedByCategory(productId, currentProductCategoryId, categoryLimit)
-          : Promise.resolve([])
-      ])
-    }
+    // Cargar todas las fuentes de datos en paralelo con límites máximos permitidos por la API
+    // Nota: getRelatedProducts suma +1 al límite, así que usamos 99 para que el máximo sea 100
+    const [premiumProducts, relatedByName, relatedByCategory] = await Promise.all([
+      fetchPremiumProducts(100), // Límite máximo permitido por la API
+      fetchRelatedByName(productId), // Ya tiene límite de 20 en la función
+      currentProductCategoryId 
+        ? fetchRelatedByCategory(productId, currentProductCategoryId, 99) // 99 porque getRelatedProducts suma +1 (máx 100)
+        : Promise.resolve([])
+    ])
 
     // 0. Productos premium (máxima prioridad)
     premiumProducts.forEach(product => {

@@ -62,8 +62,6 @@ export interface BadgeConfig {
 }
 
 export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  // ⚡ PERFORMANCE: Prop para indicar si la imagen debe tener priority (primeras 4)
-  imagePriority?: boolean
   image?: string
   title?: string
   slug?: string
@@ -147,7 +145,6 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       children,
       color,
       medida,
-      imagePriority = false, // ⚡ PERFORMANCE: Por defecto false, solo primeras 4 con priority
       ...props
     },
     ref
@@ -1084,8 +1081,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               fill
               className='object-contain scale-125 z-0'
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              priority={imagePriority} // ⚡ PERFORMANCE: Solo primeras 4 imágenes con priority
-              loading={imagePriority ? undefined : 'lazy'} // ⚡ PERFORMANCE: Lazy load excepto primeras 4
+              priority={false}
               onError={handleImageError}
               onLoad={() => {
                 console.log(`✅ [CommercialProductCard] Imagen cargada exitosamente - Producto ID: ${productId}`)

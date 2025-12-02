@@ -152,3 +152,5 @@ console.log('dataLayer:', window.dataLayer)
 - [Verificar etiquetas en Google Ads](https://support.google.com/google-ads/answer/6331314)
 
 
+
+

@@ -179,3 +179,5 @@ Después de implementar estas optimizaciones, deberíamos ver mejoras en:
 
 
 
+
+

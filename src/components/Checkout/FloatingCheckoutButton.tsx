@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useAppSelector } from '@/redux/store'
@@ -8,49 +8,61 @@ import { selectCartItems, selectTotalPrice } from '@/redux/features/cart-slice'
 import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ⚡ PERFORMANCE: Memoizar componente para evitar re-renders innecesarios
-export const FloatingCheckoutButton: React.FC = memo(() => {
+export const FloatingCheckoutButton: React.FC = () => {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const [lastProductInfo, setLastProductInfo] = useState<{ brand?: string; name: string; image?: string } | null>(null)
   const [imageError, setImageError] = useState(false)
   const cartItems = useAppSelector(selectCartItems)
   const totalPrice = useAppSelector(selectTotalPrice)
-
-  // ⚡ PERFORMANCE: Obtener el último producto del carrito (optimizado)
-  const lastItem = useMemo(() => {
-    if (Array.isArray(cartItems) && cartItems.length > 0) {
-      return cartItems[cartItems.length - 1]
-    }
-    return null
-  }, [cartItems])
-
-  // ⚡ PERFORMANCE: Usar solo datos del carrito, sin query adicional
-  const lastProductInfo = useMemo(() => {
-    if (!lastItem) return null
-
-    const productImage = 
-      lastItem?.imgs?.thumbnails?.[0] 
-      || lastItem?.imgs?.previews?.[0] 
-      || lastItem?.image
-      || '/images/placeholder.png'
-
-    return {
-      brand: lastItem.brand || '',
-      name: lastItem.title || lastItem.name || 'Producto',
-      image: productImage,
-    }
-  }, [lastItem])
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Resetear error de imagen cuando cambia el producto
+  // Obtener información del último producto agregado
   useEffect(() => {
-    if (lastItem) {
-      setImageError(false)
+    if (Array.isArray(cartItems) && cartItems.length > 0) {
+      const lastItem = cartItems[cartItems.length - 1]
+      
+      // Obtener imagen del producto
+      const productImage = lastItem?.imgs?.thumbnails?.[0] 
+        || lastItem?.imgs?.previews?.[0] 
+        || lastItem?.image
+        || '/images/placeholder.png'
+
+      // Intentar obtener marca del producto desde la API si no está en el item
+      const fetchProductBrand = async () => {
+        try {
+          const response = await fetch(`/api/products/${lastItem.id}`)
+          if (response.ok) {
+            const data = await response.json()
+            const product = data.data || data.product || data
+            setLastProductInfo({
+              brand: product.brand || '',
+              name: lastItem.title || lastItem.name || '',
+              image: productImage,
+            })
+          } else {
+            setLastProductInfo({
+              brand: '',
+              name: lastItem.title || lastItem.name || '',
+              image: productImage,
+            })
+          }
+        } catch {
+          setLastProductInfo({
+            brand: '',
+            name: lastItem.title || lastItem.name || '',
+            image: productImage,
+          })
+        }
+      }
+
+      fetchProductBrand()
+      setImageError(false) // Resetear error al cambiar de producto
     }
-  }, [lastItem])
+  }, [cartItems])
 
   const itemCount = Array.isArray(cartItems) ? cartItems.length : 0
   const hasItems = itemCount > 0
@@ -153,8 +165,6 @@ export const FloatingCheckoutButton: React.FC = memo(() => {
         </div>
       </button>
   )
-})
-
-FloatingCheckoutButton.displayName = 'FloatingCheckoutButton'
+}
 
 
