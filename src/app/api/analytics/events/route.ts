@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '100')
 
     let query = supabase
-      .from('analytics_events_view')
+      .from('analytics_events_unified')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(limit)

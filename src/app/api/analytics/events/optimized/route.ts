@@ -149,9 +149,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Usar vista optimizada para compatibilidad
+    // Usar vista unificada para obtener todos los eventos
     let query = supabase
-      .from('analytics_events_view')
+      .from('analytics_events_unified')
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1)
