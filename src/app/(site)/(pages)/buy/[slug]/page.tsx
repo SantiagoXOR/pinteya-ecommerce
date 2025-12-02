@@ -4,7 +4,6 @@ export const dynamic = 'force-dynamic'
 export const dynamicParams = true
 
 import React, { useEffect, useState, useRef } from 'react'
-import dynamic from 'next/dynamic'
 import { useParams, useRouter } from 'next/navigation'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getMainImage } from '@/lib/adapters/product-adapter'
@@ -17,14 +16,9 @@ import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { useProductBySlug } from '@/hooks/useProductBySlug'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
-// ⚡ PERFORMANCE: Lazy load de componentes no críticos
-// Simplificado para evitar problemas de serialización
-const FloatingWhatsAppBuy = dynamic(() => import('@/components/Common/FloatingWhatsAppBuy'), {
-  ssr: false,
-})
-const BuyPageWhatsAppPopup = dynamic(() => import('@/components/Common/BuyPageWhatsAppPopup'), {
-  ssr: false,
-})
+// ⚡ PERFORMANCE: Importar directamente para evitar problemas de serialización con dynamic imports
+import FloatingWhatsAppBuy from '@/components/Common/FloatingWhatsAppBuy'
+import BuyPageWhatsAppPopup from '@/components/Common/BuyPageWhatsAppPopup'
 
 interface ProductData {
   id: number
@@ -49,7 +43,6 @@ export default function BuyProductPage() {
   const [status, setStatus] = useState<'loading' | 'adding' | 'ready' | 'error'>('loading')
   const [error, setError] = useState<string | null>(null)
   const [productData, setProductData] = useState<ProductData | null>(null)
-  const [shouldLoadWhatsApp, setShouldLoadWhatsApp] = useState(false)
   const [alreadyProcessed, setAlreadyProcessed] = useState(false)
   
   // Ref para rastrear si ya se procesó este slug específico en esta ejecución
@@ -65,16 +58,6 @@ export default function BuyProductPage() {
       setAlreadyProcessed(processed)
     }
   }, [productSlug])
-
-  // ⚡ PERFORMANCE: Cargar componentes de WhatsApp después del mount para evitar problemas de hidratación
-  useEffect(() => {
-    // Cargar después de un pequeño delay para evitar problemas de serialización
-    const timer = setTimeout(() => {
-      setShouldLoadWhatsApp(true)
-    }, 100)
-
-    return () => clearTimeout(timer)
-  }, [])
 
   // Guardar el slug en sessionStorage para poder volver desde checkout
   // ⚡ PERFORMANCE: Usar requestIdleCallback para operaciones no críticas
@@ -342,11 +325,11 @@ export default function BuyProductPage() {
       {/* Botón de carrito flotante justo debajo del header */}
       <FloatingCheckoutButton />
       
-      {/* Botón flotante de WhatsApp - Lazy load */}
-      {shouldLoadWhatsApp && <FloatingWhatsAppBuy />}
+      {/* Botón flotante de WhatsApp */}
+      <FloatingWhatsAppBuy />
       
-      {/* Popup de WhatsApp - Lazy load */}
-      {shouldLoadWhatsApp && <BuyPageWhatsAppPopup />}
+      {/* Popup de WhatsApp */}
+      <BuyPageWhatsAppPopup />
       
       {/* Badge flotante con título */}
       <BuyPageHeader />
