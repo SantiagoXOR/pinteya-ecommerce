@@ -1,17 +1,18 @@
 // Force redeploy to fix Server Action error - 2025-08-02T00:30:00.000Z
 import Providers from './providers'
 import { Suspense } from 'react'
+// ⚡ PERFORMANCE: CSS crítico inline, CSS no crítico carga asíncrono
 import './css/style.css'
 import './css/euclid-circular-a-font.css'
-import '../styles/checkout-mobile.css'
-import '../styles/z-index-hierarchy.css'
+// CSS no crítico se carga asíncronamente después del FCP
 import { metadata as defaultMetadata } from './metadata'
 import StructuredData from '@/components/SEO/StructuredData'
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics'
 import MetaPixel from '@/components/Analytics/MetaPixel'
 import GoogleAds from '@/components/Analytics/GoogleAds'
 import { ClientErrorSuppression } from '@/components/ErrorSuppression/ClientErrorSuppression'
-import { InitialLoadingSpinner } from '@/components/ui/initial-loading-spinner'
+import PerformanceTracker from '@/components/PerformanceTracker'
+import { DeferredCSS } from '@/components/Performance/DeferredCSS'
 import {
   organizationStructuredData,
   websiteStructuredData,
@@ -77,10 +78,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <link
           rel="preload"
-          href="/fonts/EuclidCircularA-SemiBold.woff2"
+          href="/fonts/EuclidCircularA-Bold.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
+        />
+        
+        {/* ⚡ PERFORMANCE: Preload de imagen hero crítica (LCP candidate) */}
+        <link
+          rel="preload"
+          as="image"
+          href="/images/hero/hero2/hero1.svg"
+          fetchPriority="high"
         />
         
         {/* ⚡ PERFORMANCE: Preconnect a dominios externos */}
@@ -88,7 +97,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://www.google-analytics.com" />
         <link rel="preconnect" href="https://www.googleadservices.com" />
         <link rel="preconnect" href="https://connect.facebook.net" />
+        <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
+        <link rel="preconnect" href="https://lh3.googleusercontent.com" />
+        <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
+        <link rel="preconnect" href="https://images.clerk.dev" />
+        <link rel="dns-prefetch" href="https://images.clerk.dev" />
         
         {/* Google Merchant Center Verification */}
         <meta
@@ -105,10 +119,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ClientErrorSuppression />
-        <InitialLoadingSpinner minDisplayTime={300} autoHide={true} />
         {/* <JsonSafetyInitializer /> */}
         {/* <DebugNotificationDisabler /> */}
-        {/* <PerformanceTracker /> */}
+        <PerformanceTracker />
+        
+        {/* ⚡ PERFORMANCE: CSS no crítico carga diferidamente después del FCP */}
+        <DeferredCSS />
+        
         {/* Suspense global para componentes compartidos que usan useSearchParams (Header/Search) */}
         <Suspense fallback={null}>
           <Providers>{children}</Providers>

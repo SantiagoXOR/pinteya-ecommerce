@@ -28,6 +28,42 @@
   img:not([width]):not([height]) {
     height: auto;
   }
+  
+  /* ⚡ PERFORMANCE: Reservar espacio para contenido dinámico */
+  .hero-section {
+    min-height: 320px;
+  }
+  
+  @media (min-width: 1024px) {
+    .hero-section {
+      min-height: 500px;
+    }
+  }
+  
+  /* Prevenir CLS en carruseles */
+  .carousel-container,
+  .swiper-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Reservar espacio para skeletons */
+  .skeleton-loader {
+    display: block;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
 
   /* ⚡ PERFORMANCE: Shimmer animation para skeletons */
   @keyframes shimmer {

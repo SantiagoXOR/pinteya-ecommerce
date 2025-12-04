@@ -119,6 +119,14 @@ const nextConfig = {
 
     // ⚡ PERFORMANCE: Optimizar chunks para mejor code splitting
     if (!dev) {
+      // Optimizaciones adicionales para producción
+      config.optimization = {
+        ...config.optimization,
+        minimize: true,
+        usedExports: true,
+        sideEffects: false,
+      }
+      
       config.optimization.splitChunks = {
         chunks: 'all',
         cacheGroups: {
@@ -210,9 +218,11 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     // Cache más largo para imágenes optimizadas
     minimumCacheTTL: 31536000, // 1 año para imágenes estáticas
-    // Tamaños responsivos optimizados (reducidos para mejor performance)
-    deviceSizes: [640, 750, 828, 1080, 1200], // Reducido de 8 a 5 opciones
-    imageSizes: [16, 32, 48, 64, 96, 128, 256], // Reducido de 8 a 7 opciones
+    // Tamaños responsivos optimizados según PageSpeed Insights
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Calidad optimizada por defecto
+    quality: 85,
     // Habilitar optimización de imágenes remotas
     remotePatterns: [
       {
@@ -374,6 +384,10 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'browsing-topics=()',
           },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, must-revalidate',
+          },
         ],
       },
       // ✅ Headers específicos para admin panel
@@ -421,6 +435,16 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      // ⚡ PERFORMANCE: Headers para imágenes optimizadas de Next.js
+      {
+        source: '/_next/image',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

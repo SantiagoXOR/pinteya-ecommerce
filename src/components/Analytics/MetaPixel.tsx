@@ -62,6 +62,7 @@ const MetaPixel: React.FC = () => {
           <Script
             id='meta-pixel'
             strategy='lazyOnload'
+            fetchPriority='low'
             onLoad={handlePixelLoad}
             onError={error => {
               console.warn('Error loading Meta Pixel script:', error)

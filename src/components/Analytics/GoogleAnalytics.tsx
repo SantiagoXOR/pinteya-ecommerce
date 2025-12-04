@@ -60,6 +60,7 @@ const GoogleAnalytics: React.FC = () => {
           <Script
             strategy='lazyOnload'
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+            fetchPriority='low'
             onLoad={handleGALoad}
             onError={error => {
               console.warn('Error loading Google Analytics script:', error)
@@ -69,6 +70,7 @@ const GoogleAnalytics: React.FC = () => {
           <Script
             id='google-analytics'
             strategy='lazyOnload'
+            fetchPriority='low'
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];
