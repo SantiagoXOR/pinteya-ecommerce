@@ -99,6 +99,9 @@ export interface OrderAnalytics {
 
 export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   const queryClient = useQueryClient()
+  const isDevEnvironment = process.env.NODE_ENV === 'development'
+  const isBypassAuthEnabled =
+    process.env.BYPASS_AUTH === 'true' || process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true'
 
   // Hook inicializado correctamente
 
@@ -110,6 +113,7 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     sort_order: 'desc',
     ...initialFilters,
   })
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false)
 
   // Filtros configurados
 
@@ -146,7 +150,8 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
-      return response.json()
+      const data = await response.json()
+      return data
     },
     staleTime: 30000, // 30 segundos
     refetchOnWindowFocus: false,
@@ -170,7 +175,9 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     refetchOnWindowFocus: false,
   })
 
-  // Query para analytics
+  // Query para analytics (opcional - no bloquea si falla)
+  const analyticsQueryEnabled = !isBypassAuthEnabled
+
   const {
     data: analyticsData,
     isLoading: analyticsLoading,
@@ -178,14 +185,30 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   } = useQuery({
     queryKey: ['admin-orders-analytics'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/orders/analytics')
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
+      try {
+        const response = await fetch('/api/admin/orders/analytics')
+        if (!response.ok) {
+          // Si es 401/403/404, retornar datos vacíos sin ensuciar la consola
+          if ([401, 403, 404].includes(response.status)) {
+            if (isDevEnvironment) {
+              console.info('[OrdersAnalytics] Endpoint no disponible (', response.status, ')')
+            }
+            return { data: null }
+          }
+          throw new Error(`Error ${response.status}: ${response.statusText}`)
+        }
+        return response.json()
+      } catch (error) {
+        if (isDevEnvironment) {
+          console.debug('Analytics fetch skipped:', error)
+        }
+        return { data: null }
       }
-      return response.json()
     },
     staleTime: 300000, // 5 minutos
     refetchOnWindowFocus: false,
+    retry: false, // No reintentar si falla
+    enabled: analyticsQueryEnabled,
   })
 
   // =====================================================
@@ -204,13 +227,14 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       notes?: string
     }) => {
       const response = await fetch(`/api/admin/orders/${orderId}`, {
-        method: 'PUT',
+        method: 'PATCH', // Cambio de PUT a PATCH
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, notes }),
       })
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`)
       }
 
       return response.json()
@@ -254,9 +278,18 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   // FUNCIONES AUXILIARES
   // =====================================================
 
-  const updateFilters = useCallback((newFilters: Partial<OrderFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
-  }, [])
+  const updateFilters = useCallback(
+    (newFilters: Partial<OrderFilters>) => {
+      setFilters(prev => {
+        const nextFilters = { ...prev, ...newFilters }
+        if (typeof newFilters.page === 'number' && newFilters.page !== prev.page) {
+          setIsPageTransitioning(true)
+        }
+        return nextFilters
+      })
+    },
+    [setIsPageTransitioning]
+  )
 
   const resetFilters = useCallback(() => {
     setFilters({
@@ -265,11 +298,16 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       sort_by: 'created_at',
       sort_order: 'desc',
     })
+    setIsPageTransitioning(false)
   }, [])
 
   const updateOrderStatus = useCallback(
     (orderId: string, status: OrderStatus, notes?: string) => {
-      return updateOrderStatusMutation.mutateAsync({ orderId, status, notes })
+      return updateOrderStatusMutation.mutateAsync({ 
+        orderId, 
+        status, 
+        ...(notes !== undefined && { notes })
+      })
     },
     [updateOrderStatusMutation]
   )
@@ -285,23 +323,46 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     [bulkOperationMutation]
   )
 
+  useEffect(() => {
+    const currentPageFromApi = ordersData?.data?.pagination?.page
+    if (currentPageFromApi && currentPageFromApi === filters.page) {
+      setIsPageTransitioning(false)
+    }
+  }, [ordersData?.data?.pagination?.page, filters.page])
+
+  useEffect(() => {
+    const totalPagesFromApi = ordersData?.data?.pagination?.totalPages
+    if (totalPagesFromApi && filters.page > totalPagesFromApi) {
+      setFilters(prev => ({
+        ...prev,
+        page: Math.max(1, totalPagesFromApi),
+      }))
+    }
+  }, [ordersData?.data?.pagination?.totalPages, filters.page])
+
+  useEffect(() => {
+    if (ordersError) {
+      setIsPageTransitioning(false)
+    }
+  }, [ordersError])
+
   // =====================================================
   // MÉTRICAS DERIVADAS
   // =====================================================
 
   const derivedMetrics = {
-    totalPages: ordersData?.pagination?.total_pages || 0,
-    totalOrders: ordersData?.pagination?.total_count || 0,
+    totalPages: ordersData?.data?.pagination?.totalPages || 0,
+    totalOrders: ordersData?.data?.pagination?.total || 0,
     currentPage: filters.page,
-    hasNextPage: filters.page < (ordersData?.pagination?.total_pages || 0),
-    hasPrevPage: filters.page > 1,
+    hasNextPage: ordersData?.data?.pagination?.hasNextPage || false,
+    hasPrevPage: ordersData?.data?.pagination?.hasPreviousPage || false,
 
-    // Estadísticas calculadas
-    completionRate: statsData?.data
+    // Estadísticas calculadas (protegido contra división por cero)
+    completionRate: statsData?.data && statsData.data.total_orders > 0
       ? ((statsData.data.completed_orders / statsData.data.total_orders) * 100).toFixed(1)
       : '0',
 
-    cancellationRate: statsData?.data
+    cancellationRate: statsData?.data && statsData.data.total_orders > 0
       ? ((statsData.data.cancelled_orders / statsData.data.total_orders) * 100).toFixed(1)
       : '0',
 
@@ -315,10 +376,21 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
   // =====================================================
 
   return {
-    // Datos
-    orders: ordersData?.data || [],
-    stats: statsData?.data || null,
-    analytics: analyticsData?.data || null,
+    // Datos ya transformados por el API - Acceder correctamente a la estructura anidada
+    orders: ordersData?.data?.orders || ordersData?.data || [],
+    // Bug Fix: Acceder a statsData.data en lugar de statsData.stats (consistente con API)
+    // Todos los campos ahora son provistos por el API
+    stats: statsData?.data ? {
+      totalOrders: statsData.data.total_orders,
+      pendingOrders: statsData.data.pending_orders,
+      processingOrders: statsData.data.processing_orders,
+      completedOrders: statsData.data.completed_orders,
+      cancelledOrders: statsData.data.cancelled_orders,
+      totalRevenue: statsData.data.total_revenue,
+      averageOrderValue: statsData.data.average_order_value,
+      ordersToday: statsData.data.orders_today,
+    } : null,
+    analytics: analyticsQueryEnabled ? analyticsData?.data || null : null,
 
     // Estados de carga
     isLoading: ordersLoading || statsLoading,
@@ -356,9 +428,56 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       totalItems: derivedMetrics.totalOrders,
       hasNext: derivedMetrics.hasNextPage,
       hasPrev: derivedMetrics.hasPrevPage,
-      goToPage: (page: number) => updateFilters({ page }),
-      nextPage: () => derivedMetrics.hasNextPage && updateFilters({ page: filters.page + 1 }),
-      prevPage: () => derivedMetrics.hasPrevPage && updateFilters({ page: filters.page - 1 }),
+      isTransitioning: isPageTransitioning,
+      goToPage: (page: number) => {
+        if (page !== filters.page) {
+          updateFilters({ page })
+        }
+      },
+      nextPage: () => {
+        if (!derivedMetrics.hasNextPage || isPageTransitioning) {
+          return
+        }
+        updateFilters({ page: filters.page + 1 })
+      },
+      prevPage: () => {
+        if (!derivedMetrics.hasPrevPage || isPageTransitioning) {
+          return
+        }
+        updateFilters({ page: filters.page - 1 })
+      },
+    },
+    
+    // Función refresh simplificada
+    refreshOrders: refetchOrders,
+    
+    // Handlers para componente
+    handleBulkOperation: bulkUpdateStatus,
+    handleOrderAction: async (action: string, orderId: string) => {
+      console.log('Order action:', action, orderId)
+      
+      // Mapear acciones a estados
+      const actionToStatusMap: Record<string, OrderStatus | null> = {
+        'process': 'processing',
+        'deliver': 'delivered',
+        'ship': 'shipped',
+        'confirm': 'confirmed',
+        'cancel': 'cancelled',
+      }
+      
+      const newStatus = actionToStatusMap[action]
+      
+      if (newStatus) {
+        try {
+          await updateOrderStatus(orderId, newStatus)
+        } catch (error) {
+          console.error('Error updating order status:', error)
+          throw error
+        }
+      } else {
+        // Para otras acciones que no sean cambio de estado
+        console.log('Action not mapped to status change:', action)
+      }
     },
   }
 }

@@ -5,10 +5,16 @@ import Image from 'next/image'
 import TopBar from './TopBar'
 import EnhancedSearchBar from './EnhancedSearchBar'
 import ActionButtons from './ActionButtons'
+import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 import { cn } from '@/lib/utils'
+import { SearchSuggestion } from '@/types/search'
+import { useRouter } from 'next/navigation'
 
 const NewHeader = () => {
+  const router = useRouter()
   const [stickyMenu, setStickyMenu] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Sticky menu logic
   const handleStickyMenu = () => {
@@ -26,6 +32,35 @@ const NewHeader = () => {
 
   const handleSearch = (query: string) => {
     // Implementar lógica de búsqueda
+  }
+
+  const handleSuggestionSelect = async (suggestion: SearchSuggestion) => {
+    console.log('🔍 handleSuggestionSelect ejecutado con:', suggestion)
+    if (suggestion.type === 'product' && suggestion.id) {
+      // Redirigir directamente al detalle del producto usando slug si está disponible
+      const productSlug = (suggestion as any).slug
+      const productUrl = productSlug ? `/products/${productSlug}` : `/products/${suggestion.id}`
+      router.push(productUrl)
+      return
+    }
+    // Para otros tipos, dejar comportamiento actual (no-op aquí)
+    console.log('⚠️ Sugerencia no es producto:', suggestion.type)
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  const handleAddToCart = (
+    product: any,
+    quantity: number,
+    selectedColor?: string,
+    selectedCapacity?: string
+  ) => {
+    // Implementar lógica de agregar al carrito
+    console.log('Agregando al carrito:', { product, quantity, selectedColor, selectedCapacity })
+    // Aquí puedes integrar con tu sistema de carrito existente
   }
 
   return (
@@ -60,6 +95,7 @@ const NewHeader = () => {
             <div className='hidden lg:flex flex-1 max-w-2xl mx-8'>
               <EnhancedSearchBar
                 onSearch={handleSearch}
+                onSuggestionSelect={handleSuggestionSelect}
                 size={stickyMenu ? 'sm' : 'md'}
                 data-testid='desktop-search-input'
               />
@@ -83,12 +119,29 @@ const NewHeader = () => {
           <div className='lg:hidden pb-4'>
             <EnhancedSearchBar
               onSearch={handleSearch}
+              onSuggestionSelect={handleSuggestionSelect}
               size='sm'
               data-testid='mobile-search-input'
             />
           </div>
         </div>
       </header>
+
+      {/* Modal de detalles del producto */}
+      {console.log(
+        '🔍 Renderizando modal - isModalOpen:',
+        isModalOpen,
+        'selectedProduct:',
+        !!selectedProduct
+      )}
+      {isModalOpen && selectedProduct && (
+        <ShopDetailModal
+          product={selectedProduct}
+          open={isModalOpen}
+          onOpenChange={handleModalClose}
+          onAddToCart={handleAddToCart}
+        />
+      )}
     </>
   )
 }

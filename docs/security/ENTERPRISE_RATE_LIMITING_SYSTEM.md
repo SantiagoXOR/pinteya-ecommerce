@@ -27,7 +27,7 @@ graph TB
     D --> F[Metrics Collector]
     E --> F
     F --> G[Response with Headers]
-    
+
     H[Admin API] --> I[Rate Limit Metrics]
     I --> J[Redis Stats]
     I --> K[Memory Stats]
@@ -49,6 +49,7 @@ graph TB
 ## ⚙️ Configuraciones Predefinidas
 
 ### **CRITICAL_AUTH - Autenticación Crítica**
+
 ```typescript
 {
   windowMs: 15 * 60 * 1000,    // 15 minutos
@@ -60,6 +61,7 @@ graph TB
 ```
 
 ### **ADMIN_API - APIs Administrativas**
+
 ```typescript
 {
   windowMs: 5 * 60 * 1000,     // 5 minutos
@@ -71,6 +73,7 @@ graph TB
 ```
 
 ### **PAYMENT_API - APIs de Pagos**
+
 ```typescript
 {
   windowMs: 10 * 60 * 1000,    // 10 minutos
@@ -82,6 +85,7 @@ graph TB
 ```
 
 ### **PUBLIC_API - APIs Públicas**
+
 ```typescript
 {
   windowMs: 1 * 60 * 1000,     // 1 minuto
@@ -93,6 +97,7 @@ graph TB
 ```
 
 ### **Configuraciones Adicionales:**
+
 - **WEBHOOK_API**: 200 requests/minuto
 - **SEARCH_API**: 60 requests/minuto
 - **UPLOAD_API**: 10 requests/5 minutos
@@ -103,21 +108,25 @@ graph TB
 ## 🔧 Generadores de Claves
 
 ### **IP Key Generator**
+
 ```typescript
 ipKeyGenerator(request) → "ip:192.168.1.1"
 ```
 
 ### **User Key Generator**
+
 ```typescript
 userKeyGenerator(request) → "user:user_123" | "ip:192.168.1.1"
 ```
 
 ### **Endpoint Key Generator**
+
 ```typescript
 endpointKeyGenerator(request) → "endpoint:192.168.1.1:/api/payments"
 ```
 
 ### **Hybrid Key Generator (Recomendado)**
+
 ```typescript
 hybridKeyGenerator(request) → "user:user_123:/api/payments"
 ```
@@ -129,59 +138,53 @@ hybridKeyGenerator(request) → "user:user_123:/api/payments"
 ### **1. Middleware para App Router**
 
 ```typescript
-import { withPaymentRateLimit } from '@/lib/rate-limiting/enterprise-middleware';
+import { withPaymentRateLimit } from '@/lib/rate-limiting/enterprise-middleware'
 
 const handler = async (request: NextRequest) => {
   // Lógica de la API
-  return NextResponse.json({ success: true });
-};
+  return NextResponse.json({ success: true })
+}
 
 // Aplicar rate limiting
-export const POST = withPaymentRateLimit()(handler);
+export const POST = withPaymentRateLimit()(handler)
 ```
 
 ### **2. Middleware para Pages API**
 
 ```typescript
-import { withEnterpriseRateLimitAPI } from '@/lib/rate-limiting/enterprise-middleware';
+import { withEnterpriseRateLimitAPI } from '@/lib/rate-limiting/enterprise-middleware'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  res.json({ success: true });
-};
+  res.json({ success: true })
+}
 
 export default withEnterpriseRateLimitAPI({
-  configName: 'ADMIN_API'
-})(handler);
+  configName: 'ADMIN_API',
+})(handler)
 ```
 
 ### **3. Rate Limiting Manual**
 
 ```typescript
-import { checkEnterpriseRateLimit } from '@/lib/rate-limiting/enterprise-rate-limiter';
+import { checkEnterpriseRateLimit } from '@/lib/rate-limiting/enterprise-rate-limiter'
 
 const result = await checkEnterpriseRateLimit(request, 'PAYMENT_API', {
   maxRequests: 10,
-  windowMs: 60000
-});
+  windowMs: 60000,
+})
 
 if (!result.allowed) {
-  return NextResponse.json(
-    { error: 'Rate limit exceeded' },
-    { status: 429 }
-  );
+  return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
 }
 ```
 
 ### **4. Integración con Enterprise Auth**
 
 ```typescript
-import { checkRateLimitWithAuth } from '@/lib/rate-limiting/enterprise-middleware';
+import { checkRateLimitWithAuth } from '@/lib/rate-limiting/enterprise-middleware'
 
-const authResult = await getEnterpriseAuthContext(request);
-const rateLimitResult = await checkRateLimitWithAuth(
-  request,
-  authResult.context
-);
+const authResult = await getEnterpriseAuthContext(request)
+const rateLimitResult = await checkRateLimitWithAuth(request, authResult.context)
 ```
 
 ---
@@ -192,15 +195,15 @@ const rateLimitResult = await checkRateLimitWithAuth(
 
 ```typescript
 interface RateLimitMetrics {
-  totalRequests: number;
-  allowedRequests: number;
-  blockedRequests: number;
-  redisHits: number;
-  memoryFallbacks: number;
-  errors: number;
-  averageResponseTime: number;
-  topBlockedIPs: Array<{ ip: string; count: number }>;
-  topEndpoints: Array<{ endpoint: string; count: number }>;
+  totalRequests: number
+  allowedRequests: number
+  blockedRequests: number
+  redisHits: number
+  memoryFallbacks: number
+  errors: number
+  averageResponseTime: number
+  topBlockedIPs: Array<{ ip: string; count: number }>
+  topEndpoints: Array<{ endpoint: string; count: number }>
 }
 ```
 
@@ -236,26 +239,26 @@ DELETE /api/admin/rate-limiting/metrics?force=true
 
 ```typescript
 // Variables de entorno
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=your_password
-REDIS_DB=0
+REDIS_HOST = localhost
+REDIS_PORT = 6379
+REDIS_PASSWORD = your_password
+REDIS_DB = 0
 ```
 
 ### **Funciones Redis Enterprise:**
 
 ```typescript
 // Rate limiting con sliding window
-await enterpriseRateLimit(key, windowMs, maxRequests);
+await enterpriseRateLimit(key, windowMs, maxRequests)
 
 // Rate limiting con múltiples ventanas (más preciso)
-await slidingWindowRateLimit(key, windowMs, maxRequests, precision);
+await slidingWindowRateLimit(key, windowMs, maxRequests, precision)
 
 // Estadísticas de rate limiting
-await getRateLimitStats('rate_limit:*');
+await getRateLimitStats('rate_limit:*')
 
 // Limpieza de claves expiradas
-await cleanupRateLimitKeys('rate_limit:*');
+await cleanupRateLimitKeys('rate_limit:*')
 ```
 
 ---
@@ -272,14 +275,14 @@ await cleanupRateLimitKeys('rate_limit:*');
 ### **Gestión del Store:**
 
 ```typescript
-import { memoryStore } from '@/lib/rate-limiting/enterprise-rate-limiter';
+import { memoryStore } from '@/lib/rate-limiting/enterprise-rate-limiter'
 
 // Obtener estadísticas
-const stats = memoryStore.getStats();
+const stats = memoryStore.getStats()
 // { entries: 25, memoryUsage: 2048 }
 
 // Limpiar manualmente
-memoryStore.cleanup();
+memoryStore.cleanup()
 ```
 
 ---
@@ -319,16 +322,16 @@ Retry-After: 300
 ```typescript
 // Ajuste automático basado en contexto enterprise
 if (enterpriseContext.role === 'admin') {
-  configName = 'ADMIN_API';
+  configName = 'ADMIN_API'
 } else if (enterpriseContext.permissions.includes('payment_access')) {
-  configName = 'PAYMENT_API';
+  configName = 'PAYMENT_API'
 } else {
-  configName = 'PUBLIC_API';
+  configName = 'PUBLIC_API'
 }
 
 // Ajuste por nivel de seguridad
 if (enterpriseContext.securityLevel === 'critical') {
-  customConfig.maxRequests = Math.floor(baseLimit * 0.5);
+  customConfig.maxRequests = Math.floor(baseLimit * 0.5)
 }
 ```
 
@@ -405,6 +408,3 @@ npm run build
 - ✅ **API de métricas** completa
 - ✅ **Build exitoso** sin errores
 - ✅ **Documentación completa** entregada
-
-
-

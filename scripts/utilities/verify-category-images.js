@@ -5,10 +5,10 @@
  * Pinteya E-commerce - Enero 2025
  */
 
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '.env.local' })
 
 // Configuración de Supabase
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 
 // Lista de imágenes de categorías
 const categoryImages = [
@@ -22,32 +22,31 @@ const categoryImages = [
   'reparaciones.png',
   'sinteticos.png',
   'techos.png',
-  'terminaciones.png'
-];
+  'terminaciones.png',
+]
 
 /**
  * Verifica si una imagen está disponible
  */
 async function verifyImage(imageName) {
   try {
-    const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/product-images/categories/${imageName}`;
-    
-    console.log(`🔍 Verificando: ${imageName}`);
-    console.log(`   URL: ${imageUrl}`);
-    
-    const response = await fetch(imageUrl, { method: 'HEAD' });
-    
+    const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/product-images/categories/${imageName}`
+
+    console.log(`🔍 Verificando: ${imageName}`)
+    console.log(`   URL: ${imageUrl}`)
+
+    const response = await fetch(imageUrl, { method: 'HEAD' })
+
     if (response.ok) {
-      console.log(`✅ ${imageName} - Disponible (${response.status})`);
-      return true;
+      console.log(`✅ ${imageName} - Disponible (${response.status})`)
+      return true
     } else {
-      console.log(`❌ ${imageName} - No disponible (${response.status})`);
-      return false;
+      console.log(`❌ ${imageName} - No disponible (${response.status})`)
+      return false
     }
-    
   } catch (error) {
-    console.log(`❌ ${imageName} - Error: ${error.message}`);
-    return false;
+    console.log(`❌ ${imageName} - Error: ${error.message}`)
+    return false
   }
 }
 
@@ -55,32 +54,32 @@ async function verifyImage(imageName) {
  * Función principal
  */
 async function main() {
-  console.log('🔍 Verificando disponibilidad de imágenes de categorías...\n');
-  
-  let availableCount = 0;
-  let unavailableCount = 0;
-  
+  console.log('🔍 Verificando disponibilidad de imágenes de categorías...\n')
+
+  let availableCount = 0
+  let unavailableCount = 0
+
   for (const imageName of categoryImages) {
-    const isAvailable = await verifyImage(imageName);
+    const isAvailable = await verifyImage(imageName)
     if (isAvailable) {
-      availableCount++;
+      availableCount++
     } else {
-      unavailableCount++;
+      unavailableCount++
     }
-    console.log(''); // Línea en blanco
+    console.log('') // Línea en blanco
   }
-  
-  console.log('📊 Resumen:');
-  console.log(`✅ Disponibles: ${availableCount}`);
-  console.log(`❌ No disponibles: ${unavailableCount}`);
-  console.log(`📁 Total: ${categoryImages.length}`);
-  
+
+  console.log('📊 Resumen:')
+  console.log(`✅ Disponibles: ${availableCount}`)
+  console.log(`❌ No disponibles: ${unavailableCount}`)
+  console.log(`📁 Total: ${categoryImages.length}`)
+
   if (availableCount === categoryImages.length) {
-    console.log('\n🎉 ¡Todas las imágenes están disponibles!');
+    console.log('\n🎉 ¡Todas las imágenes están disponibles!')
   } else {
-    console.log('\n⚠️  Algunas imágenes no están disponibles.');
+    console.log('\n⚠️  Algunas imágenes no están disponibles.')
   }
 }
 
 // Ejecutar el script
-main().catch(console.error);
+main().catch(console.error)

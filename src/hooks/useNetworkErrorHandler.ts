@@ -4,6 +4,7 @@
 
 import { useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { registerErrorHandler, unregisterErrorHandler, suppressionPatterns } from '@/lib/error-handling/centralized-error-handler'
 
 interface NetworkErrorHandlerOptions {
   enableLogging?: boolean
@@ -21,158 +22,110 @@ interface NetworkError {
 }
 
 export function useNetworkErrorHandler(options: NetworkErrorHandlerOptions = {}) {
-  const { enableLogging = true, enableRetry = true, maxRetries = 3, retryDelay = 1000 } = options
+  const {
+    enableLogging = true,
+    enableRetry = true,
+    maxRetries = 3,
+    retryDelay = 1000
+  } = options
 
   const queryClient = useQueryClient()
 
-  // Función para clasificar errores de red
   const classifyError = useCallback((error: any): NetworkError => {
     const timestamp = Date.now()
-
-    // Detectar tipo de error
-    let type: NetworkError['type'] = 'unknown'
-
-    if (error?.code === 'ERR_ABORTED' || error?.name === 'AbortError') {
-      type = 'abort'
-    } else if (error?.code === 'ERR_NETWORK' || error?.message?.includes('network')) {
-      type = 'network'
-    } else if (error?.code === 'TIMEOUT' || error?.message?.includes('timeout')) {
-      type = 'timeout'
-    } else if (error?.status >= 500) {
-      type = 'server'
+    
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) {
+      return { type: 'abort', originalError: error, timestamp }
     }
-
-    return {
-      type,
-      originalError: error,
-      timestamp,
-      url: error?.config?.url || error?.url,
-      method: error?.config?.method || error?.method,
+    
+    if (error?.message?.includes('timeout') || error?.code === 'TIMEOUT') {
+      return { type: 'timeout', originalError: error, timestamp }
     }
+    
+    if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+      return { type: 'network', originalError: error, timestamp }
+    }
+    
+    if (error?.status >= 500) {
+      return { type: 'server', originalError: error, timestamp }
+    }
+    
+    return { type: 'unknown', originalError: error, timestamp }
   }, [])
 
-  // Función para manejar errores de red
-  const handleNetworkError = useCallback(
-    (error: any, context?: any) => {
-      const networkError = classifyError(error)
-
-      // Para errores de abort, usar console.debug en lugar de console.error para evitar bucles
-      if (networkError.type === 'abort') {
-        if (enableLogging) {
-          console.debug('🔇 Suppressed abort error:', {
-            type: networkError.type,
-            url: networkError.url,
-            method: networkError.method,
-            originalError: networkError.originalError,
-            context,
-          })
-          console.warn('🚫 Request was aborted - this is usually intentional')
-        }
-        return // Salir temprano para errores de abort
-      }
-
-      if (enableLogging) {
-        console.group('🌐 Network Error Handler')
-        console.error('Error Type:', networkError.type)
-        console.error('URL:', networkError.url)
-        console.error('Method:', networkError.method)
-        console.error('Original Error:', networkError.originalError)
-        console.error('Context:', context)
-        console.groupEnd()
-      }
-
-      // Manejar diferentes tipos de errores
-      switch (networkError.type) {
-        case 'network':
-          // Errores de red - invalidar queries para refetch
-          if (enableRetry) {
-            setTimeout(() => {
-              queryClient.invalidateQueries()
-            }, retryDelay)
-          }
-          break
-
-        case 'timeout':
-          // Timeouts - reintentar con delay
-          if (enableRetry) {
-            setTimeout(() => {
-              queryClient.refetchQueries({ type: 'active' })
-            }, retryDelay * 2)
-          }
-          break
-
-        case 'server':
-          // Errores de servidor - reintentar después de un delay más largo
-          if (enableRetry) {
-            setTimeout(() => {
-              queryClient.invalidateQueries()
-            }, retryDelay * 3)
-          }
-          break
-
-        default:
-          // Errores desconocidos - log para debugging
-          if (enableLogging) {
-            console.warn('❓ Unknown error type:', error)
-          }
-          break
-      }
-
-      return networkError
-    },
-    [classifyError, enableLogging, enableRetry, retryDelay, queryClient]
-  )
-
-  // Función para interceptar errores de abort y console.error
-  const setupGlobalErrorHandling = useCallback(() => {
-    // Interceptar console.error para filtrar AbortErrors
-    const originalConsoleError = console.error
-    console.error = (...args) => {
-      const message = args.join(' ')
-      const lowerMessage = message.toLowerCase()
-
-      // Filtrar errores de AbortError específicos
-      if (
-        lowerMessage.includes('aborterror') ||
-        lowerMessage.includes('signal is aborted') ||
-        lowerMessage.includes('err_aborted') ||
-        message.includes('❌ Error obteniendo productos: AbortError') ||
-        message.includes('Error obteniendo productos: AbortError') ||
-        (lowerMessage.includes('error') && lowerMessage.includes('abort'))
-      ) {
-        if (enableLogging) {
-          console.debug('🔇 Suppressed AbortError from console.error:', ...args)
-        }
-        return
-      }
-      originalConsoleError(...args)
+  const handleNetworkError = useCallback((error: NetworkError) => {
+    if (enableLogging && process.env.NODE_ENV === 'development') {
+      console.debug(`🌐 Network Error [${error.type}]:`, error.originalError)
     }
+
+    // Invalidar queries relacionadas si es necesario
+    if (error.type === 'network' || error.type === 'timeout') {
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.state.status === 'error' 
+      })
+    }
+  }, [enableLogging, queryClient])
+
+  const setupGlobalErrorHandling = useCallback(() => {
+    // Handler para el sistema centralizado
+    const networkErrorHandler = (args: any[]): boolean => {
+      const message = args.join(' ')
+      
+      // Verificar si es un AbortError que debemos suprimir
+      if (suppressionPatterns.abortError(args)) {
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('🔇 [Network Suppressed AbortError]:', ...args)
+        }
+        return true // Indica que el error fue manejado
+      }
+      
+      // Verificar otros errores de red que debemos suprimir
+      if (suppressionPatterns.networkError(args)) {
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('🔇 [Network Suppressed NetworkError]:', ...args)
+        }
+        return true
+      }
+      
+      // Para otros tipos de errores, permitir que continúen
+      return false
+    }
+
+    // Registrar el handler con prioridad media (50)
+    registerErrorHandler('network-error-handler', 50, networkErrorHandler)
 
     // Solo interceptar errores de unhandled promise rejections para AbortError
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       if (
         event.reason?.name === 'AbortError' ||
-        event.reason?.code === 'ERR_ABORTED' ||
-        event.reason?.message?.includes('aborted')
+        event.reason?.message?.includes('aborted') ||
+        event.reason?.message?.includes('The user aborted a request')
       ) {
-        // Prevenir que los errores de abort aparezcan en la consola
         event.preventDefault()
-        if (enableLogging) {
-          console.debug('🔇 Suppressed AbortError from unhandledrejection')
+        
+        if (enableLogging && process.env.NODE_ENV === 'development') {
+          console.debug('🔇 [Suppressed Unhandled AbortError]:', event.reason)
         }
+        return
       }
+
+      // Para otros errores, clasificar y manejar
+      const networkError = classifyError(event.reason)
+      handleNetworkError(networkError)
     }
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection)
 
-    // Cleanup function
     return () => {
-      console.error = originalConsoleError
+      unregisterErrorHandler('network-error-handler')
       window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🧹 NetworkErrorHandler cleanup completed')
+      }
     }
-  }, [enableLogging])
+  }, [classifyError, handleNetworkError, enableLogging])
 
-  // Setup global error handling on mount
   useEffect(() => {
     const cleanup = setupGlobalErrorHandling()
     return cleanup

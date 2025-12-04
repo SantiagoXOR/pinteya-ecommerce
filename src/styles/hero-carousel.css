@@ -1,20 +1,80 @@
-/* Hero Image Carousel Styles */
+/* Hero Carousel Styles - Modular y Responsive */
 
 .hero-carousel {
-  @apply w-full h-full;
+  @apply w-full relative;
+  min-height: 400px;
 }
 
+/* Cursor grab cuando se puede arrastrar */
 .hero-carousel .swiper {
   @apply w-full h-full;
+  min-height: inherit;
+  cursor: grab;
 }
 
+.hero-carousel .swiper:active {
+  cursor: grabbing;
+}
+
+/* Efecto de sombra durante el drag */
 .hero-carousel .swiper-slide {
-  @apply flex items-center justify-center;
+  @apply w-full h-full;
+  min-height: inherit;
+  transition: box-shadow 0.3s ease;
 }
 
-.hero-carousel .swiper-slide img {
-  @apply w-full h-full object-contain;
+.hero-carousel .swiper:active .swiper-slide-active {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
+
+/* Asegurar que HeroSlide ocupe todo el espacio */
+.hero-carousel .swiper-slide > div {
+  @apply w-full h-full;
+  min-height: inherit;
+}
+
+/* Los elementos interactivos dentro del slide mantienen su funcionalidad */
+.hero-carousel .swiper-slide a,
+.hero-carousel .swiper-slide button:not(.hero-carousel-button-prev):not(.hero-carousel-button-next) {
+  cursor: pointer;
+}
+
+/* Prevenir selección de texto durante el drag pero permitir scroll */
+.hero-carousel .swiper-container,
+.hero-carousel .swiper {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Textos e imágenes no deben ser seleccionables durante el drag */
+.hero-carousel .swiper-slide img,
+.hero-carousel .swiper-slide h1,
+.hero-carousel .swiper-slide h2,
+.hero-carousel .swiper-slide p,
+.hero-carousel .swiper-slide span:not(.hero-carousel-bullet) {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Asegurar que las imágenes Next.js no bloqueen el drag */
+.hero-carousel .swiper-slide img,
+.hero-carousel .swiper-slide picture,
+.hero-carousel .swiper-slide [data-nimg] {
+  pointer-events: none !important;
+  -webkit-user-drag: none !important;
+  user-drag: none !important;
+}
+
+/* Swiper maneja touch-action internamente, no lo bloqueamos en CSS */
 
 /* Custom Pagination Styles */
 .hero-carousel .swiper-pagination {
@@ -51,94 +111,63 @@
 }
 
 /* Responsive Adjustments */
-@media (max-width: 768px) {
+
+/* Mobile Styles (< 1024px) */
+@media (max-width: 1023px) {
+  .hero-carousel {
+    min-height: 400px;
+  }
+
   .hero-carousel-bullet {
-    @apply w-3 h-3;
+    @apply w-2.5 h-2.5;
   }
 
   .hero-carousel .swiper-pagination {
-    @apply bottom-4;
-    gap: 10px !important;
+    @apply bottom-6;
+    gap: 8px !important;
   }
 
   .hero-carousel .swiper-pagination-bullet {
     width: 10px !important;
     height: 10px !important;
-    margin: 0 3px !important;
+    margin: 0 4px !important;
+  }
+
+  /* Ocultar botones en móvil - solo drag/swipe */
+  .hero-carousel .hero-carousel-button-prev,
+  .hero-carousel .hero-carousel-button-next {
+    display: none !important;
+  }
+}
+
+/* Very Small Mobile (< 640px) */
+@media (max-width: 639px) {
+  .hero-carousel {
+    min-height: 420px;
   }
 
   .hero-carousel .hero-carousel-button-prev,
   .hero-carousel .hero-carousel-button-next {
-    @apply w-8 h-8;
+    @apply w-9 h-9;
+  }
+}
+
+/* Desktop Styles (>= 1024px) */
+@media (min-width: 1024px) {
+  .hero-carousel {
+    min-height: 500px;
   }
 
-  /* Asegurar que el carrusel móvil sea visible */
-  .mobile-carousel {
-    min-height: 360px !important;
-    height: 360px !important;
-    margin: 0 !important;
-    padding: 0 !important;
+  .hero-carousel .swiper {
+    border-radius: 1.5rem;
+    overflow: hidden;
   }
+}
 
-  @media (min-width: 640px) and (max-width: 1023px) {
-    .mobile-carousel {
-      min-height: 400px !important;
-      height: 400px !important;
-    }
-  }
-
-  .mobile-carousel .swiper {
-    height: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .mobile-carousel .swiper-slide {
-    height: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Ocultar indicadores en mobile */
-  .mobile-carousel .swiper-pagination,
-  .mobile-carousel .swiper-pagination-bullets,
-  .mobile-carousel .hero-carousel-bullet {
-    display: none !important;
-    visibility: hidden !important;
-  }
-
-  /* Ocultar navegación en mobile */
-  .mobile-carousel .hero-carousel-button-prev,
-  .mobile-carousel .hero-carousel-button-next,
-  .mobile-carousel .swiper-button-prev,
-  .mobile-carousel .swiper-button-next {
-    display: none !important;
-    visibility: hidden !important;
-  }
-
-  /* Eliminar espacios adicionales */
-  .mobile-carousel .swiper-wrapper {
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Optimizar para gestos táctiles */
-  .mobile-carousel .swiper-slide {
-    touch-action: pan-y pinch-zoom !important;
-  }
-
-  /* Eliminar padding superior e inferior en mobile */
-  @media (max-width: 1023px) {
-    .mobile-carousel {
-      margin-top: 0 !important;
-      margin-bottom: 0 !important;
-    }
-
-    /* Asegurar que no haya espacios extra */
-    .mobile-carousel::before,
-    .mobile-carousel::after {
-      display: none !important;
-    }
+/* Extra Large Desktop (>= 1280px) */
+@media (min-width: 1280px) {
+  .hero-carousel {
+    min-height: 550px;
   }
 }
 
@@ -147,11 +176,11 @@
   .hero-carousel-bullet {
     @apply bg-white border-2 border-gray-800;
   }
-  
+
   .hero-carousel-bullet-active {
     @apply bg-yellow-500 border-yellow-800;
   }
-  
+
   .hero-carousel .hero-carousel-button-prev,
   .hero-carousel .hero-carousel-button-next {
     @apply bg-white border-2 border-gray-800;
@@ -163,7 +192,7 @@
   .hero-carousel .swiper-slide img {
     @apply transition-none;
   }
-  
+
   .hero-carousel-bullet,
   .hero-carousel .hero-carousel-button-prev,
   .hero-carousel .hero-carousel-button-next {
@@ -239,7 +268,7 @@
 }
 
 /* Accessibility improvements */
-.hero-carousel [aria-hidden="true"] {
+.hero-carousel [aria-hidden='true'] {
   @apply pointer-events-none;
 }
 
@@ -273,21 +302,20 @@
   image-rendering: optimizeQuality;
 }
 
-/* Estilos específicos para desktop y mobile */
-.desktop-carousel {
-  @apply rounded-lg overflow-hidden;
+/* Estilos mejorados para navegación responsive */
+.hero-carousel .hero-carousel-button-prev,
+.hero-carousel .hero-carousel-button-next {
+  @apply transition-all duration-300 ease-in-out;
+  backdrop-filter: blur(8px);
 }
 
-.desktop-carousel .swiper-pagination {
-  bottom: 20px !important;
-}
-
-.mobile-carousel {
-  @apply w-full;
-}
-
-.mobile-carousel .swiper-pagination {
-  bottom: 16px !important;
+/* Mejoras para badges en hero */
+@media (max-width: 639px) {
+  /* Asegurar que los badges sean touch-friendly en mobile */
+  .hero-carousel [role="status"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 /* Forzar renderizado correcto en todos los dispositivos */
@@ -309,8 +337,27 @@
   .hero-carousel .hero-carousel-button-next {
     @apply hidden;
   }
-  
+
   .hero-carousel .swiper-slide:not(.swiper-slide-active) {
     @apply hidden;
   }
+}
+
+/* Performance: GPU acceleration for smooth transitions */
+.hero-carousel .swiper-slide,
+.hero-carousel .hero-carousel-button-prev,
+.hero-carousel .hero-carousel-button-next {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Asegurar z-index correcto para elementos interactivos */
+.hero-carousel .hero-carousel-button-prev,
+.hero-carousel .hero-carousel-button-next {
+  z-index: 50;
+}
+
+.hero-carousel .swiper-pagination {
+  z-index: 40;
 }

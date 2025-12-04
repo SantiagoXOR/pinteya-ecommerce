@@ -68,15 +68,15 @@ async function getImageById(
  */
 const getHandler = async (
   request: NextRequest,
-  { params }: { params: { id: string; imageId: string } }
+  context: { params: Promise<{ id: string; imageId: string }> }
 ) => {
   const { supabase } = request as any
-  const { id: productId, imageId } = params
+  const { id: productId, imageId } = await context.params
 
   // Validate params
   const paramsValidation = ImageParamsSchema.safeParse({ id: productId, imageId })
   if (!paramsValidation.success) {
-    throw new ValidationError('Parámetros inválidos', paramsValidation.error.errors)
+    throw ValidationError('Parámetros inválidos', paramsValidation.error.errors)
   }
 
   const image = await getImageById(supabase, productId, imageId)
@@ -94,15 +94,15 @@ const getHandler = async (
  */
 const putHandler = async (
   request: NextRequest,
-  { params }: { params: { id: string; imageId: string } }
+  context: { params: Promise<{ id: string; imageId: string }> }
 ) => {
   const { supabase, user, validatedData } = request as any
-  const { id: productId, imageId } = params
+  const { id: productId, imageId } = await context.params
 
   // Validate params
   const paramsValidation = ImageParamsSchema.safeParse({ id: productId, imageId })
   if (!paramsValidation.success) {
-    throw new ValidationError('Parámetros inválidos', paramsValidation.error.errors)
+    throw ValidationError('Parámetros inválidos', paramsValidation.error.errors)
   }
 
   // Check if image exists
@@ -149,15 +149,15 @@ const putHandler = async (
  */
 const deleteHandler = async (
   request: NextRequest,
-  { params }: { params: { id: string; imageId: string } }
+  context: { params: Promise<{ id: string; imageId: string }> }
 ) => {
   const { supabase, user } = request as any
-  const { id: productId, imageId } = params
+  const { id: productId, imageId } = await context.params
 
   // Validate params
   const paramsValidation = ImageParamsSchema.safeParse({ id: productId, imageId })
   if (!paramsValidation.success) {
-    throw new ValidationError('Parámetros inválidos', paramsValidation.error.errors)
+    throw ValidationError('Parámetros inválidos', paramsValidation.error.errors)
   }
 
   // Check if image exists

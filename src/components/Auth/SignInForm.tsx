@@ -59,15 +59,15 @@ export function SignInForm() {
   }
 
   return (
-    <Card className='w-full max-w-md mx-auto shadow-2xl border-0 bg-white/95 backdrop-blur-sm'>
-      <CardHeader className='space-y-1 text-center pb-4'>
-        <CardTitle className='text-2xl font-bold text-gray-900'>Bienvenido a Pinteya</CardTitle>
-        <CardDescription className='text-gray-600'>
+    <Card className='w-full max-w-md mx-auto shadow-2xl border-0 bg-white backdrop-blur-sm'>
+      <CardHeader className='space-y-1 text-center pb-4 px-4 sm:px-6 pt-6 sm:pt-8'>
+        <CardTitle className='text-xl sm:text-2xl font-bold text-gray-900'>Bienvenido a Pinteya</CardTitle>
+        <CardDescription className='text-sm sm:text-base text-gray-600'>
           Inicia sesión para acceder a tu cuenta
         </CardDescription>
       </CardHeader>
 
-      <CardContent className='space-y-6'>
+      <CardContent className='space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-8'>
         {error && (
           <Alert variant='destructive' className='border-red-200 bg-red-50'>
             <Shield className='h-4 w-4' />
@@ -75,24 +75,24 @@ export function SignInForm() {
           </Alert>
         )}
 
-        <div className='space-y-4'>
+        <div className='space-y-3 sm:space-y-4'>
           {Object.values(providers).map(provider => (
             <Button
               key={provider.name}
               onClick={() => handleSignIn(provider.id)}
               disabled={isLoading}
-              className='w-full h-12 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300 shadow-sm transition-all duration-200 group'
+              className='w-full h-11 sm:h-12 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md transition-all duration-200 group text-sm sm:text-base'
               variant='outline'
             >
               {isLoading ? (
                 <div className='flex items-center gap-2'>
                   <Loader2 className='h-4 w-4 animate-spin' />
-                  <span>Iniciando sesión...</span>
+                  <span className='text-sm sm:text-base'>Iniciando sesión...</span>
                 </div>
               ) : (
-                <div className='flex items-center gap-3'>
+                <div className='flex items-center gap-2 sm:gap-3'>
                   {provider.id === 'google' && (
-                    <svg className='h-5 w-5' viewBox='0 0 24 24'>
+                    <svg className='h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0' viewBox='0 0 24 24'>
                       <path
                         fill='#4285F4'
                         d='M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z'
@@ -111,8 +111,8 @@ export function SignInForm() {
                       />
                     </svg>
                   )}
-                  <span className='font-medium'>Continuar con {provider.name}</span>
-                  <ArrowRight className='h-4 w-4 ml-auto group-hover:translate-x-1 transition-transform' />
+                  <span className='font-medium text-sm sm:text-base'>Continuar con {provider.name}</span>
+                  <ArrowRight className='h-4 w-4 ml-auto group-hover:translate-x-1 transition-transform flex-shrink-0' />
                 </div>
               )}
             </Button>
@@ -120,23 +120,23 @@ export function SignInForm() {
         </div>
 
         {/* Características de seguridad */}
-        <div className='space-y-3 pt-4 border-t border-gray-100'>
-          <div className='flex items-center gap-2 text-sm text-gray-600'>
-            <CheckCircle className='h-4 w-4 text-green-500' />
+        <div className='space-y-2 sm:space-y-3 pt-3 sm:pt-4 border-t border-gray-100'>
+          <div className='flex items-center gap-2 text-xs sm:text-sm text-gray-600'>
+            <CheckCircle className='h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0' />
             <span>Autenticación segura con Google</span>
           </div>
-          <div className='flex items-center gap-2 text-sm text-gray-600'>
-            <CheckCircle className='h-4 w-4 text-green-500' />
+          <div className='flex items-center gap-2 text-xs sm:text-sm text-gray-600'>
+            <CheckCircle className='h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0' />
             <span>Protección de datos garantizada</span>
           </div>
-          <div className='flex items-center gap-2 text-sm text-gray-600'>
-            <CheckCircle className='h-4 w-4 text-green-500' />
+          <div className='flex items-center gap-2 text-xs sm:text-sm text-gray-600'>
+            <CheckCircle className='h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0' />
             <span>Acceso rápido y confiable</span>
           </div>
         </div>
 
-        <div className='text-center pt-4'>
-          <p className='text-xs text-gray-500 leading-relaxed'>
+        <div className='text-center pt-3 sm:pt-4'>
+          <p className='text-[10px] sm:text-xs text-gray-500 leading-relaxed px-2'>
             Al iniciar sesión, aceptas nuestros{' '}
             <a href='/terms' className='text-blaze-orange-600 hover:underline'>
               términos de servicio

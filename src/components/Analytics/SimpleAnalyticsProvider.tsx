@@ -1,6 +1,8 @@
 'use client'
 
-import React, { createContext, useContext, ReactNode } from 'react'
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 // Tipos simplificados
 interface AnalyticsContextType {
@@ -39,35 +41,122 @@ interface SimpleAnalyticsProviderProps {
   children: ReactNode
 }
 
-// Provider simplificado
+// Función helper para enviar eventos a la API
+const sendAnalyticsEvent = async (
+  event: string,
+  category: string,
+  action: string,
+  label?: string,
+  value?: number,
+  metadata?: Record<string, any>
+) => {
+  try {
+    const sessionId = sessionStorage.getItem('analytics_session_id') || 
+      `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    if (!sessionStorage.getItem('analytics_session_id')) {
+      sessionStorage.setItem('analytics_session_id', sessionId)
+    }
+
+    const eventData = {
+      event,
+      category,
+      action,
+      label,
+      value,
+      userId: metadata?.userId,
+      sessionId,
+      page: typeof window !== 'undefined' ? window.location.pathname : '',
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      metadata,
+    }
+
+    // Enviar evento a la API de forma asíncrona (no bloquea)
+    fetch('/api/analytics/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventData),
+    }).catch(error => {
+      // Silenciar errores de analytics para no afectar la UX
+      console.warn('Analytics event failed:', error)
+    })
+  } catch (error) {
+    // Silenciar errores
+    console.warn('Analytics error:', error)
+  }
+}
+
+// Provider simplificado con tracking real
 export const SimpleAnalyticsProvider: React.FC<SimpleAnalyticsProviderProps> = ({ children }) => {
-  // Funciones mock para analytics
+  const { user } = useAuth()
+  const pathname = usePathname()
+  const [isEnabled] = useState(true)
+
+  // Track page views automáticamente
+  useEffect(() => {
+    if (isEnabled && pathname) {
+      sendAnalyticsEvent('page_view', 'navigation', 'view', pathname, undefined, {
+        userId: user?.id,
+      })
+    }
+  }, [pathname, isEnabled, user])
+
+  // Funciones de tracking que envían eventos reales
   const trackEvent = (eventName: string, properties?: Record<string, any>) => {
-    console.log('📊 Analytics Event:', eventName, properties)
+    if (!isEnabled) return
+    sendAnalyticsEvent(eventName, 'custom', 'event', eventName, undefined, {
+      userId: user?.id,
+      ...properties,
+    })
   }
 
   const trackPageView = (pageName: string, properties?: Record<string, any>) => {
-    console.log('📄 Page View:', pageName, properties)
+    if (!isEnabled) return
+    sendAnalyticsEvent('page_view', 'navigation', 'view', pageName, undefined, {
+      userId: user?.id,
+      ...properties,
+    })
   }
 
   const trackClick = (elementName: string, properties?: Record<string, any>) => {
-    console.log('🖱️ Click:', elementName, properties)
+    if (!isEnabled) return
+    sendAnalyticsEvent('click', 'interaction', 'click', elementName, undefined, {
+      userId: user?.id,
+      ...properties,
+    })
   }
 
   const trackHover = (elementName: string, properties?: Record<string, any>) => {
-    console.log('👆 Hover:', elementName, properties)
+    if (!isEnabled) return
+    sendAnalyticsEvent('hover', 'interaction', 'hover', elementName, undefined, {
+      userId: user?.id,
+      ...properties,
+    })
   }
 
   const trackScroll = (scrollData: { scrollY: number; scrollPercent: number }) => {
-    console.log('📜 Scroll:', scrollData)
+    if (!isEnabled) return
+    sendAnalyticsEvent('scroll', 'interaction', 'scroll', undefined, scrollData.scrollPercent, {
+      userId: user?.id,
+      scrollY: scrollData.scrollY,
+    })
   }
 
   const trackConversion = (conversionType: string, properties?: Record<string, any>) => {
-    console.log('💰 Conversion:', conversionType, properties)
+    if (!isEnabled) return
+    sendAnalyticsEvent('conversion', 'conversion', conversionType, conversionType, properties?.value, {
+      userId: user?.id,
+      ...properties,
+    })
   }
 
   const trackSearch = (searchTerm: string, results?: number) => {
-    console.log('🔍 Search:', searchTerm, 'Results:', results)
+    if (!isEnabled) return
+    sendAnalyticsEvent('search', 'search', 'search_query', searchTerm, results, {
+      userId: user?.id,
+    })
   }
 
   const trackCartAction = (
@@ -75,7 +164,13 @@ export const SimpleAnalyticsProvider: React.FC<SimpleAnalyticsProviderProps> = (
     productId?: string,
     properties?: Record<string, any>
   ) => {
-    console.log('🛒 Cart Action:', action, productId, properties)
+    if (!isEnabled) return
+    const eventName = action === 'add' ? 'add_to_cart' : action === 'remove' ? 'remove_from_cart' : 'cart_action'
+    sendAnalyticsEvent(eventName, 'shop', action, productId, properties?.value, {
+      userId: user?.id,
+      productId,
+      ...properties,
+    })
   }
 
   const trackProductView = (
@@ -83,15 +178,30 @@ export const SimpleAnalyticsProvider: React.FC<SimpleAnalyticsProviderProps> = (
     productName: string,
     properties?: Record<string, any>
   ) => {
-    console.log('👁️ Product View:', productId, productName, properties)
+    if (!isEnabled) return
+    sendAnalyticsEvent('view_item', 'shop', 'view_item', productName, undefined, {
+      userId: user?.id,
+      item_id: productId,
+      item_name: productName,
+      ...properties,
+    })
   }
 
   const trackCategoryView = (categoryName: string, properties?: Record<string, any>) => {
-    console.log('📂 Category View:', categoryName, properties)
+    if (!isEnabled) return
+    sendAnalyticsEvent('view_category', 'navigation', 'view', categoryName, undefined, {
+      userId: user?.id,
+      category_name: categoryName,
+      ...properties,
+    })
   }
 
   const trackUserAction = (action: string, properties?: Record<string, any>) => {
-    console.log('👤 User Action:', action, properties)
+    if (!isEnabled) return
+    sendAnalyticsEvent('user_action', 'user', action, action, undefined, {
+      userId: user?.id,
+      ...properties,
+    })
   }
 
   const contextValue: AnalyticsContextType = {

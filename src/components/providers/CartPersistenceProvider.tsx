@@ -37,8 +37,7 @@ export const CartPersistenceProvider: React.FC<CartPersistenceProviderProps> = (
     } catch (error) {
       console.warn('Error loading cart from localStorage:', error)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]) // Removido cartItems.length para evitar rehidratación no deseada
+  }, [dispatch])
 
   return <>{children}</>
 }

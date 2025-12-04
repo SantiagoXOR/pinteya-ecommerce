@@ -13,10 +13,19 @@ import Image from 'next/image'
 import CheckoutTransitionAnimation from '@/components/ui/checkout-transition-animation'
 import useCheckoutTransition from '@/hooks/useCheckoutTransition'
 import { useCartWithBackend } from '@/hooks/useCartWithBackend'
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from '@/components/ui/sheet'
 
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext()
   const cartItems = useAppSelector(state => state.cartReducer.items)
+  const [mounted, setMounted] = useState(false)
+  const [dragStartY, setDragStartY] = useState<number | null>(null)
+  const [dragCurrentY, setDragCurrentY] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   // Hook para carrito con backend
   const {
@@ -31,7 +40,10 @@ const CartSidebarModal = () => {
   // Usar carrito del backend si está disponible, sino usar Redux
   const effectiveCartItems = backendCartItems.length > 0 ? backendCartItems : cartItems
   const effectiveTotalPrice = backendCartItems.length > 0 ? backendTotalAmount : totalPrice
-  const hasItems = effectiveCartItems.length > 0
+  const hasItems = mounted && effectiveCartItems.length > 0
+
+  // Estimación de envío: gratis desde $50.000; caso contrario $10.000 (express)
+  const estimatedShippingCost = effectiveTotalPrice >= 50000 ? 0 : 10000
 
   // Hook para manejar la animación de transición al checkout
   const { isTransitioning, startTransition, skipAnimation, isButtonDisabled } =
@@ -45,88 +57,147 @@ const CartSidebarModal = () => {
       },
     })
 
+  // Efecto para evitar error de hidratación
   useEffect(() => {
-    // closing modal while clicking outside
-    function handleClickOutside(event: MouseEvent) {
-      if (event.target && !(event.target as Element).closest('.modal-content')) {
-        closeCartModal()
+    setMounted(true)
+  }, [])
+
+  // Prevenir scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isCartModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isCartModalOpen])
+
+  // Handlers para el drag to dismiss
+  const handleDragStart = (clientY: number) => {
+    setDragStartY(clientY)
+    setIsDragging(true)
+  }
+
+  const handleDragMove = (clientY: number) => {
+    if (dragStartY === null) return
+    setDragCurrentY(clientY)
+  }
+
+  const handleDragEnd = () => {
+    if (dragStartY !== null && dragCurrentY !== null) {
+      const dragDistance = dragCurrentY - dragStartY
+      // Si arrastró hacia abajo más de 100px, cerrar el modal
+      if (dragDistance > 100) {
+        // Primero resetear el estado del drag para que vuelva a su posición
+        setDragStartY(null)
+        setDragCurrentY(null)
+        setIsDragging(false)
+        // Luego cerrar el modal después de un pequeño delay
+        setTimeout(() => {
+          closeCartModal()
+        }, 50)
+        return
       }
     }
+    setDragStartY(null)
+    setDragCurrentY(null)
+    setIsDragging(false)
+  }
 
-    if (isCartModalOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches[0]) {
+      handleDragStart(e.touches[0].clientY)
     }
+  }
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches[0]) {
+      e.preventDefault() // Prevenir scroll mientras arrastra
+      handleDragMove(e.touches[0].clientY)
     }
-  }, [isCartModalOpen, closeCartModal])
+  }
+
+  const handleTouchEnd = () => {
+    handleDragEnd()
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    handleDragStart(e.clientY)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      handleDragMove(e.clientY)
+    }
+  }
+
+  const handleMouseUp = () => {
+    if (isDragging) {
+      handleDragEnd()
+    }
+  }
+
+  // Calcular el translateY para el efecto visual
+  const translateY = dragStartY !== null && dragCurrentY !== null
+    ? Math.max(0, dragCurrentY - dragStartY)
+    : 0
 
   return (
-    <div
-      className={`fixed top-0 left-0 z-99999 overflow-y-auto no-scrollbar w-full h-screen bg-dark/70 transition-all duration-500 ease-out ${
-        isCartModalOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-      }`}
-    >
-      <div className='flex items-center justify-end'>
-        <div
-          className={`w-full max-w-[500px] shadow-1 bg-white px-4 sm:px-7.5 lg:px-11 relative modal-content transition-transform duration-500 ease-out ${
-            isCartModalOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+    <>
+      <Sheet open={isCartModalOpen} onOpenChange={closeCartModal}>
+        <SheetContent
+          side='bottom'
+          className='h-[88vh] max-h-[88vh] rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden'
+          style={{
+            transform: isDragging && translateY > 0 ? `translateY(${translateY}px)` : undefined,
+            transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            willChange: isDragging ? 'transform' : 'auto'
+          }}
         >
-          <div className='sticky top-0 bg-white z-20 flex items-center justify-between py-4 border-b border-gray-200 shadow-sm'>
-            <div className='flex items-center gap-3'>
-              <div className='bg-gradient-to-r from-orange-500 to-yellow-500 p-2 rounded-full'>
-                <svg className='w-5 h-5 text-white' fill='currentColor' viewBox='0 0 20 20'>
-                  <path d='M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z' />
-                </svg>
-              </div>
-              <div>
-                <h2 className='font-bold text-lg' style={{ color: '#ea5a17' }}>
-                  🛒 Tu Selección
-                </h2>
-                <p className='text-xs text-gray-500'>
-                  {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'} listos
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => closeCartModal()}
-              aria-label='Cerrar carrito'
-              className='flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors duration-150'
-            >
-              <svg
-                className='w-6 h-6 text-gray-400 hover:text-gray-600'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M6 18L18 6M6 6l12 12'
-                />
-              </svg>
-            </button>
+          {/* Título oculto para accesibilidad */}
+          <SheetTitle className='sr-only'>Carrito de Compras</SheetTitle>
+
+          {/* Drag Handle - Indicador visual estilo Instagram */}
+          <div 
+            className='flex justify-center pt-3 pb-2 bg-white rounded-t-3xl flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none'
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <div className='w-12 h-1.5 bg-gray-300 rounded-full pointer-events-none' />
           </div>
 
-          <div className='flex-1 overflow-y-auto no-scrollbar pt-4'>
+          {/* Content Area - Scrollable */}
+          <div className='flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 pt-4 bg-gray-50 min-h-0'>
             <div className='flex flex-col gap-4 px-1'>
-              {/* <!-- cart item --> */}
-              {cartItems.length > 0 ? (
-                cartItems.map((item: any, key: number) => <SingleItem key={key} item={item} />)
+              {/* cart items */}
+              {mounted && effectiveCartItems.length > 0 ? (
+                effectiveCartItems.map((item: any, key: number) => (
+                  <SingleItem key={key} item={item} />
+                ))
               ) : (
                 <EmptyCart />
               )}
             </div>
           </div>
 
-          <div className='border-t border-gray-200 bg-white pt-3 pb-3 mt-4 sticky bottom-0'>
+          {/* Footer - Sticky at bottom */}
+          <div className='border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 pt-3 pb-3 mt-auto flex-shrink-0'>
             {/* Barra de Progreso Envío Gratis */}
-            {cartItems.length > 0 && (
+            {mounted && effectiveCartItems.length > 0 && (
               <div className='mb-3'>
-                <ShippingProgressBar currentAmount={totalPrice} variant='compact' />
+                <ShippingProgressBar 
+                  currentAmount={effectiveTotalPrice} 
+                  variant='compact' 
+                  showIcon={true}
+                />
               </div>
             )}
 
@@ -134,13 +205,37 @@ const CartSidebarModal = () => {
             <div className='flex items-center justify-between gap-3 mb-3'>
               <p className='font-bold text-lg text-gray-900'>Subtotal:</p>
               <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
-                ${totalPrice.toLocaleString()}
+                ${mounted ? effectiveTotalPrice.toLocaleString() : '0'}
               </p>
             </div>
 
+            {/* Envío */}
+            {hasItems && (
+              <div className='flex items-center justify-between gap-3 mb-2'>
+                <p className='text-gray-700'>Envío</p>
+                <p className='font-semibold'>
+                  {estimatedShippingCost === 0 ? (
+                    <span className='text-green-600'>Gratis</span>
+                  ) : (
+                    `$${estimatedShippingCost.toLocaleString()}`
+                  )}
+                </p>
+              </div>
+            )}
+
+            {/* Total */}
+            {hasItems && (
+              <div className='flex items-center justify-between gap-3 mb-3'>
+                <p className='font-bold text-lg text-gray-900'>Total:</p>
+                <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
+                  ${mounted ? (effectiveTotalPrice + estimatedShippingCost).toLocaleString() : '0'}
+                </p>
+              </div>
+            )}
+
             {/* Información de pago */}
             <div className='space-y-2'>
-              {/* Línea informativa de MercadoPago - 150px */}
+              {/* Línea informativa de MercadoPago */}
               <div className='w-full flex items-center justify-center gap-2 py-1 px-2 text-sm text-gray-600'>
                 <Image
                   src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
@@ -171,8 +266,8 @@ const CartSidebarModal = () => {
               </button>
             </div>
           </div>
-        </div>
-      </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Componente de animación de transición */}
       <CheckoutTransitionAnimation
@@ -182,7 +277,7 @@ const CartSidebarModal = () => {
           // Callback adicional si es necesario
         }}
       />
-    </div>
+    </>
   )
 }
 

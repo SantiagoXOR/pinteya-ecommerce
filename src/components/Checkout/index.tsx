@@ -6,10 +6,15 @@ import Breadcrumb from '../Common/Breadcrumb'
 import Shipping from './Shipping'
 
 import PaymentMethod from './PaymentMethod'
+import PaymentMethodSelector from './PaymentMethodSelector'
 import Billing from './Billing'
 import Coupon from './Coupon'
 import UserInfo from './UserInfo'
 import { useCheckout } from '@/hooks/useCheckout'
+import { trackBeginCheckout } from '@/lib/google-analytics'
+import { trackInitiateCheckout } from '@/lib/meta-pixel'
+import { trackGoogleAdsBeginCheckout } from '@/lib/google-ads'
+import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form'
@@ -52,6 +57,7 @@ const Checkout = () => {
   const router = useRouter()
   const [showExitIntent, setShowExitIntent] = useState(false)
   const [isExpressMode, setIsExpressMode] = useState(true) // ✅ TEMPORAL: Activado por defecto para testing
+  const { trackEvent } = useAnalytics() // Analytics propio
 
   const {
     formData,
@@ -143,6 +149,53 @@ const Checkout = () => {
     }
   }, [cartItems.length, step, router])
 
+  // 📊 ANALYTICS: Track initiate checkout (solo una vez al cargar)
+  useEffect(() => {
+    if (cartItems.length > 0 && step === 'form') {
+      try {
+        // Preparar items para tracking
+        const items = cartItems.map((item: any) => ({
+          item_id: String(item.id),
+          item_name: item.name || item.title || 'Producto',
+          item_category: item.brand || item.category || 'Producto',
+          price: item.discounted_price || item.price || 0,
+          quantity: item.quantity || 1,
+        }))
+
+        // Preparar items para Meta Pixel (formato diferente)
+        const metaContents = cartItems.map((item: any) => ({
+          id: String(item.id),
+          quantity: item.quantity || 1,
+          item_price: item.discounted_price || item.price || 0,
+        }))
+
+        // Google Analytics
+        trackBeginCheckout(items, totalPrice, 'ARS')
+
+        // Meta Pixel
+        trackInitiateCheckout(metaContents, totalPrice, 'ARS', cartItems.length)
+
+        // Google Ads
+        trackGoogleAdsBeginCheckout(totalPrice, 'ARS', items)
+
+        // 📊 Analytics propio - Trackear begin_checkout
+        trackEvent('begin_checkout', 'shop', 'begin_checkout', undefined, totalPrice, {
+          itemCount: cartItems.length,
+          currency: 'ARS',
+          items: items,
+        })
+
+        console.debug('[Analytics] Initiate checkout tracked:', {
+          items: items.length,
+          totalValue: totalPrice,
+        })
+      } catch (analyticsError) {
+        console.warn('[Analytics] Error tracking initiate checkout:', analyticsError)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Solo ejecutar una vez al montar el componente
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // ✅ CORREGIDO: Usar la función correcta según el modo
@@ -154,7 +207,7 @@ const Checkout = () => {
   }
 
   const handlePaymentMethodChange = (method: string) => {
-    updateFormData({ paymentMethod: method as 'mercadopago' | 'bank' | 'cash' })
+    updateFormData({ paymentMethod: method as 'mercadopago' | 'cash' })
   }
 
   // ✅ NUEVO: Toggle entre modo normal y express
@@ -367,7 +420,7 @@ const Checkout = () => {
             {/* Timer de Urgencia */}
             <UrgencyTimer
               initialMinutes={15}
-              message='Completa tu compra para mantener el precio y envío gratis desde $15.000'
+              message='Completa tu compra para mantener el precio y envío gratis desde $50.000'
               variant='warning'
               showProgress={true}
             />
@@ -468,11 +521,7 @@ const Checkout = () => {
 
                       {/* Payment Method Express */}
                       <div className='space-y-3'>
-                        <h3 className='font-semibold flex items-center gap-2'>
-                          <CreditCard className='w-5 h-5 text-blaze-orange-600' />
-                          Método de Pago
-                        </h3>
-                        <PaymentMethod
+                        <PaymentMethodSelector
                           selectedMethod={formData.paymentMethod}
                           onMethodChange={handlePaymentMethodChange}
                         />
@@ -526,7 +575,7 @@ const Checkout = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className='p-6'>
-                        <PaymentMethod
+                        <PaymentMethodSelector
                           selectedMethod={formData.paymentMethod}
                           onMethodChange={handlePaymentMethodChange}
                         />
@@ -609,7 +658,7 @@ const Checkout = () => {
                       </div>
                       <div className='flex items-center gap-1'>
                         <Truck className='w-4 h-4 text-blue-600' />
-                        <span>Envío Gratis +$15.000</span>
+                        <span>Envío Gratis +$50.000</span>
                       </div>
                     </div>
                   </CardContent>

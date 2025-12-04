@@ -112,19 +112,19 @@ export const InlineWithCalculator: Story = {
 export const MultipleOptions: Story = {
   args: {
     variant: 'card',
-    options: [
-      {
-        id: 'free',
-        name: 'Envío gratis',
-        price: 0,
-        estimatedDays: { min: 5, max: 7 },
-        isFree: true,
-        description: 'En compras mayores a $15.000',
-      },
-      {
-        id: 'standard',
-        name: 'Envío estándar',
-        price: 1500,
+      options: [
+        {
+          id: 'free',
+          name: 'Envío gratis',
+          price: 0,
+          estimatedDays: { min: 5, max: 7 },
+          isFree: true,
+          description: 'En compras mayores a $50.000',
+        },
+        {
+          id: 'standard',
+          name: 'Envío estándar',
+          price: 1500,
         estimatedDays: { min: 3, max: 5 },
         description: 'Entrega a domicilio',
       },

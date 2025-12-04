@@ -398,9 +398,9 @@ describe('SimplifiedCheckout', () => {
   it('shows free shipping when total is above threshold', () => {
     const mockUseCheckoutFreeShipping = {
       ...defaultMockData,
-      totalPrice: 30000, // Above 25000 threshold
+      totalPrice: 60000, // Above 50000 threshold
       shippingCost: 0,
-      finalTotal: 30000,
+      finalTotal: 60000,
     }
 
     jest.mocked(useCheckout).mockReturnValue(mockUseCheckoutFreeShipping)

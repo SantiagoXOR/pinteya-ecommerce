@@ -63,44 +63,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onMethodC
             </div>
           </label>
 
-          {/* Transferencia bancaria */}
-          <label htmlFor='bank' className='flex cursor-pointer select-none items-center gap-4'>
-            <div className='relative'>
-              <input
-                type='radio'
-                name='payment'
-                id='bank'
-                className='sr-only'
-                checked={selectedMethod === 'bank'}
-                onChange={() => onMethodChange('bank')}
-              />
-              <div
-                className={`flex h-4 w-4 items-center justify-center rounded-full ${
-                  selectedMethod === 'bank'
-                    ? 'border-4 border-tahiti-gold-500'
-                    : 'border border-gray-4'
-                }`}
-              ></div>
-            </div>
 
-            <div
-              className={`rounded-md border-[0.5px] py-3.5 px-5 ease-out duration-200 hover:bg-gray-2 hover:border-transparent hover:shadow-none ${
-                selectedMethod === 'bank'
-                  ? 'border-transparent bg-gray-2'
-                  : ' border-gray-4 shadow-1'
-              }`}
-            >
-              <div className='flex items-center'>
-                <div className='pr-2.5'>
-                  <Image src='/images/checkout/bank.svg' alt='bank' width={29} height={12} />
-                </div>
-
-                <div className='border-l border-gray-4 pl-2.5'>
-                  <p>Transferencia bancaria</p>
-                </div>
-              </div>
-            </div>
-          </label>
 
           {/* Pagás cuando llega */}
           <label htmlFor='cash' className='flex cursor-pointer select-none items-center gap-4'>

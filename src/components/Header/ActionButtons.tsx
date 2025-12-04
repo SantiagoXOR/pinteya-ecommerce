@@ -1,10 +1,10 @@
 'use client'
 
 import React from 'react'
-import { User, ShoppingCart, LogIn, Package, LayoutDashboard } from 'lucide-react'
+import { User, ShoppingCart, LogIn, Package, LayoutDashboard, Shield } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useAuth } from '@/hooks/useAuth'
+import { useSession, signIn, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -49,8 +49,11 @@ interface ActionButtonsProps {
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'header' }) => {
-  // Integración con Clerk
-  const { isSignedIn, user, isLoaded } = useAuth()
+  // Integración con NextAuth
+  const { data: session, status } = useSession()
+  const isSignedIn = !!session
+  const isLoaded = status !== 'loading'
+  const isAdmin = session?.user?.role === 'admin'
 
   // Integración con carrito
   const { openCartModal } = useCartModalContext()
@@ -60,6 +63,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
 
   const handleCartClick = () => {
     openCartModal()
+  }
+
+  const handleSignIn = () => {
+    signIn('google', { callbackUrl: '/' })
+  }
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/' })
   }
 
   // Componente skeleton para estado de carga
@@ -77,7 +88,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
           variant='ghost'
           size='sm'
           onClick={handleCartClick}
-          className='relative p-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200'
+          className='relative p-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200 z-maximum'
           data-testid='cart-icon'
         >
           <Image
@@ -89,7 +100,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
           />
           {cartItemCount > 0 && (
             <Badge
-              className='absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md'
+              className='absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md z-maximum'
               style={{ backgroundColor: '#007639' }}
             >
               {cartItemCount}
@@ -109,25 +120,32 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
                 className='p-1 hover:bg-bright-sun hover:text-black transition-all duration-200 rounded-full'
               >
                 <Avatar className='h-8 w-8 ring-2 ring-transparent hover:ring-bright-sun transition-all duration-200'>
-                  <AvatarImage src={user?.imageUrl} />
+                  <AvatarImage src={session?.user?.image || ''} />
                   <AvatarFallback className='bg-primary-100 text-primary-700 text-sm font-medium'>
-                    {user?.firstName?.[0] ||
-                      user?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase() ||
+                    {session?.user?.name?.[0]?.toUpperCase() ||
+                      session?.user?.email?.[0]?.toUpperCase() ||
                       'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='w-56'>
+              {isAdmin && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href='/admin'>
+                      <Shield className='mr-2 h-4 w-4' />
+                      Panel Admin
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem asChild>
                 <Link href='/dashboard'>
                   <LayoutDashboard className='mr-2 h-4 w-4' />
                   Mi Dashboard
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <User className='mr-2 h-4 w-4' />
-                Mi Perfil
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href='/orders'>
@@ -136,13 +154,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Cerrar Sesión</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSignOut}>
+                <LogIn className='mr-2 h-4 w-4 rotate-180' />
+                Cerrar Sesión
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
           <Button
             variant='ghost'
             size='sm'
+            onClick={handleSignIn}
             className='p-2 hover:bg-bright-sun text-white hover:text-black transition-all duration-200'
           >
             <div className='flex items-center gap-1'>
@@ -163,7 +185,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
         variant='ghost'
         size='sm'
         onClick={handleCartClick}
-        className='relative text-white hover:text-black hover:bg-bright-sun px-3 py-2 transition-all duration-200'
+        className='relative text-white hover:text-black hover:bg-bright-sun px-3 py-2 transition-all duration-200 z-maximum'
         data-testid='cart-icon'
         aria-label={`Carrito con ${cartItemCount} productos`}
       >
@@ -178,7 +200,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
             />
             {cartItemCount > 0 && (
               <Badge
-                className='absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md'
+                className='absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md z-maximum'
                 style={{ backgroundColor: '#007639' }}
               >
                 {cartItemCount}
@@ -202,30 +224,37 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
               className='flex items-center gap-2 px-3 py-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200 rounded-full'
             >
               <Avatar className='h-8 w-8 ring-2 ring-transparent hover:ring-bright-sun transition-all duration-200'>
-                <AvatarImage src={user?.imageUrl} />
+                <AvatarImage src={session?.user?.image || ''} />
                 <AvatarFallback className='bg-white text-blaze-orange-700 text-sm font-medium'>
-                  {user?.firstName?.[0] ||
-                    user?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase() ||
+                  {session?.user?.name?.[0]?.toUpperCase() ||
+                    session?.user?.email?.[0]?.toUpperCase() ||
                     'U'}
                 </AvatarFallback>
               </Avatar>
               <span className='text-sm font-medium'>
-                {user?.firstName ||
-                  user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ||
+                {session?.user?.name?.split(' ')[0] ||
+                  session?.user?.email?.split('@')[0] ||
                   'Usuario'}
               </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end' className='w-56'>
+            {isAdmin && (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href='/admin'>
+                    <Shield className='mr-2 h-4 w-4' />
+                    Panel Admin
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem asChild>
               <Link href='/dashboard'>
                 <LayoutDashboard className='mr-2 h-4 w-4' />
                 Mi Dashboard
               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <User className='mr-2 h-4 w-4' />
-              Mi Perfil
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href='/orders'>
@@ -234,7 +263,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Cerrar Sesión</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogIn className='mr-2 h-4 w-4 rotate-180' />
+              Cerrar Sesión
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
@@ -243,9 +275,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
           <Button
             variant='ghost'
             size='sm'
+            onClick={handleSignIn}
             className='text-white hover:text-black hover:bg-bright-sun transition-all duration-200'
           >
             <div className='flex items-center gap-2'>
+              <GoogleIcon className='w-4 h-4' />
               <LogIn className='w-4 h-4' />
               <span className='text-sm font-medium'>Iniciar Sesión</span>
             </div>

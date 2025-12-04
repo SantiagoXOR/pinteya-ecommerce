@@ -5,6 +5,7 @@
 import { Product as DatabaseProduct } from '@/types/database'
 import { Product as LegacyProduct } from '@/types/product'
 import { ProductWithCategory } from '@/types/api'
+import { shouldShowFreeShipping as dsShouldShowFreeShipping, defaultDesignSystemConfig } from '@/lib/design-system-config'
 
 /**
  * Adapta un producto de la base de datos al formato legacy usado en componentes
@@ -41,6 +42,12 @@ export function adaptApiProductToLegacy(apiProduct: ProductWithCategory): Legacy
   name?: string
   discounted_price?: number | null
   images?: any
+  // Datos estructurados críticos para badges inteligentes
+  variants?: any[]
+  specifications?: Record<string, any>
+  dimensions?: Record<string, any>
+  color?: string
+  medida?: string
 } {
   // FIX TEMPORAL: Limpiar "Poxipol" del título si está presente
   let cleanTitle = apiProduct.name
@@ -74,6 +81,13 @@ export function adaptApiProductToLegacy(apiProduct: ProductWithCategory): Legacy
     brand: apiProduct.brand, // Agregar brand
     discounted_price: apiProduct.discounted_price,
     images: apiProduct.images,
+    // ✅ Datos estructurados para badges inteligentes y UI
+    variants: (apiProduct as any).variants || [],
+    specifications: (apiProduct as any).specifications || {},
+    dimensions: (apiProduct as any).dimensions || undefined,
+    color: (apiProduct as any).color || undefined,
+    medida: (apiProduct as any).medida || undefined,
+    slug: (apiProduct as any).slug || undefined, // Agregar slug para consistencia con search/bestsellers
   }
 }
 
@@ -111,8 +125,8 @@ export function calculateProductFeatures(
   // Precio actual (con descuento si existe)
   const currentPrice = product.discounted_price || product.price
 
-  // Envío gratis para productos > $15000
-  const freeShipping = currentPrice >= 15000
+  // Envío gratis según Design System (umbral global)
+  const freeShipping = dsShouldShowFreeShipping(currentPrice, defaultDesignSystemConfig)
 
   // Envío rápido para ciertas categorías
   const categoryName = product.category?.name?.toLowerCase() || ''
@@ -136,8 +150,9 @@ export function calculateProductFeatures(
   // Badge principal
   const badge = discount ? `${discount}% OFF` : undefined
 
-  // Stock disponible
-  const stock = product.stock || 0
+  // Stock disponible - priorizar stock de variante por defecto
+  const defaultVariant = (product as any).default_variant || (product as any).variants?.[0]
+  const stock = defaultVariant?.stock ?? product.stock ?? 0
 
   return {
     currentPrice,
@@ -163,8 +178,16 @@ export type ExtendedProduct = LegacyProduct & {
   }
   name?: string
   brand?: string | null
+  description?: string
   discounted_price?: number | null
   images?: any
+  // Campos adicionales para badges inteligentes y datos estructurados
+  variants?: any[]
+  specifications?: Record<string, any>
+  dimensions?: Record<string, any>
+  color?: string
+  medida?: string
+  slug?: string
 }
 
 /**

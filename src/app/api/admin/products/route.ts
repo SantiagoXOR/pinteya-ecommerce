@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth'
 import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils'
 import { withCriticalValidation } from '@/lib/validation/enterprise-validation-middleware'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
 import {
   EnterpriseProductSchema,
   EnterpriseProductFiltersSchema,
@@ -13,6 +14,56 @@ import {
 } from '@/lib/validation/enterprise-schemas'
 import { ProductFiltersSchema } from '@/lib/validation/admin-schemas'
 import type { ValidatedRequest } from '@/lib/validation/enterprise-validation-middleware'
+import { logger } from '@/lib/utils/logger'
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+function extractImageUrl(images: any): string | null {
+  const normalize = (value?: string | null) => {
+    if (!value || typeof value !== 'string') return null
+    const trimmed = value.trim()
+    return trimmed.length > 0 ? trimmed : null
+  }
+
+  if (!images) {
+    return null
+  }
+
+  if (typeof images === 'string') {
+    const trimmed = images.trim()
+    if (!trimmed) return null
+
+    // Intentar parsear JSON si corresponde
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return extractImageUrl(JSON.parse(trimmed))
+      } catch {
+        return normalize(trimmed)
+      }
+    }
+
+    return normalize(trimmed)
+  }
+
+  if (Array.isArray(images)) {
+    return normalize(images[0])
+  }
+
+  if (typeof images === 'object') {
+    return (
+      normalize(images.preview) ||
+      normalize(images.previews?.[0]) ||
+      normalize(images.thumbnails?.[0]) ||
+      normalize(images.gallery?.[0]) ||
+      normalize(images.main) ||
+      normalize(images.url)
+    )
+  }
+
+  return null
+}
 
 // Helper function to check admin permissions with proper role verification
 async function checkAdminPermissionsForProducts(
@@ -53,7 +104,7 @@ const getHandler = async (request: ValidatedRequest) => {
       )
     }
 
-    const { supabase, user } = authResult
+    const { user } = authResult
     const { searchParams } = new URL(request.url)
 
     // Parse query parameters - let schema handle type conversion
@@ -63,42 +114,81 @@ const getHandler = async (request: ValidatedRequest) => {
       page: searchParams.get('page') || '1',
       limit: searchParams.get('limit') || searchParams.get('pageSize') || '20',
       search: searchParams.get('search') || undefined,
-      category_id: searchParams.get('category') || undefined,
+      category_id: searchParams.get('category') || searchParams.get('category_id') || undefined,
+      brand: searchParams.get('brand') || undefined, // ✅ NUEVO: Filtro de marca
       is_active: statusParam ? statusParam === 'active' : undefined,
       price_min: searchParams.get('priceMin') || undefined,
       price_max: searchParams.get('priceMax') || undefined,
-      sort_by: searchParams.get('sortBy') || 'created_at',
-      sort_order: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
+      sort_by: searchParams.get('sortBy') || searchParams.get('sort_by') || 'created_at',
+      sort_order: (searchParams.get('sortOrder') || searchParams.get('sort_order') as 'asc' | 'desc') || 'desc',
     }
 
     const filters = ProductFiltersSchema.parse(rawParams)
 
-    // Build query
-    let query = supabase.from('products').select(
+    // ✅ DIAGNÓSTICO: Log de filtros recibidos
+    console.log('🔍 [API /admin/products] Filtros recibidos:', {
+      page: filters.page,
+      limit: filters.limit,
+      stock_status: searchParams.get('stock_status'),
+      rawParams,
+    })
+
+    // Build query con supabaseAdmin
+    let query = supabaseAdmin.from('products').select(
       `
         id,
         name,
+        slug,
         description,
         price,
+        discounted_price,
         stock,
         category_id,
         images,
+        color,
+        medida,
+        brand,
+        aikon_id,
+        is_active,
         created_at,
         updated_at,
-        categories (
+        category:categories (
           id,
           name
+        ),
+        product_categories (
+          category:categories (
+            id,
+            name,
+            slug
+          )
         )
       `,
       { count: 'exact' }
     )
 
-    // Apply filters
+    // ✅ BÚSQUEDA MULTI-CAMPO MEJORADA
+    // Busca en: nombre, descripción, marca, SKU (aikon_id)
     if (filters.search) {
-      query = query.ilike('name', `%${filters.search}%`)
+      const searchTerm = filters.search.trim()
+      query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%,aikon_id.ilike.%${searchTerm}%`)
+      console.log('🔍 [API] Búsqueda multi-campo aplicada:', searchTerm)
     }
+    
+    // ✅ ACTUALIZADO: Filtrar usando product_categories para soportar múltiples categorías
     if (filters.category_id) {
-      query = query.eq('category_id', filters.category_id)
+      const { data: productIdsData } = await supabaseAdmin
+        .from('product_categories')
+        .select('product_id')
+        .eq('category_id', filters.category_id)
+      
+      if (productIdsData && productIdsData.length > 0) {
+        const productIds = productIdsData.map(pc => pc.product_id)
+        query = query.in('id', productIds)
+      } else {
+        // Si no hay productos con esta categoría, retornar vacío
+        query = query.eq('id', -1)
+      }
     }
     if (filters.is_active !== undefined) {
       query = query.eq('is_active', filters.is_active)
@@ -109,34 +199,82 @@ const getHandler = async (request: ValidatedRequest) => {
     if (filters.price_max !== undefined) {
       query = query.lte('price', filters.price_max)
     }
+    
+    // ✅ NUEVO: Filtro de marca
+    const brandFilter = searchParams.get('brand')
+    if (brandFilter && brandFilter.trim()) {
+      query = query.ilike('brand', `%${brandFilter.trim()}%`)
+      console.log('🔍 [API] Filtro de marca aplicado:', brandFilter)
+    }
+    
+    // ✅ NUEVO: Filtro de stock status
+    const stockStatus = searchParams.get('stock_status')
+    console.log('🔍 [API] stock_status recibido:', stockStatus)
+    
+    if (stockStatus === 'low_stock') {
+      query = query.gt('stock', 0).lte('stock', 10)
+      console.log('🔍 [API] Filtro LOW_STOCK aplicado: stock > 0 AND stock <= 10')
+    } else if (stockStatus === 'out_of_stock') {
+      query = query.or('stock.eq.0,stock.is.null')
+      console.log('🔍 [API] Filtro OUT_OF_STOCK aplicado: stock = 0 OR stock IS NULL')
+    } else {
+      console.log('🔍 [API] Sin filtro de stock (mostrando todos)')
+    }
+    // Si es 'all' o no se especifica, no aplicar filtro de stock
 
-    // Apply sorting
-    query = query.order(filters.sort_by, { ascending: filters.sort_order === 'asc' })
-
-    // Apply pagination
+    // Apply pagination BEFORE sorting (más eficiente)
     const from = (filters.page - 1) * filters.limit
     const to = from + filters.limit - 1
+    
+    console.log('🔥 [API] Aplicando .range():', {
+      page: filters.page,
+      limit: filters.limit,
+      from,
+      to,
+      calculation: `(${filters.page} - 1) * ${filters.limit} = ${from}, hasta ${to}`,
+    })
+    
     query = query.range(from, to)
 
-    const { data: products, error, count } = await query
+    // Apply sorting AFTER range
+    query = query.order(filters.sort_by, { ascending: filters.sort_order === 'asc' })
 
+    const { data: products, error, count } = await query
+    
     if (error) {
-      console.error('Error fetching products:', error)
+      console.error('🔥 [API] Error en query:', error)
       return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 })
     }
+    
+    console.log('🔥 [API] Productos retornados con .range():', {
+      cantidad: products?.length,
+      totalCount: count,
+      IDs: products?.map(p => p.id) || [],
+      primeros3: products?.slice(0, 3).map(p => `${p.id}:${p.name?.substring(0, 15)}`) || [],
+      ultimos3: products?.slice(-3).map(p => `${p.id}:${p.name?.substring(0, 15)}`) || [],
+    })
 
-    // Transform data to include category name
+    // Transform data to include category name and all fields
     const transformedProducts =
-      products?.map(product => ({
-        ...product,
-        category_name: product.categories?.name || null,
-        categories: undefined, // Remove nested object
-      })) || []
+      products?.map(product => {
+        const resolvedImage = extractImageUrl(product.images)
+
+        return {
+          ...product,
+          category_name: product.category?.name || null,
+          category: undefined, // Remove nested object
+          // Transform images JSONB/legacy formats to image_url
+          image_url: resolvedImage,
+          // Derive status from is_active (status column doesn't exist in DB)
+          status: product.is_active ? 'active' : 'inactive',
+        }
+      }) || []
 
     const total = count || 0
     const totalPages = Math.ceil(total / filters.limit)
 
     return NextResponse.json({
+      products: transformedProducts,
       data: transformedProducts,
       total,
       page: filters.page,
@@ -239,9 +377,16 @@ const postHandler = async (request: ValidatedRequest) => {
         images,
         created_at,
         updated_at,
-        categories (
+        category:categories (
           id,
           name
+        ),
+        product_categories (
+          category:categories (
+            id,
+            name,
+            slug
+          )
         )
       `
       )
@@ -255,8 +400,8 @@ const postHandler = async (request: ValidatedRequest) => {
     // Transform response
     const transformedProduct = {
       ...product,
-      category_name: product.categories?.name || null,
-      categories: undefined,
+      category_name: product.category?.name || null,
+      category: undefined,
     }
 
     // Log admin action
@@ -307,7 +452,8 @@ const postHandlerSimple = async (request: NextRequest) => {
     }
 
     console.log('✅ Auth successful')
-    const { supabase, user } = authResult
+    // Usar supabaseAdmin directamente ya que checkCRUDPermissions no retorna supabase
+    const supabase = supabaseAdmin
 
     const body = await request.json()
     console.log('📝 Request body:', JSON.stringify(body, null, 2))
@@ -330,17 +476,14 @@ const postHandlerSimple = async (request: NextRequest) => {
     const productData = {
       name: body.name,
       description: body.description || '',
-      short_description: body.short_description || '',
       price: parseFloat(body.price),
       discounted_price: body.compare_price ? parseFloat(body.compare_price) : null,
-      cost_price: body.cost_price ? parseFloat(body.cost_price) : null,
       stock: parseInt(body.stock) || 0,
-      low_stock_threshold: parseInt(body.low_stock_threshold) || 5,
       category_id: body.category_id ? parseInt(body.category_id) : null,
-      status: body.status || 'draft',
-      is_active: body.status === 'active',
-      track_inventory: body.track_inventory !== false,
-      allow_backorders: body.allow_backorders === true,
+      is_active: body.status === 'active' || true,
+      brand: body.brand || '',
+      color: body.color || '',
+      medida: body.medida || '',
       // Generar slug automático
       slug:
         body.name
@@ -389,7 +532,8 @@ const postHandlerSimple = async (request: NextRequest) => {
         price,
         stock,
         category_id,
-        status,
+        is_active,
+        brand,
         created_at,
         updated_at
       `
@@ -432,75 +576,161 @@ const postHandlerSimple = async (request: NextRequest) => {
   }
 }
 
-// USAR VERSIÓN SIMPLIFICADA TEMPORALMENTE PARA DEBUG
+// Export GET handler - Versión simplificada con paginación funcionando
 export const GET = async (request: NextRequest) => {
   try {
-    console.log('🔍 GET /api/admin/products - Starting request')
+    logger.api('GET', '/api/admin/products')
 
-    // Simple auth check
+    // Auth check simple
     const authResult = await checkAdminPermissionsForProducts('read')
     if (!authResult.allowed) {
-      console.log('❌ Auth failed:', authResult.error)
-      return NextResponse.json({ error: authResult.error || 'Acceso denegado' }, { status: 403 })
+      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
-    // Get supabase instance
-    const { supabaseAdmin } = await import('@/lib/supabase')
-    const supabase = supabaseAdmin
-    console.log('✅ Auth successful, querying products...')
+    const { searchParams } = new URL(request.url)
+    
+    // Parse parameters
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '25')
+    const sortBy = searchParams.get('sort_by') || 'created_at'
+    const sortOrder = searchParams.get('sort_order') || 'desc'
+    const stockStatus = searchParams.get('stock_status')
+    const search = searchParams.get('search')
 
-    // Simple query without complex filters
-    const {
-      data: products,
-      error,
-      count,
-    } = await supabase
-      .from('products')
-      .select(
-        `
-        *,
-        categories!inner(name)
+    logger.dev('[API] Parámetros:', { page, limit, sortBy, sortOrder, stockStatus, search })
+
+    // Validar supabaseAdmin
+    if (!supabaseAdmin) {
+      logger.error('[API] supabaseAdmin is not initialized')
+      return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 })
+    }
+
+    // Build query
+    let query = supabaseAdmin.from('products').select(
+      `
+        id,
+        name,
+        slug,
+        description,
+        price,
+        discounted_price,
+        stock,
+        category_id,
+        images,
+        color,
+        medida,
+        brand,
+        aikon_id,
+        is_active,
+        created_at,
+        updated_at,
+        category:categories (
+          id,
+          name
+        ),
+        product_categories (
+          category:categories (
+            id,
+            name,
+            slug
+          )
+        )
       `,
-        { count: 'exact' }
-      )
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(20)
+      { count: 'exact' }
+    )
+
+    // Apply filters
+    if (search) {
+      query = query.ilike('name', `%${search}%`)
+    }
+    
+    // Stock status filter
+    if (stockStatus === 'low_stock') {
+      query = query.gt('stock', 0).lte('stock', 10)
+      logger.dev('[API] Filtro LOW_STOCK aplicado')
+    } else if (stockStatus === 'out_of_stock') {
+      query = query.or('stock.eq.0,stock.is.null')
+      logger.dev('[API] Filtro OUT_OF_STOCK aplicado')
+    }
+
+    // Apply pagination
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+    
+    logger.db('range', 'products', { from, to, page, limit })
+    
+    query = query.range(from, to)
+
+    // Apply sorting
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+
+    const { data: products, error, count } = await query
+    
+    logger.dev('[API] Resultado:', {
+      productsLength: products?.length,
+      count,
+      primeros5IDs: products?.slice(0, 5).map(p => p.id) || [],
+    })
 
     if (error) {
-      console.error('❌ Database error:', error)
-      return NextResponse.json(
-        { error: 'Error al obtener productos', details: error.message },
-        { status: 500 }
-      )
+      logger.error('[API] Database error:', error)
+      return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 })
     }
 
-    console.log('✅ Products fetched:', products?.length || 0, 'total:', count)
+    const productIds = products?.map(p => p.id) || []
+    const variantCounts: Record<number, number> = {}
+    const variantImages: Record<number, string | null> = {}
+    
+    if (productIds.length > 0) {
+      const { data: variantData } = await supabaseAdmin
+        .from('product_variants')
+        .select('product_id,image_url,is_default')
+        .in('product_id', productIds)
+        .eq('is_active', true)
+      
+      variantData?.forEach(variant => {
+        const normalizedImage = extractImageUrl(variant.image_url)
+        variantCounts[variant.product_id] = (variantCounts[variant.product_id] || 0) + 1
 
-    // Transform data
+        if (!variantImages[variant.product_id] && normalizedImage) {
+          variantImages[variant.product_id] = normalizedImage
+        }
+
+        if (variant.is_default && normalizedImage) {
+          variantImages[variant.product_id] = normalizedImage
+        }
+      })
+    }
+    
     const transformedProducts =
-      products?.map(product => ({
-        ...product,
-        category_name: product.categories?.name || null,
-        categories: undefined,
-      })) || []
+      products?.map(product => {
+        const variantImage = variantImages[product.id]
+        const fallbackImage = extractImageUrl(product.images)
+
+        return {
+          ...product,
+          category_name: product.category?.name || null,
+          category: undefined,
+          // Agregar conteo de variantes
+          variant_count: variantCounts[product.id] || 0,
+          // Imagen priorizando variantes
+          image_url: variantImage || fallbackImage,
+          // Default status si es null
+          status: product.status || (product.is_active ? 'active' : 'inactive'),
+        }
+      }) || []
 
     return NextResponse.json({
+      products: transformedProducts,
       data: transformedProducts,
       total: count || 0,
-      page: 1,
-      pageSize: 20,
-      totalPages: Math.ceil((count || 0) / 20),
+      page,
+      pageSize: limit,
+      totalPages: Math.ceil((count || 0) / limit),
     })
   } catch (error) {
-    console.error('❌ Error in GET /api/admin/products:', error)
-    return NextResponse.json(
-      {
-        error: 'Error interno del servidor',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    )
+    logger.error('[API] Error en GET /api/admin/products:', error)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
 

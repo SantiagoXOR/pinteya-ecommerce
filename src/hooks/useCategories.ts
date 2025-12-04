@@ -2,16 +2,12 @@
 // PINTEYA E-COMMERCE - HOOK PARA CATEGORÍAS
 // ===================================
 
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState, useCallback, useEffect } from 'react'
 import { Category } from '@/types/database'
 import { CategoryFilters, ApiResponse } from '@/types/api'
 import { getCategories, getMainCategories } from '@/lib/api/categories'
-
-interface UseCategoriesState {
-  categories: Category[]
-  loading: boolean
-  error: string | null
-}
+import { productQueryKeys } from './queries/productQueryKeys'
 
 interface UseCategoriesOptions {
   initialFilters?: CategoryFilters
@@ -20,62 +16,57 @@ interface UseCategoriesOptions {
 
 export function useCategories(options: UseCategoriesOptions = {}) {
   const { initialFilters = {}, autoFetch = true } = options
-
-  const [state, setState] = useState<UseCategoriesState>({
-    categories: [],
-    loading: false,
-    error: null,
-  })
-
+  const queryClient = useQueryClient()
+  
+  // Mantener filtros en estado para poder actualizarlos
   const [filters, setFilters] = useState<CategoryFilters>(initialFilters)
 
-  /**
-   * Obtiene categorías desde la API
-   */
-  const fetchCategories = useCallback(
-    async (newFilters?: CategoryFilters) => {
-      setState(prev => ({ ...prev, loading: true, error: null }))
+  // Sincronizar filtros cuando initialFilters cambia
+  useEffect(() => {
+    if (initialFilters && Object.keys(initialFilters).length > 0) {
+      setFilters(prevFilters => {
+        // Solo actualizar si realmente hay cambios
+        const hasChanges = Object.keys(initialFilters).some(
+          key => prevFilters[key as keyof CategoryFilters] !== initialFilters[key as keyof CategoryFilters]
+        )
+        return hasChanges ? { ...prevFilters, ...initialFilters } : prevFilters
+      })
+    }
+  }, [initialFilters])
 
-      try {
-        // Obtener categorías con filtros
-        const filtersToUse = newFilters || filters
-        const response = await getCategories(filtersToUse)
+  // Query principal usando TanStack Query
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: productQueryKeys.categoryListWithFilters(filters),
+    queryFn: async (): Promise<Category[]> => {
+      const response = await getCategories(filters)
 
-        if (response.success) {
-          setState(prev => ({
-            ...prev,
-            categories: response.data || [],
-            loading: false,
-          }))
-        } else {
-          setState(prev => ({
-            ...prev,
-            loading: false,
-            error: response.error || 'Error obteniendo categorías',
-          }))
-        }
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Error inesperado'
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: errorMessage,
-        }))
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Error obteniendo categorías')
       }
+
+      return response.data
     },
-    [filters]
-  )
+    // Configuración optimizada para categorías
+    staleTime: 10 * 60 * 1000, // 10 minutos - las categorías cambian raramente
+    gcTime: 30 * 60 * 1000, // 30 minutos - mantener en caché más tiempo
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // Usar caché si está disponible
+    refetchOnReconnect: true,
+    enabled: autoFetch,
+  })
 
   /**
-   * Actualiza los filtros y obtiene categorías
+   * Actualiza los filtros y refetch las categorías
    */
   const updateFilters = useCallback(
     (newFilters: Partial<CategoryFilters>) => {
       const updatedFilters = { ...filters, ...newFilters }
       setFilters(updatedFilters)
-      fetchCategories(updatedFilters)
+      // TanStack Query automáticamente refetch cuando cambia la query key
     },
-    [filters, fetchCategories]
+    [filters]
   )
 
   /**
@@ -88,27 +79,32 @@ export function useCategories(options: UseCategoriesOptions = {}) {
     [updateFilters]
   )
 
-  // Función removida ya que no hay jerarquía en la estructura actual
-
   /**
-   * Refresca las categorías
+   * Refresca las categorías manualmente
    */
   const refreshCategories = useCallback(() => {
-    fetchCategories()
-  }, [fetchCategories])
+    refetch()
+  }, [refetch])
 
-  // Auto-fetch al montar el componente
-  useEffect(() => {
-    if (autoFetch) {
-      fetchCategories()
-    }
-  }, [autoFetch, fetchCategories])
+  /**
+   * Fetch categorías manualmente (para compatibilidad)
+   */
+  const fetchCategories = useCallback(
+    async (newFilters?: CategoryFilters) => {
+      if (newFilters) {
+        setFilters(newFilters)
+      } else {
+        refetch()
+      }
+    },
+    [refetch]
+  )
 
   return {
-    // Estado
-    categories: state.categories,
-    loading: state.loading,
-    error: state.error,
+    // Estado - mantener compatibilidad con interfaz anterior
+    categories: data || [],
+    loading: isLoading,
+    error: error ? (error instanceof Error ? error.message : String(error)) : null,
 
     // Acciones
     fetchCategories,

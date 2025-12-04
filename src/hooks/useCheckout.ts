@@ -37,8 +37,8 @@ const initialFormData: CheckoutFormData = {
   shipping: {
     differentAddress: false,
   },
-  paymentMethod: 'mercadopago',
-  shippingMethod: 'free',
+  paymentMethod: 'cash',
+  shippingMethod: 'express',
   couponCode: '',
 }
 
@@ -47,6 +47,17 @@ export const useCheckout = () => {
   const cartItems = useAppSelector(selectCartItems)
   const totalPrice = useAppSelector(selectTotalPrice)
   const { user, isLoaded } = useAuth()
+
+  // 🔍 DEBUG CRÍTICO: Verificar items del carrito Redux
+  console.log('🛒 useCheckout: Items del carrito Redux:', cartItems.map((item: any) => ({
+    id: item.id,
+    title: item.title,
+    price: item.price,
+    discountedPrice: item.discountedPrice,
+    quantity: item.quantity,
+    brand: item.brand,
+    attributes: item.attributes
+  })))
 
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     formData: initialFormData,
@@ -109,15 +120,20 @@ export const useCheckout = () => {
   const calculateShippingCost = useCallback(() => {
     const { shippingMethod } = checkoutState.formData
 
+    // Envío gratis para compras mayores a $50,000
+    if (totalPrice >= 50000) {
+      return 0
+    }
+
+    // Solo existe un tipo de envío: $10,000 pesos
+    // Retiro en tienda es gratis
     switch (shippingMethod) {
-      case 'free':
+      case 'pickup':
         return 0
-      case 'standard':
-        return totalPrice > 50000 ? 0 : 5000 // Envío gratis por compras mayores a $50,000
+      case 'shipping':
       case 'express':
-        return 8000
       default:
-        return 0
+        return 10000 // $10,000 pesos
     }
   }, [checkoutState.formData.shippingMethod, totalPrice])
 
@@ -258,12 +274,22 @@ export const useCheckout = () => {
       errors.email = 'Email inválido'
     }
 
-    if (billing.phone && !validatePhoneNumber(billing.phone)) {
-      errors.phone = 'Teléfono inválido. Formato: +54 351 XXX XXXX'
+    // Validación más permisiva para teléfono en checkout express
+    if (billing.phone) {
+      const digitsOnly = billing.phone.replace(/\D/g, '')
+      // Aceptar 8 a 11 dígitos (fijo/celular argentino, sin prefijo +54)
+      if (digitsOnly.length < 8 || digitsOnly.length > 11) {
+        errors.phone = 'Teléfono inválido. Ingresá 8–11 dígitos'
+      }
     }
 
     if (billing.streetAddress && billing.streetAddress.length < 10) {
       errors.streetAddress = 'La dirección debe tener al menos 10 caracteres'
+    }
+
+    // Validación específica para Córdoba Capital
+    if (billing.streetAddress && !billing.streetAddress.toLowerCase().includes('córdoba') && !billing.streetAddress.toLowerCase().includes('cordoba')) {
+      errors.streetAddress = 'La dirección debe estar en Córdoba Capital'
     }
 
     // Validar código postal argentino (formato XXXX o AXXXX)
@@ -298,11 +324,15 @@ export const useCheckout = () => {
 
     setCheckoutState(prev => ({ ...prev, errors }))
     return Object.keys(errors).length === 0
-  }, [cartItems.length])
+  }, [checkoutState.formData, cartItems.length])
 
   // Validar formulario express (solo campos esenciales)
-  const validateExpressForm = useCallback(() => {
-    const { billing } = checkoutState.formData
+  const validateExpressForm = useCallback((isMetaFlow: boolean = false, overrideBillingData?: Partial<CheckoutFormData['billing']>) => {
+    // ✅ CORREGIR: Usar datos override si están disponibles (para flujo meta con datos directos)
+    const billing = overrideBillingData 
+      ? { ...checkoutState.formData.billing, ...overrideBillingData }
+      : checkoutState.formData.billing
+    
     const errors: Record<string, string> = {}
 
     console.log('🔍 validateExpressForm - Datos del formulario:', {
@@ -314,7 +344,9 @@ export const useCheckout = () => {
       streetAddress: billing.streetAddress,
       paymentMethod: checkoutState.formData.paymentMethod,
       cartItemsLength: cartItems.length,
-      currentStep: checkoutState.step, // ✅ NUEVO: Agregar step actual
+      currentStep: checkoutState.step,
+      isMetaFlow, // ✅ NUEVO: Indicar si es flujo meta
+      hasOverrideData: !!overrideBillingData, // ✅ DEBUG: Indicar si se usan datos override
     })
 
     // Validaciones esenciales para checkout express
@@ -324,10 +356,14 @@ export const useCheckout = () => {
     if (!billing.lastName?.trim()) {
       errors.lastName = 'Apellido es requerido'
     }
-    if (!billing.dni?.trim()) {
+    
+    // DNI solo requerido si NO es flujo meta
+    if (!isMetaFlow && !billing.dni?.trim()) {
       errors.dni = 'DNI/CUIT es requerido'
     }
-    if (!billing.email?.trim()) {
+    
+    // Email solo requerido si NO es flujo meta
+    if (!isMetaFlow && !billing.email?.trim()) {
       errors.email = 'Email es requerido'
     }
     if (!billing.phone?.trim()) {
@@ -342,8 +378,13 @@ export const useCheckout = () => {
       errors.email = 'Email inválido'
     }
 
-    if (billing.phone && !validatePhoneNumber(billing.phone)) {
-      errors.phone = 'Teléfono inválido. Formato: +54 351 XXX XXXX'
+    // Validación más permisiva de teléfono para checkout express
+    if (billing.phone) {
+      const digitsOnly = billing.phone.replace(/\D/g, '')
+      // Aceptar 8–13 dígitos (local y E.164 con +54 9)
+      if (digitsOnly.length < 8 || digitsOnly.length > 13) {
+        errors.phone = 'Teléfono inválido. Ingresá 8–13 dígitos'
+      }
     }
 
     // Validación de DNI/CUIT argentino
@@ -357,8 +398,8 @@ export const useCheckout = () => {
     }
 
     // ✅ NUEVO: Solo validar carrito si NO estamos en el step de pago
-    // Durante el step 'payment', el carrito ya se vació pero es normal
-    if (checkoutState.step !== 'payment' && cartItems.length === 0) {
+    // Durante el step 'payment' o 'cash_success', el carrito ya se vació pero es normal
+    if (checkoutState.step !== 'payment' && checkoutState.step !== 'cash_success' && cartItems.length === 0) {
       errors.cart = 'El carrito está vacío'
     }
 
@@ -374,8 +415,12 @@ export const useCheckout = () => {
   // ===================================
 
   // Procesar checkout express
-  const processExpressCheckout = useCallback(async (): Promise<void> => {
-    if (!validateExpressForm()) {
+  const processExpressCheckout = useCallback(async (
+    isMetaFlow: boolean = false,
+    overrideBillingData?: Partial<CheckoutFormData['billing']> // ✅ AGREGAR: Parámetro opcional
+  ): Promise<void> => {
+    // ✅ CORREGIR: Pasar overrideBillingData a validateExpressForm
+    if (!validateExpressForm(isMetaFlow, overrideBillingData)) {
       return
     }
 
@@ -385,7 +430,10 @@ export const useCheckout = () => {
     setCheckoutState(prev => ({ ...prev, isLoading: true, step: 'processing' }))
 
     try {
-      const { billing } = checkoutState.formData
+      // ✅ CORREGIR: Usar datos override si están disponibles, sino usar el estado
+      const billing = overrideBillingData 
+        ? { ...checkoutState.formData.billing, ...overrideBillingData }
+        : checkoutState.formData.billing
       const shippingCost = calculateShippingCost()
 
       // Sanitizar teléfono para el backend (solo números, formato argentino 10-11 dígitos)
@@ -403,6 +451,17 @@ export const useCheckout = () => {
       console.log('🔍 processExpressCheckout - Teléfono sanitizado:', sanitizedPhone)
       console.log('🔍 processExpressCheckout - Longitud del teléfono:', sanitizedPhone.length)
 
+      // 🔍 DEBUG CRÍTICO: Verificar items del carrito en checkout express
+      console.log('🛒 processExpressCheckout: Items del carrito antes de crear payload:', cartItems.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        discountedPrice: item.discountedPrice,
+        quantity: item.quantity,
+        brand: item.brand,
+        attributes: item.attributes
+      })))
+
       // Preparar datos para la API (Express Checkout - campos simplificados)
       const payload: CreatePreferencePayload = {
         items: cartItems.map((item: any) => ({
@@ -411,24 +470,34 @@ export const useCheckout = () => {
           price: item.discountedPrice,
           quantity: item.quantity,
           image: item.imgs?.previews?.[0] || '',
+          // 🔧 AGREGAR: Información de la variante para el mensaje de WhatsApp
+          variant_id: item.variant_id,
+          variant_color: item.variant_color,
         })),
         payer: {
           name: billing.firstName || 'Cliente', // Valor por defecto para express checkout
           surname: billing.lastName || 'Express', // Valor por defecto para express checkout
-          email: billing.email,
+          // Si no hay email (flujo meta), generar uno temporal basado en teléfono
+          email: billing.email || (sanitizedPhone ? `${sanitizedPhone}@temp.metacheckout.local` : 'noreply@metacheckout.local'),
           phone: sanitizedPhone, // Teléfono sanitizado (solo números)
         },
         shipping:
           shippingCost > 0
             ? {
                 cost: shippingCost,
-                address: {
-                  street_name: billing.streetAddress,
-                  street_number: '123', // Número por defecto
-                  zip_code: billing.zipCode || '5000', // Código postal por defecto para Córdoba
-                  city_name: billing.city || 'Córdoba',
-                  state_name: billing.state || 'Córdoba',
-                },
+                address: (() => {
+                  const full = (billing.streetAddress || '').trim()
+                  const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
+                  const street_name = match ? match[1].trim() : full
+                  const street_number = match ? match[2].trim() : ''
+                  return {
+                    street_name,
+                    street_number,
+                    zip_code: billing.zipCode || '5000',
+                    city_name: billing.city || 'Córdoba',
+                    state_name: billing.state || 'Córdoba',
+                  }
+                })(),
               }
             : undefined,
         external_reference: `express_checkout_${Date.now()}`,
@@ -455,6 +524,28 @@ export const useCheckout = () => {
       // Esto evita el problema de hooks con el Wallet Brick embebido
       console.log('🔄 Redirigiendo directamente a MercadoPago:', result.data.init_point)
 
+      // 📊 ANALYTICS: Guardar datos del checkout para tracking de Purchase
+      try {
+        const checkoutData = {
+          items: cartItems.map((item: any) => ({
+            id: item.id,
+            name: item.title,
+            title: item.title,
+            brand: item.brand,
+            category: item.category,
+            price: item.price,
+            discounted_price: item.discountedPrice,
+            quantity: item.quantity,
+          })),
+          total: totalPrice + shippingCost,
+          shipping: shippingCost,
+          discount: 0,
+        }
+        sessionStorage.setItem('checkout-data', JSON.stringify(checkoutData))
+      } catch (storageError) {
+        console.warn('[Analytics] Error saving checkout data:', storageError)
+      }
+
       // Cambiar a estado de redirección inmediatamente
       setCheckoutState(prev => ({
         ...prev,
@@ -473,7 +564,7 @@ export const useCheckout = () => {
         errors: { general: errorMessage },
       }))
     }
-  }, [checkoutState.formData, cartItems, validateExpressForm, calculateShippingCost, dispatch])
+  }, [checkoutState.formData, cartItems, validateExpressForm, calculateShippingCost, dispatch, totalPrice])
 
   // Procesar checkout completo
   const processCheckout = useCallback(async (): Promise<void> => {
@@ -490,6 +581,17 @@ export const useCheckout = () => {
       const { billing, shipping } = checkoutState.formData
       const shippingCost = calculateShippingCost()
 
+      // 🔍 DEBUG CRÍTICO: Verificar items del carrito antes de enviar
+      console.log('🛒 useCheckout: Items del carrito antes de crear payload:', cartItems.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        discountedPrice: item.discountedPrice,
+        quantity: item.quantity,
+        brand: item.brand,
+        attributes: item.attributes
+      })))
+
       // Preparar datos para la API
       const payload: CreatePreferencePayload = {
         items: cartItems.map((item: any) => ({
@@ -498,6 +600,9 @@ export const useCheckout = () => {
           price: item.discountedPrice,
           quantity: item.quantity,
           image: item.imgs?.previews?.[0] || '',
+          // 🔧 AGREGAR: Información de la variante para el mensaje de WhatsApp
+          variant_id: item.variant_id,
+          variant_color: item.variant_color,
         })),
         payer: {
           name: billing.firstName,
@@ -509,15 +614,19 @@ export const useCheckout = () => {
           shippingCost > 0
             ? {
                 cost: shippingCost,
-                address: {
-                  street_name: shipping.differentAddress
-                    ? shipping.streetAddress!
-                    : billing.streetAddress,
-                  street_number: '123', // Número por defecto como string
-                  zip_code: shipping.differentAddress ? shipping.zipCode! : billing.zipCode,
-                  city_name: shipping.differentAddress ? shipping.city! : billing.city,
-                  state_name: shipping.differentAddress ? shipping.state! : billing.state,
-                },
+                address: (() => {
+                  const full = (shipping.differentAddress ? shipping.streetAddress : billing.streetAddress) || ''
+                  const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
+                  const street_name = match ? match[1].trim() : full.trim()
+                  const street_number = match ? match[2].trim() : ''
+                  return {
+                    street_name,
+                    street_number,
+                    zip_code: (shipping.differentAddress ? shipping.zipCode : billing.zipCode)!,
+                    city_name: (shipping.differentAddress ? shipping.city : billing.city)!,
+                    state_name: (shipping.differentAddress ? shipping.state : billing.state)!,
+                  }
+                })(),
               }
             : undefined,
         external_reference: `checkout_${Date.now()}`,
@@ -543,6 +652,28 @@ export const useCheckout = () => {
 
       // ✅ CORREGIDO: Ir directamente a redirect para evitar error de hooks con MercadoPagoWallet
       console.log('🔄 Redirigiendo directamente a MercadoPago:', result.data.init_point)
+
+      // 📊 ANALYTICS: Guardar datos del checkout para tracking de Purchase
+      try {
+        const checkoutData = {
+          items: cartItems.map((item: any) => ({
+            id: item.id,
+            name: item.title,
+            title: item.title,
+            brand: item.brand,
+            category: item.category,
+            price: item.price,
+            discounted_price: item.discountedPrice,
+            quantity: item.quantity,
+          })),
+          total: totalPrice + shippingCost,
+          shipping: shippingCost,
+          discount: 0,
+        }
+        sessionStorage.setItem('checkout-data', JSON.stringify(checkoutData))
+      } catch (storageError) {
+        console.warn('[Analytics] Error saving checkout data:', storageError)
+      }
 
       setCheckoutState(prev => ({
         ...prev,
@@ -592,6 +723,9 @@ export const useCheckout = () => {
     }))
   }, [])
 
+  // ===================================
+  // VALORES MEMOIZADOS
+  // ===================================
   // Memorizar valores calculados para evitar recursión infinita
   const memoizedShippingCost = useMemo(() => {
     try {
@@ -623,6 +757,240 @@ export const useCheckout = () => {
     }
   }, [calculateTotal])
 
+  // ===================================
+  // FUNCIÓN PARA PAGO CONTRA ENTREGA
+  // ===================================
+  const processCashOnDelivery = useCallback(async (isMetaFlow: boolean = false, overrideBillingData?: Partial<CheckoutFormData['billing']>) => {
+    console.log('💰 Iniciando proceso de pago contra entrega', { isMetaFlow, hasOverrideData: !!overrideBillingData })
+    
+    // ✅ CORREGIR: Validar con datos override si están disponibles
+    const isValid = validateExpressForm(isMetaFlow, overrideBillingData)
+    if (!isValid) {
+      // Los errores ya se establecen dentro de validateForm()
+      console.warn('⚠️ Validación falló, no se puede procesar la orden')
+      return
+    }
+
+    setCheckoutState(prev => ({
+      ...prev,
+      isLoading: true,
+      errors: {},
+    }))
+
+    try {
+      // ✅ CORREGIR: Usar datos override si están disponibles, sino usar el estado
+      const billing = overrideBillingData 
+        ? { ...checkoutState.formData.billing, ...overrideBillingData }
+        : checkoutState.formData.billing
+      const shipping = checkoutState.formData.shipping
+
+      // Sanitizar teléfono para separar código de área y número
+      let sanitizedPhone = billing.phone?.replace(/\D/g, '') || ''
+      let areaCode = ''
+      let phoneNumber = ''
+
+      if (sanitizedPhone.length >= 10) {
+        // Para Argentina: primeros 2-4 dígitos son código de área
+        if (sanitizedPhone.startsWith('54')) {
+          sanitizedPhone = sanitizedPhone.substring(2) // Remover código de país
+        }
+        
+        if (sanitizedPhone.length === 10) {
+          // Teléfono fijo: XXXX-XXXXXX
+          areaCode = sanitizedPhone.substring(0, 4)
+          phoneNumber = sanitizedPhone.substring(4)
+        } else if (sanitizedPhone.length === 11) {
+          // Celular: XXX-XXXXXXXX
+          areaCode = sanitizedPhone.substring(0, 3)
+          phoneNumber = sanitizedPhone.substring(3)
+        } else {
+          // Fallback
+          areaCode = sanitizedPhone.substring(0, 3)
+          phoneNumber = sanitizedPhone.substring(3)
+        }
+      } else {
+        // Fallback para números cortos
+        areaCode = '351' // Código de Córdoba por defecto
+        phoneNumber = sanitizedPhone
+      }
+
+      // Determinar dirección de envío (usar dirección completa para evitar errores de parsing)
+      const getStreetComponents = (addr?: string) => {
+        const full = (addr || '').trim()
+        // No separar - enviar dirección completa para evitar errores como "9" solo
+        return {
+          street_name: full,
+          street_number: '',
+        }
+      }
+
+      const shippingAddress = (() => {
+        const base = shipping.differentAddress ? getStreetComponents(shipping.streetAddress) : getStreetComponents(billing.streetAddress)
+        return {
+          street_name: base.street_name,
+          street_number: base.street_number,
+          city_name: (shipping.differentAddress ? shipping.city : billing.city) || 'Córdoba',
+          state_name: (shipping.differentAddress ? shipping.state : billing.state) || 'Córdoba',
+          zip_code: (shipping.differentAddress ? shipping.zipCode : billing.zipCode) || '5000',
+          // ✅ AGREGAR: Incluir piso/depto y observaciones si existen
+          ...(billing.apartment && { apartment: billing.apartment }),
+          ...(shipping.apartment && { apartment: shipping.apartment }),
+          ...(billing.observations && { observations: billing.observations }),
+          ...(shipping.observations && { observations: shipping.observations }),
+        }
+      })()
+
+      // Preparar payload según el esquema CreateCashOrderSchema
+      const payload = {
+        items: cartItems.map(item => ({
+          id: item.id.toString(), // Convertir a string como espera el esquema
+          quantity: item.quantity,
+          // Usar 'unit_price' para cumplir con CreateCashOrderSchema
+          unit_price: item.discountedPrice || item.price,
+          // 🔧 Incluir información de variante (color, terminación, etc.)
+          variant_color: item.attributes?.color,
+          variant_finish: item.attributes?.finish,
+        })),
+        payer: {
+          name: billing.firstName,
+          surname: billing.lastName,
+          // Si no hay email (flujo meta), generar uno temporal basado en teléfono
+          email: billing.email || (phoneNumber ? `${phoneNumber}@temp.metacheckout.local` : 'noreply@metacheckout.local'),
+          phone: {
+            area_code: areaCode,
+            number: phoneNumber,
+          },
+          identification: billing.dni ? {
+            type: 'DNI',
+            number: billing.dni,
+          } : undefined,
+        },
+        shipments: {
+          // ✅ Enviar costo de envío para que el backend lo incluya en el total
+          cost: memoizedShippingCost,
+          receiver_address: shippingAddress,
+        },
+        external_reference: `cash_order_${Date.now()}`,
+      }
+
+      console.log('🔍 DEBUG - Llegó hasta aquí, creando payload...')
+      console.log('📦 Enviando orden de pago contra entrega:', payload)
+      console.log('🔍 DEBUG - Justo antes de llamar a la API...')
+
+      // Llamar a la API de cash order
+      const response = await fetch('/api/orders/create-cash-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      console.log('🔍 DEBUG - Respuesta recibida de la API, status:', response.status)
+      console.log('🔍 DEBUG - Respuesta OK:', response.ok)
+      
+      const result = await response.json()
+      
+      console.log('🔍 DEBUG - Respuesta completa de la API:', result)
+      console.log('🔍 DEBUG - result.success:', result.success)
+      console.log('🔍 DEBUG - result.data:', result.data)
+
+      if (!result.success) {
+        console.error('❌ Error en la respuesta de la API:', result.error)
+        throw new Error(result.error || 'Error creando la orden')
+      }
+
+      console.log('✅ Orden de pago contra entrega creada exitosamente:', result.data)
+      console.log('🔍 DEBUG - Llegó hasta aquí, ahora va a guardar en localStorage')
+
+      // Persistir datos clave para la página de éxito
+      console.log('🔍 DEBUG - Iniciando guardado en localStorage...')
+      try {
+        const order = result?.data?.order
+        const whatsappUrl = result?.data?.whatsapp_url || order?.whatsapp_url
+        const whatsappMessage = result?.data?.whatsapp_message
+        
+        console.log('🔍 DEBUG - order:', order)
+        console.log('🔍 DEBUG - whatsappUrl:', whatsappUrl)
+        console.log('🔍 DEBUG - whatsappMessage:', whatsappMessage)
+        
+        console.log('🔍 DEBUG - result.data:', result.data)
+        console.log('🔍 DEBUG - whatsappMessage from API:', whatsappMessage)
+        
+        if (order) {
+          const orderId = order.order_number || String(order.id)
+          const successParams = {
+            orderId,
+            total: Number(order.total ?? 0),
+            whatsappUrl,
+            whatsappMessage,
+          }
+          console.log('🔍 DEBUG - successParams to save:', successParams)
+          console.log('🔍 DEBUG - whatsappMessage to save with orderId:', whatsappMessage)
+          
+          // Guardar con múltiples claves para compatibilidad
+          localStorage.setItem('cashSuccessParams', JSON.stringify(successParams))
+          localStorage.setItem('cashOrderData', JSON.stringify(result.data))
+          
+          // Guardar mensaje específico con clave del orderId (más confiable)
+          if (whatsappMessage) {
+            localStorage.setItem(`order_message_${orderId}`, whatsappMessage)
+            console.log('🔍 DEBUG - Mensaje guardado con clave:', `order_message_${orderId}`)
+            console.log('🔍 DEBUG - Contenido del mensaje guardado:', whatsappMessage.substring(0, 200) + '...')
+            
+            // Verificar que se guardó correctamente
+            const saved = localStorage.getItem(`order_message_${orderId}`)
+            console.log('🔍 DEBUG - Verificación: mensaje recuperado:', saved ? 'SÍ' : 'NO')
+          } else {
+            console.warn('🔍 DEBUG - No hay whatsappMessage para guardar')
+          }
+        }
+      } catch (e) {
+        console.error('❌ No se pudo guardar cashSuccessParams en localStorage', e)
+      }
+
+      // Limpiar carrito
+      dispatch(removeAllItemsFromCart())
+
+      // Actualizar estado a cash_success
+      console.log('🔄 useCheckout - Actualizando estado a cash_success con datos:', {
+        hasOrder: !!result.data?.order,
+        hasWhatsappUrl: !!result.data?.whatsapp_url,
+        hasWhatsappMessage: !!result.data?.whatsapp_message,
+        orderNumber: result.data?.order?.order_number
+      })
+      
+      setCheckoutState(prev => {
+        const newState = {
+          ...prev,
+          step: 'cash_success' as const,
+          cashOrderData: result.data,
+          isLoading: false,
+        }
+        console.log('🔄 useCheckout - Nuevo estado establecido:', {
+          step: newState.step,
+          hasCashOrderData: !!newState.cashOrderData
+        })
+        return newState
+      })
+
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error procesando la orden'
+      console.error('❌ Error en pago contra entrega:', error)
+      console.error('❌ Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      setCheckoutState(prev => ({
+        ...prev,
+        isLoading: false,
+        step: 'form',
+        errors: { general: errorMessage },
+      }))
+    }
+      }, [checkoutState.formData, cartItems, validateForm, memoizedShippingCost, memoizedDiscount, memoizedFinalTotal, dispatch, validateExpressForm])
+
   return {
     // Estado
     formData: checkoutState.formData,
@@ -633,6 +1001,9 @@ export const useCheckout = () => {
     // Datos para Wallet Brick
     preferenceId: checkoutState.preferenceId,
     initPoint: checkoutState.initPoint,
+
+    // Datos para Cash Order
+    cashOrderData: checkoutState.cashOrderData,
 
     // Datos calculados
     cartItems,
@@ -653,6 +1024,7 @@ export const useCheckout = () => {
     validateExpressForm,
     processCheckout,
     processExpressCheckout,
+    processCashOnDelivery,
 
     // Callbacks para Wallet Brick
     handleWalletReady,

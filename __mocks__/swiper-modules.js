@@ -18,7 +18,7 @@ export const Navigation = {
   },
   create() {},
   on: {},
-};
+}
 
 // Mock de Pagination module
 export const Pagination = {
@@ -37,8 +37,8 @@ export const Pagination = {
       type: 'bullets',
       dynamicBullets: false,
       dynamicMainBullets: 1,
-      formatFractionCurrent: (number) => number,
-      formatFractionTotal: (number) => number,
+      formatFractionCurrent: number => number,
+      formatFractionTotal: number => number,
       bulletClass: 'swiper-pagination-bullet',
       bulletActiveClass: 'swiper-pagination-bullet-active',
       modifierClass: 'swiper-pagination-',
@@ -53,7 +53,7 @@ export const Pagination = {
   },
   create() {},
   on: {},
-};
+}
 
 // Mock de Autoplay module
 export const Autoplay = {
@@ -69,7 +69,7 @@ export const Autoplay = {
   },
   create() {},
   on: {},
-};
+}
 
 // Mock de EffectFade module
 export const EffectFade = {
@@ -81,7 +81,7 @@ export const EffectFade = {
   },
   create() {},
   on: {},
-};
+}
 
 // Mock de Thumbs module
 export const Thumbs = {
@@ -97,7 +97,7 @@ export const Thumbs = {
   },
   create() {},
   on: {},
-};
+}
 
 // Mock de Virtual module
 export const Virtual = {
@@ -116,7 +116,7 @@ export const Virtual = {
   },
   create() {},
   on: {},
-};
+}
 
 // Export default para compatibilidad
 export default {
@@ -126,4 +126,4 @@ export default {
   EffectFade,
   Thumbs,
   Virtual,
-};
+}

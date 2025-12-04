@@ -22,6 +22,7 @@ import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocomplete
 import { type SearchSuggestion } from '@/hooks/useSearch'
 
 // Definición de categorías con iconos y placeholders profesionales
+// Orden de visualización: Paredes, Metales y Maderas, Techos, Complementos, Antihumedad, Piscinas, Reparaciones, Pisos
 const categories = [
   {
     id: 'all',
@@ -30,34 +31,52 @@ const categories = [
     placeholder: 'Látex interior blanco 20lts, rodillos, pinceles...',
   },
   {
-    id: 'pinturas',
-    name: 'Pinturas',
+    id: 'paredes',
+    name: 'Paredes',
     icon: Palette,
-    placeholder: 'Látex Sherwin Williams, esmalte sintético...',
+    placeholder: 'Látex interior, frentes, muros...',
   },
   {
-    id: 'herramientas',
-    name: 'Herramientas',
-    icon: Wrench,
-    placeholder: 'Rodillos premium, pinceles profesionales...',
-  },
-  {
-    id: 'accesorios',
-    name: 'Accesorios',
-    icon: Package,
-    placeholder: 'Bandejas, extensores, cintas de papel...',
-  },
-  {
-    id: 'barnices',
-    name: 'Barnices',
-    icon: Sparkles,
-    placeholder: 'Barniz marino, poliuretánico brillante...',
-  },
-  {
-    id: 'esmaltes',
-    name: 'Esmaltes',
+    id: 'metales-y-maderas',
+    name: 'Metales y Maderas',
     icon: Brush,
-    placeholder: 'Esmalte sintético blanco, antióxido rojo...',
+    placeholder: 'Impregnantes, sintéticos, protectores...',
+  },
+  {
+    id: 'techos',
+    name: 'Techos',
+    icon: Sparkles,
+    placeholder: 'Membranas, cielorrasos, impermeabilizantes...',
+  },
+  {
+    id: 'complementos',
+    name: 'Complementos',
+    icon: Wrench,
+    placeholder: 'Rodillos, pinceles, cintas, lijas...',
+  },
+  {
+    id: 'antihumedad',
+    name: 'Antihumedad',
+    icon: Package,
+    placeholder: 'Productos para baños y cocinas...',
+  },
+  {
+    id: 'piscinas',
+    name: 'Piscinas',
+    icon: Package,
+    placeholder: 'Productos para piscinas...',
+  },
+  {
+    id: 'reparaciones',
+    name: 'Reparaciones',
+    icon: Package,
+    placeholder: 'Poximix, masillas, rellenos...',
+  },
+  {
+    id: 'pisos',
+    name: 'Pisos',
+    icon: Sparkles,
+    placeholder: 'Barnices para pisos, protectores...',
   },
 ]
 
@@ -165,7 +184,7 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             // Props de configuración
             placeholder={selectedCategory.placeholder}
             onSearch={handleSearch}
-            onSuggestionSelect={handleSuggestionSelect}
+            onSuggestionSelected={handleSuggestionSelect}
             size={size}
             className='w-full [&>div>div>input]:border-0 [&>div>div>input]:rounded-none [&>div>div>input]:bg-white [&>div>div>input]:focus:ring-0 [&>div>div>input]:focus:border-gray-300'
             maxSuggestions={6}
@@ -173,6 +192,8 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             showRecentSearches={true}
             showTrendingSearches={true}
             data-testid={testId || 'search-input'}
+            categoryId={selectedCategory.id !== 'all' ? selectedCategory.id : undefined}
+            formId='search-autocomplete-form'
           />
         </div>
 
@@ -183,15 +204,7 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             'rounded-l-none bg-bright-sun hover:bg-bright-sun-600 text-black border-bright-sun hover:border-bright-sun-600 flex-shrink-0 button-hover-lift font-bold transition-all duration-200',
             buttonSizeClasses[size]
           )}
-          onClick={() => {
-            // Trigger search from SearchAutocomplete if needed
-            const searchInput = document.querySelector(
-              '[data-testid="search-input"]'
-            ) as HTMLInputElement
-            if (searchInput?.value) {
-              handleSearch(searchInput.value)
-            }
-          }}
+          form='search-autocomplete-form'
         >
           <span className='font-medium'>Buscar</span>
         </Button>

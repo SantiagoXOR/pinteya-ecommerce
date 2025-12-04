@@ -3,7 +3,8 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
-import { ProductForm } from '@/components/admin/products/ProductForm'
+import { ProductFormMinimal } from '@/components/admin/products/ProductFormMinimal'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { toast } from 'react-hot-toast'
 import { AlertCircle } from 'lucide-react'
 
@@ -12,7 +13,7 @@ interface Product {
   name: string
   description?: string
   short_description?: string
-  category_id: string
+  category_id: number // ✅ CORREGIDO: number (no string) - alineado con BD y schemas Zod
   status: 'active' | 'inactive' | 'draft'
   price: number
   compare_price?: number
@@ -50,6 +51,8 @@ async function fetchProduct(productId: string): Promise<Product> {
 }
 
 async function updateProduct(productId: string, data: ProductFormData) {
+  console.log('📤 Enviando actualización:', { productId, data })
+  
   const response = await fetch(`/api/admin/products/${productId}`, {
     method: 'PUT',
     headers: {
@@ -63,7 +66,9 @@ async function updateProduct(productId: string, data: ProductFormData) {
     throw new Error(error.error || 'Error al actualizar producto')
   }
 
-  return response.json()
+  const result = await response.json()
+  console.log('📥 Respuesta recibida:', result)
+  return result
 }
 
 export default function EditProductPage() {
@@ -81,21 +86,32 @@ export default function EditProductPage() {
     queryKey: ['admin-product', productId],
     queryFn: () => fetchProduct(productId),
     enabled: !!productId,
+    staleTime: 0, // Siempre considerar los datos como obsoletos
+    refetchOnMount: 'always', // Siempre refetch al montar
   })
 
   // Update product mutation
   const updateProductMutation = useMutation({
     mutationFn: (data: ProductFormData) => updateProduct(productId, data),
-    onSuccess: data => {
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
-      queryClient.invalidateQueries({ queryKey: ['admin-product', productId] })
+    onSuccess: async (data) => {
+      console.log('✅ Actualización exitosa, datos recibidos:', data)
+      
+      // Invalidate queries y forzar refetch
+      await queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin-product', productId] })
+      await queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+      
+      // Refetch inmediato para asegurar datos frescos
+      await queryClient.refetchQueries({ queryKey: ['admin-product', productId] })
+      await queryClient.refetchQueries({ queryKey: ['product-variants', productId] })
 
       // Show success message
       toast.success('Producto actualizado exitosamente')
 
-      // Redirect to product detail
-      router.push(`/admin/products/${productId}`)
+      // Pequeño delay antes de redirigir para asegurar que los datos se carguen
+      setTimeout(() => {
+        router.push(`/admin/products/${productId}`)
+      }, 100)
     },
     onError: (error: Error) => {
       toast.error(error.message)
@@ -145,13 +161,16 @@ export default function EditProductPage() {
 
   return (
     <AdminLayout title={`Editar: ${product.name}`} breadcrumbs={breadcrumbs}>
-      <ProductForm
-        mode='edit'
-        initialData={product}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        isLoading={updateProductMutation.isPending}
-      />
+      <AdminContentWrapper>
+        <ProductFormMinimal
+          mode='edit'
+          productId={productId}
+          initialData={product}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          isLoading={updateProductMutation.isPending}
+        />
+      </AdminContentWrapper>
     </AdminLayout>
   )
 }

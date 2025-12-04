@@ -16,6 +16,10 @@ interface Product {
   created_at: string
   updated_at: string
   category_name: string
+  product_categories?: Array<{ 
+    category: { id: number; name: string; slug: string } 
+  }> // ✅ NUEVO: Categorías múltiples desde la API
+  categories?: Array<{ id: number; name: string; slug: string }> // ✅ Formato procesado para UI
 }
 
 interface ProductListResponse {
@@ -67,8 +71,14 @@ export function useProductList() {
         console.log('🔧 useProductList: data.data:', data.data)
 
         if (Array.isArray(data.data)) {
-          setProducts(data.data)
-          console.log('🔧 useProductList: ✅ Productos cargados:', data.data.length)
+          // ✅ Procesar categorías múltiples
+          const processedProducts = data.data.map(product => ({
+            ...product,
+            categories: product.product_categories?.map(pc => pc.category) || []
+          }))
+          
+          setProducts(processedProducts)
+          console.log('🔧 useProductList: ✅ Productos cargados:', processedProducts.length)
         } else {
           throw new Error('Estructura de respuesta inválida - data no es un array')
         }

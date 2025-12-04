@@ -70,36 +70,101 @@ export const ProductSkeleton: React.FC<ProductSkeletonProps> = ({
     )
   }
 
-  return (
-    <div className={cn(baseClasses, 'p-4', className)}>
-      {/* Badges */}
-      {showBadges && (
-        <div className='flex gap-2 mb-3'>
-          <div className='h-5 bg-gray-200 rounded-full w-16' />
-          <div className='h-5 bg-gray-200 rounded-full w-20' />
+  // Variante carousel (para carruseles horizontales)
+  if (variant === 'grid') {
+    return (
+      <div
+        className={cn(
+          'relative rounded-xl bg-white shadow-md flex flex-col w-full',
+          'h-[300px] sm:h-[360px] md:h-[450px] lg:h-[500px]',
+          'animate-pulse',
+          className
+        )}
+      >
+        {/* Imagen con degradado */}
+        <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-1 md:mb-2 flex-1 bg-gray-200'>
+          {/* Degradado simulado */}
+          <div className='absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10' />
         </div>
-      )}
 
-      {/* Imagen */}
-      <div className='w-full h-48 bg-gray-200 rounded-md mb-4' />
+        {/* Contenido */}
+        <div className='relative z-20 text-left p-1.5 md:p-2 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
+          {/* Marca */}
+          <div className='h-3 bg-gray-200 rounded w-16 mb-0.5' />
 
-      {/* Título */}
-      <div className='h-5 bg-gray-200 rounded mb-2' />
-      <div className='h-4 bg-gray-200 rounded w-3/4 mb-3' />
-
-      {/* Precio */}
-      {showPrice && (
-        <div className='space-y-2 mb-4'>
-          <div className='flex items-center gap-2'>
-            <div className='h-6 bg-gray-200 rounded w-24' />
-            <div className='h-4 bg-gray-200 rounded w-20' />
+          {/* Título - 2 líneas */}
+          <div className='space-y-1 mb-1'>
+            <div className='h-4 bg-gray-200 rounded w-full' />
+            <div className='h-4 bg-gray-200 rounded w-3/4' />
           </div>
-          <div className='h-3 bg-gray-200 rounded w-32' />
-        </div>
-      )}
 
-      {/* Botón */}
-      {showButton && <div className='h-10 bg-gray-200 rounded-lg w-full' />}
+          {/* Precio */}
+          {showPrice && (
+            <div className='flex items-center gap-1 md:gap-2'>
+              <div className='h-5 sm:h-6 md:h-7 bg-gray-200 rounded w-20' />
+              <div className='h-3 md:h-4 bg-gray-200 rounded w-12' />
+            </div>
+          )}
+
+          {/* Badges de colores/capacidad */}
+          {showBadges && (
+            <div className='flex gap-1 mt-2 md:mt-2.5'>
+              <div className='h-5 w-5 bg-gray-200 rounded-full' />
+              <div className='h-5 w-5 bg-gray-200 rounded-full' />
+              <div className='h-5 w-5 bg-gray-200 rounded-full' />
+              <div className='h-4 bg-gray-200 rounded-full w-12' />
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Variante card estándar (para grids)
+  return (
+    <div
+      className={cn(
+        'relative rounded-xl bg-white shadow-md flex flex-col w-full',
+        'h-[300px] sm:h-[360px] md:h-[450px] lg:h-[500px]',
+        'animate-pulse',
+        className
+      )}
+    >
+      {/* Imagen con degradado */}
+      <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-1 md:mb-2 flex-1 bg-gray-200'>
+        {/* Degradado simulado */}
+        <div className='absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10' />
+      </div>
+
+      {/* Contenido */}
+      <div className='relative z-20 text-left p-1.5 md:p-2 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
+        {/* Marca */}
+        <div className='h-3 bg-gray-200 rounded w-16 mb-0.5' />
+
+        {/* Título - 2 líneas */}
+        <div className='space-y-1 mb-1'>
+          <div className='h-4 bg-gray-200 rounded w-full' />
+          <div className='h-4 bg-gray-200 rounded w-3/4' />
+        </div>
+
+        {/* Precio */}
+        {showPrice && (
+          <div className='flex items-center gap-1 md:gap-2'>
+            <div className='h-5 sm:h-6 md:h-7 bg-gray-200 rounded w-20' />
+            <div className='h-3 md:h-4 bg-gray-200 rounded w-12' />
+          </div>
+        )}
+
+        {/* Badges de colores/capacidad */}
+        {showBadges && (
+          <div className='flex gap-1 mt-2 md:mt-2.5'>
+            <div className='h-5 w-5 bg-gray-200 rounded-full' />
+            <div className='h-5 w-5 bg-gray-200 rounded-full' />
+            <div className='h-5 w-5 bg-gray-200 rounded-full' />
+            <div className='h-4 bg-gray-200 rounded-full w-12' />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -116,19 +181,51 @@ export const ProductSkeletonGrid: React.FC<ProductSkeletonGridProps> = ({
   return (
     <div
       className={cn(
-        'grid gap-6',
+        'grid gap-4 md:gap-6',
         variant === 'list'
           ? 'grid-cols-1'
-          : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+          : 'grid-cols-2 md:grid-cols-2 lg:grid-cols-4',
         className
       )}
     >
       {Array.from({ length: count }, (_, index) => (
         <ProductSkeleton
           key={index}
-          variant={variant}
+          variant={variant === 'list' ? 'list' : 'card'}
           className={variant === 'list' ? 'max-w-none' : ''}
         />
+      ))}
+    </div>
+  )
+}
+
+// ===================================
+// SKELETON PARA CAROUSEL HORIZONTAL
+// ===================================
+
+export interface ProductSkeletonCarouselProps {
+  count?: number
+  className?: string
+  itemClassName?: string
+}
+
+export const ProductSkeletonCarousel: React.FC<ProductSkeletonCarouselProps> = ({
+  count = 5,
+  className,
+  itemClassName,
+}) => {
+  return (
+    <div className={cn('flex gap-4 md:gap-6 overflow-hidden', className)}>
+      {Array.from({ length: count }, (_, index) => (
+        <div
+          key={index}
+          className={cn(
+            'min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-1.125rem)] flex-shrink-0',
+            itemClassName
+          )}
+        >
+          <ProductSkeleton variant='grid' />
+        </div>
       ))}
     </div>
   )

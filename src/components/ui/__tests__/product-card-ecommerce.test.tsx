@@ -75,7 +75,7 @@ describe('ProductCard with E-commerce Components', () => {
     )
 
     // Verifica que muestre stock bajo
-    expect(screen.getByText(/3 unidades disponibles/)).toBeInTheDocument()
+    expect(screen.getByText(/3 disponibles/)).toBeInTheDocument()
   })
 
   it('shows out of stock with new components', () => {
@@ -129,7 +129,7 @@ describe('ProductCard with E-commerce Components', () => {
     )
 
     // StockIndicator debería estar presente con información de stock
-    expect(screen.getByText(/10 unidades disponibles/)).toBeInTheDocument()
+    expect(screen.getByText(/10 disponibles/)).toBeInTheDocument()
   })
 
   it('handles zero price correctly with new components', () => {

@@ -59,24 +59,85 @@ export function useProducts(options: UseProductsOptions = {}) {
 
       try {
         setState(prev => ({ ...prev, loading: true, error: null }))
+        const MAX_API_LIMIT = 100
+        const requestedLimit =
+          typeof filtersToUse.limit === 'number' ? filtersToUse.limit : state.pagination.limit
+        const perPage = Math.min(requestedLimit ?? 12, MAX_API_LIMIT)
+        const shouldFetchAll = (requestedLimit ?? 12) > MAX_API_LIMIT
 
-        const response = await getProducts(filtersToUse)
+        const baseFilters: ProductFilters = {
+          ...filtersToUse,
+          limit: perPage,
+          page: filtersToUse.page || 1,
+        }
 
-        if (response.success) {
-          const adaptedProducts = adaptApiProductsToLegacy(response.data)
+        if (shouldFetchAll) {
+          // Fetch todas las páginas sin exceder el límite de la API
+          const allProducts: ExtendedProduct[] = []
+          let page = baseFilters.page as number
+          let total = 0
+          let totalPages = 0
+
+          // Primera llamada para obtener totales
+          const firstResponse = await getProducts(baseFilters)
+          if (!firstResponse.success) {
+            setState(prev => ({
+              ...prev,
+              loading: false,
+              error: firstResponse.error || 'Error obteniendo productos',
+            }))
+            return
+          }
+
+          const firstProducts = adaptApiProductsToLegacy(firstResponse.data)
+          allProducts.push(...firstProducts)
+          total = firstResponse.pagination.total
+          totalPages = firstResponse.pagination.totalPages
+
+          // Continuar con las siguientes páginas
+          for (page = (baseFilters.page as number) + 1; page <= totalPages; page++) {
+            const resp = await getProducts({ ...baseFilters, page })
+            if (!resp.success) {
+              // Si falla alguna página, salimos con lo acumulado y mensaje de error
+              setState(prev => ({
+                ...prev,
+                loading: false,
+                error: resp.error || 'Error obteniendo productos',
+              }))
+              return
+            }
+            const adapted = adaptApiProductsToLegacy(resp.data)
+            allProducts.push(...adapted)
+            if (allProducts.length >= total) break
+          }
 
           setState(prev => ({
             ...prev,
-            products: adaptedProducts,
+            products: allProducts,
             loading: false,
-            pagination: response.pagination,
+            // Al mostrar todos, representamos una sola página para ocultar paginación
+            pagination: { page: 1, limit: allProducts.length, total, totalPages: 1 },
           }))
         } else {
-          setState(prev => ({
-            ...prev,
-            loading: false,
-            error: response.error || 'Error obteniendo productos',
-          }))
+          // Comportamiento estándar, con límite saneado
+          const response = await getProducts(baseFilters)
+
+          if (response.success) {
+            const adaptedProducts = adaptApiProductsToLegacy(response.data)
+
+            setState(prev => ({
+              ...prev,
+              products: adaptedProducts,
+              loading: false,
+              pagination: response.pagination,
+            }))
+          } else {
+            setState(prev => ({
+              ...prev,
+              loading: false,
+              error: response.error || 'Error obteniendo productos',
+            }))
+          }
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Error inesperado'
@@ -148,6 +209,26 @@ export function useProducts(options: UseProductsOptions = {}) {
   const filterByCategory = useCallback(
     (category: string) => {
       updateFilters({ category, page: 1 })
+    },
+    [updateFilters]
+  )
+
+  /**
+   * Filtra por múltiples categorías
+   */
+  const filterByCategories = useCallback(
+    (categories: string[]) => {
+      updateFilters({ categories, page: 1 })
+    },
+    [updateFilters]
+  )
+
+  /**
+   * Filtra por múltiples marcas
+   */
+  const filterByBrands = useCallback(
+    (brands: string[]) => {
+      updateFilters({ brands, page: 1 })
     },
     [updateFilters]
   )
@@ -233,6 +314,8 @@ export function useProducts(options: UseProductsOptions = {}) {
     changeSorting,
     searchProducts,
     filterByCategory,
+    filterByCategories,
+    filterByBrands,
     filterByPriceRange,
     clearFilters,
     refresh,

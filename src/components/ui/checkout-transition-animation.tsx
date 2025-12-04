@@ -103,7 +103,7 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
       if (skipAnimation) {
         // Navegación inmediata para skip
         timeoutRef.current = setTimeout(() => {
-          router.push('/checkout')
+          router.push('/checkout/meta')
           onComplete?.()
         }, 100)
       } else {
@@ -123,7 +123,7 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
         timeoutRef.current = setTimeout(() => {
           clearInterval(progressInterval)
           handleProgress(100)
-          router.push('/checkout')
+          router.push('/checkout/meta')
           onComplete?.()
         }, animationDuration)
 
@@ -358,7 +358,7 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
             if (timeoutRef.current) {
               clearTimeout(timeoutRef.current)
             }
-            router.push('/checkout')
+            router.push('/checkout/meta')
             onComplete?.()
           }}
           aria-label='Saltar animación e ir al checkout'

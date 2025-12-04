@@ -5,43 +5,39 @@
  * Configura axe-core con Storybook para testing a11y
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-console.log('🔧 Configurando testing de accesibilidad automatizado...\n');
+console.log('🔧 Configurando testing de accesibilidad automatizado...\n')
 
 // 1. Verificar que axe-core esté instalado
-const packageJsonPath = path.join(process.cwd(), 'package.json');
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+const packageJsonPath = path.join(process.cwd(), 'package.json')
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
 
-const requiredDeps = [
-  '@storybook/addon-a11y',
-  '@axe-core/playwright',
-  'axe-core'
-];
+const requiredDeps = ['@storybook/addon-a11y', '@axe-core/playwright', 'axe-core']
 
-const missingDeps = requiredDeps.filter(dep => 
-  !packageJson.devDependencies?.[dep] && !packageJson.dependencies?.[dep]
-);
+const missingDeps = requiredDeps.filter(
+  dep => !packageJson.devDependencies?.[dep] && !packageJson.dependencies?.[dep]
+)
 
 if (missingDeps.length > 0) {
-  console.log('❌ Dependencias faltantes para testing de accesibilidad:');
-  missingDeps.forEach(dep => console.log(`   - ${dep}`));
-  console.log('\n💡 Instala las dependencias con:');
-  console.log(`   npm install --save-dev ${missingDeps.join(' ')}\n`);
-  process.exit(1);
+  console.log('❌ Dependencias faltantes para testing de accesibilidad:')
+  missingDeps.forEach(dep => console.log(`   - ${dep}`))
+  console.log('\n💡 Instala las dependencias con:')
+  console.log(`   npm install --save-dev ${missingDeps.join(' ')}\n`)
+  process.exit(1)
 }
 
 // 2. Verificar configuración de Storybook
-const storybookMainPath = path.join(process.cwd(), '.storybook', 'main.ts');
+const storybookMainPath = path.join(process.cwd(), '.storybook', 'main.ts')
 if (fs.existsSync(storybookMainPath)) {
-  const storybookMain = fs.readFileSync(storybookMainPath, 'utf8');
-  
+  const storybookMain = fs.readFileSync(storybookMainPath, 'utf8')
+
   if (!storybookMain.includes('@storybook/addon-a11y')) {
-    console.log('⚠️  El addon de accesibilidad no está configurado en Storybook');
-    console.log('💡 Agrega "@storybook/addon-a11y" a los addons en .storybook/main.ts\n');
+    console.log('⚠️  El addon de accesibilidad no está configurado en Storybook')
+    console.log('💡 Agrega "@storybook/addon-a11y" a los addons en .storybook/main.ts\n')
   } else {
-    console.log('✅ Addon de accesibilidad configurado en Storybook');
+    console.log('✅ Addon de accesibilidad configurado en Storybook')
   }
 }
 
@@ -92,17 +88,17 @@ test.describe('Accessibility Tests', () => {
     });
   });
 });
-`;
+`
 
-const a11yTestPath = path.join(process.cwd(), 'tests', 'accessibility.spec.ts');
-const testsDir = path.dirname(a11yTestPath);
+const a11yTestPath = path.join(process.cwd(), 'tests', 'accessibility.spec.ts')
+const testsDir = path.dirname(a11yTestPath)
 
 if (!fs.existsSync(testsDir)) {
-  fs.mkdirSync(testsDir, { recursive: true });
+  fs.mkdirSync(testsDir, { recursive: true })
 }
 
-fs.writeFileSync(a11yTestPath, a11yTestConfig);
-console.log('✅ Configuración de testing a11y creada en tests/accessibility.spec.ts');
+fs.writeFileSync(a11yTestPath, a11yTestConfig)
+console.log('✅ Configuración de testing a11y creada en tests/accessibility.spec.ts')
 
 // 4. Crear configuración de axe para Storybook
 const axeStorybookConfig = `// Configuración de axe-core para Storybook
@@ -135,17 +131,17 @@ export const parameters = {
     manual: true,
   },
 };
-`;
+`
 
-const storybookPreviewPath = path.join(process.cwd(), '.storybook', 'preview.ts');
+const storybookPreviewPath = path.join(process.cwd(), '.storybook', 'preview.ts')
 if (fs.existsSync(storybookPreviewPath)) {
-  const previewContent = fs.readFileSync(storybookPreviewPath, 'utf8');
-  
+  const previewContent = fs.readFileSync(storybookPreviewPath, 'utf8')
+
   if (!previewContent.includes('a11y:')) {
-    console.log('⚠️  Configuración de a11y no encontrada en .storybook/preview.ts');
-    console.log('💡 Agrega la configuración de axe manualmente\n');
+    console.log('⚠️  Configuración de a11y no encontrada en .storybook/preview.ts')
+    console.log('💡 Agrega la configuración de axe manualmente\n')
   } else {
-    console.log('✅ Configuración de a11y encontrada en Storybook');
+    console.log('✅ Configuración de a11y encontrada en Storybook')
   }
 }
 
@@ -175,36 +171,36 @@ try {
   console.error('\\n❌ Error en tests de accesibilidad:', error.message);
   process.exit(1);
 }
-`;
+`
 
-const a11yScriptPath = path.join(process.cwd(), 'scripts', 'run-a11y-tests.js');
-fs.writeFileSync(a11yScriptPath, a11yScript);
-fs.chmodSync(a11yScriptPath, '755');
-console.log('✅ Script de testing a11y creado en scripts/run-a11y-tests.js');
+const a11yScriptPath = path.join(process.cwd(), 'scripts', 'run-a11y-tests.js')
+fs.writeFileSync(a11yScriptPath, a11yScript)
+fs.chmodSync(a11yScriptPath, '755')
+console.log('✅ Script de testing a11y creado en scripts/run-a11y-tests.js')
 
 // 6. Actualizar package.json con nuevos scripts
 const newScripts = {
   'test:a11y': 'node scripts/run-a11y-tests.js',
   'test:a11y:pages': 'playwright test tests/accessibility.spec.ts',
   'test:a11y:components': 'test-storybook --url=http://localhost:6006 --a11y',
-};
-
-let packageJsonUpdated = false;
-Object.entries(newScripts).forEach(([script, command]) => {
-  if (!packageJson.scripts[script]) {
-    packageJson.scripts[script] = command;
-    packageJsonUpdated = true;
-  }
-});
-
-if (packageJsonUpdated) {
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-  console.log('✅ Scripts de testing a11y agregados a package.json');
 }
 
-console.log('\n🎉 Configuración de testing de accesibilidad completada!');
-console.log('\n📋 Comandos disponibles:');
-console.log('   npm run test:a11y           - Ejecutar todos los tests a11y');
-console.log('   npm run test:a11y:pages     - Tests a11y en páginas');
-console.log('   npm run test:a11y:components - Tests a11y en componentes');
-console.log('\n💡 Recuerda configurar el addon @storybook/addon-a11y en Storybook');
+let packageJsonUpdated = false
+Object.entries(newScripts).forEach(([script, command]) => {
+  if (!packageJson.scripts[script]) {
+    packageJson.scripts[script] = command
+    packageJsonUpdated = true
+  }
+})
+
+if (packageJsonUpdated) {
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
+  console.log('✅ Scripts de testing a11y agregados a package.json')
+}
+
+console.log('\n🎉 Configuración de testing de accesibilidad completada!')
+console.log('\n📋 Comandos disponibles:')
+console.log('   npm run test:a11y           - Ejecutar todos los tests a11y')
+console.log('   npm run test:a11y:pages     - Tests a11y en páginas')
+console.log('   npm run test:a11y:components - Tests a11y en componentes')
+console.log('\n💡 Recuerda configurar el addon @storybook/addon-a11y en Storybook')

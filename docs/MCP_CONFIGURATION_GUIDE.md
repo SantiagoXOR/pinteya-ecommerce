@@ -15,6 +15,7 @@ Esta guía documenta la configuración de límites para procesos MCP (Model Cont
 ## 📁 Archivos de Configuración
 
 ### 1. `.mcp-config.json` - Configuración del Proyecto
+
 ```json
 {
   "mcpServers": {
@@ -32,20 +33,24 @@ Esta guía documenta la configuración de límites para procesos MCP (Model Cont
 ```
 
 ### 2. `scripts/mcp-process-manager.ps1` - Gestor de Procesos
+
 Script PowerShell para monitoreo y limpieza automática de procesos MCP.
 
 ### 3. `scripts/setup-mcp-limits.js` - Configurador Automático
+
 Script Node.js para configurar límites en Claude Desktop automáticamente.
 
 ## 🚀 Comandos NPM Disponibles
 
 ### Configuración Inicial
+
 ```bash
 # Configurar límites MCP por primera vez
 npm run mcp:setup
 ```
 
 ### Monitoreo y Gestión
+
 ```bash
 # Ver estado actual de procesos MCP
 npm run mcp:status
@@ -62,14 +67,14 @@ npm run mcp:kill-all
 
 ## 📊 Límites Configurados
 
-| Parámetro | Valor | Descripción |
-|-----------|-------|-------------|
-| **Instancias por servidor** | 1 | Máximo de procesos por tipo de servidor MCP |
-| **Instancias totales** | 5 | Máximo total de procesos MCP simultáneos |
-| **Memoria por proceso** | 100MB | Límite de RAM por proceso individual |
-| **Memoria total** | 500MB | Límite total de RAM para todos los procesos MCP |
-| **CPU por proceso** | 10% | Límite de CPU por proceso individual |
-| **Intervalo de monitoreo** | 30s | Frecuencia de verificación automática |
+| Parámetro                   | Valor | Descripción                                     |
+| --------------------------- | ----- | ----------------------------------------------- |
+| **Instancias por servidor** | 1     | Máximo de procesos por tipo de servidor MCP     |
+| **Instancias totales**      | 5     | Máximo total de procesos MCP simultáneos        |
+| **Memoria por proceso**     | 100MB | Límite de RAM por proceso individual            |
+| **Memoria total**           | 500MB | Límite total de RAM para todos los procesos MCP |
+| **CPU por proceso**         | 10%   | Límite de CPU por proceso individual            |
+| **Intervalo de monitoreo**  | 30s   | Frecuencia de verificación automática           |
 
 ## 🔍 Tipos de Servidores MCP Monitoreados
 
@@ -82,12 +87,15 @@ npm run mcp:kill-all
 ## 🛠️ Configuración Manual
 
 ### Claude Desktop Configuration
+
 Ubicación del archivo de configuración:
+
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **macOS**: `~/.config/claude/claude_desktop_config.json`
 - **Linux**: `~/.config/claude/claude_desktop_config.json`
 
 ### Ejemplo de Configuración Claude Desktop
+
 ```json
 {
   "mcpServers": {
@@ -113,12 +121,14 @@ Ubicación del archivo de configuración:
 ## 📈 Monitoreo y Alertas
 
 ### Métricas Monitoreadas
+
 - **Número de procesos** por tipo de servidor
 - **Uso de memoria** por proceso y total
 - **Tiempo de ejecución** de cada proceso
 - **Procesos duplicados** o huérfanos
 
 ### Acciones Automáticas
+
 - **Terminación de duplicados** (mantiene el más reciente)
 - **Limpieza por memoria** (termina procesos que excedan 100MB)
 - **Logging estructurado** en `.mcp-logs.json`
@@ -126,6 +136,7 @@ Ubicación del archivo de configuración:
 ## 🚨 Solución de Problemas
 
 ### Problema: Múltiples Procesos Duplicados
+
 ```bash
 # Solución inmediata
 npm run mcp:cleanup
@@ -135,6 +146,7 @@ npm run mcp:status
 ```
 
 ### Problema: Alto Uso de Memoria
+
 ```bash
 # Terminar procesos que excedan límites
 npm run mcp:cleanup
@@ -144,6 +156,7 @@ npm run mcp:monitor
 ```
 
 ### Problema: Procesos No Responden
+
 ```bash
 # Terminar todos los procesos MCP
 npm run mcp:kill-all
@@ -156,11 +169,13 @@ npm run mcp:setup
 ## 📝 Logs y Diagnóstico
 
 ### Archivo de Logs
+
 - **Ubicación**: `.mcp-logs.json`
 - **Formato**: JSON estructurado con timestamp
 - **Información**: Acciones realizadas, errores, métricas
 
 ### Ejemplo de Log
+
 ```json
 {
   "timestamp": "2025-01-09 15:30:45",
@@ -172,14 +187,17 @@ npm run mcp:setup
 ## 🔄 Mantenimiento Recomendado
 
 ### Diario
+
 - Ejecutar `npm run mcp:status` para verificar estado
 - Revisar logs en `.mcp-logs.json`
 
 ### Semanal
+
 - Ejecutar `npm run mcp:cleanup` para limpieza preventiva
 - Verificar configuración con `npm run mcp:setup`
 
 ### Mensual
+
 - Revisar y actualizar límites según uso real
 - Actualizar servidores MCP a versiones más recientes
 
@@ -195,10 +213,8 @@ npm run mcp:setup
 ## 📞 Soporte
 
 Para problemas con la configuración MCP:
+
 1. Verificar logs en `.mcp-logs.json`
 2. Ejecutar `npm run mcp:status` para diagnóstico
 3. Usar `npm run mcp:cleanup` para solución rápida
 4. Reiniciar Claude Desktop si es necesario
-
-
-

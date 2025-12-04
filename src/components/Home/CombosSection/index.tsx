@@ -1,11 +1,13 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 
-const combosImages = [
-  '/images/promo/combopoximix.png',
-  '/images/promo/comboverano.png',
-  '/images/promo/comboplavicon.png',
+const combosData = [
+  { image: '/images/promo/comboverano.png', url: '/search?search=Piscinas' },
+  { image: '/images/promo/comboeco.png', url: '/search?search=Ecopainting' },
+  { image: '/images/promo/comboplavicon.png', url: '/search?search=Plavicon+Muros' },
+  { image: '/images/promo/combopoximix.png', url: '/search?search=Poximix' }
 ]
 
 const CombosSection: React.FC = () => {
@@ -14,7 +16,7 @@ const CombosSection: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Duplicar las imágenes para crear efecto infinito
-  const infiniteImages = [...combosImages, ...combosImages]
+  const infiniteData = [...combosData, ...combosData]
 
   // Scroll automático infinito
   useEffect(() => {
@@ -27,7 +29,7 @@ const CombosSection: React.FC = () => {
 
   // Manejar el reinicio del scroll infinito
   useEffect(() => {
-    if (currentIndex === combosImages.length) {
+    if (currentIndex === combosData.length) {
       // Cuando llegamos al final de las imágenes originales, esperamos a que termine la transición
       const timeout = setTimeout(() => {
         setIsTransitioning(false)
@@ -43,7 +45,7 @@ const CombosSection: React.FC = () => {
   }, [currentIndex])
 
   return (
-    <section className='w-full py-2 px-4 bg-white'>
+    <section className='w-full pt-6 pb-2 px-4 bg-white'>
       <div className='max-w-7xl mx-auto'>
         {/* Carrusel horizontal */}
         <div className='relative'>
@@ -54,13 +56,15 @@ const CombosSection: React.FC = () => {
               className={`flex ${isTransitioning ? 'transition-transform duration-300 ease-in-out' : ''}`}
               style={{ transform: `translateX(-${currentIndex * 100}%)` }}
             >
-              {infiniteImages.map((image, index) => (
+              {infiniteData.map((combo, index) => (
                 <div key={index} className='w-full flex-shrink-0'>
-                  <img
-                    src={image}
-                    alt={`Combo promocional ${(index % combosImages.length) + 1}`}
-                    className='w-full h-auto object-contain max-h-[300px] md:max-h-[400px]'
-                  />
+                  <Link href={combo.url} className='block'>
+                    <img
+                      src={combo.image}
+                      alt={`Combo promocional ${(index % combosData.length) + 1}`}
+                      className='w-full h-auto object-contain max-h-[300px] md:max-h-[400px] hover:scale-105 transition-transform duration-300 cursor-pointer hover:shadow-xl rounded-2xl'
+                    />
+                  </Link>
                 </div>
               ))}
             </div>

@@ -30,9 +30,9 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
     const sessionId = searchParams.get('sessionId')
 
-    // Construir query base
+    // Construir query base usando vista unificada
     let baseQuery = supabase
-      .from('analytics_events')
+      .from('analytics_events_unified')
       .select('*')
       .gte('created_at', startDate)
       .lte('created_at', endDate)
@@ -78,13 +78,19 @@ function calculateMetrics(events: any[]) {
   const navigationEvents = events.filter(e => e.category === 'navigation')
 
   // Métricas básicas de e-commerce
-  const cartAdditions = ecommerceEvents.filter(e => e.action === 'add_to_cart').length
-  const cartRemovals = ecommerceEvents.filter(e => e.action === 'remove_from_cart').length
+  const cartAdditions = ecommerceEvents.filter(e => e.action === 'add_to_cart' || e.action === 'add').length
+  const cartRemovals = ecommerceEvents.filter(e => e.action === 'remove_from_cart' || e.action === 'remove').length
   const checkoutStarts = ecommerceEvents.filter(e => e.action === 'begin_checkout').length
   const checkoutCompletions = ecommerceEvents.filter(e => e.action === 'purchase').length
-  const productViews = navigationEvents.filter(e => e.page?.includes('/product/')).length
+  const productViews = navigationEvents.filter(e => e.page?.includes('/product/') || e.page?.includes('/buy/')).length
   const categoryViews = navigationEvents.filter(e => e.page?.includes('/category/')).length
-  const searchQueries = ecommerceEvents.filter(e => e.action === 'search').length
+  
+  // Búsquedas: manejar ambos formatos (search_query y search)
+  const searchEvents = events.filter(e => 
+    (e.category === 'search' && (e.action === 'search' || e.action === 'search_query')) ||
+    (e.event_name === 'search' || e.event_name === 'search_query')
+  )
+  const searchQueries = searchEvents.length
 
   // Calcular tasas de conversión
   const conversionRate = checkoutStarts > 0 ? (checkoutCompletions / checkoutStarts) * 100 : 0

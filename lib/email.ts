@@ -2,20 +2,20 @@
 // PINTEYA E-COMMERCE - CONFIGURACIÓN DE EMAIL
 // ===================================
 
-import { Resend } from 'resend';
-import { emailConfig } from './env-config';
+import { Resend } from 'resend'
+import { emailConfig } from './env-config'
 
 // Inicialización lazy de Resend
-let resend: Resend | null = null;
+let resend: Resend | null = null
 
 function getResendClient(): Resend {
   if (!resend) {
     if (!emailConfig.resendApiKey) {
-      throw new Error('RESEND_API_KEY no está configurado');
+      throw new Error('RESEND_API_KEY no está configurado')
     }
-    resend = new Resend(emailConfig.resendApiKey);
+    resend = new Resend(emailConfig.resendApiKey)
   }
-  return resend;
+  return resend
 }
 
 // ===================================
@@ -23,31 +23,31 @@ function getResendClient(): Resend {
 // ===================================
 
 export interface EmailTemplate {
-  to: string | string[];
-  subject: string;
-  html: string;
-  text?: string;
+  to: string | string[]
+  subject: string
+  html: string
+  text?: string
 }
 
 export interface WelcomeEmailData {
-  userName: string;
-  userEmail: string;
+  userName: string
+  userEmail: string
 }
 
 export interface OrderConfirmationData {
-  userName: string;
-  orderNumber: string;
-  orderTotal: string;
+  userName: string
+  orderNumber: string
+  orderTotal: string
   orderItems: Array<{
-    name: string;
-    quantity: number;
-    price: string;
-  }>;
+    name: string
+    quantity: number
+    price: string
+  }>
 }
 
 export interface PasswordResetData {
-  userName: string;
-  resetLink: string;
+  userName: string
+  resetLink: string
 }
 
 // ===================================
@@ -110,21 +110,24 @@ export function createWelcomeEmail(data: WelcomeEmailData): EmailTemplate {
         </body>
       </html>
     `,
-    text: `¡Bienvenido a Pinteya, ${data.userName}! Gracias por unirte a nuestra comunidad. Visita https://www.pinteya.com/shop para explorar nuestros productos.`
-  };
+    text: `¡Bienvenido a Pinteya, ${data.userName}! Gracias por unirte a nuestra comunidad. Visita https://www.pinteya.com/shop para explorar nuestros productos.`,
+  }
 }
 
 /**
  * Plantilla de email de confirmación de pedido
  */
 export function createOrderConfirmationEmail(data: OrderConfirmationData): EmailTemplate {
-  const itemsHtml = data.orderItems.map(item => 
-    `<tr>
+  const itemsHtml = data.orderItems
+    .map(
+      item =>
+        `<tr>
       <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
       <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
       <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${item.price}</td>
     </tr>`
-  ).join('');
+    )
+    .join('')
 
   return {
     to: data.userEmail,
@@ -183,8 +186,8 @@ export function createOrderConfirmationEmail(data: OrderConfirmationData): Email
         </body>
       </html>
     `,
-    text: `Hola ${data.userName}, tu pedido #${data.orderNumber} por ${data.orderTotal} ha sido confirmado. Recibirás tracking cuando sea enviado.`
-  };
+    text: `Hola ${data.userName}, tu pedido #${data.orderNumber} por ${data.orderTotal} ha sido confirmado. Recibirás tracking cuando sea enviado.`,
+  }
 }
 
 /**
@@ -250,8 +253,8 @@ export function createPasswordResetEmail(data: PasswordResetData): EmailTemplate
         </body>
       </html>
     `,
-    text: `Hola ${data.userName}, solicita restablecer tu contraseña en Pinteya. Usa este enlace: ${data.resetLink} (expira en 10 minutos)`
-  };
+    text: `Hola ${data.userName}, solicita restablecer tu contraseña en Pinteya. Usa este enlace: ${data.resetLink} (expira en 10 minutos)`,
+  }
 }
 
 // ===================================
@@ -261,9 +264,11 @@ export function createPasswordResetEmail(data: PasswordResetData): EmailTemplate
 /**
  * Envía un email usando Resend
  */
-export async function sendEmail(template: EmailTemplate): Promise<{ success: boolean; messageId?: string; error?: string }> {
+export async function sendEmail(
+  template: EmailTemplate
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const resendClient = getResendClient();
+    const resendClient = getResendClient()
 
     const result = await resendClient.emails.send({
       from: emailConfig.fromEmail,
@@ -271,18 +276,18 @@ export async function sendEmail(template: EmailTemplate): Promise<{ success: boo
       subject: template.subject,
       html: template.html,
       text: template.text,
-    });
+    })
 
     return {
       success: true,
       messageId: result.data?.id,
-    };
+    }
   } catch (error) {
-    console.error('Error enviando email:', error);
+    console.error('Error enviando email:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido',
-    };
+    }
   }
 }
 
@@ -290,24 +295,24 @@ export async function sendEmail(template: EmailTemplate): Promise<{ success: boo
  * Envía email de bienvenida
  */
 export async function sendWelcomeEmail(data: WelcomeEmailData) {
-  const template = createWelcomeEmail(data);
-  return sendEmail(template);
+  const template = createWelcomeEmail(data)
+  return sendEmail(template)
 }
 
 /**
  * Envía email de confirmación de pedido
  */
 export async function sendOrderConfirmationEmail(data: OrderConfirmationData) {
-  const template = createOrderConfirmationEmail(data);
-  return sendEmail(template);
+  const template = createOrderConfirmationEmail(data)
+  return sendEmail(template)
 }
 
 /**
  * Envía email de recuperación de contraseña
  */
 export async function sendPasswordResetEmail(data: PasswordResetData) {
-  const template = createPasswordResetEmail(data);
-  return sendEmail(template);
+  const template = createPasswordResetEmail(data)
+  return sendEmail(template)
 }
 
 // ===================================
@@ -318,7 +323,7 @@ export async function sendPasswordResetEmail(data: PasswordResetData) {
  * Verifica si el servicio de email está configurado
  */
 export function isEmailServiceReady(): boolean {
-  return !!(emailConfig.resendApiKey && emailConfig.fromEmail);
+  return !!(emailConfig.resendApiKey && emailConfig.fromEmail)
 }
 
 /**
@@ -330,5 +335,5 @@ export function getEmailServiceConfig() {
     fromEmail: emailConfig.fromEmail,
     supportEmail: emailConfig.supportEmail,
     hasApiKey: !!emailConfig.resendApiKey,
-  };
+  }
 }

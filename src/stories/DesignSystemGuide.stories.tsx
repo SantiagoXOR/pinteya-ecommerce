@@ -95,7 +95,7 @@ Todos los componentes están diseñados primero para dispositivos móviles y lue
 ### Jerarquía de Componentes
 1. **Atoms**: Button, Input, Badge
 2. **Molecules**: Card, Modal, Form
-3. **Organisms**: CommercialProductCard, SearchAutocomplete
+3. **Organisms**: CommercialProductCard, SearchAutocompleteIntegrated
 4. **Templates**: Layouts, Forms
 5. **Pages**: Complete page examples
 

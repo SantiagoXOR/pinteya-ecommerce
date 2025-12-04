@@ -1,81 +1,86 @@
-/**
- * Página de Acceso Denegado
- * Mostrada cuando un usuario autenticado intenta acceder a rutas admin sin permisos
- */
-
-'use client'
-
+import { Suspense } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Shield, ArrowLeft, Home } from 'lucide-react'
 import Link from 'next/link'
-import { Shield, Home, ArrowLeft } from 'lucide-react'
 
-// Metadata se maneja en layout.tsx para client components
+interface AccessDeniedPageProps {
+  searchParams: {
+    type?: string
+  }
+}
 
-export default function AccessDeniedPage() {
+export default function AccessDeniedPage({ searchParams }: AccessDeniedPageProps) {
+  const accessType = searchParams.type || 'general'
+  
+  const getAccessInfo = () => {
+    switch (accessType) {
+      case 'admin':
+        return {
+          title: 'Acceso Administrativo Denegado',
+          description: 'No tienes permisos para acceder al panel administrativo.',
+          details: 'Solo los administradores autorizados pueden acceder a esta sección.',
+          icon: Shield,
+          color: 'text-red-500',
+        }
+      case 'driver':
+        return {
+          title: 'Acceso de Conductor Denegado',
+          description: 'No tienes permisos para acceder al panel de conductores.',
+          details: 'Solo los conductores autorizados pueden acceder a esta sección.',
+          icon: Shield,
+          color: 'text-orange-500',
+        }
+      default:
+        return {
+          title: 'Acceso Denegado',
+          description: 'No tienes permisos para acceder a esta sección.',
+          details: 'Contacta al administrador si crees que esto es un error.',
+          icon: Shield,
+          color: 'text-gray-500',
+        }
+    }
+  }
+
+  const accessInfo = getAccessInfo()
+  const IconComponent = accessInfo.icon
+
   return (
-    <div className='min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
-      <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-        <div className='bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10'>
-          {/* Icono de acceso denegado */}
-          <div className='flex justify-center mb-6'>
-            <div className='w-16 h-16 bg-red-100 rounded-full flex items-center justify-center'>
-              <Shield className='w-8 h-8 text-red-600' />
-            </div>
+    <div className='min-h-screen bg-gray-50 flex items-center justify-center p-4'>
+      <Card className='w-full max-w-md'>
+        <CardHeader className='text-center'>
+          <div className={`w-16 h-16 ${accessInfo.color} mx-auto mb-4`}>
+            <IconComponent className='w-full h-full' />
           </div>
-
-          {/* Título y mensaje */}
-          <div className='text-center'>
-            <h1 className='text-2xl font-bold text-gray-900 mb-4'>Acceso Denegado</h1>
-            <p className='text-gray-600 mb-6'>
-              No tienes permisos para acceder a esta página. Solo los administradores pueden acceder
-              al panel administrativo.
-            </p>
+          <CardTitle className='text-2xl'>{accessInfo.title}</CardTitle>
+          <CardDescription>{accessInfo.description}</CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <div className='text-center text-sm text-gray-600'>
+            {accessInfo.details}
           </div>
-
-          {/* Información adicional */}
-          <div className='bg-red-50 border border-red-200 rounded-lg p-4 mb-6'>
-            <div className='flex'>
-              <div className='flex-shrink-0'>
-                <Shield className='h-5 w-5 text-red-400' />
-              </div>
-              <div className='ml-3'>
-                <h3 className='text-sm font-medium text-red-800'>Permisos Insuficientes</h3>
-                <div className='mt-2 text-sm text-red-700'>
-                  <p>
-                    Esta área está restringida a usuarios con rol de administrador. Si crees que
-                    deberías tener acceso, contacta al administrador del sistema.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Botones de acción */}
-          <div className='space-y-3'>
-            <Link
-              href='/'
-              className='w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blaze-orange-600 hover:bg-blaze-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blaze-orange-500 transition-colors'
-            >
-              <Home className='w-4 h-4 mr-2' />
-              Ir al Inicio
+          
+          <div className='flex flex-col space-y-2'>
+            <Link href='/' className='w-full'>
+              <Button className='w-full' variant='default'>
+                <Home className='w-4 h-4 mr-2' />
+                Ir al Inicio
+              </Button>
             </Link>
-
-            <button
-              onClick={() => window.history.back()}
-              className='w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blaze-orange-500 transition-colors'
-            >
-              <ArrowLeft className='w-4 h-4 mr-2' />
-              Volver Atrás
-            </button>
+            
+            <Link href='javascript:history.back()' className='w-full'>
+              <Button className='w-full' variant='outline'>
+                <ArrowLeft className='w-4 h-4 mr-2' />
+                Volver Atrás
+              </Button>
+            </Link>
           </div>
 
-          {/* Información de contacto */}
-          <div className='mt-6 text-center'>
-            <p className='text-xs text-gray-500'>
-              ¿Necesitas ayuda? Contacta al administrador del sistema
-            </p>
+          <div className='text-center text-xs text-gray-500 pt-4 border-t'>
+            Si crees que esto es un error, contacta al administrador del sistema.
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

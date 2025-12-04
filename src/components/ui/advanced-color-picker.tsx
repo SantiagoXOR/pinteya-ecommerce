@@ -48,7 +48,7 @@ export const PAINT_COLORS: ColorOption[] = [
     id: 'blanco-puro',
     name: 'blanco-puro',
     displayName: 'Blanco Puro',
-    hex: '#FFFFFF',
+    hex: '#F5F5F5',
     category: 'Madera',
     family: 'Blancos',
     isPopular: true,
@@ -68,7 +68,7 @@ export const PAINT_COLORS: ColorOption[] = [
     id: 'cedro',
     name: 'cedro',
     displayName: 'Cedro',
-    hex: '#D2691E',
+    hex: '#C26A2B',
     category: 'Madera',
     family: 'Marrones',
     isPopular: true,
@@ -78,11 +78,21 @@ export const PAINT_COLORS: ColorOption[] = [
     id: 'caoba',
     name: 'caoba',
     displayName: 'Caoba',
-    hex: '#C04000',
+    hex: '#8E3B1F',
     category: 'Madera',
     family: 'Marrones',
     isPopular: true,
     description: 'Marrón rojizo elegante',
+  },
+  {
+    id: 'roble',
+    name: 'roble',
+    displayName: 'Roble',
+    hex: '#C7955B',
+    category: 'Madera',
+    family: 'Marrones',
+    isPopular: true,
+    description: 'Tono clásico de roble',
   },
   {
     id: 'roble-britanico',
@@ -108,10 +118,19 @@ export const PAINT_COLORS: ColorOption[] = [
     id: 'nogal',
     name: 'nogal',
     displayName: 'Nogal',
-    hex: '#5D4037',
+    hex: '#5C3A1A',
     category: 'Madera',
     family: 'Marrones',
     description: 'Marrón profundo de nogal',
+  },
+  {
+    id: 'pino',
+    name: 'pino',
+    displayName: 'Pino',
+    hex: '#E5B57E',
+    category: 'Madera',
+    family: 'Marrones',
+    description: 'Tono claro amarillento típico del pino',
   },
   {
     id: 'natural',
@@ -121,6 +140,24 @@ export const PAINT_COLORS: ColorOption[] = [
     category: 'Madera',
     family: 'Marrones',
     description: 'Tono madera natural',
+  },
+  {
+    id: 'cristal',
+    name: 'cristal',
+    displayName: 'Cristal',
+    hex: '#E8D5B5',
+    category: 'Madera',
+    family: 'Marrones',
+    description: 'Transparente levemente cálido para madera',
+  },
+  {
+    id: 'incoloro',
+    name: 'incoloro',
+    displayName: 'Incoloro',
+    hex: 'rgba(255,255,255,0.1)',
+    category: 'Madera',
+    family: 'Transparentes',
+    description: 'Transparente completamente incoloro con brillo',
   },
 
   // ===================================
@@ -186,6 +223,17 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Rojos',
     isPopular: true,
     description: 'Rojo bermellón intenso',
+  },
+  // Nuevo color solicitado para techos: Rojo Teja
+  {
+    id: 'rojo-teja',
+    name: 'rojo-teja',
+    displayName: 'Rojo Teja',
+    hex: '#A63A2B',
+    category: 'Sintético',
+    family: 'Rojos',
+    isPopular: true,
+    description: 'Rojo teja clásico para exteriores y techos',
   },
   {
     id: 'blanco',
@@ -344,6 +392,16 @@ export const PAINT_COLORS: ColorOption[] = [
     hex: '#36454F',
     category: 'Neutros',
     family: 'Grises',
+  },
+  {
+    id: 'cemento',
+    name: 'cemento',
+    displayName: 'Cemento',
+    hex: '#9FA1A3',
+    category: 'Neutros',
+    family: 'Grises',
+    isPopular: true,
+    description: 'Gris cemento neutro para exteriores',
   },
 
   // Azules generales
@@ -554,7 +612,7 @@ export const PAINT_COLORS: ColorOption[] = [
     id: 'negro-mate',
     name: 'negro-mate',
     displayName: 'Negro Mate',
-    hex: '#28282B',
+    hex: '#000000',
     category: 'Neutros',
     family: 'Negros',
   },
@@ -604,7 +662,15 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
       hasProductType: !!productType,
       allowedColorCategories: productType?.allowedColorCategories,
       totalColors: colors.length,
+      colorsSource: colors.length < 50 ? 'smartColors (pre-filtrados)' : 'PAINT_COLORS (completos)',
     })
+
+    // CRÍTICO: Si recibimos menos de 50 colores, son colores inteligentes ya filtrados
+    // NO aplicar filtrado adicional para evitar perder colores de variantes
+    if (colors.length < 50) {
+      console.log('✅ Usando colores inteligentes pre-filtrados sin filtrado adicional:', colors.length)
+      return colors
+    }
 
     if (!productType || !productType.allowedColorCategories) {
       console.log('⚠️ No hay restricciones de color, mostrando todos los colores')
@@ -616,12 +682,24 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
     )
 
     // Para productos de látex, excluir completamente los colores de madera
-    const isLatexProduct =
-      productType.allowedColorCategories!.includes('Látex') &&
-      productType.allowedColorCategories!.length === 1
+    const isLatexProduct = productType.id === 'pinturas-latex'
     if (isLatexProduct) {
       filtered = filtered.filter(color => color.category !== 'Madera')
-      console.log('🎨 Latex product detected - excluding wood colors')
+      // Cambiar categoría de "Sintético" a "Látex" para productos de látex
+      filtered = filtered.map(color => ({
+        ...color,
+        category: color.category === 'Sintético' ? 'Látex' : color.category,
+        description: color.description?.includes('sintéticos') 
+          ? color.description.replace('sintéticos', 'látex')
+          : color.description
+      }))
+      console.log('🎨 Latex product detected - excluding wood colors and updating categories')
+    }
+
+    // Para Impregnantes de madera: excluir blancos y cremas del selector
+    if (productType.id === 'impregnante-madera') {
+      const blocked = new Set(['blanco-puro', 'crema', 'blanco', 'marfil'])
+      filtered = filtered.filter(c => !blocked.has(c.id))
     }
 
     console.log('✅ Colores filtrados:', {
@@ -753,8 +831,24 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
         </div>
       )}
 
+      {/* Grid de colores cuando showCategories=false (modal) */}
+      {!showCategories && (
+        <div className='space-y-2'>
+          <div className='grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2'>
+            {availableColors.map(color => (
+              <ColorSwatch
+                key={`${color.id}-${color.category.toLowerCase()}`}
+                color={color}
+                isSelected={selectedColor === color.id}
+                onClick={() => onColorChange(color.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Colores populares */}
-      {selectedCategory === 'all' && !searchTerm && (
+      {showCategories && selectedCategory === 'all' && !searchTerm && (
         <div className='space-y-2'>
           <div className='flex items-center gap-2'>
             <Badge variant='secondary' className='text-xs'>
@@ -788,7 +882,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
       )}
 
       {/* Grid de colores filtrados por categoría */}
-      {selectedCategory !== 'all' && (
+      {showCategories && selectedCategory !== 'all' && (
         <div className='space-y-2'>
           <div className='grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2'>
             {filteredColors.map(color => (
@@ -814,13 +908,16 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
             <div className='flex-1'>
               <h5 className='font-medium text-gray-900'>{currentColor.displayName}</h5>
               <p className='text-sm text-gray-600'>
-                {currentColor.family} • {currentColor.category}
+                {currentColor.family} • {productType?.id === 'pinturas-latex' && currentColor.category === 'Sintético' ? 'Látex' : currentColor.category}
               </p>
-              <p className='text-xs text-gray-500 font-mono'>{currentColor.hex}</p>
             </div>
           </div>
           {currentColor.description && (
-            <p className='text-sm text-gray-600 italic'>{currentColor.description}</p>
+            <p className='text-sm text-gray-600 italic'>
+              {productType?.id === 'pinturas-latex' && currentColor.description.includes('sintéticos') 
+                ? currentColor.description.replace('sintéticos', 'látex')
+                : currentColor.description}
+            </p>
           )}
         </div>
       )}
@@ -839,6 +936,56 @@ interface ColorSwatchProps {
 }
 
 const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick }) => {
+  const isWood = color.category === 'Madera'
+  const isTransparent = color.id === 'incoloro' || color.family === 'Transparentes'
+  
+  const style: React.CSSProperties = isTransparent
+    ? {
+        // Para colores transparentes: efecto de brillo y transparencia
+        backgroundColor: color.hex,
+        backgroundImage: [
+          // Gradiente de brillo sutil
+          'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
+          // Reflejo brillante
+          'linear-gradient(45deg, rgba(255,255,255,0.6) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.3) 100%)',
+          // Patrón de brillo sutil
+          'radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.5) 0%, transparent 50%)',
+          'radial-gradient(ellipse at 70% 70%, rgba(255,255,255,0.3) 0%, transparent 60%)'
+        ].join(', '),
+        backgroundSize: '100% 100%, 100% 100%, 60% 60%, 50% 50%',
+        backgroundBlendMode: 'overlay',
+        boxShadow: [
+          'inset 0 0 0 1px rgba(255,255,255,0.3)',
+          '0 0 8px rgba(255,255,255,0.2)',
+          'inset 0 1px 2px rgba(255,255,255,0.4)'
+        ].join(', '),
+        position: 'relative',
+        overflow: 'hidden',
+      }
+    : isWood
+    ? {
+        // Base de la veta en el color principal
+        backgroundColor: color.hex,
+        // Textura tipo madera con vetas más marcadas y nudos sutiles
+        backgroundImage: [
+          // Luz uniforme muy suave
+          'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
+          // Vetas principales (diagonales)
+          'repeating-linear-gradient(25deg, rgba(0,0,0,0.18) 0 2px, rgba(0,0,0,0.0) 2px 8px)',
+          // Vetas secundarias finas
+          'repeating-linear-gradient(-25deg, rgba(0,0,0,0.10) 0 1px, rgba(0,0,0,0.0) 1px 7px)',
+          // Nudos muy suaves
+          'radial-gradient(ellipse at 30% 45%, rgba(0,0,0,0.08) 0 3px, rgba(0,0,0,0.0) 4px)',
+          'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.06) 0 2px, rgba(255,255,255,0.0) 3px)'
+        ].join(', '),
+        backgroundSize: '100% 100%, 10px 10px, 12px 12px, 100% 100%, 100% 100%',
+        backgroundBlendMode: 'multiply',
+        boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.10)',
+      }
+    : {
+        backgroundColor: color.hex,
+        boxShadow: color.hex === '#FFFFFF' ? 'inset 0 0 0 1px #E5E7EB' : 'none',
+      }
   return (
     <button
       onClick={onClick}
@@ -848,10 +995,7 @@ const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick })
           ? 'border-blaze-orange-500 ring-2 ring-blaze-orange-200 shadow-md'
           : 'border-gray-300 hover:border-gray-400'
       )}
-      style={{
-        backgroundColor: color.hex,
-        boxShadow: color.hex === '#FFFFFF' ? 'inset 0 0 0 1px #E5E7EB' : 'none',
-      }}
+      style={style}
       title={color.displayName}
       aria-label={`Seleccionar color ${color.displayName}`}
     >
@@ -864,6 +1008,18 @@ const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick })
             }}
           />
         </div>
+      )}
+
+      {/* Efecto de brillo adicional para colores transparentes */}
+      {isTransparent && (
+        <div 
+          className='absolute inset-0 rounded-lg pointer-events-none'
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.4) 100%)',
+            mixBlendMode: 'overlay',
+            opacity: 0.6,
+          }}
+        />
       )}
 
       {/* Tooltip con nombre del color */}

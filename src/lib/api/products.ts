@@ -24,10 +24,28 @@ export async function getProducts(
 
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, value.toString())
+        if (value === undefined || value === null) return
+
+        // Manejo especial para arrays (p.ej. categories: string[])
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            // Enviar como lista separada por comas
+            searchParams.append(key, value.join(','))
+          }
+          return
         }
+
+        searchParams.append(key, value.toString())
       })
+
+      // Si existen categories[], preferirlo sobre category para evitar conflicto
+      if (filters.categories && filters.categories.length > 0) {
+        searchParams.delete('category')
+      }
+      // Si existen brands[], preferirlo sobre brand para evitar conflicto
+      if (filters.brands && filters.brands.length > 0) {
+        searchParams.delete('brand')
+      }
     }
 
     const url = `/api/products?${searchParams.toString()}`
@@ -123,6 +141,40 @@ export async function getProductById(id: number): Promise<ApiResponse<ProductWit
     return result.data
   } catch (error) {
     console.error(`Error obteniendo producto ${id}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Obtiene un producto por slug desde la API
+ * @param slug - Slug del producto
+ * @returns Promise<ApiResponse<ProductWithCategory>>
+ */
+export async function getProductBySlug(slug: string): Promise<ApiResponse<ProductWithCategory>> {
+  try {
+    const response = await fetch(`/api/products/slug/${encodeURIComponent(slug)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    // Parsear respuesta incluso si hay error para obtener el mensaje de la API
+    const result = await safeApiResponseJson<ApiResponse<ProductWithCategory>>(response)
+
+    if (!response.ok) {
+      // Usar el mensaje de error de la API si está disponible
+      const errorMessage = result?.error || `Error al obtener producto: ${response.statusText}`
+      throw new Error(`HTTP ${response.status}: ${errorMessage}`)
+    }
+
+    if (!result || !result.success || !result.data) {
+      throw new Error(result?.error || 'Error parsing API response')
+    }
+
+    return result.data
+  } catch (error) {
+    console.error(`Error obteniendo producto por slug ${slug}:`, error)
     throw error
   }
 }
@@ -321,12 +373,22 @@ export function isProductInStock(product: ProductWithCategory): boolean {
  * @returns string
  */
 export function getProductMainImage(product: ProductWithCategory): string {
-  if (product.images?.previews?.[0]) {
-    return product.images.previews[0]
+  // Priorizar el nuevo formato de array simple
+  if (Array.isArray(product.images) && product.images[0]) {
+    return product.images[0]
   }
 
-  if (product.images?.thumbnails?.[0]) {
-    return product.images.thumbnails[0]
+  // Formato de objeto { main, previews, thumbnails, gallery }
+  if (product && typeof product.images === 'object' && product.images !== null) {
+    const candidates = [
+      (product as any).images?.main,
+      (product as any).images?.previews?.[0],
+      (product as any).images?.thumbnails?.[0],
+      (product as any).images?.gallery?.[0],
+    ]
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim() !== '') return c.trim()
+    }
   }
 
   return '/images/products/placeholder.jpg'

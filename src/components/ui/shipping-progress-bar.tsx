@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { useDesignSystemConfig } from '@/lib/design-system-config'
 
 interface ShippingProgressBarProps {
   currentAmount: number
@@ -14,14 +14,16 @@ interface ShippingProgressBarProps {
 
 const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
   currentAmount,
-  targetAmount = 15000,
+  targetAmount,
   className,
   showIcon = true,
   variant = 'default',
 }) => {
-  const progress = Math.min((currentAmount / targetAmount) * 100, 100)
-  const remainingAmount = Math.max(targetAmount - currentAmount, 0)
-  const hasReachedTarget = currentAmount >= targetAmount
+  const config = useDesignSystemConfig()
+  const resolvedTarget = targetAmount ?? config.ecommerce.shippingInfo.freeShippingThreshold
+  const progress = Math.min((currentAmount / resolvedTarget) * 100, 100)
+  const remainingAmount = Math.max(resolvedTarget - currentAmount, 0)
+  const hasReachedTarget = currentAmount >= resolvedTarget
 
   const isCompact = variant === 'compact'
   const isDetailed = variant === 'detailed'
@@ -29,62 +31,70 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
   return (
     <div
       className={cn(
-        'bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200',
-        isCompact ? 'p-3' : 'p-4',
         className
       )}
     >
-      {/* Header centrado con icono grande */}
-      <div className='text-center mb-4'>
+      {/* Layout de dos columnas: icono izquierda, contenido derecha */}
+      <div className='flex items-center gap-3'>
+        {/* Columna izquierda: Icono SVG */}
         {showIcon && (
-          <div className='flex justify-center mb-3'>
-            <Image
+          <div className='flex-shrink-0'>
+            <img
               src='/images/icons/icon-envio.svg'
-              alt='Envío'
-              width={isCompact ? 120 : 140}
-              height={isCompact ? 120 : 140}
+              alt='Envío Gratis'
               className='w-auto h-auto'
+              style={{ 
+                width: isCompact ? '110px' : '140px', 
+                height: isCompact ? '110px' : '140px',
+                maxWidth: isCompact ? '110px' : '140px', 
+                maxHeight: isCompact ? '110px' : '140px',
+                display: 'block'
+              }}
             />
           </div>
         )}
 
-        <div>
-          {hasReachedTarget ? (
-            <p className={cn('text-green-700 font-bold', isCompact ? 'text-base' : 'text-lg')}>
-              ¡Felicitaciones! Tienes envío gratis
-            </p>
-          ) : (
-            <p className={cn('text-gray-700 font-semibold', isCompact ? 'text-base' : 'text-lg')}>
-              Te faltan ${remainingAmount.toLocaleString()} para envío gratis
-            </p>
-          )}
+        {/* Columna derecha: Texto, barra y labels */}
+        <div className='flex-1'>
+          {/* Texto principal */}
+          <div className={cn(isCompact ? 'mb-1.5' : 'mb-3')}>
+            {hasReachedTarget ? (
+              <p className={cn('text-green-700 font-bold', isCompact ? 'text-sm' : 'text-base')}>
+                ¡Felicitaciones! Tienes envío gratis
+              </p>
+            ) : (
+              <p className={cn('text-gray-700 font-semibold', isCompact ? 'text-sm' : 'text-base')}>
+                Te faltan ${remainingAmount.toLocaleString()} para envío gratis
+              </p>
+            )}
+          </div>
+
+          {/* Barra de progreso */}
+          <div
+            className={cn('w-full bg-gray-200 rounded-full overflow-hidden', isCompact ? 'h-2' : 'h-3')}
+          >
+            <div
+              className={cn(
+                'h-full rounded-full transition-all duration-500 ease-out',
+                hasReachedTarget
+                  ? 'bg-gradient-to-r from-green-500 to-green-600'
+                  : 'bg-gradient-to-r from-yellow-400 to-orange-500'
+              )}
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+
+          {/* Labels de progreso */}
+          <div
+            className={cn(
+              'flex justify-between text-gray-600',
+              isCompact ? 'mt-1 text-2xs' : 'mt-2 text-xs'
+            )}
+          >
+            <span>$0</span>
+            <span className='font-semibold'>${resolvedTarget.toLocaleString()}</span>
+          </div>
         </div>
-      </div>
-
-      {/* Barra de progreso */}
-      <div
-        className={cn('w-full bg-gray-200 rounded-full overflow-hidden', isCompact ? 'h-2' : 'h-3')}
-      >
-        <div
-          className={cn(
-            'h-full rounded-full transition-all duration-500 ease-out',
-            hasReachedTarget
-              ? 'bg-gradient-to-r from-green-500 to-green-600'
-              : 'bg-gradient-to-r from-yellow-400 to-orange-500'
-          )}
-          style={{ width: `${progress}%` }}
-        ></div>
-      </div>
-
-      {/* Labels de progreso */}
-      <div
-        className={cn(
-          'flex justify-between text-gray-600 mt-2',
-          isCompact ? 'text-2xs' : 'text-xs'
-        )}
-      >
-        <span>$0</span>
-        <span className='font-semibold'>${targetAmount.toLocaleString()}</span>
       </div>
 
       {/* Información detallada (solo en variant detailed) */}

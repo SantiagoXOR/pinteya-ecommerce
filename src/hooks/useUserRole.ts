@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from './useAuth'
 
 export interface UserRole {
@@ -46,19 +46,17 @@ export interface UseUserRoleReturn {
 }
 
 export const useUserRole = (): UseUserRoleReturn => {
-  // 🚨 TEMPORAL: Hook simplificado sin autenticación durante migración
-  // TODO: Restaurar funcionalidad completa cuando NextAuth esté configurado
-  // const { user, isLoaded, isSignedIn } = useAuth();
+  // ✅ Usar NextAuth.js para obtener el usuario autenticado
+  const { user, isLoaded, isSignedIn } = useAuth()
 
-  // 🚨 TEMPORAL: Estados simplificados sin autenticación
+  // Estados para el perfil de usuario
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  // 🚨 TEMPORAL: Variables mock para evitar errores
-  const user = null
-  const isLoaded = true
-  const isSignedIn = false
+  
+  // Ref para rastrear si hay una solicitud en curso y evitar llamadas duplicadas
+  const isFetchingRef = useRef(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const syncUser = useCallback(async () => {
     if (!user?.email) {
@@ -106,10 +104,23 @@ export const useUserRole = (): UseUserRoleReturn => {
       console.log('[useUserRole] No hay usuario autenticado')
       setUserProfile(null)
       setIsLoading(false)
+      isFetchingRef.current = false
       return
     }
 
+    // Evitar múltiples llamadas simultáneas usando ref
+    if (isFetchingRef.current) {
+      console.log('[useUserRole] Ya hay una solicitud en curso, omitiendo...')
+      return
+    }
+
+    // Cancelar solicitud anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
     try {
+      isFetchingRef.current = true
       setIsLoading(true)
       setError(null)
 
@@ -118,39 +129,64 @@ export const useUserRole = (): UseUserRoleReturn => {
         console.warn('Email no disponible para el usuario')
         setError('Email no disponible')
         setIsLoading(false)
+        isFetchingRef.current = false
         return
       }
 
-      const response = await fetch(`/api/admin/users/profile?email=${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      // Crear AbortController para poder cancelar la solicitud
+      const abortController = new AbortController()
+      abortControllerRef.current = abortController
+      const timeoutId = setTimeout(() => abortController.abort(), 10000) // Timeout de 10 segundos
 
-      if (response.status === 404) {
-        // Usuario no existe, intentar sincronizar
-        await syncUser()
-        return
-      }
+      try {
+        const response = await fetch(`/api/admin/users/profile?email=${encodeURIComponent(email)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: abortController.signal,
+        })
 
-      if (!response.ok) {
-        // Manejo más específico de errores HTTP
-        const errorText = await response.text()
-        console.warn(`Error HTTP ${response.status}: ${errorText}`)
+        clearTimeout(timeoutId)
 
-        // No lanzar error para errores de red, solo logear
-        setError(`Error de conexión (${response.status})`)
-        setIsLoading(false)
-        return
-      }
+        // Verificar si la solicitud fue cancelada
+        if (abortController.signal.aborted) {
+          return
+        }
 
-      const data = await response.json()
-      if (data.success) {
-        setUserProfile(data.user)
-      } else {
-        console.warn('Error en respuesta del servidor:', data.error)
-        setError(data.error || 'Error del servidor')
+        if (response.status === 404) {
+          // Usuario no existe, intentar sincronizar
+          await syncUser()
+          return
+        }
+
+        if (!response.ok) {
+          // Manejo más específico de errores HTTP
+          const errorText = await response.text()
+          console.warn(`Error HTTP ${response.status}: ${errorText}`)
+
+          // No lanzar error para errores de red, solo logear
+          setError(`Error de conexión (${response.status})`)
+          setIsLoading(false)
+          isFetchingRef.current = false
+          return
+        }
+
+        const data = await response.json()
+        if (data.success) {
+          setUserProfile(data.user)
+        } else {
+          console.warn('Error en respuesta del servidor:', data.error)
+          setError(data.error || 'Error del servidor')
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId)
+        // Ignorar errores de cancelación
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.log('[useUserRole] Solicitud cancelada')
+          return
+        }
+        throw fetchError
       }
     } catch (err) {
       // Manejo más suave de errores para no interrumpir la aplicación
@@ -161,8 +197,9 @@ export const useUserRole = (): UseUserRoleReturn => {
       // No re-lanzar el error para evitar interrumpir otros componentes
     } finally {
       setIsLoading(false)
+      isFetchingRef.current = false
     }
-  }, [user])
+  }, [user, syncUser])
 
   const hasPermission = (permissionPath: string[]): boolean => {
     if (!userProfile?.user_roles?.permissions) {
@@ -198,10 +235,11 @@ export const useUserRole = (): UseUserRoleReturn => {
     return permissions.every(permission => hasPermission(permission))
   }
 
-  // Verificaciones de roles
-  const isAdmin = userProfile?.user_roles?.role_name === 'admin'
-  const isCustomer = userProfile?.user_roles?.role_name === 'customer'
-  const isModerator = userProfile?.user_roles?.role_name === 'moderator'
+  // Verificaciones de roles - Usar el rol de la sesión de NextAuth como fallback
+  const sessionRole = (user as any)?.role || userProfile?.user_roles?.role_name
+  const isAdmin = sessionRole === 'admin' || userProfile?.user_roles?.role_name === 'admin'
+  const isCustomer = sessionRole === 'customer' || userProfile?.user_roles?.role_name === 'customer'
+  const isModerator = sessionRole === 'moderator' || userProfile?.user_roles?.role_name === 'moderator'
 
   // Verificaciones de permisos específicos
   const canAccessAdminPanel = hasPermission(['admin_panel', 'access'])
@@ -224,16 +262,39 @@ export const useUserRole = (): UseUserRoleReturn => {
   const canViewAnalytics = hasPermission(['analytics', 'read'])
 
   useEffect(() => {
-    if (isLoaded && isSignedIn && user) {
-      console.log('[useUserRole] Usuario autenticado, obteniendo perfil...')
-      fetchUserProfile()
+    // Solo intentar cargar el perfil si el usuario está autenticado y tiene email
+    if (isLoaded && isSignedIn && user?.email) {
+      // Evitar múltiples llamadas simultáneas usando un flag de referencia
+      const email = user.email
+      let cancelled = false
+
+      const timeoutId = setTimeout(() => {
+        if (!cancelled && !isFetchingRef.current) {
+          console.log('[useUserRole] Usuario autenticado, obteniendo perfil...', email)
+          fetchUserProfile()
+        }
+      }, 200) // Pequeño delay para evitar llamadas múltiples
+
+      return () => {
+        cancelled = true
+        clearTimeout(timeoutId)
+        // Cancelar solicitud pendiente al desmontar
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort()
+        }
+      }
     } else if (isLoaded && !isSignedIn) {
       console.log('[useUserRole] Usuario no autenticado')
       setUserProfile(null)
       setIsLoading(false)
       setError(null)
+      isFetchingRef.current = false
+      // Cancelar cualquier solicitud pendiente
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
     }
-  }, [isLoaded, isSignedIn, user, fetchUserProfile])
+  }, [isLoaded, isSignedIn, user?.email, fetchUserProfile])
 
   return {
     userProfile,

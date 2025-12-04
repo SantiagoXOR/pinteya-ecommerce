@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     siteName: 'Pinteya E-commerce',
     images: [
       {
-        url: '/images/logo/LOGO POSITIVO.svg',
-        width: 620,
-        height: 333,
+        url: '/images/quickview/quick-view-01.png',
+        width: 1200,
+        height: 630,
         alt: 'Pinteya - Tu Pinturería Online',
       },
     ],
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
     description:
       'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad y herramientas profesionales.',
-    images: ['/images/logo/LOGO POSITIVO.svg'],
+    images: ['/images/quickview/quick-view-01.png'],
   },
   robots: {
     index: true,
@@ -69,32 +69,22 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.png?v=2', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', type: 'image/x-icon' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/favicon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/favicon.png?v=2',
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
     other: [
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '32x32',
-        url: '/favicon-32x32.png',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '192x192',
-        url: '/favicon-192x192.png',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '512x512',
-        url: '/favicon-512x512.png',
-      },
+      { rel: 'icon', type: 'image/png', url: '/favicon.png?v=2' },
+      { rel: 'icon', type: 'image/svg+xml', url: '/favicon.svg' },
+      { rel: 'icon', type: 'image/x-icon', url: '/favicon.ico' },
+      { rel: 'icon', type: 'image/png', sizes: '32x32', url: '/favicon-32x32.png' },
+      { rel: 'icon', type: 'image/png', sizes: '192x192', url: '/favicon-192x192.png' },
+      { rel: 'icon', type: 'image/png', sizes: '512x512', url: '/favicon-512x512.png' },
     ],
   },
   manifest: '/manifest.json',

@@ -103,6 +103,8 @@ export interface CreatePreferenceData {
     excluded_payment_methods?: Array<{ id: string }>
     excluded_payment_types?: Array<{ id: string }>
     installments?: number
+    default_installments?: number
+    default_payment_method_id?: string | null
   }
   notification_url?: string
   statement_descriptor?: string
@@ -110,6 +112,9 @@ export interface CreatePreferenceData {
   expires?: boolean
   expiration_date_from?: string
   expiration_date_to?: string
+  // ✅ NUEVO: Soporte para promociones y cuotas sin interés
+  differential_pricing_id?: number
+  sponsor_id?: number
 }
 
 /**
@@ -140,20 +145,39 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
         const dynamicPreference = new Preference(dynamicClient)
 
         // ✅ MEJORADO: Configuración avanzada de métodos de pago
+        // ✅ MEJORADO: Configuración avanzada de métodos de pago
+        // Lee variables de entorno para ajustar cuotas y métodos según negocio
+        const envExcludedMethods = process.env.MP_EXCLUDED_PAYMENT_METHODS
+          ? process.env.MP_EXCLUDED_PAYMENT_METHODS.split(',').map(id => ({ id: id.trim() }))
+          : []
+        const envExcludedTypes = process.env.MP_EXCLUDED_PAYMENT_TYPES
+          ? process.env.MP_EXCLUDED_PAYMENT_TYPES.split(',').map(id => ({ id: id.trim() }))
+          : [{ id: 'ticket' }, { id: 'atm' }]
+        const envMaxInstallments = process.env.NEXT_PUBLIC_MP_MAX_INSTALLMENTS
+          ? parseInt(process.env.NEXT_PUBLIC_MP_MAX_INSTALLMENTS, 10)
+          : process.env.MP_MAX_INSTALLMENTS
+          ? parseInt(process.env.MP_MAX_INSTALLMENTS, 10)
+          : 6
+        const envDefaultInstallments = process.env.MP_DEFAULT_INSTALLMENTS
+          ? parseInt(process.env.MP_DEFAULT_INSTALLMENTS, 10)
+          : 6
+        const envDefaultPaymentMethodId = process.env.MP_DEFAULT_PAYMENT_METHOD_ID || null
+
         const paymentMethods = {
           excluded_payment_methods: [
             // Excluir American Express si no se acepta
             // { id: "amex" },
-          ],
+          ...envExcludedMethods],
           excluded_payment_types: [
             // Excluir pagos en efectivo para simplificar
             { id: 'ticket' },
             // Excluir cajeros automáticos
             { id: 'atm' },
+            ...envExcludedTypes.filter(t => !['ticket', 'atm'].includes(t.id)),
           ],
-          installments: 12, // Máximo 12 cuotas
-          default_installments: 1, // Por defecto sin cuotas
-          default_payment_method_id: null, // Sin método preferido
+          installments: envMaxInstallments, // Máximo de cuotas configurable
+          default_installments: envDefaultInstallments, // Por defecto sin cuotas
+          default_payment_method_id: envDefaultPaymentMethodId, // Método preferido opcional
         }
 
         // ✅ MEJORADO: URLs dinámicas según entorno
@@ -185,6 +209,21 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
           // ✅ NUEVO: Configuración de expiración
           expires: true,
           expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
+
+          // ✅ NUEVO: Configuración de cuotas sin interés mediante pricing diferencial
+          ...(data.differential_pricing_id || process.env.MP_DIFFERENTIAL_PRICING_ID
+            ? {
+                differential_pricing_id:
+                  data.differential_pricing_id ||
+                  parseInt(process.env.MP_DIFFERENTIAL_PRICING_ID as string, 10),
+              }
+            : {}),
+          // ✅ NUEVO: Sponsor para habilitar promociones del comercio
+          ...(data.sponsor_id || process.env.MP_SPONSOR_ID
+            ? {
+                sponsor_id: data.sponsor_id || parseInt(process.env.MP_SPONSOR_ID as string, 10),
+              }
+            : {}),
 
           // ✅ NUEVO: Configuración específica para sandbox
           ...(isSandbox && {
@@ -319,6 +358,51 @@ export async function getPaymentInfo(paymentId: string) {
       }
     }
   }) // Cierre del CacheUtils.cachePaymentInfo
+}
+
+/**
+ * Obtiene detalles completos de un pago desde MercadoPago
+ * Usado para mostrar comprobantes de pago en el panel admin
+ */
+export async function getPaymentDetails(paymentId: string) {
+  try {
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN
+
+    if (!accessToken) {
+      return {
+        success: false,
+        error: 'MercadoPago access token not configured',
+      }
+    }
+
+    const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `MercadoPago API error: ${response.status}`,
+      }
+    }
+
+    const data = await response.json()
+
+    return {
+      success: true,
+      data,
+    }
+  } catch (error) {
+    console.error('Error getting payment details:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
 }
 
 /**

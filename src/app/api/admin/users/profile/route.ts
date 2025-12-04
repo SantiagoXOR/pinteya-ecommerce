@@ -30,13 +30,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Email es requerido' }, { status: 400 })
     }
 
-    // Buscar usuario con roles
-    const { data: user, error } = await supabase
-      .from('users')
+    // Buscar usuario en user_profiles (no en users)
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
       .select(
         `
-        *,
-        user_roles (
+        id,
+        supabase_user_id,
+        email,
+        first_name,
+        last_name,
+        role_id,
+        is_active,
+        user_roles:role_id (
           role_name,
           description,
           permissions
@@ -44,26 +50,39 @@ export async function GET(request: NextRequest) {
       `
       )
       .eq('email', email)
+      .eq('is_active', true)
       .single()
 
-    if (error) {
-      if (error.code === 'PGRST116') {
+    if (profileError) {
+      if (profileError.code === 'PGRST116') {
         return NextResponse.json(
           { success: false, error: 'Usuario no encontrado' },
           { status: 404 }
         )
       }
 
-      console.error('Error al buscar usuario:', error)
+      console.error('Error al buscar usuario:', profileError)
       return NextResponse.json(
         { success: false, error: 'Error al buscar usuario' },
         { status: 500 }
       )
     }
 
+    // Transformar a formato esperado
+    const user = {
+      id: userProfile.id,
+      clerk_user_id: userProfile.supabase_user_id,
+      email: userProfile.email,
+      first_name: userProfile.first_name,
+      last_name: userProfile.last_name,
+      role_id: userProfile.role_id,
+      is_active: userProfile.is_active,
+      user_roles: userProfile.user_roles,
+    }
+
     return NextResponse.json({
       success: true,
-      user,
+      user: user,
     })
   } catch (error) {
     console.error('Error al obtener perfil de usuario:', error)

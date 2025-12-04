@@ -55,7 +55,7 @@ const NewArrival: React.FC = () => {
 
           {/* Botón migrado al Design System */}
           <Button variant='outline' asChild>
-            <Link href='/shop-with-sidebar'>
+            <Link href='/products'>
               Ver Todos
               <ArrowRight className='ml-2 h-4 w-4' />
             </Link>
@@ -132,7 +132,7 @@ const NewArrival: React.FC = () => {
                     Pronto agregaremos nuevos productos de pinturería
                   </p>
                   <Button variant='outline' asChild>
-                    <Link href='/shop-with-sidebar'>Ver Catálogo Completo</Link>
+                    <Link href='/products'>Ver Catálogo Completo</Link>
                   </Button>
                 </div>
               </div>

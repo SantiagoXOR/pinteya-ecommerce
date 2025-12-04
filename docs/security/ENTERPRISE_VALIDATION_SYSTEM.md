@@ -27,7 +27,7 @@ graph TB
     E --> F[Security Validation]
     F --> G[Audit Logging]
     G --> H[Validated Response]
-    
+
     I[DOMPurify] --> D
     J[Validator.js] --> D
     K[Enterprise Audit] --> G
@@ -50,6 +50,7 @@ graph TB
 ### **4 Niveles de Seguridad:**
 
 #### **CRITICAL_ADMIN - Operaciones Administrativas**
+
 ```typescript
 {
   enableSanitization: true,
@@ -64,6 +65,7 @@ graph TB
 ```
 
 #### **HIGH_PAYMENT - APIs de Pagos**
+
 ```typescript
 {
   enableSanitization: true,
@@ -78,6 +80,7 @@ graph TB
 ```
 
 #### **STANDARD_PUBLIC - APIs Públicas**
+
 ```typescript
 {
   enableSanitization: true,
@@ -92,6 +95,7 @@ graph TB
 ```
 
 #### **BASIC_USER - Contenido de Usuario**
+
 ```typescript
 {
   enableSanitization: true,
@@ -112,11 +116,13 @@ graph TB
 ### **EnterpriseSanitizer - Funcionalidades:**
 
 #### **1. Sanitización de Strings:**
+
 ```typescript
 sanitizeString(value: string, options: SanitizationOptions)
 ```
 
 **Características:**
+
 - **Remover scripts maliciosos** - `<script>`, `javascript:`, `on*=`
 - **Limpiar HTML** - DOMPurify con tags permitidos
 - **Escapar HTML** - Conversión de caracteres especiales
@@ -127,11 +133,13 @@ sanitizeString(value: string, options: SanitizationOptions)
 - **Validar caracteres** - Regex de caracteres permitidos
 
 #### **2. Sanitización de Objetos:**
+
 ```typescript
 sanitizeObject(obj: any, depth: number = 0)
 ```
 
 **Características:**
+
 - **Recursivo** - Sanitiza objetos anidados
 - **Control de profundidad** - Previene ataques de profundidad
 - **Arrays seguros** - Límites de longitud configurables
@@ -139,11 +147,13 @@ sanitizeObject(obj: any, depth: number = 0)
 - **Sanitiza claves** - Nombres de propiedades seguros
 
 #### **3. Sanitización de FormData:**
+
 ```typescript
 sanitizeFormData(formData: FormData)
 ```
 
 **Características:**
+
 - **Archivos seguros** - Validación de tipo y tamaño
 - **Nombres de archivo** - Caracteres seguros únicamente
 - **Tipos permitidos** - Lista blanca de MIME types
@@ -156,6 +166,7 @@ sanitizeFormData(formData: FormData)
 ### **EnterpriseValidator - Funcionalidades:**
 
 #### **1. Validación y Sanitización Combinada:**
+
 ```typescript
 async validateAndSanitize<T>(
   schema: z.ZodSchema<T>,
@@ -166,6 +177,7 @@ async validateAndSanitize<T>(
 ```
 
 **Proceso:**
+
 1. **Sanitización automática** si está habilitada
 2. **Validación Zod** con esquemas tipados
 3. **Validación de seguridad** adicional
@@ -175,6 +187,7 @@ async validateAndSanitize<T>(
 #### **2. Detección de Ataques de Seguridad:**
 
 **SQL Injection Detection:**
+
 ```typescript
 // Patrones detectados:
 /(\bselect\b.*\bfrom\b)/i
@@ -186,6 +199,7 @@ async validateAndSanitize<T>(
 ```
 
 **XSS Detection:**
+
 ```typescript
 // Patrones detectados:
 /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi
@@ -196,6 +210,7 @@ async validateAndSanitize<T>(
 ```
 
 #### **3. Determinación de Severidad:**
+
 - **Critical** - Campos: password, email, payment, admin, auth
 - **High** - Campos: user_id, amount, price, quantity
 - **Medium** - Otros campos y errores generales
@@ -206,53 +221,56 @@ async validateAndSanitize<T>(
 ## 🔧 Middleware Enterprise
 
 ### **Uso en App Router:**
+
 ```typescript
-import { withCriticalValidation } from '@/lib/validation/enterprise-validation-middleware';
-import { EnterpriseProductSchema } from '@/lib/validation/enterprise-schemas';
+import { withCriticalValidation } from '@/lib/validation/enterprise-validation-middleware'
+import { EnterpriseProductSchema } from '@/lib/validation/enterprise-schemas'
 
 const handler = async (request: ValidatedRequest) => {
   // Datos ya validados y sanitizados
-  const productData = request.validatedBody;
-  const queryParams = request.validatedQuery;
-  
+  const productData = request.validatedBody
+  const queryParams = request.validatedQuery
+
   // Lógica de la API
-  return NextResponse.json({ success: true });
-};
+  return NextResponse.json({ success: true })
+}
 
 export const POST = withCriticalValidation({
   bodySchema: EnterpriseProductSchema,
-  querySchema: ProductFiltersSchema
-})(handler);
+  querySchema: ProductFiltersSchema,
+})(handler)
 ```
 
 ### **Uso en Pages API:**
+
 ```typescript
-import { withEnterpriseValidationAPI } from '@/lib/validation/enterprise-validation-middleware';
+import { withEnterpriseValidationAPI } from '@/lib/validation/enterprise-validation-middleware'
 
 const handler = async (req: ValidatedApiRequest, res: NextApiResponse) => {
-  const validatedData = req.validatedBody;
-  res.json({ success: true, data: validatedData });
-};
+  const validatedData = req.validatedBody
+  res.json({ success: true, data: validatedData })
+}
 
 export default withEnterpriseValidationAPI({
   bodySchema: EnterpriseUserSchema,
-  configName: 'HIGH_PAYMENT'
-})(handler);
+  configName: 'HIGH_PAYMENT',
+})(handler)
 ```
 
 ### **Funciones de Conveniencia:**
+
 ```typescript
 // Validación crítica para admin
-export const POST = withCriticalValidation({ bodySchema })(handler);
+export const POST = withCriticalValidation({ bodySchema })(handler)
 
 // Validación alta para pagos
-export const POST = withHighValidation({ bodySchema })(handler);
+export const POST = withHighValidation({ bodySchema })(handler)
 
 // Validación estándar para APIs públicas
-export const POST = withStandardValidation({ bodySchema })(handler);
+export const POST = withStandardValidation({ bodySchema })(handler)
 
 // Validación básica para usuarios
-export const POST = withBasicValidation({ bodySchema })(handler);
+export const POST = withBasicValidation({ bodySchema })(handler)
 ```
 
 ---
@@ -262,8 +280,10 @@ export const POST = withBasicValidation({ bodySchema })(handler);
 ### **Validadores Básicos:**
 
 #### **Email Enterprise:**
+
 ```typescript
-EnterpriseEmailSchema = z.string()
+EnterpriseEmailSchema = z
+  .string()
   .email('Email inválido')
   .min(5, 'Email muy corto')
   .max(254, 'Email muy largo')
@@ -272,8 +292,10 @@ EnterpriseEmailSchema = z.string()
 ```
 
 #### **Contraseña Enterprise:**
+
 ```typescript
-EnterprisePasswordSchema = z.string()
+EnterprisePasswordSchema = z
+  .string()
   .min(8, 'Contraseña muy corta')
   .max(128, 'Contraseña muy larga')
   .refine(password => /[A-Z]/.test(password), 'Debe contener mayúscula')
@@ -283,8 +305,10 @@ EnterprisePasswordSchema = z.string()
 ```
 
 #### **Precio Enterprise:**
+
 ```typescript
-EnterprisePriceSchema = z.number()
+EnterprisePriceSchema = z
+  .number()
   .min(0.01, 'Precio muy bajo')
   .max(999999.99, 'Precio muy alto')
   .multipleOf(0.01, 'Máximo 2 decimales')
@@ -293,9 +317,14 @@ EnterprisePriceSchema = z.number()
 ### **Esquemas Complejos:**
 
 #### **Producto Enterprise:**
+
 ```typescript
 EnterpriseProductSchema = z.object({
-  name: z.string().min(2).max(100).refine(name => !/[<>{}]/.test(name)),
+  name: z
+    .string()
+    .min(2)
+    .max(100)
+    .refine(name => !/[<>{}]/.test(name)),
   brand: z.string().min(1).max(50).optional(),
   slug: EnterpriseSlugSchema,
   description: z.string().min(10).max(5000).optional(),
@@ -304,15 +333,18 @@ EnterpriseProductSchema = z.object({
   category_id: EnterpriseUUIDSchema.optional(),
   status: z.enum(['active', 'inactive', 'draft']).default('draft'),
   tags: z.array(z.string().min(1).max(30)).max(50).optional(),
-  images: z.object({
-    previews: z.array(z.string().url()).max(20).optional(),
-    main: z.string().url().optional(),
-    gallery: z.array(z.string().url()).max(20).optional()
-  }).optional()
+  images: z
+    .object({
+      previews: z.array(z.string().url()).max(20).optional(),
+      main: z.string().url().optional(),
+      gallery: z.array(z.string().url()).max(20).optional(),
+    })
+    .optional(),
 })
 ```
 
 #### **Usuario Enterprise:**
+
 ```typescript
 EnterpriseUserSchema = z.object({
   clerk_id: z.string().min(1),
@@ -321,15 +353,18 @@ EnterpriseUserSchema = z.object({
   last_name: z.string().min(2).max(100).optional(),
   phone: EnterprisePhoneSchema.optional(),
   role: z.enum(['admin', 'customer', 'moderator']).default('customer'),
-  preferences: z.object({
-    newsletter: z.boolean().default(false),
-    notifications: z.boolean().default(true),
-    language: z.enum(['es', 'en']).default('es')
-  }).optional()
+  preferences: z
+    .object({
+      newsletter: z.boolean().default(false),
+      notifications: z.boolean().default(true),
+      language: z.enum(['es', 'en']).default('es'),
+    })
+    .optional(),
 })
 ```
 
 #### **Orden Enterprise:**
+
 ```typescript
 EnterpriseOrderSchema = z.object({
   items: z.array(EnterpriseOrderItemSchema).min(1).max(50),
@@ -337,7 +372,7 @@ EnterpriseOrderSchema = z.object({
   shipping_cost: EnterprisePriceSchema.default(0),
   total: EnterprisePriceSchema,
   shipping_address: EnterpriseShippingAddressSchema,
-  payment_method: z.enum(['mercadopago', 'transfer', 'cash']).default('mercadopago')
+  payment_method: z.enum(['mercadopago', 'transfer', 'cash']).default('mercadopago'),
 })
 ```
 
@@ -346,9 +381,11 @@ EnterpriseOrderSchema = z.object({
 ## 🔄 Integración con Sistema Enterprise
 
 ### **Auditoría Automática:**
+
 Cuando ocurre un error de validación, el sistema automáticamente:
 
 1. **Registra evento de seguridad:**
+
 ```typescript
 {
   event_type: 'VALIDATION_FAILED',
@@ -370,20 +407,21 @@ Cuando ocurre un error de validación, el sistema automáticamente:
 3. **Ejecuta detección de anomalías** si hay patrones sospechosos
 
 ### **Contexto Enterprise:**
+
 ```typescript
 interface ValidationResult<T> {
-  success: boolean;
-  data?: T;
-  errors?: ValidationError[];
-  sanitized?: T;
+  success: boolean
+  data?: T
+  errors?: ValidationError[]
+  sanitized?: T
   metadata?: {
-    validatedAt: string;
-    validatedBy?: string;
-    sanitizationApplied: boolean;
-    securityLevel: 'basic' | 'standard' | 'high' | 'critical';
-    rulesApplied: string[];
-    performanceMs: number;
-  };
+    validatedAt: string
+    validatedBy?: string
+    sanitizationApplied: boolean
+    securityLevel: 'basic' | 'standard' | 'high' | 'critical'
+    rulesApplied: string[]
+    performanceMs: number
+  }
 }
 ```
 
@@ -392,6 +430,7 @@ interface ValidationResult<T> {
 ## 🧪 Testing y Validación
 
 ### **Tests Implementados:**
+
 - **✅ Configuraciones enterprise** - 4 niveles de seguridad validados
 - **✅ Sanitización de strings** - Scripts, HTML, SQL, XSS
 - **✅ Sanitización de objetos** - Recursivo, profundidad, arrays
@@ -402,6 +441,7 @@ interface ValidationResult<T> {
 - **✅ Manejo de errores** - Severidad, auditoría, performance
 
 ### **Casos de Prueba Cubiertos:**
+
 - **Sanitización básica** - Remover scripts, normalizar espacios
 - **Sanitización avanzada** - SQL keywords, caracteres especiales
 - **Validación de esquemas** - Productos, usuarios, órdenes
@@ -414,24 +454,28 @@ interface ValidationResult<T> {
 ## 🚀 Beneficios Implementados
 
 ### **🛡️ Seguridad Robusta:**
+
 - **Sanitización automática** - Prevención de XSS, SQL injection
 - **Validación multicapa** - Zod + validaciones de seguridad
 - **Detección proactiva** - Patrones maliciosos identificados
 - **Auditoría completa** - Todos los eventos registrados
 
 ### **⚡ Performance Optimizado:**
+
 - **Validación eficiente** - Sanitización antes de validación
 - **Métricas incluidas** - Tiempo de respuesta monitoreado
 - **Cache inteligente** - Resultados de validación cacheados
 - **Límites configurables** - Prevención de ataques de recursos
 
 ### **🎯 Flexibilidad Enterprise:**
+
 - **4 niveles de seguridad** - Configuraciones por contexto
 - **Middleware transparente** - Integración sin cambios de código
 - **Esquemas reutilizables** - Consistencia en todo el proyecto
 - **Funciones de conveniencia** - Implementación simplificada
 
 ### **📊 Monitoreo Completo:**
+
 - **Auditoría automática** - Eventos de validación registrados
 - **Métricas de performance** - Tiempo de respuesta incluido
 - **Detección de anomalías** - Patrones sospechosos identificados
@@ -442,12 +486,14 @@ interface ValidationResult<T> {
 ## 📚 Documentación Entregada
 
 ### **📖 Documentación Técnica:**
+
 - **`ENTERPRISE_VALIDATION_SYSTEM.md`** - Guía completa del sistema
 - **Arquitectura detallada** - Diagramas y flujos de trabajo
 - **Esquemas documentados** - Todos los validadores enterprise
 - **Middleware explicado** - Uso en App Router y Pages API
 
 ### **🔧 Guías de Implementación:**
+
 - **Configuraciones enterprise** - 4 niveles de seguridad
 - **Sanitización avanzada** - DOMPurify y validator.js
 - **Detección de ataques** - SQL injection y XSS
@@ -466,6 +512,3 @@ interface ValidationResult<T> {
 - ✅ **Integración enterprise** con auditoría y autenticación
 - ✅ **Build exitoso** con dependencias instaladas
 - ✅ **Documentación completa** entregada
-
-
-

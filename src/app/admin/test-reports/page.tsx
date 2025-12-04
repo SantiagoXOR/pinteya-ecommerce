@@ -214,8 +214,8 @@ const TestReportsDashboard = () => {
       {
         id: 'mock-ss-4',
         stepName: 'Hero Section Render',
-        url: '/images/hero/hero-01.png',
-        previewUrl: '/images/hero/hero-01.png',
+        url: '/images/hero/hero2/hero1.webp',
+        previewUrl: '/images/hero/hero2/hero1.webp',
         timestamp: new Date(Date.now() - 120000), // 2 min ago
         status: 'info',
         metadata: { width: 1920, height: 1080, size: 456000 },

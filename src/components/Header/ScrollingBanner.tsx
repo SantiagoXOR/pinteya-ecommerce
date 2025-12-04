@@ -19,10 +19,10 @@ const ScrollingBanner = () => {
       {/* Separador */}
       <div className='w-px h-4 bg-white/40 mx-6'></div>
 
-      {/* Segundo conjunto - Tienda en naranja */}
-      <div className='inline-flex items-center gap-2 bg-orange-500 px-3 py-1 rounded-full'>
-        <Star className='w-4 h-4 text-white' />
-        <span className='text-xs font-semibold tracking-widest text-white'>{tiendaText}</span>
+      {/* Segundo conjunto - Tienda en amarillo Bright Sun con texto verde */}
+      <div className='inline-flex items-center gap-2 bg-bright-sun-400 px-3 py-1 rounded-full'>
+        <Star className='w-4 h-4 text-green-800' />
+        <span className='text-xs font-semibold tracking-widest text-green-800'>{tiendaText}</span>
       </div>
 
       {/* Separador */}
@@ -31,39 +31,47 @@ const ScrollingBanner = () => {
   )
 
   return (
-    <div className='w-full bg-gradient-to-r from-[#007638] to-[#00a84a] text-white overflow-hidden relative h-[32px] flex items-center rounded-lg mx-2 my-1'>
-      {/* Contenedor de animación */}
-      <div className='whitespace-nowrap animate-scroll-banner'>
+    <div className='w-full bg-blaze-orange-600 text-white overflow-hidden relative h-[28px] flex items-center rounded-lg mx-2 my-0.5'>
+      {/* Contenedor de animación mejorado para loop infinito */}
+      <div className='whitespace-nowrap animate-scroll-banner-infinite'>
         <div className='inline-flex items-center px-4'>
-          {/* Repetimos el contenido 3 veces para el efecto continuo */}
+          {/* Repetimos el contenido 4 veces para mejor efecto continuo */}
+          {bannerContent}
           {bannerContent}
           {bannerContent}
           {bannerContent}
         </div>
       </div>
 
-      {/* Gradientes laterales para efecto de desvanecimiento con bordes redondeados */}
-      <div className='absolute top-0 left-0 w-12 h-full bg-gradient-to-r from-[#007638] to-transparent pointer-events-none z-10 rounded-l-lg'></div>
-      <div className='absolute top-0 right-0 w-12 h-full bg-gradient-to-l from-[#007638] to-transparent pointer-events-none z-10 rounded-r-lg'></div>
+      {/* Gradientes laterales en naranja del header */}
+      <div className='absolute top-0 left-0 w-12 h-full bg-gradient-to-r from-blaze-orange-600 to-transparent pointer-events-none z-10 rounded-l-lg'></div>
+      <div className='absolute top-0 right-0 w-12 h-full bg-gradient-to-l from-blaze-orange-600 to-transparent pointer-events-none z-10 rounded-r-lg'></div>
 
-      {/* Estilos CSS para la animación */}
+      {/* Estilos CSS mejorados para animación infinita suave */}
       <style jsx global>{`
-        @keyframes scroll-banner {
+        @keyframes scroll-banner-infinite {
           0% {
-            transform: translateX(100%);
+            transform: translateX(0%);
           }
           100% {
-            transform: translateX(-100%);
+            transform: translateX(-50%);
           }
         }
 
-        .animate-scroll-banner {
-          animation: scroll-banner 25s linear infinite;
+        .animate-scroll-banner-infinite {
+          animation: scroll-banner-infinite 30s linear infinite;
           will-change: transform;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
         }
 
-        .animate-scroll-banner:hover {
+        .animate-scroll-banner-infinite:hover {
           animation-play-state: paused;
+        }
+
+        /* Asegurar transiciones suaves */
+        .animate-scroll-banner-infinite {
+          transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
       `}</style>
     </div>

@@ -4,7 +4,7 @@
 
 export const SHOP_CONSTANTS = {
   // Paginación
-  PRODUCTS_PER_PAGE_SIDEBAR: 9,
+  PRODUCTS_PER_PAGE_SIDEBAR: 1000,
   PRODUCTS_PER_PAGE_GRID: 12,
   PRODUCTS_PER_PAGE_LIST: 8,
 
@@ -35,26 +35,55 @@ export const SHOP_CONSTANTS = {
   ],
 } as const
 
+// Orden de visualización en UI: Paredes, Metales y Maderas, Techos, Complementos, Antihumedad, Piscinas, Reparaciones, Pisos
 export const PRODUCT_CATEGORIES = {
-  PINTURAS: {
-    name: 'Pinturas',
-    slug: 'pinturas',
-    description: 'Pinturas para interior y exterior',
+  PAREDES: {
+    name: 'Paredes',
+    slug: 'paredes',
+    description: 'Pinturas para paredes interiores y exteriores',
+    displayOrder: 1,
   },
-  HERRAMIENTAS: {
-    name: 'Herramientas',
-    slug: 'herramientas',
-    description: 'Herramientas para pintura y construcción',
+  METALES_Y_MADERAS: {
+    name: 'Metales y Maderas',
+    slug: 'metales-y-maderas',
+    description: 'Productos para protección y acabado de maderas y metales',
+    displayOrder: 2,
   },
-  ACCESORIOS: {
-    name: 'Accesorios',
-    slug: 'accesorios',
-    description: 'Accesorios y complementos',
+  TECHOS: {
+    name: 'Techos',
+    slug: 'techos',
+    description: 'Impermeabilizantes y pinturas para techos y cielorrasos',
+    displayOrder: 3,
   },
-  PREPARACION: {
-    name: 'Preparación',
-    slug: 'preparacion',
-    description: 'Productos para preparación de superficies',
+  COMPLEMENTOS: {
+    name: 'Complementos',
+    slug: 'complementos',
+    description: 'Herramientas y accesorios para pintura',
+    displayOrder: 4,
+  },
+  ANTIHUMEDAD: {
+    name: 'Antihumedad',
+    slug: 'antihumedad',
+    description: 'Productos especiales para ambientes húmedos',
+    displayOrder: 5,
+  },
+  PISCINAS: {
+    name: 'Piscinas',
+    slug: 'Piscinas',
+    description: 'Productos para mantenimiento de piscinas',
+    displayOrder: 6,
+  },
+  REPARACIONES: {
+    name: 'Reparaciones',
+    slug: 'reparaciones',
+    description: 'Masillas y productos para reparación de superficies',
+    displayOrder: 7,
+  },
+  PISOS: {
+    name: 'Pisos',
+    slug: 'pisos',
+    description: 'Barnices y productos para pisos de madera',
+    displayOrder: 8,
   },
 } as const
 

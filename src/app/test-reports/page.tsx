@@ -127,6 +127,19 @@ interface TestReport {
 }
 
 export default function TestReportsPage() {
+  // Bloquear indexación para SEO
+  useEffect(() => {
+    const metaRobots = document.querySelector('meta[name="robots"]')
+    if (!metaRobots) {
+      const meta = document.createElement('meta')
+      meta.name = 'robots'
+      meta.content = 'noindex, nofollow'
+      document.head.appendChild(meta)
+    } else {
+      metaRobots.setAttribute('content', 'noindex, nofollow')
+    }
+  }, [])
+
   const [reports, setReports] = useState<string[]>([])
   const [selectedReport, setSelectedReport] = useState<TestReport | null>(null)
   const [loading, setLoading] = useState(true)

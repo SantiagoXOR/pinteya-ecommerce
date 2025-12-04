@@ -1,117 +1,165 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
-import HeroCarousel from '@/components/Common/HeroCarousel'
+import { HeroSlide as HeroSlideType } from '@/types/hero'
+// ⚡ PERFORMANCE: Lazy load de HeroSlideCarousel (-1s FCP)
+import HeroSlideCarousel from '@/components/Common/HeroSlideCarousel.lazy'
 
-// Configuración de imágenes para el carrusel móvil (todas las imágenes originales .png)
-const heroImagesMobile = [
+// ⚡ HERO MODULAR Y RESPONSIVE: Diseño estilo Mercado Libre
+// Contenido separado de imágenes para máxima flexibilidad responsive
+const heroSlides: HeroSlideType[] = [
   {
-    src: '/images/hero/hero-01.png',
-    alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
-    priority: true,
-    unoptimized: true,
+    id: 'slide-1',
+    backgroundGradient: 'from-blaze-orange-500 via-blaze-orange-400 to-blaze-orange-600',
+    mainTitle: 'Pintá rápido, fácil y cotiza al instante!',
+    highlightedWords: ['Pintá', 'cotiza'],
+    subtitle: 'Miles de productos con envío gratis y asesoramiento experto',
+    badges: [
+      {
+        type: 'discount',
+        text: '30% OFF',
+        variant: 'yellow',
+      },
+      {
+        type: 'shipping',
+        text: 'Envío Gratis',
+        subtitle: 'en Córdoba Capital',
+        variant: 'green',
+      },
+      {
+        type: 'delivery',
+        text: 'Llega hoy',
+        variant: 'green',
+      },
+    ],
+    productImages: [
+      {
+        src: '/images/hero/hero2/hero1.svg',
+        alt: 'Pareja eligiendo pinturas con laptop y muestras de colores',
+        priority: true,
+        position: {
+          top: '50%',
+          left: '50%',
+        },
+        mobileSize: {
+          width: '95%',
+        },
+        desktopSize: {
+          width: '70%',
+          height: '90%',
+        },
+        aspectRatio: '737/266',
+        zIndex: 2,
+      },
+    ],
+    cta: {
+      text: 'Ver Todos los Productos',
+      href: '/productos',
+      variant: 'primary',
+    },
   },
   {
-    src: '/images/hero/hero-02.png',
-    alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
-    priority: false,
-    unoptimized: true,
+    id: 'slide-2',
+    backgroundGradient: 'from-blue-600 via-blue-500 to-blaze-orange-500',
+    mainTitle: 'Comprá pinturas con entrega en 24 HS',
+    highlightedWords: ['24 HS'],
+    subtitle: 'en Córdoba Capital',
+    badges: [
+      {
+        type: 'shipping',
+        text: 'Envío Express',
+        subtitle: '24 horas',
+        variant: 'green',
+      },
+      {
+        type: 'installments',
+        text: '12 cuotas sin interés',
+        variant: 'blue',
+      },
+    ],
+    productImages: [
+      {
+        src: '/images/hero/hero2/hero2.svg',
+        alt: 'Pareja en sofá con muestras de colores y app móvil',
+        priority: false,
+        position: {
+          top: '50%',
+          left: '50%',
+        },
+        mobileSize: {
+          width: '95%',
+        },
+        desktopSize: {
+          width: '70%',
+          height: '90%',
+        },
+        aspectRatio: '737/266',
+        zIndex: 2,
+      },
+    ],
+    cta: {
+      text: 'Ver Ofertas',
+      href: '/productos',
+      variant: 'primary',
+    },
   },
   {
-    src: '/images/hero/hero-03.png',
-    alt: 'Envío gratis y asesoramiento experto en productos de pintura',
-    priority: false,
-    unoptimized: true,
-  },
-  {
-    src: '/images/hero/hero-04.png',
-    alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
-    priority: false,
-    unoptimized: true,
-  },
-]
-
-// Configuración de imágenes para el carrusel desktop (originales .png sin optimización)
-const heroImagesDesktop = [
-  {
-    src: '/images/hero/hero-02.png',
-    alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
-    priority: true,
-    unoptimized: true,
-  },
-  {
-    src: '/images/hero/hero-03.png',
-    alt: 'Envío gratis y asesoramiento experto en productos de pintura',
-    priority: false,
-    unoptimized: true,
-  },
-  {
-    src: '/images/hero/hero-04.png',
-    alt: 'Pagos seguros y devoluciones fáciles - Pinteya e-commerce',
-    priority: false,
-    unoptimized: true,
+    id: 'slide-3',
+    backgroundGradient: 'from-green-600 via-blaze-orange-500 to-yellow-400',
+    mainTitle: 'Ahora pagás con Mercado Pago',
+    highlightedWords: ['Mercado Pago'],
+    subtitle: 'Rápido, fácil y seguro',
+    badges: [
+      {
+        type: 'payment',
+        text: '¡Pagás al recibir!',
+        variant: 'orange',
+      },
+      {
+        type: 'shipping',
+        text: 'Envío Gratis Express',
+        variant: 'green',
+      },
+    ],
+    productImages: [
+      {
+        src: '/images/hero/hero2/hero3.svg',
+        alt: 'Equipo de entrega con productos Pinte YA',
+        priority: false,
+        position: {
+          top: '50%',
+          left: '50%',
+        },
+        mobileSize: {
+          width: '95%',
+        },
+        desktopSize: {
+          width: '70%',
+          height: '90%',
+        },
+        aspectRatio: '737/266',
+        zIndex: 2,
+      },
+    ],
+    cta: {
+      text: 'Comprar Ahora',
+      href: '/productos',
+      variant: 'primary',
+    },
   },
 ]
 
 const Hero = () => {
   return (
-    <section className='relative bg-white overflow-hidden'>
-      {/* Carrusel móvil - solo visible en mobile */}
-      <div className='lg:hidden bg-white relative z-50'>
-        <div className='relative w-full h-[320px] sm:h-[360px] bg-white overflow-hidden'>
-          <HeroCarousel
-            images={heroImagesMobile}
-            autoplayDelay={5000}
-            showNavigation={false}
-            showPagination={false}
-            className='w-full h-full mobile-carousel'
-          />
-        </div>
-      </div>
-
-      {/* Layout desktop - COMPLETAMENTE SEPARADO del móvil */}
-      <div className='hidden lg:block relative w-full'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1 pt-2 lg:py-4 lg:pt-8 overflow-hidden relative z-10'>
-          {/* Banner principal */}
-          <div className='relative rounded-3xl overflow-hidden bg-gradient-to-br from-blaze-orange-500 via-blaze-orange-400 to-blaze-orange-600 min-h-[400px] lg:min-h-[500px]'>
-            {/* Contenido desktop - solo visible en desktop */}
-            <div className='relative z-10 p-6 lg:p-12 hidden lg:block'>
-              <div className='grid lg:grid-cols-2 gap-6 lg:gap-12 items-center min-h-[350px] lg:min-h-[400px]'>
-                {/* Contenido del banner - texto a la izquierda */}
-                <div className='space-y-4 lg:space-y-6 lg:pr-8'>
-                  {/* Título principal más grande y mejor posicionado */}
-                  <h1 className='text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight drop-shadow-2xl'>
-                    <span className='text-yellow-300'>Pintá</span> rápido,
-                    <br />
-                    fácil y <span className='text-yellow-300'>cotiza</span>
-                    <br />
-                    al instante!
-                  </h1>
-                </div>
-
-                {/* Carrusel principal posicionado a la derecha del texto */}
-                <div className='relative z-[20] lg:col-span-1 overflow-hidden'>
-                  <div className='relative w-full max-w-md mx-auto lg:max-w-lg xl:max-w-xl h-[420px] lg:h-[480px]'>
-                    <HeroCarousel
-                      images={heroImagesDesktop}
-                      autoplayDelay={4000}
-                      showNavigation={true}
-                      showPagination={true}
-                      className='w-full h-full rounded-lg shadow-2xl desktop-carousel'
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Elementos decorativos sutiles - solo visible en desktop */}
-            <div className='absolute top-6 right-6 w-12 h-12 bg-white/5 rounded-full blur-lg z-[5]'></div>
-            <div className='absolute bottom-6 left-6 w-8 h-8 bg-white/5 rounded-full blur-md z-[5]'></div>
-            <div className='absolute top-1/3 right-1/3 w-6 h-6 bg-yellow-300/10 rounded-full blur-sm z-[5]'></div>
-          </div>
-        </div>
-      </div>
+    <section className='relative overflow-hidden w-full'>
+      {/* Hero Modular y Responsive - Layout único que se adapta */}
+      <HeroSlideCarousel
+        slides={heroSlides}
+        autoplayDelay={5000}
+        showNavigation={true}
+        showPagination={true}
+        className='w-full'
+      />
     </section>
   )
 }

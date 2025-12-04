@@ -5,76 +5,55 @@
 'use client'
 
 import { useEffect } from 'react'
+import { registerErrorHandler, unregisterErrorHandler, suppressionPatterns } from '@/lib/error-handling/centralized-error-handler'
 
 /**
- * Componente que configura la supresión de errores en el cliente
+ * Componente para suprimir errores específicos del cliente
+ * Usa el sistema centralizado de manejo de errores para evitar conflictos
  */
 export function ClientErrorSuppression() {
   useEffect(() => {
-    // Lista de patrones de errores a suprimir (más completa)
-    const suppressedErrorPatterns = [
-      'ERR_ABORTED',
-      'AbortError',
-      'The user aborted a request',
-      'Request was aborted',
-      'net::ERR_ABORTED',
-      'Failed to fetch',
-      'NetworkError when attempting to fetch resource',
-      'Load failed',
-      'Connection was aborted',
-      'The operation was aborted',
-      'Request timeout',
-      'ERR_NETWORK',
-      'ERR_INTERNET_DISCONNECTED',
-      'ERR_CONNECTION_REFUSED',
-      'ERR_CONNECTION_RESET',
-      'ERR_CONNECTION_ABORTED',
-      'NETWORK_ERROR',
-      'fetch aborted',
-      'request aborted',
-      'cancelled',
+    // Patrones de errores adicionales específicos de este componente
+    const additionalPatterns = [
+      // Errores específicos de la aplicación que queremos suprimir
+      /Error obteniendo producto actual/i,
+      /Error original/i,
+      
+      // Errores de desarrollo
+      /Warning: ReactDOM.render is no longer supported/i,
+      /Warning: componentWillReceiveProps has been renamed/i,
     ]
 
-    // Función para verificar si un error debe ser suprimido
-    const shouldSuppressError = (message: string): boolean => {
-      return suppressedErrorPatterns.some(pattern =>
-        message.toLowerCase().includes(pattern.toLowerCase())
-      )
+    // Función para verificar si un mensaje debe ser suprimido
+    const shouldSuppress = (message: string): boolean => {
+      // Verificar patrones comunes
+      if (suppressionPatterns.abortError([message]) ||
+          suppressionPatterns.networkError([message]) ||
+          suppressionPatterns.nextAuthError([message])) {
+        return true
+      }
+      
+      // Verificar patrones adicionales
+      return additionalPatterns.some(pattern => pattern.test(message))
     }
 
-    // Interceptar console.error
-    const originalConsoleError = console.error
-    const originalConsoleWarn = console.warn
-
-    console.error = (...args: any[]) => {
+    // Handler para el sistema centralizado
+    const clientErrorHandler = (args: any[]): boolean => {
       const message = args.join(' ')
-
-      if (shouldSuppressError(message)) {
-        // En desarrollo, mostrar como debug
+      
+      // Si el mensaje debe ser suprimido, manejarlo aquí
+      if (shouldSuppress(message)) {
         if (process.env.NODE_ENV === 'development') {
           console.debug('🔇 [Client Suppressed Error]:', ...args)
         }
-        return
+        return true // Indica que el error fue manejado
       }
-
-      // Permitir otros errores
-      originalConsoleError(...args)
+      
+      return false // Permite que otros handlers procesen el error
     }
 
-    console.warn = (...args: any[]) => {
-      const message = args.join(' ')
-
-      if (shouldSuppressError(message)) {
-        // En desarrollo, mostrar como debug
-        if (process.env.NODE_ENV === 'development') {
-          console.debug('🔇 [Client Suppressed Warning]:', ...args)
-        }
-        return
-      }
-
-      // Permitir otros warnings
-      originalConsoleWarn(...args)
-    }
+    // Registrar el handler con prioridad alta (100)
+    registerErrorHandler('client-error-suppression', 100, clientErrorHandler)
 
     // TEMPORALMENTE DESHABILITADO PARA DEBUG
     // Interceptar unhandled promise rejections
@@ -150,14 +129,30 @@ export function ClientErrorSuppression() {
 
     // Cleanup function
     return () => {
-      // Restaurar funciones originales
-      console.error = originalConsoleError
-      console.warn = originalConsoleWarn
+      // Desregistrar el handler del sistema centralizado
+      unregisterErrorHandler('client-error-suppression')
+      
+      // Restaurar funciones originales solo si este componente las interceptó
+      if ((console.error as any).__clientErrorSuppressionActive) {
+        console.error = originalConsoleError
+        delete (console.error as any).__clientErrorSuppressionActive
+      }
+      
+      if ((console.warn as any).__clientErrorSuppressionActive) {
+        console.warn = originalConsoleWarn
+        delete (console.warn as any).__clientErrorSuppressionActive
+      }
+      
+      // Restaurar fetch original
       window.fetch = originalFetch
 
       // Remover event listeners
       window.removeEventListener('unhandledrejection', handleUnhandledRejection)
       window.removeEventListener('error', handleError)
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔇 Client error suppression cleanup completed')
+      }
     }
   }, [])
 

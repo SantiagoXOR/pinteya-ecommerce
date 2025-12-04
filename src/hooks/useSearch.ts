@@ -57,25 +57,25 @@ const defaultTrendingSearches: SearchSuggestion[] = [
     id: 'trending-1',
     type: 'trending',
     title: 'Pintura látex',
-    href: '/search?q=pintura+latex',
+    href: '/search?search=pintura+latex',
   },
   {
     id: 'trending-2',
     type: 'trending',
     title: 'Sherwin Williams',
-    href: '/search?q=sherwin+williams',
+    href: '/search?search=sherwin+williams',
   },
   {
     id: 'trending-3',
     type: 'trending',
     title: 'Rodillos premium',
-    href: '/search?q=rodillos+premium',
+    href: '/search?search=rodillos+premium',
   },
   {
     id: 'trending-4',
     type: 'trending',
     title: 'Pinceles',
-    href: '/search?q=pinceles',
+    href: '/search?search=pinceles',
   },
 ]
 
@@ -163,7 +163,7 @@ export function useSearch(options: UseSearchOptions = {}) {
             id: `recent-${index}`,
             type: 'recent' as const,
             title: search,
-            href: `/search?q=${encodeURIComponent(search)}`,
+            href: `/search?search=${encodeURIComponent(search)}`,
           })),
         ].slice(0, maxSuggestions)
 

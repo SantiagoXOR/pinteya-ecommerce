@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkCRUDPermissions, logAdminAction, getRequestInfo } from '@/lib/auth/admin-auth'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
 import { Database } from '@/types/database'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
@@ -11,6 +12,14 @@ import { withAdminAuth } from '@/lib/auth/api-auth-middleware'
 import { withValidation } from '@/lib/validation/admin-schemas'
 import { composeMiddlewares } from '@/lib/api/middleware-composer'
 
+// Helper function to check admin permissions
+async function checkAdminPermissionsForProducts(
+  action: 'create' | 'read' | 'update' | 'delete',
+  request?: NextRequest
+) {
+  return await checkCRUDPermissions(action, 'products')
+}
+
 // Validation schemas
 const UpdateProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(255, 'Máximo 255 caracteres').optional(),
@@ -20,7 +29,7 @@ const UpdateProductSchema = z.object({
   discounted_price: z.number().min(0).optional(),
   stock: z.number().min(0, 'El stock debe ser mayor o igual a 0').optional(),
   low_stock_threshold: z.number().min(0).optional(),
-  category_id: z.string().uuid('ID de categoría inválido').optional(),
+  category_id: z.number().int().positive('ID de categoría inválido').optional(),
   brand: z.string().optional(),
   images: z
     .array(
@@ -33,21 +42,26 @@ const UpdateProductSchema = z.object({
     .optional(),
   is_active: z.boolean().optional(),
   is_featured: z.boolean().optional(),
-  status: z.enum(['active', 'inactive', 'draft']).optional(),
 })
 
 const ProductParamsSchema = z.object({
-  id: z.string().uuid('ID de producto inválido'),
+  id: z.string().regex(/^\d+$/, 'ID debe ser un número entero positivo'),
 })
 
 // Enterprise imports for error handling
 import { ApiError, NotFoundError, ValidationError } from '@/lib/api/error-handler'
 
-// Helper function to get product by ID with enhanced error handling
+// Helper function to get product by ID - Returns null if not found
 async function getProductById(
   supabase: ReturnType<typeof createClient<Database>>,
   productId: string
 ) {
+  console.log('🔥🔥 getProductById: Iniciando con ID:', productId)
+  
+  // Convert string ID to integer for DB query
+  const numericId = parseInt(productId, 10)
+  console.log('🔥🔥 Numeric ID:', numericId, 'tipo:', typeof numericId)
+  
   const { data: product, error } = await supabase
     .from('products')
     .select(
@@ -66,7 +80,6 @@ async function getProductById(
       images,
       is_active,
       is_featured,
-      status,
       created_at,
       updated_at,
       categories (
@@ -75,11 +88,14 @@ async function getProductById(
       )
     `
     )
-    .eq('id', productId)
+    .eq('id', numericId)
     .single()
 
-  if (error) {
-    throw new NotFoundError('Producto')
+  console.log('🔥🔥 Supabase result:', { hasData: !!product, hasError: !!error, productId: product?.id })
+  
+  if (error || !product) {
+    console.log('🔥🔥 Retornando NULL - Error:', error?.message)
+    return null  // Return null instead of throwing
   }
 
   // Transform response with enhanced data
@@ -87,6 +103,19 @@ async function getProductById(
     ...product,
     category_name: product.categories?.name || null,
     categories: undefined,
+    // Transform images JSONB to image_url
+    image_url: 
+      product.images?.previews?.[0] || 
+      product.images?.thumbnails?.[0] ||
+      product.images?.main ||
+      null,
+      // Derive status from is_active (status column doesn't exist in DB)
+      status: product.is_active ? 'active' : 'inactive',
+    // Defaults para campos opcionales
+    cost_price: product.cost_price ?? null,
+    compare_price: product.compare_price ?? product.discounted_price ?? null,
+    track_inventory: product.track_inventory ?? true,
+    allow_backorder: product.allow_backorder ?? false,
   }
 
   return transformedProduct
@@ -103,23 +132,47 @@ function generateSlug(name: string): string {
 }
 
 /**
- * GET /api/admin/products/[id] - Enterprise Handler
- * Obtener producto específico por ID con middleware enterprise
+ * GET /api/admin/products/[id] - Simplified Handler
+ * Obtener producto específico por ID
  */
-const getHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const { supabase } = request as any
-  const productId = params.id
+const getHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
+  console.log('🔥 [GET /api/admin/products/[id]] Iniciando...')
+  
+  // Auth check
+  const authResult = await checkAdminPermissionsForProducts('read')
+  if (!authResult.allowed) {
+    console.log('🔥 Auth denegado')
+    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+  }
+
+  const { id } = await context.params
+  const productId = id
+  console.log('🔥 Product ID recibido:', productId, 'tipo:', typeof productId)
 
   // Validar parámetros
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
-    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors)
+    console.log('🔥 Validación falló:', paramsValidation.error)
+    return NextResponse.json(
+      { error: 'ID de producto inválido', details: paramsValidation.error.errors },
+      { status: 400 }
+    )
   }
 
-  const product = await getProductById(supabase, productId)
+  console.log('🔥 Llamando getProductById con supabaseAdmin...')
+  // Usar supabaseAdmin directamente
+  const product = await getProductById(supabaseAdmin, productId)
+  console.log('🔥 Producto retornado:', product ? `ID:${product.id} Name:${product.name}` : 'NULL')
 
+  if (!product) {
+    console.log('🔥 Producto no encontrado, retornando 404')
+    return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 })
+  }
+
+  console.log('🔥 Retornando producto exitosamente')
   return NextResponse.json({
     data: product,
+    product: product, // Para compatibilidad
     success: true,
     message: 'Producto obtenido exitosamente',
   })
@@ -129,64 +182,85 @@ const getHandler = async (request: NextRequest, { params }: { params: { id: stri
  * PUT /api/admin/products/[id] - Enterprise Handler
  * Actualizar producto específico con middleware enterprise
  */
-const putHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const { supabase, user, validatedData } = request as any
-  const productId = params.id
+const putHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
+  const { user, validatedData } = request as any
+  const { id } = await context.params
+  const productId = id
 
   // Validar parámetros
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
-    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors)
+    throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
-  // Verificar que el producto existe
-  const existingProduct = await getProductById(supabase, productId)
+  // Verificar que el producto existe - Usar supabaseAdmin directamente
+  const existingProduct = await getProductById(supabaseAdmin, productId)
 
   // Verificar categoría si se está actualizando
   if (validatedData.category_id) {
-    const { data: category, error: categoryError } = await supabase
+    const { data: category, error: categoryError } = await supabaseAdmin
       .from('categories')
       .select('id')
       .eq('id', validatedData.category_id)
       .single()
 
     if (categoryError || !category) {
-      throw new ValidationError('Categoría no encontrada')
+      throw ValidationError('Categoría no encontrada')
     }
   }
 
-  // Generar slug si se actualiza el nombre
-  const updateData = {
-    ...validatedData,
+  // LOG: Datos recibidos del frontend
+  console.log('📥 validatedData recibido del frontend:', JSON.stringify(validatedData, null, 2))
+  console.log('📦 Stock recibido:', validatedData.stock, '(tipo:', typeof validatedData.stock, ')')
+
+  // Crear updateData solo con campos que existen en la tabla products
+  const updateData: any = {
     updated_at: new Date().toISOString(),
   }
 
+  // Mapear solo campos válidos de la BD
+  if (validatedData.name !== undefined) updateData.name = validatedData.name
+  if (validatedData.description !== undefined) updateData.description = validatedData.description
+  if (validatedData.price !== undefined) updateData.price = validatedData.price
+  if (validatedData.discounted_price !== undefined) updateData.discounted_price = validatedData.discounted_price
+  if (validatedData.stock !== undefined) updateData.stock = validatedData.stock
+  if (validatedData.category_id !== undefined) updateData.category_id = validatedData.category_id
+  if (validatedData.brand !== undefined) updateData.brand = validatedData.brand
+  if (validatedData.images !== undefined) updateData.images = validatedData.images
+  
+  // Generar slug si se actualiza el nombre
   if (validatedData.name) {
     updateData.slug = generateSlug(validatedData.name)
   }
 
+  console.log('🔍 updateData preparado:', JSON.stringify(updateData, null, 2))
+  console.log('📦 Stock en updateData:', updateData.stock, '(tipo:', typeof updateData.stock, ')')
+
+  // Verificar que supabaseAdmin esté disponible
+  if (!supabaseAdmin) {
+    throw new ApiError('Cliente de Supabase no disponible', 500, 'CONFIG_ERROR')
+  }
+
+  // Convertir productId a número para la query
+  const numericProductId = parseInt(productId, 10)
+  
   // Actualizar producto
-  const { data: updatedProduct, error } = await supabase
+  const { data: updatedProduct, error } = await supabaseAdmin
     .from('products')
     .update(updateData)
-    .eq('id', productId)
+    .eq('id', numericProductId)
     .select(
       `
       id,
       name,
       slug,
       description,
-      short_description,
       price,
       discounted_price,
       stock,
-      low_stock_threshold,
       category_id,
       brand,
       images,
-      is_active,
-      is_featured,
-      status,
       created_at,
       updated_at,
       categories (
@@ -198,11 +272,48 @@ const putHandler = async (request: NextRequest, { params }: { params: { id: stri
     .single()
 
   if (error) {
-    throw new ApiError('Error al actualizar producto', 500, 'DATABASE_ERROR', error)
+    console.error('🔥 DATABASE ERROR al actualizar producto:', {
+      error,
+      productId,
+      updateData,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    })
+    throw new ApiError(`Error al actualizar producto: ${error.message}`, 500, 'DATABASE_ERROR', error)
+  }
+
+  console.log('✅ Producto actualizado en BD:', {
+    id: updatedProduct.id,
+    name: updatedProduct.name,
+    stock: updatedProduct.stock,
+    stockTipo: typeof updatedProduct.stock
+  })
+
+  // Si se actualizó el stock del producto principal, actualizar también la variante predeterminada
+  // (las demás variantes se manejan de forma independiente a través del endpoint específico)
+  if (validatedData.stock !== undefined) {
+    console.log('📦 Actualizando stock de variante predeterminada a:', validatedData.stock)
+    // @ts-ignore - Supabase types are too strict
+    const { error: variantError, count } = await supabaseAdmin
+      .from('product_variants')
+      .update({ 
+        stock: validatedData.stock,
+        updated_at: new Date().toISOString()
+      })
+      .eq('product_id', numericProductId)
+      .eq('is_default', true)
+    
+    if (variantError) {
+      console.error('⚠️ Error actualizando variante predeterminada:', variantError)
+    } else {
+      console.log(`✅ Variante predeterminada actualizada con stock ${validatedData.stock} (${count || 0} registros)`)
+    }
   }
 
   // Log de auditoría
-  await logAdminAction(user.id, 'UPDATE', 'product', productId, existingProduct, updatedProduct)
+  await logAdminAction(user?.id || 'system', 'UPDATE', 'product', productId, existingProduct, updatedProduct)
 
   // Transform response
   const transformedProduct = {
@@ -210,6 +321,11 @@ const putHandler = async (request: NextRequest, { params }: { params: { id: stri
     category_name: updatedProduct.categories?.name || null,
     categories: undefined,
   }
+
+  console.log('📤 Respuesta que se enviará al frontend:', {
+    stock: transformedProduct.stock,
+    stockTipo: typeof transformedProduct.stock
+  })
 
   return NextResponse.json({
     data: transformedProduct,
@@ -222,21 +338,22 @@ const putHandler = async (request: NextRequest, { params }: { params: { id: stri
  * DELETE /api/admin/products/[id] - Enterprise Handler
  * Eliminar producto específico con middleware enterprise
  */
-const deleteHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const { supabase, user } = request as any
-  const productId = params.id
+const deleteHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
+  const { user } = request as any
+  const { id } = await context.params
+  const productId = id
 
   // Validar parámetros
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
-    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors)
+    throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
-  // Verificar que el producto existe
-  const existingProduct = await getProductById(supabase, productId)
+  // Verificar que el producto existe - Usar supabaseAdmin directamente
+  const existingProduct = await getProductById(supabaseAdmin, productId)
 
   // Verificar si el producto está referenciado en órdenes
-  const { data: orderItems, error: orderCheckError } = await supabase
+  const { data: orderItems, error: orderCheckError } = await supabaseAdmin
     .from('order_items')
     .select('id')
     .eq('product_id', productId)
@@ -252,10 +369,9 @@ const deleteHandler = async (request: NextRequest, { params }: { params: { id: s
 
   if (orderItems && orderItems.length > 0) {
     // Soft delete: marcar como inactivo
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('products')
       .update({
-        status: 'inactive',
         is_active: false,
         updated_at: new Date().toISOString(),
       })
@@ -271,7 +387,7 @@ const deleteHandler = async (request: NextRequest, { params }: { params: { id: s
     }
   } else {
     // Hard delete si no hay referencias
-    const { error } = await supabase.from('products').delete().eq('id', productId)
+    const { error } = await supabaseAdmin.from('products').delete().eq('id', productId)
 
     if (error) {
       throw new ApiError('Error al eliminar producto', 500, 'DATABASE_ERROR', error)
@@ -286,7 +402,7 @@ const deleteHandler = async (request: NextRequest, { params }: { params: { id: s
 
   // Log de auditoría
   await logAdminAction(
-    user.id,
+    user?.id || 'system',
     isHardDelete ? 'DELETE' : 'SOFT_DELETE',
     'product',
     productId,
@@ -300,12 +416,93 @@ const deleteHandler = async (request: NextRequest, { params }: { params: { id: s
   })
 }
 
-// Aplicar middlewares enterprise y exportar handlers
-export const GET = composeMiddlewares(
-  withErrorHandler,
-  withApiLogging,
-  withAdminAuth(['products_read'])
-)(getHandler)
+// Export GET handler - Completamente simplificado
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    console.log('🔥🔥🔥 GET SIMPLIFICADO - Iniciando')
+    
+    // Auth simple
+    const authResult = await checkAdminPermissionsForProducts('read')
+    if (!authResult.allowed) {
+      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+    }
+    
+    const { id } = await context.params
+    console.log('🔥🔥🔥 ID recibido:', id)
+    
+    const productId = parseInt(id, 10)
+    console.log('🔥🔥🔥 ID parseado:', productId)
+    
+    // Query directa
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .select(`
+        *,
+        categories (id, name)
+      `)
+      .eq('id', productId)
+      .single()
+    
+    console.log('🔥🔥🔥 Query result:', { hasData: !!data, error: error?.message, productId: data?.id })
+    
+    if (error || !data) {
+      console.log('🔥🔥🔥 Retornando 404')
+      return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 })
+    }
+    
+    // Obtener variantes reales de la BD
+    const { data: variants } = await supabaseAdmin
+      .from('product_variants')
+      .select('*')
+      .eq('product_id', productId)
+      .eq('is_active', true)
+      .order('is_default', { ascending: false })
+    
+    const defaultVariant = variants?.find(v => v.is_default) || variants?.[0]
+    
+    // Transform ALL fields para compatibilidad con frontend
+    const transformedData = {
+      ...data,
+      category_name: data.categories?.name || null,
+      categories: undefined,
+      // Incluir variantes
+      variants: variants || [],
+      variant_count: variants?.length || 0,
+      default_variant: defaultVariant,
+      // Transform images JSONB to image_url (priorizar variante default)
+      image_url: 
+        defaultVariant?.image_url ||
+        data.images?.previews?.[0] || 
+        data.images?.thumbnails?.[0] ||
+        data.images?.main ||
+        null,
+      // Derive status from is_active (status column doesn't exist in DB)
+      status: data.is_active ? 'active' : 'inactive',
+      // Usar precio/stock de variante default si existe
+      price: defaultVariant?.price_list || data.price,
+      discounted_price: defaultVariant?.price_sale || data.discounted_price,
+      stock: defaultVariant?.stock || data.stock,
+      // Defaults para campos opcionales
+      cost_price: data.cost_price ?? null,
+      compare_price: data.compare_price ?? data.discounted_price ?? null,
+      track_inventory: data.track_inventory ?? true,
+      allow_backorder: data.allow_backorder ?? false,
+    }
+    
+    console.log('🔥🔥🔥 Retornando producto:', data.name, 'status:', transformedData.status, 'image_url:', transformedData.image_url)
+    return NextResponse.json({
+      data: transformedData,
+      product: transformedData,
+      success: true,
+    })
+  } catch (err) {
+    console.error('🔥🔥🔥 Error en GET:', err)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+  }
+}
 
 export const PUT = composeMiddlewares(
   withErrorHandler,

@@ -95,6 +95,7 @@ npm start
 ### Esquema Principal
 
 #### Tabla: products
+
 ```sql
 CREATE TABLE products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -111,6 +112,7 @@ CREATE TABLE products (
 ```
 
 #### Tabla: categories
+
 ```sql
 CREATE TABLE categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -123,6 +125,7 @@ CREATE TABLE categories (
 ```
 
 #### Tabla: orders
+
 ```sql
 CREATE TABLE orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -168,11 +171,11 @@ Todas las APIs siguen un patrón consistente:
 ```typescript
 // Estructura de respuesta estándar
 interface APIResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-  timestamp: number;
+  success: boolean
+  data?: T
+  error?: string
+  message?: string
+  timestamp: number
 }
 
 // Manejo de errores estándar
@@ -181,14 +184,17 @@ try {
   return NextResponse.json({
     success: true,
     data: result,
-    timestamp: Date.now()
-  });
+    timestamp: Date.now(),
+  })
 } catch (error) {
-  return NextResponse.json({
-    success: false,
-    error: error.message,
-    timestamp: Date.now()
-  }, { status: 500 });
+  return NextResponse.json(
+    {
+      success: false,
+      error: error.message,
+      timestamp: Date.now(),
+    },
+    { status: 500 }
+  )
 }
 ```
 
@@ -197,79 +203,83 @@ try {
 #### Productos
 
 **GET /api/products**
+
 ```typescript
 // Parámetros de consulta
 interface ProductsQuery {
-  page?: number;
-  limit?: number;
-  category?: string;
-  search?: string;
-  sort?: 'name' | 'price' | 'created_at';
-  order?: 'asc' | 'desc';
+  page?: number
+  limit?: number
+  category?: string
+  search?: string
+  sort?: 'name' | 'price' | 'created_at'
+  order?: 'asc' | 'desc'
 }
 
 // Respuesta
 interface ProductsResponse {
-  products: Product[];
+  products: Product[]
   pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
 }
 ```
 
 **POST /api/products**
+
 ```typescript
 // Body de la request
 interface CreateProductRequest {
-  name: string;
-  description?: string;
-  price: number;
-  category_id: string;
-  image_url?: string;
-  stock?: number;
+  name: string
+  description?: string
+  price: number
+  category_id: string
+  image_url?: string
+  stock?: number
 }
 ```
 
 #### Carrito
 
 **POST /api/cart**
+
 ```typescript
 // Agregar producto al carrito
 interface AddToCartRequest {
-  product_id: string;
-  quantity: number;
+  product_id: string
+  quantity: number
 }
 
 // Respuesta
 interface CartResponse {
-  cart: CartItem[];
-  total: number;
-  itemCount: number;
+  cart: CartItem[]
+  total: number
+  itemCount: number
 }
 ```
 
 #### Órdenes
 
 **POST /api/orders**
+
 ```typescript
 // Crear orden
 interface CreateOrderRequest {
   items: Array<{
-    product_id: string;
-    quantity: number;
-    price: number;
-  }>;
+    product_id: string
+    quantity: number
+    price: number
+  }>
   shipping_address: {
-    street: string;
-    city: string;
-    state: string;
-    zip_code: string;
-    country: string;
-  };
-  payment_method: 'mercadopago';
+    street: string
+    city: string
+    state: string
+    zip_code: string
+    country: string
+  }
+  payment_method: 'mercadopago'
 }
 ```
 
@@ -288,28 +298,28 @@ Todas las APIs implementan:
 // Ejemplo de middleware aplicado
 export async function POST(request: NextRequest) {
   // 1. Rate limiting
-  await rateLimiter.check(request);
-  
+  await rateLimiter.check(request)
+
   // 2. Autenticación
-  const user = await authenticateUser(request);
-  
+  const user = await authenticateUser(request)
+
   // 3. Validación
-  const body = await validateRequest(request, schema);
-  
+  const body = await validateRequest(request, schema)
+
   // 4. Logging de seguridad
   securityLogger.logDataAccess({
     userId: user.id,
     endpoint: '/api/products',
-    action: 'create'
-  });
-  
+    action: 'create',
+  })
+
   // 5. Lógica de negocio con timeout
   const result = await TimeoutUtils.withTimeout(
     businessLogic(body),
     TIMEOUTS.INTERNAL_API.PRODUCTS.CREATE
-  );
-  
-  return NextResponse.json({ success: true, data: result });
+  )
+
+  return NextResponse.json({ success: true, data: result })
 }
 ```
 
@@ -323,23 +333,23 @@ interface ComponentProps {
   // Props tipadas
 }
 
-export const Component: React.FC<ComponentProps> = ({ 
-  prop1, 
-  prop2 
+export const Component: React.FC<ComponentProps> = ({
+  prop1,
+  prop2
 }) => {
   // Hooks
   const [state, setState] = useState();
-  
+
   // Effects
   useEffect(() => {
     // Side effects
   }, []);
-  
+
   // Handlers
   const handleAction = useCallback(() => {
     // Event handling
   }, []);
-  
+
   // Render
   return (
     <div className="tailwind-classes">
@@ -352,66 +362,68 @@ export const Component: React.FC<ComponentProps> = ({
 ### Hooks Personalizados
 
 #### useCart
+
 ```typescript
 export const useCart = () => {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  
+  const [cart, setCart] = useState<CartItem[]>([])
+
   const addToCart = useCallback((product: Product, quantity: number) => {
     // Lógica para agregar al carrito
-  }, []);
-  
+  }, [])
+
   const removeFromCart = useCallback((productId: string) => {
     // Lógica para remover del carrito
-  }, []);
-  
+  }, [])
+
   const clearCart = useCallback(() => {
-    setCart([]);
-  }, []);
-  
+    setCart([])
+  }, [])
+
   const total = useMemo(() => {
-    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  }, [cart]);
-  
+    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  }, [cart])
+
   return {
     cart,
     addToCart,
     removeFromCart,
     clearCart,
     total,
-    itemCount: cart.length
-  };
-};
+    itemCount: cart.length,
+  }
+}
 ```
 
 #### useAuth
+
 ```typescript
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
-    });
-    
-    if (error) throw error;
-    return data;
-  };
-  
+      password,
+    })
+
+    if (error) throw error
+    return data
+  }
+
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
-  
+    await supabase.auth.signOut()
+    setUser(null)
+  }
+
   return {
     user,
     loading,
     signIn,
     signOut,
-    isAuthenticated: !!user
-  };
-};
+    isAuthenticated: !!user,
+  }
+}
 ```
 
 ## 🚀 Sistema de Cache
@@ -421,22 +433,22 @@ export const useAuth = () => {
 ```typescript
 // Configuración de capas
 const CACHE_LAYERS = {
-  MEMORY: { priority: 1, ttl: 300 },    // 5 minutos
-  REDIS: { priority: 2, ttl: 3600 },    // 1 hora
-  CDN: { priority: 3, ttl: 86400 },     // 24 horas
-  BROWSER: { priority: 4, ttl: 1800 },  // 30 minutos
-  EDGE: { priority: 5, ttl: 7200 }      // 2 horas
-};
+  MEMORY: { priority: 1, ttl: 300 }, // 5 minutos
+  REDIS: { priority: 2, ttl: 3600 }, // 1 hora
+  CDN: { priority: 3, ttl: 86400 }, // 24 horas
+  BROWSER: { priority: 4, ttl: 1800 }, // 30 minutos
+  EDGE: { priority: 5, ttl: 7200 }, // 2 horas
+}
 
 // Uso del cache
-const cachedData = await multiLayerCacheManager.get('products:popular');
+const cachedData = await multiLayerCacheManager.get('products:popular')
 if (!cachedData) {
-  const data = await fetchPopularProducts();
+  const data = await fetchPopularProducts()
   await multiLayerCacheManager.set('products:popular', data, {
     layers: ['MEMORY', 'REDIS'],
-    ttl: 3600
-  });
-  return data;
+    ttl: 3600,
+  })
+  return data
 }
 ```
 
@@ -454,7 +466,7 @@ const data = await advancedCacheStrategyManager.execute(
   'products:category:electronics',
   () => fetchProductsByCategory('electronics'),
   'PRODUCT_DATA' // Configuración predefinida
-);
+)
 ```
 
 ## 📊 Sistema de Monitoreo
@@ -464,12 +476,12 @@ const data = await advancedCacheStrategyManager.execute(
 ```typescript
 // Registrar métricas de performance
 realTimePerformanceMonitor.recordWebVitals({
-  lcp: 2300,  // Largest Contentful Paint
-  fid: 85,    // First Input Delay
-  cls: 0.08,  // Cumulative Layout Shift
-  fcp: 1600,  // First Contentful Paint
-  ttfb: 650   // Time to First Byte
-});
+  lcp: 2300, // Largest Contentful Paint
+  fid: 85, // First Input Delay
+  cls: 0.08, // Cumulative Layout Shift
+  fcp: 1600, // First Contentful Paint
+  ttfb: 650, // Time to First Byte
+})
 
 // Registrar métricas de API
 realTimePerformanceMonitor.recordAPIMetrics({
@@ -478,8 +490,8 @@ realTimePerformanceMonitor.recordAPIMetrics({
   responseTime: 450,
   statusCode: 200,
   userAgent: request.headers['user-agent'],
-  ip: request.ip
-});
+  ip: request.ip,
+})
 ```
 
 ### Sistema de Alertas
@@ -491,12 +503,12 @@ advancedAlertingEngine.configureChannel(AlertChannel.SLACK, {
   enabled: true,
   config: {
     webhookUrl: process.env.SLACK_WEBHOOK_URL,
-    slackChannel: '#alerts'
+    slackChannel: '#alerts',
   },
   filters: {
-    severities: [AlertSeverity.HIGH, AlertSeverity.CRITICAL]
-  }
-});
+    severities: [AlertSeverity.HIGH, AlertSeverity.CRITICAL],
+  },
+})
 
 // Crear alerta personalizada
 await advancedAlertingEngine.createAlert(
@@ -507,9 +519,9 @@ await advancedAlertingEngine.createAlert(
   {
     endpoint: '/api/products',
     responseTime: 3200,
-    threshold: 3000
+    threshold: 3000,
   }
-);
+)
 ```
 
 ### Presupuestos de Performance
@@ -517,18 +529,19 @@ await advancedAlertingEngine.createAlert(
 ```typescript
 // Registrar métricas contra presupuestos
 performanceBudgetsMonitor.recordMeasurement(
-  'lcp_mobile',  // Budget ID
-  2800,          // Valor medido
-  {              // Contexto
+  'lcp_mobile', // Budget ID
+  2800, // Valor medido
+  {
+    // Contexto
     device: 'mobile',
     page: '/products',
-    network: '4g'
+    network: '4g',
   }
-);
+)
 
 // Generar reporte
-const report = performanceBudgetsMonitor.generateReport(24); // Últimas 24 horas
-console.log(`Score general: ${report.summary.overallScore}/100`);
+const report = performanceBudgetsMonitor.generateReport(24) // Últimas 24 horas
+console.log(`Score general: ${report.summary.overallScore}/100`)
 ```
 
 ## 🔒 Seguridad
@@ -538,47 +551,50 @@ console.log(`Score general: ${report.summary.overallScore}/100`);
 ```typescript
 // Middleware de autenticación
 export const authenticateUser = async (request: NextRequest): Promise<User> => {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '');
-  
+  const token = request.headers.get('authorization')?.replace('Bearer ', '')
+
   if (!token) {
-    throw new Error('Token de autenticación requerido');
+    throw new Error('Token de autenticación requerido')
   }
-  
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token)
+
   if (error || !user) {
     securityLogger.logAuthenticationFailure({
       ip: request.ip,
       userAgent: request.headers.get('user-agent'),
-      endpoint: request.url
-    });
-    throw new Error('Token inválido');
+      endpoint: request.url,
+    })
+    throw new Error('Token inválido')
   }
-  
+
   securityLogger.logAuthenticationSuccess({
     userId: user.id,
     userEmail: user.email,
     ip: request.ip,
-    endpoint: request.url
-  });
-  
-  return user;
-};
+    endpoint: request.url,
+  })
+
+  return user
+}
 
 // Verificación de roles
 export const requireRole = (user: User, requiredRole: string) => {
-  const userRole = user.user_metadata?.role || 'user';
-  
+  const userRole = user.user_metadata?.role || 'user'
+
   if (userRole !== requiredRole) {
     securityLogger.logAuthorizationDenied({
       userId: user.id,
       userRole,
       requiredRole,
-      endpoint: request.url
-    });
-    throw new Error('Permisos insuficientes');
+      endpoint: request.url,
+    })
+    throw new Error('Permisos insuficientes')
   }
-};
+}
 ```
 
 ### Rate Limiting
@@ -591,38 +607,45 @@ const rateLimitConfig = {
   message: 'Demasiadas requests, intenta más tarde',
   standardHeaders: true,
   legacyHeaders: false,
-};
+}
 
 // Aplicar rate limiting
-export const rateLimiter = new RateLimiter(rateLimitConfig);
+export const rateLimiter = new RateLimiter(rateLimitConfig)
 
 // En API route
-await rateLimiter.check(request);
+await rateLimiter.check(request)
 ```
 
 ### Logging de Seguridad
 
 ```typescript
 // Eventos de seguridad automáticos
-securityLogger.logSuspiciousActivity({
-  userId: user.id,
-  ip: request.ip,
-  userAgent: request.headers.get('user-agent'),
-  endpoint: request.url
-}, 'Múltiples intentos de acceso fallidos', 75);
+securityLogger.logSuspiciousActivity(
+  {
+    userId: user.id,
+    ip: request.ip,
+    userAgent: request.headers.get('user-agent'),
+    endpoint: request.url,
+  },
+  'Múltiples intentos de acceso fallidos',
+  75
+)
 
 securityLogger.logDataAccess({
   userId: user.id,
   dataType: 'user_profiles',
   recordCount: 1,
-  action: 'read'
-});
+  action: 'read',
+})
 
-securityLogger.logPaymentFraudAttempt({
-  userId: user.id,
-  ip: request.ip,
-  amount: 1000000 // Monto sospechoso
-}, 'Monto excesivamente alto para el perfil del usuario');
+securityLogger.logPaymentFraudAttempt(
+  {
+    userId: user.id,
+    ip: request.ip,
+    amount: 1000000, // Monto sospechoso
+  },
+  'Monto excesivamente alto para el perfil del usuario'
+)
 ```
 
 ## 🧪 Testing
@@ -637,19 +660,16 @@ module.exports = {
   moduleNameMapping: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.d.ts',
-  ],
-};
+  collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!src/**/*.d.ts'],
+}
 
 // jest.setup.js
-import '@testing-library/jest-dom';
-import { server } from './src/mocks/server';
+import '@testing-library/jest-dom'
+import { server } from './src/mocks/server'
 
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+beforeAll(() => server.listen())
+afterEach(() => server.resetHandlers())
+afterAll(() => server.close())
 ```
 
 ### Tests de Componentes
@@ -669,15 +689,15 @@ const mockProduct = {
 describe('ProductCard', () => {
   it('renders product information correctly', () => {
     render(<ProductCard product={mockProduct} />);
-    
+
     expect(screen.getByText('Test Product')).toBeInTheDocument();
     expect(screen.getByText('$99.99')).toBeInTheDocument();
   });
-  
+
   it('calls onAddToCart when button is clicked', () => {
     const mockAddToCart = jest.fn();
     render(<ProductCard product={mockProduct} onAddToCart={mockAddToCart} />);
-    
+
     fireEvent.click(screen.getByText('Agregar al Carrito'));
     expect(mockAddToCart).toHaveBeenCalledWith(mockProduct);
   });
@@ -688,36 +708,36 @@ describe('ProductCard', () => {
 
 ```typescript
 // __tests__/api/products.test.ts
-import { createMocks } from 'node-mocks-http';
-import handler from '@/app/api/products/route';
+import { createMocks } from 'node-mocks-http'
+import handler from '@/app/api/products/route'
 
 describe('/api/products', () => {
   it('returns products list', async () => {
     const { req, res } = createMocks({
       method: 'GET',
-      query: { page: '1', limit: '10' }
-    });
-    
-    await handler(req, res);
-    
-    expect(res._getStatusCode()).toBe(200);
-    
-    const data = JSON.parse(res._getData());
-    expect(data.success).toBe(true);
-    expect(Array.isArray(data.data.products)).toBe(true);
-  });
-  
+      query: { page: '1', limit: '10' },
+    })
+
+    await handler(req, res)
+
+    expect(res._getStatusCode()).toBe(200)
+
+    const data = JSON.parse(res._getData())
+    expect(data.success).toBe(true)
+    expect(Array.isArray(data.data.products)).toBe(true)
+  })
+
   it('handles invalid parameters', async () => {
     const { req, res } = createMocks({
       method: 'GET',
-      query: { page: 'invalid' }
-    });
-    
-    await handler(req, res);
-    
-    expect(res._getStatusCode()).toBe(400);
-  });
-});
+      query: { page: 'invalid' },
+    })
+
+    await handler(req, res)
+
+    expect(res._getStatusCode()).toBe(400)
+  })
+})
 ```
 
 ## 🚀 Deployment
@@ -761,11 +781,11 @@ const nextConfig = {
           },
         ],
       },
-    ];
+    ]
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
 ```
 
 ### Scripts de Deployment
@@ -801,19 +821,19 @@ const productionConfig = {
     alertThresholds: {
       responseTime: 2000,
       errorRate: 0.05,
-      memoryUsage: 0.8
-    }
+      memoryUsage: 0.8,
+    },
   },
   logging: {
     level: 'warn',
     includeStackTrace: false,
-    maskSensitiveData: true
+    maskSensitiveData: true,
   },
   cache: {
     defaultTTL: 3600,
-    maxMemoryUsage: '512MB'
-  }
-};
+    maxMemoryUsage: '512MB',
+  },
+}
 ```
 
 ## 📈 Performance
@@ -841,6 +861,7 @@ const productionConfig = {
 ### Problemas Comunes
 
 #### Error de Conexión a Base de Datos
+
 ```bash
 # Verificar variables de entorno
 echo $NEXT_PUBLIC_SUPABASE_URL
@@ -851,39 +872,45 @@ curl -I $NEXT_PUBLIC_SUPABASE_URL/rest/v1/
 ```
 
 #### Problemas de Cache
+
 ```typescript
 // Limpiar cache manualmente
-await multiLayerCacheManager.clear();
+await multiLayerCacheManager.clear()
 
 // Verificar estado del cache
-const stats = await multiLayerCacheManager.getStats();
-console.log('Cache stats:', stats);
+const stats = await multiLayerCacheManager.getStats()
+console.log('Cache stats:', stats)
 ```
 
 #### Problemas de Performance
+
 ```typescript
 // Verificar métricas actuales
-const metrics = realTimePerformanceMonitor.getCurrentMetrics();
-console.log('Performance metrics:', metrics);
+const metrics = realTimePerformanceMonitor.getCurrentMetrics()
+console.log('Performance metrics:', metrics)
 
 // Verificar presupuestos
-const budgetReport = performanceBudgetsMonitor.generateReport(1);
-console.log('Budget violations:', budgetReport.budgetResults.filter(r => r.status === 'critical'));
+const budgetReport = performanceBudgetsMonitor.generateReport(1)
+console.log(
+  'Budget violations:',
+  budgetReport.budgetResults.filter(r => r.status === 'critical')
+)
 ```
 
 ### Logs de Debug
 
 ```typescript
 // Habilitar logs detallados
-process.env.DEBUG = 'pinteya:*';
+process.env.DEBUG = 'pinteya:*'
 
 // Logs específicos por categoría
-logger.debug(LogLevel.DEBUG, 'Debug message', { context }, LogCategory.API);
+logger.debug(LogLevel.DEBUG, 'Debug message', { context }, LogCategory.API)
 ```
 
 ## 📞 Soporte
 
 Para soporte técnico:
+
 - **Email**: dev@pinteya.com
 - **Slack**: #pinteya-dev
 - **Documentación**: [docs.pinteya.com](https://docs.pinteya.com)
@@ -894,35 +921,37 @@ Para soporte técnico:
 ### Convenciones de Código
 
 #### TypeScript
+
 ```typescript
 // Interfaces con PascalCase
 interface UserProfile {
-  id: string;
-  email: string;
-  createdAt: Date;
+  id: string
+  email: string
+  createdAt: Date
 }
 
 // Tipos con PascalCase
-type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered';
+type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered'
 
 // Enums con PascalCase
 enum PaymentMethod {
   CREDIT_CARD = 'credit_card',
   MERCADOPAGO = 'mercadopago',
-  BANK_TRANSFER = 'bank_transfer'
+  BANK_TRANSFER = 'bank_transfer',
 }
 
 // Funciones con camelCase
 const calculateTotal = (items: CartItem[]): number => {
-  return items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-};
+  return items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+}
 
 // Constantes con UPPER_SNAKE_CASE
-const MAX_CART_ITEMS = 50;
-const DEFAULT_PAGE_SIZE = 20;
+const MAX_CART_ITEMS = 50
+const DEFAULT_PAGE_SIZE = 20
 ```
 
 #### React Components
+
 ```typescript
 // Componentes con PascalCase
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
@@ -973,56 +1002,67 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 ```
 
 #### API Routes
+
 ```typescript
 // Estructura estándar de API
 export async function GET(request: NextRequest) {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
   try {
     // 1. Extraer parámetros
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '20')
 
     // 2. Validación
     if (page < 1 || limit < 1 || limit > 100) {
-      return NextResponse.json({
-        success: false,
-        error: 'Parámetros inválidos',
-        timestamp: Date.now()
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Parámetros inválidos',
+          timestamp: Date.now(),
+        },
+        { status: 400 }
+      )
     }
 
     // 3. Autenticación (si es necesaria)
-    const user = await authenticateUser(request);
+    const user = await authenticateUser(request)
 
     // 4. Lógica de negocio
-    const result = await businessLogic({ page, limit, userId: user?.id });
+    const result = await businessLogic({ page, limit, userId: user?.id })
 
     // 5. Logging de performance
-    const responseTime = Date.now() - startTime;
-    logger.info(LogLevel.INFO, 'API request completed', {
-      endpoint: '/api/example',
-      responseTime,
-      userId: user?.id
-    }, LogCategory.API);
+    const responseTime = Date.now() - startTime
+    logger.info(
+      LogLevel.INFO,
+      'API request completed',
+      {
+        endpoint: '/api/example',
+        responseTime,
+        userId: user?.id,
+      },
+      LogCategory.API
+    )
 
     // 6. Respuesta exitosa
     return NextResponse.json({
       success: true,
       data: result,
-      timestamp: Date.now()
-    });
-
+      timestamp: Date.now(),
+    })
   } catch (error) {
     // 7. Manejo de errores
-    logger.error(LogLevel.ERROR, 'API request failed', error as Error, LogCategory.API);
+    logger.error(LogLevel.ERROR, 'API request failed', error as Error, LogCategory.API)
 
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Error interno del servidor',
-      timestamp: Date.now()
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error interno del servidor',
+        timestamp: Date.now(),
+      },
+      { status: 500 }
+    )
   }
 }
 ```
@@ -1030,6 +1070,7 @@ export async function GET(request: NextRequest) {
 ### Flujo de Desarrollo
 
 #### 1. Feature Development
+
 ```bash
 # Crear rama para feature
 git checkout -b feature/nueva-funcionalidad
@@ -1052,6 +1093,7 @@ git push origin feature/nueva-funcionalidad
 ```
 
 #### 2. Code Review Checklist
+
 - [ ] Código sigue convenciones establecidas
 - [ ] Tests unitarios incluidos
 - [ ] Documentación actualizada
@@ -1061,6 +1103,7 @@ git push origin feature/nueva-funcionalidad
 - [ ] Responsive design implementado
 
 #### 3. Deployment Process
+
 ```bash
 # Staging deployment
 git checkout staging
@@ -1080,6 +1123,7 @@ vercel --prod
 ### Debugging
 
 #### Frontend Debugging
+
 ```typescript
 // React DevTools
 // Instalar extensión React Developer Tools
@@ -1117,6 +1161,7 @@ class ErrorBoundary extends React.Component {
 ```
 
 #### Backend Debugging
+
 ```typescript
 // Debug middleware
 export const debugMiddleware = (req: NextRequest) => {
@@ -1124,30 +1169,31 @@ export const debugMiddleware = (req: NextRequest) => {
     method: req.method,
     url: req.url,
     headers: Object.fromEntries(req.headers.entries()),
-    timestamp: new Date().toISOString()
-  });
-};
+    timestamp: new Date().toISOString(),
+  })
+}
 
 // Database query debugging
 const debugQuery = async (query: string, params: any[]) => {
-  const start = Date.now();
-  console.log('🗄️ Executing query:', query, params);
+  const start = Date.now()
+  console.log('🗄️ Executing query:', query, params)
 
   try {
-    const result = await supabase.rpc(query, params);
-    const duration = Date.now() - start;
-    console.log(`✅ Query completed in ${duration}ms`);
-    return result;
+    const result = await supabase.rpc(query, params)
+    const duration = Date.now() - start
+    console.log(`✅ Query completed in ${duration}ms`)
+    return result
   } catch (error) {
-    console.error('❌ Query failed:', error);
-    throw error;
+    console.error('❌ Query failed:', error)
+    throw error
   }
-};
+}
 ```
 
 ### Performance Optimization
 
 #### Frontend Optimizations
+
 ```typescript
 // Lazy loading de componentes
 const LazyProductGallery = lazy(() => import('./ProductGallery'));
@@ -1183,49 +1229,52 @@ const VirtualizedProductList = ({ products }) => (
 ```
 
 #### Backend Optimizations
+
 ```typescript
 // Database query optimization
 const getProductsOptimized = async (filters: ProductFilters) => {
   // Usar índices apropiados
   const query = supabase
     .from('products')
-    .select(`
+    .select(
+      `
       id,
       name,
       price,
       image_url,
       categories!inner(name)
-    `)
-    .eq('is_active', true);
+    `
+    )
+    .eq('is_active', true)
 
   // Aplicar filtros eficientemente
   if (filters.category) {
-    query.eq('categories.name', filters.category);
+    query.eq('categories.name', filters.category)
   }
 
   // Paginación
-  const from = (filters.page - 1) * filters.limit;
-  query.range(from, from + filters.limit - 1);
+  const from = (filters.page - 1) * filters.limit
+  query.range(from, from + filters.limit - 1)
 
-  return query;
-};
+  return query
+}
 
 // Cache optimization
 const getCachedProducts = async (key: string) => {
   // Intentar cache primero
-  const cached = await redis.get(key);
+  const cached = await redis.get(key)
   if (cached) {
-    return JSON.parse(cached);
+    return JSON.parse(cached)
   }
 
   // Fallback a base de datos
-  const data = await getProductsOptimized(filters);
+  const data = await getProductsOptimized(filters)
 
   // Cachear resultado
-  await redis.setex(key, 300, JSON.stringify(data)); // 5 minutos
+  await redis.setex(key, 300, JSON.stringify(data)) // 5 minutos
 
-  return data;
-};
+  return data
+}
 ```
 
 ## 🔐 Guía de Seguridad
@@ -1233,6 +1282,7 @@ const getCachedProducts = async (key: string) => {
 ### Checklist de Seguridad
 
 #### Autenticación
+
 - [ ] Passwords hasheados con bcrypt/scrypt
 - [ ] JWT tokens con expiración apropiada
 - [ ] Refresh tokens implementados
@@ -1241,12 +1291,14 @@ const getCachedProducts = async (key: string) => {
 - [ ] 2FA disponible para admins
 
 #### Autorización
+
 - [ ] RLS policies en Supabase
 - [ ] Verificación de roles en cada endpoint
 - [ ] Principio de menor privilegio
 - [ ] Validación de ownership de recursos
 
 #### Input Validation
+
 - [ ] Validación con Zod schemas
 - [ ] Sanitización de HTML
 - [ ] Validación de tipos de archivo
@@ -1254,6 +1306,7 @@ const getCachedProducts = async (key: string) => {
 - [ ] Validación de URLs
 
 #### Data Protection
+
 - [ ] Encriptación en tránsito (HTTPS)
 - [ ] Encriptación en reposo
 - [ ] Datos sensibles enmascarados en logs
@@ -1264,24 +1317,24 @@ const getCachedProducts = async (key: string) => {
 
 ```typescript
 // Validación de input
-import { z } from 'zod';
+import { z } from 'zod'
 
 const ProductSchema = z.object({
   name: z.string().min(1).max(255),
   price: z.number().positive().max(999999),
   description: z.string().max(2000).optional(),
-  category_id: z.string().uuid()
-});
+  category_id: z.string().uuid(),
+})
 
 // Sanitización
-import DOMPurify from 'dompurify';
+import DOMPurify from 'dompurify'
 
 const sanitizeHTML = (html: string): string => {
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],
-    ALLOWED_ATTR: []
-  });
-};
+    ALLOWED_ATTR: [],
+  })
+}
 
 // Headers de seguridad
 const securityHeaders = {
@@ -1289,11 +1342,11 @@ const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'"
-};
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'",
+}
 ```
 
 ---
 
-*Documentación actualizada: Diciembre 2024*
-*Versión: 2.0.0*
+_Documentación actualizada: Diciembre 2024_
+_Versión: 2.0.0_

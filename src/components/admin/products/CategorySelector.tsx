@@ -6,17 +6,17 @@ import { ChevronDown, Plus, Search, Folder, FolderOpen } from 'lucide-react'
 import { cn } from '@/lib/core/utils'
 
 interface Category {
-  id: string
+  id: number
   name: string
   description?: string
-  parent_id?: string
+  parent_id?: number
   level: number
   children?: Category[]
 }
 
 interface CategorySelectorProps {
-  value?: string
-  onChange: (categoryId: string) => void
+  value?: number
+  onChange: (categoryId: number) => void
   error?: string
   placeholder?: string
   allowCreate?: boolean
@@ -35,7 +35,7 @@ async function fetchCategories(): Promise<Category[]> {
 
 // Build category tree
 function buildCategoryTree(categories: Category[]): Category[] {
-  const categoryMap = new Map<string, Category>()
+  const categoryMap = new Map<number, Category>()
   const rootCategories: Category[] = []
 
   // Create map of all categories
@@ -84,7 +84,7 @@ export function CategorySelector({
 }: CategorySelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set())
 
   // Fetch categories
   const {
@@ -110,7 +110,7 @@ export function CategorySelector({
       )
     : categoryTree
 
-  const toggleExpanded = (categoryId: string) => {
+  const toggleExpanded = (categoryId: number) => {
     const newExpanded = new Set(expandedCategories)
     if (newExpanded.has(categoryId)) {
       newExpanded.delete(categoryId)
@@ -120,7 +120,7 @@ export function CategorySelector({
     setExpandedCategories(newExpanded)
   }
 
-  const handleSelect = (categoryId: string) => {
+  const handleSelect = (categoryId: number) => {
     onChange(categoryId)
     setIsOpen(false)
     setSearchTerm('')
@@ -229,7 +229,7 @@ export function CategorySelector({
       {/* Error Message */}
       {error && (
         <p className='text-red-600 text-sm mt-1'>
-          {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
+          {error}
         </p>
       )}
 

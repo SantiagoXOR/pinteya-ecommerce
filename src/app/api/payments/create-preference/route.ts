@@ -11,7 +11,7 @@ import { CreatePreferencePayload } from '@/types/checkout'
 import { ApiResponse } from '@/types/api'
 import { createPaymentPreference } from '@/lib/integrations/mercadopago'
 import type { MercadoPagoItem } from '@/lib/integrations/mercadopago'
-import { auth } from '@/lib/auth/config'
+import { auth } from '@/auth'
 import { CHECKOUT_CONSTANTS, VALIDATION_CONSTANTS } from '@/constants/shop'
 import { z } from 'zod'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
@@ -22,6 +22,8 @@ import {
 } from '@/lib/enterprise/rate-limiter'
 import { ENTERPRISE_RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/enterprise-rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { whatsappLinkService } from '@/lib/integrations/whatsapp/whatsapp-link-service'
+import crypto from 'crypto'
 
 // Schema de validación para la entrada
 const CreatePreferenceSchema = z.object({
@@ -80,6 +82,65 @@ interface Product {
 // Función helper para calcular precio final
 function getFinalPrice(product: { price: number; discounted_price?: number | null }): number {
   return product.discounted_price ?? product.price
+}
+
+// Función para generar mensaje de WhatsApp para MercadoPago
+function generateMercadoPagoWhatsAppMessage(order: any, orderData: any, products: any[]): string {
+  const formatARS = (v: number) => Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const bullet = '•'
+  
+  const lines: string[] = [
+    `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+    `💳 Tu pago con MercadoPago ha sido procesado exitosamente`,
+    ``,
+    `*Detalle de Orden:*`,
+    `${bullet} Orden: ${order.order_number || order.id}`,
+    `${bullet} Total: $${formatARS(Number(order.total || 0))}`,
+    ``,
+    `*Datos Personales:*`,
+    `${bullet} Nombre: ${orderData.payer.name} ${orderData.payer.surname}`,
+    `${bullet} Teléfono: 📞 ${orderData.payer.phone || 'No proporcionado'}`,
+    `${bullet} Email: ✉️ ${orderData.payer.email}`,
+    ``,
+    `*Productos:*`,
+  ]
+
+  // Agregar productos
+  for (const item of orderData.items) {
+    const product = products.find(p => p.id === parseInt(item.id))
+    if (product) {
+      const finalPrice = getFinalPrice(product)
+      const lineTotal = finalPrice * item.quantity
+      
+      let productLine = `${bullet} ${product.name}`
+      
+      // Agregar detalles del producto si están disponibles
+      const details = []
+      if (product.category?.name) details.push(`Categoría: ${product.category.name}`)
+      if (product.brand) details.push(`Marca: ${product.brand}`)
+      
+      if (details.length > 0) {
+        productLine += ` (${details.join(', ')})`
+      }
+      
+      productLine += ` x${item.quantity} - $${formatARS(lineTotal)}`
+      lines.push(productLine)
+    }
+  }
+
+  // Datos de envío si están disponibles
+  if (orderData.shipping?.address) {
+    lines.push('', `*Datos de Envío:*`)
+    lines.push(`${bullet} Dirección: 📍 ${orderData.shipping.address.street_name} ${orderData.shipping.address.street_number}`)
+    lines.push(`${bullet} Ciudad: ${orderData.shipping.address.city_name}, ${orderData.shipping.address.state_name}`)
+    lines.push(`${bullet} CP: ${orderData.shipping.address.zip_code}`)
+  }
+
+  lines.push('')
+  lines.push(`💳 *Método de pago:* MercadoPago`)
+  lines.push('', `✅ ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`)
+
+  return lines.join('\n')
 }
 
 // Función helper para crear usuario temporal
@@ -185,43 +246,47 @@ export async function POST(request: NextRequest) {
     const shippingCost = orderData.shipping?.cost || 0
 
     // ===================================
-    // OBTENER USUARIO AUTENTICADO CON CLERK
+    // OBTENER USUARIO AUTENTICADO CON NEXTAUTH
     // ===================================
     let userId: string | null = null
     let userEmail: string | null = null
 
     try {
-      // Intentar obtener usuario autenticado de Clerk
-      const clerkUser = await currentUser()
-      if (clerkUser) {
-        userId = clerkUser.id
-        userEmail = clerkUser.emailAddresses?.[0]?.emailAddress || null
+      // Intentar obtener usuario autenticado de NextAuth
+      const session = await auth()
+      if (session?.user) {
+        userEmail = session.user.email || null
 
-        // Verificar si el usuario existe en nuestra base de datos
+        // Verificar si el usuario existe en user_profiles
         const { data: existingUser, error: userError } = await supabaseAdmin
-          .from('users')
-          .select('id, clerk_id')
-          .eq('clerk_id', clerkUser.id)
+          .from('user_profiles')
+          .select('id, email')
+          .eq('email', userEmail)
           .single()
 
         if (userError && userError.code !== 'PGRST116') {
-          console.error('Error checking user in database:', userError)
+          console.error('Error checking user in user_profiles:', userError)
         }
 
-        // Si el usuario no existe en nuestra DB, crearlo
+        // Si el usuario no existe en user_profiles, crearlo
         if (!existingUser) {
           const { data: newUser, error: createUserError } = await supabaseAdmin
-            .from('users')
+            .from('user_profiles')
             .insert({
-              clerk_id: clerkUser.id,
+              supabase_user_id: session.user.id,
               email: userEmail,
-              name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Usuario',
+              first_name: session.user.name?.split(' ')[0] || 'Usuario',
+              last_name: session.user.name?.split(' ').slice(1).join(' ') || '',
+              metadata: {
+                created_from: 'checkout',
+                created_at: new Date().toISOString()
+              }
             })
             .select('id')
             .single()
 
           if (createUserError) {
-            console.error('Error creating user in database:', createUserError)
+            console.error('Error creating user in user_profiles:', createUserError)
             // Continuar con usuario temporal si falla la creación
             userId = null
           } else if (newUser) {
@@ -234,8 +299,8 @@ export async function POST(request: NextRequest) {
           userId = existingUser.id
         }
       }
-    } catch (clerkError) {
-      console.error('Error getting Clerk user:', clerkError)
+    } catch (authError) {
+      console.error('Error getting NextAuth session:', authError)
       // Continuar sin usuario autenticado
     }
 
@@ -244,20 +309,25 @@ export async function POST(request: NextRequest) {
       userId = '00000000-0000-4000-8000-000000000000'
       userEmail = orderData.payer.email
 
-      // Verificar que el usuario temporal existe
+      // Verificar que el usuario temporal existe en user_profiles
       const { data: tempUser, error: tempUserError } = await supabaseAdmin
-        .from('users')
+        .from('user_profiles')
         .select('id')
         .eq('id', userId)
         .single()
 
       if (tempUserError) {
         // Crear usuario temporal si no existe
-        const { error: createTempError } = await supabaseAdmin.from('users').insert({
+        const { error: createTempError } = await supabaseAdmin.from('user_profiles').insert({
           id: userId,
-          clerk_id: 'temp-user',
           email: userEmail,
-          name: `${orderData.payer.name} ${orderData.payer.surname}`.trim(),
+          first_name: orderData.payer.name,
+          last_name: orderData.payer.surname,
+          metadata: {
+            type: 'temporary',
+            created_for: 'checkout',
+            created_at: new Date().toISOString()
+          }
         })
 
         if (createTempError) {
@@ -358,25 +428,36 @@ export async function POST(request: NextRequest) {
     const totalAmount = itemsTotal + shippingCost
 
     // ===================================
+    // GENERAR ORDER_NUMBER (como en Cash)
+    // ===================================
+    const orderNumber = `ORD-${Math.floor(Date.now() / 1000)}-${crypto.randomBytes(4).toString('hex')}`;
+
+    // ===================================
     // CREAR ORDEN EN BASE DE DATOS
     // ===================================
+    // Solo usar columnas que existen: id, user_id, total, status, payment_id, shipping_address, 
+    // created_at, updated_at, external_reference, payment_preference_id, payer_info, payment_status
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         user_id: userId,
         status: 'pending',
+        payment_status: 'pending',
         total: totalAmount,
         shipping_address: orderData.shipping?.address
           ? JSON.stringify(orderData.shipping.address)
           : null,
-        external_reference: orderData.external_reference || `order_${Date.now()}`,
-        // ✅ NUEVO: Guardar información del payer
+        // Usar external_reference para almacenar el número de orden (order_number no existe en schema)
+        external_reference: orderNumber,
+        // Guardar información del payer (incluyendo payment_method y order_number aquí)
         payer_info: {
           name: orderData.payer.name,
           surname: orderData.payer.surname,
           email: orderData.payer.email,
           phone: orderData.payer.phone,
           identification: orderData.payer.identification,
+          payment_method: 'mercadopago', // Guardar payment_method en payer_info
+          order_number: orderNumber, // Guardar order_number en payer_info también
         },
       })
       .select()
@@ -402,6 +483,87 @@ export async function POST(request: NextRequest) {
     }
 
     // ===================================
+    // GENERAR WHATSAPP MESSAGE (como en Cash)
+    // ===================================
+    console.log('[WHATSAPP] Generando mensaje de WhatsApp para orden:', order.id)
+
+    const formatARS = (v: number) => Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const bullet = '•';
+    const lines: string[] = [
+      `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+      `💳 Tu pago con MercadoPago ha sido procesado exitosamente`,
+      '',
+      `*Detalle de Orden:*`,
+      `${bullet} Orden: ${order.order_number}`,  // Usa el order_number generado
+      `${bullet} Total: $${formatARS(totalAmount)}`,
+      '',
+      `*Datos Personales:*`,
+      `${bullet} Nombre: ${orderData.payer.name} ${orderData.payer.surname}`,  // Datos reales
+      `${bullet} Teléfono: 📞 ${orderData.payer.phone || 'No proporcionado'}`,  // Datos reales
+      `${bullet} Email: ✉️ ${orderData.payer.email}`,  // Datos reales
+      '',
+      `*Productos:*`,
+    ];
+
+    // Agregar productos REALES del carrito
+    for (const item of orderData.items) {
+      const product = typedProducts.find(p => p.id === parseInt(item.id));
+      if (product) {
+        const finalPrice = getFinalPrice(product);
+        const lineTotal = finalPrice * item.quantity;
+        
+        let productLine = `${bullet} ${product.name}`;
+        
+        // Agregar detalles del producto si están disponibles
+        const details = [];
+        if (product.category?.name) details.push(`Categoría: ${product.category.name}`);
+        if (product.brand) details.push(`Marca: ${product.brand}`);
+        
+        if (details.length > 0) {
+          productLine += ` (${details.join(', ')})`;
+        }
+        
+        productLine += ` x${item.quantity} - $${formatARS(lineTotal)}`;
+        lines.push(productLine);
+      }
+    }
+
+    // Datos de envío si están disponibles
+    if (orderData.shipping?.address) {
+      lines.push('', `*Datos de Envío:*`);
+      lines.push(`${bullet} Dirección: 📍 ${orderData.shipping.address.street_name} ${orderData.shipping.address.street_number}`);
+      lines.push(`${bullet} Ciudad: ${orderData.shipping.address.city_name}, ${orderData.shipping.address.state_name}`);
+      lines.push(`${bullet} CP: ${orderData.shipping.address.zip_code}`);
+    }
+
+    lines.push('');
+    lines.push(`💳 *Método de pago:* MercadoPago`);
+    lines.push('', `✅ ¡Listo! 💚 En breve te contactamos para confirmar disponibilidad y horario.`);
+
+    const message = lines.join('\n');
+    const whatsappMessage = encodeURIComponent(message);
+    const businessPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
+    const whatsappLink = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${whatsappMessage}`;
+
+    console.log('[WHATSAPP] Mensaje generado con datos reales')
+
+    // Actualizar orden con WhatsApp
+    const { error: updateError } = await supabaseAdmin
+      .from('orders')
+      .update({
+        whatsapp_notification_link: whatsappLink,
+        whatsapp_message: message,  // Guardar mensaje sin codificar
+        whatsapp_generated_at: new Date().toISOString()
+      })
+      .eq('id', order.id)
+
+    if (updateError) {
+      console.error('[WHATSAPP] Error actualizando orden con WhatsApp:', updateError)
+    } else {
+      console.log('[WHATSAPP] Orden actualizada exitosamente')
+    }
+
+    // ===================================
     // CREAR ITEMS DE LA ORDEN CON PRECIOS CORRECTOS
     // ===================================
     const orderItems = orderData.items.map(item => {
@@ -412,19 +574,54 @@ export async function POST(request: NextRequest) {
 
       // Usar precio con descuento si existe, sino precio normal
       const finalPrice = getFinalPrice(product)
+      const itemTotal = finalPrice * item.quantity
+
+      // Preparar product_snapshot con información del producto
+      const productSnapshot = {
+        name: product.name,
+        price: finalPrice,
+        category: product.category?.name || null,
+        image: product.images?.previews?.[0] || null,
+      }
 
       return {
         order_id: order.id,
         product_id: parseInt(item.id),
+        product_name: product.name,
+        product_sku: null, // MercadoPago no tiene SKU, usar null
         quantity: item.quantity,
         price: finalPrice,
+        unit_price: finalPrice,
+        total_price: itemTotal,
+        product_snapshot: productSnapshot
       }
+    })
+
+    // Log detallado de los items a insertar
+    console.log('[ORDER_ITEMS] Preparando inserción:', {
+      orderItemsCount: orderItems.length,
+      orderId: order.id,
+      items: orderItems.map(item => ({
+        product_id: item.product_id,
+        product_name: item.product_name,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price
+      }))
     })
 
     const { error: itemsError } = await supabaseAdmin.from('order_items').insert(orderItems)
 
     if (itemsError) {
-      console.error('Error creating order items:', itemsError)
+      console.error('[ORDER_ITEMS] Error detallado:', {
+        error: itemsError,
+        message: itemsError.message,
+        code: itemsError.code,
+        details: itemsError.details,
+        hint: itemsError.hint,
+        orderItemsAttempted: orderItems,
+        orderId: order.id
+      })
       // Rollback: eliminar orden creada
       await supabaseAdmin.from('orders').delete().eq('id', order.id)
 
@@ -437,8 +634,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ===================================
-    // CONVERTIR ITEMS PARA MERCADOPAGO
+    // CONVERTIR ITEMS PARA MERCADOPAGO CON ENVÍO INCLUIDO
     // ===================================
+    // Distribuir el costo de envío proporcionalmente entre los productos
     const mercadoPagoItems: MercadoPagoItem[] = typedProducts.map(product => {
       const orderItem = orderData.items.find(item => item.id === product.id.toString())
       if (!orderItem) {
@@ -447,31 +645,77 @@ export async function POST(request: NextRequest) {
 
       // Usar precio con descuento si existe, sino precio normal
       const finalPrice = getFinalPrice(product)
+      const itemSubtotal = finalPrice * orderItem.quantity
+      
+      // Calcular porción del envío que corresponde a este producto
+      const shippingPortion = itemsTotal > 0 ? (itemSubtotal / itemsTotal) * shippingCost : 0
+      const adjustedPrice = finalPrice + (shippingPortion / orderItem.quantity)
 
       return {
         id: product.id.toString(),
         title: product.name,
-        description: `Producto de pinturería - ${product.category?.name || 'General'}`,
+        // ✅ MEJORAR: Descripción más descriptiva que incluya cantidad y categoría
+        // Nota: Mercado Pago solo muestra el título del primer producto en la UI,
+        // pero la descripción ayuda a identificar cada producto en el backend
+        description: `Pinteya - ${product.name}${product.category?.name ? ` (${product.category.name})` : ''} - Cantidad: ${orderItem.quantity}`,
         picture_url: product.images?.previews?.[0] || '',
         category_id: product.category?.slug || 'general',
         quantity: orderItem.quantity,
         currency_id: 'ARS',
-        unit_price: finalPrice,
+        unit_price: Math.round(adjustedPrice * 100) / 100, // Precio con envío incluido
       }
     })
 
-    // Agregar costo de envío si existe
-    if (shippingCost > 0) {
-      mercadoPagoItems.push({
-        id: 'shipping',
-        title: 'Costo de envío',
-        description: 'Envío a domicilio',
-        category_id: 'shipping',
-        quantity: 1,
-        currency_id: 'ARS',
-        unit_price: shippingCost,
+    // ✅ CORREGIR: Ajustar el último producto para que el total coincida exactamente
+    // Esto corrige cualquier diferencia de redondeo al distribuir el envío proporcionalmente
+    const mercadoPagoTotal = mercadoPagoItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+    const difference = totalAmount - mercadoPagoTotal
+    
+    if (Math.abs(difference) > 0.01 && mercadoPagoItems.length > 0) {
+      // Ajustar el último producto para compensar la diferencia
+      const lastItem = mercadoPagoItems[mercadoPagoItems.length - 1]
+      const adjustment = difference / lastItem.quantity
+      lastItem.unit_price = Math.round((lastItem.unit_price + adjustment) * 100) / 100
+      
+      console.log('[MERCADOPAGO] Ajuste de total aplicado:', {
+        diferenciaOriginal: difference,
+        ajustePorUnidad: adjustment,
+        nuevoPrecioUnitario: lastItem.unit_price,
+        nuevoTotal: mercadoPagoItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0),
+        totalEsperado: totalAmount
       })
     }
+
+    // ✅ DEBUG: Verificar que el total coincida exactamente
+    const finalMercadoPagoTotal = mercadoPagoItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+    console.log('[MERCADOPAGO] Verificación de totales:', {
+      frontendTotal: totalAmount,
+      mercadoPagoTotal: finalMercadoPagoTotal,
+      diferencia: Math.abs(totalAmount - finalMercadoPagoTotal),
+      items: mercadoPagoItems.map(item => ({
+        title: item.title,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        subtotal: item.unit_price * item.quantity
+      }))
+    })
+
+    // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
+    // El costo de envío ya está incluido en el precio de cada producto
+
+    // ✅ DEBUG: Logging detallado de URLs de retorno
+    const backUrls = {
+      success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/mercadopago-success?order_id=${order.id}`,
+      failure: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failure?order_id=${order.id}`,
+      pending: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pending?order_id=${order.id}`,
+    }
+    
+    console.log('[MERCADOPAGO] URLs de retorno configuradas:', {
+      orderId: order.id,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      backUrls,
+      externalReference: order.id.toString()
+    })
 
     // ✅ MEJORADO: Usar nueva función con configuración avanzada
     const preferenceResult = await createPaymentPreference({
@@ -495,24 +739,10 @@ export async function POST(request: NextRequest) {
             }
           : undefined,
       },
-      back_urls: {
-        success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?order_id=${order.id}`,
-        failure: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/failure?order_id=${order.id}`,
-        pending: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pending?order_id=${order.id}`,
-      },
+      back_urls: backUrls,
       external_reference: order.id.toString(),
-      shipments: orderData.shipping
-        ? {
-            cost: orderData.shipping.cost,
-            receiver_address: {
-              zip_code: orderData.shipping.address.zip_code,
-              street_name: orderData.shipping.address.street_name,
-              street_number: orderData.shipping.address.street_number,
-              city_name: orderData.shipping.address.city_name,
-              state_name: orderData.shipping.address.state_name,
-            },
-          }
-        : undefined,
+      // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
+      // shipments: undefined // Comentado intencionalmente
     })
 
     // ✅ MEJORADO: Manejar resultado de la nueva función
@@ -524,20 +754,53 @@ export async function POST(request: NextRequest) {
 
     // Actualizar orden con ID de preferencia
     const preferenceData = 'data' in preferenceResult ? preferenceResult.data : null
-    const { error: updateError } = await supabaseAdmin
+    const { error: preferenceUpdateError } = await supabaseAdmin
       .from('orders')
       .update({
         payment_preference_id: preferenceData?.id,
       })
       .eq('id', order.id)
 
-    if (updateError) {
+    if (preferenceUpdateError) {
       logger.warn(
         LogCategory.PAYMENT,
         'Failed to update order with preference ID',
-        { updateError },
+        { preferenceUpdateError },
         { clientIP }
       )
+    }
+
+    // ✅ NUEVO: Generar WhatsApp link al crear la orden (similar a pago al recibir)
+    try {
+      const whatsappMessage = generateMercadoPagoWhatsAppMessage(order, orderData, typedProducts)
+      const businessPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${encodeURIComponent(whatsappMessage)}`
+      
+      console.log('[WHATSAPP] Generando link de WhatsApp:', {
+        orderId: order.id,
+        businessPhone,
+        messageLength: whatsappMessage.length,
+        whatsappUrl: whatsappUrl.substring(0, 100) + '...'
+      })
+      
+      // Actualizar orden con whatsapp link
+      const { error: whatsappUpdateError } = await supabaseAdmin
+        .from('orders')
+        .update({
+          whatsapp_notification_link: whatsappUrl,
+          whatsapp_generated_at: new Date().toISOString()
+        })
+        .eq('id', order.id)
+
+      if (whatsappUpdateError) {
+        console.error('[WHATSAPP] Error actualizando orden con WhatsApp link:', whatsappUpdateError)
+        // No fallar la request por error en WhatsApp
+      } else {
+        console.log('[WHATSAPP] WhatsApp link guardado exitosamente en la orden')
+      }
+    } catch (whatsappError) {
+      console.error('[WHATSAPP] Error generando WhatsApp link:', whatsappError)
+      // No fallar la request por error en WhatsApp
     }
 
     // ✅ NUEVO: Logging exitoso de creación de preferencia

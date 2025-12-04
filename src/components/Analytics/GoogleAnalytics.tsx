@@ -56,8 +56,9 @@ const GoogleAnalytics: React.FC = () => {
     <>
       {GA_TRACKING_ID && GA_TRACKING_ID !== 'G-XXXXXXXXXX' && GA_TRACKING_ID.length >= 10 && (
         <>
+          {/* ⚡ PERFORMANCE: lazyOnload carga GA DESPUÉS de FCP (-0.2s) */}
           <Script
-            strategy='afterInteractive'
+            strategy='lazyOnload'
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
             onLoad={handleGALoad}
             onError={error => {
@@ -67,7 +68,7 @@ const GoogleAnalytics: React.FC = () => {
           />
           <Script
             id='google-analytics'
-            strategy='afterInteractive'
+            strategy='lazyOnload'
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];

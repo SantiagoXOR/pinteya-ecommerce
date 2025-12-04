@@ -1,56 +1,166 @@
 // ===================================
-// HOOK DEL CARRITO
-// Hook completo para el carrito de compras con Redux
+// PINTEYA E-COMMERCE - CART HOOK WITH NEXTAUTH INTEGRATION
 // ===================================
 
-import { useAppSelector, useAppDispatch } from '@/redux/store'
+import { useEffect, useCallback } from 'react'
+import { useAuth } from './useAuth'
+import { useAppDispatch, useAppSelector } from '@/redux/store'
 import {
+  selectCartItems,
+  hydrateCart,
+  replaceCart,
+  removeAllItemsFromCart,
   addItemToCart,
   removeItemFromCart,
   updateCartItemQuantity,
-  removeAllItemsFromCart,
-  CartItem,
 } from '@/redux/features/cart-slice'
+import {
+  loadCartFromStorage,
+  clearCartFromStorage,
+  migrateTemporaryCart,
+  loadUserCart,
+  saveUserCart,
+} from '@/redux/middleware/cartPersistence'
 
+/**
+ * Hook para manejar el carrito con integración NextAuth
+ * Maneja la sincronización entre localStorage y backend para usuarios autenticados
+ */
+export const useAuthCart = () => {
+  const { user, isLoaded } = useAuth()
+  const dispatch = useAppDispatch()
+  const cartItems = useAppSelector(selectCartItems)
+
+  // Función para migrar carrito temporal a usuario autenticado
+  const migrateCart = useCallback(
+    async (userId: string) => {
+      try {
+        // Obtener items del localStorage
+        const temporaryItems = loadCartFromStorage()
+
+        if (temporaryItems.length > 0) {
+          // Migrar items al backend
+          const migrationSuccess = await migrateTemporaryCart(temporaryItems, userId)
+
+          if (migrationSuccess) {
+            // Limpiar localStorage después de migración exitosa
+            clearCartFromStorage()
+          }
+        }
+
+        // Cargar carrito del usuario desde el backend
+        const userCartItems = await loadUserCart(userId)
+
+        // Si hay items del usuario, reemplazar el carrito actual
+        if (userCartItems.length > 0) {
+          dispatch(replaceCart(userCartItems))
+        }
+      } catch (error) {
+        console.error('Error during cart migration:', error)
+      }
+    },
+    [dispatch]
+  )
+
+  // Función para guardar carrito del usuario autenticado
+  const saveCart = useCallback(
+    async (userId: string) => {
+      try {
+        if (cartItems.length > 0) {
+          await saveUserCart(userId, cartItems)
+        }
+      } catch (error) {
+        console.error('Error saving user cart:', error)
+      }
+    },
+    [cartItems]
+  )
+
+  // Efecto para manejar cambios en el estado de autenticación
+  useEffect(() => {
+    if (!isLoaded) {
+      return
+    }
+
+    if (user) {
+      // Usuario autenticado - migrar carrito temporal si existe
+      migrateCart(user.id)
+    } else {
+      // Usuario no autenticado - cargar desde localStorage
+      const persistedItems = loadCartFromStorage()
+      if (persistedItems.length > 0) {
+        dispatch(hydrateCart(persistedItems))
+      }
+    }
+  }, [user, isLoaded, dispatch, migrateCart])
+
+  // Efecto para guardar carrito de usuario autenticado cuando cambie
+  useEffect(() => {
+    if (!isLoaded || !user) {
+      return
+    }
+
+    // Debounce para evitar guardados excesivos
+    const timeoutId = setTimeout(() => {
+      saveCart(user.id)
+    }, 1000)
+
+    return () => clearTimeout(timeoutId)
+  }, [cartItems, user, isLoaded, saveCart])
+
+  // Función para limpiar carrito al cerrar sesión
+  const handleSignOut = useCallback(() => {
+    dispatch(removeAllItemsFromCart())
+    clearCartFromStorage()
+  }, [dispatch])
+
+  return {
+    isAuthenticated: !!user,
+    userId: user?.id,
+    cartItems,
+    migrateCart,
+    saveCart,
+    handleSignOut,
+  }
+}
+
+/**
+ * Hook simplificado para componentes que solo necesitan el estado del carrito
+ * No requiere autenticación, útil para acceso rápido al estado del carrito
+ */
 export const useCart = () => {
-  const cartItems = useAppSelector(state => state.cartReducer.items)
+  const cartItems = useAppSelector(selectCartItems)
   const dispatch = useAppDispatch()
 
-  // Cálculos derivados
-  const cartCount = cartItems.length
-  const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0)
-  const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
-
-  // Acciones del carrito
-  const addToCart = (item: CartItem) => {
+  // Función para agregar producto al carrito
+  const addToCart = useCallback((item: any) => {
     dispatch(addItemToCart(item))
-  }
+  }, [dispatch])
 
-  const removeFromCart = (id: number) => {
-    dispatch(removeItemFromCart(id))
-  }
+  // Función para remover producto del carrito
+  const removeFromCart = useCallback((itemId: number) => {
+    dispatch(removeItemFromCart(itemId))
+  }, [dispatch])
 
-  const updateQuantity = (id: number, quantity: number) => {
-    if (quantity <= 0) {
-      dispatch(removeItemFromCart(id))
-    } else {
-      dispatch(updateCartItemQuantity({ id, quantity }))
-    }
-  }
+  // Función para actualizar cantidad de un producto
+  const updateQuantity = useCallback((itemId: number, quantity: number) => {
+    dispatch(updateCartItemQuantity({ id: itemId, quantity }))
+  }, [dispatch])
 
-  const clearCart = () => {
+  // Función para limpiar el carrito
+  const clearCart = useCallback(() => {
     dispatch(removeAllItemsFromCart())
-  }
+  }, [dispatch])
 
   return {
     cartItems,
-    cartCount,
-    totalQuantity,
-    totalPrice,
+    dispatch,
     addToCart,
     removeFromCart,
     updateQuantity,
     clearCart,
-    dispatch,
   }
 }
+
+// Export por defecto del hook principal
+export default useAuthCart

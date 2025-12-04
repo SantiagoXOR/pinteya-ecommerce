@@ -35,8 +35,9 @@ CREATE TABLE categories (
 ```
 
 **Datos de ejemplo:**
+
 - Pinturas de Interior
-- Pinturas de Exterior  
+- Pinturas de Exterior
 - Herramientas
 - Accesorios
 - Impermeabilizantes
@@ -170,6 +171,7 @@ CREATE TABLE orders (
 ```
 
 **Estados de orden:**
+
 - `pending` - Pendiente
 - `confirmed` - Confirmada
 - `processing` - En proceso
@@ -250,9 +252,9 @@ const { data, error } = supabase
   .from('products')
   .select('id, stock')
   .on('UPDATE', payload => {
-    console.log('Stock actualizado:', payload.new);
+    console.log('Stock actualizado:', payload.new)
   })
-  .subscribe();
+  .subscribe()
 ```
 
 ---
@@ -263,11 +265,11 @@ const { data, error } = supabase
 
 ```sql
 -- Bucket para imágenes de productos
-INSERT INTO storage.buckets (id, name, public) 
+INSERT INTO storage.buckets (id, name, public)
 VALUES ('product-images', 'product-images', true);
 
 -- Bucket para avatares de usuario
-INSERT INTO storage.buckets (id, name, public) 
+INSERT INTO storage.buckets (id, name, public)
 VALUES ('avatars', 'avatars', true);
 ```
 
@@ -275,13 +277,13 @@ VALUES ('avatars', 'avatars', true);
 
 ```sql
 -- Acceso público a imágenes de productos
-CREATE POLICY "Public Access" ON storage.objects 
+CREATE POLICY "Public Access" ON storage.objects
 FOR SELECT USING (bucket_id = 'product-images');
 
 -- Usuarios pueden subir sus avatares
-CREATE POLICY "Users can upload avatars" ON storage.objects 
+CREATE POLICY "Users can upload avatars" ON storage.objects
 FOR INSERT WITH CHECK (
-  bucket_id = 'avatars' AND 
+  bucket_id = 'avatars' AND
   auth.uid()::text = (storage.foldername(name))[1]
 );
 ```
@@ -294,7 +296,7 @@ FOR INSERT WITH CHECK (
 
 ```sql
 -- Búsqueda de productos
-CREATE INDEX idx_products_name_search ON products 
+CREATE INDEX idx_products_name_search ON products
 USING gin(to_tsvector('spanish', name || ' ' || description));
 
 -- Filtros por categoría
@@ -323,7 +325,7 @@ CREATE OR REPLACE FUNCTION update_product_stock(
 )
 RETURNS VOID AS $$
 BEGIN
-  UPDATE products 
+  UPDATE products
   SET stock = stock + quantity_change,
       updated_at = NOW()
   WHERE id = product_id;
@@ -340,14 +342,14 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT 
+  SELECT
     p.id,
     p.name,
     p.price,
-    ts_rank(to_tsvector('spanish', p.name || ' ' || p.description), 
+    ts_rank(to_tsvector('spanish', p.name || ' ' || p.description),
             plainto_tsquery('spanish', search_term)) as rank
   FROM products p
-  WHERE to_tsvector('spanish', p.name || ' ' || p.description) 
+  WHERE to_tsvector('spanish', p.name || ' ' || p.description)
         @@ plainto_tsquery('spanish', search_term)
   ORDER BY rank DESC;
 END;
@@ -363,7 +365,7 @@ $$ LANGUAGE plpgsql;
 El proyecto incluye **22 productos reales** de marcas argentinas:
 
 - **Sherwin Williams**: Pinturas premium
-- **Petrilac**: Pinturas industriales  
+- **Petrilac**: Pinturas industriales
 - **Sinteplast**: Revestimientos
 - **Plavicon**: Impermeabilizantes
 - **Akapol**: Adhesivos y selladores
@@ -384,15 +386,16 @@ El proyecto incluye **22 productos reales** de marcas argentinas:
 ### Backups Automáticos
 
 Supabase realiza backups automáticos:
+
 - **Diarios**: Últimos 7 días
-- **Semanales**: Últimas 4 semanas  
+- **Semanales**: Últimas 4 semanas
 - **Point-in-time**: Últimas 24 horas
 
 ### Monitoreo
 
 ```sql
 -- Verificar salud de la base de datos
-SELECT 
+SELECT
   schemaname,
   tablename,
   n_tup_ins as inserts,
@@ -401,7 +404,7 @@ SELECT
 FROM pg_stat_user_tables;
 
 -- Verificar uso de índices
-SELECT 
+SELECT
   indexrelname,
   idx_tup_read,
   idx_tup_fetch
@@ -416,6 +419,3 @@ FROM pg_stat_user_indexes;
 - [🔐 Autenticación](./authentication.md) - Integración con Clerk
 - [📡 Real-time](./realtime.md) - Configuración tiempo real
 - [🗂️ Storage](./storage.md) - Gestión de archivos
-
-
-

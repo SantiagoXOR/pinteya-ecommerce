@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificador de Cambios Mobile</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 20px;
+      background: #f3f4f6;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #ea5a17;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .check {
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .check.success {
+      background: #d1fae5;
+      border-color: #10b981;
+    }
+    .check.error {
+      background: #fee2e2;
+      border-color: #ef4444;
+    }
+    .check-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .check-value {
+      font-family: monospace;
+      font-size: 12px;
+      background: rgba(0,0,0,0.05);
+      padding: 8px;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+    button {
+      background: #ea5a17;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+    }
+    button:hover {
+      background: #bd4811;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Verificador de Cambios Mobile</h1>
+    <p style="color: #6b7280; margin-bottom: 20px;">
+      Esta página verifica si los cambios de optimización mobile se aplicaron correctamente.
+    </p>
+    
+    <div id="results"></div>
+    
+    <button onclick="runChecks()">🔄 Verificar Cambios</button>
+  </div>
+
+  <script>
+    function runChecks() {
+      const results = document.getElementById('results');
+      results.innerHTML = '';
+      
+      const checks = [
+        {
+          name: 'Viewport Configuration',
+          check: () => {
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (!viewport) return { pass: false, value: 'Meta viewport NO encontrado' };
+            
+            const content = viewport.getAttribute('content') || '';
+            const hasUserScalable = content.includes('user-scalable=yes') || content.includes('user-scalable=1');
+            const hasMaxScale = content.includes('maximum-scale');
+            const maxScale = content.match(/maximum-scale=(\d+)/)?.[1];
+            
+            return {
+              pass: hasUserScalable && maxScale && parseInt(maxScale) > 1,
+              value: content,
+              details: `User-scalable: ${hasUserScalable}, Max-scale: ${maxScale}`
+            };
+          }
+        },
+        {
+          name: 'HTML Font-Size',
+          check: () => {
+            const htmlFontSize = getComputedStyle(document.documentElement).fontSize;
+            const isRelative = !htmlFontSize.includes('16px') || parseFloat(htmlFontSize) !== 16;
+            
+            return {
+              pass: true, // Siempre mostrar el valor
+              value: htmlFontSize,
+              details: parseFloat(htmlFontSize) === 16 ? '⚠️ Puede ser fijo' : '✅ Parece responsive'
+            };
+          }
+        },
+        {
+          name: 'Body Padding Top',
+          check: () => {
+            const bodyPaddingTop = getComputedStyle(document.body).paddingTop;
+            const paddingValue = parseFloat(bodyPaddingTop);
+            
+            return {
+              pass: paddingValue <= 100,
+              value: bodyPaddingTop,
+              details: paddingValue <= 90 ? '✅ Optimizado' : '⚠️ Puede ser muy grande'
+            };
+          }
+        },
+        {
+          name: 'Viewport Width',
+          check: () => {
+            return {
+              pass: true,
+              value: `${window.innerWidth}px`,
+              details: `Screen: ${screen.width}px, DPR: ${window.devicePixelRatio}`
+            };
+          }
+        },
+        {
+          name: 'Product Card Detection',
+          check: () => {
+            const cards = document.querySelectorAll('[data-testid="commercial-product-card"]');
+            return {
+              pass: cards.length > 0,
+              value: `${cards.length} cards encontrados`,
+              details: cards.length > 0 ? '✅ Cards cargados' : '❌ No se encontraron cards'
+            };
+          }
+        },
+        {
+          name: 'Header Logo Size',
+          check: () => {
+            const logo = document.querySelector('.logo-container img');
+            if (!logo) return { pass: false, value: 'Logo NO encontrado' };
+            
+            const width = logo.getBoundingClientRect().width;
+            return {
+              pass: width <= 80, // En mobile debería ser ~64px
+              value: `${Math.round(width)}px`,
+              details: width <= 70 ? '✅ Optimizado' : '⚠️ Puede ser grande'
+            };
+          }
+        }
+      ];
+      
+      checks.forEach(({name, check}) => {
+        const result = check();
+        const div = document.createElement('div');
+        div.className = `check ${result.pass ? 'success' : 'error'}`;
+        div.innerHTML = `
+          <div class="check-title">${result.pass ? '✅' : '❌'} ${name}</div>
+          <div>${result.details || ''}</div>
+          <div class="check-value">${result.value}</div>
+        `;
+        results.appendChild(div);
+      });
+    }
+    
+    // Run checks on load
+    window.addEventListener('load', runChecks);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

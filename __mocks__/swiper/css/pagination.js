@@ -4,8 +4,8 @@
  */
 
 // Mock vacío para CSS de Swiper pagination
-module.exports = {};
+module.exports = {}
 
 // Para compatibilidad con ES modules
-module.exports.__esModule = true;
-module.exports.default = {};
+module.exports.__esModule = true
+module.exports.default = {}

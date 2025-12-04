@@ -30,7 +30,7 @@ const ProductFormSchema = z
 
     short_description: z.string().max(500, 'Máximo 500 caracteres').optional(),
 
-    category_id: z.string().uuid('Selecciona una categoría válida'),
+    category_id: z.number().int().positive('Selecciona una categoría válida'),
 
     status: z.enum(['active', 'inactive', 'draft']),
 

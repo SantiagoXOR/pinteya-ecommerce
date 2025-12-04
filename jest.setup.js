@@ -3,36 +3,36 @@
 // ===================================
 
 // Polyfills para MSW
-import { TextEncoder, TextDecoder } from 'util';
-import { ReadableStream, WritableStream, TransformStream } from 'stream/web';
+import { TextEncoder, TextDecoder } from 'util'
+import { ReadableStream, WritableStream, TransformStream } from 'stream/web'
 
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-global.ReadableStream = ReadableStream;
-global.WritableStream = WritableStream;
-global.TransformStream = TransformStream;
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
+global.ReadableStream = ReadableStream
+global.WritableStream = WritableStream
+global.TransformStream = TransformStream
 
 // Mock fetch si no está disponible
 if (!global.fetch) {
-  global.fetch = jest.fn();
+  global.fetch = jest.fn()
 }
 
 // Mock BroadcastChannel para MSW
 global.BroadcastChannel = class BroadcastChannel {
   constructor(name) {
-    this.name = name;
+    this.name = name
   }
   postMessage() {}
   close() {}
   addEventListener() {}
   removeEventListener() {}
-};
+}
 
 import '@testing-library/jest-dom'
 
 // Mock TanStack Query para tests - Versión completa con QueryCache
 jest.mock('@tanstack/react-query', () => {
-  const actual = jest.requireActual('@tanstack/react-query');
+  const actual = jest.requireActual('@tanstack/react-query')
 
   // Mock completo del QueryCache
   const mockQueryCache = {
@@ -46,7 +46,7 @@ jest.mock('@tanstack/react-query', () => {
     onOnline: jest.fn(),
     subscribe: jest.fn(() => jest.fn()),
     build: jest.fn(),
-  };
+  }
 
   // Mock completo del MutationCache
   const mockMutationCache = {
@@ -57,7 +57,7 @@ jest.mock('@tanstack/react-query', () => {
     notify: jest.fn(),
     subscribe: jest.fn(() => jest.fn()),
     build: jest.fn(),
-  };
+  }
 
   // Mock del QueryClient con todos los métodos necesarios
   const mockQueryClient = {
@@ -78,7 +78,7 @@ jest.mock('@tanstack/react-query', () => {
     unmount: jest.fn(),
     isFetching: jest.fn(() => 0),
     isMutating: jest.fn(() => 0),
-  };
+  }
 
   return {
     ...actual,
@@ -96,8 +96,8 @@ jest.mock('@tanstack/react-query', () => {
     })),
     useQueryClient: jest.fn(() => mockQueryClient),
     QueryClientProvider: ({ children }) => children,
-  };
-});
+  }
+})
 
 // Mock Next.js router
 jest.mock('next/router', () => ({
@@ -136,9 +136,9 @@ jest.mock('next/navigation', () => ({
     }
   },
   useSearchParams: jest.fn(() => ({
-    get: jest.fn((key) => {
-      if (key === 'q') return 'test-query';
-      return null;
+    get: jest.fn(key => {
+      if (key === 'q') return 'test-query'
+      return null
     }),
     getAll: jest.fn(),
     has: jest.fn(),
@@ -156,7 +156,7 @@ jest.mock('next/navigation', () => ({
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props) => {
+  default: props => {
     // eslint-disable-next-line @next/next/no-img-element
     return <img {...props} />
   },
@@ -166,7 +166,11 @@ jest.mock('next/image', () => ({
 jest.mock('next/link', () => ({
   __esModule: true,
   default: ({ children, href, ...props }) => {
-    return <a href={href} {...props}>{children}</a>
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    )
   },
 }))
 
@@ -250,7 +254,7 @@ global.Request = class Request {
       value: input,
       writable: false,
       enumerable: true,
-      configurable: true
+      configurable: true,
     })
     this.method = init.method || 'GET'
     this.headers = new Headers(init.headers)
@@ -416,29 +420,33 @@ jest.mock('next-auth/react', () => ({
   })),
   signIn: jest.fn(() => Promise.resolve({ ok: true, error: null })),
   signOut: jest.fn(() => Promise.resolve({ url: '/api/auth/signin' })),
-  getProviders: jest.fn(() => Promise.resolve({
-    google: {
-      id: 'google',
-      name: 'Google',
-      type: 'oauth',
-      signinUrl: '/api/auth/signin/google',
-      callbackUrl: '/api/auth/callback/google',
-    },
-  })),
+  getProviders: jest.fn(() =>
+    Promise.resolve({
+      google: {
+        id: 'google',
+        name: 'Google',
+        type: 'oauth',
+        signinUrl: '/api/auth/signin/google',
+        callbackUrl: '/api/auth/callback/google',
+      },
+    })
+  ),
   SessionProvider: ({ children }) => children,
 }))
 
 // Mock NextAuth.js auth function
 jest.mock('@/auth', () => ({
-  auth: jest.fn(() => Promise.resolve({
-    user: {
-      id: 'test-user-id',
-      email: 'test@example.com',
-      name: 'Test User',
-      image: 'https://example.com/avatar.jpg',
-    },
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-  })),
+  auth: jest.fn(() =>
+    Promise.resolve({
+      user: {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        name: 'Test User',
+        image: 'https://example.com/avatar.jpg',
+      },
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    })
+  ),
   signIn: jest.fn(),
   signOut: jest.fn(),
 }))
@@ -485,8 +493,21 @@ const createMockQueryBuilder = () => {
 
   // Métodos que retornan el builder para chaining
   const chainableMethods = [
-    'select', 'eq', 'gte', 'lte', 'gt', 'lt', 'or', 'and',
-    'ilike', 'like', 'in', 'order', 'neq', 'is', 'not'
+    'select',
+    'eq',
+    'gte',
+    'lte',
+    'gt',
+    'lt',
+    'or',
+    'and',
+    'ilike',
+    'like',
+    'in',
+    'order',
+    'neq',
+    'is',
+    'not',
   ]
 
   chainableMethods.forEach(method => {
@@ -495,28 +516,30 @@ const createMockQueryBuilder = () => {
 
   // Métodos que retornan promesas
   builder.range = jest.fn(() => Promise.resolve(mockSupabaseResponse))
-  builder.single = jest.fn(() => Promise.resolve({
-    data: { id: 1, name: 'Test Category', slug: 'test-category' },
-    error: null,
-  }))
+  builder.single = jest.fn(() =>
+    Promise.resolve({
+      data: { id: 1, name: 'Test Category', slug: 'test-category' },
+      error: null,
+    })
+  )
 
   // Agregar soporte para Promise (then/catch) para casos donde no se llama a range()
-  builder.then = jest.fn((callback) => {
+  builder.then = jest.fn(callback => {
     return Promise.resolve(callback(mockSupabaseResponse))
   })
-  builder.catch = jest.fn((callback) => {
+  builder.catch = jest.fn(callback => {
     return Promise.resolve()
   })
 
   // Métodos especiales
-  builder.insert = jest.fn((data) => {
+  builder.insert = jest.fn(data => {
     // Para inserts que no necesitan select (como order_items)
     if (Array.isArray(data) && data[0]?.order_id) {
-      return Promise.resolve({ data: null, error: null });
+      return Promise.resolve({ data: null, error: null })
     }
 
     return {
-      select: jest.fn((columns) => ({
+      select: jest.fn(columns => ({
         single: jest.fn(() => {
           // Crear un objeto de usuario válido para inserts de usuarios (array)
           if (Array.isArray(data) && data[0]?.clerk_id) {
@@ -525,10 +548,10 @@ const createMockQueryBuilder = () => {
                 id: 'test-user-id',
                 clerk_id: data[0].clerk_id,
                 email: data[0].email || 'test@example.com',
-                name: data[0].name || 'Test User'
+                name: data[0].name || 'Test User',
               },
               error: null,
-            });
+            })
           }
           // Para inserts de usuarios sin array (objeto directo)
           if (data?.clerk_id) {
@@ -537,19 +560,19 @@ const createMockQueryBuilder = () => {
                 id: 'test-user-id',
                 clerk_id: data.clerk_id,
                 email: data.email || 'test@example.com',
-                name: data.name || 'Test User'
+                name: data.name || 'Test User',
               },
               error: null,
-            });
+            })
           }
           // Para otros tipos de insert, usar el mock por defecto
           return Promise.resolve({
             data: { id: 1, ...mockSupabaseResponse.data[0] },
             error: null,
-          });
+          })
         }),
-      }))
-    };
+      })),
+    }
   })
 
   builder.update = jest.fn(() => ({
@@ -561,29 +584,31 @@ const createMockQueryBuilder = () => {
   }))
 
   // Método para consultas con IN (productos)
-  builder.in = jest.fn(() => Promise.resolve({
-    data: [
-      {
-        id: 1,
-        name: 'Test Product 1',
-        price: 1000,
-        discounted_price: null,
-        stock: 10,
-        images: { previews: ['test1.jpg'] },
-        category: { name: 'Test Category', slug: 'test-category' }
-      },
-      {
-        id: 2,
-        name: 'Test Product 2',
-        price: 2000,
-        discounted_price: 1800,
-        stock: 5,
-        images: { previews: ['test2.jpg'] },
-        category: { name: 'Test Category', slug: 'test-category' }
-      }
-    ],
-    error: null
-  }))
+  builder.in = jest.fn(() =>
+    Promise.resolve({
+      data: [
+        {
+          id: 1,
+          name: 'Test Product 1',
+          price: 1000,
+          discounted_price: null,
+          stock: 10,
+          images: { previews: ['test1.jpg'] },
+          category: { name: 'Test Category', slug: 'test-category' },
+        },
+        {
+          id: 2,
+          name: 'Test Product 2',
+          price: 2000,
+          discounted_price: 1800,
+          stock: 5,
+          images: { previews: ['test2.jpg'] },
+          category: { name: 'Test Category', slug: 'test-category' },
+        },
+      ],
+      error: null,
+    })
+  )
 
   return builder
 }
@@ -598,8 +623,8 @@ jest.mock('@/lib/supabase', () => {
         { brand: 'Plavicon', product_count: 5 },
         { brand: 'Akapol', product_count: 2 },
       ],
-      error: null
-    };
+      error: null,
+    }
 
     const mockQueryBuilder = {
       select: jest.fn(() => mockQueryBuilder),
@@ -625,20 +650,22 @@ jest.mock('@/lib/supabase', () => {
       range: jest.fn(() => mockQueryBuilder),
       single: jest.fn(() => Promise.resolve(mockData)),
       maybeSingle: jest.fn(() => Promise.resolve(mockData)),
-      then: jest.fn((callback) => Promise.resolve(callback(mockData))),
+      then: jest.fn(callback => Promise.resolve(callback(mockData))),
       catch: jest.fn(() => Promise.resolve()),
-    };
+    }
 
-    return mockQueryBuilder;
-  };
+    return mockQueryBuilder
+  }
 
   const mockClient = {
     from: jest.fn(() => createMockQueryBuilder()),
     auth: {
-      getUser: jest.fn(() => Promise.resolve({
-        data: { user: null },
-        error: null,
-      })),
+      getUser: jest.fn(() =>
+        Promise.resolve({
+          data: { user: null },
+          error: null,
+        })
+      ),
     },
   }
 
@@ -704,9 +731,13 @@ jest.mock('@/lib/integrations/supabase', () => {
       getUser: jest.fn().mockResolvedValue({ data: { user: null }, error: null }),
       getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
       signUp: jest.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
-      signInWithPassword: jest.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
+      signInWithPassword: jest
+        .fn()
+        .mockResolvedValue({ data: { user: null, session: null }, error: null }),
       signOut: jest.fn().mockResolvedValue({ error: null }),
-      onAuthStateChange: jest.fn().mockReturnValue({ data: { subscription: { unsubscribe: jest.fn() } } }),
+      onAuthStateChange: jest
+        .fn()
+        .mockReturnValue({ data: { subscription: { unsubscribe: jest.fn() } } }),
     },
     storage: {
       from: jest.fn(() => ({
@@ -718,7 +749,7 @@ jest.mock('@/lib/integrations/supabase', () => {
       })),
     },
     rpc: jest.fn().mockResolvedValue({ data: null, error: null }),
-  };
+  }
 
   return {
     supabase: mockSupabaseClient,
@@ -726,33 +757,39 @@ jest.mock('@/lib/integrations/supabase', () => {
     getSupabaseClient: jest.fn(() => mockSupabaseClient),
     handleSupabaseError: jest.fn(),
     mockSupabaseClient,
-  };
+  }
 })
 
 // Mock NextAuth.js para tests de API
 jest.mock('next-auth/next', () => ({
-  getServerSession: jest.fn(() => Promise.resolve({
-    user: {
-      id: 'test-user-id',
-      email: 'test@example.com',
-      name: 'Test User',
-    },
-  })),
+  getServerSession: jest.fn(() =>
+    Promise.resolve({
+      user: {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        name: 'Test User',
+      },
+    })
+  ),
 }))
 
 // Mock auth utilities para compatibilidad
 jest.mock('@/lib/auth/admin-auth', () => ({
-  getAuthUser: jest.fn(() => Promise.resolve({
-    id: 'test-user-id',
-    email: 'test@example.com',
-    name: 'Test User',
-  })),
+  getAuthUser: jest.fn(() =>
+    Promise.resolve({
+      id: 'test-user-id',
+      email: 'test@example.com',
+      name: 'Test User',
+    })
+  ),
   getAuthUserId: jest.fn(() => Promise.resolve('test-user-id')),
-  requireAuth: jest.fn(() => Promise.resolve({
-    id: 'test-user-id',
-    email: 'test@example.com',
-    name: 'Test User',
-  })),
+  requireAuth: jest.fn(() =>
+    Promise.resolve({
+      id: 'test-user-id',
+      email: 'test@example.com',
+      name: 'Test User',
+    })
+  ),
 }))
 
 // Mock MercadoPago - Versión completa
@@ -761,33 +798,41 @@ jest.mock('@/lib/integrations/mercadopago', () => ({
     accessToken: 'TEST-mock-token',
     options: {
       timeout: 5000,
-      idempotencyKey: 'mock-key'
-    }
+      idempotencyKey: 'mock-key',
+    },
   })),
   preference: {
-    create: jest.fn(() => Promise.resolve({
-      id: 'mock-preference-id',
-      init_point: 'https://mock-mercadopago.com/checkout',
-      sandbox_init_point: 'https://sandbox-mercadopago.com/checkout'
-    }))
+    create: jest.fn(() =>
+      Promise.resolve({
+        id: 'mock-preference-id',
+        init_point: 'https://mock-mercadopago.com/checkout',
+        sandbox_init_point: 'https://sandbox-mercadopago.com/checkout',
+      })
+    ),
   },
   payment: {
-    get: jest.fn(() => Promise.resolve({
+    get: jest.fn(() =>
+      Promise.resolve({
+        id: 'mock-payment-id',
+        status: 'approved',
+        transaction_amount: 100,
+      })
+    ),
+  },
+  createPaymentPreference: jest.fn(() =>
+    Promise.resolve({
+      id: 'mock-preference-id',
+      init_point: 'https://mock-mercadopago.com/checkout',
+    })
+  ),
+  getPaymentInfo: jest.fn(() =>
+    Promise.resolve({
       id: 'mock-payment-id',
       status: 'approved',
-      transaction_amount: 100
-    }))
-  },
-  createPaymentPreference: jest.fn(() => Promise.resolve({
-    id: 'mock-preference-id',
-    init_point: 'https://mock-mercadopago.com/checkout'
-  })),
-  getPaymentInfo: jest.fn(() => Promise.resolve({
-    id: 'mock-payment-id',
-    status: 'approved'
-  })),
+    })
+  ),
   validateWebhookSignature: jest.fn(() => true),
-  validateWebhookOrigin: jest.fn(() => true)
+  validateWebhookOrigin: jest.fn(() => true),
 }))
 
 // Mock Redis para tests
@@ -814,17 +859,21 @@ jest.mock('@/lib/redis', () => ({
 
 // Mock Rate Limiter
 jest.mock('@/lib/enterprise/rate-limiter', () => ({
-  checkRateLimit: jest.fn(() => Promise.resolve({
-    success: true,
-    remaining: 100,
-    reset: Date.now() + 60000,
-  })),
-  RateLimiter: jest.fn().mockImplementation(() => ({
-    check: jest.fn(() => Promise.resolve({
+  checkRateLimit: jest.fn(() =>
+    Promise.resolve({
       success: true,
       remaining: 100,
       reset: Date.now() + 60000,
-    })),
+    })
+  ),
+  RateLimiter: jest.fn().mockImplementation(() => ({
+    check: jest.fn(() =>
+      Promise.resolve({
+        success: true,
+        remaining: 100,
+        reset: Date.now() + 60000,
+      })
+    ),
   })),
 }))
 
@@ -834,4 +883,3 @@ afterEach(() => {
   localStorageMock.clear()
   sessionStorageMock.clear()
 })
-

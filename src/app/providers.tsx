@@ -1,48 +1,83 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
+import dynamic from 'next/dynamic'
+import { BrowserCacheUtils } from '@/lib/cache/browser-cache-optimizer'
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
 
-// Providers de la aplicación
+// ⚡ PERFORMANCE: Providers críticos (carga inmediata)
 import { CartModalProvider } from './context/CartSidebarModalContext'
 import { ReduxProvider } from '@/redux/provider'
 import { PreviewSliderProvider } from './context/PreviewSliderContext'
 import CartPersistenceProvider from '@/components/providers/CartPersistenceProvider'
-import { SimpleAnalyticsProvider as AnalyticsProvider } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { QueryClientProvider } from '@/components/providers/QueryClientProvider'
-import { NetworkErrorProvider } from '@/components/providers/NetworkErrorProvider'
-import { MonitoringProvider } from '@/providers/MonitoringProvider'
 import { AdvancedErrorBoundary } from '@/lib/error-boundary/advanced-error-boundary'
+import { ModalProvider } from '@/contexts/ModalContext'
 
-// Componentes UI
+// ⚡ PERFORMANCE: Providers no críticos (lazy load -0.4s FCP)
+const AnalyticsProvider = dynamic(
+  () => import('@/components/Analytics/SimpleAnalyticsProvider').then(m => ({ default: m.SimpleAnalyticsProvider })),
+  { ssr: false }
+)
+const NetworkErrorProvider = dynamic(
+  () => import('@/components/providers/NetworkErrorProvider').then(m => ({ default: m.NetworkErrorProvider })),
+  { ssr: false }
+)
+const MonitoringProvider = dynamic(
+  () => import('@/providers/MonitoringProvider').then(m => ({ default: m.MonitoringProvider })),
+  { ssr: false }
+)
+
+// Componentes UI - Carga inmediata (críticos)
 import Header from '../components/Header/index'
 import Footer from '../components/layout/Footer'
-import CartSidebarModal from '@/components/Common/CartSidebarModal/index'
-import PreviewSliderModal from '@/components/Common/PreviewSlider'
 import ScrollToTop from '@/components/Common/ScrollToTop'
-import PreLoader from '@/components/Common/PreLoader'
-import CartNotification, { useCartNotification } from '@/components/Common/CartNotification'
-// import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import FloatingCartButton from '@/components/ui/floating-cart-button'
 import { Toaster } from '@/components/ui/toast'
 
+// ⚡ PERFORMANCE: Lazy loading de componentes pesados
+// Estos componentes se cargan solo cuando son necesarios
+const CartSidebarModal = dynamic(() => import('@/components/Common/CartSidebarModal/index'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const PreviewSliderModal = dynamic(() => import('@/components/Common/PreviewSlider'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const FloatingCartButton = dynamic(() => import('@/components/ui/floating-cart-button'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const FloatingWhatsAppButton = dynamic(() => import('@/components/ui/floating-whatsapp-button'), {
+  ssr: false,
+  loading: () => null,
+})
+
+// ⚡ PERFORMANCE: Memoizar componentes para evitar re-renders innecesarios
+const MemoizedHeader = React.memo(Header)
+const MemoizedFooter = React.memo(Footer)
+const MemoizedScrollToTop = React.memo(ScrollToTop)
+const MemoizedToaster = React.memo(Toaster)
+
 // Componente NextAuthWrapper para manejar sesiones
-function NextAuthWrapper({ children }: { children: React.ReactNode }) {
+const NextAuthWrapper = React.memo(({ children }: { children: React.ReactNode }) => {
   // DEBUG: Log de configuración NextAuth
   console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce')
 
   return <SessionProvider>{children}</SessionProvider>
-}
+})
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState<boolean>(true)
-  const [isClient, setIsClient] = useState<boolean>(false)
 
   useEffect(() => {
-    // Verificar que estamos en el cliente para evitar errores de SSG
-    setIsClient(true)
-    setTimeout(() => setLoading(false), 1000)
+    // Desregistrar SW y limpiar caches si el flag está deshabilitado
+    if (process.env.NEXT_PUBLIC_ENABLE_SW !== 'true') {
+      BrowserCacheUtils.unregisterAndClearCaches()
+    }
   }, [])
 
   // ✅ NEXTAUTH.JS ACTIVADO - Migración completada 21/08/2025
@@ -51,11 +86,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   // Componente interno con todos los providers
   const AppContent = () => {
-    const { notification, hideNotification } = useCartNotification()
+    // Notificación deshabilitada: no inicializamos el hook
+    // const { notification, hideNotification } = useCartNotification()
     const pathname = usePathname()
 
     // Detectar si estamos en rutas de admin
     const isAdminRoute = pathname?.startsWith('/admin')
+    // Detectar si estamos en checkout express para ocultar el botón flotante
+    const isCheckoutRoute = pathname?.startsWith('/checkout')
+    // Detectar si estamos en rutas de autenticación
+    const isAuthRoute = pathname?.startsWith('/auth/') || pathname === '/auth'
 
     // DEBUG: Logs para verificar la detección de rutas admin (DESHABILITADO)
     // console.log('🔧 PROVIDERS DEBUG:', {
@@ -66,74 +106,77 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     return (
       <>
-        {loading ? (
-          <PreLoader />
-        ) : (
-          <>
-            <AdvancedErrorBoundary
-              level="page"
-              context="RootApplication"
-              enableRetry={true}
-              maxRetries={3}
-              enableAutoRecovery={true}
-              enableReporting={true}
-            >
-              <MonitoringProvider
-                autoStart={process.env.NODE_ENV === 'production'}
-                enableErrorBoundary={true}
-              >
-              <QueryClientProvider>
-                <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
-                  <ReduxProvider>
-                    <CartPersistenceProvider>
-                      <AnalyticsProvider>
-                        <CartModalProvider>
-                          <PreviewSliderProvider>
-                            {/* Header y Footer solo para rutas públicas - MOVIDO DENTRO DE QueryClientProvider */}
-                            {!isAdminRoute && <Header />}
+        {/* ⚡ PERFORMANCE: Orden optimizado - Críticos primero */}
+        <AdvancedErrorBoundary
+          level='page'
+          context='RootApplication'
+          enableRetry={true}
+          maxRetries={3}
+          enableAutoRecovery={true}
+          enableReporting={true}
+        >
+          {/* 1. Query client - Crítico para data fetching */}
+          <QueryClientProvider>
+            {/* 2. Redux - Crítico para state management */}
+            <ReduxProvider>
+              {/* 3. Cart persistence - Crítico para carrito */}
+              <CartPersistenceProvider>
+                {/* 4. Modal provider - Crítico para UI */}
+                <ModalProvider>
+                  <CartModalProvider>
+                    <PreviewSliderProvider>
+                      {/* ⚡ Providers lazy - No bloquean FCP */}
+                      <MonitoringProvider
+                        autoStart={process.env.NODE_ENV === 'production'}
+                        enableErrorBoundary={true}
+                      >
+                        <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
+                          <AnalyticsProvider>
+                            {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
+                            {!isAdminRoute && !isAuthRoute && <MemoizedHeader />}
 
-                            {/* CartSidebarModal solo para rutas públicas */}
-                            {!isAdminRoute && <CartSidebarModal />}
+                            {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
+                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
                             <PreviewSliderModal />
-                            <ScrollToTop />
+                            <MemoizedScrollToTop />
 
                             {/* Contenido principal */}
                             {children}
 
-                            {/* Footer solo para rutas públicas */}
-                            {!isAdminRoute && <Footer />}
+                            {/* Footer solo para rutas públicas - Memoizado */}
+                            {!isAdminRoute && !isAuthRoute && <MemoizedFooter />}
 
                             {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
                             {/* <div className="md:hidden">
                       <BottomNavigation />
                     </div> */}
 
-                            {/* Botón de carrito flotante - Solo en rutas públicas */}
-                            {!isAdminRoute && <FloatingCartButton />}
+                            {/* Botones flotantes - Lazy loaded y solo para rutas públicas */}
+                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingCartButton />}
+                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingWhatsAppButton />}
 
-                            {/* Notificación del carrito - Solo en rutas públicas */}
-                            {!isAdminRoute && (
-                              <CartNotification
-                                show={notification.show}
-                                productName={notification.productName}
-                                productImage={notification.productImage}
-                                onClose={hideNotification}
-                              />
-                            )}
+                            {/* Notificación del carrito deshabilitada por requerimiento */}
+                            {/* {!isAdminRoute && (
+                                <CartNotification
+                                  show={notification.show}
+                                  productName={notification.productName}
+                                  productImage={notification.productImage}
+                                  onClose={hideNotification}
+                                />
+                              )} */}
 
-                            {/* Toaster para notificaciones */}
-                            <Toaster />
-                          </PreviewSliderProvider>
-                        </CartModalProvider>
-                      </AnalyticsProvider>
-                    </CartPersistenceProvider>
-                  </ReduxProvider>
-                </NetworkErrorProvider>
-              </QueryClientProvider>
-            </MonitoringProvider>
-          </AdvancedErrorBoundary>
-        </>
-      )}
+                            {/* Toaster para notificaciones - Memoizado */}
+                            <MemoizedToaster />
+                          </AnalyticsProvider>
+                        </NetworkErrorProvider>
+                      </MonitoringProvider>
+                    </PreviewSliderProvider>
+                  </CartModalProvider>
+                </ModalProvider>
+              </CartPersistenceProvider>
+            </ReduxProvider>
+          </QueryClientProvider>
+        </AdvancedErrorBoundary>
       </>
     )
   }

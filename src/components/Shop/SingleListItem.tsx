@@ -3,25 +3,27 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Product } from '@/types/product'
-import { useCartActions } from '@/hooks/useCartActions'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/redux/store'
 import { updateQuickView } from '@/redux/features/quickView-slice'
 import { addItemToWishlist } from '@/redux/features/wishlist-slice'
-import { useCartWithBackend } from '@/hooks/useCartWithBackend'
+// import { useCartWithBackend } from '@/hooks/useCartWithBackend'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { ExtendedProduct, calculateProductFeatures } from '@/lib/adapters/productAdapter'
+import { getMainImage } from '@/lib/adapters/product-adapter'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 
 interface SingleListItemProps {
   product: ExtendedProduct
 }
 
 const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
-  const { addToCart } = useCartActions()
+  const { addProduct } = useCartUnified()
   const { trackEvent } = useAnalytics()
   const dispatch = useDispatch<AppDispatch>()
-  const { addItem } = useCartWithBackend()
+  // const { addItem } = useCartWithBackend()
 
   // Usar product directamente
   const item = product
@@ -31,28 +33,21 @@ const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
     dispatch(updateQuickView({ ...item }))
   }
 
-  // add to cart - Conectado con backend
-  const handleAddToCart = async () => {
-    // Intentar agregar al backend primero
-    const success = await addItem(item.id, 1)
-
-    if (success) {
-      // Si el backend funciona, también actualizar Redux para compatibilidad
-      dispatch(
-        addItemToCart({
-          ...item,
-          quantity: 1,
-        })
-      )
-    } else {
-      // Si falla el backend, solo usar Redux (fallback)
-      dispatch(
-        addItemToCart({
-          ...item,
-          quantity: 1,
-        })
-      )
-    }
+  // Agregar al carrito usando el hook unificado
+  const handleAddToCart = () => {
+    addProduct(
+      {
+        id: item.id,
+        title: item.name || item.title,
+        price: item.price,
+        discounted_price:
+          features.discount
+            ? Math.round(item.price * (1 - features.discount / 100))
+            : features.currentPrice,
+        images: [getMainImage(item)].filter(Boolean),
+      },
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida, finish: item?.finish } }
+    )
   }
 
   const handleItemToWishList = () => {
@@ -71,11 +66,15 @@ const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
   return (
     <CommercialProductCard
       className='bg-white' // Forzar fondo blanco
-      image={
-        item.images?.previews?.[0] || item.imgs?.previews?.[0] || '/images/products/placeholder.svg'
-      }
+      image={getMainImage(item)}
       title={item.name || item.title}
       brand={item.brand}
+      description={item.description}
+      variants={item?.variants || []}
+      specifications={item?.specifications}
+      dimensions={item?.dimensions}
+      color={item?.color}
+      medida={item?.medida}
       price={
         features.discount
           ? Math.round(item.price * (1 - features.discount / 100))
@@ -99,11 +98,32 @@ const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
             }
           : undefined
       }
-      // Envío gratis automático para productos >= $15000
-      freeShipping={features.freeShipping || features.currentPrice >= 15000}
-      shippingText={
-        features.freeShipping ? 'Envío gratis' : features.fastShipping ? 'Envío rápido' : undefined
-      }
+      // Envío gratis según Design System (umbral global)
+      {...(() => {
+        const config = useDesignSystemConfig()
+        const autoFree = dsShouldShowFreeShipping(features.currentPrice, config)
+        const free = Boolean(features.freeShipping) || autoFree
+        return {
+          freeShipping: free,
+          shippingText: free
+            ? 'Envío gratis'
+            : features.fastShipping
+            ? 'Envío rápido'
+            : undefined,
+        }
+      })()}
+      badgeConfig={{
+        showCapacity: true,
+        showColor: true,
+        showFinish: true,
+        showMaterial: true,
+        showGrit: true,
+        showDimensions: true,
+        // Alinear con Home/ProductItem
+        showWeight: false,
+        showBrand: false,
+        maxBadges: 3,
+      }}
     />
   )
 }

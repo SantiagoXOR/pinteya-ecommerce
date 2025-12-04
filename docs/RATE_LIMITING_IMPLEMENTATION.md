@@ -43,17 +43,17 @@ RATE_LIMIT_AUTH_MAX=10             # 10 intentos
 ```typescript
 export const RATE_LIMIT_CONFIGS = {
   products: {
-    windowMs: 5 * 60 * 1000,   // 5 minutos
-    maxRequests: 200,          // 200 requests por ventana
+    windowMs: 5 * 60 * 1000, // 5 minutos
+    maxRequests: 200, // 200 requests por ventana
     message: 'Límite de consultas de productos excedido. Intente en 5 minutos.',
   },
   auth: {
-    windowMs: 15 * 60 * 1000,  // 15 minutos
-    maxRequests: 10,           // 10 intentos por ventana
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    maxRequests: 10, // 10 intentos por ventana
     message: 'Demasiados intentos de autenticación. Intente en 15 minutos.',
   },
   // ... más configuraciones
-};
+}
 ```
 
 ## 🚀 Uso
@@ -61,31 +61,27 @@ export const RATE_LIMIT_CONFIGS = {
 ### Implementación Básica
 
 ```typescript
-import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter';
-import { createSecurityLogger } from '@/lib/logging/security-logger';
+import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
+import { createSecurityLogger } from '@/lib/logging/security-logger'
 
 export async function GET(request: NextRequest) {
-  const securityLogger = createSecurityLogger(request);
-  
-  const rateLimitResult = await withRateLimit(
-    request,
-    RATE_LIMIT_CONFIGS.products,
-    async () => {
-      // Tu lógica de API aquí
-      return await handleRequest();
-    }
-  );
+  const securityLogger = createSecurityLogger(request)
+
+  const rateLimitResult = await withRateLimit(request, RATE_LIMIT_CONFIGS.products, async () => {
+    // Tu lógica de API aquí
+    return await handleRequest()
+  })
 
   // Manejar rate limit excedido
   if (rateLimitResult instanceof NextResponse) {
-    securityLogger.logRateLimitExceeded(
-      securityLogger.context,
-      { endpoint: '/api/products', method: 'GET' }
-    );
-    return rateLimitResult;
+    securityLogger.logRateLimitExceeded(securityLogger.context, {
+      endpoint: '/api/products',
+      method: 'GET',
+    })
+    return rateLimitResult
   }
 
-  return rateLimitResult;
+  return rateLimitResult
 }
 ```
 
@@ -93,16 +89,16 @@ export async function GET(request: NextRequest) {
 
 ```typescript
 const customConfig: RateLimitConfig = {
-  windowMs: 10 * 60 * 1000,  // 10 minutos
-  maxRequests: 50,           // 50 requests
+  windowMs: 10 * 60 * 1000, // 10 minutos
+  maxRequests: 50, // 50 requests
   message: 'Límite personalizado excedido',
-  keyGenerator: (request) => {
+  keyGenerator: request => {
     // Lógica personalizada para generar clave
-    return `custom:${getClientIP(request)}`;
-  }
-};
+    return `custom:${getClientIP(request)}`
+  },
+}
 
-const result = await withRateLimit(request, customConfig, handler);
+const result = await withRateLimit(request, customConfig, handler)
 ```
 
 ## 📊 Monitoreo y Logging
@@ -127,8 +123,8 @@ securityLogger.logRateLimitExceeded(context, {
   method: 'GET',
   limit: 200,
   window: '5m',
-  clientIP: '192.168.1.1'
-});
+  clientIP: '192.168.1.1',
+})
 ```
 
 ## 🔍 Identificación de Clientes
@@ -141,12 +137,12 @@ securityLogger.logRateLimitExceeded(context, {
 
 ```typescript
 function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
+  const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) {
-    return forwarded.split(',')[0].trim();
+    return forwarded.split(',')[0].trim()
   }
-  
-  return request.headers.get('x-real-ip') || 'unknown';
+
+  return request.headers.get('x-real-ip') || 'unknown'
 }
 ```
 
@@ -155,12 +151,12 @@ function getClientIP(request: NextRequest): string {
 ```typescript
 function generateKey(request: NextRequest, config: RateLimitConfig): string {
   if (config.keyGenerator) {
-    return config.keyGenerator(request);
+    return config.keyGenerator(request)
   }
-  
-  const ip = getClientIP(request);
-  const endpoint = new URL(request.url).pathname;
-  return `${ip}:${endpoint}`;
+
+  const ip = getClientIP(request)
+  const endpoint = new URL(request.url).pathname
+  return `${ip}:${endpoint}`
 }
 ```
 
@@ -177,16 +173,16 @@ npm test -- __tests__/lib/rate-limiting.test.ts
 ```typescript
 describe('Rate Limiting Integration', () => {
   it('should block requests after limit', async () => {
-    const requests = Array(6).fill(null).map(() => 
-      fetch('/api/products', { headers: { 'x-forwarded-for': '192.168.1.1' } })
-    );
-    
-    const responses = await Promise.all(requests);
-    const lastResponse = responses[responses.length - 1];
-    
-    expect(lastResponse.status).toBe(429);
-  });
-});
+    const requests = Array(6)
+      .fill(null)
+      .map(() => fetch('/api/products', { headers: { 'x-forwarded-for': '192.168.1.1' } }))
+
+    const responses = await Promise.all(requests)
+    const lastResponse = responses[responses.length - 1]
+
+    expect(lastResponse.status).toBe(429)
+  })
+})
 ```
 
 ## 🔧 Configuración Avanzada
@@ -195,9 +191,9 @@ describe('Rate Limiting Integration', () => {
 
 ```typescript
 interface RateLimitStore {
-  get(key: string): Promise<number | null>;
-  set(key: string, value: number, ttl: number): Promise<void>;
-  increment(key: string, ttl: number): Promise<number>;
+  get(key: string): Promise<number | null>
+  set(key: string, value: number, ttl: number): Promise<void>
+  increment(key: string, ttl: number): Promise<number>
 }
 
 // Implementación con Redis
@@ -209,13 +205,10 @@ class RedisRateLimitStore implements RateLimitStore {
 ### Middleware Personalizado
 
 ```typescript
-export function createCustomRateLimiter(
-  config: RateLimitConfig,
-  store?: RateLimitStore
-) {
+export function createCustomRateLimiter(config: RateLimitConfig, store?: RateLimitStore) {
   return async (request: NextRequest) => {
     // Lógica personalizada de rate limiting
-  };
+  }
 }
 ```
 
@@ -236,8 +229,8 @@ if (blockedRequests / totalRequests > 0.5) {
   sendAlert('High rate limit hit ratio', {
     endpoint,
     ratio: blockedRequests / totalRequests,
-    timeframe: '5m'
-  });
+    timeframe: '5m',
+  })
 }
 ```
 
@@ -246,17 +239,19 @@ if (blockedRequests / totalRequests > 0.5) {
 ### Problemas Comunes
 
 1. **Rate limit muy estricto**
+
    ```bash
    # Ajustar en variables de entorno
    RATE_LIMIT_PRODUCTS_MAX=500
    ```
 
 2. **IPs legítimas bloqueadas**
+
    ```typescript
    // Implementar whitelist
-   const whitelist = ['192.168.1.100', '10.0.0.1'];
+   const whitelist = ['192.168.1.100', '10.0.0.1']
    if (whitelist.includes(clientIP)) {
-     return handler();
+     return handler()
    }
    ```
 
@@ -264,8 +259,8 @@ if (blockedRequests / totalRequests > 0.5) {
    ```typescript
    // Implementar limpieza automática
    setInterval(() => {
-     cleanupExpiredEntries();
-   }, 60000);
+     cleanupExpiredEntries()
+   }, 60000)
    ```
 
 ### Logs de Debug
@@ -289,7 +284,7 @@ DEBUG=rate-limiting npm run dev
 ```typescript
 // Feature flag para deshabilitar rate limiting
 if (process.env.DISABLE_RATE_LIMITING === 'true') {
-  return handler();
+  return handler()
 }
 ```
 
@@ -315,6 +310,3 @@ Para contribuir al sistema de rate limiting:
 **Última actualización**: 2025-01-11
 **Versión**: 1.0.0
 **Mantenedor**: Equipo de Desarrollo Pinteya
-
-
-

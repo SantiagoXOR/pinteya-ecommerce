@@ -42,7 +42,7 @@ describe('CommercialProductCard', () => {
     expect(screen.getByText('especial')).toBeInTheDocument()
   })
 
-  it('shows installments information when provided', () => {
+  it('does not show installments information even when provided', () => {
     const installments = {
       quantity: 3,
       amount: 6450,
@@ -51,7 +51,7 @@ describe('CommercialProductCard', () => {
 
     render(<CommercialProductCard {...defaultProps} installments={installments} />)
 
-    expect(screen.getByText('3x de $6.450 sin interés')).toBeInTheDocument()
+    expect(screen.queryByText(/x de \$/)).not.toBeInTheDocument()
   })
 
   it('shows free shipping when freeShipping is true', () => {
@@ -60,8 +60,8 @@ describe('CommercialProductCard', () => {
     expect(screen.getByAltText('Envío gratis')).toBeInTheDocument()
   })
 
-  it('shows free shipping automatically for prices >= 15000', () => {
-    render(<CommercialProductCard {...defaultProps} price={20000} />)
+  it('shows free shipping automatically for prices >= 50000', () => {
+    render(<CommercialProductCard {...defaultProps} price={60000} />)
 
     expect(screen.getByAltText('Envío gratis')).toBeInTheDocument()
   })

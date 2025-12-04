@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     console.log('[TEST_WEBHOOK] Order encontrada:', order.id, 'Status actual:', order.status)
 
     // Mapear estados
-    const newOrderStatus = 'paid' // ✅ CORREGIDO: Usar estado válido
+    const newOrderStatus = 'confirmed' // ✅ Orden confirmada después del pago
     const newPaymentStatus = 'paid'
 
     console.log(

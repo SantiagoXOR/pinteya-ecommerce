@@ -25,6 +25,8 @@ coverage/
 test-results/
 playwright-report/
 .jest-cache/
+tests/reports/
+tests/results.json
 
 # Package manager
 package-lock.json
@@ -47,9 +49,34 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Configuration files
+tsconfig.json
+vercel.json
+vercel-storybook.json
+
 # Documentation build
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+
+# Logs and reports
+logs/
+*.log
+tests/reports/
+tests/results.json
+.mcp-logs.json
+
+# HTML test files
+public/test-images.html
+
+# Markdown files
+*.md
+*.mdx
+
+# Security files
+SECURITY-IMPROVEMENTS.md
+
+# Test files with JSX syntax issues
+__tests__/performance/lazy-loading.test.ts
 
 # Supabase
 supabase/.branches/

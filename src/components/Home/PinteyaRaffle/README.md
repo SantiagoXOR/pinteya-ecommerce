@@ -7,24 +7,28 @@ El componente `PinteyaRaffle` es una refactorización completa del componente `C
 ## ✨ Características Principales
 
 ### 🎨 Diseño Visual
+
 - **Paleta de colores Pinteya**: Blaze Orange, Fun Green, Bright Sun
 - **Gradientes modernos**: Fondo con degradado suave
 - **Animaciones fluidas**: Efectos hover, pulse y bounce
 - **Responsive design**: Optimizado para mobile, tablet y desktop
 
 ### ⏰ Contador Regresivo
+
 - **Tiempo real**: Actualización cada segundo
 - **15 días de duración**: Configurado automáticamente
 - **Formato elegante**: Días, horas, minutos y segundos
 - **Animación en segundos**: Efecto pulse para mayor dinamismo
 
 ### 🏆 Información del Sorteo
+
 - **Premio valorado**: $150.000 en productos
 - **Marcas incluidas**: Plavicon, Petrilac, Sinteplast, etc.
 - **Kit completo**: Látex, esmaltes, herramientas y accesorios
 - **Participación gratuita**: Solo seguir en redes sociales
 
 ### 🖼️ Elementos Visuales
+
 - **Imágenes reales**: Productos de la base de datos
 - **Productos flotantes**: Pincel y rodillo decorativos
 - **Efectos decorativos**: Círculos animados
@@ -42,22 +46,22 @@ El componente `PinteyaRaffle` es una refactorización completa del componente `C
 ## 📦 Componentes del Design System
 
 ```tsx
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 ```
 
 ## 🎯 Uso
 
 ```tsx
-import PinteyaRaffle from "@/components/Home/PinteyaRaffle";
+import PinteyaRaffle from '@/components/Home/PinteyaRaffle'
 
 function HomePage() {
   return (
     <main>
       <PinteyaRaffle />
     </main>
-  );
+  )
 }
 ```
 
@@ -112,16 +116,19 @@ npm run storybook
 ## 📱 Responsive Design
 
 ### Mobile (320px - 768px)
+
 - 2 columnas en grid de productos
 - Contador compacto (80px)
 - Texto responsive (text-sm/base)
 
 ### Tablet (768px - 1024px)
+
 - 4 columnas en grid de productos
 - Contador intermedio (90px)
 - Texto intermedio (text-base/lg)
 
 ### Desktop (1024px+)
+
 - Layout completo lado a lado
 - Contador grande (100px)
 - Texto grande (text-lg/xl)
@@ -129,22 +136,24 @@ npm run storybook
 ## 🔧 Configuración
 
 ### Fecha del Sorteo
+
 ```tsx
 // Automático: 15 días desde hoy
-const deadline = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toDateString();
+const deadline = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toDateString()
 
 // Manual: Fecha específica
-const deadline = "January 15, 2025";
+const deadline = 'January 15, 2025'
 ```
 
 ### Imágenes de Productos
+
 ```tsx
 // Imagen principal
-src="/images/products/latex-interior-4l-plavicon.jpg"
+src = '/images/products/latex-interior-4l-plavicon.jpg'
 
 // Productos flotantes
-src="/images/products/pincel-persianero-n15-galgo.jpg"
-src="/images/products/rodillo-22cm-lanar-elefante-galgo.jpg"
+src = '/images/products/pincel-persianero-n15-galgo.jpg'
+src = '/images/products/rodillo-22cm-lanar-elefante-galgo.jpg'
 ```
 
 ## 🚀 Integración
@@ -153,7 +162,7 @@ El componente reemplaza al `CounDown` original en:
 
 ```tsx
 // src/components/Home/index.tsx
-import PinteyaRaffle from "./PinteyaRaffle";
+import PinteyaRaffle from './PinteyaRaffle'
 
 const Home = () => {
   return (
@@ -162,8 +171,8 @@ const Home = () => {
       <PinteyaRaffle />
       {/* ... otros componentes ... */}
     </main>
-  );
-};
+  )
+}
 ```
 
 ## 📈 Performance
@@ -183,19 +192,21 @@ const Home = () => {
 ## 🔄 Migración desde CounDown
 
 1. **Reemplazar import**:
+
    ```tsx
    // Antes
-   import CounDown from "./Countdown";
-   
+   import CounDown from './Countdown'
+
    // Después
-   import PinteyaRaffle from "./PinteyaRaffle";
+   import PinteyaRaffle from './PinteyaRaffle'
    ```
 
 2. **Actualizar uso**:
+
    ```tsx
    // Antes
    <CounDown />
-   
+
    // Después
    <PinteyaRaffle />
    ```
@@ -212,6 +223,3 @@ const Home = () => {
 - **Colores consistentes**: Sigue el design system de Pinteya
 - **Animaciones suaves**: Mejora la experiencia de usuario
 - **Código limpio**: TypeScript y ESLint compliant
-
-
-

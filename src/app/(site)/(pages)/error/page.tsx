@@ -5,7 +5,10 @@ import { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Página de Error | Pinteya E-commerce',
   description: 'Página de error para Pinteya E-commerce',
-  // other metadata
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 const ErrorPage = () => {

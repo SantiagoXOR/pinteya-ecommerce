@@ -10,7 +10,7 @@ import { configureStore } from '@reduxjs/toolkit'
 // Componentes migrados
 import NewArrivals from '@/components/Home/NewArrivals'
 import BestSeller from '@/components/Home/BestSeller'
-import SearchBox from '@/components/ShopWithSidebar/SearchBox'
+import SearchBox from '@/components/ShopWithSidebar/_unused/SearchBox'
 import CategoryDropdown from '@/components/ShopWithSidebar/CategoryDropdown'
 import Breadcrumb from '@/components/Common/Breadcrumb'
 import ScrollToTop from '@/components/Common/ScrollToTop'

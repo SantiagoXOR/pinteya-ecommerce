@@ -5,21 +5,21 @@
  * Genera reportes automáticos de las optimizaciones implementadas
  */
 
-const { createClient } = require('@supabase/supabase-js');
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config({ path: '.env.local' });
+const { createClient } = require('@supabase/supabase-js')
+const fs = require('fs')
+const path = require('path')
+require('dotenv').config({ path: '.env.local' })
 
 // Configuración
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('❌ Variables de entorno de Supabase no configuradas');
-  process.exit(1);
+  console.error('❌ Variables de entorno de Supabase no configuradas')
+  process.exit(1)
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 /**
  * Obtener métricas actuales de la base de datos
@@ -29,20 +29,20 @@ async function getCurrentMetrics() {
     // Métricas de analytics
     const { data: analyticsOriginal } = await supabase
       .from('analytics_events')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true })
 
     const { data: analyticsOptimized } = await supabase
       .from('analytics_events_optimized')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true })
 
     // Métricas de productos
     const { data: productsOriginal } = await supabase
       .from('products')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true })
 
     const { data: productsOptimized } = await supabase
       .from('products_optimized')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true })
 
     // Obtener tamaños de tablas
     const { data: tableSizes } = await supabase.rpc('exec_sql', {
@@ -66,8 +66,8 @@ async function getCurrentMetrics() {
           'products_optimized',
           pg_size_pretty(pg_total_relation_size('products_optimized')),
           pg_total_relation_size('products_optimized')
-      `
-    });
+      `,
+    })
 
     return {
       analytics: {
@@ -78,12 +78,11 @@ async function getCurrentMetrics() {
         originalCount: productsOriginal?.count || 0,
         optimizedCount: productsOptimized?.count || 0,
       },
-      tableSizes: tableSizes || []
-    };
-
+      tableSizes: tableSizes || [],
+    }
   } catch (error) {
-    console.error('Error obteniendo métricas:', error);
-    return null;
+    console.error('Error obteniendo métricas:', error)
+    return null
   }
 }
 
@@ -91,14 +90,30 @@ async function getCurrentMetrics() {
  * Generar reporte en formato Markdown
  */
 function generateMarkdownReport(metrics, timestamp) {
-  const analyticsOriginalSize = metrics.tableSizes.find(t => t.table_name === 'analytics_events')?.size_bytes || 1548288;
-  const analyticsOptimizedSize = metrics.tableSizes.find(t => t.table_name === 'analytics_events_optimized')?.size_bytes || 524288;
-  const productsOriginalSize = metrics.tableSizes.find(t => t.table_name === 'products')?.size_bytes || 376832;
-  const productsOptimizedSize = metrics.tableSizes.find(t => t.table_name === 'products_optimized')?.size_bytes || 180224;
+  const analyticsOriginalSize =
+    metrics.tableSizes.find(t => t.table_name === 'analytics_events')?.size_bytes || 1548288
+  const analyticsOptimizedSize =
+    metrics.tableSizes.find(t => t.table_name === 'analytics_events_optimized')?.size_bytes ||
+    524288
+  const productsOriginalSize =
+    metrics.tableSizes.find(t => t.table_name === 'products')?.size_bytes || 376832
+  const productsOptimizedSize =
+    metrics.tableSizes.find(t => t.table_name === 'products_optimized')?.size_bytes || 180224
 
-  const analyticsReduction = Math.round(((analyticsOriginalSize - analyticsOptimizedSize) / analyticsOriginalSize) * 100);
-  const productsReduction = Math.round(((productsOriginalSize - productsOptimizedSize) / productsOriginalSize) * 100);
-  const totalReduction = Math.round(((analyticsOriginalSize + productsOriginalSize - analyticsOptimizedSize - productsOptimizedSize) / (analyticsOriginalSize + productsOriginalSize)) * 100);
+  const analyticsReduction = Math.round(
+    ((analyticsOriginalSize - analyticsOptimizedSize) / analyticsOriginalSize) * 100
+  )
+  const productsReduction = Math.round(
+    ((productsOriginalSize - productsOptimizedSize) / productsOriginalSize) * 100
+  )
+  const totalReduction = Math.round(
+    ((analyticsOriginalSize +
+      productsOriginalSize -
+      analyticsOptimizedSize -
+      productsOptimizedSize) /
+      (analyticsOriginalSize + productsOriginalSize)) *
+      100
+  )
 
   return `# 📊 REPORTE DE OPTIMIZACIÓN - PINTEYA E-COMMERCE
 
@@ -133,7 +148,7 @@ Las optimizaciones implementadas han logrado una **reducción total del ${totalR
 - 📊 **Inserción 10x más rápida** en lotes
 
 ### Almacenamiento
-- 💾 **${formatBytes((analyticsOriginalSize + productsOriginalSize) - (analyticsOptimizedSize + productsOptimizedSize))} liberados**
+- 💾 **${formatBytes(analyticsOriginalSize + productsOriginalSize - (analyticsOptimizedSize + productsOptimizedSize))} liberados**
 - 📉 **${totalReduction}% menos uso de disco**
 - 🔄 **Backup más rápidos** por menor tamaño
 
@@ -190,66 +205,67 @@ Las optimizaciones implementadas han logrado una **reducción total del ${totalR
 
 **Generado por:** Sistema de Optimización Automática
 **Próximo reporte:** ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('es-AR')}
-`;
+`
 }
 
 /**
  * Formatear bytes
  */
 function formatBytes(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 /**
  * Función principal
  */
 async function main() {
-  console.log('📊 GENERANDO REPORTE DE OPTIMIZACIÓN');
-  console.log('====================================');
+  console.log('📊 GENERANDO REPORTE DE OPTIMIZACIÓN')
+  console.log('====================================')
 
   try {
     // Obtener métricas actuales
-    console.log('📈 Obteniendo métricas...');
-    const metrics = await getCurrentMetrics();
-    
+    console.log('📈 Obteniendo métricas...')
+    const metrics = await getCurrentMetrics()
+
     if (!metrics) {
-      console.error('❌ Error obteniendo métricas');
-      process.exit(1);
+      console.error('❌ Error obteniendo métricas')
+      process.exit(1)
     }
 
     // Generar reporte
-    console.log('📝 Generando reporte...');
-    const timestamp = new Date().toISOString();
-    const report = generateMarkdownReport(metrics, timestamp);
+    console.log('📝 Generando reporte...')
+    const timestamp = new Date().toISOString()
+    const report = generateMarkdownReport(metrics, timestamp)
 
     // Guardar reporte
-    const reportsDir = './reports';
+    const reportsDir = './reports'
     if (!fs.existsSync(reportsDir)) {
-      fs.mkdirSync(reportsDir, { recursive: true });
+      fs.mkdirSync(reportsDir, { recursive: true })
     }
 
-    const filename = `optimization-report-${new Date().toISOString().split('T')[0]}.md`;
-    const filepath = path.join(reportsDir, filename);
-    
-    fs.writeFileSync(filepath, report);
+    const filename = `optimization-report-${new Date().toISOString().split('T')[0]}.md`
+    const filepath = path.join(reportsDir, filename)
 
-    console.log('✅ REPORTE GENERADO EXITOSAMENTE');
-    console.log(`📄 Archivo: ${filepath}`);
-    console.log(`📊 Métricas incluidas: Analytics (${metrics.analytics.optimizedCount}), Productos (${metrics.products.optimizedCount})`);
+    fs.writeFileSync(filepath, report)
 
+    console.log('✅ REPORTE GENERADO EXITOSAMENTE')
+    console.log(`📄 Archivo: ${filepath}`)
+    console.log(
+      `📊 Métricas incluidas: Analytics (${metrics.analytics.optimizedCount}), Productos (${metrics.products.optimizedCount})`
+    )
   } catch (error) {
-    console.error('❌ Error generando reporte:', error.message);
-    process.exit(1);
+    console.error('❌ Error generando reporte:', error.message)
+    process.exit(1)
   }
 }
 
 // Ejecutar generación
 if (require.main === module) {
-  main();
+  main()
 }
 
-module.exports = { main, getCurrentMetrics, generateMarkdownReport };
+module.exports = { main, getCurrentMetrics, generateMarkdownReport }

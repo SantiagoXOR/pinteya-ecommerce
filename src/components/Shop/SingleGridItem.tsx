@@ -2,16 +2,17 @@
 import React from 'react'
 import { Product } from '@/types/product'
 import { updateQuickView } from '@/redux/features/quickView-slice'
-import { addItemToCart } from '@/redux/features/cart-slice'
+// import { addItemToCart } from '@/redux/features/cart-slice'
 import { addItemToWishlist } from '@/redux/features/wishlist-slice'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from '@/redux/store'
 import Link from 'next/link'
 import Image from 'next/image'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { ExtendedProduct, calculateProductFeatures } from '@/lib/adapters/productAdapter'
-import { useCartWithBackend } from '@/hooks/useCartWithBackend'
-import { useCartActions } from '@/hooks/useCartActions'
+import { getMainImage } from '@/lib/adapters/product-adapter'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,36 +21,26 @@ import { ShoppingCart, Eye } from 'lucide-react'
 const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
   const dispatch = useDispatch<AppDispatch>()
 
-  // Hook para carrito con backend
-  const { addItem, loading } = useCartWithBackend()
+  // Hook unificado de carrito
+  const { addProduct } = useCartUnified()
 
   // update the QuickView state
   const handleQuickViewUpdate = () => {
     dispatch(updateQuickView({ ...item }))
   }
 
-  // add to cart - Conectado con backend
-  const handleAddToCart = async () => {
-    // Intentar agregar al backend primero
-    const success = await addItem(item.id, 1)
-
-    if (success) {
-      // Si el backend funciona, también actualizar Redux para compatibilidad
-      dispatch(
-        addItemToCart({
-          ...item,
-          quantity: 1,
-        })
-      )
-    } else {
-      // Si falla el backend, solo usar Redux (fallback)
-      dispatch(
-        addItemToCart({
-          ...item,
-          quantity: 1,
-        })
-      )
-    }
+  // Agregar al carrito usando el hook unificado
+  const handleAddToCart = () => {
+    addProduct(
+      {
+        id: item.id,
+        title: item.name || item.title,
+        price: item.price,
+        discounted_price: (features?.currentPrice ?? item.price),
+        images: [getMainImage(item)].filter(Boolean),
+      },
+      { quantity: 1, attributes: { color: item?.color, medida: item?.medida, finish: item?.finish } }
+    )
   }
 
   const handleItemToWishList = () => {
@@ -74,16 +65,18 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
   return (
     <CommercialProductCard
       className='bg-white' // Forzar fondo blanco
-      image={
-        item.images?.previews?.[0] || item.imgs?.previews?.[0] || '/images/products/placeholder.svg'
-      }
+      image={getMainImage(item)}
+      slug={item.slug}
       title={cleanTitle}
       brand={item.brand}
-      price={
-        features.discount
-          ? Math.round(item.price * (1 - features.discount / 100))
-          : features.currentPrice
-      }
+      description={item.description}
+      variants={item?.variants || []}
+      specifications={item?.specifications}
+      dimensions={item?.dimensions}
+      // ✅ NO pasar color/medida legacy - usar solo variantes para badges
+      // color={item?.color}
+      // medida={item?.medida}
+      price={features.currentPrice}
       originalPrice={features.discount ? item.price : undefined}
       discount={features.discount ? `${features.discount}%` : undefined}
       isNew={features.isNew}
@@ -102,11 +95,34 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
             }
           : undefined
       }
-      // Envío gratis automático para productos >= $15000
-      freeShipping={features.freeShipping || features.currentPrice >= 15000}
-      shippingText={
-        features.freeShipping ? 'Envío gratis' : features.fastShipping ? 'Envío rápido' : undefined
-      }
+      // Envío gratis según Design System (umbral global)
+      {...(() => {
+        const config = useDesignSystemConfig()
+        const autoFree = dsShouldShowFreeShipping(features.currentPrice, config)
+        const free = Boolean(features.freeShipping) || autoFree
+        return {
+          freeShipping: free,
+          shippingText: free
+            ? 'Envío gratis'
+            : features.fastShipping
+            ? 'Envío rápido'
+            : undefined,
+        }
+      })()}
+      // Configuración de badges inteligentes
+      badgeConfig={{
+        showCapacity: true,
+        showColor: true,
+        showFinish: true,
+        // Alinear comportamiento con /search: priorizar medida, acabado y colores
+        showMaterial: false,
+        showGrit: false,
+        showDimensions: false,
+        showWeight: false,
+        showBrand: false,
+        // Permitir medida + acabado + varios colores
+        maxBadges: 6
+      }}
     />
   )
 }

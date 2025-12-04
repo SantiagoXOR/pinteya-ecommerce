@@ -1,303 +1,313 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Limpiar Storage - Pinteya</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #ea5a17;
-            text-align: center;
-        }
-        button {
-            background: #ea5a17;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 10px 5px;
-            font-size: 16px;
-        }
-        button:hover {
-            background: #d14d0f;
-        }
-        .success {
-            background: #4CAF50;
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-        .info {
-            background: #2196F3;
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-        .warning {
-            background: #ff9800;
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-        pre {
-            background: #f4f4f4;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-size: 12px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #ea5a17;
+        text-align: center;
+      }
+      button {
+        background: #ea5a17;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 10px 5px;
+        font-size: 16px;
+      }
+      button:hover {
+        background: #d14d0f;
+      }
+      .success {
+        background: #4caf50;
+        color: white;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+      .info {
+        background: #2196f3;
+        color: white;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+      .warning {
+        background: #ff9800;
+        color: white;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 12px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🧹 Limpiar Storage Corrupto - Pinteya</h1>
-        
-        <div class="info">
-            <strong>¿Para qué sirve esta página?</strong><br>
-            Esta herramienta limpia datos corruptos de localStorage que pueden causar errores JSON en la aplicación Pinteya.
-        </div>
+      <h1>🧹 Limpiar Storage Corrupto - Pinteya</h1>
 
-        <div class="warning">
-            <strong>⚠️ Advertencia:</strong><br>
-            Esto eliminará todos los datos guardados localmente (carrito, búsquedas recientes, preferencias).
-        </div>
+      <div class="info">
+        <strong>¿Para qué sirve esta página?</strong><br />
+        Esta herramienta limpia datos corruptos de localStorage que pueden causar errores JSON en la
+        aplicación Pinteya.
+      </div>
 
-        <h3>Acciones Disponibles:</h3>
-        
-        <button onclick="inspectStorage()">🔍 Inspeccionar Storage</button>
-        <button onclick="cleanCorrupted()">🧹 Limpiar Solo Corruptos</button>
-        <button onclick="clearAll()">🗑️ Limpiar Todo</button>
-        <button onclick="detectProblems()">🚨 Detectar Problemas</button>
+      <div class="warning">
+        <strong>⚠️ Advertencia:</strong><br />
+        Esto eliminará todos los datos guardados localmente (carrito, búsquedas recientes,
+        preferencias).
+      </div>
 
-        <div id="results"></div>
+      <h3>Acciones Disponibles:</h3>
 
-        <h3>Instrucciones:</h3>
-        <ol>
-            <li><strong>Inspeccionar Storage:</strong> Ver qué datos están guardados</li>
-            <li><strong>Limpiar Solo Corruptos:</strong> Eliminar solo datos dañados</li>
-            <li><strong>Limpiar Todo:</strong> Eliminar todos los datos de Pinteya</li>
-            <li><strong>Detectar Problemas:</strong> Buscar datos que puedan causar errores</li>
-        </ol>
+      <button onclick="inspectStorage()">🔍 Inspeccionar Storage</button>
+      <button onclick="cleanCorrupted()">🧹 Limpiar Solo Corruptos</button>
+      <button onclick="clearAll()">🗑️ Limpiar Todo</button>
+      <button onclick="detectProblems()">🚨 Detectar Problemas</button>
 
-        <div class="info">
-            <strong>💡 Tip:</strong> Después de limpiar, recarga la página principal de Pinteya.
-        </div>
+      <div id="results"></div>
+
+      <h3>Instrucciones:</h3>
+      <ol>
+        <li><strong>Inspeccionar Storage:</strong> Ver qué datos están guardados</li>
+        <li><strong>Limpiar Solo Corruptos:</strong> Eliminar solo datos dañados</li>
+        <li><strong>Limpiar Todo:</strong> Eliminar todos los datos de Pinteya</li>
+        <li><strong>Detectar Problemas:</strong> Buscar datos que puedan causar errores</li>
+      </ol>
+
+      <div class="info">
+        <strong>💡 Tip:</strong> Después de limpiar, recarga la página principal de Pinteya.
+      </div>
     </div>
 
     <script>
-        const STORAGE_KEYS = {
-            CART: 'pinteya-cart',
-            RECENT_SEARCHES: 'pinteya-recent-searches',
-            USER_PREFERENCES: 'pinteya-user-preferences',
-            ANALYTICS: 'pinteya-analytics',
-        };
+      const STORAGE_KEYS = {
+        CART: 'pinteya-cart',
+        RECENT_SEARCHES: 'pinteya-recent-searches',
+        USER_PREFERENCES: 'pinteya-user-preferences',
+        ANALYTICS: 'pinteya-analytics',
+      }
 
-        function showResult(message, type = 'info') {
-            const results = document.getElementById('results');
-            const div = document.createElement('div');
-            div.className = type;
-            div.innerHTML = message;
-            results.appendChild(div);
-            
-            // Auto-scroll to results
-            div.scrollIntoView({ behavior: 'smooth' });
-        }
+      function showResult(message, type = 'info') {
+        const results = document.getElementById('results')
+        const div = document.createElement('div')
+        div.className = type
+        div.innerHTML = message
+        results.appendChild(div)
 
-        function clearResults() {
-            document.getElementById('results').innerHTML = '';
-        }
+        // Auto-scroll to results
+        div.scrollIntoView({ behavior: 'smooth' })
+      }
 
-        function inspectStorage() {
-            clearResults();
-            showResult('<strong>🔍 Inspeccionando localStorage...</strong>');
-            
-            const keys = Object.values(STORAGE_KEYS);
-            let report = '<pre>';
-            
-            keys.forEach(key => {
+      function clearResults() {
+        document.getElementById('results').innerHTML = ''
+      }
+
+      function inspectStorage() {
+        clearResults()
+        showResult('<strong>🔍 Inspeccionando localStorage...</strong>')
+
+        const keys = Object.values(STORAGE_KEYS)
+        let report = '<pre>'
+
+        keys.forEach(key => {
+          try {
+            const stored = localStorage.getItem(key)
+            if (stored) {
+              const isValidJSON = (() => {
                 try {
-                    const stored = localStorage.getItem(key);
-                    if (stored) {
-                        const isValidJSON = (() => {
-                            try {
-                                JSON.parse(stored);
-                                return '✅ Válido';
-                            } catch {
-                                return '❌ Corrupto';
-                            }
-                        })();
-                        
-                        report += `📦 ${key}:\n`;
-                        report += `   Tamaño: ${stored.length} caracteres\n`;
-                        report += `   Estado: ${isValidJSON}\n`;
-                        report += `   Preview: ${stored.substring(0, 50)}${stored.length > 50 ? '...' : ''}\n\n`;
-                    } else {
-                        report += `📦 ${key}: (vacío)\n\n`;
-                    }
-                } catch (error) {
-                    report += `📦 ${key}: ❌ Error de acceso - ${error.message}\n\n`;
+                  JSON.parse(stored)
+                  return '✅ Válido'
+                } catch {
+                  return '❌ Corrupto'
                 }
-            });
-            
-            report += '</pre>';
-            showResult(report, 'info');
-        }
+              })()
 
-        function cleanCorrupted() {
-            clearResults();
-            showResult('<strong>🧹 Limpiando datos corruptos...</strong>');
-            
-            const keys = Object.values(STORAGE_KEYS);
-            let cleanedCount = 0;
-            let report = '<pre>';
-            
-            keys.forEach(key => {
-                try {
-                    const stored = localStorage.getItem(key);
-                    if (stored) {
-                        // Detectar problemas específicos
-                        let isCorrupted = false;
-                        let reason = '';
-                        
-                        if (stored === '""' || stored === "''") {
-                            isCorrupted = true;
-                            reason = 'Comillas vacías';
-                        } else if (stored.includes('""') && stored.length < 5) {
-                            isCorrupted = true;
-                            reason = 'Comillas corruptas';
-                        } else if (stored.trim() === '') {
-                            isCorrupted = true;
-                            reason = 'String vacío';
-                        } else {
-                            try {
-                                JSON.parse(stored);
-                            } catch (parseError) {
-                                isCorrupted = true;
-                                reason = 'JSON inválido';
-                            }
-                        }
-                        
-                        if (isCorrupted) {
-                            localStorage.removeItem(key);
-                            cleanedCount++;
-                            report += `🧹 Limpiado ${key}: ${reason}\n`;
-                        } else {
-                            report += `✅ ${key}: OK\n`;
-                        }
-                    }
-                } catch (error) {
-                    localStorage.removeItem(key);
-                    cleanedCount++;
-                    report += `🧹 Limpiado ${key}: Error de acceso\n`;
-                }
-            });
-            
-            report += `\n🎉 Total limpiado: ${cleanedCount} entradas`;
-            report += '</pre>';
-            
-            showResult(report, cleanedCount > 0 ? 'success' : 'info');
-        }
-
-        function clearAll() {
-            if (!confirm('¿Estás seguro de que quieres eliminar TODOS los datos de Pinteya? Esto incluye carrito, búsquedas recientes y preferencias.')) {
-                return;
-            }
-            
-            clearResults();
-            showResult('<strong>🗑️ Limpiando todos los datos...</strong>');
-            
-            const keys = Object.values(STORAGE_KEYS);
-            let clearedCount = 0;
-            let report = '<pre>';
-            
-            keys.forEach(key => {
-                try {
-                    if (localStorage.getItem(key)) {
-                        localStorage.removeItem(key);
-                        clearedCount++;
-                        report += `🗑️ Eliminado: ${key}\n`;
-                    } else {
-                        report += `📦 ${key}: ya estaba vacío\n`;
-                    }
-                } catch (error) {
-                    report += `❌ Error eliminando ${key}: ${error.message}\n`;
-                }
-            });
-            
-            report += `\n🎉 Total eliminado: ${clearedCount} entradas`;
-            report += '</pre>';
-            
-            showResult(report, 'success');
-        }
-
-        function detectProblems() {
-            clearResults();
-            showResult('<strong>🚨 Detectando problemas JSON...</strong>');
-            
-            const keys = Object.values(STORAGE_KEYS);
-            const problems = [];
-            
-            keys.forEach(key => {
-                try {
-                    const stored = localStorage.getItem(key);
-                    if (stored) {
-                        // Detectar problemas específicos
-                        if (stored === '""' || stored === "''") {
-                            problems.push({key, issue: 'Comillas vacías', data: stored});
-                        } else if (stored.includes('""') && stored.length < 5) {
-                            problems.push({key, issue: 'Comillas corruptas', data: stored});
-                        } else if (stored.trim() === '') {
-                            problems.push({key, issue: 'String vacío', data: stored});
-                        } else {
-                            try {
-                                JSON.parse(stored);
-                            } catch (parseError) {
-                                problems.push({key, issue: 'JSON inválido', data: stored.substring(0, 50) + '...'});
-                            }
-                        }
-                    }
-                } catch (error) {
-                    problems.push({key, issue: 'Error de acceso', data: error.message});
-                }
-            });
-
-            let report = '<pre>';
-            if (problems.length > 0) {
-                report += '❌ Problemas encontrados:\n\n';
-                problems.forEach(problem => {
-                    report += `🔴 ${problem.key}:\n`;
-                    report += `   Problema: ${problem.issue}\n`;
-                    report += `   Datos: ${problem.data}\n\n`;
-                });
+              report += `📦 ${key}:\n`
+              report += `   Tamaño: ${stored.length} caracteres\n`
+              report += `   Estado: ${isValidJSON}\n`
+              report += `   Preview: ${stored.substring(0, 50)}${stored.length > 50 ? '...' : ''}\n\n`
             } else {
-                report += '✅ No se encontraron problemas JSON\n';
+              report += `📦 ${key}: (vacío)\n\n`
             }
-            report += '</pre>';
-            
-            showResult(report, problems.length > 0 ? 'warning' : 'success');
+          } catch (error) {
+            report += `📦 ${key}: ❌ Error de acceso - ${error.message}\n\n`
+          }
+        })
+
+        report += '</pre>'
+        showResult(report, 'info')
+      }
+
+      function cleanCorrupted() {
+        clearResults()
+        showResult('<strong>🧹 Limpiando datos corruptos...</strong>')
+
+        const keys = Object.values(STORAGE_KEYS)
+        let cleanedCount = 0
+        let report = '<pre>'
+
+        keys.forEach(key => {
+          try {
+            const stored = localStorage.getItem(key)
+            if (stored) {
+              // Detectar problemas específicos
+              let isCorrupted = false
+              let reason = ''
+
+              if (stored === '""' || stored === "''") {
+                isCorrupted = true
+                reason = 'Comillas vacías'
+              } else if (stored.includes('""') && stored.length < 5) {
+                isCorrupted = true
+                reason = 'Comillas corruptas'
+              } else if (stored.trim() === '') {
+                isCorrupted = true
+                reason = 'String vacío'
+              } else {
+                try {
+                  JSON.parse(stored)
+                } catch (parseError) {
+                  isCorrupted = true
+                  reason = 'JSON inválido'
+                }
+              }
+
+              if (isCorrupted) {
+                localStorage.removeItem(key)
+                cleanedCount++
+                report += `🧹 Limpiado ${key}: ${reason}\n`
+              } else {
+                report += `✅ ${key}: OK\n`
+              }
+            }
+          } catch (error) {
+            localStorage.removeItem(key)
+            cleanedCount++
+            report += `🧹 Limpiado ${key}: Error de acceso\n`
+          }
+        })
+
+        report += `\n🎉 Total limpiado: ${cleanedCount} entradas`
+        report += '</pre>'
+
+        showResult(report, cleanedCount > 0 ? 'success' : 'info')
+      }
+
+      function clearAll() {
+        if (
+          !confirm(
+            '¿Estás seguro de que quieres eliminar TODOS los datos de Pinteya? Esto incluye carrito, búsquedas recientes y preferencias.'
+          )
+        ) {
+          return
         }
 
-        // Auto-detectar problemas al cargar la página
-        window.addEventListener('load', () => {
-            setTimeout(detectProblems, 1000);
-        });
+        clearResults()
+        showResult('<strong>🗑️ Limpiando todos los datos...</strong>')
+
+        const keys = Object.values(STORAGE_KEYS)
+        let clearedCount = 0
+        let report = '<pre>'
+
+        keys.forEach(key => {
+          try {
+            if (localStorage.getItem(key)) {
+              localStorage.removeItem(key)
+              clearedCount++
+              report += `🗑️ Eliminado: ${key}\n`
+            } else {
+              report += `📦 ${key}: ya estaba vacío\n`
+            }
+          } catch (error) {
+            report += `❌ Error eliminando ${key}: ${error.message}\n`
+          }
+        })
+
+        report += `\n🎉 Total eliminado: ${clearedCount} entradas`
+        report += '</pre>'
+
+        showResult(report, 'success')
+      }
+
+      function detectProblems() {
+        clearResults()
+        showResult('<strong>🚨 Detectando problemas JSON...</strong>')
+
+        const keys = Object.values(STORAGE_KEYS)
+        const problems = []
+
+        keys.forEach(key => {
+          try {
+            const stored = localStorage.getItem(key)
+            if (stored) {
+              // Detectar problemas específicos
+              if (stored === '""' || stored === "''") {
+                problems.push({ key, issue: 'Comillas vacías', data: stored })
+              } else if (stored.includes('""') && stored.length < 5) {
+                problems.push({ key, issue: 'Comillas corruptas', data: stored })
+              } else if (stored.trim() === '') {
+                problems.push({ key, issue: 'String vacío', data: stored })
+              } else {
+                try {
+                  JSON.parse(stored)
+                } catch (parseError) {
+                  problems.push({
+                    key,
+                    issue: 'JSON inválido',
+                    data: stored.substring(0, 50) + '...',
+                  })
+                }
+              }
+            }
+          } catch (error) {
+            problems.push({ key, issue: 'Error de acceso', data: error.message })
+          }
+        })
+
+        let report = '<pre>'
+        if (problems.length > 0) {
+          report += '❌ Problemas encontrados:\n\n'
+          problems.forEach(problem => {
+            report += `🔴 ${problem.key}:\n`
+            report += `   Problema: ${problem.issue}\n`
+            report += `   Datos: ${problem.data}\n\n`
+          })
+        } else {
+          report += '✅ No se encontraron problemas JSON\n'
+        }
+        report += '</pre>'
+
+        showResult(report, problems.length > 0 ? 'warning' : 'success')
+      }
+
+      // Auto-detectar problemas al cargar la página
+      window.addEventListener('load', () => {
+        setTimeout(detectProblems, 1000)
+      })
     </script>
-</body>
+  </body>
 </html>

@@ -58,22 +58,22 @@ jest.mock('next/image', () => {
 
 const mockImages = [
   {
-    src: '/images/hero/hero-01.png',
+    src: '/images/hero/hero2/hero1.webp',
     alt: 'Imagen 1 - Productos de pinturería',
     priority: true,
   },
   {
-    src: '/images/hero/hero-02.png',
+    src: '/images/hero/hero2/hero2.webp',
     alt: 'Imagen 2 - Ferretería y corralón',
     priority: false,
   },
   {
-    src: '/images/hero/hero-03.png',
+    src: '/images/hero/hero2/hero3.webp',
     alt: 'Imagen 3 - Envío gratis',
     priority: false,
   },
   {
-    src: '/images/hero/hero-04.png',
+    src: '/images/hero/hero2/hero4.webp',
     alt: 'Imagen 4 - Pagos seguros',
     priority: false,
   },

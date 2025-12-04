@@ -1,11 +1,11 @@
-import Home from '@/components/Home'
+import HomeV2 from '@/components/Home-v2'
 import { Metadata } from 'next'
-import { TrendingSearchesTest } from '@/components/debug/TrendingSearchesTest'
+import '@/styles/home-v2-animations.css'
 
 export const metadata: Metadata = {
-  title: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
+  title: 'Pinteya - Tu Pinturería Online | Envío Gratis +$50.000',
   description:
-    'Descubre la mejor selección de pinturas, herramientas y productos de ferretería en Pinteya. Marcas reconocidas como Sherwin Williams, Petrilac, Sinteplast y más. Envío gratis en compras superiores a $50.000. ¡Compra online ahora!',
+    'Descubre la mejor selección de pinturas, herramientas y productos de ferretería. Marcas reconocidas como Sherwin Williams, Petrilac, Sinteplast y más. Envío gratis en compras superiores a $50.000.',
   keywords: [
     'pinturería online',
     'pinturas',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Pinteya - Tu Pinturería Online | Las Mejores Marcas',
     description:
-      'Descubre la mejor selección de pinturas, herramientas y productos de ferretería en Pinteya. Marcas reconocidas y envío gratis.',
+      'Descubre la mejor selección de pinturas, herramientas y productos de ferretería en Pinteya. Marcas reconocidas y envío gratis en compras superiores a $50.000.',
     images: [
       {
         url: '/images/hero/hero-bg.jpg',
@@ -36,11 +36,9 @@ export const metadata: Metadata = {
   },
 }
 
+// ⚡ PERFORMANCE: ISR - Revalidar cada 60 segundos para mejor cache
+export const revalidate = 60
+
 export default function HomePage() {
-  return (
-    <>
-      <Home />
-      {/* {process.env.NODE_ENV === 'development' && <TrendingSearchesTest />} */}
-    </>
-  )
+  return <HomeV2 />
 }

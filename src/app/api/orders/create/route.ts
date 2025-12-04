@@ -30,7 +30,7 @@ const createOrderSchema = z.object({
       image: z.string().optional(),
     })
   ),
-  paymentMethod: z.enum(['mercadopago', 'bank', 'cash']),
+  paymentMethod: z.enum(['mercadopago', 'cash']),
   shippingMethod: z.enum(['free', 'express', 'pickup']),
   totals: z.object({
     subtotal: z.number(),

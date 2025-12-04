@@ -150,12 +150,12 @@ async function getCategoriesWithStats(filters: z.infer<typeof CategoryFiltersSch
     throw new Error(`Error al obtener categorías: ${error.message}`)
   }
 
-  // Procesar datos
+  // Procesar datos - usando solo campos que existen en la tabla
   const processedCategories = (categories || []).map(category => ({
     ...category,
-    children: category.children || [],
-    products_count: category.products_count?.[0]?.count || 0,
-    meta_keywords: category.meta_keywords ? JSON.parse(category.meta_keywords) : [],
+    children: [], // Inicializar como array vacío
+    products_count: 0, // Valor por defecto
+    meta_keywords: [], // Valor por defecto
   }))
 
   return {
@@ -185,38 +185,25 @@ async function createCategory(categoryData: z.infer<typeof CreateCategorySchema>
     throw new Error('Ya existe una categoría con este slug')
   }
 
-  // Calcular nivel y path si tiene padre
-  let level = 0
-  let path = categoryData.slug
-
+  // Calcular nivel y path si tiene padre - simplificado para esquema actual
   if (categoryData.parent_id) {
     const { data: parentCategory, error: parentError } = await supabase
       .from('categories')
-      .select('level, path')
+      .select('id')
       .eq('id', categoryData.parent_id)
       .single()
 
     if (parentError || !parentCategory) {
       throw new Error('Categoría padre no encontrada')
     }
-
-    level = parentCategory.level + 1
-    path = `${parentCategory.path}/${categoryData.slug}`
-
-    // Verificar profundidad máxima
-    if (level > 5) {
-      throw new Error('Profundidad máxima de categorías excedida (5 niveles)')
-    }
   }
 
-  // Preparar datos para inserción
+  // Preparar datos para inserción - usando solo campos que existen en la tabla
   const insertData = {
-    ...categoryData,
-    level,
-    path,
-    meta_keywords: categoryData.meta_keywords ? JSON.stringify(categoryData.meta_keywords) : null,
-    product_count: 0,
-    created_by: userId,
+    name: categoryData.name,
+    slug: categoryData.slug,
+    parent_id: categoryData.parent_id || null,
+    image_url: categoryData.image_url || null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }

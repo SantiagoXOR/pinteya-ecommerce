@@ -105,7 +105,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Stock insuficiente. Solo hay ${product.stock} unidades disponibles`,
+          error: `Stock insuficiente. Solo hay ${product.stock} disponibles`,
           availableStock: product.stock,
           requestedQuantity: quantity,
           productName: product.name,

@@ -334,6 +334,56 @@ export class BrowserCacheOptimizer {
       return
     }
 
+    // Gate de inicialización por entorno/flag para evitar interferencias en desarrollo
+    const enableSW = process.env.NEXT_PUBLIC_ENABLE_SW === 'true'
+    const isProd = process.env.NODE_ENV === 'production'
+    if (!enableSW || !isProd) {
+      logger.warn(
+        LogCategory.CACHE,
+        'Service Worker deshabilitado por configuración (NEXT_PUBLIC_ENABLE_SW) o entorno no productivo'
+      )
+      // En desarrollo, desregistrar SWs previos y limpiar caches para evitar InvalidStateError
+      try {
+        if (document.readyState !== 'complete') {
+          await new Promise<void>(resolve => window.addEventListener('load', () => resolve(), { once: true }))
+        }
+        if ('serviceWorker' in navigator) {
+          try {
+            const regs = await navigator.serviceWorker.getRegistrations()
+            await Promise.all(regs.map(r => r.unregister()))
+          } catch (e) {
+            // Ignorar InvalidStateError en desarrollo
+            logger.warn(
+              LogCategory.CACHE,
+              'Ignorando error al obtener registros de SW en entorno no productivo',
+              e as Error
+            )
+          }
+        }
+        try {
+          const cacheNames = await caches.keys()
+          await Promise.all(cacheNames.map(name => caches.delete(name)))
+        } catch (e) {
+          logger.warn(
+            LogCategory.CACHE,
+            'Ignorando error al limpiar caches en entorno no productivo',
+            e as Error
+          )
+        }
+        logger.info(
+          LogCategory.CACHE,
+          'SW desregistrado y caches limpiados en entorno no productivo'
+        )
+      } catch (err) {
+        logger.warn(
+          LogCategory.CACHE,
+          'No se pudo limpiar SW/caches en entorno no productivo',
+          err as Error
+        )
+      }
+      return
+    }
+
     try {
       await this.registerServiceWorker()
       await this.setupCacheHeaders()
@@ -663,5 +713,38 @@ export const BrowserCacheUtils = {
    */
   isActive(): boolean {
     return browserCacheOptimizer.isServiceWorkerActive()
+  },
+
+  /**
+   * Desregistra todos los Service Workers y limpia caches
+   */
+  async unregisterAndClearCaches(): Promise<void> {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return
+    }
+
+    try {
+      if (document.readyState !== 'complete') {
+        await new Promise<void>(resolve => window.addEventListener('load', () => resolve(), { once: true }))
+      }
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(registrations.map(reg => reg.unregister()))
+
+      const cacheNames = await caches.keys()
+      await Promise.all(cacheNames.map(name => caches.delete(name)))
+
+      logger.info(LogCategory.CACHE, 'Service Workers desregistrados y caches limpiados')
+    } catch (error) {
+      const err = error as Error & { name?: string }
+      if (err?.name === 'InvalidStateError') {
+        logger.warn(
+          LogCategory.CACHE,
+          'Ignorando InvalidStateError al limpiar SW/caches (documento no activo)',
+          err
+        )
+        return
+      }
+      logger.warn(LogCategory.CACHE, 'Fallo no crítico al limpiar SW/caches', err)
+    }
   },
 }

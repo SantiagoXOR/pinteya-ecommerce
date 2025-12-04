@@ -1,166 +1,200 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Performance APIs - Pinteya E-commerce</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
-        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
-        .timing { font-weight: bold; color: #007bff; }
-        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        #results { margin-top: 20px; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .test-result {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+      }
+      .timing {
+        font-weight: bold;
+        color: #007bff;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      #results {
+        margin-top: 20px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🚀 Test Performance APIs - Pinteya E-commerce</h1>
     <p>Verificando mejoras de performance después de optimizaciones</p>
-    
+
     <div>
-        <button onclick="testAnalyticsAPI()">Test Analytics API</button>
-        <button onclick="testProductsAPI()">Test Products API</button>
-        <button onclick="testSearchAPI()">Test Search API</button>
-        <button onclick="runAllTests()">Ejecutar Todos los Tests</button>
-        <button onclick="clearResults()">Limpiar Resultados</button>
+      <button onclick="testAnalyticsAPI()">Test Analytics API</button>
+      <button onclick="testProductsAPI()">Test Products API</button>
+      <button onclick="testSearchAPI()">Test Search API</button>
+      <button onclick="runAllTests()">Ejecutar Todos los Tests</button>
+      <button onclick="clearResults()">Limpiar Resultados</button>
     </div>
-    
+
     <div id="results"></div>
 
     <script>
-        const API_BASE = 'http://localhost:3001';
-        
-        function addResult(test, time, success, details = '') {
-            const results = document.getElementById('results');
-            const div = document.createElement('div');
-            div.className = `test-result ${success ? 'success' : 'error'}`;
-            
-            const status = success ? '✅' : '❌';
-            const timeClass = time < 500 ? 'success' : time < 2000 ? 'warning' : 'error';
-            
-            div.innerHTML = `
+      const API_BASE = 'http://localhost:3001'
+
+      function addResult(test, time, success, details = '') {
+        const results = document.getElementById('results')
+        const div = document.createElement('div')
+        div.className = `test-result ${success ? 'success' : 'error'}`
+
+        const status = success ? '✅' : '❌'
+        const timeClass = time < 500 ? 'success' : time < 2000 ? 'warning' : 'error'
+
+        div.innerHTML = `
                 ${status} <strong>${test}</strong> - 
                 <span class="timing ${timeClass}">${time}ms</span>
                 ${details ? `<br><small>${details}</small>` : ''}
-            `;
-            results.appendChild(div);
+            `
+        results.appendChild(div)
+      }
+
+      async function testAnalyticsAPI() {
+        console.log('🧪 Testing Analytics API...')
+        const startTime = Date.now()
+
+        try {
+          const response = await fetch(`${API_BASE}/api/analytics/events`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              event: 'test_performance',
+              category: 'testing',
+              action: 'api_test',
+              label: 'performance_optimization',
+              sessionId: 'test-session-' + Date.now(),
+              timestamp: Date.now(),
+              page: '/test',
+            }),
+          })
+
+          const endTime = Date.now()
+          const duration = endTime - startTime
+
+          if (response.ok) {
+            const data = await response.json()
+            addResult(
+              'Analytics API',
+              duration,
+              true,
+              `Respuesta: ${JSON.stringify(data)} | Target: <200ms`
+            )
+          } else {
+            addResult('Analytics API', duration, false, `Error HTTP: ${response.status}`)
+          }
+        } catch (error) {
+          const endTime = Date.now()
+          const duration = endTime - startTime
+          addResult('Analytics API', duration, false, `Error: ${error.message}`)
         }
-        
-        async function testAnalyticsAPI() {
-            console.log('🧪 Testing Analytics API...');
-            const startTime = Date.now();
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/analytics/events`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        event: 'test_performance',
-                        category: 'testing',
-                        action: 'api_test',
-                        label: 'performance_optimization',
-                        sessionId: 'test-session-' + Date.now(),
-                        timestamp: Date.now(),
-                        page: '/test'
-                    })
-                });
-                
-                const endTime = Date.now();
-                const duration = endTime - startTime;
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    addResult('Analytics API', duration, true, 
-                        `Respuesta: ${JSON.stringify(data)} | Target: <200ms`);
-                } else {
-                    addResult('Analytics API', duration, false, 
-                        `Error HTTP: ${response.status}`);
-                }
-            } catch (error) {
-                const endTime = Date.now();
-                const duration = endTime - startTime;
-                addResult('Analytics API', duration, false, 
-                    `Error: ${error.message}`);
-            }
+      }
+
+      async function testProductsAPI() {
+        console.log('🧪 Testing Products API...')
+        const startTime = Date.now()
+
+        try {
+          const response = await fetch(`${API_BASE}/api/products?limit=12&page=1`)
+          const endTime = Date.now()
+          const duration = endTime - startTime
+
+          if (response.ok) {
+            const data = await response.json()
+            addResult(
+              'Products API',
+              duration,
+              true,
+              `${data.data?.length || 0} productos | Target: <500ms`
+            )
+          } else {
+            addResult('Products API', duration, false, `Error HTTP: ${response.status}`)
+          }
+        } catch (error) {
+          const endTime = Date.now()
+          const duration = endTime - startTime
+          addResult('Products API', duration, false, `Error: ${error.message}`)
         }
-        
-        async function testProductsAPI() {
-            console.log('🧪 Testing Products API...');
-            const startTime = Date.now();
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/products?limit=12&page=1`);
-                const endTime = Date.now();
-                const duration = endTime - startTime;
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    addResult('Products API', duration, true, 
-                        `${data.data?.length || 0} productos | Target: <500ms`);
-                } else {
-                    addResult('Products API', duration, false, 
-                        `Error HTTP: ${response.status}`);
-                }
-            } catch (error) {
-                const endTime = Date.now();
-                const duration = endTime - startTime;
-                addResult('Products API', duration, false, 
-                    `Error: ${error.message}`);
-            }
+      }
+
+      async function testSearchAPI() {
+        console.log('🧪 Testing Search API...')
+        const startTime = Date.now()
+
+        try {
+          const response = await fetch(`${API_BASE}/api/products?search=pintura&limit=6&page=1`)
+          const endTime = Date.now()
+          const duration = endTime - startTime
+
+          if (response.ok) {
+            const data = await response.json()
+            addResult(
+              'Search API',
+              duration,
+              true,
+              `${data.data?.length || 0} resultados para "pintura" | Target: <500ms`
+            )
+          } else {
+            addResult('Search API', duration, false, `Error HTTP: ${response.status}`)
+          }
+        } catch (error) {
+          const endTime = Date.now()
+          const duration = endTime - startTime
+          addResult('Search API', duration, false, `Error: ${error.message}`)
         }
-        
-        async function testSearchAPI() {
-            console.log('🧪 Testing Search API...');
-            const startTime = Date.now();
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/products?search=pintura&limit=6&page=1`);
-                const endTime = Date.now();
-                const duration = endTime - startTime;
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    addResult('Search API', duration, true, 
-                        `${data.data?.length || 0} resultados para "pintura" | Target: <500ms`);
-                } else {
-                    addResult('Search API', duration, false, 
-                        `Error HTTP: ${response.status}`);
-                }
-            } catch (error) {
-                const endTime = Date.now();
-                const duration = endTime - startTime;
-                addResult('Search API', duration, false, 
-                    `Error: ${error.message}`);
-            }
-        }
-        
-        async function runAllTests() {
-            clearResults();
-            addResult('Iniciando Tests', 0, true, 'Ejecutando suite completa de performance...');
-            
-            await testAnalyticsAPI();
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            await testProductsAPI();
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            await testSearchAPI();
-            
-            addResult('Tests Completados', 0, true, 'Suite de performance finalizada');
-        }
-        
-        function clearResults() {
-            document.getElementById('results').innerHTML = '';
-        }
-        
-        // Auto-ejecutar tests al cargar la página
-        window.onload = function() {
-            setTimeout(runAllTests, 1000);
-        };
+      }
+
+      async function runAllTests() {
+        clearResults()
+        addResult('Iniciando Tests', 0, true, 'Ejecutando suite completa de performance...')
+
+        await testAnalyticsAPI()
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        await testProductsAPI()
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        await testSearchAPI()
+
+        addResult('Tests Completados', 0, true, 'Suite de performance finalizada')
+      }
+
+      function clearResults() {
+        document.getElementById('results').innerHTML = ''
+      }
+
+      // Auto-ejecutar tests al cargar la página
+      window.onload = function () {
+        setTimeout(runAllTests, 1000)
+      }
     </script>
-</body>
+  </body>
 </html>

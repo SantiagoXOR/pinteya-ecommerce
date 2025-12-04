@@ -1,341 +1,393 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Debug Admin Panel - Pinteya</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .button {
-            background-color: #eb6313;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 10px 5px;
-            font-size: 16px;
-        }
-        .button:hover {
-            background-color: #d55a0f;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 10px 0;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 10px 0;
-        }
-        .info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 10px 0;
-        }
-        .warning {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 10px 0;
-        }
-        pre {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-        }
-        .test-result {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 6px;
-            border-left: 4px solid;
-        }
-        .test-pass {
-            background-color: #d4edda;
-            border-color: #28a745;
-            color: #155724;
-        }
-        .test-fail {
-            background-color: #f8d7da;
-            border-color: #dc3545;
-            color: #721c24;
-        }
-        .test-pending {
-            background-color: #fff3cd;
-            border-color: #ffc107;
-            color: #856404;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .button {
+        background-color: #eb6313;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 10px 5px;
+        font-size: 16px;
+      }
+      .button:hover {
+        background-color: #d55a0f;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 10px 0;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 10px 0;
+      }
+      .info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 10px 0;
+      }
+      .warning {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 10px 0;
+      }
+      pre {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+      }
+      .test-result {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 6px;
+        border-left: 4px solid;
+      }
+      .test-pass {
+        background-color: #d4edda;
+        border-color: #28a745;
+        color: #155724;
+      }
+      .test-fail {
+        background-color: #f8d7da;
+        border-color: #dc3545;
+        color: #721c24;
+      }
+      .test-pending {
+        background-color: #fff3cd;
+        border-color: #ffc107;
+        color: #856404;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🔧 Debug Admin Panel - Pinteya</h1>
-        
-        <div class="warning">
-            <strong>⚠️ Herramienta de Diagnóstico:</strong> Esta página ayuda a diagnosticar problemas de acceso al panel administrativo /admin.
-        </div>
+      <h1>🔧 Debug Admin Panel - Pinteya</h1>
 
-        <h2>🚀 Tests de Diagnóstico</h2>
-        
-        <button class="button" onclick="runAllTests()">
-            🔍 Ejecutar Todos los Tests
-        </button>
-        
-        <button class="button" onclick="testAdminPage()">
-            📄 Test Página /admin
-        </button>
-        
-        <button class="button" onclick="testAdminProductsPage()">
-            📦 Test Página /admin/products
-        </button>
-        
-        <button class="button" onclick="testAdminAPIs()">
-            🔌 Test APIs Admin
-        </button>
+      <div class="warning">
+        <strong>⚠️ Herramienta de Diagnóstico:</strong> Esta página ayuda a diagnosticar problemas
+        de acceso al panel administrativo /admin.
+      </div>
 
-        <button class="button" onclick="testAuthentication()">
-            🔐 Test Autenticación
-        </button>
+      <h2>🚀 Tests de Diagnóstico</h2>
 
-        <div id="results"></div>
+      <button class="button" onclick="runAllTests()">🔍 Ejecutar Todos los Tests</button>
 
-        <h2>📊 Estado Actual</h2>
-        <div id="status"></div>
+      <button class="button" onclick="testAdminPage()">📄 Test Página /admin</button>
 
-        <h2>🔍 Información de Debug</h2>
-        <pre id="debug-info"></pre>
+      <button class="button" onclick="testAdminProductsPage()">
+        📦 Test Página /admin/products
+      </button>
+
+      <button class="button" onclick="testAdminAPIs()">🔌 Test APIs Admin</button>
+
+      <button class="button" onclick="testAuthentication()">🔐 Test Autenticación</button>
+
+      <div id="results"></div>
+
+      <h2>📊 Estado Actual</h2>
+      <div id="status"></div>
+
+      <h2>🔍 Información de Debug</h2>
+      <pre id="debug-info"></pre>
     </div>
 
     <script>
-        let testResults = [];
+      let testResults = []
 
-        function showResult(message, type = 'info') {
-            const results = document.getElementById('results');
-            const div = document.createElement('div');
-            div.className = `test-result test-${type}`;
-            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
-            results.appendChild(div);
-            results.scrollTop = results.scrollHeight;
-        }
+      function showResult(message, type = 'info') {
+        const results = document.getElementById('results')
+        const div = document.createElement('div')
+        div.className = `test-result test-${type}`
+        div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`
+        results.appendChild(div)
+        results.scrollTop = results.scrollHeight
+      }
 
-        async function testAdminPage() {
-            showResult('🔍 Probando acceso a /admin...', 'pending');
-            
-            try {
-                const response = await fetch('/admin', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const text = await response.text();
-                    if (text.includes('Dashboard') || text.includes('Admin')) {
-                        showResult('✅ /admin - Página carga correctamente', 'pass');
-                        testResults.push({test: 'admin_page', status: 'pass', details: 'Página accesible'});
-                    } else {
-                        showResult('⚠️ /admin - Página carga pero contenido inesperado', 'fail');
-                        testResults.push({test: 'admin_page', status: 'fail', details: 'Contenido inesperado'});
-                    }
-                } else {
-                    showResult(`❌ /admin - Error ${response.status}: ${response.statusText}`, 'fail');
-                    testResults.push({test: 'admin_page', status: 'fail', details: `HTTP ${response.status}`});
-                }
-            } catch (error) {
-                showResult(`❌ /admin - Error de red: ${error.message}`, 'fail');
-                testResults.push({test: 'admin_page', status: 'fail', details: error.message});
+      async function testAdminPage() {
+        showResult('🔍 Probando acceso a /admin...', 'pending')
+
+        try {
+          const response = await fetch('/admin', {
+            method: 'GET',
+            credentials: 'include',
+          })
+
+          if (response.ok) {
+            const text = await response.text()
+            if (text.includes('Dashboard') || text.includes('Admin')) {
+              showResult('✅ /admin - Página carga correctamente', 'pass')
+              testResults.push({ test: 'admin_page', status: 'pass', details: 'Página accesible' })
+            } else {
+              showResult('⚠️ /admin - Página carga pero contenido inesperado', 'fail')
+              testResults.push({
+                test: 'admin_page',
+                status: 'fail',
+                details: 'Contenido inesperado',
+              })
             }
+          } else {
+            showResult(`❌ /admin - Error ${response.status}: ${response.statusText}`, 'fail')
+            testResults.push({
+              test: 'admin_page',
+              status: 'fail',
+              details: `HTTP ${response.status}`,
+            })
+          }
+        } catch (error) {
+          showResult(`❌ /admin - Error de red: ${error.message}`, 'fail')
+          testResults.push({ test: 'admin_page', status: 'fail', details: error.message })
         }
+      }
 
-        async function testAdminProductsPage() {
-            showResult('🔍 Probando acceso a /admin/products...', 'pending');
-            
-            try {
-                const response = await fetch('/admin/products', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const text = await response.text();
-                    if (text.includes('Productos') || text.includes('ProductList')) {
-                        showResult('✅ /admin/products - Página carga correctamente', 'pass');
-                        testResults.push({test: 'admin_products_page', status: 'pass', details: 'Página accesible'});
-                    } else {
-                        showResult('⚠️ /admin/products - Página carga pero contenido inesperado', 'fail');
-                        testResults.push({test: 'admin_products_page', status: 'fail', details: 'Contenido inesperado'});
-                    }
-                } else {
-                    showResult(`❌ /admin/products - Error ${response.status}: ${response.statusText}`, 'fail');
-                    testResults.push({test: 'admin_products_page', status: 'fail', details: `HTTP ${response.status}`});
-                }
-            } catch (error) {
-                showResult(`❌ /admin/products - Error de red: ${error.message}`, 'fail');
-                testResults.push({test: 'admin_products_page', status: 'fail', details: error.message});
+      async function testAdminProductsPage() {
+        showResult('🔍 Probando acceso a /admin/products...', 'pending')
+
+        try {
+          const response = await fetch('/admin/products', {
+            method: 'GET',
+            credentials: 'include',
+          })
+
+          if (response.ok) {
+            const text = await response.text()
+            if (text.includes('Productos') || text.includes('ProductList')) {
+              showResult('✅ /admin/products - Página carga correctamente', 'pass')
+              testResults.push({
+                test: 'admin_products_page',
+                status: 'pass',
+                details: 'Página accesible',
+              })
+            } else {
+              showResult('⚠️ /admin/products - Página carga pero contenido inesperado', 'fail')
+              testResults.push({
+                test: 'admin_products_page',
+                status: 'fail',
+                details: 'Contenido inesperado',
+              })
             }
+          } else {
+            showResult(
+              `❌ /admin/products - Error ${response.status}: ${response.statusText}`,
+              'fail'
+            )
+            testResults.push({
+              test: 'admin_products_page',
+              status: 'fail',
+              details: `HTTP ${response.status}`,
+            })
+          }
+        } catch (error) {
+          showResult(`❌ /admin/products - Error de red: ${error.message}`, 'fail')
+          testResults.push({ test: 'admin_products_page', status: 'fail', details: error.message })
         }
+      }
 
-        async function testAdminAPIs() {
-            showResult('🔍 Probando APIs administrativas...', 'pending');
-            
-            const apis = [
-                '/api/admin/products/stats',
-                '/api/admin/orders/stats',
-                '/api/admin/users/stats'
-            ];
-            
-            for (const api of apis) {
-                try {
-                    const response = await fetch(api, {
-                        method: 'GET',
-                        credentials: 'include'
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        showResult(`✅ ${api} - API responde correctamente`, 'pass');
-                        testResults.push({test: `api_${api.split('/').pop()}`, status: 'pass', details: 'API accesible'});
-                    } else if (response.status === 401) {
-                        showResult(`🔐 ${api} - Requiere autenticación (esperado)`, 'pass');
-                        testResults.push({test: `api_${api.split('/').pop()}`, status: 'pass', details: 'Auth requerida'});
-                    } else if (response.status === 404) {
-                        showResult(`⚠️ ${api} - API no encontrada`, 'fail');
-                        testResults.push({test: `api_${api.split('/').pop()}`, status: 'fail', details: 'API no existe'});
-                    } else {
-                        showResult(`❌ ${api} - Error ${response.status}`, 'fail');
-                        testResults.push({test: `api_${api.split('/').pop()}`, status: 'fail', details: `HTTP ${response.status}`});
-                    }
-                } catch (error) {
-                    showResult(`❌ ${api} - Error de red: ${error.message}`, 'fail');
-                    testResults.push({test: `api_${api.split('/').pop()}`, status: 'fail', details: error.message});
-                }
+      async function testAdminAPIs() {
+        showResult('🔍 Probando APIs administrativas...', 'pending')
+
+        const apis = [
+          '/api/admin/products/stats',
+          '/api/admin/orders/stats',
+          '/api/admin/users/stats',
+        ]
+
+        for (const api of apis) {
+          try {
+            const response = await fetch(api, {
+              method: 'GET',
+              credentials: 'include',
+            })
+
+            if (response.ok) {
+              const data = await response.json()
+              showResult(`✅ ${api} - API responde correctamente`, 'pass')
+              testResults.push({
+                test: `api_${api.split('/').pop()}`,
+                status: 'pass',
+                details: 'API accesible',
+              })
+            } else if (response.status === 401) {
+              showResult(`🔐 ${api} - Requiere autenticación (esperado)`, 'pass')
+              testResults.push({
+                test: `api_${api.split('/').pop()}`,
+                status: 'pass',
+                details: 'Auth requerida',
+              })
+            } else if (response.status === 404) {
+              showResult(`⚠️ ${api} - API no encontrada`, 'fail')
+              testResults.push({
+                test: `api_${api.split('/').pop()}`,
+                status: 'fail',
+                details: 'API no existe',
+              })
+            } else {
+              showResult(`❌ ${api} - Error ${response.status}`, 'fail')
+              testResults.push({
+                test: `api_${api.split('/').pop()}`,
+                status: 'fail',
+                details: `HTTP ${response.status}`,
+              })
             }
+          } catch (error) {
+            showResult(`❌ ${api} - Error de red: ${error.message}`, 'fail')
+            testResults.push({
+              test: `api_${api.split('/').pop()}`,
+              status: 'fail',
+              details: error.message,
+            })
+          }
         }
+      }
 
-        async function testAuthentication() {
-            showResult('🔍 Probando estado de autenticación...', 'pending');
-            
-            try {
-                // Verificar si hay datos de Clerk en localStorage
-                const clerkKeys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && (key.includes('clerk') || key.includes('__clerk'))) {
-                        clerkKeys.push(key);
-                    }
-                }
-                
-                if (clerkKeys.length > 0) {
-                    showResult(`✅ Autenticación - ${clerkKeys.length} entradas de Clerk encontradas`, 'pass');
-                    testResults.push({test: 'auth_clerk_data', status: 'pass', details: `${clerkKeys.length} entradas`});
-                } else {
-                    showResult('⚠️ Autenticación - No se encontraron datos de Clerk', 'fail');
-                    testResults.push({test: 'auth_clerk_data', status: 'fail', details: 'Sin datos de Clerk'});
-                }
-                
-                // Verificar cookies
-                const hasCookies = document.cookie.length > 0;
-                if (hasCookies) {
-                    showResult('✅ Autenticación - Cookies presentes', 'pass');
-                    testResults.push({test: 'auth_cookies', status: 'pass', details: 'Cookies encontradas'});
-                } else {
-                    showResult('⚠️ Autenticación - No se encontraron cookies', 'fail');
-                    testResults.push({test: 'auth_cookies', status: 'fail', details: 'Sin cookies'});
-                }
-                
-            } catch (error) {
-                showResult(`❌ Autenticación - Error: ${error.message}`, 'fail');
-                testResults.push({test: 'auth_check', status: 'fail', details: error.message});
+      async function testAuthentication() {
+        showResult('🔍 Probando estado de autenticación...', 'pending')
+
+        try {
+          // Verificar si hay datos de Clerk en localStorage
+          const clerkKeys = []
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i)
+            if (key && (key.includes('clerk') || key.includes('__clerk'))) {
+              clerkKeys.push(key)
             }
-        }
+          }
 
-        async function runAllTests() {
-            testResults = [];
-            document.getElementById('results').innerHTML = '';
-            
-            showResult('🚀 Iniciando diagnóstico completo...', 'pending');
-            
-            await testAuthentication();
-            await testAdminPage();
-            await testAdminProductsPage();
-            await testAdminAPIs();
-            
-            // Resumen
-            const passed = testResults.filter(r => r.status === 'pass').length;
-            const failed = testResults.filter(r => r.status === 'fail').length;
-            
-            showResult(`📊 Resumen: ${passed} tests pasaron, ${failed} fallaron`, 
-                      failed === 0 ? 'pass' : 'fail');
-            
-            updateStatus();
-            updateDebugInfo();
-        }
+          if (clerkKeys.length > 0) {
+            showResult(
+              `✅ Autenticación - ${clerkKeys.length} entradas de Clerk encontradas`,
+              'pass'
+            )
+            testResults.push({
+              test: 'auth_clerk_data',
+              status: 'pass',
+              details: `${clerkKeys.length} entradas`,
+            })
+          } else {
+            showResult('⚠️ Autenticación - No se encontraron datos de Clerk', 'fail')
+            testResults.push({
+              test: 'auth_clerk_data',
+              status: 'fail',
+              details: 'Sin datos de Clerk',
+            })
+          }
 
-        function updateStatus() {
-            const status = document.getElementById('status');
-            const passed = testResults.filter(r => r.status === 'pass').length;
-            const failed = testResults.filter(r => r.status === 'fail').length;
-            
-            status.innerHTML = `
+          // Verificar cookies
+          const hasCookies = document.cookie.length > 0
+          if (hasCookies) {
+            showResult('✅ Autenticación - Cookies presentes', 'pass')
+            testResults.push({
+              test: 'auth_cookies',
+              status: 'pass',
+              details: 'Cookies encontradas',
+            })
+          } else {
+            showResult('⚠️ Autenticación - No se encontraron cookies', 'fail')
+            testResults.push({ test: 'auth_cookies', status: 'fail', details: 'Sin cookies' })
+          }
+        } catch (error) {
+          showResult(`❌ Autenticación - Error: ${error.message}`, 'fail')
+          testResults.push({ test: 'auth_check', status: 'fail', details: error.message })
+        }
+      }
+
+      async function runAllTests() {
+        testResults = []
+        document.getElementById('results').innerHTML = ''
+
+        showResult('🚀 Iniciando diagnóstico completo...', 'pending')
+
+        await testAuthentication()
+        await testAdminPage()
+        await testAdminProductsPage()
+        await testAdminAPIs()
+
+        // Resumen
+        const passed = testResults.filter(r => r.status === 'pass').length
+        const failed = testResults.filter(r => r.status === 'fail').length
+
+        showResult(
+          `📊 Resumen: ${passed} tests pasaron, ${failed} fallaron`,
+          failed === 0 ? 'pass' : 'fail'
+        )
+
+        updateStatus()
+        updateDebugInfo()
+      }
+
+      function updateStatus() {
+        const status = document.getElementById('status')
+        const passed = testResults.filter(r => r.status === 'pass').length
+        const failed = testResults.filter(r => r.status === 'fail').length
+
+        status.innerHTML = `
                 <div class="${failed === 0 ? 'success' : 'error'}">
                     <strong>📊 Estado de Tests:</strong><br>
                     • Tests pasados: ${passed}<br>
                     • Tests fallidos: ${failed}<br>
                     • Total ejecutados: ${testResults.length}
                 </div>
-            `;
+            `
+      }
+
+      function updateDebugInfo() {
+        const debugInfo = document.getElementById('debug-info')
+        const debugData = {
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+          testResults: testResults,
+          localStorage: {
+            total: localStorage.length,
+            clerkKeys: [],
+          },
+          cookies: document.cookie ? 'Present' : 'None',
         }
 
-        function updateDebugInfo() {
-            const debugInfo = document.getElementById('debug-info');
-            const debugData = {
-                timestamp: new Date().toISOString(),
-                userAgent: navigator.userAgent,
-                url: window.location.href,
-                testResults: testResults,
-                localStorage: {
-                    total: localStorage.length,
-                    clerkKeys: []
-                },
-                cookies: document.cookie ? 'Present' : 'None'
-            };
-            
-            // Recopilar keys de Clerk
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && (key.includes('clerk') || key.includes('__clerk'))) {
-                    debugData.localStorage.clerkKeys.push(key);
-                }
-            }
-            
-            debugInfo.textContent = JSON.stringify(debugData, null, 2);
+        // Recopilar keys de Clerk
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && (key.includes('clerk') || key.includes('__clerk'))) {
+            debugData.localStorage.clerkKeys.push(key)
+          }
         }
 
-        // Ejecutar test básico al cargar
-        window.onload = function() {
-            updateDebugInfo();
-        };
+        debugInfo.textContent = JSON.stringify(debugData, null, 2)
+      }
+
+      // Ejecutar test básico al cargar
+      window.onload = function () {
+        updateDebugInfo()
+      }
     </script>
-</body>
+  </body>
 </html>

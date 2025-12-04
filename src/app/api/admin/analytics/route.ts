@@ -84,15 +84,25 @@ interface AnalyticsData {
 
 async function validateAdminAuth() {
   try {
-    // BYPASS TEMPORAL PARA DESARROLLO
+    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
     if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-      return {
-        user: {
-          id: 'dev-admin',
-          email: 'santiago@xor.com.ar',
-          name: 'Dev Admin',
-        },
-        userId: 'dev-admin',
+      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const envLocalPath = path.join(process.cwd(), '.env.local')
+        if (fs.existsSync(envLocalPath)) {
+          return {
+            user: {
+              id: 'dev-admin',
+              email: 'santiago@xor.com.ar',
+              name: 'Dev Admin',
+            },
+            userId: 'dev-admin',
+          }
+        }
+      } catch (error) {
+        console.warn('[API Admin Analytics] No se pudo verificar .env.local, bypass deshabilitado')
       }
     }
 
@@ -145,7 +155,7 @@ async function getOverviewMetrics(dateFrom: string, dateTo: string) {
 
     // Total de usuarios
     const { count: totalUsers } = await supabaseAdmin
-      .from('users')
+      .from('user_profiles')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
@@ -400,7 +410,7 @@ export async function GET(request: NextRequest) {
 
     if (!rateLimitResult.success) {
       const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
-      addRateLimitHeaders(response, rateLimitResult)
+      addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.admin)
       return response
     }
 
@@ -498,16 +508,27 @@ export async function GET(request: NextRequest) {
       dateTo,
     })
 
-    const response: ApiResponse<AnalyticsData> = {
+    const response: ApiResponse<AnalyticsData> & {
+      totalProducts: number
+      totalOrders: number
+      totalRevenue: number
+      totalUsers: number
+    } = {
       data: analyticsData,
       success: true,
       message: 'Analytics obtenidos exitosamente',
+      // Propiedades adicionales para compatibilidad con tests
+      totalProducts: analyticsData.overview.total_products,
+      totalOrders: analyticsData.overview.total_orders,
+      totalRevenue: analyticsData.overview.total_revenue,
+      totalUsers: analyticsData.overview.total_users,
     }
 
     const nextResponse = NextResponse.json(response)
-    addRateLimitHeaders(nextResponse, rateLimitResult)
+    addRateLimitHeaders(nextResponse, rateLimitResult, RATE_LIMIT_CONFIGS.admin)
     return nextResponse
   } catch (error) {
+    console.error('Error detallado en analytics:', error)
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/analytics', { error })
 
     // Registrar métricas de error
@@ -522,7 +543,7 @@ export async function GET(request: NextRequest) {
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
-      error: 'Error interno del servidor',
+      error: error instanceof Error ? error.message : 'Error interno del servidor',
     }
 
     return NextResponse.json(errorResponse, { status: 500 })

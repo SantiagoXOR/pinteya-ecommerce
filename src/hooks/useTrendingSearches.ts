@@ -148,19 +148,22 @@ export function useTrendingSearches(
     isLoading,
     error: error as Error | null,
     refetch,
-    isStale,
-    lastUpdated: data?.lastUpdated || null,
     trackSearch,
+    lastUpdated: data?.lastUpdated,
   }
 
-  console.log('🔥 useTrendingSearches: Hook result:', {
-    trendingSearchesCount: result.trendingSearches.length,
-    isLoading: result.isLoading,
-    error: result.error,
-    data: data,
-    rawTrending: data?.trending,
-    enabled,
-  })
+  // Debug temporal para verificar el flujo de datos
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 useTrendingSearches - Estado del hook:', {
+      enabled,
+      isLoading,
+      error: error?.message,
+      dataReceived: !!data,
+      trendingCount: data?.trending?.length || 0,
+      trendingData: data?.trending || [],
+      lastUpdated: data?.lastUpdated,
+    })
+  }
 
   return result
 }

@@ -247,12 +247,12 @@ const ShopDetails = () => {
                         ),
                         interestFree: true,
                       }}
-                      showFreeShipping={(product.discountedPrice || product.price) >= 15000}
+                      showFreeShipping={(product.discountedPrice || product.price) >= 50000}
                       variant='default'
                       size='lg'
                     />
                     <p className='text-gray-600 text-sm mt-2'>
-                      Precio incluye IVA • Envío gratis en compras mayores a $15.000
+                      Precio incluye IVA • Envío gratis en compras mayores a $50.000
                     </p>
                   </div>
 
@@ -279,7 +279,7 @@ const ShopDetails = () => {
                         {
                           id: 'express',
                           name: 'Envío express',
-                          price: 4500,
+                          price: 10000,
                           estimatedDays: { min: 1, max: 2 },
                           isExpress: true,
                           description: 'Entrega prioritaria',
@@ -338,9 +338,9 @@ const ShopDetails = () => {
                           // Lógica de agregar al carrito (ya existe en el componente principal)
                         }}
                         showCartAnimation={true}
-                        freeShipping={(product.discountedPrice || product.price) >= 15000}
+                        freeShipping={(product.discountedPrice || product.price) >= 50000}
                         shippingText={
-                          (product.discountedPrice || product.price) >= 15000
+                          (product.discountedPrice || product.price) >= 50000
                             ? 'Envío gratis'
                             : 'Disponible'
                         }
@@ -353,6 +353,16 @@ const ShopDetails = () => {
                               }
                             : undefined
                         }
+                        // Nuevas props para sistema de badges inteligentes
+                        variants={product.variants || []}
+                        description={product.description || ''}
+                        badgeConfig={{
+                          showCapacityBadge: true,
+                          showColorBadge: true,
+                          showFinishBadge: true,
+                          showMaterialBadge: false,
+                          showGritBadge: true
+                        }}
                       />
                     </div>
                   </div>

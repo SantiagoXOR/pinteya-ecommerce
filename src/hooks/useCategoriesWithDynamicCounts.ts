@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { useCategories } from './useCategories'
+import { CategoryFilters } from '@/types/api'
 import { useCategoryProductCounts, ProductFilters } from './useFilteredProducts'
 import { Category } from '@/types/database'
 
@@ -33,12 +34,24 @@ export const useCategoriesWithDynamicCounts = ({
   selectedCategories = [],
   enableDynamicCounts = true,
 }: UseCategoriesWithDynamicCountsOptions = {}) => {
-  // Obtener categorías base
+  // Extraer filtros de búsqueda para pasarlos a useCategories
+  const categoryFilters = useMemo(() => {
+    const filters: any = {}
+    if (baseFilters.search) {
+      filters.search = baseFilters.search
+    }
+    return filters
+  }, [baseFilters.search])
+
+  // Obtener categorías base con filtros de búsqueda si existen
   const {
     categories: baseCategories,
     loading: categoriesLoading,
     error: categoriesError,
-  } = useCategories()
+  } = useCategories({
+    initialFilters: categoryFilters,
+    autoFetch: true,
+  })
 
   // Extraer slugs de categorías para obtener conteos
   const categoryIds = useMemo(() => {
@@ -86,7 +99,8 @@ export const useCategoriesWithDynamicCounts = ({
 
   // Estados combinados
   const isLoading = categoriesLoading || (enableDynamicCounts && countsLoading)
-  const error = categoriesError || countsError
+  // Convertir ambos errores a string para compatibilidad
+  const error = categoriesError || (countsError ? (countsError instanceof Error ? countsError.message : String(countsError)) : null)
 
   // Estadísticas útiles
   const stats = useMemo(() => {

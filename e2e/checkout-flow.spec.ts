@@ -19,7 +19,7 @@ import { test, expect } from '@playwright/test'
 const SCREENSHOT_OPTIONS = {
   fullPage: true,
   animations: 'disabled' as const,
-  clip: undefined
+  clip: undefined,
 }
 
 // Helper para capturar screenshots con contexto
@@ -29,7 +29,7 @@ async function captureStepScreenshot(page: any, stepName: string, description: s
 
   await page.screenshot({
     path: `test-results/screenshots/${filename}`,
-    ...SCREENSHOT_OPTIONS
+    ...SCREENSHOT_OPTIONS,
   })
 
   console.log(`📸 Screenshot capturado: ${stepName} - ${description}`)
@@ -44,7 +44,7 @@ async function capturePerformanceMetrics(page: any, stepName: string) {
       loadTime: navigation.loadEventEnd - navigation.loadEventStart,
       domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
       firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   })
 
@@ -88,7 +88,11 @@ test.describe('Checkout Flow - Flujo Completo sin Autenticación', () => {
     // 3. Hacer clic en botón checkout
     await page.click('[data-testid="checkout-btn"]')
     await page.waitForLoadState('networkidle')
-    await captureStepScreenshot(page, 'step1-checkout-transition', 'Transición a página de checkout')
+    await captureStepScreenshot(
+      page,
+      'step1-checkout-transition',
+      'Transición a página de checkout'
+    )
 
     // 4. Verificar llegada a página de checkout
     await expect(page).toHaveURL('/checkout')
@@ -115,7 +119,7 @@ test.describe('Checkout Flow - Flujo Completo sin Autenticación', () => {
     const sections = [
       { selector: '[data-testid="payer-info-section"]', name: 'Información del comprador' },
       { selector: '[data-testid="shipping-info-section"]', name: 'Información de envío' },
-      { selector: '[data-testid="order-summary-section"]', name: 'Resumen del pedido' }
+      { selector: '[data-testid="order-summary-section"]', name: 'Resumen del pedido' },
     ]
 
     for (const section of sections) {
@@ -132,7 +136,7 @@ test.describe('Checkout Flow - Flujo Completo sin Autenticación', () => {
       { name: 'payer.name', label: 'Nombre' },
       { name: 'payer.surname', label: 'Apellido' },
       { name: 'payer.email', label: 'Email' },
-      { name: 'payer.phone', label: 'Teléfono' }
+      { name: 'payer.phone', label: 'Teléfono' },
     ]
 
     for (const field of payerFields) {
@@ -146,7 +150,7 @@ test.describe('Checkout Flow - Flujo Completo sin Autenticación', () => {
     const shippingFields = [
       { name: 'shipping.address.street_name', label: 'Calle' },
       { name: 'shipping.address.street_number', label: 'Número' },
-      { name: 'shipping.address.zip_code', label: 'Código postal' }
+      { name: 'shipping.address.zip_code', label: 'Código postal' },
     ]
 
     for (const field of shippingFields) {
@@ -361,7 +365,7 @@ test.describe('Checkout Flow - Flujo Completo sin Autenticación', () => {
 
     // Should redirect to shop or show empty cart message
     await expect(page.locator('[data-testid="empty-cart-message"]')).toBeVisible()
-    
+
     // Or should redirect to shop
     // await expect(page).toHaveURL('/shop')
   })
@@ -369,7 +373,7 @@ test.describe('Checkout Flow - Flujo Completo sin Autenticación', () => {
   test('checkout form auto-fills for authenticated users', async ({ page }) => {
     // This test assumes user is logged in
     // You might need to implement login first or mock authentication
-    
+
     // Navigate to checkout
     await page.goto('/checkout')
 
@@ -384,11 +388,11 @@ test.describe('Checkout Flow - Flujo Completo sin Autenticación', () => {
     // Check if form fields are pre-filled
     const nameInput = page.locator('input[name="payer.name"]')
     const emailInput = page.locator('input[name="payer.email"]')
-    
+
     // If user is authenticated, these should have values
     const nameValue = await nameInput.inputValue()
     const emailValue = await emailInput.inputValue()
-    
+
     if (nameValue && emailValue) {
       expect(nameValue).toBeTruthy()
       expect(emailValue).toContain('@')

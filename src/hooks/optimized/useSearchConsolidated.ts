@@ -239,7 +239,7 @@ export function useSearchConsolidated(
 
       // Prefetch optimizado
       if (enablePrefetch && searchQuery.trim().length >= 1) {
-        const prefetchUrl = `/search?q=${encodeURIComponent(searchQuery.trim())}`
+        const prefetchUrl = `/search?search=${encodeURIComponent(searchQuery.trim())}`
         router.prefetch(prefetchUrl)
       }
     },
@@ -265,7 +265,7 @@ export function useSearchConsolidated(
 
         // Construir URL de navegación
         const params = new URLSearchParams()
-        params.set('q', searchQuery.trim())
+        params.set('search', searchQuery.trim())
         if (category && category !== 'all') {
           params.set('category', category)
         }
@@ -286,15 +286,18 @@ export function useSearchConsolidated(
 
   const selectSuggestion = useCallback(
     (suggestion: SearchSuggestion) => {
+      // Si hay un callback externo, dejarlo manejar la navegación
+      if (onSuggestionSelect) {
+        onSuggestionSelect(suggestion)
+        return
+      }
+
+      // Solo navegar automáticamente si NO hay callback externo
       if (suggestion.type === 'product' && suggestion.productId) {
         const productUrl = `/products/${suggestion.productId}`
         router.push(productUrl)
       } else {
         executeSearch(suggestion.text)
-      }
-
-      if (onSuggestionSelect) {
-        onSuggestionSelect(suggestion)
       }
     },
     [router, executeSearch, onSuggestionSelect]

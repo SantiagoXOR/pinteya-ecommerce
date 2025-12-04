@@ -31,12 +31,14 @@
 ### **1. Checkout Principal Mejorado** (`src/components/Checkout/index.tsx`)
 
 #### **Antes:**
+
 - Layout básico de 2 columnas
 - Colores inconsistentes (tahiti-gold)
 - Estados de carga simples
 - Componentes custom sin design system
 
 #### **Después:**
+
 - ✅ **Layout Responsive**: Grid 3 columnas en desktop, stack en mobile
 - ✅ **Progress Indicator**: Barra de progreso visual con badges
 - ✅ **Design System**: Colores Pinteya (Blaze Orange, Fun Green, Bright Sun)
@@ -46,11 +48,11 @@
 
 ```tsx
 // Ejemplo de mejora aplicada
-<Card className="shadow-sm">
-  <CardHeader className="bg-blaze-orange-50 border-b">
-    <CardTitle className="text-blaze-orange-700">Información de Facturación</CardTitle>
+<Card className='shadow-sm'>
+  <CardHeader className='bg-blaze-orange-50 border-b'>
+    <CardTitle className='text-blaze-orange-700'>Información de Facturación</CardTitle>
   </CardHeader>
-  <CardContent className="p-6">
+  <CardContent className='p-6'>
     <Billing {...props} />
   </CardContent>
 </Card>
@@ -59,6 +61,7 @@
 ### **2. MercadoPagoWallet Mejorado** (`src/components/Checkout/MercadoPagoWallet.tsx`)
 
 #### **Mejoras Implementadas:**
+
 - ✅ **UI Moderna**: Gradientes y badges de seguridad
 - ✅ **Estados Visuales**: Loading, error y success mejorados
 - ✅ **Trust Signals**: Badges SSL, PCI DSS, certificaciones
@@ -66,15 +69,16 @@
 - ✅ **Fallback Mejorado**: Experiencia alternativa elegante
 
 #### **Características Destacadas:**
+
 ```tsx
 // Trust signals implementados
-<div className="flex items-center gap-2">
-  <Badge variant="secondary" className="bg-green-100 text-green-700">
-    <Shield className="w-3 h-3 mr-1" />
+<div className='flex items-center gap-2'>
+  <Badge variant='secondary' className='bg-green-100 text-green-700'>
+    <Shield className='w-3 h-3 mr-1' />
     Seguro
   </Badge>
-  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-    <Lock className="w-3 h-3 mr-1" />
+  <Badge variant='secondary' className='bg-blue-100 text-blue-700'>
+    <Lock className='w-3 h-3 mr-1' />
     SSL
   </Badge>
 </div>
@@ -83,6 +87,7 @@
 ### **3. Checkout Mejorado** (`src/components/Checkout/EnhancedCheckout.tsx`)
 
 #### **Nuevo Componente con:**
+
 - ✅ **Navegación por Pasos**: 3 pasos claros (Contacto → Envío → Pago)
 - ✅ **Validación en Tiempo Real**: Validación por paso
 - ✅ **Progress Tracking**: Indicador visual de progreso
@@ -90,6 +95,7 @@
 - ✅ **Responsive Design**: Mobile-first completo
 
 #### **Flujo Optimizado:**
+
 1. **Paso 1**: Información de contacto (User icon)
 2. **Paso 2**: Dirección y método de envío (Truck icon)
 3. **Paso 3**: Método de pago y finalización (CreditCard icon)
@@ -102,12 +108,9 @@
 
 ```css
 /* Aplicados consistentemente */
---blaze-orange-50: #fef7ee    /* Backgrounds suaves */
---blaze-orange-600: #eb6313   /* Elementos principales */
---blaze-orange-700: #bd4811   /* Textos y borders */
-
---fun-green-600: #00ca53      /* Success states */
---bright-sun-400: #f9a007     /* Botones principales */
+--blaze-orange-50: #fef7ee /* Backgrounds suaves */ --blaze-orange-600: #eb6313
+  /* Elementos principales */ --blaze-orange-700: #bd4811 /* Textos y borders */
+  --fun-green-600: #00ca53 /* Success states */ --bright-sun-400: #f9a007 /* Botones principales */;
 ```
 
 ### **Componentes del Design System Utilizados**
@@ -134,6 +137,7 @@
 ### **1. Mobile-First Design**
 
 #### **Breakpoints Implementados:**
+
 ```css
 /* Responsive grid */
 grid-cols-1 lg:grid-cols-3  /* Mobile stack, Desktop 3 cols */
@@ -144,12 +148,14 @@ text-xl md:text-2xl        /* Tipografía responsive */
 ### **2. Estados de Carga Mejorados**
 
 #### **Loading States:**
+
 - Spinners con colores Pinteya
 - Barras de progreso animadas
 - Mensajes contextuales
 - Indicadores de tiempo estimado
 
 #### **Error Handling:**
+
 - Cards de error con iconos
 - Botones de retry prominentes
 - Mensajes de error claros
@@ -276,6 +282,3 @@ NEXT_PUBLIC_BASE_URL=https://your-domain.com
 Las mejoras implementadas en el sistema de checkout de Pinteya representan una evolución significativa hacia una experiencia de usuario moderna, eficiente y alineada con las mejores prácticas de la industria. La integración del design system, las optimizaciones de performance y la atención al detalle en UX/UI posicionan a Pinteya como líder en experiencia de checkout para e-commerce de pinturería y ferretería.
 
 **Resultado**: Sistema de checkout enterprise-ready, optimizado para conversión y preparado para escalar con el crecimiento del negocio.
-
-
-

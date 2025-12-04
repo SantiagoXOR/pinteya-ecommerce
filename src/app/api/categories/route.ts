@@ -60,6 +60,31 @@ export async function GET(request: NextRequest) {
 
         // Verificar que el cliente de Supabase esté disponible
         if (!supabase) {
+          if (process.env.NODE_ENV !== 'production') {
+            const { devMockCategories } = await import('@/lib/dev-mocks')
+            let items = devMockCategories
+            if (filters.search) {
+              const q = filters.search.toLowerCase()
+              items = items.filter(c => c.name.toLowerCase().includes(q))
+            }
+
+            const response: ApiResponse<any[]> = {
+              data: items.map(c => ({ ...c, products_count: 0 })),
+              success: true,
+              message: `${items.length} categorías encontradas (mock)`,
+            }
+
+            securityLogger.log({
+              type: 'data_access',
+              severity: 'low',
+              message: 'Categories served from dev mocks',
+              context: securityLogger.context,
+              metadata: { count: items.length },
+            })
+
+            return NextResponse.json(response)
+          }
+
           console.error('Cliente de Supabase no disponible en GET /api/categories')
           const errorResponse: ApiResponse<null> = {
             data: null,
@@ -72,13 +97,12 @@ export async function GET(request: NextRequest) {
         // Construir query base - simplificado para la estructura actual
         const baseQuery = supabase
           .from('categories')
-          .select(
-            `
-        *,
-        products_count:products(count)
-      `
-          )
-          .order('name')
+          .select(`
+            *,
+            products_count:products(count)
+          `)
+          .order('display_order', { ascending: true })
+          .order('name', { ascending: true })
 
         // Aplicar filtros
         let query = baseQuery
@@ -88,7 +112,7 @@ export async function GET(request: NextRequest) {
 
         // Ejecutar query con timeout de base de datos
         const { data: categories, error } = await withDatabaseTimeout(async signal => {
-          return await query.abortSignal(signal)
+          return await query
         }, API_TIMEOUTS.database)
 
         if (error) {

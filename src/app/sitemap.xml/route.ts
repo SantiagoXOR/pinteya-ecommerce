@@ -122,7 +122,7 @@ async function generateCompleteSitemapXML(): Promise<string> {
   // Páginas de productos (limitamos a los más recientes para evitar sitemaps muy grandes)
   products.slice(0, 1000).forEach(product => {
     urls += `  <url>\n`
-    urls += `    <loc>${baseUrl}/shop-details/${product.slug}</loc>\n`
+    urls += `    <loc>${baseUrl}/products/${product.slug}</loc>\n`
     urls += `    <lastmod>${product.updated_at || now}</lastmod>\n`
     urls += `    <changefreq>weekly</changefreq>\n`
     urls += `    <priority>0.7</priority>\n`

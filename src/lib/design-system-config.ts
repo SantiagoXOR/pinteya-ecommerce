@@ -88,7 +88,7 @@ export const defaultDesignSystemConfig: DesignSystemConfig = {
     },
 
     shippingInfo: {
-      highlightFreeShippingByDefault: true,
+      highlightFreeShippingByDefault: false,
       showCalculatorByDefault: false, // Solo en checkout/detalle
       showGuaranteesByDefault: false, // Solo en checkout
       freeShippingThreshold: 50000, // $50.000 ARS

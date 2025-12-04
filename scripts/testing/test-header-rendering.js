@@ -7,11 +7,11 @@
  * Pinteya E-commerce - Diagnóstico de renderizado
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-console.log('🔍 DIAGNÓSTICO DE RENDERIZADO DEL HEADER');
-console.log('========================================\n');
+console.log('🔍 DIAGNÓSTICO DE RENDERIZADO DEL HEADER')
+console.log('========================================\n')
 
 // Colores para la consola
 const colors = {
@@ -20,200 +20,197 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   reset: '\x1b[0m',
-  bold: '\x1b[1m'
-};
+  bold: '\x1b[1m',
+}
 
 const log = {
-  success: (msg) => console.log(`${colors.green}✅ ${msg}${colors.reset}`),
-  error: (msg) => console.log(`${colors.red}❌ ${msg}${colors.reset}`),
-  warning: (msg) => console.log(`${colors.yellow}⚠️  ${msg}${colors.reset}`),
-  info: (msg) => console.log(`${colors.blue}ℹ️  ${msg}${colors.reset}`),
-  title: (msg) => console.log(`${colors.bold}${colors.blue}${msg}${colors.reset}`)
-};
+  success: msg => console.log(`${colors.green}✅ ${msg}${colors.reset}`),
+  error: msg => console.log(`${colors.red}❌ ${msg}${colors.reset}`),
+  warning: msg => console.log(`${colors.yellow}⚠️  ${msg}${colors.reset}`),
+  info: msg => console.log(`${colors.blue}ℹ️  ${msg}${colors.reset}`),
+  title: msg => console.log(`${colors.bold}${colors.blue}${msg}${colors.reset}`),
+}
 
 /**
  * Verifica que los archivos de corrección existan
  */
 function checkCorrectionFiles() {
-  log.title('1. VERIFICANDO ARCHIVOS DE CORRECCIÓN');
-  
+  log.title('1. VERIFICANDO ARCHIVOS DE CORRECCIÓN')
+
   const files = [
     'src/styles/header-fixes.css',
     'src/styles/mobile-safety.css',
-    'src/components/Header/index.tsx'
-  ];
-  
-  let allFilesExist = true;
-  
+    'src/components/Header/index.tsx',
+  ]
+
+  let allFilesExist = true
+
   files.forEach(file => {
     if (fs.existsSync(file)) {
-      log.success(`Archivo encontrado: ${file}`);
+      log.success(`Archivo encontrado: ${file}`)
     } else {
-      log.error(`Archivo faltante: ${file}`);
-      allFilesExist = false;
+      log.error(`Archivo faltante: ${file}`)
+      allFilesExist = false
     }
-  });
-  
-  return allFilesExist;
+  })
+
+  return allFilesExist
 }
 
 /**
  * Verifica que las correcciones de transform scale estén aplicadas
  */
 function checkTransformScaleFixes() {
-  log.title('\n2. VERIFICANDO CORRECCIONES DE TRANSFORM SCALE');
-  
-  const headerFile = 'src/components/Header/index.tsx';
-  
+  log.title('\n2. VERIFICANDO CORRECCIONES DE TRANSFORM SCALE')
+
+  const headerFile = 'src/components/Header/index.tsx'
+
   if (!fs.existsSync(headerFile)) {
-    log.error('Archivo Header no encontrado');
-    return false;
+    log.error('Archivo Header no encontrado')
+    return false
   }
-  
-  const content = fs.readFileSync(headerFile, 'utf8');
-  
+
+  const content = fs.readFileSync(headerFile, 'utf8')
+
   // Buscar problemas de transform scale
   const problematicPatterns = [
     'hover:scale-110',
     'group-hover:scale-110',
     'transform hover:scale',
-    'active:scale-95'
-  ];
-  
-  let hasProblems = false;
-  
+    'active:scale-95',
+  ]
+
+  let hasProblems = false
+
   problematicPatterns.forEach(pattern => {
     if (content.includes(pattern)) {
-      log.error(`Patrón problemático encontrado: ${pattern}`);
-      hasProblems = true;
+      log.error(`Patrón problemático encontrado: ${pattern}`)
+      hasProblems = true
     }
-  });
-  
+  })
+
   if (!hasProblems) {
-    log.success('No se encontraron patrones problemáticos de transform scale');
+    log.success('No se encontraron patrones problemáticos de transform scale')
   }
-  
+
   // Verificar que se usen alternativas
   const goodPatterns = [
     'group-hover:brightness-110',
     'hover:brightness-110',
-    'group-hover:drop-shadow-lg'
-  ];
-  
-  let hasAlternatives = false;
-  
+    'group-hover:drop-shadow-lg',
+  ]
+
+  let hasAlternatives = false
+
   goodPatterns.forEach(pattern => {
     if (content.includes(pattern)) {
-      log.success(`Alternativa encontrada: ${pattern}`);
-      hasAlternatives = true;
+      log.success(`Alternativa encontrada: ${pattern}`)
+      hasAlternatives = true
     }
-  });
-  
-  return !hasProblems && hasAlternatives;
+  })
+
+  return !hasProblems && hasAlternatives
 }
 
 /**
  * Verifica las correcciones de positioning relativo
  */
 function checkRelativePositioningFixes() {
-  log.title('\n3. VERIFICANDO CORRECCIONES DE POSITIONING');
-  
-  const headerFile = 'src/components/Header/index.tsx';
-  const content = fs.readFileSync(headerFile, 'utf8');
-  
+  log.title('\n3. VERIFICANDO CORRECCIONES DE POSITIONING')
+
+  const headerFile = 'src/components/Header/index.tsx'
+  const content = fs.readFileSync(headerFile, 'utf8')
+
   // Verificar que se hayan removido posicionamientos problemáticos
-  const problematicPatterns = [
-    'relative z-10',
-    'className="relative"'
-  ];
-  
-  let hasProblems = false;
-  
+  const problematicPatterns = ['relative z-10', 'className="relative"']
+
+  let hasProblems = false
+
   problematicPatterns.forEach(pattern => {
     if (content.includes(pattern)) {
-      log.warning(`Posicionamiento relativo encontrado: ${pattern}`);
-      hasProblems = true;
+      log.warning(`Posicionamiento relativo encontrado: ${pattern}`)
+      hasProblems = true
     }
-  });
-  
+  })
+
   // Verificar alternativas
   if (content.includes('cart-icon-container')) {
-    log.success('Contenedor de carrito optimizado encontrado');
+    log.success('Contenedor de carrito optimizado encontrado')
   }
-  
+
   if (content.includes('search-focus-ring') && !content.includes('relative z-10')) {
-    log.success('Contenedor de búsqueda optimizado');
+    log.success('Contenedor de búsqueda optimizado')
   }
-  
-  return !hasProblems;
+
+  return !hasProblems
 }
 
 /**
  * Verifica la configuración CSS
  */
 function checkCSSConfiguration() {
-  log.title('\n4. VERIFICANDO CONFIGURACIÓN CSS');
-  
-  const headerFixesFile = 'src/styles/header-fixes.css';
-  const mobileSafetyFile = 'src/styles/mobile-safety.css';
-  const layoutFile = 'src/app/layout.tsx';
-  
-  let allCorrect = true;
-  
+  log.title('\n4. VERIFICANDO CONFIGURACIÓN CSS')
+
+  const headerFixesFile = 'src/styles/header-fixes.css'
+  const mobileSafetyFile = 'src/styles/mobile-safety.css'
+  const layoutFile = 'src/app/layout.tsx'
+
+  let allCorrect = true
+
   // Verificar header-fixes.css
   if (fs.existsSync(headerFixesFile)) {
-    const content = fs.readFileSync(headerFixesFile, 'utf8');
-    
+    const content = fs.readFileSync(headerFixesFile, 'utf8')
+
     if (content.includes('--z-header: 1000')) {
-      log.success('Variables CSS de z-index configuradas');
+      log.success('Variables CSS de z-index configuradas')
     } else {
-      log.error('Variables CSS de z-index faltantes');
-      allCorrect = false;
+      log.error('Variables CSS de z-index faltantes')
+      allCorrect = false
     }
-    
+
     if (content.includes('overflow: visible !important')) {
-      log.success('Correcciones de overflow configuradas');
+      log.success('Correcciones de overflow configuradas')
     } else {
-      log.error('Correcciones de overflow faltantes');
-      allCorrect = false;
+      log.error('Correcciones de overflow faltantes')
+      allCorrect = false
     }
   } else {
-    log.error('Archivo header-fixes.css no encontrado');
-    allCorrect = false;
+    log.error('Archivo header-fixes.css no encontrado')
+    allCorrect = false
   }
-  
+
   // Verificar mobile-safety.css
   if (fs.existsSync(mobileSafetyFile)) {
-    const content = fs.readFileSync(mobileSafetyFile, 'utf8');
-    
+    const content = fs.readFileSync(mobileSafetyFile, 'utf8')
+
     if (content.includes('overflow-y: visible !important')) {
-      log.success('Correcciones móviles configuradas');
+      log.success('Correcciones móviles configuradas')
     } else {
-      log.warning('Correcciones móviles podrían necesitar actualización');
+      log.warning('Correcciones móviles podrían necesitar actualización')
     }
   }
-  
+
   // Verificar importación en layout
   if (fs.existsSync(layoutFile)) {
-    const content = fs.readFileSync(layoutFile, 'utf8');
-    
+    const content = fs.readFileSync(layoutFile, 'utf8')
+
     if (content.includes('header-fixes.css')) {
-      log.success('header-fixes.css importado en layout');
+      log.success('header-fixes.css importado en layout')
     } else {
-      log.error('header-fixes.css NO importado en layout');
-      allCorrect = false;
+      log.error('header-fixes.css NO importado en layout')
+      allCorrect = false
     }
   }
-  
-  return allCorrect;
+
+  return allCorrect
 }
 
 /**
  * Genera reporte HTML de diagnóstico
  */
 function generateDiagnosticReport(results) {
-  log.title('\n5. GENERANDO REPORTE DE DIAGNÓSTICO');
-  
+  log.title('\n5. GENERANDO REPORTE DE DIAGNÓSTICO')
+
   const reportContent = `
 <!DOCTYPE html>
 <html lang="es">
@@ -272,18 +269,19 @@ function generateDiagnosticReport(results) {
         
         <div class="section">
             <h3>📋 Próximos Pasos</h3>
-            ${results.overall ? 
-              '<p class="success">✅ El Header debería renderizarse correctamente. Prueba la aplicación en el navegador.</p>' :
-              '<p class="error">❌ Revisa los elementos marcados como incorrectos y aplica las correcciones necesarias.</p>'
+            ${
+              results.overall
+                ? '<p class="success">✅ El Header debería renderizarse correctamente. Prueba la aplicación en el navegador.</p>'
+                : '<p class="error">❌ Revisa los elementos marcados como incorrectos y aplica las correcciones necesarias.</p>'
             }
         </div>
     </div>
 </body>
 </html>
-  `;
-  
-  fs.writeFileSync('header-diagnostic-report.html', reportContent);
-  log.success('Reporte generado: header-diagnostic-report.html');
+  `
+
+  fs.writeFileSync('header-diagnostic-report.html', reportContent)
+  log.success('Reporte generado: header-diagnostic-report.html')
 }
 
 /**
@@ -294,27 +292,27 @@ function main() {
     files: checkCorrectionFiles(),
     transforms: checkTransformScaleFixes(),
     positioning: checkRelativePositioningFixes(),
-    css: checkCSSConfiguration()
-  };
-  
-  results.overall = results.files && results.transforms && results.positioning && results.css;
-  
-  generateDiagnosticReport(results);
-  
-  log.title('\n📊 RESUMEN FINAL');
-  
-  if (results.overall) {
-    log.success('¡Todas las correcciones aplicadas correctamente!');
-    log.info('El Header debería renderizarse sin problemas.');
-    log.info('Ejecuta: npm run dev y verifica en el navegador.');
-  } else {
-    log.error('Se encontraron problemas que requieren atención.');
-    log.info('Revisa el reporte HTML para más detalles.');
+    css: checkCSSConfiguration(),
   }
-  
-  console.log('\n========================================');
-  console.log('🏁 Diagnóstico completado');
+
+  results.overall = results.files && results.transforms && results.positioning && results.css
+
+  generateDiagnosticReport(results)
+
+  log.title('\n📊 RESUMEN FINAL')
+
+  if (results.overall) {
+    log.success('¡Todas las correcciones aplicadas correctamente!')
+    log.info('El Header debería renderizarse sin problemas.')
+    log.info('Ejecuta: npm run dev y verifica en el navegador.')
+  } else {
+    log.error('Se encontraron problemas que requieren atención.')
+    log.info('Revisa el reporte HTML para más detalles.')
+  }
+
+  console.log('\n========================================')
+  console.log('🏁 Diagnóstico completado')
 }
 
 // Ejecutar el script
-main();
+main()

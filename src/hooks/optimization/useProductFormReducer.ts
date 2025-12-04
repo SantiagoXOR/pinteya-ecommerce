@@ -2,6 +2,10 @@ import { useReducer, useCallback, useMemo } from 'react'
 
 // Tipos para el estado del formulario de productos
 interface ProductFormState {
+  // UI State
+  activeTab: string
+  previewMode: boolean
+  
   // Información básica
   name: string
   description: string
@@ -52,6 +56,8 @@ interface ProductFormState {
   isDirty: boolean
   currentStep: number
   validationErrors: Record<string, string[]>
+  uploadProgress: number
+  isUploading: boolean
 }
 
 // Tipos de acciones
@@ -68,6 +74,8 @@ type ProductFormAction =
   | { type: 'SET_STEP'; step: number }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
+  | { type: 'SET_ACTIVE_TAB'; tab: string }
+  | { type: 'SET_PREVIEW_MODE'; previewMode: boolean }
   | { type: 'ADD_IMAGE'; image: string }
   | { type: 'REMOVE_IMAGE'; index: number }
   | { type: 'ADD_VARIANT'; variant: any }
@@ -80,6 +88,10 @@ type ProductFormAction =
 
 // Estado inicial
 const initialState: ProductFormState = {
+  // UI State
+  activeTab: 'general',
+  previewMode: false,
+  
   // Información básica
   name: '',
   description: '',
@@ -130,6 +142,8 @@ const initialState: ProductFormState = {
   isDirty: false,
   currentStep: 0,
   validationErrors: {},
+  uploadProgress: 0,
+  isUploading: false,
 }
 
 // Reducer function
@@ -201,6 +215,12 @@ function productFormReducer(state: ProductFormState, action: ProductFormAction):
     case 'PREV_STEP':
       return { ...state, currentStep: Math.max(0, state.currentStep - 1) }
 
+    case 'SET_ACTIVE_TAB':
+      return { ...state, activeTab: action.tab }
+
+    case 'SET_PREVIEW_MODE':
+      return { ...state, previewMode: action.previewMode }
+
     case 'ADD_IMAGE':
       return {
         ...state,
@@ -271,8 +291,9 @@ function productFormReducer(state: ProductFormState, action: ProductFormAction):
 }
 
 // Hook personalizado
-export function useProductFormReducer() {
-  const [state, dispatch] = useReducer(productFormReducer, initialState)
+export function useProductFormReducer(initialStateOverride?: Partial<ProductFormState>) {
+  const initialStateWithOverride = { ...initialState, ...initialStateOverride }
+  const [state, dispatch] = useReducer(productFormReducer, initialStateWithOverride)
 
   // Acciones memoizadas
   const actions = useMemo(
@@ -303,6 +324,11 @@ export function useProductFormReducer() {
       nextStep: () => dispatch({ type: 'NEXT_STEP' }),
 
       prevStep: () => dispatch({ type: 'PREV_STEP' }),
+
+      setActiveTab: (tab: string) => dispatch({ type: 'SET_ACTIVE_TAB', tab }),
+
+      setPreviewMode: (previewMode: boolean) =>
+        dispatch({ type: 'SET_PREVIEW_MODE', previewMode }),
 
       addImage: (image: string) => dispatch({ type: 'ADD_IMAGE', image }),
 

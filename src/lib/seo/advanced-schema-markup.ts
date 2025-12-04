@@ -279,7 +279,7 @@ const DEFAULT_SCHEMA_CONFIG: SchemaConfig = {
     },
     sameAs: [
       'https://www.facebook.com/pinteya',
-      'https://www.instagram.com/pinteya',
+      'https://www.instagram.com/pinteya.app/',
       'https://twitter.com/pinteya',
     ],
     foundingDate: '2020-01-01',

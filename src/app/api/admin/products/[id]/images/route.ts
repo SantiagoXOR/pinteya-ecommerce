@@ -45,11 +45,11 @@ function validateImageFile(file: File) {
   const maxSize = 5 * 1024 * 1024 // 5MB
 
   if (!allowedTypes.includes(file.type)) {
-    throw new ValidationError('Tipo de archivo no permitido. Use JPG, PNG o WebP')
+    throw ValidationError('Tipo de archivo no permitido. Use JPG, PNG o WebP')
   }
 
   if (file.size > maxSize) {
-    throw new ValidationError('El archivo es demasiado grande. Máximo 5MB')
+    throw ValidationError('El archivo es demasiado grande. Máximo 5MB')
   }
 }
 
@@ -99,14 +99,15 @@ async function deleteImageFromStorage(path: string) {
  * POST /api/admin/products/[id]/images
  * Upload new image for product
  */
-const postHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
+const postHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const { supabase, user } = request as any
-  const productId = params.id
+  const { id } = await context.params
+  const productId = id
 
   // Validate params
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
-    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors)
+    throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
   // Check if product exists
@@ -127,7 +128,7 @@ const postHandler = async (request: NextRequest, { params }: { params: { id: str
   const isPrimary = formData.get('is_primary') === 'true'
 
   if (!file) {
-    throw new ValidationError('No se proporcionó archivo')
+    throw ValidationError('No se proporcionó archivo')
   }
 
   // Validate file
@@ -193,7 +194,7 @@ const getHandler = async (request: NextRequest, { params }: { params: { id: stri
   // Validate params
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
-    throw new ValidationError('ID de producto inválido', paramsValidation.error.errors)
+    throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
   // Get images

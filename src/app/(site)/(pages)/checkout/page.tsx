@@ -1,10 +1,37 @@
-import React from 'react'
-import CheckoutExpress from '@/components/Checkout/CheckoutExpress'
+'use client'
+import React, { Suspense } from 'react'
+import dynamic from 'next/dynamic'
+
+// ⚡ PERFORMANCE: Lazy load del componente pesado con loading state
+// ✅ CORRECCIÓN: Manejar correctamente el named export para evitar React error #306
+const MetaCheckoutWizard = dynamic(
+  () => import('@/components/Checkout/MetaCheckoutFlow/MetaCheckoutWizard').then(mod => ({ default: mod.MetaCheckoutWizard })),
+  {
+    loading: () => (
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='flex flex-col items-center gap-4'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500' />
+          <p className='text-gray-600'>Cargando checkout...</p>
+        </div>
+      </div>
+    ),
+    ssr: false, // Solo cargar en cliente si es necesario
+  }
+)
 
 const CheckoutPage = () => {
   return (
     <main className='min-h-screen'>
-      <CheckoutExpress />
+      <Suspense fallback={
+        <div className='min-h-screen flex items-center justify-center'>
+          <div className='flex flex-col items-center gap-4'>
+            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500' />
+            <p className='text-gray-600'>Cargando checkout...</p>
+          </div>
+        </div>
+      }>
+        <MetaCheckoutWizard />
+      </Suspense>
     </main>
   )
 }

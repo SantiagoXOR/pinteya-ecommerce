@@ -19,10 +19,7 @@ const customJestConfig = {
   cacheDirectory: process.env.CI ? false : '<rootDir>/.jest-cache',
 
   // Setup files
-  setupFilesAfterEnv: [
-    '<rootDir>/jest.setup.js',
-    '<rootDir>/__tests__/setup/auth-setup.js',
-  ],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/__tests__/setup/auth-setup.js'],
 
   // Module name mapping para absolute imports - Optimizado
   moduleNameMapper: {
@@ -49,7 +46,8 @@ const customJestConfig = {
     // Mapeos para assets estáticos
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     'swiper/.*\\.css$': 'identity-obj-proxy',
-    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/__mocks__/fileMock.js',
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+      '<rootDir>/__mocks__/fileMock.js',
 
     // Swiper mocks (Patrón 1: Imports faltantes)
     '^swiper$': '<rootDir>/__mocks__/swiper.js',
@@ -67,12 +65,9 @@ const customJestConfig = {
     '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
     '^@mswjs/interceptors/(.*)$': '<rootDir>/node_modules/@mswjs/interceptors/$1',
   },
-  
+
   // Test patterns
-  testMatch: [
-    '**/__tests__/**/*.[jt]s?(x)',
-    '**/?(*.)+(spec|test).[jt]s?(x)'
-  ],
+  testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
 
   // Ignore E2E tests (Playwright) and utility files
   testPathIgnorePatterns: [
@@ -93,7 +88,7 @@ const customJestConfig = {
     'hooks-mocks.ts',
     'components-mocks.ts',
   ],
-  
+
   // Coverage configuration
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
@@ -106,7 +101,7 @@ const customJestConfig = {
     '!src/app/**/error.tsx',
     '!src/middleware.ts',
   ],
-  
+
   // Coverage thresholds
   coverageThreshold: {
     global: {
@@ -116,10 +111,10 @@ const customJestConfig = {
       statements: 70,
     },
   },
-  
+
   // Coverage reporters
   coverageReporters: ['text', 'lcov', 'html'],
-  
+
   // Ignore patterns
   coveragePathIgnorePatterns: [
     '/node_modules/',
@@ -131,7 +126,7 @@ const customJestConfig = {
     '/__tests__/',
     '/e2e/',
   ],
-  
+
   // Transform ignore patterns - Optimizado
   transformIgnorePatterns: [
     '/node_modules/(?!(.*\.mjs$|@tanstack|use-debounce|next-auth|swiper|msw))',

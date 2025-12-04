@@ -10,35 +10,89 @@ import { ProductWithCategory } from '@/types/api'
  * @param apiProduct - Producto desde la API
  * @returns Product - Producto en formato de componente
  */
-export function adaptApiProductToComponent(
-  apiProduct: ProductWithCategory
-): Product & { name?: string } {
-  // Mapear correctamente las imágenes desde la estructura de BD a la estructura de componentes
-  const images = apiProduct.images || {}
+export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Product => {
+  console.group(`🔄 [ProductAdapter] Adaptando producto: ${apiProduct.name}`);
+  console.log('📦 API Product original:', apiProduct);
+  console.log('🖼️ Imágenes originales:', apiProduct.images);
+  console.log('🎨 Variantes:', apiProduct.variants);
+  
+  // ✅ PRIORIDAD DE IMAGEN: Variante por defecto > Producto padre
+  let firstImage = '/images/products/placeholder.svg'
+  let normalizedImages: string[] = []
+  
+  // 1. Intentar obtener imagen de variante por defecto
+  const defaultVariant = (apiProduct as any).default_variant || (apiProduct as any).variants?.[0]
+  if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
+    firstImage = defaultVariant.image_url.trim()
+    normalizedImages = [firstImage]
+    console.log('🎯 Usando imagen de variante por defecto:', firstImage)
+  } else {
+    // 2. Normalizar imágenes del producto padre
+    normalizedImages = Array.isArray(apiProduct.images)
+      ? (
+          apiProduct.images
+            .map((img: any) => {
+              if (typeof img === 'string') return img
+              if (img && typeof img?.url === 'string') return img.url
+              if (img && typeof img?.image_url === 'string') return img.image_url
+              return null
+            })
+            .filter(Boolean) as string[]
+        )
+      : apiProduct.images?.previews && Array.isArray(apiProduct.images.previews) && apiProduct.images.previews.length > 0
+        ? apiProduct.images.previews // ✅ USAR TODOS los previews, no solo el primero
+        : apiProduct.images?.thumbnails && Array.isArray(apiProduct.images.thumbnails) && apiProduct.images.thumbnails.length > 0
+          ? apiProduct.images.thumbnails // ✅ USAR TODOS los thumbnails
+          : apiProduct.images?.main
+            ? [apiProduct.images.main]
+            : apiProduct.images?.gallery && Array.isArray(apiProduct.images.gallery) && apiProduct.images.gallery.length > 0
+              ? apiProduct.images.gallery
+              : ['/images/products/placeholder.svg']
 
-  return {
-    id: apiProduct.id,
-    title: apiProduct.name,
-    name: apiProduct.name, // Agregar el campo name para compatibilidad
-    brand: apiProduct.brand, // Agregar el campo brand que faltaba
-    reviews: Math.floor(Math.random() * 50) + 1, // Temporal: generar reviews aleatorias
-    price: apiProduct.price,
-    // FIX CRÍTICO: Solo usar discounted_price si es menor que price, sino undefined
-    discountedPrice:
-      apiProduct.discounted_price && apiProduct.discounted_price < apiProduct.price
-        ? apiProduct.discounted_price
-        : undefined,
-    imgs: {
-      // Mapear desde la estructura real de la BD: { main, gallery, thumbnail }
-      thumbnails: images.thumbnail ? [images.thumbnail] : ['/images/products/placeholder.svg'],
-      previews: images.main
-        ? [images.main]
-        : images.gallery?.[0]
-          ? [images.gallery[0]]
-          : ['/images/products/placeholder.svg'],
-    },
+    firstImage = normalizedImages[0] || '/images/products/placeholder.svg'
+    console.log('🎯 Usando imagen de producto padre:', firstImage);
+    console.log('📸 Imágenes normalizadas:', normalizedImages);
   }
-}
+
+  const adaptedProduct: Product = {
+    id: apiProduct.id,
+    title: apiProduct.name, // ✅ Mapear name a title para compatibilidad con tipo Product
+    brand: apiProduct.brand || '',
+    reviews: 0, // Valor por defecto
+    price: apiProduct.price,
+    discountedPrice: apiProduct.discounted_price || apiProduct.price,
+    // Campos adicionales para compatibilidad extendida
+    name: apiProduct.name,
+    description: apiProduct.description || '',
+    originalPrice: apiProduct.original_price || apiProduct.price,
+    discount: apiProduct.discount || null,
+    category: apiProduct.category?.name || 'Sin categoría',
+    categoryId: apiProduct.category_id,
+    stock: apiProduct.stock || 0,
+    isNew: apiProduct.is_new || false,
+    images: normalizedImages,
+    image: firstImage,
+    // ✅ CAMPOS CRÍTICOS PARA BADGES INTELIGENTES
+    // 🎯 BADGES INTELIGENTES FIX - Octubre 2025
+    // Campos críticos para generación de badges inteligentes
+    color: apiProduct.color || undefined,        // ✅ CRÍTICO: Para badges de color
+    medida: apiProduct.medida || undefined,      // ✅ CRÍTICO: Para badges de capacidad/tamaño
+    slug: apiProduct.slug || undefined,          // ✅ CRÍTICO: Para extracción de finish desde slug
+    variants: apiProduct.variants || [],
+    specifications: apiProduct.specifications || {},
+    // Campos de compatibilidad con versiones anteriores
+    imgs: {
+      previews: normalizedImages,
+      thumbnails: normalizedImages // ✅ Incluir thumbnails también
+    }
+  };
+
+  console.log('✅ Producto adaptado:', adaptedProduct);
+  console.log('🖼️ URL final de imagen:', adaptedProduct.image);
+  console.groupEnd();
+
+  return adaptedProduct;
+};
 
 /**
  * Convierte una lista de productos de la API al formato de componentes
@@ -47,7 +101,7 @@ export function adaptApiProductToComponent(
  */
 export function adaptApiProductsToComponents(
   apiProducts: ProductWithCategory[]
-): (Product & { name?: string })[] {
+): Product[] {
   return apiProducts.map(adaptApiProductToComponent)
 }
 
@@ -129,17 +183,47 @@ export function getFinalPrice(product: Product | ProductWithCategory): number {
  * @returns string - URL de la imagen
  */
 export function getMainImage(product: Product | ProductWithCategory): string {
-  if ('imgs' in product && product.imgs?.previews?.[0]) {
-    return product.imgs.previews[0]
+  // 1. PRIORIDAD: Imagen de variante por defecto (productos con sistema de variantes)
+  const defaultVariant = (product as any).default_variant || (product as any).variants?.[0]
+  if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
+    return defaultVariant.image_url.trim()
   }
-  if ('images' in product && product.images?.previews?.[0]) {
-    return product.images.previews[0]
+
+  // 2. Priorizar el formato de array. Puede ser string[] u objetos con url
+  if ('images' in product && Array.isArray((product as any).images) && (product as any).images[0]) {
+    const first = (product as any).images[0]
+    const url = typeof first === 'string' ? first : first?.url ?? first?.image_url
+    if (url && typeof url === 'string' && url.trim() !== '') {
+      return url.trim()
+    }
   }
+  // 3. Nuevo formato basado en objeto { main, previews, thumbnails, gallery }
+  if (
+    'images' in product &&
+    product &&
+    typeof (product as any).images === 'object' &&
+    (product as any).images !== null
+  ) {
+    const imagesObj: any = (product as any).images
+    const candidates = [imagesObj.main, imagesObj.previews?.[0], imagesObj.thumbnails?.[0], imagesObj.gallery?.[0]]
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim() !== '') return c.trim()
+    }
+  }
+  // 4. Compatibilidad con estructuras antiguas
+  if ('imgs' in product && (product as any).imgs?.previews?.[0]) {
+    return (product as any).imgs.previews[0]
+  }
+  if ('images' in product && (product as any).images?.previews?.[0]) {
+    return (product as any).images.previews[0]
+  }
+  // 5. Placeholder
   return '/images/products/placeholder.svg'
 }
 
 /**
  * Valida y obtiene una URL de imagen válida, manejando cadenas vacías y undefined
+ * También detecta y corrige URLs de Supabase malformadas
  * @param imageUrl - URL de imagen a validar
  * @param fallback - URL de fallback (por defecto: placeholder)
  * @returns string - URL de imagen válida
@@ -150,7 +234,29 @@ export function getValidImageUrl(
 ): string {
   // Verificar si la imagen existe y no es una cadena vacía o solo espacios
   if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
-    return imageUrl.trim()
+    const trimmedUrl = imageUrl.trim()
+    
+    // 🛡️ PROTECCIÓN: Detectar y corregir hostname incorrecto de Supabase
+    // Este problema puede ocurrir por extensiones del navegador o errores de red
+    const incorrectHostname = 'aaklgwkpb.supabase.co'
+    const correctHostname = 'aakzspzfulgftqlgwkpb.supabase.co'
+    
+    if (trimmedUrl.includes(incorrectHostname)) {
+      const correctedUrl = trimmedUrl.replace(incorrectHostname, correctHostname)
+      
+      // Log para debugging (solo en desarrollo)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[getValidImageUrl] URL malformada detectada y corregida:', {
+          original: trimmedUrl,
+          corrected: correctedUrl,
+          issue: 'hostname_truncado'
+        })
+      }
+      
+      return correctedUrl
+    }
+    
+    return trimmedUrl
   }
   return fallback
 }
@@ -163,10 +269,17 @@ export function getValidImageUrl(
 export function getThumbnailImage(product: Product | ProductWithCategory): string {
   let imageUrl: string | undefined
 
-  if ('imgs' in product && product.imgs?.thumbnails?.[0]) {
+  // Priorizar el nuevo formato de array simple
+  if ('images' in product && Array.isArray(product.images) && product.images[0]) {
+    imageUrl = product.images[0]
+  } else if ('imgs' in product && product.imgs?.thumbnails?.[0]) {
     imageUrl = product.imgs.thumbnails[0]
   } else if ('images' in product && product.images?.thumbnails?.[0]) {
     imageUrl = product.images.thumbnails[0]
+  } else if ('images' in product && (product as any).images?.previews?.[0]) {
+    imageUrl = (product as any).images.previews[0]
+  } else if ('images' in product && typeof (product as any).images?.main === 'string') {
+    imageUrl = (product as any).images.main
   }
 
   return getValidImageUrl(imageUrl)
@@ -180,10 +293,17 @@ export function getThumbnailImage(product: Product | ProductWithCategory): strin
 export function getPreviewImage(product: Product | ProductWithCategory): string {
   let imageUrl: string | undefined
 
-  if ('imgs' in product && product.imgs?.previews?.[0]) {
+  // Priorizar el nuevo formato de array simple
+  if ('images' in product && Array.isArray(product.images) && product.images[0]) {
+    imageUrl = product.images[0]
+  } else if ('imgs' in product && product.imgs?.previews?.[0]) {
     imageUrl = product.imgs.previews[0]
   } else if ('images' in product && product.images?.previews?.[0]) {
     imageUrl = product.images.previews[0]
+  } else if ('images' in product && product.images?.thumbnails?.[0]) {
+    imageUrl = product.images.thumbnails[0]
+  } else if ('images' in product && typeof (product as any).images?.main === 'string') {
+    imageUrl = (product as any).images.main
   }
 
   return getValidImageUrl(imageUrl)

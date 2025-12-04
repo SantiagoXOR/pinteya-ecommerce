@@ -6,18 +6,21 @@ import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { searchProducts } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
-import { ProductCard } from '@/components/ui'
+import { CommercialProductCard } from '@/components/ui/product-card-commercial'
+import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { Search, AlertCircle, Package, Filter, SortAsc } from 'lucide-react'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 import { Button } from '@/components/ui/button'
-import { useCart } from '@/hooks/useCart'
+import { useCartUnified } from '@/hooks/useCartUnified'
 import { toast } from '@/components/ui/use-toast'
+import { getMainImage } from '@/lib/adapters/product-adapter'
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
-  const { addItem } = useCart()
+  const { addProduct } = useCartUnified()
   const query = searchParams.get('search') || ''
   const category = searchParams.get('category')
+  const config = useDesignSystemConfig()
 
   const [products, setProducts] = useState<ProductWithCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -26,7 +29,6 @@ export default function SearchPage() {
   const [sortBy, setSortBy] = useState<'relevance' | 'price-asc' | 'price-desc' | 'name'>(
     'relevance'
   )
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Función para ordenar productos
   const sortProducts = (products: ProductWithCategory[], sortBy: string) => {
@@ -113,7 +115,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 py-8'>
+    <div className='min-h-screen bg-gray-50 py-8 overflow-x-hidden'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header de resultados */}
         <div className='mb-8'>
@@ -157,7 +159,7 @@ export default function SearchPage() {
                 )}
               </div>
 
-              {/* Controles de vista y ordenamiento */}
+              {/* Controles de ordenamiento */}
               {!isLoading && totalResults > 0 && (
                 <div className='flex items-center gap-3'>
                   {/* Selector de ordenamiento */}
@@ -171,30 +173,6 @@ export default function SearchPage() {
                     <option value='price-desc'>Precio: mayor a menor</option>
                     <option value='name'>Nombre A-Z</option>
                   </select>
-
-                  {/* Selector de vista */}
-                  <div className='flex border border-gray-300 rounded-lg overflow-hidden'>
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={`px-3 py-2 text-sm ${
-                        viewMode === 'grid'
-                          ? 'bg-blaze-orange-500 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      Grid
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`px-3 py-2 text-sm ${
-                        viewMode === 'list'
-                          ? 'bg-blaze-orange-500 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      Lista
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
@@ -206,8 +184,8 @@ export default function SearchPage() {
           // Estado de loading con skeletons
           <ProductSkeletonGrid
             count={12}
-            variant={viewMode === 'list' ? 'list' : 'card'}
-            className={viewMode === 'list' ? 'grid-cols-1' : ''}
+            variant='card'
+            className='grid-cols-2 md:grid-cols-2 lg:grid-cols-3'
           />
         ) : error ? (
           // Estado de error
@@ -245,49 +223,105 @@ export default function SearchPage() {
             </div>
           </div>
         ) : (
-          // Resultados de productos
-          <div
-            className={`gap-6 ${
-              viewMode === 'list'
-                ? 'space-y-4'
-                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-            }`}
-          >
-            {products.map(product => (
-              <ProductCard
-                key={product.id}
-                productId={product.id}
-                title={product.name}
-                price={product.price}
-                image={product.images?.previews?.[0] || '/images/products/placeholder.svg'}
-                stock={product.stock}
-                brand={product.category?.name}
-                onAddToCart={() => {
-                  try {
-                    addItem({
-                      id: product.id,
-                      name: product.name,
-                      price: product.price,
-                      image: product.images?.previews?.[0] || '/images/products/placeholder.svg',
-                      quantity: 1,
-                    })
-                    toast({
-                      title: 'Producto agregado',
-                      description: `${product.name} se agregó al carrito`,
-                    })
-                  } catch (error) {
-                    toast({
-                      title: 'Error',
-                      description: 'No se pudo agregar el producto al carrito',
-                      variant: 'destructive',
-                    })
+          // Resultados de productos - Layout fijo con 2 productos por línea en mobile
+          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full'>
+            {products.map(product => {
+              const hasDiscount =
+                typeof product.discounted_price === 'number' &&
+                product.discounted_price > 0 &&
+                product.discounted_price < product.price
+              const currentPrice = hasDiscount ? (product.discounted_price as number) : product.price
+              const originalPrice = hasDiscount ? product.price : undefined
+              const discount = hasDiscount
+                ? `${Math.round((1 - (product.discounted_price as number) / product.price) * 100)}%`
+                : undefined
+              const image = getMainImage(product)
+
+              return (
+                <CommercialProductCard
+                  key={product.id}
+                  productId={String(product.id)}
+                  title={product.name}
+                  slug={product.slug}
+                  brand={product.brand || product.category?.name}
+                  image={image}
+                  price={currentPrice}
+                  originalPrice={originalPrice}
+                  discount={discount}
+                  stock={product.stock}
+                  // ✅ NO pasar color/medida legacy - usar solo variantes para badges
+                  // color={(product as any).color}
+                  // medida={(product as any).medida}
+                  shippingText={product.stock > 0 ? 'En stock' : 'Sin stock'}
+                  {...(() => {
+                    const autoFree = dsShouldShowFreeShipping(currentPrice, config)
+                    return { freeShipping: autoFree }
+                  })()}
+                  installments={
+                    currentPrice > 0
+                      ? {
+                          quantity: 3,
+                          amount: Math.round(currentPrice / 3),
+                          interestFree: true,
+                        }
+                      : undefined
                   }
-                }}
-                className={`bg-white shadow-sm hover:shadow-md transition-shadow ${
-                  viewMode === 'list' ? 'flex flex-row items-center p-4' : ''
-                }`}
-              />
-            ))}
+                  onAddToCart={() => {
+                    try {
+                      // Usar el hook unificado para normalizar y agregar al carrito
+                      addProduct(
+                        {
+                          id: product.id,
+                          title: product.name,
+                          price: product.price,
+                          discounted_price:
+                            (product as any).discounted_price ?? currentPrice ?? product.price,
+                          images: Array.isArray((product as any).images)
+                            ? (product as any).images
+                            : [image].filter(Boolean),
+                        },
+                        {
+                          quantity: 1,
+                          attributes: {
+                            color: (product as any).color,
+                            medida: (product as any).medida,
+                            finish: (product as any).finish,
+                          },
+                          image,
+                        }
+                      )
+                      toast({
+                        title: 'Producto agregado',
+                        description: `${product.name} se agregó al carrito`,
+                      })
+                    } catch (error) {
+                      toast({
+                        title: 'Error',
+                        description: 'No se pudo agregar el producto al carrito',
+                        variant: 'destructive',
+                      })
+                    }
+                  }}
+                  // Variantes y badges inteligentes
+                  variants={(product as any).variants || []}
+                  description={(product as any).description || ''}
+                  badgeConfig={{
+                    showCapacity: true,
+                    showColor: true,
+                    showFinish: true,
+                    // Para el grid de búsqueda priorizamos medida, acabado y colores
+                    showMaterial: false,
+                    showGrit: false,
+                    showDimensions: false,
+                    showWeight: false,
+                    showBrand: false,
+                    // Aumentamos el límite para permitir medida + acabado + varios colores
+                    maxBadges: 6,
+                  }}
+                  className='bg-white shadow-sm hover:shadow-md transition-shadow'
+                />
+              )
+            })}
           </div>
         )}
 

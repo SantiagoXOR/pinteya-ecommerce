@@ -4,4 +4,4 @@
  */
 
 // Mock vacío para imports de CSS de Swiper
-module.exports = {};
+module.exports = {}

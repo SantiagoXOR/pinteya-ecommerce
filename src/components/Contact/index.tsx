@@ -9,6 +9,7 @@ import React from 'react'
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { WhatsAppQR } from '@/components/ui/whatsapp-qr'
 
 // ===================================
 // INTERFACES
@@ -150,6 +151,22 @@ const Contact: React.FC = () => {
                 ))}
               </div>
             </div>
+
+            {/* QR de WhatsApp */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='text-xl text-gray-900'>Escaneá nuestro QR de WhatsApp</CardTitle>
+              </CardHeader>
+              <CardContent className='flex flex-col items-center'>
+                <p className='text-gray-600 mb-4 text-center'>
+                  Escaneá el código QR para contactarnos directamente por WhatsApp
+                </p>
+                <WhatsAppQR 
+                  size={200} 
+                  message="Hola! Me gustaría obtener más información sobre sus productos"
+                />
+              </CardContent>
+            </Card>
 
             {/* Información adicional */}
             <Card>

@@ -39,7 +39,7 @@ const checkoutValidationSchema = z.object({
       })
     )
     .min(1, 'Debe haber al menos un producto'),
-  paymentMethod: z.enum(['mercadopago', 'bank', 'cash']),
+  paymentMethod: z.enum(['mercadopago', 'cash']),
   shippingMethod: z.enum(['free', 'express', 'pickup']),
   totals: z.object({
     subtotal: z.number().nonnegative(),
@@ -244,7 +244,9 @@ function calculateShippingCost(method: string, subtotal: number, state: string):
   if (method === 'pickup') {
     return 0
   }
-  if (method === 'free' && subtotal >= 25000) {
+  
+  // Envío gratis para compras mayores a $50,000 (aplica a todos los métodos)
+  if (subtotal >= 50000) {
     return 0
   }
 

@@ -2,7 +2,6 @@
 import React, { useState } from 'react'
 import Breadcrumb from '../Common/Breadcrumb'
 import SingleGridItem from '../Shop/SingleGridItem'
-import SingleListItem from '../Shop/SingleListItem'
 import CustomSelect from '../ShopWithSidebar/CustomSelect'
 import { useProducts } from '@/hooks/useProducts'
 import { Button } from '@/components/ui/button'
@@ -12,7 +11,7 @@ import { Grid, List, Package, TrendingUp } from 'lucide-react'
 // import shopData from "../Shop/shopData"; // Comentado: ahora usamos datos dinámicos
 
 const ShopWithoutSidebar = () => {
-  const [productStyle, setProductStyle] = useState('grid')
+  // Vista fija en grilla: se elimina el selector de tipo de vista
 
   // Hook para obtener productos dinámicos
   const { products, loading, error, pagination, changeSorting, changePage } = useProducts({
@@ -72,28 +71,7 @@ const ShopWithoutSidebar = () => {
                     </div>
                   </div>
 
-                  {/* <!-- top bar right --> */}
-                  <div className='flex items-center gap-2'>
-                    <Button
-                      variant={productStyle === 'grid' ? 'primary' : 'outline'}
-                      size='icon'
-                      onClick={() => setProductStyle('grid')}
-                      aria-label='Vista en grilla'
-                      className='transition-all duration-200'
-                    >
-                      <Grid className='w-4 h-4' />
-                    </Button>
-
-                    <Button
-                      variant={productStyle === 'list' ? 'primary' : 'outline'}
-                      size='icon'
-                      onClick={() => setProductStyle('list')}
-                      aria-label='Vista en lista'
-                      className='transition-all duration-200'
-                    >
-                      <List className='w-4 h-4' />
-                    </Button>
-                  </div>
+                  {/* Selector de vista (grid/list) eliminado para simplificar la UI */}
                 </div>
               </Card>
 
@@ -125,28 +103,19 @@ const ShopWithoutSidebar = () => {
                   <p className='text-gray-600'>No se encontraron productos.</p>
                 </div>
               ) : (
-                <div
-                  className={`${
-                    productStyle === 'grid'
-                      ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9'
-                      : 'flex flex-col gap-7.5'
-                  }`}
-                >
-                  {products.map((item, key) =>
-                    productStyle === 'grid' ? (
-                      <SingleGridItem item={item} key={key} />
-                    ) : (
-                      <SingleListItem item={item} key={key} />
-                    )
-                  )}
+                <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9'>
+                  {products.map((item, key) => (
+                    <SingleGridItem item={item} key={key} />
+                  ))}
                 </div>
               )}
               {/* <!-- Products Grid Tab Content End --> */}
 
               {/* <!-- Products Pagination Start --> */}
-              <div className='flex justify-center mt-15'>
-                <div className='bg-white shadow-1 rounded-md p-2'>
-                  <ul className='flex items-center'>
+              {pagination.totalPages > 1 && (
+                <div className='flex justify-center mt-15'>
+                  <div className='bg-white shadow-1 rounded-md p-2'>
+                    <ul className='flex items-center'>
                     <li>
                       <button
                         id='paginationLeft'
@@ -256,9 +225,10 @@ const ShopWithoutSidebar = () => {
                         </svg>
                       </button>
                     </li>
-                  </ul>
+                    </ul>
+                  </div>
                 </div>
-              </div>
+              )}
               {/* <!-- Products Pagination End --> */}
             </div>
             {/* // <!-- Content End --> */}

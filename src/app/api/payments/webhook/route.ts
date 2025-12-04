@@ -29,6 +29,7 @@ import {
   recordSecurityMetric,
 } from '@/lib/monitoring/enterprise-metrics'
 import { sendOrderConfirmationEmail } from '../../../../../lib/email'
+import { whatsappLinkService, OrderDetails } from '@/lib/integrations/whatsapp/whatsapp-link-service'
 
 // ✅ ELIMINADO: Rate limiting básico reemplazado por sistema avanzado con Redis
 
@@ -198,40 +199,57 @@ export async function POST(request: NextRequest) {
     )
 
     if (!signatureValidation.isValid) {
+      const isProduction = process.env.NODE_ENV === 'production'
+      
       logger.security(
-        LogLevel.WARN,
-        'Webhook signature validation failed - MODO PERMISIVO',
+        LogLevel.ERROR,
+        'Webhook signature validation failed',
         {
           threat: 'invalid_signature',
-          blocked: false, // TEMPORAL: No bloquear
+          blocked: isProduction,
           reason: signatureValidation.error || 'Signature validation failed',
+          environment: process.env.NODE_ENV,
         },
         { clientIP }
       )
 
-      console.log('[WEBHOOK_DEBUG] SIGNATURE VALIDATION FAILED - PERMITIENDO TEMPORALMENTE')
-      console.log('[WEBHOOK_DEBUG] Signature error:', signatureValidation.error)
-      console.log('[WEBHOOK_DEBUG] xSignature:', xSignature?.substring(0, 50))
-      console.log('[WEBHOOK_DEBUG] xRequestId:', xRequestId)
-      console.log('[WEBHOOK_DEBUG] timestamp:', timestamp)
-      console.log('[WEBHOOK_DEBUG] webhookData.data.id:', webhookData.data.id)
+      console.error('[WEBHOOK_SECURITY] ❌ SIGNATURE VALIDATION FAILED')
+      console.error('[WEBHOOK_SECURITY] Signature error:', signatureValidation.error)
+      console.error('[WEBHOOK_SECURITY] xSignature:', xSignature?.substring(0, 50))
+      console.error('[WEBHOOK_SECURITY] xRequestId:', xRequestId)
+      console.error('[WEBHOOK_SECURITY] timestamp:', timestamp)
+      console.error('[WEBHOOK_SECURITY] webhookData.data.id:', webhookData.data.id)
 
-      // ✅ TEMPORAL: Continuar procesamiento a pesar del error de firma
-      console.log('[WEBHOOK] CONTINUANDO A PESAR DE FIRMA INVÁLIDA - SOLO PARA DIAGNÓSTICO')
+      // 🔒 SEGURIDAD: En producción, rechazar webhooks con firma inválida
+      if (isProduction) {
+        console.error('[WEBHOOK_SECURITY] 🚨 BLOCKING WEBHOOK - Invalid signature in production')
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Invalid webhook signature',
+            blocked: true,
+            reason: 'Signature validation failed in production environment'
+          },
+          { status: 401 }
+        )
+      }
+
+      // ⚠️ DESARROLLO: Permitir temporalmente para debugging
+      console.warn('[WEBHOOK_DEV] ⚠️ Continuing despite invalid signature (development only)')
     } else {
-      console.log('[WEBHOOK_DEBUG] Signature validation SUCCESS')
+      console.log('[WEBHOOK_SECURITY] ✅ Signature validation SUCCESS')
+      
+      logger.security(
+        LogLevel.INFO,
+        'Webhook signature validated successfully',
+        {
+          threat: 'none',
+          blocked: false,
+          reason: 'Valid signature',
+        },
+        { clientIP }
+      )
     }
-
-    logger.security(
-      LogLevel.INFO,
-      'Webhook signature validated successfully',
-      {
-        threat: 'none',
-        blocked: false,
-        reason: 'Valid signature',
-      },
-      { clientIP }
-    )
 
     // ✅ OPTIMIZACIÓN: Respuesta rápida para evitar timeout de MercadoPago
     console.log('[WEBHOOK] Respondiendo inmediatamente para evitar timeout')
@@ -491,7 +509,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
 
     switch (payment.status) {
       case 'approved':
-        newOrderStatus = 'paid' // ✅ CORREGIDO: Usar estado válido
+        newOrderStatus = 'confirmed' // ✅ Orden confirmada después del pago
         newPaymentStatus = 'paid'
         shouldUpdateStock = true
         shouldSendEmail = true
@@ -508,7 +526,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
         break
       case 'refunded':
       case 'charged_back':
-        newOrderStatus = 'cancelled' // ✅ CORREGIDO: Usar estado válido
+        newOrderStatus = 'refunded' // ✅ Usar estado 'refunded' para reembolsos
         newPaymentStatus = 'refunded'
         // TODO: Restaurar stock si es necesario
         break
@@ -607,6 +625,58 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
             email: order.payer_info.email,
             orderReference,
           })
+
+          // ✅ NUEVO: Generar enlace de WhatsApp para notificación a Pinteya
+          try {
+            const orderDetails: OrderDetails = {
+              id: order.id,
+              orderNumber: orderReference,
+              total: `$${parseFloat(order.total).toLocaleString('es-AR')}`,
+              status: newOrderStatus,
+              paymentId: payment.id?.toString(),
+              payerInfo: {
+                name: order.payer_info.name || 'Cliente',
+                email: order.payer_info.email,
+                phone: order.payer_info.phone || undefined,
+              },
+              shippingInfo: order.shipping_info ? {
+                address: order.shipping_info.address,
+                city: order.shipping_info.city,
+                postalCode: order.shipping_info.postal_code,
+              } : undefined,
+              items: emailItems,
+              createdAt: order.created_at,
+            }
+
+            const { link: whatsappLink, message: whatsappMessage } = whatsappLinkService.generateOrderWhatsApp(orderDetails)
+
+            // Guardar el enlace en la base de datos
+            const { error: whatsappUpdateError } = await supabase
+              .from('orders')
+              .update({
+                whatsapp_notification_link: whatsappLink,
+                whatsapp_message: whatsappMessage,
+                whatsapp_generated_at: new Date().toISOString(),
+              })
+              .eq('id', order.id)
+
+            if (whatsappUpdateError) {
+              console.error('Error saving WhatsApp link:', whatsappUpdateError)
+            } else {
+              logger.info(LogLevel.INFO, 'WhatsApp notification link generated and saved', {
+                orderId: order.id,
+                orderReference,
+                linkLength: whatsappLink.length,
+              })
+            }
+          } catch (whatsappError) {
+            // No fallar el webhook por errores de WhatsApp
+            console.error('Error generating WhatsApp link:', whatsappError)
+            logger.warn(LogLevel.WARN, 'Failed to generate WhatsApp link', {
+              orderId: order.id,
+              error: whatsappError instanceof Error ? whatsappError.message : 'Unknown error',
+            })
+          }
         }
       } catch (emailError) {
         // No fallar el webhook por errores de email

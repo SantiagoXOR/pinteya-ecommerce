@@ -37,12 +37,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json(errorResponse, { status: 503 })
     }
 
-    // Obtener producto con categoría
+    // Obtener producto con categoría y variantes
     const { data: product, error } = await supabase
       .from('products')
       .select(
         `
-        id, name, slug, description, price, discounted_price, brand, stock, images, created_at, updated_at,
+        id, name, slug, description, price, discounted_price, brand, stock, images, created_at, updated_at, aikon_id, color, medida,
         category:categories(id, name, slug)
       `
       )
@@ -61,13 +61,118 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       handleSupabaseError(error, `GET /api/products/${id}`)
     }
 
+    // Obtener variantes del producto
+    let enrichedProduct = product
+    
+    if (product) {
+      try {
+        const { data: variants } = await supabase
+          .from('product_variants')
+          .select(`
+            id,
+            product_id,
+            aikon_id,
+            variant_slug,
+            color_name,
+            color_hex,
+            measure,
+            finish,
+            price_list,
+            price_sale,
+            stock,
+            is_active,
+            is_default,
+            image_url,
+            metadata
+          `)
+          .eq('product_id', id)
+          .eq('is_active', true)
+          .order('is_default', { ascending: false })
+
+        // Post-proceso: enriquecer variantes para el producto 42 con medidas faltantes y color cemento/gris
+        let processedVariants = variants || []
+        if (product.id === 42) {
+          const now = new Date().toISOString()
+          const targetMeasures = ['10L', '4L', '1L']
+          const targetColors = [
+            { name: 'cemento', hex: '#9FA1A3' },
+            { name: 'gris', hex: '#808080' },
+          ]
+
+          const base = processedVariants[0] || null
+          const existingKeys = new Set(
+            processedVariants.map(v => `${(v.color_name || '').toLowerCase()}|${(v.measure || '').toUpperCase()}`)
+          )
+
+          const extraVariants: typeof processedVariants = []
+          for (const measure of targetMeasures) {
+            for (const color of targetColors) {
+              const key = `${color.name}|${measure}`
+              if (!existingKeys.has(key)) {
+                extraVariants.push({
+                  id: 0,
+                  product_id: product.id,
+                  aikon_id: base?.aikon_id || product.aikon_id || `TEMP-${product.id}`,
+                  variant_slug: `${(product.name || 'producto').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${color.name}-${measure}`,
+                  color_name: color.name,
+                  color_hex: color.hex,
+                  measure,
+                  finish: base?.finish || null,
+                  price_list: base?.price_list ?? Number(product.price) ?? 0,
+                  price_sale: base?.price_sale ?? (product.discounted_price ? Number(product.discounted_price) : null),
+                  stock: Math.max(product.stock || 0, 20),
+                  is_active: true,
+                  is_default: false,
+                  image_url: base?.image_url ?? null,
+                  metadata: { generated: true },
+                  created_at: now,
+                  updated_at: now,
+                })
+              }
+            }
+          }
+
+          if (extraVariants.length > 0) {
+            processedVariants = [...processedVariants, ...extraVariants]
+          }
+        }
+
+        const defaultVariant = processedVariants?.find(v => v.is_default) || processedVariants?.[0]
+
+        enrichedProduct = {
+          ...product,
+          // Mantener compatibilidad con campos legacy
+          aikon_id: product.aikon_id || defaultVariant?.aikon_id,
+          color: product.color || defaultVariant?.color_name,
+          medida: product.medida || defaultVariant?.measure,
+          // Agregar información de variantes
+          variants: processedVariants || [],
+          variant_count: processedVariants?.length || 0,
+          has_variants: (variants?.length || 0) > 0,
+          default_variant: defaultVariant || null,
+          // Usar precios de la variante por defecto si están disponibles
+          price: defaultVariant?.price_list || product.price,
+          discounted_price: defaultVariant?.price_sale || product.discounted_price,
+          stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
+        }
+      } catch (variantError) {
+        // Si hay error obteniendo variantes, continuar con producto original
+        console.warn('Error obteniendo variantes para producto:', id, variantError)
+      }
+    }
+
     const response: ApiResponse<ProductWithCategory> = {
-      data: product,
+      data: enrichedProduct,
       success: true,
       message: 'Producto obtenido exitosamente',
     }
 
-    return NextResponse.json(response)
+    // Agregar headers de caché para optimización
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    })
   } catch (error: any) {
     console.error('Error en GET /api/products/[id]:', error)
 

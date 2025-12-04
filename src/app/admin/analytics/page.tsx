@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import AnalyticsDashboard from '@/components/Analytics/AnalyticsDashboard'
 import ConversionFunnel from '@/components/Analytics/ConversionFunnel'
 import HeatmapViewer from '@/components/Analytics/HeatmapViewer'
@@ -17,10 +17,11 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { BarChart3, TrendingUp, Users, Eye, Download, RefreshCw, Settings } from 'lucide-react'
 
 const AnalyticsPage: React.FC = () => {
+  const router = useRouter()
   const { user, isLoaded } = useAuth()
   const { userProfile, isAdmin, hasPermission, isLoading: roleLoading } = useUserRole()
   const { getEvents, getInteractions, getConversionMetrics } = useAnalytics()
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'funnel' | 'heatmap'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'funnel' | 'heatmap' | 'google' | 'meta'>('dashboard')
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [conversionData, setConversionData] = useState({
     productViews: 0,
@@ -29,19 +30,31 @@ const AnalyticsPage: React.FC = () => {
     checkoutCompletions: 0,
   })
 
-  // Verificar permisos de administrador usando el sistema de roles de Supabase
+  // Verificar permisos de administrador - Usar rol de la sesión de NextAuth
   useEffect(() => {
-    if (isLoaded && !roleLoading) {
-      if (!user) {
-        redirect('/signin')
-        return
-      }
-
-      if (!isAdmin && !hasPermission(['dashboard', 'access'])) {
-        redirect('/')
-      }
+    // Esperar a que todo esté cargado
+    if (!isLoaded) {
+      return
     }
-  }, [user, isLoaded, isAdmin, hasPermission, roleLoading])
+
+    if (!user) {
+      router.push('/auth/signin')
+      return
+    }
+
+    // Verificar si el usuario es admin usando el rol de la sesión directamente
+    const userRole = (user as any)?.role
+    
+    // Solo redirigir si definitivamente no es admin
+    // El middleware ya debería haber bloqueado el acceso si no es admin
+    if (userRole && userRole !== 'admin') {
+      console.log('[Analytics Page] Usuario sin permisos, redirigiendo. Rol:', userRole)
+      router.push('/')
+      return
+    }
+
+    console.log('[Analytics Page] Acceso permitido. Rol:', userRole || 'cargando...')
+  }, [user, isLoaded, router])
 
   useEffect(() => {
     loadConversionData()
@@ -94,22 +107,35 @@ const AnalyticsPage: React.FC = () => {
     URL.revokeObjectURL(url)
   }
 
-  // Mostrar pantalla de carga mientras se verifican permisos
-  if (!isLoaded || roleLoading) {
+  // Mostrar pantalla de carga solo mientras se carga la sesión
+  if (!isLoaded) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-400 mx-auto'></div>
-          <p className='mt-4 text-gray-600'>
-            {!isLoaded ? 'Cargando...' : 'Verificando permisos...'}
-          </p>
+          <p className='mt-4 text-gray-600'>Cargando...</p>
         </div>
       </div>
     )
   }
 
-  // Verificar si el usuario tiene permisos
-  if (!isAdmin && !hasPermission(['dashboard', 'access'])) {
+  // Verificar si el usuario tiene permisos - Usar rol de la sesión directamente
+  const userRole = user ? (user as any)?.role : null
+  
+  // Si no hay usuario, redirigir (ya se maneja en useEffect, pero por si acaso)
+  if (!user) {
+    return (
+      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-400 mx-auto'></div>
+          <p className='mt-4 text-gray-600'>Redirigiendo...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Si el usuario tiene un rol y no es admin, mostrar acceso denegado
+  if (userRole && userRole !== 'admin') {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <div className='text-center'>
@@ -141,6 +167,18 @@ const AnalyticsPage: React.FC = () => {
       name: 'Mapa de Calor',
       icon: Eye,
       description: 'Interacciones de usuarios',
+    },
+    {
+      id: 'google',
+      name: 'Google Analytics',
+      icon: BarChart3,
+      description: 'Métricas de Google Analytics',
+    },
+    {
+      id: 'meta',
+      name: 'Meta Pixel',
+      icon: Eye,
+      description: 'Métricas de Meta Pixel',
     },
   ]
 
@@ -295,6 +333,37 @@ const AnalyticsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'google' && (
+            <div className='space-y-6'>
+              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
+                <h2 className='text-xl font-semibold text-gray-900 mb-4'>Google Analytics</h2>
+                <p className='text-gray-600 mb-6'>
+                  Visualización de métricas y reportes de Google Analytics 4. Los reportes embebidos
+                  requieren que tengas acceso a la cuenta de Google Analytics asociada.
+                </p>
+              </div>
+
+              <GoogleAnalyticsEmbed />
+            </div>
+          )}
+
+          {activeTab === 'meta' && (
+            <div className='space-y-6'>
+              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
+                <h2 className='text-xl font-semibold text-gray-900 mb-4'>Meta Pixel Analytics</h2>
+                <p className='text-gray-600 mb-6'>
+                  Métricas basadas en eventos trackeados por el Meta Pixel. Estos datos muestran los
+                  eventos que se están enviando desde nuestro sistema al Pixel de Meta.
+                </p>
+              </div>
+
+              <MetaMetrics
+                startDate={new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()}
+                endDate={new Date().toISOString()}
+              />
             </div>
           )}
         </motion.div>

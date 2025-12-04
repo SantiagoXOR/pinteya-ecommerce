@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpiar Caché - Pinteya</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a202c;
+            margin-top: 0;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        .success {
+            background: #48bb78;
+            padding: 12px;
+            border-radius: 6px;
+            color: white;
+            margin: 15px 0;
+            display: none;
+        }
+        .info {
+            background: #e6fffa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #319795;
+            margin: 15px 0;
+        }
+        .log {
+            background: #f7fafc;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧹 Limpiar Caché y LocalStorage</h1>
+        
+        <div class="info">
+            <strong>⚠️ Importante:</strong> Esta herramienta limpiará todo el caché del navegador y LocalStorage de la aplicación. Esto resolverá problemas con imágenes antiguas o URLs incorrectas.
+        </div>
+
+        <button onclick="clearEverything()">Limpiar Todo Ahora</button>
+        
+        <button onclick="clearServiceWorkers()">Solo Desregistrar Service Workers</button>
+        
+        <button onclick="clearLocalStorage()">Solo Limpiar LocalStorage</button>
+        
+        <button onclick="clearCacheStorage()">Solo Limpiar Cache Storage</button>
+        
+        <div class="success" id="success">
+            ✅ ¡Limpieza completada! Recarga la página para ver los cambios.
+        </div>
+        
+        <div class="log" id="log"></div>
+        
+        <div class="info" style="margin-top: 20px;">
+            <strong>Después de limpiar:</strong><br>
+            1. Cierra esta pestaña<br>
+            2. Recarga la página principal (Ctrl + Shift + R)<br>
+            3. Las imágenes deberían cargar correctamente
+        </div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const successMsg = document.getElementById('success');
+
+        function addLog(message, isError = false) {
+            const time = new Date().toLocaleTimeString();
+            const color = isError ? 'red' : 'green';
+            log.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function clearLocalStorage() {
+            try {
+                addLog('Limpiando LocalStorage...');
+                const keys = Object.keys(localStorage);
+                addLog(`Encontradas ${keys.length} entradas en LocalStorage`);
+                
+                keys.forEach(key => {
+                    addLog(`  - Eliminando: ${key}`);
+                    localStorage.removeItem(key);
+                });
+                
+                addLog('✅ LocalStorage limpiado correctamente', false);
+                successMsg.style.display = 'block';
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function clearCacheStorage() {
+            try {
+                addLog('Limpiando Cache Storage...');
+                
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    addLog(`Encontrados ${cacheNames.length} cachés`);
+                    
+                    for (const cacheName of cacheNames) {
+                        addLog(`  - Eliminando caché: ${cacheName}`);
+                        await caches.delete(cacheName);
+                    }
+                    
+                    addLog('✅ Cache Storage limpiado correctamente', false);
+                } else {
+                    addLog('ℹ️ Cache Storage API no disponible', false);
+                }
+                
+                successMsg.style.display = 'block';
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function clearIndexedDB() {
+            try {
+                addLog('Limpiando IndexedDB...');
+                
+                if ('indexedDB' in window) {
+                    const databases = await indexedDB.databases();
+                    addLog(`Encontradas ${databases.length} bases de datos IndexedDB`);
+                    
+                    for (const db of databases) {
+                        if (db.name) {
+                            addLog(`  - Eliminando: ${db.name}`);
+                            indexedDB.deleteDatabase(db.name);
+                        }
+                    }
+                    
+                    addLog('✅ IndexedDB limpiado correctamente', false);
+                } else {
+                    addLog('ℹ️ IndexedDB no disponible', false);
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function clearServiceWorkers() {
+            try {
+                addLog('Desregistrando Service Workers...');
+                
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    addLog(`Encontrados ${registrations.length} Service Workers registrados`);
+                    
+                    for (const registration of registrations) {
+                        addLog(`  - Desregistrando: ${registration.scope}`);
+                        await registration.unregister();
+                    }
+                    
+                    addLog('✅ Service Workers desregistrados correctamente', false);
+                } else {
+                    addLog('ℹ️ Service Workers no disponibles', false);
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function clearEverything() {
+            addLog('====================================');
+            addLog('Iniciando limpieza completa...');
+            addLog('====================================');
+            
+            await clearServiceWorkers();
+            await clearLocalStorage();
+            await clearCacheStorage();
+            await clearIndexedDB();
+            
+            addLog('====================================');
+            addLog('✅ Limpieza completa finalizada');
+            addLog('Service Workers desregistrados y caches limpiados');
+            addLog('====================================');
+            
+            successMsg.style.display = 'block';
+            
+            // Opción de recargar automáticamente
+            setTimeout(() => {
+                if (confirm('¿Quieres recargar la página principal ahora?')) {
+                    window.location.href = '/';
+                }
+            }, 2000);
+        }
+
+        // Log inicial
+        addLog('Herramienta de limpieza lista. Haz clic en un botón para empezar.');
+    </script>
+</body>
+</html>
+

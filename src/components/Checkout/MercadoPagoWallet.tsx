@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, CreditCard, AlertTriangle, CheckCircle, Shield, Lock } from 'lucide-react'
+import { CheckoutProcessSkeleton } from '@/components/ui/checkout-process-skeleton'
 
 // Tipos para el SDK de MercadoPago
 declare global {
@@ -36,6 +37,13 @@ export default function MercadoPagoWallet({
   const [error, setError] = useState<string | null>(null)
   const [isReady, setIsReady] = useState(false)
   const [sdkLoaded, setSdkLoaded] = useState(false)
+
+  // Forzar scroll al top cuando está cargando para mantener el spinner visible
+  useEffect(() => {
+    if (isLoading) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [isLoading])
 
   // Verificar si el SDK ya está cargado
   useEffect(() => {
@@ -241,41 +249,7 @@ export default function MercadoPagoWallet({
       <CardContent className={cn('p-6', isMobileOptimized && 'p-4')}>
         {/* Estado de carga */}
         {isLoading && (
-          <div
-            className={cn(
-              'flex flex-col items-center justify-center py-12 space-y-6',
-              isMobileOptimized && 'py-8 space-y-4'
-            )}
-          >
-            <div className='relative'>
-              <div
-                className={cn(
-                  'w-16 h-16 rounded-full bg-blaze-orange-100 flex items-center justify-center',
-                  isMobileOptimized && 'w-12 h-12'
-                )}
-              >
-                <Loader2
-                  className={cn(
-                    'w-8 h-8 animate-spin text-blaze-orange-600',
-                    isMobileOptimized && 'w-6 h-6'
-                  )}
-                />
-              </div>
-              <div className='absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center'>
-                <CreditCard className='w-3 h-3 text-gray-700' />
-              </div>
-            </div>
-            <div className='text-center space-y-2'>
-              <p className='font-medium text-gray-900'>Cargando opciones de pago</p>
-              <p className='text-sm text-gray-600'>Preparando tu experiencia de pago segura...</p>
-            </div>
-            <div className='w-full bg-gray-200 rounded-full h-2'>
-              <div
-                className='bg-blaze-orange-600 h-2 rounded-full animate-pulse'
-                style={{ width: '60%' }}
-              ></div>
-            </div>
-          </div>
+          <CheckoutProcessSkeleton message="Cargando opciones de pago..." />
         )}
 
         {/* Estado de error */}

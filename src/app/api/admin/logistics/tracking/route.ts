@@ -420,7 +420,7 @@ async function putHandler(request: NextRequest) {
   const eventId = searchParams.get('id')
 
   if (!eventId) {
-    throw new ValidationError('ID del evento de tracking es requerido')
+    throw ValidationError('ID del evento de tracking es requerido')
   }
 
   const body = await request.json()
@@ -490,7 +490,7 @@ async function deleteHandler(request: NextRequest) {
   const eventId = searchParams.get('id')
 
   if (!eventId) {
-    throw new ValidationError('ID del evento de tracking es requerido')
+    throw ValidationError('ID del evento de tracking es requerido')
   }
 
   const supabase = createClient()
@@ -517,7 +517,7 @@ async function deleteHandler(request: NextRequest) {
   }
 
   if (eventCount && eventCount.length <= 1) {
-    throw new ValidationError('No se puede eliminar el único evento de tracking del envío')
+    throw ValidationError('No se puede eliminar el único evento de tracking del envío')
   }
 
   // Eliminar evento

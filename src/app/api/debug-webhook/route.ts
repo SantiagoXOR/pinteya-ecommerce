@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     logs.push('[DEBUG] Orden encontrada: ' + JSON.stringify(order))
 
     // Mapear estados
-    const newOrderStatus = 'paid'
+    const newOrderStatus = 'confirmed' // ✅ Orden confirmada después del pago
     const newPaymentStatus = 'paid'
 
     logs.push('[DEBUG] Nuevos estados: order=' + newOrderStatus + ', payment=' + newPaymentStatus)

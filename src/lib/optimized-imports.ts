@@ -9,6 +9,8 @@
  * Esto ayuda a Next.js a hacer mejor tree-shaking
  */
 
+import React from 'react'
+
 // ===================================
 // LUCIDE REACT ICONS - OPTIMIZED
 // ===================================
@@ -16,7 +18,8 @@
 // Esto reduce significativamente el bundle size y mejora el rendimiento
 
 // Iconos utilizados en el proyecto (basado en análisis de código)
-export {
+// Importación directa sin paths específicos (compatible con todas las versiones)
+import {
   // Navegación básica
   Search,
   ShoppingCart,
@@ -80,6 +83,56 @@ export {
   Zap,
 } from 'lucide-react'
 
+// Re-exportar para uso en el proyecto
+export {
+  Search,
+  ShoppingCart,
+  Heart,
+  User,
+  Menu,
+  X,
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  ArrowRight,
+  Home,
+  Plus,
+  Minus,
+  Check,
+  Star,
+  Eye,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  Circle,
+  ShoppingBag,
+  Package,
+  Truck,
+  CreditCard,
+  DollarSign,
+  Gift,
+  Trophy,
+  TrendingUp,
+  MapPin,
+  Phone,
+  Mail,
+  MessageCircle,
+  Trash2,
+  ZoomIn,
+  Filter,
+  Calendar,
+  Shield,
+  Palette,
+  Sparkles,
+  Brush,
+  Wrench,
+  Clock,
+  Users,
+  Zap,
+}
+
 // ===================================
 // DATE-FNS OPTIMIZED IMPORTS
 // ===================================
@@ -135,21 +188,28 @@ export { es } from 'date-fns/locale'
 // FRAMER MOTION OPTIMIZED
 // ===================================
 // Importamos solo los componentes que necesitamos
+// Usar LazyMotion + domAnimation para reducir bundle size en ~50KB
 
 export {
-  motion,
+  // LazyMotion debe usarse como wrapper principal
+  LazyMotion,
+  domAnimation, // Feature set reducido para animaciones DOM comunes
+  m, // Componente m en lugar de motion cuando usamos LazyMotion
+  
+  // Componentes básicos
   AnimatePresence,
+  
+  // Hooks - solo los esenciales
   useAnimation,
   useMotionValue,
   useTransform,
   useSpring,
   useInView,
   useScroll,
-  useDragControls,
   useAnimationControls,
-  LazyMotion,
-  domAnimation,
-  m,
+  
+  // motion solo para casos legacy (preferir 'm' con LazyMotion)
+  motion,
 } from 'framer-motion'
 
 // ===================================
