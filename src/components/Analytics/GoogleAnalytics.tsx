@@ -38,9 +38,7 @@ const GoogleAnalytics: React.FC = () => {
       const events = ['mousedown', 'touchstart', 'keydown', 'scroll']
       const onInteraction = () => {
         loadAnalytics()
-        events.forEach(event => {
-          document.removeEventListener(event, onInteraction, { passive: true })
-        })
+        // ⚡ NOTA: No es necesario removeEventListener porque once: true lo hace automáticamente
       }
 
       events.forEach(event => {
@@ -104,7 +102,6 @@ const GoogleAnalytics: React.FC = () => {
           <Script
             strategy='lazyOnload'
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
-            fetchPriority='low'
             onLoad={handleGALoad}
             onError={error => {
               console.warn('Error loading Google Analytics script:', error)
@@ -114,7 +111,6 @@ const GoogleAnalytics: React.FC = () => {
           <Script
             id='google-analytics'
             strategy='lazyOnload'
-            fetchPriority='low'
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];

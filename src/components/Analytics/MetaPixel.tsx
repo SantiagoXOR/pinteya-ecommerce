@@ -35,9 +35,7 @@ const MetaPixel: React.FC = () => {
       const events = ['mousedown', 'touchstart', 'keydown', 'scroll']
       const onInteraction = () => {
         loadPixel()
-        events.forEach(event => {
-          document.removeEventListener(event, onInteraction, { passive: true })
-        })
+        // ⚡ NOTA: No es necesario removeEventListener porque once: true lo hace automáticamente
       }
 
       events.forEach(event => {
@@ -103,7 +101,6 @@ const MetaPixel: React.FC = () => {
           <Script
             id='meta-pixel'
             strategy='lazyOnload'
-            fetchPriority='low'
             onLoad={handlePixelLoad}
             onError={error => {
               console.warn('Error loading Meta Pixel script:', error)
