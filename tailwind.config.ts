@@ -3,8 +3,25 @@ import type { Config } from 'tailwindcss'
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 const config: Config = {
-  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  // ⚡ OPTIMIZACIÓN: Content paths para purge más agresivo
+  content: [
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/styles/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   darkMode: ['class', 'class'],
+  // ⚡ OPTIMIZACIÓN: Purge CSS no utilizado en producción
+  safelist: [
+    // Mantener clases dinámicas que Tailwind no puede detectar
+    'animate-fade-in',
+    'animate-slide-up',
+    'animate-scale-in',
+    // Clases de z-index críticas
+    'z-header',
+    'z-modal',
+    'z-toast',
+  ],
   theme: {
     fontFamily: {
       'euclid-circular-a': ['Euclid Circular A'],

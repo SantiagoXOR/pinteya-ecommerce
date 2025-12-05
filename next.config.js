@@ -76,8 +76,11 @@ const nextConfig = {
       'swiper',
       'swiper/react',
     ],
-    // optimizeCss: true, // TODO: Agregar critters package para habilitar
+    // ⚡ OPTIMIZACIÓN CSS: Inline de CSS crítico automático (reduce render-blocking)
+    optimizeCss: true, // Extrae e inlinea CSS crítico automáticamente
     optimisticClientCache: true, // Cache optimista para navegación más rápida
+    // ⚡ CSS chunking para mejor code splitting
+    cssChunking: 'loose', // 'strict' | 'loose' - loose es mejor para performance
   },
 
   // ✅ Configuración de webpack para resolver el error de 'call'
