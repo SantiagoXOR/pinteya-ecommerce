@@ -89,3 +89,4 @@ Write-Host ""
 Write-Host "Impacto Total Esperado Post-Deploy: -1,140 ms (-56%)" -ForegroundColor Green -BackgroundColor Black
 Write-Host ""
 
+

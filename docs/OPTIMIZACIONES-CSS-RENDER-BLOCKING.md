@@ -388,3 +388,4 @@ Si encuentras formas de mejorar estas optimizaciones:
 **Versión**: 1.0.0  
 **Autor**: Equipo de Desarrollo
 
+

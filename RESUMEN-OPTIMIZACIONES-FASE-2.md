@@ -363,3 +363,4 @@ cat analisis.css
 **Próxima acción**: Deploy a producción para aplicar cssnano y purge  
 **Impacto total proyectado**: **-1,140 ms (-56%)**
 
+

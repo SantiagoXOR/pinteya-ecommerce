@@ -129,12 +129,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⚡ PERFORMANCE: next/font maneja el preload automáticamente */}
         {/* Las fuentes se inlinean automáticamente en el CSS, eliminando el request bloqueante */}
         
-        {/* ⚡ PERFORMANCE: Preload de imagen hero crítica (LCP candidate) - Actualizado a WebP */}
+        {/* ⚡ CRITICAL: Preload de imagen LCP del hero (ahora optimizada: 758KB → 37KB) */}
         <link
           rel="preload"
           as="image"
           href="/images/hero/hero2/hero1.webp"
           fetchPriority="high"
+          type="image/webp"
+        />
+        {/* ⚡ AVIF para navegadores que lo soportan (mejor compresión) */}
+        <link
+          rel="preload"
+          as="image"
+          href="/images/hero/hero2/hero1.avif"
+          fetchPriority="high"
+          type="image/avif"
         />
         
         {/* ⚡ PERFORMANCE: Preconnect a dominios externos - Agregar crossorigin para recursos CORS */}

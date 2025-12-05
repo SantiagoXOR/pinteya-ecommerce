@@ -300,3 +300,4 @@ npx lighthouse http://localhost:3000 --view
 **Sitio analizado**: www.pinteya.com  
 **Estado**: Optimizaciones en implementación
 
+

@@ -93,3 +93,4 @@ Write-Host "               ✨ 🟢 LISTO PARA DEPLOY 🟢 ✨" -ForegroundColor
 Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Green
 Write-Host ""
 
+

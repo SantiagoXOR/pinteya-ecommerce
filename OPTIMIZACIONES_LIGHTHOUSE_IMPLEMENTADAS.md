@@ -145,3 +145,4 @@
 3. Monitorear métricas en producción
 4. Ajustar tiempos de carga de analytics si es necesario
 
+

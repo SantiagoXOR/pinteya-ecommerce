@@ -297,3 +297,4 @@ La optimización de fuentes con `next/font` ha sido **completada exitosamente**:
 **Impacto estimado**: -610 ms render-blocking  
 **Estado**: ✅ Completado - Listo para deploy
 
+

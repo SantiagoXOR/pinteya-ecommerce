@@ -303,3 +303,4 @@ Si se requiere más mejora después del deploy:
 **Estado**: ✅ Optimizaciones implementadas - Esperando deploy a producción  
 **Próxima acción**: Deploy para aplicar cssnano y purge
 
+
