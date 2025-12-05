@@ -81,7 +81,7 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
             </span>
           )}
         </div>
-        <span className='text-sm font-semibold text-blaze-orange-600' style={{ color: '#ea5a17' }}>
+        <span className='text-sm font-semibold text-blaze-orange-600' style={{ color: '#c2410b' }}>
           Carrito
         </span>
       </button>

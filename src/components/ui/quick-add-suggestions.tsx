@@ -166,7 +166,7 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
                   <p className='text-2xs text-gray-500 mb-1'>{product.brand || 'Sin marca'}</p>
 
                   <div className='flex items-center gap-2'>
-                    <span className='font-bold text-sm' style={{ color: '#ea5a17' }}>
+                    <span className='font-bold text-sm' style={{ color: '#c2410b' }}>
                       ${currentPrice.toLocaleString()}
                     </span>
                     {hasDiscount && (

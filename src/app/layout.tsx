@@ -84,11 +84,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
         
-        {/* ⚡ PERFORMANCE: Preload de imagen hero crítica (LCP candidate) */}
+        {/* ⚡ PERFORMANCE: Preload de imagen hero crítica (LCP candidate) - Actualizado a WebP */}
         <link
           rel="preload"
           as="image"
-          href="/images/hero/hero2/hero1.svg"
+          href="/images/hero/hero2/hero1.webp"
           fetchPriority="high"
         />
         

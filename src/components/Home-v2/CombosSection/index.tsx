@@ -13,12 +13,13 @@
    productSlug: string
  }
 
- // Carrusel igual al de Hero pero con los SVG hero4, hero5 y hero6
- const slides: Slide[] = [
-   { id: 'combo-hero-4', image: '/images/hero/hero2/hero4.svg', alt: 'Combo destacado - slide 1', productSlug: 'plavicon-fibrado-plavicon' },
-   { id: 'combo-hero-5', image: '/images/hero/hero2/hero5.svg', alt: 'Combo destacado - slide 2', productSlug: 'sintetico-converlux' },
-   { id: 'combo-hero-6', image: '/images/hero/hero2/hero6.svg', alt: 'Combo destacado - slide 3', productSlug: 'recuplast-frentes' },
- ]
+// ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia
+// Carrusel igual al de Hero pero con WebP optimizado
+const slides: Slide[] = [
+  { id: 'combo-hero-4', image: '/images/hero/hero2/hero4.webp', alt: 'Combo destacado - slide 1', productSlug: 'plavicon-fibrado-plavicon' },
+  { id: 'combo-hero-5', image: '/images/hero/hero2/hero5.webp', alt: 'Combo destacado - slide 2', productSlug: 'sintetico-converlux' },
+  { id: 'combo-hero-6', image: '/images/hero/hero2/hero6.webp', alt: 'Combo destacado - slide 3', productSlug: 'recuplast-frentes' },
+]
 
  const CombosSection: React.FC = () => {
    const [currentIndex, setCurrentIndex] = useState(1)
@@ -124,6 +125,7 @@
                       fetchPriority={index === 1 ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority para primera imagen
                       className='object-contain'
                       sizes='(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px'
+                      quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
                     />
                   </div>
                 )

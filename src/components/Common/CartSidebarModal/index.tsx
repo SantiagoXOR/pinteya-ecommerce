@@ -204,7 +204,7 @@ const CartSidebarModal = () => {
             {/* Subtotal */}
             <div className='flex items-center justify-between gap-3 mb-3'>
               <p className='font-bold text-lg text-gray-900'>Subtotal:</p>
-              <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
+              <p className='font-bold text-lg' style={{ color: '#c2410b' }}>
                 ${mounted ? effectiveTotalPrice.toLocaleString() : '0'}
               </p>
             </div>
@@ -227,7 +227,7 @@ const CartSidebarModal = () => {
             {hasItems && (
               <div className='flex items-center justify-between gap-3 mb-3'>
                 <p className='font-bold text-lg text-gray-900'>Total:</p>
-                <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
+                <p className='font-bold text-lg' style={{ color: '#c2410b' }}>
                   ${mounted ? (effectiveTotalPrice + estimatedShippingCost).toLocaleString() : '0'}
                 </p>
               </div>

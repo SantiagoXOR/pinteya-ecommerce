@@ -78,6 +78,11 @@ const PerformanceMonitor: React.FC = () => {
       )
 
       if (!response.ok) {
+        // ⚡ OPTIMIZACIÓN: Manejo específico de errores 401 (No autorizado)
+        if (response.status === 401) {
+          setError('Acceso no autorizado. Por favor, inicia sesión como administrador.')
+          return // No intentar procesar la respuesta
+        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 

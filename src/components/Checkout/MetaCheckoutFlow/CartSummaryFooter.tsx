@@ -41,7 +41,7 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
       {/* Subtotal */}
       <div className='flex items-center justify-between gap-3 mb-3'>
         <p className='font-medium text-lg text-gray-900'>Subtotal:</p>
-        <p className='font-medium text-lg' style={{ color: '#ea5a17' }}>
+        <p className='font-medium text-lg' style={{ color: '#c2410b' }}>
           ${subtotal.toLocaleString()}
         </p>
       </div>
@@ -64,7 +64,7 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
       {subtotal > 0 && (
         <div className='flex items-center justify-between gap-3 mb-0'>
           <p className='font-bold text-lg text-gray-900'>Total:</p>
-          <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
+          <p className='font-bold text-lg' style={{ color: '#c2410b' }}>
             ${total.toLocaleString()}
           </p>
         </div>

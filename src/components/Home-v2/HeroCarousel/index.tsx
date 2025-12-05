@@ -10,20 +10,21 @@ interface HeroSlide {
   alt: string
 }
 
+// ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia
 const heroSlides: HeroSlide[] = [
   {
     id: 'hero-1',
-    image: '/images/hero/hero2/hero1.svg',
+    image: '/images/hero/hero2/hero1.webp',
     alt: 'Pintá rápido, fácil y cotiza al instante - Pinteya'
   },
   {
     id: 'hero-2',
-    image: '/images/hero/hero2/hero2.svg',
+    image: '/images/hero/hero2/hero2.webp',
     alt: 'Envío express en 24HS - Pinteya'
   },
   {
     id: 'hero-3',
-    image: '/images/hero/hero2/hero3.svg',
+    image: '/images/hero/hero2/hero3.webp',
     alt: 'Pagá con Mercado Pago - Pinteya'
   }
 ]
@@ -120,6 +121,7 @@ const HeroCarousel = () => {
                   fetchPriority={index === 1 ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority explícito para LCP
                   className="object-contain"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                  quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
                 />
               </div>
             ))}

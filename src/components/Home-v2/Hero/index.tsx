@@ -9,49 +9,49 @@ import HeroCarousel from '@/components/Common/HeroCarousel'
 import { Truck, ShieldCheck, CreditCard, ArrowRight } from 'lucide-react'
 import { trackEvent } from '@/lib/google-analytics'
 
-// ⚡ SOLO CAMBIADAS LAS IMÁGENES: WebP → SVG
-// Configuración de imágenes para el carrusel móvil con SVG
+// ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia de ~30MB a ~2MB
+// Configuración de imágenes para el carrusel móvil con WebP optimizado
 const heroImagesMobile = [
   {
-    src: '/images/hero/hero2/hero1.svg',
+    src: '/images/hero/hero2/hero1.webp',
     alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
     priority: true,
     fetchPriority: 'high' as const, // ⚡ CRITICAL: fetchPriority explícito para LCP
-    unoptimized: true, // SVG no necesita optimización
+    quality: 80, // Balance tamaño/calidad para WebP
   },
   {
-    src: '/images/hero/hero2/hero2.svg',
+    src: '/images/hero/hero2/hero2.webp',
     alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
     priority: false,
-    unoptimized: true,
+    quality: 80,
   },
   {
-    src: '/images/hero/hero2/hero3.svg',
+    src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
     priority: false,
-    unoptimized: true,
+    quality: 80,
   },
 ]
 
 const heroImagesDesktop = [
   {
-    src: '/images/hero/hero2/hero1.svg',
+    src: '/images/hero/hero2/hero1.webp',
     alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
     priority: true,
     fetchPriority: 'high' as const, // ⚡ CRITICAL: fetchPriority explícito para LCP
-    unoptimized: true,
+    quality: 80,
   },
   {
-    src: '/images/hero/hero2/hero2.svg',
+    src: '/images/hero/hero2/hero2.webp',
     alt: 'Amplia gama de productos para pinturería, ferretería y corralón',
     priority: false,
-    unoptimized: true,
+    quality: 80,
   },
   {
-    src: '/images/hero/hero2/hero3.svg',
+    src: '/images/hero/hero2/hero3.webp',
     alt: 'Envío gratis y asesoramiento experto en productos de pintura',
     priority: false,
-    unoptimized: true,
+    quality: 80,
   },
 ]
 

@@ -307,32 +307,32 @@ const HomeV2 = () => {
       <LazyBestSeller />
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
-      <div className='mt-3 sm:mt-4' style={{ minHeight: '120px' }}> {/* ⚡ CLS FIX: Reservar espacio para banner y evitar layout shift de 0.041 */}
+      <div className='mt-3 sm:mt-4' style={{ aspectRatio: '16/2', minHeight: '120px' }}> {/* ⚡ CLS FIX: aspect-ratio + minHeight para evitar layout shift */}
         <PromoBanners bannerId={1} />
       </div>
 
       {/* 4. Productos Destacados (Combos) */}
-      <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}> {/* ⚡ CLS FIX: Reservar espacio para evitar layout shift */}
+      <div className='mt-4 sm:mt-6 product-section' style={{ aspectRatio: '16/9', minHeight: '400px' }}> {/* ⚡ CLS FIX: aspect-ratio + minHeight para evitar layout shift */}
         <CombosSection />
       </div>
 
       {/* 5. Carrusel Dinámico - Solo Envío Gratis */}
-      <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '350px' }}> {/* ⚡ CLS FIX: Reservar espacio para evitar layout shift */}
+      <div className='mt-4 sm:mt-6 product-section' style={{ aspectRatio: '16/9', minHeight: '350px' }}> {/* ⚡ CLS FIX: aspect-ratio + minHeight para evitar layout shift */}
         <DynamicProductCarousel freeShippingOnly={true} />
       </div>
 
       {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded */}
-      <div className='mt-4 sm:mt-6 below-fold-content'>
+      <div className='mt-4 sm:mt-6 below-fold-content' style={{ aspectRatio: '16/2', minHeight: '120px' }}> {/* ⚡ CLS FIX: aspect-ratio para evitar layout shift */}
         <LazyPromoBanner bannerId={2} />
       </div>
 
       {/* 7. Nuevos productos - Lazy loaded */}
-      <div className='mt-3 sm:mt-4 product-section' style={{ minHeight: '500px' }}> {/* ⚡ CLS FIX: Reservar espacio para evitar layout shift */}
+      <div className='mt-3 sm:mt-4 product-section' style={{ aspectRatio: '16/10', minHeight: '500px' }}> {/* ⚡ CLS FIX: aspect-ratio + minHeight para evitar layout shift */}
         <LazyNewArrivals />
       </div>
 
       {/* 8. Banner CALCULADORA DE PINTURA - Lazy loaded */}
-      <div className='mt-4 sm:mt-6 below-fold-content'>
+      <div className='mt-4 sm:mt-6 below-fold-content' style={{ aspectRatio: '16/2', minHeight: '120px' }}> {/* ⚡ CLS FIX: aspect-ratio para evitar layout shift */}
         <LazyPromoBanner bannerId={3} />
       </div>
 

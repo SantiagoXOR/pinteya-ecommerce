@@ -34,7 +34,7 @@ const heroSlides: HeroSlideType[] = [
     ],
     productImages: [
       {
-        src: '/images/hero/hero2/hero1.svg',
+        src: '/images/hero/hero2/hero1.webp',
         alt: 'Pareja eligiendo pinturas con laptop y muestras de colores',
         priority: true,
         position: {
@@ -79,7 +79,7 @@ const heroSlides: HeroSlideType[] = [
     ],
     productImages: [
       {
-        src: '/images/hero/hero2/hero2.svg',
+        src: '/images/hero/hero2/hero2.webp',
         alt: 'Pareja en sofá con muestras de colores y app móvil',
         priority: false,
         position: {
@@ -123,7 +123,7 @@ const heroSlides: HeroSlideType[] = [
     ],
     productImages: [
       {
-        src: '/images/hero/hero2/hero3.svg',
+        src: '/images/hero/hero2/hero3.webp',
         alt: 'Equipo de entrega con productos Pinte YA',
         priority: false,
         position: {
