@@ -16,6 +16,7 @@ const heroImagesMobile = [
     src: '/images/hero/hero2/hero1.svg',
     alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
     priority: true,
+    fetchPriority: 'high' as const, // ⚡ CRITICAL: fetchPriority explícito para LCP
     unoptimized: true, // SVG no necesita optimización
   },
   {
@@ -37,6 +38,7 @@ const heroImagesDesktop = [
     src: '/images/hero/hero2/hero1.svg',
     alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
     priority: true,
+    fetchPriority: 'high' as const, // ⚡ CRITICAL: fetchPriority explícito para LCP
     unoptimized: true,
   },
   {
