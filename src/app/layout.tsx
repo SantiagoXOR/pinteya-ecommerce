@@ -1,9 +1,11 @@
 // Force redeploy to fix Server Action error - 2025-08-02T00:30:00.000Z
 import Providers from './providers'
 import { Suspense } from 'react'
+// ⚡ PERFORMANCE: Fuentes optimizadas con next/font (elimina 610ms de render-blocking)
+import { euclidCircularA } from './fonts'
 // ⚡ PERFORMANCE: CSS crítico inline, CSS no crítico carga asíncrono
 import './css/style.css'
-import './css/euclid-circular-a-font.css'
+// NOTA: euclid-circular-a-font.css ya no es necesario, next/font lo maneja automáticamente
 // CSS no crítico se carga asíncronamente después del FCP
 import { metadata as defaultMetadata } from './metadata'
 import StructuredData from '@/components/SEO/StructuredData'
@@ -29,13 +31,69 @@ export { viewport } from './viewport'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='es'>
+    <html lang='es' className={euclidCircularA.variable}>
       <head>
         {/* ⚡ CRITICAL CSS - Inline para FCP rápido (-0.2s) */}
         <style dangerouslySetInnerHTML={{__html: `
+          /* CSS Variables - Inline para eliminar archivo bloqueante */
+          :root{
+            --background:0 0% 100%;
+            --foreground:222.2 84% 4.9%;
+            --card:0 0% 100%;
+            --card-foreground:222.2 84% 4.9%;
+            --popover:0 0% 100%;
+            --popover-foreground:222.2 84% 4.9%;
+            --primary:222.2 47.4% 11.2%;
+            --primary-foreground:210 40% 98%;
+            --secondary:210 40% 96%;
+            --secondary-foreground:222.2 84% 4.9%;
+            --muted:210 40% 96%;
+            --muted-foreground:215.4 16.3% 46.9%;
+            --accent:210 40% 96%;
+            --accent-foreground:222.2 84% 4.9%;
+            --destructive:0 84.2% 60.2%;
+            --destructive-foreground:210 40% 98%;
+            --border:214.3 31.8% 91.4%;
+            --input:214.3 31.8% 91.4%;
+            --ring:222.2 84% 4.9%;
+            --radius:0.5rem;
+            --chart-1:12 76% 61%;
+            --chart-2:173 58% 39%;
+            --chart-3:197 37% 24%;
+            --chart-4:43 74% 66%;
+            --chart-5:27 87% 67%;
+          }
+          .dark{
+            --background:222.2 84% 4.9%;
+            --foreground:210 40% 98%;
+            --card:222.2 84% 4.9%;
+            --card-foreground:210 40% 98%;
+            --popover:222.2 84% 4.9%;
+            --popover-foreground:210 40% 98%;
+            --primary:210 40% 98%;
+            --primary-foreground:222.2 47.4% 11.2%;
+            --secondary:217.2 32.6% 17.5%;
+            --secondary-foreground:210 40% 98%;
+            --muted:217.2 32.6% 17.5%;
+            --muted-foreground:215 20.2% 65.1%;
+            --accent:217.2 32.6% 17.5%;
+            --accent-foreground:210 40% 98%;
+            --destructive:0 62.8% 30.6%;
+            --destructive-foreground:210 40% 98%;
+            --border:217.2 32.6% 17.5%;
+            --input:217.2 32.6% 17.5%;
+            --ring:212.7 26.8% 83.9%;
+            --chart-1:220 70% 50%;
+            --chart-2:160 60% 45%;
+            --chart-3:30 80% 55%;
+            --chart-4:280 65% 60%;
+            --chart-5:340 75% 55%;
+          }
+          
+          /* Reset y base styles */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth}
-          body{margin:0;font-family:'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(180deg,#ffd549 0%,#fff4c6 50%,#ffffff 100%);background-attachment:fixed;color:#1f2937;padding-top:92px}
+          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(180deg,#ffd549 0%,#fff4c6 50%,#ffffff 100%);background-attachment:fixed;color:#1f2937;padding-top:92px}
           @media(min-width:1024px){body{padding-top:105px}}
           img,picture,video{max-width:100%;height:auto;display:block}
           button,input,select,textarea{font:inherit}
@@ -68,21 +126,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-toast{z-index:300}
         `}} />
         
-        {/* ⚡ PERFORMANCE: Preload de fuentes críticas */}
-        <link
-          rel="preload"
-          href="/fonts/EuclidCircularA-Regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/EuclidCircularA-Bold.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
+        {/* ⚡ PERFORMANCE: next/font maneja el preload automáticamente */}
+        {/* Las fuentes se inlinean automáticamente en el CSS, eliminando el request bloqueante */}
         
         {/* ⚡ PERFORMANCE: Preload de imagen hero crítica (LCP candidate) - Actualizado a WebP */}
         <link
