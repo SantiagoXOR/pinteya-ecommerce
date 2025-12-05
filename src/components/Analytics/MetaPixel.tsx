@@ -19,6 +19,42 @@ import {
 const MetaPixel: React.FC = () => {
   const pathname = usePathname()
   const [isPixelLoaded, setIsPixelLoaded] = useState(false)
+  const [shouldLoad, setShouldLoad] = useState(false)
+
+  // ⚡ CRITICAL: Cargar Meta Pixel solo después de LCP y primera interacción del usuario
+  // Esto evita que Meta Pixel bloquee la ruta crítica (5,863ms según Lighthouse)
+  useEffect(() => {
+    // Esperar a que el LCP se complete y el usuario interactúe
+    const loadAfterLCP = () => {
+      // Cargar después de LCP estimado (2.5s) o primera interacción
+      const loadPixel = () => {
+        setShouldLoad(true)
+      }
+
+      // Opción 1: Cargar después de interacción del usuario
+      const events = ['mousedown', 'touchstart', 'keydown', 'scroll']
+      const onInteraction = () => {
+        loadPixel()
+        events.forEach(event => {
+          document.removeEventListener(event, onInteraction, { passive: true })
+        })
+      }
+
+      events.forEach(event => {
+        document.addEventListener(event, onInteraction, { passive: true, once: true })
+      })
+
+      // Opción 2: Cargar después de delay si no hay interacción
+      setTimeout(loadPixel, 3000) // 3 segundos después de carga inicial
+    }
+
+    // Esperar a que el DOM esté listo
+    if (document.readyState === 'complete') {
+      loadAfterLCP()
+    } else {
+      window.addEventListener('load', loadAfterLCP, { once: true })
+    }
+  }, [])
 
   // Manejar cuando Meta Pixel está listo
   const handlePixelLoad = async () => {
@@ -54,11 +90,16 @@ const MetaPixel: React.FC = () => {
     return null
   }
 
+  // ⚡ CRITICAL: No cargar Meta Pixel hasta después de LCP e interacción
+  if (!shouldLoad) {
+    return null
+  }
+
   return (
     <>
       {META_PIXEL_ID && META_PIXEL_ID.length >= 10 && (
         <>
-          {/* ⚡ PERFORMANCE: lazyOnload carga Meta Pixel DESPUÉS de FCP */}
+          {/* ⚡ PERFORMANCE: Carga diferida después de LCP e interacción para evitar bloqueo de ruta crítica */}
           <Script
             id='meta-pixel'
             strategy='lazyOnload'

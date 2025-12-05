@@ -427,13 +427,13 @@ const nextConfig = {
           },
         ],
       },
-      // ⚡ PERFORMANCE: Headers para imágenes estáticas
+      // ⚡ PERFORMANCE: Headers para imágenes estáticas - Caché de 1 año para recursos inmutables
       {
         source: '/images/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=86400, stale-while-revalidate=604800',
+            value: 'public, max-age=31536000, immutable', // ⚡ OPTIMIZACIÓN: 1 año en lugar de 1 día (ahorro de 1,327 KiB según Lighthouse)
           },
         ],
       },

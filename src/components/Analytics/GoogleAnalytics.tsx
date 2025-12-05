@@ -19,6 +19,45 @@ import {
 const GoogleAnalytics: React.FC = () => {
   const pathname = usePathname()
   const [isGALoaded, setIsGALoaded] = useState(false)
+  const [shouldLoad, setShouldLoad] = useState(false)
+
+  // ⚡ CRITICAL: Cargar analytics solo después de LCP y primera interacción del usuario
+  // Esto evita que analytics bloqueen la ruta crítica (5,863ms según Lighthouse)
+  useEffect(() => {
+    // Esperar a que el LCP se complete y el usuario interactúe
+    const loadAfterLCP = () => {
+      // Verificar si LCP ya ocurrió (después de 2.5s o cuando hay interacción)
+      const hasInteracted = document.visibilityState === 'visible'
+      
+      // Cargar después de LCP estimado (2.5s) o primera interacción
+      const loadAnalytics = () => {
+        setShouldLoad(true)
+      }
+
+      // Opción 1: Cargar después de interacción del usuario
+      const events = ['mousedown', 'touchstart', 'keydown', 'scroll']
+      const onInteraction = () => {
+        loadAnalytics()
+        events.forEach(event => {
+          document.removeEventListener(event, onInteraction, { passive: true })
+        })
+      }
+
+      events.forEach(event => {
+        document.addEventListener(event, onInteraction, { passive: true, once: true })
+      })
+
+      // Opción 2: Cargar después de delay si no hay interacción
+      setTimeout(loadAnalytics, 3000) // 3 segundos después de carga inicial
+    }
+
+    // Esperar a que el DOM esté listo
+    if (document.readyState === 'complete') {
+      loadAfterLCP()
+    } else {
+      window.addEventListener('load', loadAfterLCP, { once: true })
+    }
+  }, [])
 
   // Manejar cuando GA está listo
   const handleGALoad = async () => {
@@ -52,11 +91,16 @@ const GoogleAnalytics: React.FC = () => {
     return null
   }
 
+  // ⚡ CRITICAL: No cargar analytics hasta después de LCP e interacción
+  if (!shouldLoad) {
+    return null
+  }
+
   return (
     <>
       {GA_TRACKING_ID && GA_TRACKING_ID !== 'G-XXXXXXXXXX' && GA_TRACKING_ID.length >= 10 && (
         <>
-          {/* ⚡ PERFORMANCE: lazyOnload carga GA DESPUÉS de FCP (-0.2s) */}
+          {/* ⚡ PERFORMANCE: Carga diferida después de LCP e interacción para evitar bloqueo de ruta crítica */}
           <Script
             strategy='lazyOnload'
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}

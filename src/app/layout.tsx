@@ -92,16 +92,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fetchPriority="high"
         />
         
-        {/* ⚡ PERFORMANCE: Preconnect a dominios externos */}
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://www.google-analytics.com" />
-        <link rel="preconnect" href="https://www.googleadservices.com" />
-        <link rel="preconnect" href="https://connect.facebook.net" />
-        <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
+        {/* ⚡ PERFORMANCE: Preconnect a dominios externos - Agregar crossorigin para recursos CORS */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.googleadservices.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
-        <link rel="preconnect" href="https://lh3.googleusercontent.com" />
+        <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
-        <link rel="preconnect" href="https://images.clerk.dev" />
+        <link rel="preconnect" href="https://images.clerk.dev" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.clerk.dev" />
         
         {/* Google Merchant Center Verification */}

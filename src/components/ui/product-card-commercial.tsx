@@ -1080,8 +1080,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               alt={title || 'Producto'}
               fill
               className='object-contain scale-125 z-0'
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              sizes="(max-width: 640px) 153px, (max-width: 1024px) 200px, 250px" // ⚡ OPTIMIZACIÓN: Tamaños específicos para evitar cargar 384px cuando se muestra 153px
               priority={false}
+              loading="lazy"
               onError={handleImageError}
               onLoad={() => {
                 console.log(`✅ [CommercialProductCard] Imagen cargada exitosamente - Producto ID: ${productId}`)

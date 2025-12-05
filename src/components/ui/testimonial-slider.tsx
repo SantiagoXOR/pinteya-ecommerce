@@ -54,8 +54,11 @@ const TestimonialSlider = ({
 
     if (!container || !pill) return
 
-    const offset = pill.offsetLeft - container.clientWidth / 2 + pill.clientWidth / 2
-    container.scrollTo({ left: offset, behavior: 'smooth' })
+    // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para agrupar lecturas de geometría y evitar reprocesamiento forzado
+    requestAnimationFrame(() => {
+      const offset = pill.offsetLeft - container.clientWidth / 2 + pill.clientWidth / 2
+      container.scrollTo({ left: offset, behavior: 'smooth' })
+    })
   }, [active])
 
   return (

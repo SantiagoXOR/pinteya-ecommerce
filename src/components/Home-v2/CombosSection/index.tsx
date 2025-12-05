@@ -121,6 +121,7 @@
                       alt={slide.alt}
                       fill
                       priority={index === 1}
+                      fetchPriority={index === 1 ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority para primera imagen
                       className='object-contain'
                       sizes='(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px'
                     />

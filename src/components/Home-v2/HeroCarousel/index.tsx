@@ -117,6 +117,7 @@ const HeroCarousel = () => {
                   alt={slide.alt}
                   fill
                   priority={index === 1} // La primera slide real está en índice 1
+                  fetchPriority={index === 1 ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority explícito para LCP
                   className="object-contain"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
                 />

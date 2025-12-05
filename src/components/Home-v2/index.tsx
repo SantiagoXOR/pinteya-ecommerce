@@ -307,17 +307,17 @@ const HomeV2 = () => {
       <LazyBestSeller />
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
-      <div className='mt-3 sm:mt-4'>
+      <div className='mt-3 sm:mt-4' style={{ minHeight: '120px' }}> {/* ⚡ CLS FIX: Reservar espacio para banner y evitar layout shift de 0.041 */}
         <PromoBanners bannerId={1} />
       </div>
 
       {/* 4. Productos Destacados (Combos) */}
-      <div className='mt-4 sm:mt-6 product-section'>
+      <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}> {/* ⚡ CLS FIX: Reservar espacio para evitar layout shift */}
         <CombosSection />
       </div>
 
       {/* 5. Carrusel Dinámico - Solo Envío Gratis */}
-      <div className='mt-4 sm:mt-6 product-section'>
+      <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '350px' }}> {/* ⚡ CLS FIX: Reservar espacio para evitar layout shift */}
         <DynamicProductCarousel freeShippingOnly={true} />
       </div>
 
@@ -327,7 +327,7 @@ const HomeV2 = () => {
       </div>
 
       {/* 7. Nuevos productos - Lazy loaded */}
-      <div className='mt-3 sm:mt-4 product-section'>
+      <div className='mt-3 sm:mt-4 product-section' style={{ minHeight: '500px' }}> {/* ⚡ CLS FIX: Reservar espacio para evitar layout shift */}
         <LazyNewArrivals />
       </div>
 

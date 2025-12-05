@@ -158,9 +158,15 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     }
 
     setIsDragging(true)
-    setStartX(e.pageX - carousel.offsetLeft)
-    setScrollLeft(carousel.scrollLeft)
-    carousel.style.cursor = 'grabbing'
+    // ⚡ OPTIMIZACIÓN: Agrupar lecturas de geometría antes de cambios de estilo
+    const offsetLeft = carousel.offsetLeft
+    const scrollLeft = carousel.scrollLeft
+    setStartX(e.pageX - offsetLeft)
+    setScrollLeft(scrollLeft)
+    // Cambiar estilo después de leer geometría
+    requestAnimationFrame(() => {
+      carousel.style.cursor = 'grabbing'
+    })
   }
 
   const handleMouseLeave = () => {
