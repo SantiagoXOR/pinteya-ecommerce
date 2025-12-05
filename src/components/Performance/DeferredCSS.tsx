@@ -16,12 +16,13 @@ import { useEffect } from 'react'
 interface CSSResource {
   path: string
   priority: 'high' | 'medium' | 'low'
-  condition?: () => boolean // Condición para cargar (ej: solo en mobile)
+  condition?: () => boolean // Condición para cargar (ej: solo en mobile, solo en homepage)
+  routes?: string[] // Rutas específicas donde se necesita este CSS
 }
 
 export function DeferredCSS() {
   useEffect(() => {
-    // ⚡ OPTIMIZACIÓN: CSS categorizado por prioridad
+    // ⚡ OPTIMIZACIÓN: CSS categorizado por prioridad y rutas
     const cssResources: CSSResource[] = [
       // Prioridad ALTA: CSS que afecta interacciones comunes
       {
@@ -34,25 +35,45 @@ export function DeferredCSS() {
         path: '/styles/checkout-mobile.css',
         priority: 'medium',
         condition: () => window.innerWidth < 768, // Solo en mobile
+        routes: ['/checkout', '/checkout/*'], // Solo en checkout
       },
       {
         path: '/styles/checkout-transition.css',
         priority: 'medium',
+        routes: ['/checkout', '/checkout/*'], // Solo en checkout
+      },
+      {
+        path: '/styles/checkout-animations.css', // Nuevo: animaciones del checkout
+        priority: 'low',
+        routes: ['/checkout', '/checkout/*'], // Solo en checkout
+      },
+      
+      // Prioridad MEDIA-BAJA: CSS del carousel (solo en homepage)
+      {
+        path: '/styles/hero-carousel.css',
+        priority: 'medium',
+        routes: ['/'], // Solo en homepage
+        condition: () => {
+          // Verificar si estamos en homepage
+          const isHomepage = window.location.pathname === '/' || window.location.pathname === ''
+          return isHomepage
+        },
       },
       
       // Prioridad BAJA: CSS decorativo o animaciones adicionales
       {
         path: '/styles/home-v2-animations.css',
         priority: 'low',
-      },
-      {
-        path: '/styles/hero-carousel.css',
-        priority: 'low',
+        routes: ['/'], // Solo en homepage
       },
       {
         path: '/styles/mobile-modals.css',
         priority: 'low',
         condition: () => window.innerWidth < 768,
+      },
+      {
+        path: '/styles/collapsible.css',
+        priority: 'low',
       },
     ]
 
@@ -102,10 +123,34 @@ export function DeferredCSS() {
 
     // ⚡ OPTIMIZACIÓN: Cargar CSS en orden de prioridad
     const loadDeferredCSS = async () => {
-      // Filtrar recursos según condiciones
-      const filteredResources = cssResources.filter(
-        (resource) => !resource.condition || resource.condition()
-      )
+      const currentPath = window.location.pathname
+      
+      // Filtrar recursos según condiciones y rutas
+      const filteredResources = cssResources.filter((resource) => {
+        // Verificar condición general
+        if (resource.condition && !resource.condition()) {
+          return false
+        }
+        
+        // Verificar si hay restricción de rutas
+        if (resource.routes && resource.routes.length > 0) {
+          // Verificar si la ruta actual coincide con alguna ruta permitida
+          const matchesRoute = resource.routes.some((route) => {
+            if (route.endsWith('/*')) {
+              // Wildcard: /checkout/* coincide con /checkout/payment
+              const baseRoute = route.slice(0, -2)
+              return currentPath === baseRoute || currentPath.startsWith(baseRoute + '/')
+            }
+            return currentPath === route
+          })
+          
+          if (!matchesRoute) {
+            return false
+          }
+        }
+        
+        return true
+      })
 
       // Separar por prioridad
       const highPriority = filteredResources.filter(r => r.priority === 'high')
