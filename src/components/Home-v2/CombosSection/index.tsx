@@ -97,9 +97,29 @@ const slides: Slide[] = [
   return (
     <section className='w-full pt-2 pb-2 px-4 bg-transparent'>
       <div className='max-w-[1200px] mx-auto'>
-        <div className='relative w-full overflow-visible rounded-2xl' style={{ aspectRatio: '2.77' }}>
+        {/* ⚡ CLS FIX: Dimensiones fijas desde el inicio - calculadas basadas en aspectRatio 2.77 */}
+        {/* Para max-width 1200px: height = 1200 / 2.77 ≈ 433px */}
+        {/* Para mobile ~768px: height = 768 / 2.77 ≈ 277px */}
+        <div 
+          className='relative w-full overflow-visible rounded-2xl'
+          style={{ 
+            aspectRatio: '2.77',
+            minHeight: '277px', // ⚡ CLS FIX: Altura mínima para mobile (768px / 2.77)
+          }}
+        >
+          {/* ⚡ CLS FIX: Skeleton placeholder mientras carga - mismo aspectRatio */}
+          <div 
+            className='absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl z-0'
+            style={{ aspectRatio: '2.77' }}
+            aria-hidden="true"
+          />
+          
           {/* Contenedor interno con overflow-hidden para las slides */}
-          <div ref={swipeRef as React.RefObject<HTMLDivElement>} className='relative w-full h-full overflow-hidden rounded-2xl'>
+          <div 
+            ref={swipeRef as React.RefObject<HTMLDivElement>} 
+            className='relative w-full h-full overflow-hidden rounded-2xl z-10'
+            style={{ aspectRatio: '2.77' }}
+          >
             <div
               className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
               style={{ transform: `translateX(-${currentIndex * 100}%)` }}
@@ -115,6 +135,7 @@ const slides: Slide[] = [
                   <div 
                     key={`${slide.id}-${index}`} 
                     className='min-w-full h-full flex-shrink-0 relative cursor-pointer'
+                    style={{ aspectRatio: '2.77' }} // ⚡ CLS FIX: AspectRatio fijo en cada slide
                     onClick={(e) => productSlug && handleSlideClick(productSlug, e)}
                   >
                     <Image
@@ -126,6 +147,7 @@ const slides: Slide[] = [
                       className='object-contain'
                       sizes='(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px'
                       quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
+                      style={{ objectFit: 'contain' }} // ⚡ CLS FIX: objectFit explícito
                     />
                   </div>
                 )

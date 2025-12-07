@@ -15,6 +15,7 @@ import GoogleAds from '@/components/Analytics/GoogleAds'
 import { ClientErrorSuppression } from '@/components/ErrorSuppression/ClientErrorSuppression'
 import PerformanceTracker from '@/components/PerformanceTracker'
 import { DeferredCSS } from '@/components/Performance/DeferredCSS'
+import { NonBlockingCSS } from '@/components/Performance/NonBlockingCSS'
 import {
   organizationStructuredData,
   websiteStructuredData,
@@ -135,6 +136,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-toast{z-index:300}
         `}} />
         
+        {/* ⚡ CRITICAL: Preconnect al dominio propio DEBE estar ANTES de cualquier preload */}
+        {/* Esto establece la conexión antes de que se necesiten los recursos CSS */}
+        <link rel="preconnect" href="https://www.pinteya.com" />
+        <link rel="dns-prefetch" href="https://www.pinteya.com" />
+        
         {/* ⚡ CRITICAL: Preload de imagen LCP del hero - POSICIONADO PRIMERO para máxima prioridad */}
         {/* Esto elimina el retraso de 2,270ms en la carga de recursos */}
         {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
@@ -159,7 +165,67 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         
         {/* ⚡ OPTIMIZACIÓN: Next.js con optimizeCss: true inlina CSS crítico automáticamente */}
         {/* Los archivos CSS no críticos (hero-carousel, checkout-transition) se cargan diferidamente via DeferredCSS */}
-        {/* Esto elimina ~760ms de render-blocking según Lighthouse */}
+        {/* NonBlockingCSS convierte los CSS generados por Next.js a carga no bloqueante */}
+        {/* Esto elimina ~1,010ms de render-blocking según Lighthouse */}
+        
+        {/* ⚡ CRITICAL: Script inline para convertir CSS a no bloqueante ANTES de que React se hidrate */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              function convertCSSToNonBlocking() {
+                const stylesheets = document.querySelectorAll('head link[rel="stylesheet"]');
+                stylesheets.forEach(function(link) {
+                  const href = link.getAttribute('href') || '';
+                  const isNextJSCSS = href.includes('_next/static/css') || href.includes('.css');
+                  
+                  if (isNextJSCSS && link.media !== 'print' && !link.hasAttribute('data-non-blocking')) {
+                    link.setAttribute('data-non-blocking', 'true');
+                    const originalMedia = link.media || 'all';
+                    
+                    // Si ya está cargado, no hacer nada
+                    if (link.sheet) return;
+                    
+                    // Técnica media="print" para carga no bloqueante
+                    link.media = 'print';
+                    
+                    link.onload = function() {
+                      link.media = originalMedia;
+                      link.onload = null;
+                      link.onerror = null;
+                    };
+                    
+                    link.onerror = function() {
+                      link.media = originalMedia;
+                      link.onload = null;
+                      link.onerror = null;
+                    };
+                    
+                    // Fallback después de 3 segundos
+                    setTimeout(function() {
+                      if (link.media === 'print') {
+                        link.media = originalMedia;
+                      }
+                    }, 3000);
+                  }
+                });
+              }
+              
+              // Ejecutar inmediatamente
+              convertCSSToNonBlocking();
+              
+              // Ejecutar después de un pequeño delay para CSS que se carga después
+              setTimeout(convertCSSToNonBlocking, 50);
+              
+              // Observar cambios en el DOM
+              if (typeof MutationObserver !== 'undefined') {
+                const observer = new MutationObserver(convertCSSToNonBlocking);
+                observer.observe(document.head, { childList: true, subtree: false });
+              }
+            })();
+            `,
+          }}
+        />
         
         {/* ⚡ PERFORMANCE: Preconnect a dominios externos - Agregar crossorigin para recursos CORS */}
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
@@ -172,10 +238,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="preconnect" href="https://images.clerk.dev" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.clerk.dev" />
-        
-        {/* ⚡ CRITICAL: Preconnect al dominio propio para reducir latencia de CSS crítico */}
-        <link rel="preconnect" href="https://www.pinteya.com" />
-        <link rel="dns-prefetch" href="https://www.pinteya.com" />
         
         {/* Google Merchant Center Verification */}
         <meta
@@ -195,6 +257,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* <JsonSafetyInitializer /> */}
         {/* <DebugNotificationDisabler /> */}
         <PerformanceTracker />
+        
+        {/* ⚡ CRITICAL: Convertir CSS de Next.js a carga no bloqueante (ejecutar primero) */}
+        <NonBlockingCSS />
         
         {/* ⚡ PERFORMANCE: CSS no crítico carga diferidamente después del FCP */}
         <DeferredCSS />

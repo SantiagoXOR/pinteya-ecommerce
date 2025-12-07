@@ -85,24 +85,34 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
             >
               {/* DISEÑO COMPACTO PARA BANNERS 1 Y 2 */}
               {isCompactBanner ? (
-                <div className='relative h-12 md:h-14'>
+                <div 
+                  className='relative h-12 md:h-14'
+                  style={{ minHeight: '48px' }} // ⚡ CLS FIX: Altura mínima fija (h-12 = 48px)
+                >
+                  {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
+                  <div 
+                    className='absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0'
+                    aria-hidden="true"
+                  />
+                  
                   {/* Background Image optimizada */}
                   {/* Solo bannerId 1 tiene priority (above-fold), los demás usan lazy loading */}
                   <Image
                     src={banner.bgImage}
                     alt={banner.title}
                     fill
-                    className='object-cover object-center'
+                    className='object-cover object-center z-10'
                     sizes='(max-width: 768px) 100vw, 1200px'
                     priority={banner.id === 1}
                     loading={banner.id === 1 ? undefined : 'lazy'}
+                    style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito
                   />
                   
                   {/* Gradient Overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient}`}></div>
+                  <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient} z-20`}></div>
                   
                   {/* Content - Súper compacto */}
-                  <div className='relative h-full flex items-center justify-between px-3 md:px-5'>
+                  <div className='relative h-full flex items-center justify-between px-3 md:px-5 z-30'>
                     {/* Left Content */}
                     <div className='flex items-center gap-1.5 md:gap-2'>
                       {/* Badge mini */}
@@ -124,21 +134,31 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                 </div>
               ) : (
                 // DISEÑO NORMAL PARA OTROS BANNERS
-                <div className='relative h-16 md:h-20'>
+                <div 
+                  className='relative h-16 md:h-20'
+                  style={{ minHeight: '64px' }} // ⚡ CLS FIX: Altura mínima fija (h-16 = 64px)
+                >
+                  {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
+                  <div 
+                    className='absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0'
+                    aria-hidden="true"
+                  />
+                  
                   <Image
                     src={banner.bgImage}
                     alt={banner.title}
                     fill
-                    className='object-cover'
+                    className='object-cover z-10'
                     sizes='(max-width: 768px) 100vw, 1200px'
                     loading='lazy'
+                    style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito
                   />
                   
                   {/* Gradient Overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient}`}></div>
+                  <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient} z-20`}></div>
                   
                   {/* Content - Simplificado para 1-2 líneas */}
-                  <div className='relative h-full flex items-center justify-between px-4 md:px-8'>
+                  <div className='relative h-full flex items-center justify-between px-4 md:px-8 z-30'>
                     {/* Left Content */}
                     <div className='flex items-center gap-3 md:gap-4'>
                       {/* Badge más pequeño */}

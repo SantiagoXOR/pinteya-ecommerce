@@ -307,12 +307,24 @@ const HomeV2 = () => {
       <LazyBestSeller />
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
-      <div className='mt-3 sm:mt-4' style={{ minHeight: '120px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
+      <div 
+        className='mt-3 sm:mt-4' 
+        style={{ 
+          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px)
+          height: 'auto' // Permite que el contenido defina la altura
+        }}
+      >
         <PromoBanners bannerId={1} />
       </div>
 
       {/* 4. Productos Destacados (Combos) */}
-      <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
+      <div 
+        className='mt-4 sm:mt-6 product-section' 
+        style={{ 
+          minHeight: '277px', // ⚡ CLS FIX: Altura mínima para mobile (aspectRatio 2.77 con width ~768px: 768/2.77≈277px)
+          height: 'auto' // Se calcula con aspectRatio del componente interno
+        }}
+      >
         <CombosSection />
       </div>
 

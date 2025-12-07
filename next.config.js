@@ -88,8 +88,8 @@ const nextConfig = {
     // - Separa CSS en chunks más pequeños por ruta/componente
     // - Reduce el tamaño inicial del CSS principal
     // - Los @import bloqueantes fueron removidos de style.css y se cargan via DeferredCSS
-    // - 'strict' reduce más la cadena crítica que true (optimización para reducir latencia de 641ms)
-    cssChunking: 'strict',
+    // - Revertido a true: 'strict' aumentó la latencia de 641ms a 942ms
+    cssChunking: true,
   },
 
   // ✅ Configuración de webpack para resolver el error de 'call'
