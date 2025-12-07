@@ -1,6 +1,6 @@
 /* ⚡ OPTIMIZACIÓN: variables.css ahora está inline en layout.tsx para eliminar request bloqueante */
-@import '../../styles/checkout-transition.css';
-@import '../../styles/hero-carousel.css';
+/* ⚡ OPTIMIZACIÓN: checkout-transition.css y hero-carousel.css se cargan diferidamente via DeferredCSS.tsx */
+/* Los @import bloqueantes fueron removidos para eliminar ~760ms de render-blocking */
 
 @tailwind base;
 @tailwind components;

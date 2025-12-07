@@ -490,3 +490,4 @@ npx lighthouse http://localhost:3000 --view
 **Próxima acción**: Verificar y comprimir imágenes del hero carousel
 
 
+

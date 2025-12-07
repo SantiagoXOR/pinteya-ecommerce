@@ -301,3 +301,4 @@ npx lighthouse http://localhost:3000 --view
 **Estado**: Optimizaciones en implementación
 
 
+

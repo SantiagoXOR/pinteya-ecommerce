@@ -453,3 +453,4 @@ npx lighthouse http://localhost:3000 --view
 **Impacto proyectado**: Performance 43 → 85 (+42 puntos)
 
 
+

@@ -195,3 +195,4 @@ Para más detalles, consulta: [`docs/OPTIMIZACIONES-CSS-RENDER-BLOCKING.md`](doc
 Las optimizaciones implementadas reducirán significativamente el tiempo de bloqueo de renderización y mejorarán las métricas de performance (FCP, LCP).
 
 
+

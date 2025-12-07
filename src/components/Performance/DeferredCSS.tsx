@@ -37,9 +37,10 @@ export function DeferredCSS() {
         condition: () => window.innerWidth < 768, // Solo en mobile
         routes: ['/checkout', '/checkout/*'], // Solo en checkout
       },
+      // ⚡ OPTIMIZACIÓN: CSS de checkout-transition removido de @import bloqueante de style.css
       {
         path: '/styles/checkout-transition.css',
-        priority: 'medium',
+        priority: 'high', // Cambiado a high porque se necesita inmediatamente en checkout
         routes: ['/checkout', '/checkout/*'], // Solo en checkout
       },
       {
@@ -48,10 +49,10 @@ export function DeferredCSS() {
         routes: ['/checkout', '/checkout/*'], // Solo en checkout
       },
       
-      // Prioridad MEDIA-BAJA: CSS del carousel (solo en homepage)
+      // ⚡ OPTIMIZACIÓN: CSS del hero-carousel (solo en homepage) - Prioridad ALTA porque está above-the-fold
       {
         path: '/styles/hero-carousel.css',
-        priority: 'medium',
+        priority: 'high', // Cambiado a high porque está above-the-fold y afecta LCP
         routes: ['/'], // Solo en homepage
         condition: () => {
           // Verificar si estamos en homepage

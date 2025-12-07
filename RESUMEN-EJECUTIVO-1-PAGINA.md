@@ -87,3 +87,4 @@ npx lighthouse https://www.pinteya.com --view
 **Estado**: 🟢 Listo para deploy | **Impacto**: LCP -76%, Performance +42 pts
 
 
+

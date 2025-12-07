@@ -1,13 +1,41 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-// ⚡ PERFORMANCE: HeroCarousel carga inmediatamente con SSR habilitado
-// La primera imagen se renderiza en el servidor para LCP óptimo
-import HeroCarousel from '@/components/Common/HeroCarousel'
-import { Truck, ShieldCheck, CreditCard, ArrowRight } from 'lucide-react'
-import { trackEvent } from '@/lib/google-analytics'
+import dynamic from 'next/dynamic'
+// ⚡ PERFORMANCE: Cargar HeroCarousel dinámicamente después del LCP
+// Esto elimina el retraso de 2,270ms en la carga de recursos
+const HeroCarousel = dynamic(() => import('@/components/Common/HeroCarousel'), {
+  ssr: false,
+  loading: () => null, // No mostrar loading, la imagen estática ya está visible
+})
+
+// ⚡ CRITICAL: Primera imagen estática para LCP óptimo
+// Esta imagen se renderiza inmediatamente en el HTML, sin esperar JavaScript
+// Elimina el retraso de 2,270ms en la carga de recursos
+const HeroImageStatic: React.FC<{
+  src: string
+  alt: string
+  className?: string
+  isMobile?: boolean
+}> = ({ src, alt, className = '', isMobile = false }) => {
+  return (
+    <div className={`relative w-full ${isMobile ? 'h-[320px] sm:h-[360px]' : 'h-[360px]'} overflow-hidden ${className}`}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        priority
+        fetchPriority="high"
+        quality={85}
+        className="object-contain"
+        sizes={isMobile ? "(max-width: 768px) 100vw, 100vw" : "(max-width: 1200px) 90vw, 1200px"}
+        style={{ objectFit: 'contain' }}
+        unoptimized={false}
+      />
+    </div>
+  )
+}
 
 // ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia de ~30MB a ~2MB
 // Configuración de imágenes para el carrusel móvil con WebP optimizado
@@ -56,20 +84,50 @@ const heroImagesDesktop = [
 ]
 
 const Hero = () => {
+  const [carouselLoaded, setCarouselLoaded] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // ⚡ OPTIMIZACIÓN: Cargar carousel después de que la página esté lista
+  // Esto da prioridad al LCP de la imagen estática
+  useEffect(() => {
+    setIsMounted(true)
+    // Cargar carousel después de un pequeño delay para no competir con LCP
+    const timer = setTimeout(() => {
+      setCarouselLoaded(true)
+    }, 100) // 100ms después del mount para dar prioridad a LCP
+
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
     <section className='relative overflow-hidden -mt-4'>
       {/* Carrusel móvil - PEGADO COMPLETAMENTE al header */}
       <div className='lg:hidden relative z-50 -mt-[92px]'>
         <div className='w-full pt-[92px]'>
           <div className='relative w-full h-[320px] sm:h-[360px] overflow-hidden'>
-            {/* ⚡ CRITICAL: HeroCarousel carga inmediatamente, primera imagen con priority para LCP */}
-            <HeroCarousel
-              images={heroImagesMobile}
-              autoplayDelay={5000}
-              showNavigation={false}
-              showPagination={false}
-              className='w-full h-full mobile-carousel'
-            />
+            {/* ⚡ CRITICAL: Imagen estática para LCP - se renderiza inmediatamente sin JavaScript */}
+            {/* Elimina el retraso de 2,270ms en la carga de recursos */}
+            <div className={`absolute inset-0 z-10 transition-opacity duration-500 ${carouselLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+              <HeroImageStatic
+                src={heroImagesMobile[0].src}
+                alt={heroImagesMobile[0].alt}
+                isMobile={true}
+                className="mobile-carousel"
+              />
+            </div>
+            
+            {/* ⚡ PERFORMANCE: Carousel carga dinámicamente después del LCP */}
+            {isMounted && (
+              <div className={`relative z-20 transition-opacity duration-500 ${carouselLoaded ? 'opacity-100' : 'opacity-0'}`}>
+                <HeroCarousel
+                  images={heroImagesMobile}
+                  autoplayDelay={5000}
+                  showNavigation={false}
+                  showPagination={false}
+                  className='w-full h-full mobile-carousel'
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -80,14 +138,29 @@ const Hero = () => {
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden relative z-10'>
             <div className='relative rounded-3xl overflow-hidden'>
               <div className='relative w-full h-[360px]'>
-                {/* ⚡ CRITICAL: HeroCarousel carga inmediatamente, primera imagen con priority para LCP */}
-                <HeroCarousel
-                  images={heroImagesDesktop}
-                  autoplayDelay={4000}
-                  showNavigation={true}
-                  showPagination={false}
-                  className='w-full h-full rounded-lg desktop-carousel'
-                />
+                {/* ⚡ CRITICAL: Imagen estática para LCP - se renderiza inmediatamente sin JavaScript */}
+                {/* Elimina el retraso de 2,270ms en la carga de recursos */}
+                <div className={`absolute inset-0 z-10 transition-opacity duration-500 ${carouselLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                  <HeroImageStatic
+                    src={heroImagesDesktop[0].src}
+                    alt={heroImagesDesktop[0].alt}
+                    isMobile={false}
+                    className="rounded-lg desktop-carousel"
+                  />
+                </div>
+                
+                {/* ⚡ PERFORMANCE: Carousel carga dinámicamente después del LCP */}
+                {isMounted && (
+                  <div className={`relative z-20 transition-opacity duration-500 ${carouselLoaded ? 'opacity-100' : 'opacity-0'}`}>
+                    <HeroCarousel
+                      images={heroImagesDesktop}
+                      autoplayDelay={4000}
+                      showNavigation={true}
+                      showPagination={false}
+                      className='w-full h-full rounded-lg desktop-carousel'
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

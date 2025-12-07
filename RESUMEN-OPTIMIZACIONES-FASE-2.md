@@ -364,3 +364,4 @@ cat analisis.css
 **Impacto total proyectado**: **-1,140 ms (-56%)**
 
 
+

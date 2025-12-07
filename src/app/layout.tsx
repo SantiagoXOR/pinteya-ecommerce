@@ -105,6 +105,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .hero-section{min-height:320px;background:linear-gradient(135deg,#f97316,#ea580c);position:relative;overflow:hidden}
           @media(min-width:1024px){.hero-section{min-height:500px}}
           
+          /* Critical Hero Carousel Styles - Mínimos para evitar layout shift mientras carga CSS diferido */
+          .hero-carousel{position:relative;width:100%;min-height:400px}
+          .hero-carousel .swiper{width:100%;height:100%;min-height:inherit;cursor:grab}
+          .hero-carousel .swiper:active{cursor:grabbing}
+          .hero-carousel .swiper-slide{width:100%;height:100%;min-height:inherit;position:relative}
+          .hero-carousel .swiper-slide>div{width:100%;height:100%;min-height:inherit}
+          @media(max-width:639px){.hero-carousel{min-height:420px}}
+          @media(min-width:1024px){.hero-carousel{min-height:500px}}
+          
           /* Hero Skeleton Animation */
           .hero-skeleton{animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite}
           @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
@@ -126,10 +135,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-toast{z-index:300}
         `}} />
         
-        {/* ⚡ PERFORMANCE: next/font maneja el preload automáticamente */}
-        {/* Las fuentes se inlinean automáticamente en el CSS, eliminando el request bloqueante */}
-        
-        {/* ⚡ CRITICAL: Preload de imagen LCP del hero (ahora optimizada: 758KB → 37KB) */}
+        {/* ⚡ CRITICAL: Preload de imagen LCP del hero - POSICIONADO PRIMERO para máxima prioridad */}
+        {/* Esto elimina el retraso de 2,270ms en la carga de recursos */}
+        {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
         <link
           rel="preload"
           as="image"
@@ -146,6 +154,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="image/avif"
         />
         
+        {/* ⚡ PERFORMANCE: next/font maneja el preload automáticamente */}
+        {/* Las fuentes se inlinean automáticamente en el CSS, eliminando el request bloqueante */}
+        
+        {/* ⚡ OPTIMIZACIÓN: Next.js con optimizeCss: true inlina CSS crítico automáticamente */}
+        {/* Los archivos CSS no críticos (hero-carousel, checkout-transition) se cargan diferidamente via DeferredCSS */}
+        {/* Esto elimina ~760ms de render-blocking según Lighthouse */}
+        
         {/* ⚡ PERFORMANCE: Preconnect a dominios externos - Agregar crossorigin para recursos CORS */}
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
@@ -157,6 +172,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="preconnect" href="https://images.clerk.dev" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.clerk.dev" />
+        
+        {/* ⚡ CRITICAL: Preconnect al dominio propio para reducir latencia de CSS crítico */}
+        <link rel="preconnect" href="https://www.pinteya.com" />
+        <link rel="dns-prefetch" href="https://www.pinteya.com" />
         
         {/* Google Merchant Center Verification */}
         <meta

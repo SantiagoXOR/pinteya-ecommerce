@@ -90,3 +90,4 @@ Write-Host "Impacto Total Esperado Post-Deploy: -1,140 ms (-56%)" -ForegroundCol
 Write-Host ""
 
 
+
