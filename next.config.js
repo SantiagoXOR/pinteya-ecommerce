@@ -137,17 +137,37 @@ const nextConfig = {
         minimize: true,
         usedExports: true,
         sideEffects: false,
+        // ⚡ CRITICAL: Mejorar tree shaking y eliminación de código muerto
+        providedExports: true,
+        innerGraph: true,
+        concatenateModules: true, // Scope hoisting para reducir overhead
+        moduleIds: 'deterministic', // IDs determinísticos para mejor cache
+        chunkIds: 'deterministic',
+        // ⚡ CRITICAL: Eliminar código no usado más agresivamente
+        removeAvailableModules: true,
+        removeEmptyChunks: true,
+        mergeDuplicateChunks: true,
+        flagIncludedChunks: true,
       }
       
       config.optimization.splitChunks = {
         chunks: 'all',
+        // ⚡ CRITICAL: Limitar tamaño máximo de chunks para evitar tareas largas (>50ms)
+        // Chunks más pequeños = menos tiempo de ejecución por chunk = mejor interactividad
+        maxSize: 150000, // 150 KB máximo (reducido de 200 KB para evitar tareas largas)
+        minSize: 20000, // 20 KB mínimo
+        maxAsyncRequests: 30,
+        maxInitialRequests: 25, // ⚡ Reducido de 30 para evitar demasiados requests iniciales
         cacheGroups: {
-          // Framework core (React, Next.js) - NO CAMBIAR
+          // Framework core (React, Next.js) - Separado pero optimizado
           framework: {
             test: /[\\/]node_modules[\\/](react|react-dom|next|scheduler)[\\/]/,
             name: 'framework',
             priority: 40,
             enforce: true,
+            // ⚡ CRITICAL: Limitar tamaño del framework chunk
+            maxSize: 300000, // 300 KB máximo para framework
+            reuseExistingChunk: true,
           },
           
           // ⚡ NUEVO: Radix UI separado
@@ -157,6 +177,8 @@ const nextConfig = {
             priority: 35,
             reuseExistingChunk: true,
             enforce: true,
+            // ⚡ CRITICAL: Limitar tamaño del radix-ui chunk
+            maxSize: 100000, // 100 KB máximo (vs sin límite anterior)
           },
           
           // ⚡ NUEVO: Recharts separado (solo carga en admin)
@@ -175,6 +197,8 @@ const nextConfig = {
             priority: 32,
             reuseExistingChunk: true,
             enforce: true,
+            // ⚡ CRITICAL: Limitar tamaño del framer-motion chunk
+            maxSize: 100000, // 100 KB máximo (vs sin límite anterior)
           },
           
           // Bibliotecas compartidas grandes
@@ -183,6 +207,8 @@ const nextConfig = {
             name: 'lib',
             priority: 30,
             reuseExistingChunk: true,
+            // ⚡ CRITICAL: Limitar tamaño del lib chunk para mejor code splitting
+            maxSize: 150000, // 150 KB máximo (vs sin límite anterior)
           },
           
           // Redux y state management
@@ -207,6 +233,10 @@ const nextConfig = {
             name: 'vendors',
             priority: 20,
             reuseExistingChunk: true,
+            // ⚡ CRITICAL: Reducir tamaño del vendor chunk para evitar tareas largas (>50ms)
+            // Tareas largas bloquean interactividad - chunks más pequeños = menos tiempo de ejecución por chunk
+            maxSize: 150000, // 150 KB máximo (reducido de 200 KB para evitar tareas largas)
+            minSize: 20000, // 20 KB mínimo para evitar chunks muy pequeños
           },
           
           // Componentes compartidos

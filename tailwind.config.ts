@@ -4,14 +4,19 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 
 const config: Config = {
   // ⚡ OPTIMIZACIÓN: Content paths para purge más agresivo
+  // ⚡ CRITICAL: Incluir todos los archivos que pueden usar clases Tailwind
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/styles/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/lib/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/hooks/**/*.{js,ts,jsx,tsx,mdx}',
+    './public/**/*.{html,js}',
   ],
   darkMode: ['class', 'class'],
   // ⚡ OPTIMIZACIÓN: Purge CSS no utilizado en producción
+  // ⚡ CRITICAL: Safelist mínima - solo clases realmente dinámicas
   safelist: [
     // Mantener clases dinámicas que Tailwind no puede detectar
     'animate-fade-in',
@@ -21,6 +26,8 @@ const config: Config = {
     'z-header',
     'z-modal',
     'z-toast',
+    // ⚡ CRITICAL: Solo agregar clases que realmente se generan dinámicamente
+    // No agregar clases que se pueden detectar estáticamente
   ],
   theme: {
     fontFamily: {

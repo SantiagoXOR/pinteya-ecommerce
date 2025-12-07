@@ -54,12 +54,9 @@ const TrendingSearches = dynamic(() => import('./TrendingSearches/index'), {
   ),
 })
 
+// ⚡ CLS FIX: Cargar CombosSection dinámicamente pero con skeleton en el contenedor padre
 const CombosSection = dynamic(() => import('./CombosSection/index'), {
-  loading: () => (
-    <div className='px-4'>
-      <ProductSkeletonGrid count={4} />
-    </div>
-  ),
+  loading: () => null, // No mostrar loading aquí, el skeleton está en el contenedor padre
 })
 
 const BestSeller = dynamic(() => import('./BestSeller/index'), {
@@ -321,8 +318,13 @@ const HomeV2 = () => {
       <div 
         className='mt-4 sm:mt-6 product-section' 
         style={{ 
-          minHeight: '277px', // ⚡ CLS FIX: Altura mínima para mobile (aspectRatio 2.77 con width ~768px: 768/2.77≈277px)
-          height: 'auto' // Se calcula con aspectRatio del componente interno
+          // ⚡ CLS FIX: Altura fija calculada basada en aspectRatio 2.77
+          // Mobile (768px): 768 / 2.77 ≈ 277px
+          // Desktop (1200px): 1200 / 2.77 ≈ 433px
+          // Usar aspectRatio para cálculo automático pero con altura mínima garantizada
+          aspectRatio: '2.77',
+          minHeight: '277px',
+          width: '100%'
         }}
       >
         <CombosSection />

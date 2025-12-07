@@ -92,6 +92,31 @@ export const BROWSER_CACHE_CONFIGS: Record<string, BrowserCacheConfig> = {
     networkTimeoutSeconds: 2,
     urlPatterns: [/\/api\/user\/profile/, /\/api\/user\/preferences/],
   },
+
+  // ⚡ OPTIMIZACIÓN: Recursos de terceros (Facebook, Analytics, Google Tag Manager, etc.)
+  // Cache agresivo para compensar TTL corto del servidor (20min → 7 días)
+  // Ahorro estimado: 186 KiB según Lighthouse
+  THIRD_PARTY_SCRIPTS: {
+    strategy: BrowserCacheStrategy.STALE_WHILE_REVALIDATE,
+    cacheName: 'third-party-scripts-v1',
+    maxAge: 86400 * 7, // 7 días (vs 20min del servidor)
+    maxEntries: 50,
+    networkTimeoutSeconds: 5,
+    urlPatterns: [
+      /connect\.facebook\.net\/.*fbevents\.js/,
+      /connect\.facebook\.net\/.*config\//,
+      /www\.googletagmanager\.com\/gtag\/js/, // ⚡ Google Tag Manager (153 KiB)
+      /www\.googletagmanager\.com\/.*sw_iframe\.html/, // ⚡ Google Tag Manager iframe
+      /www\.google-analytics\.com\/analytics\.js/,
+      /www\.google-analytics\.com\/g\/collect/, // ⚡ Google Analytics collect
+      /googleads\.g\.doubleclick\.net/, // ⚡ Google Ads
+      /www\.google\.com\/.*1p-user-list/, // ⚡ Google APIs
+      /www\.google\.com\/ccm\/collect/, // ⚡ Google collect
+    ],
+    headers: {
+      'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400',
+    },
+  },
 }
 
 /**
@@ -155,8 +180,8 @@ self.addEventListener('fetch', (event) => {
   // Solo manejar requests GET
   if (request.method !== 'GET') return;
   
-  // Encontrar configuración de cache apropiada
-  const config = findCacheConfig(url.pathname + url.search);
+  // ⚡ OPTIMIZACIÓN: Buscar configuración usando URL completa para recursos de terceros
+  const config = findCacheConfig(url.href) || findCacheConfig(url.pathname + url.search);
   if (!config) return;
   
   event.respondWith(handleRequest(request, config));
@@ -164,14 +189,23 @@ self.addEventListener('fetch', (event) => {
 
 // Encontrar configuración de cache para una URL
 function findCacheConfig(url) {
+  // ⚡ OPTIMIZACIÓN: También verificar por dominio completo para recursos de terceros
+  const fullUrl = url.includes('://') ? url : `https://${url}`;
+  
   for (const [name, config] of Object.entries(CACHE_CONFIGS)) {
     // Verificar patrones de exclusión
-    if (config.excludePatterns && config.excludePatterns.some(pattern => new RegExp(pattern).test(url))) {
+    if (config.excludePatterns && config.excludePatterns.some(pattern => {
+      const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
+      return regex.test(url) || regex.test(fullUrl);
+    })) {
       continue;
     }
     
     // Verificar patrones de inclusión
-    if (config.urlPatterns.some(pattern => new RegExp(pattern).test(url))) {
+    if (config.urlPatterns.some(pattern => {
+      const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
+      return regex.test(url) || regex.test(fullUrl);
+    })) {
       return config;
     }
   }

@@ -102,7 +102,15 @@ const Footer = () => {
               className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-lg shadow-black/20 ${item.wrapperClass}`}
               aria-label={item.label}
             >
-              <Image src={item.imageSrc} alt={item.label} width={20} height={20} />
+              {/* ⚡ OPTIMIZACIÓN: Usar <img> para SVG en lugar de Next.js Image (más eficiente para SVG pequeños) */}
+              <img 
+                src={item.imageSrc} 
+                alt={item.label} 
+                width={20} 
+                height={20}
+                className="w-5 h-5"
+                loading="lazy"
+              />
             </Link>
           ))}
         </div>

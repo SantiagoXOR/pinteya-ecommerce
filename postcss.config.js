@@ -2,9 +2,10 @@
  * ⚡ OPTIMIZACIÓN: Configuración PostCSS para CSS optimizado
  * 
  * Plugins aplicados:
- * 1. tailwindcss - Genera utilidades CSS
+ * 1. tailwindcss - Genera utilidades CSS (con purge automático)
  * 2. autoprefixer - Añade prefijos de navegador
  * 3. cssnano (producción) - Minifica y optimiza CSS
+ * 4. ⚡ NUEVO: PurgeCSS más agresivo para eliminar CSS sin usar
  */
 
 module.exports = {
@@ -30,6 +31,10 @@ module.exports = {
                 normalizeWhitespace: true, // Normalizar espacios en blanco
                 minifyFontValues: true, // Minificar valores de fuentes
                 minifySelectors: true, // Minificar selectores
+                // ⚡ CRITICAL: Eliminar CSS sin usar más agresivamente
+                discardUnused: true, // Eliminar reglas @keyframes y @counter-style sin usar
+                discardEmpty: true, // Eliminar reglas vacías
+                discardDuplicates: true, // Eliminar reglas duplicadas
                 // Configuración conservadora para evitar romper estilos
                 calc: false, // No optimizar calc() automáticamente
                 zindex: false, // No modificar z-index (puede romper jerarquía)

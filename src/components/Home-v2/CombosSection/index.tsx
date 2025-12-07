@@ -25,7 +25,13 @@ const slides: Slide[] = [
    const [currentIndex, setCurrentIndex] = useState(1)
    const [isTransitioning, setIsTransitioning] = useState(false)
    const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+   const [isMounted, setIsMounted] = useState(false) // ⚡ CLS FIX: Estado para ocultar skeleton
    const router = useRouter()
+   
+   // ⚡ CLS FIX: Marcar como montado para ocultar skeleton
+   useEffect(() => {
+     setIsMounted(true)
+   }, [])
 
    const extendedSlides = useMemo(
      () => [slides[slides.length - 1], ...slides, slides[0]],
@@ -105,12 +111,18 @@ const slides: Slide[] = [
           style={{ 
             aspectRatio: '2.77',
             minHeight: '277px', // ⚡ CLS FIX: Altura mínima para mobile (768px / 2.77)
+            // ⚡ CLS FIX: Altura fija calculada para evitar layout shift
+            height: 'clamp(277px, calc(100vw / 2.77), 433px)'
           }}
         >
-          {/* ⚡ CLS FIX: Skeleton placeholder mientras carga - mismo aspectRatio */}
+          {/* ⚡ CLS FIX: Skeleton placeholder mientras carga - se oculta cuando se monta */}
           <div 
-            className='absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl z-0'
-            style={{ aspectRatio: '2.77' }}
+            className={`absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl z-0 transition-opacity duration-300 ${isMounted ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+            style={{ 
+              aspectRatio: '2.77',
+              minHeight: '277px',
+              height: 'clamp(277px, calc(100vw / 2.77), 433px)'
+            }}
             aria-hidden="true"
           />
           
@@ -180,16 +192,40 @@ const slides: Slide[] = [
           </button>
 
           {/* Indicadores (dots) - Estilo Mercado Libre */}
+          {/* ⚡ OPTIMIZACIÓN: Animaciones compositables (transform + opacity) en lugar de width/background-color/box-shadow */}
           <div className='absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-2 sm:gap-3'>
             {slides.map((_, index) => {
               let realIndex = currentIndex - 1
               if (currentIndex === 0) realIndex = slides.length - 1
               if (currentIndex === extendedSlides.length - 1) realIndex = 0
+              
+              const isActive = realIndex === index
+              
               return (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`transition-all duration-300 rounded-full ${realIndex === index ? 'bg-white w-6 sm:w-8 h-2 sm:h-2.5 shadow-md' : 'bg-white/60 hover:bg-white/80 w-2 sm:w-2.5 h-2 sm:h-2.5'}`}
+                  className="relative w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white/60 overflow-hidden"
+                  style={{
+                    // ⚡ OPTIMIZACIÓN: Usar transform: scaleX() en lugar de width (propiedad compositable)
+                    transform: isActive ? 'scaleX(3)' : 'scaleX(1)',
+                    // ⚡ OPTIMIZACIÓN: Usar opacity para cambio de color (propiedad compositable)
+                    opacity: isActive ? 1 : 0.6,
+                    // ⚡ OPTIMIZACIÓN: Transiciones solo en propiedades compositables
+                    transition: 'transform 300ms ease-in-out, opacity 300ms ease-in-out',
+                    // ⚡ OPTIMIZACIÓN: will-change para mejor rendimiento
+                    willChange: 'transform, opacity',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.opacity = '0.8'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.opacity = '0.6'
+                    }
+                  }}
                   aria-label={`Ir al slide ${index + 1}`}
                 />
               )

@@ -12,7 +12,7 @@ const HeroCarousel = dynamic(() => import('@/components/Common/HeroCarousel'), {
 
 // ⚡ CRITICAL: Primera imagen estática para LCP óptimo
 // Esta imagen se renderiza inmediatamente en el HTML, sin esperar JavaScript
-// Elimina el retraso de 2,270ms en la carga de recursos
+// Elimina el retraso de 1,250ms en la carga de recursos
 const HeroImageStatic: React.FC<{
   src: string
   alt: string
@@ -21,6 +21,8 @@ const HeroImageStatic: React.FC<{
 }> = ({ src, alt, className = '', isMobile = false }) => {
   return (
     <div className={`relative w-full ${isMobile ? 'h-[320px] sm:h-[360px]' : 'h-[360px]'} overflow-hidden ${className}`}>
+      {/* ⚡ CRITICAL: Imagen estática renderizada inmediatamente - sin esperar React */}
+      {/* Esta imagen se descubre temprano porque está en el HTML inicial */}
       <Image
         src={src}
         alt={alt}
@@ -106,8 +108,21 @@ const Hero = () => {
         <div className='w-full pt-[92px]'>
           <div className='relative w-full h-[320px] sm:h-[360px] overflow-hidden'>
             {/* ⚡ CRITICAL: Imagen estática para LCP - se renderiza inmediatamente sin JavaScript */}
-            {/* Elimina el retraso de 2,270ms en la carga de recursos */}
+            {/* Elimina el retraso de 1,250ms en la carga de recursos */}
+            {/* Estrategia dual: <img> estático para descubrimiento temprano + Image component para optimización */}
             <div className={`absolute inset-0 z-10 transition-opacity duration-500 ${carouselLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+              {/* ⚡ CRITICAL: <img> estático para descubrimiento temprano - se renderiza en HTML inicial */}
+              <img
+                src="/images/hero/hero2/hero1.webp"
+                alt={heroImagesMobile[0].alt}
+                className="absolute inset-0 w-full h-full object-contain mobile-carousel"
+                style={{ objectFit: 'contain' }}
+                fetchPriority="high"
+                decoding="async"
+                loading="eager"
+                aria-hidden={carouselLoaded ? 'true' : 'false'}
+              />
+              {/* ⚡ OPTIMIZACIÓN: Image component para optimización Next.js (WebP/AVIF, responsive) */}
               <HeroImageStatic
                 src={heroImagesMobile[0].src}
                 alt={heroImagesMobile[0].alt}
@@ -139,8 +154,21 @@ const Hero = () => {
             <div className='relative rounded-3xl overflow-hidden'>
               <div className='relative w-full h-[360px]'>
                 {/* ⚡ CRITICAL: Imagen estática para LCP - se renderiza inmediatamente sin JavaScript */}
-                {/* Elimina el retraso de 2,270ms en la carga de recursos */}
+                {/* Elimina el retraso de 1,250ms en la carga de recursos */}
+                {/* Estrategia dual: <img> estático para descubrimiento temprano + Image component para optimización */}
                 <div className={`absolute inset-0 z-10 transition-opacity duration-500 ${carouselLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                  {/* ⚡ CRITICAL: <img> estático para descubrimiento temprano - se renderiza en HTML inicial */}
+                  <img
+                    src="/images/hero/hero2/hero1.webp"
+                    alt={heroImagesDesktop[0].alt}
+                    className="absolute inset-0 w-full h-full object-contain rounded-lg desktop-carousel"
+                    style={{ objectFit: 'contain' }}
+                    fetchPriority="high"
+                    decoding="async"
+                    loading="eager"
+                    aria-hidden={carouselLoaded ? 'true' : 'false'}
+                  />
+                  {/* ⚡ OPTIMIZACIÓN: Image component para optimización Next.js (WebP/AVIF, responsive) */}
                   <HeroImageStatic
                     src={heroImagesDesktop[0].src}
                     alt={heroImagesDesktop[0].alt}

@@ -22,20 +22,18 @@ const GoogleAnalytics: React.FC = () => {
   const [shouldLoad, setShouldLoad] = useState(false)
 
   // ⚡ CRITICAL: Cargar analytics solo después de LCP y primera interacción del usuario
-  // Esto evita que analytics bloqueen la ruta crítica (5,863ms según Lighthouse)
+  // Esto evita que Google Tag Manager (153 KiB, 162 ms) bloquee la ruta crítica
   useEffect(() => {
     // Esperar a que el LCP se complete y el usuario interactúe
     const loadAfterLCP = () => {
-      // Verificar si LCP ya ocurrió (después de 2.5s o cuando hay interacción)
-      const hasInteracted = document.visibilityState === 'visible'
-      
       // Cargar después de LCP estimado (2.5s) o primera interacción
       const loadAnalytics = () => {
         setShouldLoad(true)
       }
 
-      // Opción 1: Cargar después de interacción del usuario
-      const events = ['mousedown', 'touchstart', 'keydown', 'scroll']
+      // ⚡ OPTIMIZACIÓN: Cargar después de interacción del usuario (más agresivo)
+      // Esto asegura que el contenido principal se carga primero
+      const events = ['mousedown', 'touchstart', 'keydown', 'scroll', 'pointerdown']
       const onInteraction = () => {
         loadAnalytics()
         // ⚡ NOTA: No es necesario removeEventListener porque once: true lo hace automáticamente
@@ -45,8 +43,9 @@ const GoogleAnalytics: React.FC = () => {
         document.addEventListener(event, onInteraction, { passive: true, once: true })
       })
 
-      // Opción 2: Cargar después de delay si no hay interacción
-      setTimeout(loadAnalytics, 3000) // 3 segundos después de carga inicial
+      // ⚡ OPTIMIZACIÓN: Aumentar delay a 4 segundos para dar más tiempo al contenido principal
+      // Google Tag Manager es pesado (153 KiB), mejor cargarlo después de que todo esté listo
+      setTimeout(loadAnalytics, 4000) // 4 segundos después de carga inicial (vs 3s anterior)
     }
 
     // Esperar a que el DOM esté listo

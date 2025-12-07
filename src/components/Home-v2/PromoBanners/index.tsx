@@ -11,6 +11,7 @@ export interface PromoBannersProps {
 
 const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set())
 
   const banners = [
     {
@@ -91,7 +92,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                 >
                   {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
                   <div 
-                    className='absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0'
+                    className={`absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                     aria-hidden="true"
                   />
                   
@@ -105,7 +106,11 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     sizes='(max-width: 768px) 100vw, 1200px'
                     priority={banner.id === 1}
                     loading={banner.id === 1 ? undefined : 'lazy'}
+                    quality={65} // ⚡ OPTIMIZACIÓN: Reducido de 75 a 65 para ahorrar 20.9 KiB (Lighthouse)
                     style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito
+                    onLoad={() => {
+                      setImagesLoaded(prev => new Set(prev).add(banner.id))
+                    }}
                   />
                   
                   {/* Gradient Overlay */}
@@ -140,7 +145,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                 >
                   {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
                   <div 
-                    className='absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0'
+                    className={`absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                     aria-hidden="true"
                   />
                   
@@ -151,7 +156,11 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     className='object-cover z-10'
                     sizes='(max-width: 768px) 100vw, 1200px'
                     loading='lazy'
+                    quality={65} // ⚡ OPTIMIZACIÓN: Reducido de 75 a 65 para ahorrar tamaño
                     style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito
+                    onLoad={() => {
+                      setImagesLoaded(prev => new Set(prev).add(banner.id))
+                    }}
                   />
                   
                   {/* Gradient Overlay */}

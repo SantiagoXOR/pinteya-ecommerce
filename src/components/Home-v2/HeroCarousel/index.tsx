@@ -153,6 +153,7 @@ const HeroCarousel = () => {
           </button>
 
           {/* Indicadores (dots) - Estilo Mercado Libre */}
+          {/* ⚡ OPTIMIZACIÓN: Animaciones compositables (transform + opacity) en lugar de width/background-color/box-shadow */}
           <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2 sm:gap-3">
             {heroSlides.map((_, index) => {
               // Calcular el índice real de la slide actual (quitando los clones)
@@ -160,17 +161,33 @@ const HeroCarousel = () => {
               if (currentIndex === 0) realIndex = heroSlides.length - 1
               if (currentIndex === extendedSlides.length - 1) realIndex = 0
               
+              const isActive = realIndex === index
+              
               return (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`
-                    transition-all duration-300 rounded-full
-                    ${realIndex === index 
-                      ? 'bg-white w-6 sm:w-8 h-2 sm:h-2.5 shadow-md' 
-                      : 'bg-white/60 hover:bg-white/80 w-2 sm:w-2.5 h-2 sm:h-2.5'
+                  className="relative w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white/60 overflow-hidden"
+                  style={{
+                    // ⚡ OPTIMIZACIÓN: Usar transform: scaleX() en lugar de width (propiedad compositable)
+                    transform: isActive ? 'scaleX(3)' : 'scaleX(1)',
+                    // ⚡ OPTIMIZACIÓN: Usar opacity para cambio de color (propiedad compositable)
+                    opacity: isActive ? 1 : 0.6,
+                    // ⚡ OPTIMIZACIÓN: Transiciones solo en propiedades compositables
+                    transition: 'transform 300ms ease-in-out, opacity 300ms ease-in-out',
+                    // ⚡ OPTIMIZACIÓN: will-change para mejor rendimiento
+                    willChange: 'transform, opacity',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.opacity = '0.8'
                     }
-                  `}
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.opacity = '0.6'
+                    }
+                  }}
                   aria-label={`Ir al slide ${index + 1}`}
                 />
               )
