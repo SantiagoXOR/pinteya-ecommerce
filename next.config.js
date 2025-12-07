@@ -157,6 +157,7 @@ const nextConfig = {
         maxSize: 150000, // 150 KB máximo (reducido de 200 KB para evitar tareas largas)
         minSize: 20000, // 20 KB mínimo
         maxAsyncRequests: 30,
+        // ⚡ FIX: maxInitialRequests definido una sola vez (25 para evitar demasiados requests iniciales)
         maxInitialRequests: 25, // ⚡ Reducido de 30 para evitar demasiados requests iniciales
         cacheGroups: {
           // Framework core (React, Next.js) - Separado pero optimizado
@@ -246,8 +247,9 @@ const nextConfig = {
             reuseExistingChunk: true,
           },
         },
-        maxInitialRequests: 30, // ⚡ Aumentado de 25
-        minSize: 10000, // ⚡ Reducido de 20000 (10 KB mínimo)
+        // ⚡ FIX: maxInitialRequests y minSize ya están definidos arriba (líneas 160 y 158)
+        // No duplicar aquí para evitar conflictos
+        // minSize: 20000 está definido en línea 158 (20 KB mínimo)
       }
     }
 
