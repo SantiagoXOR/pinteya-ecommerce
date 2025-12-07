@@ -20,48 +20,9 @@ const StructuredData = dynamic(() => import('@/components/SEO/StructuredData'), 
   ssr: true, // SSR para SEO
 })
 
-// ⚡ PERFORMANCE: Componentes no críticos (lazy load después de FCP)
-// Analytics y tracking se cargan después de interacción del usuario
-const GoogleAnalytics = dynamic(() => import('@/components/Analytics/GoogleAnalytics'), {
-  ssr: false,
-  loading: () => null,
-})
-const MetaPixel = dynamic(() => import('@/components/Analytics/MetaPixel'), {
-  ssr: false,
-  loading: () => null,
-})
-const GoogleAds = dynamic(() => import('@/components/Analytics/GoogleAds'), {
-  ssr: false,
-  loading: () => null,
-})
-
-// ⚡ PERFORMANCE: Performance tracking y optimizaciones (lazy load)
-const ClientErrorSuppression = dynamic(() => import('@/components/ErrorSuppression/ClientErrorSuppression').then(m => ({ default: m.ClientErrorSuppression })), {
-  ssr: false,
-  loading: () => null,
-})
-const PerformanceTracker = dynamic(() => import('@/components/PerformanceTracker'), {
-  ssr: false,
-  loading: () => null,
-})
-const DeferredCSS = dynamic(() => import('@/components/Performance/DeferredCSS').then(m => ({ default: m.DeferredCSS })), {
-  ssr: false,
-  loading: () => null,
-})
-const NonBlockingCSS = dynamic(() => import('@/components/Performance/NonBlockingCSS').then(m => ({ default: m.NonBlockingCSS })), {
-  ssr: false,
-  loading: () => null,
-})
-
-// ⚡ PERFORMANCE: Vercel Analytics - Lazy load (solo en producción)
-const Analytics = dynamic(() => import('@vercel/analytics/react').then(m => ({ default: m.Analytics })), {
-  ssr: false,
-  loading: () => null,
-})
-const SpeedInsights = dynamic(() => import('@vercel/speed-insights/next').then(m => ({ default: m.SpeedInsights })), {
-  ssr: false,
-  loading: () => null,
-})
+// ⚡ FIX Next.js 15: Componentes con ssr: false deben estar en Client Components
+// Mover todos los dynamic imports con ssr: false a un componente cliente
+import ClientAnalytics from '@/components/Performance/ClientAnalytics'
 
 // ⚡ PERFORMANCE: Structured data - Import estático para SSR (necesario para SEO)
 import {
@@ -389,34 +350,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <StructuredData
           data={[organizationStructuredData, websiteStructuredData, storeStructuredData]}
         />
-        <GoogleAnalytics />
-        <MetaPixel />
-        <GoogleAds />
       </head>
       <body>
-        <ClientErrorSuppression />
-        {/* <JsonSafetyInitializer /> */}
-        {/* <DebugNotificationDisabler /> */}
-        <PerformanceTracker />
-        
-        {/* ⚡ CRITICAL: Convertir CSS de Next.js a carga no bloqueante (ejecutar primero) */}
-        <NonBlockingCSS />
-        
-        {/* ⚡ PERFORMANCE: CSS no crítico carga diferidamente después del FCP */}
-        <DeferredCSS />
+        {/* ⚡ FIX Next.js 15: Todos los componentes con ssr: false están en ClientAnalytics */}
+        <ClientAnalytics />
         
         {/* Suspense global para componentes compartidos que usan useSearchParams (Header/Search) */}
         <Suspense fallback={null}>
           <Providers>{children}</Providers>
         </Suspense>
-        
-        {/* Vercel Analytics - Solo en producción */}
-        {process.env.NODE_ENV === 'production' && (
-          <>
-            <Analytics />
-            <SpeedInsights />
-          </>
-        )}
       </body>
     </html>
   )
