@@ -12,17 +12,28 @@ import { getSupabaseClient } from '@/lib/integrations/supabase'
 // GET /sitemap.xml - Servir sitemap dinámico
 // ===================================
 
+// ⚡ FIX VERCEL: Marcar como dinámico para permitir acceso a headers en runtime
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
-    logger.info(
-      LogLevel.INFO,
-      'Dynamic sitemap.xml requested',
-      {
-        userAgent: request.headers.get('user-agent'),
-        referer: request.headers.get('referer'),
-      },
-      LogCategory.SEO
-    )
+    // ⚡ FIX VERCEL: Solo acceder a headers si están disponibles (no durante build)
+    // Esto evita el error "Dynamic server usage: Route /sitemap.xml couldn't be rendered statically"
+    const userAgent = request.headers.get('user-agent') || undefined
+    const referer = request.headers.get('referer') || undefined
+
+    // Solo loguear si estamos en runtime (no durante build)
+    if (userAgent || referer) {
+      logger.info(
+        LogLevel.INFO,
+        'Dynamic sitemap.xml requested',
+        {
+          userAgent,
+          referer,
+        },
+        LogCategory.SEO
+      )
+    }
 
     // Generar sitemap XML completo
     const xmlContent = await generateCompleteSitemapXML()
