@@ -97,12 +97,16 @@ const nextConfig = {
     // ⚡ FIX: Asegurar que React esté disponible globalmente en el cliente
     if (!isServer) {
       // Asegurar que React esté disponible en el scope global
+      // Combinar todos los alias en un solo bloque para evitar sobrescritura
       config.resolve.alias = {
         ...config.resolve.alias,
         'react': require.resolve('react'),
         'react-dom': require.resolve('react-dom'),
         'react/jsx-runtime': require.resolve('react/jsx-runtime'),
         'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+        // Configuración específica para NextAuth v5
+        'next-auth/react$': require.resolve('next-auth/react'),
+        'next-auth$': require.resolve('next-auth'),
       }
       
       config.resolve.fallback = {
@@ -110,15 +114,6 @@ const nextConfig = {
         fs: false,
         net: false,
         tls: false,
-      }
-    }
-
-    // Configuración específica para NextAuth v5 - Método alternativo
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'next-auth/react$': require.resolve('next-auth/react'),
-        'next-auth$': require.resolve('next-auth'),
       }
     }
 
