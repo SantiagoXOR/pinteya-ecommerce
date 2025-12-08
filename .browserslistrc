@@ -1,6 +1,7 @@
-# ⚡ OPTIMIZACIÓN: Navegadores modernos para reducir JavaScript heredado
+# ⚡ OPTIMIZACIÓN: Balance entre navegadores modernos y compatibilidad
 # Esto permite usar características ES2021+ sin transpilación innecesaria
 # Ahorro estimado: ~11.7 KiB en código propio
+# Mantiene soporte para dispositivos más antiguos que aún están en uso
 
 # Navegadores modernos que soportan ES2021+ nativamente
 # Esto elimina polyfills para:
@@ -10,28 +11,34 @@
 # - Promise.allSettled, Promise.any
 # - Y más características modernas
 
-# Chrome/Edge (últimas 2 versiones)
-last 2 Chrome versions
-last 2 Edge versions
+# Desktop Browsers (últimas 3-4 versiones para mejor compatibilidad)
+# Chrome/Edge: Últimas 3 versiones (cubre ~98% de usuarios desktop)
+last 3 Chrome versions
+last 3 Edge versions
 
-# Firefox (últimas 2 versiones)
-last 2 Firefox versions
+# Firefox: Últimas 3 versiones
+last 3 Firefox versions
 
-# Safari (últimas 2 versiones)
-last 2 Safari versions
+# Safari: Últimas 3 versiones (importante para usuarios Mac)
+last 3 Safari versions
 
-# iOS Safari (últimas 2 versiones)
-last 2 iOS versions
+# Mobile Browsers (más inclusivo para dispositivos antiguos)
+# iOS Safari: Últimas 3 versiones + iOS 14+ (cubre dispositivos iPhone 6s+)
+last 3 iOS versions
+iOS >= 14
 
-# Android Chrome (últimas 2 versiones)
+# Android Chrome: Últimas 3 versiones + Android 10+ (cubre mayoría de dispositivos activos)
 # ⚡ FIX: Usar sintaxis correcta de browserslist (and_chr en lugar de Android)
-last 2 and_chr versions
+last 3 and_chr versions
+Android >= 10
 
-# Samsung Internet (última versión)
+# Samsung Internet: Últimas 2 versiones (menor uso pero importante en algunos mercados)
 # ⚡ FIX: Usar minúsculas para samsung (samsung en lugar de Samsung)
-last 1 samsung versions
+last 2 samsung versions
 
-# Nota: Esto reduce el soporte para navegadores muy antiguos
-# pero la mayoría de usuarios usa navegadores modernos
-# Si necesitas soportar navegadores antiguos, ajusta esta configuración
+# Nota: Esta configuración balancea optimización y compatibilidad
+# - Desktop: Soporta ~98% de usuarios con navegadores modernos
+# - Mobile: Incluye dispositivos más antiguos que aún están en uso activo
+# - Mantiene optimizaciones ES2021+ para la mayoría de usuarios
+# - Asegura funcionalidad en dispositivos Android/iOS más antiguos
 
