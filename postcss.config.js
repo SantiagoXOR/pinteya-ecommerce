@@ -31,10 +31,12 @@ module.exports = {
                 normalizeWhitespace: true, // Normalizar espacios en blanco
                 minifyFontValues: true, // Minificar valores de fuentes
                 minifySelectors: true, // Minificar selectores
-                // ⚡ CRITICAL: Eliminar CSS sin usar más agresivamente
-                discardUnused: true, // Eliminar reglas @keyframes y @counter-style sin usar
-                discardEmpty: true, // Eliminar reglas vacías
-                discardDuplicates: true, // Eliminar reglas duplicadas
+                // ⚡ FIX: discardUnused deshabilitado - NO SEGURO con code-splitting de CSS
+                // discardUnused puede eliminar @keyframes que están en un chunk pero se usan en otro
+                // Esto rompería animaciones cuando CSS está dividido en múltiples chunks (Next.js)
+                discardUnused: false, // ⚡ DESHABILITADO: Inseguro con CSS code-splitting
+                discardEmpty: true, // Eliminar reglas vacías (seguro)
+                discardDuplicates: true, // Eliminar reglas duplicadas (seguro)
                 // Configuración conservadora para evitar romper estilos
                 calc: false, // No optimizar calc() automáticamente
                 zindex: false, // No modificar z-index (puede romper jerarquía)
