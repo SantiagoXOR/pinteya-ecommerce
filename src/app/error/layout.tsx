@@ -1,9 +1,9 @@
-// ⚡ FIX VERCEL: Layout para forzar renderizado estático
-// Esto asegura que Vercel trate esta ruta como página estática, no como lambda
+// ⚡ FIX VERCEL: Layout para forzar renderizado dinámico
+// Esto asegura que Vercel trate esta ruta como lambda explícitamente
 import React from 'react'
 
-export const dynamic = 'force-static'
-export const revalidate = false
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function ErrorLayout({
   children,
@@ -12,3 +12,4 @@ export default function ErrorLayout({
 }) {
   return <>{children}</>
 }
+
