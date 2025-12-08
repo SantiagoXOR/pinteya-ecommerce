@@ -97,13 +97,16 @@ const nextConfig = {
     // ⚡ FIX: Asegurar que React esté disponible globalmente (cliente Y servidor)
     // Aplicar alias tanto en cliente como en servidor para resolver react/jsx-runtime
     const reactPath = require.resolve('react')
+    const reactDomPath = require.resolve('react-dom')
     const reactJsxRuntimePath = require.resolve('react/jsx-runtime')
     const reactJsxDevRuntimePath = require.resolve('react/jsx-dev-runtime')
     
+    // ⚡ CRITICAL: Asegurar que los alias se apliquen correctamente
+    // Usar paths absolutos para evitar problemas de resolución
     config.resolve.alias = {
-      ...config.resolve.alias,
+      ...(config.resolve.alias || {}),
       'react': reactPath,
-      'react-dom': require.resolve('react-dom'),
+      'react-dom': reactDomPath,
       'react/jsx-runtime': reactJsxRuntimePath,
       'react/jsx-dev-runtime': reactJsxDevRuntimePath,
       // Configuración específica para NextAuth v5 (solo cliente)
@@ -113,10 +116,21 @@ const nextConfig = {
       }),
     }
     
-    // ⚡ FIX: Asegurar que webpack pueda resolver react/jsx-runtime correctamente
+    // ⚡ FIX: Asegurar que webpack pueda resolver módulos correctamente
+    // Priorizar node_modules local sobre otros paths
     config.resolve.modules = [
-      ...(config.resolve.modules || []),
       'node_modules',
+      ...(config.resolve.modules || []).filter(m => m !== 'node_modules'),
+    ]
+    
+    // ⚡ FIX: Asegurar que las extensiones se resuelvan correctamente
+    config.resolve.extensions = [
+      '.js',
+      '.jsx',
+      '.ts',
+      '.tsx',
+      '.json',
+      ...(config.resolve.extensions || []),
     ]
     
     // Resolver problemas de hidratación y carga dinámica (solo cliente)
