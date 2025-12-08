@@ -15,16 +15,14 @@ const nextConfig = {
     return `build-${Date.now()}`
   },
 
-  // ✅ ESLint configuration - Temporalmente deshabilitado para investigar errores
-  eslint: {
-    ignoreDuringBuilds: true,
-    dirs: ['src'],
-  },
-
   // ✅ TypeScript configuration - Temporalmente deshabilitado para investigar errores
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // ⚡ FIX Next.js 16: Turbopack está habilitado por defecto
+  // Agregar configuración vacía para silenciar el error cuando usamos webpack
+  turbopack: {},
 
   // ⚡ FIX VERCEL: output: 'standalone' removido - NO compatible con Vercel
   // 'standalone' es para Docker/containers, Vercel maneja Next.js automáticamente
