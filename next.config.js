@@ -94,21 +94,23 @@ const nextConfig = {
 
   // ✅ Configuración de webpack para resolver el error de 'call'
   webpack: (config, { dev, isServer }) => {
-    // ⚡ FIX: Asegurar que React esté disponible globalmente en el cliente
-    if (!isServer) {
-      // Asegurar que React esté disponible en el scope global
-      // Combinar todos los alias en un solo bloque para evitar sobrescritura
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'react': require.resolve('react'),
-        'react-dom': require.resolve('react-dom'),
-        'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-        'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
-        // Configuración específica para NextAuth v5
+    // ⚡ FIX: Asegurar que React esté disponible globalmente (cliente Y servidor)
+    // Aplicar alias tanto en cliente como en servidor para resolver react/jsx-runtime
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'react': require.resolve('react'),
+      'react-dom': require.resolve('react-dom'),
+      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+      'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+      // Configuración específica para NextAuth v5 (solo cliente)
+      ...(!isServer && {
         'next-auth/react$': require.resolve('next-auth/react'),
         'next-auth$': require.resolve('next-auth'),
-      }
-      
+      }),
+    }
+    
+    // Resolver problemas de hidratación y carga dinámica (solo cliente)
+    if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
