@@ -1,7 +1,7 @@
 'use client'
 
-// ⚡ FIX: Client Components no pueden exportar 'dynamic' (solo Server Components)
-// El renderizado dinámico se maneja automáticamente en Client Components
+// Forzar renderizado dinámico para evitar problemas con prerendering
+export const dynamic = 'force-dynamic'
 import React, { useEffect, useState } from 'react'
 import {
   Package,
