@@ -167,7 +167,7 @@ export function UserDashboard() {
         <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6'>
           <div className='flex items-center justify-between mb-4'>
             <h2 className='text-lg font-semibold text-gray-900'>Órdenes Recientes</h2>
-            <Link href='/orders' className='text-sm text-blue-600 hover:text-blue-800'>
+            <Link href='/mis-ordenes' className='text-sm text-blue-600 hover:text-blue-800'>
               Ver todas
             </Link>
           </div>
