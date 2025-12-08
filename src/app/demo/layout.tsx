@@ -1,7 +1,7 @@
-// ⚡ FIX VERCEL: Layout para forzar renderizado estático de todas las rutas /demo/*
-// Esto asegura que Vercel trate estas rutas como páginas estáticas, no como lambdas
-export const dynamic = 'force-static'
-export const revalidate = false
+// ⚡ FIX VERCEL: Layout para forzar renderizado dinámico de todas las rutas /demo/*
+// Cambiado a force-dynamic para que Vercel trate estas rutas como lambdas explícitamente
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function DemoLayout({
   children,
