@@ -1,6 +1,6 @@
 'use client'
 
-// Forzar renderizado dinΓö£├¡mico para evitar problemas con prerendering
+// Forzar renderizado din├ímico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
 import React, { useEffect, useState } from 'react'
 import {
@@ -102,11 +102,11 @@ export default function OrdersPage() {
     fetchOrders()
   }, [])
 
-  // Filtrar Γö£Γöérdenes cuando cambian los filtros
+  // Filtrar ├│rdenes cuando cambian los filtros
   useEffect(() => {
     let filtered = orders
 
-    // Filtrar por tΓö£ΓîÉrmino de bΓö£Γòæsqueda
+    // Filtrar por t├⌐rmino de b├║squeda
     if (searchTerm) {
       filtered = filtered.filter(
         order =>
@@ -136,10 +136,10 @@ export default function OrdersPage() {
         setOrders(data.data)
         setFilteredOrders(data.data)
       } else {
-        setError(data.error || 'Error al cargar Γö£Γöérdenes')
+        setError(data.error || 'Error al cargar ├│rdenes')
       }
     } catch (err) {
-      setError('Error de conexiΓö£Γöén')
+      setError('Error de conexi├│n')
     } finally {
       setLoading(false)
     }
@@ -163,10 +163,10 @@ export default function OrdersPage() {
         setIsDetailsDialogOpen(true)
       } else {
         console.error('Error al obtener detalles:', data.error)
-        // AquΓö£┬í podrΓö£┬ías mostrar un toast o notificaciΓö£Γöén de error
+        // Aqu├¡ podr├¡as mostrar un toast o notificaci├│n de error
       }
     } catch (error) {
-      console.error('Error de conexiΓö£Γöén:', error)
+      console.error('Error de conexi├│n:', error)
     } finally {
       setLoadingDetails(false)
     }
@@ -186,7 +186,7 @@ export default function OrdersPage() {
     updated_at: order.updated_at,
   })
 
-  // Obtener estadΓö£┬ísticas de Γö£Γöérdenes
+  // Obtener estad├¡sticas de ├│rdenes
   const getOrderStats = () => {
     const stats = {
       total: orders.length,
@@ -244,7 +244,7 @@ export default function OrdersPage() {
         <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blaze-orange-600 mx-auto'></div>
-            <p className='mt-4 text-gray-600'>Cargando tus Γö£Γöérdenes...</p>
+            <p className='mt-4 text-gray-600'>Cargando tus ├│rdenes...</p>
           </div>
         </div>
       </div>
@@ -278,7 +278,7 @@ export default function OrdersPage() {
         <div className='mb-8'>
           <div className='flex items-center justify-between'>
             <div>
-              <h1 className='text-3xl font-bold text-gray-900 mb-2'>Mis Γö£├┤rdenes</h1>
+              <h1 className='text-3xl font-bold text-gray-900 mb-2'>Mis ├ôrdenes</h1>
               <p className='text-gray-600'>Historial completo de tus compras</p>
             </div>
             <Button onClick={fetchOrders} variant='outline' disabled={loading}>
@@ -287,7 +287,7 @@ export default function OrdersPage() {
             </Button>
           </div>
 
-          {/* EstadΓö£┬ísticas */}
+          {/* Estad├¡sticas */}
           <div className='grid grid-cols-2 md:grid-cols-5 gap-4 mt-6'>
             <Card>
               <CardContent className='p-4'>
@@ -322,7 +322,7 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Filtros y bΓö£Γòæsqueda */}
+        {/* Filtros y b├║squeda */}
         <Card className='mb-6'>
           <CardContent className='p-6'>
             <div className='flex flex-col md:flex-row gap-4'>
@@ -330,7 +330,7 @@ export default function OrdersPage() {
                 <div className='relative'>
                   <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
                   <Input
-                    placeholder='Buscar por nΓö£Γòæmero de orden, tracking o producto...'
+                    placeholder='Buscar por n├║mero de orden, tracking o producto...'
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     className='pl-10'
@@ -361,8 +361,8 @@ export default function OrdersPage() {
           <Card>
             <CardContent className='p-12 text-center'>
               <Filter className='h-12 w-12 mx-auto text-gray-400 mb-4' />
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>No se encontraron Γö£Γöérdenes</h3>
-              <p className='text-gray-600 mb-4'>Intenta ajustar los filtros de bΓö£Γòæsqueda</p>
+              <h3 className='text-lg font-medium text-gray-900 mb-2'>No se encontraron ├│rdenes</h3>
+              <p className='text-gray-600 mb-4'>Intenta ajustar los filtros de b├║squeda</p>
               <Button
                 variant='outline'
                 onClick={() => {
@@ -377,8 +377,8 @@ export default function OrdersPage() {
         ) : orders.length === 0 ? (
           <div className='text-center py-12'>
             <Package className='mx-auto h-12 w-12 text-gray-400 mb-4' />
-            <h3 className='text-lg font-medium text-gray-900 mb-2'>No tienes Γö£Γöérdenes aΓö£Γòæn</h3>
-            <p className='text-gray-600 mb-6'>Cuando realices tu primera compra, aparecerΓö£├¡ aquΓö£┬í</p>
+            <h3 className='text-lg font-medium text-gray-900 mb-2'>No tienes ├│rdenes a├║n</h3>
+            <p className='text-gray-600 mb-6'>Cuando realices tu primera compra, aparecer├í aqu├¡</p>
             <Link
               href='/shop'
               className='inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blaze-orange-600 hover:bg-blaze-orange-700 transition-colors'
@@ -473,7 +473,7 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {/* DiΓö£├¡logo de tracking */}
+        {/* Di├ílogo de tracking */}
         <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
           <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
             <DialogHeader>
@@ -486,29 +486,29 @@ export default function OrdersPage() {
           </DialogContent>
         </Dialog>
 
-        {/* DiΓö£├¡logo de detalles de orden */}
+        {/* Di├ílogo de detalles de orden */}
         <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
           <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
             <DialogHeader>
               <DialogTitle>Detalles de la Orden</DialogTitle>
-              <DialogDescription>InformaciΓö£Γöén completa de tu pedido</DialogDescription>
+              <DialogDescription>Informaci├│n completa de tu pedido</DialogDescription>
             </DialogHeader>
             {orderDetails && (
               <div className='space-y-6'>
-                {/* InformaciΓö£Γöén general */}
+                {/* Informaci├│n general */}
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <Card>
                     <CardHeader>
-                      <CardTitle className='text-lg'>InformaciΓö£Γöén de la Orden</CardTitle>
+                      <CardTitle className='text-lg'>Informaci├│n de la Orden</CardTitle>
                     </CardHeader>
                     <CardContent className='space-y-3'>
                       <div>
-                        <span className='text-sm font-medium text-gray-600'>NΓö£Γòæmero de Orden:</span>
+                        <span className='text-sm font-medium text-gray-600'>N├║mero de Orden:</span>
                         <p className='text-sm text-gray-900'>#{orderDetails.external_reference}</p>
                       </div>
                       <div>
                         <span className='text-sm font-medium text-gray-600'>
-                          Fecha de CreaciΓö£Γöén:
+                          Fecha de Creaci├│n:
                         </span>
                         <p className='text-sm text-gray-900'>
                           {formatDate(orderDetails.created_at)}
@@ -516,7 +516,7 @@ export default function OrdersPage() {
                       </div>
                       <div>
                         <span className='text-sm font-medium text-gray-600'>
-                          Γö£├£ltima ActualizaciΓö£Γöén:
+                          ├Ültima Actualizaci├│n:
                         </span>
                         <p className='text-sm text-gray-900'>
                           {formatDate(orderDetails.updated_at)}
@@ -543,11 +543,11 @@ export default function OrdersPage() {
                     </CardContent>
                   </Card>
 
-                  {/* InformaciΓö£Γöén del comprador */}
+                  {/* Informaci├│n del comprador */}
                   {orderDetails.payer_info && (
                     <Card>
                       <CardHeader>
-                        <CardTitle className='text-lg'>InformaciΓö£Γöén del Comprador</CardTitle>
+                        <CardTitle className='text-lg'>Informaci├│n del Comprador</CardTitle>
                       </CardHeader>
                       <CardContent className='space-y-3'>
                         {orderDetails.payer_info.email && (
@@ -569,7 +569,7 @@ export default function OrdersPage() {
                         )}
                         {orderDetails.payer_info.phone && (
                           <div>
-                            <span className='text-sm font-medium text-gray-600'>TelΓö£ΓîÉfono:</span>
+                            <span className='text-sm font-medium text-gray-600'>Tel├⌐fono:</span>
                             <p className='text-sm text-gray-900'>
                               {typeof orderDetails.payer_info.phone === 'string'
                                 ? orderDetails.payer_info.phone
@@ -580,7 +580,7 @@ export default function OrdersPage() {
                         {orderDetails.payer_info.identification && (
                           <div>
                             <span className='text-sm font-medium text-gray-600'>
-                              IdentificaciΓö£Γöén:
+                              Identificaci├│n:
                             </span>
                             <p className='text-sm text-gray-900'>
                               {orderDetails.payer_info.identification.type}:{' '}
@@ -593,11 +593,11 @@ export default function OrdersPage() {
                   )}
                 </div>
 
-                {/* DirecciΓö£Γöén de envΓö£┬ío */}
+                {/* Direcci├│n de env├¡o */}
                 {orderDetails.shipping_address ? (
                   <Card>
                     <CardHeader>
-                      <CardTitle className='text-lg'>DirecciΓö£Γöén de EnvΓö£┬ío</CardTitle>
+                      <CardTitle className='text-lg'>Direcci├│n de Env├¡o</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className='text-sm text-gray-900'>
@@ -622,12 +622,12 @@ export default function OrdersPage() {
                 ) : (
                   <Card>
                     <CardHeader>
-                      <CardTitle className='text-lg'>InformaciΓö£Γöén de Entrega</CardTitle>
+                      <CardTitle className='text-lg'>Informaci├│n de Entrega</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className='text-sm text-gray-600 italic'>
-                        <p>Γëí╞Æ├┤┬¬ Retiro en tienda o informaciΓö£Γöén de envΓö£┬ío no disponible</p>
-                        <p className='mt-2'>Para consultas sobre el envΓö£┬ío, contacta al vendedor.</p>
+                        <p>≡ƒôª Retiro en tienda o informaci├│n de env├¡o no disponible</p>
+                        <p className='mt-2'>Para consultas sobre el env├¡o, contacta al vendedor.</p>
                       </div>
                     </CardContent>
                   </Card>
