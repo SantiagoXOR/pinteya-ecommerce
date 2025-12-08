@@ -10,7 +10,7 @@ import { SimplePageLoading } from '@/components/ui/simple-page-loading'
 import { trackProductView } from '@/lib/google-analytics'
 import { trackViewContent } from '@/lib/meta-pixel'
 
-// Mapea el producto de API al formato mínimo que consume el modal
+// Mapea el producto de API al formato m├¡nimo que consume el modal
 function mapToModalProduct(apiProduct: any) {
   if (!apiProduct) return null
 
@@ -27,7 +27,7 @@ function mapToModalProduct(apiProduct: any) {
       ? originalCandidate
       : Number(String(originalCandidate))
 
-  // Precio con descuento explícito si está disponible
+  // Precio con descuento expl├¡cito si est├í disponible
   const discountedCandidate =
     (apiProduct as any)?.discounted_price ??
     (apiProduct as any)?.default_variant?.price_sale
@@ -56,7 +56,7 @@ function mapToModalProduct(apiProduct: any) {
     stock: Number.isFinite(stockNum) ? stockNum : 0,
     description: (apiProduct as any)?.description || '',
     slug: (apiProduct as any)?.slug,
-    // Incluir variantes si están disponibles para que el modal las use
+    // Incluir variantes si est├ín disponibles para que el modal las use
     variants: (apiProduct as any)?.variants || [],
     has_variants: (apiProduct as any)?.has_variants || false,
     default_variant: (apiProduct as any)?.default_variant || null,
@@ -91,16 +91,16 @@ export default function ProductDetailPage() {
     
     ;(async () => {
       try {
-        // Detectar si el parámetro es un ID numérico o un slug
+        // Detectar si el par├ímetro es un ID num├⌐rico o un slug
         const idNum = Number(productParam)
         const isNumericId = !isNaN(idNum) && idNum > 0 && productParam === String(idNum)
         
-        // Usar la función apropiada según el tipo de parámetro
+        // Usar la funci├│n apropiada seg├║n el tipo de par├ímetro
         const apiProduct = isNumericId 
           ? await getProductById(idNum)
           : await getProductBySlug(productParam)
         
-        // Verificar si el componente aún está montado
+        // Verificar si el componente a├║n est├í montado
         if (abortController.signal.aborted) return
         
         console.debug('[products/[slug]] Producto API (raw):', apiProduct)
@@ -110,7 +110,7 @@ export default function ProductDetailPage() {
             : apiProduct
         console.debug('[products/[slug]] Producto API (desempaquetado):', apiData)
         
-        // 🔄 REDIRECCIÓN 301: Si se accedió por ID y el producto tiene slug, redirigir a la ruta con slug
+        // ≡ƒöä REDIRECCI├ôN 301: Si se accedi├│ por ID y el producto tiene slug, redirigir a la ruta con slug
         if (isNumericId && apiData?.slug) {
           const newUrl = `/products/${apiData.slug}`
           console.debug('[products/[slug]] Redirigiendo de ID a slug:', newUrl)
@@ -122,7 +122,7 @@ export default function ProductDetailPage() {
         
         const mapped = mapToModalProduct(apiData)
         if (!mapped) {
-          console.warn('[products/[slug]] Producto vacío o sin datos. Verifica respuesta del API.')
+          console.warn('[products/[slug]] Producto vac├¡o o sin datos. Verifica respuesta del API.')
         }
         console.debug('[products/[slug]] Producto mapeado para modal:', mapped)
         
@@ -131,11 +131,11 @@ export default function ProductDetailPage() {
           setProduct(mapped)
         }
 
-        // 📊 ANALYTICS: Track product view
+        // ≡ƒôè ANALYTICS: Track product view
         if (mapped && mapped.id && mapped.name && !abortController.signal.aborted) {
           try {
             const price = mapped.discounted_price || mapped.price || 0
-            const category = apiData?.category?.name || apiData?.category || 'Sin categoría'
+            const category = apiData?.category?.name || apiData?.category || 'Sin categor├¡a'
             const productName = mapped.name || 'Producto'
             const productSlugForUrl = mapped.slug || apiData?.slug || productParam
             const productUrl = typeof window !== 'undefined' && productSlugForUrl 
@@ -175,7 +175,7 @@ export default function ProductDetailPage() {
       } catch (error) {
         if (!abortController.signal.aborted) {
           console.error('Error cargando producto', error)
-          // Si el producto no se encuentra, redirigir a 404 o página de error
+          // Si el producto no se encuentra, redirigir a 404 o p├ígina de error
           // router.push('/404')
         }
       } finally {
@@ -230,7 +230,7 @@ export default function ProductDetailPage() {
       {/* Spinner simple mientras carga */}
       {!product && <SimplePageLoading message="Cargando producto..." />}
       
-      {/* Cuando el producto esté cargado, mostrar spinner de fondo + modal */}
+      {/* Cuando el producto est├⌐ cargado, mostrar spinner de fondo + modal */}
       {product && (
         <>
           {/* Spinner simple como fondo para mantener el layout */}

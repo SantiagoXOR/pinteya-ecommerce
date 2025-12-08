@@ -24,50 +24,50 @@ export default function OrderDetailPage() {
     const customerName = searchParams.get('customerName')
     const total = searchParams.get('total')
 
-    console.log('🔍 DEBUG - Parámetros URL:', { message, customerName, total, orderId })
+    console.log('≡ƒöì DEBUG - Par├ímetros URL:', { message, customerName, total, orderId })
 
     let foundMessage = ''
     let foundOrderData: ParsedOrderData | null = null
 
-    // 1. Primero intentar desde parámetros URL (si vienen)
+    // 1. Primero intentar desde par├ímetros URL (si vienen)
     if (message) {
       // Decodificar el mensaje que viene de la URL
       try {
         foundMessage = decodeURIComponent(message)
       } catch (e) {
-        // Si falla la decodificación, usar el mensaje tal cual
+        // Si falla la decodificaci├│n, usar el mensaje tal cual
         foundMessage = message
       }
       foundOrderData = parseWhatsAppOrderMessage(foundMessage)
-      console.log('🔍 DEBUG - Mensaje desde URL (decodificado):', foundMessage)
+      console.log('≡ƒöì DEBUG - Mensaje desde URL (decodificado):', foundMessage)
     } else {
       // 2. Intentar desde localStorage con clave del orderId
       try {
-        console.log('🔍 DEBUG - Buscando en localStorage con clave:', `order_message_${orderId}`)
+        console.log('≡ƒöì DEBUG - Buscando en localStorage con clave:', `order_message_${orderId}`)
         const savedMessage = localStorage.getItem(`order_message_${orderId}`)
-        console.log('🔍 DEBUG - Mensaje desde localStorage:', savedMessage)
+        console.log('≡ƒöì DEBUG - Mensaje desde localStorage:', savedMessage)
         
-        // También buscar con otras posibles claves
+        // Tambi├⌐n buscar con otras posibles claves
         const allKeys = Object.keys(localStorage)
         const orderKeys = allKeys.filter(key => key.includes('order_message_'))
-        console.log('🔍 DEBUG - Todas las claves de orden en localStorage:', orderKeys)
+        console.log('≡ƒöì DEBUG - Todas las claves de orden en localStorage:', orderKeys)
         
-        // Buscar también en cashSuccessParams
+        // Buscar tambi├⌐n en cashSuccessParams
         const cashSuccessParams = localStorage.getItem('cashSuccessParams')
-        console.log('🔍 DEBUG - cashSuccessParams:', cashSuccessParams)
+        console.log('≡ƒöì DEBUG - cashSuccessParams:', cashSuccessParams)
         
-        // Buscar también en cashOrderData
+        // Buscar tambi├⌐n en cashOrderData
         const cashOrderData = localStorage.getItem('cashOrderData')
-        console.log('🔍 DEBUG - cashOrderData:', cashOrderData)
+        console.log('≡ƒöì DEBUG - cashOrderData:', cashOrderData)
         
-        // Buscar también en mercadopagoSuccessParams
+        // Buscar tambi├⌐n en mercadopagoSuccessParams
         const mercadopagoSuccessParams = localStorage.getItem('mercadopagoSuccessParams')
-        console.log('🔍 DEBUG - mercadopagoSuccessParams:', mercadopagoSuccessParams)
+        console.log('≡ƒöì DEBUG - mercadopagoSuccessParams:', mercadopagoSuccessParams)
         
         if (savedMessage) {
           foundMessage = savedMessage
           foundOrderData = parseWhatsAppOrderMessage(savedMessage)
-          console.log('🔍 DEBUG - Datos parseados desde localStorage:', foundOrderData)
+          console.log('≡ƒöì DEBUG - Datos parseados desde localStorage:', foundOrderData)
         } else if (cashSuccessParams) {
           // Intentar desde cashSuccessParams
           try {
@@ -75,7 +75,7 @@ export default function OrderDetailPage() {
             if (params.whatsappMessage) {
               foundMessage = params.whatsappMessage
               foundOrderData = parseWhatsAppOrderMessage(params.whatsappMessage)
-              console.log('🔍 DEBUG - Datos recuperados desde cashSuccessParams:', foundOrderData)
+              console.log('≡ƒöì DEBUG - Datos recuperados desde cashSuccessParams:', foundOrderData)
             }
           } catch (e) {
             console.warn('Error parseando cashSuccessParams:', e)
@@ -87,7 +87,7 @@ export default function OrderDetailPage() {
             if (data.whatsapp_message) {
               foundMessage = data.whatsapp_message
               foundOrderData = parseWhatsAppOrderMessage(data.whatsapp_message)
-              console.log('🔍 DEBUG - Datos recuperados desde cashOrderData:', foundOrderData)
+              console.log('≡ƒöì DEBUG - Datos recuperados desde cashOrderData:', foundOrderData)
             }
           } catch (e) {
             console.warn('Error parseando cashOrderData:', e)
@@ -99,7 +99,7 @@ export default function OrderDetailPage() {
             if (params.whatsappMessage) {
               foundMessage = params.whatsappMessage
               foundOrderData = parseWhatsAppOrderMessage(params.whatsappMessage)
-              console.log('🔍 DEBUG - Datos recuperados desde mercadopagoSuccessParams:', foundOrderData)
+              console.log('≡ƒöì DEBUG - Datos recuperados desde mercadopagoSuccessParams:', foundOrderData)
             }
           } catch (e) {
             console.warn('Error parseando mercadopagoSuccessParams:', e)
@@ -114,9 +114,9 @@ export default function OrderDetailPage() {
     if (foundMessage && foundOrderData) {
       setRawMessage(foundMessage)
       setOrderData(foundOrderData)
-      console.log('🔍 DEBUG - Usando datos completos del mensaje')
+      console.log('≡ƒöì DEBUG - Usando datos completos del mensaje')
     } else if (customerName || total) {
-      // 4. Si no hay mensaje pero tenemos datos básicos de la URL, crear datos básicos
+      // 4. Si no hay mensaje pero tenemos datos b├ísicos de la URL, crear datos b├ísicos
       setOrderData({
         orderNumber: orderId,
         total: total || '0',
@@ -133,9 +133,9 @@ export default function OrderDetailPage() {
         }],
         paymentMethod: 'Pago contra entrega'
       })
-      console.log('🔍 DEBUG - Usando datos básicos de URL')
+      console.log('≡ƒöì DEBUG - Usando datos b├ísicos de URL')
     } else {
-      // 5. Si no hay nada, crear datos básicos usando el orderId
+      // 5. Si no hay nada, crear datos b├ísicos usando el orderId
       setOrderData({
         orderNumber: orderId,
         total: '0',
@@ -152,7 +152,7 @@ export default function OrderDetailPage() {
         }],
         paymentMethod: 'Pago contra entrega'
       })
-      console.log('🔍 DEBUG - Usando datos básicos por defecto')
+      console.log('≡ƒöì DEBUG - Usando datos b├ísicos por defecto')
     }
 
     setLoading(false)
@@ -171,7 +171,7 @@ export default function OrderDetailPage() {
     )
   }
 
-  // Ya no necesitamos esta verificación porque siempre creamos datos básicos
+  // Ya no necesitamos esta verificaci├│n porque siempre creamos datos b├ísicos
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -190,14 +190,14 @@ export default function OrderDetailPage() {
               {!rawMessage && (
                 <div className="mt-2">
                   <Badge variant="outline" className="text-yellow-600 border-yellow-300">
-                    Información básica disponible
+                    Informaci├│n b├ísica disponible
                   </Badge>
                 </div>
               )}
               {rawMessage && (
                 <div className="mt-2">
                   <Badge variant="outline" className="text-green-600 border-green-300">
-                    Información completa disponible
+                    Informaci├│n completa disponible
                   </Badge>
                 </div>
               )}
@@ -222,14 +222,14 @@ export default function OrderDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-600">Número de Orden:</span>
+                <span className="text-sm font-medium text-gray-600">N├║mero de Orden:</span>
                 <Badge variant="outline" className="font-mono">
                   #{orderData.orderNumber || orderId}
                 </Badge>
               </div>
               {orderData.paymentMethod && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Método de Pago:</span>
+                  <span className="text-sm font-medium text-gray-600">M├⌐todo de Pago:</span>
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-gray-500" />
                     <span className="text-sm text-gray-900">{orderData.paymentMethod}</span>
@@ -246,13 +246,13 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Información del Cliente */}
+          {/* Informaci├│n del Cliente */}
           {(orderData.customerName || orderData.email || orderData.phone) && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="w-5 h-5" />
-                  Información del Cliente
+                  Informaci├│n del Cliente
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -278,7 +278,7 @@ export default function OrderDetailPage() {
                   <div className="flex items-center gap-3">
                     <Phone className="w-4 h-4 text-gray-500" />
                     <div>
-                      <span className="text-sm font-medium text-gray-600">Teléfono:</span>
+                      <span className="text-sm font-medium text-gray-600">Tel├⌐fono:</span>
                       <p className="text-sm text-gray-900">{orderData.phone}</p>
                     </div>
                   </div>
@@ -287,13 +287,13 @@ export default function OrderDetailPage() {
             </Card>
           )}
 
-          {/* Dirección de Envío */}
+          {/* Direcci├│n de Env├¡o */}
           {(orderData.address || orderData.city) && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
-                  Dirección de Envío
+                  Direcci├│n de Env├¡o
                 </CardTitle>
               </CardHeader>
               <CardContent>
