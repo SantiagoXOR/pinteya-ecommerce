@@ -140,7 +140,7 @@ export default function CheckoutSuccessPage() {
   }
 
   const handleViewOrder = () => {
-    router.push('/orders')
+    router.push('/mis-ordenes')
   }
 
   if (isLoading) {

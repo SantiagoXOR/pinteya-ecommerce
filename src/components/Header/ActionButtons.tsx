@@ -148,7 +148,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href='/orders'>
+                <Link href='/mis-ordenes'>
                   <Package className='mr-2 h-4 w-4' />
                   Mis Órdenes
                 </Link>

@@ -61,7 +61,7 @@ export default function DashboardPage() {
           value={0}
           icon={ShoppingBag}
           color='bg-blue-500'
-          href='/orders'
+          href='/mis-ordenes'
         />
         <StatCard title='Total Gastado' value='$0' icon={DollarSign} color='bg-green-500' />
         <StatCard
@@ -69,7 +69,7 @@ export default function DashboardPage() {
           value={0}
           icon={Clock}
           color='bg-yellow-500'
-          href='/orders'
+          href='/mis-ordenes'
         />
         <StatCard
           title='Sesiones Activas'
@@ -107,7 +107,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link
-            href='/orders'
+            href='/mis-ordenes'
             className='flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors'
           >
             <Package className='h-8 w-8 text-purple-500 mr-3' />

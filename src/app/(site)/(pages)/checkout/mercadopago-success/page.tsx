@@ -298,7 +298,7 @@ export default function MercadoPagoSuccessPage() {
       
       // Usar order_number si existe, sino usar orderId
       const displayOrderId = orderData?.order_number || orderId
-      router.push(`/orders/${displayOrderId}?${params.toString()}`)
+      router.push(`/mis-ordenes/${displayOrderId}?${params.toString()}`)
     }
   }
 

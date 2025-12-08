@@ -99,7 +99,7 @@ export function UserDashboard() {
           value={stats?.total_orders || 0}
           icon={ShoppingBag}
           color='bg-blue-500'
-          href='/orders'
+          href='/mis-ordenes'
         />
         <StatCard
           title='Total Gastado'
@@ -112,7 +112,7 @@ export function UserDashboard() {
           value={stats?.pending_orders || 0}
           icon={Clock}
           color='bg-yellow-500'
-          href='/orders'
+          href='/mis-ordenes'
         />
         <StatCard
           title='Sesiones Activas'
@@ -150,7 +150,7 @@ export function UserDashboard() {
           </Link>
 
           <Link
-            href='/orders'
+            href='/mis-ordenes'
             className='flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors'
           >
             <Package className='h-8 w-8 text-purple-500 mr-3' />

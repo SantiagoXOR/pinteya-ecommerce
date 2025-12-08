@@ -241,7 +241,7 @@ export default function CashSuccessPage() {
       params.set('customerName', customerName || '')
       params.set('total', effectiveTotal.toString())
       
-      router.push(`/orders/${orderId}?${params.toString()}`)
+      router.push(`/mis-ordenes/${orderId}?${params.toString()}`)
     }
   }
 

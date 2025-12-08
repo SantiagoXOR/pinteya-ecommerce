@@ -148,7 +148,7 @@ export default function ProfilePage() {
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 {/* Ver órdenes */}
                 <Link
-                  href='/orders'
+                  href='/mis-ordenes'
                   className='flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group'
                 >
                   <div className='p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors'>

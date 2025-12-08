@@ -94,7 +94,7 @@ export default function CheckoutPendingPage() {
   }
 
   const handleViewOrders = () => {
-    router.push('/orders')
+    router.push('/mis-ordenes')
   }
 
   if (isLoading) {

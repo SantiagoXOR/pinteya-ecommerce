@@ -139,7 +139,7 @@ export function DashboardHeader() {
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild>
-                <Link href='/orders' className='flex items-center'>
+                <Link href='/mis-ordenes' className='flex items-center'>
                   <Package className='mr-2 h-4 w-4' />
                   <span>Mis Órdenes</span>
                 </Link>

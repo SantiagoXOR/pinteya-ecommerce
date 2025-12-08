@@ -420,7 +420,7 @@ describe('Flujo de Checkout - Integración', () => {
       await waitFor(() => {
         expect(supabase.from).toHaveBeenCalledWith('orders')
         expect(toast.success).toHaveBeenCalledWith('¡Compra realizada exitosamente!')
-        expect(mockRouter.push).toHaveBeenCalledWith('/orders/order-123')
+        expect(mockRouter.push).toHaveBeenCalledWith('/mis-ordenes/order-123')
       })
     })
 
