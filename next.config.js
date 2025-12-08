@@ -96,18 +96,28 @@ const nextConfig = {
   webpack: (config, { dev, isServer }) => {
     // ⚡ FIX: Asegurar que React esté disponible globalmente (cliente Y servidor)
     // Aplicar alias tanto en cliente como en servidor para resolver react/jsx-runtime
+    const reactPath = require.resolve('react')
+    const reactJsxRuntimePath = require.resolve('react/jsx-runtime')
+    const reactJsxDevRuntimePath = require.resolve('react/jsx-dev-runtime')
+    
     config.resolve.alias = {
       ...config.resolve.alias,
-      'react': require.resolve('react'),
+      'react': reactPath,
       'react-dom': require.resolve('react-dom'),
-      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-      'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+      'react/jsx-runtime': reactJsxRuntimePath,
+      'react/jsx-dev-runtime': reactJsxDevRuntimePath,
       // Configuración específica para NextAuth v5 (solo cliente)
       ...(!isServer && {
         'next-auth/react$': require.resolve('next-auth/react'),
         'next-auth$': require.resolve('next-auth'),
       }),
     }
+    
+    // ⚡ FIX: Asegurar que webpack pueda resolver react/jsx-runtime correctamente
+    config.resolve.modules = [
+      ...(config.resolve.modules || []),
+      'node_modules',
+    ]
     
     // Resolver problemas de hidratación y carga dinámica (solo cliente)
     if (!isServer) {
