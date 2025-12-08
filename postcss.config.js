@@ -31,10 +31,17 @@ module.exports = {
                 normalizeWhitespace: true, // Normalizar espacios en blanco
                 minifyFontValues: true, // Minificar valores de fuentes
                 minifySelectors: true, // Minificar selectores
-                // ⚡ FIX: discardUnused deshabilitado - NO SEGURO con code-splitting de CSS
-                // discardUnused puede eliminar @keyframes que están en un chunk pero se usan en otro
-                // Esto rompería animaciones cuando CSS está dividido en múltiples chunks (Next.js)
-                discardUnused: false, // ⚡ DESHABILITADO: Inseguro con CSS code-splitting
+                // ⚡ CRITICAL FIX: discardUnused deshabilitado - NO SEGURO con code-splitting de CSS
+                // PROBLEMA: discardUnused puede eliminar @keyframes que están definidos en un chunk CSS
+                // pero se usan en otro chunk, rompiendo animaciones cuando Next.js divide CSS en múltiples chunks.
+                // EJEMPLO: Si @keyframes fadeIn está en chunk A pero se usa en chunk B, cssnano lo eliminará
+                // como "no usado" en chunk A, rompiendo la animación en chunk B.
+                // SOLUCIÓN: Mantener discardUnused: false para preservar @keyframes en todos los chunks.
+                // El proyecto usa múltiples @keyframes (loading, shimmer, fadeIn, slideUp, etc.) en:
+                // - src/app/css/style.css
+                // - src/styles/home-v2-animations.css
+                // - tailwind.config.ts (animaciones personalizadas)
+                discardUnused: false, // ⚡ DESHABILITADO: Inseguro con CSS code-splitting de Next.js
                 discardEmpty: true, // Eliminar reglas vacías (seguro)
                 discardDuplicates: true, // Eliminar reglas duplicadas (seguro)
                 // Configuración conservadora para evitar romper estilos
