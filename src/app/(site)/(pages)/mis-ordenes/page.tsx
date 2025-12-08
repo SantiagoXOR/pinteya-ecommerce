@@ -1,7 +1,8 @@
 'use client'
 
-// Forzar renderizado din├ímico para evitar problemas con prerendering
-export const dynamic = 'force-dynamic'
+// ⚡ FIX VERCEL: Client Components no deben exportar 'dynamic'
+// Los Client Components se renderizan estáticamente en build time y se hidratan en el cliente
+// El 'export const dynamic' es solo para Server Components
 import React, { useEffect, useState } from 'react'
 import {
   Package,
