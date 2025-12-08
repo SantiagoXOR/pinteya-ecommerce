@@ -26,8 +26,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // ⚡ OPTIMIZACIÓN: Configuración de output para ISR
-  output: 'standalone',
+  // ⚡ FIX VERCEL: output: 'standalone' removido - NO compatible con Vercel
+  // 'standalone' es para Docker/containers, Vercel maneja Next.js automáticamente
+  // Esta configuración causaba el error "Unable to find lambda for route"
+  // output: 'standalone', // ⚡ REMOVIDO: Incompatible con Vercel
 
   // ✅ Compiler optimizations - Solo las esenciales
   compiler: {
