@@ -171,6 +171,8 @@ const nextConfig = {
             // ⚡ CRITICAL: Limitar tamaño del framework chunk
             maxSize: 300000, // 300 KB máximo para framework
             reuseExistingChunk: true,
+            // ⚡ FIX: Asegurar que React esté disponible en todos los chunks
+            chunks: 'all',
           },
           
           // ⚡ NUEVO: Radix UI separado
