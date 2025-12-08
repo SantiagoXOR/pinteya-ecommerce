@@ -1,5 +1,7 @@
 // ⚡ FIX VERCEL: Layout para forzar renderizado estático de todas las rutas /demo/*
 // Esto asegura que Vercel trate estas rutas como páginas estáticas, no como lambdas
+import React from 'react'
+
 export const dynamic = 'force-static'
 export const revalidate = false
 

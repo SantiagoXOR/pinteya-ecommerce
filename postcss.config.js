@@ -40,6 +40,12 @@ module.exports = {
                 // El proyecto usa múltiples @keyframes (loading, shimmer, fadeIn, slideUp, etc.) en:
                 // - src/app/css/style.css
                 // - src/styles/home-v2-animations.css
+                // - src/styles/mobile-modals.css
+                // - src/styles/collapsible.css
+                // - src/styles/checkout-transition.css
+                // - src/styles/checkout-mobile.css
+                // - src/components/Header/header-animations.css
+                // - src/app/auth/auth-page.css
                 // - tailwind.config.ts (animaciones personalizadas)
                 discardUnused: false, // ⚡ DESHABILITADO: Inseguro con CSS code-splitting de Next.js
                 discardEmpty: true, // Eliminar reglas vacías (seguro)
