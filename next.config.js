@@ -96,8 +96,15 @@ const nextConfig = {
 
   // ✅ Configuración de webpack para resolver el error de 'call'
   webpack: (config, { dev, isServer }) => {
-    // Resolver problemas de hidratación y carga dinámica
+    // ⚡ FIX: Asegurar que React esté disponible globalmente en el cliente
     if (!isServer) {
+      // Asegurar que React esté disponible en el scope global
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'react': require.resolve('react'),
+        'react-dom': require.resolve('react-dom'),
+      }
+      
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -171,8 +178,10 @@ const nextConfig = {
             // ⚡ CRITICAL: Limitar tamaño del framework chunk
             maxSize: 300000, // 300 KB máximo para framework
             reuseExistingChunk: true,
-            // ⚡ FIX: Asegurar que React esté disponible en todos los chunks
+            // ⚡ FIX: Asegurar que React esté disponible en todos los chunks (async e initial)
             chunks: 'all',
+            // ⚡ CRITICAL: Forzar que React esté disponible antes de otros chunks
+            minChunks: 1,
           },
           
           // ⚡ NUEVO: Radix UI separado
