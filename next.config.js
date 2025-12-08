@@ -94,6 +94,18 @@ const nextConfig = {
 
   // ✅ Configuración de webpack para resolver el error de 'call'
   webpack: (config, { dev, isServer }) => {
+    // ⚡ FIX: Asegurar que React esté disponible (cliente Y servidor)
+    // Next.js 16 necesita que React esté correctamente resuelto
+    const reactPath = require.resolve('react')
+    const reactDomPath = require.resolve('react-dom')
+    
+    // Aplicar alias de React en ambos entornos
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'react': reactPath,
+      'react-dom': reactDomPath,
+    }
+    
     // Resolver problemas de hidratación y carga dinámica (solo cliente)
     if (!isServer) {
       config.resolve.fallback = {
