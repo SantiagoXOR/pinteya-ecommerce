@@ -1,18 +1,7 @@
-import { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  robots: {
-    index: false,
-    follow: false,
-    googleBot: {
-      index: false,
-      follow: false,
-      'noimageindex': true,
-      'noarchive': true,
-      'nosnippet': true,
-    },
-  },
-}
+// ⚡ FIX VERCEL: Layout para forzar renderizado estático de todas las rutas /demo/*
+// Esto asegura que Vercel trate estas rutas como páginas estáticas, no como lambdas
+export const dynamic = 'force-static'
+export const revalidate = false
 
 export default function DemoLayout({
   children,
@@ -21,17 +10,3 @@ export default function DemoLayout({
 }) {
   return <>{children}</>
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
