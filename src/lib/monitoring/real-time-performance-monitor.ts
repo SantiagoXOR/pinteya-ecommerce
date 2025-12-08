@@ -156,8 +156,23 @@ export class RealTimePerformanceMonitor {
   private monitoringInterval?: NodeJS.Timeout
 
   private constructor() {
+    // ⚡ FIX: Deshabilitar monitoreo durante build
+    if (this.isBuildTime()) {
+      return
+    }
     this.startMonitoring()
     this.startPeriodicFlush()
+  }
+
+  /**
+   * Verifica si estamos en tiempo de build
+   */
+  private isBuildTime(): boolean {
+    return (
+      process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.DISABLE_MONITORING === 'true' ||
+      (process.env.VERCEL && !process.env.VERCEL_ENV)
+    )
   }
 
   static getInstance(): RealTimePerformanceMonitor {
@@ -191,13 +206,10 @@ export class RealTimePerformanceMonitor {
    * Recolecta métricas del sistema
    */
   private async collectSystemMetrics(): Promise<void> {
-    // 🔧 QUICK FIX: Deshabilitar durante build de Vercel
+    // ⚡ FIX: Deshabilitar durante build time
     // Previene alertas de memoria/CPU durante compilación
-    if (process.env.VERCEL && !process.env.VERCEL_ENV) {
-      return // Build time en Vercel
-    }
-    if (process.env.DISABLE_MONITORING === 'true') {
-      return // Deshabilitado explícitamente
+    if (this.isBuildTime()) {
+      return
     }
 
     try {
@@ -304,12 +316,9 @@ export class RealTimePerformanceMonitor {
    * Verifica umbrales y genera alertas
    */
   private async checkThresholds(metrics: RealTimeMetrics): Promise<void> {
-    // 🔧 QUICK FIX: Deshabilitar alertas durante build
-    if (process.env.VERCEL && !process.env.VERCEL_ENV) {
-      return // Build time en Vercel
-    }
-    if (process.env.DISABLE_MONITORING === 'true') {
-      return // Deshabilitado explícitamente
+    // ⚡ FIX: Deshabilitar alertas durante build
+    if (this.isBuildTime()) {
+      return
     }
 
     // Verificar tiempo de respuesta
@@ -646,7 +655,17 @@ export class RealTimePerformanceMonitor {
    * Flush de métricas a Redis
    */
   private async flushMetricsToRedis(): Promise<void> {
+    // ⚡ FIX: No hacer flush durante build time
+    if (this.isBuildTime()) {
+      return
+    }
+
     try {
+      // ⚡ FIX: Verificar que Redis tenga el método setex antes de usarlo
+      if (!this.redis || typeof this.redis.setex !== 'function') {
+        return
+      }
+
       const timestamp = Date.now()
 
       // Guardar métricas en Redis con TTL de 24 horas
@@ -690,12 +709,20 @@ export class RealTimePerformanceMonitor {
    * Persiste alerta en Redis
    */
   private async persistAlert(alert: PerformanceAlert): Promise<void> {
+    // ⚡ FIX: No persistir durante build time
+    if (this.isBuildTime()) {
+      return
+    }
+
     try {
-      await this.redis.setex(
-        `alert:${alert.id}`,
-        86400 * 7, // 7 días
-        JSON.stringify(alert)
-      )
+      // ⚡ FIX: Verificar que Redis tenga el método setex antes de usarlo
+      if (this.redis && typeof this.redis.setex === 'function') {
+        await this.redis.setex(
+          `alert:${alert.id}`,
+          86400 * 7, // 7 días
+          JSON.stringify(alert)
+        )
+      }
     } catch (error) {
       logger.error(LogCategory.MONITORING, 'Error persisting alert', error as Error)
     }
