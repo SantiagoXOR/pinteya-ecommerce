@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     xml += `<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">\n`
     xml += `  <channel>\n`
     xml += `    <title>Pinteya - Catálogo de Productos</title>\n`
-    xml += `    <link>${fullBaseUrl}</link>\n`
+    xml += `    <link>${escapeXml(fullBaseUrl)}</link>\n`
     xml += `    <description>Catálogo completo de productos de Pinteya para Google Merchant Center</description>\n`
 
     // Obtener TODAS las variantes activas para cada producto
@@ -251,11 +251,11 @@ export async function GET(request: NextRequest) {
           xml += `      <g:id>${itemId}</g:id>\n`
           xml += `      <g:title>${escapeXml(variantTitle)}</g:title>\n`
           xml += `      <g:description>${escapeXml(variantDescription)}</g:description>\n`
-          xml += `      <g:link>${productUrl}</g:link>\n`
+          xml += `      <g:link>${escapeXml(productUrl)}</g:link>\n`
           
           // g:image_link es obligatorio
           const finalImageUrl = imageUrl || `${fullBaseUrl}/images/products/placeholder.svg`
-          xml += `      <g:image_link>${finalImageUrl}</g:image_link>\n`
+          xml += `      <g:image_link>${escapeXml(finalImageUrl)}</g:image_link>\n`
           
           // Precio con formato requerido: "valor moneda" (ej: "5000.00 ARS")
           xml += `      <g:price>${price.toFixed(2)} ARS</g:price>\n`
@@ -292,7 +292,7 @@ export async function GET(request: NextRequest) {
             product.images.slice(1, 6).forEach((img: string) => {
               const additionalImageUrl = getFullImageUrl(img, fullBaseUrl)
               if (additionalImageUrl) {
-                xml += `      <g:additional_image_link>${additionalImageUrl}</g:additional_image_link>\n`
+                xml += `      <g:additional_image_link>${escapeXml(additionalImageUrl)}</g:additional_image_link>\n`
               }
             })
           }
@@ -321,10 +321,10 @@ export async function GET(request: NextRequest) {
         xml += `      <g:id>${product.id}</g:id>\n`
         xml += `      <g:title>${escapeXml(product.name)}</g:title>\n`
         xml += `      <g:description>${escapeXml(description)}</g:description>\n`
-        xml += `      <g:link>${productUrl}</g:link>\n`
+        xml += `      <g:link>${escapeXml(productUrl)}</g:link>\n`
         
         const finalImageUrl = imageUrl || `${fullBaseUrl}/images/products/placeholder.svg`
-        xml += `      <g:image_link>${finalImageUrl}</g:image_link>\n`
+        xml += `      <g:image_link>${escapeXml(finalImageUrl)}</g:image_link>\n`
         
         xml += `      <g:price>${price.toFixed(2)} ARS</g:price>\n`
         xml += `      <g:availability>${availability}</g:availability>\n`
@@ -348,7 +348,7 @@ export async function GET(request: NextRequest) {
           product.images.slice(1, 6).forEach((img: string) => {
             const additionalImageUrl = getFullImageUrl(img, fullBaseUrl)
             if (additionalImageUrl) {
-              xml += `      <g:additional_image_link>${additionalImageUrl}</g:additional_image_link>\n`
+              xml += `      <g:additional_image_link>${escapeXml(additionalImageUrl)}</g:additional_image_link>\n`
             }
           })
         }
