@@ -127,8 +127,8 @@ import {
   IconCircleX,
   IconServer,
   // IconShieldAlert no existe, usar IconShield con IconAlertTriangle
-  // IconMousePointer no existe, usar IconPointer
-  IconPointer,
+  // IconMousePointer no existe, usar IconCursorText como alternativa
+  IconCursorText,
   IconWorld,
   IconBulb,
   IconUpload,
@@ -286,7 +286,7 @@ export {
   IconCircleX as XCircle,
   IconServer as Server,
   IconShield as ShieldAlert, // ShieldAlert no existe, usar Shield
-  IconPointer as MousePointer, // MousePointer no existe, usar Pointer
+  IconCursorText as MousePointer, // MousePointer no existe, usar CursorText
   IconWorld as Globe,
   IconBulb as Lightbulb,
   IconUpload as Upload,
