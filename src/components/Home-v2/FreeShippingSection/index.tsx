@@ -74,7 +74,7 @@ const FreeShippingSection = () => {
               />
             </div>
             <div>
-              <h2 className='text-2xl md:text-3xl font-bold text-green-700 dark:text-bright-sun-300'>
+              <h2 className='text-2xl md:text-3xl font-bold text-green-700 dark:!text-bright-sun-300'>
                 Envío Gratis
               </h2>
               <p className='text-sm text-gray-600 dark:text-bright-sun-200'>

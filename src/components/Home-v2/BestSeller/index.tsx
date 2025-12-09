@@ -39,33 +39,38 @@ const BestSeller: React.FC = () => {
   const shouldShowHelpCard = bestSellerProducts.length > 0 && 
     (bestSellerProducts.length % 4 !== 0 || bestSellerProducts.length % 2 !== 0)
 
-  // ✅ FIX: Timeout más corto y mejor manejo del estado de loading
+  // ✅ FIX CRÍTICO: Mejor manejo del estado de loading con timeout y detección de datos
   const [showTimeout, setShowTimeout] = React.useState(false)
-  const [hasData, setHasData] = React.useState(false)
+  const hasProducts = bestSellerProducts.length > 0
   
   React.useEffect(() => {
-    // Si hay productos, marcar que tenemos datos
-    if (bestSellerProducts.length > 0) {
-      setHasData(true)
+    // Si hay productos, resetear timeout
+    if (hasProducts) {
       setShowTimeout(false)
+      return
     }
-  }, [bestSellerProducts.length])
-  
-  React.useEffect(() => {
-    if (isLoading && !hasData) {
-      // Timeout más corto: 8 segundos
+    
+    // Si está cargando y no hay productos, iniciar timeout
+    if (isLoading && !hasProducts) {
       const timeout = setTimeout(() => {
+        console.warn('⚠️ useBestSellerProducts: Timeout después de 6 segundos, ocultando skeletons')
         setShowTimeout(true)
-      }, 8000)
+      }, 6000) // 6 segundos - más agresivo
       
       return () => clearTimeout(timeout)
     } else {
       setShowTimeout(false)
     }
-  }, [isLoading, hasData])
+  }, [isLoading, hasProducts])
 
-  // ✅ FIX: Mostrar skeletons solo si está cargando Y no hay datos Y no hay timeout
-  if (isLoading && !hasData && !showTimeout) {
+  // ✅ FIX CRÍTICO: Mostrar skeletons solo si:
+  // 1. Está cargando
+  // 2. No hay productos
+  // 3. No hay timeout
+  // 4. No hay error
+  const shouldShowSkeletons = isLoading && !hasProducts && !showTimeout && !error
+
+  if (shouldShowSkeletons) {
     return (
       <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
@@ -101,7 +106,7 @@ const BestSeller: React.FC = () => {
                       <Trophy className='w-8 h-8 text-yellow-500' />
                     </div>
                     <div>
-                      <h3 className='font-semibold text-gray-900 dark:text-bright-sun-300 mb-2'>
+                      <h3 className='font-semibold text-gray-900 dark:!text-bright-sun-300 mb-2'>
                         No hay productos disponibles
                       </h3>
                       <p className='text-gray-600 dark:text-bright-sun-200 text-sm mb-4'>

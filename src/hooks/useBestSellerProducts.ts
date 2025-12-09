@@ -62,15 +62,10 @@ export const useBestSellerProducts = ({
   
   const queryKey = ['products', 'bestsellers', categorySlug] as const
   
-  const { data, isLoading, error, refetch } = useQuery<Product[]>({
+  const { data, isLoading, isFetching, error, refetch } = useQuery<Product[]>({
     queryKey,
     queryFn: async (): Promise<Product[]> => {
-      // Timeout de 10 segundos para evitar que se quede cargando indefinidamente
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: La carga de productos está tardando demasiado')), 10000)
-      })
-
-      const fetchPromise = async (): Promise<Product[]> => {
+      try {
         // Construir filtros según si hay categoría o no
         const filters: any = {
           limit: categorySlug ? 50 : 100,
@@ -85,8 +80,15 @@ export const useBestSellerProducts = ({
         // Fetch productos usando la función de API existente
         const response = await getProducts(filters)
         
-        if (!response.success || !response.data) {
-          throw new Error(response.message || 'Error al cargar productos')
+        // ✅ FIX CRÍTICO: Si la respuesta no es exitosa, lanzar error para que la query se complete
+        if (!response.success) {
+          throw new Error(response.message || response.error || 'Error al cargar productos')
+        }
+
+        // ✅ FIX: Verificar que hay datos antes de procesar
+        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+          // Si no hay datos pero la respuesta fue exitosa, devolver array vacío (no es error)
+          return []
         }
 
         // Adaptar productos del formato API al formato legacy
@@ -108,10 +110,12 @@ export const useBestSellerProducts = ({
         }
 
         return finalProducts
+      } catch (err) {
+        // ✅ FIX: Asegurar que siempre se lance un error para que la query se complete
+        const errorMessage = err instanceof Error ? err.message : 'Error inesperado al cargar productos'
+        console.error('❌ useBestSellerProducts error:', errorMessage)
+        throw new Error(errorMessage)
       }
-
-      // Ejecutar con timeout
-      return Promise.race([fetchPromise(), timeoutPromise])
     },
     // ✅ FIX: Asegurar que la query siempre se ejecute
     enabled: true,
@@ -126,9 +130,15 @@ export const useBestSellerProducts = ({
     refetchOnReconnect: true, // Refetch si se reconecta
   })
 
+  // ✅ FIX CRÍTICO: Determinar loading de forma más confiable
+  // isLoading puede quedarse en true si la query nunca se completa
+  // Si hay datos, no mostrar loading aunque isLoading sea true
+  // Si hay error, no mostrar loading
+  const isActuallyLoading = isLoading && !data && !error && isFetching
+
   return {
-    products: data || [],
-    isLoading: isLoading && !data, // ✅ FIX: Solo mostrar loading si no hay datos
+    products: Array.isArray(data) ? data : [],
+    isLoading: isActuallyLoading,
     // Convertir Error a string para mantener compatibilidad con componentes
     error: error ? (error instanceof Error ? error.message : String(error)) : null,
     refetch: () => {

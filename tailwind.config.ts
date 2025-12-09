@@ -30,6 +30,9 @@ const config: Config = {
     'dark:text-bright-sun-200',
     'dark:text-bright-sun-300',
     'dark:text-bright-sun-400',
+    'dark:!text-bright-sun-200',
+    'dark:!text-bright-sun-300',
+    'dark:!text-bright-sun-400',
     // ⚡ CRITICAL: Solo agregar clases que realmente se generan dinámicamente
     // No agregar clases que se pueden detectar estáticamente
   ],

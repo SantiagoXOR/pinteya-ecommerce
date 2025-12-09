@@ -44,7 +44,7 @@ const TrustSection = () => {
             <CheckCircle className='w-5 h-5' />
             <span className='font-bold text-sm'>GARANTÍA PINTEYA</span>
           </div>
-          <h2 className='text-3xl lg:text-5xl font-bold text-gray-900 dark:text-bright-sun-300 mb-4'>
+          <h2 className='text-3xl lg:text-5xl font-bold text-gray-900 dark:!text-bright-sun-300 mb-4'>
             Tu Confianza es Nuestra <span className='text-[#eb6313] dark:text-bright-sun-400'>Prioridad</span>
           </h2>
           <p className='text-lg text-gray-600 dark:text-bright-sun-200 max-w-3xl mx-auto'>
