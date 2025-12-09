@@ -319,6 +319,7 @@ export {
   IconFolderOpen as FolderOpen,
   IconFolder as Folder,
   IconPhoto as ImageIcon,
+  IconPhoto as Image, // Alias para compatibilidad con imports que usan 'Image as ImageIcon'
   IconArrowsSort as ArrowUpDown,
   IconArrowUp as ArrowUp,
   IconArrowDown as ArrowDown,

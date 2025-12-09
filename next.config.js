@@ -96,10 +96,28 @@ const nextConfig = {
   // Necesario para resolver react/jsx-runtime cuando se usa webpack en lugar de Turbopack
   webpack: (config, { isServer }) => {
     // Resolver react/jsx-runtime correctamente para webpack
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-      'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+    if (!config.resolve) {
+      config.resolve = {}
+    }
+    if (!config.resolve.alias) {
+      config.resolve.alias = {}
+    }
+    
+    // Asegurar que React se resuelva correctamente
+    try {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+        'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+      }
+    } catch (error) {
+      // Si require.resolve falla, usar path relativo
+      const path = require('path')
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'react/jsx-runtime': path.resolve(process.cwd(), 'node_modules/react/jsx-runtime.js'),
+        'react/jsx-dev-runtime': path.resolve(process.cwd(), 'node_modules/react/jsx-dev-runtime.js'),
+      }
     }
     
     return config
