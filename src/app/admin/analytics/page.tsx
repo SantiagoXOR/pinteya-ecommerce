@@ -14,6 +14,7 @@ import ConversionFunnel from '@/components/Analytics/ConversionFunnel'
 import HeatmapViewer from '@/components/Analytics/HeatmapViewer'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useUserRole } from '@/hooks/useUserRole'
+import { UserInteraction } from '@/lib/integrations/analytics'
 import { BarChart3, TrendingUp, Users, Eye, Download, RefreshCw, Settings } from '@/lib/optimized-imports'
 
 const AnalyticsPage: React.FC = () => {
@@ -29,6 +30,14 @@ const AnalyticsPage: React.FC = () => {
     checkoutStarts: 0,
     checkoutCompletions: 0,
   })
+  const [conversionAnalysis, setConversionAnalysis] = useState<{
+    improvements: Array<{ label: string; value: string; severity: string }>
+    strengths: Array<{ label: string; value: string; severity: string }>
+  } | null>(null)
+  const [pageInteractions, setPageInteractions] = useState<Array<{ page: string; interactions: number }>>([])
+  const [interactions, setInteractions] = useState<UserInteraction[]>([])
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false)
+  const [loadingInteractions, setLoadingInteractions] = useState(false)
 
   // Verificar permisos de administrador - Usar rol de la sesión de NextAuth
   useEffect(() => {
@@ -58,24 +67,119 @@ const AnalyticsPage: React.FC = () => {
 
   useEffect(() => {
     loadConversionData()
+    loadConversionAnalysis()
+    loadPageInteractions()
   }, [])
 
-  const loadConversionData = () => {
-    const metrics = getConversionMetrics()
-    setConversionData({
-      productViews: metrics.productViews,
-      cartAdditions: metrics.cartAdditions,
-      checkoutStarts: metrics.checkoutStarts,
-      checkoutCompletions: metrics.checkoutCompletions,
-    })
+  useEffect(() => {
+    if (activeTab === 'heatmap') {
+      loadInteractions()
+    }
+  }, [activeTab])
+
+  const loadConversionData = async () => {
+    try {
+      // Obtener datos desde la API en lugar de memoria del cliente
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+      const response = await fetch(
+        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}`
+      )
+      if (!response.ok) {
+        throw new Error('Error al cargar métricas de conversión')
+      }
+      const data = await response.json()
+
+      setConversionData({
+        productViews: data.ecommerce?.productViews || 0,
+        cartAdditions: data.ecommerce?.cartAdditions || 0,
+        checkoutStarts: data.ecommerce?.checkoutStarts || 0,
+        checkoutCompletions: data.ecommerce?.checkoutCompletions || 0,
+      })
+    } catch (error) {
+      console.error('Error cargando datos de conversión:', error)
+      // Fallback a datos en memoria si la API falla
+      const metrics = getConversionMetrics()
+      setConversionData({
+        productViews: metrics.productViews,
+        cartAdditions: metrics.cartAdditions,
+        checkoutStarts: metrics.checkoutStarts,
+        checkoutCompletions: metrics.checkoutCompletions,
+      })
+    }
+  }
+
+  const loadConversionAnalysis = async () => {
+    try {
+      setLoadingAnalysis(true)
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+      const response = await fetch(
+        `/api/analytics/conversion-analysis?startDate=${startDate}&endDate=${endDate}`
+      )
+      if (!response.ok) {
+        throw new Error('Error al cargar análisis de conversión')
+      }
+      const data = await response.json()
+      setConversionAnalysis(data)
+    } catch (error) {
+      console.error('Error cargando análisis de conversión:', error)
+    } finally {
+      setLoadingAnalysis(false)
+    }
+  }
+
+  const loadPageInteractions = async () => {
+    try {
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+      const response = await fetch(
+        `/api/analytics/interactions?startDate=${startDate}&endDate=${endDate}&statsOnly=true`
+      )
+      if (!response.ok) {
+        throw new Error('Error al cargar interacciones por página')
+      }
+      const data = await response.json()
+      setPageInteractions(data.stats || [])
+    } catch (error) {
+      console.error('Error cargando interacciones por página:', error)
+    }
+  }
+
+  const loadInteractions = async () => {
+    try {
+      setLoadingInteractions(true)
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const currentPage = typeof window !== 'undefined' ? window.location.pathname : '/'
+
+      const response = await fetch(
+        `/api/analytics/interactions?startDate=${startDate}&endDate=${endDate}&page=${currentPage}`
+      )
+      if (!response.ok) {
+        throw new Error('Error al cargar interacciones')
+      }
+      const data = await response.json()
+      setInteractions(data.interactions || [])
+    } catch (error) {
+      console.error('Error cargando interacciones:', error)
+    } finally {
+      setLoadingInteractions(false)
+    }
   }
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {
-      // Simular refresh de datos
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      loadConversionData()
+      await Promise.all([
+        loadConversionData(),
+        loadConversionAnalysis(),
+        loadPageInteractions(),
+        activeTab === 'heatmap' ? loadInteractions() : Promise.resolve(),
+      ])
     } finally {
       setIsRefreshing(false)
     }
@@ -269,30 +373,102 @@ const AnalyticsPage: React.FC = () => {
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
                   <h3 className='text-lg font-semibold text-gray-900 mb-4'>Puntos de Mejora</h3>
-                  <div className='space-y-3'>
-                    <div className='flex items-center justify-between p-3 bg-red-50 rounded-lg'>
-                      <span className='text-red-800'>Mayor abandono en checkout</span>
-                      <span className='text-red-600 font-medium'>-23%</span>
+                  {loadingAnalysis ? (
+                    <div className='text-center py-4'>
+                      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400 mx-auto'></div>
+                      <p className='text-sm text-gray-500 mt-2'>Cargando análisis...</p>
                     </div>
-                    <div className='flex items-center justify-between p-3 bg-yellow-50 rounded-lg'>
-                      <span className='text-yellow-800'>Baja conversión producto → carrito</span>
-                      <span className='text-yellow-600 font-medium'>-15%</span>
+                  ) : conversionAnalysis?.improvements.length ? (
+                    <div className='space-y-3'>
+                      {conversionAnalysis.improvements.map((improvement, index) => (
+                        <div
+                          key={index}
+                          className={`flex items-center justify-between p-3 rounded-lg ${
+                            improvement.severity === 'high'
+                              ? 'bg-red-50'
+                              : improvement.severity === 'medium'
+                                ? 'bg-yellow-50'
+                                : 'bg-orange-50'
+                          }`}
+                        >
+                          <span
+                            className={
+                              improvement.severity === 'high'
+                                ? 'text-red-800'
+                                : improvement.severity === 'medium'
+                                  ? 'text-yellow-800'
+                                  : 'text-orange-800'
+                            }
+                          >
+                            {improvement.label}
+                          </span>
+                          <span
+                            className={`font-medium ${
+                              improvement.severity === 'high'
+                                ? 'text-red-600'
+                                : improvement.severity === 'medium'
+                                  ? 'text-yellow-600'
+                                  : 'text-orange-600'
+                            }`}
+                          >
+                            {improvement.value}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  ) : (
+                    <p className='text-gray-500 text-sm'>No hay puntos de mejora identificados</p>
+                  )}
                 </div>
 
                 <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
                   <h3 className='text-lg font-semibold text-gray-900 mb-4'>Fortalezas</h3>
-                  <div className='space-y-3'>
-                    <div className='flex items-center justify-between p-3 bg-green-50 rounded-lg'>
-                      <span className='text-green-800'>Alta retención en carrito</span>
-                      <span className='text-green-600 font-medium'>+18%</span>
+                  {loadingAnalysis ? (
+                    <div className='text-center py-4'>
+                      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400 mx-auto'></div>
+                      <p className='text-sm text-gray-500 mt-2'>Cargando análisis...</p>
                     </div>
-                    <div className='flex items-center justify-between p-3 bg-blue-50 rounded-lg'>
-                      <span className='text-blue-800'>Buena tasa de vista de productos</span>
-                      <span className='text-blue-600 font-medium'>+12%</span>
+                  ) : conversionAnalysis?.strengths.length ? (
+                    <div className='space-y-3'>
+                      {conversionAnalysis.strengths.map((strength, index) => (
+                        <div
+                          key={index}
+                          className={`flex items-center justify-between p-3 rounded-lg ${
+                            strength.severity === 'high'
+                              ? 'bg-green-50'
+                              : strength.severity === 'medium'
+                                ? 'bg-blue-50'
+                                : 'bg-teal-50'
+                          }`}
+                        >
+                          <span
+                            className={
+                              strength.severity === 'high'
+                                ? 'text-green-800'
+                                : strength.severity === 'medium'
+                                  ? 'text-blue-800'
+                                  : 'text-teal-800'
+                            }
+                          >
+                            {strength.label}
+                          </span>
+                          <span
+                            className={`font-medium ${
+                              strength.severity === 'high'
+                                ? 'text-green-600'
+                                : strength.severity === 'medium'
+                                  ? 'text-blue-600'
+                                  : 'text-teal-600'
+                            }`}
+                          >
+                            {strength.value}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  ) : (
+                    <p className='text-gray-500 text-sm'>No hay fortalezas identificadas</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -310,28 +486,50 @@ const AnalyticsPage: React.FC = () => {
                 </p>
               </div>
 
-              <HeatmapViewer
-                interactions={getInteractions()}
-                page={typeof window !== 'undefined' ? window.location.pathname : '/'}
-              />
+              {loadingInteractions ? (
+                <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
+                  <div className='text-center py-8'>
+                    <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto'></div>
+                    <p className='text-sm text-gray-500 mt-4'>Cargando interacciones...</p>
+                  </div>
+                </div>
+              ) : (
+                <HeatmapViewer
+                  interactions={interactions}
+                  page={typeof window !== 'undefined' ? window.location.pathname : '/'}
+                />
+              )}
 
               {/* Análisis de páginas */}
               <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
                 <h3 className='text-lg font-semibold text-gray-900 mb-4'>Análisis por Página</h3>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                  <div className='text-center p-4 bg-blue-50 rounded-lg'>
-                    <p className='text-2xl font-bold text-blue-600'>1,234</p>
-                    <p className='text-sm text-blue-800'>Interacciones en Home</p>
+                {pageInteractions.length > 0 ? (
+                  <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                    {pageInteractions.slice(0, 3).map((stat, index) => {
+                      const colors = [
+                        { bg: 'bg-blue-50', text: 'text-blue-600', label: 'text-blue-800' },
+                        { bg: 'bg-green-50', text: 'text-green-600', label: 'text-green-800' },
+                        { bg: 'bg-purple-50', text: 'text-purple-600', label: 'text-purple-800' },
+                      ]
+                      const color = colors[index] || colors[0]
+                      const pageName =
+                        stat.page === '/' ? 'Home' : stat.page.split('/').filter(Boolean).pop() || stat.page
+
+                      return (
+                        <div key={stat.page} className={`text-center p-4 ${color.bg} rounded-lg`}>
+                          <p className={`text-2xl font-bold ${color.text}`}>
+                            {stat.interactions.toLocaleString()}
+                          </p>
+                          <p className={`text-sm ${color.label}`}>Interacciones en {pageName}</p>
+                        </div>
+                      )
+                    })}
                   </div>
-                  <div className='text-center p-4 bg-green-50 rounded-lg'>
-                    <p className='text-2xl font-bold text-green-600'>856</p>
-                    <p className='text-sm text-green-800'>Interacciones en Shop</p>
-                  </div>
-                  <div className='text-center p-4 bg-purple-50 rounded-lg'>
-                    <p className='text-2xl font-bold text-purple-600'>432</p>
-                    <p className='text-sm text-purple-800'>Interacciones en Producto</p>
-                  </div>
-                </div>
+                ) : (
+                  <p className='text-gray-500 text-sm text-center py-4'>
+                    No hay datos de interacciones disponibles
+                  </p>
+                )}
               </div>
             </div>
           )}

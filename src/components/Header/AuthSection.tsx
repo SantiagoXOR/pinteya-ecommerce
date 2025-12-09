@@ -93,7 +93,7 @@ export default function AuthSection({ variant = 'default' }: AuthSectionProps) {
     return (
       <button
         onClick={() => signIn('google')}
-        className='text-gray-800 dark:text-fun-green-50 hover:text-gray-900 dark:hover:text-fun-green-100 text-xs px-2 py-1 h-auto bg-transparent hover:bg-gray-100 dark:hover:bg-fun-green-800 rounded transition-colors'
+        className='text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 text-xs px-2 py-1 h-auto bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors'
       >
         Iniciar Sesión
       </button>

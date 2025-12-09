@@ -39,22 +39,33 @@ const BestSeller: React.FC = () => {
   const shouldShowHelpCard = bestSellerProducts.length > 0 && 
     (bestSellerProducts.length % 4 !== 0 || bestSellerProducts.length % 2 !== 0)
 
-  // Timeout para evitar que los skeletons se queden cargando indefinidamente
+  // ✅ FIX: Timeout más corto y mejor manejo del estado de loading
   const [showTimeout, setShowTimeout] = React.useState(false)
+  const [hasData, setHasData] = React.useState(false)
   
   React.useEffect(() => {
-    if (isLoading) {
+    // Si hay productos, marcar que tenemos datos
+    if (bestSellerProducts.length > 0) {
+      setHasData(true)
+      setShowTimeout(false)
+    }
+  }, [bestSellerProducts.length])
+  
+  React.useEffect(() => {
+    if (isLoading && !hasData) {
+      // Timeout más corto: 8 segundos
       const timeout = setTimeout(() => {
         setShowTimeout(true)
-      }, 12000) // 12 segundos máximo de loading
+      }, 8000)
       
       return () => clearTimeout(timeout)
     } else {
       setShowTimeout(false)
     }
-  }, [isLoading])
+  }, [isLoading, hasData])
 
-  if (isLoading && !showTimeout) {
+  // ✅ FIX: Mostrar skeletons solo si está cargando Y no hay datos Y no hay timeout
+  if (isLoading && !hasData && !showTimeout) {
     return (
       <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
@@ -90,10 +101,10 @@ const BestSeller: React.FC = () => {
                       <Trophy className='w-8 h-8 text-yellow-500' />
                     </div>
                     <div>
-                      <h3 className='font-semibold text-gray-900 dark:text-fun-green-50 mb-2'>
+                      <h3 className='font-semibold text-gray-900 dark:text-bright-sun-300 mb-2'>
                         No hay productos disponibles
                       </h3>
-                      <p className='text-gray-600 dark:text-fun-green-200 text-sm mb-4'>
+                      <p className='text-gray-600 dark:text-bright-sun-200 text-sm mb-4'>
                         No se encontraron productos en este momento.
                       </p>
                       <Button variant='outline' asChild>

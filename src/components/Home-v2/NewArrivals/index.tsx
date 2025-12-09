@@ -38,7 +38,7 @@ const NewArrival: React.FC = () => {
           <div className='w-10 h-10 rounded-full bg-gradient-to-br from-[#eb6313] to-[#f27a1d] flex items-center justify-center shadow-md'>
             <Sparkles className='w-5 h-5 text-white' />
           </div>
-          <h2 className='text-xl md:text-2xl font-bold text-gray-900 dark:text-fun-green-50'>
+          <h2 className='text-xl md:text-2xl font-bold text-gray-900 dark:text-bright-sun-300'>
             {sectionTitle}
           </h2>
         </div>
@@ -91,10 +91,10 @@ const NewArrival: React.FC = () => {
                   <Sparkles className='w-8 h-8 text-gray-400' />
                 </div>
                 <div>
-                  <h3 className='font-semibold text-gray-900 dark:text-fun-green-50 mb-2'>
+                  <h3 className='font-semibold text-gray-900 dark:text-bright-sun-300 mb-2'>
                     No hay productos nuevos
                   </h3>
-                  <p className='text-gray-600 text-sm mb-4'>
+                  <p className='text-gray-600 dark:text-bright-sun-200 text-sm mb-4'>
                     Pronto agregaremos nuevos productos de pinturería
                   </p>
                   <Button variant='outline' asChild>

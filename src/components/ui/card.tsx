@@ -8,12 +8,12 @@ import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShippi
 import { StockIndicator } from './stock-indicator'
 import { ShippingInfo } from './shipping-info'
 
-const cardVariants = cva('rounded-card bg-white dark:bg-fun-green-900 text-gray-900 dark:text-fun-green-50 transition-all duration-200', {
+const cardVariants = cva('rounded-card bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-all duration-200', {
   variants: {
     variant: {
-      default: 'border border-gray-200 dark:border-fun-green-700 shadow-1',
+      default: 'border border-gray-200 dark:border-gray-700 shadow-1',
       elevated: 'shadow-2 dark:shadow-xl',
-      outlined: 'border border-gray-300 dark:border-fun-green-700',
+      outlined: 'border border-gray-300 dark:border-gray-700',
       ghost: 'border-0 shadow-none',
     },
     padding: {

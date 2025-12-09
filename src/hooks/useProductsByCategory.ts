@@ -115,7 +115,7 @@ export const useProductsByCategory = ({
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true, // ✅ FIX: Siempre ejecutar en el primer mount para evitar skeletons infinitos
     refetchOnReconnect: true,
   })
 

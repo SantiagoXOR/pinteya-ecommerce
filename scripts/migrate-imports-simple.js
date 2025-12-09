@@ -35,3 +35,4 @@ for (const file of files) {
 console.log(`\n✨ Migrados ${migrated} archivos`)
 
 
+

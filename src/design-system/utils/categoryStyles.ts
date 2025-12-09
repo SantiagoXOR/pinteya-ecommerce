@@ -172,7 +172,7 @@ export const getCategoriesTitleStyles = ({
   variant?: ComponentVariant
 }) => {
   return cn(
-    'font-bold text-gray-900 dark:text-fun-green-50',
+    'font-bold text-gray-900 dark:text-gray-200',
     variant === 'default' && 'text-2xl md:text-3xl',
     variant === 'compact' && 'text-xl md:text-2xl',
     variant === 'minimal' && 'text-lg md:text-xl'

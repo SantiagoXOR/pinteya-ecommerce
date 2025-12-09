@@ -121,19 +121,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           /* Reset y base styles */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth}
-          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(180deg,#ffd549 0%,#fff4c6 50%,#ffffff 100%);background-attachment:fixed;color:#1f2937;padding-top:92px}
-          .dark body{background:linear-gradient(180deg,#003919 0%,#007638 50%,#026532 100%);color:#ecfff5}
+          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(180deg,#ffd549 0%,#fff4c6 50%,#ffffff 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#1f2937;padding-top:92px}
+          .dark body{background:radial-gradient(ellipse at top right,#f27a1d 0%,transparent 50%),radial-gradient(ellipse at bottom left,#bd4811 0%,transparent 50%),#000000;background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#fff4c6;min-height:100vh}
           @media(min-width:1024px){body{padding-top:105px}}
           img,picture,video{max-width:100%;height:auto;display:block}
           button,input,select,textarea{font:inherit}
           h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2}
           a{text-decoration:none;color:inherit}
           header{background-color:#f97316;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);border-radius:0 0 1.5rem 1.5rem}
-          .dark header{background-color:#007638;box-shadow:0 4px 6px -1px rgba(0,0,0,0.3)}
+          .dark header{background-color:#bd4811;box-shadow:0 4px 6px -1px rgba(0,0,0,0.5)}
           
           /* Critical Hero Styles */
           .hero-section{min-height:320px;background:linear-gradient(135deg,#f97316,#ea580c);position:relative;overflow:hidden}
-          .dark .hero-section{background:linear-gradient(135deg,#007638,#003919)}
+          .dark .hero-section{background:linear-gradient(135deg,#bd4811,#000000)}
           @media(min-width:1024px){.hero-section{min-height:500px}}
           
           /* Critical Hero Carousel Styles - Mínimos para evitar layout shift mientras carga CSS diferido */
@@ -151,7 +151,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           
           /* Gradient backgrounds */
           .bg-gradient-hero{background:linear-gradient(135deg,#f97316 0%,#ea580c 100%)}
-          .dark .bg-gradient-hero{background:linear-gradient(135deg,#007638 0%,#003919 100%)}
+          .dark .bg-gradient-hero{background:linear-gradient(135deg,#bd4811 0%,#000000 100%)}
           
           /* Critical button styles */
           .btn-primary{background:#eb6313;color:#fff;padding:1rem 2rem;border-radius:0.5rem;font-weight:600;transition:all 0.2s}

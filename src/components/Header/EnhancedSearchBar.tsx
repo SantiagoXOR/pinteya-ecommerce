@@ -145,7 +145,7 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
             <Button
               variant='ghost'
               className={cn(
-                'flex-shrink-0 border-0 rounded-none border-r border-gray-200 dark:border-fun-green-700 bg-gray-50 dark:bg-fun-green-900 hover:bg-gray-100 dark:hover:bg-fun-green-800 text-gray-700 dark:text-fun-green-50 hover:text-gray-900 dark:hover:text-fun-green-100 gap-2',
+                'flex-shrink-0 border-0 rounded-none border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 gap-2',
                 categorySizeClasses[size]
               )}
               aria-expanded='false'
@@ -201,7 +201,7 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
         <Button
           type='submit'
           className={cn(
-            'rounded-l-none bg-bright-sun dark:bg-fun-green-600 hover:bg-bright-sun-600 dark:hover:bg-fun-green-500 text-black dark:text-fun-green-50 border-bright-sun dark:border-fun-green-600 hover:border-bright-sun-600 dark:hover:border-fun-green-500 flex-shrink-0 button-hover-lift font-bold transition-all duration-200',
+            'rounded-l-none bg-bright-sun dark:bg-blaze-orange-600 hover:bg-bright-sun-600 dark:hover:bg-blaze-orange-500 text-black dark:text-gray-200 border-bright-sun dark:border-blaze-orange-600 hover:border-bright-sun-600 dark:hover:border-blaze-orange-500 flex-shrink-0 button-hover-lift font-bold transition-all duration-200',
             buttonSizeClasses[size]
           )}
           form='search-autocomplete-form'

@@ -44,10 +44,10 @@ const TrustSection = () => {
             <CheckCircle className='w-5 h-5' />
             <span className='font-bold text-sm'>GARANTÍA PINTEYA</span>
           </div>
-          <h2 className='text-3xl lg:text-5xl font-bold text-gray-900 dark:text-fun-green-50 mb-4'>
-            Tu Confianza es Nuestra <span className='text-[#eb6313]'>Prioridad</span>
+          <h2 className='text-3xl lg:text-5xl font-bold text-gray-900 dark:text-bright-sun-300 mb-4'>
+            Tu Confianza es Nuestra <span className='text-[#eb6313] dark:text-bright-sun-400'>Prioridad</span>
           </h2>
-          <p className='text-lg text-gray-600 max-w-3xl mx-auto'>
+          <p className='text-lg text-gray-600 dark:text-bright-sun-200 max-w-3xl mx-auto'>
             Más de 15.000 clientes confían en nosotros. Descubre por qué somos líderes en Córdoba Capital.
           </p>
         </div>
@@ -72,7 +72,7 @@ const TrustSection = () => {
                       className='w-20 h-20 lg:w-28 lg:h-28 rounded-full transition-transform duration-300 group-hover:scale-110'
                     />
                   </div>
-                  <h3 className='font-bold text-[#eb6313] text-sm lg:text-lg transition-all duration-300 group-hover:scale-110 group-hover:text-[#bd4811]'>
+                  <h3 className='font-bold text-[#eb6313] dark:text-bright-sun-400 text-sm lg:text-lg transition-all duration-300 group-hover:scale-110 group-hover:text-[#bd4811] dark:group-hover:text-bright-sun-300'>
                     {item.label}
                   </h3>
                 </div>
@@ -113,8 +113,8 @@ const TrustSection = () => {
                 <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br ${stat.color} mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <Icon className='w-8 h-8 text-white' />
                 </div>
-                <div className='text-3xl font-bold text-gray-900 dark:text-fun-green-50 mb-1 group-hover:text-[#eb6313] dark:group-hover:text-fun-green-400 transition-colors'>{stat.value}</div>
-                <div className='text-sm text-gray-600 font-medium'>{stat.label}</div>
+                <div className='text-3xl font-bold text-gray-900 dark:text-bright-sun-300 mb-1 group-hover:text-[#eb6313] dark:group-hover:text-bright-sun-400 transition-colors'>{stat.value}</div>
+                <div className='text-sm text-gray-600 dark:text-bright-sun-200 font-medium'>{stat.label}</div>
               </div>
             )
           })}

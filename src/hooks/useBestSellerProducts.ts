@@ -60,8 +60,10 @@ export const useBestSellerProducts = ({
   enableCache = true,
 }: UseBestSellerProductsOptions): UseBestSellerProductsReturn => {
   
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: productQueryKeys.bestseller(categorySlug),
+  const queryKey = ['products', 'bestsellers', categorySlug] as const
+  
+  const { data, isLoading, error, refetch } = useQuery<Product[]>({
+    queryKey,
     queryFn: async (): Promise<Product[]> => {
       // Timeout de 10 segundos para evitar que se quede cargando indefinidamente
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -111,24 +113,22 @@ export const useBestSellerProducts = ({
       // Ejecutar con timeout
       return Promise.race([fetchPromise(), timeoutPromise])
     },
+    // ✅ FIX: Asegurar que la query siempre se ejecute
+    enabled: true,
     // Configuración optimizada para Home-v2
     staleTime: enableCache ? 5 * 60 * 1000 : 0, // 5 minutos de caché
     gcTime: 10 * 60 * 1000, // 10 minutos en caché
     retry: 1, // Reducir retries para evitar esperas largas
     retryDelay: 2000, // 2 segundos entre retries
-    // Timeout global de la query
-    meta: {
-      timeout: 10000, // 10 segundos máximo
-    },
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
-    refetchOnMount: false, // Usar caché si está disponible
+    refetchOnMount: true, // ✅ FIX: Siempre ejecutar en el primer mount para evitar skeletons infinitos
     refetchOnReconnect: true, // Refetch si se reconecta
   })
 
   return {
     products: data || [],
-    isLoading,
+    isLoading: isLoading && !data, // ✅ FIX: Solo mostrar loading si no hay datos
     // Convertir Error a string para mantener compatibilidad con componentes
     error: error ? (error instanceof Error ? error.message : String(error)) : null,
     refetch: () => {
