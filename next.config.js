@@ -134,117 +134,47 @@ const nextConfig = {
     }
     
     // ⚡ FIX: Next.js puede requerir react/cache que no existe en React 18.3.1
-    // El polyfill se crea en scripts/create-react-cache-polyfill.js antes del build
-    // Asegurar que webpack lo resuelva correctamente usando alias y fallback
+    // Usamos un polyfill local en lugar de node_modules para mayor confiabilidad
+    // Primero intentar crear el polyfill en node_modules (para compatibilidad)
     const fs = require('fs')
     const reactCachePath = path.join(reactPath, 'cache.js')
+    const localPolyfillPath = path.resolve(process.cwd(), 'src/lib/polyfills/react-cache.js')
     
-    // Asegurar que el polyfill existe (debería haberse creado en prebuild)
+    // Asegurar que el polyfill existe en node_modules (para compatibilidad)
     if (!fs.existsSync(reactCachePath)) {
-      // Si no existe, crearlo ahora como fallback (mismo formato que el script)
       if (!fs.existsSync(reactPath)) {
         fs.mkdirSync(reactPath, { recursive: true })
       }
-      const polyfillContent = `'use strict';
-
-// Polyfill para react/cache en React 18.3.1
-// Next.js 15 puede requerir esto pero no está disponible en React 18.3.1
-
+      // Usar el polyfill local como fuente
+      if (fs.existsSync(localPolyfillPath)) {
+        fs.copyFileSync(localPolyfillPath, reactCachePath)
+      } else {
+        // Fallback: crear polyfill inline
+        const polyfillContent = `'use strict';
 function cacheImpl(fn) {
-  if (typeof fn !== 'function') {
-    throw new Error('cache requires a function');
-  }
-  // En React 19, cache memoiza funciones, aquí simplemente devolvemos la función
+  if (typeof fn !== 'function') throw new Error('cache requires a function');
   return fn;
 }
-
-// CRÍTICO: Crear objeto de exportación que soporte todos los patrones
-// Empezamos con un objeto plano y luego le agregamos las propiedades
-const moduleExports = {};
-
-// Primero definir cache como propiedad enumerable (CRÍTICO para (0, n.cache))
-Object.defineProperty(moduleExports, 'cache', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-// Definir default export
-Object.defineProperty(moduleExports, 'default', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-// Marcar como módulo ES
-Object.defineProperty(moduleExports, '__esModule', {
-  value: true,
-  writable: false,
-  enumerable: false,
-  configurable: false
-});
-
-// También hacer que moduleExports sea callable (para compatibilidad con algunos patrones)
-// Creamos una función que delega a cacheImpl
-const callableExport = function(fn) {
-  return cacheImpl(fn);
-};
-
-// Copiar todas las propiedades del objeto al callable
-Object.keys(moduleExports).forEach(key => {
-  Object.defineProperty(callableExport, key, {
-    value: moduleExports[key],
-    writable: false,
-    enumerable: key !== '__esModule',
-    configurable: false
-  });
-});
-
-// Agregar cache directamente al callable también
-Object.defineProperty(callableExport, 'cache', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-Object.defineProperty(callableExport, 'default', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-Object.defineProperty(callableExport, '__esModule', {
-  value: true,
-  writable: false,
-  enumerable: false,
-  configurable: false
-});
-
-// Exportar como objeto (esto funciona mejor con webpack)
+const callableExport = function(fn) { return cacheImpl(fn); };
+Object.defineProperty(callableExport, 'cache', { value: cacheImpl, writable: false, enumerable: true, configurable: false });
+Object.defineProperty(callableExport, 'default', { value: cacheImpl, writable: false, enumerable: true, configurable: false });
+Object.defineProperty(callableExport, '__esModule', { value: true, writable: false, enumerable: false, configurable: false });
 module.exports = callableExport;
-
-// Soporte para ES modules (si se usa transpilador)
-if (typeof exports !== 'undefined') {
-  Object.defineProperty(exports, '__esModule', { value: true });
-  exports.cache = cacheImpl;
-  exports.default = cacheImpl;
-}
 `
-      fs.writeFileSync(reactCachePath, polyfillContent, 'utf8')
+        fs.writeFileSync(reactCachePath, polyfillContent, 'utf8')
+      }
     }
     
-    // Configurar alias para que webpack resuelva react/cache al polyfill
-    config.resolve.alias['react/cache'] = reactCachePath
+    // CRÍTICO: Configurar alias para que webpack resuelva react/cache
+    // Priorizar el polyfill local si existe, sino usar el de node_modules
+    const polyfillToUse = fs.existsSync(localPolyfillPath) ? localPolyfillPath : reactCachePath
+    config.resolve.alias['react/cache'] = polyfillToUse
     
     // También configurar fallback para asegurar resolución
     if (!config.resolve.fallback) {
       config.resolve.fallback = {}
     }
-    config.resolve.fallback['react/cache'] = reactCachePath
+    config.resolve.fallback['react/cache'] = polyfillToUse
     
     return config
   },

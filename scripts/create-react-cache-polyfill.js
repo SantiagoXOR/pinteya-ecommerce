@@ -4,12 +4,43 @@ const path = require('path');
 // Crear polyfill para react/cache antes del build
 const reactPath = path.join(process.cwd(), 'node_modules', 'react');
 const cachePath = path.join(reactPath, 'cache.js');
+const localPolyfillPath = path.join(process.cwd(), 'src', 'lib', 'polyfills', 'react-cache.js');
 
 // Verificar que node_modules/react existe
 if (!fs.existsSync(reactPath)) {
   console.error('❌ Error: node_modules/react no encontrado. Ejecuta npm install primero.');
   process.exit(1);
 }
+
+// Verificar si existe el polyfill local
+if (fs.existsSync(localPolyfillPath)) {
+  console.log('✅ Polyfill local encontrado, copiando a node_modules...');
+  
+  // Asegurar que el directorio existe
+  if (!fs.existsSync(reactPath)) {
+    fs.mkdirSync(reactPath, { recursive: true });
+  }
+  
+  // Copiar el polyfill local a node_modules
+  fs.copyFileSync(localPolyfillPath, cachePath);
+  console.log('✅ Polyfill copiado a:', cachePath);
+  
+  // Verificar que el archivo se copió correctamente
+  if (fs.existsSync(cachePath)) {
+    const stats = fs.statSync(cachePath);
+    console.log(`   Tamaño: ${stats.size} bytes`);
+    console.log('✅ Polyfill verificado correctamente');
+  } else {
+    console.error('❌ Error: No se pudo copiar el archivo polyfill');
+    process.exit(1);
+  }
+  
+  // Continuar para que el build pueda usar el polyfill
+  // No hacer exit(0) porque el build puede necesitar continuar
+} else {
+
+  // Si no existe el polyfill local, crear uno básico
+  console.log('⚠️  Polyfill local no encontrado, creando uno básico...');
 
 // Verificar si react/cache ya existe
 // Forzar recreación en cada build para asegurar que esté actualizado
@@ -138,4 +169,4 @@ if (fs.existsSync(cachePath)) {
   console.error('❌ Error: No se pudo crear el archivo polyfill');
   process.exit(1);
 }
-
+}
