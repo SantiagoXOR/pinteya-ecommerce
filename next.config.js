@@ -128,12 +128,21 @@ const nextConfig = {
     }
     
     // ⚡ FIX: Next.js 16 puede requerir react/cache que no existe en React 18.3.1
-    // Crear un polyfill completo que implementa la funcionalidad de cache
+    // Intentar usar next/dist/compiled/react/cache primero, luego crear polyfill
     const fs = require('fs')
+    const nextReactCachePath = path.join(process.cwd(), 'node_modules', 'next', 'dist', 'compiled', 'react', 'cache.js')
     const reactCachePath = path.join(reactPath, 'cache.js')
     
-    if (!fs.existsSync(reactCachePath)) {
-      // Crear polyfill en un directorio que webpack pueda resolver
+    // Prioridad 1: Usar next/dist/compiled/react/cache si existe
+    if (fs.existsSync(nextReactCachePath)) {
+      config.resolve.alias['react/cache'] = nextReactCachePath
+    }
+    // Prioridad 2: Usar react/cache si existe en React
+    else if (fs.existsSync(reactCachePath)) {
+      config.resolve.alias['react/cache'] = reactCachePath
+    }
+    // Prioridad 3: Crear polyfill
+    else {
       const polyfillDir = path.join(process.cwd(), 'node_modules', 'react')
       const polyfillPath = path.join(polyfillDir, 'cache.js')
       
@@ -141,48 +150,30 @@ const nextConfig = {
         fs.mkdirSync(polyfillDir, { recursive: true })
       }
       
-      // Polyfill que exporta cache de todas las formas posibles para compatibilidad completa
+      // Polyfill que exporta cache como función y como propiedad del objeto exportado
       const polyfillContent = `'use strict';
 
 // Polyfill para react/cache en React 18.3.1
 // Next.js 16 puede requerir esto pero no está disponible en React 18.3.1
-// Esta implementación es compatible con todas las formas de importación
 
-function cacheImpl(fn) {
+function cache(fn) {
   if (typeof fn !== 'function') {
     throw new Error('cache requires a function');
   }
-  // Retornar la función directamente (passthrough simple)
-  // Next.js maneja el cache internamente
   return fn;
 }
 
-// Crear objeto de exportación con cache como propiedad
-const exportsObj = {
-  cache: cacheImpl,
-  default: cacheImpl
-};
+// Exportar como función con cache como propiedad (para f.cache)
+const cacheExport = cache;
+cacheExport.cache = cache;
 
-// Agregar cache como propiedad del objeto de exportación
-exportsObj.cache = cacheImpl;
-
-// Exportar como objeto (para import * as f from 'react/cache'; f.cache(...))
-module.exports = exportsObj;
-
-// También exportar la función directamente (para import cache from 'react/cache')
-module.exports.cache = cacheImpl;
-module.exports.default = cacheImpl;
-
-// Soporte para ES modules - exportar tanto named como default
-if (typeof exports !== 'undefined') {
-  exports.cache = cacheImpl;
-  exports.default = cacheImpl;
-}
+// Exportar de todas las formas posibles
+module.exports = cacheExport;
+module.exports.cache = cache;
+module.exports.default = cache;
 `
       fs.writeFileSync(polyfillPath, polyfillContent, 'utf8')
       config.resolve.alias['react/cache'] = polyfillPath
-    } else {
-      config.resolve.alias['react/cache'] = reactCachePath
     }
     
     return config
