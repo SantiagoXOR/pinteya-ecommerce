@@ -20,9 +20,9 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // ⚡ FIX Next.js 16: Turbopack está habilitado por defecto
-  // Agregar configuración vacía para silenciar el error cuando usamos webpack
-  turbopack: {},
+  // ⚡ FIX Next.js 16: Usando Turbopack en lugar de webpack
+  // Turbopack resuelve automáticamente react/jsx-runtime sin necesidad de alias
+  // No necesitamos configuración adicional para Turbopack
 
   // ⚡ FIX VERCEL: output: 'standalone' removido - NO compatible con Vercel
   // 'standalone' es para Docker/containers, Vercel maneja Next.js automáticamente
@@ -41,9 +41,10 @@ const nextConfig = {
 
   // ⚡ PERFORMANCE: Modular imports para reducir bundle size
   // Nota: swcMinify removido - es por defecto en Next.js 15
+  // ⚡ FIX TURBOPACK: Agregar extensión .mjs para compatibilidad con Turbopack
   modularizeImports: {
     'lucide-react': {
-      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}.mjs',
     },
     '@radix-ui/react-icons': {
       transform: '@radix-ui/react-icons/dist/{{member}}',
@@ -92,181 +93,16 @@ const nextConfig = {
     cssChunking: true,
   },
 
-  // ✅ Configuración de webpack para resolver el error de 'call'
-  webpack: (config, { dev, isServer }) => {
-    // ⚡ FIX: Asegurar que React esté disponible (cliente Y servidor)
-    // Next.js 16 necesita que React esté correctamente resuelto
-    const reactPath = require.resolve('react')
-    const reactDomPath = require.resolve('react-dom')
-    
-    // Aplicar alias de React en ambos entornos
+  // ⚡ FIX VERCEL WEBPACK: Configuración de webpack para builds con --webpack
+  // Necesario para resolver react/jsx-runtime cuando se usa webpack en lugar de Turbopack
+  webpack: (config, { isServer }) => {
+    // Resolver react/jsx-runtime correctamente para webpack
     config.resolve.alias = {
       ...config.resolve.alias,
-      'react': reactPath,
-      'react-dom': reactDomPath,
+      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+      'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
     }
     
-    // Resolver problemas de hidratación y carga dinámica (solo cliente)
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      }
-      
-      // Configuración específica para NextAuth v5 (solo cliente)
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'next-auth/react$': require.resolve('next-auth/react'),
-        'next-auth$': require.resolve('next-auth'),
-      }
-    }
-
-    // ✅ Configuración para resolver errores de hot-update
-    if (dev && !isServer) {
-      // Configurar el cliente de webpack para manejar errores de red
-      config.optimization = {
-        ...config.optimization,
-        runtimeChunk: 'single',
-      }
-
-      // Configurar el output para hot updates
-      config.output = {
-        ...config.output,
-        hotUpdateChunkFilename: 'static/webpack/[id].[fullhash].hot-update.js',
-        hotUpdateMainFilename: 'static/webpack/[fullhash].hot-update.json',
-      }
-    }
-
-    // ⚡ PERFORMANCE: Optimizar chunks para mejor code splitting
-    if (!dev) {
-      // Optimizaciones adicionales para producción
-      config.optimization = {
-        ...config.optimization,
-        minimize: true,
-        usedExports: true,
-        sideEffects: false,
-        // ⚡ CRITICAL: Mejorar tree shaking y eliminación de código muerto
-        providedExports: true,
-        innerGraph: true,
-        concatenateModules: true, // Scope hoisting para reducir overhead
-        moduleIds: 'deterministic', // IDs determinísticos para mejor cache
-        chunkIds: 'deterministic',
-        // ⚡ CRITICAL: Eliminar código no usado más agresivamente
-        removeAvailableModules: true,
-        removeEmptyChunks: true,
-        mergeDuplicateChunks: true,
-        flagIncludedChunks: true,
-      }
-      
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        // ⚡ CRITICAL: Limitar tamaño máximo de chunks para evitar tareas largas (>50ms)
-        // Chunks más pequeños = menos tiempo de ejecución por chunk = mejor interactividad
-        maxSize: 150000, // 150 KB máximo (reducido de 200 KB para evitar tareas largas)
-        minSize: 20000, // 20 KB mínimo
-        maxAsyncRequests: 30,
-        // ⚡ FIX: maxInitialRequests definido una sola vez (25 para evitar demasiados requests iniciales)
-        maxInitialRequests: 25, // ⚡ Reducido de 30 para evitar demasiados requests iniciales
-        cacheGroups: {
-          // Framework core (React, Next.js) - Separado pero optimizado
-          framework: {
-            test: /[\\/]node_modules[\\/](react|react-dom|next|scheduler)[\\/]/,
-            name: 'framework',
-            priority: 40,
-            enforce: true,
-            // ⚡ CRITICAL: Limitar tamaño del framework chunk
-            maxSize: 300000, // 300 KB máximo para framework
-            reuseExistingChunk: true,
-            // ⚡ FIX: Asegurar que React esté disponible en todos los chunks (async e initial)
-            chunks: 'all',
-            // ⚡ CRITICAL: Forzar que React esté disponible antes de otros chunks
-            minChunks: 1,
-          },
-          
-          // ⚡ NUEVO: Radix UI separado
-          radixUI: {
-            test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
-            name: 'radix-ui',
-            priority: 35,
-            reuseExistingChunk: true,
-            enforce: true,
-            // ⚡ CRITICAL: Limitar tamaño del radix-ui chunk
-            maxSize: 100000, // 100 KB máximo (vs sin límite anterior)
-          },
-          
-          // ⚡ NUEVO: Recharts separado (solo carga en admin)
-          recharts: {
-            test: /[\\/]node_modules[\\/]recharts[\\/]/,
-            name: 'recharts',
-            priority: 33,
-            reuseExistingChunk: true,
-            enforce: true,
-          },
-          
-          // ⚡ NUEVO: Framer Motion separado
-          framerMotion: {
-            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-            name: 'framer-motion',
-            priority: 32,
-            reuseExistingChunk: true,
-            enforce: true,
-            // ⚡ CRITICAL: Limitar tamaño del framer-motion chunk
-            maxSize: 100000, // 100 KB máximo (vs sin límite anterior)
-          },
-          
-          // Bibliotecas compartidas grandes
-          lib: {
-            test: /[\\/]node_modules[\\/](swiper|react-hook-form)[\\/]/,
-            name: 'lib',
-            priority: 30,
-            reuseExistingChunk: true,
-            // ⚡ CRITICAL: Limitar tamaño del lib chunk para mejor code splitting
-            maxSize: 150000, // 150 KB máximo (vs sin límite anterior)
-          },
-          
-          // Redux y state management
-          redux: {
-            test: /[\\/]node_modules[\\/](@reduxjs|react-redux)[\\/]/,
-            name: 'redux',
-            priority: 25,
-            reuseExistingChunk: true,
-          },
-          
-          // React Query
-          query: {
-            test: /[\\/]node_modules[\\/](@tanstack)[\\/]/,
-            name: 'query',
-            priority: 25,
-            reuseExistingChunk: true,
-          },
-          
-          // Otros vendors
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            priority: 20,
-            reuseExistingChunk: true,
-            // ⚡ CRITICAL: Reducir tamaño del vendor chunk para evitar tareas largas (>50ms)
-            // Tareas largas bloquean interactividad - chunks más pequeños = menos tiempo de ejecución por chunk
-            maxSize: 150000, // 150 KB máximo (reducido de 200 KB para evitar tareas largas)
-            minSize: 20000, // 20 KB mínimo para evitar chunks muy pequeños
-          },
-          
-          // Componentes compartidos
-          commons: {
-            minChunks: 2,
-            priority: 10,
-            reuseExistingChunk: true,
-          },
-        },
-        // ⚡ FIX: maxInitialRequests y minSize ya están definidos arriba (líneas 160 y 158)
-        // No duplicar aquí para evitar conflictos
-        // minSize: 20000 está definido en línea 158 (20 KB mínimo)
-      }
-    }
-
     return config
   },
 
