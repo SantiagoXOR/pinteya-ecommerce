@@ -128,27 +128,43 @@ const nextConfig = {
     }
     
     // ⚡ FIX: Next.js 16 puede requerir react/cache que no existe en React 18.3.1
-    // Crear un polyfill simple para react/cache si no existe
+    // Crear un polyfill robusto para react/cache si no existe
     const fs = require('fs')
     const reactCachePath = path.join(reactPath, 'cache.js')
     
     if (!fs.existsSync(reactCachePath)) {
-      // Crear un polyfill temporal para react/cache
-      const polyfillPath = path.join(process.cwd(), '.next', 'react-cache-polyfill.js')
-      const polyfillDir = path.dirname(polyfillPath)
+      // Crear polyfill en un directorio que webpack pueda resolver
+      const polyfillDir = path.join(process.cwd(), 'node_modules', 'react')
+      const polyfillPath = path.join(polyfillDir, 'cache.js')
       
       if (!fs.existsSync(polyfillDir)) {
         fs.mkdirSync(polyfillDir, { recursive: true })
       }
       
-      // Polyfill simple que exporta una función cache que retorna el callback
-      const polyfillContent = `
+      // Polyfill robusto que soporta diferentes formas de importación
+      const polyfillContent = `'use strict';
+
 // Polyfill para react/cache en React 18.3.1
 // Next.js 16 puede requerir esto pero no está disponible en React 18.3.1
-export function cache(fn) {
-  return fn
+// Esta implementación es compatible con cómo Next.js importa cache
+
+function cache(fn) {
+  if (typeof fn !== 'function') {
+    throw new Error('cache requires a function');
+  }
+  return fn;
 }
-export default cache
+
+// Exportar de múltiples formas para compatibilidad
+module.exports = cache;
+module.exports.cache = cache;
+module.exports.default = cache;
+
+// Soporte para ES modules
+if (typeof exports !== 'undefined') {
+  exports.cache = cache;
+  exports.default = cache;
+}
 `
       fs.writeFileSync(polyfillPath, polyfillContent, 'utf8')
       config.resolve.alias['react/cache'] = polyfillPath
