@@ -127,53 +127,38 @@ const nextConfig = {
       config.resolve.modules.push('node_modules')
     }
     
-    // ⚡ FIX: Next.js 16 puede requerir react/cache que no existe en React 18.3.1
-    // Intentar usar next/dist/compiled/react/cache primero, luego crear polyfill
+    // ⚡ FIX: Next.js puede requerir react/cache que no existe en React 18.3.1
+    // El polyfill se crea en scripts/create-react-cache-polyfill.js antes del build
+    // Asegurar que webpack lo resuelva correctamente
     const fs = require('fs')
-    const nextReactCachePath = path.join(process.cwd(), 'node_modules', 'next', 'dist', 'compiled', 'react', 'cache.js')
     const reactCachePath = path.join(reactPath, 'cache.js')
     
-    // Prioridad 1: Usar next/dist/compiled/react/cache si existe
-    if (fs.existsSync(nextReactCachePath)) {
-      config.resolve.alias['react/cache'] = nextReactCachePath
-    }
-    // Prioridad 2: Usar react/cache si existe en React
-    else if (fs.existsSync(reactCachePath)) {
+    // Asegurar que el polyfill existe (debería haberse creado en prebuild)
+    if (fs.existsSync(reactCachePath)) {
       config.resolve.alias['react/cache'] = reactCachePath
-    }
-    // Prioridad 3: Crear polyfill
-    else {
-      const polyfillDir = path.join(process.cwd(), 'node_modules', 'react')
-      const polyfillPath = path.join(polyfillDir, 'cache.js')
-      
-      if (!fs.existsSync(polyfillDir)) {
-        fs.mkdirSync(polyfillDir, { recursive: true })
+    } else {
+      // Si no existe, crearlo ahora como fallback (mismo formato que el script)
+      if (!fs.existsSync(reactPath)) {
+        fs.mkdirSync(reactPath, { recursive: true })
       }
-      
-      // Polyfill que exporta cache como función y como propiedad del objeto exportado
       const polyfillContent = `'use strict';
-
-// Polyfill para react/cache en React 18.3.1
-// Next.js 16 puede requerir esto pero no está disponible en React 18.3.1
-
-function cache(fn) {
+function cacheImpl(fn) {
   if (typeof fn !== 'function') {
     throw new Error('cache requires a function');
   }
   return fn;
 }
-
-// Exportar como función con cache como propiedad (para f.cache)
-const cacheExport = cache;
-cacheExport.cache = cache;
-
-// Exportar de todas las formas posibles
-module.exports = cacheExport;
-module.exports.cache = cache;
-module.exports.default = cache;
+const cacheObj = {
+  cache: cacheImpl,
+  default: cacheImpl
+};
+cacheImpl.cache = cacheImpl;
+module.exports = cacheObj;
+module.exports.cache = cacheImpl;
+module.exports.default = cacheImpl;
 `
-      fs.writeFileSync(polyfillPath, polyfillContent, 'utf8')
-      config.resolve.alias['react/cache'] = polyfillPath
+      fs.writeFileSync(reactCachePath, polyfillContent, 'utf8')
+      config.resolve.alias['react/cache'] = reactCachePath
     }
     
     return config
