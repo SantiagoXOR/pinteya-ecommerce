@@ -128,7 +128,7 @@ const nextConfig = {
     }
     
     // ⚡ FIX: Next.js 16 puede requerir react/cache que no existe en React 18.3.1
-    // Crear un polyfill robusto para react/cache si no existe
+    // Crear un polyfill completo que implementa la funcionalidad de cache
     const fs = require('fs')
     const reactCachePath = path.join(reactPath, 'cache.js')
     
@@ -141,18 +141,45 @@ const nextConfig = {
         fs.mkdirSync(polyfillDir, { recursive: true })
       }
       
-      // Polyfill robusto que soporta diferentes formas de importación
+      // Polyfill completo que implementa cache con Map para almacenar resultados
       const polyfillContent = `'use strict';
 
-// Polyfill para react/cache en React 18.3.1
+// Polyfill completo para react/cache en React 18.3.1
 // Next.js 16 puede requerir esto pero no está disponible en React 18.3.1
-// Esta implementación es compatible con cómo Next.js importa cache
+// Esta implementación proporciona funcionalidad de cache real
+
+const cacheMap = new WeakMap();
 
 function cache(fn) {
   if (typeof fn !== 'function') {
     throw new Error('cache requires a function');
   }
-  return fn;
+  
+  // Si ya está en cache, retornar la función cached
+  if (cacheMap.has(fn)) {
+    return cacheMap.get(fn);
+  }
+  
+  // Crear función cached que almacena resultados
+  const cachedFn = function(...args) {
+    const key = JSON.stringify(args);
+    if (!cachedFn._cache) {
+      cachedFn._cache = new Map();
+    }
+    
+    if (cachedFn._cache.has(key)) {
+      return cachedFn._cache.get(key);
+    }
+    
+    const result = fn.apply(this, args);
+    cachedFn._cache.set(key, result);
+    return result;
+  };
+  
+  // Almacenar en cacheMap para futuras referencias
+  cacheMap.set(fn, cachedFn);
+  
+  return cachedFn;
 }
 
 // Exportar de múltiples formas para compatibilidad
