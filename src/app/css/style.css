@@ -206,6 +206,28 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* ⚡ CRITICAL: Forzar colores amarillos en dark mode para títulos */
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6 {
+    color: #ffd549 !important; /* bright-sun-300 */
+  }
+
+  /* Títulos específicos en Home-v2 */
+  .dark section h2,
+  .dark section h3 {
+    color: #ffd549 !important; /* bright-sun-300 */
+  }
+
+  /* Subtítulos y descripciones */
+  .dark p,
+  .dark span:not([class*="text-"]) {
+    color: #fff4c6 !important; /* bright-sun-200 */
+  }
 }
 
 @layer components {
