@@ -82,6 +82,12 @@ const FloatingWhatsAppButton = dynamic(() => import('@/components/ui/floating-wh
   loading: () => null,
 })
 
+// ⚡ PERFORMANCE: Bottom navigation estilo MercadoLibre (lazy load)
+const MercadoLibreBottomNav = dynamic(() => import('@/components/ui/bottom-navigation-mercadolibre').then(m => ({ default: m.MercadoLibreBottomNav })), {
+  ssr: false,
+  loading: () => null,
+})
+
 // ⚡ PERFORMANCE: Memoizar componentes para evitar re-renders innecesarios
 const MemoizedHeader = React.memo(Header)
 const MemoizedFooter = React.memo(Footer)
@@ -176,10 +182,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                             {/* Footer solo para rutas públicas - Memoizado */}
                             {!isAdminRoute && !isAuthRoute && <MemoizedFooter />}
 
-                            {/* Navegación móvil inferior - Solo visible en móviles - TEMPORALMENTE DESACTIVADO */}
-                            {/* <div className="md:hidden">
-                      <BottomNavigation />
-                    </div> */}
+                            {/* Navegación móvil inferior estilo MercadoLibre - Solo visible en móviles */}
+                            {!isAdminRoute && !isAuthRoute && (
+                              <div className="md:hidden">
+                                <MercadoLibreBottomNav />
+                              </div>
+                            )}
 
                             {/* Botones flotantes - Lazy loaded y solo para rutas públicas */}
                             {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingCartButton />}

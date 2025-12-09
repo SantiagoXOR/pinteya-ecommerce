@@ -80,6 +80,23 @@ const Header = () => {
     setIsMounted(true)
   }, [])
 
+  // Escuchar evento personalizado para hacer focus en el searchbar desde el bottom nav
+  useEffect(() => {
+    const handleFocusSearchbar = () => {
+      setIsSearchExpanded(true)
+      // Enfocar el input después de la animación
+      setTimeout(() => {
+        expandedSearchRef.current?.focus()
+        expandedSearchRef.current?.click()
+      }, 100)
+    }
+
+    window.addEventListener('focus-searchbar', handleFocusSearchbar as EventListener)
+    return () => {
+      window.removeEventListener('focus-searchbar', handleFocusSearchbar as EventListener)
+    }
+  }, [])
+
   const product = useAppSelector(state => state.cartReducer.items)
   const totalPrice = useSelector(selectTotalPrice)
 

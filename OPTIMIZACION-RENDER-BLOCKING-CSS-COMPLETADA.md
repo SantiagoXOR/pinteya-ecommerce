@@ -239,3 +239,6 @@ Después del despliegue, verificar:
 Todas las optimizaciones han sido implementadas exitosamente. El build se completó sin errores y las configuraciones están activas. Solo falta verificar con Lighthouse después del despliegue a producción.
 
 
+
+
+

@@ -63,49 +63,63 @@ export const useBestSellerProducts = ({
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: productQueryKeys.bestseller(categorySlug),
     queryFn: async (): Promise<Product[]> => {
-      // Construir filtros según si hay categoría o no
-      const filters: any = {
-        limit: categorySlug ? 50 : 100,
-        sortBy: categorySlug ? 'created_at' : 'price',
-        sortOrder: 'desc',
-      }
-      
-      if (categorySlug) {
-        filters.category = categorySlug
-      }
+      // Timeout de 10 segundos para evitar que se quede cargando indefinidamente
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: La carga de productos está tardando demasiado')), 10000)
+      })
 
-      // Fetch productos usando la función de API existente
-      const response = await getProducts(filters)
-      
-      if (!response.success || !response.data) {
-        throw new Error(response.message || 'Error al cargar productos')
-      }
-
-      // Adaptar productos del formato API al formato legacy
-      const fetchedProducts = adaptApiProductsToLegacy(response.data)
-      
-      let finalProducts: Product[]
-      
-      if (!categorySlug) {
-        // Sin categoría: filtrar solo los 10 productos específicos
-        const specificProducts = fetchedProducts.filter(p => 
-          BESTSELLER_PRODUCTS_SLUGS.includes((p.slug || '') as any)
-        )
+      const fetchPromise = async (): Promise<Product[]> => {
+        // Construir filtros según si hay categoría o no
+        const filters: any = {
+          limit: categorySlug ? 50 : 100,
+          sortBy: categorySlug ? 'created_at' : 'price',
+          sortOrder: 'desc',
+        }
         
-        // Ordenar según el orden de prioridad y limitar a 10
-        finalProducts = orderProductsByPriority(specificProducts, BESTSELLER_PRODUCTS_SLUGS).slice(0, 10)
-      } else {
-        // Con categoría: usar todos los productos de la categoría
-        finalProducts = fetchedProducts
+        if (categorySlug) {
+          filters.category = categorySlug
+        }
+
+        // Fetch productos usando la función de API existente
+        const response = await getProducts(filters)
+        
+        if (!response.success || !response.data) {
+          throw new Error(response.message || 'Error al cargar productos')
+        }
+
+        // Adaptar productos del formato API al formato legacy
+        const fetchedProducts = adaptApiProductsToLegacy(response.data)
+        
+        let finalProducts: Product[]
+        
+        if (!categorySlug) {
+          // Sin categoría: filtrar solo los 10 productos específicos
+          const specificProducts = fetchedProducts.filter(p => 
+            BESTSELLER_PRODUCTS_SLUGS.includes((p.slug || '') as any)
+          )
+          
+          // Ordenar según el orden de prioridad y limitar a 10
+          finalProducts = orderProductsByPriority(specificProducts, BESTSELLER_PRODUCTS_SLUGS).slice(0, 10)
+        } else {
+          // Con categoría: usar todos los productos de la categoría
+          finalProducts = fetchedProducts
+        }
+
+        return finalProducts
       }
 
-      return finalProducts
+      // Ejecutar con timeout
+      return Promise.race([fetchPromise(), timeoutPromise])
     },
     // Configuración optimizada para Home-v2
     staleTime: enableCache ? 5 * 60 * 1000 : 0, // 5 minutos de caché
     gcTime: 10 * 60 * 1000, // 10 minutos en caché
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retry: 1, // Reducir retries para evitar esperas largas
+    retryDelay: 2000, // 2 segundos entre retries
+    // Timeout global de la query
+    meta: {
+      timeout: 10000, // 10 segundos máximo
+    },
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
     refetchOnMount: false, // Usar caché si está disponible

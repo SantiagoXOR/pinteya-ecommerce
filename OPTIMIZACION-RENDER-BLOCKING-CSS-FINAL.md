@@ -208,3 +208,6 @@ Se usa para detectar CSS que Next.js carga dinámicamente después del render in
 El script inline se ejecuta antes de que React se hidrate, asegurando que todos los CSS generados por Next.js se conviertan automáticamente a carga no bloqueante. Esto elimina los ~1,010 ms de render-blocking restantes.
 
 
+
+
+

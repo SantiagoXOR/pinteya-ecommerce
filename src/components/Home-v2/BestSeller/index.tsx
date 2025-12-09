@@ -39,7 +39,22 @@ const BestSeller: React.FC = () => {
   const shouldShowHelpCard = bestSellerProducts.length > 0 && 
     (bestSellerProducts.length % 4 !== 0 || bestSellerProducts.length % 2 !== 0)
 
-  if (isLoading) {
+  // Timeout para evitar que los skeletons se queden cargando indefinidamente
+  const [showTimeout, setShowTimeout] = React.useState(false)
+  
+  React.useEffect(() => {
+    if (isLoading) {
+      const timeout = setTimeout(() => {
+        setShowTimeout(true)
+      }, 12000) // 12 segundos máximo de loading
+      
+      return () => clearTimeout(timeout)
+    } else {
+      setShowTimeout(false)
+    }
+  }, [isLoading])
+
+  if (isLoading && !showTimeout) {
     return (
       <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
@@ -49,7 +64,8 @@ const BestSeller: React.FC = () => {
     )
   }
 
-  if (error) {
+  // Si hay timeout o error, mostrar contenido vacío o mensaje
+  if (error || showTimeout) {
     return null
   }
 
