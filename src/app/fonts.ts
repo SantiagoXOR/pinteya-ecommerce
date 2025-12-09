@@ -1,48 +1,20 @@
 /**
- * ⚡ OPTIMIZACIÓN: Fuentes con next/font para máximo rendimiento
+ * ⚡ OPTIMIZACIÓN: Fuentes optimizadas para Turbopack
  * 
- * Beneficios:
- * - Inline automático de @font-face en <head>
- * - Preload automático de fuentes críticas
- * - Eliminación de request bloqueante (-610ms)
- * - Optimización de subsetting automática
- * - Sin FOUT/FOIT (Flash of Unstyled/Invisible Text)
+ * NOTA: Turbopack tiene un bug conocido con next/font/local que genera URLs mal formateadas.
+ * Por ahora usamos una variable CSS simple para mantener compatibilidad con Turbopack.
+ * Las fuentes se cargan mediante CSS manual en layout.tsx
  */
 
-import localFont from 'next/font/local'
-
-/**
- * Fuente principal: Euclid Circular A
- * 
- * Pesos configurados:
- * - 400 (Regular): Texto normal
- * - 600 (SemiBold): Énfasis medio
- * - 700 (Bold): Títulos y énfasis fuerte
- */
-export const euclidCircularA = localFont({
-  src: [
-    {
-      path: '../../public/fonts/EuclidCircularA-Regular.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '../../public/fonts/EuclidCircularA-SemiBold.woff2',
-      weight: '600',
-      style: 'normal',
-    },
-    {
-      path: '../../public/fonts/EuclidCircularA-Bold.woff2',
-      weight: '700',
-      style: 'normal',
-    },
-  ],
+// ⚡ FIX Turbopack: Usamos variable CSS simple en lugar de next/font/local
+// hasta que se solucione el bug con URLs mal formateadas
+export const euclidCircularA = {
   variable: '--font-euclid',
-  display: 'swap', // Muestra fuente fallback mientras carga
-  preload: true, // Preload automático de la fuente
-  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-  adjustFontFallback: 'Arial', // Ajuste automático para reducir layout shift
-})
+  className: 'font-euclid',
+  style: {
+    fontFamily: 'var(--font-euclid), "Euclid Circular A", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  },
+}
 
 /**
  * Fuente secundaria: Inter (sistema)
@@ -54,6 +26,7 @@ export const euclidCircularA = localFont({
 //   display: 'swap',
 //   preload: true,
 // })
+
 
 
 

@@ -1,12 +1,12 @@
 // Force redeploy to fix Server Action error - 2025-08-02T00:30:00.000Z
 import Providers from './providers'
 import React, { Suspense } from 'react'
-// ⚡ PERFORMANCE: Fuentes optimizadas con next/font (elimina 610ms de render-blocking)
+// ⚡ PERFORMANCE: Fuentes optimizadas para Turbopack
 import { euclidCircularA } from './fonts'
 // ⚡ PERFORMANCE: CSS crítico inline, CSS no crítico carga asíncrono
 import './css/style.css'
-// NOTA: euclid-circular-a-font.css ya no es necesario, next/font lo maneja automáticamente
-// CSS no crítico se carga asíncronamente después del FCP
+// ⚡ FIX Turbopack: Importar CSS manual de fuentes (next/font/local tiene bug con Turbopack)
+import './css/euclid-fonts-turbopack.css'
 import { metadata as defaultMetadata } from './metadata'
 import type { Metadata } from 'next'
 

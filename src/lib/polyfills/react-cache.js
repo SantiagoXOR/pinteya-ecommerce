@@ -13,36 +13,40 @@ function cacheImpl(fn) {
 }
 
 // CRÍTICO: Crear objeto de exportación que soporte todos los patrones
-// También hacer que moduleExports sea callable (para compatibilidad con algunos patrones)
-// Creamos una función que delega a cacheImpl
-const callableExport = function(fn) {
+// Necesitamos que funcione como objeto (import * as n) y como función (import cache)
+const cacheExport = function(fn) {
   return cacheImpl(fn);
 };
 
-// Agregar cache directamente al callable (CRÍTICO para (0, n.cache))
-Object.defineProperty(callableExport, 'cache', {
+// Agregar propiedades directamente a la función (enumerables para import * as n)
+Object.defineProperty(cacheExport, 'cache', {
+  value: cacheImpl,
+  writable: false,
+  enumerable: true,  // CRÍTICO: debe ser enumerable para import * as n
+  configurable: false
+});
+
+Object.defineProperty(cacheExport, 'default', {
   value: cacheImpl,
   writable: false,
   enumerable: true,
   configurable: false
 });
 
-Object.defineProperty(callableExport, 'default', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-Object.defineProperty(callableExport, '__esModule', {
+Object.defineProperty(cacheExport, '__esModule', {
   value: true,
   writable: false,
   enumerable: false,
   configurable: false
 });
 
-// Exportar (CommonJS)
-module.exports = callableExport;
+// Exportar la función con propiedades
+module.exports = cacheExport;
+
+// Exportar también como objeto para compatibilidad adicional
+module.exports.cache = cacheImpl;
+module.exports.default = cacheImpl;
+module.exports.__esModule = true;
 
 // Soporte para ES modules
 if (typeof exports !== 'undefined') {
@@ -50,4 +54,3 @@ if (typeof exports !== 'undefined') {
   exports.cache = cacheImpl;
   exports.default = cacheImpl;
 }
-

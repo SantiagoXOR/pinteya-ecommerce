@@ -6,7 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const nextConfig = {
-  // ✅ Configuración mínima y estable para Next.js 15
+  // ✅ Configuración mínima y estable para Next.js 16
 
   // ⚡ OPTIMIZACIÓN: Configuración ISR para reducir build time
   // Genera páginas bajo demanda en lugar de todas en build time
@@ -20,14 +20,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // ⚡ FIX: Deshabilitar ESLint durante el build para evitar errores circulares
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // ⚡ FIX: ESLint config removido - Next.js 16 maneja esto diferente
 
-  // ⚡ FIX Next.js 16: Usando Turbopack en lugar de webpack
-  // Turbopack resuelve automáticamente react/jsx-runtime sin necesidad de alias
-  // No necesitamos configuración adicional para Turbopack
+  // ⚡ Next.js 16: Turbopack es el empaquetador predeterminado
+  // También mantenemos configuración de webpack por compatibilidad
 
   // ⚡ FIX VERCEL: output: 'standalone' removido - NO compatible con Vercel
   // 'standalone' es para Docker/containers, Vercel maneja Next.js automáticamente
@@ -93,9 +89,8 @@ const nextConfig = {
     // - Separa CSS en chunks más pequeños por ruta/componente
     // - Reduce el tamaño inicial del CSS principal
     // - Los @import bloqueantes fueron removidos de style.css y se cargan via DeferredCSS
-    // - Revertido a true: 'strict' aumentó la latencia de 641ms a 942ms
-    // Nota: En Next.js 15.0.0, cssChunking debe ser 'strict' | 'loose' | boolean
-    cssChunking: 'loose',
+    // Nota: En Next.js 16, cssChunking debe ser boolean (true = loose, false = strict)
+    cssChunking: true,
   },
 
   // ⚡ FIX VERCEL WEBPACK: Configuración de webpack para builds con --webpack
@@ -155,11 +150,14 @@ function cacheImpl(fn) {
   if (typeof fn !== 'function') throw new Error('cache requires a function');
   return fn;
 }
-const callableExport = function(fn) { return cacheImpl(fn); };
-Object.defineProperty(callableExport, 'cache', { value: cacheImpl, writable: false, enumerable: true, configurable: false });
-Object.defineProperty(callableExport, 'default', { value: cacheImpl, writable: false, enumerable: true, configurable: false });
-Object.defineProperty(callableExport, '__esModule', { value: true, writable: false, enumerable: false, configurable: false });
-module.exports = callableExport;
+const cacheExport = function(fn) { return cacheImpl(fn); };
+Object.defineProperty(cacheExport, 'cache', { value: cacheImpl, writable: false, enumerable: true, configurable: false });
+Object.defineProperty(cacheExport, 'default', { value: cacheImpl, writable: false, enumerable: true, configurable: false });
+Object.defineProperty(cacheExport, '__esModule', { value: true, writable: false, enumerable: false, configurable: false });
+module.exports = cacheExport;
+module.exports.cache = cacheImpl;
+module.exports.default = cacheImpl;
+module.exports.__esModule = true;
 `
         fs.writeFileSync(reactCachePath, polyfillContent, 'utf8')
       }
@@ -177,6 +175,16 @@ module.exports = callableExport;
     config.resolve.fallback['react/cache'] = polyfillToUse
     
     return config
+  },
+
+  // ⚡ FIX Next.js 16: Configuración Turbopack para react/cache polyfill
+  // Turbopack es el empaquetador predeterminado en Next.js 16
+  // El script prebuild:vercel copia el polyfill a node_modules/react/cache.js
+  // Configuramos alias para que Turbopack resuelva correctamente
+  turbopack: {
+    resolveAlias: {
+      'react/cache': require('path').resolve(process.cwd(), 'node_modules/react/cache.js'),
+    },
   },
 
   // ⚡ PERFORMANCE: Configuración de imágenes optimizada (-4s FCP con WebP)

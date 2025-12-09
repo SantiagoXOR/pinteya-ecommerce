@@ -12,13 +12,18 @@ if (!fs.existsSync(reactPath)) {
   process.exit(1);
 }
 
+// Asegurar que el directorio existe
+if (!fs.existsSync(reactPath)) {
+  fs.mkdirSync(reactPath, { recursive: true });
+}
+
 // Verificar si existe el polyfill local
 if (fs.existsSync(localPolyfillPath)) {
   console.log('✅ Polyfill local encontrado, copiando a node_modules...');
   
-  // Asegurar que el directorio existe
-  if (!fs.existsSync(reactPath)) {
-    fs.mkdirSync(reactPath, { recursive: true });
+  // Eliminar el polyfill existente si existe para forzar actualización
+  if (fs.existsSync(cachePath)) {
+    fs.unlinkSync(cachePath);
   }
   
   // Copiar el polyfill local a node_modules
@@ -74,73 +79,40 @@ function cacheImpl(fn) {
 }
 
 // CRÍTICO: Crear objeto de exportación que soporte todos los patrones
-// Empezamos con un objeto plano y luego le agregamos las propiedades
-const moduleExports = {};
-
-// Primero definir cache como propiedad enumerable (CRÍTICO para (0, n.cache))
-Object.defineProperty(moduleExports, 'cache', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-// Definir default export
-Object.defineProperty(moduleExports, 'default', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-// Marcar como módulo ES
-Object.defineProperty(moduleExports, '__esModule', {
-  value: true,
-  writable: false,
-  enumerable: false,
-  configurable: false
-});
-
-// También hacer que moduleExports sea callable (para compatibilidad con algunos patrones)
-// Creamos una función que delega a cacheImpl
-const callableExport = function(fn) {
+// Necesitamos que funcione como objeto (import * as n) y como función (import cache)
+const cacheExport = function(fn) {
   return cacheImpl(fn);
 };
 
-// Copiar todas las propiedades del objeto al callable
-Object.keys(moduleExports).forEach(key => {
-  Object.defineProperty(callableExport, key, {
-    value: moduleExports[key],
-    writable: false,
-    enumerable: key !== '__esModule',
-    configurable: false
-  });
+// Agregar propiedades directamente a la función (enumerables para import * as n)
+Object.defineProperty(cacheExport, 'cache', {
+  value: cacheImpl,
+  writable: false,
+  enumerable: true,  // CRÍTICO: debe ser enumerable para import * as n
+  configurable: false
 });
 
-// Agregar cache directamente al callable también
-Object.defineProperty(callableExport, 'cache', {
+Object.defineProperty(cacheExport, 'default', {
   value: cacheImpl,
   writable: false,
   enumerable: true,
   configurable: false
 });
 
-Object.defineProperty(callableExport, 'default', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-Object.defineProperty(callableExport, '__esModule', {
+Object.defineProperty(cacheExport, '__esModule', {
   value: true,
   writable: false,
   enumerable: false,
   configurable: false
 });
 
-// Exportar como objeto (esto funciona mejor con webpack)
-module.exports = callableExport;
+// Exportar la función con propiedades
+module.exports = cacheExport;
+
+// Exportar también como objeto para compatibilidad adicional
+module.exports.cache = cacheImpl;
+module.exports.default = cacheImpl;
+module.exports.__esModule = true;
 
 // Soporte para ES modules (si se usa transpilador)
 if (typeof exports !== 'undefined') {

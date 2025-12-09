@@ -1,0 +1,50 @@
+/* ⚡ FIX Turbopack: Fuentes optimizadas para Turbopack
+ * next/font/local tiene un bug conocido con Turbopack que genera URLs mal formateadas
+ * Este archivo CSS manual mantiene las optimizaciones pero funciona con Turbopack
+ */
+
+/* Variable CSS para la fuente */
+:root {
+  --font-euclid: 'Euclid Circular A', 'Euclid Circular A Fallback', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* 1. Regular (400) - Más usado en el sitio */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/EuclidCircularA-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007F, U+00A0-00FF, U+0100-017F;
+}
+
+/* 2. SemiBold (600) - Usado en títulos y destacados */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/EuclidCircularA-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007F, U+00A0-00FF, U+0100-017F;
+}
+
+/* 3. Bold (700) - Usado en CTAs y encabezados principales */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/EuclidCircularA-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007F, U+00A0-00FF, U+0100-017F;
+}
+
+/* Fallback con ajuste para reducir layout shift */
+@font-face {
+  font-family: 'Euclid Circular A Fallback';
+  ascent-override: 93.26%;
+  descent-override: 24.99%;
+  line-gap-override: 0.00%;
+  size-adjust: 107.23%;
+  src: local('Arial');
+}
+
