@@ -95,6 +95,8 @@ const nextConfig = {
   // ⚡ FIX VERCEL WEBPACK: Configuración de webpack para builds con --webpack
   // Necesario para resolver react/jsx-runtime cuando se usa webpack en lugar de Turbopack
   webpack: (config, { isServer }) => {
+    const path = require('path')
+    
     // Resolver react/jsx-runtime correctamente para webpack
     if (!config.resolve) {
       config.resolve = {}
@@ -103,21 +105,26 @@ const nextConfig = {
       config.resolve.alias = {}
     }
     
-    // Asegurar que React se resuelva correctamente
-    try {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-        'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
-      }
-    } catch (error) {
-      // Si require.resolve falla, usar path relativo
-      const path = require('path')
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'react/jsx-runtime': path.resolve(process.cwd(), 'node_modules/react/jsx-runtime.js'),
-        'react/jsx-dev-runtime': path.resolve(process.cwd(), 'node_modules/react/jsx-dev-runtime.js'),
-      }
+    // Asegurar que React se resuelva correctamente y evitar múltiples instancias
+    const reactPath = path.resolve(process.cwd(), 'node_modules/react')
+    const reactDomPath = path.resolve(process.cwd(), 'node_modules/react-dom')
+    
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Asegurar una sola instancia de React
+      'react': reactPath,
+      'react-dom': reactDomPath,
+      // Resolver jsx-runtime
+      'react/jsx-runtime': path.join(reactPath, 'jsx-runtime.js'),
+      'react/jsx-dev-runtime': path.join(reactPath, 'jsx-dev-runtime.js'),
+    }
+    
+    // Asegurar que webpack no incluya múltiples instancias de React
+    if (!config.resolve.modules) {
+      config.resolve.modules = []
+    }
+    if (!config.resolve.modules.includes('node_modules')) {
+      config.resolve.modules.push('node_modules')
     }
     
     return config
