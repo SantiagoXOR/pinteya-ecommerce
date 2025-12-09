@@ -121,10 +121,10 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             </div>
             
             <div className='flex flex-col justify-center' style={{maxHeight: '3.5rem'}}>
-              <h2 className={`text-xl md:text-2xl font-bold ${categoryConfig.textColor || 'text-gray-900 dark:!text-bright-sun-300'} leading-tight line-clamp-1`}>
+              <h2 className={`text-xl md:text-2xl font-bold ${categoryConfig.textColor || 'text-gray-900 dark:!text-white'} leading-tight line-clamp-1`}>
                 {categoryConfig.title}
               </h2>
-              <p className='text-xs md:text-sm text-gray-600 dark:text-bright-sun-200 leading-tight line-clamp-1'>
+              <p className='text-xs md:text-sm text-gray-600 dark:!text-white/70 leading-tight line-clamp-1'>
                 {categoryConfig.subtitle}
               </p>
             </div>

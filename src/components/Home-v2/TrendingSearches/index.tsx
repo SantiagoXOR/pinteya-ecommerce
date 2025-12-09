@@ -77,7 +77,7 @@ const TrendingSearches = () => {
         <div className='flex items-center gap-3 mb-5'>
           <div className='flex items-center gap-2 text-orange-600'>
             <TrendingUp className='w-5 h-5' />
-            <h2 className='font-bold text-lg text-gray-900 dark:!text-bright-sun-300'>
+            <h2 className='font-bold text-lg text-gray-900 dark:!text-white'>
               Búsquedas Populares
             </h2>
           </div>
@@ -116,7 +116,7 @@ const TrendingSearches = () => {
               </span>
 
               {/* Term */}
-              <span className='text-xs sm:text-sm font-medium text-gray-700 dark:text-bright-sun-200 group-hover:text-orange-600 dark:group-hover:text-bright-sun-400 transition-colors break-words whitespace-nowrap'>
+              <span className='text-xs sm:text-sm font-medium text-gray-700 dark:!text-white/90 group-hover:text-orange-600 dark:group-hover:text-bright-sun-400 transition-colors break-words whitespace-nowrap'>
                 {search.term}
               </span>
 
@@ -134,7 +134,7 @@ const TrendingSearches = () => {
         <div className='mt-6 text-center'>
           <Link
             href='/products'
-            className='inline-flex items-center gap-2 text-sm text-gray-600 dark:text-bright-sun-200 hover:text-orange-600 dark:hover:text-bright-sun-400 font-medium transition-colors group'
+            className='inline-flex items-center gap-2 text-sm text-gray-600 dark:!text-white/80 hover:text-orange-600 dark:hover:text-bright-sun-400 font-medium transition-colors group'
           >
             <Search className='w-4 h-4' />
             Ver todos los productos

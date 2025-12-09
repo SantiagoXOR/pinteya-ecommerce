@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 import { Product } from '@/types/product'
 import { getProducts } from '@/lib/api/products'
 import { adaptApiProductsToLegacy } from '@/lib/adapters/productAdapter'
@@ -61,6 +62,7 @@ export const useBestSellerProducts = ({
 }: UseBestSellerProductsOptions): UseBestSellerProductsReturn => {
   
   const queryKey = ['products', 'bestsellers', categorySlug] as const
+  const hasMountedRef = useRef(false)
   
   const { data, isLoading, isFetching, error, refetch } = useQuery<Product[]>({
     queryKey,
@@ -119,22 +121,35 @@ export const useBestSellerProducts = ({
     },
     // ✅ FIX: Asegurar que la query siempre se ejecute
     enabled: true,
-    // Configuración optimizada para Home-v2
-    staleTime: enableCache ? 5 * 60 * 1000 : 0, // 5 minutos de caché
+    // ✅ FIX CRÍTICO: staleTime en 0 para forzar ejecución en primer mount
+    // Esto asegura que la query se ejecute incluso si hay datos en caché
+    staleTime: 0, // Forzar ejecución en primer render
     gcTime: 10 * 60 * 1000, // 10 minutos en caché
     retry: 1, // Reducir retries para evitar esperas largas
     retryDelay: 2000, // 2 segundos entre retries
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
-    refetchOnMount: true, // ✅ FIX: Siempre ejecutar en el primer mount para evitar skeletons infinitos
+    refetchOnMount: 'always', // ✅ FIX CRÍTICO: Siempre ejecutar en mount, incluso con datos frescos
     refetchOnReconnect: true, // Refetch si se reconecta
   })
+
+  // ✅ FIX CRÍTICO: Forzar ejecución en el primer mount del cliente
+  useEffect(() => {
+    if (!hasMountedRef.current && typeof window !== 'undefined') {
+      hasMountedRef.current = true
+      // Forzar refetch en el primer mount del cliente
+      if (!data && !error) {
+        refetch()
+      }
+    }
+  }, [data, error, refetch])
 
   // ✅ FIX CRÍTICO: Determinar loading de forma más confiable
   // isLoading puede quedarse en true si la query nunca se completa
   // Si hay datos, no mostrar loading aunque isLoading sea true
   // Si hay error, no mostrar loading
-  const isActuallyLoading = isLoading && !data && !error && isFetching
+  // Usar isLoading directamente pero verificar que no haya datos
+  const isActuallyLoading = isLoading && !data && !error
 
   return {
     products: Array.isArray(data) ? data : [],

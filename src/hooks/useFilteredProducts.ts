@@ -108,6 +108,8 @@ export const useFilteredProducts = (filters: ProductFilters = {}) => {
     retry: 2,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     enabled: true, // Siempre habilitado, incluso sin filtros
+    refetchOnMount: true, // ✅ FIX: Siempre ejecutar en el primer mount
+    refetchOnWindowFocus: false,
   })
 }
 

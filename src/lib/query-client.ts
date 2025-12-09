@@ -81,7 +81,7 @@ export const queryClientConfig = {
       refetchOnWindowFocus: false,
       // Refetch en reconexión
       refetchOnReconnect: true,
-      // No refetch en mount si los datos están frescos
+      // ✅ FIX CRÍTICO: Siempre refetch en mount para asegurar ejecución en primer render
       refetchOnMount: true,
       // Configuración de red más robusta
       networkMode: 'online',

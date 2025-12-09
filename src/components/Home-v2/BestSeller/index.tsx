@@ -106,10 +106,10 @@ const BestSeller: React.FC = () => {
                       <Trophy className='w-8 h-8 text-yellow-500' />
                     </div>
                     <div>
-                      <h3 className='font-semibold text-gray-900 dark:!text-bright-sun-300 mb-2'>
+                      <h3 className='font-semibold text-gray-900 dark:!text-white mb-2'>
                         No hay productos disponibles
                       </h3>
-                      <p className='text-gray-600 dark:text-bright-sun-200 text-sm mb-4'>
+                      <p className='text-gray-600 dark:!text-white/80 text-sm mb-4'>
                         No se encontraron productos en este momento.
                       </p>
                       <Button variant='outline' asChild>
