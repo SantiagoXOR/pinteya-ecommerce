@@ -129,14 +129,12 @@ const nextConfig = {
     
     // ⚡ FIX: Next.js puede requerir react/cache que no existe en React 18.3.1
     // El polyfill se crea en scripts/create-react-cache-polyfill.js antes del build
-    // Asegurar que webpack lo resuelva correctamente
+    // Asegurar que webpack lo resuelva correctamente usando alias y fallback
     const fs = require('fs')
     const reactCachePath = path.join(reactPath, 'cache.js')
     
     // Asegurar que el polyfill existe (debería haberse creado en prebuild)
-    if (fs.existsSync(reactCachePath)) {
-      config.resolve.alias['react/cache'] = reactCachePath
-    } else {
+    if (!fs.existsSync(reactCachePath)) {
       // Si no existe, crearlo ahora como fallback (mismo formato que el script)
       if (!fs.existsSync(reactPath)) {
         fs.mkdirSync(reactPath, { recursive: true })
@@ -153,13 +151,31 @@ const cacheObj = {
   default: cacheImpl
 };
 cacheImpl.cache = cacheImpl;
+Object.defineProperty(cacheObj, 'cache', {
+  value: cacheImpl,
+  writable: false,
+  enumerable: true,
+  configurable: false
+});
 module.exports = cacheObj;
 module.exports.cache = cacheImpl;
 module.exports.default = cacheImpl;
+if (typeof exports !== 'undefined') {
+  exports.cache = cacheImpl;
+  exports.default = cacheImpl;
+}
 `
       fs.writeFileSync(reactCachePath, polyfillContent, 'utf8')
-      config.resolve.alias['react/cache'] = reactCachePath
     }
+    
+    // Configurar alias para que webpack resuelva react/cache al polyfill
+    config.resolve.alias['react/cache'] = reactCachePath
+    
+    // También configurar fallback para asegurar resolución
+    if (!config.resolve.fallback) {
+      config.resolve.fallback = {}
+    }
+    config.resolve.fallback['react/cache'] = reactCachePath
     
     return config
   },
