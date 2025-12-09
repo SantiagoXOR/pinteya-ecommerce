@@ -53,7 +53,7 @@ const AuthSectionSimple = ({ variant = 'desktop' }: AuthSectionProps) => {
           variant='ghost'
           size='sm'
           asChild
-          className='text-gray-800 hover:text-gray-900 text-xs px-2 py-1 h-auto'
+          className='text-gray-800 dark:text-fun-green-50 hover:text-gray-900 dark:hover:text-fun-green-100 text-xs px-2 py-1 h-auto'
         >
           <Link href='/api/auth/signin'>Ingresá</Link>
         </Button>

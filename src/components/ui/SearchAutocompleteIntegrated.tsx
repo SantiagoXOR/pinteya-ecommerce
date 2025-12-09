@@ -395,15 +395,15 @@ export const SearchAutocompleteIntegrated = React.memo(
       const getSuggestionIcon = (type: SearchSuggestion['type']) => {
         switch (type) {
           case 'product':
-            return <Package className='w-4 h-4 text-gray-500' />
+            return <Package className='w-4 h-4 text-gray-500 dark:text-fun-green-300' />
           case 'category':
-            return <Tag className='w-4 h-4 text-gray-500' />
+            return <Tag className='w-4 h-4 text-gray-500 dark:text-fun-green-300' />
           case 'recent':
-            return <Clock className='w-4 h-4 text-gray-400' />
+            return <Clock className='w-4 h-4 text-gray-400 dark:text-fun-green-400' />
           case 'trending':
-            return <TrendingUp className='w-4 h-4 text-orange-500' />
+            return <TrendingUp className='w-4 h-4 text-orange-500 dark:text-fun-green-400' />
           default:
-            return <Search className='w-4 h-4 text-gray-500' />
+            return <Search className='w-4 h-4 text-gray-500 dark:text-fun-green-300' />
         }
       }
 
@@ -413,8 +413,8 @@ export const SearchAutocompleteIntegrated = React.memo(
           ref={el => (suggestionRefs.current[index] = el)}
           className={cn(
             'flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors',
-            'hover:bg-gray-50 focus:bg-gray-50',
-            selectedIndex === index && 'bg-gray-50'
+            'hover:bg-gray-50 dark:hover:bg-fun-green-800 focus:bg-gray-50 dark:focus:bg-fun-green-800',
+            selectedIndex === index && 'bg-gray-50 dark:bg-fun-green-800'
           )}
           onClick={() => handleSuggestionSelect(suggestion)}
           onMouseEnter={() => {
@@ -433,7 +433,7 @@ export const SearchAutocompleteIntegrated = React.memo(
             <img
               src={suggestion.image}
               alt={suggestion.title}
-              className='w-10 h-10 rounded-md object-cover border border-gray-200 flex-shrink-0'
+              className='w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-fun-green-700 flex-shrink-0'
             />
           ) : (
             getSuggestionIcon(suggestion.type)
@@ -441,9 +441,9 @@ export const SearchAutocompleteIntegrated = React.memo(
 
           {/* Texto */}
           <div className='flex-1 min-w-0'>
-            <div className='font-medium text-gray-900 truncate'>{suggestion.title}</div>
+            <div className='font-medium text-gray-900 dark:text-fun-green-50 truncate'>{suggestion.title}</div>
             {suggestion.subtitle && (
-              <div className='text-sm text-gray-500 truncate'>{suggestion.subtitle}</div>
+              <div className='text-sm text-gray-500 dark:text-fun-green-200 truncate'>{suggestion.subtitle}</div>
             )}
           </div>
 
@@ -458,7 +458,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         <div ref={containerRef} className={cn('relative w-full', className)}>
           <form onSubmit={handleSubmit} id={formId || 'search-autocomplete-form'} className='relative'>
             <div className='relative'>
-              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-fun-green-400' />
               <input
                 {...props}
                 ref={combinedRef}
@@ -471,10 +471,11 @@ export const SearchAutocompleteIntegrated = React.memo(
                 placeholder={placeholder}
                 disabled={disabled}
                 className={cn(
-                  'w-full pl-10 pr-10 py-1.5 border border-gray-300 rounded-full',
-                  'focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
-                  'placeholder-gray-500 text-gray-900',
-                  'disabled:bg-gray-50 disabled:text-gray-500',
+                  'w-full pl-10 pr-10 py-1.5 border border-gray-300 dark:border-fun-green-700 rounded-full',
+                  'focus:ring-2 focus:ring-orange-500 dark:focus:ring-fun-green-500 focus:border-orange-500 dark:focus:border-fun-green-500',
+                  'placeholder-gray-500 dark:placeholder-fun-green-300 text-gray-900 dark:text-fun-green-50',
+                  'bg-white dark:bg-fun-green-950',
+                  'disabled:bg-gray-50 dark:disabled:bg-fun-green-950 disabled:text-gray-500 dark:disabled:text-fun-green-400',
                   'transition-colors duration-200'
                 )}
                 role='searchbox'
@@ -492,10 +493,10 @@ export const SearchAutocompleteIntegrated = React.memo(
                 <button
                   type='button'
                   onClick={handleClear}
-                  className='absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors'
+                  className='absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-fun-green-800 rounded-full transition-colors'
                   aria-label='Clear search'
                 >
-                  <X className='w-4 h-4 text-gray-400' />
+                  <X className='w-4 h-4 text-gray-400 dark:text-fun-green-400' />
                 </button>
               )}
             </div>
@@ -506,8 +507,8 @@ export const SearchAutocompleteIntegrated = React.memo(
             <div
               ref={dropdownRef}
               className={cn(
-                'absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200',
-                'rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto'
+                'absolute top-full left-0 right-0 mt-1 bg-white dark:bg-fun-green-900 border border-gray-200 dark:border-fun-green-700',
+                'rounded-lg shadow-lg dark:shadow-xl z-50 max-h-96 overflow-y-auto'
               )}
               role='listbox'
             id='autocomplete-listbox'
@@ -515,7 +516,7 @@ export const SearchAutocompleteIntegrated = React.memo(
               {/* Estado inicial sin texto: encabezado y esqueleto/ayuda */}
               {!inputValue.trim() && (
                 <div className='py-2'>
-                  <div className='px-4 py-2 text-sm text-gray-600'>
+                  <div className='px-4 py-2 text-sm text-gray-600 dark:text-fun-green-200'>
                     Sugerencias populares
                   </div>
                   {/* Lista curada de sugerencias siempre visible en estado vacío */}
@@ -550,10 +551,10 @@ export const SearchAutocompleteIntegrated = React.memo(
                     <div className='py-2' aria-live='polite'>
                       {[...Array(3)].map((_, i) => (
                         <div key={`trend-sk-${i}`} className='flex items-center gap-3 px-4 py-3'>
-                          <div className='w-10 h-10 bg-gray-100 rounded-md animate-pulse' />
+                          <div className='w-10 h-10 bg-gray-100 dark:bg-fun-green-800 rounded-md animate-pulse' />
                           <div className='flex-1 min-w-0'>
-                            <div className='w-40 h-3 bg-gray-100 rounded-md animate-pulse mb-2' />
-                            <div className='w-24 h-3 bg-gray-100 rounded-md animate-pulse' />
+                            <div className='w-40 h-3 bg-gray-100 dark:bg-fun-green-800 rounded-md animate-pulse mb-2' />
+                            <div className='w-24 h-3 bg-gray-100 dark:bg-fun-green-800 rounded-md animate-pulse' />
                           </div>
                         </div>
                       ))}
@@ -595,16 +596,16 @@ export const SearchAutocompleteIntegrated = React.memo(
                   {/* Skeletons de carga para mejor percepción de velocidad */}
                   {[...Array(3)].map((_, i) => (
                     <div key={`sk-${i}`} className='flex items-center gap-3 px-4 py-3'>
-                      <div className='w-10 h-10 bg-gray-100 rounded-md animate-pulse' />
-                      <div className='flex-1 min-w-0'>
-                        <div className='w-40 h-3 bg-gray-100 rounded-md animate-pulse mb-2' />
-                        <div className='w-24 h-3 bg-gray-100 rounded-md animate-pulse' />
+                      <div className='w-10 h-10 bg-gray-100 dark:bg-fun-green-800 rounded-md animate-pulse' />
+                          <div className='flex-1 min-w-0'>
+                        <div className='w-40 h-3 bg-gray-100 dark:bg-fun-green-800 rounded-md animate-pulse mb-2' />
+                        <div className='w-24 h-3 bg-gray-100 dark:bg-fun-green-800 rounded-md animate-pulse' />
                       </div>
                     </div>
                   ))}
                   <div className='flex items-center justify-center py-2'>
                     <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500' />
-                    <span className='ml-2 text-gray-600'>Buscando productos...</span>
+                    <span className='ml-2 text-gray-600 dark:text-fun-green-200'>Buscando productos...</span>
                   </div>
                 </div>
               )}
@@ -616,7 +617,7 @@ export const SearchAutocompleteIntegrated = React.memo(
               )}
 
               {!isLoading && !error && allSuggestions.length === 0 && inputValue.trim() && (
-                <div className='px-4 py-8 text-center text-gray-500' aria-live='polite'>
+                <div className='px-4 py-8 text-center text-gray-500 dark:text-fun-green-200' aria-live='polite'>
                   No se encontraron resultados para "{inputValue}"
                 </div>
               )}

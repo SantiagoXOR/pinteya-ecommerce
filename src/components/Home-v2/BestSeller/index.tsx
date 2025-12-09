@@ -57,7 +57,7 @@ const BestSeller: React.FC = () => {
   if (isLoading && !showTimeout) {
     return (
       <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
-        <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
+        <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
           <ProductSkeletonGrid count={12} />
         </div>
       </section>
@@ -90,10 +90,10 @@ const BestSeller: React.FC = () => {
                       <Trophy className='w-8 h-8 text-yellow-500' />
                     </div>
                     <div>
-                      <h3 className='font-semibold text-gray-900 mb-2'>
+                      <h3 className='font-semibold text-gray-900 dark:text-fun-green-50 mb-2'>
                         No hay productos disponibles
                       </h3>
-                      <p className='text-gray-600 text-sm mb-4'>
+                      <p className='text-gray-600 dark:text-fun-green-200 text-sm mb-4'>
                         No se encontraron productos en este momento.
                       </p>
                       <Button variant='outline' asChild>

@@ -101,10 +101,11 @@
     contain-intrinsic-size: auto 450px;
   }
 
-  /* ⚡ PERFORMANCE: Wave animation para skeleton shimmer effect */
+  /* ⚡ PERFORMANCE: Wave animation para skeleton shimmer effect - FIX: Contenedor con overflow */
   .skeleton-wave {
     position: relative;
-    overflow: hidden;
+    overflow: hidden; /* ✅ FIX: Asegurar que no se salga */
+    contain: layout style paint; /* ✅ FIX: Optimizar rendering */
   }
 
   .skeleton-wave::after {
@@ -123,9 +124,10 @@
       rgba(255, 255, 255, 0) 100%
     );
     animation: shimmer 2s infinite;
+    will-change: transform; /* ✅ FIX: Optimizar animación */
   }
 
-  /* Shimmer mejorado con gradiente más suave */
+  /* Shimmer mejorado con gradiente más suave - FIX: No usar transform que se salga */
   .skeleton-shimmer {
     background: linear-gradient(
       110deg,
@@ -135,6 +137,8 @@
     );
     background-size: 200% 100%;
     animation: shimmer-slide 1.5s linear infinite;
+    overflow: hidden; /* ✅ FIX: Asegurar que no se salga */
+    contain: layout style paint; /* ✅ FIX: Optimizar rendering */
   }
 
   @keyframes shimmer-slide {

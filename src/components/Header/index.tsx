@@ -187,7 +187,7 @@ const Header = () => {
       <header
         className={`
         fixed top-0 left-0 w-full z-header
-        bg-blaze-orange-600 rounded-b-3xl shadow-lg
+        bg-blaze-orange-600 dark:bg-fun-green-800 rounded-b-3xl shadow-lg
         header-sticky-transition
         ${isSticky ? 'shadow-2xl backdrop-blur-sm' : 'shadow-lg'}
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
@@ -225,12 +225,12 @@ const Header = () => {
               <div className='flex-1 animate-in fade-in zoom-in-95 duration-200'>
                 <div className='relative w-full'>
                   <div
-                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 rounded-full'
+                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 dark:bg-fun-green-900 rounded-full'
                   >
                     <MemoizedSearchAutocomplete
                       ref={expandedSearchRef}
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:dark:border-fun-green-700 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:dark:text-fun-green-50 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:dark:focus:border-fun-green-500 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:dark:focus:ring-fun-green-500 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:dark:hover:border-fun-green-600 [&>div>div>input]:!bg-white [&>div>div>input]:dark:!bg-fun-green-950'
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}
@@ -259,11 +259,11 @@ const Header = () => {
               >
                 <div className='relative w-full'>
                   <div
-                    className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring bg-bright-sun-100 rounded-full'
+                    className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring bg-bright-sun-100 dark:bg-fun-green-900 rounded-full'
                   >
                     <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-3 [&>div>div>input]:sm:pr-4 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-xs [&>div>div>input]:sm:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:dark:border-fun-green-700 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-3 [&>div>div>input]:sm:pr-4 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:dark:text-fun-green-50 [&>div>div>input]:text-xs [&>div>div>input]:sm:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:dark:focus:border-fun-green-500 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:dark:focus:ring-fun-green-500 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:dark:hover:border-fun-green-600 [&>div>div>input]:!bg-white [&>div>div>input]:dark:!bg-fun-green-950'
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}

@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 // Esto reduce Script Evaluation inicial (no se carga hasta que se necesita)
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
+import { ThemeProvider } from 'next-themes'
 
 // ⚡ PERFORMANCE: Providers críticos (carga inmediata - solo los esenciales)
 import { ReduxProvider } from '@/redux/provider'
@@ -72,15 +73,16 @@ const PreviewSliderModal = dynamic(() => import('@/components/Common/PreviewSlid
   loading: () => null,
 })
 
-const FloatingCartButton = dynamic(() => import('@/components/ui/floating-cart-button'), {
-  ssr: false,
-  loading: () => null,
-})
+// ⚡ DESACTIVADO: Botones flotantes reemplazados por bottom navigation estilo MercadoLibre
+// const FloatingCartButton = dynamic(() => import('@/components/ui/floating-cart-button'), {
+//   ssr: false,
+//   loading: () => null,
+// })
 
-const FloatingWhatsAppButton = dynamic(() => import('@/components/ui/floating-whatsapp-button'), {
-  ssr: false,
-  loading: () => null,
-})
+// const FloatingWhatsAppButton = dynamic(() => import('@/components/ui/floating-whatsapp-button'), {
+//   ssr: false,
+//   loading: () => null,
+// })
 
 // ⚡ PERFORMANCE: Bottom navigation estilo MercadoLibre (lazy load)
 const MercadoLibreBottomNav = dynamic(() => import('@/components/ui/bottom-navigation-mercadolibre').then(m => ({ default: m.MercadoLibreBottomNav })), {
@@ -151,8 +153,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           enableAutoRecovery={true}
           enableReporting={true}
         >
-          {/* 1. Query client - Crítico para data fetching */}
-          <QueryClientProvider>
+          {/* Theme Provider - Detecta automáticamente la preferencia del sistema */}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem={true}
+            disableTransitionOnChange={false}
+            storageKey="ecommerce-theme"
+          >
+            {/* 1. Query client - Crítico para data fetching */}
+            <QueryClientProvider>
             {/* 2. Redux - Crítico para state management */}
             <ReduxProvider>
               {/* 3. Cart persistence - Crítico para carrito */}
@@ -189,9 +199,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                               </div>
                             )}
 
-                            {/* Botones flotantes - Lazy loaded y solo para rutas públicas */}
-                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingCartButton />}
-                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingWhatsAppButton />}
+                            {/* Botones flotantes - DESACTIVADOS: Reemplazados por bottom navigation estilo MercadoLibre */}
+                            {/* {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingCartButton />} */}
+                            {/* {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingWhatsAppButton />} */}
 
                             {/* Notificación del carrito deshabilitada por requerimiento */}
                             {/* {!isAdminRoute && (
@@ -214,6 +224,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               </CartPersistenceProvider>
             </ReduxProvider>
           </QueryClientProvider>
+          </ThemeProvider>
         </AdvancedErrorBoundary>
       </>
     )

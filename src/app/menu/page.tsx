@@ -122,8 +122,8 @@ export default function MenuPage() {
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
           {/* Header */}
           <div className='text-center mb-8'>
-            <h1 className='text-3xl md:text-4xl font-bold text-gray-900 mb-4'>Menú Principal</h1>
-            <p className='text-lg text-gray-600'>
+            <h1 className='text-3xl md:text-4xl font-bold text-gray-900 dark:text-fun-green-50 mb-4'>Menú Principal</h1>
+            <p className='text-lg text-gray-600 dark:text-fun-green-200'>
               Accede rápidamente a todas las secciones de Pinteya
             </p>
           </div>
@@ -133,7 +133,7 @@ export default function MenuPage() {
             {menuSections.map((section, sectionIndex) => (
               <Card key={sectionIndex}>
                 <CardHeader>
-                  <CardTitle className='text-lg text-gray-900'>{section.title}</CardTitle>
+                  <CardTitle className='text-lg text-gray-900 dark:text-fun-green-50'>{section.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>

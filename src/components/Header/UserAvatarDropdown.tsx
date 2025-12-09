@@ -87,12 +87,12 @@ export function UserAvatarDropdown() {
           <div className='flex items-center gap-3'>
             <Avatar className='h-10 w-10'>
               <AvatarImage src={user.image || undefined} alt={user.name || 'Usuario'} />
-              <AvatarFallback className='bg-gray-100 text-gray-700 text-lg font-medium'>
+              <AvatarFallback className='bg-gray-100 dark:bg-fun-green-800 text-gray-700 dark:text-fun-green-50 text-lg font-medium'>
                 {getUserInitial()}
               </AvatarFallback>
             </Avatar>
             <div className='flex-1 min-w-0'>
-              <p className='text-sm font-medium text-gray-900 truncate'>{user.name || 'Usuario'}</p>
+              <p className='text-sm font-medium text-gray-900 dark:text-fun-green-50 truncate'>{user.name || 'Usuario'}</p>
               <p className='text-xs text-gray-500 truncate'>{user.email}</p>
             </div>
           </div>

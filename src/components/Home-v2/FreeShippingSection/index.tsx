@@ -43,8 +43,8 @@ const FreeShippingSection = () => {
 
   if (isLoading) {
     return (
-      <section className='py-3 bg-white/40 backdrop-blur-sm'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8'>
+      <section className='py-3 bg-white/40 backdrop-blur-sm overflow-hidden'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8 overflow-hidden'>
           <div className='animate-pulse mb-4'>
             <div className='h-8 bg-gray-200 rounded w-64'></div>
           </div>
@@ -74,7 +74,7 @@ const FreeShippingSection = () => {
               />
             </div>
             <div>
-              <h2 className='text-2xl md:text-3xl font-bold text-green-700'>
+              <h2 className='text-2xl md:text-3xl font-bold text-green-700 dark:text-fun-green-300'>
                 Envío Gratis
               </h2>
               <p className='text-sm text-gray-600'>

@@ -67,8 +67,8 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <section className='py-4 bg-white category-transition'>
-        <div className='max-w-7xl mx-auto px-4'>
+      <section className='py-4 bg-white category-transition overflow-hidden'>
+        <div className='max-w-7xl mx-auto px-4 overflow-hidden'>
           <div className='animate-pulse mb-3'>
             <div className='flex items-center gap-3'>
               <div className='w-[68px] h-[68px] md:w-[84px] md:h-[84px] bg-gray-200 rounded-full'></div>
@@ -121,7 +121,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             </div>
             
             <div className='flex flex-col justify-center' style={{maxHeight: '3.5rem'}}>
-              <h2 className={`text-xl md:text-2xl font-bold ${categoryConfig.textColor || 'text-gray-900'} leading-tight line-clamp-1`}>
+              <h2 className={`text-xl md:text-2xl font-bold ${categoryConfig.textColor || 'text-gray-900 dark:text-fun-green-50'} leading-tight line-clamp-1`}>
                 {categoryConfig.title}
               </h2>
               <p className='text-xs md:text-sm text-gray-600 leading-tight line-clamp-1'>

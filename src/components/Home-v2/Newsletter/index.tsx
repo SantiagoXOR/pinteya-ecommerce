@@ -93,7 +93,7 @@ const Newsletter = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder='tuemail@ejemplo.com'
                         required
-                        className='w-full bg-white border-2 border-gray-200 focus:border-[#eb6313] outline-none rounded-xl placeholder:text-gray-400 py-4 pl-12 pr-4 text-gray-900 font-medium transition-all'
+                        className='w-full bg-white dark:bg-fun-green-900 border-2 border-gray-200 dark:border-fun-green-700 focus:border-[#eb6313] dark:focus:border-fun-green-500 outline-none rounded-xl placeholder:text-gray-400 dark:placeholder:text-fun-green-300 py-4 pl-12 pr-4 text-gray-900 dark:text-fun-green-50 font-medium transition-all'
                       />
                     </div>
                     

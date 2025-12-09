@@ -89,7 +89,7 @@ const BenefitsBar = () => {
                   >
                     <Icon className='w-4 h-4' />
                   </div>
-                  <span className='text-sm font-medium text-gray-700'>
+                  <span className='text-sm font-medium text-gray-700 dark:text-fun-green-50'>
                     {benefit.text}
                   </span>
                 </div>

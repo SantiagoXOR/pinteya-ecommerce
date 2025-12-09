@@ -34,7 +34,7 @@ const PromoBanners = dynamic<PromoBannersProps>(() => import('./PromoBanners/ind
 
 const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'), {
   loading: () => (
-    <div className='px-4'>
+    <div className='px-4 overflow-hidden'>
       <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
       <ProductSkeletonCarousel count={4} />
     </div>
@@ -61,7 +61,7 @@ const CombosSection = dynamic(() => import('./CombosSection/index'), {
 
 const BestSeller = dynamic(() => import('./BestSeller/index'), {
   loading: () => (
-    <div className='px-4'>
+    <div className='px-4 overflow-hidden'>
       <ProductSkeletonGrid count={4} />
     </div>
   ),
@@ -83,64 +83,64 @@ const Testimonials = dynamic(() => import('./Testimonials/index'), {
 const NewArrivals = dynamic(() => import('./NewArrivals/index'), {
   loading: () => (
     <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-transparent'>
-      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
+      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
         <ProductSkeletonGrid count={8} />
       </div>
     </section>
   ),
 })
-// Componentes flotantes con carga diferida
+// ⚡ DESACTIVADO: Componentes flotantes reemplazados por bottom navigation estilo MercadoLibre
 // FloatingCart: cargar después de 2 segundos
-const FloatingCart = dynamic(() => import('@/components/Common/FloatingCart'), {
-  ssr: false,
-})
+// const FloatingCart = dynamic(() => import('@/components/Common/FloatingCart'), {
+//   ssr: false,
+// })
 
 // FloatingWhatsApp: cargar después de 5 segundos
-const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhatsApp'), {
-  ssr: false,
-})
+// const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhatsApp'), {
+//   ssr: false,
+// })
 
 // WhatsAppPopup: mantener delay actual pero usar dynamic import con ssr: false
 const WhatsAppPopup = dynamic(() => import('@/components/Common/WhatsAppPopup'), {
   ssr: false,
 })
 
-// Wrapper para componentes flotantes con carga diferida - Memoizados
-const DelayedFloatingCart = React.memo(() => {
-  const [shouldLoad, setShouldLoad] = React.useState(false)
+// ⚡ DESACTIVADO: Wrappers de componentes flotantes reemplazados por bottom navigation estilo MercadoLibre
+// const DelayedFloatingCart = React.memo(() => {
+//   const [shouldLoad, setShouldLoad] = React.useState(false)
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldLoad(true)
-    }, 2000) // 2 segundos
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       setShouldLoad(true)
+//     }, 2000) // 2 segundos
 
-    return () => clearTimeout(timer)
-  }, [])
+//     return () => clearTimeout(timer)
+//   }, [])
 
-  // Memoizar para evitar re-renders innecesarios
-  return React.useMemo(() => {
-    return shouldLoad ? <FloatingCart /> : null
-  }, [shouldLoad])
-})
-DelayedFloatingCart.displayName = 'DelayedFloatingCart'
+//   // Memoizar para evitar re-renders innecesarios
+//   return React.useMemo(() => {
+//     return shouldLoad ? <FloatingCart /> : null
+//   }, [shouldLoad])
+// })
+// DelayedFloatingCart.displayName = 'DelayedFloatingCart'
 
-const DelayedFloatingWhatsApp = React.memo(() => {
-  const [shouldLoad, setShouldLoad] = React.useState(false)
+// const DelayedFloatingWhatsApp = React.memo(() => {
+//   const [shouldLoad, setShouldLoad] = React.useState(false)
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldLoad(true)
-    }, 5000) // 5 segundos
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       setShouldLoad(true)
+//     }, 5000) // 5 segundos
 
-    return () => clearTimeout(timer)
-  }, [])
+//     return () => clearTimeout(timer)
+//   }, [])
 
-  // Memoizar para evitar re-renders innecesarios
-  return React.useMemo(() => {
-    return shouldLoad ? <FloatingWhatsApp /> : null
-  }, [shouldLoad])
-})
-DelayedFloatingWhatsApp.displayName = 'DelayedFloatingWhatsApp'
+//   // Memoizar para evitar re-renders innecesarios
+//   return React.useMemo(() => {
+//     return shouldLoad ? <FloatingWhatsApp /> : null
+//   }, [shouldLoad])
+// })
+// DelayedFloatingWhatsApp.displayName = 'DelayedFloatingWhatsApp'
 
 
 // Wrapper para componentes below-fold con lazy loading - Memoizados para evitar re-renders
@@ -360,9 +360,9 @@ const HomeV2 = () => {
         <LazyTestimonials />
       </div>
 
-      {/* Elementos flotantes de engagement - Carga diferida */}
-      <DelayedFloatingCart />
-      <DelayedFloatingWhatsApp />
+      {/* ⚡ DESACTIVADO: Elementos flotantes reemplazados por bottom navigation estilo MercadoLibre */}
+      {/* <DelayedFloatingCart /> */}
+      {/* <DelayedFloatingWhatsApp /> */}
       {/* <ExitIntentModal /> */} {/* Desactivado - Solo WhatsAppPopup activo para evitar sobrecarga de popups */}
       
       {/* WhatsApp Popup para captura de leads - Rediseñado con paleta Pinteya */}
