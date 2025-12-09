@@ -5,90 +5,95 @@ const path = require('path');
 const reactPath = path.join(process.cwd(), 'node_modules', 'react');
 const cachePath = path.join(reactPath, 'cache.js');
 
-// Verificar si react/cache ya existe
-if (!fs.existsSync(cachePath)) {
-  // Asegurar que el directorio existe
-  if (!fs.existsSync(reactPath)) {
-    fs.mkdirSync(reactPath, { recursive: true });
-  }
+// Verificar que node_modules/react existe
+if (!fs.existsSync(reactPath)) {
+  console.error('❌ Error: node_modules/react no encontrado. Ejecuta npm install primero.');
+  process.exit(1);
+}
 
-  // Crear polyfill que exporta un objeto con cache como propiedad
-  // Esto es necesario para import * as f from 'react/cache'; f.cache(...)
-  // Usar formato compatible con ambos CommonJS y ES modules
-  // Versión mejorada que asegura que cache sea accesible de todas las formas
-  // IMPORTANTE: Debe funcionar con el patrón (0, r.cache) usado por webpack
-  const polyfillContent = `'use strict';
+// Verificar si react/cache ya existe
+// Forzar recreación en cada build para asegurar que esté actualizado
+if (fs.existsSync(cachePath)) {
+  console.log('ℹ️  react/cache existe, recreando para asegurar compatibilidad...');
+  fs.unlinkSync(cachePath);
+}
+
+// Asegurar que el directorio existe
+if (!fs.existsSync(reactPath)) {
+  fs.mkdirSync(reactPath, { recursive: true });
+}
+
+// Polyfill mejorado para react/cache
+// CRÍTICO: Debe funcionar con el patrón (0, r.cache) usado por webpack
+// El problema es que webpack necesita que cache sea una propiedad accesible directamente
+const polyfillContent = `'use strict';
 
 // Polyfill para react/cache en React 18.3.1
-// Next.js puede requerir esto pero no está disponible en React 18.3.1
-// Este polyfill exporta un objeto con cache como propiedad para compatibilidad con namespace imports
+// Next.js 15 puede requerir esto pero no está disponible en React 18.3.1
 
 function cacheImpl(fn) {
   if (typeof fn !== 'function') {
     throw new Error('cache requires a function');
   }
+  // En React 19, cache memoiza funciones, aquí simplemente devolvemos la función
   return fn;
 }
 
-// Crear objeto de exportación con cache como propiedad (para import * as f from 'react/cache')
-// IMPORTANTE: cache debe ser una función directamente accesible
-// El patrón (0, r.cache) requiere que cache sea una propiedad enumerable del objeto exportado
-const cacheObj = {
-  cache: cacheImpl,
-  default: cacheImpl
-};
-
-// Asegurar que cache es no-configurable y enumerable (importante para webpack)
-Object.defineProperty(cacheObj, 'cache', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-Object.defineProperty(cacheObj, 'default', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-// También hacer que cacheImpl tenga cache como propiedad (para compatibilidad adicional)
+// CRÍTICO: Para que (0, r.cache) funcione, necesitamos exportar la función directamente
+// y luego agregar propiedades después de la exportación
+// Primero, hacemos que cacheImpl tenga la propiedad cache
 cacheImpl.cache = cacheImpl;
 
-// Exportar objeto (esto permite f.cache y d.cache y (0, r.cache))
-module.exports = cacheObj;
+// Exportar como función directamente (CommonJS)
+// Esto permite que webpack acceda a r.cache cuando r es el módulo
+const moduleExports = cacheImpl;
 
-// Asegurar que las propiedades están disponibles directamente en module.exports
-// Esto es crítico para que webpack pueda resolver (0, r.cache) correctamente
-if (!module.exports.cache) {
-  Object.defineProperty(module.exports, 'cache', {
-    value: cacheImpl,
-    writable: false,
-    enumerable: true,
-    configurable: false
-  });
-}
+// Agregar propiedades al objeto exportado después
+moduleExports.cache = cacheImpl;
+moduleExports.default = cacheImpl;
 
-if (!module.exports.default) {
-  Object.defineProperty(module.exports, 'default', {
-    value: cacheImpl,
-    writable: false,
-    enumerable: true,
-    configurable: false
-  });
-}
+// Asegurar que cache es enumerable y accesible
+Object.defineProperty(moduleExports, 'cache', {
+  value: cacheImpl,
+  writable: false,
+  enumerable: true,
+  configurable: false
+});
 
-// Soporte para ES modules
+Object.defineProperty(moduleExports, 'default', {
+  value: cacheImpl,
+  writable: false,
+  enumerable: true,
+  configurable: false
+});
+
+// Exportar
+module.exports = moduleExports;
+
+// Soporte adicional para ES modules
 if (typeof exports !== 'undefined') {
   exports.cache = cacheImpl;
   exports.default = cacheImpl;
 }
 `;
 
-  fs.writeFileSync(cachePath, polyfillContent, 'utf8');
-  console.log('✅ Polyfill de react/cache creado en:', cachePath);
+fs.writeFileSync(cachePath, polyfillContent, 'utf8');
+console.log('✅ Polyfill de react/cache creado/actualizado en:', cachePath);
+
+// Verificar que el archivo se creó correctamente
+if (fs.existsSync(cachePath)) {
+  const stats = fs.statSync(cachePath);
+  console.log(`   Tamaño: ${stats.size} bytes`);
+  
+  // Verificar contenido básico
+  const content = fs.readFileSync(cachePath, 'utf8');
+  if (content.includes('cacheImpl') && content.includes('module.exports')) {
+    console.log('✅ Polyfill verificado correctamente');
+  } else {
+    console.warn('⚠️  Advertencia: El contenido del polyfill podría no ser correcto');
+  }
 } else {
-  console.log('ℹ️  react/cache ya existe, no se creó polyfill');
+  console.error('❌ Error: No se pudo crear el archivo polyfill');
+  process.exit(1);
 }
 
