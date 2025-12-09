@@ -114,7 +114,7 @@ import {
   
   // Iconos faltantes detectados en build
   IconBuilding,
-  IconBuilding2,
+  // IconBuilding2 no existe, usar IconBuilding
   IconTarget,
   IconAward,
   IconEdit,
@@ -126,13 +126,14 @@ import {
   IconTrendingDown,
   IconCircleX,
   IconServer,
-  IconShieldAlert,
-  IconMousePointer,
+  // IconShieldAlert no existe, usar IconShield con IconAlertTriangle
+  // IconMousePointer no existe, usar IconPointer
+  IconPointer,
   IconWorld,
   IconBulb,
   IconUpload,
   IconLink,
-  IconStore,
+  // IconStore no existe, usar IconShoppingBag
   IconCalculator,
   IconPaint,
   IconReceipt,
@@ -144,14 +145,15 @@ import {
   IconList,
   IconMap,
   IconDeviceFloppy,
-  IconMessageSquare,
+  // IconMessageSquare no existe, usar IconMessageCircle
   IconRotateClockwise2,
-  IconPackageCheck,
+  // IconPackageCheck no existe, usar IconPackage con IconCheck
   IconShieldCheck,
-  IconCircleCheck2,
+  // IconCircleCheck2 no existe, usar IconCircleCheck
   IconLogout,
   IconCode,
-  IconDotsHorizontal,
+  // IconDotsHorizontal no existe, usar IconDots
+  IconDots,
   IconArchive,
   IconCopy,
   IconAdjustmentsHorizontal,
@@ -170,7 +172,8 @@ import {
   IconLock,
   IconNetwork,
   IconDeviceDesktopAnalytics,
-  IconBrandTabler,
+  // IconBrandTabler no existe, usar IconBrandTabler o alternativa
+  IconSend,
 } from '@tabler/icons-react'
 
 // Re-exportar con nombres compatibles (aliases para facilitar migración)
@@ -270,7 +273,7 @@ export {
   
   // Iconos faltantes - mapeo a nombres de lucide-react
   IconBuilding as Building,
-  IconBuilding2 as Building2,
+  IconBuilding as Building2, // Building2 no existe, usar Building
   IconTarget as Target,
   IconAward as Award,
   IconEdit as Edit,
@@ -282,13 +285,13 @@ export {
   IconTrendingDown as TrendingDown,
   IconCircleX as XCircle,
   IconServer as Server,
-  IconShieldAlert as ShieldAlert,
-  IconMousePointer as MousePointer,
+  IconShield as ShieldAlert, // ShieldAlert no existe, usar Shield
+  IconPointer as MousePointer, // MousePointer no existe, usar Pointer
   IconWorld as Globe,
   IconBulb as Lightbulb,
   IconUpload as Upload,
   IconLink as Link,
-  IconStore as Store,
+  IconShoppingBag as Store, // Store no existe, usar ShoppingBag
   IconCalculator as Calculator,
   IconPaint as Paintbrush,
   IconReceipt as Receipt,
@@ -300,14 +303,14 @@ export {
   IconList as List,
   IconMap as Map,
   IconDeviceFloppy as Save,
-  IconMessageSquare as MessageSquare,
+  IconMessageCircle as MessageSquare, // MessageSquare no existe, usar MessageCircle
   IconRotateClockwise2 as RotateCcw,
-  IconPackageCheck as PackageCheck,
+  IconPackage as PackageCheck, // PackageCheck no existe, usar Package
   IconShieldCheck as ShieldCheck,
-  IconCircleCheck2 as CheckCircle2,
+  IconCircleCheck as CheckCircle2, // CheckCircle2 no existe, usar CircleCheck
   IconLogout as LogOut,
   IconCode as Code,
-  IconDotsHorizontal as MoreHorizontal,
+  IconDots as MoreHorizontal, // DotsHorizontal no existe, usar Dots
   IconArchive as Archive,
   IconCopy as Copy,
   IconAdjustmentsHorizontal as SlidersHorizontal,
@@ -326,7 +329,8 @@ export {
   IconLock as Lock,
   IconNetwork as Network,
   IconDeviceDesktopAnalytics as HardDrive,
-  IconBrandTabler as MemoryStick,
+  IconDatabase as MemoryStick, // BrandTabler no existe, usar Database como alternativa
+  IconSend as Send,
 }
 
 // ===================================
