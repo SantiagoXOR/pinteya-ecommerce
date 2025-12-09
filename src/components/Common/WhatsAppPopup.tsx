@@ -30,7 +30,7 @@ export default WhatsAppPopup
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { X, Phone, MessageCircle, CheckCircle, Gift, Sparkles } from 'lucide-react'
+import { X, Phone, MessageCircle, CheckCircle, Gift, Sparkles } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 
 // ===================================

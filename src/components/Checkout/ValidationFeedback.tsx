@@ -1,5 +1,5 @@
 import React from 'react'
-import { CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { CheckCircle, XCircle, AlertCircle } from '@/lib/optimized-imports'
 
 interface ValidationFeedbackProps {
   field: string

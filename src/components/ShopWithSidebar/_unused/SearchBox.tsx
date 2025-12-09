@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Search, X } from 'lucide-react'
+import { Search, X } from '@/lib/optimized-imports'
 
 interface SearchBoxProps {
   onSearch: (searchTerm: string) => void

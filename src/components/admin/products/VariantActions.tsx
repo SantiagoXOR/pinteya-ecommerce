@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Copy, Eye, EyeOff, Star, Edit, Trash2 } from 'lucide-react'
+import { Copy, Eye, EyeOff, Star, Edit, Trash2 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 

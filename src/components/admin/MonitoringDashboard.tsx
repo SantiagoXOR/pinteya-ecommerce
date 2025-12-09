@@ -26,7 +26,7 @@ import {
   Cpu,
   HardDrive,
   Zap,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface MonitoringDashboardProps {
   className?: string

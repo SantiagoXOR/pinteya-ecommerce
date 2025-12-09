@@ -17,7 +17,7 @@ import {
   Phone,
   AlertCircle,
   ShieldCheck,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 const PoliticaDevolucionesPage = () => {
   return (

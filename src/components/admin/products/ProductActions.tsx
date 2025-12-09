@@ -19,7 +19,7 @@ import {
   XCircle,
   FileText,
   BarChart3,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 

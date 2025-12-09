@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { Search, X } from 'lucide-react'
+import { Search, X } from '@/lib/optimized-imports'
 import { getBrandColor, formatBrandName } from '@/lib/api/brands'
 
 // ===================================

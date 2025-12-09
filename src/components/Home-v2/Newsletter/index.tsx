@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Mail, Send, CheckCircle } from 'lucide-react'
+import { Mail, Send, CheckCircle } from '@/lib/optimized-imports'
 
 const Newsletter = () => {
   const [email, setEmail] = useState('')

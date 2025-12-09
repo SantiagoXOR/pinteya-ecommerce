@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
-import { Loader2, CreditCard, Shield, Lock } from 'lucide-react'
+import { Loader2, CreditCard, Shield, Lock } from '@/lib/optimized-imports'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 interface CheckoutProcessSkeletonProps {

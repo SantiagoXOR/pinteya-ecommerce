@@ -17,7 +17,7 @@ import {
   Database,
   Server,
   Code,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // =====================================================
 // INTERFACES

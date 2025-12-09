@@ -4,7 +4,7 @@
 export const dynamic = 'force-dynamic'
 import React from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { ShoppingBag, DollarSign, Monitor, Clock, User, Settings, Package } from 'lucide-react'
+import { ShoppingBag, DollarSign, Monitor, Clock, User, Settings, Package } from '@/lib/optimized-imports'
 import Link from 'next/link'
 
 interface StatCardProps {

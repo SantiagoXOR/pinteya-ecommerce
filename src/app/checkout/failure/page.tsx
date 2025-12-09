@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { XCircle, AlertTriangle, ArrowLeft, RefreshCw, CreditCard, HelpCircle } from 'lucide-react'
+import { XCircle, AlertTriangle, ArrowLeft, RefreshCw, CreditCard, HelpCircle } from '@/lib/optimized-imports'
 
 interface PaymentError {
   payment_id?: string

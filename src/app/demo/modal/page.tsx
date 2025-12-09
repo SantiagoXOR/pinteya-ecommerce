@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog'
 import ShopDetailModalV2 from '@/components/ShopDetails/ShopDetailModalV2'
 import { Product } from '@/types/product'
-import { X } from 'lucide-react'
+import { X } from '@/lib/optimized-imports'
 
 export default function ModalDemoPage() {
   const [isOpen, setIsOpen] = useState(false)

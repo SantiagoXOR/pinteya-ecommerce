@@ -13,7 +13,7 @@ import { Skeleton, TableSkeleton } from '../ui/Skeleton'
 import { EmptyState } from '../ui/EmptyState'
 import { Badge } from '../ui/Badge'
 import { cn } from '@/lib/core/utils'
-import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from '@/lib/optimized-imports'
 
 const resolveImageSource = (payload: any): string | null => {
   const normalize = (value?: string | null) => {

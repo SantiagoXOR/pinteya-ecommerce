@@ -17,7 +17,7 @@ import {
   useErrorReporting,
   MonitoringStatus,
 } from '@/providers/MonitoringProvider'
-import { Activity, Shield, TrendingUp, Zap, RefreshCw, AlertTriangle, Download } from 'lucide-react'
+import { Activity, Shield, TrendingUp, Zap, RefreshCw, AlertTriangle, Download } from '@/lib/optimized-imports'
 import { toast } from 'sonner'
 import { useState } from 'react'
 

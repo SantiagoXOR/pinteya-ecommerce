@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Shield, Eye, UserCheck, Download, Trash2 } from 'lucide-react'
+import { Shield, Eye, UserCheck, Download, Trash2 } from '@/lib/optimized-imports'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { toast } from 'sonner'
 

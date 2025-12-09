@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Truck, Shield, Headphones, Trophy } from 'lucide-react'
+import { Truck, Shield, Headphones, Trophy } from '@/lib/optimized-imports'
 
 const BenefitsBar = () => {
   const [currentIndex, setCurrentIndex] = useState(0)

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { MapPin, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react'
+import { MapPin, CheckCircle, AlertCircle, Loader2, X } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { useAddressValidation } from '@/hooks/useAddressValidation'
 import { Button } from './button'

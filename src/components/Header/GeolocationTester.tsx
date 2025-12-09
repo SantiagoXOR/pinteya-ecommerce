@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react'
 import { useGeolocation } from '@/hooks/useGeolocation'
-import { MapPin, Loader2, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { MapPin, Loader2, CheckCircle, XCircle, AlertCircle } from '@/lib/optimized-imports'
 
 const GeolocationTester = () => {
   const {

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { ShoppingCart, Heart, Search, Star, Truck, Tag } from 'lucide-react'
+import { ShoppingCart, Heart, Search, Star, Truck, Tag } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'

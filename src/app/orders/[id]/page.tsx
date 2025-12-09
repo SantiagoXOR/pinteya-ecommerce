@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { Package, CheckCircle, ArrowLeft, ShoppingBag, MapPin, User, Mail, Phone, CreditCard } from 'lucide-react'
+import { Package, CheckCircle, ArrowLeft, ShoppingBag, MapPin, User, Mail, Phone, CreditCard } from '@/lib/optimized-imports'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

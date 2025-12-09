@@ -23,7 +23,7 @@ import {
   Server,
   TrendingUp,
   Zap,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Tipos para las métricas
 interface PerformanceMetrics {

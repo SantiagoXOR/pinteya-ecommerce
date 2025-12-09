@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Truck, Mail, Phone, Loader2, Navigation } from 'lucide-react'
+import { Truck, Mail, Phone, Loader2, Navigation } from '@/lib/optimized-imports'
 import { toast } from 'sonner'
 
 export default function DriverLoginPage() {

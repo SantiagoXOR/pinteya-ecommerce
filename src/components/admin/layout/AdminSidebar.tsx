@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/core/utils'
-// Importación robusta de iconos según mejores prácticas de Lucide React
+// Importación desde optimized-imports (migrado a Tabler Icons)
 import {
   Package,
   ShoppingCart,
@@ -16,7 +16,7 @@ import {
   Search,
   Bell,
   Activity,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface SidebarItem {
   title: string

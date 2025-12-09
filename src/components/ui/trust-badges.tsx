@@ -16,7 +16,7 @@ import {
   MapPin,
   Zap,
   MessageCircle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 const trustBadgeVariants = cva(
   'inline-flex items-center gap-2 rounded-lg font-medium transition-all duration-200',

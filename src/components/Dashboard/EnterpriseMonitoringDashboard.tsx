@@ -31,7 +31,7 @@ import {
   HardDrive,
   Network,
   BarChart3,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // =====================================================
 // TIPOS E INTERFACES

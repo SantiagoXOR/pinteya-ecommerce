@@ -21,7 +21,7 @@ import {
   RefreshCw,
   Pause,
   Play,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Tipos para el dashboard
 interface DashboardMetrics {

@@ -5,7 +5,7 @@ import { AddressInput } from '@/components/ui/AddressInput'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle, AlertCircle, MapPin } from 'lucide-react'
+import { CheckCircle, AlertCircle, MapPin } from '@/lib/optimized-imports'
 
 /**
  * Componente de ejemplo que demuestra el uso del AddressInput

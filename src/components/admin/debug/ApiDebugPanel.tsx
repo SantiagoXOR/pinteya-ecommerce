@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface ApiDebugEntry {
   id: string

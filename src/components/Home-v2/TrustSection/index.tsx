@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react'
 import Image from 'next/image'
-import { Shield, Award, Truck, Clock, Users, Star, CheckCircle } from 'lucide-react'
+import { Shield, Award, Truck, Clock, Users, Star, CheckCircle } from '@/lib/optimized-imports'
 
 const TrustSection = () => {
   const [isVisible, setIsVisible] = useState(false)

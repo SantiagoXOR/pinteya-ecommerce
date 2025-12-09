@@ -5,7 +5,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import { useRouter } from 'next/navigation'
 import { BottomNavigation, type BottomNavigationItem } from '@/components/ui/bottom-navigation'
 import cartReducer from '@/redux/features/cart-slice'
-import { Home, Tag, Package } from 'lucide-react'
+import { Home, Tag, Package } from '@/lib/optimized-imports'
 
 // Mock Next.js router
 const mockUsePathname = jest.fn()

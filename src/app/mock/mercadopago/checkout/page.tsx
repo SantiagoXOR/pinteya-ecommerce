@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { CreditCard, Shield, AlertCircle, CheckCircle } from 'lucide-react'
+import { CreditCard, Shield, AlertCircle, CheckCircle } from '@/lib/optimized-imports'
 import {
   processMockPayment,
   generateTestCardData,

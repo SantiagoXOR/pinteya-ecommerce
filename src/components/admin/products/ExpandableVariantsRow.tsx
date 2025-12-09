@@ -8,7 +8,7 @@ import { cn } from '@/lib/core/utils'
 import { VariantActions } from './VariantActions'
 import { Badge } from '../ui/Badge'
 import { Skeleton } from '../ui/Skeleton'
-import { Package, Image as ImageIcon, Star, AlertCircle, TrendingDown, TrendingUp, CheckCircle } from 'lucide-react'
+import { Package, Image as ImageIcon, Star, AlertCircle, TrendingDown, TrendingUp, CheckCircle } from '@/lib/optimized-imports'
 
 interface ProductVariant {
   id: number

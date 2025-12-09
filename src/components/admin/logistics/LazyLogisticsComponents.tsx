@@ -18,7 +18,7 @@ import {
   Loader2,
   Activity,
   Clock,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // ===================================
 // LAZY IMPORTS

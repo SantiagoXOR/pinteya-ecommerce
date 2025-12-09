@@ -6,7 +6,7 @@
 'use client'
 
 import React from 'react'
-import { Clock, Navigation, MapPin, AlertTriangle, Gauge, TrendingUp } from 'lucide-react'
+import { Clock, Navigation, MapPin, AlertTriangle, Gauge, TrendingUp } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface RouteInfo {

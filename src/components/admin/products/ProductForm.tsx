@@ -14,7 +14,7 @@ import { CategorySelector } from './CategorySelector'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 import { useProductFormReducer } from '@/hooks/optimization/useProductFormReducer'
 import { cn } from '@/lib/core/utils'
-import { Save, X, Eye, Loader2 } from 'lucide-react'
+import { Save, X, Eye, Loader2 } from '@/lib/optimized-imports'
 
 // Validation schema
 const ProductFormSchema = z

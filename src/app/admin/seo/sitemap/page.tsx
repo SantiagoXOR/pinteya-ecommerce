@@ -30,7 +30,7 @@ import {
   ExternalLink,
   Calendar,
   TrendingUp,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // ===================================
 // INTERFACES

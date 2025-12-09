@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { X, ChevronLeft, ChevronDown } from 'lucide-react'
+import { X, ChevronLeft, ChevronDown } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { useModal, ModalType } from '@/contexts/ModalContext'
 

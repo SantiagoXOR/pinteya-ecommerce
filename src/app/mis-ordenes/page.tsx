@@ -16,7 +16,7 @@ import {
   Search,
   Download,
   RefreshCw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import Link from 'next/link'
 import { OrderTracker, OrderStatus } from '@/components/Orders/OrderTracker'
 import { Button } from '@/components/ui/button'

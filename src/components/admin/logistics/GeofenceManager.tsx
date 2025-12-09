@@ -49,7 +49,7 @@ import {
   BarChart3,
   Settings,
   Zap,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useLogisticsWebSocket } from '@/hooks/admin/useLogisticsWebSocket'
 import { cn } from '@/lib/core/utils'
 import { formatDate } from '@/lib/utils/consolidated-utils'

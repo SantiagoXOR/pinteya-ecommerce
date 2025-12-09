@@ -14,8 +14,8 @@ import {
   User,
   Percent,
   ClipboardList,
-} from 'lucide-react'
-import { Home } from 'lucide-react'
+} from '@/lib/optimized-imports'
+import { Home } from '@/lib/optimized-imports'
 import { useAppSelector } from '@/redux/store'
 
 const bottomNavigationVariants = cva(

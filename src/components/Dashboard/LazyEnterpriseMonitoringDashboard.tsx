@@ -32,7 +32,7 @@ import {
   HardDrive,
   Network,
   BarChart3,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Lazy loading del componente principal
 const EnterpriseMonitoringDashboard = lazy(() => import('./EnterpriseMonitoringDashboard'))

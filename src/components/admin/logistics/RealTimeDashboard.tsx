@@ -25,7 +25,7 @@ import {
   Settings,
   Maximize2,
   RefreshCw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { LogisticsMap } from './LogisticsMap'
 import { TrackingTimeline } from './TrackingTimeline'
 import { LogisticsAlerts } from './LogisticsAlerts'

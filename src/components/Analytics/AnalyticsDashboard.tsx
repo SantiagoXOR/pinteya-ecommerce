@@ -18,7 +18,7 @@ import {
   Search,
   Target,
   Activity,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useAnalytics, useRealTimeMetrics } from '@/hooks/useAnalytics'
 import GoogleAnalyticsEmbed from './GoogleAnalyticsEmbed'
 import MetaMetrics from './MetaMetrics'

@@ -7,7 +7,7 @@ import { useBestSellerProducts } from '@/hooks/useBestSellerProducts'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Trophy } from 'lucide-react'
+import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from './HelpCard'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 

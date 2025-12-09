@@ -7,7 +7,7 @@
 
 import React from 'react'
 import { getGoogleAnalyticsUrl, getGoogleAnalyticsReportsUrl } from '@/lib/integrations/google-analytics-embed'
-import { ExternalLink, BarChart3, Info } from 'lucide-react'
+import { ExternalLink, BarChart3, Info } from '@/lib/optimized-imports'
 
 interface GoogleAnalyticsEmbedProps {
   measurementId?: string

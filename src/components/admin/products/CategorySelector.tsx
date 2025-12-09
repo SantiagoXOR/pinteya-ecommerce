@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, Plus, Search, Folder, FolderOpen } from 'lucide-react'
+import { ChevronDown, Plus, Search, Folder, FolderOpen } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface Category {

@@ -3,7 +3,7 @@
 // ===================================
 
 import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
-import { Search, X, Clock, TrendingUp, Package, Tag } from 'lucide-react'
+import { Search, X, Clock, TrendingUp, Package, Tag } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { useSearchOptimized } from '@/hooks/useSearchOptimized'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'

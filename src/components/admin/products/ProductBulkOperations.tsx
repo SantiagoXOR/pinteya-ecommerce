@@ -46,7 +46,7 @@ import {
   FileText,
   Settings,
   MoreHorizontal,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Product } from '@/hooks/admin/useProductsEnterprise'
 import { cn } from '@/lib/core/utils'
 

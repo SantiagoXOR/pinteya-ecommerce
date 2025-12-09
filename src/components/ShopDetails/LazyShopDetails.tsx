@@ -20,7 +20,7 @@ import {
   Truck,
   Shield,
   RotateCcw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Lazy loading del componente principal
 const ShopDetails = lazy(() => import('./index'))

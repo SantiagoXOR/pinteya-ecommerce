@@ -14,7 +14,7 @@ import {
   Search,
   TrendingUp,
   AlertTriangle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 export default function AdminPageSimple() {
   // Datos estáticos para evitar problemas con el hook

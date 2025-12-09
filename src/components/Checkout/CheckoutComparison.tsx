@@ -15,7 +15,7 @@ import {
   Star,
   TrendingUp,
   Shield,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import Link from 'next/link'
 
 const CheckoutComparison = () => {

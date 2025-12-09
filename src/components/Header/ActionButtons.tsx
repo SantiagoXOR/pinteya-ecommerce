@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { User, ShoppingCart, LogIn, Package, LayoutDashboard, Shield } from 'lucide-react'
+import { User, ShoppingCart, LogIn, Package, LayoutDashboard, Shield } from '@/lib/optimized-imports'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSession, signIn, signOut } from 'next-auth/react'

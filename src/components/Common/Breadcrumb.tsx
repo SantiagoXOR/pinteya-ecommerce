@@ -8,7 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { Home, ChevronRight } from 'lucide-react'
+import { Home, ChevronRight } from '@/lib/optimized-imports'
 
 const Breadcrumb = ({ title, pages = [] }: { title: string; pages?: any[] }) => {
   return (

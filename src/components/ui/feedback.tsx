@@ -13,7 +13,7 @@ import {
   Star,
   Zap,
   Loader2,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Toast/Notification Component
 const toastVariants = cva(

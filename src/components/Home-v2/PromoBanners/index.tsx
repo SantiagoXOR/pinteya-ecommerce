@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Percent } from 'lucide-react'
+import { ArrowRight, Percent } from '@/lib/optimized-imports'
 
 export interface PromoBannersProps {
   bannerId?: number // Si se proporciona, muestra solo ese banner

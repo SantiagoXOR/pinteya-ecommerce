@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Search, Mail, Lock, Eye, EyeOff, User, Phone, MapPin } from 'lucide-react'
+import { Search, Mail, Lock, Eye, EyeOff, User, Phone, MapPin } from '@/lib/optimized-imports'
 import { Input } from './input'
 import { Button } from './button'
 import { useState } from 'react'

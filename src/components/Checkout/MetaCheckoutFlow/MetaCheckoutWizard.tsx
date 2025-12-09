@@ -26,7 +26,7 @@ import {
   Loader2,
   ShoppingCart,
   MessageSquare,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { trackCustomEvent } from '@/lib/meta-pixel'
 import { trackEvent } from '@/lib/google-analytics'

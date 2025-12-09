@@ -14,7 +14,7 @@ import ConversionFunnel from '@/components/Analytics/ConversionFunnel'
 import HeatmapViewer from '@/components/Analytics/HeatmapViewer'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useUserRole } from '@/hooks/useUserRole'
-import { BarChart3, TrendingUp, Users, Eye, Download, RefreshCw, Settings } from 'lucide-react'
+import { BarChart3, TrendingUp, Users, Eye, Download, RefreshCw, Settings } from '@/lib/optimized-imports'
 
 const AnalyticsPage: React.FC = () => {
   const router = useRouter()

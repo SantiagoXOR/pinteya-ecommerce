@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
-import { Bell, Menu, X, User, LogOut } from 'lucide-react'
+import { Bell, Menu, X, User, LogOut } from '@/lib/optimized-imports'
 import { useState } from 'react'
 import { cn } from '@/lib/core/utils'
 

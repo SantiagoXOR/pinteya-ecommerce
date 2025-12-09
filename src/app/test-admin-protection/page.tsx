@@ -6,7 +6,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Shield, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
+import { Shield, CheckCircle, XCircle, AlertTriangle } from '@/lib/optimized-imports'
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'

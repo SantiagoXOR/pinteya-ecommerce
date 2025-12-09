@@ -5,7 +5,7 @@ import Image from 'next/image'
 import ProductItem from '@/components/Common/ProductItem'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
 import { useProductsByCategory } from '@/hooks/useProductsByCategory'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
 import { ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
 

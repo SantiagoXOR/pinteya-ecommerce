@@ -19,7 +19,7 @@ import {
   DollarSign,
   MoreHorizontal,
   History,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface Order {
   id: string

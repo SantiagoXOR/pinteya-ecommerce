@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Shield, Award, Truck, Clock, Users, Star, Headphones } from 'lucide-react'
+import { Shield, Award, Truck, Clock, Users, Star, Headphones } from '@/lib/optimized-imports'
 
 const metrics = [
   { label: 'Clientes felices', value: '15.000+', icon: Users },

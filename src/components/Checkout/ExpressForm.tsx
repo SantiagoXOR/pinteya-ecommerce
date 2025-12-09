@@ -16,7 +16,7 @@ import {
   AlertCircle,
   MessageSquare,
   User,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface ExpressFormProps {
   formData: {

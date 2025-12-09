@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Eye, ShoppingCart, CreditCard, CheckCircle, TrendingDown } from 'lucide-react'
+import { Eye, ShoppingCart, CreditCard, CheckCircle, TrendingDown } from '@/lib/optimized-imports'
 
 interface FunnelStep {
   name: string

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useState } from 'react'
-import { Camera, Upload, X, User, Trash2 } from 'lucide-react'
+import { Camera, Upload, X, User, Trash2 } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'

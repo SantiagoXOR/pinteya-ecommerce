@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { cn } from '@/lib/core/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Heart, ShoppingCart, Star, Zap } from 'lucide-react'
+import { Check, Heart, ShoppingCart, Star, Zap } from '@/lib/optimized-imports'
 
 // ===================================
 // MICRO-INTERACCIONES - PINTEYA E-COMMERCE

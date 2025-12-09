@@ -17,7 +17,7 @@ import {
   AlertCircle,
   Loader2,
   Check,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { toast } from 'react-hot-toast'
 

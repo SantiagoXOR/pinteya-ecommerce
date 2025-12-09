@@ -1,6 +1,6 @@
 import { forwardRef, TextareaHTMLAttributes } from 'react'
 import { cn } from '@/lib/core/utils'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2 } from '@/lib/optimized-imports'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {

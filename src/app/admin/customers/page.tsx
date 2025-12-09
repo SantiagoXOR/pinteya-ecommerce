@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Users, UserCheck, UserX, UserPlus, Mail, Phone, RefreshCw, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, UserCheck, UserX, UserPlus, Mail, Phone, RefreshCw, Search, ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useCustomers } from '@/hooks/admin/useCustomers'
 import { formatCurrency } from '@/lib/utils/format'
 

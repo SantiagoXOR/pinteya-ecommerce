@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, HelpCircle } from 'lucide-react'
+import { MessageCircle, HelpCircle } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 interface HelpCardProps {

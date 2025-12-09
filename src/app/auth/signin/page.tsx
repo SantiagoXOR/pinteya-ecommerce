@@ -5,7 +5,7 @@
 
 import { Suspense } from 'react'
 import { SignInForm } from '@/components/Auth/SignInForm'
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from '@/lib/optimized-imports'
 import Link from 'next/link'
 import '../auth-page.css'
 

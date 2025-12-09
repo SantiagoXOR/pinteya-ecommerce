@@ -6,7 +6,7 @@
 
 import React, { lazy, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw } from '@/lib/optimized-imports'
 
 // Lazy loading del dashboard principal
 const MetricsDashboard = lazy(() => import('./MetricsDashboard'))

@@ -18,7 +18,7 @@ import {
   AlertCircle,
   Truck,
   Route,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { toast } from 'sonner'
 
 interface OrderItem {

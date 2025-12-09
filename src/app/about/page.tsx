@@ -7,7 +7,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Building2, Users, Target, Award, MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { Building2, Users, Target, Award, MapPin, Phone, Mail, Clock } from '@/lib/optimized-imports'
 
 const AboutPage = () => {
   return (

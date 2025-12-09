@@ -23,7 +23,7 @@ import {
   Package,
   Truck,
   MapPin,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { LogisticsAlert } from '@/types/logistics'
 import { cn } from '@/lib/core/utils'
 import { formatDate, formatRelativeTime } from '@/lib/utils/consolidated-utils'

@@ -6,7 +6,7 @@ import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { ProductFormMinimal } from '@/components/admin/products/ProductFormMinimal'
 import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { toast } from 'react-hot-toast'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle } from '@/lib/optimized-imports'
 
 interface Product {
   id: string

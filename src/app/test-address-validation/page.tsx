@@ -5,7 +5,7 @@ import { AddressInput } from '@/components/ui/AddressInput'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle, AlertCircle, MapPin, TestTube } from 'lucide-react'
+import { CheckCircle, AlertCircle, MapPin, TestTube } from '@/lib/optimized-imports'
 
 /**
  * Página de prueba para la validación de direcciones

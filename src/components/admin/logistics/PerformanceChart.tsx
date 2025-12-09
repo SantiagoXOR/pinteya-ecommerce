@@ -27,7 +27,7 @@ import {
   PieChart as PieChartIcon,
   Calendar,
   Download,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { PerformanceMetric } from '@/types/logistics'
 import { cn } from '@/lib/core/utils'
 import { formatCurrency, formatDate } from '@/lib/utils/consolidated-utils'

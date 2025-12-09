@@ -9,7 +9,7 @@ import TopBar from '@/components/Header/TopBar'
 import EnhancedSearchBar from '@/components/Header/EnhancedSearchBar'
 import ActionButtons from '@/components/Header/ActionButtons'
 import DropdownTester from '@/components/Header/DropdownTester'
-import { CheckCircle, AlertCircle, Info, Smartphone, Monitor, Tablet } from 'lucide-react'
+import { CheckCircle, AlertCircle, Info, Smartphone, Monitor, Tablet } from '@/lib/optimized-imports'
 
 const HeaderDemoPage = () => {
   const [searchResults, setSearchResults] = useState<string[]>([])

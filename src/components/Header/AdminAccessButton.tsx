@@ -8,7 +8,7 @@
 
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { Shield, LogIn } from 'lucide-react'
+import { Shield, LogIn } from '@/lib/optimized-imports'
 
 export function AdminAccessButton() {
   const { data: session, status } = useSession()

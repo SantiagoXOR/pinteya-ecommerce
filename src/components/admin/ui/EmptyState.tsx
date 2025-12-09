@@ -1,4 +1,4 @@
-import { LucideIcon, Package, Search, AlertCircle } from 'lucide-react'
+import { LucideIcon, Package, Search, AlertCircle } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { Button } from '@/components/ui/button'
 

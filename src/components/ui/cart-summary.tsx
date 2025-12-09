@@ -17,7 +17,7 @@ import {
   Percent,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 export interface CartItem {

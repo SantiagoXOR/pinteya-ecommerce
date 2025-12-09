@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { AnalyticsSource } from '@/types/analytics'
-import { CheckCircle, XCircle, Clock, Database, BarChart3, Facebook } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Database, BarChart3, Facebook } from '@/lib/optimized-imports'
 
 interface AnalyticsSourceIndicatorProps {
   source: AnalyticsSource

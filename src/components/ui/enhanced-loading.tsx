@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
-import { Loader2, Package, ShoppingCart, CreditCard } from 'lucide-react'
+import { Loader2, Package, ShoppingCart, CreditCard } from '@/lib/optimized-imports'
 
 // ===================================
 // ENHANCED LOADING STATES - PINTEYA E-COMMERCE

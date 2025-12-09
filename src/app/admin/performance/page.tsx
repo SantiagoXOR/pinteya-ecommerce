@@ -23,7 +23,7 @@ import {
   Gauge,
   Server,
   BarChart3,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface PerformanceMetric {
   name: string

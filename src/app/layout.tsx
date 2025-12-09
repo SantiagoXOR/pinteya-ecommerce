@@ -1,6 +1,6 @@
 // Force redeploy to fix Server Action error - 2025-08-02T00:30:00.000Z
 import Providers from './providers'
-import { Suspense } from 'react'
+import React, { Suspense } from 'react'
 // ⚡ PERFORMANCE: Fuentes optimizadas con next/font (elimina 610ms de render-blocking)
 import { euclidCircularA } from './fonts'
 // ⚡ PERFORMANCE: CSS crítico inline, CSS no crítico carga asíncrono
@@ -35,6 +35,7 @@ export const metadata: Metadata = defaultMetadata
 export { viewport } from './viewport'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // ⚡ DEBUG: Simplificar layout para identificar el problema
   return (
     <html lang='es' className={euclidCircularA.variable}>
       <head>
@@ -353,7 +354,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {/* ⚡ FIX Next.js 15: Todos los componentes con ssr: false están en ClientAnalytics */}
-        <ClientAnalytics />
+        {/* ⚡ TEMPORAL: Comentado para debug del Internal Server Error */}
+        {/* <ClientAnalytics /> */}
         
         {/* Suspense global para componentes compartidos que usan useSearchParams (Header/Search) */}
         <Suspense fallback={null}>

@@ -40,7 +40,7 @@ import {
   Plus,
   Minus,
   AlertTriangle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useOrderNotifications } from '@/hooks/admin/useOrderNotifications'
 
 // ===================================

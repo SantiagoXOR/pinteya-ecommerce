@@ -9,7 +9,7 @@ import { useOrdersEnterprise } from '@/hooks/admin/useOrdersEnterprise'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { RefreshCw, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
+import { RefreshCw, AlertTriangle, CheckCircle, XCircle } from '@/lib/optimized-imports'
 
 export function DebugOrdersHook() {
   const hookData = useOrdersEnterprise()

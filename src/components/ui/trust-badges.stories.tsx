@@ -11,7 +11,7 @@ import {
   InstantDeliveryBadge,
   TrustBadgeGroup,
 } from './trust-badges'
-import { Shield, Star, Truck } from 'lucide-react'
+import { Shield, Star, Truck } from '@/lib/optimized-imports'
 
 const meta = {
   title: 'UI/TrustBadges',

@@ -26,7 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
-import { Download, FileText, Calendar, Filter, CheckCircle, AlertCircle } from 'lucide-react'
+import { Download, FileText, Calendar, Filter, CheckCircle, AlertCircle } from '@/lib/optimized-imports'
 import { useOrderNotifications } from '@/hooks/admin/useOrderNotifications'
 
 // ===================================

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { MessageCircle, X, Sparkles } from 'lucide-react'
+import { MessageCircle, X, Sparkles } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 
 const BuyPageWhatsAppPopup = () => {
@@ -101,6 +101,8 @@ const BuyPageWhatsAppPopup = () => {
 }
 
 export default BuyPageWhatsAppPopup
+
+
 
 
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Save, Palette, Package, DollarSign, Hash } from 'lucide-react'
+import { X, Save, Palette, Package, DollarSign, Hash } from '@/lib/optimized-imports'
 import { Input } from '../ui/Input'
 import { ImageUpload } from '../ui/ImageUpload'
 import { Badge } from '../ui/Badge'

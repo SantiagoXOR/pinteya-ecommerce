@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react'
 import Link from 'next/link'
-import { Phone, MapPin, ChevronDown, Navigation, Loader2 } from 'lucide-react'
+import { Phone, MapPin, ChevronDown, Navigation, Loader2 } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,

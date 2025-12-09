@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { AdminCard } from '../ui/AdminCard'
-import { Sparkles, Tag, TrendingUp, Package, AlertTriangle, XCircle } from 'lucide-react'
+import { Sparkles, Tag, TrendingUp, Package, AlertTriangle, XCircle } from '@/lib/optimized-imports'
 
 interface ProductBadgePreviewProps {
   product: {

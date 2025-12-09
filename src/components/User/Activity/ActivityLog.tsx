@@ -15,7 +15,7 @@ import {
   Settings,
   LogIn,
   Monitor,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'

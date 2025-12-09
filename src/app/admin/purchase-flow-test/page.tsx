@@ -18,7 +18,7 @@ import {
   Play,
   RefreshCw,
   Clock,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 const PurchaseFlowTestPage: React.FC = () => {
   const [simulationLogs, setSimulationLogs] = useState<any>(null)

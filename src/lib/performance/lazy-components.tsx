@@ -6,7 +6,7 @@
 import { lazy, Suspense, ComponentType, ReactNode } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from '@/lib/optimized-imports'
 
 // ===================================
 // FALLBACK COMPONENTS

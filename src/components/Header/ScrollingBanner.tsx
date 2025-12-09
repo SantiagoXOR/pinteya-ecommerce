@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Truck, MapPin, Star, Shield } from 'lucide-react'
+import { Truck, MapPin, Star, Shield } from '@/lib/optimized-imports'
 
 const ScrollingBanner = () => {
   const envioText = 'ENVÍO GRATIS EN 24HS EN CÓRDOBA CAPITAL'

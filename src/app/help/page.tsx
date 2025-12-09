@@ -20,7 +20,7 @@ import {
   CreditCard,
   Truck,
   RefreshCw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'

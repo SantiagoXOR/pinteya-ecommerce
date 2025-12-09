@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import ProductItem from '@/components/Common/ProductItem'
 import { useFilteredProducts } from '@/hooks/useFilteredProducts'
 import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'

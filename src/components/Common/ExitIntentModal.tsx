@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X, Gift, Mail } from 'lucide-react'
+import { X, Gift, Mail } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 
 const ExitIntentModal = () => {

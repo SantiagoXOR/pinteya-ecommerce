@@ -7,7 +7,7 @@ import { useProducts } from '@/hooks/useProducts'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { Grid, List, Package, TrendingUp } from 'lucide-react'
+import { Grid, List, Package, TrendingUp } from '@/lib/optimized-imports'
 // import shopData from "../Shop/shopData"; // Comentado: ahora usamos datos dinámicos
 
 const ShopWithoutSidebar = () => {

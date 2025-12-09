@@ -41,7 +41,7 @@ import {
   Download,
   RefreshCw,
   Settings,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // ===================================
 // INTERFACES

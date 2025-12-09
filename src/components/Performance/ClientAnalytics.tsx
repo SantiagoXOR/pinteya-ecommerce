@@ -7,6 +7,7 @@
  * Este componente cliente maneja todos los imports dinámicos que requieren `ssr: false`.
  */
 
+import React from 'react'
 import dynamic from 'next/dynamic'
 
 // ⚡ PERFORMANCE: Componentes no críticos (lazy load después de FCP)

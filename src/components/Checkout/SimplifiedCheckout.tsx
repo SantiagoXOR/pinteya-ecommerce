@@ -20,7 +20,7 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'

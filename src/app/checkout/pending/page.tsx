@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Clock, AlertCircle, ArrowLeft, RefreshCw, Mail, Phone, Home } from 'lucide-react'
+import { Clock, AlertCircle, ArrowLeft, RefreshCw, Mail, Phone, Home } from '@/lib/optimized-imports'
 
 interface PendingPayment {
   payment_id?: string

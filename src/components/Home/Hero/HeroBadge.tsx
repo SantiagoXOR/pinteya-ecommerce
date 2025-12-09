@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { HeroBadgeProps, BadgeType, BadgeVariant } from '@/types/hero'
-import { Truck, CreditCard, Package, Clock } from 'lucide-react'
+import { Truck, CreditCard, Package, Clock } from '@/lib/optimized-imports'
 
 /**
  * Obtener el icono apropiado según el tipo de badge

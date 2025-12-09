@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Filter, X, Search, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react'
+import { Filter, X, Search, SlidersHorizontal, ChevronDown, ChevronUp } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { ProductFilters as ProductFiltersType } from '@/hooks/admin/useProductsEnterprise'
 import { Badge } from '../ui/Badge'

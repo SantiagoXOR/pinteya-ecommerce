@@ -13,7 +13,7 @@ import { ProductInventory } from './ProductInventory'
 import { ProductSeo } from './ProductSeo'
 import { CategorySelector } from './CategorySelector'
 import { cn } from '@/lib/core/utils'
-import { Save, X, Eye, Loader2, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { Save, X, Eye, Loader2, Clock, CheckCircle, AlertCircle } from '@/lib/optimized-imports'
 import { toast } from 'react-hot-toast'
 
 // Enhanced validation schema

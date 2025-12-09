@@ -22,7 +22,7 @@ import {
   History,
   Download,
   Eye,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { OrderEnterprise, OrderStatusHistory, OrderNote } from '@/types/orders-enterprise'
 import { formatOrderStatus, formatPaymentStatus } from '@/lib/orders-enterprise'
 import { getProductImage } from '@/lib/utils/image-helpers'

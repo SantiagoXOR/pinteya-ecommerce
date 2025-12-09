@@ -8,7 +8,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { getMetaEventsManagerUrl } from '@/lib/integrations/meta-pixel-analytics'
 import { MetaPixelMetrics } from '@/types/analytics'
-import { ShoppingCart, CreditCard, CheckCircle, Eye, Search, ExternalLink, TrendingUp } from 'lucide-react'
+import { ShoppingCart, CreditCard, CheckCircle, Eye, Search, ExternalLink, TrendingUp } from '@/lib/optimized-imports'
 import { motion } from 'framer-motion'
 
 interface MetaMetricsProps {

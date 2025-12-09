@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Route, MapPin, Clock, Truck, Eye, EyeOff, Navigation, Zap, TrendingUp } from 'lucide-react'
+import { Route, MapPin, Clock, Truck, Eye, EyeOff, Navigation, Zap, TrendingUp } from '@/lib/optimized-imports'
 
 // =====================================================
 // INTERFACES Y TIPOS

@@ -12,125 +12,201 @@
 import React from 'react'
 
 // ===================================
-// LUCIDE REACT ICONS - OPTIMIZED
+// TABLER ICONS - OPTIMIZED
 // ===================================
-// Solo importamos los iconos que realmente se usan en el proyecto
-// Esto reduce significativamente el bundle size y mejora el rendimiento
+// Migrado de lucide-react a @tabler/icons-react
+// Tabler Icons ofrece mejor compatibilidad, más iconos (4964+) y mejor mantenimiento
+// Los iconos se re-exportan con los nombres originales de lucide-react para compatibilidad
 
 // Iconos utilizados en el proyecto (basado en análisis de código)
-// Importación directa sin paths específicos (compatible con todas las versiones)
 import {
   // Navegación básica
-  Search,
-  ShoppingCart,
-  Heart,
-  User,
-  Menu,
-  X,
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  ArrowLeft,
-  ArrowRight,
-  Home,
+  IconSearch,
+  IconShoppingCart,
+  IconHeart,
+  IconUser,
+  IconMenu2,
+  IconX,
+  IconChevronDown,
+  IconChevronUp,
+  IconChevronLeft,
+  IconChevronRight,
+  IconArrowLeft,
+  IconArrowRight,
+  IconHome,
 
   // UI y acciones
-  Plus,
-  Minus,
-  Check,
-  Star,
-  Eye,
-  Loader2,
-  AlertCircle,
-  CheckCircle,
-  Circle,
+  IconPlus,
+  IconMinus,
+  IconCheck,
+  IconStar,
+  IconEye,
+  IconLoader2,
+  IconAlertCircle,
+  IconCircleCheck,
+  IconCircle,
 
   // E-commerce específicos
-  ShoppingBag,
-  Package,
-  Truck,
-  CreditCard,
-  DollarSign,
-  Gift,
-  Trophy,
-  TrendingUp,
+  IconShoppingBag,
+  IconPackage,
+  IconTruck,
+  IconCreditCard,
+  IconCurrencyDollar,
+  IconGift,
+  IconTrophy,
+  IconTrendingUp,
 
   // Información y contacto
-  MapPin,
-  Phone,
-  Mail,
-  MessageCircle,
+  IconMapPin,
+  IconPhone,
+  IconMail,
+  IconMessageCircle,
 
   // Acciones de producto
-  Trash2,
-  ZoomIn,
-  Filter,
-  Calendar,
+  IconTrash,
+  IconZoomIn,
+  IconFilter,
+  IconCalendar,
 
   // Seguridad y confianza
-  Shield,
+  IconShield,
 
   // Herramientas (para productos de pintura)
-  Palette,
-  Sparkles,
-  Brush,
-  Wrench,
+  IconPalette,
+  IconSparkles,
+  IconBrush,
+  IconTool,
 
   // Otros iconos utilizados
-  Clock,
-  Users,
-  Zap,
-} from 'lucide-react'
+  IconClock,
+  IconUsers,
+  IconBolt,
 
-// Re-exportar para uso en el proyecto
+  // Iconos adicionales encontrados en el proyecto
+  IconLogin,
+  IconDashboard,
+  IconChartBar,
+  IconSettings,
+  IconDatabase,
+  IconBell,
+  IconActivity,
+  IconNavigation,
+  IconAlertTriangle,
+  IconRefresh,
+  IconInfoCircle,
+  IconExternalLink,
+  IconTestPipe,
+  IconBox,
+  IconStack,
+  IconRuler,
+  IconMaximize,
+  IconHash,
+  IconDeviceDesktop,
+  IconFileText,
+  IconDownload,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconBug,
+  IconTag,
+  IconCamera,
+  IconHelp,
+  IconPercentage,
+} from '@tabler/icons-react'
+
+// Re-exportar con nombres compatibles (aliases para facilitar migración)
+// Esto permite que los componentes existentes sigan funcionando sin cambios
 export {
-  Search,
-  ShoppingCart,
-  Heart,
-  User,
-  Menu,
-  X,
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  ArrowLeft,
-  ArrowRight,
-  Home,
-  Plus,
-  Minus,
-  Check,
-  Star,
-  Eye,
-  Loader2,
-  AlertCircle,
-  CheckCircle,
-  Circle,
-  ShoppingBag,
-  Package,
-  Truck,
-  CreditCard,
-  DollarSign,
-  Gift,
-  Trophy,
-  TrendingUp,
-  MapPin,
-  Phone,
-  Mail,
-  MessageCircle,
-  Trash2,
-  ZoomIn,
-  Filter,
-  Calendar,
-  Shield,
-  Palette,
-  Sparkles,
-  Brush,
-  Wrench,
-  Clock,
-  Users,
-  Zap,
+  // Navegación básica
+  IconSearch as Search,
+  IconShoppingCart as ShoppingCart,
+  IconHeart as Heart,
+  IconUser as User,
+  IconMenu2 as Menu,
+  IconX as X,
+  IconChevronDown as ChevronDown,
+  IconChevronUp as ChevronUp,
+  IconChevronLeft as ChevronLeft,
+  IconChevronRight as ChevronRight,
+  IconArrowLeft as ArrowLeft,
+  IconArrowRight as ArrowRight,
+  IconHome as Home,
+
+  // UI y acciones
+  IconPlus as Plus,
+  IconMinus as Minus,
+  IconCheck as Check,
+  IconStar as Star,
+  IconEye as Eye,
+  IconLoader2 as Loader2,
+  IconAlertCircle as AlertCircle,
+  IconCircleCheck as CheckCircle,
+  IconCircle as Circle,
+
+  // E-commerce específicos
+  IconShoppingBag as ShoppingBag,
+  IconPackage as Package,
+  IconTruck as Truck,
+  IconCreditCard as CreditCard,
+  IconCurrencyDollar as DollarSign,
+  IconGift as Gift,
+  IconTrophy as Trophy,
+  IconTrendingUp as TrendingUp,
+
+  // Información y contacto
+  IconMapPin as MapPin,
+  IconPhone as Phone,
+  IconMail as Mail,
+  IconMessageCircle as MessageCircle,
+
+  // Acciones de producto
+  IconTrash as Trash2,
+  IconZoomIn as ZoomIn,
+  IconFilter as Filter,
+  IconCalendar as Calendar,
+
+  // Seguridad y confianza
+  IconShield as Shield,
+
+  // Herramientas (para productos de pintura)
+  IconPalette as Palette,
+  IconSparkles as Sparkles,
+  IconBrush as Brush,
+  IconTool as Wrench,
+
+  // Otros iconos utilizados
+  IconClock as Clock,
+  IconUsers as Users,
+  IconBolt as Zap,
+
+  // Iconos adicionales
+  IconLogin as LogIn,
+  IconDashboard as LayoutDashboard,
+  IconChartBar as BarChart3,
+  IconSettings as Settings,
+  IconDatabase as Database,
+  IconBell as Bell,
+  IconActivity as Activity,
+  IconNavigation as Navigation,
+  IconAlertTriangle as AlertTriangle,
+  IconRefresh as RefreshCw,
+  IconInfoCircle as Info,
+  IconExternalLink as ExternalLink,
+  IconTestPipe as TestTube,
+  IconBox as Box,
+  IconStack as Layers,
+  IconRuler as Ruler,
+  IconMaximize as Maximize,
+  IconHash as Hash,
+  IconDeviceDesktop as Monitor,
+  IconFileText as FileText,
+  IconDownload as Download,
+  IconPlayerPause as Pause,
+  IconPlayerPlay as Play,
+  IconBug as Bug,
+  IconTag as Tag,
+  IconCamera as Camera,
+  IconHelp as HelpCircle,
+  IconPercentage as Percent,
 }
 
 // ===================================

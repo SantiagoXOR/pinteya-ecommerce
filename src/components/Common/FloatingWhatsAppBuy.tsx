@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { MessageCircle, X } from 'lucide-react'
+import { MessageCircle, X } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 
 // Versión específica para /buy que aparece inmediatamente
@@ -91,6 +91,8 @@ const FloatingWhatsAppBuy = () => {
 }
 
 export default FloatingWhatsAppBuy
+
+
 
 
 

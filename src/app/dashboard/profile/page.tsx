@@ -4,7 +4,7 @@
 export const dynamic = 'force-dynamic'
 import React, { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { User, Camera, Mail, Phone } from 'lucide-react'
+import { User, Camera, Mail, Phone } from '@/lib/optimized-imports'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

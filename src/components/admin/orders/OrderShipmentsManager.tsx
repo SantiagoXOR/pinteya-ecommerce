@@ -38,7 +38,7 @@ import {
   Plus,
   Eye,
   RefreshCw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useOrderLogistics, CreateShipmentRequest, Shipment } from '@/hooks/admin/useOrderLogistics'
 import { formatDate, formatShipmentStatus } from '@/lib/utils/consolidated-utils'
 import { cn } from '@/lib/core/utils'

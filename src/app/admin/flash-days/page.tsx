@@ -6,7 +6,7 @@
 
 'use client'
 
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle } from '@/lib/optimized-imports'
 
 export default function FlashDaysPage() {
   return (

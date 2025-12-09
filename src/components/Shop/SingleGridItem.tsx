@@ -16,7 +16,7 @@ import { useCartUnified } from '@/hooks/useCartUnified'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, Eye } from 'lucide-react'
+import { ShoppingCart, Eye } from '@/lib/optimized-imports'
 
 const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
   const dispatch = useDispatch<AppDispatch>()

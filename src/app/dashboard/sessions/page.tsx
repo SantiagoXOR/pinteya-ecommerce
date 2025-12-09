@@ -3,7 +3,7 @@
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
 import React from 'react'
-import { Monitor, MapPin, Clock, AlertTriangle } from 'lucide-react'
+import { Monitor, MapPin, Clock, AlertTriangle } from '@/lib/optimized-imports'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 

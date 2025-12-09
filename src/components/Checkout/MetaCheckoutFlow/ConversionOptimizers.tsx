@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { X, AlertCircle, Gift, Percent } from 'lucide-react'
+import { X, AlertCircle, Gift, Percent } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { trackCustomEvent } from '@/lib/meta-pixel'
 import { trackEvent } from '@/lib/google-analytics'

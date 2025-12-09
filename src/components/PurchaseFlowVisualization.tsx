@@ -18,7 +18,7 @@ import {
   AlertCircle,
   PlayCircle,
   RefreshCw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface FlowStep {
   id: string

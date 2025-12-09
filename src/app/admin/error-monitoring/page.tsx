@@ -29,7 +29,7 @@ import {
   Clock,
   Users,
   Zap,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useErrorMetrics } from '@/hooks/error-boundary/useErrorBoundary'
 
 // ===================================

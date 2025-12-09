@@ -21,7 +21,7 @@ import {
   Shield,
   Zap,
   Eye,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Importar managers de testing
 import { automatedTestingManager } from '@/lib/testing/automated-testing-manager'

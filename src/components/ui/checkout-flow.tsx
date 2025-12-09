@@ -18,7 +18,7 @@ import {
   User,
   Clock,
   Shield,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 // Tipos mejorados con mejor tipado

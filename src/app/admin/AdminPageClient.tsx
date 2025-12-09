@@ -19,7 +19,7 @@ import {
   Truck,
   Gauge,
   GitBranch,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 import { useMonitoringStats } from '@/providers/MonitoringProvider'
 

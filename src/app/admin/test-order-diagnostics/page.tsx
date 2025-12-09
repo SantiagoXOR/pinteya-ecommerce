@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { CheckCircle, XCircle, Clock, AlertTriangle, RefreshCw, Download } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, AlertTriangle, RefreshCw, Download } from '@/lib/optimized-imports'
 
 interface TestStep {
   step: string

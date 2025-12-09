@@ -9,7 +9,7 @@ import { useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { User, Mail, Calendar, ArrowLeft, Edit } from 'lucide-react'
+import { User, Mail, Calendar, ArrowLeft, Edit } from '@/lib/optimized-imports'
 import Link from 'next/link'
 
 /**

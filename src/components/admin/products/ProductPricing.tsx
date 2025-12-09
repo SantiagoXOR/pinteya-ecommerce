@@ -2,7 +2,7 @@
 
 import { UseFormReturn, FieldErrors } from 'react-hook-form'
 import { AdminCard } from '../ui/AdminCard'
-import { Calculator, DollarSign, TrendingUp, AlertCircle } from 'lucide-react'
+import { Calculator, DollarSign, TrendingUp, AlertCircle } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface ProductFormData {

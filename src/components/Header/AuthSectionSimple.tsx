@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { LogIn } from 'lucide-react'
+import { LogIn } from '@/lib/optimized-imports'
 
 interface AuthSectionProps {
   variant?: 'desktop' | 'mobile' | 'topbar'

@@ -31,7 +31,7 @@ import {
   Clock,
   Users,
   MousePointer,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import Link from 'next/link'
 
 // ===================================

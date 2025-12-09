@@ -34,7 +34,7 @@ import {
   Trash2,
   TrendingUp,
   Zap,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useToast } from '@/hooks/use-toast'
 import { toast } from 'sonner'
 

@@ -11,7 +11,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { HeroSlideProps } from '@/types/hero'
 import { HeroBadge } from './HeroBadge'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@/lib/optimized-imports'
 
 /**
  * Resaltar palabras específicas en el título

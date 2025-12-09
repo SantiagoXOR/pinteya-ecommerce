@@ -3,7 +3,7 @@
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminCard } from '@/components/admin/ui/AdminCard'
 import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
-import { Settings, Store, CreditCard, Truck, Bell, Shield, AlertTriangle } from 'lucide-react'
+import { Settings, Store, CreditCard, Truck, Bell, Shield, AlertTriangle } from '@/lib/optimized-imports'
 
 export function SettingsPageClient() {
   const breadcrumbs = [{ label: 'Admin', href: '/admin' }, { label: 'Configuración' }]

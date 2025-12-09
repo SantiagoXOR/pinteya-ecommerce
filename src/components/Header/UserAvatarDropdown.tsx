@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { User, Package, Settings, LogOut, ChevronDown, MapPin } from 'lucide-react'
+import { User, Package, Settings, LogOut, ChevronDown, MapPin } from '@/lib/optimized-imports'
 import Link from 'next/link'
 
 /**

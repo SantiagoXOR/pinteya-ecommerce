@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { Bell, LogOut, Home, User, Settings, Package, ChevronDown } from 'lucide-react'
+import { Bell, LogOut, Home, User, Settings, Package, ChevronDown } from '@/lib/optimized-imports'
 import Link from 'next/link'
 import Image from 'next/image'
 import {

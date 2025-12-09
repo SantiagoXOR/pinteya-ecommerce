@@ -18,7 +18,7 @@ import {
   CheckCircle,
   ShoppingCart,
   ShieldAlert,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useOrdersEnterprise } from '@/hooks/admin/useOrdersEnterprise'
 import { OrderBulkOperations } from '@/components/admin/orders/OrderBulkOperations'
 import { OrderList } from '@/components/admin/orders/OrderList'

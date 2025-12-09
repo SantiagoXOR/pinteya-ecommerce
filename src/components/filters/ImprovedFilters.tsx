@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { X, Filter } from 'lucide-react'
+import { X, Filter } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import CategoryTogglePills from '@/components/Home/CategoryTogglePills'
 

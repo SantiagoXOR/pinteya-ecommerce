@@ -2,7 +2,7 @@
 
 import { UseFormReturn, FieldErrors } from 'react-hook-form'
 import { AdminCard } from '../ui/AdminCard'
-import { Package, AlertTriangle, TrendingDown, BarChart3, Settings } from 'lucide-react'
+import { Package, AlertTriangle, TrendingDown, BarChart3, Settings } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface ProductInventoryProps {

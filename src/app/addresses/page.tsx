@@ -3,7 +3,7 @@
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
 import React, { useEffect, useState } from 'react'
-import { MapPin, Plus, Edit, Trash2, Star, Building, Phone } from 'lucide-react'
+import { MapPin, Plus, Edit, Trash2, Star, Building, Phone } from '@/lib/optimized-imports'
 import { useSession } from 'next-auth/react'
 import { AddressFormAdvanced, AdvancedAddress } from '@/components/Address/AddressFormAdvanced'
 import { Button } from '@/components/ui/button'

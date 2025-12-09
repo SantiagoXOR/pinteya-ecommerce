@@ -25,7 +25,7 @@ import {
   BarChart3,
   Users,
   Navigation,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useLogisticsDashboard } from '@/hooks/admin/useLogisticsDashboard'
 import { LogisticsMetricsCards } from '@/components/admin/logistics/LogisticsMetricsCards'
 import { ShipmentsList } from '@/components/admin/logistics/ShipmentsList'

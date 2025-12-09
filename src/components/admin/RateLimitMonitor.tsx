@@ -16,7 +16,7 @@ import {
   TrendingUp,
   TrendingDown,
   Zap,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface MetricsSummary {
   totalEndpoints: number

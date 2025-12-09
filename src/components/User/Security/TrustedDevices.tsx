@@ -15,7 +15,7 @@ import {
   Calendar,
   MapPin,
   Trash2,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import {
   DropdownMenu,
   DropdownMenuContent,

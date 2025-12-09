@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react'
 import Link from 'next/link'
-import { TrendingUp, Search } from 'lucide-react'
+import { TrendingUp, Search } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'
 

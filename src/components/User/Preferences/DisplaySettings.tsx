@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Monitor, Globe, DollarSign, Palette } from 'lucide-react'
+import { Monitor, Globe, DollarSign, Palette } from '@/lib/optimized-imports'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { useTheme } from 'next-themes'
 import { toast } from 'sonner'

@@ -17,7 +17,7 @@ import {
   Monitor,
   Truck,
   AlertTriangle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // ===================================
 // LAZY IMPORTS

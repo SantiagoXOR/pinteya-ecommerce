@@ -11,7 +11,7 @@ import {
   Package,
   User,
   Settings,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
 

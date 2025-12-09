@@ -43,7 +43,7 @@ import {
   Plus,
   Search,
   Filter,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useRouteOptimization } from '@/hooks/admin/useRouteOptimization'
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
 

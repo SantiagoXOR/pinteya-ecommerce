@@ -30,7 +30,7 @@ import {
   XCircle,
   Copy,
   ExternalLink,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { toast } from 'sonner'
 import { PaymentProofModal } from './PaymentProofModal'
 

@@ -24,7 +24,7 @@ import {
   Hash,
   X,
   AlertCircle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { FreeShippingText } from '@/components/ui/free-shipping-text'
 import {

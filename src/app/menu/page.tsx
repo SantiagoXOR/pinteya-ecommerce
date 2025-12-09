@@ -17,7 +17,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 export const metadata: Metadata = {
   title: 'Menú Principal | Pinteya E-commerce',

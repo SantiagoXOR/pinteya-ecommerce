@@ -20,7 +20,7 @@ import {
   TrendingUp,
   Eye,
   Heart,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Componente de Timer de Urgencia Avanzado
 interface UrgencyTimerProps {

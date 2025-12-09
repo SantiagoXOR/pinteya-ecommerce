@@ -1,6 +1,6 @@
 import { forwardRef, InputHTMLAttributes } from 'react'
 import { cn } from '@/lib/core/utils'
-import { LucideIcon, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { LucideIcon, AlertCircle, CheckCircle2 } from '@/lib/optimized-imports'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {

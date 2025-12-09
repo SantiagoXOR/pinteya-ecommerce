@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Bell, Mail, Smartphone, AlertCircle } from 'lucide-react'
+import { Bell, Mail, Smartphone, AlertCircle } from '@/lib/optimized-imports'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { toast } from 'sonner'
 

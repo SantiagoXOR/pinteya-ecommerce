@@ -23,7 +23,7 @@ import {
   SlidersHorizontal,
   X,
   ArrowUpDown,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Lazy loading del componente principal
 const ShopWithSidebar = lazy(() => import('./index'))

@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminCard } from '../ui/AdminCard'
 import { CategorySelector } from './CategorySelector'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
-import { Save, X, Upload, Plus, Edit, Trash2 } from 'lucide-react'
+import { Save, X, Upload, Plus, Edit, Trash2 } from '@/lib/optimized-imports'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
 

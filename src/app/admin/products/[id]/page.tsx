@@ -16,7 +16,7 @@ import {
   Calendar,
   Tag,
   AlertCircle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 interface Product {
