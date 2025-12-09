@@ -127,17 +127,33 @@ const nextConfig = {
       config.resolve.modules.push('node_modules')
     }
     
-    // ⚡ FIX: Resolver react/cache si existe (Next.js 16 puede requerirlo)
-    // Si no existe, crear un alias que apunte a una implementación vacía
-    try {
-      const reactCachePath = path.join(reactPath, 'cache.js')
-      // Verificar si existe, si no, no agregar el alias
-      const fs = require('fs')
-      if (fs.existsSync(reactCachePath)) {
-        config.resolve.alias['react/cache'] = reactCachePath
+    // ⚡ FIX: Next.js 16 puede requerir react/cache que no existe en React 18.3.1
+    // Crear un polyfill simple para react/cache si no existe
+    const fs = require('fs')
+    const reactCachePath = path.join(reactPath, 'cache.js')
+    
+    if (!fs.existsSync(reactCachePath)) {
+      // Crear un polyfill temporal para react/cache
+      const polyfillPath = path.join(process.cwd(), '.next', 'react-cache-polyfill.js')
+      const polyfillDir = path.dirname(polyfillPath)
+      
+      if (!fs.existsSync(polyfillDir)) {
+        fs.mkdirSync(polyfillDir, { recursive: true })
       }
-    } catch (error) {
-      // Ignorar si no se puede verificar
+      
+      // Polyfill simple que exporta una función cache que retorna el callback
+      const polyfillContent = `
+// Polyfill para react/cache en React 18.3.1
+// Next.js 16 puede requerir esto pero no está disponible en React 18.3.1
+export function cache(fn) {
+  return fn
+}
+export default cache
+`
+      fs.writeFileSync(polyfillPath, polyfillContent, 'utf8')
+      config.resolve.alias['react/cache'] = polyfillPath
+    } else {
+      config.resolve.alias['react/cache'] = reactCachePath
     }
     
     return config
