@@ -127,6 +127,19 @@ const nextConfig = {
       config.resolve.modules.push('node_modules')
     }
     
+    // ⚡ FIX: Resolver react/cache si existe (Next.js 16 puede requerirlo)
+    // Si no existe, crear un alias que apunte a una implementación vacía
+    try {
+      const reactCachePath = path.join(reactPath, 'cache.js')
+      // Verificar si existe, si no, no agregar el alias
+      const fs = require('fs')
+      if (fs.existsSync(reactCachePath)) {
+        config.resolve.alias['react/cache'] = reactCachePath
+      }
+    } catch (error) {
+      // Ignorar si no se puede verificar
+    }
+    
     return config
   },
 
