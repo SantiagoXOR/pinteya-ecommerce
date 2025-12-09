@@ -141,49 +141,30 @@ const nextConfig = {
         fs.mkdirSync(polyfillDir, { recursive: true })
       }
       
-      // Polyfill completo que implementa cache con Map para almacenar resultados
+      // Polyfill que exporta cache como función y como propiedad para compatibilidad completa
       const polyfillContent = `'use strict';
 
-// Polyfill completo para react/cache en React 18.3.1
+// Polyfill para react/cache en React 18.3.1
 // Next.js 16 puede requerir esto pero no está disponible en React 18.3.1
-// Esta implementación proporciona funcionalidad de cache real
-
-const cacheMap = new WeakMap();
+// Esta implementación es compatible con todas las formas de importación
 
 function cache(fn) {
   if (typeof fn !== 'function') {
     throw new Error('cache requires a function');
   }
-  
-  // Si ya está en cache, retornar la función cached
-  if (cacheMap.has(fn)) {
-    return cacheMap.get(fn);
-  }
-  
-  // Crear función cached que almacena resultados
-  const cachedFn = function(...args) {
-    const key = JSON.stringify(args);
-    if (!cachedFn._cache) {
-      cachedFn._cache = new Map();
-    }
-    
-    if (cachedFn._cache.has(key)) {
-      return cachedFn._cache.get(key);
-    }
-    
-    const result = fn.apply(this, args);
-    cachedFn._cache.set(key, result);
-    return result;
-  };
-  
-  // Almacenar en cacheMap para futuras referencias
-  cacheMap.set(fn, cachedFn);
-  
-  return cachedFn;
+  // Retornar la función directamente (passthrough simple)
+  // Next.js maneja el cache internamente
+  return fn;
 }
 
+// Exportar como función directa (para import cache from 'react/cache')
+const cacheExport = cache;
+
+// Agregar cache como propiedad (para import { cache } from 'react/cache')
+cacheExport.cache = cache;
+
 // Exportar de múltiples formas para compatibilidad
-module.exports = cache;
+module.exports = cacheExport;
 module.exports.cache = cache;
 module.exports.default = cache;
 
