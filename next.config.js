@@ -41,10 +41,9 @@ const nextConfig = {
 
   // ⚡ PERFORMANCE: Modular imports para reducir bundle size
   // Nota: swcMinify removido - es por defecto en Next.js 15
-  // ⚡ FIX TURBOPACK: Agregar extensión .mjs para compatibilidad con Turbopack
   modularizeImports: {
-    'lucide-react': {
-      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}.mjs',
+    '@tabler/icons-react': {
+      transform: '@tabler/icons-react/dist/esm/icons/{{member}}',
     },
     '@radix-ui/react-icons': {
       transform: '@radix-ui/react-icons/dist/{{member}}',
@@ -54,7 +53,7 @@ const nextConfig = {
   // ⚡ PERFORMANCE: Configuración experimental optimizada
   experimental: {
     optimizePackageImports: [
-      'lucide-react',
+      '@tabler/icons-react',
       '@radix-ui/react-alert-dialog',
       '@radix-ui/react-avatar',
       '@radix-ui/react-checkbox',
