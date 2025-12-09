@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
       country,
       phone,
       type,
-      is_default,
+      is_default: initialIsDefault,
       validation_status,
     } = body
 
@@ -274,6 +274,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Manejar lógica de dirección predeterminada
+    let is_default = initialIsDefault
     if (is_default) {
       console.log('🔄 POST - Desmarcando otras direcciones como predeterminadas')
       // Desmarcar todas las otras direcciones como predeterminadas
