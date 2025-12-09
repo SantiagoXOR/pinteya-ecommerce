@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prebuild": "node scripts/create-react-cache-polyfill.js",
+    "prebuild:vercel": "node scripts/create-react-cache-polyfill.js",
     "dev": "next dev --turbo -p 3000",
     "dev:turbo": "next dev --turbo -p 3000",
     "build": "next build",
