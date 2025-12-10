@@ -190,11 +190,11 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                           />
                         </div>
 
-                        {/* Badge del carrito encima del círculo con color naranja Pinteya */}
+                        {/* Badge del carrito encima del círculo con color naranja Pinteya - Posicionado más arriba para alinear títulos */}
                         {showBadge && (
                           <span
                             className={cn(
-                              'absolute -top-1 left-1/2 transform -translate-x-1/2 text-white text-[10px] font-bold',
+                              'absolute -top-2.5 left-1/2 transform -translate-x-1/2 text-white text-[10px] font-bold',
                               'rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1.5',
                               'shadow-lg border-2 border-white ring-2 ring-blaze-orange-100 z-10',
                               item.badge && item.badge > 0

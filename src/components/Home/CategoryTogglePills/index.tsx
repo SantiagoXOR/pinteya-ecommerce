@@ -324,7 +324,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                         ? 'bg-bright-sun-400 hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600 shadow-lg'
                         : isSelected
                         ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
-                        : 'bg-white hover:bg-gray-50 hover:shadow-lg text-white border-gray-200 shadow-sm'
+                        : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-900 border-gray-200 shadow-sm'
                     }
                   `}
                 >
@@ -344,7 +344,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     />
                   </div>
                 )}
-                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-white'}`}>
+                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
                   {category.name}
                 </span>
               </Button>
@@ -432,7 +432,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                           ? 'bg-bright-sun-400 hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600 shadow-lg'
                           : isSelected
                           ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
-                          : 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-lg text-white border-gray-200 dark:border-gray-700 shadow-sm'
+                          : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-900 border-gray-200 shadow-sm'
                       }
                     `}
                   >
@@ -452,7 +452,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     />
                   </div>
                 )}
-                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-white'}`}>
+                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
                   {category.name}
                 </span>
               </Button>
