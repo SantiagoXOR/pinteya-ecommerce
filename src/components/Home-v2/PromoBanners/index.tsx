@@ -87,12 +87,19 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
               {/* DISEÑO COMPACTO PARA BANNERS 1 Y 2 */}
               {isCompactBanner ? (
                 <div 
-                  className='relative h-12 md:h-14'
-                  style={{ minHeight: '48px' }} // ⚡ CLS FIX: Altura mínima fija (h-12 = 48px)
+                  className='relative w-full'
+                  style={{ 
+                    aspectRatio: '2.77', // ⚡ MISMO ASPECT RATIO QUE HERO Y COMBOS
+                    minHeight: '277px' // Mobile: 768px / 2.77 ≈ 277px (igual que CombosSection)
+                  }}
                 >
                   {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
                   <div 
                     className={`absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                    style={{ 
+                      aspectRatio: '2.77',
+                      minHeight: '277px'
+                    }}
                     aria-hidden="true"
                   />
                   
@@ -102,12 +109,12 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     src={banner.bgImage}
                     alt={banner.title}
                     fill
-                    className='object-cover object-center z-10'
+                    className='object-contain object-center z-10'
                     sizes='(max-width: 768px) 100vw, 1200px'
                     priority={banner.id === 1}
                     loading={banner.id === 1 ? undefined : 'lazy'}
                     quality={65} // ⚡ OPTIMIZACIÓN: Reducido de 75 a 65 para ahorrar 20.9 KiB (Lighthouse)
-                    style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito
+                    style={{ objectFit: 'contain' }} // ⚡ CLS FIX: objectFit explícito (igual que HeroCarousel)
                     onLoad={() => {
                       setImagesLoaded(prev => new Set(prev).add(banner.id))
                     }}

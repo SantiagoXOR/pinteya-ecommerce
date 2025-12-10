@@ -194,7 +194,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
                             {/* Navegación móvil inferior estilo MercadoLibre - Visible en mobile y desktop */}
                             {!isAdminRoute && !isAuthRoute && (
-                              <MercadoLibreBottomNav />
+                                <MercadoLibreBottomNav />
                             )}
 
                             {/* Botones flotantes - DESACTIVADOS: Reemplazados por bottom navigation estilo MercadoLibre */}
