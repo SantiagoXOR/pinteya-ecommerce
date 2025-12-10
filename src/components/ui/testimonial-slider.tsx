@@ -106,8 +106,8 @@ const TestimonialSlider = ({
               leaveTo='opacity-0 translate-x-4'
               beforeEnter={() => heightFix()}
             >
-              <blockquote className='text-lg sm:text-xl font-semibold text-gray-900 leading-relaxed'>
-                “{testimonial.quote}”
+              <blockquote className='text-lg sm:text-xl font-semibold text-white leading-relaxed'>
+                "{testimonial.quote}"
               </blockquote>
             </Transition>
           ))}
@@ -128,7 +128,7 @@ const TestimonialSlider = ({
               className={`whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring focus-visible:ring-orange-200 ${
                 isActive
                   ? 'bg-orange-500 text-white shadow-orange-500/20'
-                  : 'bg-white text-orange-900 hover:bg-orange-50'
+                  : 'bg-white text-gray-900 hover:bg-orange-50'
               }`}
               onClick={() => {
                 setActive(index)

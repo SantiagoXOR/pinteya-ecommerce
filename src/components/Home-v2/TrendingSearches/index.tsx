@@ -116,7 +116,7 @@ const TrendingSearches = () => {
               </span>
 
               {/* Term */}
-              <span className='text-xs sm:text-sm font-medium text-white/90 group-hover:text-orange-600 dark:group-hover:text-bright-sun-400 transition-colors break-words whitespace-nowrap'>
+              <span className='text-xs sm:text-sm font-medium text-gray-900 group-hover:text-orange-600 transition-colors break-words whitespace-nowrap'>
                 {search.term}
               </span>
 

@@ -28,7 +28,7 @@ const Testimonials = () => {
     <section ref={sectionRef} className='py-4'>
       <div className='max-w-4xl w-full mx-auto px-4'>
         <div
-          className={`mb-6 flex items-center justify-center text-orange-600 text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-500 ${
+          className={`mb-6 flex items-center justify-center text-white text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-500 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
