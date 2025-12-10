@@ -348,9 +348,9 @@ const HomeV2 = () => {
         <LazyTestimonials />
       </div>
 
-      {/* Elementos flotantes de engagement - Carga diferida */}
-      <DelayedFloatingCart />
-      <DelayedFloatingWhatsApp />
+      {/* Elementos flotantes de engagement - DESACTIVADOS: Reemplazados por bottom navigation */}
+      {/* <DelayedFloatingCart /> */}
+      {/* <DelayedFloatingWhatsApp /> */}
       {/* <ExitIntentModal /> */} {/* Desactivado - Solo WhatsAppPopup activo para evitar sobrecarga de popups */}
       
       {/* WhatsApp Popup para captura de leads - Rediseñado con paleta Pinteya */}

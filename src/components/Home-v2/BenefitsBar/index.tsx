@@ -89,7 +89,7 @@ const BenefitsBar = () => {
                   >
                     <Icon className='w-4 h-4' />
                   </div>
-                  <span className='text-sm font-medium text-gray-700 dark:!text-white/90'>
+                  <span className='text-sm font-medium text-white/90'>
                     {benefit.text}
                   </span>
                 </div>
@@ -104,7 +104,7 @@ const BenefitsBar = () => {
             >
               <CurrentIcon className='w-4 h-4' />
             </div>
-            <span className='text-sm font-medium text-gray-700'>
+            <span className='text-sm font-medium text-white/90'>
               {currentBenefit.text}
             </span>
           </div>

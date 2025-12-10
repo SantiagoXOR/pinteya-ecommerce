@@ -65,13 +65,16 @@
     }
   }
 
-  /* ⚡ PERFORMANCE: Shimmer animation para skeletons */
+  /* ⚡ PERFORMANCE: Shimmer animation para skeletons - Pulso sutil sin movimiento horizontal */
   @keyframes shimmer {
     0% {
-      transform: translateX(-100%);
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 1;
     }
     100% {
-      transform: translateX(100%);
+      opacity: 0.9;
     }
   }
 
@@ -115,39 +118,44 @@
     right: 0;
     bottom: 0;
     left: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.2) 20%,
-      rgba(255, 255, 255, 0.5) 60%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    animation: shimmer 2s infinite;
-    will-change: transform; /* ✅ FIX: Optimizar animación */
+    /* DESACTIVADO: Sin animación horizontal - transform: translateX(-100%); */
+    background: rgba(255, 255, 255, 0.1);
+    animation: shimmer-pulse 2.5s ease-in-out infinite;
+    will-change: opacity; /* ✅ FIX: Optimizar animación */
   }
 
-  /* Shimmer mejorado con gradiente más suave - FIX: No usar transform que se salga */
+  /* Shimmer mejorado - Pulso sutil sin animación horizontal */
   .skeleton-shimmer {
-    background: linear-gradient(
-      110deg,
-      #f0f0f0 8%,
-      #f8f8f8 18%,
-      #f0f0f0 33%
-    );
-    background-size: 200% 100%;
-    animation: shimmer-slide 1.5s linear infinite;
+    background: #f0f0f0;
+    animation: shimmer-pulse 2.5s ease-in-out infinite;
     overflow: hidden; /* ✅ FIX: Asegurar que no se salga */
     contain: layout style paint; /* ✅ FIX: Optimizar rendering */
   }
 
-  @keyframes shimmer-slide {
+  @keyframes shimmer-pulse {
     0% {
-      background-position: 100% 0;
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 1;
     }
     100% {
-      background-position: -100% 0;
+      opacity: 0.9;
     }
+  }
+
+  /* Pulso sutil para skeletons que usan animate-pulse de Tailwind */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.95;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
 

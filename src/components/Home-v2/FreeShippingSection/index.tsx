@@ -74,10 +74,10 @@ const FreeShippingSection = () => {
               />
             </div>
             <div>
-              <h2 className='text-2xl md:text-3xl font-bold text-green-700 dark:!text-white'>
+              <h2 className='text-2xl md:text-3xl font-bold text-white'>
                 Envío Gratis
               </h2>
-              <p className='text-sm text-gray-600 dark:!text-white/80'>
+              <p className='text-sm text-white/80'>
                 En compras superiores a $50.000
               </p>
             </div>

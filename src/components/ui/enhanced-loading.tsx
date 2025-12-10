@@ -67,7 +67,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   className,
 }) => {
   const baseClasses =
-    'animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] rounded'
+    'animate-pulse bg-gray-200 rounded'
 
   const variants = {
     text: 'h-4 w-full',
@@ -101,7 +101,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     <div
       className={cn(baseClasses, variants[variant], className)}
       style={{
-        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite, shimmer 2s linear infinite',
+        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       }}
     />
   )
@@ -219,15 +219,18 @@ export const LoadingStyles = () => (
   <style jsx global>{`
     @keyframes shimmer {
       0% {
-        background-position: -200% 0;
+        opacity: 0.9;
+      }
+      50% {
+        opacity: 1;
       }
       100% {
-        background-position: 200% 0;
+        opacity: 0.9;
       }
     }
 
     .animate-shimmer {
-      animation: shimmer 2s linear infinite;
+      animation: shimmer 2.5s ease-in-out infinite;
     }
 
     @keyframes fadeInUp {

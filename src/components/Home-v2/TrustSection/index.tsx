@@ -44,10 +44,10 @@ const TrustSection = () => {
             <CheckCircle className='w-5 h-5' />
             <span className='font-bold text-sm'>GARANTÍA PINTEYA</span>
           </div>
-          <h2 className='text-3xl lg:text-5xl font-bold text-gray-900 dark:!text-white mb-4'>
-            Tu Confianza es Nuestra <span className='text-[#eb6313] dark:!text-white'>Prioridad</span>
+          <h2 className='text-3xl lg:text-5xl font-bold text-white mb-4'>
+            Tu Confianza es Nuestra <span className='text-[#eb6313]'>Prioridad</span>
           </h2>
-          <p className='text-lg text-gray-600 dark:!text-white/80 max-w-3xl mx-auto'>
+          <p className='text-lg text-white/80 max-w-3xl mx-auto'>
             Más de 15.000 clientes confían en nosotros. Descubre por qué somos líderes en Córdoba Capital.
           </p>
         </div>
@@ -113,8 +113,8 @@ const TrustSection = () => {
                 <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br ${stat.color} mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                   <Icon className='w-8 h-8 text-white' />
                 </div>
-                <div className='text-3xl font-bold text-gray-900 dark:!text-white mb-1 group-hover:text-[#eb6313] dark:group-hover:text-bright-sun-400 transition-colors'>{stat.value}</div>
-                <div className='text-sm text-gray-600 dark:!text-white/80 font-medium'>{stat.label}</div>
+                <div className='text-3xl font-bold text-white mb-1 group-hover:text-[#eb6313] transition-colors'>{stat.value}</div>
+                <div className='text-sm text-white/80 font-medium'>{stat.label}</div>
               </div>
             )
           })}

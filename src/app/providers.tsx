@@ -192,11 +192,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                             {/* Footer solo para rutas públicas - Memoizado */}
                             {!isAdminRoute && !isAuthRoute && <MemoizedFooter />}
 
-                            {/* Navegación móvil inferior estilo MercadoLibre - Solo visible en móviles */}
+                            {/* Navegación móvil inferior estilo MercadoLibre - Visible en mobile y desktop */}
                             {!isAdminRoute && !isAuthRoute && (
-                              <div className="md:hidden">
-                                <MercadoLibreBottomNav />
-                              </div>
+                              <MercadoLibreBottomNav />
                             )}
 
                             {/* Botones flotantes - DESACTIVADOS: Reemplazados por bottom navigation estilo MercadoLibre */}
