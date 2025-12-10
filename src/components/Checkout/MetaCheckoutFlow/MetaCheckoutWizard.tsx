@@ -330,7 +330,7 @@ export const MetaCheckoutWizard: React.FC = () => {
     <>
       {/* ✅ AGREGAR: Pantalla de loading full-screen */}
       {showFullScreenLoading && (
-        <div className='fixed inset-0 z-[9999] bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center'>
+        <div className='fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center'>
           <div className='text-center space-y-4 px-4'>
             <Loader2 className='w-16 h-16 animate-spin text-green-600 mx-auto' />
             <div className='space-y-2'>
@@ -343,7 +343,7 @@ export const MetaCheckoutWizard: React.FC = () => {
         </div>
       )}
 
-      <div className='min-h-screen' style={{ background: 'linear-gradient(180deg, #ffd549 0%, #fff4c6 50%, #ffffff 100%)', backgroundAttachment: 'fixed' }}>
+      <div className='min-h-screen'>
       <div className='max-w-4xl mx-auto px-4 py-8'>
         {/* Header con progreso */}
         <div className='mb-4'>

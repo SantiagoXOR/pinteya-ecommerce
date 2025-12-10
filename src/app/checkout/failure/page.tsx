@@ -118,7 +118,7 @@ function CheckoutFailureContent() {
 
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center'>
+      <div className='min-h-screen flex items-center justify-center'>
         <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-red-600'></div>
       </div>
     )
@@ -127,7 +127,7 @@ function CheckoutFailureContent() {
   const errorInfo = getErrorInfo()
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4'>
+    <div className='min-h-screen flex items-center justify-center p-4'>
       <Card className='w-full max-w-2xl shadow-2xl'>
         <CardHeader className='text-center bg-gradient-to-r from-red-500 to-red-600 text-white rounded-t-lg'>
           <div className='flex justify-center mb-4'>
@@ -255,7 +255,7 @@ export default function CheckoutFailurePage() {
   return (
     <Suspense
       fallback={
-        <div className='min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center'>
+        <div className='min-h-screen flex items-center justify-center'>
           <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-red-600'></div>
         </div>
       }

@@ -44,7 +44,7 @@ export function Providers({ children }: ProvidersProps) {
         <ThemeProvider
           attribute='class'
           defaultTheme='light'
-          enableSystem
+          enableSystem={false}
           disableTransitionOnChange
         >
           <MonitoringProvider autoStart={true} enableErrorBoundary={true}>

@@ -86,7 +86,7 @@ export default function SearchPage() {
   // Estado de carga
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-gray-50 py-8'>
+      <div className='min-h-screen py-8'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center py-12'>
             <div className='animate-spin w-8 h-8 border-2 border-blaze-orange-600 border-t-transparent rounded-full mx-auto mb-4'></div>
@@ -100,7 +100,7 @@ export default function SearchPage() {
   // Sin query de búsqueda
   if (!query.trim()) {
     return (
-      <div className='min-h-screen bg-gray-50 py-8'>
+      <div className='min-h-screen py-8'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center py-12'>
             <Search className='w-16 h-16 text-gray-400 mx-auto mb-4' />
@@ -115,7 +115,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 py-8 overflow-x-hidden'>
+    <div className='min-h-screen py-8 overflow-x-hidden'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header de resultados */}
         <div className='mb-8'>

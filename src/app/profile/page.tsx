@@ -31,7 +31,7 @@ export default function ProfilePage() {
   // Mostrar loading mientras se verifica la autenticación
   if (!isLoaded) {
     return (
-      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
+      <div className='min-h-screen flex items-center justify-center'>
         <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-blaze-orange-600'></div>
       </div>
     )
@@ -61,7 +61,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <div className='min-h-screen'>
       {/* Header de la página */}
       <div className='bg-white border-b border-gray-200'>
         <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>

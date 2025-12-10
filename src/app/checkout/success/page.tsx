@@ -145,14 +145,14 @@ export default function CheckoutSuccessPage() {
 
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center'>
+      <div className='min-h-screen flex items-center justify-center'>
         <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-green-600'></div>
       </div>
     )
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4'>
+    <div className='min-h-screen flex items-center justify-center p-4'>
       <Card className='w-full max-w-2xl shadow-2xl'>
         <CardHeader className='text-center bg-gradient-to-r from-green-500 to-green-600 text-white rounded-t-lg'>
           <div className='flex justify-center mb-4'>

@@ -21,7 +21,7 @@ import {
 
 const PoliticaDevolucionesPage = () => {
   return (
-    <div className='min-h-screen bg-white'>
+    <div className='min-h-screen'>
       {/* Hero Section */}
       <section className='bg-gradient-to-r from-blaze-orange-600 to-blaze-orange-500 text-white py-16'>
         <div className='container mx-auto px-4'>

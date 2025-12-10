@@ -43,7 +43,7 @@ const FreeShippingSection = () => {
 
   if (isLoading) {
     return (
-      <section className='py-3 bg-white/40 backdrop-blur-sm overflow-hidden'>
+      <section className='py-3 overflow-hidden'>
         <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8 overflow-hidden'>
           <div className='animate-pulse mb-4'>
             <div className='h-8 bg-gray-200 rounded w-64'></div>
@@ -57,7 +57,7 @@ const FreeShippingSection = () => {
   if (freeShippingProducts.length === 0) return null
 
   return (
-    <section id='envio-gratis' className='py-3 bg-white/40 backdrop-blur-sm scroll-mt-20'>
+    <section id='envio-gratis' className='py-3 scroll-mt-20'>
       <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8'>
         {/* Header */}
         <div className='flex items-center justify-between mb-4'>

@@ -99,7 +99,7 @@ export default function CheckoutPendingPage() {
 
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center'>
+      <div className='min-h-screen flex items-center justify-center'>
         <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-600'></div>
       </div>
     )
@@ -108,7 +108,7 @@ export default function CheckoutPendingPage() {
   const pendingInfo = getPendingInfo()
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center p-4'>
+    <div className='min-h-screen flex items-center justify-center p-4'>
       <Card className='w-full max-w-2xl shadow-2xl'>
         <CardHeader className='text-center bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-t-lg'>
           <div className='flex justify-center mb-4'>
