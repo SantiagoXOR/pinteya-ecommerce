@@ -61,12 +61,20 @@ export const useBestSellerProducts = ({
   enableCache = true,
 }: UseBestSellerProductsOptions): UseBestSellerProductsReturn => {
   
-  const queryKey = ['products', 'bestsellers', categorySlug] as const
+  // ✅ LOG: Verificar que el hook se está ejecutando
+  console.log('🟡 [useBestSellerProducts] HOOK EJECUTÁNDOSE', {
+    categorySlug,
+    timestamp: new Date().toISOString(),
+    isClient: typeof window !== 'undefined'
+  })
+  
   const hasMountedRef = useRef(false)
   
-  const { data, isLoading, isFetching, error, refetch } = useQuery<Product[]>({
-    queryKey,
+  // ✅ FIX: Usar el mismo formato que useProductsByCategory para evitar errores de TypeScript
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey: ['products', 'bestsellers', categorySlug ?? null] as const,
     queryFn: async (): Promise<Product[]> => {
+      console.log('🟡 [useBestSellerProducts] INICIANDO QUERY', { categorySlug })
       try {
         // Construir filtros según si hay categoría o no
         const filters: any = {
@@ -80,21 +88,31 @@ export const useBestSellerProducts = ({
         }
 
         // Fetch productos usando la función de API existente
+        console.log('🟡 [useBestSellerProducts] Llamando getProducts con filters:', filters)
         const response = await getProducts(filters)
+        console.log('🟡 [useBestSellerProducts] Respuesta recibida:', {
+          success: response.success,
+          hasData: !!response.data,
+          dataLength: Array.isArray(response.data) ? response.data.length : 'NO ARRAY',
+          message: response.message
+        })
         
         // ✅ FIX CRÍTICO: Si la respuesta no es exitosa, lanzar error para que la query se complete
         if (!response.success) {
+          console.error('🟡 [useBestSellerProducts] ❌ Respuesta no exitosa:', response.message || response.error)
           throw new Error(response.message || response.error || 'Error al cargar productos')
         }
 
         // ✅ FIX: Verificar que hay datos antes de procesar
         if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+          console.warn('🟡 [useBestSellerProducts] ⚠️ No hay datos en la respuesta, devolviendo array vacío')
           // Si no hay datos pero la respuesta fue exitosa, devolver array vacío (no es error)
           return []
         }
 
         // Adaptar productos del formato API al formato legacy
         const fetchedProducts = adaptApiProductsToLegacy(response.data)
+        console.log('🟡 [useBestSellerProducts] Productos adaptados:', fetchedProducts.length)
         
         let finalProducts: Product[]
         
@@ -111,11 +129,15 @@ export const useBestSellerProducts = ({
           finalProducts = fetchedProducts
         }
 
+        console.log('🟡 [useBestSellerProducts] ✅ Query completada exitosamente:', {
+          finalProductsCount: finalProducts.length,
+          categorySlug
+        })
         return finalProducts
       } catch (err) {
         // ✅ FIX: Asegurar que siempre se lance un error para que la query se complete
         const errorMessage = err instanceof Error ? err.message : 'Error inesperado al cargar productos'
-        console.error('❌ useBestSellerProducts error:', errorMessage)
+        console.error('🟡 [useBestSellerProducts] ❌ Error en queryFn:', errorMessage, err)
         throw new Error(errorMessage)
       }
     },
@@ -137,12 +159,29 @@ export const useBestSellerProducts = ({
   useEffect(() => {
     if (!hasMountedRef.current && typeof window !== 'undefined') {
       hasMountedRef.current = true
+      console.log('🟡 [useBestSellerProducts] Primer mount detectado, forzando refetch si es necesario', {
+        hasData: !!data,
+        hasError: !!error
+      })
       // Forzar refetch en el primer mount del cliente
       if (!data && !error) {
+        console.log('🟡 [useBestSellerProducts] Ejecutando refetch() manual')
         refetch()
       }
     }
   }, [data, error, refetch])
+
+  // ✅ LOG: Estado de la query
+  useEffect(() => {
+    console.log('🟡 [useBestSellerProducts] Estado de la query cambió:', {
+      isLoading,
+      isFetching,
+      hasData: !!data,
+      dataLength: Array.isArray(data) ? data.length : 0,
+      hasError: !!error,
+      errorMessage: error ? (error instanceof Error ? error.message : String(error)) : null
+    })
+  }, [isLoading, isFetching, data, error])
 
   // ✅ FIX CRÍTICO: Determinar loading de forma más confiable
   // isLoading puede quedarse en true si la query nunca se completa
@@ -151,12 +190,19 @@ export const useBestSellerProducts = ({
   // Usar isLoading directamente pero verificar que no haya datos
   const isActuallyLoading = isLoading && !data && !error
 
+  console.log('🟡 [useBestSellerProducts] Retornando valores:', {
+    productsCount: Array.isArray(data) ? data.length : 0,
+    isActuallyLoading,
+    hasError: !!error
+  })
+
   return {
     products: Array.isArray(data) ? data : [],
     isLoading: isActuallyLoading,
     // Convertir Error a string para mantener compatibilidad con componentes
     error: error ? (error instanceof Error ? error.message : String(error)) : null,
     refetch: () => {
+      console.log('🟡 [useBestSellerProducts] refetch() llamado manualmente')
       refetch()
     },
   }

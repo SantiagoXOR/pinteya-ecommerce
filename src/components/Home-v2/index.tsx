@@ -7,6 +7,8 @@ import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import type { PromoBannersProps } from './PromoBanners'
 import { ProductSkeletonGrid, ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
+// ✅ FIX CRÍTICO: Importar BestSeller directamente en lugar de dynamic para evitar problemas de carga
+import BestSeller from './BestSeller/index'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
 // ⚡ PERFORMANCE: Loading states para componentes críticos
@@ -57,14 +59,6 @@ const TrendingSearches = dynamic(() => import('./TrendingSearches/index'), {
 // ⚡ CLS FIX: Cargar CombosSection dinámicamente pero con skeleton en el contenedor padre
 const CombosSection = dynamic(() => import('./CombosSection/index'), {
   loading: () => null, // No mostrar loading aquí, el skeleton está en el contenedor padre
-})
-
-const BestSeller = dynamic(() => import('./BestSeller/index'), {
-  loading: () => (
-    <div className='px-4'>
-      <ProductSkeletonGrid count={4} />
-    </div>
-  ),
 })
 
 const Testimonials = dynamic(() => import('./Testimonials/index'), {
@@ -221,19 +215,13 @@ const LazyTestimonials = React.memo(() => {
 LazyTestimonials.displayName = 'LazyTestimonials'
 
 const LazyBestSeller = React.memo(() => {
-  // BestSeller es importante pero puede cargar después del hero y categorías
-  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '100px', // Cargar poco después de que entre al viewport
-    threshold: 0.01,
-  })
-
-  const content = React.useMemo(() => {
-    return isVisible ? <BestSeller /> : null
-  }, [isVisible])
+  // ✅ FIX CRÍTICO: BestSeller debe cargarse SIEMPRE, sin progressive loading
+  // Renderizar inmediatamente sin esperar a ser visible
+  console.log('🔵 [LazyBestSeller] Renderizando - FORZANDO CARGA INMEDIATA')
 
   return (
-    <div ref={ref} className='mt-4 sm:mt-6 product-section' style={{ minHeight: isVisible ? 'auto' : '1px' }}>
-      {content}
+    <div className='mt-4 sm:mt-6 product-section'>
+      <BestSeller />
     </div>
   )
 })

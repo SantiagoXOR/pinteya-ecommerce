@@ -12,13 +12,28 @@ import HelpCard from './HelpCard'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
 const BestSeller: React.FC = () => {
+  // ✅ LOG: Verificar que el componente se está montando
+  console.log('🟢 [BestSeller] COMPONENTE MONTÁNDOSE', {
+    timestamp: new Date().toISOString(),
+    isClient: typeof window !== 'undefined'
+  })
+
   const { selectedCategory } = useCategoryFilter()
+
+  console.log('🟢 [BestSeller] selectedCategory:', selectedCategory)
 
   // Fetch productos según categoría seleccionada
   // Sin categoría: 10 productos específicos hardcodeados
   // Con categoría: Todos los productos de la categoría (limit 50)
   const { products, isLoading, error } = useBestSellerProducts({
     categorySlug: selectedCategory,
+  })
+
+  console.log('🟢 [BestSeller] Estado después de useBestSellerProducts', {
+    productsLength: Array.isArray(products) ? products.length : 'NO ARRAY',
+    isLoading,
+    hasError: !!error,
+    errorMessage: error || 'NO ERROR'
   })
 
   // Memoizar ordenamiento y filtrado de productos
