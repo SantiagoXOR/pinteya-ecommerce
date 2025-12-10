@@ -295,10 +295,8 @@ const HomeV2 = () => {
       <div 
         className='mt-3 sm:mt-4' 
         style={{ 
-          // ⚡ CLS FIX: Mismo aspectRatio que Hero y Combos para consistencia visual
-          aspectRatio: '2.77',
-          minHeight: '277px', // Mobile: 768px / 2.77 ≈ 277px
-          width: '100%'
+          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px)
+          height: 'auto' // Permite que el contenido defina la altura
         }}
       >
         <PromoBanners bannerId={1} />
