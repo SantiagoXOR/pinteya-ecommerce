@@ -302,19 +302,8 @@ const HomeV2 = () => {
         <PromoBanners bannerId={1} />
       </div>
 
-      {/* 4. Productos Destacados (Combos) */}
-      <div 
-        className='mt-4 sm:mt-6 product-section' 
-        style={{ 
-          // ⚡ CLS FIX: Altura fija calculada basada en aspectRatio 2.77
-          // Mobile (768px): 768 / 2.77 ≈ 277px
-          // Desktop (1200px): 1200 / 2.77 ≈ 433px
-          // Usar aspectRatio para cálculo automático pero con altura mínima garantizada
-          aspectRatio: '2.77',
-          minHeight: '277px',
-          width: '100%'
-        }}
-      >
+      {/* 4. Productos Destacados (Combos) - Misma estructura que HeroCarousel */}
+      <div className='mt-4 sm:mt-6 product-section'>
         <CombosSection />
       </div>
 
@@ -323,18 +312,30 @@ const HomeV2 = () => {
         <DynamicProductCarousel freeShippingOnly={true} />
       </div>
 
-      {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded */}
-      <div className='mt-4 sm:mt-6 below-fold-content' style={{ minHeight: '120px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
+      {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded - Subido más arriba y más separado de Nuevos Productos */}
+      <div 
+        className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content' 
+        style={{ 
+          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px) - Igual que Pintura Flash Days
+          height: 'auto' // Permite que el contenido defina la altura
+        }}
+      >
         <LazyPromoBanner bannerId={2} />
       </div>
 
       {/* 7. Nuevos productos - Lazy loaded */}
-      <div className='mt-3 sm:mt-4 product-section' style={{ minHeight: '500px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
+      <div className='mt-0 product-section' style={{ minHeight: '500px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
         <LazyNewArrivals />
       </div>
 
-      {/* 8. Banner CALCULADORA DE PINTURA - Lazy loaded */}
-      <div className='mt-4 sm:mt-6 below-fold-content' style={{ minHeight: '120px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
+      {/* 8. Banner CALCULADORA DE PINTURA - Lazy loaded - Mismo espaciado que Asesoramiento Gratis */}
+      <div 
+        className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content' 
+        style={{ 
+          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px)
+          height: 'auto' // Permite que el contenido defina la altura
+        }}
+      >
         <LazyPromoBanner bannerId={3} />
       </div>
 

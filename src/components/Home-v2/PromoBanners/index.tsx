@@ -66,12 +66,12 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
     : banners
 
   return (
-    <section className='px-4 sm:px-4 lg:px-8'>
+    <section className='px-4 sm:px-4 lg:px-8 pb-0 pt-0'>
       <div className='max-w-7xl mx-auto relative'>
         {/* Contenedor con scroll horizontal */}
         <div
           ref={scrollRef}
-          className='flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth pb-2'
+          className='flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth'
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
         {bannersToShow.map((banner) => {
@@ -117,7 +117,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                   <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient} z-20`}></div>
                   
                   {/* Content - Súper compacto */}
-                  <div className='relative h-full flex items-center justify-between px-3 md:px-5 z-30'>
+                  <div className='relative h-full flex items-center justify-between px-2 md:px-3 z-30'>
                     {/* Left Content */}
                     <div className='flex items-center gap-1.5 md:gap-2'>
                       {/* Badge mini */}

@@ -31,7 +31,7 @@ const NewArrival: React.FC = () => {
       : 'Nuevos Productos'
 
   return (
-    <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-transparent'>
+    <section className='overflow-hidden pt-0 pb-6 sm:pb-10 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
         {/* Header simplificado - Paleta Pinteya */}
         <div className='mb-4 sm:mb-6 flex items-center gap-3'>

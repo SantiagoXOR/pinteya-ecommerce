@@ -165,7 +165,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                   >
                     {/* Contenedor del icono con fondo circular mejorado para el carrito */}
                     {item.id === 'cart' && (
-                      <div className='relative mb-1'>
+                      <div className='relative mb-1 h-7 flex items-center justify-center'>
                         <div
                           className={cn(
                             'w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200',
@@ -210,7 +210,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
 
                     {/* Icono para botón de buscar */}
                     {item.id === 'search' && (
-                      <div className='mb-1'>
+                      <div className='mb-1 h-7 flex items-center justify-center'>
                         <Icon
                           className={cn(
                             'w-6 h-6 transition-colors duration-200',
@@ -223,7 +223,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
 
                     {/* Icono para botón de volver */}
                     {item.id === 'back' && (
-                      <div className='mb-1'>
+                      <div className='mb-1 h-7 flex items-center justify-center'>
                         <Icon
                           className={cn(
                             'w-6 h-6 transition-colors duration-200',
@@ -236,7 +236,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
 
                     {/* Icono para WhatsApp */}
                     {item.id === 'whatsapp' && (
-                      <div className='mb-1'>
+                      <div className='mb-1 h-7 flex items-center justify-center'>
                         <Icon
                           className={cn(
                             'w-6 h-6 transition-colors duration-200',
@@ -278,7 +278,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                     )}
 
                     {/* Icono */}
-                    <div className='mb-1'>
+                    <div className='mb-1 h-7 flex items-center justify-center'>
                       <Icon
                         className={cn(
                           'w-6 h-6 transition-colors duration-200',

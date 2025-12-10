@@ -113,43 +113,28 @@ const slides: Slide[] = [
    }, [router])
 
   return (
-    <section className='w-full pt-2 pb-0 px-4 bg-transparent'>
-      <div className='max-w-[1200px] mx-auto'>
-        {/* ⚡ CLS FIX: Dimensiones fijas desde el inicio - calculadas basadas en aspectRatio 2.77 */}
-        {/* Para max-width 1200px: height = 1200 / 2.77 ≈ 433px */}
-        {/* Para mobile ~768px: height = 768 / 2.77 ≈ 277px */}
+    <div className="relative w-full">
+      {/* Contenedor del carrusel con aspect ratio preservado - Igual que HeroCarousel */}
+      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
         <div 
-          className='relative w-full overflow-visible rounded-2xl'
-          style={{ 
-            aspectRatio: '2.77',
-            minHeight: '277px', // ⚡ CLS FIX: Altura mínima para mobile (768px / 2.77)
-            // ⚡ CLS FIX: Altura fija calculada para evitar layout shift
-            height: 'clamp(277px, calc(100vw / 2.77), 433px)'
-          }}
+          className="relative w-full overflow-hidden"
+          style={{ aspectRatio: '2.77' }}
         >
           {/* ⚡ FIX: Skeleton placeholder mientras carga - se oculta completamente cuando las imágenes cargan */}
           {!imagesLoaded && (
             <div 
-              className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl z-0"
-              style={{ 
-                aspectRatio: '2.77',
-                minHeight: '277px',
-                height: 'clamp(277px, calc(100vw / 2.77), 433px)'
-              }}
+              className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse z-0"
+              style={{ aspectRatio: '2.77' }}
               aria-hidden="true"
             />
           )}
           
-          {/* Contenedor interno con overflow-hidden para las slides */}
+          {/* Slides */}
           <div 
             ref={swipeRef as React.RefObject<HTMLDivElement>} 
-            className='relative w-full h-full overflow-hidden rounded-2xl z-10'
-            style={{ aspectRatio: '2.77' }}
+            className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
-            <div
-              className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
-              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-            >
               {extendedSlides.map((slide, index) => {
                 if (!slide) return null
                 
@@ -158,10 +143,9 @@ const slides: Slide[] = [
                 const productSlug = slide.productSlug
                 
                 return (
-                  <div 
-                    key={`${slide.id}-${index}`} 
-                    className='min-w-full h-full flex-shrink-0 relative cursor-pointer'
-                    style={{ aspectRatio: '2.77' }} // ⚡ CLS FIX: AspectRatio fijo en cada slide
+                  <div
+                    key={`${slide.id}-${index}`}
+                    className="min-w-full h-full flex-shrink-0 relative cursor-pointer"
                     onClick={(e) => productSlug && handleSlideClick(productSlug, e)}
                   >
                     <Image
@@ -169,20 +153,17 @@ const slides: Slide[] = [
                       alt={slide.alt}
                       fill
                       priority={index === 1}
-                      fetchPriority={index === 1 ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority para primera imagen
-                      className='object-contain'
-                      sizes='(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px'
-                      quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
-                      style={{ objectFit: 'contain' }} // ⚡ CLS FIX: objectFit explícito
+                      fetchPriority={index === 1 ? 'high' : 'auto'}
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                      quality={80}
                       onLoad={() => {
-                        // ⚡ FIX: Contar imágenes cargadas para ocultar skeleton
                         setLoadedImagesCount(prev => prev + 1)
                       }}
                     />
                   </div>
                 )
               })}
-            </div>
           </div>
 
           {/* Botones de navegación - Solo en desktop, mitad y mitad al borde del banner */}
@@ -251,7 +232,7 @@ const slides: Slide[] = [
           </div>
         </div>
       </div>
-    </section>
+    </div>
   )
  }
 
