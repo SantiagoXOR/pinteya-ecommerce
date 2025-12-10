@@ -319,7 +319,7 @@ const HomeV2 = () => {
       </div>
 
       {/* 5. Carrusel Dinámico - Solo Envío Gratis */}
-      <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '350px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
+      <div className='product-section' style={{ minHeight: '350px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
         <DynamicProductCarousel freeShippingOnly={true} />
       </div>
 

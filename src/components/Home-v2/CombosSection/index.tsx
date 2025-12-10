@@ -25,12 +25,24 @@ const slides: Slide[] = [
    const [currentIndex, setCurrentIndex] = useState(1)
    const [isTransitioning, setIsTransitioning] = useState(false)
    const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-   const [isMounted, setIsMounted] = useState(false) // ⚡ CLS FIX: Estado para ocultar skeleton
+   const [imagesLoaded, setImagesLoaded] = useState(false) // ⚡ FIX: Estado para verificar carga de imágenes
+   const [loadedImagesCount, setLoadedImagesCount] = useState(0)
    const router = useRouter()
    
-   // ⚡ CLS FIX: Marcar como montado para ocultar skeleton
+   // ⚡ FIX: Ocultar skeleton cuando al menos la primera imagen (prioritaria) se haya cargado
    useEffect(() => {
-     setIsMounted(true)
+     if (loadedImagesCount >= 1) {
+       setImagesLoaded(true)
+     }
+   }, [loadedImagesCount])
+   
+   // ⚡ FIX: Fallback - ocultar skeleton después de un tiempo razonable
+   useEffect(() => {
+     const fallbackTimer = setTimeout(() => {
+       setImagesLoaded(true)
+     }, 2000) // 2 segundos máximo
+     
+     return () => clearTimeout(fallbackTimer)
    }, [])
 
    const extendedSlides = useMemo(
@@ -101,7 +113,7 @@ const slides: Slide[] = [
    }, [router])
 
   return (
-    <section className='w-full pt-2 pb-2 px-4 bg-transparent'>
+    <section className='w-full pt-2 pb-0 px-4 bg-transparent'>
       <div className='max-w-[1200px] mx-auto'>
         {/* ⚡ CLS FIX: Dimensiones fijas desde el inicio - calculadas basadas en aspectRatio 2.77 */}
         {/* Para max-width 1200px: height = 1200 / 2.77 ≈ 433px */}
@@ -115,16 +127,18 @@ const slides: Slide[] = [
             height: 'clamp(277px, calc(100vw / 2.77), 433px)'
           }}
         >
-          {/* ⚡ CLS FIX: Skeleton placeholder mientras carga - se oculta cuando se monta */}
-          <div 
-            className={`absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl z-0 transition-opacity duration-300 ${isMounted ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-            style={{ 
-              aspectRatio: '2.77',
-              minHeight: '277px',
-              height: 'clamp(277px, calc(100vw / 2.77), 433px)'
-            }}
-            aria-hidden="true"
-          />
+          {/* ⚡ FIX: Skeleton placeholder mientras carga - se oculta completamente cuando las imágenes cargan */}
+          {!imagesLoaded && (
+            <div 
+              className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse rounded-2xl z-0"
+              style={{ 
+                aspectRatio: '2.77',
+                minHeight: '277px',
+                height: 'clamp(277px, calc(100vw / 2.77), 433px)'
+              }}
+              aria-hidden="true"
+            />
+          )}
           
           {/* Contenedor interno con overflow-hidden para las slides */}
           <div 
@@ -160,6 +174,10 @@ const slides: Slide[] = [
                       sizes='(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px'
                       quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
                       style={{ objectFit: 'contain' }} // ⚡ CLS FIX: objectFit explícito
+                      onLoad={() => {
+                        // ⚡ FIX: Contar imágenes cargadas para ocultar skeleton
+                        setLoadedImagesCount(prev => prev + 1)
+                      }}
                     />
                   </div>
                 )
