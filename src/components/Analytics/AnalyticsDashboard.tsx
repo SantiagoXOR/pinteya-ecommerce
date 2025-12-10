@@ -19,7 +19,7 @@ import {
   Target,
   Activity,
 } from '@/lib/optimized-imports'
-import { useAnalytics, useRealTimeMetrics } from '@/hooks/useAnalytics'
+import { useAnalytics } from '@/hooks/useAnalytics'
 import GoogleAnalyticsEmbed from './GoogleAnalyticsEmbed'
 import MetaMetrics from './MetaMetrics'
 
@@ -54,6 +54,43 @@ interface MetricsData {
     totalOrders: number
     totalRevenue: number
     averageOrderValue: number
+  }
+  devices?: {
+    devices: Array<{ device: string; count: number; percentage: number }>
+    browsers: Array<{ browser: string; count: number; percentage: number }>
+  }
+  categories?: {
+    distribution: Array<{ category: string; count: number; percentage: number }>
+    revenue: Array<{ category: string; revenue: number }>
+  }
+  behavior?: {
+    topFlows: Array<{ flow: string; count: number }>
+    averagePageTimes: Array<{ page: string; averageTime: number }>
+    bounceRate: number
+  }
+  retention?: {
+    returningUsers: number
+    newUsers: number
+    retentionRate: number
+    averageSessionsPerUser: number
+  }
+  comparison?: {
+    previousPeriod: any
+    changes: {
+      ecommerce?: {
+        productViews?: number
+        cartAdditions?: number
+        checkoutStarts?: number
+        checkoutCompletions?: number
+        conversionRate?: number
+        totalRevenue?: number
+      }
+      engagement?: {
+        uniqueSessions?: number
+        uniqueUsers?: number
+        averageSessionDuration?: number
+      }
+    } | null
   }
 }
 
@@ -141,10 +178,23 @@ const AnalyticsDashboard: React.FC = () => {
   const [metricsData, setMetricsData] = useState<MetricsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('7d')
-  const realTimeMetrics = useRealTimeMetrics()
+  const [realTimeMetrics, setRealTimeMetrics] = useState({
+    productViews: 0,
+    cartAdditions: 0,
+    checkoutStarts: 0,
+    checkoutCompletions: 0,
+  })
 
   useEffect(() => {
     fetchMetrics()
+    fetchRealTimeMetrics()
+    
+    // Actualizar métricas en tiempo real cada 10 segundos
+    const interval = setInterval(() => {
+      fetchRealTimeMetrics()
+    }, 10000)
+
+    return () => clearInterval(interval)
   }, [timeRange])
 
   const fetchMetrics = async () => {
@@ -164,6 +214,29 @@ const AnalyticsDashboard: React.FC = () => {
       console.error('Error fetching metrics:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRealTimeMetrics = async () => {
+    try {
+      // Obtener métricas de las últimas 2 horas desde la DB
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+
+      const response = await fetch(
+        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setRealTimeMetrics({
+          productViews: data.ecommerce?.productViews || 0,
+          cartAdditions: data.ecommerce?.cartAdditions || 0,
+          checkoutStarts: data.ecommerce?.checkoutStarts || 0,
+          checkoutCompletions: data.ecommerce?.checkoutCompletions || 0,
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching real-time metrics:', error)
     }
   }
 
@@ -216,11 +289,101 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Comparación con período anterior */}
+      {metricsData.comparison?.changes && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className='bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 shadow-sm border border-yellow-200 mb-6'
+        >
+          <h2 className='text-lg font-semibold text-gray-900 mb-4'>Comparación con Período Anterior</h2>
+          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4'>
+            {metricsData.comparison.changes.ecommerce && (
+              <>
+                <div className='text-center'>
+                  <p className='text-sm text-gray-600'>Vistas de productos</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      (metricsData.comparison.changes.ecommerce.productViews || 0) >= 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {(metricsData.comparison.changes.ecommerce.productViews || 0).toFixed(1)}%
+                  </p>
+                </div>
+                <div className='text-center'>
+                  <p className='text-sm text-gray-600'>Agregados al carrito</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      (metricsData.comparison.changes.ecommerce.cartAdditions || 0) >= 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {(metricsData.comparison.changes.ecommerce.cartAdditions || 0).toFixed(1)}%
+                  </p>
+                </div>
+                <div className='text-center'>
+                  <p className='text-sm text-gray-600'>Checkouts iniciados</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      (metricsData.comparison.changes.ecommerce.checkoutStarts || 0) >= 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {(metricsData.comparison.changes.ecommerce.checkoutStarts || 0).toFixed(1)}%
+                  </p>
+                </div>
+                <div className='text-center'>
+                  <p className='text-sm text-gray-600'>Compras completadas</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      (metricsData.comparison.changes.ecommerce.checkoutCompletions || 0) >= 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {(metricsData.comparison.changes.ecommerce.checkoutCompletions || 0).toFixed(1)}%
+                  </p>
+                </div>
+                <div className='text-center'>
+                  <p className='text-sm text-gray-600'>Tasa de conversión</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      (metricsData.comparison.changes.ecommerce.conversionRate || 0) >= 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {(metricsData.comparison.changes.ecommerce.conversionRate || 0).toFixed(1)}%
+                  </p>
+                </div>
+                <div className='text-center'>
+                  <p className='text-sm text-gray-600'>Ingresos totales</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      (metricsData.comparison.changes.ecommerce.totalRevenue || 0) >= 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {(metricsData.comparison.changes.ecommerce.totalRevenue || 0).toFixed(1)}%
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       {/* Métricas principales */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         <MetricCard
           title='Vistas de productos'
           value={metricsData.ecommerce.productViews}
+          change={metricsData.comparison?.changes?.ecommerce?.productViews}
           icon={<Eye className='w-6 h-6 text-white' />}
           color='bg-blue-500'
         />
@@ -228,6 +391,7 @@ const AnalyticsDashboard: React.FC = () => {
         <MetricCard
           title='Agregados al carrito'
           value={metricsData.ecommerce.cartAdditions}
+          change={metricsData.comparison?.changes?.ecommerce?.cartAdditions}
           icon={<ShoppingCart className='w-6 h-6 text-white' />}
           color='bg-green-500'
         />
@@ -235,6 +399,7 @@ const AnalyticsDashboard: React.FC = () => {
         <MetricCard
           title='Tasa de conversión'
           value={metricsData.ecommerce.conversionRate}
+          change={metricsData.comparison?.changes?.ecommerce?.conversionRate}
           icon={<Target className='w-6 h-6 text-white' />}
           color='bg-purple-500'
           format='percentage'
@@ -353,6 +518,122 @@ const AnalyticsDashboard: React.FC = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Análisis avanzado */}
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        {/* Análisis de dispositivos */}
+        {metricsData.devices && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'
+          >
+            <h3 className='text-lg font-semibold text-gray-900 mb-4'>Análisis de Dispositivos</h3>
+            <div className='space-y-4'>
+              <div>
+                <h4 className='text-sm font-medium text-gray-700 mb-2'>Dispositivos</h4>
+                <div className='space-y-2'>
+                  {metricsData.devices.devices.map((device, index) => (
+                    <div key={index} className='flex items-center justify-between'>
+                      <span className='text-sm text-gray-600'>{device.device}</span>
+                      <div className='flex items-center gap-2'>
+                        <div className='w-32 bg-gray-200 rounded-full h-2'>
+                          <div
+                            className='bg-blue-500 h-2 rounded-full'
+                            style={{ width: `${device.percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className='text-sm font-medium text-gray-900 w-16 text-right'>
+                          {device.percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Análisis de retención */}
+        {metricsData.retention && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'
+          >
+            <h3 className='text-lg font-semibold text-gray-900 mb-4'>Análisis de Retención</h3>
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='text-center p-4 bg-blue-50 rounded-lg'>
+                <p className='text-2xl font-bold text-blue-600'>{metricsData.retention.returningUsers}</p>
+                <p className='text-sm text-gray-600'>Usuarios recurrentes</p>
+              </div>
+              <div className='text-center p-4 bg-green-50 rounded-lg'>
+                <p className='text-2xl font-bold text-green-600'>{metricsData.retention.newUsers}</p>
+                <p className='text-sm text-gray-600'>Usuarios nuevos</p>
+              </div>
+              <div className='text-center p-4 bg-purple-50 rounded-lg'>
+                <p className='text-2xl font-bold text-purple-600'>
+                  {metricsData.retention.retentionRate.toFixed(1)}%
+                </p>
+                <p className='text-sm text-gray-600'>Tasa de retención</p>
+              </div>
+              <div className='text-center p-4 bg-orange-50 rounded-lg'>
+                <p className='text-2xl font-bold text-orange-600'>
+                  {metricsData.retention.averageSessionsPerUser.toFixed(1)}
+                </p>
+                <p className='text-sm text-gray-600'>Sesiones por usuario</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Análisis de comportamiento */}
+      {metricsData.behavior && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'
+        >
+          <h3 className='text-lg font-semibold text-gray-900 mb-4'>Análisis de Comportamiento</h3>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <div>
+              <h4 className='text-sm font-medium text-gray-700 mb-3'>Flujos de usuario más comunes</h4>
+              <div className='space-y-2'>
+                {metricsData.behavior.topFlows.slice(0, 5).map((flow, index) => (
+                  <div key={index} className='flex items-center justify-between p-2 bg-gray-50 rounded'>
+                    <span className='text-sm text-gray-700 truncate'>{flow.flow}</span>
+                    <span className='text-sm font-medium text-gray-900'>{flow.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 className='text-sm font-medium text-gray-700 mb-3'>Tiempo promedio en página</h4>
+              <div className='space-y-2'>
+                {metricsData.behavior.averagePageTimes
+                  .sort((a, b) => b.averageTime - a.averageTime)
+                  .slice(0, 5)
+                  .map((page, index) => (
+                    <div key={index} className='flex items-center justify-between p-2 bg-gray-50 rounded'>
+                      <span className='text-sm text-gray-700 truncate'>{page.page}</span>
+                      <span className='text-sm font-medium text-gray-900'>
+                        {Math.round(page.averageTime)}s
+                      </span>
+                    </div>
+                  ))}
+              </div>
+              <div className='mt-4 p-3 bg-yellow-50 rounded-lg'>
+                <p className='text-sm text-gray-600'>Tasa de rebote</p>
+                <p className='text-2xl font-bold text-yellow-600'>
+                  {metricsData.behavior.bounceRate.toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Integración Google Analytics y Meta */}
       <div className='space-y-6'>

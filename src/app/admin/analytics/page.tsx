@@ -79,7 +79,7 @@ const AnalyticsPage: React.FC = () => {
 
   const loadConversionData = async () => {
     try {
-      // Obtener datos desde la API en lugar de memoria del cliente
+      // Obtener datos desde la API (base de datos)
       const endDate = new Date().toISOString()
       const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -99,13 +99,12 @@ const AnalyticsPage: React.FC = () => {
       })
     } catch (error) {
       console.error('Error cargando datos de conversión:', error)
-      // Fallback a datos en memoria si la API falla
-      const metrics = getConversionMetrics()
+      // Si falla, mostrar ceros en lugar de datos en memoria
       setConversionData({
-        productViews: metrics.productViews,
-        cartAdditions: metrics.cartAdditions,
-        checkoutStarts: metrics.checkoutStarts,
-        checkoutCompletions: metrics.checkoutCompletions,
+        productViews: 0,
+        cartAdditions: 0,
+        checkoutStarts: 0,
+        checkoutCompletions: 0,
       })
     }
   }
@@ -185,30 +184,49 @@ const AnalyticsPage: React.FC = () => {
     }
   }
 
-  const exportData = () => {
-    const events = getEvents()
-    const interactions = getInteractions()
-    const metrics = getConversionMetrics()
+  const exportData = async () => {
+    try {
+      // Obtener todos los datos desde la base de datos
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
-    const exportData = {
-      events,
-      interactions,
-      metrics,
-      exportDate: new Date().toISOString(),
+      const [metricsResponse, interactionsResponse, conversionResponse] = await Promise.all([
+        fetch(`/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}`),
+        fetch(`/api/analytics/interactions?startDate=${startDate}&endDate=${endDate}`),
+        fetch(`/api/analytics/conversion-analysis?startDate=${startDate}&endDate=${endDate}`),
+      ])
+
+      const metrics = metricsResponse.ok ? await metricsResponse.json() : null
+      const interactions = interactionsResponse.ok ? await interactionsResponse.json() : null
+      const conversion = conversionResponse.ok ? await conversionResponse.json() : null
+
+      const exportData = {
+        metrics,
+        interactions: interactions?.interactions || [],
+        conversionAnalysis: conversion,
+        exportDate: new Date().toISOString(),
+        period: {
+          startDate,
+          endDate,
+        },
+      }
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json',
+      })
+
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `pinteya-analytics-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error exportando datos:', error)
+      alert('Error al exportar datos. Por favor, intenta nuevamente.')
     }
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: 'application/json',
-    })
-
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `pinteya-analytics-${new Date().toISOString().split('T')[0]}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
   }
 
   // Mostrar pantalla de carga solo mientras se carga la sesión

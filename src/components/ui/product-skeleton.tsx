@@ -36,37 +36,36 @@ export const ProductSkeleton: React.FC<ProductSkeletonProps> = ({
   showPrice = true,
   showButton = true,
 }) => {
-  // ✅ FIX: Usar animación consistente y controlada
-  const baseClasses = 'bg-white rounded-lg border border-gray-200 overflow-hidden'
+  const baseClasses = 'animate-pulse bg-white rounded-lg border border-gray-200 overflow-hidden'
 
   if (variant === 'list') {
     return (
       <div className={cn(baseClasses, 'flex gap-4 p-4', className)}>
         {/* Imagen */}
-        <div className='w-24 h-24 bg-gray-200 rounded-md flex-shrink-0 animate-pulse' />
+        <div className='w-24 h-24 bg-gray-200 rounded-md flex-shrink-0' />
 
         {/* Contenido */}
-        <div className='flex-1 space-y-3 overflow-hidden'>
+        <div className='flex-1 space-y-3'>
           {/* Título */}
-          <div className='h-4 bg-gray-200 rounded w-3/4 animate-pulse' />
+          <div className='h-4 bg-gray-200 rounded w-3/4' />
 
           {/* Descripción */}
-          <div className='space-y-2 overflow-hidden'>
-            <div className='h-3 bg-gray-200 rounded w-full animate-pulse' />
-            <div className='h-3 bg-gray-200 rounded w-2/3 animate-pulse' />
+          <div className='space-y-2'>
+            <div className='h-3 bg-gray-200 rounded w-full' />
+            <div className='h-3 bg-gray-200 rounded w-2/3' />
           </div>
 
           {/* Precio */}
           {showPrice && (
-            <div className='flex items-center gap-2 overflow-hidden'>
-              <div className='h-5 bg-gray-200 rounded w-20 animate-pulse' />
-              <div className='h-4 bg-gray-200 rounded w-16 animate-pulse' />
+            <div className='flex items-center gap-2'>
+              <div className='h-5 bg-gray-200 rounded w-20' />
+              <div className='h-4 bg-gray-200 rounded w-16' />
             </div>
           )}
         </div>
 
         {/* Botón */}
-        {showButton && <div className='w-24 h-10 bg-gray-200 rounded-lg flex-shrink-0 animate-pulse' />}
+        {showButton && <div className='w-24 h-10 bg-gray-200 rounded-lg flex-shrink-0' />}
       </div>
     )
   }
@@ -76,45 +75,44 @@ export const ProductSkeleton: React.FC<ProductSkeletonProps> = ({
     return (
       <div
         className={cn(
-          'relative rounded-xl bg-white shadow-md flex flex-col w-full overflow-hidden',
+          'relative rounded-xl bg-white shadow-md flex flex-col w-full',
           'h-[300px] sm:h-[360px] md:h-[450px] lg:h-[500px]',
+          'animate-pulse',
           className
         )}
       >
         {/* Imagen con degradado */}
         <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-1 md:mb-2 flex-1 bg-gray-200'>
-          {/* ✅ FIX: Degradado sin animación que se salga del viewport */}
+          {/* Degradado simulado */}
           <div className='absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10' />
-          {/* ✅ FIX: Animación de pulse solo en el fondo, no en elementos que se salgan */}
-          <div className='absolute inset-0 bg-gray-200 animate-pulse' />
         </div>
 
         {/* Contenido */}
-        <div className='relative z-20 text-left p-1.5 md:p-2 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl overflow-hidden'>
+        <div className='relative z-20 text-left p-1.5 md:p-2 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
           {/* Marca */}
-          <div className='h-3 bg-gray-200 rounded w-16 mb-0.5 animate-pulse' />
+          <div className='h-3 bg-gray-200 rounded w-16 mb-0.5' />
 
           {/* Título - 2 líneas */}
-          <div className='space-y-1 mb-1 overflow-hidden'>
-            <div className='h-4 bg-gray-200 rounded w-full animate-pulse' />
-            <div className='h-4 bg-gray-200 rounded w-3/4 animate-pulse' />
+          <div className='space-y-1 mb-1'>
+            <div className='h-4 bg-gray-200 rounded w-full' />
+            <div className='h-4 bg-gray-200 rounded w-3/4' />
           </div>
 
           {/* Precio */}
           {showPrice && (
-            <div className='flex items-center gap-1 md:gap-2 overflow-hidden'>
-              <div className='h-5 sm:h-6 md:h-7 bg-gray-200 rounded w-20 animate-pulse' />
-              <div className='h-3 md:h-4 bg-gray-200 rounded w-12 animate-pulse' />
+            <div className='flex items-center gap-1 md:gap-2'>
+              <div className='h-5 sm:h-6 md:h-7 bg-gray-200 rounded w-20' />
+              <div className='h-3 md:h-4 bg-gray-200 rounded w-12' />
             </div>
           )}
 
           {/* Badges de colores/capacidad */}
           {showBadges && (
-            <div className='flex gap-1 mt-2 md:mt-2.5 overflow-hidden'>
-              <div className='h-5 w-5 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
-              <div className='h-5 w-5 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
-              <div className='h-5 w-5 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
-              <div className='h-4 bg-gray-200 rounded-full w-12 animate-pulse flex-shrink-0' />
+            <div className='flex gap-1 mt-2 md:mt-2.5'>
+              <div className='h-5 w-5 bg-gray-200 rounded-full' />
+              <div className='h-5 w-5 bg-gray-200 rounded-full' />
+              <div className='h-5 w-5 bg-gray-200 rounded-full' />
+              <div className='h-4 bg-gray-200 rounded-full w-12' />
             </div>
           )}
         </div>
@@ -126,45 +124,44 @@ export const ProductSkeleton: React.FC<ProductSkeletonProps> = ({
   return (
     <div
       className={cn(
-        'relative rounded-xl bg-white shadow-md flex flex-col w-full overflow-hidden',
+        'relative rounded-xl bg-white shadow-md flex flex-col w-full',
         'h-[300px] sm:h-[360px] md:h-[450px] lg:h-[500px]',
+        'animate-pulse',
         className
       )}
     >
       {/* Imagen con degradado */}
       <div className='relative w-full flex justify-center items-center overflow-hidden rounded-t-xl mb-1 md:mb-2 flex-1 bg-gray-200'>
-        {/* ✅ FIX: Degradado sin animación que se salga del viewport */}
+        {/* Degradado simulado */}
         <div className='absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10' />
-        {/* ✅ FIX: Animación de pulse solo en el fondo */}
-        <div className='absolute inset-0 bg-gray-200 animate-pulse' />
       </div>
 
       {/* Contenido */}
-      <div className='relative z-20 text-left p-1.5 md:p-2 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl overflow-hidden'>
+      <div className='relative z-20 text-left p-1.5 md:p-2 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
         {/* Marca */}
-        <div className='h-3 bg-gray-200 rounded w-16 mb-0.5 animate-pulse' />
+        <div className='h-3 bg-gray-200 rounded w-16 mb-0.5' />
 
         {/* Título - 2 líneas */}
-        <div className='space-y-1 mb-1 overflow-hidden'>
-          <div className='h-4 bg-gray-200 rounded w-full animate-pulse' />
-          <div className='h-4 bg-gray-200 rounded w-3/4 animate-pulse' />
+        <div className='space-y-1 mb-1'>
+          <div className='h-4 bg-gray-200 rounded w-full' />
+          <div className='h-4 bg-gray-200 rounded w-3/4' />
         </div>
 
         {/* Precio */}
         {showPrice && (
-          <div className='flex items-center gap-1 md:gap-2 overflow-hidden'>
-            <div className='h-5 sm:h-6 md:h-7 bg-gray-200 rounded w-20 animate-pulse' />
-            <div className='h-3 md:h-4 bg-gray-200 rounded w-12 animate-pulse' />
+          <div className='flex items-center gap-1 md:gap-2'>
+            <div className='h-5 sm:h-6 md:h-7 bg-gray-200 rounded w-20' />
+            <div className='h-3 md:h-4 bg-gray-200 rounded w-12' />
           </div>
         )}
 
         {/* Badges de colores/capacidad */}
         {showBadges && (
-          <div className='flex gap-1 mt-2 md:mt-2.5 overflow-hidden'>
-            <div className='h-5 w-5 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
-            <div className='h-5 w-5 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
-            <div className='h-5 w-5 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
-            <div className='h-4 bg-gray-200 rounded-full w-12 animate-pulse flex-shrink-0' />
+          <div className='flex gap-1 mt-2 md:mt-2.5'>
+            <div className='h-5 w-5 bg-gray-200 rounded-full' />
+            <div className='h-5 w-5 bg-gray-200 rounded-full' />
+            <div className='h-5 w-5 bg-gray-200 rounded-full' />
+            <div className='h-4 bg-gray-200 rounded-full w-12' />
           </div>
         )}
       </div>
@@ -184,7 +181,7 @@ export const ProductSkeletonGrid: React.FC<ProductSkeletonGridProps> = ({
   return (
     <div
       className={cn(
-        'grid gap-4 md:gap-6 overflow-hidden w-full',
+        'grid gap-4 md:gap-6',
         variant === 'list'
           ? 'grid-cols-1'
           : 'grid-cols-2 md:grid-cols-2 lg:grid-cols-4',
@@ -218,12 +215,12 @@ export const ProductSkeletonCarousel: React.FC<ProductSkeletonCarouselProps> = (
   itemClassName,
 }) => {
   return (
-    <div className={cn('flex gap-4 md:gap-6 overflow-x-auto overflow-y-hidden w-full', className)}>
+    <div className={cn('flex gap-4 md:gap-6 overflow-hidden', className)}>
       {Array.from({ length: count }, (_, index) => (
         <div
           key={index}
           className={cn(
-            'min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-1.125rem)] flex-shrink-0 overflow-hidden',
+            'min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-1.125rem)] flex-shrink-0',
             itemClassName
           )}
         >
