@@ -365,9 +365,8 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
           {/* Flecha izquierda - Estilo semicírculo Mercado Libre */}
           <button
             onClick={() => scroll('left')}
-            className='absolute -left-1 lg:left-0 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-end pr-0.5 md:pr-1 rounded-r-full border border-l-0 border-gray-200 pointer-events-auto'
+            className='absolute -left-1 lg:left-0 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-end pr-0.5 md:pr-1 rounded-r-full border border-l-0 border-gray-200 pointer-events-auto top-2 sm:top-3 md:top-1/2 md:-translate-y-1/2'
             aria-label='Anterior'
-            style={{ top: '50%', transform: 'translateY(-50%)' }}
           >
             <ChevronLeft className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
           </button>
@@ -375,9 +374,8 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
           {/* Flecha derecha - Estilo semicírculo Mercado Libre */}
           <button
             onClick={() => scroll('right')}
-            className='absolute -right-1 lg:right-0 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-start pl-0.5 md:pl-1 rounded-l-full border border-r-0 border-gray-200 pointer-events-auto'
+            className='absolute -right-1 lg:right-0 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-start pl-0.5 md:pl-1 rounded-l-full border border-r-0 border-gray-200 pointer-events-auto top-2 sm:top-3 md:top-1/2 md:-translate-y-1/2'
             aria-label='Siguiente'
-            style={{ top: '50%', transform: 'translateY(-50%)' }}
           >
             <ChevronRight className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
           </button>

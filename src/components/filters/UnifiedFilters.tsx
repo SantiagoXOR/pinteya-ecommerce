@@ -71,7 +71,7 @@ export const UnifiedFilters: React.FC<UnifiedFiltersProps> = ({
 
       {/* Categorías */}
       <div>
-        <div className='overflow-x-auto no-scrollbar flex flex-nowrap items-center gap-2 pr-6'>
+        <div className='overflow-x-auto no-scrollbar flex flex-nowrap items-start md:items-center gap-2 pr-6'>
           <CategoryTogglePills
             selectedCategories={selectedCategories}
             onCategoryChange={onCategoryChange}

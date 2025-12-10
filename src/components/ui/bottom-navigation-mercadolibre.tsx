@@ -128,6 +128,19 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
       },
     ]
 
+    // #region agent log
+    React.useEffect(() => {
+      const nav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+      const overlay = document.querySelector('[data-radix-dialog-overlay]') as HTMLElement;
+      if (nav && overlay) {
+        const navZIndex = window.getComputedStyle(nav).zIndex;
+        const overlayZIndex = window.getComputedStyle(overlay).zIndex;
+        const navPointerEvents = window.getComputedStyle(nav).pointerEvents;
+        const overlayPointerEvents = window.getComputedStyle(overlay).pointerEvents;
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bottom-navigation-mercadolibre.tsx:useEffect',message:'Z-index and pointer-events check',data:{navZIndex,overlayZIndex,navPointerEvents,overlayPointerEvents,overlayExists:!!overlay},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      }
+    }, []);
+    // #endregion
     return (
       <nav
         ref={ref}
@@ -150,7 +163,23 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                 {/* Link o botón según el tipo */}
                 {item.id === 'cart' || item.id === 'back' || item.id === 'whatsapp' || item.id === 'search' ? (
                   <button
-                    onClick={item.onClick}
+                      onClick={(e) => {
+                      // #region agent log
+                      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bottom-navigation-mercadolibre.tsx:onClick',message:'Bottom nav button click',data:{itemId:item.id,eventType:e.type,defaultPrevented:e.defaultPrevented,isPropagationStopped:e.isPropagationStopped()},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v13',hypothesisId:'E'})}).catch(()=>{});
+                      // #endregion
+                      item.onClick?.(e);
+                    }}
+                    onPointerDown={(e) => {
+                      // #region agent log
+                      const target = e.target as HTMLElement;
+                      const overlay = document.querySelector('[data-radix-dialog-overlay]') as HTMLElement;
+                      const overlayZIndex = overlay ? window.getComputedStyle(overlay).zIndex : 'none';
+                      const overlayPointerEvents = overlay ? window.getComputedStyle(overlay).pointerEvents : 'none';
+                      const buttonZIndex = window.getComputedStyle(e.currentTarget).zIndex;
+                      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bottom-navigation-mercadolibre.tsx:onPointerDown',message:'Bottom nav button pointer down',data:{itemId:item.id,buttonZIndex,overlayZIndex,overlayPointerEvents,overlayExists:!!overlay,pointerX:e.clientX,pointerY:e.clientY},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v13',hypothesisId:'A'})}).catch(()=>{});
+                      // #endregion
+                      if (item.id === 'cart') setIsCartPressed(true);
+                    }}
                     onMouseDown={() => item.id === 'cart' && setIsCartPressed(true)}
                     onMouseUp={() => item.id === 'cart' && setTimeout(() => setIsCartPressed(false), 200)}
                     onMouseLeave={() => item.id === 'cart' && setIsCartPressed(false)}

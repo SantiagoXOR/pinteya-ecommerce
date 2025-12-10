@@ -17,17 +17,125 @@ const SheetPortal = SheetPrimitive.Portal
 
 const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <SheetPrimitive.Overlay
-    className={cn(
-      'fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      className
-    )}
-    {...props}
-    ref={ref}
-  />
-))
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay> & { side?: 'top' | 'bottom' | 'left' | 'right' }
+>(({ className, side, ...props }, ref) => {
+  // #region agent log
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+    const bottomNavZIndex = bottomNav ? window.getComputedStyle(bottomNav).zIndex : 'none';
+    const overlayZIndex = window.getComputedStyle(e.currentTarget).zIndex;
+    const isBottomNavArea = bottomNav && e.clientY > window.innerHeight - 80;
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:handlePointerDown',message:'Overlay pointer down event',data:{targetTag:target.tagName,targetClass:target.className,overlayZIndex,bottomNavZIndex,pointerX:e.clientX,pointerY:e.clientY,isBottomNavArea,side,windowHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v3',hypothesisId:'A'})}).catch(()=>{});
+    // Si el click es en el área del bottom bar, prevenir que el overlay capture el evento
+    if (isBottomNavArea && side === 'bottom') {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  };
+  // #endregion
+  
+  // Cuando el sheet es de tipo "bottom", hacer que el overlay no bloquee eventos en el área del bottom bar
+  // Usamos estilos inline con !important para sobrescribir el inset-0 de Radix UI
+  const overlayStyle = side === 'bottom' 
+    ? { 
+        top: '0',
+        left: '0',
+        right: '0',
+        bottom: '64px',
+        pointerEvents: 'auto' as const
+      }
+    : undefined;
+
+  // Cuando el sheet es de tipo "bottom", usar pointer-events: none y manejar el cierre manualmente
+  // Esto permite que los eventos pasen a través del overlay al bottom bar
+  const overlayRef = React.useRef<HTMLDivElement>(null);
+  
+  React.useEffect(() => {
+    if (side === 'bottom' && overlayRef.current) {
+      // Agregar listener global para cerrar el modal cuando se hace click fuera del bottom bar
+      const handleDocumentClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+        // Usar el selector correcto de Radix UI para el contenido del sheet
+        const sheetContent = document.querySelector('[role="dialog"]') as HTMLElement;
+        const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
+        const isInsideSheetContent = sheetContent && sheetContent.contains(target);
+        const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:handleDocumentClick',message:'Document click handler',data:{isInsideBottomNav,isInsideSheetContent,isBottomNavArea,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:target.tagName,targetClass:target.className},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v9',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
+        
+        // Si el click es en el área del bottom bar o dentro del bottom nav, NO cerrar el modal
+        if (isInsideBottomNav || isBottomNavArea) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+        
+        // Si el click NO es en el bottom bar ni en el contenido del sheet, cerrar el modal
+        if (!isInsideSheetContent) {
+          const dialogRoot = document.querySelector('[data-radix-dialog-root]');
+          if (dialogRoot) {
+            // Usar el método onOpenChange de Radix UI para cerrar el modal
+            const closeEvent = new CustomEvent('radix-dialog-close');
+            dialogRoot.dispatchEvent(closeEvent);
+            // También intentar encontrar y hacer click en el botón de cerrar
+            const closeButton = dialogRoot.querySelector('[data-radix-dialog-close]') as HTMLElement;
+            if (closeButton) {
+              closeButton.click();
+            }
+          }
+        }
+      };
+      
+      // Usar capture phase para interceptar antes que otros handlers
+      document.addEventListener('click', handleDocumentClick, true);
+      return () => {
+        document.removeEventListener('click', handleDocumentClick, true);
+      };
+    }
+  }, [side]);
+
+  return (
+    <SheetPrimitive.Overlay
+      ref={(node) => {
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+        overlayRef.current = node;
+      }}
+      className={cn(
+        'fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+        side === 'bottom' && 'pointer-events-none',
+        className
+      )}
+      style={overlayStyle}
+      onPointerDown={handlePointerDown}
+      onClick={(e) => {
+        // #region agent log
+        const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+        const clickedElement = e.target as HTMLElement;
+        const isInsideBottomNav = bottomNav && (bottomNav.contains(clickedElement) || clickedElement.closest('[class*="z-bottom-nav"]'));
+        const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:onClick',message:'Overlay click event',data:{isInsideBottomNav,isBottomNavArea,side,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:clickedElement.tagName,hasOverlayStyle:!!overlayStyle,pointerEvents:side === 'bottom' ? 'none' : 'auto'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v8',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
+        // Si el overlay tiene pointer-events: none, no hacer nada aquí
+        // El cierre se maneja en el listener global
+        if (side === 'bottom') {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+        // Para otros tipos de sheet, permitir que Radix UI maneje el cierre normalmente
+      }}
+      {...props}
+    />
+  );
+})
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
@@ -37,7 +145,7 @@ const sheetVariants = cva(
       side: {
         top: 'inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
         bottom:
-          'inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
+          'inset-x-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
         left: 'inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm',
         right:
           'inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm',
@@ -56,18 +164,159 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = 'right', className, children, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
-      <SheetPrimitive.Close className='absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary'>
-        <X className='h-4 w-4' />
-        <span className='sr-only'>Close</span>
-      </SheetPrimitive.Close>
-      {children}
-    </SheetPrimitive.Content>
-  </SheetPortal>
-))
+>(({ side = 'right', className, children, ...props }, ref) => {
+  // Cuando el sheet es de tipo "bottom", usar un overlay personalizado que excluya el área del bottom bar
+  const isBottom = side === 'bottom';
+  const overlayRef = React.useRef<HTMLDivElement>(null);
+  
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  
+  React.useEffect(() => {
+    if (isBottom) {
+      // Usar setTimeout para asegurarnos de que el elemento esté disponible
+      const timeoutId = setTimeout(() => {
+        if (contentRef.current) {
+          // #region agent log
+          const computedStyle = window.getComputedStyle(contentRef.current);
+          const rect = contentRef.current.getBoundingClientRect();
+          const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+          const bottomNavRect = bottomNav?.getBoundingClientRect();
+          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:useEffect-SheetContent',message:'SheetContent computed styles',data:{bottom:computedStyle.bottom,height:computedStyle.height,maxHeight:computedStyle.maxHeight,rectBottom:rect.bottom,rectHeight:rect.height,bottomNavTop:bottomNavRect?.top,windowHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v15',hypothesisId:'G'})}).catch(()=>{});
+          // #endregion
+        }
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isBottom, contentRef.current]);
+  
+  React.useEffect(() => {
+    if (isBottom && contentRef.current) {
+      
+      // Listener global para manejar clicks cuando el overlay tiene pointer-events: none
+      const handleDocumentClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+        const sheetContent = document.querySelector('[role="dialog"]') as HTMLElement;
+        const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
+        const isInsideSheetContent = sheetContent && sheetContent.contains(target);
+        const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:handleDocumentClick-SheetContent',message:'Document click handler in SheetContent',data:{isInsideBottomNav,isInsideSheetContent,isBottomNavArea,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:target.tagName,targetClass:target.className},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v15',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
+        
+        // Si el click es en el área del bottom bar o dentro del bottom nav, permitir que el evento pase
+        if (isInsideBottomNav || isBottomNavArea) {
+          // No hacer nada, permitir que el evento llegue al bottom bar
+          return;
+        }
+        
+        // Si el click NO es en el bottom bar ni en el contenido del sheet, cerrar el modal
+        if (!isInsideSheetContent && !isInsideBottomNav && !isBottomNavArea) {
+          const dialogRoot = document.querySelector('[data-radix-dialog-root]');
+          if (dialogRoot) {
+            const closeButton = dialogRoot.querySelector('[data-radix-dialog-close]') as HTMLElement;
+            if (closeButton) {
+              closeButton.click();
+            }
+          }
+        }
+      };
+      
+      // Usar capture phase para interceptar antes que otros handlers
+      document.addEventListener('click', handleDocumentClick, true);
+      return () => {
+        document.removeEventListener('click', handleDocumentClick, true);
+      };
+    }
+  }, [isBottom]);
+
+  return (
+    <SheetPortal>
+      {isBottom ? (
+        // Overlay personalizado que excluye el área del bottom bar (64px)
+        // Usar pointer-events: none para que los eventos pasen al bottom bar
+        <div
+          ref={overlayRef}
+          className="fixed z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          style={{ 
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: '64px',
+            pointerEvents: 'none'
+          }}
+          data-radix-dialog-overlay
+        />
+      ) : (
+        <SheetOverlay side={side} />
+      )}
+      <SheetPrimitive.Content 
+        ref={(node) => {
+          if (typeof ref === 'function') {
+            ref(node);
+          } else if (ref) {
+            ref.current = node;
+          }
+          contentRef.current = node;
+        }} 
+        className={cn(sheetVariants({ side }), isBottom && '!bottom-[64px] !max-h-[calc(100vh-64px)]', className)} 
+        style={isBottom ? { 
+          bottom: '64px',
+          maxHeight: 'calc(100vh - 64px)'
+        } : undefined}
+        onPointerDown={(e) => {
+          if (isBottom) {
+            // #region agent log
+            const target = e.target as HTMLElement;
+            const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+            const bottomNavRect = bottomNav?.getBoundingClientRect();
+            const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
+            const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
+            const contentRect = contentRef.current?.getBoundingClientRect();
+            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:SheetContent-onPointerDown',message:'SheetContent pointer down',data:{isBottomNavArea,isInsideBottomNav,bottomNavExists:!!bottomNav,bottomNavTop:bottomNavRect?.top,contentBottom:contentRect?.bottom,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:target.tagName},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v15',hypothesisId:'F'})}).catch(()=>{});
+            // #endregion
+            // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
+            // Permitir que el evento pase al bottom bar
+            if (isBottomNavArea || isInsideBottomNav) {
+              // No hacer nada, permitir que el evento llegue al bottom bar
+              e.stopPropagation();
+              e.preventDefault();
+              return;
+            }
+          }
+        }}
+        onClick={(e) => {
+          if (isBottom) {
+            // #region agent log
+            const target = e.target as HTMLElement;
+            const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+            const bottomNavRect = bottomNav?.getBoundingClientRect();
+            const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
+            const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
+            const contentRect = contentRef.current?.getBoundingClientRect();
+            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:SheetContent-onClick',message:'SheetContent click',data:{isBottomNavArea,isInsideBottomNav,bottomNavExists:!!bottomNav,bottomNavTop:bottomNavRect?.top,contentBottom:contentRect?.bottom,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:target.tagName},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v15',hypothesisId:'F'})}).catch(()=>{});
+            // #endregion
+            // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
+            if (isBottomNavArea || isInsideBottomNav) {
+              e.stopPropagation();
+              e.preventDefault();
+              return;
+            }
+          }
+        }}
+        {...props}
+      >
+        <SheetPrimitive.Close className='absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary'>
+          <X className='h-4 w-4' />
+          <span className='sr-only'>Close</span>
+        </SheetPrimitive.Close>
+        {children}
+      </SheetPrimitive.Content>
+    </SheetPortal>
+  );
+})
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
 const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
