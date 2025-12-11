@@ -17,8 +17,9 @@ import { selectCartItems } from '@/redux/features/cart-slice'
 import { useProductBySlug } from '@/hooks/useProductBySlug'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 // ⚡ PERFORMANCE: Importar directamente para evitar problemas de serialización con dynamic imports
-import FloatingWhatsAppBuy from '@/components/Common/FloatingWhatsAppBuy'
-import BuyPageWhatsAppPopup from '@/components/Common/BuyPageWhatsAppPopup'
+// WhatsApp components deshabilitados en /buy
+// import FloatingWhatsAppBuy from '@/components/Common/FloatingWhatsAppBuy'
+// import BuyPageWhatsAppPopup from '@/components/Common/BuyPageWhatsAppPopup'
 
 interface ProductData {
   id: number
@@ -321,15 +322,15 @@ export default function BuyProductPage() {
   console.log('[BuyProductPage] Estado actual:', { status, productData, error })
 
   return (
-    <main className='min-h-screen pb-24 relative' style={{ background: 'linear-gradient(180deg, #ffd549 0%, #fff4c6 50%, #ffffff 100%)', backgroundAttachment: 'fixed' }}>
+    <main className='min-h-screen pb-24 relative'>
       {/* Botón de carrito flotante justo debajo del header */}
       <FloatingCheckoutButton />
       
-      {/* Botón flotante de WhatsApp */}
-      <FloatingWhatsAppBuy />
+      {/* Botón flotante de WhatsApp - OCULTO en /buy */}
+      {/* <FloatingWhatsAppBuy /> */}
       
-      {/* Popup de WhatsApp */}
-      <BuyPageWhatsAppPopup />
+      {/* Popup de WhatsApp - OCULTO en /buy */}
+      {/* <BuyPageWhatsAppPopup /> */}
       
       {/* Badge flotante con título */}
       <BuyPageHeader />

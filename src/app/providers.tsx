@@ -153,11 +153,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           enableAutoRecovery={true}
           enableReporting={true}
         >
-          {/* Theme Provider - Detecta automáticamente la preferencia del sistema */}
+          {/* Theme Provider - Forzado a light mode (dark mode desactivado) */}
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem={true}
+            defaultTheme="light"
+            enableSystem={false}
+            forcedTheme="light"
             disableTransitionOnChange={false}
             storageKey="ecommerce-theme"
           >

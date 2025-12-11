@@ -186,12 +186,13 @@ const Header = () => {
     <>
       <header
         className={`
-        fixed top-0 left-0 w-full z-header
+        fixed top-0 left-0 right-0 w-full z-header
         bg-blaze-orange-600 dark:bg-blaze-orange-700 rounded-b-3xl shadow-lg
         header-sticky-transition
         ${isSticky ? 'shadow-2xl backdrop-blur-sm' : 'shadow-lg'}
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
+        max-w-full overflow-x-hidden
       `}
       >
         {/* ScrollingBanner integrado en la parte superior del header */}

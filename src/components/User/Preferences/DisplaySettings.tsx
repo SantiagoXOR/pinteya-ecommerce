@@ -35,10 +35,10 @@ export function DisplaySettings() {
         [key]: value,
       })
 
-      // Aplicar tema inmediatamente
-      if (key === 'theme') {
-        setTheme(value)
-      }
+      // Tema deshabilitado - siempre usar light mode
+      // if (key === 'theme') {
+      //   setTheme(value)
+      // }
 
       toast.success('Preferencia actualizada correctamente')
     } catch (error) {
@@ -79,20 +79,18 @@ export function DisplaySettings() {
           <div className='space-y-2'>
             <Label htmlFor='theme'>Tema</Label>
             <Select
-              value={displayPrefs.theme}
-              onValueChange={value => handleUpdate('theme', value)}
+              value='light'
+              disabled={true}
             >
               <SelectTrigger>
-                <SelectValue placeholder='Selecciona un tema' />
+                <SelectValue placeholder='Tema claro (fijo)' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='light'>Claro</SelectItem>
-                <SelectItem value='dark'>Oscuro</SelectItem>
-                <SelectItem value='system'>Sistema (automático)</SelectItem>
+                <SelectItem value='light'>Claro (fijo)</SelectItem>
               </SelectContent>
             </Select>
             <p className='text-sm text-gray-600'>
-              El tema del sistema se ajusta automáticamente según tu configuración del dispositivo.
+              El tema claro está activado de forma permanente. El modo oscuro está deshabilitado.
             </p>
           </div>
         </CardContent>

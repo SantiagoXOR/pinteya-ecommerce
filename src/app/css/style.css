@@ -166,11 +166,17 @@
 
   html {
     @apply scroll-smooth;
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
   }
 
   body {
     @apply font-euclid-circular-a font-normal text-base text-dark-3 dark:text-bright-sun-200 relative z-1;
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
     /* Fondo degradado negro/naranja por defecto en todas las rutas - sobrescribe bg-white */
     background: radial-gradient(ellipse at top right, #f27a1d 0%, transparent 50%),
                 radial-gradient(ellipse at bottom left, #bd4811 0%, transparent 50%),
@@ -186,6 +192,13 @@
     font-family: 'Euclid Circular A', system-ui, -apple-system, 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
       var(--emoji-fonts);
+  }
+  
+  /* Prevenir scroll horizontal en todos los contenedores principales */
+  #__next {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
   }
 
   /* Mobile pequeño - Reducir padding para aprovechar mejor el espacio */
