@@ -13,13 +13,10 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Monitor, Globe, DollarSign, Palette } from '@/lib/optimized-imports'
 import { useUserPreferences } from '@/hooks/useUserPreferences'
-import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 
 export function DisplaySettings() {
   const { preferences, isLoading, updateSection } = useUserPreferences()
-
-  const { theme, setTheme } = useTheme()
 
   const displayPrefs = preferences?.display || {
     language: 'es',

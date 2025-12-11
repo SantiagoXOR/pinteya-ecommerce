@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic'
 // Esto reduce Script Evaluation inicial (no se carga hasta que se necesita)
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
-import { ThemeProvider } from 'next-themes'
 
 // ⚡ PERFORMANCE: Providers críticos (carga inmediata - solo los esenciales)
 import { ReduxProvider } from '@/redux/provider'
@@ -153,17 +152,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           enableAutoRecovery={true}
           enableReporting={true}
         >
-          {/* Theme Provider - Forzado a light mode (dark mode desactivado) */}
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem={false}
-            forcedTheme="light"
-            disableTransitionOnChange={false}
-            storageKey="ecommerce-theme"
-          >
-            {/* 1. Query client - Crítico para data fetching */}
-            <QueryClientProvider>
+          {/* 1. Query client - Crítico para data fetching */}
+          <QueryClientProvider>
             {/* 2. Redux - Crítico para state management */}
             <ReduxProvider>
               {/* 3. Cart persistence - Crítico para carrito */}
@@ -223,7 +213,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               </CartPersistenceProvider>
             </ReduxProvider>
           </QueryClientProvider>
-          </ThemeProvider>
         </AdvancedErrorBoundary>
       </>
     )
