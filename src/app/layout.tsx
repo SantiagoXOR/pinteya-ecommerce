@@ -99,7 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           /* Reset y base styles */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;max-width:100vw;width:100%}
-          body:not(:has([data-admin-layout])){margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:radial-gradient(ellipse at top right,#f27a1d 0%,transparent 50%),radial-gradient(ellipse at bottom left,#bd4811 0%,transparent 50%),#000000;background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#fff4c6;min-height:100vh;padding-top:92px;overflow-x:hidden!important;max-width:100vw;width:100%}
+          body:not(:has([data-admin-layout])){margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:radial-gradient(ellipse at top right,#f27a1d 0%,transparent 50%),radial-gradient(ellipse at bottom left,#bd4811 0%,transparent 50%),#000000;background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#111827;min-height:100vh;padding-top:92px;overflow-x:hidden!important;max-width:100vw;width:100%}
           body:has([data-admin-layout]){background:#f9fafb!important;color:#111827!important;padding-top:0!important}
           #__next{overflow-x:hidden;max-width:100vw;width:100%}
           @media(min-width:1024px){body:not(:has([data-admin-layout])){padding-top:105px}}
