@@ -141,24 +141,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-modal{z-index:200}
           .z-toast{z-index:300}
           
-          /* ⚡ LEGIBILIDAD: Textos oscuros en inputs/selects dentro de contenedores blancos - EXCLUYENDO product cards */
-          /* Solo aplicar a inputs, selects y elementos sin clases de color específicas, excluyendo product cards */
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input:not([class*="text-"]),
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) select:not([class*="text-"]),
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) textarea:not([class*="text-"]){color:#111827!important}
-          /* Headings sin clases de color específicas en contenedores administrativos */
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) h1:not([class*="text-"]),
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) h2:not([class*="text-"]),
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) h3:not([class*="text-"]),
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) h4:not([class*="text-"]),
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) h5:not([class*="text-"]),
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) h6:not([class*="text-"]){color:#111827!important}
-          /* Párrafos y spans sin clases de color en contenedores administrativos */
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) p:not([class*="text-"]),
-          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) span:not([class*="text-"]){color:#111827}
-          .bg-gray-50:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input:not([class*="text-"]),
-          .bg-gray-50:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) select:not([class*="text-"]),
-          .bg-gray-100:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input:not([class*="text-"]){color:#111827!important}
+          /* ⚡ LEGIBILIDAD: Textos oscuros por defecto en contenedores blancos - EXCLUYENDO product cards */
+          /* Aplicar color por defecto al contenedor (sin !important para que clases de color lo sobrescriban) */
+          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]){color:#111827}
+          /* Inputs, selects y textareas - color explícito con !important */
+          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input,
+          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) select,
+          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) textarea{color:#111827!important}
+          /* Placeholders en gris medio */
+          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input::placeholder,
+          .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) textarea::placeholder{color:#6b7280!important}
+          /* Contenedores grises también */
+          .bg-gray-50:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]),
+          .bg-gray-100:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]){color:#111827}
+          .bg-gray-50:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input,
+          .bg-gray-50:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) select,
+          .bg-gray-100:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input{color:#111827!important}
         `}} />
         
         {/* ⚡ CRITICAL: Preconnect al dominio propio DEBE estar ANTES de cualquier preload */}

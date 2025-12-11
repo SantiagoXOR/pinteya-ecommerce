@@ -158,7 +158,7 @@ export function CategorySelector({
               </div>
             )}
 
-            <span className='text-sm font-medium'>{category.name}</span>
+            <span className='text-sm font-medium text-gray-900'>{category.name}</span>
           </div>
 
           {value === category.id && (
@@ -187,7 +187,7 @@ export function CategorySelector({
       >
         <div className='flex items-center space-x-2 flex-1'>
           <div style={{ marginLeft: `${category.level * 16}px` }}>
-            <span className='text-sm'>
+            <span className='text-sm text-gray-900'>
               {'—'.repeat(category.level)} {category.name}
             </span>
           </div>
@@ -245,7 +245,7 @@ export function CategorySelector({
                 placeholder='Buscar categorías...'
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className='w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                className='w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent text-gray-900'
               />
             </div>
           </div>

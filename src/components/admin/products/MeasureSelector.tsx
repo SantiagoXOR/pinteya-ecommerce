@@ -141,7 +141,7 @@ export function MeasureSelector({
                       key={measure}
                       type='button'
                       onClick={() => handleAddMeasure(measure)}
-                      className='px-3 py-2 text-sm text-left hover:bg-gray-50 rounded border border-gray-200 hover:border-blaze-orange-300 transition-colors'
+                      className='px-3 py-2 text-sm text-left text-gray-900 hover:bg-gray-50 rounded border border-gray-200 hover:border-blaze-orange-300 transition-colors'
                     >
                       {measure}
                     </button>

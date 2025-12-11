@@ -142,7 +142,7 @@ export function BrandSelector({
                   onClick={() => handleSelect(brand.name)}
                 >
                   <div className='flex items-center space-x-2 flex-1'>
-                    <span className='text-sm font-medium'>{brand.name}</span>
+                    <span className='text-sm font-medium text-gray-900'>{brand.name}</span>
                     <span className='text-xs text-gray-500'>({brand.products_count} productos)</span>
                   </div>
                   {value === brand.name && (
