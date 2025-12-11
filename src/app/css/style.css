@@ -171,7 +171,8 @@
     width: 100%;
   }
 
-  body {
+  /* Estilos base del body - solo para rutas que NO sean admin */
+  body:not(:has([data-admin-layout])) {
     @apply font-euclid-circular-a font-normal text-base text-dark-3 dark:text-bright-sun-200 relative z-1;
     @apply bg-background text-foreground;
     overflow-x: hidden;
@@ -193,6 +194,31 @@
       'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
       var(--emoji-fonts);
   }
+
+  /* Body para admin - estilos limpios sin fondo degradado ni color amarillo */
+  body:has([data-admin-layout]) {
+    @apply font-euclid-circular-a font-normal text-base relative z-1;
+    background: #f9fafb !important; /* bg-gray-50 */
+    color: #111827 !important; /* text-gray-900 */
+    padding-top: 0 !important;
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+  }
+
+  /* ✅ FIX: Asegurar que botones con fondo amarillo tengan texto oscuro para contraste */
+  body:not(:has([data-admin-layout])) [style*="background-color: #facc15"],
+  body:not(:has([data-admin-layout])) [style*="background-color: #eab308"],
+  body:not(:has([data-admin-layout])) [class*="bg-bright-sun"]:not([class*="text-"]) {
+    color: #111827 !important; /* text-gray-900 */
+  }
+
+  /* ✅ FIX: Textos en fondos oscuros deben ser blancos */
+  body:not(:has([data-admin-layout])) [class*="bg-black"] *,
+  body:not(:has([data-admin-layout])) [class*="bg-gray-900"] *,
+  body:not(:has([data-admin-layout])) [class*="bg-blaze-orange"] *:not([class*="text-"]) {
+    color: #ffffff !important;
+  }
   
   /* Prevenir scroll horizontal en todos los contenedores principales */
   #__next {
@@ -203,14 +229,14 @@
 
   /* Mobile pequeño - Reducir padding para aprovechar mejor el espacio */
   @media (max-width: 375px) {
-    body {
+    body:not(:has([data-admin-layout])) {
       padding-top: 88px; /* Menos padding en pantallas muy pequeñas */
     }
   }
 
   /* Ajuste específico para desktop */
   @media (min-width: 1024px) {
-    body {
+    body:not(:has([data-admin-layout])) {
       padding-top: 105px; /* Ajustado para mejor spacing con header más alto */
     }
   }

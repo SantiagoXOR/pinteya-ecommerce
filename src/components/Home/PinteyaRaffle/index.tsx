@@ -155,7 +155,7 @@ const PinteyaRaffle = () => {
                 {/* Botón de participación */}
                 <Button
                   size='lg'
-                  className='bg-bright-sun-400 hover:bg-bright-sun-500 text-blaze-orange-800 font-bold text-base px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105'
+                  className='bg-bright-sun-400 hover:bg-bright-sun-500 text-gray-900 font-bold text-base px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105'
                 >
                   <Gift className='w-4 h-4 mr-2' />
                   ¡Participar Ahora!
