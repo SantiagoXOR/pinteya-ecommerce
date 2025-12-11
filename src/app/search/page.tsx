@@ -90,7 +90,7 @@ export default function SearchPage() {
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center py-12'>
             <div className='animate-spin w-8 h-8 border-2 border-blaze-orange-600 border-t-transparent rounded-full mx-auto mb-4'></div>
-            <p className='text-gray-600'>Buscando productos...</p>
+            <p className='text-white'>Buscando productos...</p>
           </div>
         </div>
       </div>

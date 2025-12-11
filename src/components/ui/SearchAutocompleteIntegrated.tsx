@@ -648,7 +648,7 @@ export const SearchAutocompleteIntegrated = React.memo(
                   ))}
                   <div className='flex items-center justify-center py-2'>
                     <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500' />
-                    <span className='ml-2 text-gray-600 dark:text-gray-400'>Buscando productos...</span>
+                    <span className='ml-2 text-white'>Buscando productos...</span>
                   </div>
                 </div>
               )}
