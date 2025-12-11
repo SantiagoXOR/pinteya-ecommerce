@@ -1194,6 +1194,24 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                           backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
                           backgroundBlendMode: 'multiply' as const
                         } : {}
+                        const isSelected = selectedColor === colorData.hex
+                        // Determinar color del texto según el fondo
+                        const getTextColor = () => {
+                          if (isSelected) return 'text-[#EA5A17]'
+                          // Para colores claros, usar texto oscuro
+                          if (colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' || 
+                              colorData.name.toLowerCase().includes('blanco') || 
+                              colorData.name.toLowerCase().includes('white') ||
+                              colorData.name.toLowerCase().includes('crema') ||
+                              colorData.name.toLowerCase().includes('cream') ||
+                              colorData.name.toLowerCase().includes('beige') ||
+                              colorData.name.toLowerCase().includes('arena') ||
+                              colorData.name.toLowerCase().includes('sand')) {
+                            return 'text-gray-700'
+                          }
+                          // Para colores oscuros, usar texto blanco
+                          return 'text-white'
+                        }
                         return (
                           <button
                             key={`${colorData.hex}-${index}`}
@@ -1204,8 +1222,10 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                             }}
                             title={colorData.name}
                             className={cn(
-                              'w-6 h-6 flex-shrink-0 rounded-full border-2 border-gray-200 shadow-sm transition-all hover:scale-110',
-                              selectedColor === colorData.hex && 'ring-2 ring-[#EA5A17] ring-offset-0',
+                              'px-1.5 py-0.5 flex-shrink-0 rounded-full transition-all hover:scale-105 flex items-center justify-center h-[18px]',
+                              isSelected 
+                                ? 'border border-[#EA5A17]' 
+                                : 'border border-gray-200',
                               (colorData.name.toLowerCase().includes('incoloro') || 
                                colorData.name.toLowerCase().includes('transparente') ||
                                colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
@@ -1219,19 +1239,18 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                                 : {}),
                               ...woodTexture
                             }}
-                          />
+                          >
+                            <span className={cn(
+                              'font-bold leading-none whitespace-nowrap text-[8px]',
+                              getTextColor()
+                            )}>
+                              {colorData.name}
+                            </span>
+                          </button>
                         )
                       })}
                     </div>
                   </div>
-                  {/* Nombre del color seleccionado a la derecha */}
-                  {selectedColor && (
-                    <div className='flex-shrink-0 z-10'>
-                      <span className='text-[9px] md:text-[10px] text-gray-500 uppercase whitespace-nowrap'>
-                        {uniqueColors.find(c => c.hex === selectedColor)?.name || ''}
-                      </span>
-                    </div>
-                  )}
                 </div>
               )}
 
