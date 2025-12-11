@@ -3,6 +3,7 @@
 // ===================================
 
 import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { Search, X, Clock, TrendingUp, Package, Tag } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { useSearchOptimized } from '@/hooks/useSearchOptimized'
@@ -114,12 +115,19 @@ export const SearchAutocompleteIntegrated = React.memo(
       const [isOpen, setIsOpen] = useState(false)
       const [inputValue, setInputValue] = useState('')
       const [selectedIndex, setSelectedIndex] = useState(-1)
+      const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
+      const [mounted, setMounted] = useState(false)
 
       // Referencias
       const inputRef = useRef<HTMLInputElement>(null)
       const dropdownRef = useRef<HTMLDivElement>(null)
       const containerRef = useRef<HTMLDivElement>(null)
       const suggestionRefs = useRef<(HTMLDivElement | null)[]>([])
+
+      // Montar el componente en el cliente
+      useEffect(() => {
+        setMounted(true)
+      }, [])
 
       // Combinar refs
       const combinedRef = useCallback(
@@ -269,10 +277,23 @@ export const SearchAutocompleteIntegrated = React.memo(
         [searchWithDebounce, onSearch]
       )
 
+      // Calcular posición del dropdown
+      const updateDropdownPosition = useCallback(() => {
+        if (inputRef.current) {
+          const rect = inputRef.current.getBoundingClientRect()
+          setDropdownPosition({
+            top: rect.bottom + window.scrollY + 4,
+            left: rect.left + window.scrollX,
+            width: rect.width,
+          })
+        }
+      }, [])
+
       const handleInputFocus = useCallback(() => {
         setIsOpen(true)
+        updateDropdownPosition()
         onFocus?.()
-      }, [onFocus])
+      }, [onFocus, updateDropdownPosition])
 
       const handleInputBlur = useCallback(
         (e: React.FocusEvent) => {
@@ -383,10 +404,26 @@ export const SearchAutocompleteIntegrated = React.memo(
           const timer = setTimeout(() => {
             inputRef.current?.focus()
             setIsOpen(true) // Abrir dropdown automáticamente
+            updateDropdownPosition()
           }, 50)
           return () => clearTimeout(timer)
         }
-      }, [autoFocus])
+      }, [autoFocus, updateDropdownPosition])
+
+      // Actualizar posición del dropdown cuando se abre o cambia el tamaño de la ventana
+      useEffect(() => {
+        if (isOpen && mounted) {
+          updateDropdownPosition()
+          const handleResize = () => updateDropdownPosition()
+          const handleScroll = () => updateDropdownPosition()
+          window.addEventListener('resize', handleResize)
+          window.addEventListener('scroll', handleScroll, true)
+          return () => {
+            window.removeEventListener('resize', handleResize)
+            window.removeEventListener('scroll', handleScroll, true)
+          }
+        }
+      }, [isOpen, mounted, updateDropdownPosition])
 
       // ===================================
       // FUNCIONES DE RENDERIZADO
@@ -502,17 +539,23 @@ export const SearchAutocompleteIntegrated = React.memo(
             </div>
           </form>
 
-          {/* Dropdown de sugerencias */}
-          {isOpen && (
-            <div
-              ref={dropdownRef}
-              className={cn(
-                'absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
-                'rounded-lg shadow-lg dark:shadow-xl z-50 max-h-96 overflow-y-auto'
-              )}
-              role='listbox'
-            id='autocomplete-listbox'
-            >
+          {/* Dropdown de sugerencias - Renderizado con Portal fuera del header */}
+          {isOpen && mounted && dropdownPosition
+            ? createPortal(
+                <div
+                  ref={dropdownRef}
+                  className={cn(
+                    'fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
+                    'rounded-lg shadow-lg dark:shadow-xl z-[200] max-h-96 overflow-y-auto'
+                  )}
+                  style={{
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                    width: `${dropdownPosition.width}px`,
+                  }}
+                  role='listbox'
+                  id='autocomplete-listbox'
+                >
               {/* Estado inicial sin texto: encabezado y esqueleto/ayuda */}
               {!inputValue.trim() && (
                 <div className='py-2'>
@@ -627,8 +670,10 @@ export const SearchAutocompleteIntegrated = React.memo(
                   {allSuggestions.map((suggestion, index) => renderSuggestion(suggestion, index))}
                 </div>
               )}
-            </div>
-          )}
+                </div>,
+                document.body
+              )
+            : null}
         </div>
       )
     }

@@ -192,7 +192,7 @@ const Header = () => {
         ${isSticky ? 'shadow-2xl backdrop-blur-sm' : 'shadow-lg'}
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
-        max-w-full overflow-x-hidden
+        max-w-full overflow-x-hidden overflow-y-visible
       `}
       >
         {/* ScrollingBanner integrado en la parte superior del header */}
