@@ -92,7 +92,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                 >
                   {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
                   <div 
-                    className={`absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                    className={`absolute inset-0 skeleton-loading z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                     aria-hidden="true"
                   />
                   
@@ -151,7 +151,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                 >
                   {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
                   <div 
-                    className={`absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                    className={`absolute inset-0 skeleton-loading z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                     aria-hidden="true"
                   />
                   

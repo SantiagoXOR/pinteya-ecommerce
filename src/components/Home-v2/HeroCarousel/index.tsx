@@ -167,16 +167,14 @@ const HeroCarousel = () => {
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className="relative w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white/60 overflow-hidden"
+                  className={`relative rounded-full bg-white/60 transition-all duration-300 ${
+                    isActive 
+                      ? 'w-8 sm:w-10 h-2 sm:h-2.5' 
+                      : 'w-2 sm:w-2.5 h-2 sm:h-2.5'
+                  }`}
                   style={{
-                    // ⚡ OPTIMIZACIÓN: Usar transform: scaleX() en lugar de width (propiedad compositable)
-                    transform: isActive ? 'scaleX(3)' : 'scaleX(1)',
-                    // ⚡ OPTIMIZACIÓN: Usar opacity para cambio de color (propiedad compositable)
                     opacity: isActive ? 1 : 0.6,
-                    // ⚡ OPTIMIZACIÓN: Transiciones solo en propiedades compositables
-                    transition: 'transform 300ms ease-in-out, opacity 300ms ease-in-out',
-                    // ⚡ OPTIMIZACIÓN: will-change para mejor rendimiento
-                    willChange: 'transform, opacity',
+                    willChange: 'width, opacity',
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {

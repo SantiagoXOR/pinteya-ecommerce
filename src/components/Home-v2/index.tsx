@@ -14,7 +14,14 @@ import BestSeller from './BestSeller/index'
 // ⚡ PERFORMANCE: Loading states para componentes críticos
 const HeroCarousel = dynamic(() => import('./HeroCarousel/index'), {
   loading: () => (
-    <div className='w-full h-[320px] md:h-[500px] bg-gradient-to-r from-orange-500 to-orange-600 animate-pulse' />
+    <div className="relative w-full">
+      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
+        <div 
+          className="relative w-full overflow-hidden skeleton-loading"
+          style={{ aspectRatio: '2.77' }}
+        />
+      </div>
+    </div>
   ),
 })
 
@@ -22,7 +29,7 @@ const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePill
   loading: () => (
     <div className='flex gap-2 px-4 overflow-x-auto'>
       {[...Array(5)].map((_, i) => (
-        <div key={i} className='h-8 w-24 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
+        <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
       ))}
     </div>
   ),
@@ -30,14 +37,14 @@ const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePill
 
 const PromoBanners = dynamic<PromoBannersProps>(() => import('./PromoBanners/index'), {
   loading: () => (
-    <div className='w-full h-32 md:h-48 bg-gray-200 animate-pulse rounded-lg mx-4' />
+    <div className='w-full h-32 md:h-48 bg-gray-200 skeleton-loading rounded-lg mx-4' />
   ),
 })
 
 const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'), {
   loading: () => (
     <div className='px-4'>
-      <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='h-8 w-48 bg-gray-200 rounded skeleton-pulse mb-4' />
       <ProductSkeletonCarousel count={4} />
     </div>
   ),
@@ -46,10 +53,10 @@ const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/in
 const TrendingSearches = dynamic(() => import('./TrendingSearches/index'), {
   loading: () => (
     <div className='px-4'>
-      <div className='h-8 w-40 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='h-8 w-40 bg-gray-200 rounded skeleton-pulse mb-4' />
       <div className='flex flex-wrap gap-2'>
         {[...Array(6)].map((_, i) => (
-          <div key={i} className='h-8 w-24 bg-gray-200 rounded-full animate-pulse' />
+          <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse' />
         ))}
       </div>
     </div>
@@ -64,10 +71,10 @@ const CombosSection = dynamic(() => import('./CombosSection/index'), {
 const Testimonials = dynamic(() => import('./Testimonials/index'), {
   loading: () => (
     <div className='px-4'>
-      <div className='h-8 w-40 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='h-8 w-40 bg-gray-200 rounded skeleton-pulse mb-4' />
       <div className='flex gap-4 overflow-x-auto'>
         {[...Array(3)].map((_, i) => (
-          <div key={i} className='w-80 h-48 bg-gray-200 rounded-lg animate-pulse flex-shrink-0' />
+          <div key={i} className='w-80 h-48 bg-gray-200 rounded-lg skeleton-loading flex-shrink-0' />
         ))}
       </div>
     </div>
