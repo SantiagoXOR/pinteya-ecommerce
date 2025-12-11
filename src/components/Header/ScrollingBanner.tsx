@@ -4,37 +4,37 @@ import React from 'react'
 import { Truck, MapPin, Star, Shield } from '@/lib/optimized-imports'
 
 const ScrollingBanner = () => {
-  const envioText = 'ENVÍO GRATIS EN 24HS EN CÓRDOBA CAPITAL'
-  const tiendaText = 'TIENDA DE PINTURAS ONLINE N°1 EN CÓRDOBA CAPITAL'
+  const envioText = 'ENVÍO GRATIS EN 24HS EN CÓRDOBA'
+  const tiendaText = 'TIENDA DE PINTURAS ONLINE N°1 EN CÓRDOBA'
 
   // Contenido del banner optimizado con colores específicos
   const bannerContent = (
     <>
       {/* Primer conjunto - Envío en verde */}
-      <div className='inline-flex items-center gap-2 bg-green-600 px-3 py-1 rounded-full'>
-        <Truck className='w-4 h-4 text-white' />
-        <span className='text-xs font-semibold tracking-widest text-white'>{envioText}</span>
+      <div className='inline-flex items-center gap-1.5 bg-green-600 px-2 py-0 rounded-full h-[16px]'>
+        <Truck className='w-3 h-3 text-white' />
+        <span className='text-[10px] font-semibold tracking-widest text-white'>{envioText}</span>
       </div>
 
       {/* Separador */}
-      <div className='w-px h-4 bg-white/40 mx-6'></div>
+      <div className='w-px h-3 bg-white/40 mx-4'></div>
 
-      {/* Segundo conjunto - Tienda en amarillo Bright Sun con texto verde */}
-      <div className='inline-flex items-center gap-2 bg-bright-sun-400 px-3 py-1 rounded-full'>
-        <Star className='w-4 h-4 text-green-800' />
-        <span className='text-xs font-semibold tracking-widest text-green-800'>{tiendaText}</span>
+      {/* Segundo conjunto - Tienda en amarillo claro con texto negro */}
+      <div className='inline-flex items-center gap-1.5 bg-bright-sun-300 px-2 py-0 rounded-full h-[16px]'>
+        <Star className='w-3 h-3 text-black' />
+        <span className='text-[10px] font-semibold tracking-widest text-black'>{tiendaText}</span>
       </div>
 
       {/* Separador */}
-      <div className='w-px h-4 bg-white/40 mx-6'></div>
+      <div className='w-px h-3 bg-white/40 mx-4'></div>
     </>
   )
 
   return (
-    <div className='w-full bg-blaze-orange-600 text-white overflow-hidden relative h-[28px] flex items-center rounded-lg mx-2 my-0.5'>
+    <div className='w-full bg-blaze-orange-600 text-white overflow-hidden relative h-[22px] flex items-center rounded-lg mx-2 my-0.5'>
       {/* Contenedor de animación mejorado para loop infinito */}
       <div className='whitespace-nowrap animate-scroll-banner-infinite'>
-        <div className='inline-flex items-center px-4'>
+        <div className='inline-flex items-center px-3'>
           {/* Repetimos el contenido 4 veces para mejor efecto continuo */}
           {bannerContent}
           {bannerContent}
