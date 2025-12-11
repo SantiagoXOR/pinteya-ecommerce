@@ -7,6 +7,9 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminCard } from '../ui/AdminCard'
 import { CategorySelector } from './CategorySelector'
+import { BrandSelector } from './BrandSelector'
+import { MeasureSelector } from './MeasureSelector'
+import { VariantBuilder, VariantFormData } from './VariantBuilder'
 import { ImageUploadZone } from './ImageUploadZone'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 import { Save, X, Upload, Plus, Edit, Trash2 } from '@/lib/optimized-imports'
@@ -25,7 +28,7 @@ const ProductSchema = z.object({
   // Metadata
   aikon_id: z.string().max(50).optional(),
   color: z.string().max(100).optional(),
-  medida: z.string().max(50).optional(),
+  medida: z.array(z.string()).optional(),
   
   // Precios & Stock
   price: z.number().min(0.01, 'El precio debe ser mayor a 0'),
@@ -78,6 +81,7 @@ export function ProductFormMinimal({
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url || null)
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null)
   const [showVariantModal, setShowVariantModal] = useState(false)
+  const [newVariants, setNewVariants] = useState<VariantFormData[]>([])
   
   // Fetch variantes desde BD
   const { data: variantsData, isLoading: variantsLoading } = useQuery({
@@ -178,6 +182,7 @@ export function ProductFormMinimal({
       featured: false,
       discounted_price: null,
       image_url: null,
+      medida: [],
       created_at: new Date().toISOString(),
       ...initialData,
     },
@@ -197,7 +202,54 @@ export function ProductFormMinimal({
       notifications.showProcessingInfo(
         mode === 'create' ? 'Creando producto...' : 'Actualizando producto...'
       )
-      await onSubmit(data)
+      
+      // Primero guardar/actualizar el producto
+      const result = await onSubmit(data)
+      
+      // Obtener productId del resultado o usar el existente
+      const finalProductId = (result as any)?.id || productId || (result as any)?.data?.id
+      
+      // Si hay variantes nuevas y tenemos productId, crearlas
+      if (newVariants.length > 0 && finalProductId) {
+        notifications.showProcessingInfo('Creando variantes...')
+        
+        for (const variant of newVariants) {
+          try {
+            const response = await fetch('/api/admin/products/variants', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                product_id: parseInt(String(finalProductId)),
+                aikon_id: variant.aikon_id,
+                color_name: variant.color_name || null,
+                measure: variant.measure,
+                finish: variant.finish || 'Mate',
+                price_list: variant.price_list,
+                price_sale: variant.price_sale || null,
+                stock: variant.stock,
+                image_url: variant.image_url || null,
+                is_active: variant.is_active !== false,
+                is_default: variant.is_default || false,
+              }),
+            })
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+              throw new Error(errorData.error || 'Error creando variante')
+            }
+          } catch (error) {
+            console.error('Error creando variante:', error)
+            notifications.showInfoMessage(
+              'Error creando variante',
+              error instanceof Error ? error.message : 'Error desconocido'
+            )
+          }
+        }
+
+        // Limpiar variantes después de crearlas
+        setNewVariants([])
+        queryClient.invalidateQueries({ queryKey: ['product-variants', finalProductId] })
+      }
       
       if (mode === 'create') {
         notifications.showProductCreated({ productName: data.name })
@@ -261,7 +313,7 @@ export function ProductFormMinimal({
               <button
                 type='button'
                 onClick={onCancel}
-                className='flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50'
+                className='flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-gray-900'
               >
                 <X className='w-4 h-4' />
                 <span>Cancelar</span>
@@ -308,10 +360,11 @@ export function ProductFormMinimal({
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>Marca</label>
-              <input
-                {...register('brand')}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='Ej: Plavicon'
+              <BrandSelector
+                value={watchedData.brand || ''}
+                onChange={(brand) => form.setValue('brand', brand, { shouldDirty: true })}
+                placeholder='Selecciona o crea una marca'
+                allowCreate={true}
               />
             </div>
 
@@ -350,12 +403,12 @@ export function ProductFormMinimal({
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Medida Principal
+                Medidas
               </label>
-              <input
-                {...register('medida')}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='Ej: 4L, 20L'
+              <MeasureSelector
+                value={watchedData.medida || []}
+                onChange={(measures) => form.setValue('medida', measures, { shouldDirty: true })}
+                placeholder='Selecciona o agrega medidas'
               />
             </div>
 
@@ -383,7 +436,7 @@ export function ProductFormMinimal({
                   type='number'
                   step='0.01'
                   {...register('price', { valueAsNumber: true })}
-                  className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
+                  className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
                   placeholder='0.00'
                 />
               </div>
@@ -400,7 +453,7 @@ export function ProductFormMinimal({
                   type='number'
                   step='0.01'
                   {...register('discounted_price', { valueAsNumber: true })}
-                  className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
+                  className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
                   placeholder='0.00'
                 />
               </div>
@@ -408,22 +461,23 @@ export function ProductFormMinimal({
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>Stock *</label>
-              <input
-                type='number'
-                {...register('stock', { valueAsNumber: true })}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='0'
-              />
+                <input
+                  type='number'
+                  {...register('stock', { valueAsNumber: true })}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
+                  placeholder='0'
+                />
               {errors.stock && <p className='text-red-600 text-sm mt-1'>{errors.stock.message}</p>}
             </div>
           </div>
         </AdminCard>
 
-        {/* Variantes */}
-        {productId && (
-          <AdminCard title='Variantes del Producto'>
+        {/* Variantes - Usar VariantBuilder para creación inline */}
+        <AdminCard title='Variantes del Producto'>
+          {productId && mode === 'edit' ? (
+            // Modo edición: mostrar variantes existentes y permitir agregar nuevas
             <div className='space-y-4'>
-              {variants.length > 0 ? (
+              {variants.length > 0 && (
                 <div className='overflow-x-auto'>
                   <table className='min-w-full divide-y divide-gray-200'>
                     <thead className='bg-gray-50'>
@@ -485,23 +539,24 @@ export function ProductFormMinimal({
                     </tbody>
                   </table>
                 </div>
-              ) : (
-                <div className='text-center py-8 text-gray-500'>
-                  <p className='text-sm'>No hay variantes. Agrega una para ofrecer diferentes opciones.</p>
-                </div>
               )}
 
-              <button
-                type='button'
-                onClick={openCreateVariant}
-                className='flex items-center space-x-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blaze-orange-400 hover:bg-blaze-orange-50 w-full justify-center'
-              >
-                <Plus className='w-4 h-4' />
-                <span>Agregar Variante</span>
-              </button>
+              {/* VariantBuilder para agregar nuevas variantes */}
+              <VariantBuilder
+                variants={newVariants}
+                onChange={setNewVariants}
+                measures={watchedData.medida || []}
+              />
             </div>
-          </AdminCard>
-        )}
+          ) : (
+            // Modo creación: solo VariantBuilder (las variantes se crearán después de guardar el producto)
+            <VariantBuilder
+              variants={newVariants}
+              onChange={setNewVariants}
+              measures={watchedData.medida || []}
+            />
+          )}
+        </AdminCard>
 
         {/* Imagen */}
         <AdminCard title='Imagen del Producto'>
@@ -515,7 +570,7 @@ export function ProductFormMinimal({
                   form.setValue('image_url', imageUrl || null, { shouldDirty: true })
                 }}
                 onError={(error) => {
-                  notifications.showErrorMessage('Error al subir imagen', error)
+                  notifications.showInfoMessage('Error al subir imagen', error)
                 }}
               />
             ) : (
@@ -665,7 +720,7 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
               {variant.id ? 'Editar Variante' : 'Crear Variante'}
             </h2>
             {formData.is_default && (
-              <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800'>
+              <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800'>
                 ★ Predeterminada
               </span>
             )}
@@ -906,12 +961,12 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
                 </button>
               </div>
 
-              <div className='flex items-center p-4 bg-yellow-50 rounded-lg border border-yellow-200'>
+              <div className='flex items-center p-4 bg-amber-50 rounded-lg border border-amber-200'>
                 <input
                   type='checkbox'
                   checked={formData.is_default || false}
                   onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                  className='w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500'
+                  className='w-4 h-4 text-amber-600 rounded focus:ring-amber-500'
                 />
                 <div className='ml-3 flex-1'>
                   <label className='text-sm font-medium text-gray-900'>

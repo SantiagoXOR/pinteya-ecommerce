@@ -48,6 +48,75 @@ export function ImageUploadZone({
     return null
   }
 
+  const optimizeImageBeforeUpload = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new window.Image()
+
+      if (!ctx) {
+        resolve(file) // Fallback si no hay canvas
+        return
+      }
+
+      img.onload = () => {
+        try {
+          // Configuración de optimización
+          const MAX_WIDTH = 1200
+          const MAX_HEIGHT = 1200
+          const QUALITY = 0.85
+
+          // Calcular nuevas dimensiones manteniendo aspecto
+          let { width, height } = img
+          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+            const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height)
+            width = width * ratio
+            height = height * ratio
+          }
+
+          // Configurar canvas
+          canvas.width = width
+          canvas.height = height
+
+          // Dibujar imagen redimensionada
+          ctx.drawImage(img, 0, 0, width, height)
+
+          // Determinar formato de salida
+          const outputType = file.type === 'image/webp' || file.type === 'image/avif' 
+            ? file.type 
+            : 'image/webp'
+
+          // Convertir a blob optimizado
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.webp'), {
+                  type: outputType,
+                  lastModified: Date.now(),
+                })
+                resolve(optimizedFile)
+              } else {
+                resolve(file) // Fallback si falla la conversión
+              }
+            },
+            outputType,
+            QUALITY
+          )
+        } catch (error) {
+          console.warn('Error optimizando imagen, usando original:', error)
+          resolve(file) // Fallback en caso de error
+        }
+      }
+
+      img.onerror = () => {
+        resolve(file) // Fallback si falla la carga
+      }
+
+      // Cargar imagen
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   const createPreview = (file: File) => {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -71,12 +140,22 @@ export function ImageUploadZone({
       setUploadProgress(0)
 
       try {
-        // Crear FormData
+        // Optimizar imagen antes de subir
+        setUploadProgress(10)
+        const originalSize = file.size
+        const optimizedFile = await optimizeImageBeforeUpload(file)
+        const optimizedSize = optimizedFile.size
+        const reduction = originalSize > 0 ? ((originalSize - optimizedSize) / originalSize * 100).toFixed(1) : '0'
+        
+        console.log(`📦 Imagen optimizada: ${(originalSize / 1024).toFixed(1)}KB → ${(optimizedSize / 1024).toFixed(1)}KB (${reduction}% reducción)`)
+
+        // Crear FormData con archivo optimizado
         const formData = new FormData()
-        formData.append('file', file)
+        formData.append('file', optimizedFile)
         formData.append('is_primary', 'true')
 
         // Simular progreso (ya que fetch no tiene progreso nativo)
+        setUploadProgress(30)
         const progressInterval = setInterval(() => {
           setUploadProgress((prev) => {
             if (prev >= 90) {
