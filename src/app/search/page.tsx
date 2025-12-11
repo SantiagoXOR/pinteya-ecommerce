@@ -120,33 +120,33 @@ export default function SearchPage() {
         {/* Header de resultados */}
         <div className='mb-8'>
           <div className='flex items-center gap-3 mb-4'>
-            <Search className='w-6 h-6 text-blaze-orange-600' />
-            <h1 className='text-2xl font-bold text-gray-900'>Resultados de búsqueda</h1>
+            <Search className='w-6 h-6 text-blaze-orange-400' />
+            <h1 className='text-2xl font-bold text-white'>Resultados de búsqueda</h1>
           </div>
 
           <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
             <div>
-              <p className='text-lg text-gray-700'>
+              <p className='text-lg text-white/90'>
                 {isLoading ? (
                   <span className='flex items-center gap-2'>
-                    <div className='animate-spin w-4 h-4 border-2 border-blaze-orange-500 border-t-transparent rounded-full' />
+                    <div className='animate-spin w-4 h-4 border-2 border-blaze-orange-400 border-t-transparent rounded-full' />
                     Buscando productos...
                   </span>
                 ) : (
                   <>
-                    Búsqueda: <span className='font-semibold'>"{query}"</span>
+                    Búsqueda: <span className='font-semibold text-white'>"{query}"</span>
                   </>
                 )}
               </p>
               {category && (
-                <p className='text-sm text-gray-600'>
+                <p className='text-sm text-white/80'>
                   Categoría: <span className='font-medium'>{category}</span>
                 </p>
               )}
             </div>
 
             <div className='flex items-center gap-4'>
-              <div className='text-sm text-gray-600'>
+              <div className='text-sm text-white/80'>
                 {isLoading ? (
                   <span>Cargando...</span>
                 ) : totalResults > 0 ? (
@@ -166,7 +166,7 @@ export default function SearchPage() {
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value as any)}
-                    className='px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blaze-orange-500 focus:border-blaze-orange-500'
+                    className='px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blaze-orange-500 focus:border-blaze-orange-500'
                   >
                     <option value='relevance'>Más relevante</option>
                     <option value='price-asc'>Precio: menor a mayor</option>
@@ -191,8 +191,8 @@ export default function SearchPage() {
           // Estado de error
           <div className='text-center py-12'>
             <AlertCircle className='w-16 h-16 text-red-400 mx-auto mb-4' />
-            <h2 className='text-xl font-semibold text-gray-900 mb-2'>Error en la búsqueda</h2>
-            <p className='text-gray-600 mb-6'>
+            <h2 className='text-xl font-semibold text-white mb-2'>Error en la búsqueda</h2>
+            <p className='text-white/80 mb-6'>
               {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
             </p>
             <Button
@@ -205,15 +205,15 @@ export default function SearchPage() {
         ) : products.length === 0 ? (
           // Sin resultados
           <div className='text-center py-12'>
-            <Package className='w-16 h-16 text-gray-400 mx-auto mb-4' />
-            <h2 className='text-xl font-semibold text-gray-900 mb-2'>
+            <Package className='w-16 h-16 text-white/70 mx-auto mb-4' />
+            <h2 className='text-xl font-semibold text-white mb-2'>
               No se encontraron productos
             </h2>
-            <p className='text-gray-600 mb-6'>
+            <p className='text-white/80 mb-6'>
               No hay productos que coincidan con tu búsqueda "{query}"
             </p>
-            <div className='space-y-2 text-sm text-gray-500'>
-              <p>Sugerencias:</p>
+            <div className='space-y-2 text-sm text-white/70'>
+              <p className='text-white/90 font-medium'>Sugerencias:</p>
               <ul className='list-disc list-inside space-y-1'>
                 <li>Verifica la ortografía</li>
                 <li>Usa términos más generales</li>

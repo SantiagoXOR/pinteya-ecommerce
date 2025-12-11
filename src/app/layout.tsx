@@ -99,7 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           /* Reset y base styles */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;max-width:100vw;width:100%}
-          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:radial-gradient(ellipse at top right,#f27a1d 0%,transparent 50%),radial-gradient(ellipse at bottom left,#bd4811 0%,transparent 50%),#000000;background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#fff4c6;min-height:100vh;padding-top:92px;overflow-x:hidden!important;max-width:100vw;width:100%}
+          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:radial-gradient(ellipse at top right,#f27a1d 0%,transparent 50%),radial-gradient(ellipse at bottom left,#bd4811 0%,transparent 50%),#000000;background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;min-height:100vh;padding-top:92px;overflow-x:hidden!important;max-width:100vw;width:100%}
           #__next{overflow-x:hidden;max-width:100vw;width:100%}
           @media(min-width:1024px){body{padding-top:105px}}
           img,picture,video{max-width:100%;height:auto;display:block}
@@ -140,6 +140,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-header{z-index:100}
           .z-modal{z-index:200}
           .z-toast{z-index:300}
+          
+          /* ⚡ LEGIBILIDAD: Textos oscuros en cards y contenedores blancos */
+          .bg-white,[class*="bg-white"]{color:#111827!important}
+          .bg-white h1,.bg-white h2,.bg-white h3,.bg-white h4,.bg-white h5,.bg-white h6{color:#111827!important}
+          .bg-white p,.bg-white span,.bg-white div{color:#111827!important}
+          .bg-white .text-gray-600,.bg-white .text-gray-500{color:#4b5563!important}
+          .bg-white input,.bg-white select,.bg-white textarea{color:#111827!important}
+          .bg-white button:not([class*="bg-"]):not([class*="text-"]){color:#111827}
+          .bg-gray-50,.bg-gray-100{color:#111827!important}
+          .bg-gray-50 h1,.bg-gray-50 h2,.bg-gray-50 h3,.bg-gray-50 h4,.bg-gray-50 h5,.bg-gray-50 h6{color:#111827!important}
+          .bg-gray-100 h1,.bg-gray-100 h2,.bg-gray-100 h3,.bg-gray-100 h4,.bg-gray-100 h5,.bg-gray-100 h6{color:#111827!important}
         `}} />
         
         {/* ⚡ CRITICAL: Preconnect al dominio propio DEBE estar ANTES de cualquier preload */}
