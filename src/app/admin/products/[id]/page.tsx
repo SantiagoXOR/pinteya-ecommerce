@@ -67,7 +67,7 @@ function StatusBadge({ status }: { status: Product['status'] }) {
     },
     draft: {
       label: 'Borrador',
-      className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      className: 'bg-amber-100 text-amber-800 border-amber-200',
     },
   }
 
@@ -213,7 +213,7 @@ export default function ProductDetailPage() {
               <div className='text-2xl font-bold text-gray-900'>{product.stock}</div>
               <div className='text-sm text-gray-600'>Unidades en Stock</div>
               {product.stock <= (product.low_stock_threshold || 0) && (
-                <div className='text-xs text-yellow-600 mt-1'>Stock Bajo</div>
+                <div className='text-xs text-orange-700 font-medium mt-1'>Stock Bajo</div>
               )}
             </div>
           </AdminCard>

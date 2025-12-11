@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AdminSidebar } from './AdminSidebar'
 import { AdminHeader } from './AdminHeader'
 import { cn } from '@/lib/core/utils'
@@ -18,6 +18,8 @@ interface AdminLayoutProps {
   className?: string
 }
 
+const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed'
+
 export function AdminLayout({
   children,
   title,
@@ -25,7 +27,30 @@ export function AdminLayout({
   actions,
   className,
 }: AdminLayoutProps) {
+  // Estado para móvil (abierto/cerrado)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  // Estado para desktop (colapsado/expandido)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  // Cargar preferencia del localStorage al montar
+  useEffect(() => {
+    const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY)
+    if (saved !== null) {
+      setSidebarCollapsed(saved === 'true')
+    }
+  }, [])
+
+  // Guardar preferencia cuando cambie
+  const handleSidebarToggle = () => {
+    const newState = !sidebarCollapsed
+    setSidebarCollapsed(newState)
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newState))
+  }
+
+  // Toggle para móvil
+  const handleMobileToggle = () => {
+    setSidebarOpen(!sidebarOpen)
+  }
 
   return (
     <div data-admin-layout className='flex h-screen bg-gray-50 overflow-hidden'>
@@ -36,7 +61,10 @@ export function AdminLayout({
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <AdminSidebar />
+        <AdminSidebar
+          collapsed={sidebarCollapsed}
+          onToggle={handleSidebarToggle}
+        />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -54,7 +82,7 @@ export function AdminLayout({
           title={title}
           breadcrumbs={breadcrumbs}
           actions={actions}
-          onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+          onMenuToggle={handleMobileToggle}
           isSidebarOpen={sidebarOpen}
         />
 

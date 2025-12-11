@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminCard } from '../ui/AdminCard'
 import { CategorySelector } from './CategorySelector'
+import { ImageUploadZone } from './ImageUploadZone'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 import { Save, X, Upload, Plus, Edit, Trash2 } from '@/lib/optimized-imports'
 import Image from 'next/image'
@@ -505,40 +506,59 @@ export function ProductFormMinimal({
         {/* Imagen */}
         <AdminCard title='Imagen del Producto'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300'>
-              {imagePreview || watchedData.image_url ? (
-                <Image
-                  src={imagePreview || watchedData.image_url || ''}
-                  alt={watchedData.name || 'Producto'}
-                  width={400}
-                  height={400}
-                  className='w-full h-full object-cover'
-                  unoptimized
-                />
-              ) : (
-                <div className='text-center text-gray-400'>
-                  <Upload className='w-12 h-12 mx-auto mb-2' />
-                  <p className='text-sm'>Sin imagen</p>
-                </div>
-              )}
-            </div>
-
-            <div className='space-y-3'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  URL de Imagen
-                </label>
-                <input
-                  type='url'
-                  {...register('image_url')}
-                  onChange={handleImageChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                  placeholder='https://ejemplo.com/imagen.jpg'
-                />
-                {errors.image_url && (
-                  <p className='text-red-600 text-sm mt-1'>{errors.image_url.message}</p>
+            {productId && mode === 'edit' ? (
+              <ImageUploadZone
+                productId={productId}
+                currentImageUrl={imagePreview || watchedData.image_url || null}
+                onUploadSuccess={(imageUrl) => {
+                  setImagePreview(imageUrl)
+                  form.setValue('image_url', imageUrl || null, { shouldDirty: true })
+                }}
+                onError={(error) => {
+                  notifications.showErrorMessage('Error al subir imagen', error)
+                }}
+              />
+            ) : (
+              <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300'>
+                {imagePreview || watchedData.image_url ? (
+                  <Image
+                    src={imagePreview || watchedData.image_url || ''}
+                    alt={watchedData.name || 'Producto'}
+                    width={400}
+                    height={400}
+                    className='w-full h-full object-cover'
+                    unoptimized
+                  />
+                ) : (
+                  <div className='text-center text-gray-400'>
+                    <Upload className='w-12 h-12 mx-auto mb-2' />
+                    <p className='text-sm'>Sin imagen</p>
+                  </div>
                 )}
               </div>
+            )}
+
+            <div className='space-y-3'>
+              {(!productId || mode === 'create') && (
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    URL de Imagen
+                  </label>
+                  <input
+                    type='url'
+                    {...register('image_url')}
+                    onChange={handleImageChange}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
+                    placeholder='https://ejemplo.com/imagen.jpg'
+                  />
+                  {errors.image_url && (
+                    <p className='text-red-600 text-sm mt-1'>{errors.image_url.message}</p>
+                  )}
+                  <p className='text-xs text-gray-500 mt-2'>
+                    Nota: Para crear un producto nuevo, primero guárdalo y luego podrás subir imágenes arrastrándolas.
+                  </p>
+                </div>
+              )}
 
               <div className='flex items-center space-x-2 mt-4'>
                 <input
@@ -550,10 +570,6 @@ export function ProductFormMinimal({
                   Marcar como Destacado ⭐
                 </label>
               </div>
-
-              <p className='text-xs text-gray-500 mt-2'>
-                💡 Tip: Las imágenes deben ser de al menos 800x800px para mejor calidad
-              </p>
             </div>
           </div>
         </AdminCard>
