@@ -1241,7 +1241,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                   <div className='relative flex-1 min-w-0 overflow-visible'>
                     <div className='flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth py-1 px-1 pr-16' style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                       {uniqueMeasures.map((measure, index) => {
-                        const { number } = parseMeasure(measure)
+                        const { number, unit } = parseMeasure(measure)
+                        const isSelected = selectedMeasure === measure
+                        // Formatear la unidad: si es "L" o "LITRO", usar "Litro" o "L" según corresponda
+                        const displayUnit = unit === 'L' || unit === 'LT' || unit === 'LITRO' || unit === 'LITROS' 
+                          ? (number === '1' ? 'Litro' : 'L')
+                          : unit
                         return (
                           <button
                             key={measure}
@@ -1251,26 +1256,28 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                               setSelectedMeasure(measure)
                             }}
                             className={cn(
-                              'w-6 h-6 flex-shrink-0 rounded-full text-xs font-bold transition-all hover:scale-110 flex items-center justify-center border-2 border-gray-200 shadow-sm',
-                              selectedMeasure === measure
-                                ? 'bg-[#facc15] text-[#EA5A17]'
-                                : 'bg-gray-50 text-gray-600'
+                              'px-1.5 py-0.5 flex-shrink-0 rounded-full transition-all hover:scale-105 flex items-center justify-center h-[18px]',
+                              isSelected 
+                                ? 'bg-white border border-[#EA5A17]' 
+                                : 'bg-gray-50 border border-gray-200'
                             )}
                           >
-                            {number}
+                            <span className={cn(
+                              'font-bold leading-none whitespace-nowrap',
+                              isSelected 
+                                ? 'text-[#EA5A17] text-[8px]' 
+                                : 'text-gray-700 text-[8px]'
+                            )}>
+                              {number}{displayUnit ? ` ${displayUnit}` : ''}
+                            </span>
                           </button>
                         )
                       })}
                     </div>
                   </div>
-                  {/* Unidad + Botón ">" a la derecha (solo si hay selección) */}
+                  {/* Botón ">" a la derecha (solo si hay selección) */}
                   {selectedMeasure && (
                     <div className='flex items-center gap-1 flex-shrink-0 z-10'>
-                      {commonUnit && (
-                        <span className='text-[9px] md:text-[10px] text-gray-400 font-light whitespace-nowrap'>
-                          {commonUnit}
-                        </span>
-                      )}
                       {(uniqueColors.length > 1 || uniqueMeasures.length > 1) && (
                         <Sheet open={showColorsSheet} onOpenChange={setShowColorsSheet}>
                           <SheetTrigger asChild>
