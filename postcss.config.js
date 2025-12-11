@@ -23,8 +23,14 @@ module.exports = {
                 discardComments: {
                   removeAll: true, // Remover todos los comentarios
                 },
-                reduceIdents: true, // Reducir nombres de keyframes/counters
-                mergeIdents: true, // Merge idénticos @keyframes
+                // ⚡ CRITICAL FIX: reduceIdents y mergeIdents deshabilitados - Causan conflictos con animaciones
+                // PROBLEMA: Estas opciones pueden renombrar/fusionar keyframes incorrectamente en producción,
+                // causando que animaciones diferentes se mezclen (ej: rotación visual en skeletons).
+                // reduceIdents renombra keyframes (shimmer → a, pulse → b) lo que puede causar conflictos.
+                // mergeIdents fusiona keyframes que considera "idénticos" pero pueden tener diferencias sutiles.
+                // SOLUCIÓN: Deshabilitar ambas opciones para preservar nombres y definiciones de keyframes.
+                reduceIdents: false, // ⚡ DESHABILITADO: Puede causar conflictos con nombres de keyframes
+                mergeIdents: false, // ⚡ DESHABILITADO: Puede fusionar keyframes no idénticos
                 mergeRules: true, // Merge reglas duplicadas
                 mergeLonghand: true, // Merge propiedades longhand (margin-top, margin-bottom -> margin)
                 colormin: true, // Minificar colores (#ffffff -> #fff)
