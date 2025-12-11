@@ -55,19 +55,16 @@ const PromoBanner = () => {
             <Button
               variant='ghost'
               size='lg'
-              className='w-full sm:w-auto text-gray-900 font-bold py-3 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 text-lg flex items-center gap-2'
+              className='w-full sm:w-auto text-blaze-orange-600 font-bold py-3 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 text-lg flex items-center gap-2'
               style={{
                 backgroundColor: '#facc15',
                 borderColor: '#facc15',
-                color: '#111827',
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = '#eab308'
-                e.currentTarget.style.color = '#111827'
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.backgroundColor = '#facc15'
-                e.currentTarget.style.color = '#111827'
               }}
               asChild
             >
@@ -133,19 +130,16 @@ const PromoBanner = () => {
               <Button
                 variant='ghost'
                 size='md'
-                className='text-gray-900 font-bold py-2 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2'
+                className='text-blaze-orange-600 font-bold py-2 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2'
                 style={{
                   backgroundColor: '#facc15',
                   borderColor: '#facc15',
-                  color: '#111827',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.backgroundColor = '#eab308'
-                  e.currentTarget.style.color = '#111827'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.backgroundColor = '#facc15'
-                  e.currentTarget.style.color = '#111827'
                 }}
                 asChild
               >
@@ -201,19 +195,16 @@ const PromoBanner = () => {
               <Button
                 variant='ghost'
                 size='md'
-                className='text-gray-900 font-bold py-2 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2'
+                className='text-blaze-orange-600 font-bold py-2 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2'
                 style={{
                   backgroundColor: '#facc15',
                   borderColor: '#facc15',
-                  color: '#111827',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.backgroundColor = '#eab308'
-                  e.currentTarget.style.color = '#111827'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.backgroundColor = '#facc15'
-                  e.currentTarget.style.color = '#111827'
                 }}
                 asChild
               >

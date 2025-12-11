@@ -171,8 +171,7 @@
     width: 100%;
   }
 
-  /* Estilos base del body - solo para rutas que NO sean admin */
-  body:not(:has([data-admin-layout])) {
+  body {
     @apply font-euclid-circular-a font-normal text-base text-dark-3 dark:text-bright-sun-200 relative z-1;
     @apply bg-background text-foreground;
     overflow-x: hidden;
@@ -186,47 +185,13 @@
     background-size: cover !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
-    color: #111827 !important; /* text-gray-900 - Textos negros por defecto */
+    color: #fff4c6 !important;
     /* Header height unificado: ScrollingBanner (~28px) + Main (~60px) = ~88px, usando 92px para spacing óptimo */
     padding-top: 92px; /* Ajustado para header más alto en mobile */
     /* Emoji font fallbacks to ensure color emoji rendering across platforms */
     font-family: 'Euclid Circular A', system-ui, -apple-system, 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
       var(--emoji-fonts);
-  }
-
-  /* Body para admin - estilos limpios sin fondo degradado ni color amarillo */
-  body:has([data-admin-layout]) {
-    @apply font-euclid-circular-a font-normal text-base relative z-1;
-    background: #f9fafb !important; /* bg-gray-50 */
-    color: #111827 !important; /* text-gray-900 */
-    padding-top: 0 !important;
-    overflow-x: hidden;
-    max-width: 100vw;
-    width: 100%;
-  }
-
-  /* ✅ FIX: Asegurar que botones con fondo amarillo tengan texto oscuro para contraste */
-  body:not(:has([data-admin-layout])) [style*="background-color: #facc15"],
-  body:not(:has([data-admin-layout])) [style*="background-color: #eab308"],
-  body:not(:has([data-admin-layout])) [class*="bg-bright-sun"]:not([class*="text-"]) {
-    color: #111827 !important; /* text-gray-900 */
-  }
-
-  /* ✅ FIX: Textos en fondos oscuros específicos deben ser blancos */
-  body:not(:has([data-admin-layout])) [class*="bg-black"] *:not([class*="text-"]),
-  body:not(:has([data-admin-layout])) [class*="bg-gray-900"] *:not([class*="text-"]),
-  body:not(:has([data-admin-layout])) header *:not([class*="text-"]),
-  body:not(:has([data-admin-layout])) [class*="hero"] *:not([class*="text-"]),
-  body:not(:has([data-admin-layout])) [class*="bg-blaze-orange"] *:not([class*="text-"]) {
-    color: #ffffff !important;
-  }
-
-  /* ✅ FIX: Contenedores con fondo blanco/claro deben tener texto negro */
-  body:not(:has([data-admin-layout])) [class*="bg-white"] *:not([class*="text-"]),
-  body:not(:has([data-admin-layout])) [class*="bg-gray-50"] *:not([class*="text-"]),
-  body:not(:has([data-admin-layout])) [class*="bg-gray-100"] *:not([class*="text-"]) {
-    color: #111827 !important; /* text-gray-900 */
   }
   
   /* Prevenir scroll horizontal en todos los contenedores principales */
@@ -238,14 +203,14 @@
 
   /* Mobile pequeño - Reducir padding para aprovechar mejor el espacio */
   @media (max-width: 375px) {
-    body:not(:has([data-admin-layout])) {
+    body {
       padding-top: 88px; /* Menos padding en pantallas muy pequeñas */
     }
   }
 
   /* Ajuste específico para desktop */
   @media (min-width: 1024px) {
-    body:not(:has([data-admin-layout])) {
+    body {
       padding-top: 105px; /* Ajustado para mejor spacing con header más alto */
     }
   }

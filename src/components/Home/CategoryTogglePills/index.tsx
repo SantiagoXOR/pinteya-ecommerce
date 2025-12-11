@@ -344,13 +344,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     />
                   </div>
                 )}
-                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${
-                  isSelected && useDynamicCarousel 
-                    ? '!text-gray-900' 
-                    : isSelected 
-                    ? '!text-white' 
-                    : '!text-gray-900'
-                }`}>
+                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
                   {category.name}
                 </span>
               </Button>
@@ -456,13 +450,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     />
                   </div>
                 )}
-                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${
-                  isSelected && useDynamicCarousel 
-                    ? '!text-gray-900' 
-                    : isSelected 
-                    ? '!text-white' 
-                    : '!text-gray-900'
-                }`}>
+                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
                   {category.name}
                 </span>
               </Button>
