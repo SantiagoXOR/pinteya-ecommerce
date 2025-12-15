@@ -145,10 +145,13 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
       <nav
         ref={ref}
         className={cn(
-          'fixed bottom-0 left-0 right-0 z-bottom-nav bg-white border-t border-gray-200 shadow-lg',
-          'safe-area-bottom', // Para dispositivos con notch
+          'fixed left-0 right-0 z-bottom-nav bg-white border-t border-gray-200 shadow-lg',
+          'safe-area-bottom', // Para dispositivos con notch - usa bottom: env(safe-area-inset-bottom)
           className
         )}
+        style={{
+          bottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
         {...props}
       >
         <div className='flex items-center justify-around max-w-md mx-auto w-full h-16'>

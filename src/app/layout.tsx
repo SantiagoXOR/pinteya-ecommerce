@@ -99,14 +99,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           /* Reset y base styles */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;max-width:100vw;width:100%}
-          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;min-height:100vh;padding-top:92px;overflow-x:hidden!important;max-width:100vw;width:100%}
+          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;min-height:100vh;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;max-width:100vw;width:100%}
           #__next{overflow-x:hidden;max-width:100vw;width:100%}
-          @media(min-width:1024px){body{padding-top:105px}}
+          @media(min-width:1024px){body{padding-top:calc(105px + env(safe-area-inset-top, 0px))}}
+          @media(max-width:768px){body{padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px))}}
           img,picture,video{max-width:100%;height:auto;display:block}
           button,input,select,textarea{font:inherit}
           h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2}
           a{text-decoration:none;color:inherit}
-          header{background-color:#bd4811;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.5);border-radius:0 0 1.5rem 1.5rem}
+          header{background-color:#bd4811;position:fixed;top:env(safe-area-inset-top, 0px);left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.5);border-radius:0 0 1.5rem 1.5rem}
           
           /* Critical Hero Styles */
           .hero-section{min-height:320px;background:linear-gradient(135deg,#bd4811,#000000);position:relative;overflow:hidden}

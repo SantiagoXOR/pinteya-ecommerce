@@ -185,7 +185,8 @@
     background-repeat: no-repeat !important;
     color: #ffffff !important;
     /* Header height unificado: ScrollingBanner (~28px) + Main (~60px) = ~88px, usando 92px para spacing óptimo */
-    padding-top: 92px; /* Ajustado para header más alto en mobile */
+    /* Agregar safe area superior para iOS Safari cuando se oculta la interfaz */
+    padding-top: calc(92px + env(safe-area-inset-top, 0px)); /* Ajustado para header más alto en mobile + safe area iOS */
     /* Emoji font fallbacks to ensure color emoji rendering across platforms */
     font-family: 'Euclid Circular A', system-ui, -apple-system, 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
@@ -202,14 +203,16 @@
   /* Mobile pequeño - Reducir padding para aprovechar mejor el espacio */
   @media (max-width: 375px) {
     body {
-      padding-top: 88px; /* Menos padding en pantallas muy pequeñas */
+      /* Menos padding en pantallas muy pequeñas + safe area iOS */
+      padding-top: calc(88px + env(safe-area-inset-top, 0px));
     }
   }
 
   /* Ajuste específico para desktop */
   @media (min-width: 1024px) {
     body {
-      padding-top: 105px; /* Ajustado para mejor spacing con header más alto */
+      /* Ajustado para mejor spacing con header más alto + safe area iOS */
+      padding-top: calc(105px + env(safe-area-inset-top, 0px));
     }
   }
   :root {
@@ -512,11 +515,20 @@
 /* Padding para bottom navigation estilo MercadoLibre */
 @media (max-width: 768px) {
   body {
-    padding-bottom: 64px; /* Altura del bottom nav */
+    /* Altura del bottom nav + safe area inferior para iOS Safari */
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   }
   
-  /* Safe area para dispositivos con notch */
+  /* Safe area para dispositivos con notch - Bottom navigation */
   .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+    /* Usar bottom en lugar de padding-bottom para posicionamiento correcto */
+    bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Safe area superior para header en iOS Safari */
+  .safe-area-top {
+    top: env(safe-area-inset-top, 0px);
+    padding-top: env(safe-area-inset-top, 0px);
   }
 }
