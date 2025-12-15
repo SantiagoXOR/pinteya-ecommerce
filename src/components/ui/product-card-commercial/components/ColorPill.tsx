@@ -71,12 +71,14 @@ export const ColorPill = React.memo(function ColorPill({
       className={cn(
         'relative py-0.5 flex-shrink-0 rounded-full transition-all flex items-center gap-1 h-[18px]',
         isSelected 
-          ? 'border-2 border-[#EA5A17] pl-1.5 pr-2' 
+          ? 'border-[#EA5A17] pl-1.5 pr-2' 
           : 'border border-gray-200 px-1.5',
         isTransparent && 'backdrop-blur-md'
       )}
       style={{
         backgroundColor,
+        borderWidth: isSelected ? '1.5px' : '1px',
+        borderColor: isSelected ? '#EA5A17' : undefined,
         ...(isTransparent ? transparentTexture : {}),
         ...woodTexture,
         ...glossTexture,

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
+import { Check } from '@/lib/optimized-imports'
 import { parseMeasure } from '../utils/measure-utils'
 import type { MeasurePillProps } from '../types'
 
@@ -29,25 +30,34 @@ export const MeasurePill = React.memo(function MeasurePill({
     onSelect(measure)
   }, [onSelect, measure])
 
+  // Color del texto - siempre negro cuando está seleccionado
+  const textColor = React.useMemo(() => {
+    return 'text-gray-900'
+  }, [])
+
   return (
     <button
       type='button'
       onClick={handleClick}
       className={cn(
-        'px-1.5 py-0.5 flex-shrink-0 rounded-full transition-all flex items-center justify-center h-[18px]',
+        'relative py-0.5 flex-shrink-0 rounded-full transition-all flex items-center gap-1 h-[18px]',
         isSelected 
-          ? 'bg-white border border-[#EA5A17]' 
-          : 'bg-gray-50 border border-gray-200'
+          ? 'bg-white pl-1.5 pr-2' 
+          : 'bg-gray-50 border border-gray-200 px-1.5'
       )}
+      style={isSelected ? { borderWidth: '1.5px', borderColor: '#EA5A17', borderStyle: 'solid' } : undefined}
     >
       <span className={cn(
-        'font-bold leading-none whitespace-nowrap',
-        isSelected 
-          ? 'text-[#EA5A17] text-[8px]' 
-          : 'text-gray-700 text-[8px]'
+        'font-bold leading-none whitespace-nowrap text-[8px]',
+        textColor
       )}>
         {number}{displayUnit ? ` ${displayUnit}` : ''}
       </span>
+      
+      {/* Checkmark de selección - alineado al centro del texto */}
+      {isSelected && (
+        <Check className={cn('w-2.5 h-2.5 flex-shrink-0', textColor)} strokeWidth={3} />
+      )}
     </button>
   )
 }, (prevProps, nextProps) => {
