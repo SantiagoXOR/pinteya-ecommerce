@@ -58,11 +58,14 @@ export function SettingsPageClient() {
       <AdminContentWrapper>
         <div className='space-y-6'>
         {/* Header */}
-        <AdminCard className='bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0'>
-          <div className='flex items-center justify-between'>
+        <div className='bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg p-4 sm:p-6 text-white'>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0'>
             <div>
-              <h1 className='text-2xl font-bold mb-2'>Configuración del Sistema</h1>
-              <p className='text-blue-100'>
+              <div className='flex items-center space-x-3 mb-2'>
+                <Settings className='w-6 h-6 sm:w-8 sm:h-8' />
+                <h1 className='text-2xl sm:text-3xl font-bold'>Configuración del Sistema</h1>
+              </div>
+              <p className='text-blue-100 text-sm sm:text-base'>
                 Gestiona la configuración de tu tienda y sistema
               </p>
             </div>
@@ -72,7 +75,7 @@ export function SettingsPageClient() {
               </div>
             </div>
           </div>
-        </AdminCard>
+        </div>
 
         {/* Advertencia de funcionalidad limitada */}
         <AdminCard className='border-yellow-200 bg-yellow-50'>

@@ -31,7 +31,7 @@ export function AdminHeader({
     <header
       className={cn(
         'sticky top-0 z-30 w-full flex-shrink-0 border-b border-gray-200/70',
-        'bg-white/90 backdrop-blur-md shadow-sm px-3 lg:px-5 py-3 space-y-3'
+        'bg-white/90 backdrop-blur-md shadow-sm px-3 lg:px-5 py-3 space-y-3 rounded-none'
       )}
     >
       {/* Top Row */}
