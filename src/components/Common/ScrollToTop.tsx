@@ -23,7 +23,8 @@ export default function ScrollToTop() {
       }
     }
 
-    window.addEventListener('scroll', toggleVisibility)
+    // ⚡ PERFORMANCE: Agregar passive: true para no bloquear el scroll
+    window.addEventListener('scroll', toggleVisibility, { passive: true })
 
     return () => window.removeEventListener('scroll', toggleVisibility)
   }, [])

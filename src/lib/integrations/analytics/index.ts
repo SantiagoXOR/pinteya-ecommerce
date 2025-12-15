@@ -47,6 +47,10 @@ class AnalyticsManager {
   private isEnabled: boolean = true
   private isInitialized: boolean = false
   private initializationPromise: Promise<void> | null = null
+  // ⚡ PERFORMANCE: Variables para optimizar scroll tracking
+  private scrollTimeout: NodeJS.Timeout | null = null
+  private scrollRAF: number | null = null
+  private lastScrollY: number = 0
 
   constructor() {
     this.sessionId = this.generateSessionId()
@@ -106,14 +110,36 @@ class AnalyticsManager {
       // Track clicks globalmente
       document.addEventListener('click', this.handleClick.bind(this))
 
-      // Track scroll events
-      let scrollTimeout: NodeJS.Timeout
-      document.addEventListener('scroll', () => {
-        clearTimeout(scrollTimeout)
-        scrollTimeout = setTimeout(() => {
-          this.trackInteraction('scroll', 'page', window.scrollX, window.scrollY)
-        }, 100)
-      })
+      // ⚡ PERFORMANCE: Track scroll events optimizado con passive: true y requestAnimationFrame
+      const handleScroll = () => {
+        // Cancelar RAF anterior si existe
+        if (this.scrollRAF !== null) {
+          cancelAnimationFrame(this.scrollRAF)
+        }
+
+        // Usar requestAnimationFrame para sincronizar con el render del navegador
+        this.scrollRAF = requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+          
+          // Solo trackear si hay un cambio significativo (más de 50px) para reducir eventos
+          if (Math.abs(currentScrollY - this.lastScrollY) > 50) {
+            this.lastScrollY = currentScrollY
+            
+            // Debounce adicional para reducir aún más los eventos
+            if (this.scrollTimeout) {
+              clearTimeout(this.scrollTimeout)
+            }
+            this.scrollTimeout = setTimeout(() => {
+              this.trackInteraction('scroll', 'page', window.scrollX, window.scrollY)
+            }, 250) // Aumentado a 250ms para reducir frecuencia
+          }
+          
+          this.scrollRAF = null
+        })
+      }
+
+      // ⚡ CRITICAL: Agregar passive: true para no bloquear el scroll
+      document.addEventListener('scroll', handleScroll, { passive: true })
 
       // Track form interactions
       document.addEventListener('input', this.handleInput.bind(this))
@@ -428,10 +454,18 @@ class AnalyticsManager {
     this.interactions = []
     this.eventQueue = []
 
-    // Limpiar timeouts
+    // Limpiar timeouts y RAF
     if (this.queueTimeout) {
       clearTimeout(this.queueTimeout)
       this.queueTimeout = null
+    }
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout)
+      this.scrollTimeout = null
+    }
+    if (this.scrollRAF !== null) {
+      cancelAnimationFrame(this.scrollRAF)
+      this.scrollRAF = null
     }
   }
 
@@ -499,7 +533,8 @@ export const trackEvent = async (
   metadata?: Record<string, any>
 ): Promise<void> => {
   try {
-    await optimizedAnalytics.trackEvent(event, category, action, label, value, metadata)
+    // ⚡ FIX: Corregir referencia de optimizedAnalytics a analytics
+    await analytics.trackEvent(event, category, action, label, value, metadata)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('Analytics trackEvent error:', error)

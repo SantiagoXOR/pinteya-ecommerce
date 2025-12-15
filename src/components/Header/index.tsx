@@ -55,21 +55,37 @@ const Header = () => {
     testLocation,
   } = useGeolocation(geoEnabled ? undefined : { skip: true })
 
-  // Sticky header logic con detección de dirección de scroll
+  // ⚡ PERFORMANCE: Sticky header logic optimizado con requestAnimationFrame
   useEffect(() => {
+    let ticking = false
+    let rafId: number | null = null
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
+      if (!ticking) {
+        rafId = window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
 
-      // Determinar si el header debe ser sticky
-      setIsSticky(currentScrollY > 100)
+          // Determinar si el header debe ser sticky
+          setIsSticky(currentScrollY > 100)
 
-      // Determinar dirección del scroll para animaciones
-      setIsScrollingUp(currentScrollY < lastScrollY || currentScrollY < 10)
-      setLastScrollY(currentScrollY)
+          // Determinar dirección del scroll para animaciones
+          setIsScrollingUp(currentScrollY < lastScrollY || currentScrollY < 10)
+          setLastScrollY(currentScrollY)
+
+          ticking = false
+          rafId = null
+        })
+        ticking = true
+      }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
+    }
   }, [lastScrollY])
 
   // Log para debugging del estado de geolocalización (solo cuando cambia la zona)
