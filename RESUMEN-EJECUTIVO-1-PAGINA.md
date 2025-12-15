@@ -99,3 +99,9 @@ npx lighthouse https://www.pinteya.com --view
 
 
 
+
+
+
+
+
+

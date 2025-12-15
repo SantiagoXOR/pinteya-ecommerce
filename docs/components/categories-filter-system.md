@@ -454,7 +454,7 @@ className={`
 
 ---
 
-**Última actualización**: Enero 2025  
+**Última actualización**: 15 de Diciembre, 2025  
 **Versión**: 2.0.0  
 **Estado**: ✅ 100% Funcional y en Producción  
 **Problema resuelto**: Sistema de filtros por categorías completamente operativo con navegación URL

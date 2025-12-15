@@ -2,6 +2,105 @@
 
 Componente de tarjeta de producto con diseño comercial estilo MercadoLibre, optimizado para conversión y experiencia de usuario.
 
+> **Última actualización**: 15 de Diciembre, 2025 - Refactorizado en arquitectura modular con hooks personalizados y componentes separados.
+
+## 🏗️ Arquitectura Modular
+
+El componente ha sido refactorizado en una arquitectura modular que separa la lógica de negocio en hooks personalizados y la UI en componentes reutilizables:
+
+```
+product-card-commercial/
+├── index.tsx                    # Componente principal (orquestador)
+├── types.ts                      # Tipos e interfaces TypeScript
+├── hooks/                        # Lógica de negocio
+│   ├── useProductColors.ts      # Manejo de colores y selección
+│   ├── useProductMeasures.ts    # Manejo de medidas y capacidades
+│   ├── useProductVariants.ts    # Cálculo de precios por variante
+│   ├── useProductBadges.ts      # Generación de badges inteligentes
+│   └── useProductCardState.ts   # Estado del componente (modal, hover, etc.)
+├── components/                   # Componentes UI
+│   ├── ProductCardImage.tsx     # Imagen del producto con fallback
+│   ├── ProductCardContent.tsx   # Contenido (marca, título, precios)
+│   ├── ProductCardActions.tsx   # Botón agregar al carrito
+│   ├── ColorPillSelector.tsx    # Selector de colores (pills)
+│   └── MeasurePillSelector.tsx  # Selector de medidas (pills)
+└── utils/                        # Utilidades
+    ├── color-utils.ts           # Funciones de manejo de colores
+    ├── measure-utils.ts         # Funciones de manejo de medidas
+    └── texture-utils.ts         # Funciones de texturas
+```
+
+### Hooks Personalizados
+
+#### `useProductColors`
+Extrae colores únicos de las variantes y maneja la selección del usuario.
+
+```tsx
+const { uniqueColors, selectedColor, setSelectedColor } = useProductColors({
+  variants,
+  title
+})
+```
+
+#### `useProductMeasures`
+Extrae medidas/capacidades únicas y maneja la selección.
+
+```tsx
+const { uniqueMeasures, selectedMeasure, setSelectedMeasure, commonUnit } = useProductMeasures({
+  variants,
+  title
+})
+```
+
+#### `useProductVariants`
+Calcula el precio y variante actual basado en la selección de color y medida.
+
+```tsx
+const { currentVariant, displayPrice, displayOriginalPrice } = useProductVariants({
+  variants,
+  selectedColor,
+  selectedMeasure,
+  price,
+  originalPrice
+})
+```
+
+#### `useProductBadges`
+Genera badges inteligentes basados en características del producto.
+
+```tsx
+const { badges, resolvedFinish, resolvedFinishSource, isImpregnante } = useProductBadges({
+  title,
+  slug,
+  variants,
+  description,
+  features,
+  specifications,
+  dimensions,
+  weight,
+  brand,
+  badgeConfig,
+  price,
+  medida
+})
+```
+
+#### `useProductCardState`
+Maneja el estado interno del componente (modal, hover, carga, etc.).
+
+```tsx
+const state = useProductCardState({ image, title })
+// state: { isHovered, showQuickActions, showShopDetailModal, isAddingToCart, ... }
+```
+
+### Componentes UI
+
+- **ProductCardImage**: Maneja la imagen con fallback y estados de error
+- **ProductCardContent**: Muestra marca, título y precios con formato
+- **ProductCardActions**: Botón de agregar al carrito con estados de carga
+- **ColorPillSelector**: Selector visual de colores en formato pills
+- **MeasurePillSelector**: Selector visual de medidas con unidad integrada
+
 ## 🎯 Características
 
 - **Diseño comercial impactante** inspirado en MercadoLibre
@@ -44,17 +143,39 @@ function ProductGrid() {
       discount='10%'
       isNew={true}
       stock={12}
-      installments={{
-        quantity: 3,
-        amount: 6450,
-        interestFree: true,
-      }}
-      freeShipping={true}
-      deliveryLocation='Llega gratis hoy en Córdoba Capital'
+      productId={123}
+      slug='barniz-campbell-4l'
+      variants={[
+        {
+          id: 1,
+          color_name: 'Natural',
+          color_hex: '#D4A574',
+          measure: '4L',
+          price_list: 19350,
+          stock: 12
+        }
+      ]}
       onAddToCart={() => console.log('Agregado al carrito')}
     />
   )
 }
+```
+
+### Uso con Variantes
+
+El componente maneja automáticamente las variantes de productos (colores, medidas, acabados):
+
+```tsx
+<CommercialProductCard
+  title='Impregnante Danzke'
+  price={25000}
+  variants={[
+    { id: 1, color_name: 'Roble', color_hex: '#8B4513', measure: '4L', price_list: 25000 },
+    { id: 2, color_name: 'Roble', color_hex: '#8B4513', measure: '10L', price_list: 55000 },
+    { id: 3, color_name: 'Pino', color_hex: '#F4A460', measure: '4L', price_list: 25000 },
+  ]}
+  // El componente mostrará selectores de color y medida automáticamente
+/>
 ```
 
 ## 📋 Props
@@ -94,6 +215,20 @@ function ProductGrid() {
 | `shippingText`     | `string`  | `"Envío GRATIS EXPRESS"`                | Texto del envío      |
 | `deliveryLocation` | `string`  | `"Llega gratis hoy en Córdoba Capital"` | Ubicación de entrega |
 
+### Variantes y Badges
+
+| Prop            | Tipo              | Default | Descripción                                    |
+| --------------- | ----------------- | ------- | ---------------------------------------------- |
+| `variants`      | `ProductVariant[]` | `[]`    | Array de variantes (colores, medidas, etc.)   |
+| `badgeConfig`   | `BadgeConfig`     | -       | Configuración de badges inteligentes           |
+| `description`   | `string`          | -       | Descripción del producto                        |
+| `features`      | `object`          | -       | Características del producto                   |
+| `specifications`| `object`          | -       | Especificaciones técnicas                      |
+| `dimensions`    | `object`          | -       | Dimensiones del producto                        |
+| `weight`        | `number`          | -       | Peso del producto                              |
+| `color`         | `string`          | -       | Color directo de la base de datos              |
+| `medida`        | `string`          | -       | Medida directa de la base de datos            |
+
 ### Interacción
 
 | Prop                | Tipo       | Default                | Descripción            |
@@ -101,6 +236,8 @@ function ProductGrid() {
 | `cta`               | `string`   | `"Agregar al carrito"` | Texto del botón        |
 | `onAddToCart`       | `function` | -                      | Callback al hacer clic |
 | `showCartAnimation` | `boolean`  | `true`                 | Animación de carga     |
+| `productId`         | `number\|string` | - | ID del producto para tracking |
+| `slug`              | `string`   | -                      | Slug del producto      |
 
 ## 🎨 Ejemplos de Uso
 
@@ -208,6 +345,15 @@ function CardWrapper({ price, features }: { price: number; features?: { freeShip
 
 Esto reemplaza cualquier lógica hardcodeada (por ejemplo `price >= 15000`).
 
+## 🎨 Selectores de Color y Medida (Pills)
+
+Los selectores han sido actualizados de círculos a pills con mejor UX:
+
+- **ColorPillSelector**: Muestra colores como pills con nombre y hex
+- **MeasurePillSelector**: Muestra medidas con unidad integrada (ej: "4L", "10L")
+- **Interacción mejorada**: Hover effects y estados visuales claros
+- **Integración con variantes**: Los selectores se actualizan automáticamente según las variantes disponibles
+
 ## 🧪 Testing
 
 El componente incluye 20 tests que cubren:
@@ -219,9 +365,40 @@ El componente incluye 20 tests que cubren:
 - ✅ Interacciones del usuario
 - ✅ Estados de carga y error
 - ✅ Casos edge (sin stock, sin imagen, etc.)
+- ✅ Selección de variantes (colores y medidas)
+- ✅ Cálculo de precios por variante
 
 ```bash
 npm test src/components/ui/__tests__/commercial-product-card.test.tsx
+```
+
+## 🔧 Extensibilidad
+
+La arquitectura modular permite extender fácilmente el componente:
+
+### Agregar un nuevo hook
+
+```tsx
+// hooks/useProductCustomFeature.ts
+export const useProductCustomFeature = ({ product }) => {
+  // Lógica personalizada
+  return { customData, customActions }
+}
+
+// En index.tsx
+const customFeature = useProductCustomFeature({ product })
+```
+
+### Agregar un nuevo componente
+
+```tsx
+// components/ProductCardCustom.tsx
+export const ProductCardCustom = ({ data }) => {
+  // UI personalizada
+}
+
+// En index.tsx
+<ProductCardCustom data={customFeature.customData} />
 ```
 
 ## 🎯 Beneficios UX

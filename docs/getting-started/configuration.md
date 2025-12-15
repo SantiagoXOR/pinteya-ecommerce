@@ -16,7 +16,7 @@ cp .env.example .env.local
 
 ```bash
 # URL de la aplicación
-NEXT_PUBLIC_APP_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Base de datos Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
@@ -76,26 +76,48 @@ FOR SELECT USING (bucket_id = 'product-images');
 
 ---
 
-## 🔐 Configuración de Clerk
+## 🔐 Configuración de NextAuth
 
-### 1. Crear Aplicación
+### 1. Crear Aplicación OAuth en Google
 
-1. Ve a [clerk.com](https://clerk.com)
-2. Crea una nueva aplicación
-3. Configura métodos de autenticación
+1. Ve a [Google Cloud Console](https://console.cloud.google.com)
+2. Crea un nuevo proyecto o selecciona uno existente
+3. Habilita Google+ API desde "APIs & Services" > "Library"
+4. Ve a "APIs & Services" > "Credentials"
+5. Crea credenciales OAuth 2.0 Client ID
+6. Configura:
+   - **Tipo**: Aplicación web
+   - **URI de redirección autorizados**: `http://localhost:3000/api/auth/callback/google`
+   - Para producción: `https://tu-dominio.com/api/auth/callback/google`
 
 ### 2. Variables de Entorno
 
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=[STRIPE_PUBLIC_KEY_REMOVED]tu-key
-CLERK_SECRET_KEY=[STRIPE_SECRET_KEY_REMOVED]tu-secret
-CLERK_WEBHOOK_SECRET=whsec_tu-webhook-secret
+# NextAuth Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=tu-secret-generado-con-openssl-rand-base64-32
+
+# Google OAuth
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=tu-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=tu-google-client-secret
+
+# Para producción, actualiza NEXTAUTH_URL
+NEXTAUTH_URL=https://tu-dominio.com
 ```
 
-### 3. Configurar Webhooks
+### 3. Generar NEXTAUTH_SECRET
 
-- **URL**: `https://tu-dominio.com/api/auth/webhook`
-- **Eventos**: `user.created`, `user.updated`, `user.deleted`
+```bash
+# Generar secret seguro
+openssl rand -base64 32
+
+# O usar Node.js
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+### 4. Configurar Supabase para NextAuth
+
+El proyecto usa Supabase como adaptador de NextAuth. Asegúrate de que las tablas de autenticación estén configuradas correctamente en Supabase.
 
 ---
 
@@ -209,7 +231,7 @@ vercel
 Configura todas las variables en Vercel Dashboard:
 
 - Supabase credentials
-- Clerk credentials
+- NextAuth credentials (Google OAuth)
 - MercadoPago credentials
 - `NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app`
 
@@ -228,7 +250,7 @@ npm run check-env
 
 - [ ] Variables de entorno configuradas
 - [ ] Supabase conectado y tablas creadas
-- [ ] Clerk funcionando (login/logout)
+- [ ] NextAuth funcionando (login/logout con Google)
 - [ ] MercadoPago configurado
 - [ ] Tests pasando
 - [ ] Build exitoso
@@ -247,11 +269,16 @@ echo $NEXT_PUBLIC_SUPABASE_URL
 echo $NEXT_PUBLIC_SUPABASE_ANON_KEY
 ```
 
-#### Error: "Clerk not configured"
+#### Error: "NextAuth not configured"
 
 ```bash
-# Verificar middleware
-cat src/middleware.ts
+# Verificar variables de entorno
+echo $NEXTAUTH_URL
+echo $NEXTAUTH_SECRET
+echo $NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
+# Verificar configuración
+cat src/auth.ts
 ```
 
 #### Error: "MercadoPago credentials invalid"
