@@ -23,15 +23,17 @@ interface VariantBuilderProps {
   variants: VariantFormData[]
   onChange: (variants: VariantFormData[]) => void
   measures?: string[]
+  terminaciones?: string[]
   className?: string
 }
 
-const FINISH_OPTIONS = ['Mate', 'Satinado', 'Brillante']
+const FINISH_OPTIONS = ['Mate', 'Satinado', 'Brillante'] // Fallback por defecto
 
 export function VariantBuilder({
   variants,
   onChange,
   measures = [],
+  terminaciones = [],
   className,
 }: VariantBuilderProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
@@ -248,7 +250,7 @@ export function VariantBuilder({
               onChange={(e) => setFormData({ ...formData, finish: e.target.value })}
               className='w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
             >
-              {FINISH_OPTIONS.map((finish) => (
+              {(terminaciones.length > 0 ? terminaciones : FINISH_OPTIONS).map((finish) => (
                 <option key={finish} value={finish}>
                   {finish}
                 </option>

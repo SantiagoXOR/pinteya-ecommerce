@@ -347,22 +347,55 @@ const postHandler = async (request: ValidatedRequest) => {
       )
     }
 
-    // Verify category exists
-    const { data: category, error: categoryError } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('id', productData.category_id)
-      .single()
+    // Normalizar category_ids: soportar tanto category_id como category_ids para retrocompatibilidad
+    let categoryIds: number[] = []
+    if ((productData as any).category_ids && Array.isArray((productData as any).category_ids)) {
+      categoryIds = (productData as any).category_ids.map((id: any) => parseInt(String(id))).filter((id: number) => !isNaN(id))
+    } else if ((productData as any).category_id) {
+      categoryIds = [parseInt(String((productData as any).category_id))].filter((id: number) => !isNaN(id))
+    }
 
-    if (categoryError || !category) {
-      return NextResponse.json({ error: 'Categoría no encontrada' }, { status: 400 })
+    // Validar categorías si se proporcionan
+    if (categoryIds.length > 0) {
+      const { data: categories, error: categoryError } = await supabase
+        .from('categories')
+        .select('id')
+        .in('id', categoryIds)
+
+      if (categoryError) {
+        return NextResponse.json(
+          {
+            error: 'Error al validar categorías',
+            code: 'CATEGORY_VALIDATION_ERROR',
+            enterprise: true,
+          },
+          { status: 400 }
+        )
+      }
+
+      if (!categories || categories.length !== categoryIds.length) {
+        return NextResponse.json(
+          {
+            error: 'Una o más categorías no fueron encontradas',
+            code: 'CATEGORY_NOT_FOUND',
+            enterprise: true,
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Mantener category_id para retrocompatibilidad (usar primera categoría)
+    const productDataWithCategory = {
+      ...productData,
+      category_id: categoryIds.length > 0 ? categoryIds[0] : (productData as any).category_id || null,
     }
 
     // Create product
     const { data: product, error } = await supabase
       .from('products')
       .insert({
-        ...productData,
+        ...productDataWithCategory,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -395,6 +428,26 @@ const postHandler = async (request: ValidatedRequest) => {
     if (error) {
       console.error('Error creating product:', error)
       return NextResponse.json({ error: 'Error al crear producto' }, { status: 500 })
+    }
+
+    // Insertar relaciones en product_categories si hay categorías
+    if (categoryIds.length > 0 && product?.id) {
+      const categoryInserts = categoryIds.map(catId => ({
+        product_id: product.id,
+        category_id: catId,
+      }))
+
+      const { error: categoryRelationError } = await supabase
+        .from('product_categories')
+        .insert(categoryInserts)
+
+      if (categoryRelationError) {
+        console.error('Error creating product_categories relations:', categoryRelationError)
+        // No fallar la creación del producto si falla la relación de categorías
+        // pero loguear el error
+      } else {
+        console.log(`✅ Created ${categoryIds.length} product category relation(s)`)
+      }
     }
 
     // Transform response
@@ -472,6 +525,44 @@ const postHandlerSimple = async (request: NextRequest) => {
       }
     }
 
+    // Normalizar category_ids: soportar tanto category_id como category_ids para retrocompatibilidad
+    let categoryIds: number[] = []
+    if (body.category_ids && Array.isArray(body.category_ids)) {
+      categoryIds = body.category_ids.map(id => parseInt(String(id))).filter(id => !isNaN(id))
+    } else if (body.category_id) {
+      categoryIds = [parseInt(String(body.category_id))].filter(id => !isNaN(id))
+    }
+
+    // Validar categorías si se proporcionan
+    if (categoryIds.length > 0) {
+      const { data: categories, error: categoryError } = await supabase
+        .from('categories')
+        .select('id')
+        .in('id', categoryIds)
+
+      if (categoryError) {
+        console.log('❌ Error fetching categories:', categoryError)
+        return NextResponse.json(
+          {
+            error: 'Error al validar categorías',
+            code: 'CATEGORY_VALIDATION_ERROR',
+          },
+          { status: 400 }
+        )
+      }
+
+      if (!categories || categories.length !== categoryIds.length) {
+        console.log('❌ Some categories not found')
+        return NextResponse.json(
+          {
+            error: 'Una o más categorías no fueron encontradas',
+            code: 'CATEGORY_NOT_FOUND',
+          },
+          { status: 400 }
+        )
+      }
+    }
+
     // Mapear datos del frontend al formato de base de datos
     const productData = {
       name: body.name,
@@ -479,11 +570,12 @@ const postHandlerSimple = async (request: NextRequest) => {
       price: parseFloat(body.price),
       discounted_price: body.compare_price ? parseFloat(body.compare_price) : null,
       stock: parseInt(body.stock) || 0,
-      category_id: body.category_id ? parseInt(body.category_id) : null,
+      category_id: categoryIds.length > 0 ? categoryIds[0] : null, // Mantener category_id para retrocompatibilidad
       is_active: body.status === 'active' || true,
       brand: body.brand || '',
       color: body.color || '',
       medida: body.medida || '',
+      terminaciones: body.terminaciones || null,
       // Generar slug automático
       slug:
         body.name
@@ -499,26 +591,6 @@ const postHandlerSimple = async (request: NextRequest) => {
     }
 
     console.log('🔄 Mapped product data:', JSON.stringify(productData, null, 2))
-
-    // Verificar categoría si se proporciona
-    if (productData.category_id) {
-      const { data: category, error: categoryError } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('id', productData.category_id)
-        .single()
-
-      if (categoryError || !category) {
-        console.log('❌ Category not found:', categoryError)
-        return NextResponse.json(
-          {
-            error: 'Categoría no encontrada',
-            code: 'CATEGORY_NOT_FOUND',
-          },
-          { status: 400 }
-        )
-      }
-    }
 
     // Crear producto
     const { data: product, error } = await supabase
@@ -550,6 +622,26 @@ const postHandlerSimple = async (request: NextRequest) => {
         },
         { status: 500 }
       )
+    }
+
+    // Insertar relaciones en product_categories si hay categorías
+    if (categoryIds.length > 0 && product?.id) {
+      const categoryInserts = categoryIds.map(catId => ({
+        product_id: product.id,
+        category_id: catId,
+      }))
+
+      const { error: categoryRelationError } = await supabase
+        .from('product_categories')
+        .insert(categoryInserts)
+
+      if (categoryRelationError) {
+        console.error('❌ Error creating product_categories relations:', categoryRelationError)
+        // No fallar la creación del producto si falla la relación de categorías
+        // pero loguear el error
+      } else {
+        console.log(`✅ Created ${categoryIds.length} product category relation(s)`)
+      }
     }
 
     console.log('✅ Product created successfully:', product)

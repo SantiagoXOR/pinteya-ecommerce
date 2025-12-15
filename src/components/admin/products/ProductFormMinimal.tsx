@@ -9,6 +9,7 @@ import { AdminCard } from '../ui/AdminCard'
 import { CategorySelector } from './CategorySelector'
 import { BrandSelector } from './BrandSelector'
 import { MeasureSelector } from './MeasureSelector'
+import { TerminacionSelector } from './TerminacionSelector'
 import { VariantBuilder, VariantFormData } from './VariantBuilder'
 import { ImageUploadZone } from './ImageUploadZone'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
@@ -22,13 +23,14 @@ const ProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(255),
   description: z.string().max(5000).optional(),
   brand: z.string().max(100).optional(),
-  category_id: z.number().int().positive('Selecciona una categoría'),
+  category_ids: z.array(z.number().int().positive()).min(1, 'Selecciona al menos una categoría'),
   is_active: z.boolean().default(true),
   
   // Metadata
   aikon_id: z.string().max(50).optional(),
   color: z.string().max(100).optional(),
   medida: z.array(z.string()).optional(),
+  terminaciones: z.array(z.string()).optional(),
   
   // Precios & Stock
   price: z.number().min(0.01, 'El precio debe ser mayor a 0'),
@@ -173,6 +175,19 @@ export function ProductFormMinimal({
     }
   })
 
+  // Normalizar initialData para convertir category_id a category_ids si es necesario
+  const normalizedInitialData = initialData
+    ? {
+        ...initialData,
+        category_ids: initialData.category_ids
+          ? initialData.category_ids
+          : (initialData as any).category_id
+          ? [(initialData as any).category_id]
+          : [],
+        terminaciones: initialData.terminaciones || [],
+      }
+    : {}
+
   const form = useForm<ProductFormData>({
     resolver: zodResolver(ProductSchema),
     defaultValues: {
@@ -183,8 +198,10 @@ export function ProductFormMinimal({
       discounted_price: null,
       image_url: null,
       medida: [],
+      terminaciones: [],
+      category_ids: [],
       created_at: new Date().toISOString(),
-      ...initialData,
+      ...normalizedInitialData,
     },
   })
 
@@ -370,12 +387,13 @@ export function ProductFormMinimal({
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Categoría *
+                Categorías *
               </label>
               <CategorySelector
-                value={watchedData.category_id}
-                onChange={(categoryId) => form.setValue('category_id', categoryId)}
-                {...(errors.category_id?.message && { error: errors.category_id.message })}
+                value={watchedData.category_ids || []}
+                onChange={(categoryIds) => form.setValue('category_ids', Array.isArray(categoryIds) ? categoryIds : [categoryIds], { shouldDirty: true })}
+                multiple={true}
+                {...(errors.category_ids?.message && { error: errors.category_ids.message })}
               />
             </div>
 
@@ -409,6 +427,17 @@ export function ProductFormMinimal({
                 value={watchedData.medida || []}
                 onChange={(measures) => form.setValue('medida', measures, { shouldDirty: true })}
                 placeholder='Selecciona o agrega medidas'
+              />
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Terminaciones
+              </label>
+              <TerminacionSelector
+                value={watchedData.terminaciones || []}
+                onChange={(terminaciones) => form.setValue('terminaciones', terminaciones, { shouldDirty: true })}
+                placeholder='Selecciona o agrega terminaciones'
               />
             </div>
 
@@ -546,6 +575,7 @@ export function ProductFormMinimal({
                 variants={newVariants}
                 onChange={setNewVariants}
                 measures={watchedData.medida || []}
+                terminaciones={watchedData.terminaciones || []}
               />
             </div>
           ) : (
@@ -554,6 +584,7 @@ export function ProductFormMinimal({
               variants={newVariants}
               onChange={setNewVariants}
               measures={watchedData.medida || []}
+              terminaciones={watchedData.terminaciones || []}
             />
           )}
         </AdminCard>
