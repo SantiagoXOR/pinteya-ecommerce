@@ -282,7 +282,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         />
 
         {/* Selectores de color y medida */}
-        <div className='w-full mt-2 md:mt-2.5 px-1.5 md:px-2'>
+        <div className='w-full mt-0.5 px-1.5 md:px-2 pb-1.5'>
           <div className='flex flex-col gap-0'>
             {/* Selector de colores */}
             <ColorPillSelector

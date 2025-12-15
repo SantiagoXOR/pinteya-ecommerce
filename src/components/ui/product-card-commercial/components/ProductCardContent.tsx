@@ -15,25 +15,35 @@ export const ProductCardContent = React.memo(function ProductCardContent({
   discount
 }: ProductCardContentProps) {
   return (
-    <div className='relative z-20 text-left p-1.5 md:p-2 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
+    <div className='relative z-20 text-left px-1.5 md:px-2 pt-1.5 md:pt-2 pb-0 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
       {/* Marca del producto */}
       {brand && (
-        <div className='text-xs md:text-sm uppercase text-gray-400 font-normal tracking-wide mb-0.5'>
-          {brand}
+        <div className='text-[8px] md:text-[9px] uppercase text-gray-500 font-bold tracking-[0.1em] md:tracking-[0.12em] mb-0'>
+          {brand.split('').join(' ')}
         </div>
       )}
 
       {/* Título del producto */}
-      <h3 className='font-medium text-gray-600 text-sm md:text-lg line-clamp-2 leading-[1.1] mb-1'>
+      <h3 className='font-medium text-gray-600 text-sm md:text-lg line-clamp-2 leading-[1.1] mb-1 -mt-1'>
         {title}
       </h3>
 
       {/* Precios */}
-      <div className='flex flex-col items-start space-y-1'>
-        <div className='flex items-center gap-1 md:gap-2'>
+      <div className='flex flex-col items-start mb-0 pb-0'>
+        {/* Precio anterior tachado - arriba */}
+        {displayOriginalPrice && displayOriginalPrice > (displayPrice || 0) && (
+          <div className='text-gray-400 line-through text-[10px] md:text-xs mb-0 leading-none -mt-0.5'>
+            {`$${displayOriginalPrice.toLocaleString('es-AR', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })}`}
+          </div>
+        )}
+        
+        <div className='flex items-center gap-1 md:gap-1.5 -mt-0.5'>
           {/* Precio actual */}
           <div
-            className='text-base sm:text-lg md:text-2xl font-bold drop-shadow-sm'
+            className='text-base sm:text-lg md:text-2xl font-light drop-shadow-sm'
             style={{ color: '#EA5A17' }}
           >
             {`$${(displayPrice ?? 0).toLocaleString('es-AR', {
@@ -42,28 +52,13 @@ export const ProductCardContent = React.memo(function ProductCardContent({
             })}`}
           </div>
 
-          {/* Badge de descuento */}
+          {/* Badge de descuento - horizontal y pequeño */}
           {discount && (
             <div
-              className='inline-flex flex-col items-center justify-center px-1.5 py-0.5 rounded shadow-sm'
-              style={{ backgroundColor: '#EA5A17' }}
+              className='inline-flex items-center justify-center px-1 py-0.5 rounded-full text-[8px] md:text-[9px] font-medium leading-tight'
+              style={{ backgroundColor: '#EA5A17', color: '#ffffff' }}
             >
-              <span className='font-extrabold text-[10px] sm:text-[11px] text-white leading-none'>
-                {discount}
-              </span>
-              <span className='uppercase text-[7px] sm:text-[8px] font-semibold text-white leading-none -mt-[1px]'>
-                OFF
-              </span>
-            </div>
-          )}
-
-          {/* Precio anterior tachado */}
-          {displayOriginalPrice && displayOriginalPrice > (displayPrice || 0) && (
-            <div className='text-gray-500 line-through text-xs md:text-sm drop-shadow-sm'>
-              {`$${displayOriginalPrice.toLocaleString('es-AR', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}`}
+              {discount} OFF
             </div>
           )}
         </div>
