@@ -213,11 +213,11 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       
       // Crear objeto con datos estructurados de la base de datos
       const databaseData = {
-        features,
-        specifications,
-        dimensions,
-        weight,
-        brand,
+        features: features || {},
+        specifications: specifications || {},
+        dimensions: dimensions || {},
+        weight: weight || 0,
+        brand: brand || '',
         // ✅ NO incluir color/medida legacy - usar solo variantes
         // color: color,
         // medida: medida
@@ -335,9 +335,50 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         'terracotta': '#C2410C',
         'arena': '#E9D7C3',
         'sand': '#E9D7C3',
+        'ocre': '#CC7722',
+        'ochre': '#CC7722',
+        'marfil': '#F5E6D3',
+        'ivory': '#F5E6D3',
+        'verde cemento': '#9CAF88',
+        'cement green': '#9CAF88',
+        'verde inglés': '#4A5B4A',
+        'verde ingles': '#4A5B4A',
+        'english green': '#4A5B4A',
+        'verde manzana': '#8FBC8F',
+        'verde manz': '#8FBC8F',
+        'apple green': '#8FBC8F',
+        'teja': '#B85C38',
+        'tile': '#B85C38',
+        'chocolate': '#7D5A3C',
+        'blanco brillante': '#FFFFFF',
+        'blanco brill': '#FFFFFF',
+        'white gloss': '#FFFFFF',
+        'blanco mate': '#E8E8E8',
+        'white matte': '#E8E8E8',
+        'blanco satinado': '#F0F0F0',
+        'blanco sat': '#F0F0F0',
+        'white satin': '#F0F0F0',
+        'siena': '#a0522d',
+        'sienna': '#a0522d',
       }
-      const normalized = colorName.toLowerCase().trim()
-      return colorMap[normalized] || '#9CA3AF' // gris por defecto
+      // Normalizar el nombre: convertir a minúsculas, eliminar espacios múltiples, y trim
+      const normalized = colorName.toLowerCase().trim().replace(/\s+/g, ' ')
+      // Buscar coincidencia exacta primero
+      if (colorMap[normalized]) {
+        return colorMap[normalized]
+      }
+      // Buscar coincidencia sin espacios
+      const noSpaces = normalized.replace(/\s+/g, '')
+      if (colorMap[noSpaces]) {
+        return colorMap[noSpaces]
+      }
+      // Buscar coincidencia parcial (para casos como "verde ingles" vs "verde inglés")
+      for (const [key, value] of Object.entries(colorMap)) {
+        if (normalized.includes(key) || key.includes(normalized)) {
+          return value
+        }
+      }
+      return '#9CA3AF' // gris por defecto
     }, [])
 
     const isImpregnante = (title || '').toLowerCase().includes('impregnante')
@@ -409,9 +450,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               ? v.price_sale
               : (typeof v.price_list === 'number' ? v.price_list : Number.POSITIVE_INFINITY)
 
-          if (typeof price === 'number') {
+          if (typeof price === 'number' && sameMeasure.length > 0) {
             // Elegir la variante cuyo precio efectivo sea más cercano al del card
-            let best: ProductVariant = sameMeasure[0]
+            let best: ProductVariant = sameMeasure[0]!
             let bestDist = Math.abs(effectivePrice(best) - price)
             for (const v of sameMeasure.slice(1)) {
               const p = effectivePrice(v)
@@ -494,14 +535,16 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       if (finishBadges.length > 1) {
         const brillante = finishBadges.find(b => (b.value || '').toLowerCase() === 'brillante')
         const chosenFinish = brillante || finishBadges[0]
-        processedBadges = [...badges.filter(b => b.type !== 'finish'), chosenFinish]
+        if (chosenFinish) {
+          processedBadges = [...badges.filter(b => b.type !== 'finish'), chosenFinish]
+        }
       }
 
       // Regla anti-duplicados para granos (lijas):
       // - Si vienen múltiples badges de tipo "grit", mantener solo el primero
       const gritBadges = processedBadges.filter(b => b.type === 'grit')
       console.log(`🔍 [${title}] Badges de grano encontrados: ${gritBadges.length}`, gritBadges)
-      if (gritBadges.length > 1) {
+      if (gritBadges.length > 1 && gritBadges[0]) {
         const chosenGrit = gritBadges[0]
         processedBadges = [...processedBadges.filter(b => b.type !== 'grit'), chosenGrit]
         console.warn(`⚠️ [${title}] Se encontraron ${gritBadges.length} badges de grano duplicados, manteniendo solo el primero:`, chosenGrit)
@@ -701,30 +744,45 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       }
       
       if (variants && variants.length > 0) {
-        // Primero extraer todos los color_name únicos
-        const uniqueColorNames = new Set<string>()
+        // Agrupar variantes por color_name y priorizar color_hex cuando esté disponible
+        const colorGroups = new Map<string, { name: string; hex: string }>()
+        
         variants.forEach(v => {
           if (v.color_name && v.color_name.trim() !== '') {
-            uniqueColorNames.add(v.color_name)
+            const colorName = v.color_name.trim()
+            const colorKey = colorName.toLowerCase()
+            
+            // Si ya existe este color, verificar si podemos mejorar el hex
+            if (!colorGroups.has(colorKey)) {
+              let finalHex: string
+              
+              // Prioridad 1: usar color_hex de la variante si está disponible y es válido
+              if (v.color_hex && v.color_hex.trim() !== '' && v.color_hex !== '#000000' && v.color_hex !== '#FFFFFF') {
+                finalHex = v.color_hex.trim()
+              } else {
+                // Prioridad 2: buscar en PAINT_COLORS
+                const existingColor = PAINT_COLORS.find(c => 
+                  c.name.toLowerCase() === colorName.toLowerCase() ||
+                  c.displayName.toLowerCase() === colorName.toLowerCase() ||
+                  c.id.toLowerCase() === colorName.toLowerCase()
+                )
+                
+                if (existingColor) {
+                  finalHex = existingColor.hex
+                } else {
+                  // Prioridad 3: usar el helper mejorado para convertir nombre a hex
+                  finalHex = getColorHexFromName(colorName)
+                }
+              }
+              
+              colorGroups.set(colorKey, { name: colorName, hex: finalHex })
+            }
           }
         })
         
-        // Convertir cada color_name a hex usando PAINT_COLORS o el helper
-        Array.from(uniqueColorNames).forEach(colorName => {
-          // Buscar si existe en PAINT_COLORS (igual que el modal)
-          const existingColor = PAINT_COLORS.find(c => 
-            c.name.toLowerCase() === colorName.toLowerCase() ||
-            c.displayName.toLowerCase() === colorName.toLowerCase() ||
-            c.id.toLowerCase() === colorName.toLowerCase()
-          )
-          
-          if (existingColor) {
-            colorsMap.set(existingColor.hex, { name: colorName, hex: existingColor.hex })
-          } else {
-            // Fallback: usar el helper para convertir nombre a hex
-            const hexFromName = getColorHexFromName(colorName)
-            colorsMap.set(hexFromName, { name: colorName, hex: hexFromName })
-          }
+        // Convertir el Map a Array
+        Array.from(colorGroups.values()).forEach(colorData => {
+          colorsMap.set(colorData.hex, colorData)
         })
       }
       
@@ -761,7 +819,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
     // Establecer color por defecto al cargar
     React.useEffect(() => {
-      if (!selectedColor && uniqueColors.length > 0) {
+      if (!selectedColor && uniqueColors.length > 0 && uniqueColors[0]) {
         setSelectedColor(uniqueColors[0].hex)
       }
     }, [selectedColor, uniqueColors])
@@ -777,20 +835,20 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const parseMeasure = React.useCallback((measure: string): { number: string; unit: string } => {
       // Para "N°10", "N°15", etc. (pinceles/brochas) o "N120", "N180" (lijas)
       const nMatch = measure.match(/^(N°|Nº|n°|nº|N|n)\s*(\d+)$/i)
-      if (nMatch) {
+      if (nMatch && nMatch[2]) {
         return { number: nMatch[2], unit: 'N°' }
       }
       
       // Para "Grano 60", "Grano 80", etc.
       const granoMatch = measure.match(/^(grano)\s*(\d+)$/i)
-      if (granoMatch) {
+      if (granoMatch && granoMatch[2]) {
         return { number: granoMatch[2], unit: 'Grano' }
       }
       
       // Regex para separar número de unidad (ej: "4L" -> "4" + "L")
       const match = measure.match(/^(\d+(?:\.\d+)?)\s*(.*)$/)
-      if (match) {
-        return { number: match[1], unit: match[2].toUpperCase() }
+      if (match && match[1]) {
+        return { number: match[1], unit: (match[2] || '').toUpperCase() }
       }
       
       return { number: measure, unit: '' }
@@ -798,7 +856,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
     // Extraer la unidad común de todas las medidas (para mostrarla una vez)
     const commonUnit = React.useMemo(() => {
-      if (uniqueMeasures.length === 0) return ''
+      if (uniqueMeasures.length === 0 || !uniqueMeasures[0]) return ''
       const { unit } = parseMeasure(uniqueMeasures[0])
       return unit
     }, [uniqueMeasures, parseMeasure])
@@ -1175,7 +1233,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
           {/* Barra: Color + Medidas → debajo del precio/título */}
           <div className='w-full mt-2 md:mt-2.5'>
-            <div className='flex flex-col gap-1.5'>
+            <div className='flex flex-col gap-0'>
               {/* Primera línea: Colores - Carrusel horizontal */}
               {uniqueColors.length > 0 && (
                 <div className='relative flex items-center justify-between gap-2'>
@@ -1195,23 +1253,77 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                           backgroundBlendMode: 'multiply' as const
                         } : {}
                         const isSelected = selectedColor === colorData.hex
-                        // Determinar color del texto según el fondo
+                        // Función para calcular luminosidad de un color HEX
+                        const getLuminance = (hex: string): number => {
+                          const rgbMatch = hex.replace('#', '').match(/.{2}/g)
+                          if (!rgbMatch || rgbMatch.length !== 3) return 0.5
+                          const r = parseInt(rgbMatch[0] || '00', 16) / 255
+                          const g = parseInt(rgbMatch[1] || '00', 16) / 255
+                          const b = parseInt(rgbMatch[2] || '00', 16) / 255
+                          // Aplicar gamma correction
+                          const rLinear = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4)
+                          const gLinear = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4)
+                          const bLinear = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4)
+                          return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear
+                        }
+                        // Determinar color del texto según el fondo y estado seleccionado
                         const getTextColor = () => {
+                          // Cuando está seleccionado, siempre usar texto naranja (fondo será blanco)
                           if (isSelected) return 'text-[#EA5A17]'
-                          // Para colores claros, usar texto oscuro
-                          if (colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' || 
+                          // Calcular luminosidad del color
+                          const bgHex = colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex
+                          const luminance = getLuminance(bgHex)
+                          // Para colores claros (luminosidad > 0.6), usar texto oscuro
+                          if (luminance > 0.6 || 
                               colorData.name.toLowerCase().includes('blanco') || 
                               colorData.name.toLowerCase().includes('white') ||
                               colorData.name.toLowerCase().includes('crema') ||
                               colorData.name.toLowerCase().includes('cream') ||
                               colorData.name.toLowerCase().includes('beige') ||
                               colorData.name.toLowerCase().includes('arena') ||
-                              colorData.name.toLowerCase().includes('sand')) {
-                            return 'text-gray-700'
+                              colorData.name.toLowerCase().includes('sand') ||
+                              colorData.name.toLowerCase().includes('marfil') ||
+                              colorData.name.toLowerCase().includes('ivory')) {
+                            return 'text-gray-800'
                           }
                           // Para colores oscuros, usar texto blanco
                           return 'text-white'
                         }
+                        // Determinar si es blanco brillante para aplicar textura gloss
+                        const isBlancoBrillante = colorData.name.toLowerCase().includes('blanco brill') || 
+                                                  colorData.name.toLowerCase().includes('white gloss')
+                        // Determinar si es blanco satinado para aplicar textura satinada
+                        const isBlancoSatinado = colorData.name.toLowerCase().includes('blanco sat') || 
+                                                  colorData.name.toLowerCase().includes('white satin')
+                        // Determinar color de fondo
+                        const getBackgroundColor = () => {
+                          // Cuando está seleccionado, usar fondo blanco para mejor contraste con texto naranja
+                          if (isSelected) {
+                            return '#FFFFFF'
+                          }
+                          // Cuando no está seleccionado, usar el color original
+                          return colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex
+                        }
+                        // Textura gloss para blanco brillante
+                        const glossTexture = isBlancoBrillante && !isSelected ? {
+                          backgroundImage: [
+                            'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                            'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
+                            'radial-gradient(ellipse at top, rgba(255,255,255,0.6) 0%, transparent 50%)'
+                          ].join(', '),
+                          backgroundSize: '100% 100%, 20px 20px, 100% 100%',
+                          backgroundBlendMode: 'overlay' as const
+                        } : {}
+                        // Textura satinada para blanco satinado (más suave que gloss)
+                        const satinTexture = isBlancoSatinado && !isSelected ? {
+                          backgroundImage: [
+                            'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.02) 100%)',
+                            'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)',
+                            'radial-gradient(ellipse at top, rgba(255,255,255,0.3) 0%, transparent 50%)'
+                          ].join(', '),
+                          backgroundSize: '100% 100%, 30px 30px, 100% 100%',
+                          backgroundBlendMode: 'soft-light' as const
+                        } : {}
                         return (
                           <button
                             key={`${colorData.hex}-${index}`}
@@ -1231,20 +1343,25 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                                colorData.name.toLowerCase().includes('transparent')) && 'backdrop-blur-md'
                             )}
                             style={{
-                              backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : colorData.hex,
+                              backgroundColor: getBackgroundColor(),
                               ...(colorData.name.toLowerCase().includes('incoloro') || 
                                   colorData.name.toLowerCase().includes('transparente') ||
                                   colorData.name.toLowerCase().includes('transparent') 
                                 ? { backgroundImage: 'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)' }
                                 : {}),
-                              ...woodTexture
+                              // Solo aplicar textura de madera cuando NO está seleccionado
+                              ...(isSelected ? {} : woodTexture),
+                              // Aplicar textura gloss para blanco brillante
+                              ...glossTexture,
+                              // Aplicar textura satinada para blanco satinado
+                              ...satinTexture
                             }}
                           >
                             <span className={cn(
-                              'font-bold leading-none whitespace-nowrap text-[8px]',
+                              'font-bold leading-none whitespace-nowrap text-[8px] uppercase',
                               getTextColor()
                             )}>
-                              {colorData.name}
+                              {colorData.name.toUpperCase()}
                             </span>
                           </button>
                         )
@@ -1256,7 +1373,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
               {/* Segunda línea: Medidas - Carrusel horizontal */}
               {uniqueMeasures.length > 0 && (
-                <div className='relative flex items-center justify-between gap-2'>
+                <div className='relative flex items-center justify-between gap-2 -mt-1'>
                   <div className='relative flex-1 min-w-0 overflow-visible'>
                     <div className='flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth py-1 px-1 pr-16' style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                       {uniqueMeasures.map((measure, index) => {
@@ -1519,8 +1636,8 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               description: `Color ${c.name}`
             })) : undefined,
             capacities: uniqueMeasures.length > 0 ? uniqueMeasures : [],
-            variants: variants && variants.length > 0 ? variants : undefined,
-          }}
+            ...(variants && variants.length > 0 ? { variants } : {}),
+          } as any}
           onAddToCart={(productData, variants) => {
             console.log('Agregando al carrito:', productData, variants)
 
