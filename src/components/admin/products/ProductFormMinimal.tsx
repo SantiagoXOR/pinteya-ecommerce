@@ -10,6 +10,7 @@ import { CategorySelector } from './CategorySelector'
 import { BrandSelector } from './BrandSelector'
 import { MeasureSelector } from './MeasureSelector'
 import { TerminacionSelector } from './TerminacionSelector'
+import { ColorPickerField } from './ColorPickerField'
 import { VariantBuilder, VariantFormData } from './VariantBuilder'
 import { ImageUploadZone } from './ImageUploadZone'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
@@ -50,6 +51,7 @@ type ProductFormData = z.infer<typeof ProductSchema>
 interface ProductVariant {
   id?: number
   color_name: string
+  color_hex?: string
   measure: string
   finish: string
   price_list: number
@@ -84,6 +86,22 @@ export function ProductFormMinimal({
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null)
   const [showVariantModal, setShowVariantModal] = useState(false)
   const [newVariants, setNewVariants] = useState<VariantFormData[]>([])
+
+  const openNewVariant = () => {
+    setEditingVariant({
+      color_name: '',
+      color_hex: undefined,
+      measure: '',
+      finish: 'Mate',
+      price_list: 0,
+      price_sale: 0,
+      stock: 0,
+      aikon_id: '',
+      is_active: true,
+      is_default: false,
+    })
+    setShowVariantModal(true)
+  }
   
   // Fetch variantes desde BD
   const { data: variantsData, isLoading: variantsLoading } = useQuery({
@@ -239,6 +257,7 @@ export function ProductFormMinimal({
                 product_id: parseInt(String(finalProductId)),
                 aikon_id: variant.aikon_id,
                 color_name: variant.color_name || null,
+                color_hex: variant.color_hex || null,
                 measure: variant.measure,
                 finish: variant.finish || 'Mate',
                 price_list: variant.price_list,
@@ -408,16 +427,11 @@ export function ProductFormMinimal({
               />
             </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Color del Producto
-              </label>
-              <input
-                {...register('color')}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='Ej: Blanco, Rojo Óxido'
-              />
-            </div>
+            <ColorPickerField
+              colorName={watchedData.color || ''}
+              onColorChange={(name) => form.setValue('color', name, { shouldDirty: true })}
+              label='Color del Producto'
+            />
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
@@ -804,26 +818,16 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
           <div>
             <h3 className='text-sm font-semibold text-gray-900 mb-4'>Información Básica</h3>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Color *</label>
-                <input
-                  value={formData.color_name || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, color_name: e.target.value })
-                    if (errors.color_name) setErrors({ ...errors, color_name: '' })
-                  }}
-                  className={cn(
-                    'w-full px-3 py-2 border rounded-lg focus:ring-2',
-                    errors.color_name
-                      ? 'border-red-300 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blaze-orange-500'
-                  )}
-                  placeholder='Ej: Blanco, Rojo Óxido'
-                />
-                {errors.color_name && (
-                  <p className='text-red-600 text-sm mt-1'>{errors.color_name}</p>
-                )}
-              </div>
+              <ColorPickerField
+                colorName={formData.color_name}
+                colorHex={formData.color_hex}
+                onColorChange={(name, hex) => {
+                  setFormData({ ...formData, color_name: name, color_hex: hex })
+                  if (errors.color_name) setErrors({ ...errors, color_name: '' })
+                }}
+                label='Color *'
+                error={errors.color_name}
+              />
 
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>

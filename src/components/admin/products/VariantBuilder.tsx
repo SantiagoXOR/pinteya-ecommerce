@@ -4,10 +4,12 @@ import { useState } from 'react'
 import { Plus, Trash2, Edit, X } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { MeasureSelector } from './MeasureSelector'
+import { ColorPickerField } from './ColorPickerField'
 
 export interface VariantFormData {
   id?: number
   color_name: string
+  color_hex?: string
   aikon_id: string
   measure: string
   finish: string
@@ -39,6 +41,7 @@ export function VariantBuilder({
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [formData, setFormData] = useState<VariantFormData>({
     color_name: '',
+    color_hex: undefined,
     aikon_id: '',
     measure: '',
     finish: 'Mate',
@@ -91,6 +94,7 @@ export function VariantBuilder({
   const resetForm = () => {
     setFormData({
       color_name: '',
+      color_hex: undefined,
       aikon_id: '',
       measure: '',
       finish: 'Mate',
@@ -192,18 +196,13 @@ export function VariantBuilder({
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
           {/* Color */}
-          <div>
-            <label className='block text-xs font-medium text-gray-700 mb-1'>
-              Color
-            </label>
-            <input
-              type='text'
-              value={formData.color_name}
-              onChange={(e) => setFormData({ ...formData, color_name: e.target.value })}
-              className='w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
-              placeholder='Ej: Blanco'
-            />
-          </div>
+          <ColorPickerField
+            colorName={formData.color_name}
+            colorHex={formData.color_hex}
+            onColorChange={(name, hex) => setFormData({ ...formData, color_name: name, color_hex: hex })}
+            label='Color'
+            className='text-xs'
+          />
 
           {/* Aikon ID */}
           <div>
