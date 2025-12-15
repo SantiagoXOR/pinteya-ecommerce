@@ -42,11 +42,11 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
   }
 
   return (
-    <div className='relative flex items-center justify-between gap-2 -mt-1'>
+    <div className='relative flex items-center justify-between gap-2 -mt-1 overflow-visible'>
       <div className='relative flex-1 min-w-0 overflow-visible'>
         <div 
-          className='flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth pt-1 px-0 pr-16 pb-0' 
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className='flex items-center gap-1 overflow-x-auto overflow-y-visible scrollbar-hide scroll-smooth pt-1 pl-0 pr-16 pb-0' 
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'visible' }}
         >
           {measures.map((measure) => (
             <MeasurePill

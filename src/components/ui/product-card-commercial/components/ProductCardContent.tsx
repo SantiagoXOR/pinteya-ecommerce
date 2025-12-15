@@ -15,7 +15,7 @@ export const ProductCardContent = React.memo(function ProductCardContent({
   discount
 }: ProductCardContentProps) {
   return (
-    <div className='relative z-20 text-left px-1.5 md:px-2 pt-1.5 md:pt-2 pb-0 bg-white -mt-2 md:-mt-3 flex-shrink-0 rounded-b-xl md:rounded-b-2xl'>
+    <div className='relative z-20 text-left px-1.5 md:px-2 pt-1.5 md:pt-2 pb-0 flex-shrink-0'>
       {/* Marca del producto */}
       {brand && (
         <div className='text-[8px] md:text-[9px] uppercase text-gray-500 font-bold tracking-[0.1em] md:tracking-[0.12em] mb-0'>

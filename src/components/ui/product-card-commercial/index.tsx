@@ -213,7 +213,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer',
           'h-[300px] sm:h-[360px] md:h-[450px] lg:h-[500px]',
           'md:rounded-2xl transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl',
-          'transform-gpu will-change-transform',
+          'transform-gpu will-change-transform overflow-visible',
           className
         )}
         data-testid='commercial-product-card'
@@ -272,40 +272,55 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           currentImageSrc={state.currentImageSrc}
         />
 
-        {/* Contenido: marca, título, precios */}
-        <ProductCardContent
-          brand={brand}
-          title={title}
-          displayPrice={variantsData.displayPrice}
-          displayOriginalPrice={variantsData.displayOriginalPrice}
-          discount={discount}
-        />
-
-        {/* Selectores de color y medida */}
-        <div className='w-full mt-0.5 px-1.5 md:px-2 pb-1.5'>
-          <div className='flex flex-col gap-0'>
-            {/* Selector de colores */}
-            <ColorPillSelector
-              colors={colors.uniqueColors}
-              selectedColor={colors.selectedColor}
-              onColorSelect={colors.setSelectedColor}
-              isImpregnante={badges.isImpregnante}
+        {/* Contenedor de información con blur blanco */}
+        <div className='relative -mt-2 md:-mt-3 rounded-b-xl md:rounded-b-2xl overflow-visible ml-2 md:ml-3'>
+          {/* Blur blanco detrás de toda la información */}
+          <div 
+            className='absolute inset-0 z-0 pointer-events-none rounded-b-xl md:rounded-b-2xl'
+            style={{
+              background: 'linear-gradient(to top, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 30%, rgba(255, 255, 255, 0.7) 60%, transparent 100%)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)'
+            }}
+          />
+          
+          {/* Contenido: marca, título, precios */}
+          <div className='relative z-10'>
+            <ProductCardContent
+              brand={brand}
+              title={title}
+              displayPrice={variantsData.displayPrice}
+              displayOriginalPrice={variantsData.displayOriginalPrice}
+              discount={discount}
             />
+          </div>
 
-            {/* Selector de medidas */}
-            <MeasurePillSelector
-              measures={measures.uniqueMeasures}
-              selectedMeasure={measures.selectedMeasure}
-              onMeasureSelect={measures.setSelectedMeasure}
-              commonUnit={measures.commonUnit}
-              colors={colors.uniqueColors}
-              selectedColor={colors.selectedColor}
-              onColorSelect={colors.setSelectedColor}
-              onAddToCart={handleAddToCart}
-              isAddingToCart={state.isAddingToCart}
-              stock={stock}
-              isImpregnante={badges.isImpregnante}
-            />
+          {/* Selectores de color y medida */}
+          <div className='relative z-10 w-full mt-0.5 px-1.5 md:px-2 pb-1.5 overflow-visible'>
+            <div className='flex flex-col gap-0 overflow-visible'>
+              {/* Selector de colores */}
+              <ColorPillSelector
+                colors={colors.uniqueColors}
+                selectedColor={colors.selectedColor}
+                onColorSelect={colors.setSelectedColor}
+                isImpregnante={badges.isImpregnante}
+              />
+
+              {/* Selector de medidas */}
+              <MeasurePillSelector
+                measures={measures.uniqueMeasures}
+                selectedMeasure={measures.selectedMeasure}
+                onMeasureSelect={measures.setSelectedMeasure}
+                commonUnit={measures.commonUnit}
+                colors={colors.uniqueColors}
+                selectedColor={colors.selectedColor}
+                onColorSelect={colors.setSelectedColor}
+                onAddToCart={handleAddToCart}
+                isAddingToCart={state.isAddingToCart}
+                stock={stock}
+                isImpregnante={badges.isImpregnante}
+              />
+            </div>
           </div>
         </div>
 

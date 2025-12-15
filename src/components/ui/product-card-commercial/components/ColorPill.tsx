@@ -2,10 +2,10 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
+import { Check } from '@/lib/optimized-imports'
 import { 
   darkenHex, 
   getTextColorForBackground, 
-  getBackgroundColorForPill,
   isBlancoBrillante,
   isBlancoSatinado,
   isTransparentColor
@@ -32,27 +32,31 @@ export const ColorPill = React.memo(function ColorPill({
   const darker = React.useMemo(() => darkenHex(colorData.hex, 0.35), [colorData.hex])
   
   const woodTexture = React.useMemo(() => {
-    if (!isImpregnante || isSelected) return {}
+    if (!isImpregnante) return {}
     return getWoodTexture(colorData.hex, darker)
-  }, [isImpregnante, isSelected, colorData.hex, darker])
+  }, [isImpregnante, colorData.hex, darker])
 
   const isBlancoBrill = React.useMemo(() => isBlancoBrillante(colorData.name), [colorData.name])
   const isBlancoSat = React.useMemo(() => isBlancoSatinado(colorData.name), [colorData.name])
   const isTransparent = React.useMemo(() => isTransparentColor(colorData.name), [colorData.name])
 
-  const glossTexture = React.useMemo(() => getGlossTexture(isBlancoBrill, isSelected), [isBlancoBrill, isSelected])
-  const satinTexture = React.useMemo(() => getSatinTexture(isBlancoSat, isSelected), [isBlancoSat, isSelected])
+  const glossTexture = React.useMemo(() => getGlossTexture(isBlancoBrill, false), [isBlancoBrill])
+  const satinTexture = React.useMemo(() => getSatinTexture(isBlancoSat, false), [isBlancoSat])
   const transparentTexture = React.useMemo(() => isTransparent ? getTransparentTexture() : {}, [isTransparent])
 
+  // Mantener siempre el color original del pill
   const textColor = React.useMemo(
-    () => getTextColorForBackground(colorData.hex, isSelected, colorData.name),
-    [colorData.hex, isSelected, colorData.name]
+    () => getTextColorForBackground(colorData.hex, false, colorData.name),
+    [colorData.hex, colorData.name]
   )
 
-  const backgroundColor = React.useMemo(
-    () => getBackgroundColorForPill(colorData.hex, isSelected),
-    [colorData.hex, isSelected]
-  )
+  // Usar siempre el color original, sin cambios por selección
+  const backgroundColor = React.useMemo(() => {
+    if (colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff') {
+      return '#F5F5F5'
+    }
+    return colorData.hex
+  }, [colorData.hex])
 
   const handleClick = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -65,16 +69,16 @@ export const ColorPill = React.memo(function ColorPill({
       onClick={handleClick}
       title={colorData.name}
       className={cn(
-        'px-1.5 py-0.5 flex-shrink-0 rounded-full transition-all hover:scale-105 flex items-center justify-center h-[18px]',
+        'relative py-0.5 flex-shrink-0 rounded-full transition-all flex items-center gap-1 h-[18px]',
         isSelected 
-          ? 'border border-[#EA5A17]' 
-          : 'border border-gray-200',
+          ? 'border-2 border-[#EA5A17] pl-1.5 pr-2' 
+          : 'border border-gray-200 px-1.5',
         isTransparent && 'backdrop-blur-md'
       )}
       style={{
         backgroundColor,
         ...(isTransparent ? transparentTexture : {}),
-        ...(isSelected ? {} : woodTexture),
+        ...woodTexture,
         ...glossTexture,
         ...satinTexture
       }}
@@ -85,6 +89,11 @@ export const ColorPill = React.memo(function ColorPill({
       )}>
         {colorData.name.toUpperCase()}
       </span>
+      
+      {/* Checkmark de selección - alineado al centro del texto */}
+      {isSelected && (
+        <Check className={cn('w-2.5 h-2.5 flex-shrink-0', textColor)} strokeWidth={3} />
+      )}
     </button>
   )
 }, (prevProps, nextProps) => {

@@ -34,7 +34,7 @@ export const MeasurePill = React.memo(function MeasurePill({
       type='button'
       onClick={handleClick}
       className={cn(
-        'px-1.5 py-0.5 flex-shrink-0 rounded-full transition-all hover:scale-105 flex items-center justify-center h-[18px]',
+        'px-1.5 py-0.5 flex-shrink-0 rounded-full transition-all flex items-center justify-center h-[18px]',
         isSelected 
           ? 'bg-white border border-[#EA5A17]' 
           : 'bg-gray-50 border border-gray-200'
