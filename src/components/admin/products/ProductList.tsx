@@ -13,6 +13,7 @@ import { Skeleton, TableSkeleton } from '../ui/Skeleton'
 import { EmptyState } from '../ui/EmptyState'
 import { Badge } from '../ui/Badge'
 import { cn } from '@/lib/core/utils'
+import { useResizableColumns } from '@/hooks/admin/useResizableColumns'
 import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from '@/lib/optimized-imports'
 
 const resolveImageSource = (payload: any): string | null => {
@@ -242,12 +243,40 @@ export function ProductList({
       : <ArrowDown className='w-3.5 h-3.5 text-primary' />
   }
 
+  // Configuración de anchos por defecto para columnas
+  const defaultColumnWidths: { [key: string]: number } = {
+    images: 80,
+    name: 250,
+    id: 70,
+    slug: 150,
+    variant_count: 120,
+    categories: 150,
+    brand: 120,
+    medida: 100,
+    price: 100,
+    discounted_price: 120,
+    stock: 100,
+    color: 100,
+    aikon_id: 120,
+    status: 100,
+    created_at: 110,
+    updated_at: 110,
+    actions: 80,
+  }
+
+  // Hook para columnas redimensionables
+  const { columnWidths, isResizing, handleMouseDown } = useResizableColumns({
+    defaultWidths: defaultColumnWidths,
+    minWidth: 80, // Aumentado para evitar superposición
+    maxWidth: 500,
+  })
+
   // Table columns configuration
   const columns = [
     {
       key: 'images',
       title: 'Imagen',
-      width: '100px',
+      defaultWidth: 80,
       render: (images: any, product: Product) => {
         const imageUrl = resolveImageSource(product.image_url || images)
         
@@ -273,14 +302,17 @@ export function ProductList({
       key: 'name',
       title: 'Producto',
       sortable: true,
+      defaultWidth: 280, // Aumentado para evitar superposición
       render: (name: string, product: Product) => (
-        <div className='max-w-sm'>
-          <div className='font-semibold text-gray-900 text-base mb-1'>{name}</div>
+        <div className='w-full min-w-0'>
+          <div className='font-semibold text-gray-900 text-sm mb-0.5 truncate' title={name}>
+            {name}
+          </div>
           <div
-            className='text-sm text-gray-600 overflow-hidden leading-relaxed'
-            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+            className='text-xs text-gray-600 truncate'
+            title={product.description || 'Sin descripción'}
           >
-            {product.description || 'Sin descripción disponible'}
+            {product.description || 'Sin descripción'}
           </div>
         </div>
       ),
@@ -289,7 +321,7 @@ export function ProductList({
       key: 'id',
       title: 'ID',
       sortable: true,
-      width: '70px',
+      defaultWidth: 70,
       render: (id: number) => (
         <span className='text-sm text-gray-600 font-mono'>#{id}</span>
       ),
@@ -297,8 +329,9 @@ export function ProductList({
     {
       key: 'slug',
       title: 'Slug',
+      defaultWidth: 180, // Aumentado
       render: (slug: string) => (
-        <span className='text-xs text-gray-500 font-mono max-w-[150px] truncate block' title={slug}>
+        <span className='text-xs text-gray-500 font-mono truncate block w-full' title={slug}>
           {slug || '-'}
         </span>
       ),
@@ -307,6 +340,7 @@ export function ProductList({
       key: 'variant_count',
       title: 'Variantes',
       sortable: true,
+      defaultWidth: 120,
       render: (count: number, product: Product) => {
         const isExpanded = expandedRows.has(product.id)
         return (
@@ -340,6 +374,7 @@ export function ProductList({
       key: 'categories',
       title: 'Categorías',
       sortable: false,
+      defaultWidth: 150,
       render: (_: any, product: Product) => {
         const categories = product.categories || []
         
@@ -366,16 +401,18 @@ export function ProductList({
       key: 'brand',
       title: 'Marca',
       sortable: true,
+      defaultWidth: 120,
       render: (brand: string) => (
-        <span className='text-sm text-gray-700'>{brand || '-'}</span>
+        <span className='text-xs text-gray-700'>{brand || '-'}</span>
       ),
     },
     {
       key: 'medida',
       title: 'Medida',
       sortable: true,
+      defaultWidth: 100,
       render: (medida: string) => (
-        <span className='text-sm text-gray-700 font-medium'>{medida || '-'}</span>
+        <span className='text-xs text-gray-700 font-medium'>{medida || '-'}</span>
       ),
     },
     {
@@ -383,9 +420,10 @@ export function ProductList({
       title: 'Precio',
       align: 'right' as const,
       sortable: true,
+      defaultWidth: 100,
       render: (price: number) => (
         <div className='text-right'>
-          <span className='font-bold text-lg text-green-600'>${price.toLocaleString('es-AR')}</span>
+          <span className='font-semibold text-sm text-green-600'>${price.toLocaleString('es-AR')}</span>
         </div>
       ),
     },
@@ -394,6 +432,7 @@ export function ProductList({
       title: 'Precio Desc.',
       align: 'right' as const,
       sortable: true,
+      defaultWidth: 120,
       render: (discountedPrice: number, product: Product) => (
         discountedPrice ? (
           <div className='text-right'>
@@ -414,18 +453,21 @@ export function ProductList({
       title: 'Stock',
       align: 'center' as const,
       sortable: true,
+      defaultWidth: 100,
       render: (stock: number) => <StockBadge stock={stock} />,
     },
     {
       key: 'color',
       title: 'Color',
+      defaultWidth: 100,
       render: (color: string) => (
-        <span className='text-sm text-gray-700'>{color || '-'}</span>
+        <span className='text-xs text-gray-700'>{color || '-'}</span>
       ),
     },
     {
       key: 'aikon_id',
       title: 'Código Aikon',
+      defaultWidth: 120,
       render: (aikonId: string) => (
         <span className='text-xs text-gray-500 font-mono'>{aikonId || '-'}</span>
       ),
@@ -435,14 +477,16 @@ export function ProductList({
       title: 'Estado',
       align: 'center' as const,
       sortable: true,
+      defaultWidth: 100,
       render: (status: Product['status']) => <StatusBadge status={status} />,
     },
     {
       key: 'created_at',
       title: 'Creado',
       sortable: true,
+      defaultWidth: 110,
       render: (createdAt: string) => (
-        <span className='text-sm text-gray-500'>
+        <span className='text-xs text-gray-500'>
           {new Date(createdAt).toLocaleDateString('es-AR')}
         </span>
       ),
@@ -451,8 +495,9 @@ export function ProductList({
       key: 'updated_at',
       title: 'Actualizado',
       sortable: true,
+      defaultWidth: 110,
       render: (updatedAt: string) => (
-        <span className='text-sm text-gray-500'>
+        <span className='text-xs text-gray-500'>
           {new Date(updatedAt).toLocaleDateString('es-AR')}
         </span>
       ),
@@ -460,7 +505,7 @@ export function ProductList({
     {
       key: 'actions',
       title: 'Acciones',
-      width: '60px',
+      defaultWidth: 80,
       render: (_: any, product: Product) => (
         <ProductRowActions
           product={product}
@@ -652,43 +697,71 @@ export function ProductList({
             {/* Sticky Header con blur backdrop y sorting */}
             <thead className='bg-gradient-to-r from-gray-50/95 to-gray-100/95 sticky top-0 z-10 backdrop-blur-sm border-b border-gray-200'>
               <tr>
-                {columns.slice(0, -1).map((column, index) => (
-                  <th
-                    key={`header-${column.key.toString()}-${index}`}
-                    className={cn(
-                      'px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider',
-                      column.sortable && 'cursor-pointer select-none group hover:bg-gray-100/50 transition-colors'
-                    )}
-                    style={{ width: column.width }}
-                    onClick={() => column.sortable && handleSort(column.key.toString())}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <span>{column.title}</span>
-                      {column.sortable && renderSortIcon(column.key.toString())}
-                    </div>
-                  </th>
-                ))}
-                <th className='px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider'>
-                  Acciones
-                </th>
+                {columns.map((column, index) => {
+                  const columnKey = column.key.toString()
+                  const width = columnWidths[columnKey] || column.defaultWidth || 150
+                  const isResizingColumn = isResizing === columnKey
+                  
+                  return (
+                    <th
+                      key={`header-${columnKey}-${index}`}
+                      className={cn(
+                        'px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider relative',
+                        column.sortable && 'cursor-pointer select-none group hover:bg-gray-100/50 transition-colors',
+                        isResizingColumn && 'bg-blue-50'
+                      )}
+                      style={{ width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }}
+                      onClick={() => column.sortable && handleSort(columnKey)}
+                    >
+                      <div className='flex items-center gap-1.5'>
+                        <span>{column.title}</span>
+                        {column.sortable && renderSortIcon(columnKey)}
+                      </div>
+                      {/* Resize handle */}
+                      <div
+                        className={cn(
+                          'absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 transition-colors group',
+                          isResizingColumn && 'bg-blue-500 w-1.5'
+                        )}
+                        onMouseDown={(e) => handleMouseDown(e, columnKey)}
+                        title='Arrastra para redimensionar'
+                      >
+                        <div className='absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-0.5 opacity-0 group-hover:opacity-100 transition-opacity'>
+                          <div className='w-0.5 h-4 bg-gray-400 rounded-full'></div>
+                        </div>
+                      </div>
+                    </th>
+                  )
+                })}
               </tr>
             </thead>
             <tbody className='bg-white divide-y divide-gray-50'>
               {isLoading ? (
                 /* Skeleton Loading State */
                 <>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className='animate-pulse'>
-                      {columns.map((column, colIndex) => (
-                        <td 
-                          key={`skeleton-${i}-${colIndex}`}
-                          className='px-6 py-4'
-                        >
-                          <Skeleton className='h-4 w-full' />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const columnKey = columns[i % columns.length]?.key.toString() || 'default'
+                    const width = columnWidths[columnKey] || columns[i % columns.length]?.defaultWidth || 150
+                    
+                    return (
+                      <tr key={i} className='animate-pulse'>
+                        {columns.map((column, colIndex) => {
+                          const colKey = column.key.toString()
+                          const colWidth = columnWidths[colKey] || column.defaultWidth || 150
+                          
+                          return (
+                            <td 
+                              key={`skeleton-${i}-${colIndex}`}
+                              className='px-2 py-2'
+                              style={{ width: `${colWidth}px`, minWidth: `${colWidth}px`, maxWidth: `${colWidth}px` }}
+                            >
+                              <Skeleton className='h-4 w-full' />
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    )
+                  })}
                 </>
               ) : products.length === 0 ? (
                 /* Empty State Mejorado */
@@ -731,23 +804,36 @@ export function ProductList({
                         )}
                         data-testid="product-row"
                       >
-                        {columns.slice(0, -1).map((column, colIndex) => (
-                          <td
-                            key={`${product.id}-${column.key.toString()}-${colIndex}`}
-                            className={cn(
-                              'px-6 py-4 whitespace-nowrap transition-colors',
-                              column.align === 'center' && 'text-center',
-                              column.align === 'right' && 'text-right'
-                            )}
-                          >
-                            {column.render
-                              ? column.render(product[column.key as keyof Product], product)
-                              : String(product[column.key as keyof Product] || '-')}
-                          </td>
-                        ))}
-                        <td className='px-6 py-4 whitespace-nowrap text-right'>
-                          {columns[columns.length - 1]?.render?.(null, product) || null}
-                        </td>
+                        {columns.map((column, colIndex) => {
+                          const columnKey = column.key.toString()
+                          const width = columnWidths[columnKey] || column.defaultWidth || 150
+                          const shouldWrap = column.key === 'name' || column.key === 'description' || column.key === 'slug'
+                          
+                          return (
+                            <td
+                              key={`${product.id}-${column.key.toString()}-${colIndex}`}
+                              className={cn(
+                                'px-2 py-2 transition-colors overflow-hidden',
+                                !shouldWrap && 'whitespace-nowrap',
+                                column.align === 'center' && 'text-center',
+                                column.align === 'right' && 'text-right'
+                              )}
+                              style={{ 
+                                width: `${width}px`, 
+                                minWidth: `${width}px`, 
+                                maxWidth: `${width}px`,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                              }}
+                            >
+                              <div className='w-full min-w-0 overflow-hidden'>
+                                {column.render
+                                  ? column.render(product[column.key as keyof Product], product)
+                                  : String(product[column.key as keyof Product] || '-')}
+                              </div>
+                            </td>
+                          )
+                        })}
                       </tr>
 
                       {/* Fila expandible de variantes */}
