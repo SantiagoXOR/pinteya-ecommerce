@@ -128,6 +128,7 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
+      
       logger.dev('[useProductsEnterprise] API Response:', {
         productsCount: data?.data?.length,
         count: data?.count,

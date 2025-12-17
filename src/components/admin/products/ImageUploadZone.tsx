@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { Upload, X, Loader2, AlertCircle } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface ImageUploadZoneProps {
-  productId: string
+  productId?: string // ✅ Ahora es opcional para permitir uploads antes de crear el producto
   currentImageUrl?: string | null
   onUploadSuccess: (imageUrl: string) => void
   onError?: (error: string) => void
@@ -166,8 +166,12 @@ export function ImageUploadZone({
           })
         }, 200)
 
-        // Subir archivo
-        const response = await fetch(`/api/admin/products/${productId}/images`, {
+        // Subir archivo - usar endpoint genérico si no hay productId, o endpoint específico si hay productId
+        const uploadUrl = productId 
+          ? `/api/admin/products/${productId}/images`
+          : `/api/admin/upload/image`
+        
+        const response = await fetch(uploadUrl, {
           method: 'POST',
           body: formData,
         })
@@ -181,6 +185,7 @@ export function ImageUploadZone({
         }
 
         const result = await response.json()
+        // El endpoint genérico retorna { data: { url, path } }, el específico retorna { data: { url, ... } }
         const imageUrl = result.data?.url
 
         if (!imageUrl) {
@@ -228,7 +233,7 @@ export function ImageUploadZone({
         uploadFile(file)
       }
     },
-    [productId, uploadFile]
+    [uploadFile]
   )
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {

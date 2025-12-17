@@ -155,10 +155,10 @@ export default function ProductDetailPage() {
   ]
 
   const actions = (
-    <div className='flex w-full flex-wrap items-center justify-end gap-2 sm:gap-3'>
+    <>
       <button
         onClick={handleViewPublic}
-        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium'
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium whitespace-nowrap'
       >
         <Eye className='w-4 h-4' />
         <span>Ver Público</span>
@@ -166,7 +166,7 @@ export default function ProductDetailPage() {
 
       <button
         onClick={handleEdit}
-        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors text-sm font-medium'
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap'
       >
         <Edit className='w-4 h-4' />
         <span>Editar</span>
@@ -174,12 +174,12 @@ export default function ProductDetailPage() {
 
       <button
         onClick={handleDelete}
-        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 border border-red-300 text-red-700 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium'
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 border border-red-300 text-red-700 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium whitespace-nowrap'
       >
         <Trash2 className='w-4 h-4' />
         <span>Eliminar</span>
       </button>
-    </div>
+    </>
   )
 
   return (

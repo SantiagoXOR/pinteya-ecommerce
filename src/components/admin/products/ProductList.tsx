@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -207,6 +207,8 @@ export function ProductList({
   const router = useRouter()
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const tableScrollRef = useRef<HTMLDivElement>(null)
+  const topScrollBarRef = useRef<HTMLDivElement>(null)
 
   // ✅ Estado de sorting
   const [sortColumn, setSortColumn] = useState<string>(filters.sort_by || 'created_at')
@@ -265,11 +267,53 @@ export function ProductList({
   }
 
   // Hook para columnas redimensionables
-  const { columnWidths, isResizing, handleMouseDown } = useResizableColumns({
+  const { columnWidths, isResizing, justFinishedResizing, handleMouseDown } = useResizableColumns({
     defaultWidths: defaultColumnWidths,
     minWidth: 80, // Aumentado para evitar superposición
     maxWidth: 500,
   })
+
+  // Sincronizar scroll horizontal entre la barra superior y la tabla
+  useEffect(() => {
+    const tableContainer = tableScrollRef.current
+    const scrollBar = topScrollBarRef.current
+    
+    if (!tableContainer || !scrollBar) return
+
+    const scrollContent = scrollBar.querySelector('.scroll-content') as HTMLElement
+    if (scrollContent) {
+      scrollContent.style.width = `${tableContainer.scrollWidth}px`
+    }
+
+    const handleTableScroll = () => {
+      if (scrollBar) {
+        scrollBar.scrollLeft = tableContainer.scrollLeft
+      }
+    }
+
+    const handleBarScroll = () => {
+      if (tableContainer) {
+        tableContainer.scrollLeft = scrollBar.scrollLeft
+      }
+    }
+
+    tableContainer.addEventListener('scroll', handleTableScroll)
+    scrollBar.addEventListener('scroll', handleBarScroll)
+
+    // Actualizar ancho cuando cambie el contenido
+    const resizeObserver = new ResizeObserver(() => {
+      if (scrollContent) {
+        scrollContent.style.width = `${tableContainer.scrollWidth}px`
+      }
+    })
+    resizeObserver.observe(tableContainer)
+
+    return () => {
+      tableContainer.removeEventListener('scroll', handleTableScroll)
+      scrollBar.removeEventListener('scroll', handleBarScroll)
+      resizeObserver.disconnect()
+    }
+  }, [products, columnWidths])
 
   // Table columns configuration
   const columns = [
@@ -378,15 +422,38 @@ export function ProductList({
       render: (_: any, product: Product) => {
         const categories = product.categories || []
         
+        // Fallback: intentar obtener categorías de product_categories si categories está vacío
+        if (categories.length === 0 && (product as any).product_categories) {
+          const fallbackCategories = (product as any).product_categories
+            ?.map((pc: any) => pc.category)
+            .filter((cat: any) => cat != null) || []
+          
+          if (fallbackCategories.length > 0) {
+            return (
+              <div className='flex flex-wrap gap-1'>
+                {fallbackCategories.map((cat: any) => (
+                  <Badge
+                    key={cat.id}
+                    variant='soft'
+                    className='text-xs'
+                  >
+                    {cat.name}
+                  </Badge>
+                ))}
+              </div>
+            )
+          }
+        }
+
         if (categories.length === 0) {
           return <span className='text-sm text-gray-500'>Sin categorías</span>
         }
-        
+
         return (
           <div className='flex flex-wrap gap-1'>
             {categories.map(cat => (
-              <Badge 
-                key={cat.id} 
+              <Badge
+                key={cat.id}
                 variant='soft'
                 className='text-xs'
               >
@@ -411,9 +478,28 @@ export function ProductList({
       title: 'Medida',
       sortable: true,
       defaultWidth: 100,
-      render: (medida: string) => (
-        <span className='text-xs text-gray-700 font-medium'>{medida || '-'}</span>
-      ),
+      render: (medida: string, product: Product) => {
+        // ✅ NUEVO: Obtener todas las medidas del array 'medidas' o usar la medida individual
+        const medidas = (product as any).medidas || (medida ? [medida] : [])
+        
+        if (medidas.length === 0) {
+          return <span className='text-sm text-gray-500'>Sin medidas</span>
+        }
+
+        return (
+          <div className='flex flex-wrap gap-1'>
+            {medidas.map((m: string, index: number) => (
+              <Badge
+                key={`${product.id}-${m}-${index}`}
+                variant='soft'
+                className='text-xs'
+              >
+                {m}
+              </Badge>
+            ))}
+          </div>
+        )
+      },
     },
     {
       key: 'price',
@@ -460,17 +546,39 @@ export function ProductList({
       key: 'color',
       title: 'Color',
       defaultWidth: 100,
-      render: (color: string) => (
-        <span className='text-xs text-gray-700'>{color || '-'}</span>
-      ),
+      render: (color: string, product: Product) => {
+        // ✅ NUEVO: Obtener todos los colores del array 'colores' o usar el color individual
+        const colores = (product as any).colores || (color ? [color] : [])
+        
+        if (colores.length === 0) {
+          return <span className='text-sm text-gray-500'>Sin colores</span>
+        }
+
+        return (
+          <div className='flex flex-wrap gap-1'>
+            {colores.map((c: string, index: number) => (
+              <Badge
+                key={`${product.id}-${c}-${index}`}
+                variant='soft'
+                className='text-xs'
+              >
+                {c}
+              </Badge>
+            ))}
+          </div>
+        )
+      },
     },
     {
       key: 'aikon_id',
       title: 'Código Aikon',
       defaultWidth: 120,
-      render: (aikonId: string) => (
-        <span className='text-xs text-gray-500 font-mono'>{aikonId || '-'}</span>
-      ),
+      render: (aikonId: string) => {
+        // ✅ CAMBIADO: Mostrar solo el código aikon (ya viene de la variante predeterminada desde la API)
+        return (
+          <span className='text-xs text-gray-500 font-mono'>{aikonId || '-'}</span>
+        )
+      },
     },
     {
       key: 'status',
@@ -690,9 +798,29 @@ export function ProductList({
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+        className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative'
       >
-        <div className='overflow-x-auto'>
+        {/* Barra de scroll horizontal flotante siempre visible en la parte superior */}
+        <div 
+          ref={topScrollBarRef}
+          className='sticky top-0 z-30 h-3 bg-gray-50 border-b border-gray-200 overflow-x-auto overflow-y-hidden products-table-scroll'
+          style={{ 
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#cbd5e1 #f1f5f9'
+          }}
+        >
+          <div className='scroll-content' style={{ height: '1px' }}></div>
+        </div>
+        
+        <div 
+          ref={tableScrollRef}
+          className='products-table-scroll' 
+          style={{ 
+            maxHeight: 'calc(100vh - 300px)',
+            overflowX: 'auto',
+            overflowY: 'auto'
+          }}
+        >
           <table className='min-w-full divide-y divide-gray-100' data-testid="products-table">
             {/* Sticky Header con blur backdrop y sorting */}
             <thead className='bg-gradient-to-r from-gray-50/95 to-gray-100/95 sticky top-0 z-10 backdrop-blur-sm border-b border-gray-200'>
@@ -711,7 +839,14 @@ export function ProductList({
                         isResizingColumn && 'bg-blue-50'
                       )}
                       style={{ width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }}
-                      onClick={() => column.sortable && handleSort(columnKey)}
+                      onClick={(e) => {
+                        // Prevenir sort si estamos redimensionando o acabamos de redimensionar esta columna
+                        if (column.sortable && !isResizing && justFinishedResizing !== columnKey) {
+                          handleSort(columnKey)
+                        } else if (justFinishedResizing === columnKey) {
+                          e.stopPropagation()
+                        }
+                      }}
                     >
                       <div className='flex items-center gap-1.5'>
                         <span>{column.title}</span>
@@ -720,10 +855,21 @@ export function ProductList({
                       {/* Resize handle */}
                       <div
                         className={cn(
-                          'absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 transition-colors group',
+                          'absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 transition-colors group z-10',
                           isResizingColumn && 'bg-blue-500 w-1.5'
                         )}
-                        onMouseDown={(e) => handleMouseDown(e, columnKey)}
+                        onMouseDown={(e) => {
+                          handleMouseDown(e, columnKey)
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        onMouseUp={(e) => {
+                          // Prevenir que el click se propague después del mouseUp
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
                         title='Arrastra para redimensionar'
                       >
                         <div className='absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-0.5 opacity-0 group-hover:opacity-100 transition-opacity'>

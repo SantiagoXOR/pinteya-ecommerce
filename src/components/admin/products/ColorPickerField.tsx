@@ -157,9 +157,9 @@ export function ColorPickerField({
           <div className='mb-2'>
             <h4 className='text-sm font-medium text-gray-700 mb-2'>Seleccionar de paleta</h4>
             <div className='grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 max-h-48 overflow-y-auto'>
-              {PAINT_COLORS.filter(c => c.isPopular).map((color) => (
+              {PAINT_COLORS.filter(c => c.isPopular).map((color, index) => (
                 <button
-                  key={color.id}
+                  key={`color-${color.hex}-${index}`}
                   type='button'
                   onClick={() => handlePaletteColorSelect(color)}
                   className={cn(

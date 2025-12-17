@@ -2,11 +2,12 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useRef, useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { ProductFormMinimal } from '@/components/admin/products/ProductFormMinimal'
 import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { toast } from 'react-hot-toast'
-import { AlertCircle } from '@/lib/optimized-imports'
+import { AlertCircle, Save, X } from '@/lib/optimized-imports'
 
 interface Product {
   id: string
@@ -76,6 +77,9 @@ export default function EditProductPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const productId = params.id as string
+  const [isFormDirty, setIsFormDirty] = useState(false)
+  const submitFormRef = useRef<(() => void) | null>(null)
+  const isDirtyCheckRef = useRef<(() => boolean) | null>(null)
 
   // Fetch product data
   const {
@@ -126,6 +130,31 @@ export default function EditProductPage() {
     router.push(`/admin/products/${productId}`)
   }
 
+  const handleFormReady = (submitForm: () => void, isDirty: () => boolean) => {
+    submitFormRef.current = submitForm
+    isDirtyCheckRef.current = isDirty
+    setIsFormDirty(isDirty())
+  }
+
+  // Actualizar isDirty periódicamente
+  useEffect(() => {
+    if (!isDirtyCheckRef.current) return
+
+    const interval = setInterval(() => {
+      if (isDirtyCheckRef.current) {
+        setIsFormDirty(isDirtyCheckRef.current())
+      }
+    }, 500)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleSave = () => {
+    if (submitFormRef.current) {
+      submitFormRef.current()
+    }
+  }
+
   if (isLoading) {
     return (
       <AdminLayout title='Cargando...'>
@@ -159,8 +188,28 @@ export default function EditProductPage() {
     { label: 'Editar' },
   ]
 
+  const actions = (
+    <>
+      <button
+        onClick={handleCancel}
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium whitespace-nowrap'
+      >
+        <X className='w-4 h-4' />
+        <span>Cancelar</span>
+      </button>
+      <button
+        onClick={handleSave}
+        disabled={updateProductMutation.isPending || !isFormDirty}
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed'
+      >
+        <Save className='w-4 h-4' />
+        <span>Guardar</span>
+      </button>
+    </>
+  )
+
   return (
-    <AdminLayout title={`Editar: ${product.name}`} breadcrumbs={breadcrumbs}>
+    <AdminLayout breadcrumbs={breadcrumbs} actions={actions}>
       <AdminContentWrapper>
         <ProductFormMinimal
           mode='edit'
@@ -169,6 +218,7 @@ export default function EditProductPage() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isLoading={updateProductMutation.isPending}
+          onFormReady={handleFormReady}
         />
       </AdminContentWrapper>
     </AdminLayout>

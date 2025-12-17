@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminCard } from '../ui/AdminCard'
 import { CategorySelector } from './CategorySelector'
@@ -70,6 +70,8 @@ interface ProductFormMinimalProps {
   onSubmit: (data: ProductFormData) => Promise<void>
   onCancel?: () => void
   isLoading?: boolean
+  // ✅ NUEVO: Exponer funciones para que los botones externos puedan usarlas
+  onFormReady?: (submitForm: () => void, isDirty: () => boolean) => void
 }
 
 export function ProductFormMinimal({
@@ -79,6 +81,7 @@ export function ProductFormMinimal({
   onSubmit,
   onCancel,
   isLoading = false,
+  onFormReady,
 }: ProductFormMinimalProps) {
   const notifications = useProductNotifications()
   const queryClient = useQueryClient()
@@ -231,6 +234,25 @@ export function ProductFormMinimal({
   } = form
 
   const watchedData = watch()
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // ✅ NUEVO: Exponer funciones al componente padre para que los botones externos puedan usarlas
+  // Usar useRef para almacenar la función checkDirty y evitar re-renders infinitos
+  const isDirtyRef = useRef(isDirty)
+  isDirtyRef.current = isDirty
+
+  useEffect(() => {
+    if (onFormReady) {
+      const submitForm = () => {
+        if (formRef.current) {
+          formRef.current.requestSubmit()
+        }
+      }
+      const checkDirty = () => isDirtyRef.current
+      onFormReady(submitForm, checkDirty)
+    }
+    // ✅ Solo ejecutar cuando onFormReady cambia, NO cuando isDirty cambia
+  }, [onFormReady])
 
   const handleFormSubmit = async (data: ProductFormData) => {
     try {
@@ -338,37 +360,12 @@ export function ProductFormMinimal({
 
   return (
     <div className='space-y-6'>
-      {/* Header Sticky */}
-      <div className='sticky top-0 z-10 bg-white border-b border-gray-200 -mx-6 px-6 py-4 shadow-sm'>
-        <div className='flex items-center justify-between'>
-          <h1 className='text-2xl font-bold text-gray-900'>
-            {mode === 'create' ? 'Crear Producto' : 'Editar Producto'}
-          </h1>
-          <div className='flex items-center space-x-3'>
-            {onCancel && (
-              <button
-                type='button'
-                onClick={onCancel}
-                className='flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-gray-900'
-              >
-                <X className='w-4 h-4' />
-                <span>Cancelar</span>
-              </button>
-            )}
-            <button
-              type='submit'
-              form='product-form-minimal'
-              disabled={isLoading || !isDirty}
-              className='flex items-center space-x-2 px-4 py-2 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg disabled:opacity-50'
-            >
-              <Save className='w-4 h-4' />
-              <span>{mode === 'create' ? 'Crear' : 'Guardar'}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <form id='product-form-minimal' onSubmit={handleSubmit(handleFormSubmit)} className='space-y-6'>
+      <form 
+        id='product-form-minimal' 
+        ref={formRef}
+        onSubmit={handleSubmit(handleFormSubmit)} 
+        className='space-y-6'
+      >
         {/* Información Básica */}
         <AdminCard title='Información Básica'>
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
@@ -606,37 +603,17 @@ export function ProductFormMinimal({
         {/* Imagen */}
         <AdminCard title='Imagen del Producto'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            {productId && mode === 'edit' ? (
-              <ImageUploadZone
-                productId={productId}
-                currentImageUrl={imagePreview || watchedData.image_url || null}
-                onUploadSuccess={(imageUrl) => {
-                  setImagePreview(imageUrl)
-                  form.setValue('image_url', imageUrl || null, { shouldDirty: true })
-                }}
-                onError={(error) => {
-                  notifications.showInfoMessage('Error al subir imagen', error)
-                }}
-              />
-            ) : (
-              <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300'>
-                {imagePreview || watchedData.image_url ? (
-                  <Image
-                    src={imagePreview || watchedData.image_url || ''}
-                    alt={watchedData.name || 'Producto'}
-                    width={400}
-                    height={400}
-                    className='w-full h-full object-cover'
-                    unoptimized
-                  />
-                ) : (
-                  <div className='text-center text-gray-400'>
-                    <Upload className='w-12 h-12 mx-auto mb-2' />
-                    <p className='text-sm'>Sin imagen</p>
-                  </div>
-                )}
-              </div>
-            )}
+            <ImageUploadZone
+              productId={productId} // ✅ Ahora es opcional, funciona tanto en create como edit
+              currentImageUrl={imagePreview || watchedData.image_url || null}
+              onUploadSuccess={(imageUrl) => {
+                setImagePreview(imageUrl)
+                form.setValue('image_url', imageUrl || null, { shouldDirty: true })
+              }}
+              onError={(error) => {
+                notifications.showInfoMessage('Error al subir imagen', error)
+              }}
+            />
 
             <div className='space-y-3'>
               {(!productId || mode === 'create') && (

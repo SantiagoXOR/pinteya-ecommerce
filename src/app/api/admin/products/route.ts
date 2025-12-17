@@ -254,19 +254,89 @@ const getHandler = async (request: ValidatedRequest) => {
       ultimos3: products?.slice(-3).map(p => `${p.id}:${p.name?.substring(0, 15)}`) || [],
     })
 
+    // ✅ NUEVO: Obtener TODAS las medidas y colores únicos de variantes, y solo el código aikon de la variante predeterminada
+    const productIds = products?.map(p => p.id) || []
+    const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
+    const variantColors: Record<number, string[]> = {} // ✅ Array de colores
+    const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+    
+    if (productIds.length > 0) {
+      const { data: variantData, error: variantError } = await supabaseAdmin
+        .from('product_variants')
+        .select('product_id,is_default,measure,color_name,aikon_id')
+        .in('product_id', productIds)
+        .eq('is_active', true)
+      
+      variantData?.forEach(variant => {
+        // Obtener TODAS las medidas únicas de las variantes
+        if (variant.measure && variant.measure.trim() !== '') {
+          if (!variantMeasures[variant.product_id]) {
+            variantMeasures[variant.product_id] = []
+          }
+          if (!variantMeasures[variant.product_id].includes(variant.measure)) {
+            variantMeasures[variant.product_id].push(variant.measure)
+          }
+        }
+        
+        // ✅ Obtener TODOS los colores únicos de las variantes
+        if (variant.color_name && variant.color_name.trim() !== '') {
+          if (!variantColors[variant.product_id]) {
+            variantColors[variant.product_id] = []
+          }
+          if (!variantColors[variant.product_id].includes(variant.color_name)) {
+            variantColors[variant.product_id].push(variant.color_name)
+          }
+        }
+        
+        // ✅ CAMBIADO: Obtener SOLO el código aikon de la variante predeterminada
+        if (variant.is_default && variant.aikon_id && variant.aikon_id.trim() !== '') {
+          variantAikonIds[variant.product_id] = variant.aikon_id
+        }
+      })
+    }
+
     // Transform data to include category name and all fields
     const transformedProducts =
       products?.map(product => {
         const resolvedImage = extractImageUrl(product.images)
+        
+        // Transform product_categories to categories array
+        const categories = product.product_categories
+          ?.map((pc: any) => pc.category)
+          .filter((cat: any) => cat != null) || []
+        
+        // ✅ NUEVO: Combinar medida del producto con todas las medidas de variantes
+        const productMedida = product.medida ? [product.medida] : []
+        const variantMeasuresList = variantMeasures[product.id] || []
+        const allMeasures = Array.from(new Set([...productMedida, ...variantMeasuresList]))
+        
+        // ✅ NUEVO: Combinar color del producto con todos los colores de variantes
+        const productColor = product.color ? [product.color] : []
+        const variantColorsList = variantColors[product.id] || []
+        const allColors = Array.from(new Set([...productColor, ...variantColorsList]))
+        
+        // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
+        const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
 
         return {
           ...product,
-          category_name: product.category?.name || null,
+          category_name: product.category?.name || categories[0]?.name || null,
           category: undefined, // Remove nested object
+          product_categories: undefined, // Remove nested object
+          // Transform product_categories to categories array
+          categories: categories,
           // Transform images JSONB/legacy formats to image_url
           image_url: resolvedImage,
           // Derive status from is_active (status column doesn't exist in DB)
           status: product.is_active ? 'active' : 'inactive',
+          // ✅ NUEVO: Array de todas las medidas (producto + variantes)
+          medida: allMeasures.length > 0 ? allMeasures[0] : null, // Mantener compatibilidad con campo string
+          medidas: allMeasures, // ✅ NUEVO: Array de todas las medidas
+          // ✅ NUEVO: Array de todos los colores (producto + variantes)
+          color: allColors.length > 0 ? allColors[0] : null, // Mantener compatibilidad con campo string
+          colores: allColors, // ✅ NUEVO: Array de todos los colores
+          // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+          aikon_id: defaultAikonId,
         }
       }) || []
 
@@ -772,11 +842,14 @@ export const GET = async (request: NextRequest) => {
     const productIds = products?.map(p => p.id) || []
     const variantCounts: Record<number, number> = {}
     const variantImages: Record<number, string | null> = {}
+    const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
+    const variantColors: Record<number, string[]> = {} // ✅ Array de colores
+    const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
     
     if (productIds.length > 0) {
-      const { data: variantData } = await supabaseAdmin
+      const { data: variantData, error: variantError } = await supabaseAdmin
         .from('product_variants')
-        .select('product_id,image_url,is_default')
+        .select('product_id,image_url,is_default,measure,color_name,aikon_id') // ✅ AGREGADO: color_name, aikon_id
         .in('product_id', productIds)
         .eq('is_active', true)
       
@@ -791,6 +864,31 @@ export const GET = async (request: NextRequest) => {
         if (variant.is_default && normalizedImage) {
           variantImages[variant.product_id] = normalizedImage
         }
+        
+        // ✅ Obtener TODAS las medidas únicas de las variantes
+        if (variant.measure && variant.measure.trim() !== '') {
+          if (!variantMeasures[variant.product_id]) {
+            variantMeasures[variant.product_id] = []
+          }
+          if (!variantMeasures[variant.product_id].includes(variant.measure)) {
+            variantMeasures[variant.product_id].push(variant.measure)
+          }
+        }
+        
+        // ✅ Obtener TODOS los colores únicos de las variantes
+        if (variant.color_name && variant.color_name.trim() !== '') {
+          if (!variantColors[variant.product_id]) {
+            variantColors[variant.product_id] = []
+          }
+          if (!variantColors[variant.product_id].includes(variant.color_name)) {
+            variantColors[variant.product_id].push(variant.color_name)
+          }
+        }
+        
+        // ✅ CAMBIADO: Obtener SOLO el código aikon de la variante predeterminada
+        if (variant.is_default && variant.aikon_id && variant.aikon_id.trim() !== '') {
+          variantAikonIds[variant.product_id] = variant.aikon_id
+        }
       })
     }
     
@@ -798,17 +896,46 @@ export const GET = async (request: NextRequest) => {
       products?.map(product => {
         const variantImage = variantImages[product.id]
         const fallbackImage = extractImageUrl(product.images)
-
+        
+        // Transform product_categories to categories array
+        const categories = product.product_categories
+          ?.map((pc: any) => pc.category)
+          .filter((cat: any) => cat != null) || []
+        
+        // ✅ NUEVO: Combinar medida del producto con todas las medidas de variantes
+        const productMedida = product.medida ? [product.medida] : []
+        const variantMeasuresList = variantMeasures[product.id] || []
+        const allMeasures = Array.from(new Set([...productMedida, ...variantMeasuresList]))
+        
+        // ✅ NUEVO: Combinar color del producto con todos los colores de variantes
+        const productColor = product.color ? [product.color] : []
+        const variantColorsList = variantColors[product.id] || []
+        const allColors = Array.from(new Set([...productColor, ...variantColorsList]))
+        
+        // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
+        const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
+        
         return {
           ...product,
-          category_name: product.category?.name || null,
+          category_name: product.category?.name || categories[0]?.name || null,
           category: undefined,
+          product_categories: undefined, // Remove nested object
+          // Transform product_categories to categories array
+          categories: categories,
           // Agregar conteo de variantes
           variant_count: variantCounts[product.id] || 0,
           // Imagen priorizando variantes
           image_url: variantImage || fallbackImage,
           // Default status si es null
           status: product.status || (product.is_active ? 'active' : 'inactive'),
+          // ✅ NUEVO: Array de todas las medidas (producto + variantes)
+          medida: allMeasures.length > 0 ? allMeasures[0] : null, // Mantener compatibilidad con campo string
+          medidas: allMeasures, // ✅ NUEVO: Array de todas las medidas
+          // ✅ NUEVO: Array de todos los colores (producto + variantes)
+          color: allColors.length > 0 ? allColors[0] : null, // Mantener compatibilidad con campo string
+          colores: allColors, // ✅ NUEVO: Array de todos los colores
+          // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+          aikon_id: defaultAikonId,
         }
       }) || []
 
