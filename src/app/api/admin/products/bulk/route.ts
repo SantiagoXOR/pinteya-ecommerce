@@ -248,6 +248,8 @@ export async function POST(request: NextRequest) {
 
       case 'delete':
         // ✅ CORREGIDO: Eliminar productos (hard delete si no tienen órdenes, soft delete si tienen)
+        console.log('🗑️ Iniciando eliminación masiva de productos:', { productIds: numericProductIds })
+        
         // Primero verificar si tienen órdenes asociadas
         const { data: orderItems, error: orderCheckError } = await supabase
           .from('order_items')
@@ -256,14 +258,20 @@ export async function POST(request: NextRequest) {
           .limit(1)
 
         if (orderCheckError) {
-          console.warn('Error verificando órdenes:', orderCheckError)
+          console.warn('⚠️ Error verificando órdenes:', orderCheckError)
         }
+
+        console.log('📦 Verificación de órdenes:', { 
+          hasOrders: orderItems && orderItems.length > 0,
+          orderItemsCount: orderItems?.length || 0 
+        })
 
         let deleteData
         let deleteError
 
         if (orderItems && orderItems.length > 0) {
           // Soft delete: marcar como inactivo si tienen órdenes
+          console.log('🔄 Realizando soft delete (marcar como inactivo)')
           const result = await supabase
             .from('products')
             .update({
@@ -274,22 +282,44 @@ export async function POST(request: NextRequest) {
             .select('id')
           deleteData = result.data
           deleteError = result.error
+          console.log('🔄 Resultado soft delete:', { data: deleteData, error: deleteError })
         } else {
           // Hard delete: eliminar completamente si no tienen órdenes
+          console.log('🗑️ Realizando hard delete (eliminación completa)')
           const result = await supabase
             .from('products')
             .delete()
             .in('id', numericProductIds)
+          // ✅ CORREGIDO: En Supabase, después de DELETE, select puede no funcionar correctamente
+          // Verificar eliminación consultando los productos
+          const { data: verifyDelete, error: verifyError } = await supabase
+            .from('products')
             .select('id')
-          deleteData = result.data
-          deleteError = result.error
+            .in('id', numericProductIds)
+          
+          console.log('🗑️ Verificación de eliminación:', { 
+            productosRestantes: verifyDelete?.length || 0,
+            verifyError 
+          })
+          
+          // Si no hay productos restantes, la eliminación fue exitosa
+          deleteData = verifyDelete && verifyDelete.length === 0 ? numericProductIds.map(id => ({ id })) : []
+          deleteError = result.error || verifyError
         }
 
         if (deleteError) {
+          console.error('❌ Error en eliminación:', deleteError)
           throw deleteError
         }
 
         affectedCount = deleteData?.length || 0
+        console.log('✅ Eliminación completada:', { 
+          affectedCount, 
+          expectedCount: numericProductIds.length,
+          hard_delete: !orderItems || orderItems.length === 0,
+          soft_delete: orderItems && orderItems.length > 0,
+        })
+        
         result = {
           operation: 'delete',
           affected_count: affectedCount,

@@ -113,6 +113,7 @@ interface ProductListProps {
   onBulkCategoryChange?: (productIds: string[], categoryId: number) => Promise<void>
   onBulkPriceUpdate?: (productIds: string[], priceChange: { type: 'percentage' | 'fixed'; value: number }) => Promise<void>
   onBulkArchive?: (productIds: string[]) => Promise<void>
+  onBulkDelete?: (productIds: string[]) => Promise<void>
   className?: string
 }
 
@@ -213,6 +214,7 @@ export function ProductList({
   onBulkCategoryChange,
   onBulkPriceUpdate,
   onBulkArchive,
+  onBulkDelete,
   className 
 }: ProductListProps) {
   const router = useRouter()
@@ -694,9 +696,26 @@ export function ProductList({
   }
 
   const handleBulkDelete = async (productIds: string[]) => {
-    // TODO: Implement bulk delete
-    console.log('Bulk delete products:', productIds)
-    setSelectedProducts([])
+    if (onBulkDelete) {
+      try {
+        await onBulkDelete(productIds)
+        setSelectedProducts([]) // Limpiar selección después de la acción
+        // ✅ Invalidar queries para refrescar la lista
+        queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+        queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+        // Forzar refetch inmediato
+        await queryClient.refetchQueries({ 
+          queryKey: ['admin-products'], 
+          exact: false,
+          type: 'active'
+        })
+      } catch (error) {
+        console.error('Error en eliminación masiva:', error)
+        throw error // Re-lanzar para que el componente padre maneje el error
+      }
+    } else {
+      console.warn('onBulkDelete no está definido')
+    }
   }
 
   // ✅ Handlers para acciones masivas
