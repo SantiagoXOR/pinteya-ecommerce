@@ -19,9 +19,14 @@ import {
   XCircle,
   FileText,
   BarChart3,
+  X,
 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
+import { BrandSelector } from './BrandSelector'
+import { CategorySelector } from './CategorySelector'
+import { MeasureSelector } from './MeasureSelector'
+import { ColorPickerField } from './ColorPickerField'
 
 interface Product {
   id: string
@@ -29,15 +34,22 @@ interface Product {
   status: 'active' | 'inactive' | 'draft'
 }
 
+interface Category {
+  id: number
+  name: string
+  slug?: string
+}
+
 interface ProductActionsProps {
   selectedProducts?: Product[]
+  categories?: Category[] // ✅ NUEVO: Categorías reales desde la BD
   onCreateProduct?: () => void
   onEditProduct?: (productId: string) => void
   onViewProduct?: (productId: string) => void
   onDeleteProduct?: (productId: string) => void
   onBulkDelete?: (productIds: string[]) => void
   onBulkEdit?: (productIds: string[], updates: Partial<Product>) => void
-  onBulkStatusChange?: (productIds: string[], status: Product['status']) => void
+  onBulkStatusChange?: (productIds: string[], status: 'active' | 'inactive' | 'draft') => void
   onBulkCategoryChange?: (productIds: string[], categoryId: number) => void
   onBulkPriceUpdate?: (
     productIds: string[],
@@ -54,6 +66,7 @@ interface ProductActionsProps {
 
 export function ProductActions({
   selectedProducts = [],
+  categories = [], // ✅ NUEVO: Recibir categorías reales
   onCreateProduct,
   onEditProduct,
   onViewProduct,
@@ -78,8 +91,16 @@ export function ProductActions({
   const [showExportOptions, setShowExportOptions] = useState(false)
   const [bulkEditData, setBulkEditData] = useState({
     status: '',
-    categoryId: '',
+    categoryIds: [] as number[], // ✅ Cambiado a array para multi-select
+    brand: '',
+    stock: '',
+    stockAdjustment: { type: 'set' as 'set' | 'add' | 'subtract', value: '' },
+    price: '',
+    discountedPrice: '',
     priceChange: { type: 'percentage' as const, value: 0 },
+    medidas: [] as string[], // ✅ Cambiado a array
+    color: '',
+    colorHex: '',
   })
 
   const selectedCount = selectedProducts.length
@@ -97,7 +118,7 @@ export function ProductActions({
     }
   }
 
-  const handleBulkStatusChange = async (status: Product['status']) => {
+  const handleBulkStatusChange = async (status: 'active' | 'inactive' | 'draft') => {
     if (onBulkStatusChange && selectedProducts.length > 0) {
       try {
         await onBulkStatusChange(
@@ -130,7 +151,7 @@ export function ProductActions({
         notifications.showProcessingInfo(`Exportando productos en formato ${format.toUpperCase()}...`)
         await onExportProducts(format)
         // Estimamos que exporta todos los productos visibles
-        notifications.showExportSuccess({ format: format.toUpperCase() as 'CSV' | 'Excel' | 'JSON', recordCount: totalProducts || 0 })
+        notifications.showExportSuccess({ format: format.toUpperCase() as 'CSV' | 'Excel' | 'JSON', recordCount: selectedCount || 0 })
         setShowExportOptions(false)
       } catch (error) {
         notifications.showExportError(format.toUpperCase(), error instanceof Error ? error.message : 'Error desconocido')
@@ -327,7 +348,7 @@ export function ProductActions({
       </div>
 
       {/* Bulk Actions Dropdown */}
-      {showBulkActions && hasSelectedProducts && (
+      {showBulkActions && hasSelection && (
         <div className='absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50'>
           <div className='py-1'>
             <button
@@ -409,7 +430,7 @@ export function ProductActions({
       {/* Bulk Edit Modal */}
       {showBulkEditModal && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-white rounded-lg p-6 max-w-lg w-full mx-4'>
+          <div className='bg-white rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col'>
             <div className='flex items-center justify-between mb-4'>
               <h3 className='text-lg font-medium text-gray-900'>Editar productos masivamente</h3>
               <button
@@ -420,21 +441,29 @@ export function ProductActions({
               </button>
             </div>
 
-            <div className='space-y-4'>
+            <div className='space-y-4 flex-1 overflow-y-auto pr-2'>
+              {/* Categorías (Multi-select) */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Categoría</label>
-                <select
-                  value={bulkEditData.categoryId || ''}
-                  onChange={e => setBulkEditData(prev => ({ ...prev, categoryId: e.target.value }))}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
-                >
-                  <option value=''>Sin cambios</option>
-                  <option value='1'>Electrónicos</option>
-                  <option value='2'>Ropa</option>
-                  <option value='3'>Hogar</option>
-                </select>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Categorías {bulkEditData.categoryIds.length > 0 && `(${bulkEditData.categoryIds.length} seleccionadas)`}
+                </label>
+                <CategorySelector
+                  value={bulkEditData.categoryIds}
+                  onChange={(categoryIds) => {
+                    const ids = Array.isArray(categoryIds) ? categoryIds : categoryIds ? [categoryIds] : []
+                    setBulkEditData(prev => ({ ...prev, categoryIds: ids }))
+                  }}
+                  multiple={true}
+                  placeholder='Selecciona categorías (dejar vacío para no cambiar)'
+                />
+                {bulkEditData.categoryIds.length > 0 && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Se aplicarán todas las categorías seleccionadas a los productos
+                  </p>
+                )}
               </div>
 
+              {/* Estado */}
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Estado</label>
                 <select
@@ -454,6 +483,91 @@ export function ProductActions({
                 </select>
               </div>
 
+              {/* Marca */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Marca</label>
+                <BrandSelector
+                  value={bulkEditData.brand || ''}
+                  onChange={(brand) => setBulkEditData(prev => ({ ...prev, brand }))}
+                  placeholder='Selecciona o crea una marca'
+                  allowCreate={true}
+                />
+                {bulkEditData.brand && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Se aplicará la marca "{bulkEditData.brand}" a todos los productos seleccionados
+                  </p>
+                )}
+              </div>
+
+              {/* Stock */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Stock</label>
+                <div className='flex space-x-2'>
+                  <select
+                    value={bulkEditData.stockAdjustment.type}
+                    onChange={e =>
+                      setBulkEditData(prev => ({
+                        ...prev,
+                        stockAdjustment: {
+                          ...prev.stockAdjustment,
+                          type: e.target.value as 'set' | 'add' | 'subtract',
+                        },
+                      }))
+                    }
+                    className='px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                  >
+                    <option value='set'>Establecer</option>
+                    <option value='add'>Sumar</option>
+                    <option value='subtract'>Restar</option>
+                  </select>
+                  <input
+                    type='number'
+                    value={bulkEditData.stockAdjustment.value}
+                    onChange={e =>
+                      setBulkEditData(prev => ({
+                        ...prev,
+                        stockAdjustment: {
+                          ...prev.stockAdjustment,
+                          value: e.target.value,
+                        },
+                      }))
+                    }
+                    className='flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                    placeholder='0'
+                    min='0'
+                  />
+                </div>
+              </div>
+
+              {/* Precio Base */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Precio Base</label>
+                <input
+                  type='number'
+                  step='0.01'
+                  value={bulkEditData.price}
+                  onChange={e => setBulkEditData(prev => ({ ...prev, price: e.target.value }))}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                  placeholder='Dejar vacío para no cambiar'
+                  min='0'
+                />
+              </div>
+
+              {/* Precio con Descuento */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Precio con Descuento</label>
+                <input
+                  type='number'
+                  step='0.01'
+                  value={bulkEditData.discountedPrice}
+                  onChange={e => setBulkEditData(prev => ({ ...prev, discountedPrice: e.target.value }))}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                  placeholder='Dejar vacío para no cambiar'
+                  min='0'
+                />
+              </div>
+
+              {/* Ajuste de precio (porcentaje o fijo) */}
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Ajuste de precio
@@ -472,12 +586,13 @@ export function ProductActions({
                     }
                     className='px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
                   >
-                    <option value='percentage'>Porcentaje</option>
-                    <option value='fixed'>Cantidad fija</option>
+                    <option value='percentage'>Porcentaje (%)</option>
+                    <option value='fixed'>Cantidad fija ($)</option>
                   </select>
                   <input
                     type='number'
-                    value={bulkEditData.priceChange.value}
+                    step='0.01'
+                    value={bulkEditData.priceChange.value || ''}
                     onChange={e =>
                       setBulkEditData(prev => ({
                         ...prev,
@@ -488,15 +603,75 @@ export function ProductActions({
                       }))
                     }
                     className='flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
-                    placeholder='0'
+                    placeholder={bulkEditData.priceChange.type === 'percentage' ? 'Ej: 10 (aumenta 10%)' : 'Ej: 100 (suma $100)'}
                   />
                 </div>
+                {bulkEditData.priceChange.value !== 0 && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    {bulkEditData.priceChange.type === 'percentage' 
+                      ? `Se ${bulkEditData.priceChange.value > 0 ? 'aumentará' : 'reducirá'} el precio en ${Math.abs(bulkEditData.priceChange.value)}%`
+                      : `Se ${bulkEditData.priceChange.value > 0 ? 'sumará' : 'restará'} $${Math.abs(bulkEditData.priceChange.value)} al precio`
+                    }
+                  </p>
+                )}
               </div>
+
+              {/* Medidas */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Medidas {bulkEditData.medidas.length > 0 && `(${bulkEditData.medidas.length} seleccionadas)`}
+                </label>
+                <MeasureSelector
+                  value={bulkEditData.medidas}
+                  onChange={(medidas) => setBulkEditData(prev => ({ ...prev, medidas }))}
+                  placeholder='Selecciona o agrega medidas'
+                />
+                {bulkEditData.medidas.length > 0 && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Se aplicarán todas las medidas seleccionadas a los productos
+                  </p>
+                )}
+              </div>
+
+              {/* Color */}
+              <div>
+                <ColorPickerField
+                  colorName={bulkEditData.color}
+                  colorHex={bulkEditData.colorHex}
+                  onColorChange={(name, hex) => setBulkEditData(prev => ({ 
+                    ...prev, 
+                    color: name, 
+                    colorHex: hex || undefined 
+                  }))}
+                  label='Color'
+                />
+                {bulkEditData.color && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Se aplicará el color "{bulkEditData.color}" a todos los productos seleccionados
+                  </p>
+                )}
+              </div>
+
             </div>
 
             <div className='flex justify-end space-x-3 mt-6'>
               <button
-                onClick={() => setShowBulkEditModal(false)}
+                onClick={() => {
+                  setShowBulkEditModal(false)
+                  setBulkEditData({
+                    status: '',
+                    categoryIds: [],
+                    brand: '',
+                    stock: '',
+                    stockAdjustment: { type: 'set' as const, value: '' },
+                    price: '',
+                    discountedPrice: '',
+                    priceChange: { type: 'percentage' as const, value: 0 },
+                    medidas: [],
+                    color: '',
+                    colorHex: '',
+                  })
+                }}
                 className='px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors'
               >
                 Cancelar
@@ -505,31 +680,100 @@ export function ProductActions({
                 onClick={() => {
                   if (onBulkEdit && selectedProducts.length > 0) {
                     const updates: any = {}
+                    
+                    // Estado
                     if (bulkEditData.status) {
                       updates.status = bulkEditData.status
                     }
-                    if (bulkEditData.categoryId) {
-                      onBulkCategoryChange?.(
-                        selectedProducts.map(p => p.id),
-                        parseInt(bulkEditData.categoryId)
-                      )
+                    
+                    // Categorías (multi-select)
+                    if (bulkEditData.categoryIds.length > 0) {
+                      // Aplicar cada categoría seleccionada
+                      bulkEditData.categoryIds.forEach(categoryId => {
+                        onBulkCategoryChange?.(
+                          selectedProducts.map(p => p.id),
+                          categoryId
+                        )
+                      })
                     }
+                    
+                    // Marca
+                    if (bulkEditData.brand.trim()) {
+                      updates.brand = bulkEditData.brand.trim()
+                    }
+                    
+                    // Stock
+                    if (bulkEditData.stockAdjustment.value) {
+                      const stockValue = parseInt(bulkEditData.stockAdjustment.value)
+                      if (!isNaN(stockValue)) {
+                        updates.stockAdjustment = {
+                          type: bulkEditData.stockAdjustment.type,
+                          value: stockValue,
+                        }
+                      }
+                    }
+                    
+                    // Precio base
+                    if (bulkEditData.price) {
+                      const priceValue = parseFloat(bulkEditData.price)
+                      if (!isNaN(priceValue) && priceValue >= 0) {
+                        updates.price = priceValue
+                      }
+                    }
+                    
+                    // Precio con descuento
+                    if (bulkEditData.discountedPrice) {
+                      const discountedValue = parseFloat(bulkEditData.discountedPrice)
+                      if (!isNaN(discountedValue) && discountedValue >= 0) {
+                        updates.discounted_price = discountedValue
+                      }
+                    }
+                    
+                    // Ajuste de precio (porcentaje o fijo)
                     if (bulkEditData.priceChange.value !== 0) {
                       onBulkPriceUpdate?.(
                         selectedProducts.map(p => p.id),
                         bulkEditData.priceChange
                       )
                     }
-                    onBulkEdit(
-                      selectedProducts.map(p => p.id),
-                      updates
-                    )
+                    
+                    // Medidas (array)
+                    if (bulkEditData.medidas.length > 0) {
+                      updates.medidas = bulkEditData.medidas
+                    }
+                    
+                    // Color
+                    if (bulkEditData.color.trim()) {
+                      updates.color = bulkEditData.color.trim()
+                      if (bulkEditData.colorHex) {
+                        updates.color_hex = bulkEditData.colorHex
+                      }
+                    }
+                    
+                    // Aplicar actualizaciones
+                    const hasUpdates = Object.keys(updates).length > 0 || 
+                                      bulkEditData.categoryIds.length > 0 || 
+                                      bulkEditData.priceChange.value !== 0
+                    
+                    if (hasUpdates) {
+                      onBulkEdit(selectedProducts.map(p => p.id), updates)
+                    }
                   }
+                  
+                  // Resetear formulario
                   setShowBulkEditModal(false)
                   setBulkEditData({
                     status: '',
-                    categoryId: '',
+                    categoryIds: [],
+                    brand: '',
+                    stock: '',
+                    stockAdjustment: { type: 'set' as const, value: '' },
+                    price: '',
+                    discountedPrice: '',
                     priceChange: { type: 'percentage' as const, value: 0 },
+                    medidas: [],
+                    color: '',
+                    colorHex: '',
                   })
                 }}
                 className='px-4 py-2 text-sm text-white bg-blaze-orange-600 hover:bg-blaze-orange-700 rounded-lg transition-colors'

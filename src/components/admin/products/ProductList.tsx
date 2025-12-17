@@ -14,7 +14,7 @@ import { EmptyState } from '../ui/EmptyState'
 import { Badge } from '../ui/Badge'
 import { cn } from '@/lib/core/utils'
 import { useResizableColumns } from '@/hooks/admin/useResizableColumns'
-import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from '@/lib/optimized-imports'
+import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Check } from '@/lib/optimized-imports'
 
 const resolveImageSource = (payload: any): string | null => {
   const normalize = (value?: string | null) => {
@@ -107,6 +107,11 @@ interface ProductListProps {
     hasPrev?: boolean
   }
   onProductAction?: (action: string, productId: string) => void
+  // ✅ NUEVO: Funciones para acciones masivas
+  onBulkStatusChange?: (productIds: string[], status: 'active' | 'inactive') => Promise<void>
+  onBulkCategoryChange?: (productIds: string[], categoryId: number) => Promise<void>
+  onBulkPriceUpdate?: (productIds: string[], priceChange: { type: 'percentage' | 'fixed'; value: number }) => Promise<void>
+  onBulkArchive?: (productIds: string[]) => Promise<void>
   className?: string
 }
 
@@ -202,6 +207,11 @@ export function ProductList({
     prevPage: () => {},
   },
   onProductAction,
+  // ✅ NUEVO: Funciones para acciones masivas
+  onBulkStatusChange,
+  onBulkCategoryChange,
+  onBulkPriceUpdate,
+  onBulkArchive,
   className 
 }: ProductListProps) {
   const router = useRouter()
@@ -247,6 +257,8 @@ export function ProductList({
 
   // Configuración de anchos por defecto para columnas
   const defaultColumnWidths: { [key: string]: number } = {
+    select: 50, // ✅ NUEVO: Columna de selección
+    actions: 80, // ✅ Movido al principio (después de selección)
     images: 80,
     name: 250,
     id: 70,
@@ -263,7 +275,6 @@ export function ProductList({
     status: 100,
     created_at: 110,
     updated_at: 110,
-    actions: 80,
   }
 
   // Hook para columnas redimensionables
@@ -315,8 +326,68 @@ export function ProductList({
     }
   }, [products, columnWidths])
 
+  // ✅ Handlers para selección
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProducts(prev => {
+      const isSelected = prev.some(p => p.id === product.id)
+      if (isSelected) {
+        return prev.filter(p => p.id !== product.id)
+      } else {
+        return [...prev, product]
+      }
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedProducts.length === products.length) {
+      setSelectedProducts([])
+    } else {
+      setSelectedProducts([...products])
+    }
+  }
+
+  const isProductSelected = (productId: string) => {
+    return selectedProducts.some(p => p.id === productId)
+  }
+
+  const isAllSelected = products.length > 0 && selectedProducts.length === products.length
+  const isSomeSelected = selectedProducts.length > 0 && selectedProducts.length < products.length
+
   // Table columns configuration
   const columns = [
+    {
+      key: 'select',
+      title: '',
+      defaultWidth: 50,
+      align: 'center' as const,
+      render: (_: any, product: Product) => (
+        <div className='flex items-center justify-center'>
+          <input
+            type='checkbox'
+            checked={isProductSelected(product.id)}
+            onChange={() => handleSelectProduct(product)}
+            onClick={(e) => e.stopPropagation()}
+            className='w-4 h-4 text-blaze-orange-600 border-gray-300 rounded focus:ring-blaze-orange-500 cursor-pointer'
+            aria-label={`Seleccionar ${product.name}`}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      title: 'Acciones',
+      defaultWidth: 80,
+      render: (_: any, product: Product) => (
+        <ProductRowActions
+          product={product}
+          onView={id => router.push(`/admin/products/${id}`)}
+          onEdit={id => router.push(`/admin/products/${id}/edit`)}
+          onDelete={handleDeleteProduct}
+          onDuplicate={handleDuplicateProduct}
+          isLoading={isDeleting}
+        />
+      ),
+    },
     {
       key: 'images',
       title: 'Imagen',
@@ -610,21 +681,6 @@ export function ProductList({
         </span>
       ),
     },
-    {
-      key: 'actions',
-      title: 'Acciones',
-      defaultWidth: 80,
-      render: (_: any, product: Product) => (
-        <ProductRowActions
-          product={product}
-          onView={id => router.push(`/admin/products/${id}`)}
-          onEdit={id => router.push(`/admin/products/${id}/edit`)}
-          onDelete={handleDeleteProduct}
-          onDuplicate={handleDuplicateProduct}
-          isLoading={isDeleting}
-        />
-      ),
-    },
   ]
 
   // Event handlers
@@ -637,6 +693,53 @@ export function ProductList({
     // TODO: Implement bulk delete
     console.log('Bulk delete products:', productIds)
     setSelectedProducts([])
+  }
+
+  // ✅ Handlers para acciones masivas
+  const handleBulkStatusChange = async (productIds: string[], status: 'active' | 'inactive' | 'draft') => {
+    if (onBulkStatusChange) {
+      try {
+        // Convertir 'draft' a 'inactive' si es necesario (el hook solo soporta 'active' | 'inactive')
+        const statusToUse = status === 'draft' ? 'inactive' : status
+        await onBulkStatusChange(productIds, statusToUse)
+        setSelectedProducts([]) // Limpiar selección después de la acción
+      } catch (error) {
+        console.error('Error en cambio masivo de estado:', error)
+      }
+    }
+  }
+
+  const handleBulkCategoryChange = async (productIds: string[], categoryId: number) => {
+    if (onBulkCategoryChange) {
+      try {
+        await onBulkCategoryChange(productIds, categoryId)
+        setSelectedProducts([])
+      } catch (error) {
+        console.error('Error en cambio masivo de categoría:', error)
+      }
+    }
+  }
+
+  const handleBulkPriceUpdate = async (productIds: string[], priceChange: { type: 'percentage' | 'fixed'; value: number }) => {
+    if (onBulkPriceUpdate) {
+      try {
+        await onBulkPriceUpdate(productIds, priceChange)
+        setSelectedProducts([])
+      } catch (error) {
+        console.error('Error en actualización masiva de precio:', error)
+      }
+    }
+  }
+
+  const handleBulkArchive = async (productIds: string[]) => {
+    if (onBulkArchive) {
+      try {
+        await onBulkArchive(productIds)
+        setSelectedProducts([])
+      } catch (error) {
+        console.error('Error en archivado masivo:', error)
+      }
+    }
   }
 
   const handleDuplicateProduct = (productId: string) => {
@@ -652,6 +755,11 @@ export function ProductList({
     try {
       console.log(`📊 Exportando productos en formato ${format}...`)
       
+      // ✅ Si hay productos seleccionados, exportar solo esos
+      const productIdsToExport = selectedProducts.length > 0 
+        ? selectedProducts.map(p => p.id)
+        : undefined
+      
       // Construir URL con filtros actuales
       const params = new URLSearchParams({
         format: format,
@@ -659,6 +767,10 @@ export function ProductList({
         ...(filters.brand && { brand: filters.brand }),
         ...(filters.status && filters.status !== 'all' && { status: filters.status }),
         ...(filters.stock_status && filters.stock_status !== 'all' && { stock_status: filters.stock_status }),
+        // ✅ Agregar IDs de productos seleccionados si hay alguno
+        ...(productIdsToExport && productIdsToExport.length > 0 && { 
+          product_ids: productIdsToExport.join(',')
+        }),
       })
 
       // Hacer request a la API
@@ -787,8 +899,13 @@ export function ProductList({
       {/* Actions */}
       <ProductActions
         selectedProducts={selectedProducts}
+        categories={categories} // ✅ Pasar categorías reales
         onCreateProduct={handleCreateProduct}
         onBulkDelete={handleBulkDelete}
+        onBulkStatusChange={handleBulkStatusChange}
+        onBulkCategoryChange={handleBulkCategoryChange}
+        onBulkPriceUpdate={handleBulkPriceUpdate}
+        onBulkArchive={handleBulkArchive}
         onExportProducts={handleExportProducts}
         onImportProducts={handleImportProducts}
         isLoading={isDeleting || isBulkDeleting}
@@ -829,18 +946,26 @@ export function ProductList({
                   const columnKey = column.key.toString()
                   const width = columnWidths[columnKey] || column.defaultWidth || 150
                   const isResizingColumn = isResizing === columnKey
-                  
+                  const isSelectColumn = columnKey === 'select'
+
                   return (
                     <th
                       key={`header-${columnKey}-${index}`}
                       className={cn(
-                        'px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider relative',
-                        column.sortable && 'cursor-pointer select-none group hover:bg-gray-100/50 transition-colors',
+                        'px-2 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wider relative',
+                        column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left',
+                        column.sortable && !isSelectColumn && 'cursor-pointer select-none group hover:bg-gray-100/50 transition-colors',
                         isResizingColumn && 'bg-blue-50'
                       )}
                       style={{ width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }}
                       onClick={(e) => {
                         // Prevenir sort si estamos redimensionando o acabamos de redimensionar esta columna
+                        if (isSelectColumn) {
+                          // Para la columna de selección, manejar "seleccionar todos"
+                          e.stopPropagation()
+                          handleSelectAll()
+                          return
+                        }
                         if (column.sortable && !isResizing && justFinishedResizing !== columnKey) {
                           handleSort(columnKey)
                         } else if (justFinishedResizing === columnKey) {
@@ -848,9 +973,25 @@ export function ProductList({
                         }
                       }}
                     >
-                      <div className='flex items-center gap-1.5'>
-                        <span>{column.title}</span>
-                        {column.sortable && renderSortIcon(columnKey)}
+                      <div className='flex items-center gap-1.5 justify-center'>
+                        {isSelectColumn ? (
+                          <input
+                            type='checkbox'
+                            checked={isAllSelected}
+                            ref={(input) => {
+                              if (input) input.indeterminate = isSomeSelected
+                            }}
+                            onChange={handleSelectAll}
+                            onClick={(e) => e.stopPropagation()}
+                            className='w-4 h-4 text-blaze-orange-600 border-gray-300 rounded focus:ring-blaze-orange-500 cursor-pointer'
+                            aria-label='Seleccionar todos los productos'
+                          />
+                        ) : (
+                          <>
+                            <span>{column.title}</span>
+                            {column.sortable && renderSortIcon(columnKey)}
+                          </>
+                        )}
                       </div>
                       {/* Resize handle */}
                       <div

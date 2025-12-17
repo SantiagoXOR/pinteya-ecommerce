@@ -43,6 +43,10 @@ export function ProductsPageClient() {
     refreshProducts,
     handleBulkOperation,
     handleProductAction,
+    // ✅ NUEVO: Funciones para acciones masivas
+    bulkUpdateStatus,
+    bulkUpdateCategory,
+    bulkDelete,
   } = useProductsEnterprise()
 
   // =====================================================
@@ -244,6 +248,10 @@ export function ProductsPageClient() {
                     updateFilters={updateFilters}
                     resetFilters={resetFilters}
                     pagination={pagination}
+                    // ✅ NUEVO: Funciones para acciones masivas
+                    onBulkStatusChange={bulkUpdateStatus}
+                    onBulkCategoryChange={bulkUpdateCategory}
+                    onBulkDelete={bulkDelete}
                   />
                 </Suspense>
               </ErrorBoundary>
@@ -264,9 +272,14 @@ export function ProductsPageClient() {
                       error={error}
                       onProductAction={handleProductAction}
                       filters={filters}
+                      categories={categories}
                       updateFilters={updateFilters}
                       resetFilters={resetFilters}
                       pagination={pagination}
+                      // ✅ NUEVO: Funciones para acciones masivas
+                      onBulkStatusChange={bulkUpdateStatus}
+                      onBulkCategoryChange={bulkUpdateCategory}
+                      onBulkDelete={bulkDelete}
                     />
                   </Suspense>
               </ErrorBoundary>
@@ -287,9 +300,14 @@ export function ProductsPageClient() {
                       error={error}
                       onProductAction={handleProductAction}
                       filters={filters}
+                      categories={categories}
                       updateFilters={updateFilters}
                       resetFilters={resetFilters}
                       pagination={pagination}
+                      // ✅ NUEVO: Funciones para acciones masivas
+                      onBulkStatusChange={bulkUpdateStatus}
+                      onBulkCategoryChange={bulkUpdateCategory}
+                      onBulkDelete={bulkDelete}
                     />
                   </Suspense>
                 </ErrorBoundary>

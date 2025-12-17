@@ -14,9 +14,12 @@ interface MeasureSelectorProps {
 // Medidas predefinidas comunes
 const PREDEFINED_MEASURES = [
   '1L',
+  '2.5L',
   '4L',
+  '5L',
   '10L',
   '20L',
+  '25L',
   '1KG',
   '4KG',
   '10KG',
@@ -30,10 +33,6 @@ const PREDEFINED_MEASURES = [
   '250ml',
   '500ml',
   '750ml',
-  '1L',
-  '2.5L',
-  '5L',
-  '25L',
 ]
 
 export function MeasureSelector({
@@ -81,9 +80,9 @@ export function MeasureSelector({
       {/* Selected Measures as Chips */}
       {selectedMeasures.length > 0 && (
         <div className='flex flex-wrap gap-2'>
-          {selectedMeasures.map(measure => (
+          {selectedMeasures.map((measure, index) => (
             <span
-              key={measure}
+              key={`selected-${measure}-${index}`}
               className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200'
             >
               {measure}
@@ -136,9 +135,9 @@ export function MeasureSelector({
               <div className='max-h-48 overflow-y-auto p-2'>
                 <div className='text-xs text-gray-500 mb-2 px-2'>Medidas predefinidas:</div>
                 <div className='grid grid-cols-2 gap-1'>
-                  {filteredMeasures.map(measure => (
+                  {filteredMeasures.map((measure, index) => (
                     <button
-                      key={measure}
+                      key={`${measure}-${index}`}
                       type='button'
                       onClick={() => handleAddMeasure(measure)}
                       className='px-3 py-2 text-sm text-left text-gray-900 hover:bg-gray-50 rounded border border-gray-200 hover:border-blaze-orange-300 transition-colors'
