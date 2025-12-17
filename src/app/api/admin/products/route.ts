@@ -645,7 +645,7 @@ const postHandlerSimple = async (request: NextRequest) => {
       brand: body.brand || '',
       color: body.color || '',
       medida: body.medida || '',
-      terminaciones: body.terminaciones || null,
+      // NO incluir terminaciones - esa columna no existe en la tabla products
       // Generar slug automático
       slug:
         body.name
@@ -955,3 +955,829 @@ export const GET = async (request: NextRequest) => {
 
 // USAR VERSIÓN SIMPLIFICADA TEMPORALMENTE
 export const POST = postHandlerSimple
+
+        // No fallar la creación del producto si falla la relación de categorías
+
+        // pero loguear el error
+
+      } else {
+
+        console.log(`✅ Created ${categoryIds.length} product category relation(s)`)
+
+      }
+
+    }
+
+
+
+    // Transform response
+
+    const transformedProduct = {
+
+      ...product,
+
+      category_name: product.category?.name || null,
+
+      category: undefined,
+
+    }
+
+
+
+    // Log admin action
+
+    await logAdminAction(user.id, 'CREATE', 'product', product.id, null, transformedProduct)
+
+
+
+    return NextResponse.json(
+
+      {
+
+        message: 'Producto creado exitosamente',
+
+        data: transformedProduct,
+
+      },
+
+      { status: 201 }
+
+    )
+
+  } catch (error) {
+
+    console.error('Error in POST /api/admin/products:', error)
+
+
+
+    return NextResponse.json(
+
+      {
+
+        error: 'Error interno del servidor',
+
+        code: 'INTERNAL_ERROR',
+
+        enterprise: true,
+
+        timestamp: new Date().toISOString(),
+
+      },
+
+      { status: 500 }
+
+    )
+
+  }
+
+}
+
+
+
+/**
+
+ * POST SIMPLIFICADO /api/admin/products
+
+ * Crear nuevo producto SIN validaciones enterprise complejas
+
+ */
+
+const postHandlerSimple = async (request: NextRequest) => {
+
+  try {
+
+    console.log('🔧 Products API: Creating product (SIMPLE MODE)...')
+
+
+
+    // Verificar autenticación básica
+
+    const authResult = await checkCRUDPermissions('create', 'products')
+
+
+
+    if (!authResult.allowed) {
+
+      console.log('❌ Auth failed:', authResult.error)
+
+      return NextResponse.json(
+
+        {
+
+          error: authResult.error || 'Autenticación requerida',
+
+          code: 'AUTH_ERROR',
+
+        },
+
+        { status: 401 }
+
+      )
+
+    }
+
+
+
+    console.log('✅ Auth successful')
+
+    // Usar supabaseAdmin directamente ya que checkCRUDPermissions no retorna supabase
+
+    const supabase = supabaseAdmin
+
+
+
+    const body = await request.json()
+
+    console.log('📝 Request body:', JSON.stringify(body, null, 2))
+
+
+
+    // Validación básica de campos requeridos
+
+    const requiredFields = ['name', 'price']
+
+    for (const field of requiredFields) {
+
+      if (!body[field]) {
+
+        return NextResponse.json(
+
+          {
+
+            error: `Campo requerido: ${field}`,
+
+            code: 'MISSING_FIELD',
+
+          },
+
+          { status: 400 }
+
+        )
+
+      }
+
+    }
+
+
+
+    // Normalizar category_ids: soportar tanto category_id como category_ids para retrocompatibilidad
+
+    let categoryIds: number[] = []
+
+    if (body.category_ids && Array.isArray(body.category_ids)) {
+
+      categoryIds = body.category_ids.map(id => parseInt(String(id))).filter(id => !isNaN(id))
+
+    } else if (body.category_id) {
+
+      categoryIds = [parseInt(String(body.category_id))].filter(id => !isNaN(id))
+
+    }
+
+
+
+    // Validar categorías si se proporcionan
+
+    if (categoryIds.length > 0) {
+
+      const { data: categories, error: categoryError } = await supabase
+
+        .from('categories')
+
+        .select('id')
+
+        .in('id', categoryIds)
+
+
+
+      if (categoryError) {
+
+        console.log('❌ Error fetching categories:', categoryError)
+
+        return NextResponse.json(
+
+          {
+
+            error: 'Error al validar categorías',
+
+            code: 'CATEGORY_VALIDATION_ERROR',
+
+          },
+
+          { status: 400 }
+
+        )
+
+      }
+
+
+
+      if (!categories || categories.length !== categoryIds.length) {
+
+        console.log('❌ Some categories not found')
+
+        return NextResponse.json(
+
+          {
+
+            error: 'Una o más categorías no fueron encontradas',
+
+            code: 'CATEGORY_NOT_FOUND',
+
+          },
+
+          { status: 400 }
+
+        )
+
+      }
+
+    }
+
+
+
+    // Mapear datos del frontend al formato de base de datos
+
+    const productData = {
+
+      name: body.name,
+
+      description: body.description || '',
+
+      price: parseFloat(body.price),
+
+      discounted_price: body.compare_price ? parseFloat(body.compare_price) : null,
+
+      stock: parseInt(body.stock) || 0,
+
+      category_id: categoryIds.length > 0 ? categoryIds[0] : null, // Mantener category_id para retrocompatibilidad
+
+      is_active: body.status === 'active' || true,
+
+      brand: body.brand || '',
+
+      color: body.color || '',
+
+      medida: body.medida || '',
+
+      terminaciones: body.terminaciones || null,
+
+      // Generar slug automático
+
+      slug:
+
+        body.name
+
+          .toLowerCase()
+
+          .replace(/[^a-z0-9\s-]/g, '')
+
+          .replace(/\s+/g, '-')
+
+          .replace(/-+/g, '-')
+
+          .trim() +
+
+        '-' +
+
+        Date.now(),
+
+      created_at: new Date().toISOString(),
+
+      updated_at: new Date().toISOString(),
+
+    }
+
+
+
+    console.log('🔄 Mapped product data:', JSON.stringify(productData, null, 2))
+
+
+
+    // Crear producto
+
+    const { data: product, error } = await supabase
+
+      .from('products')
+
+      .insert(productData)
+
+      .select(
+
+        `
+
+        id,
+
+        name,
+
+        description,
+
+        price,
+
+        stock,
+
+        category_id,
+
+        is_active,
+
+        brand,
+
+        created_at,
+
+        updated_at
+
+      `
+
+      )
+
+      .single()
+
+
+
+    if (error) {
+
+      console.error('❌ Error creating product:', error)
+
+      return NextResponse.json(
+
+        {
+
+          error: 'Error al crear producto',
+
+          code: 'DATABASE_ERROR',
+
+          details: error.message,
+
+        },
+
+        { status: 500 }
+
+      )
+
+    }
+
+
+
+    // Insertar relaciones en product_categories si hay categorías
+
+    if (categoryIds.length > 0 && product?.id) {
+
+      const categoryInserts = categoryIds.map(catId => ({
+
+        product_id: product.id,
+
+        category_id: catId,
+
+      }))
+
+
+
+      const { error: categoryRelationError } = await supabase
+
+        .from('product_categories')
+
+        .insert(categoryInserts)
+
+
+
+      if (categoryRelationError) {
+
+        console.error('❌ Error creating product_categories relations:', categoryRelationError)
+
+        // No fallar la creación del producto si falla la relación de categorías
+
+        // pero loguear el error
+
+      } else {
+
+        console.log(`✅ Created ${categoryIds.length} product category relation(s)`)
+
+      }
+
+    }
+
+
+
+    console.log('✅ Product created successfully:', product)
+
+
+
+    return NextResponse.json(
+
+      {
+
+        success: true,
+
+        message: 'Producto creado exitosamente',
+
+        data: product,
+
+      },
+
+      { status: 201 }
+
+    )
+
+  } catch (error) {
+
+    console.error('❌ Error in POST /api/admin/products (SIMPLE):', error)
+
+
+
+    return NextResponse.json(
+
+      {
+
+        error: 'Error interno del servidor',
+
+        code: 'INTERNAL_ERROR',
+
+        details: error instanceof Error ? error.message : 'Unknown error',
+
+      },
+
+      { status: 500 }
+
+    )
+
+  }
+
+}
+
+
+
+// Export GET handler - Versión simplificada con paginación funcionando
+
+export const GET = async (request: NextRequest) => {
+
+  try {
+
+    logger.api('GET', '/api/admin/products')
+
+
+
+    // Auth check simple
+
+    const authResult = await checkAdminPermissionsForProducts('read')
+
+    if (!authResult.allowed) {
+
+      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+
+    }
+
+
+
+    const { searchParams } = new URL(request.url)
+
+    
+
+    // Parse parameters
+
+    const page = parseInt(searchParams.get('page') || '1')
+
+    const limit = parseInt(searchParams.get('limit') || '25')
+
+    const sortBy = searchParams.get('sort_by') || 'created_at'
+
+    const sortOrder = searchParams.get('sort_order') || 'desc'
+
+    const stockStatus = searchParams.get('stock_status')
+
+    const search = searchParams.get('search')
+
+
+
+    logger.dev('[API] Parámetros:', { page, limit, sortBy, sortOrder, stockStatus, search })
+
+
+
+    // Validar supabaseAdmin
+
+    if (!supabaseAdmin) {
+
+      logger.error('[API] supabaseAdmin is not initialized')
+
+      return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 })
+
+    }
+
+
+
+    // Build query
+
+    let query = supabaseAdmin.from('products').select(
+
+      `
+
+        id,
+
+        name,
+
+        slug,
+
+        description,
+
+        price,
+
+        discounted_price,
+
+        stock,
+
+        category_id,
+
+        images,
+
+        color,
+
+        medida,
+
+        brand,
+
+        aikon_id,
+
+        is_active,
+
+        created_at,
+
+        updated_at,
+
+        category:categories (
+
+          id,
+
+          name
+
+        ),
+
+        product_categories (
+
+          category:categories (
+
+            id,
+
+            name,
+
+            slug
+
+          )
+
+        )
+
+      `,
+
+      { count: 'exact' }
+
+    )
+
+
+
+    // Apply filters
+
+    if (search) {
+
+      query = query.ilike('name', `%${search}%`)
+
+    }
+
+    
+
+    // Stock status filter
+
+    if (stockStatus === 'low_stock') {
+
+      query = query.gt('stock', 0).lte('stock', 10)
+
+      logger.dev('[API] Filtro LOW_STOCK aplicado')
+
+    } else if (stockStatus === 'out_of_stock') {
+
+      query = query.or('stock.eq.0,stock.is.null')
+
+      logger.dev('[API] Filtro OUT_OF_STOCK aplicado')
+
+    }
+
+
+
+    // Apply pagination
+
+    const from = (page - 1) * limit
+
+    const to = from + limit - 1
+
+    
+
+    logger.db('range', 'products', { from, to, page, limit })
+
+    
+
+    query = query.range(from, to)
+
+
+
+    // Apply sorting
+
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+
+
+
+    const { data: products, error, count } = await query
+
+    
+
+    logger.dev('[API] Resultado:', {
+
+      productsLength: products?.length,
+
+      count,
+
+      primeros5IDs: products?.slice(0, 5).map(p => p.id) || [],
+
+    })
+
+
+
+    if (error) {
+
+      logger.error('[API] Database error:', error)
+
+      return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 })
+
+    }
+
+
+
+    const productIds = products?.map(p => p.id) || []
+
+    const variantCounts: Record<number, number> = {}
+
+    const variantImages: Record<number, string | null> = {}
+
+    const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
+    const variantColors: Record<number, string[]> = {} // ✅ Array de colores
+    const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+    
+
+    if (productIds.length > 0) {
+
+      const { data: variantData, error: variantError } = await supabaseAdmin
+        .from('product_variants')
+
+        .select('product_id,image_url,is_default,measure,color_name,aikon_id') // ✅ AGREGADO: color_name, aikon_id
+        .in('product_id', productIds)
+
+        .eq('is_active', true)
+
+      
+
+      variantData?.forEach(variant => {
+
+        const normalizedImage = extractImageUrl(variant.image_url)
+
+        variantCounts[variant.product_id] = (variantCounts[variant.product_id] || 0) + 1
+
+
+
+        if (!variantImages[variant.product_id] && normalizedImage) {
+
+          variantImages[variant.product_id] = normalizedImage
+
+        }
+
+
+
+        if (variant.is_default && normalizedImage) {
+
+          variantImages[variant.product_id] = normalizedImage
+
+        }
+
+        
+        // ✅ Obtener TODAS las medidas únicas de las variantes
+        if (variant.measure && variant.measure.trim() !== '') {
+          if (!variantMeasures[variant.product_id]) {
+            variantMeasures[variant.product_id] = []
+          }
+          if (!variantMeasures[variant.product_id].includes(variant.measure)) {
+            variantMeasures[variant.product_id].push(variant.measure)
+          }
+        }
+        
+        // ✅ Obtener TODOS los colores únicos de las variantes
+        if (variant.color_name && variant.color_name.trim() !== '') {
+          if (!variantColors[variant.product_id]) {
+            variantColors[variant.product_id] = []
+          }
+          if (!variantColors[variant.product_id].includes(variant.color_name)) {
+            variantColors[variant.product_id].push(variant.color_name)
+          }
+        }
+        
+        // ✅ CAMBIADO: Obtener SOLO el código aikon de la variante predeterminada
+        if (variant.is_default && variant.aikon_id && variant.aikon_id.trim() !== '') {
+          variantAikonIds[variant.product_id] = variant.aikon_id
+        }
+      })
+
+    }
+
+    
+
+    const transformedProducts =
+
+      products?.map(product => {
+
+        const variantImage = variantImages[product.id]
+
+        const fallbackImage = extractImageUrl(product.images)
+
+        
+        // Transform product_categories to categories array
+        const categories = product.product_categories
+          ?.map((pc: any) => pc.category)
+          .filter((cat: any) => cat != null) || []
+        
+        // ✅ NUEVO: Combinar medida del producto con todas las medidas de variantes
+        const productMedida = product.medida ? [product.medida] : []
+        const variantMeasuresList = variantMeasures[product.id] || []
+        const allMeasures = Array.from(new Set([...productMedida, ...variantMeasuresList]))
+        
+        // ✅ NUEVO: Combinar color del producto con todos los colores de variantes
+        const productColor = product.color ? [product.color] : []
+        const variantColorsList = variantColors[product.id] || []
+        const allColors = Array.from(new Set([...productColor, ...variantColorsList]))
+        
+        // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
+        const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
+
+
+        return {
+
+          ...product,
+
+          category_name: product.category?.name || categories[0]?.name || null,
+          category: undefined,
+
+          product_categories: undefined, // Remove nested object
+          // Transform product_categories to categories array
+          categories: categories,
+          // Agregar conteo de variantes
+
+          variant_count: variantCounts[product.id] || 0,
+
+          // Imagen priorizando variantes
+
+          image_url: variantImage || fallbackImage,
+
+          // Default status si es null
+
+          status: product.status || (product.is_active ? 'active' : 'inactive'),
+
+          // ✅ NUEVO: Array de todas las medidas (producto + variantes)
+          medida: allMeasures.length > 0 ? allMeasures[0] : null, // Mantener compatibilidad con campo string
+          medidas: allMeasures, // ✅ NUEVO: Array de todas las medidas
+          // ✅ NUEVO: Array de todos los colores (producto + variantes)
+          color: allColors.length > 0 ? allColors[0] : null, // Mantener compatibilidad con campo string
+          colores: allColors, // ✅ NUEVO: Array de todos los colores
+          // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+          aikon_id: defaultAikonId,
+        }
+
+      }) || []
+
+
+
+    return NextResponse.json({
+
+      products: transformedProducts,
+
+      data: transformedProducts,
+
+      total: count || 0,
+
+      page,
+
+      pageSize: limit,
+
+      totalPages: Math.ceil((count || 0) / limit),
+
+    })
+
+  } catch (error) {
+
+    logger.error('[API] Error en GET /api/admin/products:', error)
+
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+
+  }
+
+}
+
+
+
+// USAR VERSIÓN SIMPLIFICADA TEMPORALMENTE
+
+export const POST = postHandlerSimple
+
+

@@ -603,17 +603,17 @@ export function ProductFormMinimal({
         {/* Imagen */}
         <AdminCard title='Imagen del Producto'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <ImageUploadZone
+              <ImageUploadZone
               productId={productId} // ✅ Ahora es opcional, funciona tanto en create como edit
-              currentImageUrl={imagePreview || watchedData.image_url || null}
-              onUploadSuccess={(imageUrl) => {
-                setImagePreview(imageUrl)
-                form.setValue('image_url', imageUrl || null, { shouldDirty: true })
-              }}
-              onError={(error) => {
-                notifications.showInfoMessage('Error al subir imagen', error)
-              }}
-            />
+                currentImageUrl={imagePreview || watchedData.image_url || null}
+                onUploadSuccess={(imageUrl) => {
+                  setImagePreview(imageUrl)
+                  form.setValue('image_url', imageUrl || null, { shouldDirty: true })
+                }}
+                onError={(error) => {
+                  notifications.showInfoMessage('Error al subir imagen', error)
+                }}
+              />
 
             <div className='space-y-3'>
               {(!productId || mode === 'create') && (

@@ -133,12 +133,12 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                 onClick={e => item.disabled && e.preventDefault()}
                 title={item.title}
               >
-                <item.icon
-                  className={cn(
+                    <item.icon
+                      className={cn(
                     'flex-shrink-0 w-5 h-5',
-                    isActive ? 'text-blaze-orange-600' : 'text-gray-500'
-                  )}
-                />
+                        isActive ? 'text-blaze-orange-600' : 'text-gray-500'
+                      )}
+                    />
               </Link>
 
               {/* Tooltip cuando se hace hover */}
@@ -174,10 +174,10 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
 
           {/* Tooltip */}
           {hoveredItem === 'notifications' && !notificationsOpen && (
-            <div className='absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none'>
-              Notificaciones
-            </div>
-          )}
+              <div className='absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none'>
+                Notificaciones
+              </div>
+            )}
 
           {/* Dropdown de notificaciones */}
           {notificationsOpen && (

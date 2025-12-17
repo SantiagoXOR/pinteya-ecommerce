@@ -8,6 +8,7 @@ import { AdminDataTable } from '../ui/AdminDataTable'
 import { ProductFilters } from './ProductFilters'
 import { ProductActions, ProductRowActions } from './ProductActions'
 import { useProductList } from '@/hooks/admin/useProductList'
+import { useQueryClient } from '@tanstack/react-query'
 import { ExpandableVariantsRow } from './ExpandableVariantsRow'
 import { Skeleton, TableSkeleton } from '../ui/Skeleton'
 import { EmptyState } from '../ui/EmptyState'
@@ -215,10 +216,13 @@ export function ProductList({
   className 
 }: ProductListProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const tableScrollRef = useRef<HTMLDivElement>(null)
   const topScrollBarRef = useRef<HTMLDivElement>(null)
+  const [showBulkActionsDropdown, setShowBulkActionsDropdown] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
 
   // ✅ Estado de sorting
   const [sortColumn, setSortColumn] = useState<string>(filters.sort_by || 'created_at')
@@ -742,9 +746,181 @@ export function ProductList({
     }
   }
 
-  const handleDuplicateProduct = (productId: string) => {
-    // TODO: Implement product duplication
-    console.log('Duplicate product:', productId)
+  const handleDuplicateProduct = async (productId: string) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-start',message:'Starting product duplication',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
+    
+    try {
+      // 1. Obtener el producto original con todas sus variantes
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-fetch-original',message:'Fetching original product',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      const productResponse = await fetch(`/api/admin/products/${productId}`)
+      if (!productResponse.ok) {
+        throw new Error('Error al obtener el producto original')
+      }
+      const productData = await productResponse.json()
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-product-fetched',message:'Original product fetched',data:{productId,hasVariants:!!productData.variants,variantsCount:productData.variants?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      // 2. Obtener variantes del producto
+      const variantsResponse = await fetch(`/api/products/${productId}/variants`)
+      const variantsData = variantsResponse.ok ? await variantsResponse.json() : { data: [] }
+      const variants = variantsData.data || []
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-variants-fetched',message:'Variants fetched',data:{productId,variantsCount:variants.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      // 3. Preparar datos del nuevo producto (sin id, con nombre modificado)
+      const originalProduct = productData.data || productData
+      const newProductData = {
+        name: `${originalProduct.name} (Copia)`,
+        description: originalProduct.description || '',
+        price: parseFloat(String(originalProduct.price || 0)), // Asegurar que sea número
+        ...(originalProduct.discounted_price ? { compare_price: parseFloat(String(originalProduct.discounted_price)) } : {}), // La API espera compare_price
+        stock: parseInt(String(originalProduct.stock || 0)), // Asegurar que sea número entero
+        ...(originalProduct.category_id ? { category_id: parseInt(String(originalProduct.category_id)) } : {}), // Solo incluir si existe
+        ...(originalProduct.brand ? { brand: String(originalProduct.brand) } : {}),
+        ...(originalProduct.color ? { color: String(originalProduct.color) } : {}),
+        ...(originalProduct.medida ? { medida: String(originalProduct.medida) } : {}),
+        // NO incluir terminaciones - esa columna no existe en la tabla products
+        status: 'inactive', // La API espera status en lugar de is_active
+        // No enviar slug, la API lo genera automáticamente
+        // No enviar images aquí, se manejan por separado si es necesario
+      }
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-data-prepared',message:'Product data prepared for creation',data:{productId,newProductData},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      // 4. Crear el nuevo producto
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-creating',message:'Creating duplicated product',data:{productId,newProductName:newProductData.name},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      const createResponse = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProductData),
+      })
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-create-response',message:'Create product response received',data:{productId,status:createResponse.status,ok:createResponse.ok,statusText:createResponse.statusText},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json().catch(() => ({ error: 'Error desconocido' }))
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-create-error',message:'Create product error details',data:{productId,status:createResponse.status,errorData,requestData:newProductData},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        throw new Error(errorData.error || errorData.message || 'Error al crear el producto duplicado')
+      }
+      
+      const newProduct = await createResponse.json()
+      const newProductId = newProduct.data?.id || newProduct.id
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-created',message:'Duplicated product created',data:{originalProductId:productId,newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      // 5. Duplicar todas las variantes creándolas directamente en el nuevo producto
+      if (variants.length > 0) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-duplicating-variants',message:'Duplicating variants',data:{newProductId,variantsCount:variants.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        
+        for (const variant of variants) {
+          try {
+            // Generar nuevo aikon_id único usando timestamp
+            const timestamp = Date.now()
+            const newAikonId = `${variant.aikon_id || 'VAR'}-COPIA-${timestamp}-${Math.random().toString(36).substring(2, 9)}`
+            
+            const variantData = {
+              product_id: parseInt(String(newProductId)),
+              aikon_id: newAikonId,
+              color_name: variant.color_name || null,
+              color_hex: variant.color_hex || null,
+              measure: variant.measure || null,
+              finish: variant.finish || 'Mate',
+              price_list: parseFloat(String(variant.price_list || variant.price_sale || 0)), // Asegurar que sea número
+              price_sale: variant.price_sale ? parseFloat(String(variant.price_sale)) : null,
+              stock: parseInt(String(variant.stock || 0)), // Asegurar que sea número entero
+              image_url: variant.image_url || null,
+              is_active: variant.is_active !== false,
+              is_default: variant.is_default || false,
+            }
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-creating-variant',message:'Creating variant',data:{newProductId,variantId:variant.id,variantData},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+            // #endregion
+            
+            // Crear nueva variante en el nuevo producto
+            const variantResponse = await fetch('/api/admin/products/variants', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(variantData),
+            })
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-variant-response',message:'Variant creation response',data:{newProductId,variantId:variant.id,status:variantResponse.status,ok:variantResponse.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+            // #endregion
+            
+            if (!variantResponse.ok) {
+              const errorData = await variantResponse.json().catch(() => ({ error: 'Error desconocido' }))
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-variant-error',message:'Variant creation error',data:{newProductId,variantId:variant.id,status:variantResponse.status,errorData},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+              // #endregion
+              console.error('Error al crear variante duplicada:', errorData.error || errorData.message || 'Error al crear variante')
+            }
+          } catch (error) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-variant-exception',message:'Variant creation exception',data:{newProductId,variantId:variant.id,error:error instanceof Error ? error.message : String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+            // #endregion
+            console.error('Error al duplicar variante:', error)
+          }
+        }
+      }
+      
+      // 6. Invalidar queries para refrescar la lista (invalidar todas las queries que empiecen con 'admin-products')
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-invalidating',message:'Invalidating queries',data:{newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H2'})}).catch(()=>{});
+      // #endregion
+      
+      // Invalidar todas las queries relacionadas con productos (incluyendo las que tienen filtros)
+      // Usar exact: false para invalidar todas las queries que empiecen con 'admin-products'
+      queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+      
+      // Forzar refetch inmediato para asegurar que se muestren los datos actualizados
+      // Esto es necesario porque invalidateQueries solo marca como obsoletos, no fuerza refetch
+      await queryClient.refetchQueries({ 
+        queryKey: ['admin-products'], 
+        exact: false,
+        type: 'active' // Solo refetch queries activas (que están siendo observadas)
+      })
+      await queryClient.refetchQueries({ 
+        queryKey: ['admin-products-stats'], 
+        exact: false,
+        type: 'active'
+      })
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-success',message:'Product duplication completed successfully',data:{originalProductId:productId,newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});
+      // #endregion
+      
+      return newProductId
+    } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-error',message:'Product duplication failed',data:{productId,error:error instanceof Error ? error.message : 'Error desconocido'},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});
+      // #endregion
+      console.error('Error al duplicar producto:', error)
+      throw error
+    }
   }
 
   const handleCreateProduct = () => {
@@ -824,14 +1000,33 @@ export function ProductList({
     event: React.MouseEvent<HTMLTableRowElement>,
     product: Product
   ) => {
-    if (event.defaultPrevented) return
+    // #region agent log
+    try {
+      const target = event.target as HTMLElement
+      const targetInfo = {
+        tagName: target?.tagName || 'unknown',
+        className: typeof target?.className === 'string' ? target.className.substring(0, 50) : String(target?.className || '').substring(0, 50)
+      }
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleRowClick',message:'Row clicked',data:{productId:product.id,...targetInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'D'})}).catch(()=>{});
+    } catch (e) {
+      // Ignorar errores de serialización
+    }
+    // #endregion
+    if (event.defaultPrevented) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleRowClick-prevented',message:'Row click prevented',data:{productId:product.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
+      return
+    }
 
     const target = event.target as HTMLElement
-    if (
-      target.closest(
-        'button, a, input, select, textarea, label, [role="button"], [data-interactive="true"]'
-      )
-    ) {
+    const isInteractive = target.closest(
+      'button, a, input, select, textarea, label, [role="button"], [data-interactive="true"], .product-actions-menu'
+    )
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleRowClick-check',message:'Row click check',data:{productId:product.id,isInteractive:!!isInteractive,targetTag:target?.tagName||'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
+    if (isInteractive) {
       return
     }
 
@@ -887,20 +1082,29 @@ export function ProductList({
   }
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn('', className)}>
       {/* Filters */}
       <ProductFilters
         filters={params.filters || {}}
         onFiltersChange={updateFilters}
         onClearFilters={clearFilters}
         categories={categories} // ✅ Pasar categorías reales desde el padre
+        onImportProducts={handleImportProducts}
+        onExportProducts={handleExportProducts}
+        onShowExportModal={() => {
+          setShowExportModal(true)
+        }}
+        onBulkActions={() => {
+          setShowBulkActionsDropdown(true)
+        }}
+        selectedProductsCount={selectedProducts.length}
+        isLoading={isDeleting || isBulkDeleting}
       />
 
-      {/* Actions */}
+      {/* Actions - Solo para modales y lógica */}
       <ProductActions
         selectedProducts={selectedProducts}
         categories={categories} // ✅ Pasar categorías reales
-        onCreateProduct={handleCreateProduct}
         onBulkDelete={handleBulkDelete}
         onBulkStatusChange={handleBulkStatusChange}
         onBulkCategoryChange={handleBulkCategoryChange}
@@ -909,13 +1113,17 @@ export function ProductList({
         onExportProducts={handleExportProducts}
         onImportProducts={handleImportProducts}
         isLoading={isDeleting || isBulkDeleting}
+        externalShowBulkActions={showBulkActionsDropdown}
+        onExternalBulkActionsChange={setShowBulkActionsDropdown}
+        externalShowExportModal={showExportModal}
+        onExternalExportModalChange={setShowExportModal}
       />
 
       {/* Modern Table with Improved UX */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative'
+        className='mt-4 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative'
       >
         {/* Barra de scroll horizontal flotante siempre visible en la parte superior */}
         <div 
@@ -1103,17 +1311,27 @@ export function ProductList({
                                 'px-2 py-2 transition-colors overflow-hidden',
                                 !shouldWrap && 'whitespace-nowrap',
                                 column.align === 'center' && 'text-center',
-                                column.align === 'right' && 'text-right'
+                                column.align === 'right' && 'text-right',
+                                column.key === 'actions' && 'relative z-50'
                               )}
                               style={{ 
                                 width: `${width}px`, 
                                 minWidth: `${width}px`, 
                                 maxWidth: `${width}px`,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis'
+                                overflow: 'visible',
+                                textOverflow: 'ellipsis',
+                                position: column.key === 'actions' ? 'relative' : 'static'
+                              }}
+                              onClick={(e) => {
+                                if (column.key === 'actions') {
+                                  e.stopPropagation()
+                                }
                               }}
                             >
-                              <div className='w-full min-w-0 overflow-hidden'>
+                              <div className={cn(
+                                'w-full min-w-0',
+                                column.key === 'actions' ? 'overflow-visible' : 'overflow-hidden'
+                              )}>
                                 {column.render
                                   ? column.render(product[column.key as keyof Product], product)
                                   : String(product[column.key as keyof Product] || '-')}

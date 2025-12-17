@@ -225,3 +225,4 @@ El script inline se ejecuta antes de que React se hidrate, asegurando que todos 
 
 
 
+

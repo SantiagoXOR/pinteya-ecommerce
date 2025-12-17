@@ -3,7 +3,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase'
+import { getSupabaseClient, handleSupabaseError, supabaseAdmin } from '@/lib/integrations/supabase'
 import { ApiResponse } from '@/types/api'
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { createSecurityLogger } from '@/lib/logging/security-logger'
@@ -205,7 +205,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         }
       }
 
-      const supabase = getSupabaseClient()
+      // Usar supabaseAdmin para evitar problemas con RLS (Row Level Security)
+      const supabase = supabaseAdmin
 
       // Verificar que el producto existe
       const { data: product, error: productError } = await supabase
@@ -298,11 +299,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
           }
         )
 
+        console.error('[API] Error creating variant:', variantError)
+        console.error('[API] Variant data:', JSON.stringify({
+          product_id: body.product_id,
+          aikon_id: body.aikon_id,
+          color_name: body.color_name,
+          measure: body.measure,
+          finish: body.finish,
+          price_list: body.price_list,
+          price_sale: body.price_sale,
+          stock: body.stock,
+        }, null, 2))
+
         return NextResponse.json(
           {
             success: false,
-            error: 'Error al crear variante',
+            error: variantError.message || 'Error al crear variante',
             data: null,
+            details: variantError.details || null,
           },
           { status: 500 }
         )
