@@ -137,14 +137,35 @@ export function ProductActions({
   const hasSelection = selectedCount > 0
 
   const handleBulkDelete = async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-entry',message:'handleBulkDelete iniciado',data:{selectedProductsCount:selectedProducts.length,selectedProductIds:selectedProducts.map(p => p.id),onBulkDeleteDefined:!!onBulkDelete},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
+    
     if (onBulkDelete && selectedProducts.length > 0) {
       try {
-        await onBulkDelete(selectedProducts.map(p => p.id))
+        const productIds = selectedProducts.map(p => p.id)
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-before-call',message:'Antes de llamar onBulkDelete',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        
+        await onBulkDelete(productIds)
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-after-call',message:'Después de llamar onBulkDelete',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        
         notifications.showBulkActionSuccess({ selectedCount: selectedProducts.length, action: 'delete' })
         setShowDeleteConfirm(false)
       } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-error',message:'Error en handleBulkDelete',data:{error:error instanceof Error ? error.message : String(error),selectedProductIds:selectedProducts.map(p => p.id)},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
         notifications.showBulkActionError('eliminar productos', error instanceof Error ? error.message : 'Error desconocido')
       }
+    } else {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-no-handler',message:'onBulkDelete no definido o sin productos seleccionados',data:{onBulkDeleteDefined:!!onBulkDelete,selectedProductsCount:selectedProducts.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
     }
   }
 

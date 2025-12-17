@@ -41,6 +41,7 @@ export function ProductsPageClient() {
 
     // Operaciones
     refreshProducts,
+    refreshStats,
     handleBulkOperation,
     handleProductAction,
     // ✅ NUEVO: Funciones para acciones masivas
@@ -260,6 +261,8 @@ export function ProductsPageClient() {
                     onBulkStatusChange={bulkUpdateStatus}
                     onBulkCategoryChange={bulkUpdateCategory}
                     onBulkDelete={bulkDelete}
+                    refreshProducts={refreshProducts}  // ✅ Pasar refreshProducts para refetch directo
+                    refreshStats={refreshStats}        // ✅ Pasar refreshStats para actualizar contadores
                   />
                 </Suspense>
               </ErrorBoundary>
@@ -288,6 +291,7 @@ export function ProductsPageClient() {
                       onBulkStatusChange={bulkUpdateStatus}
                       onBulkCategoryChange={bulkUpdateCategory}
                       onBulkDelete={bulkDelete}
+                      refreshProducts={refreshProducts}  // ✅ NUEVO: Pasar refreshProducts para refetch directo
                     />
                   </Suspense>
               </ErrorBoundary>
@@ -316,6 +320,7 @@ export function ProductsPageClient() {
                       onBulkStatusChange={bulkUpdateStatus}
                       onBulkCategoryChange={bulkUpdateCategory}
                       onBulkDelete={bulkDelete}
+                      refreshProducts={refreshProducts}  // ✅ NUEVO: Pasar refreshProducts para refetch directo
                     />
                   </Suspense>
                 </ErrorBoundary>

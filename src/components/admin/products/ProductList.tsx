@@ -114,6 +114,8 @@ interface ProductListProps {
   onBulkPriceUpdate?: (productIds: string[], priceChange: { type: 'percentage' | 'fixed'; value: number }) => Promise<void>
   onBulkArchive?: (productIds: string[]) => Promise<void>
   onBulkDelete?: (productIds: string[]) => Promise<void>
+  refreshProducts?: () => Promise<void>  // ✅ Función para refrescar productos
+  refreshStats?: () => Promise<void>      // ✅ Función para refrescar estadísticas
   className?: string
 }
 
@@ -215,6 +217,8 @@ export function ProductList({
   onBulkPriceUpdate,
   onBulkArchive,
   onBulkDelete,
+  refreshProducts,  // ✅ Función para refrescar productos
+  refreshStats,     // ✅ Función para refrescar estadísticas
   className 
 }: ProductListProps) {
   const router = useRouter()
@@ -691,29 +695,188 @@ export function ProductList({
 
   // Event handlers
   const handleDeleteProduct = async (productId: string) => {
-    // TODO: Implement actual delete functionality
-    console.log('Delete product:', productId)
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-entry',message:'handleDeleteProduct iniciado',data:{productId,onBulkDeleteDefined:!!onBulkDelete},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});
+    // #endregion
+    
+    // Usar onBulkDelete con un solo ID para eliminar el producto individual
+    if (onBulkDelete) {
+      try {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-before-call',message:'Antes de llamar onBulkDelete con un solo ID',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        
+        const result = await onBulkDelete([productId])
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-after-call',message:'Después de llamar onBulkDelete',data:{result,productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H3'})}).catch(()=>{});
+        // #endregion
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-before-cache-clear',message:'Antes de limpiar cache y forzar refetch',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2,H3'})}).catch(()=>{});
+        // #endregion
+        
+        // ✅ SOLUCIÓN DEFINITIVA: Limpiar completamente el cache y forzar recarga
+        // En lugar de intentar actualizar el cache manualmente, simplemente lo limpiamos
+        // y forzamos un refetch completo desde el servidor
+        
+        // Paso 1: Remover todas las queries del cache relacionadas con productos
+        queryClient.removeQueries({ queryKey: ['admin-products'], exact: false })
+        queryClient.removeQueries({ queryKey: ['admin-products-stats'], exact: false })
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-cache-removed',message:'Cache removido completamente',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2'})}).catch(()=>{});
+        // #endregion
+        
+        // Paso 2: Invalidar queries para forzar refetch
+        queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+        queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+        
+        // ✅ Esperar un momento para que la transacción de la DB se confirme
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // ✅ Usar refreshProducts directamente si está disponible
+        if (refreshProducts) {
+          try {
+            await refreshProducts()
+          } catch (refreshError) {
+            console.warn('Error en refreshProducts:', refreshError)
+          }
+        } else {
+          // Fallback: Invalidar queries si refreshProducts no está disponible
+          queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+          queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+        }
+        
+        // ✅ Refrescar estadísticas para actualizar contadores
+        if (refreshStats) {
+          try {
+            await refreshStats()
+          } catch (refreshError) {
+            console.warn('Error en refreshStats:', refreshError)
+          }
+        }
+        
+        // Paso 3: Forzar refetch adicional de todas las queries activas relacionadas
+        try {
+          await queryClient.refetchQueries({ 
+            queryKey: ['admin-products'],
+            exact: false,
+            type: 'active'
+          })
+          await queryClient.refetchQueries({ 
+            queryKey: ['admin-products-stats'],
+            exact: false,
+            type: 'active'
+          })
+        } catch (refetchError) {
+          console.warn('Error en refetchQueries:', refetchError)
+        }
+      } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-error',message:'Error en eliminación de producto',data:{error:error instanceof Error ? error.message : String(error),productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2,H3'})}).catch(()=>{});
+        // #endregion
+        console.error('Error en eliminación de producto:', error)
+        throw error // Re-lanzar para que el componente padre maneje el error
+      }
+    } else {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-no-handler',message:'onBulkDelete no está definido',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      console.warn('onBulkDelete no está definido, no se puede eliminar el producto')
+    }
   }
 
   const handleBulkDelete = async (productIds: string[]) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-entry',message:'handleBulkDelete iniciado',data:{productIds,productIdsType:typeof productIds[0],productIdsLength:productIds.length,onBulkDeleteDefined:!!onBulkDelete},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});
+    // #endregion
+    
     if (onBulkDelete) {
       try {
-        await onBulkDelete(productIds)
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-before-call',message:'Antes de llamar onBulkDelete',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        
+        const result = await onBulkDelete(productIds)
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-after-call',message:'Después de llamar onBulkDelete',data:{result,productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H3'})}).catch(()=>{});
+        // #endregion
+        
         setSelectedProducts([]) // Limpiar selección después de la acción
-        // ✅ Invalidar queries para refrescar la lista
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-before-cache-clear',message:'Antes de limpiar cache y forzar refetch',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2,H3'})}).catch(()=>{});
+        // #endregion
+        
+        // ✅ SOLUCIÓN DEFINITIVA: Limpiar completamente el cache y forzar recarga
+        // En lugar de intentar actualizar el cache manualmente, simplemente lo limpiamos
+        // y forzamos un refetch completo desde el servidor
+        
+        // Paso 1: Remover todas las queries del cache relacionadas con productos
+        queryClient.removeQueries({ queryKey: ['admin-products'], exact: false })
+        queryClient.removeQueries({ queryKey: ['admin-products-stats'], exact: false })
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-cache-removed',message:'Cache removido completamente',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2'})}).catch(()=>{});
+        // #endregion
+        
+        // Paso 2: Invalidar queries para forzar refetch
         queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
         queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
-        // Forzar refetch inmediato
-        await queryClient.refetchQueries({ 
-          queryKey: ['admin-products'], 
-          exact: false,
-          type: 'active'
-        })
+        
+        // ✅ Esperar un momento para que la transacción de la DB se confirme
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // ✅ Usar refreshProducts directamente si está disponible
+        if (refreshProducts) {
+          try {
+            await refreshProducts()
+          } catch (refreshError) {
+            console.warn('Error en refreshProducts:', refreshError)
+          }
+        } else {
+          // Fallback: Invalidar queries si refreshProducts no está disponible
+          queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+          queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+        }
+        
+        // ✅ Refrescar estadísticas para actualizar contadores
+        if (refreshStats) {
+          try {
+            await refreshStats()
+          } catch (refreshError) {
+            console.warn('Error en refreshStats:', refreshError)
+          }
+        }
+        
+        // Paso 3: Forzar refetch adicional de todas las queries activas relacionadas
+        try {
+          await queryClient.refetchQueries({ 
+            queryKey: ['admin-products'],
+            exact: false,
+            type: 'active'
+          })
+          await queryClient.refetchQueries({ 
+            queryKey: ['admin-products-stats'],
+            exact: false,
+            type: 'active'
+          })
+        } catch (refetchError) {
+          console.warn('Error en refetchQueries:', refetchError)
+        }
       } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-error',message:'Error en eliminación masiva',data:{error:error instanceof Error ? error.message : String(error),productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2,H3'})}).catch(()=>{});
+        // #endregion
         console.error('Error en eliminación masiva:', error)
         throw error // Re-lanzar para que el componente padre maneje el error
       }
     } else {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-no-handler',message:'onBulkDelete no está definido',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
       console.warn('onBulkDelete no está definido')
     }
   }
@@ -808,7 +971,7 @@ export function ProductList({
         ...(originalProduct.color ? { color: String(originalProduct.color) } : {}),
         ...(originalProduct.medida ? { medida: String(originalProduct.medida) } : {}),
         // NO incluir terminaciones - esa columna no existe en la tabla products
-        status: 'inactive', // La API espera status en lugar de is_active
+        status: 'active', // ✅ CORREGIDO: Crear productos duplicados como activos para que aparezcan en la lista
         // No enviar slug, la API lo genera automáticamente
         // No enviar images aquí, se manejan por separado si es necesario
       }
@@ -905,28 +1068,52 @@ export function ProductList({
         }
       }
       
-      // 6. Invalidar queries para refrescar la lista (invalidar todas las queries que empiecen con 'admin-products')
+      // 6. Limpiar cache y forzar refetch completo para actualizar la lista
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-invalidating',message:'Invalidating queries',data:{newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H2'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-invalidating',message:'Limpiando cache y forzando refetch',data:{newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2'})}).catch(()=>{});
       // #endregion
       
-      // Invalidar todas las queries relacionadas con productos (incluyendo las que tienen filtros)
-      // Usar exact: false para invalidar todas las queries que empiecen con 'admin-products'
+      // ✅ ESTRATEGIA: Invalidar primero para marcar como obsoletas, luego refetch
+      // Paso 1: Invalidar queries para forzar refetch automático de queries activas
       queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
       queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
       
-      // Forzar refetch inmediato para asegurar que se muestren los datos actualizados
-      // Esto es necesario porque invalidateQueries solo marca como obsoletos, no fuerza refetch
-      await queryClient.refetchQueries({ 
-        queryKey: ['admin-products'], 
-        exact: false,
-        type: 'active' // Solo refetch queries activas (que están siendo observadas)
-      })
-      await queryClient.refetchQueries({ 
-        queryKey: ['admin-products-stats'], 
-        exact: false,
-        type: 'active'
-      })
+      // ✅ Esperar un momento para que la transacción de la DB se confirme
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Paso 2: Forzar refetch de queries activas
+      if (refreshProducts) {
+        try {
+          await refreshProducts()
+        } catch (refreshError) {
+          console.warn('Error en refreshProducts:', refreshError)
+        }
+      }
+      
+      // ✅ Refrescar estadísticas para actualizar contadores
+      if (refreshStats) {
+        try {
+          await refreshStats()
+        } catch (refreshError) {
+          console.warn('Error en refreshStats:', refreshError)
+        }
+      }
+      
+      // Paso 3: Forzar refetch adicional de todas las queries activas relacionadas
+      try {
+        await queryClient.refetchQueries({ 
+          queryKey: ['admin-products'],
+          exact: false,
+          type: 'active'
+        })
+        await queryClient.refetchQueries({ 
+          queryKey: ['admin-products-stats'],
+          exact: false,
+          type: 'active'
+        })
+      } catch (refetchError) {
+        console.warn('Error en refetchQueries:', refetchError)
+      }
       
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-success',message:'Product duplication completed successfully',data:{originalProductId:productId,newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});

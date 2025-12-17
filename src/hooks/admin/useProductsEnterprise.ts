@@ -123,7 +123,14 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
         }
       })
 
-      const response = await fetch(`/api/admin/products?${params}`)
+      // ✅ Forzar fetch sin cache para asegurar datos frescos
+      const response = await fetch(`/api/admin/products?${params}`, {
+        cache: 'no-store',  // ✅ Forzar fetch sin cache
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
+      
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
@@ -137,9 +144,10 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       return data
     },
     enabled: filters.page > 0 && filters.limit > 0,
-    staleTime: 30000,          // 30 seg - datos frescos
+    staleTime: 0,              // ✅ CAMBIADO: Siempre considerar los datos como obsoletos para forzar refetch después de refresh
     gcTime: 300000,            // 5 min - mantener en memoria (cacheTime deprecado, usar gcTime)
     refetchOnWindowFocus: false,
+    refetchOnMount: 'always',  // ✅ AGREGADO: Siempre refetch al montar el componente (después de refresh)
   })
 
   // Query para estadísticas
@@ -147,10 +155,16 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
     data: statsData,
     isLoading: statsLoading,
     error: statsError,
+    refetch: refetchStats,
   } = useQuery({
     queryKey: ['admin-products-stats'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/products/stats')
+      const response = await fetch('/api/admin/products/stats', {
+        cache: 'no-store',  // ✅ Forzar fetch sin cache
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
@@ -158,9 +172,10 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       logger.dev('[useProductsEnterprise] Stats Response:', data?.stats)
       return data
     },
-    staleTime: 60000,          // 1 min - stats cambian menos frecuentemente
+    staleTime: 0,              // ✅ CAMBIADO: Siempre considerar los datos como obsoletos para forzar refetch después de operaciones CUD
     gcTime: 600000,            // 10 min
     refetchOnWindowFocus: false,
+    refetchOnMount: 'always',  // ✅ AGREGADO: Siempre refetch al montar el componente
   })
 
   // Query para categorías
@@ -227,21 +242,50 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   // Mutation para operaciones masivas
   const bulkOperationMutation = useMutation({
     mutationFn: async (operation: BulkOperation) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-before-fetch',message:'Antes de fetch a API',data:{operation,operationStringified:JSON.stringify(operation)},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
       const response = await fetch('/api/admin/products/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(operation),
       })
 
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-after-fetch',message:'Después de fetch a API',data:{status:response.status,statusText:response.statusText,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H4'})}).catch(()=>{});
+      // #endregion
+
       if (!response.ok) {
+        const errorText = await response.text()
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-error',message:'Error en respuesta de API',data:{status:response.status,statusText:response.statusText,errorText},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H4'})}).catch(()=>{});
+        // #endregion
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
 
-      return response.json()
+      const result = await response.json()
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-success',message:'Respuesta exitosa de API',data:{result},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
+      
+      return result
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
-      queryClient.invalidateQueries({ queryKey: ['admin-products-stats'] })
+    onSuccess: (data) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-onSuccess',message:'onSuccess del mutation ejecutado',data:{mutationData:data},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2,H5'})}).catch(()=>{});
+      // #endregion
+      // ✅ CORREGIDO: Invalidar con exact: false para invalidar todas las variantes con filtros
+      queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+      
+      // ✅ ADICIONAL: Forzar refetch inmediato de todas las queries (no solo activas)
+      // Esto asegura que la UI se actualice incluso si las queries no están activamente observadas
+      queryClient.refetchQueries({ 
+        queryKey: ['admin-products'], 
+        exact: false
+      }).catch(() => {}) // No fallar si hay error en refetch
     },
   })
 
@@ -325,10 +369,20 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
 
   const bulkDelete = useCallback(
     (productIds: string[]) => {
-      return bulkOperationMutation.mutateAsync({
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkDelete-entry',message:'bulkDelete llamado',data:{productIds,productIdsType:typeof productIds[0],productIdsLength:productIds.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      const operation = {
         operation: 'delete',
         product_ids: productIds,
-      })
+      }
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkDelete-before-mutation',message:'Antes de ejecutar mutation',data:{operation},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+      
+      return bulkOperationMutation.mutateAsync(operation)
     },
     [bulkOperationMutation]
   )
@@ -480,8 +534,9 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       prevPage: () => derivedMetrics.hasPrevPage && updateFilters({ page: filters.page - 1 }),
     },
     
-    // Función refresh simplificada
+    // Funciones refresh simplificadas
     refreshProducts: refetchProducts,
+    refreshStats: refetchStats,
     
     // Handlers para componente
     handleBulkOperation: bulkUpdateStatus,
