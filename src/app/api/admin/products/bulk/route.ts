@@ -27,7 +27,16 @@ const supabase = createClient(
 
 const BulkOperationSchema = z.object({
   operation: z.enum(['update_status', 'update_category', 'update_price', 'delete']),
-  product_ids: z.array(z.string().uuid()).min(1, 'Debe seleccionar al menos un producto'),
+  // ✅ CORREGIDO: Aceptar números enteros (IDs de productos) en lugar de UUIDs
+  product_ids: z
+    .array(z.union([z.number().int().positive(), z.string().transform((val) => {
+      const num = parseInt(val, 10)
+      if (isNaN(num) || num <= 0) {
+        throw new Error('ID de producto inválido')
+      }
+      return num
+    })]))
+    .min(1, 'Debe seleccionar al menos un producto'),
   data: z
     .object({
       status: z.enum(['active', 'inactive']).optional(),
@@ -70,18 +79,28 @@ export async function POST(request: NextRequest) {
 
     const { operation, product_ids, data } = validationResult.data
 
+    // ✅ CORREGIDO: Asegurar que todos los IDs sean números enteros
+    const numericProductIds = product_ids.map(id => typeof id === 'string' ? parseInt(id, 10) : id).filter(id => !isNaN(id) && id > 0)
+
+    if (numericProductIds.length === 0) {
+      return NextResponse.json(
+        { error: 'IDs de productos inválidos' },
+        { status: 400 }
+      )
+    }
+
     // Verificar que los productos existen y pertenecen al usuario autorizado
     const { data: existingProducts, error: checkError } = await supabase
       .from('products')
       .select('id, name')
-      .in('id', product_ids)
+      .in('id', numericProductIds)
 
     if (checkError) {
       console.error('Error verificando productos:', checkError)
       return NextResponse.json({ error: 'Error al verificar productos' }, { status: 500 })
     }
 
-    if (existingProducts.length !== product_ids.length) {
+    if (existingProducts.length !== numericProductIds.length) {
       return NextResponse.json(
         { error: 'Algunos productos no fueron encontrados' },
         { status: 404 }
@@ -107,7 +126,7 @@ export async function POST(request: NextRequest) {
             is_active: data.status === 'active',
             updated_at: new Date().toISOString(),
           })
-          .in('id', product_ids)
+          .in('id', numericProductIds)
           .select('id')
 
         if (statusError) {
@@ -147,7 +166,7 @@ export async function POST(request: NextRequest) {
             category_id: data.category_id,
             updated_at: new Date().toISOString(),
           })
-          .in('id', product_ids)
+          .in('id', numericProductIds)
           .select('id')
 
         if (categoryUpdateError) {
@@ -174,7 +193,7 @@ export async function POST(request: NextRequest) {
         const { data: currentProducts, error: priceError } = await supabase
           .from('products')
           .select('id, price')
-          .in('id', product_ids)
+          .in('id', numericProductIds)
 
         if (priceError) {
           throw priceError
@@ -228,15 +247,43 @@ export async function POST(request: NextRequest) {
         break
 
       case 'delete':
-        // Eliminar productos (soft delete marcando como inactivo)
-        const { data: deleteData, error: deleteError } = await supabase
-          .from('products')
-          .update({
-            is_active: false,
-            updated_at: new Date().toISOString(),
-          })
-          .in('id', product_ids)
-          .select('id')
+        // ✅ CORREGIDO: Eliminar productos (hard delete si no tienen órdenes, soft delete si tienen)
+        // Primero verificar si tienen órdenes asociadas
+        const { data: orderItems, error: orderCheckError } = await supabase
+          .from('order_items')
+          .select('product_id')
+          .in('product_id', numericProductIds)
+          .limit(1)
+
+        if (orderCheckError) {
+          console.warn('Error verificando órdenes:', orderCheckError)
+        }
+
+        let deleteData
+        let deleteError
+
+        if (orderItems && orderItems.length > 0) {
+          // Soft delete: marcar como inactivo si tienen órdenes
+          const result = await supabase
+            .from('products')
+            .update({
+              is_active: false,
+              updated_at: new Date().toISOString(),
+            })
+            .in('id', numericProductIds)
+            .select('id')
+          deleteData = result.data
+          deleteError = result.error
+        } else {
+          // Hard delete: eliminar completamente si no tienen órdenes
+          const result = await supabase
+            .from('products')
+            .delete()
+            .in('id', numericProductIds)
+            .select('id')
+          deleteData = result.data
+          deleteError = result.error
+        }
 
         if (deleteError) {
           throw deleteError
@@ -246,6 +293,8 @@ export async function POST(request: NextRequest) {
         result = {
           operation: 'delete',
           affected_count: affectedCount,
+          hard_delete: !orderItems || orderItems.length === 0,
+          soft_delete: orderItems && orderItems.length > 0,
         }
         break
 
