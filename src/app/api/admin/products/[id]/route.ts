@@ -453,6 +453,20 @@ export async function GET(
       return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 })
     }
     
+    // ✅ Obtener todas las categorías desde product_categories con query separada
+    const { data: productCategoriesData, error: categoriesError } = await supabaseAdmin
+      .from('product_categories')
+      .select(`
+        category_id,
+        category:categories(id, name, slug)
+      `)
+      .eq('product_id', productId)
+    
+    // Agregar product_categories al objeto data ANTES de transformarlo
+    if (productCategoriesData && !categoriesError) {
+      data.product_categories = productCategoriesData
+    }
+    
     // Obtener variantes reales de la BD
     const { data: variants } = await supabaseAdmin
       .from('product_variants')
@@ -468,6 +482,8 @@ export async function GET(
       ...data,
       category_name: data.categories?.name || null,
       categories: undefined,
+      // ✅ PRESERVAR product_categories para duplicación
+      product_categories: data.product_categories || [],
       // Incluir variantes
       variants: variants || [],
       variant_count: variants?.length || 0,
@@ -481,10 +497,10 @@ export async function GET(
         null,
       // Derive status from is_active (status column doesn't exist in DB)
       status: data.is_active ? 'active' : 'inactive',
-      // Usar precio/stock de variante default si existe
+      // Usar precio de variante default si existe, pero preservar stock del producto principal
       price: defaultVariant?.price_list || data.price,
       discounted_price: defaultVariant?.price_sale || data.discounted_price,
-      stock: defaultVariant?.stock || data.stock,
+      stock: data.stock, // ✅ CORREGIDO: Usar stock del producto principal, no de la variante
       // Defaults para campos opcionales
       cost_price: data.cost_price ?? null,
       compare_price: data.compare_price ?? data.discounted_price ?? null,

@@ -929,44 +929,43 @@ export function ProductList({
   }
 
   const handleDuplicateProduct = async (productId: string) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-start',message:'Starting product duplication',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
-    
     try {
       // 1. Obtener el producto original con todas sus variantes
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-fetch-original',message:'Fetching original product',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      
       const productResponse = await fetch(`/api/admin/products/${productId}`)
       if (!productResponse.ok) {
         throw new Error('Error al obtener el producto original')
       }
       const productData = await productResponse.json()
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-product-fetched',message:'Original product fetched',data:{productId,hasVariants:!!productData.variants,variantsCount:productData.variants?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      
       // 2. Obtener variantes del producto
       const variantsResponse = await fetch(`/api/products/${productId}/variants`)
       const variantsData = variantsResponse.ok ? await variantsResponse.json() : { data: [] }
       const variants = variantsData.data || []
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-variants-fetched',message:'Variants fetched',data:{productId,variantsCount:variants.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      
       // 3. Preparar datos del nuevo producto (sin id, con nombre modificado)
       const originalProduct = productData.data || productData
+      
+      // ✅ Extraer todas las categorías desde product_categories
+      let categoryIds: number[] = []
+      if (originalProduct.product_categories && Array.isArray(originalProduct.product_categories)) {
+        categoryIds = originalProduct.product_categories
+          .map((pc: any) => pc.category_id || pc.category?.id)
+          .filter((id: any) => id != null && !isNaN(id))
+      }
+      
+      // Si no hay categorías en product_categories, usar category_id del producto como fallback
+      if (categoryIds.length === 0 && originalProduct.category_id) {
+        categoryIds.push(parseInt(String(originalProduct.category_id)))
+      }
+      
       const newProductData = {
         name: `${originalProduct.name} (Copia)`,
         description: originalProduct.description || '',
         price: parseFloat(String(originalProduct.price || 0)), // Asegurar que sea número
         ...(originalProduct.discounted_price ? { compare_price: parseFloat(String(originalProduct.discounted_price)) } : {}), // La API espera compare_price
-        stock: parseInt(String(originalProduct.stock || 0)), // Asegurar que sea número entero
-        ...(originalProduct.category_id ? { category_id: parseInt(String(originalProduct.category_id)) } : {}), // Solo incluir si existe
+        stock: parseInt(String(originalProduct.stock || 0)), // ✅ Usar stock del producto principal
+        ...(originalProduct.category_id ? { category_id: parseInt(String(originalProduct.category_id)) } : {}), // Mantener category_id principal para retrocompatibilidad
+        ...(categoryIds.length > 0 ? { category_ids: categoryIds } : {}), // ✅ NUEVO: Incluir todas las categorías
         ...(originalProduct.brand ? { brand: String(originalProduct.brand) } : {}),
         ...(originalProduct.color ? { color: String(originalProduct.color) } : {}),
         ...(originalProduct.medida ? { medida: String(originalProduct.medida) } : {}),
@@ -976,45 +975,23 @@ export function ProductList({
         // No enviar images aquí, se manejan por separado si es necesario
       }
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-data-prepared',message:'Product data prepared for creation',data:{productId,newProductData},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      
       // 4. Crear el nuevo producto
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-creating',message:'Creating duplicated product',data:{productId,newProductName:newProductData.name},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      
       const createResponse = await fetch('/api/admin/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProductData),
       })
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-create-response',message:'Create product response received',data:{productId,status:createResponse.status,ok:createResponse.ok,statusText:createResponse.statusText},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      
       if (!createResponse.ok) {
         const errorData = await createResponse.json().catch(() => ({ error: 'Error desconocido' }))
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-create-error',message:'Create product error details',data:{productId,status:createResponse.status,errorData,requestData:newProductData},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-        // #endregion
         throw new Error(errorData.error || errorData.message || 'Error al crear el producto duplicado')
       }
       
       const newProduct = await createResponse.json()
       const newProductId = newProduct.data?.id || newProduct.id
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-created',message:'Duplicated product created',data:{originalProductId:productId,newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      
       // 5. Duplicar todas las variantes creándolas directamente en el nuevo producto
       if (variants.length > 0) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-duplicating-variants',message:'Duplicating variants',data:{newProductId,variantsCount:variants.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-        // #endregion
         
         for (const variant of variants) {
           try {
@@ -1037,10 +1014,6 @@ export function ProductList({
               is_default: variant.is_default || false,
             }
             
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-creating-variant',message:'Creating variant',data:{newProductId,variantId:variant.id,variantData},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-            // #endregion
-            
             // Crear nueva variante en el nuevo producto
             const variantResponse = await fetch('/api/admin/products/variants', {
               method: 'POST',
@@ -1048,31 +1021,17 @@ export function ProductList({
               body: JSON.stringify(variantData),
             })
             
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-variant-response',message:'Variant creation response',data:{newProductId,variantId:variant.id,status:variantResponse.status,ok:variantResponse.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-            // #endregion
-            
             if (!variantResponse.ok) {
               const errorData = await variantResponse.json().catch(() => ({ error: 'Error desconocido' }))
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-variant-error',message:'Variant creation error',data:{newProductId,variantId:variant.id,status:variantResponse.status,errorData},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-              // #endregion
               console.error('Error al crear variante duplicada:', errorData.error || errorData.message || 'Error al crear variante')
             }
           } catch (error) {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-variant-exception',message:'Variant creation exception',data:{newProductId,variantId:variant.id,error:error instanceof Error ? error.message : String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-            // #endregion
             console.error('Error al duplicar variante:', error)
           }
         }
       }
       
       // 6. Limpiar cache y forzar refetch completo para actualizar la lista
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-invalidating',message:'Limpiando cache y forzando refetch',data:{newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2'})}).catch(()=>{});
-      // #endregion
-      
       // ✅ ESTRATEGIA: Invalidar primero para marcar como obsoletas, luego refetch
       // Paso 1: Invalidar queries para forzar refetch automático de queries activas
       queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
@@ -1115,15 +1074,8 @@ export function ProductList({
         console.warn('Error en refetchQueries:', refetchError)
       }
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-success',message:'Product duplication completed successfully',data:{originalProductId:productId,newProductId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});
-      // #endregion
-      
       return newProductId
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDuplicateProduct-error',message:'Product duplication failed',data:{productId,error:error instanceof Error ? error.message : 'Error desconocido'},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});
-      // #endregion
       console.error('Error al duplicar producto:', error)
       throw error
     }
