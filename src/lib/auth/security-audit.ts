@@ -67,6 +67,7 @@ export interface SecurityAlert {
 export async function logSecurityEvent(
   event: Omit<SecurityEvent, 'id' | 'timestamp' | 'resolved'>
 ): Promise<void> {
+  // Usar try-catch global para asegurar que los errores de logging NO bloqueen operaciones críticas
   try {
     if (!supabaseAdmin) {
       console.warn('[SECURITY] Supabase admin no disponible para logging')
@@ -84,25 +85,37 @@ export async function logSecurityEvent(
 
     if (error && error.code === 'PGRST205') {
       // Tabla security_events no existe, usar admin_security_alerts como fallback
-      const { error: fallbackError } = await supabaseAdmin
-        .from('admin_security_alerts')
-        .insert({
-          user_id: securityEvent.user_id,
-          alert_type: securityEvent.event_type,
-          severity: securityEvent.severity,
-          message: securityEvent.description,
-          metadata: securityEvent.metadata,
-          resolved: false,
-          timestamp: securityEvent.timestamp,
-        })
+      // admin_security_alerts NO tiene columna user_id, solo guardamos user_id en metadata
+      try {
+        const { error: fallbackError } = await supabaseAdmin
+          .from('admin_security_alerts')
+          .insert({
+            alert_type: securityEvent.event_type,
+            severity: securityEvent.severity,
+            message: securityEvent.description,
+            metadata: {
+              ...(securityEvent.metadata || {}),
+              user_id: securityEvent.user_id, // Guardar user_id en metadata (no como columna)
+            },
+            resolved: false,
+            timestamp: securityEvent.timestamp,
+          })
 
-      if (fallbackError) {
-        console.error('[SECURITY] Error guardando evento de seguridad (fallback):', fallbackError)
-      } else {
-        console.log(`[SECURITY] Evento registrado en admin_security_alerts: ${event.event_type} - ${event.description}`)
+        if (fallbackError) {
+          // Si el fallback también falla, solo loguear el error pero NO lanzar excepción
+          // Esto evita que los errores de logging bloqueen operaciones críticas
+          console.error('[SECURITY] Error guardando evento de seguridad (fallback):', fallbackError)
+        } else {
+          console.log(`[SECURITY] Evento registrado en admin_security_alerts: ${event.event_type} - ${event.description}`)
+        }
+      } catch (fallbackErr) {
+        // Capturar cualquier error del fallback y solo loguearlo, NO bloquear la operación
+        console.warn('[SECURITY] No se pudo registrar evento de seguridad (fallback), pero la operación continúa:', fallbackErr)
       }
     } else if (error) {
+      // Error diferente a tabla no encontrada - solo loguear
       console.error('[SECURITY] Error guardando evento de seguridad:', error)
+      // NO lanzar excepción - solo loguear el error
     } else {
       console.log(`[SECURITY] Evento registrado: ${event.event_type} - ${event.description}`)
     }
