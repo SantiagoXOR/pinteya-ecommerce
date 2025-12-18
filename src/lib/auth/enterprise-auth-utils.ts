@@ -304,7 +304,13 @@ export async function getEnterpriseAuthContext(
           await logPermissionDenied(
             userId,
             `Permission validation failed: ${permissionResult.error}`,
-            request
+            config.requiredPermissions || [],
+            {
+              ipAddress: getClientIP(request),
+              userAgent: getHeader(request, 'user-agent') || 'unknown',
+              userRole: 'unknown', // No disponible aún en este punto
+              permissions: [],
+            }
           )
 
           return {
@@ -337,7 +343,13 @@ export async function getEnterpriseAuthContext(
       await logPermissionDenied(
         userId,
         `Role validation failed: required ${config.requiredRole}, got ${userRole}`,
-        request
+        config.requiredPermissions || [],
+        {
+          ipAddress: getClientIP(request),
+          userAgent: getHeader(request, 'user-agent') || 'unknown',
+          userRole: userRole,
+          permissions: userPermissions,
+        }
       )
 
       return {
@@ -358,7 +370,13 @@ export async function getEnterpriseAuthContext(
         await logPermissionDenied(
           userId,
           `Permission validation failed: missing ${config.requiredPermissions.join(', ')}`,
-          request
+          config.requiredPermissions,
+          {
+            ipAddress: getClientIP(request),
+            userAgent: getHeader(request, 'user-agent') || 'unknown',
+            userRole: userRole,
+            permissions: userPermissions,
+          }
         )
 
         return {
@@ -400,11 +418,18 @@ export async function getEnterpriseAuthContext(
       userId,
       {
         ip_address: ipAddress,
+        ipAddress: ipAddress, // Compatibilidad con SecurityContext
         user_agent: userAgent,
+        userAgent: userAgent, // Compatibilidad con SecurityContext
         session_id: sessionId,
+        sessionId: sessionId, // Compatibilidad con SecurityContext
         security_level: config.securityLevel || 'medium',
         permissions: userPermissions,
         role: userRole,
+        userRole: userRole, // Compatibilidad con SecurityContext
+        metadata: {
+          emailVerified: userProfile?.metadata?.emailVerified || false,
+        },
       },
       request
     )

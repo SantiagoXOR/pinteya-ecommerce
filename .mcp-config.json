@@ -21,6 +21,9 @@
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"],
+      "env": {
+        "CONTEXT7_API_KEY": ""
+      },
       "maxInstances": 1,
       "restartPolicy": "on-failure",
       "timeout": 30000
@@ -37,6 +40,7 @@
       "args": [
         "-y",
         "@supabase/mcp-server-supabase@latest",
+        "--read-only",
         "--project-ref=aakzspzfulgftqlgwkpb"
       ],
       "env": {
