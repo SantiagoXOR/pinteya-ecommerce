@@ -3,17 +3,46 @@ import { supabaseAdmin } from '@/lib/integrations/supabase'
 import { z } from 'zod'
 
 // Schema de validación para actualización de variante
+// ✅ CORREGIDO: Usar preprocess para convertir strings a números automáticamente
 const UpdateVariantSchema = z.object({
   color_name: z.string().optional(),
   color_hex: z.string().optional(),
   measure: z.string().optional(),
   finish: z.string().optional().nullable(),
-  price_list: z.number().optional(),
-  price_sale: z.number().optional().nullable(),
-  stock: z.number().int().min(0).optional(),
+  // ✅ Convertir strings a números automáticamente
+  price_list: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return undefined
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return isNaN(num) ? undefined : num
+    },
+    z.number().optional()
+  ),
+  price_sale: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '' || val === 0) return null
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return isNaN(num) ? null : num
+    },
+    z.number().nullable().optional()
+  ),
+  stock: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return undefined
+      const num = typeof val === 'string' ? parseInt(val, 10) : val
+      return isNaN(num) ? undefined : Math.floor(num)
+    },
+    z.number().int().min(0).optional()
+  ),
   is_active: z.boolean().optional(),
   is_default: z.boolean().optional(),
-  image_url: z.string().optional().nullable(), // Cualquier string o null
+  image_url: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return null
+      return typeof val === 'string' ? val.trim() || null : val
+    },
+    z.string().nullable().optional()
+  ),
   aikon_id: z.string().optional(),
 })
 
