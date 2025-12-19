@@ -932,14 +932,43 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
 
   const handleSave = () => {
     if (validateForm()) {
-      // ✅ DEBUG: Log para verificar formData antes de guardar
-      console.log('💾 [VariantModal] handleSave - formData:', {
-        id: formData.id,
-        hasImageUrl: !!formData.image_url,
-        imageUrl: formData.image_url,
-        allKeys: Object.keys(formData),
+      // ✅ CORREGIDO: Normalizar datos antes de guardar para asegurar tipos correctos
+      const normalizedData = {
+        ...formData,
+        // Asegurar que price_list sea número
+        price_list: typeof formData.price_list === 'number' 
+          ? formData.price_list 
+          : parseFloat(String(formData.price_list || 0)) || 0,
+        // Asegurar que price_sale sea número o null (no 0 cuando está vacío)
+        price_sale: formData.price_sale && formData.price_sale > 0
+          ? (typeof formData.price_sale === 'number' 
+              ? formData.price_sale 
+              : parseFloat(String(formData.price_sale)) || null)
+          : null,
+        // Asegurar que stock sea número entero
+        stock: typeof formData.stock === 'number' 
+          ? Math.floor(formData.stock) 
+          : parseInt(String(formData.stock || 0), 10) || 0,
+        // Asegurar que image_url sea string o null (no string vacío)
+        image_url: formData.image_url && formData.image_url.trim() !== '' 
+          ? formData.image_url.trim() 
+          : null,
+      }
+      
+      // ✅ DEBUG: Log para verificar datos normalizados
+      console.log('💾 [VariantModal] handleSave - formData normalizado:', {
+        id: normalizedData.id,
+        hasImageUrl: !!normalizedData.image_url,
+        imageUrl: normalizedData.image_url,
+        price_list: normalizedData.price_list,
+        price_sale: normalizedData.price_sale,
+        stock: normalizedData.stock,
+        stockType: typeof normalizedData.stock,
+        priceListType: typeof normalizedData.price_list,
+        priceSaleType: typeof normalizedData.price_sale,
+        allKeys: Object.keys(normalizedData),
       })
-      onSave(formData)
+      onSave(normalizedData)
     }
   }
 
@@ -1133,9 +1162,15 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
                     type='number'
                     step='0.01'
                     value={formData.price_sale || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price_sale: e.target.value ? parseFloat(e.target.value) : 0 })
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData({ 
+                        ...formData, 
+                        price_sale: value && value.trim() !== '' 
+                          ? parseFloat(value) 
+                          : undefined // ✅ Usar undefined en lugar de 0 para que sea opcional
+                      })
+                    }}
                     className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
                     placeholder='0.00'
                   />
