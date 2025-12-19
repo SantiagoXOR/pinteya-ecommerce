@@ -75,8 +75,8 @@ const SingleGridItem = ({ item }: { item: ExtendedProduct }) => {
       dimensions={item?.dimensions}
       // ✅ CORREGIDO: Pasar medida para que se muestre en ProductCard cuando no hay variantes
       medida={(item as any)?.medida}
-      // ✅ NO pasar color legacy - usar solo variantes para badges
-      // color={item?.color}
+      // ✅ CORREGIDO: Pasar color para que se muestre cuando no hay variantes
+      color={(item as any)?.color}
       price={features.currentPrice}
       originalPrice={features.discount ? item.price : undefined}
       discount={features.discount ? `${features.discount}%` : undefined}

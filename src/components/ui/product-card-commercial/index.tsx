@@ -71,6 +71,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       weight,
       children,
       medida,
+      color,
       ...props
     },
     ref
@@ -82,7 +83,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const config = useDesignSystemConfig()
 
     // Hooks personalizados
-    const colors = useProductColors({ variants, title })
+    const colors = useProductColors({ variants, title, color })
     const measures = useProductMeasures({ variants, title, medida }) // ✅ NUEVO: Pasar medida como fallback
     const variantsData = useProductVariants({
       variants,

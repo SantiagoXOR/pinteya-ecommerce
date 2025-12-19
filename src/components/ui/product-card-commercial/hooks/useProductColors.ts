@@ -8,6 +8,7 @@ import type { ProductVariant, ColorData } from '../types'
 interface UseProductColorsOptions {
   variants?: ProductVariant[]
   title?: string
+  color?: string // ✅ NUEVO: Color directo del producto cuando no hay variantes
 }
 
 interface UseProductColorsResult {
@@ -22,7 +23,8 @@ interface UseProductColorsResult {
  */
 export const useProductColors = ({
   variants,
-  title
+  title,
+  color
 }: UseProductColorsOptions): UseProductColorsResult => {
   const [selectedColor, setSelectedColor] = React.useState<string | undefined>(undefined)
 
@@ -30,8 +32,15 @@ export const useProductColors = ({
   const uniqueColors = React.useMemo(() => {
     const colorsMap = new Map<string, ColorData>()
     
+    // ✅ NUEVO: Si no hay variantes pero hay color directo del producto, usarlo
     if (!variants || variants.length === 0) {
-      console.log(`⚠️ [${title}] Sin variantes para extraer colores`)
+      if (color && color.trim() !== '') {
+        const colorName = color.trim()
+        const colorHex = getColorHexFromName(colorName)
+        console.log(`✅ [${title}] Usando color directo del producto: ${colorName} (${colorHex})`)
+        return [{ name: colorName, hex: colorHex }]
+      }
+      console.log(`⚠️ [${title}] Sin variantes ni color directo para extraer colores`)
       return []
     }
     
@@ -99,13 +108,14 @@ export const useProductColors = ({
     }
     
     // Si no hay colores pero sí hay medidas, agregar "Incoloro" por defecto para otros productos
-    if (result.length === 0 && variants.some(v => v.measure)) {
+    // ✅ CORREGIDO: Solo si hay variantes con medidas, no si solo hay color directo
+    if (result.length === 0 && variants && variants.length > 0 && variants.some(v => v.measure)) {
       console.log(`➕ [${title}] Agregando color "Incoloro" por defecto`)
       return [{ name: 'Incoloro', hex: 'rgba(245, 245, 245, 0.85)' }]
     }
     
     return result
-  }, [variants, title])
+  }, [variants, title, color])
 
   // Establecer color por defecto al cargar
   React.useEffect(() => {
