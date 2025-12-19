@@ -139,9 +139,10 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
       specifications={productData.specifications}
       dimensions={productData.dimensions}
       weight={productData.weight}
-      // ✅ NO pasar color/medida legacy - usar solo variantes para badges
+      // ✅ CORREGIDO: Pasar medida para que se muestre en ProductCard cuando no hay variantes
+      medida={(productData as any)?.medida}
+      // ✅ NO pasar color legacy - usar solo variantes para badges
       // color={productData.color}
-      // medida={productData.medida}
     />
   )
 }, (prevProps, nextProps) => {

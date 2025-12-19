@@ -414,7 +414,27 @@ export async function GET(request: NextRequest) {
             return acc
           }, {} as Record<number, any[]>)
 
-          // Enriquecer productos con variantes
+          // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
+          const productImagesResult = await withDatabaseTimeout(async signal => {
+            return await supabase
+              .from('product_images')
+              .select('product_id, url, is_primary')
+              .in('product_id', productIds)
+              .order('is_primary', { ascending: false })
+              .order('display_order', { ascending: true })
+          }, API_TIMEOUTS.supabase.simple)
+          
+          const { data: productImagesData } = productImagesResult
+          const productImagesByProduct: Record<number, string | null> = {}
+          
+          // Agrupar imágenes por product_id y tomar la primera (primaria o primera disponible)
+          productImagesData?.forEach((img: any) => {
+            if (!productImagesByProduct[img.product_id]) {
+              productImagesByProduct[img.product_id] = img.url
+            }
+          })
+
+          // Enriquecer productos con variantes e imágenes
           enrichedProducts = products.map(product => {
             const productVariants = variantsByProduct[product.id] || []
             const defaultVariant = productVariants.find(v => v.is_default) || productVariants[0]
@@ -424,7 +444,20 @@ export async function GET(request: NextRequest) {
               // Mantener compatibilidad con campos legacy
               aikon_id: product.aikon_id || defaultVariant?.aikon_id,
               color: product.color || defaultVariant?.color_name,
-              medida: product.medida || defaultVariant?.measure,
+              // ✅ CORREGIDO: Parsear medida si viene como string de array
+              medida: (() => {
+                const rawMedida = product.medida || defaultVariant?.measure
+                if (!rawMedida) return null
+                if (typeof rawMedida === 'string' && rawMedida.trim().startsWith('[') && rawMedida.trim().endsWith(']')) {
+                  try {
+                    const parsed = JSON.parse(rawMedida)
+                    return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : rawMedida
+                  } catch {
+                    return rawMedida
+                  }
+                }
+                return rawMedida
+              })(),
               // Agregar información de variantes
               variants: productVariants,
               variant_count: productVariants.length,
@@ -434,6 +467,8 @@ export async function GET(request: NextRequest) {
               price: product.price,
               discounted_price: product.discounted_price,
               stock: product.stock,
+              // ✅ NUEVO: Agregar image_url desde product_images si está disponible
+              image_url: productImagesByProduct[product.id] || defaultVariant?.image_url || null,
             }
           })
 

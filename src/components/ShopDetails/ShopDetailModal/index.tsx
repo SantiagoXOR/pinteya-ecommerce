@@ -292,7 +292,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     if (selectedSize && productType.hasSizeSelector) {
       return calculateDynamicPrice()
     }
-    const candidate = product.price ?? (productData as any)?.discounted_price ?? (productData as any)?.price
+    // ✅ CORREGIDO: Priorizar discounted_price del producto cuando no hay variantes
+    const candidate = (productData as any)?.discounted_price ?? product.price ?? (productData as any)?.price
     const n = typeof candidate === 'number' ? candidate : parseFloat(String(candidate))
     return Number.isFinite(n) ? n : 0
   }, [
@@ -308,7 +309,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   ])
 
   const originalPrice = useMemo(() => {
-    return calculateOriginalPrice(
+    // ✅ CORREGIDO: Si no hay variante, usar precio del producto como originalPrice
+    const calculated = calculateOriginalPrice(
       selectedVariant,
       selectedRelatedProduct,
       product,
@@ -316,7 +318,19 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       widthToPriceMap,
       productType
     )
-  }, [selectedVariant, selectedRelatedProduct, product, selectedWidth, widthToPriceMap, productType])
+    // Si no hay variante y no hay precio calculado, usar price del producto como originalPrice
+    if (!calculated && !selectedVariant && !selectedRelatedProduct) {
+      // ✅ CORREGIDO: Usar price del producto como originalPrice cuando hay discounted_price
+      const productPrice = (productData as any)?.price || product?.price
+      const productDiscountedPrice = (productData as any)?.discounted_price
+      // Si hay descuento, el originalPrice es el price, no el discounted_price
+      if (productDiscountedPrice && productPrice && productPrice > productDiscountedPrice) {
+        return productPrice
+      }
+      return productPrice
+    }
+    return calculated
+  }, [selectedVariant, selectedRelatedProduct, product, productData, selectedWidth, widthToPriceMap, productType])
 
   const hasVariantDiscount = useMemo(() => {
     if (selectedVariant) {
@@ -325,8 +339,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     if (originalPrice && finalCurrentPrice) {
       return hasDiscountUtil(originalPrice, finalCurrentPrice)
     }
+    // ✅ CORREGIDO: Verificar descuento del producto cuando no hay variantes
+    const productOriginalPrice = product?.originalPrice || (productData as any)?.price
+    const productDiscountedPrice = finalCurrentPrice || (productData as any)?.discounted_price || product?.price
+    if (productOriginalPrice && productDiscountedPrice && productOriginalPrice > productDiscountedPrice) {
+      return true
+    }
     return product.originalPrice && product.originalPrice > product.price
-  }, [selectedVariant, originalPrice, finalCurrentPrice, product])
+  }, [selectedVariant, originalPrice, finalCurrentPrice, product, productData])
 
   // Stock efectivo
   const effectiveStock = useMemo(() => {
@@ -347,6 +367,13 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       if (!c) return ''
       if (typeof c === 'string') return sanitize(c)
       return sanitize(c?.url || c?.image_url)
+    }
+    
+    // ✅ CORREGIDO: Prioridad 1 - image_url desde product_images (API)
+    if ((productData as any)?.image_url) {
+      const apiImage = sanitize((productData as any).image_url)
+      const validated = getValidImageUrl(apiImage)
+      if (validated && !validated.includes('placeholder')) return validated
     }
     
     if (selectedVariant?.image_url) {

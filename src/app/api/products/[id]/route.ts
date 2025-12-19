@@ -49,6 +49,20 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       .eq('id', id)
       .single()
 
+    // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
+    let primaryImageUrl: string | null = null
+    if (product) {
+      const { data: productImages } = await supabase
+        .from('product_images')
+        .select('url, is_primary')
+        .eq('product_id', id)
+        .order('is_primary', { ascending: false })
+        .order('display_order', { ascending: true })
+        .limit(1)
+      
+      primaryImageUrl = productImages?.[0]?.url || null
+    }
+
     if (error) {
       if (error.code === 'PGRST116') {
         const notFoundResponse: ApiResponse<null> = {
@@ -144,7 +158,20 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           // Mantener compatibilidad con campos legacy
           aikon_id: product.aikon_id || defaultVariant?.aikon_id,
           color: product.color || defaultVariant?.color_name,
-          medida: product.medida || defaultVariant?.measure,
+          // ✅ CORREGIDO: Parsear medida si viene como string de array
+          medida: (() => {
+            const rawMedida = product.medida || defaultVariant?.measure
+            if (!rawMedida) return null
+            if (typeof rawMedida === 'string' && rawMedida.trim().startsWith('[') && rawMedida.trim().endsWith(']')) {
+              try {
+                const parsed = JSON.parse(rawMedida)
+                return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : rawMedida
+              } catch {
+                return rawMedida
+              }
+            }
+            return rawMedida
+          })(),
           // Agregar información de variantes
           variants: processedVariants || [],
           variant_count: processedVariants?.length || 0,
@@ -154,11 +181,35 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           price: defaultVariant?.price_list || product.price,
           discounted_price: defaultVariant?.price_sale || product.discounted_price,
           stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
+          // ✅ NUEVO: Agregar image_url desde product_images si está disponible
+          image_url: primaryImageUrl || defaultVariant?.image_url || null,
         }
       } catch (variantError) {
         // Si hay error obteniendo variantes, continuar con producto original
         console.warn('Error obteniendo variantes para producto:', id, variantError)
       }
+    }
+
+    // ✅ NUEVO: Si no se enriqueció el producto, agregar image_url y parsear medida directamente
+    if (!enrichedProduct && product) {
+      // ✅ CORREGIDO: Parsear medida si viene como string de array
+      let parsedMedida = product.medida
+      if (parsedMedida && typeof parsedMedida === 'string' && parsedMedida.trim().startsWith('[') && parsedMedida.trim().endsWith(']')) {
+        try {
+          const parsed = JSON.parse(parsedMedida)
+          parsedMedida = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : parsedMedida
+        } catch {
+          // Si falla el parse, usar la medida original
+        }
+      }
+      
+      enrichedProduct = {
+        ...product,
+        medida: parsedMedida,
+        image_url: primaryImageUrl || null,
+      }
+    } else if (enrichedProduct && !enrichedProduct.image_url) {
+      enrichedProduct.image_url = primaryImageUrl || null
     }
 
     const response: ApiResponse<ProductWithCategory> = {
