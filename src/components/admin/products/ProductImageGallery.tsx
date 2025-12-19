@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Upload, X, Loader2, AlertCircle, Star, Trash2 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
@@ -107,7 +107,7 @@ export function ProductImageGallery({
     enabled: !!productId,
   })
 
-  // ✅ NUEVO: Obtener imagen de variante predeterminada si no hay imágenes en product_images
+  // ✅ NUEVO: Obtener imagen de variante predeterminada siempre (para mostrar como fallback)
   const { data: defaultVariantImage } = useQuery({
     queryKey: ['default-variant-image', productId],
     queryFn: async () => {
@@ -117,22 +117,34 @@ export function ProductImageGallery({
       const defaultVariant = result.data?.default_variant
       return defaultVariant?.image_url || null
     },
-    enabled: !!productId && (!imagesData || imagesData.length === 0),
+    enabled: !!productId,
+    staleTime: 0, // Siempre refetch para obtener la imagen más reciente
   })
 
   const images = imagesData || []
   // ✅ NUEVO: Si no hay imágenes y hay imagen de variante predeterminada, agregarla como imagen virtual
-  const imagesWithFallback = images.length > 0 
-    ? images 
-    : (defaultVariantImage 
-        ? [{
-            id: 'default-variant-image',
-            url: defaultVariantImage,
-            alt_text: 'Imagen de variante predeterminada',
-            is_primary: true,
-            display_order: 0,
-          } as ProductImage]
-        : [])
+  // Prioridad: product_images > variante predeterminada
+  const imagesWithFallback = React.useMemo(() => {
+    // Si hay imágenes en product_images, usarlas
+    if (images.length > 0) {
+      return images
+    }
+    
+    // Si no hay imágenes en product_images, usar imagen de variante predeterminada
+    if (defaultVariantImage && defaultVariantImage.trim() !== '') {
+      console.log('🖼️ Usando imagen de variante predeterminada como fallback:', defaultVariantImage)
+      return [{
+        id: 'default-variant-image',
+        url: defaultVariantImage,
+        alt_text: 'Imagen de variante predeterminada',
+        is_primary: true,
+        display_order: 0,
+      } as ProductImage]
+    }
+    
+    return []
+  }, [images, defaultVariantImage])
+  
   const primaryImage = imagesWithFallback.find(img => img.is_primary) || imagesWithFallback[0]
 
   // Mutación para subir imagen
@@ -143,7 +155,8 @@ export function ProductImageGallery({
 
       const formData = new FormData()
       formData.append('file', processedFile)
-      formData.append('is_primary', imagesWithFallback.length === 0 ? 'true' : 'false') // Primera imagen es primaria
+      // ✅ CORREGIDO: Usar solo imágenes reales (no la imagen virtual) para determinar si es primaria
+      formData.append('is_primary', images.length === 0 ? 'true' : 'false') // Primera imagen es primaria
 
       const response = await fetch(`/api/admin/products/${productId}/images`, {
         method: 'POST',
@@ -214,7 +227,8 @@ export function ProductImageGallery({
   const handleFileUpload = useCallback(
     async (file: File) => {
       // ✅ CORREGIDO: Usar solo imágenes reales (no la imagen virtual de variante) para el límite
-      if (images.length >= maxImages) {
+      const realImagesCount = images.length
+      if (realImagesCount >= maxImages) {
         alert(`Máximo ${maxImages} imágenes permitidas`)
         return
       }
@@ -381,7 +395,7 @@ export function ProductImageGallery({
               <>
                 <Upload className='w-12 h-12 text-gray-400 mb-3' />
                 <p className='text-sm font-medium text-gray-700 mb-1'>
-                  {images.length === 0 ? 'Agregar primera imagen' : 'Agregar más imágenes'}
+                  {imagesWithFallback.length === 0 ? 'Agregar primera imagen' : 'Agregar más imágenes'}
                 </p>
                 <p className='text-xs text-gray-500'>Arrastra o haz clic para seleccionar</p>
                 <p className='text-xs text-gray-400 mt-2'>
@@ -399,8 +413,8 @@ export function ProductImageGallery({
           💡 <strong>Tip:</strong> Las imágenes se procesan automáticamente para formato 1:1 con fondo blanco.
         </p>
         <p>
-          {images.length > 0
-            ? `${images.length} imagen${images.length > 1 ? 'es' : ''} agregada${images.length > 1 ? 's' : ''}. Máximo ${maxImages} imágenes.`
+          {imagesWithFallback.length > 0
+            ? `${images.length > 0 ? images.length : 1} imagen${images.length > 1 ? 'es' : ''} agregada${images.length > 1 ? 's' : ''}${images.length === 0 && imagesWithFallback.length > 0 ? ' (mostrando imagen de variante predeterminada)' : ''}. Máximo ${maxImages} imágenes.`
             : `Máximo ${maxImages} imágenes por producto.`}
         </p>
       </div>

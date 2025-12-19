@@ -635,7 +635,7 @@ export function ProductFormMinimal({
           {productId && mode === 'edit' ? (
             // Modo edición: mostrar variantes existentes y permitir agregar nuevas
             <div className='space-y-4'>
-              {variants.length > 0 && (
+              {variants.length > 0 ? (
                 <div className='overflow-x-auto'>
                   <table className='min-w-full divide-y divide-gray-200'>
                     <thead className='bg-gray-50'>
@@ -722,15 +722,34 @@ export function ProductFormMinimal({
                     </tbody>
                   </table>
                 </div>
+              ) : (
+                <div className='text-center py-8 text-gray-500 text-sm border border-dashed border-gray-300 rounded-lg'>
+                  <p>No hay variantes agregadas.</p>
+                  <p className='mt-1'>Agrega variantes para ofrecer diferentes opciones de color, medida y precio.</p>
+                </div>
               )}
 
-              {/* VariantBuilder para agregar nuevas variantes */}
-              <VariantBuilder
-                variants={newVariants}
-                onChange={setNewVariants}
-                measures={watchedData.medida || []}
-                terminaciones={watchedData.terminaciones || []}
-              />
+              {/* Botón para agregar nueva variante */}
+              <div className='flex justify-end'>
+                <button
+                  type='button'
+                  onClick={openNewVariant}
+                  className='inline-flex items-center px-4 py-2 bg-blaze-orange-600 text-white rounded-lg hover:bg-blaze-orange-700 transition-colors'
+                >
+                  <Plus className='w-4 h-4 mr-2' />
+                  Agregar Nueva Variante
+                </button>
+              </div>
+
+              {/* VariantBuilder para agregar nuevas variantes - Solo mostrar si hay variantes nuevas */}
+              {newVariants.length > 0 && (
+                <VariantBuilder
+                  variants={newVariants}
+                  onChange={setNewVariants}
+                  measures={watchedData.medida || []}
+                  terminaciones={watchedData.terminaciones || []}
+                />
+              )}
             </div>
           ) : (
             // Modo creación: solo VariantBuilder (las variantes se crearán después de guardar el producto)
@@ -803,6 +822,7 @@ export function ProductFormMinimal({
       {showVariantModal && editingVariant && (
         <VariantModal
           variant={editingVariant}
+          productId={productId}
           onSave={async (variant) => {
             try {
               if (variant.id) {
@@ -832,11 +852,12 @@ export function ProductFormMinimal({
 // Modal de Variante
 interface VariantModalProps {
   variant: ProductVariant
+  productId?: string
   onSave: (variant: ProductVariant) => void
   onCancel: () => void
 }
 
-function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
+function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProps) {
   const [formData, setFormData] = useState(variant)
   const [imagePreview, setImagePreview] = useState<string | null>(variant.image_url || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -901,27 +922,21 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
           <div className='border-b border-gray-200 pb-6'>
             <h3 className='text-sm font-semibold text-gray-900 mb-4'>Imagen de la Variante</h3>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300'>
-                {imagePreview ? (
-                  <Image
-                    src={imagePreview}
-                    alt={formData.color_name || 'Variante'}
-                    width={300}
-                    height={300}
-                    className='w-full h-full object-cover'
-                    unoptimized
-                  />
-                ) : (
-                  <div className='text-center text-gray-400'>
-                    <Upload className='w-12 h-12 mx-auto mb-2' />
-                    <p className='text-sm'>Sin imagen</p>
-                  </div>
-                )}
-              </div>
+              <ImageUploadZone
+                productId={productId} // Usar productId del producto para el upload
+                currentImageUrl={imagePreview || formData.image_url || null}
+                onUploadSuccess={(imageUrl) => {
+                  setFormData({ ...formData, image_url: imageUrl || '' })
+                  setImagePreview(imageUrl || null)
+                }}
+                onError={(error) => {
+                  console.error('Error al subir imagen:', error)
+                }}
+              />
               <div className='space-y-3'>
                 <div>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
-                    URL de Imagen
+                    O URL de Imagen
                   </label>
                   <input
                     type='url'
@@ -932,7 +947,7 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
                   />
                 </div>
                 <p className='text-xs text-gray-500'>
-                  💡 Tip: Usa imágenes específicas para cada color/variante
+                  💡 Tip: Puedes subir una imagen arrastrándola o usar una URL externa
                 </p>
               </div>
             </div>
