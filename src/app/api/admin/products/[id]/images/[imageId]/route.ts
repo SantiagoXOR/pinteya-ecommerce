@@ -70,7 +70,8 @@ const getHandler = async (
   request: NextRequest,
   context: { params: Promise<{ id: string; imageId: string }> }
 ) => {
-  const { supabase } = request as any
+  // ✅ CORREGIDO: Usar supabaseAdmin directamente
+  const { supabaseAdmin } = await import('@/lib/integrations/supabase')
   const { id: productId, imageId } = await context.params
 
   // Validate params
@@ -79,7 +80,7 @@ const getHandler = async (
     throw ValidationError('Parámetros inválidos', paramsValidation.error.errors)
   }
 
-  const image = await getImageById(supabase, productId, imageId)
+  const image = await getImageById(supabaseAdmin, productId, imageId)
 
   return NextResponse.json({
     data: image,
@@ -96,7 +97,13 @@ const putHandler = async (
   request: NextRequest,
   context: { params: Promise<{ id: string; imageId: string }> }
 ) => {
-  const { supabase, user, validatedData } = request as any
+  // ✅ CORREGIDO: Usar supabaseAdmin directamente y obtener user del auth
+  const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { auth } = await import('@/lib/auth/config')
+  const session = await auth()
+  const user = session?.user
+  
+  const { validatedData } = request as any
   const { id: productId, imageId } = await context.params
 
   // Validate params
@@ -109,11 +116,11 @@ const putHandler = async (
   const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
 
   // Check if image exists
-  const existingImage = await getImageById(supabase, numericProductId.toString(), imageId)
+  const existingImage = await getImageById(supabaseAdmin, numericProductId.toString(), imageId)
 
   // If setting as primary, update other images first
   if (validatedData.is_primary === true) {
-    await supabase
+    await supabaseAdmin
       .from('product_images')
       .update({ is_primary: false })
       .eq('product_id', numericProductId)
@@ -121,7 +128,7 @@ const putHandler = async (
   }
 
   // Update image
-  const { data: updatedImage, error } = await supabase
+  const { data: updatedImage, error } = await supabaseAdmin
     .from('product_images')
     .update({
       ...validatedData,
@@ -137,7 +144,9 @@ const putHandler = async (
   }
 
   // Log action
-  await logAdminAction(user.id, 'UPDATE', 'product_image', imageId, existingImage, updatedImage)
+  if (user?.id) {
+    await logAdminAction(user.id, 'UPDATE', 'product_image', imageId, existingImage, updatedImage)
+  }
 
   return NextResponse.json({
     data: updatedImage,
@@ -154,7 +163,12 @@ const deleteHandler = async (
   request: NextRequest,
   context: { params: Promise<{ id: string; imageId: string }> }
 ) => {
-  const { supabase, user } = request as any
+  // ✅ CORREGIDO: Usar supabaseAdmin directamente y obtener user del auth
+  const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { auth } = await import('@/lib/auth/config')
+  const session = await auth()
+  const user = session?.user
+  
   const { id: productId, imageId } = await context.params
 
   // Validate params
@@ -167,10 +181,10 @@ const deleteHandler = async (
   const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
 
   // Check if image exists
-  const existingImage = await getImageById(supabase, numericProductId.toString(), imageId)
+  const existingImage = await getImageById(supabaseAdmin, numericProductId.toString(), imageId)
 
   // Delete from database first
-  const { error: dbError } = await supabase
+  const { error: dbError } = await supabaseAdmin
     .from('product_images')
     .delete()
     .eq('id', imageId)
@@ -189,19 +203,21 @@ const deleteHandler = async (
 
   // If this was the primary image, set another image as primary
   if (existingImage.is_primary) {
-    const { data: otherImages } = await supabase
+    const { data: otherImages } = await supabaseAdmin
       .from('product_images')
       .select('id')
       .eq('product_id', numericProductId)
       .limit(1)
 
     if (otherImages && otherImages.length > 0) {
-      await supabase.from('product_images').update({ is_primary: true }).eq('id', otherImages[0].id)
+      await supabaseAdmin.from('product_images').update({ is_primary: true }).eq('id', otherImages[0].id)
     }
   }
 
   // Log action
-  await logAdminAction(user.id, 'DELETE', 'product_image', imageId, existingImage, null)
+  if (user?.id) {
+    await logAdminAction(user.id, 'DELETE', 'product_image', imageId, existingImage, null)
+  }
 
   return NextResponse.json({
     success: true,
