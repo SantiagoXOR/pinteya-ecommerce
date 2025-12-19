@@ -175,9 +175,11 @@ export function ImageUploadZone({
           ? `/api/admin/products/${productId}/images`
           : `/api/admin/upload/image`
         
+        // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
         const response = await fetch(uploadUrl, {
           method: 'POST',
           body: formData,
+          credentials: 'include', // Incluir cookies de autenticación
         })
 
         clearInterval(progressInterval)

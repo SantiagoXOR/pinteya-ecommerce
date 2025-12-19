@@ -99,7 +99,9 @@ export function ProductImageGallery({
   const { data: imagesData, isLoading } = useQuery({
     queryKey: ['product-images', productId],
     queryFn: async () => {
-      const response = await fetch(`/api/admin/products/${productId}/images`)
+      const response = await fetch(`/api/admin/products/${productId}/images`, {
+        credentials: 'include', // ✅ Incluir cookies de autenticación
+      })
       if (!response.ok) throw new Error('Error al cargar imágenes')
       const result = await response.json()
       return (result.data || []) as ProductImage[]
@@ -111,7 +113,9 @@ export function ProductImageGallery({
   const { data: defaultVariantImage } = useQuery({
     queryKey: ['default-variant-image', productId],
     queryFn: async () => {
-      const response = await fetch(`/api/admin/products/${productId}`)
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        credentials: 'include', // ✅ Incluir cookies de autenticación
+      })
       if (!response.ok) return null
       const result = await response.json()
       const defaultVariant = result.data?.default_variant
@@ -161,6 +165,7 @@ export function ProductImageGallery({
       const response = await fetch(`/api/admin/products/${productId}/images`, {
         method: 'POST',
         body: formData,
+        credentials: 'include', // ✅ Incluir cookies de autenticación
       })
 
       // ✅ IMPORTANTE: Leer el body una sola vez
@@ -187,6 +192,7 @@ export function ProductImageGallery({
     mutationFn: async (imageId: string) => {
       const response = await fetch(`/api/admin/products/${productId}/images/${imageId}`, {
         method: 'DELETE',
+        credentials: 'include', // ✅ Incluir cookies de autenticación
       })
 
       if (!response.ok) {
@@ -209,6 +215,7 @@ export function ProductImageGallery({
         method: 'PUT', // ✅ Usar PUT en lugar de PATCH
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_primary: true }),
+        credentials: 'include', // ✅ Incluir cookies de autenticación
       })
 
       if (!response.ok) {

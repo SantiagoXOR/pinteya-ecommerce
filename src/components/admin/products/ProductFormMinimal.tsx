@@ -120,7 +120,9 @@ export function ProductFormMinimal({
   const { data: variantsData, isLoading: variantsLoading } = useQuery({
     queryKey: ['product-variants', productId],
     queryFn: async () => {
-      const res = await fetch(`/api/products/${productId}/variants`)
+      const res = await fetch(`/api/products/${productId}/variants`, {
+        credentials: 'include', // ✅ Incluir cookies de autenticación
+      })
       const json = await res.json()
       return json.data || []
     },
@@ -136,7 +138,8 @@ export function ProductFormMinimal({
       const res = await fetch('/api/admin/products/variants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...variant, product_id: productId })
+        body: JSON.stringify({ ...variant, product_id: productId }),
+        credentials: 'include', // ✅ Incluir cookies de autenticación
       })
       if (!res.ok) throw new Error('Error creando variante')
       return res.json()
@@ -163,7 +166,8 @@ export function ProductFormMinimal({
       const res = await fetch(`/api/products/${productId}/variants/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
+        credentials: 'include', // ✅ Incluir cookies de autenticación
       })
       
       console.log('📡 [Frontend] Respuesta del servidor:', {
@@ -195,7 +199,8 @@ export function ProductFormMinimal({
   const deleteVariantMutation = useMutation({
     mutationFn: async (variantId: number) => {
       const res = await fetch(`/api/products/${productId}/variants/${variantId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include', // ✅ Incluir cookies de autenticación
       })
       if (!res.ok) throw new Error('Error eliminando variante')
       return res.json()
@@ -317,6 +322,7 @@ export function ProductFormMinimal({
             const response = await fetch('/api/admin/products/variants', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
+              credentials: 'include', // ✅ Incluir cookies de autenticación
               body: JSON.stringify({
                 product_id: parseInt(String(finalProductId)),
                 aikon_id: variant.aikon_id,
