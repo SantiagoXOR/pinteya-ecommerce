@@ -183,22 +183,38 @@ const deleteHandler = async (
   // Check if image exists
   const existingImage = await getImageById(supabaseAdmin, numericProductId.toString(), imageId)
 
+  // ✅ DEBUG: Log antes de eliminar
+  console.log('🗑️ [DELETE Image] Eliminando imagen:', {
+    productId: numericProductId,
+    imageId,
+    storagePath: existingImage.storage_path,
+  })
+
   // Delete from database first
-  const { error: dbError } = await supabaseAdmin
+  const { error: dbError, data: deletedData } = await supabaseAdmin
     .from('product_images')
     .delete()
     .eq('id', imageId)
     .eq('product_id', numericProductId)
+    .select()
 
   if (dbError) {
+    console.error('❌ [DELETE Image] Error al eliminar de BD:', dbError)
     throw new ApiError('Error al eliminar imagen de base de datos', 500, 'DATABASE_ERROR', dbError)
   }
 
+  console.log('✅ [DELETE Image] Imagen eliminada de BD:', { deletedCount: deletedData?.length || 0 })
+
   // Delete from storage (non-blocking)
   if (existingImage.storage_path) {
-    deleteImageFromStorage(existingImage.storage_path).catch(error => {
-      console.error('Failed to delete image from storage:', error)
-    })
+    console.log('🗑️ [DELETE Image] Eliminando de storage:', existingImage.storage_path)
+    deleteImageFromStorage(existingImage.storage_path)
+      .then(() => {
+        console.log('✅ [DELETE Image] Imagen eliminada de storage exitosamente')
+      })
+      .catch(error => {
+        console.error('❌ [DELETE Image] Error al eliminar de storage:', error)
+      })
   }
 
   // If this was the primary image, set another image as primary

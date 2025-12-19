@@ -190,6 +190,7 @@ export function ProductImageGallery({
   // Mutación para eliminar imagen
   const deleteMutation = useMutation({
     mutationFn: async (imageId: string) => {
+      console.log('🗑️ [ProductImageGallery] Eliminando imagen:', { productId, imageId })
       const response = await fetch(`/api/admin/products/${productId}/images/${imageId}`, {
         method: 'DELETE',
         credentials: 'include', // ✅ Incluir cookies de autenticación
@@ -197,14 +198,24 @@ export function ProductImageGallery({
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Error desconocido' }))
+        console.error('❌ [ProductImageGallery] Error al eliminar imagen:', error)
         throw new Error(error.error || 'Error al eliminar imagen')
       }
 
-      return response.json()
+      const result = await response.json()
+      console.log('✅ [ProductImageGallery] Imagen eliminada exitosamente:', result)
+      return result
     },
-    onSuccess: () => {
+    onSuccess: (data, imageId) => {
+      console.log('🔄 [ProductImageGallery] Invalidando queries después de eliminar:', { productId, imageId })
+      // ✅ CORREGIDO: Invalidar queries y forzar refetch
       queryClient.invalidateQueries({ queryKey: ['product-images', productId] })
       queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
+      // ✅ Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: ['product-images', productId] })
+    },
+    onError: (error) => {
+      console.error('❌ [ProductImageGallery] Error en deleteMutation:', error)
     },
   })
 
