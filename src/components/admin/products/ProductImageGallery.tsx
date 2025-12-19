@@ -107,8 +107,33 @@ export function ProductImageGallery({
     enabled: !!productId,
   })
 
+  // ✅ NUEVO: Obtener imagen de variante predeterminada si no hay imágenes en product_images
+  const { data: defaultVariantImage } = useQuery({
+    queryKey: ['default-variant-image', productId],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/products/${productId}`)
+      if (!response.ok) return null
+      const result = await response.json()
+      const defaultVariant = result.data?.default_variant
+      return defaultVariant?.image_url || null
+    },
+    enabled: !!productId && (!imagesData || imagesData.length === 0),
+  })
+
   const images = imagesData || []
-  const primaryImage = images.find(img => img.is_primary) || images[0]
+  // ✅ NUEVO: Si no hay imágenes y hay imagen de variante predeterminada, agregarla como imagen virtual
+  const imagesWithFallback = images.length > 0 
+    ? images 
+    : (defaultVariantImage 
+        ? [{
+            id: 'default-variant-image',
+            url: defaultVariantImage,
+            alt_text: 'Imagen de variante predeterminada',
+            is_primary: true,
+            display_order: 0,
+          } as ProductImage]
+        : [])
+  const primaryImage = imagesWithFallback.find(img => img.is_primary) || imagesWithFallback[0]
 
   // Mutación para subir imagen
   const uploadMutation = useMutation({
@@ -118,7 +143,7 @@ export function ProductImageGallery({
 
       const formData = new FormData()
       formData.append('file', processedFile)
-      formData.append('is_primary', images.length === 0 ? 'true' : 'false') // Primera imagen es primaria
+      formData.append('is_primary', imagesWithFallback.length === 0 ? 'true' : 'false') // Primera imagen es primaria
 
       const response = await fetch(`/api/admin/products/${productId}/images`, {
         method: 'POST',
@@ -136,6 +161,7 @@ export function ProductImageGallery({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-images', productId] })
+      queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
       setUploading(false)
     },
     onError: () => {
@@ -159,6 +185,7 @@ export function ProductImageGallery({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-images', productId] })
+      queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
     },
   })
 
@@ -180,11 +207,13 @@ export function ProductImageGallery({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-images', productId] })
+      queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
     },
   })
 
   const handleFileUpload = useCallback(
     async (file: File) => {
+      // ✅ CORREGIDO: Usar solo imágenes reales (no la imagen virtual de variante) para el límite
       if (images.length >= maxImages) {
         alert(`Máximo ${maxImages} imágenes permitidas`)
         return
@@ -240,9 +269,12 @@ export function ProductImageGallery({
   return (
     <div className={cn('space-y-4', className)}>
       {/* Galería de imágenes */}
-      {images.length > 0 && (
+      {imagesWithFallback.length > 0 && (
         <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-          {images.map((image, index) => (
+          {imagesWithFallback.map((image, index) => {
+            // ✅ NUEVO: No mostrar acciones para imagen virtual de variante predeterminada
+            const isVirtualImage = image.id === 'default-variant-image'
+            return (
             <div
               key={image.id}
               className='relative group aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200'
@@ -255,45 +287,57 @@ export function ProductImageGallery({
                 unoptimized
               />
 
-              {/* Overlay con acciones */}
-              <div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-2'>
-                <button
-                  type='button'
-                  onClick={() => setPrimaryMutation.mutate(image.id)}
-                  className={cn(
-                    'p-2 rounded-full transition-all opacity-0 group-hover:opacity-100',
-                    image.is_primary
-                      ? 'bg-amber-500 text-white'
-                      : 'bg-white text-gray-700 hover:bg-amber-100'
-                  )}
-                  title={image.is_primary ? 'Imagen principal' : 'Marcar como principal'}
-                >
-                  <Star className={cn('w-4 h-4', image.is_primary && 'fill-current')} />
-                </button>
+              {/* Overlay con acciones - Solo para imágenes reales */}
+              {!isVirtualImage && (
+                <div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => setPrimaryMutation.mutate(image.id)}
+                    className={cn(
+                      'p-2 rounded-full transition-all opacity-0 group-hover:opacity-100',
+                      image.is_primary
+                        ? 'bg-amber-500 text-white'
+                        : 'bg-white text-gray-700 hover:bg-amber-100'
+                    )}
+                    title={image.is_primary ? 'Imagen principal' : 'Marcar como principal'}
+                  >
+                    <Star className={cn('w-4 h-4', image.is_primary && 'fill-current')} />
+                  </button>
 
-                <button
-                  type='button'
-                  onClick={() => {
-                    if (confirm('¿Eliminar esta imagen?')) {
-                      deleteMutation.mutate(image.id)
-                    }
-                  }}
-                  className='p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100'
-                  title='Eliminar imagen'
-                >
-                  <Trash2 className='w-4 h-4' />
-                </button>
-              </div>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      if (confirm('¿Eliminar esta imagen?')) {
+                        deleteMutation.mutate(image.id)
+                      }
+                    }}
+                    className='p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100'
+                    title='Eliminar imagen'
+                  >
+                    <Trash2 className='w-4 h-4' />
+                  </button>
+                </div>
+              )}
+
+              {/* Badge para imagen virtual de variante */}
+              {isVirtualImage && (
+                <div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center'>
+                  <div className='bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100'>
+                    Imagen de variante predeterminada
+                  </div>
+                </div>
+              )}
 
               {/* Badge de imagen principal */}
-              {image.is_primary && (
+              {image.is_primary && !isVirtualImage && (
                 <div className='absolute top-2 left-2 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1'>
                   <Star className='w-3 h-3 fill-current' />
                   Principal
                 </div>
               )}
             </div>
-          ))}
+          )
+          })}
         </div>
       )}
 
