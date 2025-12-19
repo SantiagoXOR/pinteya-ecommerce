@@ -853,6 +853,14 @@ export function ProductFormMinimal({
           productId={productId}
           onSave={async (variant) => {
             try {
+              // ✅ DEBUG: Log para verificar que image_url se está pasando
+              console.log('💾 [VariantModal] Guardando variante:', {
+                id: variant.id,
+                hasImageUrl: !!variant.image_url,
+                imageUrl: variant.image_url,
+                allKeys: Object.keys(variant),
+              })
+              
               if (variant.id) {
                 // Editar existente
                 await updateVariantMutation.mutateAsync({ id: variant.id, ...variant })
@@ -860,6 +868,11 @@ export function ProductFormMinimal({
                 // Crear nueva
                 await createVariantMutation.mutateAsync(variant)
               }
+              
+              // Invalidar queries para refrescar las variantes
+              queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+              queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
+              
               setShowVariantModal(false)
               setEditingVariant(null)
             } catch (error) {
@@ -919,6 +932,13 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
 
   const handleSave = () => {
     if (validateForm()) {
+      // ✅ DEBUG: Log para verificar formData antes de guardar
+      console.log('💾 [VariantModal] handleSave - formData:', {
+        id: formData.id,
+        hasImageUrl: !!formData.image_url,
+        imageUrl: formData.image_url,
+        allKeys: Object.keys(formData),
+      })
       onSave(formData)
     }
   }
@@ -954,8 +974,19 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
                 productId={productId} // Usar productId del producto para el upload
                 currentImageUrl={imagePreview || formData.image_url || null}
                 onUploadSuccess={(imageUrl) => {
-                  setFormData({ ...formData, image_url: imageUrl || '' })
+                  // ✅ DEBUG: Log para verificar que la imagen se subió correctamente
+                  console.log('📸 [VariantModal] Imagen subida exitosamente:', {
+                    imageUrl,
+                    previousImageUrl: formData.image_url,
+                  })
+                  const updatedFormData = { ...formData, image_url: imageUrl || '' }
+                  setFormData(updatedFormData)
                   setImagePreview(imageUrl || null)
+                  // ✅ DEBUG: Verificar que se actualizó correctamente
+                  console.log('📸 [VariantModal] formData actualizado:', {
+                    hasImageUrl: !!updatedFormData.image_url,
+                    imageUrl: updatedFormData.image_url,
+                  })
                 }}
                 onError={(error) => {
                   console.error('Error al subir imagen:', error)
