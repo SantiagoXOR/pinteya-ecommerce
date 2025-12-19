@@ -41,10 +41,15 @@ interface ProductFormData extends Omit<Product, 'id'> {}
 
 // API functions
 async function fetchProduct(productId: string): Promise<Product> {
-  const response = await fetch(`/api/admin/products/${productId}`)
+  // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+  const response = await fetch(`/api/admin/products/${productId}`, {
+    credentials: 'include',
+  })
 
   if (!response.ok) {
-    throw new Error('Error fetching product')
+    // ✅ CORREGIDO: Obtener el mensaje de error del servidor
+    const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+    throw new Error(errorData.error || `Error ${response.status}: Error al cargar producto`)
   }
 
   const data = await response.json()
