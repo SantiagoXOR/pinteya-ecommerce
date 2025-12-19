@@ -7,10 +7,47 @@ export function withAdminAuth(permissions: string[] = []) {
   return function (handler: Function) {
     return async function (request: NextRequest, context: any) {
       try {
+        // ✅ CORREGIDO: Mapear permisos a acciones CRUD
+        // permissions puede ser ['products_read'], ['products_update'], ['products_delete'], etc.
+        let action: 'create' | 'read' | 'update' | 'delete' = 'read'
+        let resource = 'products'
+        
+        if (permissions.length > 0) {
+          const permission = permissions[0]
+          if (permission.includes('_read')) {
+            action = 'read'
+          } else if (permission.includes('_update')) {
+            action = 'update'
+          } else if (permission.includes('_delete')) {
+            action = 'delete'
+          } else if (permission.includes('_create')) {
+            action = 'create'
+          }
+          
+          // Extraer el recurso del permiso (ej: 'products_read' -> 'products')
+          const parts = permission.split('_')
+          if (parts.length > 0) {
+            resource = parts[0]
+          }
+        }
+        
+        console.log('🔐 [withAdminAuth] Verificando permisos:', {
+          permissions,
+          action,
+          resource,
+          url: request.url,
+        })
+        
         // ✅ CORREGIDO: Pasar request a checkCRUDPermissions para que auth() pueda leer las cookies
-        const authResult = await checkCRUDPermissions('read', 'products', undefined, request)
+        const authResult = await checkCRUDPermissions(action, resource, undefined, request)
 
         if (!authResult.allowed) {
+          console.error('❌ [withAdminAuth] Acceso denegado:', {
+            error: authResult.error,
+            action,
+            resource,
+            url: request.url,
+          })
           return NextResponse.json(
             {
               success: false,
@@ -23,9 +60,14 @@ export function withAdminAuth(permissions: string[] = []) {
           )
         }
 
+        console.log('✅ [withAdminAuth] Autenticación exitosa')
         return await handler(request, context)
-      } catch (error) {
-        console.error('Auth middleware error:', error)
+      } catch (error: any) {
+        console.error('❌ [withAdminAuth] Error en middleware:', {
+          error: error.message,
+          stack: error.stack,
+          url: request.url,
+        })
         return NextResponse.json(
           {
             success: false,

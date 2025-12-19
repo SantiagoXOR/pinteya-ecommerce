@@ -248,15 +248,23 @@ export async function checkCRUDPermissions(
       }
     }
 
-    // ✅ CORREGIDO: En NextAuth v5, auth() lee las cookies automáticamente desde el contexto
-    // Si tenemos una request, podemos usar cookies() de next/headers o pasar el contexto
-    // Por ahora, intentamos auth() directamente ya que debería leer las cookies del contexto
+    // ✅ CORREGIDO: En NextAuth v5, necesitamos pasar el request para que auth() pueda leer las cookies
     let session
     try {
-      // Intentar leer la sesión - NextAuth debería leer las cookies automáticamente
-      session = await auth()
-    } catch (authError) {
-      console.error('[AUTH] Error al leer sesión:', authError)
+      // Si tenemos una request, pasarla a auth() para que pueda leer las cookies
+      if (request) {
+        // NextAuth v5 requiere pasar el request como contexto
+        session = await auth({ req: request as any })
+      } else {
+        // Si no hay request, intentar sin contexto (puede fallar en Route Handlers)
+        session = await auth()
+      }
+    } catch (authError: any) {
+      console.error('[AUTH] Error al leer sesión:', {
+        error: authError.message,
+        stack: authError.stack,
+        hasRequest: !!request,
+      })
       // Si falla, retornar error de autenticación
       return {
         allowed: false,
