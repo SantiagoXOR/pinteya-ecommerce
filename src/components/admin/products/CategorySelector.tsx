@@ -226,7 +226,7 @@ export function CategorySelector({
             )}
         </div>
       )
-    }) : []
+    })
   }
 
   const renderFlatList = (categories: Category[]) => {
