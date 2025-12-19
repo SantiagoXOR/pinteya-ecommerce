@@ -978,7 +978,12 @@ export function ProductList({
       // 4. Crear el nuevo producto
       const createResponse = await fetch('/api/admin/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+        cache: 'no-store', // ✅ Forzar sin cache
         body: JSON.stringify(newProductData),
       })
       
@@ -1032,15 +1037,19 @@ export function ProductList({
       }
       
       // 6. Limpiar cache y forzar refetch completo para actualizar la lista
-      // ✅ ESTRATEGIA: Invalidar primero para marcar como obsoletas, luego refetch
-      // Paso 1: Invalidar queries para forzar refetch automático de queries activas
+      // ✅ ESTRATEGIA AGRESIVA: Remover completamente del cache antes de invalidar
+      // Paso 1: Remover todas las queries del cache relacionadas con productos
+      queryClient.removeQueries({ queryKey: ['admin-products'], exact: false })
+      queryClient.removeQueries({ queryKey: ['admin-products-stats'], exact: false })
+      
+      // ✅ Esperar un momento para que la transacción de la DB se confirme
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Paso 2: Invalidar queries para forzar refetch automático de queries activas
       queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
       queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
       
-      // ✅ Esperar un momento para que la transacción de la DB se confirme
-      await new Promise(resolve => setTimeout(resolve, 300))
-      
-      // Paso 2: Forzar refetch de queries activas
+      // Paso 3: Forzar refetch de queries activas con headers de no-cache
       if (refreshProducts) {
         try {
           await refreshProducts()
@@ -1058,7 +1067,7 @@ export function ProductList({
         }
       }
       
-      // Paso 3: Forzar refetch adicional de todas las queries activas relacionadas
+      // Paso 4: Forzar refetch adicional de todas las queries activas relacionadas
       try {
         await queryClient.refetchQueries({ 
           queryKey: ['admin-products'],

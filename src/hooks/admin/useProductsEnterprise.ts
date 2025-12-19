@@ -124,10 +124,16 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       })
 
       // ✅ Forzar fetch sin cache para asegurar datos frescos
+      // Agregar timestamp único para bypass del cache del navegador
+      const timestamp = Date.now()
+      params.append('_t', timestamp.toString())
+      
       const response = await fetch(`/api/admin/products?${params}`, {
         cache: 'no-store',  // ✅ Forzar fetch sin cache
         headers: {
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         }
       })
       
@@ -159,10 +165,14 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   } = useQuery({
     queryKey: ['admin-products-stats'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/products/stats', {
+      // Agregar timestamp único para bypass del cache del navegador
+      const timestamp = Date.now()
+      const response = await fetch(`/api/admin/products/stats?_t=${timestamp}`, {
         cache: 'no-store',  // ✅ Forzar fetch sin cache
         headers: {
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         }
       })
       if (!response.ok) {
