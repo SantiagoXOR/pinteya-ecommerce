@@ -100,7 +100,12 @@ async function deleteImageFromStorage(path: string) {
  * Upload new image for product
  */
 const postHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-  const { supabase, user } = request as any
+  // ✅ CORREGIDO: Usar supabaseAdmin directamente y obtener user del auth
+  const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { auth } = await import('@/lib/auth/config')
+  const session = await auth()
+  const user = session?.user
+  
   const { id } = await context.params
   const productId = id
 
@@ -142,7 +147,7 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   const uploadResult = await uploadImageToStorage(file, filename)
 
   // Save image record to database
-  const { data: imageRecord, error: dbError } = await supabase
+  const { data: imageRecord, error: dbError } = await supabaseAdmin
     .from('product_images')
     .insert({
       product_id: numericProductId,
@@ -166,7 +171,7 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
 
   // If this is set as primary, update other images
   if (isPrimary) {
-    await supabase
+    await supabaseAdmin
       .from('product_images')
       .update({ is_primary: false })
       .eq('product_id', numericProductId)
@@ -174,7 +179,9 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   }
 
   // Log action
-  await logAdminAction(user.id, 'CREATE', 'product_image', imageRecord.id, null, imageRecord)
+  if (user?.id) {
+    await logAdminAction(user.id, 'CREATE', 'product_image', imageRecord.id, null, imageRecord)
+  }
 
   return NextResponse.json(
     {
@@ -190,9 +197,11 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
  * GET /api/admin/products/[id]/images
  * Get all images for product
  */
-const getHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const { supabase } = request as any
-  const productId = params.id
+const getHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
+  // ✅ CORREGIDO: Usar supabaseAdmin directamente en lugar de request.supabase
+  const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { id } = await context.params
+  const productId = id
 
   // Validate params
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
@@ -204,7 +213,7 @@ const getHandler = async (request: NextRequest, { params }: { params: { id: stri
   const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
 
   // Get images
-  const { data: images, error } = await supabase
+  const { data: images, error } = await supabaseAdmin
     .from('product_images')
     .select('*')
     .eq('product_id', numericProductId)
@@ -216,7 +225,7 @@ const getHandler = async (request: NextRequest, { params }: { params: { id: stri
   }
 
   return NextResponse.json({
-    data: images,
+    data: images || [],
     success: true,
     message: 'Imágenes obtenidas exitosamente',
   })
