@@ -641,6 +641,9 @@ export function ProductFormMinimal({
                     <thead className='bg-gray-50'>
                       <tr>
                         <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                          Imagen
+                        </th>
+                        <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
                           Color
                         </th>
                         <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
@@ -666,17 +669,39 @@ export function ProductFormMinimal({
                     <tbody className='bg-white divide-y divide-gray-200'>
                       {variants.map((variant: ProductVariant, index: number) => (
                         <tr key={variant.id || index} className='hover:bg-gray-50'>
-                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.color_name}</td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.measure}</td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.finish}</td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>
-                            ${variant.price_sale.toLocaleString('es-AR')}
+                          <td className='px-4 py-3'>
+                            {variant.image_url ? (
+                              <div className='relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200'>
+                                <Image
+                                  src={variant.image_url}
+                                  alt={`${variant.color_name || 'Variante'} ${variant.measure || ''}`}
+                                  fill
+                                  className='object-cover'
+                                  unoptimized
+                                />
+                              </div>
+                            ) : (
+                              <div className='w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center'>
+                                <span className='text-xs text-gray-400'>Sin imagen</span>
+                              </div>
+                            )}
                           </td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.stock}</td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.color_name || '-'}</td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.measure || '-'}</td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.finish || '-'}</td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>
+                            ${variant.price_sale?.toLocaleString('es-AR') || variant.price_list?.toLocaleString('es-AR') || '0'}
+                          </td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.stock || 0}</td>
                           <td className='px-4 py-3 text-sm text-gray-500 font-mono'>
-                            {variant.aikon_id}
+                            {variant.aikon_id || '-'}
                           </td>
                           <td className='px-4 py-3 text-right space-x-2'>
+                            {variant.is_default && (
+                              <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 mr-2'>
+                                Predeterminada
+                              </span>
+                            )}
                             <button
                               type='button'
                               onClick={() => openEditVariant(variant)}
