@@ -31,14 +31,45 @@ function getStorageClient() {
 }
 
 // Helper function to delete image from storage
-async function deleteImageFromStorage(path: string) {
-  const supabase = getStorageClient()
-
-  const { error } = await supabase.storage.from('product-images').remove([path])
-
-  if (error) {
-    console.warn('Error deleting image from storage:', error)
-    // Don't throw error, just log warning
+async function deleteImageFromStorage(path: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = getStorageClient()
+    
+    // ✅ CORREGIDO: Verificar que el path no esté vacío
+    if (!path || path.trim() === '') {
+      console.warn('⚠️ [deleteImageFromStorage] Path vacío, no se puede eliminar')
+      return { success: false, error: 'Path vacío' }
+    }
+    
+    console.log('🗑️ [deleteImageFromStorage] Eliminando archivo:', {
+      bucket: 'product-images',
+      path,
+    })
+    
+    const { data, error } = await supabase.storage.from('product-images').remove([path])
+    
+    if (error) {
+      console.error('❌ [deleteImageFromStorage] Error al eliminar:', {
+        error: error.message,
+        path,
+        bucket: 'product-images',
+      })
+      return { success: false, error: error.message }
+    }
+    
+    console.log('✅ [deleteImageFromStorage] Archivo eliminado exitosamente:', {
+      path,
+      deletedFiles: data,
+    })
+    
+    return { success: true }
+  } catch (error: any) {
+    console.error('❌ [deleteImageFromStorage] Excepción al eliminar:', {
+      error: error.message,
+      stack: error.stack,
+      path,
+    })
+    return { success: false, error: error.message }
   }
 }
 
@@ -205,16 +236,24 @@ const deleteHandler = async (
 
   console.log('✅ [DELETE Image] Imagen eliminada de BD:', { deletedCount: deletedData?.length || 0 })
 
-  // Delete from storage (non-blocking)
+  // Delete from storage
   if (existingImage.storage_path) {
     console.log('🗑️ [DELETE Image] Eliminando de storage:', existingImage.storage_path)
-    deleteImageFromStorage(existingImage.storage_path)
-      .then(() => {
-        console.log('✅ [DELETE Image] Imagen eliminada de storage exitosamente')
+    const storageResult = await deleteImageFromStorage(existingImage.storage_path)
+    
+    if (!storageResult.success) {
+      // ✅ CORREGIDO: Log el error pero no fallar la eliminación de la DB
+      // La imagen ya fue eliminada de la DB, así que continuamos
+      console.error('⚠️ [DELETE Image] Error al eliminar de storage (continuando):', {
+        error: storageResult.error,
+        storagePath: existingImage.storage_path,
+        note: 'La imagen fue eliminada de la DB pero no del storage. Puede requerir limpieza manual.',
       })
-      .catch(error => {
-        console.error('❌ [DELETE Image] Error al eliminar de storage:', error)
-      })
+    } else {
+      console.log('✅ [DELETE Image] Imagen eliminada de storage exitosamente')
+    }
+  } else {
+    console.warn('⚠️ [DELETE Image] No hay storage_path, saltando eliminación de storage')
   }
 
   // If this was the primary image, set another image as primary
