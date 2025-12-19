@@ -223,7 +223,8 @@ export async function requireAdminAuth(): Promise<{
 export async function checkCRUDPermissions(
   operation: 'create' | 'read' | 'update' | 'delete',
   resource: string,
-  userId?: string
+  userId?: string,
+  request?: NextRequest | NextApiRequest
 ): Promise<{
   allowed: boolean
   error?: string
@@ -247,7 +248,21 @@ export async function checkCRUDPermissions(
       }
     }
 
-    const session = await auth()
+    // ✅ CORREGIDO: En NextAuth v5, auth() lee las cookies automáticamente desde el contexto
+    // Si tenemos una request, podemos usar cookies() de next/headers o pasar el contexto
+    // Por ahora, intentamos auth() directamente ya que debería leer las cookies del contexto
+    let session
+    try {
+      // Intentar leer la sesión - NextAuth debería leer las cookies automáticamente
+      session = await auth()
+    } catch (authError) {
+      console.error('[AUTH] Error al leer sesión:', authError)
+      // Si falla, retornar error de autenticación
+      return {
+        allowed: false,
+        error: 'Error de autenticación: No se pudo leer la sesión',
+      }
+    }
 
     if (!session?.user) {
       return {

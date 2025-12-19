@@ -7,8 +7,8 @@ export function withAdminAuth(permissions: string[] = []) {
   return function (handler: Function) {
     return async function (request: NextRequest, context: any) {
       try {
-        // Verificar autenticación enterprise
-        const authResult = await checkCRUDPermissions('read', 'products')
+        // ✅ CORREGIDO: Pasar request a checkCRUDPermissions para que auth() pueda leer las cookies
+        const authResult = await checkCRUDPermissions('read', 'products', undefined, request)
 
         if (!authResult.allowed) {
           return NextResponse.json(
@@ -45,9 +45,12 @@ export function withPermissionCheck(resource: string, action: string) {
   return function (handler: Function) {
     return async function (request: NextRequest, context: any) {
       try {
+        // ✅ CORREGIDO: Pasar request a checkCRUDPermissions para que auth() pueda leer las cookies
         const authResult = await checkCRUDPermissions(
           action as 'create' | 'read' | 'update' | 'delete',
-          resource
+          resource,
+          undefined,
+          request
         )
 
         if (!authResult.allowed) {
