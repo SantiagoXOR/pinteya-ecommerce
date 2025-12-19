@@ -100,7 +100,7 @@ export function MeasureSelector({
       )}
 
       {/* Dropdown Button */}
-      <div className='relative'>
+      <div className='relative w-full'>
         <button
           type='button'
           onClick={() => setIsOpen(!isOpen)}
@@ -117,7 +117,7 @@ export function MeasureSelector({
 
         {/* Dropdown */}
         {isOpen && (
-          <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden'>
+          <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden min-w-full w-full'>
             {/* Search */}
             <div className='p-3 border-b border-gray-200'>
               <input
@@ -152,7 +152,7 @@ export function MeasureSelector({
             {/* Custom Measure Input */}
             <div className='border-t border-gray-200 p-3 space-y-2'>
               <div className='text-xs text-gray-500 mb-2'>O agregar medida personalizada:</div>
-              <div className='flex items-center space-x-2'>
+              <div className='flex items-center gap-2 w-full'>
                 <input
                   type='text'
                   placeholder='Ej: 15L, 30KG'
@@ -164,13 +164,13 @@ export function MeasureSelector({
                       handleCustomMeasure()
                     }
                   }}
-                  className='flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent text-gray-900'
+                  className='flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent text-gray-900'
                 />
                 <button
                   type='button'
                   onClick={handleCustomMeasure}
                   disabled={!customMeasure.trim()}
-                  className='px-3 py-2 bg-blaze-orange-600 text-white rounded-lg hover:bg-blaze-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm'
+                  className='flex-shrink-0 px-3 py-2 bg-blaze-orange-600 text-white rounded-lg hover:bg-blaze-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm'
                 >
                   <Plus className='w-4 h-4' />
                 </button>

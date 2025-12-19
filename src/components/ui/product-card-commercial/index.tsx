@@ -83,7 +83,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
     // Hooks personalizados
     const colors = useProductColors({ variants, title })
-    const measures = useProductMeasures({ variants, title })
+    const measures = useProductMeasures({ variants, title, medida }) // ✅ NUEVO: Pasar medida como fallback
     const variantsData = useProductVariants({
       variants,
       selectedColor: colors.selectedColor,

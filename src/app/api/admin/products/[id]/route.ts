@@ -106,7 +106,9 @@ async function getProductById(
     category_name: product.categories?.name || null,
     categories: undefined,
     // Transform images JSONB to image_url
+    // ✅ CORREGIDO: Soporte para formato {url, is_primary}
     image_url: 
+      (typeof product.images === 'object' && product.images && (product.images as any).url) ||
       product.images?.previews?.[0] || 
       product.images?.thumbnails?.[0] ||
       product.images?.main ||
@@ -495,6 +497,17 @@ export async function GET(
     
     const defaultVariant = variants?.find(v => v.is_default) || variants?.[0]
     
+    // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
+    const { data: productImages } = await supabaseAdmin
+      .from('product_images')
+      .select('url, is_primary')
+      .eq('product_id', productId)
+      .order('is_primary', { ascending: false })
+      .order('display_order', { ascending: true })
+      .limit(1)
+    
+    const primaryImageFromTable = productImages?.[0]?.url || null
+    
     // Transform ALL fields para compatibilidad con frontend
     const transformedData = {
       ...data,
@@ -502,13 +515,16 @@ export async function GET(
       categories: undefined,
       // ✅ PRESERVAR product_categories para duplicación
       product_categories: data.product_categories || [],
-      // Incluir variantes
-      variants: variants || [],
+      // Incluir variantes (asegurar que siempre sea un array)
+      variants: Array.isArray(variants) ? variants : [],
       variant_count: variants?.length || 0,
       default_variant: defaultVariant,
-      // Transform images JSONB to image_url (priorizar variante default)
+      // Transform images JSONB to image_url (priorizar product_images, luego variante default, luego images JSONB)
+      // ✅ CORREGIDO: Prioridad: product_images > variante > images JSONB
       image_url: 
+        primaryImageFromTable ||
         defaultVariant?.image_url ||
+        (typeof data.images === 'object' && data.images && (data.images as any).url) ||
         data.images?.previews?.[0] || 
         data.images?.thumbnails?.[0] ||
         data.images?.main ||

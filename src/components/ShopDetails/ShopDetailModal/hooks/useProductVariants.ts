@@ -174,7 +174,8 @@ export const useProductVariants = ({
           ? (productVariantsRes as any).data
           : []
       }
-      setVariants(variantsData)
+      // ✅ CORREGIDO: Asegurar que variantsData sea siempre un array
+      setVariants(Array.isArray(variantsData) ? variantsData : [])
       
       // Inicializar selectedVariant con la variante default (solo una vez)
       if (variantsData.length > 0 && !hasInitialized.current) {
@@ -199,7 +200,9 @@ export const useProductVariants = ({
       
       // Log detallado de medidas y stock por variante para depurar
       try {
-        console.debug('📦 ShopDetailModal: Variants overview (measure, stock, price, color_name)', variantsData.map(v => ({
+        // ✅ CORREGIDO: Asegurar que variantsData sea un array antes de usar .map()
+        const safeVariantsData = Array.isArray(variantsData) ? variantsData : []
+        console.debug('📦 ShopDetailModal: Variants overview (measure, stock, price, color_name)', safeVariantsData.map(v => ({
           id: v.id,
           measure: v.measure,
           color_name: v.color_name,
@@ -244,12 +247,14 @@ export const useProductVariants = ({
       const productVariants = (product as any)?.variants
       if (productVariants && Array.isArray(productVariants) && productVariants.length > 0) {
         console.log('✅ ShopDetailModal: Usando variantes pasadas via prop:', productVariants.length)
-        console.log('🎨 Colores en variantes:', productVariants.map((v: any) => v.color_name).filter(Boolean))
-        setVariants(productVariants)
+        // ✅ CORREGIDO: Asegurar que productVariants sea siempre un array
+        const safeProductVariants = Array.isArray(productVariants) ? productVariants : []
+        console.log('🎨 Colores en variantes:', safeProductVariants.map((v: any) => v.color_name).filter(Boolean))
+        setVariants(safeProductVariants)
         
         // Inicializar selectedVariant con la variante default (solo una vez)
         if (!hasInitialized.current) {
-          const defaultVariant = productVariants.find((v: any) => v.is_default) || productVariants[0]
+          const defaultVariant = safeProductVariants.find((v: any) => v.is_default) || safeProductVariants[0]
           setSelectedVariant(defaultVariant)
           
           // Inicializar selectedFinish desde variante default

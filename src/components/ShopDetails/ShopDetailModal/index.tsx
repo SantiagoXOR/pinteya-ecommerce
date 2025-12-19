@@ -164,10 +164,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Calcular capacityUnit usando utilidad extraída
   const capacityUnit = useMemo(() => {
+    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
+    const safeVariants = Array.isArray(variants) ? variants : []
     return detectCapacityUnit(
       productData,
       selectedCapacity,
-      variants,
+      safeVariants,
       relatedProducts,
       productType
     )
@@ -175,9 +177,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Calcular capacidades disponibles usando utilidad extraída
   const availableCapacities = useMemo(() => {
+    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
+    const safeVariants = Array.isArray(variants) ? variants : []
+    
     // PRIORIDAD 1: Si hay variantes con medidas, usar SOLO esas
-    if (Array.isArray(variants) && variants.length > 0) {
-      return extractAvailableCapacities(variants)
+    if (safeVariants.length > 0) {
+      return extractAvailableCapacities(safeVariants)
     }
 
     // PRIORIDAD 2: Productos relacionados (legacy, sin variantes)
@@ -212,7 +217,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Obtener acabados disponibles usando utilidad extraída
   const availableFinishes = useMemo(() => {
-    return extractAvailableFinishes(variants)
+    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
+    const safeVariants = Array.isArray(variants) ? variants : []
+    return extractAvailableFinishes(safeVariants)
   }, [variants])
 
   // Helper para extraer ancho de medida
@@ -396,7 +403,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   // Colores inteligentes (lógica compleja mantenida aquí - demasiado específica para extraer)
   const smartColors: ColorOption[] = useMemo(() => {
     if (!productType.hasColorSelector) return []
-    const variantsToUse = variants?.length > 0 ? variants : (product as any)?.variants || []
+    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
+    const safeVariants = Array.isArray(variants) ? variants : []
+    const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
     if (variantsToUse && variantsToUse.length > 0) {
       const variantNames = Array.from(
         new Set(
@@ -435,7 +444,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   // Colores disponibles (fallback)
   const availableColors = useMemo(() => {
     if (!productType.hasColorSelector) return []
-    const variantsToUse = variants?.length > 0 ? variants : (product as any)?.variants || []
+    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
+    const safeVariants = Array.isArray(variants) ? variants : []
+    const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
     if (variantsToUse && variantsToUse.length > 0) {
       const uniqueColors = new Set<string>()
       variantsToUse.forEach((variant: any) => {

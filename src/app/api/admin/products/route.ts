@@ -35,12 +35,20 @@ function extractImageUrl(images: any): string | null {
     const trimmed = images.trim()
     if (!trimmed) return null
 
-    // Intentar parsear JSON si corresponde
-    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    // Intentar parsear JSON si corresponde (puede estar doblemente escapado)
+    if (trimmed.startsWith('{') || trimmed.startsWith('[') || trimmed.startsWith('"')) {
       try {
-        return extractImageUrl(JSON.parse(trimmed))
+        // Intentar parsear directamente
+        const parsed = JSON.parse(trimmed)
+        return extractImageUrl(parsed)
       } catch {
-        return normalize(trimmed)
+        try {
+          // Si falla, intentar parsear como string escapado
+          const unescaped = JSON.parse(`"${trimmed}"`)
+          return extractImageUrl(unescaped)
+        } catch {
+          return normalize(trimmed)
+        }
       }
     }
 
@@ -58,7 +66,8 @@ function extractImageUrl(images: any): string | null {
       normalize(images.thumbnails?.[0]) ||
       normalize(images.gallery?.[0]) ||
       normalize(images.main) ||
-      normalize(images.url)
+      normalize(images.url) || // ✅ NUEVO: Soporte para formato {url, is_primary}
+      normalize((images as any).url) // ✅ NUEVO: Extra soporte para formato simple
     )
   }
 
@@ -259,8 +268,24 @@ const getHandler = async (request: ValidatedRequest) => {
     const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
     const variantColors: Record<number, string[]> = {} // ✅ Array de colores
     const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+    const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
     
     if (productIds.length > 0) {
+      // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
+      const { data: productImagesData } = await supabaseAdmin
+        .from('product_images')
+        .select('product_id, url, is_primary')
+        .in('product_id', productIds)
+        .order('is_primary', { ascending: false })
+        .order('display_order', { ascending: true })
+      
+      // Agrupar por product_id y tomar la primera (primaria o primera disponible)
+      productImagesData?.forEach((img: any) => {
+        if (!productImagesFromTable[img.product_id]) {
+          productImagesFromTable[img.product_id] = img.url
+        }
+      })
+      
       const { data: variantData, error: variantError } = await supabaseAdmin
         .from('product_variants')
         .select('product_id,is_default,measure,color_name,aikon_id')
@@ -298,6 +323,8 @@ const getHandler = async (request: ValidatedRequest) => {
     // Transform data to include category name and all fields
     const transformedProducts =
       products?.map(product => {
+        // ✅ NUEVO: Prioridad: product_images > images JSONB
+        const primaryImageFromTable = productImagesFromTable[product.id]
         const resolvedImage = extractImageUrl(product.images)
         
         // Transform product_categories to categories array
@@ -306,9 +333,29 @@ const getHandler = async (request: ValidatedRequest) => {
           .filter((cat: any) => cat != null) || []
         
         // ✅ NUEVO: Combinar medida del producto con todas las medidas de variantes
-        const productMedida = product.medida ? [product.medida] : []
+        // ✅ CORREGIDO: Parsear medida si viene como string de array
+        let parsedMedida: string[] = []
+        if (product.medida) {
+          if (typeof product.medida === 'string') {
+            // Intentar parsear si es un string de array JSON
+            if (product.medida.trim().startsWith('[') && product.medida.trim().endsWith(']')) {
+              try {
+                const parsed = JSON.parse(product.medida)
+                parsedMedida = Array.isArray(parsed) ? parsed : [parsed]
+              } catch {
+                parsedMedida = [product.medida]
+              }
+            } else {
+              parsedMedida = [product.medida]
+            }
+          } else if (Array.isArray(product.medida)) {
+            parsedMedida = product.medida
+          } else {
+            parsedMedida = [String(product.medida)]
+          }
+        }
         const variantMeasuresList = variantMeasures[product.id] || []
-        const allMeasures = Array.from(new Set([...productMedida, ...variantMeasuresList]))
+        const allMeasures = Array.from(new Set([...parsedMedida, ...variantMeasuresList]))
         
         // ✅ NUEVO: Combinar color del producto con todos los colores de variantes
         const productColor = product.color ? [product.color] : []
@@ -326,7 +373,8 @@ const getHandler = async (request: ValidatedRequest) => {
           // Transform product_categories to categories array
           categories: categories,
           // Transform images JSONB/legacy formats to image_url
-          image_url: resolvedImage,
+          // ✅ CORREGIDO: Prioridad: product_images > images JSONB
+          image_url: primaryImageFromTable || resolvedImage,
           // Derive status from is_active (status column doesn't exist in DB)
           status: product.is_active ? 'active' : 'inactive',
           // ✅ NUEVO: Array de todas las medidas (producto + variantes)
@@ -661,7 +709,10 @@ const postHandlerSimple = async (request: NextRequest) => {
         : (body.status === 'active' ? true : (body.status === 'inactive' ? false : true)), // Si no se especifica status, por defecto es activo
       brand: body.brand || '',
       color: body.color || '',
-      medida: body.medida || '',
+      // ✅ CORREGIDO: Extraer primera medida del array o usar string directamente
+      medida: Array.isArray(body.medida) && body.medida.length > 0
+        ? body.medida[0]
+        : (typeof body.medida === 'string' ? body.medida : ''),
       // ✅ NUEVO: Incluir terminaciones como array de texto
       terminaciones: body.terminaciones && Array.isArray(body.terminaciones) 
         ? body.terminaciones.filter((t: string) => t && t.trim() !== '')
@@ -670,16 +721,17 @@ const postHandlerSimple = async (request: NextRequest) => {
       images: body.image_url 
         ? JSON.stringify({ url: body.image_url, is_primary: true })
         : null,
-      // Generar slug automático
-      slug:
-        body.name
+      // Generar slug automático (agregar timestamp solo si es necesario para evitar duplicados)
+      slug: (() => {
+        const baseSlug = body.name
           .toLowerCase()
           .replace(/[^a-z0-9\s-]/g, '')
           .replace(/\s+/g, '-')
           .replace(/-+/g, '-')
-          .trim() +
-        '-' +
-        Date.now(),
+          .trim()
+        // Agregar timestamp para asegurar unicidad (se puede mejorar con verificación de duplicados)
+        return `${baseSlug}-${Date.now()}`
+      })(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
@@ -896,8 +948,24 @@ export const GET = async (request: NextRequest) => {
     const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
     const variantColors: Record<number, string[]> = {} // ✅ Array de colores
     const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
-    
+    const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
+
     if (productIds.length > 0) {
+      // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
+      const { data: productImagesData } = await supabaseAdmin
+        .from('product_images')
+        .select('product_id, url, is_primary')
+        .in('product_id', productIds)
+        .order('is_primary', { ascending: false })
+        .order('display_order', { ascending: true })
+      
+      // Agrupar por product_id y tomar la primera (primaria o primera disponible)
+      productImagesData?.forEach((img: any) => {
+        if (!productImagesFromTable[img.product_id]) {
+          productImagesFromTable[img.product_id] = img.url
+        }
+      })
+      
       const { data: variantData, error: variantError } = await supabaseAdmin
         .from('product_variants')
         .select('product_id,image_url,is_default,measure,color_name,aikon_id') // ✅ AGREGADO: color_name, aikon_id
@@ -945,6 +1013,8 @@ export const GET = async (request: NextRequest) => {
     
     const transformedProducts =
       products?.map(product => {
+        // ✅ NUEVO: Prioridad: product_images > variante > images JSONB
+        const primaryImageFromTable = productImagesFromTable[product.id]
         const variantImage = variantImages[product.id]
         const fallbackImage = extractImageUrl(product.images)
         
@@ -954,9 +1024,29 @@ export const GET = async (request: NextRequest) => {
           .filter((cat: any) => cat != null) || []
         
         // ✅ NUEVO: Combinar medida del producto con todas las medidas de variantes
-        const productMedida = product.medida ? [product.medida] : []
+        // ✅ CORREGIDO: Parsear medida si viene como string de array
+        let parsedMedida: string[] = []
+        if (product.medida) {
+          if (typeof product.medida === 'string') {
+            // Intentar parsear si es un string de array JSON
+            if (product.medida.trim().startsWith('[') && product.medida.trim().endsWith(']')) {
+              try {
+                const parsed = JSON.parse(product.medida)
+                parsedMedida = Array.isArray(parsed) ? parsed : [parsed]
+              } catch {
+                parsedMedida = [product.medida]
+              }
+            } else {
+              parsedMedida = [product.medida]
+            }
+          } else if (Array.isArray(product.medida)) {
+            parsedMedida = product.medida
+          } else {
+            parsedMedida = [String(product.medida)]
+          }
+        }
         const variantMeasuresList = variantMeasures[product.id] || []
-        const allMeasures = Array.from(new Set([...productMedida, ...variantMeasuresList]))
+        const allMeasures = Array.from(new Set([...parsedMedida, ...variantMeasuresList]))
         
         // ✅ NUEVO: Combinar color del producto con todos los colores de variantes
         const productColor = product.color ? [product.color] : []
@@ -976,7 +1066,8 @@ export const GET = async (request: NextRequest) => {
           // Agregar conteo de variantes
           variant_count: variantCounts[product.id] || 0,
           // Imagen priorizando variantes
-          image_url: variantImage || fallbackImage,
+          // ✅ CORREGIDO: Prioridad: product_images > variante > images JSONB
+          image_url: primaryImageFromTable || variantImage || fallbackImage,
           // Default status si es null
           status: product.status || (product.is_active ? 'active' : 'inactive'),
           // ✅ NUEVO: Array de todas las medidas (producto + variantes)
