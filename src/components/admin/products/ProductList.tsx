@@ -987,12 +987,12 @@ export function ProductList({
         body: JSON.stringify(newProductData),
       })
       
-      if (!createResponse.ok) {
-        const errorData = await createResponse.json().catch(() => ({ error: 'Error desconocido' }))
-        throw new Error(errorData.error || errorData.message || 'Error al crear el producto duplicado')
-      }
+      // ✅ IMPORTANTE: Leer el body una sola vez
+      const newProduct = await createResponse.json().catch(() => ({ error: 'Error desconocido' }))
       
-      const newProduct = await createResponse.json()
+      if (!createResponse.ok) {
+        throw new Error(newProduct.error || newProduct.message || 'Error al crear el producto duplicado')
+      }
       const newProductId = newProduct.data?.id || newProduct.id
       
       // 5. Duplicar todas las variantes creándolas directamente en el nuevo producto

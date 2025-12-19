@@ -183,12 +183,12 @@ export function ImageUploadZone({
         clearInterval(progressInterval)
         setUploadProgress(100)
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
-          throw new Error(errorData.error || `Error ${response.status}: Error al subir imagen`)
-        }
+        // ✅ IMPORTANTE: Leer el body una sola vez
+        const result = await response.json().catch(() => ({ error: 'Error desconocido' }))
 
-        const result = await response.json()
+        if (!response.ok) {
+          throw new Error(result.error || `Error ${response.status}: Error al subir imagen`)
+        }
         // El endpoint genérico retorna { data: { url, path } }, el específico retorna { data: { url, ... } }
         const imageUrl = result.data?.url
 

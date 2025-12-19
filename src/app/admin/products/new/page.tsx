@@ -48,14 +48,19 @@ async function createProduct(data: ProductFormData) {
     body: JSON.stringify(data),
   })
 
-  const result = await response.json()
-  console.log('📝 API Response:', result)
-
+  // ✅ IMPORTANTE: Verificar response.ok ANTES de leer el body
   if (!response.ok) {
-    throw new Error(result.error || 'Error al crear producto')
+    // Leer el body solo cuando hay error
+    const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+    const errorMessage = errorData.error || errorData.message || `Error ${response.status}: Error al crear producto`
+    console.error('❌ Error creating product:', errorMessage, errorData)
+    throw new Error(errorMessage)
   }
 
-  return response.json()
+  // Leer el body solo cuando la respuesta es exitosa
+  const result = await response.json()
+  console.log('📝 API Response:', result)
+  return result
 }
 
 export default function NewProductPage() {

@@ -41,7 +41,15 @@ const ProductSchema = z.object({
   stock: z.number().min(0, 'El stock debe ser mayor o igual a 0'),
   
   // Imagen
-  image_url: z.string().url().optional().nullable(),
+  image_url: z
+    .union([
+      z.string().url('URL de imagen inválida'),
+      z.literal(''),
+      z.null(),
+    ])
+    .optional()
+    .nullable()
+    .transform((val) => (val === '' ? null : val)),
   
   // Para badges
   featured: z.boolean().default(false),
@@ -162,12 +170,14 @@ export function ProductFormMinimal({
         ok: res.ok
       })
       
+      // ✅ IMPORTANTE: Verificar res.ok ANTES de leer el body
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: 'Error desconocido' }))
         console.error('❌ [Frontend] Error del servidor:', res.status, errorData)
         throw new Error(errorData.error || `Error ${res.status}: Error actualizando variante`)
       }
       
+      // Leer el body solo cuando la respuesta es exitosa
       const result = await res.json()
       console.log('✅ [Frontend] Variante actualizada, respuesta:', result)
       return result
@@ -325,10 +335,11 @@ export function ProductFormMinimal({
       }
     } catch (error) {
       console.error('Error submitting form:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar el producto'
       if (mode === 'create') {
-        notifications.showProductCreationError('Error al guardar el producto')
+        notifications.showProductCreationError(errorMessage)
       } else {
-        notifications.showProductUpdateError('Error al guardar el producto', data.name)
+        notifications.showProductUpdateError(errorMessage, data.name)
       }
     }
   }

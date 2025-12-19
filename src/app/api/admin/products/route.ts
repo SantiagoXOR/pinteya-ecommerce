@@ -651,16 +651,24 @@ const postHandlerSimple = async (request: NextRequest) => {
       name: body.name,
       description: body.description || '',
       price: parseFloat(body.price),
-      discounted_price: body.compare_price ? parseFloat(body.compare_price) : null,
-      stock: parseInt(body.stock) || 0,
+      discounted_price: body.discounted_price !== undefined && body.discounted_price !== null 
+        ? parseFloat(String(body.discounted_price)) 
+        : (body.compare_price ? parseFloat(String(body.compare_price)) : null),
+      stock: parseInt(String(body.stock)) || 0,
       category_id: categoryIds.length > 0 ? categoryIds[0] : null, // Mantener category_id para retrocompatibilidad
-      is_active: body.status === 'active' ? true : (body.status === 'inactive' ? false : true), // Si no se especifica status, por defecto es activo
+      is_active: body.is_active !== undefined 
+        ? Boolean(body.is_active) 
+        : (body.status === 'active' ? true : (body.status === 'inactive' ? false : true)), // Si no se especifica status, por defecto es activo
       brand: body.brand || '',
       color: body.color || '',
       medida: body.medida || '',
       // ✅ NUEVO: Incluir terminaciones como array de texto
       terminaciones: body.terminaciones && Array.isArray(body.terminaciones) 
         ? body.terminaciones.filter((t: string) => t && t.trim() !== '')
+        : null,
+      // ✅ NUEVO: Incluir image_url en el campo images (JSONB) para retrocompatibilidad
+      images: body.image_url 
+        ? JSON.stringify({ url: body.image_url, is_primary: true })
         : null,
       // Generar slug automático
       slug:

@@ -125,12 +125,14 @@ export function ProductImageGallery({
         body: formData,
       })
 
+      // ✅ IMPORTANTE: Leer el body una sola vez
+      const result = await response.json().catch(() => ({ error: 'Error desconocido' }))
+
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Error desconocido' }))
-        throw new Error(error.error || 'Error al subir imagen')
+        throw new Error(result.error || 'Error al subir imagen')
       }
 
-      return response.json()
+      return result
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-images', productId] })
