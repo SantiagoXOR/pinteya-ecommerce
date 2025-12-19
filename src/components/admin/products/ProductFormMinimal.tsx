@@ -155,18 +155,43 @@ export function ProductFormMinimal({
   
   const updateVariantMutation = useMutation({
     mutationFn: async ({ id, ...data }: any) => {
+      // ✅ CORREGIDO: Filtrar solo campos permitidos y remover undefined
+      const allowedFields = [
+        'color_name',
+        'color_hex',
+        'measure',
+        'finish',
+        'price_list',
+        'price_sale',
+        'stock',
+        'is_active',
+        'is_default',
+        'image_url',
+        'aikon_id',
+      ]
+      
+      const cleanedData = Object.fromEntries(
+        Object.entries(data)
+          .filter(([key, value]) => 
+            allowedFields.includes(key) && value !== undefined
+          )
+      )
+      
       console.log('🚀 [Frontend] Enviando actualización de variante:', {
         id,
-        data,
-        dataKeys: Object.keys(data),
-        stock: data.stock,
-        stockType: typeof data.stock
+        originalData: data,
+        cleanedData,
+        dataKeys: Object.keys(cleanedData),
+        stock: cleanedData.stock,
+        stockType: typeof cleanedData.stock,
+        price_list: cleanedData.price_list,
+        price_sale: cleanedData.price_sale,
       })
       
       const res = await fetch(`/api/products/${productId}/variants/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(cleanedData),
         credentials: 'include', // ✅ Incluir cookies de autenticación
       })
       
@@ -933,8 +958,14 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
   const handleSave = () => {
     if (validateForm()) {
       // ✅ CORREGIDO: Normalizar datos antes de guardar para asegurar tipos correctos
-      const normalizedData = {
-        ...formData,
+      // Solo incluir campos que se pueden actualizar (excluir id, product_id, etc.)
+      const normalizedData: any = {
+        // Campos de texto
+        color_name: formData.color_name?.trim() || undefined,
+        color_hex: formData.color_hex?.trim() || undefined,
+        measure: formData.measure?.trim() || undefined,
+        finish: formData.finish || undefined,
+        aikon_id: formData.aikon_id?.trim() || undefined,
         // Asegurar que price_list sea número
         price_list: typeof formData.price_list === 'number' 
           ? formData.price_list 
@@ -953,22 +984,31 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
         image_url: formData.image_url && formData.image_url.trim() !== '' 
           ? formData.image_url.trim() 
           : null,
+        // Campos booleanos
+        is_active: formData.is_active !== undefined ? formData.is_active : undefined,
+        is_default: formData.is_default !== undefined ? formData.is_default : undefined,
       }
+      
+      // ✅ CORREGIDO: Remover campos undefined para no enviarlos al backend
+      const cleanedData = Object.fromEntries(
+        Object.entries(normalizedData).filter(([_, value]) => value !== undefined)
+      )
       
       // ✅ DEBUG: Log para verificar datos normalizados
       console.log('💾 [VariantModal] handleSave - formData normalizado:', {
-        id: normalizedData.id,
-        hasImageUrl: !!normalizedData.image_url,
-        imageUrl: normalizedData.image_url,
-        price_list: normalizedData.price_list,
-        price_sale: normalizedData.price_sale,
-        stock: normalizedData.stock,
-        stockType: typeof normalizedData.stock,
-        priceListType: typeof normalizedData.price_list,
-        priceSaleType: typeof normalizedData.price_sale,
-        allKeys: Object.keys(normalizedData),
+        id: formData.id,
+        cleanedData,
+        price_list: cleanedData.price_list,
+        price_sale: cleanedData.price_sale,
+        stock: cleanedData.stock,
+        stockType: typeof cleanedData.stock,
+        priceListType: typeof cleanedData.price_list,
+        priceSaleType: typeof cleanedData.price_sale,
+        allKeys: Object.keys(cleanedData),
       })
-      onSave(normalizedData)
+      
+      // ✅ CORREGIDO: Pasar solo los datos limpios (sin id, que va en la URL)
+      onSave({ ...formData, ...cleanedData })
     }
   }
 
