@@ -17,7 +17,8 @@ async function checkAdminPermissionsForProducts(
   action: 'create' | 'read' | 'update' | 'delete',
   request?: NextRequest
 ) {
-  return await checkCRUDPermissions(action, 'products')
+  // ✅ CORREGIDO: Pasar request a checkCRUDPermissions para que auth() pueda leer las cookies
+  return await checkCRUDPermissions(action, 'products', undefined, request)
 }
 
 // Validation schemas
@@ -468,10 +469,14 @@ export async function GET(
   try {
     console.log('🔥🔥🔥 GET SIMPLIFICADO - Iniciando')
     
-    // Auth simple
-    const authResult = await checkAdminPermissionsForProducts('read')
+    // ✅ CORREGIDO: Pasar request para que auth() pueda leer las cookies
+    const authResult = await checkAdminPermissionsForProducts('read', request)
     if (!authResult.allowed) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+      console.error('❌ [GET Product] Acceso denegado:', authResult.error)
+      return NextResponse.json({ 
+        error: authResult.error || 'Acceso denegado',
+        code: 'AUTH_ERROR'
+      }, { status: 401 })
     }
     
     const { id } = await context.params
