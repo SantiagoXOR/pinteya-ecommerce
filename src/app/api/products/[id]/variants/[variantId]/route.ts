@@ -85,15 +85,22 @@ export async function PUT(
       aikon_id: body.aikon_id,
     }
     
-    // Remover campos undefined
+    // ✅ CORREGIDO: Incluir image_url incluso si es null (para permitir limpiar la imagen)
     const filteredBody = Object.fromEntries(
-      Object.entries(allowedFields).filter(([_, value]) => value !== undefined)
+      Object.entries(allowedFields).filter(([key, value]) => {
+        // ✅ CORREGIDO: Incluir image_url incluso si es null
+        if (key === 'image_url') return true
+        // Para otros campos, excluir undefined
+        return value !== undefined
+      })
     )
     
     console.log('📦 [PUT Variant] Campos filtrados:', {
       original: Object.keys(body).length,
       filtered: Object.keys(filteredBody).length,
-      filteredBody
+      filteredBody,
+      image_url: filteredBody.image_url,
+      image_urlType: typeof filteredBody.image_url,
     })
     
     const validation = UpdateVariantSchema.safeParse(filteredBody)

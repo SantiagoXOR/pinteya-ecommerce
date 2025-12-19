@@ -170,11 +170,16 @@ export function ProductFormMinimal({
         'aikon_id',
       ]
       
+      // ✅ CORREGIDO: Incluir image_url incluso si es null (para permitir limpiar la imagen)
       const cleanedData = Object.fromEntries(
         Object.entries(data)
-          .filter(([key, value]) => 
-            allowedFields.includes(key) && value !== undefined
-          )
+          .filter(([key, value]) => {
+            if (!allowedFields.includes(key)) return false
+            // ✅ CORREGIDO: Incluir image_url incluso si es null
+            if (key === 'image_url') return true
+            // Para otros campos, excluir undefined
+            return value !== undefined
+          })
       )
       
       console.log('🚀 [Frontend] Enviando actualización de variante:', {
@@ -182,6 +187,8 @@ export function ProductFormMinimal({
         originalData: data,
         cleanedData,
         dataKeys: Object.keys(cleanedData),
+        image_url: cleanedData.image_url,
+        image_urlType: typeof cleanedData.image_url,
         stock: cleanedData.stock,
         stockType: typeof cleanedData.stock,
         price_list: cleanedData.price_list,
@@ -998,6 +1005,8 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
       console.log('💾 [VariantModal] handleSave - formData normalizado:', {
         id: formData.id,
         cleanedData,
+        image_url: cleanedData.image_url,
+        image_urlType: typeof cleanedData.image_url,
         price_list: cleanedData.price_list,
         price_sale: cleanedData.price_sale,
         stock: cleanedData.stock,
@@ -1008,7 +1017,22 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
       })
       
       // ✅ CORREGIDO: Pasar solo los datos limpios (sin id, que va en la URL)
-      onSave({ ...formData, ...cleanedData })
+      // Asegurar que image_url se incluya correctamente (puede ser null)
+      const finalData = { ...formData, ...cleanedData }
+      
+      // ✅ CORREGIDO: Si image_url es null, incluirlo explícitamente para que el backend lo procese
+      if ('image_url' in cleanedData) {
+        finalData.image_url = cleanedData.image_url
+      }
+      
+      console.log('💾 [VariantModal] Datos finales a enviar:', {
+        id: finalData.id,
+        image_url: finalData.image_url,
+        image_urlType: typeof finalData.image_url,
+        allKeys: Object.keys(finalData),
+      })
+      
+      onSave(finalData)
     }
   }
 
