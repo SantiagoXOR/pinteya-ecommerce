@@ -335,6 +335,10 @@ const getHandler = async (request: ValidatedRequest) => {
           // ✅ NUEVO: Array de todos los colores (producto + variantes)
           color: allColors.length > 0 ? allColors[0] : null, // Mantener compatibilidad con campo string
           colores: allColors, // ✅ NUEVO: Array de todos los colores
+          // ✅ NUEVO: Terminaciones del producto (array de texto)
+          terminaciones: product.terminaciones && Array.isArray(product.terminaciones) 
+            ? product.terminaciones.filter((t: string) => t && t.trim() !== '')
+            : [],
           // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
           aikon_id: defaultAikonId,
         }
@@ -456,9 +460,17 @@ const postHandler = async (request: ValidatedRequest) => {
     }
 
     // Mantener category_id para retrocompatibilidad (usar primera categoría)
+    // Normalizar terminaciones: convertir array a formato PostgreSQL TEXT[]
+    const terminaciones = (productData as any).terminaciones 
+      ? Array.isArray((productData as any).terminaciones) 
+        ? (productData as any).terminaciones.filter((t: string) => t && t.trim() !== '')
+        : []
+      : []
+
     const productDataWithCategory = {
       ...productData,
       category_id: categoryIds.length > 0 ? categoryIds[0] : (productData as any).category_id || null,
+      terminaciones: terminaciones.length > 0 ? terminaciones : null, // null en lugar de array vacío para mejor rendimiento
     }
 
     // Create product
@@ -478,6 +490,7 @@ const postHandler = async (request: ValidatedRequest) => {
         stock,
         category_id,
         images,
+        terminaciones,
         created_at,
         updated_at,
         category:categories (
@@ -645,7 +658,10 @@ const postHandlerSimple = async (request: NextRequest) => {
       brand: body.brand || '',
       color: body.color || '',
       medida: body.medida || '',
-      // NO incluir terminaciones - esa columna no existe en la tabla products
+      // ✅ NUEVO: Incluir terminaciones como array de texto
+      terminaciones: body.terminaciones && Array.isArray(body.terminaciones) 
+        ? body.terminaciones.filter((t: string) => t && t.trim() !== '')
+        : null,
       // Generar slug automático
       slug:
         body.name
@@ -961,6 +977,10 @@ export const GET = async (request: NextRequest) => {
           // ✅ NUEVO: Array de todos los colores (producto + variantes)
           color: allColors.length > 0 ? allColors[0] : null, // Mantener compatibilidad con campo string
           colores: allColors, // ✅ NUEVO: Array de todos los colores
+          // ✅ NUEVO: Terminaciones del producto (array de texto)
+          terminaciones: product.terminaciones && Array.isArray(product.terminaciones) 
+            ? product.terminaciones.filter((t: string) => t && t.trim() !== '')
+            : [],
           // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
           aikon_id: defaultAikonId,
         }

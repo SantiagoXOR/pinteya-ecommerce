@@ -42,6 +42,7 @@ const UpdateProductSchema = z.object({
     .optional(),
   is_active: z.boolean().optional(),
   is_featured: z.boolean().optional(),
+  terminaciones: z.array(z.string()).optional(), // ✅ NUEVO: Array de terminaciones
 })
 
 const ProductParamsSchema = z.object({
@@ -78,6 +79,7 @@ async function getProductById(
       category_id,
       brand,
       images,
+      terminaciones,
       is_active,
       is_featured,
       created_at,
@@ -111,6 +113,10 @@ async function getProductById(
       null,
       // Derive status from is_active (status column doesn't exist in DB)
       status: product.is_active ? 'active' : 'inactive',
+    // ✅ NUEVO: Terminaciones del producto (array de texto)
+    terminaciones: (product as any).terminaciones && Array.isArray((product as any).terminaciones) 
+      ? (product as any).terminaciones.filter((t: string) => t && t.trim() !== '')
+      : [],
     // Defaults para campos opcionales
     cost_price: product.cost_price ?? null,
     compare_price: product.compare_price ?? product.discounted_price ?? null,
@@ -227,6 +233,13 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   if (validatedData.category_id !== undefined) updateData.category_id = validatedData.category_id
   if (validatedData.brand !== undefined) updateData.brand = validatedData.brand
   if (validatedData.images !== undefined) updateData.images = validatedData.images
+  // ✅ NUEVO: Mapear terminaciones (array de texto)
+  if ((validatedData as any).terminaciones !== undefined) {
+    const terminaciones = Array.isArray((validatedData as any).terminaciones)
+      ? (validatedData as any).terminaciones.filter((t: string) => t && t.trim() !== '')
+      : []
+    updateData.terminaciones = terminaciones.length > 0 ? terminaciones : null
+  }
   
   // Generar slug si se actualiza el nombre
   if (validatedData.name) {
@@ -261,6 +274,7 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
       category_id,
       brand,
       images,
+      terminaciones,
       created_at,
       updated_at,
       categories (
@@ -320,6 +334,10 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
     ...updatedProduct,
     category_name: updatedProduct.categories?.name || null,
     categories: undefined,
+    // ✅ NUEVO: Terminaciones del producto (array de texto)
+    terminaciones: (updatedProduct as any).terminaciones && Array.isArray((updatedProduct as any).terminaciones) 
+      ? (updatedProduct as any).terminaciones.filter((t: string) => t && t.trim() !== '')
+      : [],
   }
 
   console.log('📤 Respuesta que se enviará al frontend:', {

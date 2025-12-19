@@ -171,6 +171,11 @@ export const EnterpriseProductSchema = z.object({
     .max(ENTERPRISE_VALIDATION_CONSTANTS.MAX_TAGS_LENGTH, 'Demasiadas etiquetas')
     .optional(),
 
+  terminaciones: z
+    .array(z.string().min(1).max(50, 'Terminación muy larga'))
+    .max(20, 'Demasiadas terminaciones')
+    .optional(), // ✅ NUEVO: Array de terminaciones disponibles para el producto
+
   images: z
     .object({
       previews: z
