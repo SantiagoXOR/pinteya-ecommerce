@@ -218,11 +218,33 @@ export function ProductFormMinimal({
   const normalizedInitialData = initialData
     ? {
         ...initialData,
-        category_ids: initialData.category_ids
-          ? (Array.isArray(initialData.category_ids) ? initialData.category_ids : [initialData.category_ids])
-          : (initialData as any).category_id
-          ? [(initialData as any).category_id]
-          : [],
+        // ✅ CORREGIDO: Extraer category_ids desde product_categories si está presente
+        category_ids: (() => {
+          // Si ya hay category_ids, usarlos
+          if (initialData.category_ids) {
+            return Array.isArray(initialData.category_ids) 
+              ? initialData.category_ids 
+              : [initialData.category_ids]
+          }
+          
+          // Si hay product_categories, extraer los category_id
+          const productCategories = (initialData as any).product_categories
+          if (productCategories && Array.isArray(productCategories) && productCategories.length > 0) {
+            const categoryIds = productCategories
+              .map((pc: any) => pc.category_id || pc.category?.id)
+              .filter((id: any) => id != null && !isNaN(id))
+            if (categoryIds.length > 0) {
+              return categoryIds
+            }
+          }
+          
+          // Fallback a category_id singular si existe
+          if ((initialData as any).category_id) {
+            return [(initialData as any).category_id]
+          }
+          
+          return []
+        })(),
         // ✅ CORREGIDO: Asegurar que terminaciones siempre sea un array
         terminaciones: Array.isArray(initialData.terminaciones) 
           ? initialData.terminaciones 
