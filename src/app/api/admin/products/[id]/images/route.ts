@@ -119,7 +119,7 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
 
   // Check if product exists
-  const { data: product, error: productError } = await supabase
+  const { data: product, error: productError } = await supabaseAdmin
     .from('products')
     .select('id, name')
     .eq('id', numericProductId)
