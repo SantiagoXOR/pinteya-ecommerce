@@ -931,14 +931,20 @@ export function ProductList({
   const handleDuplicateProduct = async (productId: string) => {
     try {
       // 1. Obtener el producto original con todas sus variantes
-      const productResponse = await fetch(`/api/admin/products/${productId}`)
+      // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+      const productResponse = await fetch(`/api/admin/products/${productId}`, {
+        credentials: 'include',
+      })
       if (!productResponse.ok) {
         throw new Error('Error al obtener el producto original')
       }
       const productData = await productResponse.json()
       
       // 2. Obtener variantes del producto
-      const variantsResponse = await fetch(`/api/products/${productId}/variants`)
+      // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+      const variantsResponse = await fetch(`/api/products/${productId}/variants`, {
+        credentials: 'include',
+      })
       const variantsData = variantsResponse.ok ? await variantsResponse.json() : { data: [] }
       const variants = variantsData.data || []
       

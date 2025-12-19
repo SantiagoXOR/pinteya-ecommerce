@@ -40,11 +40,13 @@ interface ProductFormData {
 async function createProduct(data: ProductFormData) {
   console.log('🚀 Creating product with data:', data)
 
+  // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
   const response = await fetch('/api/admin/products', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify(data),
   })
 

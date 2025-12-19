@@ -59,11 +59,13 @@ async function fetchProduct(productId: string): Promise<Product> {
 async function updateProduct(productId: string, data: ProductFormData) {
   console.log('📤 Enviando actualización:', { productId, data })
   
+  // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
   const response = await fetch(`/api/admin/products/${productId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify(data),
   })
 
