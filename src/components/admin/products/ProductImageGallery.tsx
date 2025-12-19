@@ -206,7 +206,25 @@ export function ProductImageGallery({
       console.log('✅ [ProductImageGallery] Imagen eliminada exitosamente:', result)
       return result
     },
-    onSuccess: (data, imageId) => {
+    // ✅ CORREGIDO: Usar optimistic update para actualizar UI inmediatamente
+    onMutate: async (imageId) => {
+      // Cancelar queries en progreso
+      await queryClient.cancelQueries({ queryKey: ['product-images', productId] })
+      
+      // Snapshot del valor anterior
+      const previousImages = queryClient.getQueryData<ProductImage[]>(['product-images', productId])
+      
+      // Optimistic update: remover la imagen de la lista
+      if (previousImages) {
+        queryClient.setQueryData<ProductImage[]>(
+          ['product-images', productId],
+          previousImages.filter(img => img.id !== imageId)
+        )
+      }
+      
+      return { previousImages }
+    },
+    onSuccess: (data, imageId, context) => {
       console.log('🔄 [ProductImageGallery] Invalidando queries después de eliminar:', { productId, imageId })
       // ✅ CORREGIDO: Invalidar queries y forzar refetch
       queryClient.invalidateQueries({ queryKey: ['product-images', productId] })
@@ -214,8 +232,12 @@ export function ProductImageGallery({
       // ✅ Forzar refetch inmediato
       queryClient.refetchQueries({ queryKey: ['product-images', productId] })
     },
-    onError: (error) => {
+    onError: (error, imageId, context) => {
       console.error('❌ [ProductImageGallery] Error en deleteMutation:', error)
+      // ✅ CORREGIDO: Revertir optimistic update si hay error
+      if (context?.previousImages) {
+        queryClient.setQueryData(['product-images', productId], context.previousImages)
+      }
     },
   })
 
