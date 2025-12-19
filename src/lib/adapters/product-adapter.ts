@@ -16,18 +16,33 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
   console.log('🖼️ Imágenes originales:', apiProduct.images);
   console.log('🎨 Variantes:', apiProduct.variants);
   
-  // ✅ PRIORIDAD DE IMAGEN: Variante por defecto > Producto padre
+  // ✅ PRIORIDAD DE IMAGEN: image_url desde product_images > Variante por defecto > Producto padre
   let firstImage = '/images/products/placeholder.svg'
   let normalizedImages: string[] = []
   
-  // 1. Intentar obtener imagen de variante por defecto
-  const defaultVariant = (apiProduct as any).default_variant || (apiProduct as any).variants?.[0]
-  if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
-    firstImage = defaultVariant.image_url.trim()
-    normalizedImages = [firstImage]
-    console.log('🎯 Usando imagen de variante por defecto:', firstImage)
-  } else {
-    // 2. Normalizar imágenes del producto padre
+  // 1. ✅ CORREGIDO: Priorizar image_url desde product_images (API pública)
+  if ((apiProduct as any)?.image_url && typeof (apiProduct as any).image_url === 'string') {
+    const imageUrl = (apiProduct as any).image_url.trim()
+    if (imageUrl && !imageUrl.includes('placeholder')) {
+      firstImage = imageUrl
+      normalizedImages = [firstImage]
+      console.log('🎯 Usando image_url desde product_images:', firstImage)
+    }
+  }
+  
+  // 2. Si no hay image_url, intentar obtener imagen de variante por defecto
+  if (firstImage === '/images/products/placeholder.svg') {
+    const defaultVariant = (apiProduct as any).default_variant || (apiProduct as any).variants?.[0]
+    if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
+      firstImage = defaultVariant.image_url.trim()
+      normalizedImages = [firstImage]
+      console.log('🎯 Usando imagen de variante por defecto:', firstImage)
+    }
+  }
+  
+  // 3. Si aún no hay imagen, usar imágenes del producto padre
+  if (firstImage === '/images/products/placeholder.svg') {
+    // Normalizar imágenes del producto padre
     normalizedImages = Array.isArray(apiProduct.images)
       ? (
           apiProduct.images
@@ -183,13 +198,21 @@ export function getFinalPrice(product: Product | ProductWithCategory): number {
  * @returns string - URL de la imagen
  */
 export function getMainImage(product: Product | ProductWithCategory): string {
-  // 1. PRIORIDAD: Imagen de variante por defecto (productos con sistema de variantes)
+  // 1. ✅ CORREGIDO: PRIORIDAD MÁXIMA - image_url desde product_images (API pública)
+  if ((product as any)?.image_url && typeof (product as any).image_url === 'string') {
+    const imageUrl = (product as any).image_url.trim()
+    if (imageUrl && !imageUrl.includes('placeholder')) {
+      return imageUrl
+    }
+  }
+
+  // 2. PRIORIDAD: Imagen de variante por defecto (productos con sistema de variantes)
   const defaultVariant = (product as any).default_variant || (product as any).variants?.[0]
   if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
     return defaultVariant.image_url.trim()
   }
 
-  // 2. Priorizar el formato de array. Puede ser string[] u objetos con url
+  // 3. Priorizar el formato de array. Puede ser string[] u objetos con url
   if ('images' in product && Array.isArray((product as any).images) && (product as any).images[0]) {
     const first = (product as any).images[0]
     const url = typeof first === 'string' ? first : first?.url ?? first?.image_url
@@ -197,7 +220,7 @@ export function getMainImage(product: Product | ProductWithCategory): string {
       return url.trim()
     }
   }
-  // 3. Nuevo formato basado en objeto { main, previews, thumbnails, gallery }
+  // 4. Nuevo formato basado en objeto { main, previews, thumbnails, gallery }
   if (
     'images' in product &&
     product &&
@@ -210,7 +233,7 @@ export function getMainImage(product: Product | ProductWithCategory): string {
       if (typeof c === 'string' && c.trim() !== '') return c.trim()
     }
   }
-  // 4. Compatibilidad con estructuras antiguas
+  // 5. Compatibilidad con estructuras antiguas
   if ('imgs' in product && (product as any).imgs?.previews?.[0]) {
     return (product as any).imgs.previews[0]
   }
