@@ -982,6 +982,7 @@ export function ProductList({
       }
       
       // 4. Crear el nuevo producto
+      // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
       const createResponse = await fetch('/api/admin/products', {
         method: 'POST',
         headers: { 
@@ -989,6 +990,7 @@ export function ProductList({
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
         },
+        credentials: 'include',
         cache: 'no-store', // ✅ Forzar sin cache
         body: JSON.stringify(newProductData),
       })
@@ -1026,9 +1028,11 @@ export function ProductList({
             }
             
             // Crear nueva variante en el nuevo producto
+            // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
             const variantResponse = await fetch('/api/admin/products/variants', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
               body: JSON.stringify(variantData),
             })
             
