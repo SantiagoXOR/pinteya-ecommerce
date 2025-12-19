@@ -36,16 +36,19 @@ async function fetchCategories(): Promise<Category[]> {
 
 // Build category tree
 function buildCategoryTree(categories: Category[]): Category[] {
+  // ✅ CORREGIDO: Asegurar que categories siempre sea un array
+  const safeCategories = Array.isArray(categories) ? categories : []
+  
   const categoryMap = new Map<number, Category>()
   const rootCategories: Category[] = []
 
   // Create map of all categories
-  categories.forEach(category => {
+  safeCategories.forEach(category => {
     categoryMap.set(category.id, { ...category, children: [] })
   })
 
   // Build tree structure
-  categories.forEach(category => {
+  safeCategories.forEach(category => {
     const categoryNode = categoryMap.get(category.id)!
 
     if (category.parent_id) {
@@ -99,7 +102,9 @@ export function CategorySelector({
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const categoryTree = buildCategoryTree(categories)
+  // ✅ CORREGIDO: Asegurar que categories siempre sea un array antes de procesarlo
+  const safeCategories = Array.isArray(categories) ? categories : []
+  const categoryTree = buildCategoryTree(safeCategories)
   const flatCategories = flattenCategories(categoryTree)
 
   // Handle value as array or single number
@@ -112,11 +117,14 @@ export function CategorySelector({
   const selectedCategory = !multiple ? selectedCategories[0] : undefined
 
   // Filter categories based on search
+  // ✅ CORREGIDO: Asegurar que flatCategories y categoryTree siempre sean arrays
+  const safeFlatCategories = Array.isArray(flatCategories) ? flatCategories : []
+  const safeCategoryTree = Array.isArray(categoryTree) ? categoryTree : []
   const filteredCategories = searchTerm
-    ? flatCategories.filter(category =>
+    ? safeFlatCategories.filter(category =>
         category.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : categoryTree
+    : safeCategoryTree
 
   const toggleExpanded = (categoryId: number) => {
     const newExpanded = new Set(expandedCategories)
@@ -152,7 +160,11 @@ export function CategorySelector({
   }
 
   const renderCategoryTree = (categories: Category[], level = 0) => {
-    return categories.map(category => {
+    // ✅ CORREGIDO: Asegurar que categories siempre sea un array
+    const safeCategories = Array.isArray(categories) ? categories : []
+    if (safeCategories.length === 0) return []
+    
+    return safeCategories.map(category => {
       const isSelected = selectedIds.includes(category.id)
       return (
         <div key={category.id}>
@@ -178,7 +190,7 @@ export function CategorySelector({
                     {isSelected && <Check className='w-3 h-3 text-white' />}
                   </div>
                 </div>
-              ) : category.children && category.children.length > 0 ? (
+              ) : category.children && Array.isArray(category.children) && category.children.length > 0 ? (
                 <button
                   onClick={e => {
                     e.stopPropagation()
@@ -207,17 +219,20 @@ export function CategorySelector({
           </div>
 
           {category.children &&
+            Array.isArray(category.children) &&
             category.children.length > 0 &&
             expandedCategories.has(category.id) && (
               <div>{renderCategoryTree(category.children, level + 1)}</div>
             )}
         </div>
       )
-    })
+    }) : []
   }
 
   const renderFlatList = (categories: Category[]) => {
-    return categories.map(category => {
+    // ✅ CORREGIDO: Asegurar que categories siempre sea un array
+    const safeCategories = Array.isArray(categories) ? categories : []
+    return safeCategories.map(category => {
       const isSelected = selectedIds.includes(category.id)
       return (
         <div
@@ -340,14 +355,14 @@ export function CategorySelector({
 
           {/* Categories List */}
           <div className='max-h-60 overflow-y-auto'>
-            {categories.length === 0 ? (
+            {safeCategories.length === 0 ? (
               <div className='p-4 text-center text-gray-500 text-sm'>
                 No hay categorías disponibles
               </div>
             ) : searchTerm ? (
-              renderFlatList(filteredCategories as Category[])
+              renderFlatList(Array.isArray(filteredCategories) ? filteredCategories : [])
             ) : (
-              renderCategoryTree(categoryTree)
+              renderCategoryTree(safeCategoryTree)
             )}
           </div>
 

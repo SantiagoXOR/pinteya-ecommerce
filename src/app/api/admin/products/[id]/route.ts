@@ -101,10 +101,34 @@ async function getProductById(
   }
 
   // Transform response with enhanced data
+  // ✅ CORREGIDO: Parsear medida si viene como string de array
+  let parsedMedida: string[] = []
+  if (product.medida) {
+    if (typeof product.medida === 'string') {
+      // Intentar parsear si es un string de array JSON
+      if (product.medida.trim().startsWith('[') && product.medida.trim().endsWith(']')) {
+        try {
+          const parsed = JSON.parse(product.medida)
+          parsedMedida = Array.isArray(parsed) ? parsed : [parsed]
+        } catch {
+          parsedMedida = [product.medida]
+        }
+      } else {
+        parsedMedida = [product.medida]
+      }
+    } else if (Array.isArray(product.medida)) {
+      parsedMedida = product.medida
+    } else {
+      parsedMedida = [String(product.medida)]
+    }
+  }
+
   const transformedProduct = {
     ...product,
     category_name: product.categories?.name || null,
     categories: undefined,
+    // ✅ CORREGIDO: Parsear medida correctamente
+    medida: parsedMedida,
     // Transform images JSONB to image_url
     // ✅ CORREGIDO: Soporte para formato {url, is_primary}
     image_url: 
@@ -115,7 +139,7 @@ async function getProductById(
       null,
       // Derive status from is_active (status column doesn't exist in DB)
       status: product.is_active ? 'active' : 'inactive',
-    // ✅ NUEVO: Terminaciones del producto (array de texto)
+    // ✅ NUEVO: Terminaciones del producto (array de texto) - asegurar que siempre sea array
     terminaciones: (product as any).terminaciones && Array.isArray((product as any).terminaciones) 
       ? (product as any).terminaciones.filter((t: string) => t && t.trim() !== '')
       : [],
@@ -483,8 +507,11 @@ export async function GET(
       .eq('product_id', productId)
     
     // Agregar product_categories al objeto data ANTES de transformarlo
-    if (productCategoriesData && !categoriesError) {
+    // ✅ CORREGIDO: Asegurar que siempre sea un array
+    if (productCategoriesData && !categoriesError && Array.isArray(productCategoriesData)) {
       data.product_categories = productCategoriesData
+    } else {
+      data.product_categories = []
     }
     
     // Obtener variantes reales de la BD
@@ -508,13 +535,37 @@ export async function GET(
     
     const primaryImageFromTable = productImages?.[0]?.url || null
     
+    // ✅ CORREGIDO: Parsear medida si viene como string de array
+    let parsedMedida: string[] = []
+    if (data.medida) {
+      if (typeof data.medida === 'string') {
+        // Intentar parsear si es un string de array JSON
+        if (data.medida.trim().startsWith('[') && data.medida.trim().endsWith(']')) {
+          try {
+            const parsed = JSON.parse(data.medida)
+            parsedMedida = Array.isArray(parsed) ? parsed : [parsed]
+          } catch {
+            parsedMedida = [data.medida]
+          }
+        } else {
+          parsedMedida = [data.medida]
+        }
+      } else if (Array.isArray(data.medida)) {
+        parsedMedida = data.medida
+      } else {
+        parsedMedida = [String(data.medida)]
+      }
+    }
+
     // Transform ALL fields para compatibilidad con frontend
     const transformedData = {
       ...data,
       category_name: data.categories?.name || null,
       categories: undefined,
-      // ✅ PRESERVAR product_categories para duplicación
-      product_categories: data.product_categories || [],
+      // ✅ PRESERVAR product_categories para duplicación - asegurar que sea array
+      product_categories: Array.isArray(data.product_categories) ? data.product_categories : [],
+      // ✅ CORREGIDO: Parsear medida correctamente
+      medida: parsedMedida,
       // Incluir variantes (asegurar que siempre sea un array)
       variants: Array.isArray(variants) ? variants : [],
       variant_count: variants?.length || 0,
@@ -535,6 +586,10 @@ export async function GET(
       price: defaultVariant?.price_list || data.price,
       discounted_price: defaultVariant?.price_sale || data.discounted_price,
       stock: data.stock, // ✅ CORREGIDO: Usar stock del producto principal, no de la variante
+      // ✅ CORREGIDO: Terminaciones - asegurar que siempre sea array
+      terminaciones: (data as any).terminaciones && Array.isArray((data as any).terminaciones) 
+        ? (data as any).terminaciones.filter((t: string) => t && t.trim() !== '')
+        : [],
       // Defaults para campos opcionales
       cost_price: data.cost_price ?? null,
       compare_price: data.compare_price ?? data.discounted_price ?? null,

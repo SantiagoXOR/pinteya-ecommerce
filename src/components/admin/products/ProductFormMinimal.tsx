@@ -127,7 +127,8 @@ export function ProductFormMinimal({
     enabled: !!productId && mode === 'edit'
   })
   
-  const variants = variantsData || []
+  // ✅ CORREGIDO: Asegurar que variants siempre sea un array
+  const variants = Array.isArray(variantsData) ? variantsData : []
   
   // Mutaciones para variantes
   const createVariantMutation = useMutation({
@@ -213,11 +214,33 @@ export function ProductFormMinimal({
     ? {
         ...initialData,
         category_ids: initialData.category_ids
-          ? initialData.category_ids
+          ? (Array.isArray(initialData.category_ids) ? initialData.category_ids : [initialData.category_ids])
           : (initialData as any).category_id
           ? [(initialData as any).category_id]
           : [],
-        terminaciones: initialData.terminaciones || [],
+        // ✅ CORREGIDO: Asegurar que terminaciones siempre sea un array
+        terminaciones: Array.isArray(initialData.terminaciones) 
+          ? initialData.terminaciones 
+          : (initialData.terminaciones ? [initialData.terminaciones] : []),
+        // ✅ CORREGIDO: Asegurar que medida siempre sea un array
+        medida: (() => {
+          const rawMedida = (initialData as any).medida
+          if (!rawMedida) return []
+          if (Array.isArray(rawMedida)) return rawMedida
+          if (typeof rawMedida === 'string') {
+            // Intentar parsear si es un string de array JSON
+            if (rawMedida.trim().startsWith('[') && rawMedida.trim().endsWith(']')) {
+              try {
+                const parsed = JSON.parse(rawMedida)
+                return Array.isArray(parsed) ? parsed : [parsed]
+              } catch {
+                return [rawMedida]
+              }
+            }
+            return [rawMedida]
+          }
+          return [String(rawMedida)]
+        })(),
         // ✅ NUEVO: Calcular discount_percent inicial si hay discounted_price
         discount_percent: 
           initialData.discounted_price && initialData.price && initialData.price > 0
