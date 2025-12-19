@@ -832,8 +832,19 @@ export const GET = async (request: NextRequest) => {
 
     const { data: products, error, count } = await query
     
+    // ✅ DIAGNÓSTICO: Verificar si el producto #294 está en los resultados
+    const tieneProducto294 = products?.some(p => p.id === 294) || false
+    const primeros5IDs = products?.slice(0, 5).map(p => p.id) || []
+    console.log('🔍 [API GET /admin/products] Productos devueltos:', {
+      total: products?.length,
+      count,
+      primeros5IDs,
+      tieneProducto294,
+      todosLosIDs: products?.map(p => p.id) || [],
+    })
+    
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'route.ts:GET-after-execute-query',message:'Después de ejecutar query',data:{productsLength:products?.length,count,error:error?.message,primeros3IDs:products?.slice(0,3).map(p=>p.id)||[],tieneProducto257:products?.some(p=>p.id===257)||false,tieneProducto258:products?.some(p=>p.id===258)||false},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'route.ts:GET-after-execute-query',message:'Después de ejecutar query',data:{productsLength:products?.length,count,error:error?.message,primeros3IDs:products?.slice(0,3).map(p=>p.id)||[],tieneProducto294,tieneProducto257:products?.some(p=>p.id===257)||false,tieneProducto258:products?.some(p=>p.id===258)||false},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
     // #endregion
     
     logger.dev('[API] Resultado:', {
