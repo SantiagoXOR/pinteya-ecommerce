@@ -215,7 +215,6 @@ export function VariantBuilder({
               onChange={(e) => setFormData({ ...formData, aikon_id: e.target.value })}
               className='w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
               placeholder='AIKON-12345'
-              required
             />
           </div>
 
@@ -228,7 +227,6 @@ export function VariantBuilder({
               value={formData.measure}
               onChange={(e) => setFormData({ ...formData, measure: e.target.value })}
               className='w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
-              required
             >
               <option value=''>Selecciona...</option>
               {measures.map((measure) => (
@@ -271,7 +269,6 @@ export function VariantBuilder({
                 onChange={(e) => setFormData({ ...formData, price_list: parseFloat(e.target.value) || 0 })}
                 className='w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
                 placeholder='0.00'
-                required
               />
             </div>
           </div>
@@ -305,7 +302,6 @@ export function VariantBuilder({
               onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
               className='w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
               placeholder='0'
-              required
             />
           </div>
 

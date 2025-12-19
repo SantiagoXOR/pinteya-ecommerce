@@ -13,6 +13,7 @@ import { TerminacionSelector } from './TerminacionSelector'
 import { ColorPickerField } from './ColorPickerField'
 import { VariantBuilder, VariantFormData } from './VariantBuilder'
 import { ImageUploadZone } from './ImageUploadZone'
+import { ProductImageGallery } from './ProductImageGallery'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 import { Save, X, Upload, Plus, Edit, Trash2 } from '@/lib/optimized-imports'
 import Image from 'next/image'
@@ -36,6 +37,7 @@ const ProductSchema = z.object({
   // Precios & Stock
   price: z.number().min(0.01, 'El precio debe ser mayor a 0'),
   discounted_price: z.number().min(0).optional().nullable(),
+  discount_percent: z.number().min(0).max(100).optional().nullable(), // ✅ NUEVO: Porcentaje de descuento
   stock: z.number().min(0, 'El stock debe ser mayor o igual a 0'),
   
   // Imagen
@@ -206,6 +208,11 @@ export function ProductFormMinimal({
           ? [(initialData as any).category_id]
           : [],
         terminaciones: initialData.terminaciones || [],
+        // ✅ NUEVO: Calcular discount_percent inicial si hay discounted_price
+        discount_percent: 
+          initialData.discounted_price && initialData.price && initialData.price > 0
+            ? Math.round(((initialData.price - initialData.discounted_price) / initialData.price) * 1000) / 10
+            : null,
       }
     : {}
 
@@ -217,6 +224,7 @@ export function ProductFormMinimal({
       price: 0,
       featured: false,
       discounted_price: null,
+      discount_percent: null, // ✅ NUEVO: Porcentaje de descuento
       image_url: null,
       medida: [],
       terminaciones: [],
@@ -231,6 +239,7 @@ export function ProductFormMinimal({
     formState: { errors, isDirty },
     watch,
     register,
+    setValue,
   } = form
 
   const watchedData = watch()
@@ -465,7 +474,7 @@ export function ProductFormMinimal({
 
         {/* Precios & Stock */}
         <AdminCard title='Precios & Stock'>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
                 Precio *
@@ -475,12 +484,70 @@ export function ProductFormMinimal({
                 <input
                   type='number'
                   step='0.01'
-                  {...register('price', { valueAsNumber: true })}
+                  {...register('price', { 
+                    valueAsNumber: true,
+                    onChange: (e) => {
+                      const price = parseFloat(e.target.value) || 0
+                      const discountPercent = watch('discount_percent')
+                      if (discountPercent && discountPercent > 0 && discountPercent <= 100) {
+                        const discountedPrice = price * (1 - discountPercent / 100)
+                        setValue('discounted_price', Math.round(discountedPrice * 100) / 100, { shouldDirty: true })
+                      }
+                    }
+                  })}
                   className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
                   placeholder='0.00'
                 />
               </div>
               {errors.price && <p className='text-red-600 text-sm mt-1'>{errors.price.message}</p>}
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Porcentaje de Descuento
+              </label>
+              <div className='flex gap-2'>
+                <div className='relative flex-1'>
+                  <input
+                    type='number'
+                    min='0'
+                    max='100'
+                    step='0.1'
+                    {...register('discount_percent', { 
+                      valueAsNumber: true,
+                      onChange: (e) => {
+                        const discountPercent = parseFloat(e.target.value) || 0
+                        const price = watch('price') || 0
+                        if (discountPercent > 0 && discountPercent <= 100 && price > 0) {
+                          const discountedPrice = price * (1 - discountPercent / 100)
+                          setValue('discounted_price', Math.round(discountedPrice * 100) / 100, { shouldDirty: true })
+                        } else if (discountPercent === 0 || !discountPercent) {
+                          setValue('discounted_price', null, { shouldDirty: true })
+                        }
+                      }
+                    })}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
+                    placeholder='0'
+                  />
+                  <span className='absolute right-3 top-2.5 text-gray-500 text-sm'>%</span>
+                </div>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setValue('discount_percent', 0, { shouldDirty: true })
+                    setValue('discounted_price', null, { shouldDirty: true })
+                  }}
+                  className='px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+                  title='Limpiar descuento'
+                >
+                  <X className='w-4 h-4' />
+                </button>
+              </div>
+              {watch('discount_percent') > 0 && watch('price') > 0 && (
+                <p className='text-xs text-gray-500 mt-1'>
+                  Descuento: ${((watch('price') || 0) * (watch('discount_percent') || 0) / 100).toFixed(2)}
+                </p>
+              )}
             </div>
 
             <div>
@@ -492,11 +559,28 @@ export function ProductFormMinimal({
                 <input
                   type='number'
                   step='0.01'
-                  {...register('discounted_price', { valueAsNumber: true })}
+                  {...register('discounted_price', { 
+                    valueAsNumber: true,
+                    onChange: (e) => {
+                      const discountedPrice = parseFloat(e.target.value) || 0
+                      const price = watch('price') || 0
+                      if (discountedPrice > 0 && price > 0) {
+                        const calculatedPercent = ((price - discountedPrice) / price) * 100
+                        setValue('discount_percent', Math.round(calculatedPercent * 10) / 10, { shouldDirty: true })
+                      } else if (!discountedPrice || discountedPrice === 0) {
+                        setValue('discount_percent', 0, { shouldDirty: true })
+                      }
+                    }
+                  })}
                   className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
                   placeholder='0.00'
                 />
               </div>
+              {watch('discounted_price') && watch('price') && watch('discounted_price') < watch('price') && (
+                <p className='text-xs text-green-600 mt-1'>
+                  Ahorro: ${((watch('price') || 0) - (watch('discounted_price') || 0)).toFixed(2)}
+                </p>
+              )}
             </div>
 
             <div>
@@ -601,10 +685,15 @@ export function ProductFormMinimal({
         </AdminCard>
 
         {/* Imagen */}
-        <AdminCard title='Imagen del Producto'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <AdminCard title='Imágenes del Producto'>
+          {productId && mode === 'edit' ? (
+            // ✅ NUEVO: Galería de imágenes múltiples para productos existentes
+            <ProductImageGallery productId={productId} />
+          ) : (
+            // Modo creación: upload simple o URL
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <ImageUploadZone
-              productId={productId} // ✅ Ahora es opcional, funciona tanto en create como edit
+                productId={productId}
                 currentImageUrl={imagePreview || watchedData.image_url || null}
                 onUploadSuccess={(imageUrl) => {
                   setImagePreview(imageUrl)
@@ -615,8 +704,7 @@ export function ProductFormMinimal({
                 }}
               />
 
-            <div className='space-y-3'>
-              {(!productId || mode === 'create') && (
+              <div className='space-y-3'>
                 <div>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
                     URL de Imagen
@@ -632,23 +720,23 @@ export function ProductFormMinimal({
                     <p className='text-red-600 text-sm mt-1'>{errors.image_url.message}</p>
                   )}
                   <p className='text-xs text-gray-500 mt-2'>
-                    Nota: Para crear un producto nuevo, primero guárdalo y luego podrás subir imágenes arrastrándolas.
+                    Nota: Para crear un producto nuevo, primero guárdalo y luego podrás subir múltiples imágenes arrastrándolas. Las imágenes se procesarán automáticamente a formato 1:1 con fondo blanco.
                   </p>
                 </div>
-              )}
 
-              <div className='flex items-center space-x-2 mt-4'>
-                <input
-                  type='checkbox'
-                  {...register('featured')}
-                  className='w-4 h-4 text-blaze-orange-600 rounded focus:ring-blaze-orange-500'
-                />
-                <label className='text-sm font-medium text-gray-700'>
-                  Marcar como Destacado ⭐
-                </label>
+                <div className='flex items-center space-x-2 mt-4'>
+                  <input
+                    type='checkbox'
+                    {...register('featured')}
+                    className='w-4 h-4 text-blaze-orange-600 rounded focus:ring-blaze-orange-500'
+                  />
+                  <label className='text-sm font-medium text-gray-700'>
+                    Marcar como Destacado ⭐
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </AdminCard>
       </form>
 

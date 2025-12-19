@@ -18,8 +18,8 @@ const ImageUpdateSchema = z.object({
 })
 
 const ImageParamsSchema = z.object({
-  id: z.string().uuid('ID de producto inválido'),
-  imageId: z.string().uuid('ID de imagen inválido'),
+  id: z.string().regex(/^\d+$/, 'ID de producto inválido'), // ✅ Aceptar IDs numéricos
+  imageId: z.string().uuid('ID de imagen inválido'), // Las imágenes sí usan UUID
 })
 
 // Helper function to get Supabase Storage client
@@ -45,7 +45,7 @@ async function deleteImageFromStorage(path: string) {
 // Helper function to get image by ID
 async function getImageById(
   supabase: ReturnType<typeof createClient<Database>>,
-  productId: string,
+  productId: string | number,
   imageId: string
 ) {
   const { data: image, error } = await supabase
@@ -105,15 +105,18 @@ const putHandler = async (
     throw ValidationError('Parámetros inválidos', paramsValidation.error.errors)
   }
 
+  // Convert productId to number if it's numeric
+  const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
+
   // Check if image exists
-  const existingImage = await getImageById(supabase, productId, imageId)
+  const existingImage = await getImageById(supabase, numericProductId.toString(), imageId)
 
   // If setting as primary, update other images first
   if (validatedData.is_primary === true) {
     await supabase
       .from('product_images')
       .update({ is_primary: false })
-      .eq('product_id', productId)
+      .eq('product_id', numericProductId)
       .neq('id', imageId)
   }
 
@@ -160,15 +163,18 @@ const deleteHandler = async (
     throw ValidationError('Parámetros inválidos', paramsValidation.error.errors)
   }
 
+  // Convert productId to number if it's numeric
+  const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
+
   // Check if image exists
-  const existingImage = await getImageById(supabase, productId, imageId)
+  const existingImage = await getImageById(supabase, numericProductId.toString(), imageId)
 
   // Delete from database first
   const { error: dbError } = await supabase
     .from('product_images')
     .delete()
     .eq('id', imageId)
-    .eq('product_id', productId)
+    .eq('product_id', numericProductId)
 
   if (dbError) {
     throw new ApiError('Error al eliminar imagen de base de datos', 500, 'DATABASE_ERROR', dbError)
@@ -186,7 +192,7 @@ const deleteHandler = async (
     const { data: otherImages } = await supabase
       .from('product_images')
       .select('id')
-      .eq('product_id', productId)
+      .eq('product_id', numericProductId)
       .limit(1)
 
     if (otherImages && otherImages.length > 0) {

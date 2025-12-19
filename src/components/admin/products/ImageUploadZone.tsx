@@ -48,7 +48,11 @@ export function ImageUploadZone({
     return null
   }
 
-  const optimizeImageBeforeUpload = async (file: File): Promise<File> => {
+  /**
+   * Procesa una imagen para que tenga fondo blanco y formato 1:1
+   * Si la imagen no es cuadrada, la centra en un canvas blanco
+   */
+  const processImageToSquare = async (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
@@ -61,49 +65,46 @@ export function ImageUploadZone({
 
       img.onload = () => {
         try {
-          // Configuración de optimización
-          const MAX_WIDTH = 1200
-          const MAX_HEIGHT = 1200
-          const QUALITY = 0.85
+          // Determinar el tamaño del canvas (el lado más grande, máximo 1200px)
+          const MAX_SIZE = 1200
+          const maxSize = Math.min(Math.max(img.width, img.height), MAX_SIZE)
+          canvas.width = maxSize
+          canvas.height = maxSize
 
-          // Calcular nuevas dimensiones manteniendo aspecto
-          let { width, height } = img
-          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
-            const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height)
-            width = width * ratio
-            height = height * ratio
-          }
+          // Rellenar con fondo blanco
+          ctx.fillStyle = '#FFFFFF'
+          ctx.fillRect(0, 0, maxSize, maxSize)
 
-          // Configurar canvas
-          canvas.width = width
-          canvas.height = height
+          // Calcular dimensiones escaladas manteniendo aspecto
+          const scale = Math.min(maxSize / img.width, maxSize / img.height)
+          const scaledWidth = img.width * scale
+          const scaledHeight = img.height * scale
 
-          // Dibujar imagen redimensionada
-          ctx.drawImage(img, 0, 0, width, height)
+          // Calcular posición para centrar la imagen
+          const x = (maxSize - scaledWidth) / 2
+          const y = (maxSize - scaledHeight) / 2
 
-          // Determinar formato de salida
-          const outputType = file.type === 'image/webp' || file.type === 'image/avif' 
-            ? file.type 
-            : 'image/webp'
+          // Dibujar la imagen centrada y escalada
+          ctx.drawImage(img, x, y, scaledWidth, scaledHeight)
 
-          // Convertir a blob optimizado
+          // Convertir a blob optimizado (WebP con calidad alta)
           canvas.toBlob(
             (blob) => {
               if (blob) {
-                const optimizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.webp'), {
-                  type: outputType,
+                const processedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.webp'), {
+                  type: 'image/webp',
                   lastModified: Date.now(),
                 })
-                resolve(optimizedFile)
+                resolve(processedFile)
               } else {
                 resolve(file) // Fallback si falla la conversión
               }
             },
-            outputType,
-            QUALITY
+            'image/webp',
+            0.92 // Calidad alta
           )
         } catch (error) {
-          console.warn('Error optimizando imagen, usando original:', error)
+          console.warn('Error procesando imagen, usando original:', error)
           resolve(file) // Fallback en caso de error
         }
       }
@@ -116,6 +117,9 @@ export function ImageUploadZone({
       img.src = URL.createObjectURL(file)
     })
   }
+
+  // Alias para compatibilidad (ahora usa processImageToSquare)
+  const optimizeImageBeforeUpload = processImageToSquare
 
   const createPreview = (file: File) => {
     const reader = new FileReader()
@@ -140,18 +144,18 @@ export function ImageUploadZone({
       setUploadProgress(0)
 
       try {
-        // Optimizar imagen antes de subir
+        // Procesar imagen: agregar fondo blanco y formato 1:1
         setUploadProgress(10)
         const originalSize = file.size
-        const optimizedFile = await optimizeImageBeforeUpload(file)
-        const optimizedSize = optimizedFile.size
-        const reduction = originalSize > 0 ? ((originalSize - optimizedSize) / originalSize * 100).toFixed(1) : '0'
+        const processedFile = await processImageToSquare(file)
+        const processedSize = processedFile.size
+        const reduction = originalSize > 0 ? ((originalSize - processedSize) / originalSize * 100).toFixed(1) : '0'
         
-        console.log(`📦 Imagen optimizada: ${(originalSize / 1024).toFixed(1)}KB → ${(optimizedSize / 1024).toFixed(1)}KB (${reduction}% reducción)`)
+        console.log(`📦 Imagen procesada a formato 1:1: ${(originalSize / 1024).toFixed(1)}KB → ${(processedSize / 1024).toFixed(1)}KB (${reduction}% reducción)`)
 
-        // Crear FormData con archivo optimizado
+        // Crear FormData con archivo procesado
         const formData = new FormData()
-        formData.append('file', optimizedFile)
+        formData.append('file', processedFile)
         formData.append('is_primary', 'true')
 
         // Simular progreso (ya que fetch no tiene progreso nativo)
@@ -381,7 +385,7 @@ export function ImageUploadZone({
       )}
 
       <p className='text-xs text-gray-500'>
-        💡 Tip: Las imágenes deben ser de al menos 800x800px para mejor calidad
+        💡 Tip: Las imágenes se procesan automáticamente a formato 1:1 con fondo blanco. Se recomienda al menos 800x800px para mejor calidad.
       </p>
     </div>
   )

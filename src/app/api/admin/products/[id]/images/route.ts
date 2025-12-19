@@ -23,7 +23,7 @@ const ImageUpdateSchema = z.object({
 })
 
 const ProductParamsSchema = z.object({
-  id: z.string().uuid('ID de producto inválido'),
+  id: z.string().regex(/^\d+$/, 'ID de producto inválido'), // ✅ Aceptar IDs numéricos
 })
 
 const ImageParamsSchema = z.object({
@@ -110,11 +110,14 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
     throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
+  // Convert productId to number if it's numeric
+  const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
+
   // Check if product exists
   const { data: product, error: productError } = await supabase
     .from('products')
     .select('id, name')
-    .eq('id', productId)
+    .eq('id', numericProductId)
     .single()
 
   if (productError || !product) {
@@ -142,7 +145,7 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   const { data: imageRecord, error: dbError } = await supabase
     .from('product_images')
     .insert({
-      product_id: productId,
+      product_id: numericProductId,
       url: uploadResult.url,
       storage_path: uploadResult.path,
       alt_text: altText || null,
@@ -166,7 +169,7 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
     await supabase
       .from('product_images')
       .update({ is_primary: false })
-      .eq('product_id', productId)
+      .eq('product_id', numericProductId)
       .neq('id', imageRecord.id)
   }
 
@@ -197,11 +200,14 @@ const getHandler = async (request: NextRequest, { params }: { params: { id: stri
     throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
+  // Convert productId to number if it's numeric
+  const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
+
   // Get images
   const { data: images, error } = await supabase
     .from('product_images')
     .select('*')
-    .eq('product_id', productId)
+    .eq('product_id', numericProductId)
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: true })
 
