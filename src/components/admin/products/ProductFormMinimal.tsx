@@ -170,13 +170,13 @@ export function ProductFormMinimal({
         'aikon_id',
       ]
       
-      // ✅ CORREGIDO: Incluir image_url incluso si es null (para permitir limpiar la imagen)
+      // ✅ CORREGIDO: Incluir image_url y color_hex incluso si es null (para permitir limpiarlos)
       const cleanedData = Object.fromEntries(
         Object.entries(data)
           .filter(([key, value]) => {
             if (!allowedFields.includes(key)) return false
-            // ✅ CORREGIDO: Incluir image_url incluso si es null
-            if (key === 'image_url') return true
+            // ✅ CORREGIDO: Incluir image_url y color_hex incluso si es null
+            if (key === 'image_url' || key === 'color_hex') return true
             // Para otros campos, excluir undefined
             return value !== undefined
           })
@@ -969,7 +969,10 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
       const normalizedData: any = {
         // Campos de texto
         color_name: formData.color_name?.trim() || undefined,
-        color_hex: formData.color_hex?.trim() || undefined,
+        // ✅ CORREGIDO: Permitir null para color_hex (puede ser null para limpiar el color)
+        color_hex: formData.color_hex && formData.color_hex.trim() !== '' 
+          ? formData.color_hex.trim() 
+          : (formData.color_hex === null ? null : undefined),
         measure: formData.measure?.trim() || undefined,
         finish: formData.finish || undefined,
         aikon_id: formData.aikon_id?.trim() || undefined,

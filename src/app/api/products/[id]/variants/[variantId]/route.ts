@@ -6,7 +6,14 @@ import { z } from 'zod'
 // ✅ CORREGIDO: Usar preprocess para convertir strings a números automáticamente
 const UpdateVariantSchema = z.object({
   color_name: z.string().optional(),
-  color_hex: z.string().optional(),
+  // ✅ CORREGIDO: Aceptar null para color_hex (puede ser null para limpiar el color)
+  color_hex: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return null
+      return typeof val === 'string' ? val.trim() || null : val
+    },
+    z.string().nullable().optional()
+  ),
   measure: z.string().optional(),
   finish: z.string().optional().nullable(),
   // ✅ Convertir strings a números automáticamente
@@ -85,11 +92,11 @@ export async function PUT(
       aikon_id: body.aikon_id,
     }
     
-    // ✅ CORREGIDO: Incluir image_url incluso si es null (para permitir limpiar la imagen)
+    // ✅ CORREGIDO: Incluir image_url y color_hex incluso si es null (para permitir limpiarlos)
     const filteredBody = Object.fromEntries(
       Object.entries(allowedFields).filter(([key, value]) => {
-        // ✅ CORREGIDO: Incluir image_url incluso si es null
-        if (key === 'image_url') return true
+        // ✅ CORREGIDO: Incluir image_url y color_hex incluso si es null
+        if (key === 'image_url' || key === 'color_hex') return true
         // Para otros campos, excluir undefined
         return value !== undefined
       })
@@ -101,6 +108,8 @@ export async function PUT(
       filteredBody,
       image_url: filteredBody.image_url,
       image_urlType: typeof filteredBody.image_url,
+      color_hex: filteredBody.color_hex,
+      color_hexType: typeof filteredBody.color_hex,
     })
     
     const validation = UpdateVariantSchema.safeParse(filteredBody)
