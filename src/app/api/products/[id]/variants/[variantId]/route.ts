@@ -229,6 +229,10 @@ export async function PUT(
     
     console.log('✅ [PUT Variant] Variante actualizada exitosamente:', {
       id: (variant as any).id,
+      color_name: (variant as any).color_name,
+      color_nameInVariant: variant ? 'color_name' in (variant as any) : false,
+      updateData_color_name: updateData.color_name,
+      updateData_color_nameInUpdate: 'color_name' in updateData,
       measure: (variant as any).measure,
       stockAntes: body.stock,
       stockDespues: (variant as any).stock,
