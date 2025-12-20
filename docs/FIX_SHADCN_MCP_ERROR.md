@@ -152,3 +152,5 @@ Este comando configurará automáticamente el servidor MCP para Cursor.
    - "Muéstrame todos los componentes disponibles en el registro de shadcn"
    - "Agrega los componentes button, dialog y card a mi proyecto"
    - "Crea un formulario de contacto usando componentes del registro de shadcn"
+
+

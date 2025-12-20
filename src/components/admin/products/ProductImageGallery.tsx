@@ -101,12 +101,19 @@ export function ProductImageGallery({
     queryFn: async () => {
       const response = await fetch(`/api/admin/products/${productId}/images`, {
         credentials: 'include', // ✅ Incluir cookies de autenticación
+        cache: 'no-store', // ✅ CORREGIDO: No usar cache para obtener datos frescos
       })
       if (!response.ok) throw new Error('Error al cargar imágenes')
       const result = await response.json()
+      console.log('📥 [ProductImageGallery] Imágenes cargadas desde servidor:', {
+        count: result.data?.length || 0,
+        images: result.data,
+      })
       return (result.data || []) as ProductImage[]
     },
     enabled: !!productId,
+    staleTime: 0, // ✅ CORREGIDO: Siempre considerar los datos como obsoletos
+    gcTime: 0, // ✅ CORREGIDO: No guardar en cache para evitar datos obsoletos
   })
 
   // ✅ NUEVO: Obtener imagen de variante predeterminada siempre (para mostrar como fallback)
@@ -206,38 +213,31 @@ export function ProductImageGallery({
       console.log('✅ [ProductImageGallery] Imagen eliminada exitosamente:', result)
       return result
     },
-    // ✅ CORREGIDO: Usar optimistic update para actualizar UI inmediatamente
-    onMutate: async (imageId) => {
-      // Cancelar queries en progreso
-      await queryClient.cancelQueries({ queryKey: ['product-images', productId] })
+    // ✅ CORREGIDO: No usar optimistic update, solo invalidar y refetch para evitar inconsistencias
+    onSuccess: async (data, imageId) => {
+      console.log('🔄 [ProductImageGallery] Imagen eliminada exitosamente, invalidando queries:', { productId, imageId })
       
-      // Snapshot del valor anterior
-      const previousImages = queryClient.getQueryData<ProductImage[]>(['product-images', productId])
+      // ✅ CORREGIDO: Remover la query del cache para forzar refetch desde el servidor
+      queryClient.removeQueries({ queryKey: ['product-images', productId], exact: true })
       
-      // Optimistic update: remover la imagen de la lista
-      if (previousImages) {
-        queryClient.setQueryData<ProductImage[]>(
-          ['product-images', productId],
-          previousImages.filter(img => img.id !== imageId)
-        )
-      }
-      
-      return { previousImages }
-    },
-    onSuccess: (data, imageId, context) => {
-      console.log('🔄 [ProductImageGallery] Invalidando queries después de eliminar:', { productId, imageId })
-      // ✅ CORREGIDO: Invalidar queries y forzar refetch
+      // ✅ CORREGIDO: Invalidar todas las queries relacionadas
       queryClient.invalidateQueries({ queryKey: ['product-images', productId] })
       queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
-      // ✅ Forzar refetch inmediato
-      queryClient.refetchQueries({ queryKey: ['product-images', productId] })
+      
+      // ✅ CORREGIDO: Esperar un momento para asegurar que la DB se actualizó
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // ✅ CORREGIDO: Forzar refetch con datos frescos (sin cache)
+      await queryClient.refetchQueries({ 
+        queryKey: ['product-images', productId],
+        type: 'active' // Solo refetch queries activas
+      })
+      
+      console.log('✅ [ProductImageGallery] Queries invalidadas y refetch completado')
     },
-    onError: (error, imageId, context) => {
+    onError: (error, imageId) => {
       console.error('❌ [ProductImageGallery] Error en deleteMutation:', error)
-      // ✅ CORREGIDO: Revertir optimistic update si hay error
-      if (context?.previousImages) {
-        queryClient.setQueryData(['product-images', productId], context.previousImages)
-      }
+      // No hay optimistic update que revertir
     },
   })
 
