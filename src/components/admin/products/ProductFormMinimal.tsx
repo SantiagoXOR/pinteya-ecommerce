@@ -187,6 +187,9 @@ export function ProductFormMinimal({
         originalData: data,
         cleanedData,
         dataKeys: Object.keys(cleanedData),
+        color_name: cleanedData.color_name,
+        color_nameType: typeof cleanedData.color_name,
+        color_nameInCleaned: 'color_name' in cleanedData,
         image_url: cleanedData.image_url,
         image_urlType: typeof cleanedData.image_url,
         color_hex: cleanedData.color_hex,
@@ -197,7 +200,7 @@ export function ProductFormMinimal({
         price_sale: cleanedData.price_sale,
         allValues: Object.entries(cleanedData).map(([key, value]) => ({
           key,
-          value,
+          value: typeof value === 'string' ? value.substring(0, 50) : value,
           type: typeof value,
           isNull: value === null,
           isUndefined: value === undefined,
@@ -228,8 +231,16 @@ export function ProductFormMinimal({
       console.log('✅ [Frontend] Variante actualizada, respuesta:', result)
       return result
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+    onSuccess: async () => {
+      // ✅ CORREGIDO: Forzar refetch inmediato después de invalidar
+      await queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+      // ✅ CORREGIDO: Esperar un momento y luego refetch para asegurar datos frescos
+      setTimeout(async () => {
+        await queryClient.refetchQueries({ 
+          queryKey: ['product-variants', productId],
+          type: 'active'
+        })
+      }, 100)
       notifications.showInfoMessage('Variante actualizada', 'La variante se actualizó exitosamente')
     },
     onError: (error: any) => {
@@ -910,9 +921,17 @@ export function ProductFormMinimal({
                 await createVariantMutation.mutateAsync(variant)
               }
               
-              // Invalidar queries para refrescar las variantes
-              queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
-              queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
+              // ✅ CORREGIDO: Invalidar y refetch queries para refrescar las variantes
+              await queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+              await queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
+              
+              // ✅ CORREGIDO: Forzar refetch inmediato
+              setTimeout(async () => {
+                await queryClient.refetchQueries({ 
+                  queryKey: ['product-variants', productId],
+                  type: 'active'
+                })
+              }, 200)
               
               setShowVariantModal(false)
               setEditingVariant(null)
@@ -1017,6 +1036,9 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
       console.log('💾 [VariantModal] handleSave - formData normalizado:', {
         id: formData.id,
         cleanedData,
+        color_name: cleanedData.color_name,
+        color_nameType: typeof cleanedData.color_name,
+        color_nameInCleaned: 'color_name' in cleanedData,
         image_url: cleanedData.image_url,
         image_urlType: typeof cleanedData.image_url,
         color_hex: cleanedData.color_hex,
@@ -1048,9 +1070,17 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
       
       console.log('💾 [VariantModal] Datos finales a enviar:', {
         id: finalData.id,
+        color_name: finalData.color_name,
+        color_nameType: typeof finalData.color_name,
+        color_nameInFinal: 'color_name' in finalData,
         image_url: finalData.image_url,
         image_urlType: typeof finalData.image_url,
         allKeys: Object.keys(finalData),
+        allValues: Object.entries(finalData).slice(0, 10).map(([key, value]) => ({
+          key,
+          value: typeof value === 'string' ? value.substring(0, 50) : value,
+          type: typeof value,
+        })),
       })
       
       onSave(finalData)

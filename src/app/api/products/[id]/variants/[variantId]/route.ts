@@ -106,6 +106,9 @@ export async function PUT(
       original: Object.keys(body).length,
       filtered: Object.keys(filteredBody).length,
       filteredBody,
+      color_name: filteredBody.color_name,
+      color_nameType: typeof filteredBody.color_name,
+      color_nameInFiltered: 'color_name' in filteredBody,
       image_url: filteredBody.image_url,
       image_urlType: typeof filteredBody.image_url,
       color_hex: filteredBody.color_hex,
@@ -165,10 +168,18 @@ export async function PUT(
     
     console.log('🔍 [PUT Variant] updateData antes de enviar a Supabase:', {
       updateData,
+      color_name: updateData.color_name,
+      color_nameType: typeof updateData.color_name,
+      color_nameInUpdate: 'color_name' in updateData,
       hasStock: 'stock' in updateData,
       stockValue: updateData.stock,
       stockType: typeof updateData.stock,
-      allKeys: Object.keys(updateData)
+      allKeys: Object.keys(updateData),
+      allValues: Object.entries(updateData).slice(0, 10).map(([key, value]) => ({
+        key,
+        value: typeof value === 'string' ? value.substring(0, 50) : value,
+        type: typeof value,
+      })),
     })
     
     // Si se marca como default, desmarcar las demás
@@ -198,7 +209,9 @@ export async function PUT(
         details: error.details,
         hint: error.hint,
         code: error.code,
-        updateData
+        updateData,
+        color_name: updateData.color_name,
+        color_nameInUpdate: 'color_name' in updateData,
       })
       return NextResponse.json(
         { error: 'Error al actualizar variante', details: error.message },
