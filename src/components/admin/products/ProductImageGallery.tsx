@@ -133,28 +133,22 @@ export function ProductImageGallery({
   })
 
   const images = imagesData || []
-  // ✅ NUEVO: Si no hay imágenes y hay imagen de variante predeterminada, agregarla como imagen virtual
-  // Prioridad: product_images > variante predeterminada
+  // ✅ CORREGIDO: Solo mostrar imágenes reales de product_images, no usar fallback automático
+  // El fallback de la variante predeterminada solo se usa en casos específicos
+  // Si el usuario elimina todas las imágenes, debe ver un estado vacío, no un fallback automático
   const imagesWithFallback = React.useMemo(() => {
-    // Si hay imágenes en product_images, usarlas
-    if (images.length > 0) {
-      return images
-    }
+    console.log('🖼️ [ProductImageGallery] Calculando imagesWithFallback:', {
+      imagesCount: images.length,
+      hasDefaultVariantImage: !!defaultVariantImage,
+      defaultVariantImage,
+      images: images.map(img => ({ id: img.id, url: img.url })),
+    })
     
-    // Si no hay imágenes en product_images, usar imagen de variante predeterminada
-    if (defaultVariantImage && defaultVariantImage.trim() !== '') {
-      console.log('🖼️ Usando imagen de variante predeterminada como fallback:', defaultVariantImage)
-      return [{
-        id: 'default-variant-image',
-        url: defaultVariantImage,
-        alt_text: 'Imagen de variante predeterminada',
-        is_primary: true,
-        display_order: 0,
-      } as ProductImage]
-    }
-    
-    return []
-  }, [images, defaultVariantImage])
+    // ✅ CORREGIDO: Siempre usar solo las imágenes reales de product_images
+    // Si el usuario eliminó todas las imágenes, debe ver un estado vacío
+    // NO mostrar automáticamente la imagen de la variante predeterminada
+    return images
+  }, [images])
   
   const primaryImage = imagesWithFallback.find(img => img.is_primary) || imagesWithFallback[0]
 
