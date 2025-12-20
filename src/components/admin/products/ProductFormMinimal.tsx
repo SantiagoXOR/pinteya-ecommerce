@@ -189,10 +189,19 @@ export function ProductFormMinimal({
         dataKeys: Object.keys(cleanedData),
         image_url: cleanedData.image_url,
         image_urlType: typeof cleanedData.image_url,
+        color_hex: cleanedData.color_hex,
+        color_hexType: typeof cleanedData.color_hex,
         stock: cleanedData.stock,
         stockType: typeof cleanedData.stock,
         price_list: cleanedData.price_list,
         price_sale: cleanedData.price_sale,
+        allValues: Object.entries(cleanedData).map(([key, value]) => ({
+          key,
+          value,
+          type: typeof value,
+          isNull: value === null,
+          isUndefined: value === undefined,
+        })),
       })
       
       const res = await fetch(`/api/products/${productId}/variants/${id}`, {
@@ -1010,6 +1019,8 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
         cleanedData,
         image_url: cleanedData.image_url,
         image_urlType: typeof cleanedData.image_url,
+        color_hex: cleanedData.color_hex,
+        color_hexType: typeof cleanedData.color_hex,
         price_list: cleanedData.price_list,
         price_sale: cleanedData.price_sale,
         stock: cleanedData.stock,
@@ -1017,6 +1028,13 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
         priceListType: typeof cleanedData.price_list,
         priceSaleType: typeof cleanedData.price_sale,
         allKeys: Object.keys(cleanedData),
+        allValues: Object.entries(cleanedData).map(([key, value]) => ({
+          key,
+          value,
+          type: typeof value,
+          isNull: value === null,
+          isUndefined: value === undefined,
+        })),
       })
       
       // ✅ CORREGIDO: Pasar solo los datos limpios (sin id, que va en la URL)

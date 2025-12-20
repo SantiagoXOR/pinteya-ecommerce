@@ -117,12 +117,22 @@ export async function PUT(
     if (!validation.success) {
       console.error('❌ [PUT Variant] Validación fallida:', {
         errors: validation.error.errors,
-        filteredBody
+        filteredBody,
+        errorDetails: validation.error.errors.map((err: any) => ({
+          path: err.path.join('.'),
+          message: err.message,
+          code: err.code,
+          receivedValue: err.path.reduce((obj: any, key: string) => obj?.[key], filteredBody),
+        })),
       })
       return NextResponse.json(
         { 
           error: 'Datos inválidos', 
-          details: validation.error.errors,
+          details: validation.error.errors.map((err: any) => ({
+            path: err.path.join('.'),
+            message: err.message,
+            code: err.code,
+          })),
           received: filteredBody
         },
         { status: 400 }
