@@ -911,6 +911,10 @@ export function ProductFormMinimal({
         <VariantModal
           variant={editingVariant}
           productId={productId}
+          productData={{
+            price: watchedData.price,
+            medida: watchedData.medida,
+          }}
           onSave={async (variant) => {
             try {
               if (variant.id) {
@@ -946,11 +950,15 @@ export function ProductFormMinimal({
 interface VariantModalProps {
   variant: ProductVariant
   productId?: string
+  productData?: {
+    price?: number
+    medida?: string[]
+  }
   onSave: (variant: ProductVariant) => void
   onCancel: () => void
 }
 
-function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProps) {
+function VariantModal({ variant, productId, productData, onSave, onCancel }: VariantModalProps) {
   const [formData, setFormData] = useState(variant)
   const [imagePreview, setImagePreview] = useState<string | null>(variant.image_url || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -1164,9 +1172,28 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
               />
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Capacidad *
-                </label>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Capacidad *
+                  </label>
+                  {productData?.medida && productData.medida.length > 0 && !variant.id && (
+                    <div className='flex gap-1 flex-wrap'>
+                      {productData.medida.map((med, idx) => (
+                        <button
+                          key={idx}
+                          type='button'
+                          onClick={() => {
+                            setFormData({ ...formData, measure: med })
+                            if (errors.measure) setErrors({ ...errors, measure: '' })
+                          }}
+                          className='text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors'
+                        >
+                          Usar: {med}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <input
                   value={formData.measure || ''}
                   onChange={(e) => {
@@ -1232,9 +1259,23 @@ function VariantModal({ variant, productId, onSave, onCancel }: VariantModalProp
             <h3 className='text-sm font-semibold text-gray-900 mb-4'>Precios y Stock</h3>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Precio Lista *
-                </label>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Precio Lista *
+                  </label>
+                  {productData?.price && productData.price > 0 && !variant.id && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setFormData({ ...formData, price_list: productData.price || 0 })
+                        if (errors.price_list) setErrors({ ...errors, price_list: '' })
+                      }}
+                      className='text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors'
+                    >
+                      Usar: ${productData.price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    </button>
+                  )}
+                </div>
                 <div className='relative'>
                   <span className='absolute left-3 top-2.5 text-gray-500'>$</span>
                   <input
