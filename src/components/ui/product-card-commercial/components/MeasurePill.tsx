@@ -17,12 +17,13 @@ export const MeasurePill = React.memo(function MeasurePill({
 }: MeasurePillProps) {
   const { number, unit } = React.useMemo(() => parseMeasure(measure), [measure])
   
-  // Formatear la unidad
+  // Formatear la unidad - siempre en mayúsculas
   const displayUnit = React.useMemo(() => {
     if (unit === 'L' || unit === 'LT' || unit === 'LITRO' || unit === 'LITROS') {
-      return number === '1' ? 'Litro' : 'L'
+      return number === '1' ? 'LITRO' : 'L'
     }
-    return unit
+    // Convertir a mayúsculas cualquier otra unidad
+    return unit.toUpperCase()
   }, [unit, number])
 
   const handleClick = React.useCallback((e: React.MouseEvent) => {

@@ -22,9 +22,11 @@ export const parseMeasure = (measure: string): ParsedMeasure => {
   }
   
   // Para "Grano 60", "Grano 80", etc.
-  const granoMatch = measure.match(/^(grano)\s*(\d+)$/i)
+  const granoMatch = measure.match(/^(grano|gr)\s*(\d+)$/i)
   if (granoMatch && granoMatch[2]) {
-    return { number: granoMatch[2], unit: 'Grano' }
+    // Si es "gr" abreviado, usar "GR", si es "grano" completo, usar "GRANO"
+    const unitMatch = granoMatch[1].toLowerCase()
+    return { number: granoMatch[2], unit: unitMatch === 'gr' ? 'GR' : 'GRANO' }
   }
   
   // Regex para separar número de unidad (ej: "4L" -> "4" + "L")
