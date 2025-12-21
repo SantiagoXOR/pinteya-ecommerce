@@ -143,18 +143,21 @@ export default function EditProductPage() {
     setIsFormDirty(isDirty())
   }
 
-  // Actualizar isDirty periódicamente
+  // Actualizar isDirty periódicamente y también cuando cambien los datos del producto
   useEffect(() => {
     if (!isDirtyCheckRef.current) return
+
+    // Actualizar inmediatamente cuando se cargan los datos del producto
+    setIsFormDirty(isDirtyCheckRef.current())
 
     const interval = setInterval(() => {
       if (isDirtyCheckRef.current) {
         setIsFormDirty(isDirtyCheckRef.current())
       }
-    }, 500)
+    }, 200) // ✅ Reducido a 200ms para mayor responsividad
 
     return () => clearInterval(interval)
-  }, [])
+  }, [product]) // ✅ Agregar product como dependencia para actualizar cuando se cargan los datos
 
   const handleSave = () => {
     if (submitFormRef.current) {
@@ -206,7 +209,7 @@ export default function EditProductPage() {
       </button>
       <button
         onClick={handleSave}
-        disabled={updateProductMutation.isPending || !isFormDirty}
+        disabled={updateProductMutation.isPending || isLoading}
         className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed'
       >
         <Save className='w-4 h-4' />

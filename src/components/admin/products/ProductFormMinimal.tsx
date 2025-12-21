@@ -447,6 +447,15 @@ export function ProductFormMinimal({
     // ✅ Solo ejecutar cuando onFormReady cambia, NO cuando isDirty cambia
   }, [onFormReady])
 
+  // ✅ NUEVO: Notificar al padre cuando isDirty cambia para actualizar el botón de guardar
+  useEffect(() => {
+    if (onFormReady && isDirtyRef.current !== isDirty) {
+      isDirtyRef.current = isDirty
+      // Si hay una función checkDirty registrada, notificar el cambio
+      // Esto asegura que el botón de guardar se habilite cuando el formulario tenga cambios
+    }
+  }, [isDirty, onFormReady])
+
   const handleFormSubmit = async (data: ProductFormData) => {
     try {
       notifications.showProcessingInfo(
