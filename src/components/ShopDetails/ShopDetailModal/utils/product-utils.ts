@@ -10,8 +10,6 @@ import { ProductWithCategory } from '@/types/api'
 import { ColorOption, PAINT_COLORS } from '@/components/ui/advanced-color-picker'
 import { getColorHex } from '@/utils/product-utils'
 
-// Re-exportar ColorOption para uso en esta función
-type ColorOptionType = ColorOption
 
 /**
  * Detecta la unidad de capacidad efectiva (litros, kg, metros, unidades)
@@ -185,9 +183,9 @@ export const extractAvailableFinishes = (
 export const getFinishesForColor = (
   variants: ProductVariant[],
   selectedColor: string | null | undefined,
-  availableColors?: ColorOptionType[]
+  availableColors?: ColorOption[]
 ): string[] => {
-  if (!variants || variants.length === 0 || !selectedColor) return []
+  if (!variants || variants.length === 0 || !selectedColor || typeof selectedColor !== 'string') return []
 
   // Intentar obtener el hex del color seleccionado
   // Si selectedColor es un id, buscar en availableColors
@@ -195,7 +193,7 @@ export const getFinishesForColor = (
   let targetHex: string | null = null
   let targetName: string | null = null
   
-  if (availableColors && availableColors.length > 0) {
+  if (availableColors && Array.isArray(availableColors) && availableColors.length > 0) {
     const foundColor = availableColors.find(c => c.id === selectedColor || c.hex === selectedColor)
     if (foundColor) {
       targetHex = foundColor.hex
@@ -203,8 +201,8 @@ export const getFinishesForColor = (
     }
   }
   
-  // Si no se encontró, tratar selectedColor como hex
-  if (!targetHex && selectedColor.startsWith('#')) {
+  // Si no se encontró, tratar selectedColor como hex (solo si es un string válido que empieza con #)
+  if (!targetHex && typeof selectedColor === 'string' && selectedColor.startsWith('#')) {
     targetHex = selectedColor
   }
 
