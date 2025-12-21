@@ -120,6 +120,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     })
     const state = useProductCardState({ image, title })
 
+    // Precargar el modal cuando el componente se monta para evitar retrasos
+    React.useEffect(() => {
+      // Precargar el módulo del modal en background
+      import('@/components/ShopDetails/ShopDetailModal').catch(() => {})
+    }, [])
+
     // Cantidad actual en el carrito
     const currentCartQuantity = React.useMemo(() => {
       if (!productId) return 0
@@ -357,14 +363,12 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           cartAddCount={state.cartAddCount}
         />
 
-        {/* Modal con Suspense - Siempre renderizar para evitar retrasos en primera carga */}
-        <React.Suspense fallback={null}>
-          {/* #region agent log */}
-          {/* Log del estado antes de renderizar el modal */}
-          {/* #endregion */}
-          <ShopDetailModal
-            open={state.showShopDetailModal}
-            onOpenChange={state.handleModalOpenChange}
+        {/* Modal con Suspense - Renderizar condicionalmente pero precargado */}
+        {state.showShopDetailModal && (
+          <React.Suspense fallback={null}>
+            <ShopDetailModal
+              open={state.showShopDetailModal}
+              onOpenChange={state.handleModalOpenChange}
             product={{
               id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
               name: title || '',
