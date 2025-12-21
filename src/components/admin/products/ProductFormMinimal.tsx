@@ -121,12 +121,17 @@ export function ProductFormMinimal({
     queryKey: ['product-variants', productId],
     queryFn: async () => {
       const res = await fetch(`/api/products/${productId}/variants`, {
-        credentials: 'include', // ✅ Incluir cookies de autenticación
+        credentials: 'include',
+        cache: 'no-store',
       })
       const json = await res.json()
       return json.data || []
     },
-    enabled: !!productId && mode === 'edit'
+    enabled: !!productId && mode === 'edit',
+    staleTime: Infinity, // ✅ CORREGIDO: Los datos son válidos hasta que los actualicemos manualmente
+    gcTime: 5 * 60 * 1000, // ✅ Mantener en cache 5 minutos
+    refetchOnMount: false, // ✅ No refetchear al montar si hay datos en cache
+    refetchOnWindowFocus: false, // ✅ No refetchear al enfocar ventana
   })
   
   // ✅ CORREGIDO: Asegurar que variants siempre sea un array
@@ -211,7 +216,7 @@ export function ProductFormMinimal({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cleanedData),
-        credentials: 'include', // ✅ Incluir cookies de autenticación
+        credentials: 'include',
       })
       
       console.log('📡 [Frontend] Respuesta del servidor:', {
@@ -231,16 +236,19 @@ export function ProductFormMinimal({
       console.log('✅ [Frontend] Variante actualizada, respuesta:', result)
       return result
     },
-    onSuccess: async () => {
-      // ✅ CORREGIDO: Forzar refetch inmediato después de invalidar
-      await queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
-      // ✅ CORREGIDO: Esperar un momento y luego refetch para asegurar datos frescos
-      setTimeout(async () => {
-        await queryClient.refetchQueries({ 
-          queryKey: ['product-variants', productId],
-          type: 'active'
+    onSuccess: (data) => {
+      // ✅ Actualizar el cache directamente con los datos actualizados del backend
+      if (data?.data && productId) {
+        queryClient.setQueryData(['product-variants', productId], (oldData: any) => {
+          if (!Array.isArray(oldData)) {
+            // Si no hay datos antiguos, crear array con la variante actualizada
+            return [data.data]
+          }
+          // Actualizar la variante existente o agregarla si no existe
+          return oldData.map((v: any) => v.id === data.data.id ? data.data : v)
         })
-      }, 100)
+      }
+      
       notifications.showInfoMessage('Variante actualizada', 'La variante se actualizó exitosamente')
     },
     onError: (error: any) => {
@@ -905,14 +913,6 @@ export function ProductFormMinimal({
           productId={productId}
           onSave={async (variant) => {
             try {
-              // ✅ DEBUG: Log para verificar que image_url se está pasando
-              console.log('💾 [VariantModal] Guardando variante:', {
-                id: variant.id,
-                hasImageUrl: !!variant.image_url,
-                imageUrl: variant.image_url,
-                allKeys: Object.keys(variant),
-              })
-              
               if (variant.id) {
                 // Editar existente
                 await updateVariantMutation.mutateAsync({ id: variant.id, ...variant })
@@ -921,17 +921,9 @@ export function ProductFormMinimal({
                 await createVariantMutation.mutateAsync(variant)
               }
               
-              // ✅ CORREGIDO: Invalidar y refetch queries para refrescar las variantes
-              await queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+              // ✅ El cache ya se actualizó en onSuccess con los datos del backend
+              // Solo invalidar otras queries relacionadas para asegurar consistencia
               await queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
-              
-              // ✅ CORREGIDO: Forzar refetch inmediato
-              setTimeout(async () => {
-                await queryClient.refetchQueries({ 
-                  queryKey: ['product-variants', productId],
-                  type: 'active'
-                })
-              }, 200)
               
               setShowVariantModal(false)
               setEditingVariant(null)
