@@ -179,17 +179,95 @@ export const extractAvailableFinishes = (
 /**
  * Determina qué finishes están disponibles para un color específico
  * selectedColor puede ser un color.id (string) o un hex (string)
+ * 
+ * IMPORTANTE: Para productos impregnantes (excepto Sintético Converlux),
+ * todos los colores tienen los mismos finishes disponibles.
  */
 export const getFinishesForColor = (
   variants: ProductVariant[],
   selectedColor: string | null | undefined,
-  availableColors?: ColorOption[]
+  availableColors?: ColorOption[],
+  productName?: string,
+  productId?: number | string
 ): string[] => {
-  if (!variants || variants.length === 0 || !selectedColor || typeof selectedColor !== 'string') return []
+  if (!variants || variants.length === 0) return []
+
+  // Detectar si es Sintético Converlux (tiene lógica especial)
+  const isSinteticoConverlux = 
+    productId === 34 || 
+    productId === '34' || 
+    (productName && productName.toLowerCase().includes('sintético converlux'))
+
+  // Detectar si es un producto impregnante (Danzke, New House, etc.)
+  const isImpregnante = productName && (
+    productName.toLowerCase().includes('impregnante') ||
+    productName.toLowerCase().includes('danzke') ||
+    productName.toLowerCase().includes('new house')
+  ) && !isSinteticoConverlux
+
+  // Para impregnantes (excepto Sintético Converlux): todos los colores tienen los mismos finishes
+  if (isImpregnante) {
+    const allFinishes = variants
+      .map(v => v.finish)
+      .filter(Boolean)
+      .filter((v, i, a) => a.indexOf(v) === i) // unique
+    return allFinishes as string[]
+  }
+
+  // Para Sintético Converlux: solo BLANCO y NEGRO tienen múltiples finishes
+  if (isSinteticoConverlux && selectedColor && typeof selectedColor === 'string') {
+    // Buscar el nombre del color seleccionado
+    let targetHex: string | null = null
+    let targetName: string | null = null
+    
+    if (availableColors && Array.isArray(availableColors) && availableColors.length > 0) {
+      const foundColor = availableColors.find(c => c.id === selectedColor || c.hex === selectedColor)
+      if (foundColor) {
+        targetHex = foundColor.hex
+        targetName = foundColor.displayName || foundColor.name
+      }
+    }
+    
+    if (!targetHex && typeof selectedColor === 'string' && selectedColor.startsWith('#')) {
+      targetHex = selectedColor
+    }
+
+    const selectedColorName = variants.find(v => {
+      if (targetHex) {
+        const variantHex = v.color_hex || getColorHexFromName(v.color_name || '')
+        return variantHex === targetHex
+      }
+      return false
+    })?.color_name
+
+    // Si el color es BLANCO o NEGRO, mostrar todos sus finishes disponibles
+    if (selectedColorName && (selectedColorName.toUpperCase() === 'BLANCO' || selectedColorName.toUpperCase() === 'NEGRO')) {
+      const finishesForColor = variants
+        .filter(v => {
+          const variantHex = v.color_hex || getColorHexFromName(v.color_name || '')
+          return variantHex === targetHex
+        })
+        .map(v => v.finish)
+        .filter((finish): finish is string => Boolean(finish))
+      
+      return Array.from(new Set(finishesForColor))
+    } else {
+      // Para otros colores, solo "Brillante" está disponible
+      return ['Brillante']
+    }
+  }
+
+  // Para otros productos: filtrar finishes por color seleccionado
+  if (!selectedColor || typeof selectedColor !== 'string') {
+    // Si no hay color seleccionado, devolver todos los finishes únicos
+    const allFinishes = variants
+      .map(v => v.finish)
+      .filter(Boolean)
+      .filter((v, i, a) => a.indexOf(v) === i) // unique
+    return allFinishes as string[]
+  }
 
   // Intentar obtener el hex del color seleccionado
-  // Si selectedColor es un id, buscar en availableColors
-  // Si no está disponible, tratar selectedColor como hex directamente
   let targetHex: string | null = null
   let targetName: string | null = null
   

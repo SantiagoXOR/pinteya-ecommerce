@@ -56,6 +56,18 @@ export const useProductFinishes = ({
     if (!variants || variants.length === 0) return []
     if (!selectedColor) return allUniqueFinishes
 
+    // Detectar si es un producto impregnante (Danzke, New House, etc.)
+    const isImpregnante = productName && (
+      productName.toLowerCase().includes('impregnante') ||
+      productName.toLowerCase().includes('danzke') ||
+      productName.toLowerCase().includes('new house')
+    ) && !isSinteticoConverlux
+
+    // Para impregnantes (excepto Sintético Converlux): todos los colores tienen los mismos finishes
+    if (isImpregnante) {
+      return allUniqueFinishes
+    }
+
     // Para Sintético Converlux: solo BLANCO y NEGRO tienen múltiples finishes
     if (isSinteticoConverlux) {
       // Buscar el nombre del color seleccionado
@@ -93,7 +105,7 @@ export const useProductFinishes = ({
       .filter((finish): finish is string => Boolean(finish))
 
     return Array.from(new Set(finishesForColor))
-  }, [variants, selectedColor, allUniqueFinishes, isSinteticoConverlux])
+  }, [variants, selectedColor, allUniqueFinishes, isSinteticoConverlux, productName])
 
   // Seleccionar finish automáticamente cuando cambia el color
   React.useEffect(() => {

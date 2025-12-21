@@ -514,9 +514,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     const safeColors = (smartColors && Array.isArray(smartColors) && smartColors.length > 0) 
       ? smartColors 
       : (availableColors && Array.isArray(availableColors) ? availableColors : [])
-    return getFinishesForColor(safeVariants, selectedColor, safeColors)
+    return getFinishesForColor(
+      safeVariants, 
+      selectedColor, 
+      safeColors,
+      product?.name,
+      product?.id
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variants, selectedColor, product, productType.hasColorSelector])
+  }, [variants, selectedColor, product?.name, product?.id, product, productType.hasColorSelector])
 
   // Establecer valores por defecto
   useEffect(() => {
