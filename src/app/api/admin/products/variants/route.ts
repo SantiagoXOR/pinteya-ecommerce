@@ -190,19 +190,40 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
       const body = await request.json()
 
-      // Validar campos requeridos
-      const requiredFields = ['product_id', 'aikon_id', 'price_list']
-      for (const field of requiredFields) {
-        if (!body[field]) {
-          return NextResponse.json(
-            {
-              success: false,
-              error: `Campo requerido: ${field}`,
-              data: null,
-            },
-            { status: 400 }
-          )
-        }
+      console.log('📥 [POST Variant] Datos recibidos:', JSON.stringify(body, null, 2))
+
+      // Validar campos requeridos - Usar verificación más estricta
+      if (!body.product_id || (typeof body.product_id !== 'number' && isNaN(parseInt(String(body.product_id))))) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Campo requerido: product_id debe ser un número válido',
+            data: null,
+          },
+          { status: 400 }
+        )
+      }
+
+      if (!body.aikon_id || typeof body.aikon_id !== 'string' || body.aikon_id.trim() === '') {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Campo requerido: aikon_id debe ser un string no vacío',
+            data: null,
+          },
+          { status: 400 }
+        )
+      }
+
+      if (body.price_list === undefined || body.price_list === null || (typeof body.price_list === 'number' && (isNaN(body.price_list) || body.price_list <= 0))) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Campo requerido: price_list debe ser un número mayor a 0',
+            data: null,
+          },
+          { status: 400 }
+        )
       }
 
       // Usar supabaseAdmin para evitar problemas con RLS (Row Level Security)
@@ -266,25 +287,42 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         counter++
       }
 
+      // ✅ Preparar datos de inserción con validación de tipos
+      const insertData: any = {
+        product_id: parseInt(String(body.product_id), 10),
+        aikon_id: String(body.aikon_id).trim(),
+        variant_slug: variantSlug,
+        color_name: body.color_name && typeof body.color_name === 'string' && body.color_name.trim() !== '' ? body.color_name.trim() : null,
+        color_hex: body.color_hex && typeof body.color_hex === 'string' && body.color_hex.trim() !== '' ? body.color_hex.trim() : null,
+        measure: body.measure && typeof body.measure === 'string' && body.measure.trim() !== '' ? body.measure.trim() : null,
+        finish: body.finish && typeof body.finish === 'string' && body.finish.trim() !== '' ? body.finish.trim() : null,
+        price_list: parseFloat(String(body.price_list)),
+        price_sale: body.price_sale && body.price_sale !== null && body.price_sale !== '' ? parseFloat(String(body.price_sale)) : null,
+        stock: body.stock !== undefined && body.stock !== null ? parseInt(String(body.stock), 10) : 0,
+        is_active: body.is_active !== undefined ? Boolean(body.is_active) : true,
+        is_default: body.is_default === true,
+        image_url: body.image_url && typeof body.image_url === 'string' && body.image_url.trim() !== '' ? body.image_url.trim() : null,
+        metadata: body.metadata && typeof body.metadata === 'object' ? body.metadata : {},
+      }
+
+      // Validar que price_list sea válido después del parseFloat
+      if (isNaN(insertData.price_list) || insertData.price_list <= 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'price_list debe ser un número mayor a 0',
+            data: null,
+          },
+          { status: 400 }
+        )
+      }
+
+      console.log('📦 [POST Variant] Datos preparados para insertar:', JSON.stringify(insertData, null, 2))
+
       // Crear variante
       const { data: variant, error: variantError } = await supabase
         .from('product_variants')
-        .insert({
-          product_id: body.product_id,
-          aikon_id: body.aikon_id,
-          variant_slug: variantSlug,
-          color_name: body.color_name || null,
-          color_hex: body.color_hex || null,
-          measure: body.measure || null,
-          finish: body.finish || null,
-          price_list: parseFloat(body.price_list),
-          price_sale: body.price_sale ? parseFloat(body.price_sale) : null,
-          stock: parseInt(body.stock) || 0,
-          is_active: body.is_active !== false,
-          is_default: body.is_default === true,
-          image_url: body.image_url || null,
-          metadata: body.metadata || {},
-        })
+        .insert(insertData)
         .select()
         .single()
 

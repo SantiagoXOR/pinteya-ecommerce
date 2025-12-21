@@ -191,13 +191,32 @@ export function ProductFormMinimal({
   // Mutaciones para variantes
   const createVariantMutation = useMutation({
     mutationFn: async (variant: any) => {
+      // ✅ Asegurar que product_id sea un número
+      const numericProductId = productId ? parseInt(String(productId), 10) : null
+      if (!numericProductId || isNaN(numericProductId)) {
+        throw new Error('Product ID inválido')
+      }
+
+      const requestBody = {
+        ...variant,
+        product_id: numericProductId,
+      }
+
+      console.log('📤 [Frontend] Enviando datos de variante:', JSON.stringify(requestBody, null, 2))
+
       const res = await fetch('/api/admin/products/variants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...variant, product_id: productId }),
+        body: JSON.stringify(requestBody),
         credentials: 'include', // ✅ Incluir cookies de autenticación
       })
-      if (!res.ok) throw new Error('Error creando variante')
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Error desconocido' }))
+        console.error('❌ [Frontend] Error del servidor:', res.status, errorData)
+        throw new Error(errorData.error || `Error ${res.status}: Error creando variante`)
+      }
+      
       return res.json()
     },
     onSuccess: (data) => {
@@ -1144,13 +1163,27 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
         })),
       })
       
-      // ✅ CORREGIDO: Pasar solo los datos limpios (sin id, que va en la URL)
-      // Asegurar que image_url se incluya correctamente (puede ser null)
-      const finalData = { ...formData, ...cleanedData }
+      // ✅ CORREGIDO: Crear finalData asegurando que todos los campos requeridos estén presentes
+      // Usar formData como base y sobrescribir con cleanedData donde esté definido
+      const finalData: any = {
+        // Campos requeridos - usar formData si cleanedData no los tiene
+        color_name: cleanedData.color_name !== undefined ? cleanedData.color_name : formData.color_name,
+        measure: cleanedData.measure !== undefined ? cleanedData.measure : formData.measure,
+        aikon_id: cleanedData.aikon_id !== undefined ? cleanedData.aikon_id : formData.aikon_id,
+        price_list: cleanedData.price_list !== undefined ? cleanedData.price_list : formData.price_list,
+        stock: cleanedData.stock !== undefined ? cleanedData.stock : formData.stock,
+        // Campos opcionales - incluir incluso si son null
+        finish: cleanedData.finish !== undefined ? cleanedData.finish : formData.finish,
+        price_sale: 'price_sale' in cleanedData ? cleanedData.price_sale : formData.price_sale,
+        image_url: 'image_url' in cleanedData ? cleanedData.image_url : formData.image_url,
+        color_hex: 'color_hex' in cleanedData ? cleanedData.color_hex : formData.color_hex,
+        is_active: cleanedData.is_active !== undefined ? cleanedData.is_active : (formData.is_active !== undefined ? formData.is_active : true),
+        is_default: cleanedData.is_default !== undefined ? cleanedData.is_default : (formData.is_default !== undefined ? formData.is_default : false),
+      }
       
-      // ✅ CORREGIDO: Si image_url es null, incluirlo explícitamente para que el backend lo procese
-      if ('image_url' in cleanedData) {
-        finalData.image_url = cleanedData.image_url
+      // Si estamos editando, incluir el id
+      if (formData.id) {
+        finalData.id = formData.id
       }
       
       console.log('💾 [VariantModal] Datos finales a enviar:', {
