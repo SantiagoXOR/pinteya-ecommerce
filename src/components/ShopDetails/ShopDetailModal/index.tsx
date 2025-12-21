@@ -506,7 +506,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
 
   // Obtener finishes disponibles para el color seleccionado (para determinar cuáles habilitar/deshabilitar)
   // IMPORTANTE: Debe estar después de la definición de smartColors y availableColors
-  // NOTA: smartColors y availableColors están definidos arriba (líneas 431 y 472)
+  // NOTA: smartColors y availableColors están definidos arriba y se recalculan automáticamente cuando cambian variants/product
+  // No incluimos smartColors/availableColors en dependencias para evitar error de inicialización - se recalculan cuando variants cambia
   const availableFinishesForColor = useMemo(() => {
     const safeVariants = Array.isArray(variants) ? variants : []
     // Usar validación segura para evitar error de inicialización
@@ -514,7 +515,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       ? smartColors 
       : (availableColors && Array.isArray(availableColors) ? availableColors : [])
     return getFinishesForColor(safeVariants, selectedColor, safeColors)
-  }, [variants, selectedColor, smartColors, availableColors])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variants, selectedColor, product, productType.hasColorSelector])
 
   // Establecer valores por defecto
   useEffect(() => {
