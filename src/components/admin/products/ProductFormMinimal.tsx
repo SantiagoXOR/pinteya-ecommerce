@@ -570,7 +570,12 @@ export function ProductFormMinimal({
               </label>
               <input
                 {...register('name')}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
+                className={cn(
+                  'w-full px-3 py-2 border rounded-lg focus:ring-2',
+                  errors.name
+                    ? 'border-red-300 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-blaze-orange-500'
+                )}
                 placeholder='Ej: Látex Interior Blanco 4L'
               />
               {errors.name && <p className='text-red-600 text-sm mt-1'>{errors.name.message}</p>}

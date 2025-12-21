@@ -31,6 +31,7 @@ const UpdateProductSchema = z.object({
   stock: z.number().min(0, 'El stock debe ser mayor o igual a 0').optional(),
   low_stock_threshold: z.number().min(0).optional(),
   category_id: z.number().int().positive('ID de categoría inválido').optional(),
+  category_ids: z.array(z.number().int().positive('ID de categoría inválido')).optional(), // ✅ NUEVO: Array de categorías
   brand: z.string().optional(),
   images: z
     .array(
@@ -44,6 +45,7 @@ const UpdateProductSchema = z.object({
   is_active: z.boolean().optional(),
   is_featured: z.boolean().optional(),
   terminaciones: z.array(z.string()).optional(), // ✅ NUEVO: Array de terminaciones
+  medida: z.union([z.array(z.string()), z.string()]).optional(), // ✅ NUEVO: Medida puede ser array o string
 })
 
 const ProductParamsSchema = z.object({
@@ -164,6 +166,64 @@ function generateSlug(name: string): string {
     .trim()
 }
 
+// Helper function to generate unique slug and verify it doesn't exist
+async function generateUniqueSlug(
+  supabase: ReturnType<typeof createClient<Database>>,
+  name: string,
+  excludeProductId?: number
+): Promise<string> {
+  const baseSlug = generateSlug(name)
+  
+  // Verificar si el slug ya existe (excluyendo el producto actual si estamos editando)
+  let query = supabase
+    .from('products')
+    .select('id')
+    .eq('slug', baseSlug)
+    .limit(1)
+  
+  if (excludeProductId !== undefined) {
+    query = query.neq('id', excludeProductId)
+  }
+  
+  const { data: existingProducts } = await query
+  
+  // Si el slug no existe, usarlo
+  if (!existingProducts || existingProducts.length === 0) {
+    return baseSlug
+  }
+  
+  // Si existe, agregar un sufijo numérico
+  let counter = 1
+  let uniqueSlug = `${baseSlug}-${counter}`
+  
+  while (true) {
+    let checkQuery = supabase
+      .from('products')
+      .select('id')
+      .eq('slug', uniqueSlug)
+      .limit(1)
+    
+    if (excludeProductId !== undefined) {
+      checkQuery = checkQuery.neq('id', excludeProductId)
+    }
+    
+    const { data: existing } = await checkQuery
+    
+    if (!existing || existing.length === 0) {
+      return uniqueSlug
+    }
+    
+    counter++
+    uniqueSlug = `${baseSlug}-${counter}`
+    
+    // Protección contra loops infinitos
+    if (counter > 1000) {
+      // Fallback: usar timestamp
+      return `${baseSlug}-${Date.now()}`
+    }
+  }
+}
+
 /**
  * GET /api/admin/products/[id] - Simplified Handler
  * Obtener producto específico por ID
@@ -229,8 +289,8 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   // Verificar que el producto existe - Usar supabaseAdmin directamente
   const existingProduct = await getProductById(supabaseAdmin, productId)
 
-  // Verificar categoría si se está actualizando
-  if (validatedData.category_id) {
+  // Verificar categoría si se está actualizando (solo si se usa category_id singular, category_ids se maneja después)
+  if (validatedData.category_id && !(validatedData as any).category_ids) {
     const { data: category, error: categoryError } = await supabaseAdmin
       .from('categories')
       .select('id')
@@ -260,6 +320,7 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   if (validatedData.category_id !== undefined) updateData.category_id = validatedData.category_id
   if (validatedData.brand !== undefined) updateData.brand = validatedData.brand
   if (validatedData.images !== undefined) updateData.images = validatedData.images
+  if (validatedData.is_active !== undefined) updateData.is_active = validatedData.is_active
   // ✅ NUEVO: Mapear terminaciones (array de texto)
   if ((validatedData as any).terminaciones !== undefined) {
     const terminaciones = Array.isArray((validatedData as any).terminaciones)
@@ -283,21 +344,87 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
     }
   }
   
-  // Generar slug si se actualiza el nombre
-  if (validatedData.name) {
-    updateData.slug = generateSlug(validatedData.name)
-  }
-
-  console.log('🔍 updateData preparado:', JSON.stringify(updateData, null, 2))
-  console.log('📦 Stock en updateData:', updateData.stock, '(tipo:', typeof updateData.stock, ')')
+  // Convertir productId a número para la query
+  const numericProductId = parseInt(productId, 10)
 
   // Verificar que supabaseAdmin esté disponible
   if (!supabaseAdmin) {
     throw new ApiError('Cliente de Supabase no disponible', 500, 'CONFIG_ERROR')
   }
+  
+  // ✅ NUEVO: Actualizar product_categories ANTES de actualizar el producto (para poder actualizar category_id)
+  if ((validatedData as any).category_ids !== undefined && Array.isArray((validatedData as any).category_ids)) {
+    const categoryIds = (validatedData as any).category_ids
+      .map((id: any) => parseInt(String(id)))
+      .filter((id: number) => !isNaN(id) && id > 0)
+    
+    if (categoryIds.length > 0) {
+      // Validar que todas las categorías existen
+      const { data: categories, error: categoryError } = await supabaseAdmin
+        .from('categories')
+        .select('id')
+        .in('id', categoryIds)
+      
+      if (categoryError) {
+        console.error('⚠️ Error validando categorías:', categoryError)
+        throw ValidationError('Error al validar categorías')
+      } else if (!categories || categories.length !== categoryIds.length) {
+        console.error('⚠️ Una o más categorías no fueron encontradas')
+        throw ValidationError('Una o más categorías no fueron encontradas')
+      } else {
+        // Eliminar todas las relaciones existentes
+        const { error: deleteError } = await supabaseAdmin
+          .from('product_categories')
+          .delete()
+          .eq('product_id', numericProductId)
+        
+        if (deleteError) {
+          console.error('⚠️ Error eliminando categorías existentes:', deleteError)
+          throw new ApiError('Error al actualizar categorías', 500, 'DATABASE_ERROR', deleteError)
+        } else {
+          // Insertar las nuevas relaciones
+          const categoryInserts = categoryIds.map((catId: number) => ({
+            product_id: numericProductId,
+            category_id: catId,
+          }))
+          
+          const { error: insertError } = await supabaseAdmin
+            .from('product_categories')
+            .insert(categoryInserts)
+          
+          if (insertError) {
+            console.error('⚠️ Error insertando nuevas categorías:', insertError)
+            throw new ApiError('Error al actualizar categorías', 500, 'DATABASE_ERROR', insertError)
+          } else {
+            console.log(`✅ Actualizadas ${categoryIds.length} relaciones de categorías`)
+            // Actualizar category_id en products con la primera categoría
+            updateData.category_id = categoryIds[0]
+          }
+        }
+      }
+    } else {
+      // Si category_ids está vacío, eliminar todas las relaciones
+      const { error: deleteError } = await supabaseAdmin
+        .from('product_categories')
+        .delete()
+        .eq('product_id', numericProductId)
+      
+      if (deleteError) {
+        console.error('⚠️ Error eliminando categorías:', deleteError)
+        // No lanzar error, solo loguear
+      } else {
+        updateData.category_id = null
+      }
+    }
+  }
+  
+  // Generar slug único si se actualiza el nombre
+  if (validatedData.name) {
+    updateData.slug = await generateUniqueSlug(supabaseAdmin, validatedData.name, numericProductId)
+  }
 
-  // Convertir productId a número para la query
-  const numericProductId = parseInt(productId, 10)
+  console.log('🔍 updateData preparado:', JSON.stringify(updateData, null, 2))
+  console.log('📦 Stock en updateData:', updateData.stock, '(tipo:', typeof updateData.stock, ')')
   
   // Actualizar producto
   const { data: updatedProduct, error } = await supabaseAdmin
