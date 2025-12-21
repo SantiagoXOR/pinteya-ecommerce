@@ -369,7 +369,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             <ShopDetailModal
               open={state.showShopDetailModal}
               onOpenChange={state.handleModalOpenChange}
-            product={{
+              product={{
               id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
               name: title || '',
               slug: slug || '',
@@ -443,8 +443,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                   { quantity: quantityFromModal, attributes }
                 )
               }}
-          />
-        </React.Suspense>
+            />
+            </React.Suspense>
+          )}
       </div>
     )
   }
