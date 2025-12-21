@@ -154,3 +154,4 @@ Este comando configurará automáticamente el servidor MCP para Cursor.
    - "Crea un formulario de contacto usando componentes del registro de shadcn"
 
 
+

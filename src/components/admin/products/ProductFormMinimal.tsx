@@ -136,6 +136,57 @@ export function ProductFormMinimal({
   
   // ✅ CORREGIDO: Asegurar que variants siempre sea un array
   const variants = Array.isArray(variantsData) ? variantsData : []
+
+  // ✅ NUEVO: Obtener imagen principal del producto para pasarla al VariantModal
+  const { data: productMainImage } = useQuery({
+    queryKey: ['product-main-image', productId],
+    queryFn: async () => {
+      if (!productId) return null
+      // Intentar obtener la primera imagen primaria de product_images
+      try {
+        const response = await fetch(`/api/admin/products/${productId}/images`, {
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (response.ok) {
+          const result = await response.json()
+          const images = result.data || []
+          const primaryImage = images.find((img: any) => img.is_primary) || images[0]
+          if (primaryImage?.url) return primaryImage.url
+        }
+      } catch (error) {
+        console.error('Error obteniendo imágenes del producto:', error)
+      }
+      // Fallback: intentar obtener image_url del producto desde la API
+      try {
+        const response = await fetch(`/api/admin/products/${productId}`, {
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (response.ok) {
+          const result = await response.json()
+          // Intentar obtener image_url desde el campo images (JSONB) o image_url directo
+          const productData = result.data
+          if (productData?.images) {
+            try {
+              const imagesJson = typeof productData.images === 'string' 
+                ? JSON.parse(productData.images) 
+                : productData.images
+              if (imagesJson?.url) return imagesJson.url
+              if (imagesJson?.previews?.[0]) return imagesJson.previews[0]
+            } catch (e) {
+              // Si no se puede parsear, continuar
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error obteniendo datos del producto:', error)
+      }
+      return null
+    },
+    enabled: !!productId && mode === 'edit',
+    staleTime: 5 * 60 * 1000, // Cache por 5 minutos (suficiente para uso en modal)
+  })
   
   // Mutaciones para variantes
   const createVariantMutation = useMutation({
@@ -149,8 +200,21 @@ export function ProductFormMinimal({
       if (!res.ok) throw new Error('Error creando variante')
       return res.json()
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+    onSuccess: (data) => {
+      // ✅ CORREGIDO: Actualizar cache directamente con la nueva variante (similar a updateVariantMutation)
+      if (data?.data && productId) {
+        queryClient.setQueryData(['product-variants', productId], (oldData: any) => {
+          if (!Array.isArray(oldData)) {
+            // Si no hay datos antiguos, crear array con la nueva variante
+            return [data.data]
+          }
+          // Agregar la nueva variante al array
+          return [...oldData, data.data]
+        })
+      } else {
+        // Si no hay datos en la respuesta, invalidar y refetch
+        queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+      }
       notifications.showInfoMessage('Variante creada', 'La variante se creó exitosamente')
     },
     onError: (error: any) => {
@@ -916,6 +980,7 @@ export function ProductFormMinimal({
             discounted_price: watchedData.discounted_price,
             stock: watchedData.stock,
             medida: watchedData.medida,
+            mainImageUrl: productMainImage || (watchedData.image_url && watchedData.image_url.trim() !== '' ? watchedData.image_url : null), // ✅ NUEVO: Pasar imagen principal
           }}
           onSave={async (variant) => {
             try {
@@ -957,6 +1022,7 @@ interface VariantModalProps {
     discounted_price?: number | null
     stock?: number
     medida?: string[]
+    mainImageUrl?: string | null // ✅ NUEVO: URL de la imagen principal del producto
   }
   onSave: (variant: ProductVariant) => void
   onCancel: () => void
@@ -1117,7 +1183,22 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
         <div className='p-6 space-y-6'>
           {/* Imagen de la Variante */}
           <div className='border-b border-gray-200 pb-6'>
-            <h3 className='text-sm font-semibold text-gray-900 mb-4'>Imagen de la Variante</h3>
+            <div className='flex items-center justify-between mb-4'>
+              <h3 className='text-sm font-semibold text-gray-900'>Imagen de la Variante</h3>
+              {/* ✅ NUEVO: Botón para usar imagen principal del producto */}
+              {productData?.mainImageUrl && (
+                <button
+                  type='button'
+                  onClick={() => {
+                    setFormData({ ...formData, image_url: productData.mainImageUrl || null })
+                    setImagePreview(productData.mainImageUrl || null)
+                  }}
+                  className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                >
+                  Usar imagen del producto
+                </button>
+              )}
+            </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <ImageUploadZone
                 productId={productId} // Usar productId del producto para el upload
@@ -1155,7 +1236,7 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
                   />
                 </div>
                 <p className='text-xs text-gray-500'>
-                  💡 Tip: Puedes subir una imagen arrastrándola o usar una URL externa
+                  💡 Tip: Puedes subir una imagen arrastrándola, usar una URL externa, o usar la imagen principal del producto
                 </p>
               </div>
             </div>
