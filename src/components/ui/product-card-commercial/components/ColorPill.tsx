@@ -45,10 +45,13 @@ export const ColorPill = React.memo(function ColorPill({
   const transparentTexture = React.useMemo(() => isTransparent ? getTransparentTexture() : {}, [isTransparent])
 
   // Mantener siempre el color original del pill
-  const textColor = React.useMemo(
-    () => getTextColorForBackground(colorData.hex, false, colorData.name),
-    [colorData.hex, colorData.name]
-  )
+  // Para INCOLORO, usar texto negro para mejor legibilidad
+  const textColor = React.useMemo(() => {
+    if (isTransparent) {
+      return 'text-black'
+    }
+    return getTextColorForBackground(colorData.hex, false, colorData.name)
+  }, [isTransparent, colorData.hex, colorData.name])
 
   // Usar siempre el color original, sin cambios por selección
   const backgroundColor = React.useMemo(() => {

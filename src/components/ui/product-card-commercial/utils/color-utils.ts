@@ -254,3 +254,40 @@ export const isTransparentColor = (colorName: string): boolean => {
          lower.includes('transparent')
 }
 
+/**
+ * Limpia el título del producto removiendo terminaciones (Brillante, Satinado, Mate)
+ * cuando el producto es incoloro. Esto es necesario porque para productos incoloros,
+ * la terminación debe mostrarse solo en el selector de finish, no en el título.
+ */
+export const cleanTitleForIncoloroProduct = (title: string): string => {
+  if (!title) return title
+  
+  // Lista de terminaciones a remover (case-insensitive)
+  const finishes = [
+    /\s+brillante\s*$/i,
+    /^brillante\s+/i,
+    /\s+brill\s*$/i,
+    /^brill\s+/i,
+    /\s+satinado\s*$/i,
+    /^satinado\s+/i,
+    /\s+sat\s*$/i,
+    /^sat\s+/i,
+    /\s+mate\s*$/i,
+    /^mate\s+/i,
+    /\s+matte\s*$/i,
+    /^matte\s+/i,
+  ]
+  
+  let cleaned = title.trim()
+  
+  // Aplicar cada patrón de terminación
+  for (const pattern of finishes) {
+    cleaned = cleaned.replace(pattern, ' ')
+  }
+  
+  // Limpiar espacios múltiples y espacios al inicio/fin
+  cleaned = cleaned.replace(/\s+/g, ' ').trim()
+  
+  return cleaned
+}
+

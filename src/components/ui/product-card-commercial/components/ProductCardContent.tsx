@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { cleanTitleForIncoloroProduct, isTransparentColor } from '../utils/color-utils'
 import type { ProductCardContentProps } from '../types'
 
 /**
@@ -12,8 +13,34 @@ export const ProductCardContent = React.memo(function ProductCardContent({
   title,
   displayPrice,
   displayOriginalPrice,
-  discount
+  discount,
+  variants,
+  selectedColorName
 }: ProductCardContentProps) {
+  // Detectar si el producto es incoloro
+  const isIncoloro = React.useMemo(() => {
+    // Verificar si el color seleccionado es incoloro
+    if (selectedColorName && isTransparentColor(selectedColorName)) {
+      return true
+    }
+    
+    // Verificar si alguna variante tiene color_name incoloro
+    if (variants && variants.length > 0) {
+      return variants.some(v => v.color_name && isTransparentColor(v.color_name))
+    }
+    
+    return false
+  }, [variants, selectedColorName])
+  
+  // Limpiar el título si es incoloro
+  const cleanedTitle = React.useMemo(() => {
+    if (!title) return title
+    if (isIncoloro) {
+      return cleanTitleForIncoloroProduct(title)
+    }
+    return title
+  }, [title, isIncoloro])
+  
   return (
     <div className='relative z-20 text-left px-1.5 md:px-2 pt-1.5 md:pt-2 pb-0 flex-shrink-0'>
       {/* Marca del producto */}
@@ -25,7 +52,7 @@ export const ProductCardContent = React.memo(function ProductCardContent({
 
       {/* Título del producto */}
       <h3 className='font-medium text-gray-600 text-sm md:text-lg line-clamp-2 leading-[1.1] mb-1 -mt-1'>
-        {title}
+        {cleanedTitle}
       </h3>
 
       {/* Precios */}

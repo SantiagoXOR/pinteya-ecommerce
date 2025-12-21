@@ -125,6 +125,8 @@ export interface ProductCardImageProps {
 
 // Props para ProductCardContent
 export interface ProductCardContentProps {
+  variants?: ProductVariant[]
+  selectedColorName?: string
   brand?: string
   title?: string
   displayPrice?: number

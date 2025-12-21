@@ -324,6 +324,8 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               displayPrice={variantsData.displayPrice}
               displayOriginalPrice={variantsData.displayOriginalPrice}
               discount={discount}
+              variants={variants}
+              selectedColorName={colors.uniqueColors.find(c => c.hex === colors.selectedColor)?.name}
             />
           </div>
 
