@@ -163,6 +163,83 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
   }, [open, resetStates])
 
+  // Colores inteligentes (lógica compleja mantenida aquí - demasiado específica para extraer)
+  // IMPORTANTE: Definir TEMPRANO para evitar errores de inicialización
+  const smartColors: ColorOption[] = useMemo(() => {
+    if (!productType.hasColorSelector) return []
+    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
+    const safeVariants = Array.isArray(variants) ? variants : []
+    const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
+    if (variantsToUse && variantsToUse.length > 0) {
+      const variantNames = Array.from(
+        new Set(
+          variantsToUse
+            .map(v => (v.color_name || '').toString().trim())
+            .filter(Boolean)
+        )
+      )
+      const list: ColorOption[] = []
+      for (const name of variantNames) {
+        const slug = name.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, '-').trim()
+        const found = PAINT_COLORS.find(
+          c => c.id === slug || c.name === slug || c.displayName.toLowerCase() === name.toLowerCase()
+        )
+        if (found) {
+          if (!list.find(l => l.id === found.id)) list.push(found)
+        } else {
+          const hexFromMap = getColorHex(name) || '#E5E7EB'
+          list.push({
+            id: slug,
+            name: name.toLowerCase(),
+            displayName: name,
+            hex: hexFromMap,
+            category: '',
+            family: 'Personalizados',
+            isPopular: false,
+            description: `Color ${name}`
+          })
+        }
+      }
+      return list.sort((a, b) => a.displayName.localeCompare(b.displayName))
+    }
+    return []
+  }, [productType.hasColorSelector, variants, product])
+
+  // Colores disponibles (fallback)
+  // IMPORTANTE: Definir TEMPRANO para evitar errores de inicialización
+  const availableColors = useMemo(() => {
+    if (!productType.hasColorSelector) return []
+    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
+    const safeVariants = Array.isArray(variants) ? variants : []
+    const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
+    if (variantsToUse && variantsToUse.length > 0) {
+      const uniqueColors = new Set<string>()
+      variantsToUse.forEach((variant: any) => {
+        if (variant.color_name) {
+          uniqueColors.add(variant.color_name)
+        }
+      })
+      return Array.from(uniqueColors).map(colorName => {
+        const existingColor = PAINT_COLORS.find(c => 
+          c.name.toLowerCase() === colorName.toLowerCase() ||
+          c.displayName.toLowerCase() === colorName.toLowerCase()
+        )
+        if (existingColor) return existingColor
+        return {
+          id: colorName.toLowerCase().replace(/\s+/g, '-'),
+          name: colorName.toLowerCase(),
+          displayName: colorName,
+          hex: '#E5E7EB',
+          category: '',
+          family: 'Personalizados',
+          isPopular: false,
+          description: `Color ${colorName}`
+        } as ColorOption
+      })
+    }
+    return product.colors || []
+  }, [variants, productType.hasColorSelector, product])
+
   // Calcular capacityUnit usando utilidad extraída
   const capacityUnit = useMemo(() => {
     // ✅ CORREGIDO: Asegurar que variants sea siempre un array
@@ -427,86 +504,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     return []
   }, [productType.hasWidthSelector, productType.widthOptions, relatedProducts?.products, variants])
 
-  // Colores inteligentes (lógica compleja mantenida aquí - demasiado específica para extraer)
-  const smartColors: ColorOption[] = useMemo(() => {
-    if (!productType.hasColorSelector) return []
-    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
-    const safeVariants = Array.isArray(variants) ? variants : []
-    const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
-    if (variantsToUse && variantsToUse.length > 0) {
-      const variantNames = Array.from(
-        new Set(
-          variantsToUse
-            .map(v => (v.color_name || '').toString().trim())
-            .filter(Boolean)
-        )
-      )
-      const list: ColorOption[] = []
-      for (const name of variantNames) {
-        const slug = name.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, '-').trim()
-        const found = PAINT_COLORS.find(
-          c => c.id === slug || c.name === slug || c.displayName.toLowerCase() === name.toLowerCase()
-        )
-        if (found) {
-          if (!list.find(l => l.id === found.id)) list.push(found)
-        } else {
-          const hexFromMap = getColorHex(name) || '#E5E7EB'
-          list.push({
-            id: slug,
-            name: name.toLowerCase(),
-            displayName: name,
-            hex: hexFromMap,
-            category: '',
-            family: 'Personalizados',
-            isPopular: false,
-            description: `Color ${name}`
-          })
-        }
-      }
-      return list.sort((a, b) => a.displayName.localeCompare(b.displayName))
-    }
-    return []
-  }, [productType.hasColorSelector, variants, product])
-
-  // Colores disponibles (fallback)
-  const availableColors = useMemo(() => {
-    if (!productType.hasColorSelector) return []
-    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
-    const safeVariants = Array.isArray(variants) ? variants : []
-    const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
-    if (variantsToUse && variantsToUse.length > 0) {
-      const uniqueColors = new Set<string>()
-      variantsToUse.forEach((variant: any) => {
-        if (variant.color_name) {
-          uniqueColors.add(variant.color_name)
-        }
-      })
-      return Array.from(uniqueColors).map(colorName => {
-        const existingColor = PAINT_COLORS.find(c => 
-          c.name.toLowerCase() === colorName.toLowerCase() ||
-          c.displayName.toLowerCase() === colorName.toLowerCase()
-        )
-        if (existingColor) return existingColor
-        return {
-          id: colorName.toLowerCase().replace(/\s+/g, '-'),
-          name: colorName.toLowerCase(),
-          displayName: colorName,
-          hex: '#E5E7EB',
-          category: '',
-          family: 'Personalizados',
-          isPopular: false,
-          description: `Color ${colorName}`
-        } as ColorOption
-      })
-    }
-    return product.colors || []
-  }, [variants, productType.hasColorSelector, product])
-
   // Obtener finishes disponibles para el color seleccionado (para determinar cuáles habilitar/deshabilitar)
   // IMPORTANTE: Debe estar después de la definición de smartColors y availableColors
+  // NOTA: smartColors y availableColors están definidos arriba (líneas 431 y 472)
   const availableFinishesForColor = useMemo(() => {
     const safeVariants = Array.isArray(variants) ? variants : []
-    const safeColors = smartColors.length > 0 ? smartColors : availableColors
+    // Usar validación segura para evitar error de inicialización
+    const safeColors = (smartColors && Array.isArray(smartColors) && smartColors.length > 0) 
+      ? smartColors 
+      : (availableColors && Array.isArray(availableColors) ? availableColors : [])
     return getFinishesForColor(safeVariants, selectedColor, safeColors)
   }, [variants, selectedColor, smartColors, availableColors])
 
@@ -571,7 +577,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       (!selectedCapacity || v.measure === selectedCapacity) &&
       (!selectedColor || (() => {
         // Obtener hex del color seleccionado
-        const selectedColorOption = [...(smartColors.length > 0 ? smartColors : availableColors)].find(
+        const selectedColorOption = [...((smartColors && Array.isArray(smartColors) && smartColors.length > 0) ? smartColors : (availableColors && Array.isArray(availableColors) ? availableColors : []))].find(
           c => c.id === selectedColor || c.hex === selectedColor
         )
         const targetHex = selectedColorOption?.hex || (selectedColor.startsWith('#') ? selectedColor : null)
@@ -827,15 +833,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                   {/* Selectores de variantes */}
                   <div className='space-y-6'>
                     {/* Selector de colores */}
-                    {productType.hasColorSelector && (smartColors.length > 0 || availableColors.length > 0) && (
+                    {productType.hasColorSelector && ((smartColors && smartColors.length > 0) || (availableColors && availableColors.length > 0)) && (
                       <React.Suspense fallback={<div className="h-32 animate-pulse bg-gray-100 rounded-lg" />}>
                         <AdvancedColorPicker
-                          colors={smartColors.length > 0 ? smartColors : availableColors}
+                          colors={(smartColors && smartColors.length > 0) ? smartColors : availableColors}
                           selectedColor={selectedColor}
                           onColorChange={setSelectedColor}
                           showSearch={false}
                           showCategories={false}
-                          maxDisplayColors={smartColors.length > 0 ? smartColors.length : availableColors.length}
+                          maxDisplayColors={(smartColors && smartColors.length > 0) ? smartColors.length : (availableColors?.length || 0)}
                           className='bg-white'
                           productType={productType}
                         />
