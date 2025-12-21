@@ -357,35 +357,34 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           cartAddCount={state.cartAddCount}
         />
 
-        {/* Modal con Suspense */}
+        {/* Modal con Suspense - Siempre renderizar para evitar retrasos en primera carga */}
         <React.Suspense fallback={null}>
-          {state.showShopDetailModal && (
-            <ShopDetailModal
-              open={state.showShopDetailModal}
-              onOpenChange={state.handleModalOpenChange}
-              product={{
-                id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
-                name: title || '',
-                slug: slug || '',
-                price: variantsData.displayPrice || price || 0,
-                originalPrice: variantsData.displayOriginalPrice || originalPrice,
-                image: image || '',
-                brand: brand || '',
-                stock: stock || 0,
-                description: description || '',
-                colors: colors.uniqueColors.length > 0 ? colors.uniqueColors.map(c => ({
-                  id: c.name.toLowerCase().replace(/\s+/g, '-'),
-                  name: c.name.toLowerCase(),
-                  displayName: c.name,
-                  hex: c.hex,
-                  category: '',
-                  family: '',
-                  isPopular: false,
-                  description: `Color ${c.name}`
-                })) : undefined,
-                capacities: measures.uniqueMeasures.length > 0 ? measures.uniqueMeasures : [],
-                ...(variants && variants.length > 0 ? { variants } : {}),
-              } as any}
+          <ShopDetailModal
+            open={state.showShopDetailModal}
+            onOpenChange={state.handleModalOpenChange}
+            product={{
+              id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
+              name: title || '',
+              slug: slug || '',
+              price: variantsData.displayPrice || price || 0,
+              originalPrice: variantsData.displayOriginalPrice || originalPrice,
+              image: image || '',
+              brand: brand || '',
+              stock: stock || 0,
+              description: description || '',
+              colors: colors.uniqueColors.length > 0 ? colors.uniqueColors.map(c => ({
+                id: c.name.toLowerCase().replace(/\s+/g, '-'),
+                name: c.name.toLowerCase(),
+                displayName: c.name,
+                hex: c.hex,
+                category: '',
+                family: '',
+                isPopular: false,
+                description: `Color ${c.name}`
+              })) : undefined,
+              capacities: measures.uniqueMeasures.length > 0 ? measures.uniqueMeasures : [],
+              ...(variants && variants.length > 0 ? { variants } : {}),
+            } as any}
               onAddToCart={(productData, modalVariants) => {
                 const images: string[] = Array.isArray((productData as any).images)
                   ? (productData as any).images
@@ -437,8 +436,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                   { quantity: quantityFromModal, attributes }
                 )
               }}
-            />
-          )}
+          />
         </React.Suspense>
       </div>
     )
