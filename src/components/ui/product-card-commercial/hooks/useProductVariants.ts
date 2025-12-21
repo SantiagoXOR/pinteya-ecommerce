@@ -8,6 +8,7 @@ interface UseProductVariantsOptions {
   variants?: ProductVariant[]
   selectedColor?: string
   selectedMeasure?: string
+  selectedFinish?: string | null
   price?: number
   originalPrice?: number
 }
@@ -26,6 +27,7 @@ export const useProductVariants = ({
   variants,
   selectedColor,
   selectedMeasure,
+  selectedFinish,
   price,
   originalPrice
 }: UseProductVariantsOptions): UseProductVariantsResult => {
@@ -49,14 +51,25 @@ export const useProductVariants = ({
     
     let matchingVariant = null
     
-    // Estrategia 1: Coincidencia exacta (color + medida)
+    // Estrategia 1: Coincidencia exacta (color + medida + finish)
     if (selectedMeasure && selectedColor) {
       matchingVariant = variants.find(v => {
         const colorMatch = v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor
         const measureMatch = v.measure === selectedMeasure
-        return colorMatch && measureMatch
+        const finishMatch = selectedFinish ? v.finish === selectedFinish : true
+        return colorMatch && measureMatch && finishMatch
       })
-      console.log('🔍 Estrategia 1 (exacta):', matchingVariant ? 'Encontrada' : 'No encontrada')
+      console.log('🔍 Estrategia 1 (exacta con finish):', matchingVariant ? 'Encontrada' : 'No encontrada', { selectedFinish })
+      
+      // Si no se encuentra con finish, buscar sin finish (fallback)
+      if (!matchingVariant && selectedMeasure && selectedColor) {
+        matchingVariant = variants.find(v => {
+          const colorMatch = v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor
+          const measureMatch = v.measure === selectedMeasure
+          return colorMatch && measureMatch
+        })
+        console.log('🔍 Estrategia 1 (fallback sin finish):', matchingVariant ? 'Encontrada' : 'No encontrada')
+      }
     }
     
     // Estrategia 2: Solo por medida (común cuando hay 1 solo color)
@@ -87,7 +100,7 @@ export const useProductVariants = ({
     })
     
     return matchingVariant || null
-  }, [variants, selectedColor, selectedMeasure])
+  }, [variants, selectedColor, selectedMeasure, selectedFinish])
 
   // Precio dinámico basado en la variante seleccionada
   const displayPrice = React.useMemo(() => {

@@ -15,6 +15,7 @@ import { toast } from 'react-hot-toast'
 // Hooks personalizados
 import { useProductColors } from './hooks/useProductColors'
 import { useProductMeasures } from './hooks/useProductMeasures'
+import { useProductFinishes } from './hooks/useProductFinishes'
 import { useProductVariants } from './hooks/useProductVariants'
 import { useProductBadges } from './hooks/useProductBadges'
 import { useProductCardState } from './hooks/useProductCardState'
@@ -22,6 +23,7 @@ import { useProductCardState } from './hooks/useProductCardState'
 // Componentes
 import { ColorPillSelector } from './components/ColorPillSelector'
 import { MeasurePillSelector } from './components/MeasurePillSelector'
+import { FinishPillSelector } from './components/FinishPillSelector'
 import { ProductCardImage } from './components/ProductCardImage'
 import { ProductCardContent } from './components/ProductCardContent'
 import { ProductCardActions } from './components/ProductCardActions'
@@ -88,10 +90,17 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     // Hooks personalizados
     const colors = useProductColors({ variants, title, color })
     const measures = useProductMeasures({ variants, title, medida }) // ✅ NUEVO: Pasar medida como fallback
+    const finishes = useProductFinishes({ 
+      variants, 
+      selectedColor: colors.selectedColor,
+      productId,
+      productName: title
+    })
     const variantsData = useProductVariants({
       variants,
       selectedColor: colors.selectedColor,
       selectedMeasure: measures.selectedMeasure,
+      selectedFinish: finishes.selectedFinish,
       price,
       originalPrice
     })
@@ -157,7 +166,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           const attributes = {
             color: selectedColorData?.name || colors.selectedColor || '',
             medida: measures.selectedMeasure || '',
-            finish: variantsData.currentVariant?.finish || '',
+            finish: finishes.selectedFinish || variantsData.currentVariant?.finish || '',
           }
 
           addProduct(productData, { quantity: 1, attributes })
@@ -189,7 +198,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           console.error('Error al agregar al carrito:', error)
         }
       },
-      [state.isAddingToCart, stock, currentCartQuantity, showCartAnimation, colors, measures, variantsData, productId, title, image, variants, price, brand, addProduct, trackCartAction]
+      [state.isAddingToCart, stock, currentCartQuantity, showCartAnimation, colors, measures, finishes, variantsData, productId, title, image, variants, price, brand, addProduct, trackCartAction]
     )
 
     // Handler para clic en el card
@@ -324,6 +333,15 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 stock={stock}
                 isImpregnante={badges.isImpregnante}
               />
+
+              {/* Selector de finishes (terminaciones) */}
+              {finishes.availableFinishesForColor.length > 1 && (
+                <FinishPillSelector
+                  finishes={finishes.availableFinishesForColor}
+                  selectedFinish={finishes.selectedFinish}
+                  onFinishSelect={finishes.setSelectedFinish}
+                />
+              )}
             </div>
           </div>
         </div>

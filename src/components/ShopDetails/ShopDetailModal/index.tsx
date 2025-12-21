@@ -216,11 +216,13 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   }, [variants, productData, productType.defaultCapacities, capacityUnit, relatedProducts?.products])
 
   // Obtener acabados disponibles usando utilidad extraída
+  // Filtrar finishes según el color seleccionado (importante para Sintético Converlux)
   const availableFinishes = useMemo(() => {
     // ✅ CORREGIDO: Asegurar que variants sea siempre un array
     const safeVariants = Array.isArray(variants) ? variants : []
-    return extractAvailableFinishes(safeVariants)
-  }, [variants])
+    // Pasar selectedColor para filtrar finishes disponibles solo para ese color
+    return extractAvailableFinishes(safeVariants, selectedColor)
+  }, [variants, selectedColor])
 
   // Helper para extraer ancho de medida
   const extractWidthFromMeasure = useCallback((measure: string): string => {
