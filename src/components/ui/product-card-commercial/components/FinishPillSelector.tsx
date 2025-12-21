@@ -5,6 +5,7 @@ import { FinishPill } from './FinishPill'
 
 interface FinishPillSelectorProps {
   finishes: string[]
+  availableFinishes: string[]
   selectedFinish: string | null
   onFinishSelect: (finish: string) => void
 }
@@ -15,6 +16,7 @@ interface FinishPillSelectorProps {
  */
 export const FinishPillSelector = React.memo(function FinishPillSelector({
   finishes,
+  availableFinishes,
   selectedFinish,
   onFinishSelect,
 }: FinishPillSelectorProps) {
@@ -27,14 +29,18 @@ export const FinishPillSelector = React.memo(function FinishPillSelector({
           className='flex items-center gap-1.5 overflow-x-auto overflow-y-visible scrollbar-hide scroll-smooth py-1 pl-0 pr-16' 
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'visible' }}
         >
-          {finishes.map((finish, index) => (
-            <FinishPill
-              key={`${finish}-${index}`}
-              finish={finish}
-              isSelected={selectedFinish === finish}
-              onSelect={onFinishSelect}
-            />
-          ))}
+          {finishes.map((finish, index) => {
+            const isAvailable = availableFinishes.includes(finish)
+            return (
+              <FinishPill
+                key={`${finish}-${index}`}
+                finish={finish}
+                isSelected={selectedFinish === finish}
+                isAvailable={isAvailable}
+                onSelect={onFinishSelect}
+              />
+            )
+          })}
         </div>
       </div>
     </div>

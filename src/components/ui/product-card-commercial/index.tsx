@@ -334,10 +334,11 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 isImpregnante={badges.isImpregnante}
               />
 
-              {/* Selector de finishes (terminaciones) */}
-              {finishes.availableFinishesForColor.length > 1 && (
+              {/* Selector de finishes (terminaciones) - mostrar siempre que haya finishes */}
+              {finishes.uniqueFinishes.length > 0 && (
                 <FinishPillSelector
-                  finishes={finishes.availableFinishesForColor}
+                  finishes={finishes.uniqueFinishes}
+                  availableFinishes={finishes.availableFinishesForColor}
                   selectedFinish={finishes.selectedFinish}
                   onFinishSelect={finishes.setSelectedFinish}
                 />

@@ -159,28 +159,40 @@ export const extractAvailableCapacities = (
 }
 
 /**
- * Extrae finishes disponibles desde variantes
- * Si se proporciona selectedColor, filtra solo los finishes disponibles para ese color
+ * Extrae TODOS los finishes únicos desde variantes (sin filtrar por color)
+ * Esto permite mostrar todas las opciones pero deshabilitar las no disponibles
  */
 export const extractAvailableFinishes = (
-  variants: ProductVariant[],
-  selectedColor?: string | null
+  variants: ProductVariant[]
 ): string[] => {
   if (!variants || variants.length === 0) return []
 
-  // Si hay un color seleccionado, filtrar finishes solo para ese color
-  let filteredVariants = variants
-  if (selectedColor) {
-    // Buscar variantes que coincidan con el color seleccionado (por hex o name)
-    filteredVariants = variants.filter(v => {
-      if (v.color_hex === selectedColor) return true
-      if (v.color_name) {
-        const colorHexFromName = getColorHexFromName(v.color_name)
-        return colorHexFromName === selectedColor
-      }
-      return false
-    })
-  }
+  const finishes = variants
+    .map(v => v.finish)
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i) // unique
+
+  return finishes as string[]
+}
+
+/**
+ * Determina qué finishes están disponibles para un color específico
+ */
+export const getFinishesForColor = (
+  variants: ProductVariant[],
+  selectedColor: string | null | undefined
+): string[] => {
+  if (!variants || variants.length === 0 || !selectedColor) return []
+
+  // Buscar variantes que coincidan con el color seleccionado (por hex o name)
+  const filteredVariants = variants.filter(v => {
+    if (v.color_hex === selectedColor) return true
+    if (v.color_name) {
+      const colorHexFromName = getColorHexFromName(v.color_name)
+      return colorHexFromName === selectedColor
+    }
+    return false
+  })
 
   const finishes = filteredVariants
     .map(v => v.finish)

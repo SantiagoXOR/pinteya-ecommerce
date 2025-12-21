@@ -44,7 +44,8 @@ import { useProductData } from './hooks/useProductData'
 import { useProductVariants } from './hooks/useProductVariants'
 import { useRelatedProducts } from './hooks/useRelatedProducts'
 import { useVariantSelection } from './hooks/useVariantSelection'
-import { detectCapacityUnit, extractAvailableCapacities, extractAvailableFinishes } from './utils/product-utils'
+import { detectCapacityUnit, extractAvailableCapacities, extractAvailableFinishes, getFinishesForColor } from './utils/product-utils'
+import { getColorHexFromName } from '@/components/ui/product-card-commercial/utils/color-utils'
 import { calculateEffectivePrice, calculateOriginalPrice, hasDiscount as hasDiscountUtil, formatPrice } from './utils/price-utils'
 import { findVariantBySelection, normalizeMeasure } from './utils/variant-utils'
 import { ProductImageGallery } from './components/ProductImageGallery'
@@ -215,13 +216,16 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     return productType.defaultCapacities
   }, [variants, productData, productType.defaultCapacities, capacityUnit, relatedProducts?.products])
 
-  // Obtener acabados disponibles usando utilidad extraída
-  // Filtrar finishes según el color seleccionado (importante para Sintético Converlux)
-  const availableFinishes = useMemo(() => {
-    // ✅ CORREGIDO: Asegurar que variants sea siempre un array
+  // Obtener TODOS los finishes únicos del producto (para mostrar todas las opciones)
+  const allFinishes = useMemo(() => {
     const safeVariants = Array.isArray(variants) ? variants : []
-    // Pasar selectedColor para filtrar finishes disponibles solo para ese color
-    return extractAvailableFinishes(safeVariants, selectedColor)
+    return extractAvailableFinishes(safeVariants)
+  }, [variants])
+
+  // Obtener finishes disponibles para el color seleccionado (para determinar cuáles habilitar/deshabilitar)
+  const availableFinishesForColor = useMemo(() => {
+    const safeVariants = Array.isArray(variants) ? variants : []
+    return getFinishesForColor(safeVariants, selectedColor)
   }, [variants, selectedColor])
 
   // Helper para extraer ancho de medida
@@ -540,6 +544,22 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
   }, [selectedWidth, variants, setSelectedVariant, setSelectedRelatedProduct])
 
+  // Actualizar selectedFinish cuando cambia el color (para Sintético Converlux)
+  useEffect(() => {
+    if (!hasInitialized.current) return
+    if (!selectedColor || !Array.isArray(variants) || variants.length === 0) return
+    
+    // Si el finish actual no está disponible para el nuevo color, seleccionar el primero disponible
+    if (availableFinishesForColor.length > 0) {
+      if (!selectedFinish || !availableFinishesForColor.includes(selectedFinish)) {
+        setSelectedFinish(availableFinishesForColor[0])
+      }
+    } else if (allFinishes.length > 0 && !selectedFinish) {
+      // Si no hay finishes disponibles para el color pero hay finishes en el producto, seleccionar el primero
+      setSelectedFinish(allFinishes[0])
+    }
+  }, [selectedColor, availableFinishesForColor, allFinishes, hasInitialized, selectedFinish, variants, setSelectedFinish])
+
   // Actualizar selectedVariant cuando cambia selectedFinish
   useEffect(() => {
     if (!selectedFinish || !Array.isArray(variants) || variants.length === 0) return
@@ -547,7 +567,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     const compatibleVariant = variants.find(v =>
       v.finish === selectedFinish &&
       (!selectedCapacity || v.measure === selectedCapacity) &&
-      (!selectedColor || v.color_name === selectedColor)
+      (!selectedColor || (() => {
+        if (v.color_hex === selectedColor) return true
+        if (v.color_name) {
+          const variantColorHex = getColorHexFromName(v.color_name)
+          return variantColorHex === selectedColor
+        }
+        return false
+      })())
     ) || variants.find(v =>
       v.finish === selectedFinish &&
       (!selectedCapacity || v.measure === selectedCapacity)
@@ -793,11 +820,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                       </React.Suspense>
                     )}
 
-                    {/* Selector de acabado */}
-                    {availableFinishes.length > 1 && (
+                    {/* Selector de acabado - mostrar siempre que haya finishes, pero deshabilitar opciones no disponibles */}
+                    {allFinishes.length > 0 && (
                       <FinishSelector
-                        finishes={availableFinishes}
-                        selectedFinish={selectedFinish}
+                        finishes={allFinishes}
+                        availableFinishes={availableFinishesForColor}
+                        selectedFinish={selectedFinish || ''}
                         onFinishChange={setSelectedFinish}
                       />
                     )}

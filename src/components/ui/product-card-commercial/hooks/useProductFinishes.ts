@@ -50,6 +50,8 @@ export const useProductFinishes = ({
   }, [variants])
 
   // Filtrar finishes disponibles según el color seleccionado
+  // NOTA: Esto devuelve los finishes disponibles para el color, pero el selector mostrará TODOS los finishes
+  // y deshabilitará los no disponibles
   const availableFinishesForColor = React.useMemo(() => {
     if (!variants || variants.length === 0) return []
     if (!selectedColor) return allUniqueFinishes
@@ -63,7 +65,7 @@ export const useProductFinishes = ({
       })?.color_name
 
       // Si el color es BLANCO o NEGRO, mostrar todos sus finishes disponibles
-      // Para otros colores, solo mostrar "Brillante" (o el finish que tenga)
+      // Para otros colores, solo "Brillante" está disponible
       if (selectedColorName && (selectedColorName.toUpperCase() === 'BLANCO' || selectedColorName.toUpperCase() === 'NEGRO')) {
         // Filtrar finishes solo de variantes con ese color
         const finishesForColor = variants
@@ -76,13 +78,8 @@ export const useProductFinishes = ({
         
         return Array.from(new Set(finishesForColor))
       } else {
-        // Para otros colores, solo mostrar el finish que tienen (generalmente "Brillante")
-        const finishForColor = variants.find(v => {
-          const variantColorHex = v.color_hex || getColorHexFromName(v.color_name || '')
-          return variantColorHex === selectedColor
-        })?.finish
-
-        return finishForColor ? [finishForColor] : []
+        // Para otros colores, solo "Brillante" está disponible
+        return ['Brillante']
       }
     }
 
