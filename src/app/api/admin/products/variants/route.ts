@@ -247,18 +247,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         )
       }
 
-      // Verificar que el aikon_id no existe
-      const { data: existingVariant } = await supabase
+      // Verificar que el aikon_id no existe (incluir información del producto que lo usa)
+      const { data: existingVariant, error: existingVariantError } = await supabase
         .from('product_variants')
-        .select('id')
+        .select(`
+          id,
+          product_id,
+          color_name,
+          measure,
+          products!inner(id, name)
+        `)
         .eq('aikon_id', body.aikon_id)
         .single()
 
-      if (existingVariant) {
+      if (existingVariant && !existingVariantError) {
+        const productName = (existingVariant as any).products?.name || 'Producto desconocido'
+        const variantInfo = existingVariant.color_name || existingVariant.measure 
+          ? ` (${[existingVariant.color_name, existingVariant.measure].filter(Boolean).join(', ')})`
+          : ''
+        
         return NextResponse.json(
           {
             success: false,
-            error: 'El código Aikon ya existe',
+            error: `El código Aikon "${body.aikon_id}" ya está en uso por el producto "${productName}"${variantInfo}`,
             data: null,
           },
           { status: 400 }
