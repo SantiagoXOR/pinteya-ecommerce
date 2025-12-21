@@ -10,6 +10,9 @@ import { ProductWithCategory } from '@/types/api'
 import { ColorOption, PAINT_COLORS } from '@/components/ui/advanced-color-picker'
 import { getColorHex } from '@/utils/product-utils'
 
+// Re-exportar ColorOption para uso en esta función
+type ColorOptionType = ColorOption
+
 /**
  * Detecta la unidad de capacidad efectiva (litros, kg, metros, unidades)
  */
@@ -177,20 +180,86 @@ export const extractAvailableFinishes = (
 
 /**
  * Determina qué finishes están disponibles para un color específico
+ * selectedColor puede ser un color.id (string) o un hex (string)
  */
 export const getFinishesForColor = (
   variants: ProductVariant[],
-  selectedColor: string | null | undefined
+  selectedColor: string | null | undefined,
+  availableColors?: ColorOptionType[]
 ): string[] => {
   if (!variants || variants.length === 0 || !selectedColor) return []
 
-  // Buscar variantes que coincidan con el color seleccionado (por hex o name)
-  const filteredVariants = variants.filter(v => {
-    if (v.color_hex === selectedColor) return true
-    if (v.color_name) {
-      const colorHexFromName = getColorHexFromName(v.color_name)
-      return colorHexFromName === selectedColor
+  // Intentar obtener el hex del color seleccionado
+  // Si selectedColor es un id, buscar en availableColors
+  // Si no está disponible, tratar selectedColor como hex directamente
+  let targetHex: string | null = null
+  let targetName: string | null = null
+  
+  if (availableColors && availableColors.length > 0) {
+    const foundColor = availableColors.find(c => c.id === selectedColor || c.hex === selectedColor)
+    if (foundColor) {
+      targetHex = foundColor.hex
+      targetName = foundColor.displayName || foundColor.name
     }
+  }
+  
+  // Si no se encontró, tratar selectedColor como hex
+  if (!targetHex && selectedColor.startsWith('#')) {
+    targetHex = selectedColor
+  }
+
+  // Buscar variantes que coincidan con el color seleccionado
+  const filteredVariants = variants.filter(v => {
+    // Si tenemos hex objetivo, comparar
+    if (targetHex) {
+      // Comparación por hex directo de la variante
+      if (v.color_hex === targetHex) return true
+      
+      // Comparación por hex derivado del nombre de la variante
+      if (v.color_name) {
+        const variantHex = getColorHexFromName(v.color_name)
+        if (variantHex === targetHex) return true
+      }
+    }
+    
+    // Comparación por nombre del color (normalizado)
+    if (v.color_name && targetName) {
+      const variantName = v.color_name.trim().toUpperCase()
+      const targetNameUpper = targetName.trim().toUpperCase()
+      if (variantName === targetNameUpper) return true
+    }
+    
+    // Comparación directa por nombre cuando selectedColor es un id conocido
+    if (v.color_name) {
+      const variantName = v.color_name.trim().toUpperCase()
+      const selectedUpper = selectedColor.trim().toUpperCase()
+      
+      // Casos especiales para NEGRO y BLANCO
+      if ((selectedUpper === 'NEGRO' || selectedUpper === 'BLACK' || selectedUpper.includes('negro')) && 
+          (variantName === 'NEGRO' || variantName === 'BLACK')) {
+        return true
+      }
+      if ((selectedUpper === 'BLANCO' || selectedUpper === 'WHITE' || selectedUpper.includes('blanco')) && 
+          (variantName === 'BLANCO' || variantName === 'WHITE')) {
+        return true
+      }
+      
+      // Comparación por hex conocido
+      if (targetHex) {
+        // NEGRO
+        if ((targetHex === '#000000' || targetHex.toLowerCase() === '#000000') && 
+            (variantName === 'NEGRO' || variantName === 'BLACK')) {
+          return true
+        }
+        // BLANCO
+        if ((targetHex === '#F5F5F5' || targetHex === '#FFFFFF' || 
+             targetHex.toLowerCase() === '#f5f5f5' || targetHex.toLowerCase() === '#ffffff') && 
+            (variantName === 'BLANCO' || variantName === 'WHITE')) {
+          return true
+        }
+      }
+    }
+    
     return false
   })
 

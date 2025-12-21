@@ -225,8 +225,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   // Obtener finishes disponibles para el color seleccionado (para determinar cuáles habilitar/deshabilitar)
   const availableFinishesForColor = useMemo(() => {
     const safeVariants = Array.isArray(variants) ? variants : []
-    return getFinishesForColor(safeVariants, selectedColor)
-  }, [variants, selectedColor])
+    const safeColors = smartColors.length > 0 ? smartColors : availableColors
+    return getFinishesForColor(safeVariants, selectedColor, safeColors)
+  }, [variants, selectedColor, smartColors, availableColors])
 
   // Helper para extraer ancho de medida
   const extractWidthFromMeasure = useCallback((measure: string): string => {
@@ -568,11 +569,31 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       v.finish === selectedFinish &&
       (!selectedCapacity || v.measure === selectedCapacity) &&
       (!selectedColor || (() => {
-        if (v.color_hex === selectedColor) return true
-        if (v.color_name) {
-          const variantColorHex = getColorHexFromName(v.color_name)
-          return variantColorHex === selectedColor
+        // Obtener hex del color seleccionado
+        const selectedColorOption = [...(smartColors.length > 0 ? smartColors : availableColors)].find(
+          c => c.id === selectedColor || c.hex === selectedColor
+        )
+        const targetHex = selectedColorOption?.hex || (selectedColor.startsWith('#') ? selectedColor : null)
+        
+        if (targetHex) {
+          if (v.color_hex === targetHex) return true
+          if (v.color_name) {
+            const variantColorHex = getColorHexFromName(v.color_name)
+            if (variantColorHex === targetHex) return true
+          }
         }
+        
+        // Comparación por nombre
+        if (v.color_name) {
+          const variantName = v.color_name.trim().toUpperCase()
+          const selectedUpper = selectedColor.trim().toUpperCase()
+          if (variantName === selectedUpper) return true
+          
+          // Casos especiales
+          if ((selectedUpper === 'NEGRO' || selectedUpper === 'BLACK') && variantName === 'NEGRO') return true
+          if ((selectedUpper === 'BLANCO' || selectedUpper === 'WHITE') && variantName === 'BLANCO') return true
+        }
+        
         return false
       })())
     ) || variants.find(v =>
