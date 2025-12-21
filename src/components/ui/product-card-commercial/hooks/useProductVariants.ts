@@ -56,13 +56,23 @@ export const useProductVariants = ({
       matchingVariant = variants.find(v => {
         const colorMatch = v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor
         const measureMatch = v.measure === selectedMeasure
-        const finishMatch = selectedFinish ? v.finish === selectedFinish : true
+        // Comparación de finish normalizada (case-insensitive, trim)
+        let finishMatch = true
+        if (selectedFinish) {
+          const variantFinish = (v.finish || '').toString().trim().toLowerCase()
+          const selectedFinishNormalized = selectedFinish.toString().trim().toLowerCase()
+          finishMatch = variantFinish === selectedFinishNormalized
+        }
         return colorMatch && measureMatch && finishMatch
       })
-      console.log('🔍 Estrategia 1 (exacta con finish):', matchingVariant ? 'Encontrada' : 'No encontrada', { selectedFinish })
+      console.log('🔍 Estrategia 1 (exacta con finish):', matchingVariant ? 'Encontrada' : 'No encontrada', { 
+        selectedFinish,
+        matchingVariantFinish: matchingVariant?.finish,
+        matchingVariantPrice: matchingVariant?.price_sale || matchingVariant?.price_list
+      })
       
-      // Si no se encuentra con finish, buscar sin finish (fallback)
-      if (!matchingVariant && selectedMeasure && selectedColor) {
+      // Si no se encuentra con finish, buscar sin finish (fallback solo si no hay finish seleccionado)
+      if (!matchingVariant && selectedMeasure && selectedColor && !selectedFinish) {
         matchingVariant = variants.find(v => {
           const colorMatch = v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor
           const measureMatch = v.measure === selectedMeasure
@@ -108,6 +118,10 @@ export const useProductVariants = ({
       currentVariant,
       selectedColor,
       selectedMeasure,
+      selectedFinish,
+      variantFinish: currentVariant?.finish,
+      variantPriceSale: currentVariant?.price_sale,
+      variantPriceList: currentVariant?.price_list,
       variants: variants?.length,
       price
     })
@@ -115,13 +129,13 @@ export const useProductVariants = ({
     if (currentVariant) {
       // Priorizar price_sale sobre price_list
       const variantPrice = currentVariant.price_sale || currentVariant.price_list || price
-      console.log('💰 Usando precio de variante:', variantPrice)
+      console.log('💰 Usando precio de variante:', variantPrice, 'para finish:', currentVariant.finish)
       return variantPrice
     }
     
     console.log('💰 Usando precio base:', price)
     return price
-  }, [currentVariant, price, selectedColor, selectedMeasure, variants])
+  }, [currentVariant, price, selectedColor, selectedMeasure, selectedFinish, variants])
 
   // Precio original para mostrar tachado (si hay descuento)
   const displayOriginalPrice = React.useMemo(() => {
