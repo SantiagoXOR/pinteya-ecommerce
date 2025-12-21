@@ -120,6 +120,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     })
     const state = useProductCardState({ image, title })
 
+    // Estado para saber si el módulo del modal ya está precargado
+    const [isModalPreloaded, setIsModalPreloaded] = React.useState(false)
+
     // Precargar el modal cuando el componente se monta para evitar retrasos
     // Esto asegura que el módulo esté disponible incluso sin cache
     React.useEffect(() => {
@@ -127,8 +130,10 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       const preloadModal = async () => {
         try {
           await import('@/components/ShopDetails/ShopDetailModal')
+          setIsModalPreloaded(true)
         } catch (error) {
-          // Silenciar errores de precarga
+          // Si falla, aún así marcar como precargado para intentar renderizar
+          setIsModalPreloaded(true)
         }
       }
       preloadModal()
@@ -371,12 +376,13 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           cartAddCount={state.cartAddCount}
         />
 
-        {/* Modal con Suspense - Siempre renderizar para que el módulo se cargue sin cache
-            El prop 'open' controla la visibilidad, no el renderizado */}
-        <React.Suspense fallback={null}>
-          <ShopDetailModal
-            open={state.showShopDetailModal}
-            onOpenChange={state.handleModalOpenChange}
+        {/* Modal con Suspense - Renderizar condicionalmente pero con módulo precargado
+            Solo renderizar si el módulo está precargado o si el modal debe estar abierto */}
+        {(isModalPreloaded || state.showShopDetailModal) && (
+          <React.Suspense fallback={null}>
+            <ShopDetailModal
+              open={state.showShopDetailModal}
+              onOpenChange={state.handleModalOpenChange}
             product={{
               id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
               name: title || '',
@@ -451,8 +457,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                   { quantity: quantityFromModal, attributes }
                 )
             }}
-          />
-        </React.Suspense>
+            />
+          </React.Suspense>
+        )}
       </div>
     )
   }
