@@ -783,15 +783,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   }, [onAddToWishlist, product, onOpenChange])
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
-    // #region agent log
-    try { fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ShopDetailModal:785',message:'handleOpenChange called',data:{newOpen,currentOpen:open,productId:product?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{}); } catch(e) {}
-    // #endregion
     onOpenChange(newOpen)
   }, [onOpenChange, open, product?.id])
 
-  // #region agent log
-  try { fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ShopDetailModal:790',message:'Dialog render',data:{open,productId:product?.id,productName:product?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{}); } catch(e) {}
-  // #endregion
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
       <DialogContent
