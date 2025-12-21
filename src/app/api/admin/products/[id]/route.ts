@@ -351,7 +351,7 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   if (!supabaseAdmin) {
     throw new ApiError('Cliente de Supabase no disponible', 500, 'CONFIG_ERROR')
   }
-  
+
   // ✅ NUEVO: Actualizar product_categories ANTES de actualizar el producto (para poder actualizar category_id)
   if ((validatedData as any).category_ids !== undefined && Array.isArray((validatedData as any).category_ids)) {
     const categoryIds = (validatedData as any).category_ids
@@ -703,7 +703,7 @@ export async function GET(
         parsedMedida = [String(data.medida)]
       }
     }
-
+    
     // Transform ALL fields para compatibilidad con frontend
     const transformedData = {
       ...data,

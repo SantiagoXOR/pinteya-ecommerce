@@ -180,7 +180,7 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
 
   // Log action
   if (user?.id) {
-    await logAdminAction(user.id, 'CREATE', 'product_image', imageRecord.id, null, imageRecord)
+  await logAdminAction(user.id, 'CREATE', 'product_image', imageRecord.id, null, imageRecord)
   }
 
   return NextResponse.json(

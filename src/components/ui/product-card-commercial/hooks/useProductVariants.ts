@@ -44,7 +44,7 @@ export const useProductVariants = ({
       price_list: v.price_list
     })))
     
-    console.log('🎯 Buscando variante para:', { selectedMeasure, selectedColor })
+    console.log('🎯 Buscando variante para:', { selectedMeasure, selectedColor, selectedFinish })
     
     // Buscar variante que coincida con color y medida seleccionados
     // Estrategia de búsqueda flexible:
@@ -82,24 +82,56 @@ export const useProductVariants = ({
       }
     }
     
-    // Estrategia 2: Solo por medida (común cuando hay 1 solo color)
-    if (!matchingVariant && selectedMeasure) {
-      matchingVariant = variants.find(v => v.measure === selectedMeasure)
-      console.log('🔍 Estrategia 2 (por medida):', matchingVariant ? 'Encontrada' : 'No encontrada')
+    // Estrategia 2: Solo por medida + finish (si hay finish seleccionado, no usar fallbacks que lo ignoren)
+    if (!matchingVariant && selectedMeasure && selectedFinish) {
+      matchingVariant = variants.find(v => {
+        const measureMatch = v.measure === selectedMeasure
+        const variantFinish = (v.finish || '').toString().trim().toLowerCase()
+        const selectedFinishNormalized = selectedFinish.toString().trim().toLowerCase()
+        const finishMatch = variantFinish === selectedFinishNormalized
+        return measureMatch && finishMatch
+      })
+      console.log('🔍 Estrategia 2 (medida + finish):', matchingVariant ? 'Encontrada' : 'No encontrada', {
+        selectedFinish,
+        matchingVariantFinish: matchingVariant?.finish,
+        matchingVariantColor: matchingVariant?.color_name
+      })
     }
     
-    // Estrategia 3: Solo por color
-    if (!matchingVariant && selectedColor) {
+    // Estrategia 2b: Solo por medida (sin finish, solo si no hay finish seleccionado)
+    if (!matchingVariant && selectedMeasure && !selectedFinish) {
+      matchingVariant = variants.find(v => v.measure === selectedMeasure)
+      console.log('🔍 Estrategia 2b (por medida sin finish):', matchingVariant ? 'Encontrada' : 'No encontrada')
+    }
+    
+    // Estrategia 3: Solo por color + finish (si hay finish seleccionado)
+    if (!matchingVariant && selectedColor && selectedFinish) {
+      matchingVariant = variants.find(v => {
+        const colorMatch = v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor
+        const variantFinish = (v.finish || '').toString().trim().toLowerCase()
+        const selectedFinishNormalized = selectedFinish.toString().trim().toLowerCase()
+        const finishMatch = variantFinish === selectedFinishNormalized
+        return colorMatch && finishMatch
+      })
+      console.log('🔍 Estrategia 3 (color + finish):', matchingVariant ? 'Encontrada' : 'No encontrada', {
+        selectedFinish,
+        matchingVariantFinish: matchingVariant?.finish,
+        matchingVariantColor: matchingVariant?.color_name
+      })
+    }
+    
+    // Estrategia 3b: Solo por color (sin finish, solo si no hay finish seleccionado)
+    if (!matchingVariant && selectedColor && !selectedFinish) {
       matchingVariant = variants.find(v => 
         v.color_hex === selectedColor || getColorHexFromName(v.color_name || '') === selectedColor
       )
-      console.log('🔍 Estrategia 3 (por color):', matchingVariant ? 'Encontrada' : 'No encontrada')
+      console.log('🔍 Estrategia 3b (por color sin finish):', matchingVariant ? 'Encontrada' : 'No encontrada')
     }
     
-    // Estrategia 4: Fallback a primera variante
-    if (!matchingVariant && variants.length > 0) {
+    // Estrategia 4: Fallback a primera variante (solo si no hay finish seleccionado)
+    if (!matchingVariant && variants.length > 0 && !selectedFinish) {
       matchingVariant = variants[0]
-      console.log('🔍 Estrategia 4 (fallback a primera)')
+      console.log('🔍 Estrategia 4 (fallback a primera sin finish)')
     }
     
     console.log('✅ Variante seleccionada:', {

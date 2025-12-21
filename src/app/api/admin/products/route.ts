@@ -46,8 +46,8 @@ function extractImageUrl(images: any): string | null {
           // Si falla, intentar parsear como string escapado
           const unescaped = JSON.parse(`"${trimmed}"`)
           return extractImageUrl(unescaped)
-        } catch {
-          return normalize(trimmed)
+      } catch {
+        return normalize(trimmed)
         }
       }
     }
@@ -954,7 +954,7 @@ export const GET = async (request: NextRequest) => {
     const variantColors: Record<number, string[]> = {} // ✅ Array de colores
     const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
     const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
-
+    
     if (productIds.length > 0) {
       // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
       const { data: productImagesData } = await supabaseAdmin
