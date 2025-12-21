@@ -913,6 +913,8 @@ export function ProductFormMinimal({
           productId={productId}
           productData={{
             price: watchedData.price,
+            discounted_price: watchedData.discounted_price,
+            stock: watchedData.stock,
             medida: watchedData.medida,
           }}
           onSave={async (variant) => {
@@ -952,6 +954,8 @@ interface VariantModalProps {
   productId?: string
   productData?: {
     price?: number
+    discounted_price?: number | null
+    stock?: number
     medida?: string[]
   }
   onSave: (variant: ProductVariant) => void
@@ -998,9 +1002,10 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
         // Campos de texto
         color_name: formData.color_name?.trim() || undefined,
         // ✅ CORREGIDO: Permitir null para color_hex (puede ser null para limpiar el color)
-        color_hex: formData.color_hex && formData.color_hex.trim() !== '' 
+        // Manejar string vacío, null, undefined: todos deben convertirse a null para permitir limpiar
+        color_hex: formData.color_hex && typeof formData.color_hex === 'string' && formData.color_hex.trim() !== '' 
           ? formData.color_hex.trim() 
-          : (formData.color_hex === null ? null : undefined),
+          : null,
         measure: formData.measure?.trim() || undefined,
         finish: formData.finish || undefined,
         aikon_id: formData.aikon_id?.trim() || undefined,
@@ -1186,7 +1191,7 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
                             setFormData({ ...formData, measure: med })
                             if (errors.measure) setErrors({ ...errors, measure: '' })
                           }}
-                          className='text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors'
+                          className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
                         >
                           Usar: {med}
                         </button>
@@ -1270,7 +1275,7 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
                         setFormData({ ...formData, price_list: productData.price || 0 })
                         if (errors.price_list) setErrors({ ...errors, price_list: '' })
                       }}
-                      className='text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors'
+                      className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
                     >
                       Usar: ${productData.price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                     </button>
@@ -1301,9 +1306,22 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
               </div>
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Precio Venta
-                </label>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Precio Venta
+                  </label>
+                  {productData?.discounted_price && productData.discounted_price > 0 && !variant.id && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setFormData({ ...formData, price_sale: productData.discounted_price || undefined })
+                      }}
+                      className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                    >
+                      Usar: ${productData.discounted_price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    </button>
+                  )}
+                </div>
                 <div className='relative'>
                   <span className='absolute left-3 top-2.5 text-gray-500'>$</span>
                   <input
@@ -1326,7 +1344,23 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
               </div>
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Stock *</label>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Stock *
+                  </label>
+                  {productData?.stock !== undefined && productData.stock >= 0 && !variant.id && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setFormData({ ...formData, stock: productData.stock || 0 })
+                        if (errors.stock) setErrors({ ...errors, stock: '' })
+                      }}
+                      className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                    >
+                      Usar: {productData.stock}
+                    </button>
+                  )}
+                </div>
                 <input
                   type='number'
                   value={formData.stock || 0}

@@ -268,6 +268,21 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
     updateData.terminaciones = terminaciones.length > 0 ? terminaciones : null
   }
   
+  // ✅ NUEVO: Normalizar medida: convertir array a string (tomar primera medida)
+  if ((validatedData as any).medida !== undefined) {
+    const medidaValue = Array.isArray((validatedData as any).medida) && (validatedData as any).medida.length > 0
+      ? (validatedData as any).medida[0]  // Solo primera medida
+      : (typeof (validatedData as any).medida === 'string' && (validatedData as any).medida.trim() !== ''
+        ? (validatedData as any).medida
+        : null)
+    
+    if (medidaValue !== null && medidaValue !== undefined) {
+      updateData.medida = medidaValue
+    } else {
+      updateData.medida = null
+    }
+  }
+  
   // Generar slug si se actualiza el nombre
   if (validatedData.name) {
     updateData.slug = generateSlug(validatedData.name)
@@ -476,7 +491,7 @@ export async function GET(
       return NextResponse.json({ 
         error: authResult.error || 'Acceso denegado',
         code: 'AUTH_ERROR'
-      }, { status: 401 })
+      }, { status: 403 })
     }
     
     const { id } = await context.params

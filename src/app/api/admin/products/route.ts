@@ -709,10 +709,15 @@ const postHandlerSimple = async (request: NextRequest) => {
         : (body.status === 'active' ? true : (body.status === 'inactive' ? false : true)), // Si no se especifica status, por defecto es activo
       brand: body.brand || '',
       color: body.color || '',
-      // ✅ CORREGIDO: Extraer primera medida del array o usar string directamente
-      medida: Array.isArray(body.medida) && body.medida.length > 0
-        ? body.medida[0]
-        : (typeof body.medida === 'string' ? body.medida : ''),
+      // ✅ CORREGIDO: Normalizar medida - convertir array a string (tomar primera medida) o null
+      medida: (() => {
+        if (Array.isArray(body.medida)) {
+          return body.medida.length > 0 ? body.medida[0] : null
+        }
+        return typeof body.medida === 'string' && body.medida.trim() !== '' 
+          ? body.medida 
+          : null
+      })(),
       // ✅ NUEVO: Incluir terminaciones como array de texto
       terminaciones: body.terminaciones && Array.isArray(body.terminaciones) 
         ? body.terminaciones.filter((t: string) => t && t.trim() !== '')
