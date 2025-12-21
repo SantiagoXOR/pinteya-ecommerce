@@ -222,13 +222,6 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     return extractAvailableFinishes(safeVariants)
   }, [variants])
 
-  // Obtener finishes disponibles para el color seleccionado (para determinar cuáles habilitar/deshabilitar)
-  const availableFinishesForColor = useMemo(() => {
-    const safeVariants = Array.isArray(variants) ? variants : []
-    const safeColors = smartColors.length > 0 ? smartColors : availableColors
-    return getFinishesForColor(safeVariants, selectedColor, safeColors)
-  }, [variants, selectedColor, smartColors, availableColors])
-
   // Helper para extraer ancho de medida
   const extractWidthFromMeasure = useCallback((measure: string): string => {
     if (measure.includes(' x ')) {
@@ -508,6 +501,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     }
     return product.colors || []
   }, [variants, productType.hasColorSelector, product])
+
+  // Obtener finishes disponibles para el color seleccionado (para determinar cuáles habilitar/deshabilitar)
+  // IMPORTANTE: Debe estar después de la definición de smartColors y availableColors
+  const availableFinishesForColor = useMemo(() => {
+    const safeVariants = Array.isArray(variants) ? variants : []
+    const safeColors = smartColors.length > 0 ? smartColors : availableColors
+    return getFinishesForColor(safeVariants, selectedColor, safeColors)
+  }, [variants, selectedColor, smartColors, availableColors])
 
   // Establecer valores por defecto
   useEffect(() => {
