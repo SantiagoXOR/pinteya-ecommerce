@@ -359,6 +359,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
         {/* Modal con Suspense - Siempre renderizar para evitar retrasos en primera carga */}
         <React.Suspense fallback={null}>
+          {/* #region agent log */}
+          {/* Log del estado antes de renderizar el modal */}
+          {/* #endregion */}
           <ShopDetailModal
             open={state.showShopDetailModal}
             onOpenChange={state.handleModalOpenChange}

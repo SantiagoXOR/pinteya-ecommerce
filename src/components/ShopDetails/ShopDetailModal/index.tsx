@@ -783,13 +783,18 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   }, [onAddToWishlist, product, onOpenChange])
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
+    // #region agent log
+    try { fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ShopDetailModal:785',message:'handleOpenChange called',data:{newOpen,currentOpen:open,productId:product?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{}); } catch(e) {}
+    // #endregion
     onOpenChange(newOpen)
-  }, [onOpenChange])
+  }, [onOpenChange, open, product?.id])
 
+  // #region agent log
+  try { fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ShopDetailModal:790',message:'Dialog render',data:{open,productId:product?.id,productName:product?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{}); } catch(e) {}
+  // #endregion
   return (
-    <Dialog key={open ? 'open' : 'closed'} open={open} onOpenChange={handleOpenChange} modal={false}>
+    <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
       <DialogContent
-        key={open ? 'content-open' : 'content-closed'}
         className="max-w-4xl max-h-[90vh] p-0 gap-0 grid grid-rows-[auto,1fr] overflow-hidden"
         showCloseButton={true}
         onInteractOutside={() => handleOpenChange(false)}

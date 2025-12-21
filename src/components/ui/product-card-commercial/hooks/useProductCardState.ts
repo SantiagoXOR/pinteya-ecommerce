@@ -80,11 +80,17 @@ export const useProductCardState = ({
 
   // Handler para abrir el modal
   const handleOpenModal = React.useCallback(() => {
+    // #region agent log
+    try { fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductCardState:82',message:'handleOpenModal called',data:{currentState:showShopDetailModal,productTitle:title},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{}); } catch(e) {}
+    // #endregion
     setShowShopDetailModal(true)
-  }, [])
+  }, [showShopDetailModal, title])
 
   // Handler para el modal
   const handleModalOpenChange = React.useCallback((open: boolean) => {
+    // #region agent log
+    try { fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductCardState:87',message:'handleModalOpenChange called',data:{newOpen:open,currentState:showShopDetailModal,productTitle:title},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{}); } catch(e) {}
+    // #endregion
     console.log('🔄 [ProductCardState] onOpenChange llamado:', { 
       open, 
       currentState: showShopDetailModal,
