@@ -371,13 +371,13 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           cartAddCount={state.cartAddCount}
         />
 
-        {/* Modal con Suspense - Renderizar condicionalmente pero precargado */}
-        {state.showShopDetailModal && (
-          <React.Suspense fallback={null}>
-            <ShopDetailModal
-              open={state.showShopDetailModal}
-              onOpenChange={state.handleModalOpenChange}
-              product={{
+        {/* Modal con Suspense - Siempre renderizar para que el módulo se cargue sin cache
+            El prop 'open' controla la visibilidad, no el renderizado */}
+        <React.Suspense fallback={null}>
+          <ShopDetailModal
+            open={state.showShopDetailModal}
+            onOpenChange={state.handleModalOpenChange}
+            product={{
               id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
               name: title || '',
               slug: slug || '',
@@ -400,7 +400,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               capacities: measures.uniqueMeasures.length > 0 ? measures.uniqueMeasures : [],
               ...(variants && variants.length > 0 ? { variants } : {}),
             } as any}
-              onAddToCart={(productData, modalVariants) => {
+            onAddToCart={(productData, modalVariants) => {
                 const images: string[] = Array.isArray((productData as any).images)
                   ? (productData as any).images
                   : (productData as any).image
@@ -450,8 +450,8 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                   },
                   { quantity: quantityFromModal, attributes }
                 )
-              }}
-            />
+            }}
+          />
         </React.Suspense>
       </div>
     )
