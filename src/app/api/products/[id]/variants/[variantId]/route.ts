@@ -160,6 +160,31 @@ export async function PUT(
     const numericProductId = parseInt(productId, 10)
     const numericVariantId = parseInt(variantId, 10)
     
+    // ✅ NUEVO: Si se está actualizando aikon_id, verificar que no exista en otra variante
+    if (validatedData.aikon_id !== undefined) {
+      const { data: existingVariantWithAikon } = await supabaseAdmin
+        .from('product_variants')
+        .select('id, aikon_id')
+        .eq('aikon_id', validatedData.aikon_id)
+        .neq('id', numericVariantId) // Excluir la variante actual
+        .single()
+      
+      if (existingVariantWithAikon) {
+        console.error('❌ [PUT Variant] El código Aikon ya existe en otra variante:', {
+          aikon_id: validatedData.aikon_id,
+          existingVariantId: existingVariantWithAikon.id,
+          currentVariantId: numericVariantId
+        })
+        return NextResponse.json(
+          {
+            error: 'El código Aikon ya existe en otra variante',
+            details: `El código ${validatedData.aikon_id} ya está en uso por otra variante`
+          },
+          { status: 400 }
+        )
+      }
+    }
+    
     // Preparar datos de actualización
     const updateData: Record<string, any> = {
       ...validatedData,

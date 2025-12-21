@@ -238,6 +238,14 @@ export function ProductFormMinimal({
     },
     onError: (error: any) => {
       console.error('Error al crear variante:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al crear variante'
+      
+      // Mostrar mensaje de error específico al usuario
+      if (errorMessage.includes('Aikon ya existe') || errorMessage.includes('aikon') || errorMessage.includes('código')) {
+        notifications.showInfoMessage('Error al crear variante', 'El código Aikon ingresado ya está en uso. Por favor, ingresa un código único.')
+      } else {
+        notifications.showInfoMessage('Error al crear variante', errorMessage)
+      }
     }
   })
   
@@ -336,6 +344,14 @@ export function ProductFormMinimal({
     },
     onError: (error: any) => {
       console.error('Error al actualizar variante:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al actualizar variante'
+      
+      // Mostrar mensaje de error específico al usuario
+      if (errorMessage.includes('Aikon ya existe') || errorMessage.includes('aikon') || errorMessage.includes('código')) {
+        notifications.showInfoMessage('Error al actualizar variante', 'El código Aikon ingresado ya está en uso por otra variante. Por favor, ingresa un código único.')
+      } else {
+        notifications.showInfoMessage('Error al actualizar variante', errorMessage)
+      }
     }
   })
   
