@@ -121,9 +121,17 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const state = useProductCardState({ image, title })
 
     // Precargar el modal cuando el componente se monta para evitar retrasos
+    // Esto asegura que el módulo esté disponible incluso sin cache
     React.useEffect(() => {
       // Precargar el módulo del modal en background
-      import('@/components/ShopDetails/ShopDetailModal').catch(() => {})
+      const preloadModal = async () => {
+        try {
+          await import('@/components/ShopDetails/ShopDetailModal')
+        } catch (error) {
+          // Silenciar errores de precarga
+        }
+      }
+      preloadModal()
     }, [])
 
     // Cantidad actual en el carrito
@@ -444,8 +452,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 )
               }}
             />
-            </React.Suspense>
-          )}
+        </React.Suspense>
       </div>
     )
   }
