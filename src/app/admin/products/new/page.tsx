@@ -90,7 +90,8 @@ export default function NewProductPage() {
   })
 
   const handleSubmit = async (data: ProductFormData) => {
-    await createProductMutation.mutateAsync(data)
+    const result = await createProductMutation.mutateAsync(data)
+    return result // ✅ IMPORTANTE: Devolver el resultado para que ProductFormMinimal pueda obtener el productId
   }
 
   const handleCancel = () => {

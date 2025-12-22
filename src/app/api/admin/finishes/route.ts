@@ -86,3 +86,88 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
   })
 }
 
+// ===================================
+// POST /api/admin/finishes - Guardar terminación personalizada en la paleta
+// ===================================
+export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<{ finish: string }>>> {
+  return withRateLimit(request, RATE_LIMIT_CONFIGS.public, async () => {
+    try {
+      const body = await request.json()
+      const { finish } = body
+
+      if (!finish || typeof finish !== 'string' || finish.trim() === '') {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Campo requerido: finish debe ser un string no vacío',
+            data: null,
+          },
+          { status: 400 }
+        )
+      }
+
+      const finishTrimmed = finish.trim()
+      const finishLower = finishTrimmed.toLowerCase()
+
+      // Verificar si la terminación ya existe en la paleta (case-insensitive)
+      const { data: existingFinish } = await supabaseAdmin
+        .from('finish_palette')
+        .select('id')
+        .ilike('finish', finishLower)
+        .maybeSingle()
+
+      // Si ya existe, devolver éxito sin crear duplicado
+      if (existingFinish) {
+        return NextResponse.json({
+          success: true,
+          data: { finish: finishTrimmed },
+          message: `Terminación "${finishTrimmed}" ya existe en la paleta`,
+        })
+      }
+
+      // Determinar categoría (por defecto 'Personalizado')
+      const category = 'Personalizado'
+
+      // Guardar terminación en la paleta
+      const { error: finishError } = await supabaseAdmin
+        .from('finish_palette')
+        .insert({
+          finish: finishTrimmed,
+          category: category,
+          is_popular: false,
+          description: `Terminación personalizada agregada automáticamente: ${finishTrimmed}`,
+        } as any)
+
+      if (finishError) {
+        console.error('❌ Error guardando terminación en paleta:', finishError)
+        return NextResponse.json(
+          {
+            success: false,
+            error: finishError.message || 'Error al guardar terminación en la paleta',
+            data: null,
+          },
+          { status: 500 }
+        )
+      }
+
+      console.log(`✅ [POST Finish] Terminación "${finishTrimmed}" guardada en paleta automáticamente`)
+
+      return NextResponse.json({
+        success: true,
+        data: { finish: finishTrimmed },
+        message: `Terminación "${finishTrimmed}" guardada en la paleta`,
+      })
+    } catch (error: any) {
+      console.error('❌ Error en POST /api/admin/finishes:', error)
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Error interno del servidor',
+          data: null,
+        },
+        { status: 500 }
+      )
+    }
+  })
+}
+

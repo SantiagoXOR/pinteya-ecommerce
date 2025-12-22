@@ -79,9 +79,40 @@ export function TerminacionSelector({
     onChange(selectedTerminaciones.filter(t => t !== terminacion))
   }
 
-  const handleCustomTerminacion = () => {
+  const handleCustomTerminacion = async () => {
     const terminacionToAdd = customTerminacion.trim()
     if (terminacionToAdd && !selectedTerminaciones.includes(terminacionToAdd)) {
+      // ✅ NUEVO: Guardar terminación en la paleta si no existe
+      try {
+        const response = await fetch('/api/admin/finishes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ finish: terminacionToAdd }),
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success) {
+            console.log(`✅ Terminación "${terminacionToAdd}" guardada en paleta automáticamente`)
+            // Recargar terminaciones para incluir la nueva
+            const reloadResponse = await fetch('/api/admin/finishes')
+            if (reloadResponse.ok) {
+              const reloadResult = await reloadResponse.json()
+              if (reloadResult.success && reloadResult.data) {
+                setAllTerminaciones(reloadResult.data)
+              }
+            }
+          }
+        } else {
+          console.warn(`⚠️ No se pudo guardar terminación en paleta:`, await response.text())
+        }
+      } catch (error) {
+        console.warn(`⚠️ Error al guardar terminación en paleta:`, error)
+        // Continuar aunque falle el guardado en paleta
+      }
+
       handleAddTerminacion(terminacionToAdd)
       
       // Si la terminación no está en allTerminaciones, agregarla localmente

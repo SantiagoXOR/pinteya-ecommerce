@@ -10,6 +10,7 @@ import { CategorySelector } from './CategorySelector'
 import { BrandSelector } from './BrandSelector'
 import { MeasureSelector } from './MeasureSelector'
 import { TerminacionSelector } from './TerminacionSelector'
+import { FinishSelectorSingle } from './FinishSelectorSingle'
 import { ColorPickerField } from './ColorPickerField'
 import { VariantBuilder, VariantFormData } from './VariantBuilder'
 import { ImageUploadZone } from './ImageUploadZone'
@@ -502,30 +503,81 @@ export function ProductFormMinimal({
       // Primero guardar/actualizar el producto
       const result = await onSubmit(data)
       
-      // Obtener productId del resultado o usar el existente
-      const finalProductId = (result as any)?.id || productId || (result as any)?.data?.id
+      // ✅ MEJORADO: Obtener productId del resultado de múltiples formas posibles
+      let finalProductId: number | string | null = null
+      
+      if (result) {
+        // Intentar obtener el ID de diferentes estructuras de respuesta
+        finalProductId = (result as any)?.data?.id || 
+                        (result as any)?.id || 
+                        (result as any)?.data?.data?.id
+      }
+      
+      // Si no se obtuvo del resultado, usar el productId existente
+      if (!finalProductId && productId) {
+        finalProductId = productId
+      }
+      
+      // ✅ DEBUG: Log para verificar que se obtuvo el productId
+      console.log('🔍 [ProductFormMinimal] Producto guardado:', {
+        result,
+        finalProductId,
+        newVariantsCount: newVariants.length,
+        newVariants: newVariants.map(v => ({ aikon_id: v.aikon_id, measure: v.measure, color_name: v.color_name }))
+      })
       
       // Si hay variantes nuevas y tenemos productId, crearlas
       if (newVariants.length > 0 && finalProductId) {
-        notifications.showProcessingInfo('Creando variantes...')
+        notifications.showProcessingInfo(`Creando ${newVariants.length} variante(s)...`)
+        
+        const createdVariants: any[] = []
+        const failedVariants: any[] = []
         
         for (const variant of newVariants) {
           try {
+            // ✅ VALIDACIÓN: Verificar que la variante tenga los campos requeridos
+            if (!variant.aikon_id || variant.aikon_id.trim() === '') {
+              console.warn('⚠️ [ProductFormMinimal] Variante sin aikon_id, saltando:', variant)
+              failedVariants.push({ variant, error: 'Código Aikon requerido' })
+              continue
+            }
+            
+            if (!variant.measure || variant.measure.trim() === '') {
+              console.warn('⚠️ [ProductFormMinimal] Variante sin measure, saltando:', variant)
+              failedVariants.push({ variant, error: 'Medida requerida' })
+              continue
+            }
+            
+            if (!variant.price_list || variant.price_list <= 0) {
+              console.warn('⚠️ [ProductFormMinimal] Variante sin price_list válido, saltando:', variant)
+              failedVariants.push({ variant, error: 'Precio lista debe ser mayor a 0' })
+              continue
+            }
+            
+            console.log('📤 [ProductFormMinimal] Creando variante:', {
+              product_id: finalProductId,
+              aikon_id: variant.aikon_id,
+              measure: variant.measure,
+              color_name: variant.color_name,
+              finish: variant.finish,
+              price_list: variant.price_list,
+            })
+            
             const response = await fetch('/api/admin/products/variants', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include', // ✅ Incluir cookies de autenticación
               body: JSON.stringify({
                 product_id: parseInt(String(finalProductId)),
-                aikon_id: variant.aikon_id,
-                color_name: variant.color_name || null,
-                color_hex: variant.color_hex || null,
-                measure: variant.measure,
-                finish: variant.finish || 'Mate',
+                aikon_id: variant.aikon_id.trim(),
+                color_name: variant.color_name && variant.color_name.trim() !== '' ? variant.color_name.trim() : null,
+                color_hex: variant.color_hex && variant.color_hex.trim() !== '' ? variant.color_hex.trim() : null,
+                measure: variant.measure.trim(),
+                finish: variant.finish && variant.finish.trim() !== '' ? variant.finish.trim() : null,
                 price_list: variant.price_list,
-                price_sale: variant.price_sale || null,
-                stock: variant.stock,
-                image_url: variant.image_url || null,
+                price_sale: variant.price_sale && variant.price_sale > 0 ? variant.price_sale : null,
+                stock: variant.stock || 0,
+                image_url: variant.image_url && variant.image_url.trim() !== '' ? variant.image_url.trim() : null,
                 is_active: variant.is_active !== false,
                 is_default: variant.is_default || false,
               }),
@@ -533,20 +585,63 @@ export function ProductFormMinimal({
 
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
-              throw new Error(errorData.error || 'Error creando variante')
+              const errorMessage = errorData.error || `Error ${response.status}: Error creando variante`
+              console.error('❌ [ProductFormMinimal] Error creando variante:', {
+                variant: variant.aikon_id,
+                error: errorMessage,
+                status: response.status,
+                errorData
+              })
+              failedVariants.push({ variant, error: errorMessage })
+              throw new Error(errorMessage)
             }
+            
+            const variantResult = await response.json()
+            console.log('✅ [ProductFormMinimal] Variante creada exitosamente:', {
+              variant: variant.aikon_id,
+              result: variantResult
+            })
+            createdVariants.push(variantResult)
           } catch (error) {
-            console.error('Error creando variante:', error)
-            notifications.showInfoMessage(
-              'Error creando variante',
-              error instanceof Error ? error.message : 'Error desconocido'
-            )
+            console.error('❌ [ProductFormMinimal] Error creando variante:', error)
+            failedVariants.push({ 
+              variant, 
+              error: error instanceof Error ? error.message : 'Error desconocido' 
+            })
+            // ✅ NO mostrar notificación aquí para evitar spam, se mostrará al final
           }
         }
 
-        // Limpiar variantes después de crearlas
+        // ✅ Mostrar resumen de variantes creadas/fallidas
+        if (createdVariants.length > 0) {
+          notifications.showInfoMessage(
+            'Variantes creadas',
+            `${createdVariants.length} de ${newVariants.length} variante(s) creada(s) exitosamente`
+          )
+        }
+        
+        if (failedVariants.length > 0) {
+          const errorMessages = failedVariants.map(f => `${f.variant.aikon_id || 'Sin código'}: ${f.error}`).join(', ')
+          notifications.showInfoMessage(
+            'Error creando algunas variantes',
+            `${failedVariants.length} variante(s) no se pudieron crear: ${errorMessages}`
+          )
+        }
+
+        // Limpiar variantes después de intentar crearlas
         setNewVariants([])
         queryClient.invalidateQueries({ queryKey: ['product-variants', finalProductId] })
+      } else if (newVariants.length > 0 && !finalProductId) {
+        // ✅ NUEVO: Mostrar error si hay variantes pero no se pudo obtener el productId
+        console.error('❌ [ProductFormMinimal] No se pudo obtener productId para crear variantes:', {
+          result,
+          productId,
+          newVariantsCount: newVariants.length
+        })
+        notifications.showInfoMessage(
+          'Error al crear variantes',
+          'No se pudo obtener el ID del producto. Las variantes no se guardaron. Por favor, edita el producto y agrega las variantes nuevamente.'
+        )
       }
       
       if (mode === 'create') {
@@ -1249,32 +1344,6 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
   const [formData, setFormData] = useState(variant)
   const [imagePreview, setImagePreview] = useState<string | null>(variant.image_url || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [availableFinishes, setAvailableFinishes] = useState<string[]>([])
-  const [isLoadingFinishes, setIsLoadingFinishes] = useState(false)
-
-  // Cargar terminaciones disponibles desde la API
-  useEffect(() => {
-    const loadFinishes = async () => {
-      setIsLoadingFinishes(true)
-      try {
-        const response = await fetch('/api/admin/finishes')
-        if (response.ok) {
-          const result = await response.json()
-          if (result.success && result.data) {
-            setAvailableFinishes(result.data)
-          }
-        }
-      } catch (error) {
-        console.warn('⚠️ Error cargando terminaciones, usando predefinidas:', error)
-        // Si falla, usar predefinidas
-        setAvailableFinishes(['Mate', 'Satinado', 'Semi-brillante', 'Brillante', 'Rústico', 'Texturizado', 'Metálico', 'Perlado', 'Chrome'])
-      } finally {
-        setIsLoadingFinishes(false)
-      }
-    }
-
-    loadFinishes()
-  }, [])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -1557,52 +1626,19 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
               </div>
 
               <div>
-                <div className='flex items-center justify-between mb-2'>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Terminación
-                  </label>
-                  {productData?.terminaciones && Array.isArray(productData.terminaciones) && productData.terminaciones.length > 0 && !variant.id && (
-                    <div className='flex gap-1 flex-wrap'>
-                      {productData.terminaciones.map((term, idx) => (
-                        <button
-                          key={idx}
-                          type='button'
-                          onClick={() => {
-                            setFormData({ ...formData, finish: term })
-                            if (errors.finish) setErrors({ ...errors, finish: '' })
-                          }}
-                          className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
-                        >
-                          Usar: {term}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <input
-                  type='text'
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Terminación
+                </label>
+                <FinishSelectorSingle
                   value={formData.finish || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, finish: e.target.value })
+                  onChange={(finish) => {
+                    setFormData({ ...formData, finish })
                     if (errors.finish) setErrors({ ...errors, finish: '' })
                   }}
-                  list='finish-options'
-                  className={cn(
-                    'w-full px-3 py-2 border rounded-lg focus:ring-2',
-                    errors.finish
-                      ? 'border-red-300 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blaze-orange-500'
-                  )}
                   placeholder='Ej: Mate, Metálico, Brillante'
+                  error={errors.finish}
+                  availableFinishes={productData?.terminaciones && Array.isArray(productData.terminaciones) ? productData.terminaciones : []}
                 />
-                <datalist id='finish-options'>
-                  {availableFinishes.map((finish) => (
-                    <option key={finish} value={finish} />
-                  ))}
-                </datalist>
-                {errors.finish && (
-                  <p className='text-red-600 text-sm mt-1'>{errors.finish}</p>
-                )}
               </div>
 
               <div>
