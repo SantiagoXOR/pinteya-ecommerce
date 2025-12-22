@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Plus } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
@@ -11,7 +11,7 @@ interface TerminacionSelectorProps {
   className?: string
 }
 
-// Terminaciones predefinidas comunes
+// Terminaciones predefinidas comunes (fallback)
 const PREDEFINED_TERMINACIONES = [
   'Mate',
   'Satinado',
@@ -30,9 +30,34 @@ export function TerminacionSelector({
   const [isOpen, setIsOpen] = useState(false)
   const [customTerminacion, setCustomTerminacion] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [allTerminaciones, setAllTerminaciones] = useState<string[]>(PREDEFINED_TERMINACIONES) // Inicializar con predefinidas
+  const [isLoadingTerminaciones, setIsLoadingTerminaciones] = useState(false)
+
+  // Cargar terminaciones desde la API (predefinidas + personalizadas)
+  useEffect(() => {
+    const loadTerminaciones = async () => {
+      setIsLoadingTerminaciones(true)
+      try {
+        const response = await fetch('/api/admin/finishes')
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            setAllTerminaciones(result.data)
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Error cargando terminaciones personalizadas, usando solo predefinidas:', error)
+        // Si falla, mantener las predefinidas
+      } finally {
+        setIsLoadingTerminaciones(false)
+      }
+    }
+
+    loadTerminaciones()
+  }, [])
 
   const selectedTerminaciones = value || []
-  const availableTerminaciones = PREDEFINED_TERMINACIONES.filter(
+  const availableTerminaciones = allTerminaciones.filter(
     t => !selectedTerminaciones.includes(t)
   )
 
@@ -55,8 +80,15 @@ export function TerminacionSelector({
   }
 
   const handleCustomTerminacion = () => {
-    if (customTerminacion.trim() && !selectedTerminaciones.includes(customTerminacion.trim())) {
-      handleAddTerminacion(customTerminacion.trim())
+    const terminacionToAdd = customTerminacion.trim()
+    if (terminacionToAdd && !selectedTerminaciones.includes(terminacionToAdd)) {
+      handleAddTerminacion(terminacionToAdd)
+      
+      // Si la terminación no está en allTerminaciones, agregarla localmente
+      if (!allTerminaciones.includes(terminacionToAdd)) {
+        setAllTerminaciones([...allTerminaciones, terminacionToAdd])
+      }
+      
       setCustomTerminacion('')
     }
   }
@@ -116,10 +148,13 @@ export function TerminacionSelector({
               />
             </div>
 
-            {/* Predefined Terminaciones */}
+            {/* Available Terminaciones */}
             {filteredTerminaciones.length > 0 && (
               <div className='max-h-48 overflow-y-auto p-2'>
-                <div className='text-xs text-gray-500 mb-2 px-2'>Terminaciones predefinidas:</div>
+                <div className='text-xs text-gray-500 mb-2 px-2'>
+                  Terminaciones disponibles:
+                  {isLoadingTerminaciones && <span className='ml-2'>(cargando...)</span>}
+                </div>
                 <div className='grid grid-cols-2 gap-1'>
                   {filteredTerminaciones.map(terminacion => (
                     <button

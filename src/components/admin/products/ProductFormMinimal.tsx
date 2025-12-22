@@ -1148,6 +1148,7 @@ export function ProductFormMinimal({
             discounted_price: watchedData.discounted_price,
             stock: watchedData.stock,
             medida: watchedData.medida,
+            terminaciones: watchedData.terminaciones || [], // ✅ NUEVO: Pasar terminaciones del producto
             mainImageUrl: productMainImage || (watchedData.image_url && watchedData.image_url.trim() !== '' ? watchedData.image_url : null), // ✅ NUEVO: Pasar imagen principal
           }}
           onSave={async (variant) => {
@@ -1237,6 +1238,7 @@ interface VariantModalProps {
     discounted_price?: number | null
     stock?: number
     medida?: string[]
+    terminaciones?: string[] // ✅ NUEVO: Terminaciones del producto
     mainImageUrl?: string | null // ✅ NUEVO: URL de la imagen principal del producto
   }
   onSave: (variant: ProductVariant) => void
@@ -1247,6 +1249,32 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
   const [formData, setFormData] = useState(variant)
   const [imagePreview, setImagePreview] = useState<string | null>(variant.image_url || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [availableFinishes, setAvailableFinishes] = useState<string[]>([])
+  const [isLoadingFinishes, setIsLoadingFinishes] = useState(false)
+
+  // Cargar terminaciones disponibles desde la API
+  useEffect(() => {
+    const loadFinishes = async () => {
+      setIsLoadingFinishes(true)
+      try {
+        const response = await fetch('/api/admin/finishes')
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            setAvailableFinishes(result.data)
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Error cargando terminaciones, usando predefinidas:', error)
+        // Si falla, usar predefinidas
+        setAvailableFinishes(['Mate', 'Satinado', 'Semi-brillante', 'Brillante', 'Rústico', 'Texturizado', 'Metálico', 'Perlado', 'Chrome'])
+      } finally {
+        setIsLoadingFinishes(false)
+      }
+    }
+
+    loadFinishes()
+  }, [])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -1529,19 +1557,52 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
               </div>
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Terminación
-                </label>
-                <select
-                  value={formData.finish || 'Mate'}
-                  onChange={(e) => setFormData({ ...formData, finish: e.target.value })}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                >
-                  <option value='Mate'>Mate</option>
-                  <option value='Satinado'>Satinado</option>
-                  <option value='Brillante'>Brillante</option>
-                  <option value='Rústico'>Rústico</option>
-                </select>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Terminación
+                  </label>
+                  {productData?.terminaciones && Array.isArray(productData.terminaciones) && productData.terminaciones.length > 0 && !variant.id && (
+                    <div className='flex gap-1 flex-wrap'>
+                      {productData.terminaciones.map((term, idx) => (
+                        <button
+                          key={idx}
+                          type='button'
+                          onClick={() => {
+                            setFormData({ ...formData, finish: term })
+                            if (errors.finish) setErrors({ ...errors, finish: '' })
+                          }}
+                          className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                        >
+                          Usar: {term}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <input
+                  type='text'
+                  value={formData.finish || ''}
+                  onChange={(e) => {
+                    setFormData({ ...formData, finish: e.target.value })
+                    if (errors.finish) setErrors({ ...errors, finish: '' })
+                  }}
+                  list='finish-options'
+                  className={cn(
+                    'w-full px-3 py-2 border rounded-lg focus:ring-2',
+                    errors.finish
+                      ? 'border-red-300 focus:ring-red-500'
+                      : 'border-gray-300 focus:ring-blaze-orange-500'
+                  )}
+                  placeholder='Ej: Mate, Metálico, Brillante'
+                />
+                <datalist id='finish-options'>
+                  {availableFinishes.map((finish) => (
+                    <option key={finish} value={finish} />
+                  ))}
+                </datalist>
+                {errors.finish && (
+                  <p className='text-red-600 text-sm mt-1'>{errors.finish}</p>
+                )}
               </div>
 
               <div>

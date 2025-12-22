@@ -421,6 +421,47 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         }
       }
 
+      // ✅ NUEVO: Guardar terminación en la paleta si no existe
+      if (insertData.finish) {
+        try {
+          const finishTrimmed = insertData.finish.trim()
+          const finishLower = finishTrimmed.toLowerCase()
+          
+          // Determinar categoría basada en el tipo de producto (podría mejorarse con más contexto)
+          // Por ahora, categoría genérica
+          const category = 'General'
+          
+          // Verificar si la terminación ya existe en la paleta (case-insensitive)
+          const { data: existingFinish } = await supabaseAdmin
+            .from('finish_palette')
+            .select('id')
+            .ilike('finish', finishLower)
+            .maybeSingle()
+
+          // Si no existe, guardarla
+          if (!existingFinish) {
+            const { error: finishError } = await supabaseAdmin
+              .from('finish_palette')
+              .insert({
+                finish: finishTrimmed,
+                category: category,
+                is_popular: false,
+                description: `Terminación personalizada agregada automáticamente: ${finishTrimmed}`,
+              } as any)
+
+            if (finishError) {
+              console.warn(`⚠️ [POST Variant] No se pudo guardar terminación en paleta: ${finishError.message}`)
+              // No fallar la creación de la variante si falla el guardado de la terminación
+            } else {
+              console.log(`✅ [POST Variant] Terminación "${finishTrimmed}" guardada en paleta automáticamente`)
+            }
+          }
+        } catch (error) {
+          console.warn(`⚠️ [POST Variant] Error al verificar/guardar terminación en paleta:`, error)
+          // No fallar la creación de la variante si falla el guardado de la terminación
+        }
+      }
+
       // Crear variante
       const { data: variant, error: variantError } = await supabase
         .from('product_variants')
